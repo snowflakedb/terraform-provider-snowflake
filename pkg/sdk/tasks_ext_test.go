@@ -44,7 +44,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Tasks_sql_Create_all,
 			func(opts *CreateTaskOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Warehouse = &CreateTaskWarehouse{Warehouse: &warehouseId}
 				opts.Schedule = new("10 MINUTE")
 				opts.Config = new(`{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`)
@@ -67,7 +67,7 @@ func init() {
 				opts.After = []SchemaObjectIdentifier{otherTaskId}
 				opts.When = new(`SYSTEM$STREAM_HAS_DATA('MYSTREAM')`)
 			},
-			`CREATE OR REPLACE TASK %s WAREHOUSE = %s SCHEDULE = '10 MINUTE' CONFIG = $${"output_dir": "/temp/test_directory/", "learning_rate": 0.1}$$ ALLOW_OVERLAPPING_EXECUTION = true JSON_INDENT = 10, LOCK_TIMEOUT = 5 USER_TASK_TIMEOUT_MS = 5 SUSPEND_TASK_AFTER_NUM_FAILURES = 6 ERROR_INTEGRATION = "some_error_integration" COMMENT = 'some comment' FINALIZE = %s TASK_AUTO_RETRY_ATTEMPTS = 10 TAG (%s = 'v1') USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 10 TARGET_COMPLETION_INTERVAL = '10 MINUTES' SERVERLESS_TASK_MIN_STATEMENT_SIZE = 'SMALL' SERVERLESS_TASK_MAX_STATEMENT_SIZE = 'LARGE' AFTER %s WHEN SYSTEM$STREAM_HAS_DATA('MYSTREAM') AS SELECT CURRENT_TIMESTAMP`,
+			`CREATE TASK IF NOT EXISTS %s WAREHOUSE = %s SCHEDULE = '10 MINUTE' CONFIG = $${"output_dir": "/temp/test_directory/", "learning_rate": 0.1}$$ ALLOW_OVERLAPPING_EXECUTION = true JSON_INDENT = 10, LOCK_TIMEOUT = 5 USER_TASK_TIMEOUT_MS = 5 SUSPEND_TASK_AFTER_NUM_FAILURES = 6 ERROR_INTEGRATION = "some_error_integration" COMMENT = 'some comment' FINALIZE = %s TASK_AUTO_RETRY_ATTEMPTS = 10 TAG (%s = 'v1') USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 10 TARGET_COMPLETION_INTERVAL = '10 MINUTES' SERVERLESS_TASK_MIN_STATEMENT_SIZE = 'SMALL' SERVERLESS_TASK_MAX_STATEMENT_SIZE = 'LARGE' AFTER %s WHEN SYSTEM$STREAM_HAS_DATA('MYSTREAM') AS SELECT CURRENT_TIMESTAMP`,
 			tasksTestIdSchemaObjectIdentifier.FullyQualifiedName(), warehouseId.FullyQualifiedName(), finalizerId.FullyQualifiedName(), tagId.FullyQualifiedName(), otherTaskId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -79,6 +79,11 @@ func init() {
 			},
 			"CREATE TASK %s USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = 'XSMALL' AS %s",
 			tasksTestIdSchemaObjectIdentifier.FullyQualifiedName(), sql,
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateTaskOptions) { opts.OrReplace = new(true) },
+			"CREATE OR REPLACE TASK %s AS %s", tasksTestIdSchemaObjectIdentifier.FullyQualifiedName(), sql,
 		)
 
 	tasksTests.CreateOrAlter.

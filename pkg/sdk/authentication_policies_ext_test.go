@@ -42,7 +42,7 @@ func init() {
 	securityIntegrations := &SecurityIntegrationsOption{
 		SecurityIntegrations: []AccountObjectIdentifier{securityIntegrationId},
 	}
-	createAllSql := "CREATE OR REPLACE AUTHENTICATION POLICY %s AUTHENTICATION_METHODS = ('SAML', 'PASSWORD')" +
+	createAllSql := "CREATE AUTHENTICATION POLICY IF NOT EXISTS %s AUTHENTICATION_METHODS = ('SAML', 'PASSWORD')" +
 		" MFA_ENROLLMENT = OPTIONAL MFA_POLICY = (ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION = ALL ALLOWED_METHODS = ('PASSKEY'))" +
 		" CLIENT_TYPES = ('DRIVERS', 'SNOWSQL') CLIENT_POLICY = (GO_DRIVER = (MINIMUM_VERSION = '1.14.1'), JDBC_DRIVER = (MINIMUM_VERSION = '3.25.0'))" +
 		" SECURITY_INTEGRATIONS = (\"security_integration\") PAT_POLICY = (DEFAULT_EXPIRY_IN_DAYS = 30 MAX_EXPIRY_IN_DAYS = 90 REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS = true NETWORK_POLICY_EVALUATION = ENFORCED_REQUIRED)" +
@@ -77,7 +77,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_AuthenticationPolicies_sql_Create_all,
 			func(opts *CreateAuthenticationPolicyOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.AuthenticationMethods = []AuthenticationMethods{
 					{Method: AuthenticationMethodsOptionSaml},
 					{Method: AuthenticationMethodsOptionPassword},
@@ -99,6 +99,11 @@ func init() {
 				opts.SecurityIntegrations = &SecurityIntegrationsOption{All: new(true)}
 			},
 			"CREATE AUTHENTICATION POLICY %s SECURITY_INTEGRATIONS = ('ALL')", id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateAuthenticationPolicyOptions) { opts.OrReplace = new(true) },
+			"CREATE OR REPLACE AUTHENTICATION POLICY %s", id.FullyQualifiedName(),
 		)
 
 	authenticationPoliciesTests.Alter.

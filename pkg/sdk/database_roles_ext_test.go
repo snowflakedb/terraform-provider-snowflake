@@ -23,6 +23,11 @@ func init() {
 			},
 			`CREATE DATABASE ROLE IF NOT EXISTS %s COMMENT = 'some comment'`,
 			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateDatabaseRoleOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE DATABASE ROLE %s`, id.FullyQualifiedName(),
 		)
 
 	databaseRolesTests.Alter.

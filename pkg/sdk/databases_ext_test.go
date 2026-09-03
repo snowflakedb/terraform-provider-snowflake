@@ -57,6 +57,11 @@ func init() {
 			},
 			`CREATE TRANSIENT DATABASE IF NOT EXISTS %s DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 EXTERNAL_VOLUME = %s CATALOG = %s REPLACE_INVALID_CHARACTERS = true DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' STORAGE_SERIALIZATION_POLICY = COMPATIBLE LOG_LEVEL = 'INFO' TRACE_LEVEL = 'PROPAGATE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = MEDIUM USER_TASK_TIMEOUT_MS = 12000 USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 QUOTED_IDENTIFIERS_IGNORE_CASE = true ENABLE_CONSOLE_OUTPUT = true COMMENT = 'comment' TAG (%s = 'v1')`,
 			id.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), catalogId.FullyQualifiedName(), tagId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateDatabaseOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE DATABASE %s`, id.FullyQualifiedName(),
 		)
 
 	databasesTests.Clone.
@@ -91,14 +96,19 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_Clone_all",
 			func(opts *CloneDatabaseOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Clone = Clone{
 					SourceObject: cloneCompleteSource,
 					At:           &TimeTravel{Timestamp: &cloneTimestamp},
 				}
 			},
-			`CREATE OR REPLACE DATABASE %s CLONE "db1" AT (TIMESTAMP => '2021-01-01 00:00:00 +0000 UTC')`,
+			`CREATE DATABASE IF NOT EXISTS %s CLONE "db1" AT (TIMESTAMP => '2021-01-01 00:00:00 +0000 UTC')`,
 			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Clone_orReplace",
+			func(opts *CloneDatabaseOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE DATABASE %s CLONE %s`, id.FullyQualifiedName(), cloneSourceId.FullyQualifiedName(),
 		)
 
 	databasesTests.CreateShared.
@@ -112,15 +122,14 @@ func init() {
 			case_Databases_sql_CreateShared_basic,
 			func(opts *CreateSharedDatabaseOptions) {
 				opts.Transient = new(true)
-				opts.IfNotExists = new(true)
 			},
-			`CREATE TRANSIENT DATABASE IF NOT EXISTS %s FROM SHARE %s`,
+			`CREATE TRANSIENT DATABASE %s FROM SHARE %s`,
 			id.FullyQualifiedName(), fromShareId.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Databases_sql_CreateShared_all,
 			func(opts *CreateSharedDatabaseOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.ExternalVolume = &externalVolumeId
 				opts.Catalog = &catalogId
 				opts.ReplaceInvalidCharacters = new(true)
@@ -140,8 +149,14 @@ func init() {
 				opts.Comment = new("comment")
 				opts.Tag = []TagAssociation{{Name: tagId, Value: "v1"}}
 			},
-			`CREATE OR REPLACE DATABASE %s FROM SHARE %s EXTERNAL_VOLUME = %s CATALOG = %s REPLACE_INVALID_CHARACTERS = true DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' STORAGE_SERIALIZATION_POLICY = COMPATIBLE LOG_LEVEL = 'INFO' TRACE_LEVEL = 'PROPAGATE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = MEDIUM USER_TASK_TIMEOUT_MS = 12000 USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 QUOTED_IDENTIFIERS_IGNORE_CASE = true ENABLE_CONSOLE_OUTPUT = true COMMENT = 'comment' TAG (%s = 'v1')`,
+			`CREATE DATABASE IF NOT EXISTS %s FROM SHARE %s EXTERNAL_VOLUME = %s CATALOG = %s REPLACE_INVALID_CHARACTERS = true DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' STORAGE_SERIALIZATION_POLICY = COMPATIBLE LOG_LEVEL = 'INFO' TRACE_LEVEL = 'PROPAGATE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = MEDIUM USER_TASK_TIMEOUT_MS = 12000 USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 QUOTED_IDENTIFIERS_IGNORE_CASE = true ENABLE_CONSOLE_OUTPUT = true COMMENT = 'comment' TAG (%s = 'v1')`,
 			id.FullyQualifiedName(), fromShareId.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), catalogId.FullyQualifiedName(), tagId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateShared_orReplace",
+			func(opts *CreateSharedDatabaseOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE DATABASE %s FROM SHARE %s`,
+			id.FullyQualifiedName(), fromShareId.FullyQualifiedName(),
 		)
 
 	databasesTests.CreateSecondary.
@@ -151,18 +166,15 @@ func init() {
 				PrimaryDatabase: primaryDatabaseId,
 			}
 		}).
-		withModifyAndExpectedSqlf(
+		withExpectedSqlf(
 			case_Databases_sql_CreateSecondary_basic,
-			func(opts *CreateSecondaryDatabaseOptions) {
-				opts.IfNotExists = new(true)
-			},
-			`CREATE DATABASE IF NOT EXISTS %s AS REPLICA OF %s`,
+			`CREATE DATABASE %s AS REPLICA OF %s`,
 			id.FullyQualifiedName(), primaryDatabaseId.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Databases_sql_CreateSecondary_all,
 			func(opts *CreateSecondaryDatabaseOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Transient = new(true)
 				opts.DataRetentionTimeInDays = new(1)
 				opts.MaxDataExtensionTimeInDays = new(1)
@@ -184,8 +196,14 @@ func init() {
 				opts.EnableConsoleOutput = new(true)
 				opts.Comment = new("comment")
 			},
-			`CREATE OR REPLACE TRANSIENT DATABASE %s AS REPLICA OF %s DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 EXTERNAL_VOLUME = %s CATALOG = %s REPLACE_INVALID_CHARACTERS = true DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' STORAGE_SERIALIZATION_POLICY = COMPATIBLE LOG_LEVEL = 'INFO' TRACE_LEVEL = 'PROPAGATE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = MEDIUM USER_TASK_TIMEOUT_MS = 12000 USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 QUOTED_IDENTIFIERS_IGNORE_CASE = true ENABLE_CONSOLE_OUTPUT = true COMMENT = 'comment'`,
+			`CREATE TRANSIENT DATABASE IF NOT EXISTS %s AS REPLICA OF %s DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 EXTERNAL_VOLUME = %s CATALOG = %s REPLACE_INVALID_CHARACTERS = true DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' STORAGE_SERIALIZATION_POLICY = COMPATIBLE LOG_LEVEL = 'INFO' TRACE_LEVEL = 'PROPAGATE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = MEDIUM USER_TASK_TIMEOUT_MS = 12000 USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 QUOTED_IDENTIFIERS_IGNORE_CASE = true ENABLE_CONSOLE_OUTPUT = true COMMENT = 'comment'`,
 			id.FullyQualifiedName(), primaryDatabaseId.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), catalogId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateSecondary_orReplace",
+			func(opts *CreateSecondaryDatabaseOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE DATABASE %s AS REPLICA OF %s`,
+			id.FullyQualifiedName(), primaryDatabaseId.FullyQualifiedName(),
 		)
 
 	databasesTests.CreateFromListing.

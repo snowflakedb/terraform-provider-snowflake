@@ -39,7 +39,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_ResourceMonitors_sql_Create_all,
 			func(opts *CreateResourceMonitorOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.With = &ResourceMonitorWith{
 					CreditQuota:    new(100),
 					Frequency:      new(FrequencyMonthly),
@@ -52,11 +52,17 @@ func init() {
 					},
 				}
 			},
-			`CREATE OR REPLACE RESOURCE MONITOR %s WITH CREDIT_QUOTA = 100 FREQUENCY = MONTHLY START_TIMESTAMP = 'IMMIEDIATELY' END_TIMESTAMP = '%s' NOTIFY_USERS = (%s, %s) TRIGGERS ON 50 PERCENT DO SUSPEND_IMMEDIATE ON 100 PERCENT DO NOTIFY`,
+			`CREATE RESOURCE MONITOR IF NOT EXISTS %s WITH CREDIT_QUOTA = 100 FREQUENCY = MONTHLY START_TIMESTAMP = 'IMMIEDIATELY' END_TIMESTAMP = '%s' NOTIFY_USERS = (%s, %s) TRIGGERS ON 50 PERCENT DO SUSPEND_IMMEDIATE ON 100 PERCENT DO NOTIFY`,
 			id.FullyQualifiedName(),
 			endTimestamp,
 			firstUser.FullyQualifiedName(),
 			secondUser.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateResourceMonitorOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE RESOURCE MONITOR %s`,
+			id.FullyQualifiedName(),
 		)
 
 	resourceMonitorsTests.Alter.

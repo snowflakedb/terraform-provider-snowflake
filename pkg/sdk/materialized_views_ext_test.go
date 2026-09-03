@@ -25,7 +25,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_MaterializedViews_sql_Create_all,
 			func(opts *CreateMaterializedViewOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Secure = new(true)
 				opts.Columns = []MaterializedViewColumn{
 					{Name: "column_without_comment"},
@@ -40,14 +40,21 @@ func init() {
 					},
 					{Name: "column 2", MaskingPolicy: maskingPolicy2Id},
 				}
-				opts.CopyGrants = new(true)
 				opts.Comment = new("comment")
 				opts.RowAccessPolicy = &MaterializedViewRowAccessPolicy{RowAccessPolicy: rowAccessPolicyId, On: []string{"c", "d"}}
 				opts.Tag = []TagAssociation{{Name: tag2Id, Value: "v2"}}
 				opts.ClusterBy = &MaterializedViewClusterBy{Expressions: []MaterializedViewClusterByExpression{{"column_without_comment"}, {"column_with_comment"}}}
 			},
-			`CREATE OR REPLACE SECURE MATERIALIZED VIEW %s COPY GRANTS ("column_without_comment", "column_with_comment" COMMENT 'column 2 comment') column MASKING POLICY %s USING (a, b) TAG (%s = 'v1'), column 2 MASKING POLICY %s COMMENT = 'comment' ROW ACCESS POLICY %s ON (c, d) TAG (%s = 'v2') CLUSTER BY ("column_without_comment", "column_with_comment") AS %s`,
+			`CREATE SECURE MATERIALIZED VIEW IF NOT EXISTS %s ("column_without_comment", "column_with_comment" COMMENT 'column 2 comment') column MASKING POLICY %s USING (a, b) TAG (%s = 'v1'), column 2 MASKING POLICY %s COMMENT = 'comment' ROW ACCESS POLICY %s ON (c, d) TAG (%s = 'v2') CLUSTER BY ("column_without_comment", "column_with_comment") AS %s`,
 			id.FullyQualifiedName(), maskingPolicy1Id.FullyQualifiedName(), tag1Id.FullyQualifiedName(), maskingPolicy2Id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName(), tag2Id.FullyQualifiedName(), sql,
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateMaterializedViewOptions) {
+				opts.OrReplace = new(true)
+				opts.CopyGrants = new(true)
+			},
+			"CREATE OR REPLACE MATERIALIZED VIEW %s COPY GRANTS AS %s", id.FullyQualifiedName(), sql,
 		)
 
 	materializedViewsTests.Alter.

@@ -15,10 +15,9 @@ func init() {
 	databaseId := NewAccountObjectIdentifier("database-name")
 
 	notebooksTests.Create.
-		withModifyAndExpectedSqlf(
+		withExpectedSqlf(
 			case_Notebooks_sql_Create_basic,
-			func(opts *CreateNotebookOptions) { opts.OrReplace = new(true) },
-			"CREATE OR REPLACE NOTEBOOK %s", id.FullyQualifiedName(),
+			"CREATE NOTEBOOK %s", id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Notebooks_sql_Create_all,
@@ -37,6 +36,11 @@ func init() {
 			},
 			`CREATE NOTEBOOK IF NOT EXISTS %s FROM '@\"%s\".\"%s\".\"%s\"/dir/subdir' MAIN_FILE = 'main_file' COMMENT = 'comment' QUERY_WAREHOUSE = %s IDLE_AUTO_SHUTDOWN_TIME_SECONDS = 3600 WAREHOUSE = %s RUNTIME_NAME = 'sample' COMPUTE_POOL = %s RUNTIME_ENVIRONMENT_VERSION = 'WH-RUNTIME-2.0' DEFAULT_VERSION = FIRST`,
 			id.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name(), queryWarehouseId.FullyQualifiedName(), warehouseId.FullyQualifiedName(), computePoolId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateNotebookOptions) { opts.OrReplace = new(true) },
+			"CREATE OR REPLACE NOTEBOOK %s", id.FullyQualifiedName(),
 		)
 
 	notebooksTests.Alter.

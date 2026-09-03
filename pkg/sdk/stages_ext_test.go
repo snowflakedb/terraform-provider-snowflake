@@ -644,6 +644,11 @@ func init() {
 			},
 			`CREATE STAGE %s FILE_FORMAT = (TYPE = XML COMPRESSION = BZ2 PRESERVE_SPACE = false STRIP_OUTER_ELEMENT = false DISABLE_AUTO_CONVERT = false REPLACE_INVALID_CHARACTERS = true SKIP_BYTE_ORDER_MARK = false)`,
 			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateInternal_orReplace",
+			func(opts *CreateInternalStageOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE STAGE %s`, id.FullyQualifiedName(),
 		)
 
 	stagesTests.CreateOnS3.
@@ -666,7 +671,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_CreateOnS3_all,
 			func(opts *CreateOnS3StageOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Temporary = new(true)
 				opts.ExternalStageParams = ExternalS3StageParams{
 					Url:                "some url",
@@ -679,14 +684,14 @@ func init() {
 				opts.FileFormat = &StageFileFormat{FormatName: new(ffId)}
 				opts.Comment = new("some comment")
 			},
-			`CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = %s ENCRYPTION = (TYPE = 'AWS_CSE' MASTER_KEY = 'master-key') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`,
+			`CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = %s ENCRYPTION = (TYPE = 'AWS_CSE' MASTER_KEY = 'master-key') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`,
 			id.FullyQualifiedName(), integrationId.FullyQualifiedName(), ffId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_CreateOnS3_allOptionsDirectoryTableAndCredentials",
 			func(opts *CreateOnS3StageOptions) {
 				opts.Temporary = new(true)
-				opts.IfNotExists = new(true)
+				opts.OrReplace = new(true)
 				opts.ExternalStageParams = ExternalS3StageParams{
 					Url:               "some url",
 					AwsAccessPointArn: new("aws-access-point-arn"),
@@ -707,7 +712,7 @@ func init() {
 					AwsSnsTopic:     new("arn:aws:sns:us-west-2:123456789012:my-sns-topic"),
 				}
 			},
-			`CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' CREDENTIALS = (AWS_KEY_ID = 'aws-key-id' AWS_SECRET_KEY = 'aws-secret-key' AWS_TOKEN = 'aws-token') ENCRYPTION = (TYPE = 'AWS_SSE_KMS' KMS_KEY_ID = 'kms-key-id') USE_PRIVATELINK_ENDPOINT = true DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true AWS_SNS_TOPIC = 'arn:aws:sns:us-west-2:123456789012:my-sns-topic')`,
+			`CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' CREDENTIALS = (AWS_KEY_ID = 'aws-key-id' AWS_SECRET_KEY = 'aws-secret-key' AWS_TOKEN = 'aws-token') ENCRYPTION = (TYPE = 'AWS_SSE_KMS' KMS_KEY_ID = 'kms-key-id') USE_PRIVATELINK_ENDPOINT = true DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true AWS_SNS_TOPIC = 'arn:aws:sns:us-west-2:123456789012:my-sns-topic')`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -752,7 +757,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_CreateOnGCS_all,
 			func(opts *CreateOnGCSStageOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Temporary = new(true)
 				opts.ExternalStageParams = ExternalGCSStageParams{
 					Url:                "some url",
@@ -770,7 +775,7 @@ func init() {
 				opts.FileFormat = &StageFileFormat{FormatName: new(ffId)}
 				opts.Comment = new("some comment")
 			},
-			`CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = %s ENCRYPTION = (TYPE = 'GCS_SSE_KMS' KMS_KEY_ID = 'kms-key-id') DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true NOTIFICATION_INTEGRATION = 'notification-integration') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`,
+			`CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' STORAGE_INTEGRATION = %s ENCRYPTION = (TYPE = 'GCS_SSE_KMS' KMS_KEY_ID = 'kms-key-id') DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true NOTIFICATION_INTEGRATION = 'notification-integration') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`,
 			id.FullyQualifiedName(), integrationId.FullyQualifiedName(), ffId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -779,6 +784,11 @@ func init() {
 				opts.ExternalStageParams.Encryption = &ExternalStageGCSEncryption{None: &ExternalStageGCSEncryptionNone{}}
 			},
 			`CREATE STAGE %s URL = 'gcs://example.com' ENCRYPTION = (TYPE = 'NONE')`, id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateOnGCS_orReplace",
+			func(opts *CreateOnGCSStageOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE STAGE %s URL = 'gcs://example.com'`, id.FullyQualifiedName(),
 		)
 
 	stagesTests.CreateOnAzure.
@@ -801,7 +811,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_CreateOnAzure_all,
 			func(opts *CreateOnAzureStageOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Temporary = new(true)
 				opts.ExternalStageParams = ExternalAzureStageParams{
 					Url:                "some url",
@@ -813,13 +823,13 @@ func init() {
 				opts.FileFormat = &StageFileFormat{FormatName: new(ffId)}
 				opts.Comment = new("some comment")
 			},
-			`CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = %s ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`,
+			`CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' STORAGE_INTEGRATION = %s ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`,
 			id.FullyQualifiedName(), integrationId.FullyQualifiedName(), ffId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_CreateOnAzure_allOptionsDirectoryTableAndCredentials",
 			func(opts *CreateOnAzureStageOptions) {
-				opts.IfNotExists = new(true)
+				opts.OrReplace = new(true)
 				opts.DirectoryTableOptions = &ExternalAzureDirectoryTableOptions{
 					Enable:                  true,
 					RefreshOnCreate:         new(true),
@@ -835,7 +845,7 @@ func init() {
 					UsePrivatelinkEndpoint: new(true),
 				}
 			},
-			`CREATE STAGE IF NOT EXISTS %s URL = 'some url' CREDENTIALS = (AZURE_SAS_TOKEN = 'azure-sas-token') ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key') USE_PRIVATELINK_ENDPOINT = true DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true NOTIFICATION_INTEGRATION = 'notification-integration')`,
+			`CREATE OR REPLACE STAGE %s URL = 'some url' CREDENTIALS = (AZURE_SAS_TOKEN = 'azure-sas-token') ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key') USE_PRIVATELINK_ENDPOINT = true DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true NOTIFICATION_INTEGRATION = 'notification-integration')`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -889,6 +899,11 @@ func init() {
 			},
 			`CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' ENDPOINT = 'some endpoint' CREDENTIALS = (AWS_KEY_ID = 'aws-key-id' AWS_SECRET_KEY = 'aws-secret-key') DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true) FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`,
 			id.FullyQualifiedName(), ffId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateOnS3Compatible_orReplace",
+			func(opts *CreateOnS3CompatibleStageOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE STAGE %s URL = 's3://example.com' ENDPOINT = 'some endpoint'`, id.FullyQualifiedName(),
 		)
 
 	stagesTests.Alter.

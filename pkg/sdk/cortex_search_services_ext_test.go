@@ -18,10 +18,9 @@ func init() {
 				QueryDefinition: queryDefinition,
 			}
 		}).
-		withModifyAndExpectedSqlf(
+		withExpectedSqlf(
 			case_CortexSearchServices_sql_Create_basic,
-			func(opts *CreateCortexSearchServiceOptions) { opts.OrReplace = new(true) },
-			`CREATE OR REPLACE CORTEX SEARCH SERVICE %s ON searchable_text WAREHOUSE = %s TARGET_LAG = '1 minutes' AS %s`,
+			`CREATE CORTEX SEARCH SERVICE %s ON searchable_text WAREHOUSE = %s TARGET_LAG = '1 minutes' AS %s`,
 			id.FullyQualifiedName(), warehouseId.FullyQualifiedName(), queryDefinition,
 		).
 		withModifyAndExpectedSqlf(
@@ -66,6 +65,12 @@ func init() {
 				opts.Initialize = new(CortexSearchServiceInitializeOnSchedule)
 			},
 			`CREATE CORTEX SEARCH SERVICE %s ON searchable_text WAREHOUSE = %s TARGET_LAG = '1 minutes' REFRESH_MODE = INCREMENTAL INITIALIZE = ON_SCHEDULE AS %s`,
+			id.FullyQualifiedName(), warehouseId.FullyQualifiedName(), queryDefinition,
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateCortexSearchServiceOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE CORTEX SEARCH SERVICE %s ON searchable_text WAREHOUSE = %s TARGET_LAG = '1 minutes' AS %s`,
 			id.FullyQualifiedName(), warehouseId.FullyQualifiedName(), queryDefinition,
 		)
 

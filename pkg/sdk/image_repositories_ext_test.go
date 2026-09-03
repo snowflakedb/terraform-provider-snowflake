@@ -28,6 +28,11 @@ func init() {
 			},
 			"CREATE IMAGE REPOSITORY IF NOT EXISTS %s ENCRYPTION = (TYPE = 'SNOWFLAKE_FULL') COMMENT = '%s' TAG (%s = 'value1')",
 			id.FullyQualifiedName(), createComment, tagId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateImageRepositoryOptions) { opts.OrReplace = new(true) },
+			"CREATE OR REPLACE IMAGE REPOSITORY %s", id.FullyQualifiedName(),
 		)
 
 	imageRepositoriesTests.Alter.

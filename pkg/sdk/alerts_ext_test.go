@@ -31,6 +31,12 @@ func init() {
 			},
 			`CREATE ALERT IF NOT EXISTS %s WAREHOUSE = %s SCHEDULE = '%s' COMMENT = '%s' IF (EXISTS (%s)) THEN %s`,
 			id.FullyQualifiedName(), warehouse.FullyQualifiedName(), schedule, comment, existsCondition, action,
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateAlertOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE ALERT %s WAREHOUSE = %s SCHEDULE = '%s' IF (EXISTS (%s)) THEN %s`,
+			id.FullyQualifiedName(), warehouse.FullyQualifiedName(), schedule, existsCondition, action,
 		)
 
 	alertsTests.Alter.

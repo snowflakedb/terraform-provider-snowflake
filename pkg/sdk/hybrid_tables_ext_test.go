@@ -17,7 +17,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_HybridTables_sql_Create_all,
 			func(opts *CreateHybridTableOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.ColumnsAndConstraints = HybridTableColumnsConstraintsAndIndexes{
 					Columns: []HybridTableColumn{
 						{
@@ -63,7 +63,7 @@ func init() {
 				}
 				opts.Comment = new("test comment")
 			},
-			`CREATE OR REPLACE HYBRID TABLE %s ("ID" NUMBER CONSTRAINT pk_id PRIMARY KEY, "NAME" VARCHAR NOT NULL COLLATE 'en-ci' COMMENT 'the name', "REF_ID" NUMBER FOREIGN KEY REFERENCES other_table (ID), UNIQUE ("NAME"), INDEX "idx_name" ("NAME") INCLUDE ("ID")) COMMENT = 'test comment'`,
+			`CREATE HYBRID TABLE IF NOT EXISTS %s ("ID" NUMBER CONSTRAINT pk_id PRIMARY KEY, "NAME" VARCHAR NOT NULL COLLATE 'en-ci' COMMENT 'the name', "REF_ID" NUMBER FOREIGN KEY REFERENCES other_table (ID), UNIQUE ("NAME"), INDEX "idx_name" ("NAME") INCLUDE ("ID")) COMMENT = 'test comment'`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -258,6 +258,11 @@ func init() {
 			},
 			`CREATE HYBRID TABLE %s ("id" NUMBER(38,0) PRIMARY KEY) DATA_RETENTION_TIME_IN_DAYS = 7 MAX_DATA_EXTENSION_TIME_IN_DAYS = 14 COMMENT = 'with retention'`,
 			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateHybridTableOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE HYBRID TABLE %s`, id.FullyQualifiedName(),
 		)
 
 	newID := randomSchemaObjectIdentifierInSchema(id.SchemaId())
@@ -667,16 +672,16 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_HybridTables_sql_CreateIndex_all,
 			func(opts *CreateIndexHybridTableOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Columns = []Column{{Value: "col1"}, {Value: "col2"}}
 				opts.IncludeColumns = []Column{{Value: "col3"}}
 			},
-			`CREATE OR REPLACE INDEX %s ON %s ("col1", "col2") INCLUDE ("col3")`, indexId.FullyQualifiedName(), tableId.FullyQualifiedName(),
+			`CREATE INDEX IF NOT EXISTS %s ON %s ("col1", "col2") INCLUDE ("col3")`, indexId.FullyQualifiedName(), tableId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
-			"sql_CreateIndex_ifNotExists",
-			func(opts *CreateIndexHybridTableOptions) { opts.IfNotExists = new(true) },
-			`CREATE INDEX IF NOT EXISTS %s ON %s ("col1")`, indexId.FullyQualifiedName(), tableId.FullyQualifiedName(),
+			"sql_CreateIndex_orReplace",
+			func(opts *CreateIndexHybridTableOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE INDEX %s ON %s ("col1")`, indexId.FullyQualifiedName(), tableId.FullyQualifiedName(),
 		)
 
 	hybridTablesTests.DropIndex.

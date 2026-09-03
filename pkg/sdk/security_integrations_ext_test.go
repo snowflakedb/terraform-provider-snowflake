@@ -26,12 +26,9 @@ func init() {
 				OauthClientSecret: "bar",
 			}
 		}).
-		withModifyAndExpectedSqlf(
+		withExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateApiAuthenticationWithClientCredentialsFlow_basic,
-			func(opts *CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions) {
-				opts.OrReplace = new(true)
-			},
-			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_CLIENT_ID = 'foo' OAUTH_CLIENT_SECRET = 'bar'",
+			"CREATE SECURITY INTEGRATION %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_CLIENT_ID = 'foo' OAUTH_CLIENT_SECRET = 'bar'",
 			id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
@@ -50,6 +47,14 @@ func init() {
 				" OAUTH_CLIENT_AUTH_METHOD = CLIENT_SECRET_POST OAUTH_CLIENT_ID = 'foo' OAUTH_CLIENT_SECRET = 'bar' OAUTH_GRANT = CLIENT_CREDENTIALS"+
 				" OAUTH_ACCESS_TOKEN_VALIDITY = 42 OAUTH_REFRESH_TOKEN_VALIDITY = 42 OAUTH_ALLOWED_SCOPES = ('bar') COMMENT = 'foo'",
 			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateApiAuthenticationWithClientCredentialsFlow_orReplace",
+			func(opts *CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions) {
+				opts.OrReplace = new(true)
+			},
+			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_CLIENT_ID = 'foo' OAUTH_CLIENT_SECRET = 'bar'",
+			id.FullyQualifiedName(),
 		)
 
 	securityIntegrationsTests.CreateApiAuthenticationWithAuthorizationCodeGrantFlow.
@@ -61,12 +66,9 @@ func init() {
 				OauthClientSecret: "bar",
 			}
 		}).
-		withModifyAndExpectedSqlf(
+		withExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateApiAuthenticationWithAuthorizationCodeGrantFlow_basic,
-			func(opts *CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions) {
-				opts.OrReplace = new(true)
-			},
-			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_CLIENT_ID = 'foo' OAUTH_CLIENT_SECRET = 'bar'",
+			"CREATE SECURITY INTEGRATION %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_CLIENT_ID = 'foo' OAUTH_CLIENT_SECRET = 'bar'",
 			id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
@@ -86,6 +88,14 @@ func init() {
 				" OAUTH_TOKEN_ENDPOINT = 'foo' OAUTH_CLIENT_AUTH_METHOD = CLIENT_SECRET_POST OAUTH_CLIENT_ID = 'foo' OAUTH_CLIENT_SECRET = 'bar' OAUTH_GRANT = AUTHORIZATION_CODE"+
 				" OAUTH_ACCESS_TOKEN_VALIDITY = 42 OAUTH_REFRESH_TOKEN_VALIDITY = 42 OAUTH_ALLOWED_SCOPES = ('bar') COMMENT = 'foo'",
 			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateApiAuthenticationWithAuthorizationCodeGrantFlow_orReplace",
+			func(opts *CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions) {
+				opts.OrReplace = new(true)
+			},
+			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_CLIENT_ID = 'foo' OAUTH_CLIENT_SECRET = 'bar'",
+			id.FullyQualifiedName(),
 		)
 
 	securityIntegrationsTests.CreateApiAuthenticationWithJwtBearerFlow.
@@ -98,12 +108,9 @@ func init() {
 				OauthAssertionIssuer: "foo",
 			}
 		}).
-		withModifyAndExpectedSqlf(
+		withExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateApiAuthenticationWithJwtBearerFlow_basic,
-			func(opts *CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) {
-				opts.OrReplace = new(true)
-			},
-			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_ASSERTION_ISSUER = 'foo' OAUTH_CLIENT_ID = 'foo'"+
+			"CREATE SECURITY INTEGRATION %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_ASSERTION_ISSUER = 'foo' OAUTH_CLIENT_ID = 'foo'"+
 				" OAUTH_CLIENT_SECRET = 'bar'",
 			id.FullyQualifiedName(),
 		).
@@ -122,6 +129,15 @@ func init() {
 			"CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_ASSERTION_ISSUER = 'foo'"+
 				" OAUTH_AUTHORIZATION_ENDPOINT = 'foo' OAUTH_TOKEN_ENDPOINT = 'foo' OAUTH_CLIENT_AUTH_METHOD = CLIENT_SECRET_POST OAUTH_CLIENT_ID = 'foo' OAUTH_CLIENT_SECRET = 'bar' OAUTH_GRANT = JWT_BEARER"+
 				" OAUTH_ACCESS_TOKEN_VALIDITY = 42 OAUTH_REFRESH_TOKEN_VALIDITY = 42 COMMENT = 'foo'",
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateApiAuthenticationWithJwtBearerFlow_orReplace",
+			func(opts *CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) {
+				opts.OrReplace = new(true)
+			},
+			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_ASSERTION_ISSUER = 'foo' OAUTH_CLIENT_ID = 'foo'"+
+				" OAUTH_CLIENT_SECRET = 'bar'",
 			id.FullyQualifiedName(),
 		)
 
@@ -153,11 +169,10 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateExternalOauth_basic,
 			func(opts *CreateExternalOauthSecurityIntegrationOptions) {
-				opts.OrReplace = new(true)
 				opts.ExternalOauthJwsKeysUrl = []JwsKeysUrl{{JwsKeyUrl: "foo"}}
 				opts.ExternalOauthBlockedRolesList = &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{blockedRoleId}}
 			},
-			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = EXTERNAL_OAUTH ENABLED = false EXTERNAL_OAUTH_TYPE = CUSTOM EXTERNAL_OAUTH_ISSUER = 'foo'"+
+			"CREATE SECURITY INTEGRATION %s TYPE = EXTERNAL_OAUTH ENABLED = false EXTERNAL_OAUTH_TYPE = CUSTOM EXTERNAL_OAUTH_ISSUER = 'foo'"+
 				" EXTERNAL_OAUTH_TOKEN_USER_MAPPING_CLAIM = ('foo') EXTERNAL_OAUTH_SNOWFLAKE_USER_MAPPING_ATTRIBUTE = 'EMAIL_ADDRESS' EXTERNAL_OAUTH_JWS_KEYS_URL = ('foo')"+
 				" EXTERNAL_OAUTH_BLOCKED_ROLES_LIST = (%s)",
 			id.FullyQualifiedName(), blockedRoleId.FullyQualifiedName(),
@@ -180,6 +195,18 @@ func init() {
 				" EXTERNAL_OAUTH_RSA_PUBLIC_KEY = 'foo' EXTERNAL_OAUTH_RSA_PUBLIC_KEY_2 = 'foo' EXTERNAL_OAUTH_AUDIENCE_LIST = ('foo') EXTERNAL_OAUTH_ANY_ROLE_MODE = DISABLE"+
 				" EXTERNAL_OAUTH_SCOPE_DELIMITER = ' ' EXTERNAL_OAUTH_SCOPE_MAPPING_ATTRIBUTE = 'foo' COMMENT = 'foo'",
 			id.FullyQualifiedName(), allowedRoleId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateExternalOauth_orReplace",
+			func(opts *CreateExternalOauthSecurityIntegrationOptions) {
+				opts.OrReplace = new(true)
+				opts.ExternalOauthJwsKeysUrl = []JwsKeysUrl{{JwsKeyUrl: "foo"}}
+				opts.ExternalOauthBlockedRolesList = &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{blockedRoleId}}
+			},
+			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = EXTERNAL_OAUTH ENABLED = false EXTERNAL_OAUTH_TYPE = CUSTOM EXTERNAL_OAUTH_ISSUER = 'foo'"+
+				" EXTERNAL_OAUTH_TOKEN_USER_MAPPING_CLAIM = ('foo') EXTERNAL_OAUTH_SNOWFLAKE_USER_MAPPING_ATTRIBUTE = 'EMAIL_ADDRESS' EXTERNAL_OAUTH_JWS_KEYS_URL = ('foo')"+
+				" EXTERNAL_OAUTH_BLOCKED_ROLES_LIST = (%s)",
+			id.FullyQualifiedName(), blockedRoleId.FullyQualifiedName(),
 		)
 
 	securityIntegrationsTests.CreateOauthForPartnerApplications.
@@ -197,12 +224,9 @@ func init() {
 			},
 			NewError("OauthRedirectUri is required when OauthClient is LOOKER"),
 		).
-		withModifyAndExpectedSqlf(
+		withExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateOauthForPartnerApplications_basic,
-			func(opts *CreateOauthForPartnerApplicationsSecurityIntegrationOptions) {
-				opts.OrReplace = new(true)
-			},
-			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = OAUTH OAUTH_CLIENT = TABLEAU_DESKTOP",
+			"CREATE SECURITY INTEGRATION %s TYPE = OAUTH OAUTH_CLIENT = TABLEAU_DESKTOP",
 			id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
@@ -222,6 +246,14 @@ func init() {
 			"CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = OAUTH OAUTH_CLIENT = LOOKER OAUTH_REDIRECT_URI = 'uri' ENABLED = true OAUTH_ISSUE_REFRESH_TOKENS = true"+
 				" OAUTH_REFRESH_TOKEN_VALIDITY = 42 OAUTH_USE_SECONDARY_ROLES = NONE ALLOWED_ROLES_LIST = (%s) BLOCKED_ROLES_LIST = (%s) COMMENT = 'a'",
 			id.FullyQualifiedName(), allowedRoleId.FullyQualifiedName(), blockedRoleId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateOauthForPartnerApplications_orReplace",
+			func(opts *CreateOauthForPartnerApplicationsSecurityIntegrationOptions) {
+				opts.OrReplace = new(true)
+			},
+			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = OAUTH OAUTH_CLIENT = TABLEAU_DESKTOP",
+			id.FullyQualifiedName(),
 		)
 
 	securityIntegrationsTests.CreateOauthForCustomClients.
@@ -232,12 +264,9 @@ func init() {
 				OauthRedirectUri: "uri",
 			}
 		}).
-		withModifyAndExpectedSqlf(
+		withExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateOauthForCustomClients_basic,
-			func(opts *CreateOauthForCustomClientsSecurityIntegrationOptions) {
-				opts.OrReplace = new(true)
-			},
-			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = OAUTH OAUTH_CLIENT = CUSTOM OAUTH_CLIENT_TYPE = 'PUBLIC' OAUTH_REDIRECT_URI = 'uri'",
+			"CREATE SECURITY INTEGRATION %s TYPE = OAUTH OAUTH_CLIENT = CUSTOM OAUTH_CLIENT_TYPE = 'PUBLIC' OAUTH_REDIRECT_URI = 'uri'",
 			id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
@@ -263,6 +292,14 @@ func init() {
 				" OAUTH_ISSUE_REFRESH_TOKENS = true OAUTH_REFRESH_TOKEN_VALIDITY = 42 NETWORK_POLICY = '\\\"%s\\\"' OAUTH_CLIENT_RSA_PUBLIC_KEY = 'key' OAUTH_CLIENT_RSA_PUBLIC_KEY_2 = 'key2' COMMENT = 'a'",
 			id.FullyQualifiedName(), preAuthorizedRoleId.FullyQualifiedName(), allowedRoleId.FullyQualifiedName(),
 			blockedRoleId.FullyQualifiedName(), networkPolicyId.Name(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateOauthForCustomClients_orReplace",
+			func(opts *CreateOauthForCustomClientsSecurityIntegrationOptions) {
+				opts.OrReplace = new(true)
+			},
+			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = OAUTH OAUTH_CLIENT = CUSTOM OAUTH_CLIENT_TYPE = 'PUBLIC' OAUTH_REDIRECT_URI = 'uri'",
+			id.FullyQualifiedName(),
 		)
 
 	securityIntegrationsTests.CreateSaml2.
@@ -275,12 +312,9 @@ func init() {
 				Saml2X509Cert: "cert",
 			}
 		}).
-		withModifyAndExpectedSqlf(
+		withExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateSaml2_basic,
-			func(opts *CreateSaml2SecurityIntegrationOptions) {
-				opts.OrReplace = new(true)
-			},
-			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = SAML2 SAML2_ISSUER = 'issuer' SAML2_SSO_URL = 'url' SAML2_PROVIDER = 'provider' SAML2_X509_CERT = 'cert'",
+			"CREATE SECURITY INTEGRATION %s TYPE = SAML2 SAML2_ISSUER = 'issuer' SAML2_SSO_URL = 'url' SAML2_PROVIDER = 'provider' SAML2_X509_CERT = 'cert'",
 			id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
@@ -306,6 +340,14 @@ func init() {
 				" SAML2_REQUESTED_NAMEID_FORMAT = '%s' SAML2_POST_LOGOUT_REDIRECT_URL = 'redirect' SAML2_FORCE_AUTHN = true SAML2_SNOWFLAKE_ISSUER_URL = 'issuer' SAML2_SNOWFLAKE_ACS_URL = 'acs'"+
 				" COMMENT = 'a'",
 			id.FullyQualifiedName(), Saml2SecurityIntegrationSaml2RequestedNameidFormatKerberos,
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateSaml2_orReplace",
+			func(opts *CreateSaml2SecurityIntegrationOptions) {
+				opts.OrReplace = new(true)
+			},
+			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = SAML2 SAML2_ISSUER = 'issuer' SAML2_SSO_URL = 'url' SAML2_PROVIDER = 'provider' SAML2_X509_CERT = 'cert'",
+			id.FullyQualifiedName(),
 		)
 
 	securityIntegrationsTests.CreateScim.
@@ -324,12 +366,9 @@ func init() {
 			},
 			NewError("SyncPassword is not supported for Azure scim client"),
 		).
-		withModifyAndExpectedSqlf(
+		withExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateScim_basic,
-			func(opts *CreateScimSecurityIntegrationOptions) {
-				opts.OrReplace = new(true)
-			},
-			`CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = SCIM SCIM_CLIENT = 'GENERIC' RUN_AS_ROLE = '\"GENERIC_SCIM_PROVISIONER\"'`,
+			`CREATE SECURITY INTEGRATION %s TYPE = SCIM SCIM_CLIENT = 'GENERIC' RUN_AS_ROLE = '\"GENERIC_SCIM_PROVISIONER\"'`,
 			id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
@@ -344,6 +383,14 @@ func init() {
 			`CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = SCIM ENABLED = true SCIM_CLIENT = 'GENERIC' RUN_AS_ROLE = '\"GENERIC_SCIM_PROVISIONER\"'`+
 				` NETWORK_POLICY = '\"%s\"' SYNC_PASSWORD = true COMMENT = 'a'`,
 			id.FullyQualifiedName(), networkPolicyId.Name(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateScim_orReplace",
+			func(opts *CreateScimSecurityIntegrationOptions) {
+				opts.OrReplace = new(true)
+			},
+			`CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = SCIM SCIM_CLIENT = 'GENERIC' RUN_AS_ROLE = '\"GENERIC_SCIM_PROVISIONER\"'`,
+			id.FullyQualifiedName(),
 		)
 
 	securityIntegrationsTests.AlterApiAuthenticationWithClientCredentialsFlow.

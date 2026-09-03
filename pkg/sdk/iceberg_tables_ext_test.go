@@ -476,7 +476,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_IcebergTables_sql_Create_all,
 			func(opts *CreateIcebergTableOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Transient = new(true)
 				opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
 					Columns: []IcebergTableColumn{
@@ -526,7 +526,6 @@ func init() {
 				opts.DataRetentionTimeInDays = new(1)
 				opts.MaxDataExtensionTimeInDays = new(2)
 				opts.ChangeTracking = new(true)
-				opts.CopyGrants = new(true)
 				opts.ErrorLogging = new(true)
 				opts.Comment = new("test comment")
 				opts.IcebergVersion = new(2)
@@ -549,7 +548,7 @@ func init() {
 					{Purpose: "ACCESS_APPROVAL", Contact: contactId},
 				}
 			},
-			`CREATE OR REPLACE TRANSIENT ICEBERG TABLE %s `+
+			`CREATE TRANSIENT ICEBERG TABLE IF NOT EXISTS %s `+
 				`("ID" NUMBER(38, 0) DEFAULT 1 NOT NULL MASKING POLICY %s USING ("ID", "NAME") PROJECTION POLICY %s TAG (%s = 'v1', %s = 'v2') COMMENT 'id column', `+
 				`"NAME" VARCHAR(16777216) COMMENT 'name column') `+
 				`PARTITION BY ("ID", BUCKET (4, "NAME"), TRUNCATE (10, "C1"), YEAR ("C2"), MONTH ("C3"), DAY ("C4"), HOUR ("C5")) `+
@@ -563,7 +562,6 @@ func init() {
 				`DATA_RETENTION_TIME_IN_DAYS = 1 `+
 				`MAX_DATA_EXTENSION_TIME_IN_DAYS = 2 `+
 				`CHANGE_TRACKING = true `+
-				`COPY GRANTS `+
 				`ERROR_LOGGING = true `+
 				`COMMENT = 'test comment' `+
 				`ICEBERG_VERSION = 2 `+
@@ -583,9 +581,12 @@ func init() {
 			contactId.FullyQualifiedName(), contactId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
-			"sql_Create_ifNotExists",
-			func(opts *CreateIcebergTableOptions) { opts.IfNotExists = new(true) },
-			`CREATE ICEBERG TABLE IF NOT EXISTS %s`, icebergTablesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+			"sql_Create_orReplace",
+			func(opts *CreateIcebergTableOptions) {
+				opts.OrReplace = new(true)
+				opts.CopyGrants = new(true)
+			},
+			`CREATE OR REPLACE ICEBERG TABLE %s COPY GRANTS`, icebergTablesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Create_clusterBy",
@@ -865,7 +866,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_IcebergTables_sql_CreateFromIcebergFiles_all,
 			func(opts *CreateFromIcebergFilesIcebergTableOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.ExternalVolume = &externalVolumeId
 				opts.Catalog = &catalogId
 				opts.ReplaceInvalidCharacters = new(true)
@@ -876,7 +877,7 @@ func init() {
 				}
 				opts.Contact = []TableContact{{Purpose: "SUPPORT", Contact: contactId}}
 			},
-			`CREATE OR REPLACE ICEBERG TABLE %s `+
+			`CREATE ICEBERG TABLE IF NOT EXISTS %s `+
 				`EXTERNAL_VOLUME = '\"%s\"' `+
 				`CATALOG = '\"%s\"' `+
 				`METADATA_FILE_PATH = 'metadata/v1.metadata.json' `+
@@ -891,9 +892,9 @@ func init() {
 			contactId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
-			"sql_CreateFromIcebergFiles_ifNotExists",
-			func(opts *CreateFromIcebergFilesIcebergTableOptions) { opts.IfNotExists = new(true) },
-			`CREATE ICEBERG TABLE IF NOT EXISTS %s METADATA_FILE_PATH = 'metadata/v1.metadata.json'`, icebergTablesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+			"sql_CreateFromIcebergFiles_orReplace",
+			func(opts *CreateFromIcebergFilesIcebergTableOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE ICEBERG TABLE %s METADATA_FILE_PATH = 'metadata/v1.metadata.json'`, icebergTablesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		)
 
 	icebergTablesTests.CreateFromDeltaLake.
@@ -910,7 +911,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_IcebergTables_sql_CreateFromDeltaLake_all,
 			func(opts *CreateFromDeltaLakeIcebergTableOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.ExternalVolume = &externalVolumeId
 				opts.Catalog = &catalogId
 				opts.ReplaceInvalidCharacters = new(true)
@@ -922,7 +923,7 @@ func init() {
 				}
 				opts.Contact = []TableContact{{Purpose: "SUPPORT", Contact: contactId}}
 			},
-			`CREATE OR REPLACE ICEBERG TABLE %s `+
+			`CREATE ICEBERG TABLE IF NOT EXISTS %s `+
 				`EXTERNAL_VOLUME = '\"%s\"' `+
 				`CATALOG = '\"%s\"' `+
 				`BASE_LOCATION = 'my/base/location' `+
@@ -938,9 +939,9 @@ func init() {
 			contactId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
-			"sql_CreateFromDeltaLake_ifNotExists",
-			func(opts *CreateFromDeltaLakeIcebergTableOptions) { opts.IfNotExists = new(true) },
-			`CREATE ICEBERG TABLE IF NOT EXISTS %s BASE_LOCATION = 'my/base/location'`, icebergTablesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+			"sql_CreateFromDeltaLake_orReplace",
+			func(opts *CreateFromDeltaLakeIcebergTableOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE ICEBERG TABLE %s BASE_LOCATION = 'my/base/location'`, icebergTablesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		)
 
 	icebergTablesTests.CreateFromIcebergRest.
@@ -957,7 +958,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_IcebergTables_sql_CreateFromIcebergRest_all,
 			func(opts *CreateFromIcebergRestIcebergTableOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.ExternalVolume = &externalVolumeId
 				opts.Catalog = &catalogId
 				opts.CatalogNamespace = new("my_namespace")
@@ -975,7 +976,7 @@ func init() {
 				}
 				opts.Contact = []TableContact{{Purpose: "SUPPORT", Contact: contactId}}
 			},
-			`CREATE OR REPLACE ICEBERG TABLE %s `+
+			`CREATE ICEBERG TABLE IF NOT EXISTS %s `+
 				`EXTERNAL_VOLUME = '\"%s\"' `+
 				`CATALOG = '\"%s\"' `+
 				`CATALOG_TABLE_NAME = 'my_remote_table' `+
@@ -997,9 +998,9 @@ func init() {
 			contactId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
-			"sql_CreateFromIcebergRest_ifNotExists",
-			func(opts *CreateFromIcebergRestIcebergTableOptions) { opts.IfNotExists = new(true) },
-			`CREATE ICEBERG TABLE IF NOT EXISTS %s CATALOG_TABLE_NAME = 'my_remote_table'`, icebergTablesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+			"sql_CreateFromIcebergRest_orReplace",
+			func(opts *CreateFromIcebergRestIcebergTableOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE ICEBERG TABLE %s CATALOG_TABLE_NAME = 'my_remote_table'`, icebergTablesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		)
 
 	icebergTablesTests.CreateFromAwsGlue.
@@ -1016,7 +1017,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_IcebergTables_sql_CreateFromAwsGlue_all,
 			func(opts *CreateFromAwsGlueIcebergTableOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.ExternalVolume = &externalVolumeId
 				opts.Catalog = &catalogId
 				opts.CatalogNamespace = new("my_namespace")
@@ -1029,7 +1030,7 @@ func init() {
 				}
 				opts.Contact = []TableContact{{Purpose: "SUPPORT", Contact: contactId}}
 			},
-			`CREATE OR REPLACE ICEBERG TABLE %s `+
+			`CREATE ICEBERG TABLE IF NOT EXISTS %s `+
 				`EXTERNAL_VOLUME = '\"%s\"' `+
 				`CATALOG = '\"%s\"' `+
 				`CATALOG_TABLE_NAME = 'my_remote_table' `+
@@ -1046,9 +1047,9 @@ func init() {
 			contactId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
-			"sql_CreateFromAwsGlue_ifNotExists",
-			func(opts *CreateFromAwsGlueIcebergTableOptions) { opts.IfNotExists = new(true) },
-			`CREATE ICEBERG TABLE IF NOT EXISTS %s CATALOG_TABLE_NAME = 'my_remote_table'`, icebergTablesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+			"sql_CreateFromAwsGlue_orReplace",
+			func(opts *CreateFromAwsGlueIcebergTableOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE ICEBERG TABLE %s CATALOG_TABLE_NAME = 'my_remote_table'`, icebergTablesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		)
 
 	icebergTablesTests.Alter.

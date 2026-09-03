@@ -17,17 +17,17 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Roles_sql_Create_all,
 			func(opts *CreateRoleOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Comment = new("comment")
 				opts.Tag = []TagAssociation{{Name: tagId, Value: "v1"}}
 			},
-			`CREATE OR REPLACE ROLE %s COMMENT = 'comment' TAG (%s = 'v1')`,
+			`CREATE ROLE IF NOT EXISTS %s COMMENT = 'comment' TAG (%s = 'v1')`,
 			id.FullyQualifiedName(), tagId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
-			"sql_Create_ifNotExists",
-			func(opts *CreateRoleOptions) { opts.IfNotExists = new(true) },
-			`CREATE ROLE IF NOT EXISTS %s`, id.FullyQualifiedName(),
+			"sql_Create_orReplace",
+			func(opts *CreateRoleOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE ROLE %s`, id.FullyQualifiedName(),
 		)
 
 	rolesTests.Alter.

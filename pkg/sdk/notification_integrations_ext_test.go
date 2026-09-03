@@ -143,6 +143,12 @@ func init() {
 			},
 			`CREATE NOTIFICATION INTEGRATION IF NOT EXISTS %s ENABLED = true TYPE = WEBHOOK WEBHOOK_URL = '%s' WEBHOOK_SECRET = %s WEBHOOK_BODY_TEMPLATE = 'SNOWFLAKE_WEBHOOK_MESSAGE' WEBHOOK_HEADERS = ('Content-Type' = 'application/json') COMMENT = 'slack webhook'`,
 			id.FullyQualifiedName(), webhookUrl, secretId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateNotificationIntegrationOptions) { opts.OrReplace = new(true) },
+			"CREATE OR REPLACE NOTIFICATION INTEGRATION %s ENABLED = true TYPE = EMAIL",
+			id.FullyQualifiedName(),
 		)
 
 	notificationIntegrationsTests.Alter.

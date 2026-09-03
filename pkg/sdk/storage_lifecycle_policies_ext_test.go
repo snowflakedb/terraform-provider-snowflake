@@ -31,7 +31,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_StorageLifecyclePolicies_sql_Create_all,
 			func(opts *CreateStorageLifecyclePolicyOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.ArchiveTier = new(StorageLifecyclePolicyArchiveTierCold)
 				opts.ArchiveForDays = new(365)
 				opts.Comment = new("some comment")
@@ -40,7 +40,7 @@ func init() {
 					{Name: tagId2, Value: "value2"},
 				}
 			},
-			`CREATE OR REPLACE STORAGE LIFECYCLE POLICY %s AS ("n" VARCHAR(16777216)) RETURNS BOOLEAN -> true ARCHIVE_TIER = COLD ARCHIVE_FOR_DAYS = 365 COMMENT = 'some comment' TAG ("tag1" = 'value1', "tag2" = 'value2')`,
+			`CREATE STORAGE LIFECYCLE POLICY IF NOT EXISTS %s AS ("n" VARCHAR(16777216)) RETURNS BOOLEAN -> true ARCHIVE_TIER = COLD ARCHIVE_FOR_DAYS = 365 COMMENT = 'some comment' TAG ("tag1" = 'value1', "tag2" = 'value2')`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -55,6 +55,12 @@ func init() {
 				}}
 			},
 			`CREATE STORAGE LIFECYCLE POLICY %s AS ("n1" VARCHAR(16777216), "n2" VARCHAR(16777216)) RETURNS BOOLEAN -> true`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateStorageLifecyclePolicyOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE STORAGE LIFECYCLE POLICY %s AS ("n" VARCHAR(16777216)) RETURNS BOOLEAN -> true`,
 			id.FullyQualifiedName(),
 		)
 

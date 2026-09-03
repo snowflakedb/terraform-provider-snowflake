@@ -14,11 +14,16 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Budgets_sql_Create_all,
 			func(opts *CreateBudgetOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Comment = new("test comment")
 			},
-			"CREATE OR REPLACE SNOWFLAKE.CORE.BUDGET %s () COMMENT = 'test comment'",
+			"CREATE SNOWFLAKE.CORE.BUDGET IF NOT EXISTS %s () COMMENT = 'test comment'",
 			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateBudgetOptions) { opts.OrReplace = new(true) },
+			"CREATE OR REPLACE SNOWFLAKE.CORE.BUDGET %s ()", id.FullyQualifiedName(),
 		)
 
 	budgetsTests.Drop.

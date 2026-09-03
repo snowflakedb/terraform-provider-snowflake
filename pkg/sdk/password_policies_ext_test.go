@@ -13,7 +13,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_PasswordPolicies_sql_Create_all,
 			func(opts *CreatePasswordPolicyOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.PasswordMinLength = new(10)
 				opts.PasswordMaxLength = new(20)
 				opts.PasswordMinUpperCaseChars = new(1)
@@ -27,8 +27,13 @@ func init() {
 				opts.PasswordHistory = new(15)
 				opts.Comment = new("test comment")
 			},
-			`CREATE OR REPLACE PASSWORD POLICY %s PASSWORD_MIN_LENGTH = 10 PASSWORD_MAX_LENGTH = 20 PASSWORD_MIN_UPPER_CASE_CHARS = 1 PASSWORD_MIN_LOWER_CASE_CHARS = 1 PASSWORD_MIN_NUMERIC_CHARS = 1 PASSWORD_MIN_SPECIAL_CHARS = 1 PASSWORD_MIN_AGE_DAYS = 30 PASSWORD_MAX_AGE_DAYS = 30 PASSWORD_MAX_RETRIES = 5 PASSWORD_LOCKOUT_TIME_MINS = 30 PASSWORD_HISTORY = 15 COMMENT = 'test comment'`,
+			`CREATE PASSWORD POLICY IF NOT EXISTS %s PASSWORD_MIN_LENGTH = 10 PASSWORD_MAX_LENGTH = 20 PASSWORD_MIN_UPPER_CASE_CHARS = 1 PASSWORD_MIN_LOWER_CASE_CHARS = 1 PASSWORD_MIN_NUMERIC_CHARS = 1 PASSWORD_MIN_SPECIAL_CHARS = 1 PASSWORD_MIN_AGE_DAYS = 30 PASSWORD_MAX_AGE_DAYS = 30 PASSWORD_MAX_RETRIES = 5 PASSWORD_LOCKOUT_TIME_MINS = 30 PASSWORD_HISTORY = 15 COMMENT = 'test comment'`,
 			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreatePasswordPolicyOptions) { opts.OrReplace = new(true) },
+			"CREATE OR REPLACE PASSWORD POLICY %s", id.FullyQualifiedName(),
 		)
 
 	passwordPoliciesTests.Alter.

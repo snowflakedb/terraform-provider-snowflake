@@ -28,13 +28,13 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Streams_sql_CreateOnTable_all,
 			func(opts *CreateOnTableStreamOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.On = &OnStream{At: new(true), Statement: OnStreamStatement{Stream: new("123")}}
 				opts.AppendOnly = new(true)
 				opts.ShowInitialRows = new(true)
 				opts.Comment = new("some comment")
 			},
-			"CREATE OR REPLACE STREAM %s ON TABLE %s AT (STREAM => '123') APPEND_ONLY = true SHOW_INITIAL_ROWS = true COMMENT = 'some comment'",
+			"CREATE STREAM IF NOT EXISTS %s ON TABLE %s AT (STREAM => '123') APPEND_ONLY = true SHOW_INITIAL_ROWS = true COMMENT = 'some comment'",
 			id.FullyQualifiedName(), tableId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -76,6 +76,11 @@ func init() {
 			},
 			"CREATE STREAM %s ON TABLE %s BEFORE (TIMESTAMP => '%s')",
 			id.FullyQualifiedName(), tableId.FullyQualifiedName(), timestamp,
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateOnTable_orReplace",
+			func(opts *CreateOnTableStreamOptions) { opts.OrReplace = new(true) },
+			"CREATE OR REPLACE STREAM %s ON TABLE %s", id.FullyQualifiedName(), tableId.FullyQualifiedName(),
 		)
 
 	streamsTests.CreateOnExternalTable.
@@ -100,6 +105,12 @@ func init() {
 			},
 			`CREATE STREAM IF NOT EXISTS %s COPY GRANTS ON EXTERNAL TABLE %s AT (STATEMENT => '123') INSERT_ONLY = true COMMENT = 'some comment'`,
 			id.FullyQualifiedName(), externalTableId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateOnExternalTable_orReplace",
+			func(opts *CreateOnExternalTableStreamOptions) { opts.OrReplace = new(true) },
+			"CREATE OR REPLACE STREAM %s ON EXTERNAL TABLE %s",
+			id.FullyQualifiedName(), externalTableId.FullyQualifiedName(),
 		)
 
 	streamsTests.CreateOnDirectoryTable.
@@ -122,6 +133,11 @@ func init() {
 			},
 			`CREATE STREAM IF NOT EXISTS %s COPY GRANTS ON STAGE %s COMMENT = 'some comment'`,
 			id.FullyQualifiedName(), stageId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateOnDirectoryTable_orReplace",
+			func(opts *CreateOnDirectoryTableStreamOptions) { opts.OrReplace = new(true) },
+			"CREATE OR REPLACE STREAM %s ON STAGE %s", id.FullyQualifiedName(), stageId.FullyQualifiedName(),
 		)
 
 	streamsTests.CreateOnView.
@@ -138,15 +154,22 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Streams_sql_CreateOnView_all,
 			func(opts *CreateOnViewStreamOptions) {
-				opts.OrReplace = new(true)
-				opts.CopyGrants = new(true)
+				opts.IfNotExists = new(true)
 				opts.On = &OnStream{Before: new(true), Statement: OnStreamStatement{Stream: new("123")}}
 				opts.AppendOnly = new(true)
 				opts.ShowInitialRows = new(true)
 				opts.Comment = new("some comment")
 			},
-			`CREATE OR REPLACE STREAM %s COPY GRANTS ON VIEW %s BEFORE (STREAM => '123') APPEND_ONLY = true SHOW_INITIAL_ROWS = true COMMENT = 'some comment'`,
+			`CREATE STREAM IF NOT EXISTS %s ON VIEW %s BEFORE (STREAM => '123') APPEND_ONLY = true SHOW_INITIAL_ROWS = true COMMENT = 'some comment'`,
 			id.FullyQualifiedName(), viewId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateOnView_orReplace",
+			func(opts *CreateOnViewStreamOptions) {
+				opts.OrReplace = new(true)
+				opts.CopyGrants = new(true)
+			},
+			"CREATE OR REPLACE STREAM %s COPY GRANTS ON VIEW %s", id.FullyQualifiedName(), viewId.FullyQualifiedName(),
 		)
 
 	streamsTests.Clone.

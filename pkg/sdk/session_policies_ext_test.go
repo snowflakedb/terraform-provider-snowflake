@@ -46,15 +46,20 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_SessionPolicies_sql_Create_all,
 			func(opts *CreateSessionPolicyOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.SessionIdleTimeoutMins = new(5)
 				opts.SessionUiIdleTimeoutMins = new(34)
 				opts.AllowedSecondaryRoles = &SessionPolicySecondaryRoles{Roles: []AccountObjectIdentifier{NewAccountObjectIdentifier("ROLE1"), NewAccountObjectIdentifier("ROLE2")}}
 				opts.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{All: new(true)}
 				opts.Comment = new("some comment")
 			},
-			`CREATE OR REPLACE SESSION POLICY %s SESSION_IDLE_TIMEOUT_MINS = 5 SESSION_UI_IDLE_TIMEOUT_MINS = 34 ALLOWED_SECONDARY_ROLES = ("ROLE1", "ROLE2") BLOCKED_SECONDARY_ROLES = ('ALL') COMMENT = 'some comment'`,
+			`CREATE SESSION POLICY IF NOT EXISTS %s SESSION_IDLE_TIMEOUT_MINS = 5 SESSION_UI_IDLE_TIMEOUT_MINS = 34 ALLOWED_SECONDARY_ROLES = ("ROLE1", "ROLE2") BLOCKED_SECONDARY_ROLES = ('ALL') COMMENT = 'some comment'`,
 			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateSessionPolicyOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE SESSION POLICY %s`, id.FullyQualifiedName(),
 		)
 
 	newId := randomSchemaObjectIdentifier()

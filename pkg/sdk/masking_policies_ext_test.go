@@ -28,11 +28,17 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_MaskingPolicies_sql_Create_all,
 			func(opts *CreateMaskingPolicyOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Comment = new("some comment")
 				opts.ExemptOtherPolicies = new(true)
 			},
-			`CREATE OR REPLACE MASKING POLICY %s AS ("col1" VARCHAR(16777216), "col2" VARCHAR(16777216)) RETURNS %s -> %s COMMENT = 'some comment' EXEMPT_OTHER_POLICIES = true`,
+			`CREATE MASKING POLICY IF NOT EXISTS %s AS ("col1" VARCHAR(16777216), "col2" VARCHAR(16777216)) RETURNS %s -> %s COMMENT = 'some comment' EXEMPT_OTHER_POLICIES = true`,
+			id.FullyQualifiedName(), dataTypeVarchar.ToSql(), expression,
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateMaskingPolicyOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE MASKING POLICY %s AS ("col1" VARCHAR(16777216), "col2" VARCHAR(16777216)) RETURNS %s -> %s`,
 			id.FullyQualifiedName(), dataTypeVarchar.ToSql(), expression,
 		)
 

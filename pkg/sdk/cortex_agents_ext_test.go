@@ -30,12 +30,17 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_CortexAgents_sql_Create_all,
 			func(opts *CreateCortexAgentOptions) {
-				opts.OrReplace = Bool(true)
+				opts.IfNotExists = Bool(true)
 				opts.Comment = String("some comment")
 				opts.Profile = String(profile)
 			},
-			"CREATE OR REPLACE AGENT %s COMMENT = 'some comment' PROFILE = '%s' FROM SPECIFICATION $$%s$$",
+			"CREATE AGENT IF NOT EXISTS %s COMMENT = 'some comment' PROFILE = '%s' FROM SPECIFICATION $$%s$$",
 			id.FullyQualifiedName(), expectedProfile, spec,
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateCortexAgentOptions) { opts.OrReplace = new(true) },
+			"CREATE OR REPLACE AGENT %s FROM SPECIFICATION $$%s$$", id.FullyQualifiedName(), spec,
 		)
 
 	cortexAgentsTests.Alter.

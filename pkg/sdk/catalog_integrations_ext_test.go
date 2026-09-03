@@ -290,6 +290,12 @@ func init() {
 				"REFRESH_INTERVAL_SECONDS = 60 "+
 				"COMMENT = 'test comment'",
 			id.FullyQualifiedName(), restCatalogUri, CatalogIntegrationCatalogApiTypeAwsApiGateway, CatalogIntegrationAccessDelegationModeVendedCredentials,
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateCatalogIntegrationOptions) { opts.OrReplace = new(true) },
+			"CREATE OR REPLACE CATALOG INTEGRATION %s CATALOG_SOURCE = GLUE TABLE_FORMAT = ICEBERG GLUE_AWS_ROLE_ARN = '%s' GLUE_CATALOG_ID = '%s' ENABLED = true",
+			id.FullyQualifiedName(), glueAwsRoleArn, glueCatalogId,
 		)
 
 	catalogIntegrationsTests.Alter.

@@ -17,13 +17,12 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_EventTables_sql_Create_all,
 			func(opts *CreateEventTableOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.ClusterBy = []string{"a", "b"}
 				opts.DataRetentionTimeInDays = new(1)
 				opts.MaxDataExtensionTimeInDays = new(2)
 				opts.ChangeTracking = new(true)
 				opts.DefaultDdlCollation = new("en_US")
-				opts.CopyGrants = new(true)
 				opts.Comment = new("test")
 				opts.RowAccessPolicy = &TableRowAccessPolicyLegacy{
 					Name: rowAccessPolicyId,
@@ -36,13 +35,21 @@ func init() {
 					},
 				}
 			},
-			`CREATE OR REPLACE EVENT TABLE %s CLUSTER BY (a, b) DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 2 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en_US' COPY GRANTS COMMENT = 'test' ROW ACCESS POLICY %s ON (c1, c2) TAG (%s = 'v1')`,
+			`CREATE EVENT TABLE IF NOT EXISTS %s CLUSTER BY (a, b) DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 2 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en_US' COMMENT = 'test' ROW ACCESS POLICY %s ON (c1, c2) TAG (%s = 'v1')`,
 			id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName(), tagId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Create_emptyClusterBy",
 			func(opts *CreateEventTableOptions) { opts.ClusterBy = []string{} },
 			`CREATE EVENT TABLE %s`, id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateEventTableOptions) {
+				opts.OrReplace = new(true)
+				opts.CopyGrants = new(true)
+			},
+			`CREATE OR REPLACE EVENT TABLE %s COPY GRANTS`, id.FullyQualifiedName(),
 		)
 
 	databaseId := NewAccountObjectIdentifier("database")

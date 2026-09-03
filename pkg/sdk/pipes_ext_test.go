@@ -33,6 +33,11 @@ func init() {
 			},
 			`CREATE PIPE IF NOT EXISTS %s AUTO_INGEST = true ERROR_INTEGRATION = some_error_integration AWS_SNS_TOPIC = 'some aws sns topic' INTEGRATION = 'some integration' COMMENT = 'some comment' AS <copy_statement>`,
 			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreatePipeOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE PIPE %s AS <copy_statement>`, id.FullyQualifiedName(),
 		)
 
 	pipesTests.Alter.

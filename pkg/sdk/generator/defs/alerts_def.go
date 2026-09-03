@@ -74,7 +74,8 @@ var alertsDef = g.NewInterface(
 		OptionalComment().
 		ListQueryStructField("condition", alertCondition(), g.KeywordOptions().SQL("IF").Parentheses().NoComma().Required()).
 		PredefinedQueryStructField("action", "string", g.ParameterOptions().NoEquals().SQL("THEN").Required()).
-		WithValidation(g.ValidIdentifier, "name"),
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-alert",
 	g.NewQueryStruct("AlterAlert").

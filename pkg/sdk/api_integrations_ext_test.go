@@ -300,6 +300,25 @@ func init() {
 				"ENABLED = false",
 				"COMMENT = 'some comment'",
 			}, " "), id.FullyQualifiedName(), oauthResourceUrl, mcpAllowedPrefix, awsAllowedPrefix,
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateApiIntegrationOptions) {
+				opts.OrReplace = new(true)
+				opts.AwsApiProviderParams = &AwsApiParams{
+					ApiProvider:   ApiIntegrationAwsApiProviderTypeAwsApiGateway,
+					ApiAwsRoleArn: apiAwsRoleArn,
+				}
+				opts.ApiAllowedPrefixes = []ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}}
+				opts.Enabled = true
+			},
+			strings.Join([]string{
+				"CREATE OR REPLACE API INTEGRATION %s",
+				"API_PROVIDER = aws_api_gateway",
+				"API_AWS_ROLE_ARN = '%s'",
+				"API_ALLOWED_PREFIXES = ('%s')",
+				"ENABLED = true",
+			}, " "), id.FullyQualifiedName(), apiAwsRoleArn, awsAllowedPrefix,
 		)
 
 	apiIntegrationsTests.Alter.

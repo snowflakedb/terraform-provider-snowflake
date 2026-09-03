@@ -57,7 +57,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Views_sql_Create_all,
 			func(opts *CreateViewOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Secure = new(true)
 				opts.Temporary = new(true)
 				opts.Recursive = new(true)
@@ -79,7 +79,6 @@ func init() {
 						},
 					},
 				}
-				opts.CopyGrants = new(true)
 				opts.Comment = new("comment")
 				opts.RowAccessPolicy = &ViewRowAccessPolicy{
 					RowAccessPolicy: rowAccessPolicyId,
@@ -91,9 +90,17 @@ func init() {
 				}
 				opts.Tag = []TagAssociation{{Name: tag2Id, Value: "v2"}}
 			},
-			`CREATE OR REPLACE SECURE TEMPORARY RECURSIVE VIEW %s `+
-				`("column_without_comment", "column_with_comment" COMMENT 'column 2 comment', "column" MASKING POLICY %s USING ("a", "b") TAG (%s = 'v1'), "column 2" PROJECTION POLICY %s) COPY GRANTS COMMENT = 'comment' ROW ACCESS POLICY %s ON ("c", "d") AGGREGATION POLICY %s ENTITY KEY ("column_with_comment") TAG (%s = 'v2') AS %s`,
+			`CREATE SECURE TEMPORARY RECURSIVE VIEW IF NOT EXISTS %s `+
+				`("column_without_comment", "column_with_comment" COMMENT 'column 2 comment', "column" MASKING POLICY %s USING ("a", "b") TAG (%s = 'v1'), "column 2" PROJECTION POLICY %s) COMMENT = 'comment' ROW ACCESS POLICY %s ON ("c", "d") AGGREGATION POLICY %s ENTITY KEY ("column_with_comment") TAG (%s = 'v2') AS %s`,
 			id.FullyQualifiedName(), maskingPolicyId.FullyQualifiedName(), tag1Id.FullyQualifiedName(), projectionPolicyId.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName(), aggregationPolicyId.FullyQualifiedName(), tag2Id.FullyQualifiedName(), sql,
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateViewOptions) {
+				opts.OrReplace = new(true)
+				opts.CopyGrants = new(true)
+			},
+			"CREATE OR REPLACE VIEW %s COPY GRANTS AS %s", id.FullyQualifiedName(), sql,
 		)
 
 	viewsTests.Alter.

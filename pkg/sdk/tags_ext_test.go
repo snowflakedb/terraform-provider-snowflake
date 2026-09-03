@@ -59,6 +59,11 @@ func init() {
 			},
 			`CREATE TAG %s PROPAGATE = ON_DATA_MOVEMENT ON_CONFLICT = ALLOWED_VALUES_SEQUENCE`,
 			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateTagOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE TAG %s`, id.FullyQualifiedName(),
 		)
 
 	tagsTests.Alter.

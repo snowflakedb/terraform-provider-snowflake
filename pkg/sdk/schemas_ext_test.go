@@ -54,6 +54,11 @@ func init() {
 				`USER_TASK_TIMEOUT_MS = 12000 USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 QUOTED_IDENTIFIERS_IGNORE_CASE = true ENABLE_CONSOLE_OUTPUT = true `+
 				`COMMENT = 'comment' TAG (%s = 'v1')`,
 			id.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), catalogId.FullyQualifiedName(), tagId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateSchemaOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE SCHEMA %s`, id.FullyQualifiedName(),
 		)
 
 	schemasTests.Clone.
@@ -70,13 +75,19 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_Clone_all",
 			func(opts *CloneSchemaOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Clone = Clone{
 					SourceObject: cloneSourceId,
 					At:           &TimeTravel{Timestamp: new(cloneTimestamp)},
 				}
 			},
-			`CREATE OR REPLACE SCHEMA %s CLONE %s AT (TIMESTAMP => '2021-01-01 00:00:00 +0000 UTC')`,
+			`CREATE SCHEMA IF NOT EXISTS %s CLONE %s AT (TIMESTAMP => '2021-01-01 00:00:00 +0000 UTC')`,
+			id.FullyQualifiedName(), cloneSourceId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Clone_orReplace",
+			func(opts *CloneSchemaOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE SCHEMA %s CLONE %s`,
 			id.FullyQualifiedName(), cloneSourceId.FullyQualifiedName(),
 		)
 

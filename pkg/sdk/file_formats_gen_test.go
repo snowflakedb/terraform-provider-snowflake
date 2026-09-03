@@ -20,8 +20,9 @@ func init() {
 var fileFormatsTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
 const (
-	case_FileFormats_validation_CreateCsv_opts_ConflictingFields                                              testCaseName = "validation_CreateCsv_opts_ConflictingFields"
+	case_FileFormats_validation_CreateCsv_opts_ConflictingFields_SkipHeader_ParseHeader                       testCaseName = "validation_CreateCsv_opts_ConflictingFields_SkipHeader_ParseHeader"
 	case_FileFormats_validation_CreateCsv_name_ValidIdentifier                                                testCaseName = "validation_CreateCsv_name_ValidIdentifier"
+	case_FileFormats_validation_CreateCsv_opts_ConflictingFields_OrReplace_IfNotExists                        testCaseName = "validation_CreateCsv_opts_ConflictingFields_OrReplace_IfNotExists"
 	case_FileFormats_validation_CreateCsv_opts_RecordDelimiter_ExactlyOneValueSet_NoneSet                     testCaseName = "validation_CreateCsv_opts_RecordDelimiter_ExactlyOneValueSet_NoneSet"
 	case_FileFormats_validation_CreateCsv_opts_RecordDelimiter_ExactlyOneValueSet_MoreThanOneSet              testCaseName = "validation_CreateCsv_opts_RecordDelimiter_ExactlyOneValueSet_MoreThanOneSet"
 	case_FileFormats_validation_CreateCsv_opts_FieldDelimiter_ExactlyOneValueSet_NoneSet                      testCaseName = "validation_CreateCsv_opts_FieldDelimiter_ExactlyOneValueSet_NoneSet"
@@ -40,8 +41,9 @@ const (
 	case_FileFormats_validation_CreateCsv_opts_FieldOptionallyEnclosedBy_ExactlyOneValueSet_MoreThanOneSet    testCaseName = "validation_CreateCsv_opts_FieldOptionallyEnclosedBy_ExactlyOneValueSet_MoreThanOneSet"
 	case_FileFormats_sql_CreateCsv_basic                                                                      testCaseName = "sql_CreateCsv_basic"
 	case_FileFormats_sql_CreateCsv_all                                                                        testCaseName = "sql_CreateCsv_all"
-	case_FileFormats_validation_CreateJson_opts_ConflictingFields                                             testCaseName = "validation_CreateJson_opts_ConflictingFields"
+	case_FileFormats_validation_CreateJson_opts_ConflictingFields_IgnoreUtf8Errors_ReplaceInvalidCharacters   testCaseName = "validation_CreateJson_opts_ConflictingFields_IgnoreUtf8Errors_ReplaceInvalidCharacters"
 	case_FileFormats_validation_CreateJson_name_ValidIdentifier                                               testCaseName = "validation_CreateJson_name_ValidIdentifier"
+	case_FileFormats_validation_CreateJson_opts_ConflictingFields_OrReplace_IfNotExists                       testCaseName = "validation_CreateJson_opts_ConflictingFields_OrReplace_IfNotExists"
 	case_FileFormats_validation_CreateJson_opts_DateFormat_ExactlyOneValueSet_NoneSet                         testCaseName = "validation_CreateJson_opts_DateFormat_ExactlyOneValueSet_NoneSet"
 	case_FileFormats_validation_CreateJson_opts_DateFormat_ExactlyOneValueSet_MoreThanOneSet                  testCaseName = "validation_CreateJson_opts_DateFormat_ExactlyOneValueSet_MoreThanOneSet"
 	case_FileFormats_validation_CreateJson_opts_TimeFormat_ExactlyOneValueSet_NoneSet                         testCaseName = "validation_CreateJson_opts_TimeFormat_ExactlyOneValueSet_NoneSet"
@@ -51,17 +53,21 @@ const (
 	case_FileFormats_sql_CreateJson_basic                                                                     testCaseName = "sql_CreateJson_basic"
 	case_FileFormats_sql_CreateJson_all                                                                       testCaseName = "sql_CreateJson_all"
 	case_FileFormats_validation_CreateAvro_name_ValidIdentifier                                               testCaseName = "validation_CreateAvro_name_ValidIdentifier"
+	case_FileFormats_validation_CreateAvro_opts_ConflictingFields                                             testCaseName = "validation_CreateAvro_opts_ConflictingFields"
 	case_FileFormats_sql_CreateAvro_basic                                                                     testCaseName = "sql_CreateAvro_basic"
 	case_FileFormats_sql_CreateAvro_all                                                                       testCaseName = "sql_CreateAvro_all"
 	case_FileFormats_validation_CreateOrc_name_ValidIdentifier                                                testCaseName = "validation_CreateOrc_name_ValidIdentifier"
+	case_FileFormats_validation_CreateOrc_opts_ConflictingFields                                              testCaseName = "validation_CreateOrc_opts_ConflictingFields"
 	case_FileFormats_sql_CreateOrc_basic                                                                      testCaseName = "sql_CreateOrc_basic"
 	case_FileFormats_sql_CreateOrc_all                                                                        testCaseName = "sql_CreateOrc_all"
-	case_FileFormats_validation_CreateParquet_opts_ConflictingFields                                          testCaseName = "validation_CreateParquet_opts_ConflictingFields"
+	case_FileFormats_validation_CreateParquet_opts_ConflictingFields_Compression_SnappyCompression            testCaseName = "validation_CreateParquet_opts_ConflictingFields_Compression_SnappyCompression"
 	case_FileFormats_validation_CreateParquet_name_ValidIdentifier                                            testCaseName = "validation_CreateParquet_name_ValidIdentifier"
+	case_FileFormats_validation_CreateParquet_opts_ConflictingFields_OrReplace_IfNotExists                    testCaseName = "validation_CreateParquet_opts_ConflictingFields_OrReplace_IfNotExists"
 	case_FileFormats_sql_CreateParquet_basic                                                                  testCaseName = "sql_CreateParquet_basic"
 	case_FileFormats_sql_CreateParquet_all                                                                    testCaseName = "sql_CreateParquet_all"
-	case_FileFormats_validation_CreateXml_opts_ConflictingFields                                              testCaseName = "validation_CreateXml_opts_ConflictingFields"
+	case_FileFormats_validation_CreateXml_opts_ConflictingFields_IgnoreUtf8Errors_ReplaceInvalidCharacters    testCaseName = "validation_CreateXml_opts_ConflictingFields_IgnoreUtf8Errors_ReplaceInvalidCharacters"
 	case_FileFormats_validation_CreateXml_name_ValidIdentifier                                                testCaseName = "validation_CreateXml_name_ValidIdentifier"
+	case_FileFormats_validation_CreateXml_opts_ConflictingFields_OrReplace_IfNotExists                        testCaseName = "validation_CreateXml_opts_ConflictingFields_OrReplace_IfNotExists"
 	case_FileFormats_sql_CreateXml_basic                                                                      testCaseName = "sql_CreateXml_basic"
 	case_FileFormats_sql_CreateXml_all                                                                        testCaseName = "sql_CreateXml_all"
 	case_FileFormats_validation_AlterCsv_name_ValidIdentifier                                                 testCaseName = "validation_AlterCsv_name_ValidIdentifier"
@@ -160,7 +166,7 @@ var fileFormatsTests = FileFormatsTestsContext{
 		}).
 		withValidationCases(
 			validationCase[*CreateCsvFileFormatOptions]{
-				Name:        case_FileFormats_validation_CreateCsv_opts_ConflictingFields,
+				Name:        case_FileFormats_validation_CreateCsv_opts_ConflictingFields_SkipHeader_ParseHeader,
 				ExpectedErr: errOneOf("CreateCsvFileFormatOptions", "SkipHeader", "ParseHeader"),
 				DefaultModify: func(opts *CreateCsvFileFormatOptions) {
 					opts.SkipHeader = new(1)
@@ -172,6 +178,14 @@ var fileFormatsTests = FileFormatsTestsContext{
 				ExpectedErr: ErrInvalidObjectIdentifier,
 				DefaultModify: func(opts *CreateCsvFileFormatOptions) {
 					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateCsvFileFormatOptions]{
+				Name:        case_FileFormats_validation_CreateCsv_opts_ConflictingFields_OrReplace_IfNotExists,
+				ExpectedErr: errOneOf("CreateCsvFileFormatOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateCsvFileFormatOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
 				},
 			},
 			validationCase[*CreateCsvFileFormatOptions]{
@@ -338,7 +352,7 @@ var fileFormatsTests = FileFormatsTestsContext{
 		}).
 		withValidationCases(
 			validationCase[*CreateJsonFileFormatOptions]{
-				Name:        case_FileFormats_validation_CreateJson_opts_ConflictingFields,
+				Name:        case_FileFormats_validation_CreateJson_opts_ConflictingFields_IgnoreUtf8Errors_ReplaceInvalidCharacters,
 				ExpectedErr: errOneOf("CreateJsonFileFormatOptions", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"),
 				DefaultModify: func(opts *CreateJsonFileFormatOptions) {
 					opts.IgnoreUtf8Errors = new(true)
@@ -350,6 +364,14 @@ var fileFormatsTests = FileFormatsTestsContext{
 				ExpectedErr: ErrInvalidObjectIdentifier,
 				DefaultModify: func(opts *CreateJsonFileFormatOptions) {
 					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateJsonFileFormatOptions]{
+				Name:        case_FileFormats_validation_CreateJson_opts_ConflictingFields_OrReplace_IfNotExists,
+				ExpectedErr: errOneOf("CreateJsonFileFormatOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateJsonFileFormatOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
 				},
 			},
 			validationCase[*CreateJsonFileFormatOptions]{
@@ -432,6 +454,14 @@ var fileFormatsTests = FileFormatsTestsContext{
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
+			validationCase[*CreateAvroFileFormatOptions]{
+				Name:        case_FileFormats_validation_CreateAvro_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateAvroFileFormatOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateAvroFileFormatOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateAvroFileFormatOptions]{
@@ -458,6 +488,14 @@ var fileFormatsTests = FileFormatsTestsContext{
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
+			validationCase[*CreateOrcFileFormatOptions]{
+				Name:        case_FileFormats_validation_CreateOrc_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateOrcFileFormatOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateOrcFileFormatOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateOrcFileFormatOptions]{
@@ -478,7 +516,7 @@ var fileFormatsTests = FileFormatsTestsContext{
 		}).
 		withValidationCases(
 			validationCase[*CreateParquetFileFormatOptions]{
-				Name:        case_FileFormats_validation_CreateParquet_opts_ConflictingFields,
+				Name:        case_FileFormats_validation_CreateParquet_opts_ConflictingFields_Compression_SnappyCompression,
 				ExpectedErr: errOneOf("CreateParquetFileFormatOptions", "Compression", "SnappyCompression"),
 			},
 			validationCase[*CreateParquetFileFormatOptions]{
@@ -486,6 +524,14 @@ var fileFormatsTests = FileFormatsTestsContext{
 				ExpectedErr: ErrInvalidObjectIdentifier,
 				DefaultModify: func(opts *CreateParquetFileFormatOptions) {
 					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateParquetFileFormatOptions]{
+				Name:        case_FileFormats_validation_CreateParquet_opts_ConflictingFields_OrReplace_IfNotExists,
+				ExpectedErr: errOneOf("CreateParquetFileFormatOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateParquetFileFormatOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
 				},
 			},
 		).
@@ -508,7 +554,7 @@ var fileFormatsTests = FileFormatsTestsContext{
 		}).
 		withValidationCases(
 			validationCase[*CreateXmlFileFormatOptions]{
-				Name:        case_FileFormats_validation_CreateXml_opts_ConflictingFields,
+				Name:        case_FileFormats_validation_CreateXml_opts_ConflictingFields_IgnoreUtf8Errors_ReplaceInvalidCharacters,
 				ExpectedErr: errOneOf("CreateXmlFileFormatOptions", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"),
 				DefaultModify: func(opts *CreateXmlFileFormatOptions) {
 					opts.IgnoreUtf8Errors = new(true)
@@ -520,6 +566,14 @@ var fileFormatsTests = FileFormatsTestsContext{
 				ExpectedErr: ErrInvalidObjectIdentifier,
 				DefaultModify: func(opts *CreateXmlFileFormatOptions) {
 					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateXmlFileFormatOptions]{
+				Name:        case_FileFormats_validation_CreateXml_opts_ConflictingFields_OrReplace_IfNotExists,
+				ExpectedErr: errOneOf("CreateXmlFileFormatOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateXmlFileFormatOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
 				},
 			},
 		).

@@ -30,6 +30,12 @@ func init() {
 			},
 			`CREATE STREAMLIT IF NOT EXISTS %s ROOT_LOCATION = '@test' MAIN_FILE = 'manifest.yml' QUERY_WAREHOUSE = %s EXTERNAL_ACCESS_INTEGRATIONS = (%s) TITLE = 'foo' COMMENT = 'test'`,
 			id.FullyQualifiedName(), warehouse.FullyQualifiedName(), integration.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateStreamlitOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE STREAMLIT %s ROOT_LOCATION = '@test' MAIN_FILE = 'manifest.yml'`,
+			id.FullyQualifiedName(),
 		)
 
 	streamlitsTests.Alter.

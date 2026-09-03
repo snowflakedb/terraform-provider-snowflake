@@ -147,6 +147,11 @@ func init() {
 				}
 			},
 			`CREATE USER %s WORKLOAD_IDENTITY = (TYPE = %s ISSUER = '%s' SUBJECT = '%s' OIDC_AUDIENCE_LIST = ('https://accounts.google.com/o/oauth2/auth'))`, id.FullyQualifiedName(), WIFTypeOidc, "https://accounts.google.com", "system:serviceaccount:service_account_namespace:service_account_name",
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateUserOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE USER %s`, id.FullyQualifiedName(),
 		)
 
 	usersTests.Alter.

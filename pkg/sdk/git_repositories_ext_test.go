@@ -16,10 +16,9 @@ func init() {
 				ApiIntegration: apiIntegrationId,
 			}
 		}).
-		withModifyAndExpectedSqlf(
+		withExpectedSqlf(
 			case_GitRepositories_sql_Create_basic,
-			func(opts *CreateGitRepositoryOptions) { opts.OrReplace = new(true) },
-			"CREATE OR REPLACE GIT REPOSITORY %s ORIGIN = '%s' API_INTEGRATION = %s",
+			"CREATE GIT REPOSITORY %s ORIGIN = '%s' API_INTEGRATION = %s",
 			id.FullyQualifiedName(), origin, apiIntegrationId.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
@@ -32,6 +31,12 @@ func init() {
 			},
 			`CREATE GIT REPOSITORY IF NOT EXISTS %s ORIGIN = '%s' API_INTEGRATION = %s GIT_CREDENTIALS = %s COMMENT = 'comment' TAG (%s = 'tag-value')`,
 			id.FullyQualifiedName(), origin, apiIntegrationId.FullyQualifiedName(), gitCredentialsId.FullyQualifiedName(), tagId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateGitRepositoryOptions) { opts.OrReplace = new(true) },
+			"CREATE OR REPLACE GIT REPOSITORY %s ORIGIN = '%s' API_INTEGRATION = %s",
+			id.FullyQualifiedName(), origin, apiIntegrationId.FullyQualifiedName(),
 		)
 
 	gitRepositoriesTests.Alter.

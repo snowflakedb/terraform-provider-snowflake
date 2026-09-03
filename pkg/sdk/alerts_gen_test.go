@@ -15,6 +15,7 @@ var alertsTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
 const (
 	case_Alerts_validation_Create_name_ValidIdentifier                  testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Alerts_validation_Create_opts_ConflictingFields                testCaseName = "validation_Create_opts_ConflictingFields"
 	case_Alerts_sql_Create_basic                                        testCaseName = "sql_Create_basic"
 	case_Alerts_sql_Create_all                                          testCaseName = "sql_Create_all"
 	case_Alerts_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
@@ -61,6 +62,14 @@ var alertsTests = AlertsTestsContext{
 				ExpectedErr: ErrInvalidObjectIdentifier,
 				DefaultModify: func(opts *CreateAlertOptions) {
 					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateAlertOptions]{
+				Name:        case_Alerts_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateAlertOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateAlertOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
 				},
 			},
 		).

@@ -1,0 +1,20 @@
+---
+name: CLA
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  cla:
+    name: CLA
+    permissions:
+      actions: write
+      pull-requests: write
+      statuses: write
+    uses: snowflakedb/reusable-workflows/.github/workflows/cla.yml@main
+    secrets:
+      CLA_APP_CLIENT_ID: ${{ secrets.CLA_APP_CLIENT_ID }}
+      CLA_APP_PRIVATE_KEY: ${{ secrets.CLA_APP_PRIVATE_KEY }}

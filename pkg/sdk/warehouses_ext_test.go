@@ -38,7 +38,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Warehouses_sql_Create_all,
 			func(opts *CreateWarehouseOptions) {
-				opts.OrReplace = Bool(true)
+				opts.IfNotExists = Bool(true)
 				opts.WarehouseType = Pointer(WarehouseTypeStandard)
 				opts.WarehouseSize = Pointer(WarehouseSizeX4Large)
 				opts.MaxClusterCount = Int(8)
@@ -61,7 +61,7 @@ func init() {
 					{Name: tagId2, Value: "v2"},
 				}
 			},
-			`CREATE OR REPLACE WAREHOUSE %s WAREHOUSE_TYPE = 'STANDARD' WAREHOUSE_SIZE = 'X4LARGE' MAX_CLUSTER_COUNT = 8 MIN_CLUSTER_COUNT = 3 SCALING_POLICY = 'ECONOMY' AUTO_SUSPEND = 1000 AUTO_RESUME = true INITIALLY_SUSPENDED = false RESOURCE_MONITOR = %s COMMENT = 'hello' ENABLE_QUERY_ACCELERATION = true QUERY_ACCELERATION_MAX_SCALE_FACTOR = 62 RESOURCE_CONSTRAINT = 'MEMORY_1X' GENERATION = '1' MAX_CONCURRENCY_LEVEL = 7 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 29 STATEMENT_TIMEOUT_IN_SECONDS = 89 TAG (%s = 'v1', %s = 'v2')`,
+			`CREATE WAREHOUSE IF NOT EXISTS %s WAREHOUSE_TYPE = 'STANDARD' WAREHOUSE_SIZE = 'X4LARGE' MAX_CLUSTER_COUNT = 8 MIN_CLUSTER_COUNT = 3 SCALING_POLICY = 'ECONOMY' AUTO_SUSPEND = 1000 AUTO_RESUME = true INITIALLY_SUSPENDED = false RESOURCE_MONITOR = %s COMMENT = 'hello' ENABLE_QUERY_ACCELERATION = true QUERY_ACCELERATION_MAX_SCALE_FACTOR = 62 RESOURCE_CONSTRAINT = 'MEMORY_1X' GENERATION = '1' MAX_CONCURRENCY_LEVEL = 7 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 29 STATEMENT_TIMEOUT_IN_SECONDS = 89 TAG (%s = 'v1', %s = 'v2')`,
 			id.FullyQualifiedName(), resourceMonitorId.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
 		)
 
@@ -85,6 +85,11 @@ func init() {
 			"sql_Create_largeMinMaxValues",
 			func(opts *CreateWarehouseOptions) { opts.MaxClusterCount = Int(100); opts.MinClusterCount = Int(11) },
 			`CREATE WAREHOUSE %s MAX_CLUSTER_COUNT = 100 MIN_CLUSTER_COUNT = 11`, id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateWarehouseOptions) { opts.OrReplace = Bool(true) },
+			`CREATE OR REPLACE WAREHOUSE %s`, id.FullyQualifiedName(),
 		)
 
 	warehousesTests.CreateAdaptive.
@@ -95,7 +100,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Warehouses_sql_CreateAdaptive_all,
 			func(opts *CreateAdaptiveWarehouseOptions) {
-				opts.OrReplace = Bool(true)
+				opts.IfNotExists = Bool(true)
 				opts.Comment = String("adaptive warehouse")
 				opts.MaxQueryPerformanceLevel = Pointer(MaxQueryPerformanceLevelMedium)
 				opts.QueryThroughputMultiplier = Int(22)
@@ -107,8 +112,13 @@ func init() {
 					{Name: tagId2, Value: "v2"},
 				}
 			},
-			`CREATE OR REPLACE WAREHOUSE %s WAREHOUSE_TYPE = 'ADAPTIVE' COMMENT = 'adaptive warehouse' MAX_QUERY_PERFORMANCE_LEVEL = 'MEDIUM' QUERY_THROUGHPUT_MULTIPLIER = 22 RESOURCE_MONITOR = "resmon" TAG (%s = 'v1', %s = 'v2') STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30 STATEMENT_TIMEOUT_IN_SECONDS = 60`,
+			`CREATE WAREHOUSE IF NOT EXISTS %s WAREHOUSE_TYPE = 'ADAPTIVE' COMMENT = 'adaptive warehouse' MAX_QUERY_PERFORMANCE_LEVEL = 'MEDIUM' QUERY_THROUGHPUT_MULTIPLIER = 22 RESOURCE_MONITOR = "resmon" TAG (%s = 'v1', %s = 'v2') STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30 STATEMENT_TIMEOUT_IN_SECONDS = 60`,
 			id.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateAdaptive_orReplace",
+			func(opts *CreateAdaptiveWarehouseOptions) { opts.OrReplace = Bool(true) },
+			`CREATE OR REPLACE WAREHOUSE %s WAREHOUSE_TYPE = 'ADAPTIVE'`, id.FullyQualifiedName(),
 		)
 
 	warehousesTests.CreateInteractive.
@@ -127,7 +137,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Warehouses_sql_CreateInteractive_all,
 			func(opts *CreateInteractiveWarehouseOptions) {
-				opts.OrReplace = Bool(true)
+				opts.IfNotExists = Bool(true)
 				opts.Tables = []SchemaObjectIdentifier{tableId1, tableId2}
 				opts.WarehouseSize = Pointer(WarehouseSizeXSmall)
 				opts.MaxClusterCount = Int(2)
@@ -142,8 +152,13 @@ func init() {
 				opts.StatementTimeoutInSeconds = Int(5)
 				opts.FallbackWarehouse = Pointer(NewAccountObjectIdentifier("fallbackwh"))
 			},
-			`CREATE OR REPLACE INTERACTIVE WAREHOUSE %s TABLES (%s, %s) WAREHOUSE_SIZE = 'XSMALL' MAX_CLUSTER_COUNT = 2 MIN_CLUSTER_COUNT = 1 AUTO_SUSPEND = 86400 AUTO_RESUME = true INITIALLY_SUSPENDED = true RESOURCE_MONITOR = "resmon" COMMENT = 'interactive warehouse' MAX_CONCURRENCY_LEVEL = 8 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30 STATEMENT_TIMEOUT_IN_SECONDS = 5 FALLBACK_WAREHOUSE = "fallbackwh"`,
+			`CREATE INTERACTIVE WAREHOUSE IF NOT EXISTS %s TABLES (%s, %s) WAREHOUSE_SIZE = 'XSMALL' MAX_CLUSTER_COUNT = 2 MIN_CLUSTER_COUNT = 1 AUTO_SUSPEND = 86400 AUTO_RESUME = true INITIALLY_SUSPENDED = true RESOURCE_MONITOR = "resmon" COMMENT = 'interactive warehouse' MAX_CONCURRENCY_LEVEL = 8 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30 STATEMENT_TIMEOUT_IN_SECONDS = 5 FALLBACK_WAREHOUSE = "fallbackwh"`,
 			id.FullyQualifiedName(), tableId1.FullyQualifiedName(), tableId2.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateInteractive_orReplace",
+			func(opts *CreateInteractiveWarehouseOptions) { opts.OrReplace = Bool(true) },
+			`CREATE OR REPLACE INTERACTIVE WAREHOUSE %s`, id.FullyQualifiedName(),
 		)
 
 	warehousesTests.Alter.

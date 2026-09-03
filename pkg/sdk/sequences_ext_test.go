@@ -12,13 +12,19 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Sequences_sql_Create_all,
 			func(opts *CreateSequenceOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Start = new(1)
 				opts.Increment = new(1)
 				opts.ValuesBehavior = new(ValuesBehaviorOrder)
 				opts.Comment = new("comment")
 			},
-			`CREATE OR REPLACE SEQUENCE %s START = 1 INCREMENT = 1 ORDER COMMENT = 'comment'`,
+			`CREATE SEQUENCE IF NOT EXISTS %s START = 1 INCREMENT = 1 ORDER COMMENT = 'comment'`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateSequenceOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE SEQUENCE %s`,
 			id.FullyQualifiedName(),
 		)
 

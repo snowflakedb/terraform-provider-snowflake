@@ -134,12 +134,12 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_ExternalVolumes_sql_Create_all,
 			func(opts *CreateExternalVolumeOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.StorageLocations = []ExternalVolumeStorageLocationItem{s3Complete, gcsComplete, azureComplete, s3CompatComplete}
 				opts.AllowWrites = new(true)
 				opts.Comment = new("some comment")
 			},
-			`CREATE OR REPLACE EXTERNAL VOLUME %s STORAGE_LOCATIONS = ((NAME = 's3_complete' STORAGE_PROVIDER = 'S3' STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::123456789012:role/myrole' STORAGE_BASE_URL = 's3://my-bucket/path' STORAGE_AWS_EXTERNAL_ID = 'external_id_123' STORAGE_AWS_ACCESS_POINT_ARN = 'arn:aws:s3:us-west-2:123456789012:accesspoint/my-access-point' USE_PRIVATELINK_ENDPOINT = true ENCRYPTION = (TYPE = 'AWS_SSE_KMS' KMS_KEY_ID = '1234abcd-12ab-34cd-56ef-1234567890ab')), (NAME = 'gcs_complete' STORAGE_PROVIDER = 'GCS' STORAGE_BASE_URL = 'gcs://my-bucket/path' ENCRYPTION = (TYPE = 'GCS_SSE_KMS' KMS_KEY_ID = '1234abcd-12ab-34cd-56ef-1234567890ab')), (NAME = 'azure_complete' STORAGE_PROVIDER = 'AZURE' AZURE_TENANT_ID = 'a123b4cd-1abc-12ab-12ab-1a2b34c5d678' STORAGE_BASE_URL = 'azure://myaccount.blob.core.windows.net/mycontainer/path' USE_PRIVATELINK_ENDPOINT = true), (NAME = 's3compat_complete' STORAGE_PROVIDER = 'S3COMPAT' STORAGE_BASE_URL = 's3compat://my-bucket/path' STORAGE_ENDPOINT = 'https://s3-compatible.example.com' CREDENTIALS = (AWS_KEY_ID = 'AKIAIOSFODNN7EXAMPLE' AWS_SECRET_KEY = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'))) ALLOW_WRITES = true COMMENT = 'some comment'`,
+			`CREATE EXTERNAL VOLUME IF NOT EXISTS %s STORAGE_LOCATIONS = ((NAME = 's3_complete' STORAGE_PROVIDER = 'S3' STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::123456789012:role/myrole' STORAGE_BASE_URL = 's3://my-bucket/path' STORAGE_AWS_EXTERNAL_ID = 'external_id_123' STORAGE_AWS_ACCESS_POINT_ARN = 'arn:aws:s3:us-west-2:123456789012:accesspoint/my-access-point' USE_PRIVATELINK_ENDPOINT = true ENCRYPTION = (TYPE = 'AWS_SSE_KMS' KMS_KEY_ID = '1234abcd-12ab-34cd-56ef-1234567890ab')), (NAME = 'gcs_complete' STORAGE_PROVIDER = 'GCS' STORAGE_BASE_URL = 'gcs://my-bucket/path' ENCRYPTION = (TYPE = 'GCS_SSE_KMS' KMS_KEY_ID = '1234abcd-12ab-34cd-56ef-1234567890ab')), (NAME = 'azure_complete' STORAGE_PROVIDER = 'AZURE' AZURE_TENANT_ID = 'a123b4cd-1abc-12ab-12ab-1a2b34c5d678' STORAGE_BASE_URL = 'azure://myaccount.blob.core.windows.net/mycontainer/path' USE_PRIVATELINK_ENDPOINT = true), (NAME = 's3compat_complete' STORAGE_PROVIDER = 'S3COMPAT' STORAGE_BASE_URL = 's3compat://my-bucket/path' STORAGE_ENDPOINT = 'https://s3-compatible.example.com' CREDENTIALS = (AWS_KEY_ID = 'AKIAIOSFODNN7EXAMPLE' AWS_SECRET_KEY = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'))) ALLOW_WRITES = true COMMENT = 'some comment'`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -188,6 +188,12 @@ func init() {
 				opts.StorageLocations = []ExternalVolumeStorageLocationItem{azureComplete}
 			},
 			`CREATE EXTERNAL VOLUME %s STORAGE_LOCATIONS = ((NAME = 'azure_complete' STORAGE_PROVIDER = 'AZURE' AZURE_TENANT_ID = 'a123b4cd-1abc-12ab-12ab-1a2b34c5d678' STORAGE_BASE_URL = 'azure://myaccount.blob.core.windows.net/mycontainer/path' USE_PRIVATELINK_ENDPOINT = true))`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateExternalVolumeOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE EXTERNAL VOLUME %s STORAGE_LOCATIONS = ((NAME = 's3_basic' STORAGE_PROVIDER = 'S3' STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::123456789012:role/myrole' STORAGE_BASE_URL = 's3://my-bucket/path'))`,
 			id.FullyQualifiedName(),
 		)
 

@@ -30,11 +30,16 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_McpServers_sql_Create_all,
 			func(opts *CreateMcpServerOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Comment = new("some comment")
 			},
-			"CREATE OR REPLACE MCP SERVER %s COMMENT = 'some comment' FROM SPECIFICATION $$%s$$",
+			"CREATE MCP SERVER IF NOT EXISTS %s COMMENT = 'some comment' FROM SPECIFICATION $$%s$$",
 			id.FullyQualifiedName(), spec,
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateMcpServerOptions) { opts.OrReplace = new(true) },
+			"CREATE OR REPLACE MCP SERVER %s FROM SPECIFICATION $$%s$$", id.FullyQualifiedName(), spec,
 		)
 
 	mcpServersTests.Drop.

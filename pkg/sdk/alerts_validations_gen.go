@@ -18,6 +18,9 @@ func (opts *CreateAlertOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CreateAlertOptions", "OrReplace", "IfNotExists"))
+	}
 	return JoinErrors(errs...)
 }
 

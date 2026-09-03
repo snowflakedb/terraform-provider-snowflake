@@ -339,7 +339,8 @@ func createFileFormat(structName, sqlType string) *g.QueryStruct {
 func createFileFormatWithFields(structName, sqlType string, typeFields func(*g.QueryStruct) *g.QueryStruct) *g.QueryStruct {
 	return typeFields(createFileFormat(structName, sqlType)).
 		OptionalComment().
-		WithValidation(g.ValidIdentifier, "name")
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists")
 }
 
 // alterFileFormatSetFields builds the SET (...) struct for a single type by applying its

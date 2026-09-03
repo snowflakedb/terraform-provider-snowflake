@@ -31,6 +31,9 @@ func (opts *CreateCsvFileFormatOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CreateCsvFileFormatOptions", "OrReplace", "IfNotExists"))
+	}
 	if valueSet(opts.RecordDelimiter) {
 		if !exactlyOneValueSet(opts.RecordDelimiter.Value, opts.RecordDelimiter.None) {
 			errs = append(errs, errExactlyOneOf("CreateCsvFileFormatOptions.RecordDelimiter", "Value", "None"))
@@ -85,6 +88,9 @@ func (opts *CreateJsonFileFormatOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CreateJsonFileFormatOptions", "OrReplace", "IfNotExists"))
+	}
 	if valueSet(opts.DateFormat) {
 		if !exactlyOneValueSet(opts.DateFormat.Value, opts.DateFormat.Auto) {
 			errs = append(errs, errExactlyOneOf("CreateJsonFileFormatOptions.DateFormat", "Value", "Auto"))
@@ -111,6 +117,9 @@ func (opts *CreateAvroFileFormatOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CreateAvroFileFormatOptions", "OrReplace", "IfNotExists"))
+	}
 	return JoinErrors(errs...)
 }
 
@@ -121,6 +130,9 @@ func (opts *CreateOrcFileFormatOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CreateOrcFileFormatOptions", "OrReplace", "IfNotExists"))
 	}
 	return JoinErrors(errs...)
 }
@@ -136,6 +148,9 @@ func (opts *CreateParquetFileFormatOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CreateParquetFileFormatOptions", "OrReplace", "IfNotExists"))
+	}
 	return JoinErrors(errs...)
 }
 
@@ -149,6 +164,9 @@ func (opts *CreateXmlFileFormatOptions) validate() error {
 	}
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CreateXmlFileFormatOptions", "OrReplace", "IfNotExists"))
 	}
 	return JoinErrors(errs...)
 }

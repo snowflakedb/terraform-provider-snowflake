@@ -35,6 +35,12 @@ func init() {
 			},
 			"CREATE SECRET IF NOT EXISTS %s TYPE = OAUTH2 API_AUTHENTICATION = %s OAUTH_SCOPES = () COMMENT = 'foo'",
 			id.FullyQualifiedName(), apiIntegrationId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateWithOAuthClientCredentialsFlow_orReplace",
+			func(opts *CreateWithOAuthClientCredentialsFlowSecretOptions) { opts.OrReplace = new(true) },
+			"CREATE OR REPLACE SECRET %s TYPE = OAUTH2 API_AUTHENTICATION = %s",
+			id.FullyQualifiedName(), apiIntegrationId.FullyQualifiedName(),
 		)
 
 	secretsTests.CreateWithOAuthAuthorizationCodeFlow.
@@ -59,6 +65,12 @@ func init() {
 			},
 			"CREATE SECRET IF NOT EXISTS %s TYPE = OAUTH2 OAUTH_REFRESH_TOKEN = 'foo' OAUTH_REFRESH_TOKEN_EXPIRY_TIME = 'bar' API_AUTHENTICATION = %s COMMENT = 'test'",
 			id.FullyQualifiedName(), apiIntegrationId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateWithOAuthAuthorizationCodeFlow_orReplace",
+			func(opts *CreateWithOAuthAuthorizationCodeFlowSecretOptions) { opts.OrReplace = new(true) },
+			"CREATE OR REPLACE SECRET %s TYPE = OAUTH2 OAUTH_REFRESH_TOKEN = 'foo' OAUTH_REFRESH_TOKEN_EXPIRY_TIME = 'bar' API_AUTHENTICATION = %s",
+			id.FullyQualifiedName(), apiIntegrationId.FullyQualifiedName(),
 		)
 
 	secretsTests.CreateWithBasicAuthentication.
@@ -82,6 +94,12 @@ func init() {
 			},
 			"CREATE SECRET IF NOT EXISTS %s TYPE = PASSWORD USERNAME = 'foo' PASSWORD = 'bar' COMMENT = 'test'",
 			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateWithBasicAuthentication_orReplace",
+			func(opts *CreateWithBasicAuthenticationSecretOptions) { opts.OrReplace = new(true) },
+			"CREATE OR REPLACE SECRET %s TYPE = PASSWORD USERNAME = 'foo' PASSWORD = 'bar'",
+			id.FullyQualifiedName(),
 		)
 
 	secretsTests.CreateWithGenericString.
@@ -103,6 +121,12 @@ func init() {
 				opts.Comment = new("test")
 			},
 			"CREATE SECRET IF NOT EXISTS %s TYPE = GENERIC_STRING SECRET_STRING = 'test' COMMENT = 'test'",
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateWithGenericString_orReplace",
+			func(opts *CreateWithGenericStringSecretOptions) { opts.OrReplace = new(true) },
+			"CREATE OR REPLACE SECRET %s TYPE = GENERIC_STRING SECRET_STRING = 'test'",
 			id.FullyQualifiedName(),
 		)
 

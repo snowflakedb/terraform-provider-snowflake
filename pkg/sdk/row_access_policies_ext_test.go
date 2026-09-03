@@ -32,10 +32,10 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_RowAccessPolicies_sql_Create_all,
 			func(opts *CreateRowAccessPolicyOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Comment = new("some comment")
 			},
-			`CREATE OR REPLACE ROW ACCESS POLICY %s AS ("n" VARCHAR(16777216)) RETURNS BOOLEAN -> true COMMENT = 'some comment'`,
+			`CREATE ROW ACCESS POLICY IF NOT EXISTS %s AS ("n" VARCHAR(16777216)) RETURNS BOOLEAN -> true COMMENT = 'some comment'`,
 			id.FullyQualifiedName(),
 		)
 
@@ -52,6 +52,12 @@ func init() {
 				}}
 			},
 			`CREATE ROW ACCESS POLICY %s AS ("n" VARCHAR(16777216), "h" VARCHAR(16777216)) RETURNS BOOLEAN -> true`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_orReplace",
+			func(opts *CreateRowAccessPolicyOptions) { opts.OrReplace = new(true) },
+			`CREATE OR REPLACE ROW ACCESS POLICY %s AS ("n" VARCHAR(16777216)) RETURNS BOOLEAN -> true`,
 			id.FullyQualifiedName(),
 		)
 

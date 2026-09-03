@@ -17,7 +17,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_BackupPolicies_sql_Create_all,
 			func(opts *CreateBackupPolicyOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Tag = []TagAssociation{
 					{
 						Name:  NewAccountObjectIdentifier("tag1"),
@@ -33,7 +33,7 @@ func init() {
 				opts.ExpireAfterDays = new(3653)
 				opts.Comment = new("some comment")
 			},
-			`CREATE OR REPLACE BACKUP POLICY %s TAG ("tag1" = 'value1', "tag2" = 'value2') WITH RETENTION LOCK SCHEDULE = 'USING CRON 0 2 * * * UTC' EXPIRE_AFTER_DAYS = 3653 COMMENT = 'some comment'`, backupPoliciesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+			`CREATE BACKUP POLICY IF NOT EXISTS %s TAG ("tag1" = 'value1', "tag2" = 'value2') WITH RETENTION LOCK SCHEDULE = 'USING CRON 0 2 * * * UTC' EXPIRE_AFTER_DAYS = 3653 COMMENT = 'some comment'`, backupPoliciesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Create_scheduleOnly",
@@ -44,11 +44,11 @@ func init() {
 			"CREATE BACKUP POLICY %s SCHEDULE = '60 MINUTE'", backupPoliciesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
-			"sql_Create_ifNotExists",
+			"sql_Create_orReplace",
 			func(opts *CreateBackupPolicyOptions) {
-				opts.IfNotExists = new(true)
+				opts.OrReplace = new(true)
 			},
-			"CREATE BACKUP POLICY IF NOT EXISTS %s EXPIRE_AFTER_DAYS = 7", backupPoliciesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+			"CREATE OR REPLACE BACKUP POLICY %s EXPIRE_AFTER_DAYS = 7", backupPoliciesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Create_withRetentionLock",

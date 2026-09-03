@@ -64,11 +64,10 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_CreateForJava_all,
 			func(opts *CreateForJavaFunctionOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Temporary = new(true)
 				opts.Secure = new(true)
 				opts.Arguments = []FunctionArgument{{ArgName: "id", ArgDataType: dataTypeNumber_36_2}, {ArgName: "name", ArgDataType: dataTypeVarchar_100, DefaultValue: new("'test'")}}
-				opts.CopyGrants = new(true)
 				opts.Returns = FunctionReturns{Table: &FunctionReturnsTable{Columns: []FunctionColumn{{ColumnName: "country_code", ColumnDataType: dataTypeVarchar_100}, {ColumnName: "country_name", ColumnDataType: dataTypeVarchar_100}}}}
 				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
 				opts.NullInputBehavior = new(NullInputBehaviorCalledOnNullInput)
@@ -82,7 +81,7 @@ func init() {
 				opts.TargetPath = new("@~/testfunc.jar")
 				opts.FunctionDefinition = new(wrapFunctionDefinition("return id + name;"))
 			},
-			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("id" NUMBER(36, 2), "name" VARCHAR(100) DEFAULT 'test') COPY GRANTS RETURNS TABLE ("country_code" VARCHAR(100), "country_name" VARCHAR(100)) NOT NULL LANGUAGE JAVA CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '2.0' COMMENT = 'comment' IMPORTS = ('@~/my_decrement_udf_package_dir/my_decrement_udf_jar.jar') PACKAGES = ('com.snowflake:snowpark:1.2.0') HANDLER = 'TestFunc.echoVarchar' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) TARGET_PATH = '@~/testfunc.jar' AS $$return id + name;$$`,
+			`CREATE TEMPORARY SECURE FUNCTION IF NOT EXISTS %s ("id" NUMBER(36, 2), "name" VARCHAR(100) DEFAULT 'test') RETURNS TABLE ("country_code" VARCHAR(100), "country_name" VARCHAR(100)) NOT NULL LANGUAGE JAVA CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '2.0' COMMENT = 'comment' IMPORTS = ('@~/my_decrement_udf_package_dir/my_decrement_udf_jar.jar') PACKAGES = ('com.snowflake:snowpark:1.2.0') HANDLER = 'TestFunc.echoVarchar' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) TARGET_PATH = '@~/testfunc.jar' AS $$return id + name;$$`,
 			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
 		).
 		// TODO [SNOW-1348103]: remove with old function removal for V1
@@ -109,6 +108,15 @@ func init() {
 			},
 			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("id" NUMBER, "name" VARCHAR DEFAULT 'test') COPY GRANTS RETURNS TABLE ("country_code" VARCHAR, "country_name" VARCHAR) NOT NULL LANGUAGE JAVA CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '2.0' COMMENT = 'comment' IMPORTS = ('@~/my_decrement_udf_package_dir/my_decrement_udf_jar.jar') PACKAGES = ('com.snowflake:snowpark:1.2.0') HANDLER = 'TestFunc.echoVarchar' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) TARGET_PATH = '@~/testfunc.jar' AS $$return id + name;$$`,
 			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateForJava_orReplace",
+			func(opts *CreateForJavaFunctionOptions) {
+				opts.OrReplace = new(true)
+				opts.CopyGrants = new(true)
+			},
+			`CREATE OR REPLACE FUNCTION %s () COPY GRANTS RETURNS VARCHAR(100) LANGUAGE JAVA IMPORTS = ('@~/my_lib.jar') HANDLER = 'TestFunc.echoVarchar'`,
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		)
 
 	functionsTests.CreateForJavascript.
@@ -220,11 +228,10 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_CreateForPython_all,
 			func(opts *CreateForPythonFunctionOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Temporary = new(true)
 				opts.Secure = new(true)
 				opts.Arguments = []FunctionArgument{{ArgName: "i", ArgDataType: dataTypeNumber_36_2, DefaultValue: new("1")}}
-				opts.CopyGrants = new(true)
 				opts.Returns = FunctionReturns{ResultDataType: &FunctionReturnsResultDataType{ResultDataType: dataTypeVariant}}
 				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
 				opts.NullInputBehavior = new(NullInputBehaviorCalledOnNullInput)
@@ -236,7 +243,7 @@ func init() {
 				opts.Secrets = []SecretReference{{VariableName: "variable1", Name: secretId}, {VariableName: "variable2", Name: secretId2}}
 				opts.FunctionDefinition = new(wrapFunctionDefinition("import numpy as np"))
 			},
-			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("i" NUMBER(36, 2) DEFAULT 1) COPY GRANTS RETURNS VARIANT NOT NULL LANGUAGE PYTHON CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '3.9' COMMENT = 'comment' IMPORTS = ('numpy', 'pandas') PACKAGES = ('numpy', 'pandas') HANDLER = 'udf' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) AS $$import numpy as np$$`,
+			`CREATE TEMPORARY SECURE FUNCTION IF NOT EXISTS %s ("i" NUMBER(36, 2) DEFAULT 1) RETURNS VARIANT NOT NULL LANGUAGE PYTHON CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '3.9' COMMENT = 'comment' IMPORTS = ('numpy', 'pandas') PACKAGES = ('numpy', 'pandas') HANDLER = 'udf' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) AS $$import numpy as np$$`,
 			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
 		).
 		// TODO [SNOW-1348103]: remove with old function removal for V1
@@ -262,6 +269,15 @@ func init() {
 			},
 			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("i" NUMBER DEFAULT 1) COPY GRANTS RETURNS VARIANT NOT NULL LANGUAGE PYTHON CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '3.9' COMMENT = 'comment' IMPORTS = ('numpy', 'pandas') PACKAGES = ('numpy', 'pandas') HANDLER = 'udf' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) AS $$import numpy as np$$`,
 			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateForPython_orReplace",
+			func(opts *CreateForPythonFunctionOptions) {
+				opts.OrReplace = new(true)
+				opts.CopyGrants = new(true)
+			},
+			`CREATE OR REPLACE FUNCTION %s () COPY GRANTS RETURNS VARIANT LANGUAGE PYTHON RUNTIME_VERSION = '3.9' IMPORTS = ('numpy') HANDLER = 'udf'`,
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		)
 
 	functionsTests.CreateForScala.
@@ -307,11 +323,10 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_CreateForScala_all,
 			func(opts *CreateForScalaFunctionOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Temporary = new(true)
 				opts.Secure = new(true)
 				opts.Arguments = []FunctionArgument{{ArgName: "x", ArgDataType: dataTypeVarchar_100, DefaultValue: new("'test'")}}
-				opts.CopyGrants = new(true)
 				opts.ResultDataType = dataTypeVarchar_100
 				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
 				opts.NullInputBehavior = new(NullInputBehaviorCalledOnNullInput)
@@ -321,7 +336,7 @@ func init() {
 				opts.Imports = []FunctionImport{{FunctionImport: "@udf_libs/echohandler.jar"}}
 				opts.FunctionDefinition = new(wrapFunctionDefinition("return x"))
 			},
-			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("x" VARCHAR(100) DEFAULT 'test') COPY GRANTS RETURNS VARCHAR(100) NOT NULL LANGUAGE SCALA CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '2.0' COMMENT = 'comment' IMPORTS = ('@udf_libs/echohandler.jar') HANDLER = 'Echo.echoVarchar' AS $$return x$$`,
+			`CREATE TEMPORARY SECURE FUNCTION IF NOT EXISTS %s ("x" VARCHAR(100) DEFAULT 'test') RETURNS VARCHAR(100) NOT NULL LANGUAGE SCALA CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '2.0' COMMENT = 'comment' IMPORTS = ('@udf_libs/echohandler.jar') HANDLER = 'Echo.echoVarchar' AS $$return x$$`,
 			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		// TODO [SNOW-1348103]: remove with old function removal for V1
@@ -344,6 +359,15 @@ func init() {
 				opts.FunctionDefinition = new(wrapFunctionDefinition("return x"))
 			},
 			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("x" VARCHAR DEFAULT 'test') COPY GRANTS RETURNS VARCHAR NOT NULL LANGUAGE SCALA CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '2.0' COMMENT = 'comment' IMPORTS = ('@udf_libs/echohandler.jar') HANDLER = 'Echo.echoVarchar' AS $$return x$$`,
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateForScala_orReplace",
+			func(opts *CreateForScalaFunctionOptions) {
+				opts.OrReplace = new(true)
+				opts.CopyGrants = new(true)
+			},
+			`CREATE OR REPLACE FUNCTION %s () COPY GRANTS RETURNS VARCHAR(100) LANGUAGE SCALA RUNTIME_VERSION = '' IMPORTS = ('@udf_libs/echohandler.jar') HANDLER = 'Echo.echoVarchar'`,
 			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		)
 
