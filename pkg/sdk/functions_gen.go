@@ -100,6 +100,7 @@ type CreateForJavascriptFunctionOptions struct {
 	Temporary             *bool                  `ddl:"keyword" sql:"TEMPORARY"`
 	Secure                *bool                  `ddl:"keyword" sql:"SECURE"`
 	function              bool                   `ddl:"static" sql:"FUNCTION"`
+	IfNotExists           *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                  SchemaObjectIdentifier `ddl:"identifier"`
 	Arguments             []FunctionArgument     `ddl:"list,must_parentheses"`
 	CopyGrants            *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
@@ -187,6 +188,7 @@ type CreateForSQLFunctionOptions struct {
 	Temporary             *bool                  `ddl:"keyword" sql:"TEMPORARY"`
 	Secure                *bool                  `ddl:"keyword" sql:"SECURE"`
 	function              bool                   `ddl:"static" sql:"FUNCTION"`
+	IfNotExists           *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                  SchemaObjectIdentifier `ddl:"identifier"`
 	Arguments             []FunctionArgument     `ddl:"list,must_parentheses"`
 	CopyGrants            *bool                  `ddl:"keyword" sql:"COPY GRANTS"`

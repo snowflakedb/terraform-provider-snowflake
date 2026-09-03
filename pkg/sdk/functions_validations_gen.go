@@ -69,6 +69,9 @@ func (opts *CreateForJavascriptFunctionOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CreateForJavascriptFunctionOptions", "OrReplace", "IfNotExists"))
+	}
 	if valueSet(opts.Arguments) {
 		for _, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
@@ -183,6 +186,9 @@ func (opts *CreateForSQLFunctionOptions) validate() error {
 	}
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CreateForSQLFunctionOptions", "OrReplace", "IfNotExists"))
 	}
 	if valueSet(opts.Arguments) {
 		for _, argument := range opts.Arguments {

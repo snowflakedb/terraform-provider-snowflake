@@ -29,6 +29,7 @@ const (
 	case_Functions_sql_CreateForJava_all                                                                           testCaseName = "sql_CreateForJava_all"
 	case_Functions_validation_CreateForJavascript_FunctionDefinition_ValidateValueSet                              testCaseName = "validation_CreateForJavascript_FunctionDefinition_ValidateValueSet"
 	case_Functions_validation_CreateForJavascript_name_ValidIdentifier                                             testCaseName = "validation_CreateForJavascript_name_ValidIdentifier"
+	case_Functions_validation_CreateForJavascript_opts_ConflictingFields                                           testCaseName = "validation_CreateForJavascript_opts_ConflictingFields"
 	case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_NoneSet                        testCaseName = "validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_NoneSet"
 	case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                 testCaseName = "validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
 	case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid             testCaseName = "validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
@@ -69,6 +70,7 @@ const (
 	case_Functions_sql_CreateForScala_all                                                                          testCaseName = "sql_CreateForScala_all"
 	case_Functions_validation_CreateForSQL_FunctionDefinition_ValidateValueSet                                     testCaseName = "validation_CreateForSQL_FunctionDefinition_ValidateValueSet"
 	case_Functions_validation_CreateForSQL_name_ValidIdentifier                                                    testCaseName = "validation_CreateForSQL_name_ValidIdentifier"
+	case_Functions_validation_CreateForSQL_opts_ConflictingFields                                                  testCaseName = "validation_CreateForSQL_opts_ConflictingFields"
 	case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_NoneSet                               testCaseName = "validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_NoneSet"
 	case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                        testCaseName = "validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
 	case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                    testCaseName = "validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
@@ -240,6 +242,14 @@ var functionsTests = FunctionsTestsContext{
 				ExpectedErr: ErrInvalidObjectIdentifier,
 				DefaultModify: func(opts *CreateForJavascriptFunctionOptions) {
 					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateForJavascriptFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJavascript_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateForJavascriptFunctionOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateForJavascriptFunctionOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
 				},
 			},
 			validationCase[*CreateForJavascriptFunctionOptions]{
@@ -509,6 +519,14 @@ var functionsTests = FunctionsTestsContext{
 				ExpectedErr: ErrInvalidObjectIdentifier,
 				DefaultModify: func(opts *CreateForSQLFunctionOptions) {
 					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateForSQLFunctionOptions]{
+				Name:        case_Functions_validation_CreateForSQL_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateForSQLFunctionOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateForSQLFunctionOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
 				},
 			},
 			validationCase[*CreateForSQLFunctionOptions]{

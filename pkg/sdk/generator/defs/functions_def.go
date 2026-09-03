@@ -145,6 +145,7 @@ var functionsDef = g.NewInterface(
 		OptionalSQL("TEMPORARY").
 		OptionalSQL("SECURE").
 		SQL("FUNCTION").
+		IfNotExists().
 		Identifier("name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 		ListQueryStructField(
 			"Arguments",
@@ -168,7 +169,8 @@ var functionsDef = g.NewInterface(
 		OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
 		PredefinedQueryStructField("FunctionDefinition", "string", g.ParameterOptions().NoEquals().SQL("AS").Required()).
 		WithValidation(g.ValidateValueSet, "FunctionDefinition").
-		WithValidation(g.ValidIdentifier, "name"),
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
 ).CustomOperation(
 	"CreateForPython",
 	"https://docs.snowflake.com/en/sql-reference/sql/create-function#python-handler",
@@ -280,6 +282,7 @@ var functionsDef = g.NewInterface(
 		OptionalSQL("TEMPORARY").
 		OptionalSQL("SECURE").
 		SQL("FUNCTION").
+		IfNotExists().
 		Identifier("name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 		ListQueryStructField(
 			"Arguments",
@@ -302,7 +305,8 @@ var functionsDef = g.NewInterface(
 		OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
 		PredefinedQueryStructField("FunctionDefinition", "string", g.ParameterOptions().NoEquals().SQL("AS").Required()).
 		WithValidation(g.ValidateValueSet, "FunctionDefinition").
-		WithValidation(g.ValidIdentifier, "name"),
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-function",
 	g.NewQueryStruct("AlterFunction").

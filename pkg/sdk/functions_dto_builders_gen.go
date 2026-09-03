@@ -241,6 +241,11 @@ func (s *CreateForJavascriptFunctionRequest) WithSecure(secure bool) *CreateForJ
 	return s
 }
 
+func (s *CreateForJavascriptFunctionRequest) WithIfNotExists(ifNotExists bool) *CreateForJavascriptFunctionRequest {
+	s.IfNotExists = &ifNotExists
+	return s
+}
+
 func (s *CreateForJavascriptFunctionRequest) WithArguments(arguments []FunctionArgumentRequest) *CreateForJavascriptFunctionRequest {
 	s.Arguments = arguments
 	return s
@@ -548,6 +553,11 @@ func (s *CreateForSQLFunctionRequest) WithTemporary(temporary bool) *CreateForSQ
 
 func (s *CreateForSQLFunctionRequest) WithSecure(secure bool) *CreateForSQLFunctionRequest {
 	s.Secure = &secure
+	return s
+}
+
+func (s *CreateForSQLFunctionRequest) WithIfNotExists(ifNotExists bool) *CreateForSQLFunctionRequest {
+	s.IfNotExists = &ifNotExists
 	return s
 }
 

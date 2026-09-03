@@ -82,6 +82,7 @@ type CreateForJavascriptFunctionRequest struct {
 	OrReplace             *bool
 	Temporary             *bool
 	Secure                *bool
+	IfNotExists           *bool
 	name                  SchemaObjectIdentifier // required
 	Arguments             []FunctionArgumentRequest
 	CopyGrants            *bool
@@ -156,6 +157,7 @@ type CreateForSQLFunctionRequest struct {
 	OrReplace             *bool
 	Temporary             *bool
 	Secure                *bool
+	IfNotExists           *bool
 	name                  SchemaObjectIdentifier // required
 	Arguments             []FunctionArgumentRequest
 	CopyGrants            *bool

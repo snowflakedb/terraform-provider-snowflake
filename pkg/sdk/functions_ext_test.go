@@ -152,18 +152,17 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_CreateForJavascript_all,
 			func(opts *CreateForJavascriptFunctionOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Temporary = new(true)
 				opts.Secure = new(true)
 				opts.Arguments = []FunctionArgument{{ArgName: "d", ArgDataType: dataTypeFloat, DefaultValue: new("1.0")}}
-				opts.CopyGrants = new(true)
 				opts.Returns = FunctionReturns{ResultDataType: &FunctionReturnsResultDataType{ResultDataType: dataTypeFloat}}
 				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
 				opts.NullInputBehavior = new(NullInputBehaviorCalledOnNullInput)
 				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
 				opts.Comment = new("comment")
 			},
-			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("d" FLOAT DEFAULT 1.0) COPY GRANTS RETURNS FLOAT NOT NULL LANGUAGE JAVASCRIPT CALLED ON NULL INPUT IMMUTABLE COMMENT = 'comment' AS $$return 1;$$`,
+			`CREATE TEMPORARY SECURE FUNCTION IF NOT EXISTS %s ("d" FLOAT DEFAULT 1.0) RETURNS FLOAT NOT NULL LANGUAGE JAVASCRIPT CALLED ON NULL INPUT IMMUTABLE COMMENT = 'comment' AS $$return 1;$$`,
 			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		// TODO [SNOW-1348103]: remove with old function removal for V1
@@ -183,6 +182,15 @@ func init() {
 				opts.FunctionDefinition = wrapFunctionDefinition("return 1;")
 			},
 			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("d" FLOAT DEFAULT 1.0) COPY GRANTS RETURNS FLOAT NOT NULL LANGUAGE JAVASCRIPT CALLED ON NULL INPUT IMMUTABLE COMMENT = 'comment' AS $$return 1;$$`,
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateForJavascript_orReplace",
+			func(opts *CreateForJavascriptFunctionOptions) {
+				opts.OrReplace = new(true)
+				opts.CopyGrants = new(true)
+			},
+			`CREATE OR REPLACE FUNCTION %s () COPY GRANTS RETURNS FLOAT LANGUAGE JAVASCRIPT AS $$return 1;$$`,
 			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		)
 
@@ -402,18 +410,17 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_CreateForSQL_all,
 			func(opts *CreateForSQLFunctionOptions) {
-				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
 				opts.Temporary = new(true)
 				opts.Secure = new(true)
 				opts.Arguments = []FunctionArgument{{ArgName: "message", ArgDataType: dataTypeVarchar_100, DefaultValue: new("'test'")}}
-				opts.CopyGrants = new(true)
 				opts.Returns = FunctionReturns{ResultDataType: &FunctionReturnsResultDataType{ResultDataType: dataTypeFloat}}
 				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
 				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
 				opts.Memoizable = new(true)
 				opts.Comment = new("comment")
 			},
-			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("message" VARCHAR(100) DEFAULT 'test') COPY GRANTS RETURNS FLOAT NOT NULL IMMUTABLE MEMOIZABLE COMMENT = 'comment' AS $$3.141592654::FLOAT$$`,
+			`CREATE TEMPORARY SECURE FUNCTION IF NOT EXISTS %s ("message" VARCHAR(100) DEFAULT 'test') RETURNS FLOAT NOT NULL IMMUTABLE MEMOIZABLE COMMENT = 'comment' AS $$3.141592654::FLOAT$$`,
 			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		// TODO [SNOW-1348103]: remove with old function removal for V1
@@ -432,6 +439,15 @@ func init() {
 				opts.Comment = new("comment")
 			},
 			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("message" VARCHAR DEFAULT 'test') COPY GRANTS RETURNS FLOAT NOT NULL IMMUTABLE MEMOIZABLE COMMENT = 'comment' AS $$3.141592654::FLOAT$$`,
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateForSQL_orReplace",
+			func(opts *CreateForSQLFunctionOptions) {
+				opts.OrReplace = new(true)
+				opts.CopyGrants = new(true)
+			},
+			`CREATE OR REPLACE FUNCTION %s () COPY GRANTS RETURNS FLOAT AS $$3.141592654::FLOAT$$`,
 			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		)
 
