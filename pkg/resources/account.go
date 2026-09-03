@@ -297,19 +297,24 @@ func CreateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 		return diag.FromErr(err)
 	}
 
+	// CREATE ACCOUNT can succeed before the account is visible in SHOW ACCOUNTS
+	// (especially across regions). Poll until it appears or the create timeout
+	// on ctx is reached (also configurable via timeouts.create).
 	var account *sdk.Account
-	if err := util.Retry(5, 3*time.Second, func() (error, bool) {
+	if err := util.RetryWithContext(ctx, 3*time.Second, func() (error, bool) {
 		account, err = client.Accounts.ShowByID(ctx, id)
 		if err != nil {
 			log.Printf("[DEBUG] retryable operation resulted in error: %v", err)
 			if errors.Is(err, sdk.ErrObjectNotFound) || errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 				return nil, false
-			} else {
-				return err, true
 			}
+			return err, true
 		}
 		return nil, true
 	}); err != nil {
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+			return diag.FromErr(fmt.Errorf("failed to query account (%s) after creation within the create timeout: %w; increase timeouts.create, or import the account if it already exists", id.FullyQualifiedName(), err))
+		}
 		return diag.FromErr(fmt.Errorf("failed to query account (%s) after creation, err: %w", id.FullyQualifiedName(), err))
 	}
 

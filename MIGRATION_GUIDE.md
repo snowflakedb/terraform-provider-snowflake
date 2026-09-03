@@ -201,6 +201,30 @@ No changes in configuration are required.
 
 Reference: [#5085](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5085)
 
+### *(improvement)* `snowflake_account` create polling now uses the resource create timeout
+
+After `CREATE ACCOUNT` succeeded, [`snowflake_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account) retried `SHOW ACCOUNTS` a fixed five times (about 15 seconds). Cross-region accounts can take longer than that to become visible, so create failed with:
+
+```
+Error: failed to query account ("ACCOUNT_NAME") after creation, err: giving up after 5 attempts
+```
+
+The provider now polls until the account appears or the resource create timeout is reached (default as of now is 20 minutes). No configuration changes are required. If create still times out in your environment, raise `timeouts.create`:
+
+```terraform
+resource "snowflake_account" "example" {
+  # ...
+
+  timeouts {
+    create = "30m"
+  }
+}
+```
+
+Read more about resource timeouts in the [Terraform documentation](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts).
+
+References: [#5189](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5189)
+
 ## v2.19.x ➞ v2.20.0
 
 ### *(new feature)* New hybrid table resource

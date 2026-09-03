@@ -11,6 +11,8 @@ The account resource allows you to create and manage Snowflake accounts. For mor
 
 ~> **Note** To use this resource you have to use an account with a privilege to use the ORGADMIN role.
 
+-> **Note** After `CREATE ACCOUNT` succeeds, the provider polls `SHOW ACCOUNTS` until the new account becomes visible. This process can take longer than a few seconds, particularly for cross-region accounts. The polling operation uses the resource create timeout. If you encounter timeout errors, use a [`timeouts` block](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts) to set a higher `create` limit. If the account was successfully created but the timeout was reached, you may need to import the account instead.
+
 ~> **Note** Changes for the following fields won't be detected: `admin_name`, `admin_password`, `admin_rsa_public_key`, `admin_user_type`, `first_name`, `last_name`, `email`, `must_change_password`. This is because these fields only supply initial values for creating the admin user. Once the account is created, the admin user becomes an independent entity. Modifying users from the account resource is challenging since it requires logging into that account. This would require the account resource logging into the account it created to read or alter admin user properties, which is impractical, because any external change to the admin user would disrupt the change detection anyway.
 
 ~> **Note** During the import, when Terraform detects changes on a field with `ForceNew`, it will try to recreate the resource. Due to Terraform limitations, `grace_period_in_days` is not set at that moment. This means that Terraform will try to drop the account with the empty grace period which is required, and fail.
