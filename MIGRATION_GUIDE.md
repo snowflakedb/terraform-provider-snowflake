@@ -26,6 +26,16 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.20.x ➞ v2.21.0
 
+### *(new feature)* Added `EXPERIMENTS` support for `on_schema_object.all` and `on.all` in grant resources
+
+Snowflake now supports `GRANT ... ON ALL EXPERIMENTS` (and ownership of all experiments). The following resources now accept `EXPERIMENTS` in the `object_type_plural` field for bulk **all** grants:
+
+- `snowflake_grant_privileges_to_account_role` (`on_schema_object.all`)
+- `snowflake_grant_privileges_to_database_role` (`on_schema_object.all`)
+- `snowflake_grant_ownership` (`on.all`)
+
+No changes in configuration are required.
+
 ### *(breaking change)* Renamed constraint column fields in `snowflake_iceberg_table`
 
 Note: this resource is in preview allowing us to make breaking changes without bumping the major version (following [our docs](https://docs.snowflake.com/en/user-guide/terraform#preview-features)).

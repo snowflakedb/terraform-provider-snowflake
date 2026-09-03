@@ -631,6 +631,8 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("CreateOnGCS - complete", func(t *testing.T) {
+		t.Skip("TODO(SNOW-3670350): Unskip once cloud resources are ready for GCP and Azure")
+
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		comment := "complete gcs stage"
 		kmsKeyId := random.AlphaN(12)

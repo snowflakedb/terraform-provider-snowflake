@@ -5,6 +5,7 @@ package testint
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -200,7 +201,9 @@ func TestInt_GetClusteringInformation(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, info)
 		assert.Equal(t, "LINEAR(REGION)", info.ClusterByKeys)
-		assert.NotNil(t, info.PartitionDepthHistogram)
+		if strings.EqualFold(info.Version, "Classic") { // Partition depth histogram is available only for Classic clustering (Optima clustering excludes it: https://docs.snowflake.com/en/sql-reference/functions/system_clustering_information#usage-notes)
+			assert.NotNil(t, info.PartitionDepthHistogram)
+		}
 		assert.Empty(t, info.ClusteringErrors)
 	})
 

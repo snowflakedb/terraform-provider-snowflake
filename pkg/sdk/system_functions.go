@@ -251,6 +251,7 @@ func (c *systemFunctions) GetIcebergTableInformation(ctx context.Context, id Sch
 
 type clusteringInformationDbStruct struct {
 	ClusterByKeys               string                         `json:"cluster_by_keys"`
+	Version                     string                         `json:"version"`
 	TotalPartitionCount         int                            `json:"total_partition_count"`
 	TotalConstantPartitionCount int                            `json:"total_constant_partition_count"`
 	AverageOverlaps             float64                        `json:"average_overlaps"`
@@ -265,6 +266,7 @@ type clusteringErrorEntryDbStruct struct {
 }
 
 type ClusteringInformation struct {
+	Version                     string
 	ClusterByKeys               string
 	TotalPartitionCount         int
 	TotalConstantPartitionCount int
@@ -326,6 +328,7 @@ func parseClusteringInformation(raw string) (*ClusteringInformation, error) {
 
 	return &ClusteringInformation{
 		ClusterByKeys:               info.ClusterByKeys,
+		Version:                     info.Version,
 		TotalPartitionCount:         info.TotalPartitionCount,
 		TotalConstantPartitionCount: info.TotalConstantPartitionCount,
 		AverageOverlaps:             info.AverageOverlaps,

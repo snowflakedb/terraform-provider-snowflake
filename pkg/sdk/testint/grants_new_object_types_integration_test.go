@@ -299,7 +299,6 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 				return testClientHelper().Experiment.Create(t)
 			},
 			expectedFutureError: "Unsupported feature 'EXPERIMENT'",
-			expectedAllError:    "Unsupported feature 'GRANT on all objects of type EXPERIMENT'",
 		},
 		{
 			objectTypePlural: sdk.PluralObjectTypeGateways,
@@ -370,6 +369,31 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 			require.ErrorContains(t, err, tc.expectedFutureError)
 		})
 
+		t.Run("database role - future "+tc.objectTypePlural.String(), func(t *testing.T) {
+			database, databaseCleanup := testClientHelper().Database.CreateDatabase(t)
+			t.Cleanup(databaseCleanup)
+
+			databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRoleInDatabase(t, database.ID())
+			t.Cleanup(databaseRoleCleanup)
+
+			err := client.Grants.GrantPrivilegesToDatabaseRole(
+				ctx,
+				&sdk.DatabaseRoleGrantPrivileges{
+					SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{tc.privilege},
+				},
+				&sdk.DatabaseRoleGrantOn{
+					SchemaObject: &sdk.GrantOnSchemaObject{
+						Future: &sdk.GrantOnSchemaObjectIn{
+							PluralObjectType: tc.objectTypePlural,
+							InDatabase:       sdk.Pointer(database.ID()),
+						},
+					},
+				},
+				databaseRole.ID(), nil,
+			)
+			require.ErrorContains(t, err, tc.expectedFutureError)
+		})
+
 		t.Run("account role - all "+tc.objectTypePlural.String(), func(t *testing.T) {
 			_, objectCleanup := tc.createObject(t)
 			t.Cleanup(objectCleanup)
@@ -392,7 +416,42 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 				},
 				role.ID(), nil,
 			)
-			require.ErrorContains(t, err, tc.expectedAllError)
+
+			if tc.expectedAllError == "" {
+				require.NoError(t, err)
+			} else {
+				require.ErrorContains(t, err, tc.expectedAllError)
+			}
+		})
+
+		t.Run("database role - all "+tc.objectTypePlural.String(), func(t *testing.T) {
+			_, objectCleanup := tc.createObject(t)
+			t.Cleanup(objectCleanup)
+
+			databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
+			t.Cleanup(databaseRoleCleanup)
+
+			err := client.Grants.GrantPrivilegesToDatabaseRole(
+				ctx,
+				&sdk.DatabaseRoleGrantPrivileges{
+					SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{tc.privilege},
+				},
+				&sdk.DatabaseRoleGrantOn{
+					SchemaObject: &sdk.GrantOnSchemaObject{
+						All: &sdk.GrantOnSchemaObjectIn{
+							PluralObjectType: tc.objectTypePlural,
+							InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
+						},
+					},
+				},
+				databaseRole.ID(), nil,
+			)
+
+			if tc.expectedAllError == "" {
+				require.NoError(t, err)
+			} else {
+				require.ErrorContains(t, err, tc.expectedAllError)
+			}
 		})
 
 		t.Run("ownership - future "+tc.objectTypePlural.String(), func(t *testing.T) {
@@ -436,7 +495,12 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 				sdk.OwnershipGrantTo{AccountRoleName: &roleId},
 				nil,
 			)
-			require.ErrorContains(t, err, tc.expectedAllError)
+
+			if tc.expectedAllError == "" {
+				require.NoError(t, err)
+			} else {
+				require.ErrorContains(t, err, tc.expectedAllError)
+			}
 		})
 	}
 }

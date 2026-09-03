@@ -91,7 +91,7 @@ var grantOwnershipSchema = map[string]*schema.Schema{
 					Description: "Configures the privilege to be granted on all objects in either a database or schema.",
 					MaxItems:    1,
 					Elem: &schema.Resource{
-						Schema: grantOwnershipBulkOperationSchema("all"),
+						Schema: grantOwnershipBulkOperationSchema("all", sdk.ValidGrantOwnershipAllPluralObjectTypesString),
 					},
 					ExactlyOneOf: []string{
 						"on.0.object_name",
@@ -106,7 +106,7 @@ var grantOwnershipSchema = map[string]*schema.Schema{
 					Description: "Configures the privilege to be granted on all objects in either a database or schema.",
 					MaxItems:    1,
 					Elem: &schema.Resource{
-						Schema: grantOwnershipBulkOperationSchema("future"),
+						Schema: grantOwnershipBulkOperationSchema("future", sdk.ValidGrantOwnershipFuturePluralObjectTypesString),
 					},
 					ExactlyOneOf: []string{
 						"on.0.object_name",
@@ -119,14 +119,14 @@ var grantOwnershipSchema = map[string]*schema.Schema{
 	},
 }
 
-func grantOwnershipBulkOperationSchema(branchName string) map[string]*schema.Schema {
+func grantOwnershipBulkOperationSchema(branchName string, validObjectTypesPlural []string) map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"object_type_plural": {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
-			Description:  fmt.Sprintf("Specifies the type of object in plural form on which you are transferring ownership. Available values are: %s. For more information head over to [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/grant-ownership#required-parameters).", strings.Join(sdk.ValidGrantOwnershipPluralObjectTypesString, " | ")),
-			ValidateFunc: validation.StringInSlice(sdk.ValidGrantOwnershipPluralObjectTypesString, true),
+			Description:  fmt.Sprintf("Specifies the type of object in plural form on which you are transferring ownership. Available values are: %s. For more information head over to [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/grant-ownership#required-parameters).", strings.Join(validObjectTypesPlural, " | ")),
+			ValidateFunc: validation.StringInSlice(validObjectTypesPlural, true),
 		},
 		"in_database": {
 			Type:             schema.TypeString,
