@@ -19,6 +19,12 @@ var openflowDeploymentsSchema = map[string]*schema.Schema{
 		Default:     true,
 		Description: "Runs DESC OPENFLOW DEPLOYMENT for each deployment returned by SHOW OPENFLOW DEPLOYMENTS. The output of describe is saved to the description field. By default this value is set to true.",
 	},
+	"with_parameters": {
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Default:     true,
+		Description: "Runs SHOW PARAMETERS IN OPENFLOW DEPLOYMENT for each deployment returned by SHOW OPENFLOW DEPLOYMENTS. The output is saved to the parameters field. By default this value is set to true.",
+	},
 	"like":        likeSchema,
 	"starts_with": startsWithSchema,
 	"limit":       limitFromSchema,
@@ -44,6 +50,14 @@ var openflowDeploymentsSchema = map[string]*schema.Schema{
 						Schema: schemas.DescribeOpenflowDeploymentSchema,
 					},
 				},
+				resources.ParametersAttributeName: {
+					Type:        schema.TypeList,
+					Computed:    true,
+					Description: "Holds the output of SHOW PARAMETERS IN OPENFLOW DEPLOYMENT.",
+					Elem: &schema.Resource{
+						Schema: schemas.ShowOpenflowDeploymentParametersSchema,
+					},
+				},
 			},
 		},
 	},
@@ -61,7 +75,8 @@ func OpenflowDeployments() *schema.Resource {
 }
 
 func ReadOpenflowDeployments(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	req := sdk.ShowOpenflowDeploymentRequest{}
 
 	handleLike(d, &req.Like)
@@ -84,9 +99,19 @@ func ReadOpenflowDeployments(ctx context.Context, d *schema.ResourceData, meta a
 			}
 			deploymentDetails = []map[string]any{schemas.OpenflowDeploymentDetailsToSchema(*describeResult)}
 		}
+		var deploymentParameters []map[string]any
+		if d.Get("with_parameters").(bool) {
+			parameters, err := client.OpenflowDeployments.ShowParameters(ctx, deployment.ID())
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			deploymentParameters = []map[string]any{schemas.OpenflowDeploymentParametersToSchema(parameters, providerCtx)}
+		}
+
 		flattenedDeployments[i] = map[string]any{
 			resources.ShowOutputAttributeName:     []map[string]any{schemas.OpenflowDeploymentToSchema(&deployment)},
 			resources.DescribeOutputAttributeName: deploymentDetails,
+			resources.ParametersAttributeName:     deploymentParameters,
 		}
 	}
 	if err := d.Set("openflow_deployments", flattenedDeployments); err != nil {

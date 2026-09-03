@@ -10,6 +10,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -28,6 +29,7 @@ func TestAcc_OpenflowDeployments_BasicUseCase_DifferentFiltering(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestOpenflow)
 
 	currentRole := testClient().Context.CurrentRole(t)
+	accountEventTable := helpers.FindParameter(t, testClient().Parameter.ShowAccountParameters(t), sdk.AccountParameterEventTable).Value
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
@@ -46,6 +48,10 @@ func TestAcc_OpenflowDeployments_BasicUseCase_DifferentFiltering(t *testing.T) {
 	dsWithoutDescribe := datasourcemodel.OpenflowDeployments("test").
 		WithLike(id.Name()).
 		WithWithDescribe(false).
+		WithDependsOn(deploymentModel.ResourceReference())
+	dsWithoutParameters := datasourcemodel.OpenflowDeployments("test").
+		WithLike(id.Name()).
+		WithWithParameters(false).
 		WithDependsOn(deploymentModel.ResourceReference())
 	dsStartsWith := datasourcemodel.OpenflowDeployments("test").
 		WithStartsWith(id.Name()).
@@ -94,6 +100,8 @@ func TestAcc_OpenflowDeployments_BasicUseCase_DifferentFiltering(t *testing.T) {
 						HasOwner(currentRole.Name()).
 						HasComment(comment).
 						HasKeyNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(dsLikeExact.DatasourceReference(), "openflow_deployments.0.parameters.0.event_table.0.value", accountEventTable)),
+					assert.Check(resource.TestCheckResourceAttr(dsLikeExact.DatasourceReference(), "openflow_deployments.0.parameters.0.event_table.0.level", string(sdk.ParameterTypeAccount))),
 				),
 			},
 			// 2. like matching nothing
@@ -114,7 +122,18 @@ func TestAcc_OpenflowDeployments_BasicUseCase_DifferentFiltering(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(dsWithoutDescribe.DatasourceReference(), "openflow_deployments.0.describe_output.#", "0")),
 				),
 			},
-			// 4. starts_with on the full name, which is unique, so it returns exactly this deployment
+			// 4. with_parameters = false suppresses the SHOW PARAMETERS call, so the block must be empty
+			{
+				Config: config.FromModels(t, deploymentModel, dsWithoutParameters),
+				Check: assertThat(
+					t,
+					assert.Check(resource.TestCheckResourceAttr(dsWithoutParameters.DatasourceReference(), "openflow_deployments.#", "1")),
+					resourceshowoutputassert.OpenflowDeploymentsDatasourceShowOutput(t, dsWithoutParameters.DatasourceReference()).
+						HasName(id.Name()),
+					assert.Check(resource.TestCheckResourceAttr(dsWithoutParameters.DatasourceReference(), "openflow_deployments.0.parameters.#", "0")),
+				),
+			},
+			// 5. starts_with on the full name, which is unique, so it returns exactly this deployment
 			{
 				Config: config.FromModels(t, deploymentModel, dsStartsWith),
 				Check: assertThat(
@@ -124,7 +143,7 @@ func TestAcc_OpenflowDeployments_BasicUseCase_DifferentFiltering(t *testing.T) {
 						HasName(id.Name()),
 				),
 			},
-			// 5. limit caps the result set
+			// 6. limit caps the result set
 			{
 				Config: config.FromModels(t, deploymentModel, dsLimit),
 				Check: assertThat(

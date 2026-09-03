@@ -16,6 +16,7 @@ type OpenflowDeploymentsModel struct {
 	OpenflowDeployments tfconfig.Variable `json:"openflow_deployments,omitempty"`
 	StartsWith          tfconfig.Variable `json:"starts_with,omitempty"`
 	WithDescribe        tfconfig.Variable `json:"with_describe,omitempty"`
+	WithParameters      tfconfig.Variable `json:"with_parameters,omitempty"`
 
 	*config.DatasourceModelMeta
 }
@@ -81,6 +82,11 @@ func (o *OpenflowDeploymentsModel) WithWithDescribe(withDescribe bool) *Openflow
 	return o
 }
 
+func (o *OpenflowDeploymentsModel) WithWithParameters(withParameters bool) *OpenflowDeploymentsModel {
+	o.WithParameters = tfconfig.BoolVariable(withParameters)
+	return o
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -107,5 +113,10 @@ func (o *OpenflowDeploymentsModel) WithStartsWithValue(value tfconfig.Variable) 
 
 func (o *OpenflowDeploymentsModel) WithWithDescribeValue(value tfconfig.Variable) *OpenflowDeploymentsModel {
 	o.WithDescribe = value
+	return o
+}
+
+func (o *OpenflowDeploymentsModel) WithWithParametersValue(value tfconfig.Variable) *OpenflowDeploymentsModel {
+	o.WithParameters = value
 	return o
 }
