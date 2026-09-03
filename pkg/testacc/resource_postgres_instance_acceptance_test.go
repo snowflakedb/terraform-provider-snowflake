@@ -24,8 +24,6 @@ import (
 )
 
 func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
-	t.Skip("TODO(SNOW-3765941): Skipped until Alter retry logic is not fixed")
-
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 	externalComment := random.Comment()
@@ -46,7 +44,7 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 		WithNetworkPolicy(networkPolicy.Name).
 		// TODO(SNOW-3580377): storage_integration requires POSTGRES_EXTERNAL_STORAGE type; no pre-created integration available.
 		WithMaintenanceWindowStart(10).
-		WithPostgresSettings(`{"postgres:work_mem":"64KB"}`)
+		WithPostgresSettings(`{"postgres:work_mem":"64MB"}`)
 
 	ref := basic.ResourceReference()
 
@@ -83,7 +81,7 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 				HasComputeFamily("STANDARD_M").
 				HasAuthenticationAuthority("POSTGRES").
 				HasStorageSize(10).
-				HasIsHighlyAvailable(false).
+				HasIsHa(false).
 				HasState(sdk.PostgresInstanceStateReady),
 			resourceshowoutputassert.PostgresInstanceDescribeOutput(t, ref).
 				HasCreatedOnNotEmpty().
@@ -111,7 +109,7 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 			HasNoStorageIntegration().
 			HasPostgresVersion(18).
 			HasMaintenanceWindowStart(10).
-			HasPostgresSettingsString(`{"postgres:work_mem":"64KB"}`).
+			HasPostgresSettingsString(`{"postgres:work_mem":"64MB"}`).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()),
 		resourceshowoutputassert.PostgresInstanceShowOutput(t, ref).
 			HasCreatedOnNotEmpty().
@@ -122,7 +120,7 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 			HasAuthenticationAuthority("POSTGRES").
 			HasComment(comment).
 			HasStorageSize(10).
-			HasIsHighlyAvailable(false).
+			HasIsHa(false).
 			HasState(sdk.PostgresInstanceStateReady),
 		resourceshowoutputassert.PostgresInstanceDescribeOutput(t, ref).
 			HasCreatedOnNotEmpty().
@@ -135,9 +133,9 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 			HasHighAvailability(false).
 			HasComment(comment).
 			HasPostgresVersion(18).
-			// Not asserted: Snowflake DESCRIBE has a propagation lag for network_policy,
-			// maintenance_window_start, and postgres_settings immediately after ALTER SET —
-			// DESCRIBE returns stale/empty values until propagation completes.
+			HasNetworkPolicy(networkPolicy.ID()).
+			HasMaintenanceWindowStart(10).
+			HasPostgresSettings(`{"postgres:work_mem":"64MB"}`).
 			HasState("READY"),
 	}
 
@@ -238,12 +236,9 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					// DESCRIBE has propagation lag for these fields after CREATE/ALTER SET — the value
-					// in state right after Apply may differ from what a later Import Read sees.
 					"postgres_settings",
-					"describe_output.0.maintenance_window_start",
-					"describe_output.0.updated_on", // changes between reads
-					"show_output.0.updated_on",     // changes between reads
+					"describe_output.0.updated_on",
+					"show_output.0.updated_on",
 				},
 			},
 		},

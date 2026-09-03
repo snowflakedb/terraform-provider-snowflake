@@ -469,3 +469,25 @@ func (p *PostgresInstanceDetailsAssert) HasNoStorageIntegration() *PostgresInsta
 	})
 	return p
 }
+
+func (p *PostgresInstanceDetailsAssert) HasHasAnyRunningOperations(expected bool) *PostgresInstanceDetailsAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
+		t.Helper()
+		if o.HasAnyRunningOperations != expected {
+			return fmt.Errorf("expected has any running operations: %v; got: %v", expected, o.HasAnyRunningOperations)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PostgresInstanceDetailsAssert) HasOperationErrors(expected error) *PostgresInstanceDetailsAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
+		t.Helper()
+		if o.OperationErrors != expected {
+			return fmt.Errorf("expected operation errors: %v; got: %v", expected, o.OperationErrors)
+		}
+		return nil
+	})
+	return p
+}

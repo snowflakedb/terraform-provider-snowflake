@@ -23,7 +23,8 @@ type PostgresInstances interface {
 	// The caller should set a deadline on ctx via context.WithTimeout.
 	// Implemented in postgres_instances_ext.go.
 	CreateSafely(ctx context.Context, request *CreatePostgresInstanceRequest) (*PostgresInstance, error)
-	// AlterSafely alters the instance and polls until it reaches READY state.
+	// AlterSafely alters the instance and waits until HasAnyRunningOperations is false.
+	// For suspend/resume it then waits for the expected SHOW state. For NETWORK_POLICY (not surfaced in operations) it polls DESCRIBE until the property matches.
 	// The caller should set a deadline on ctx via context.WithTimeout.
 	// Implemented in postgres_instances_ext.go.
 	AlterSafely(ctx context.Context, request *AlterPostgresInstanceRequest) error

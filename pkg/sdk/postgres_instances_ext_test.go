@@ -318,6 +318,34 @@ func TestPostgresInstances_ParseDetails(t *testing.T) {
 		assert.Equal(t, "STANDARD_M", details.ComputeFamily)
 		assert.Equal(t, 100, details.StorageSizeGb)
 	})
+
+	t.Run("operations: empty, in-flight, leftover READY, FAILED", func(t *testing.T) {
+		parsed := func(raw string) *PostgresInstanceDetails {
+			t.Helper()
+			details, err := ParsePostgresInstanceDetails([]PostgresInstanceProperty{{Property: "operations", Value: raw}})
+			require.NoError(t, err)
+			return details
+		}
+
+		assert.False(t, parsed("{ }").HasAnyRunningOperations)
+		assert.NoError(t, parsed("{ }").OperationErrors)
+
+		inFlight := parsed(`{"upgrade":{"state":"UPGRADING"}}`)
+		assert.True(t, inFlight.HasAnyRunningOperations)
+		assert.NoError(t, inFlight.OperationErrors)
+
+		assert.False(t, parsed(`{"create":{"state":"READY"}}`).HasAnyRunningOperations)
+
+		failed := parsed(`{"settings":{"state":"FAILED","error":"boom"}}`)
+		assert.False(t, failed.HasAnyRunningOperations)
+		require.ErrorContains(t, failed.OperationErrors, "postgres instance settings operation failed")
+		require.ErrorContains(t, failed.OperationErrors, "boom")
+
+		twoFailed := parsed(`{"upgrade":{"state":"FAILED","error":"upgrade boom"},"settings":{"state":"FAILED","error":"settings boom"}}`)
+		assert.False(t, twoFailed.HasAnyRunningOperations)
+		require.ErrorContains(t, twoFailed.OperationErrors, "postgres instance settings operation failed: settings boom")
+		require.ErrorContains(t, twoFailed.OperationErrors, "postgres instance upgrade operation failed: upgrade boom")
+	})
 }
 
 func TestNormalizePostgresSettings(t *testing.T) {
@@ -407,6 +435,9 @@ type stubPostgresInstances struct {
 	// For updateSafelyPolling tests
 	updateErr    error
 	updateCalled int
+	describeSeq  []*PostgresInstanceDetails
+	describeIdx  int
+	describeErr  error
 }
 
 func (s *stubPostgresInstances) showByID() (*PostgresInstance, error) {
@@ -414,7 +445,10 @@ func (s *stubPostgresInstances) showByID() (*PostgresInstance, error) {
 		return nil, s.showErr
 	}
 	if s.showIdx >= len(s.showStates) {
-		return &PostgresInstance{Name: "test", State: PostgresInstanceStateReady}, nil
+		if len(s.showStates) == 0 {
+			return &PostgresInstance{Name: "test", State: PostgresInstanceStateReady}, nil
+		}
+		return &PostgresInstance{Name: "test", State: s.showStates[len(s.showStates)-1]}, nil
 	}
 	state := s.showStates[s.showIdx]
 	s.showIdx++
@@ -424,6 +458,21 @@ func (s *stubPostgresInstances) showByID() (*PostgresInstance, error) {
 func (s *stubPostgresInstances) update() error {
 	s.updateCalled++
 	return s.updateErr
+}
+
+func (s *stubPostgresInstances) describe() (*PostgresInstanceDetails, error) {
+	if s.describeErr != nil {
+		return nil, s.describeErr
+	}
+	if len(s.describeSeq) == 0 {
+		return &PostgresInstanceDetails{}, nil
+	}
+	if s.describeIdx >= len(s.describeSeq) {
+		return s.describeSeq[len(s.describeSeq)-1], nil
+	}
+	details := s.describeSeq[s.describeIdx]
+	s.describeIdx++
+	return details, nil
 }
 
 func TestCreateSafely(t *testing.T) {
@@ -477,24 +526,29 @@ func TestCreateSafely(t *testing.T) {
 }
 
 func TestUpdateSafely(t *testing.T) {
-	t.Run("calls update when instance is immediately READY", func(t *testing.T) {
-		stub := &stubPostgresInstances{}
-		err := updateSafelyPolling(context.Background(), stub.update, stub.showByID)
+	req := &AlterPostgresInstanceRequest{
+		Set: &PostgresInstanceSetRequest{Comment: new("c")},
+	}
+
+	t.Run("calls update when already idle", func(t *testing.T) {
+		stub := &stubPostgresInstances{describeSeq: []*PostgresInstanceDetails{{}}}
+		err := updateSafelyPolling(context.Background(), req, stub.update, stub.describe, stub.showByID)
 		require.NoError(t, err)
 		assert.Equal(t, 1, stub.updateCalled)
 	})
 
-	t.Run("waits for READY state before calling update", func(t *testing.T) {
+	t.Run("waits then calls update", func(t *testing.T) {
 		stub := &stubPostgresInstances{
-			showStates: []PostgresInstanceState{
-				PostgresInstanceStateCreating,
-				PostgresInstanceStateCreating,
-				PostgresInstanceStateReady,
+			describeSeq: []*PostgresInstanceDetails{
+				{HasAnyRunningOperations: true},
+				{HasAnyRunningOperations: true},
+				{},
 			},
 		}
-		err := updateSafelyPolling(context.Background(), stub.update, stub.showByID)
+		err := updateSafelyPolling(context.Background(), req, stub.update, stub.describe, stub.showByID)
 		require.NoError(t, err)
 		assert.Equal(t, 1, stub.updateCalled)
+		assert.GreaterOrEqual(t, stub.describeIdx, 3)
 	})
 
 	t.Run("retries update on must-be-complete error", func(t *testing.T) {
@@ -502,32 +556,63 @@ func TestUpdateSafely(t *testing.T) {
 		doUpdate := func() error {
 			calls++
 			if calls < 3 {
-				return fmt.Errorf("604009 (03000): Running operation CREATE POSTGRES SERVICE on X %s SET POSTGRES_SETTINGS", ErrPostgresOperationMustBeComplete.Error())
+				return fmt.Errorf("604009 (03000): %s", ErrPostgresOperationMustBeComplete.Error())
 			}
 			return nil
 		}
-		stub := &stubPostgresInstances{}
-		err := updateSafelyPolling(context.Background(), doUpdate, stub.showByID)
+		stub := &stubPostgresInstances{describeSeq: []*PostgresInstanceDetails{{}}}
+		err := updateSafelyPolling(context.Background(), req, doUpdate, stub.describe, stub.showByID)
 		require.NoError(t, err)
 		assert.Equal(t, 3, calls)
 	})
 
-	t.Run("returns non-retryable update error", func(t *testing.T) {
-		updateErr := errors.New("unexpected error")
-		stub := &stubPostgresInstances{updateErr: updateErr}
-		err := updateSafelyPolling(context.Background(), stub.update, stub.showByID)
-		require.ErrorIs(t, err, updateErr)
-	})
-
-	t.Run("returns error when context is canceled before READY", func(t *testing.T) {
-		stub := &stubPostgresInstances{
-			showStates: []PostgresInstanceState{PostgresInstanceStateCreating},
-		}
+	t.Run("returns error when context is canceled before operations drain", func(t *testing.T) {
+		stub := &stubPostgresInstances{describeSeq: []*PostgresInstanceDetails{{HasAnyRunningOperations: true}}}
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)
 		defer cancel()
 		time.Sleep(5 * time.Millisecond)
-		err := updateSafelyPolling(ctx, stub.update, stub.showByID)
+		err := updateSafelyPolling(ctx, req, stub.update, stub.describe, stub.showByID)
 		require.Error(t, err)
 		assert.Equal(t, 0, stub.updateCalled)
+	})
+
+	t.Run("returns OperationErrors after ALTER", func(t *testing.T) {
+		failed := &PostgresInstanceDetails{OperationErrors: fmt.Errorf("postgres instance settings operation failed: boom")}
+		stub := &stubPostgresInstances{
+			describeSeq: []*PostgresInstanceDetails{
+				{},
+				failed,
+			},
+		}
+		err := updateSafelyPolling(context.Background(), req, stub.update, stub.describe, stub.showByID)
+		require.ErrorContains(t, err, "postgres instance settings operation failed")
+		require.ErrorContains(t, err, "boom")
+	})
+
+	t.Run("suspend waits for SUSPENDED not READY", func(t *testing.T) {
+		suspendReq := &AlterPostgresInstanceRequest{Suspend: new(true)}
+		stub := &stubPostgresInstances{
+			describeSeq: []*PostgresInstanceDetails{{}},
+			showStates:  []PostgresInstanceState{PostgresInstanceStateSuspended},
+		}
+		err := updateSafelyPolling(context.Background(), suspendReq, stub.update, stub.describe, stub.showByID)
+		require.NoError(t, err)
+	})
+
+	t.Run("polls DESCRIBE until network_policy matches after SET", func(t *testing.T) {
+		policy := NewAccountObjectIdentifier("new_policy")
+		npReq := &AlterPostgresInstanceRequest{
+			Set: &PostgresInstanceSetRequest{NetworkPolicy: &policy},
+		}
+		stub := &stubPostgresInstances{
+			describeSeq: []*PostgresInstanceDetails{
+				{},
+				{},
+				{NetworkPolicy: Pointer(NewAccountObjectIdentifier("old_policy"))},
+				{NetworkPolicy: &policy},
+			},
+		}
+		err := updateSafelyPolling(context.Background(), npReq, stub.update, stub.describe, stub.showByID)
+		require.NoError(t, err)
 	})
 }

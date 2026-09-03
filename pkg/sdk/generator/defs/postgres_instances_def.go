@@ -211,7 +211,7 @@ var postgresInstancesDef = g.NewInterface(
 	"*PostgresInstance", "error",
 ).WithCustomInterfaceMethod(
 	"AlterSafely",
-	"AlterSafely alters the instance and polls until it reaches READY state.\nThe caller should set a deadline on ctx via context.WithTimeout.\nImplemented in postgres_instances_ext.go.",
+	"AlterSafely alters the instance and waits until HasAnyRunningOperations is false.\nFor suspend/resume it then waits for the expected SHOW state. For NETWORK_POLICY (not surfaced in operations) it polls DESCRIBE until the property matches.\nThe caller should set a deadline on ctx via context.WithTimeout.\nImplemented in postgres_instances_ext.go.",
 	[]*g.MethodParameter{g.NewMethodParameter("request", "*AlterPostgresInstanceRequest")},
 	"error",
 )

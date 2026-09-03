@@ -140,6 +140,11 @@ func (p *PostgresInstanceDescribeOutputAssert) HasStorageIntegration(expected sd
 	return p
 }
 
+func (p *PostgresInstanceDescribeOutputAssert) HasHasAnyRunningOperations(expected bool) *PostgresInstanceDescribeOutputAssert {
+	p.BoolValueSet("has_any_running_operations", expected)
+	return p
+}
+
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
@@ -246,5 +251,15 @@ func (p *PostgresInstanceDescribeOutputAssert) HasNoPostgresSettings() *Postgres
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoStorageIntegration() *PostgresInstanceDescribeOutputAssert {
 	p.ValueNotSet("storage_integration")
+	return p
+}
+
+func (p *PostgresInstanceDescribeOutputAssert) HasNoHasAnyRunningOperations() *PostgresInstanceDescribeOutputAssert {
+	p.ValueNotSet("has_any_running_operations")
+	return p
+}
+
+func (p *PostgresInstanceDescribeOutputAssert) HasNoOperationErrors() *PostgresInstanceDescribeOutputAssert {
+	p.ValueNotSet("operation_errors")
 	return p
 }

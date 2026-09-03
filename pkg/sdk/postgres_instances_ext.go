@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 )
 
 func (r *CreatePostgresInstanceRequest) GetName() AccountObjectIdentifier {
@@ -41,6 +44,11 @@ type PostgresInstanceDetails struct {
 	NetworkPolicy                *AccountObjectIdentifier
 	PostgresSettings             *string
 	StorageIntegration           *AccountObjectIdentifier
+	// HasAnyRunningOperations is true when DESCRIBE operations JSON column contains any items,
+	// indicating some work (e.g. altering some field on the postgres instance) is running in the background on the server side.
+	HasAnyRunningOperations bool
+	// OperationErrors is the joined set of FAILED DESCRIBE operation records.
+	OperationErrors error
 }
 
 // ParsePostgresInstanceDetails parses []PostgresInstanceProperty into PostgresInstanceDetails
@@ -123,6 +131,42 @@ func ParsePostgresInstanceDetails(properties []PostgresInstanceProperty) (*Postg
 			if prop.Value != "" {
 				details.StorageIntegration = Pointer(NewAccountObjectIdentifier(prop.Value))
 			}
+		case "operations":
+			trimmed := strings.TrimSpace(prop.Value)
+			if trimmed != "" && !strings.EqualFold(trimmed, "none") {
+				var entries map[string]struct {
+					State string `json:"state"`
+					Error string `json:"error"`
+				}
+				if err := json.Unmarshal([]byte(trimmed), &entries); err != nil {
+					details.HasAnyRunningOperations = true
+				} else {
+					var failedNames []string
+					failedReasons := make(map[string]string)
+					for name, entry := range entries {
+						state := strings.ToUpper(strings.TrimSpace(entry.State))
+						switch state {
+						case "FAILED":
+							reason := entry.Error
+							if reason == "" {
+								reason = "no error detail reported"
+							}
+							failedNames = append(failedNames, name)
+							failedReasons[name] = reason
+						case string(PostgresInstanceStateReady):
+							// Leftover create snapshot; not running.
+						default:
+							details.HasAnyRunningOperations = true
+						}
+					}
+					slices.Sort(failedNames)
+					opErrs := make([]error, 0, len(failedNames))
+					for _, name := range failedNames {
+						opErrs = append(opErrs, fmt.Errorf("postgres instance %s operation failed: %s", name, failedReasons[name]))
+					}
+					details.OperationErrors = errors.Join(opErrs...)
+				}
+			}
 		}
 	}
 	return details, errors.Join(errs...)
@@ -141,8 +185,9 @@ func (v *postgresInstances) DescribeDetails(ctx context.Context, id AccountObjec
 }
 
 // CreateSafely creates a Postgres instance and polls ShowByID every 3 seconds until the
-// instance reaches READY state. The caller controls the wait budget via ctx — use
-// context.WithTimeout to set a deadline. Returns the ready instance or an error.
+// instance reaches READY state. CREATE actually changes SHOW state, unlike ALTER, so this
+// does not wait on HasAnyRunningOperations. The caller controls the wait budget via ctx —
+// use context.WithTimeout to set a deadline. Returns the ready instance or an error.
 func (v *postgresInstances) CreateSafely(ctx context.Context, req *CreatePostgresInstanceRequest) (*PostgresInstance, error) {
 	return createSafelyPolling(
 		ctx,
@@ -156,56 +201,94 @@ func createSafelyPolling(ctx context.Context, doCreate func() error, doShowByID 
 	if err := doCreate(); err != nil {
 		return nil, err
 	}
-	return pollUntilReady(ctx, doShowByID)
+	return pollUntilStateOneOf(ctx, doShowByID, PostgresInstanceStateReady)
 }
+
+const postgresInstancePollInterval = 3 * time.Second
 
 func (v *postgresInstances) AlterSafely(ctx context.Context, req *AlterPostgresInstanceRequest) error {
 	return updateSafelyPolling(
 		ctx,
+		req,
 		func() error { return v.Alter(ctx, req) },
+		func() (*PostgresInstanceDetails, error) { return v.DescribeDetails(ctx, req.GetName()) },
 		func() (*PostgresInstance, error) { return v.ShowByID(ctx, req.GetName()) },
 	)
 }
 
-func updateSafelyPolling(ctx context.Context, doUpdate func() error, doShowByID func() (*PostgresInstance, error)) error {
-	if _, err := pollUntilReady(ctx, doShowByID); err != nil {
+func updateSafelyPolling(
+	ctx context.Context,
+	req *AlterPostgresInstanceRequest,
+	doUpdate func() error,
+	doDescribe func() (*PostgresInstanceDetails, error),
+	doShowByID func() (*PostgresInstance, error),
+) error {
+	// SHOW state is not a completion signal: ALTER does not change state, and several
+	// async properties leave the instance READY for the whole change.
+	if _, err := pollUntilNoRunningOperations(ctx, doDescribe); err != nil {
 		return err
 	}
 	for {
 		if err := doUpdate(); err != nil {
 			if strings.Contains(err.Error(), ErrPostgresOperationMustBeComplete.Error()) {
-				if _, err := pollUntilReady(ctx, doShowByID); err != nil {
+				if _, err := pollUntilNoRunningOperations(ctx, doDescribe); err != nil {
 					return err
 				}
 				continue
 			}
 			return err
 		}
-		// ALTER accepted; wait for READY to ensure the backend has committed the
-		// change before the caller issues a read (Snowflake applies some mutations
-		// asynchronously even after returning success from ALTER).
-		_, err := pollUntilReady(ctx, doShowByID)
+		break
+	}
+	details, err := pollUntilNoRunningOperations(ctx, doDescribe)
+	if err != nil {
 		return err
 	}
+	if details != nil && details.OperationErrors != nil {
+		return details.OperationErrors
+	}
+	switch {
+	case req != nil && req.Suspend != nil && *req.Suspend:
+		_, err := pollUntilStateOneOf(ctx, doShowByID, PostgresInstanceStateSuspending, PostgresInstanceStateSuspended)
+		return err
+	case req != nil && req.Resume != nil && *req.Resume:
+		_, err := pollUntilStateOneOf(ctx, doShowByID, PostgresInstanceStateReady)
+		return err
+	}
+	return pollUntilNetworkPolicyMatches(ctx, req, doDescribe)
 }
 
-// pollUntilReady polls doShowByID every 3 seconds until the instance reaches READY state
-// or ctx is canceled. Context cancellation is respected between polls.
-func pollUntilReady(ctx context.Context, doShowByID func() (*PostgresInstance, error)) (*PostgresInstance, error) {
-	for {
-		instance, err := doShowByID()
-		if err != nil {
-			return nil, err
-		}
-		if instance.State == PostgresInstanceStateReady {
-			return instance, nil
-		}
-		select {
-		case <-ctx.Done():
-			return nil, fmt.Errorf("postgres instance did not reach READY state: %w", ctx.Err())
-		case <-time.After(3 * time.Second):
-		}
+func pollUntilNoRunningOperations(ctx context.Context, doDescribe func() (*PostgresInstanceDetails, error)) (*PostgresInstanceDetails, error) {
+	return util.PollUntil(ctx, postgresInstancePollInterval, doDescribe, func(d *PostgresInstanceDetails) bool {
+		return !d.HasAnyRunningOperations
+	}, "postgres instance still has running operations")
+}
+
+func pollUntilNetworkPolicyMatches(ctx context.Context, req *AlterPostgresInstanceRequest, doDescribe func() (*PostgresInstanceDetails, error)) error {
+	var want string
+	switch {
+	case req.Set != nil && req.Set.NetworkPolicy != nil:
+		want = req.Set.NetworkPolicy.Name()
+	case req.Unset != nil && req.Unset.NetworkPolicy != nil && *req.Unset.NetworkPolicy:
+		want = ""
+	default:
+		return nil
 	}
+
+	_, err := util.PollUntil(ctx, postgresInstancePollInterval, doDescribe, func(d *PostgresInstanceDetails) bool {
+		got := ""
+		if d.NetworkPolicy != nil && !strings.EqualFold(d.NetworkPolicy.Name(), "None") {
+			got = d.NetworkPolicy.Name()
+		}
+		return strings.EqualFold(got, want)
+	}, "postgres instance network_policy did not converge")
+	return err
+}
+
+func pollUntilStateOneOf(ctx context.Context, doShowByID func() (*PostgresInstance, error), states ...PostgresInstanceState) (*PostgresInstance, error) {
+	return util.PollUntil(ctx, postgresInstancePollInterval, doShowByID, func(i *PostgresInstance) bool {
+		return slices.Contains(states, i.State)
+	}, "postgres instance did not reach expected state")
 }
 
 // NormalizePostgresSettings parses a postgres_settings JSON string into a canonical
