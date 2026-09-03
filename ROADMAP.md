@@ -5,6 +5,52 @@ We usually create new entries in quarterly cycles, so expect an entry in the fir
 We may add more entries when we have some bigger announcements.
 These should be treated as projections and not strict commitments. Keep in mind that the plan can be subject to change.
 
+## (2026-08-31) Roadmap update
+
+Recent efforts concentrated on:
+
+* Promoting catalog integrations, stages, storage integrations, session policies, authentication policies, password policies, and external volumes to stable.
+* Adding [Iceberg table](https://docs.snowflake.com/en/user-guide/tables-iceberg) resources and a data source covering Snowflake-managed tables and tables from REST catalogs, AWS Glue, Iceberg files, and Delta files.
+* Adding [storage lifecycle policy](https://docs.snowflake.com/en/user-guide/storage-management/storage-lifecycle-policies) resources, table attachments, and a data source.
+* Reworking API integrations and file formats into dedicated per-type resources, deprecating `snowflake_api_integration` and `snowflake_file_format`, and adding a `snowflake_api_integrations` data source.
+* Adding support for [MCP servers](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents-mcp), [hybrid tables](https://docs.snowflake.com/en/sql-reference/sql/create-hybrid-table), [interactive warehouses](https://docs.snowflake.com/en/user-guide/warehouses-interactive), and [external access integrations](https://docs.snowflake.com/en/sql-reference/sql/create-external-access-integration).
+
+In the upcoming months, our focus will be on the following topics:
+
+* [Feature gap](#feature-gap)
+* [Reliability and development improvements](#reliability-and-development-improvements)
+
+If you have any questions, please open an issue or comment on the roadmap discussion. Enterprise customers can also contact their Snowflake account team.
+
+### Feature gap
+
+We continue closing the most impactful feature gaps, guided by user demand. The list below reflects the main feature-related efforts planned for this quarter. New support and preview rework are also how we prove the generation workflow described below.
+
+We plan to:
+
+* Add new resources and data sources:
+  * Backup policies and backup sets — add support for managing [backup policies](https://docs.snowflake.com/en/sql-reference/sql/create-backup-policy) and [backup sets](https://docs.snowflake.com/en/sql-reference/sql/create-backup-set).
+  * Notebook projects — add support for [notebook projects](https://docs.snowflake.com/en/sql-reference/sql/create-notebook-project).
+  * Projection policies — add support for [projection policies](https://docs.snowflake.com/en/sql-reference/sql/create-projection-policy).
+  * Replication groups — add support for [replication groups](https://docs.snowflake.com/en/sql-reference/sql/create-replication-group).
+* Stabilize preview resources and data sources:
+  * Alerts — rework `snowflake_alert` ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-alert)).
+  * Pipes — rework `snowflake_pipe` ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-pipe)).
+  * Shares — rework `snowflake_share` ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-share)).
+  * Tables — rework `snowflake_table` ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-table)).
+* Enhance existing resources:
+  * Data type handling, including VECTOR support in masking policies and row access policies.
+
+### Reliability and development improvements
+
+This quarter we are investing in generating more of the provider from a single object definition, so we can add and maintain Snowflake objects faster and spend less effort on one-off implementation:
+
+* **Single object definition** — introduce a provider-side entity definition that drives the SDK, Terraform schemas, resource and data source logic, and test helpers. Generated files will be verified in CI; custom behavior stays in extension files.
+* **Convention alignment** — clean up data-type handling, object-level parameters, show/describe output schemas, imports, and resource/data source flows so generation does not reproduce today's inconsistencies.
+* **SDK generator coverage** — migrate remaining hand-written SDK objects onto the generator, including tables, so later provider generation starts from a consistent SDK.
+* **Safer grants and object identifiers** — make object types in grants and tag associations forward-compatible when Snowflake adds new types, and continue expanding in-place hierarchy rename handling.
+* **Plugin Framework research** — continue evaluating Terraform Plugin Framework, including a limited production trial if a seamless replacement is possible.
+
 ## (2026-06-09) Roadmap update
 
 Recent efforts concentrated on:
