@@ -39,3 +39,36 @@ func (o *OpenflowRuntimeDetailsAssert) HasNodeTypeTierNotEmpty() *OpenflowRuntim
 	})
 	return o
 }
+
+func (o *OpenflowRuntimeDetailsAssert) HasDisplayNameNotEmpty() *OpenflowRuntimeDetailsAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OpenflowRuntimeDetails) error {
+		t.Helper()
+		if o.DisplayName == nil || *o.DisplayName == "" {
+			return fmt.Errorf("expected display name to be not empty")
+		}
+		return nil
+	})
+	return o
+}
+
+func (o *OpenflowRuntimeDetailsAssert) HasCommentNotEmpty() *OpenflowRuntimeDetailsAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OpenflowRuntimeDetails) error {
+		t.Helper()
+		if o.Comment == nil || *o.Comment == "" {
+			return fmt.Errorf("expected comment to be not empty")
+		}
+		return nil
+	})
+	return o
+}
+
+func (o *OpenflowRuntimeDetailsAssert) HasExternalAccessIntegrationsNotEmpty() *OpenflowRuntimeDetailsAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OpenflowRuntimeDetails) error {
+		t.Helper()
+		if len(o.ExternalAccessIntegrations) == 0 {
+			return fmt.Errorf("expected external access integrations to be not empty")
+		}
+		return nil
+	})
+	return o
+}

@@ -18,8 +18,8 @@ const (
 	// OpenflowDeploymentTerminateTimeout bounds the wait for TERMINATE to reach DELETED. Terminating a
 	// deployment tears down infrastructure asynchronously and can take several minutes.
 	OpenflowDeploymentTerminateTimeout = 20 * time.Minute
-	// OpenflowDeploymentActiveTimeout bounds the wait for an SPCS deployment to reach ACTIVE, which takes
-	// several minutes.
+	// OpenflowDeploymentActiveTimeout bounds the wait for a Snowflake-managed deployment to reach ACTIVE,
+	// which takes several minutes.
 	OpenflowDeploymentActiveTimeout = 30 * time.Minute
 )
 
@@ -40,7 +40,7 @@ func (c *OpenflowDeploymentClient) client() sdk.OpenflowDeployments {
 }
 
 // CreateByoc creates a BYOC deployment, which settles at INACTIVE without waiting on infrastructure.
-// Creating an SPCS deployment starts the real provisioning and takes far longer.
+// Creating a Snowflake-managed deployment provisions it for real and takes far longer.
 func (c *OpenflowDeploymentClient) CreateByoc(t *testing.T) (*sdk.OpenflowDeployment, func()) {
 	t.Helper()
 	id := c.ids.RandomAccountObjectIdentifier()
@@ -50,7 +50,7 @@ func (c *OpenflowDeploymentClient) CreateByoc(t *testing.T) (*sdk.OpenflowDeploy
 
 // CreateWithRequest creates a deployment and waits for it to settle, since Snowflake refuses ALTER SET,
 // TERMINATE and DROP while one is CREATING. The returned deployment reflects its settled status: ACTIVE for
-// SPCS, INACTIVE for BYOC.
+// Snowflake-managed, INACTIVE for BYOC.
 func (c *OpenflowDeploymentClient) CreateWithRequest(t *testing.T, req *sdk.CreateOpenflowDeploymentRequest) (*sdk.OpenflowDeployment, func()) {
 	t.Helper()
 	ctx := context.Background()
@@ -132,25 +132,15 @@ func (c *OpenflowDeploymentClient) ShowParameters(t *testing.T, id sdk.AccountOb
 	return parameters
 }
 
-// ActiveDeploymentForRuntimes returns the deployment named by TEST_SF_TF_OPENFLOW_DEPLOYMENT, which the
-// runtime and connector tests create their objects in. Provisioning one takes minutes, so an existing
-// deployment is reused and never dropped. The name is required rather than discovered.
+// ActiveDeploymentForRuntimes returns the deployment named by TEST_SF_TF_OPENFLOW_DEPLOYMENT. That it
+// exists and is ACTIVE is a suite prerequisite, checked once by
+// TestClient.EnsureOpenflowDeploymentIsProvisioned rather than here.
 func (c *OpenflowDeploymentClient) ActiveDeploymentForRuntimes(t *testing.T) sdk.AccountObjectIdentifier {
 	t.Helper()
-	ctx := context.Background()
 
 	name := os.Getenv(string(testenvs.OpenflowDeployment))
-	require.NotEmptyf(t, name, "%s must name an ACTIVE Openflow deployment. Provision one with "+
-		"`CREATE OPENFLOW DEPLOYMENT <name> DEPLOYMENT_TYPE = 'SNOWFLAKE'` and wait for it to reach ACTIVE.",
-		testenvs.OpenflowDeployment)
-
-	id := sdk.NewAccountObjectIdentifier(name)
-	deployment, err := c.client().ShowByID(ctx, id)
-	require.NoErrorf(t, err, "deployment %s named by %s was not found", name, testenvs.OpenflowDeployment)
-	require.Equalf(t, sdk.OpenflowDeploymentStatusActive, deployment.Status,
-		"deployment %s named by %s is %s, but runtimes can only be created in an ACTIVE deployment",
-		name, testenvs.OpenflowDeployment, deployment.Status)
-	return id
+	require.NotEmptyf(t, name, "%s must name an ACTIVE Openflow deployment", testenvs.OpenflowDeployment)
+	return sdk.NewAccountObjectIdentifier(name)
 }
 
 // WaitForStatus waits for the given status, bailing out on a terminal failure status rather than holding
@@ -178,8 +168,8 @@ func (c *OpenflowDeploymentClient) WaitForStatus(t *testing.T, id sdk.AccountObj
 }
 
 // WaitUntilSettled waits for a deployment to stop coming up, whether it lands on ACTIVE, INACTIVE or
-// CREATE_FAILED. Only settled deployments accept ALTER SET, TERMINATE or DROP. SPCS goes
-// CREATING -> PROVISIONING -> ACTIVE, so PROVISIONING is transient too; BYOC goes straight to INACTIVE.
+// CREATE_FAILED. Only settled deployments accept ALTER SET, TERMINATE or DROP. A Snowflake-managed deployment
+// goes CREATING, PROVISIONING, ACTIVE, so PROVISIONING is transient too; BYOC goes straight to INACTIVE.
 func (c *OpenflowDeploymentClient) WaitUntilSettled(t *testing.T, id sdk.AccountObjectIdentifier, timeout time.Duration) {
 	t.Helper()
 	ctx := context.Background()

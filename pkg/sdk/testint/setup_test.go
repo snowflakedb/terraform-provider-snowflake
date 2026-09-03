@@ -235,16 +235,6 @@ func (itc *integrationTestContext) initialize() error {
 			return err
 		}
 
-		if os.Getenv(string(testenvs.TestOpenflow)) != "" {
-			err = errors.Join(
-				testClientHelper().EnsureOpenflowPostgresCdcDefinitionExists(itc.ctx),
-				secondaryTestClientHelper().EnsureOpenflowPostgresCdcDefinitionExists(itc.secondaryCtx),
-			)
-			if err != nil {
-				return err
-			}
-		}
-
 		// TODO(SNOW-1842271): Adjust test setup to work properly with Accountadmin role for object tests and Orgadmin for account tests
 		if os.Getenv(string(testenvs.TestAccountCreate)) == "" {
 			err = testClientHelper().EnsureEssentialRolesExist(itc.ctx)
@@ -262,6 +252,19 @@ func (itc *integrationTestContext) initialize() error {
 			return err
 		}
 		err = secondaryTestClientHelper().EnsureImageRepositoryExist(itc.secondaryCtx)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Openflow builds on a deployment and a runtime provisioned out of band, so these assert the account is
+	// set up rather than creating anything. No Openflow test uses the secondary account.
+	if os.Getenv(string(testenvs.TestOpenflow)) != "" {
+		err = errors.Join(
+			testClientHelper().EnsureOpenflowPostgresCdcDefinitionExists(itc.ctx),
+			testClientHelper().EnsureOpenflowDeploymentIsProvisioned(itc.ctx),
+			testClientHelper().EnsureOpenflowRuntimeIsProvisioned(itc.ctx),
+		)
 		if err != nil {
 			return err
 		}

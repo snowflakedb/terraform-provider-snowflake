@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
@@ -93,6 +94,44 @@ func (c *TestClient) EnsureOpenflowPostgresCdcDefinitionExists(ctx context.Conte
 	}
 	if len(definitions) == 0 {
 		return fmt.Errorf("connector definition %s is not available on this account", PostgresCdcDefinitionName)
+	}
+	return nil
+}
+
+// EnsureOpenflowDeploymentIsProvisioned checks the deployment named by TEST_SF_TF_OPENFLOW_DEPLOYMENT exists
+// and is ACTIVE, which runtimes require of the deployment they are created in.
+func (c *TestClient) EnsureOpenflowDeploymentIsProvisioned(ctx context.Context) error {
+	name := os.Getenv(string(testenvs.OpenflowDeployment))
+	log.Printf("[DEBUG] Making sure the Openflow deployment named by %s is provisioned", testenvs.OpenflowDeployment)
+	if name == "" {
+		return fmt.Errorf("%s must name an ACTIVE Openflow deployment; see the comment on testenvs.OpenflowDeployment", testenvs.OpenflowDeployment)
+	}
+
+	deployment, err := c.context.client.OpenflowDeployments.ShowByID(ctx, sdk.NewAccountObjectIdentifier(name))
+	if err != nil {
+		return fmt.Errorf("checking Openflow deployment %s resulted in error: %w", name, err)
+	}
+	if deployment.Status != sdk.OpenflowDeploymentStatusActive {
+		return fmt.Errorf("openflow deployment %s has status %s, expected %s", name, deployment.Status, sdk.OpenflowDeploymentStatusActive)
+	}
+	return nil
+}
+
+// EnsureOpenflowRuntimeIsProvisioned checks the runtime named by TEST_SF_TF_OPENFLOW_RUNTIME exists. See
+// testenvs.OpenflowRuntime for the statements that provision it.
+func (c *TestClient) EnsureOpenflowRuntimeIsProvisioned(ctx context.Context) error {
+	raw := os.Getenv(string(testenvs.OpenflowRuntime))
+	log.Printf("[DEBUG] Making sure the Openflow runtime named by %s is provisioned", testenvs.OpenflowRuntime)
+	if raw == "" {
+		return fmt.Errorf("%s must name an ACTIVE Openflow runtime by fully qualified name; see the comment on testenvs.OpenflowRuntime", testenvs.OpenflowRuntime)
+	}
+
+	id, err := sdk.ParseSchemaObjectIdentifier(raw)
+	if err != nil {
+		return fmt.Errorf("%s must be a fully qualified name of the form <database>.<schema>.<runtime>, got %q: %w", testenvs.OpenflowRuntime, raw, err)
+	}
+	if _, err := c.context.client.OpenflowRuntimes.ShowByID(ctx, id); err != nil {
+		return fmt.Errorf("checking Openflow runtime %s resulted in error: %w", raw, err)
 	}
 	return nil
 }

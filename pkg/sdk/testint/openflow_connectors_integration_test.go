@@ -15,8 +15,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Connectors require an ACTIVE runtime, so these tests share one. They use the OPENFLOW_POSTGRES_CDC
-// definition. Its max_node_count is 1, so the runtime stays at one node.
+// Connectors require an ACTIVE runtime, which none of these subtests mutate, so they use the
+// pre-provisioned one named by TEST_SF_TF_OPENFLOW_RUNTIME rather than paying four to five minutes to create
+// one. They use the OPENFLOW_POSTGRES_CDC definition. Its max_node_count is 1, so the runtime stays at one
+// node.
 //
 // A new connector is a draft and settles on STOPPED, not RUNNING.
 func TestInt_OpenflowConnectors(t *testing.T) {
@@ -25,14 +27,10 @@ func TestInt_OpenflowConnectors(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	deploymentId := testClientHelper().OpenflowDeployment.ActiveDeploymentForRuntimes(t)
 	definition := testClientHelper().OpenflowConnectorDefinition.ForTesting(t)
 
 	currentRole := testClientHelper().Context.CurrentRole(t)
-	runtime, runtimeCleanup := testClientHelper().OpenflowRuntime.Create(t, deploymentId, currentRole)
-	t.Cleanup(runtimeCleanup)
-	runtimeId := runtime.ID()
-	testClientHelper().OpenflowRuntime.WaitForStatus(t, runtimeId, sdk.OpenflowRuntimeStatusActive, helpers.OpenflowRuntimeActiveTimeout)
+	runtimeId := testClientHelper().OpenflowRuntime.ActiveRuntime(t)
 
 	t.Run("create: from definition", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(runtimeId.SchemaId())
@@ -286,7 +284,10 @@ func TestInt_OpenflowConnectors(t *testing.T) {
 		connector, cleanup := testClientHelper().OpenflowConnector.CreateFromDefinition(t, runtimeId, definition.Name)
 		t.Cleanup(cleanup)
 
+		// IN ACCOUNT, because a connector lives in its runtime's schema, which for the pre-provisioned runtime
+		// is not the session's, and an unscoped SHOW only sees the session's.
 		connectors, err := client.OpenflowConnectors.Show(ctx, sdk.NewShowOpenflowConnectorRequest().
+			WithIn(sdk.In{Account: sdk.Bool(true)}).
 			WithLike(sdk.Like{Pattern: sdk.String(connector.Name)}))
 		require.NoError(t, err)
 		require.Len(t, connectors, 1)
@@ -332,19 +333,20 @@ func TestInt_OpenflowConnectors(t *testing.T) {
 		require.Len(t, connectors, 1)
 		assert.Equal(t, connector.Name, connectors[0].Name)
 
-		// LIMIT is asserted separately, account-wide, and needs more than one connector to be observable.
+		// LIMIT is asserted separately, account-wide. Creating a second connector to guarantee the account holds
+		// more than one costs minutes, so this compares against whatever an unlimited SHOW returns instead of
+		// skipping.
 		all, err := client.OpenflowConnectors.Show(ctx, sdk.NewShowOpenflowConnectorRequest().
 			WithIn(sdk.In{Account: sdk.Bool(true)}))
 		require.NoError(t, err)
-		if len(all) < 2 {
-			t.Skipf("LIMIT cannot be observed with %d connector(s) on the account", len(all))
-		}
+		require.NotEmpty(t, all)
 
 		limited, err := client.OpenflowConnectors.Show(ctx, sdk.NewShowOpenflowConnectorRequest().
 			WithIn(sdk.In{Account: sdk.Bool(true)}).
 			WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}))
 		require.NoError(t, err)
-		assert.Len(t, limited, 1, "LIMIT 1 should return exactly one row where an unlimited SHOW returns %d", len(all))
+		assert.Len(t, limited, 1)
+		assert.LessOrEqual(t, len(limited), len(all), "LIMIT 1 returned more rows than an unlimited SHOW")
 	})
 
 	// SHOW VERSIONS has its own row shape, so every field is asserted. A new connector has one version,

@@ -3,10 +3,12 @@ package helpers
 import (
 	"context"
 	"fmt"
+	"os"
 	"slices"
 	"testing"
 	"time"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
@@ -36,6 +38,21 @@ func NewOpenflowRuntimeClient(context *TestClientContext, idsGenerator *IdsGener
 
 func (c *OpenflowRuntimeClient) client() sdk.OpenflowRuntimes {
 	return c.context.client.OpenflowRuntimes
+}
+
+// ActiveRuntime returns the runtime named by TEST_SF_TF_OPENFLOW_RUNTIME, for the subtests that only need a
+// runtime to exist. Creating one takes four to five minutes, so it is reused and never dropped, like the
+// deployment it lives in. Its properties are a suite prerequisite, checked once by
+// TestClient.EnsureOpenflowRuntimeIsProvisioned rather than here.
+func (c *OpenflowRuntimeClient) ActiveRuntime(t *testing.T) sdk.SchemaObjectIdentifier {
+	t.Helper()
+
+	raw := os.Getenv(string(testenvs.OpenflowRuntime))
+	require.NotEmptyf(t, raw, "%s must name an ACTIVE Openflow runtime by fully qualified name", testenvs.OpenflowRuntime)
+
+	id, err := sdk.ParseSchemaObjectIdentifier(raw)
+	require.NoErrorf(t, err, "%s must be a fully qualified name, got %q", testenvs.OpenflowRuntime, raw)
+	return id
 }
 
 // Create makes a minimal runtime in the given deployment. EXECUTE_AS_ROLE, NODE_TYPE, MIN_NODES and

@@ -3,7 +3,6 @@
 package testint
 
 import (
-	"sync"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
@@ -18,7 +17,8 @@ import (
 )
 
 // Runtimes require an ACTIVE deployment, named by TEST_SF_TF_OPENFLOW_DEPLOYMENT. A runtime takes four to
-// five minutes to create, so subtests share one unless they mutate it.
+// five minutes to create, so the read-only subtests use the pre-provisioned one named by
+// TEST_SF_TF_OPENFLOW_RUNTIME and only the mutating ones create their own.
 func TestInt_OpenflowRuntimes(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestOpenflow)
 
@@ -30,33 +30,7 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 	currentRole := testClientHelper().Context.CurrentRole(t)
 	executeAsRoleId := currentRole
 
-	// Read-only fixture for the subtests that only need a runtime to exist: creating one takes four to five
-	// minutes, so describe and the show cases share it rather than each paying that. Anything that mutates a
-	// runtime creates its own. Teardown goes against the parent t so the closure outlives the subtest that
-	// triggered it.
-	parentT := t
-	var (
-		sharedRuntimeOnce sync.Once
-		sharedRuntimeId   sdk.SchemaObjectIdentifier
-		sharedRuntimeErr  error
-	)
-	sharedRuntime := func(t *testing.T) sdk.SchemaObjectIdentifier {
-		t.Helper()
-		sharedRuntimeOnce.Do(func() {
-			// Asserted against the calling t: FailNow on a t this goroutine does not own exits silently.
-			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-			if err := client.OpenflowRuntimes.Create(ctx, sdk.NewCreateOpenflowRuntimeRequest(id, deploymentId, sdk.OpenflowRuntimeNodeTypeSmall, 1, 1, executeAsRoleId)); err != nil {
-				sharedRuntimeErr = err
-				return
-			}
-			parentT.Cleanup(testClientHelper().OpenflowRuntime.DropFunc(parentT, id))
-			testClientHelper().OpenflowRuntime.WaitForStatus(t, id, sdk.OpenflowRuntimeStatusActive, helpers.OpenflowRuntimeActiveTimeout)
-			sharedRuntimeId = id
-		})
-		require.NoError(t, sharedRuntimeErr, "creating the shared runtime failed")
-		require.NotEmpty(t, sharedRuntimeId.Name(), "the shared runtime is unavailable because creating it failed")
-		return sharedRuntimeId
-	}
+	existingRuntimeId := testClientHelper().OpenflowRuntime.ActiveRuntime(t)
 
 	t.Run("create: basic", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
@@ -152,9 +126,8 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 		require.Error(t, err)
 	})
 
-	// Drives every field SET and UNSET accept. It runs on a runtime of its own rather than the shared one,
-	// because changing node counts and the role would break the later subtests that assert the values the
-	// shared runtime is created with.
+	// Drives every field SET and UNSET accept. It creates its own runtime, because changing node counts and
+	// the role would break the subtests that assert the pre-provisioned runtime's values.
 	t.Run("alter: set and unset", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.OpenflowRuntimes.Create(ctx, sdk.NewCreateOpenflowRuntimeRequest(id, deploymentId, sdk.OpenflowRuntimeNodeTypeSmall, 1, 1, executeAsRoleId))
@@ -247,7 +220,7 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 		assertThatObject(t, objectassert.OpenflowRuntime(t, newId).HasName(newId.Name()))
 	})
 
-	// Its own runtime, since suspending mutates it and the shared one is read-only.
+	// Its own runtime, since suspending mutates it and the pre-provisioned one must stay as provisioned.
 	t.Run("alter: suspend and resume", func(t *testing.T) {
 		runtime, cleanup := testClientHelper().OpenflowRuntime.Create(t, deploymentId, executeAsRoleId)
 		t.Cleanup(cleanup)
@@ -264,13 +237,11 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 	})
 
 	t.Run("describe", func(t *testing.T) {
-		id := sharedRuntime(t)
+		id := existingRuntimeId
 
 		// DESCRIBE returns server_url and node_type_tier, which SHOW does not, and omits database_name,
-		// schema_name, created_on and updated_on, which SHOW does return. Those two are Snowflake-assigned, so
-		// they are asserted as populated rather than pinned; an unmapped column would leave them nil.
-		//
-		// The shared runtime is created without a display name, comment or integrations, and nothing mutates it.
+		// schema_name, created_on and updated_on. The optional columns are asserted as populated rather than
+		// pinned to the fixture's values; "create: complete" pins them on a runtime it owns.
 		assertThatObject(
 			t, objectassert.OpenflowRuntimeDetails(t, id).
 				HasName(id.Name()).
@@ -279,13 +250,13 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 				HasMinNodes(1).
 				HasMaxNodes(1).
 				HasNodeType(sdk.OpenflowRuntimeNodeTypeSmall).
-				HasNoDisplayName().
-				HasNoExternalAccessIntegrations().
+				HasDisplayNameNotEmpty().
+				HasExternalAccessIntegrationsNotEmpty().
 				HasInitiallySuspended(false).
 				HasExecuteAsRole(executeAsRoleId.Name()).
 				HasKeyNotEmpty().
 				HasOwner(currentRole.Name()).
-				HasNoComment().
+				HasCommentNotEmpty().
 				HasServerUrlNotEmpty().
 				HasNodeTypeTierNotEmpty().
 				// Id is threaded in by the caller, since DESCRIBE returns neither database_name nor schema_name.
@@ -294,9 +265,12 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 	})
 
 	t.Run("show: with like", func(t *testing.T) {
-		id := sharedRuntime(t)
+		id := existingRuntimeId
 
+		// IN ACCOUNT, because the pre-provisioned runtime lives in its own database and schema rather than the
+		// session's, and an unscoped SHOW only sees the session's.
 		runtimes, err := client.OpenflowRuntimes.Show(ctx, sdk.NewShowOpenflowRuntimeRequest().
+			WithIn(sdk.In{Account: sdk.Bool(true)}).
 			WithLike(sdk.Like{Pattern: sdk.String(id.Name())}))
 		require.NoError(t, err)
 		require.Len(t, runtimes, 1)
@@ -304,7 +278,7 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 	})
 
 	t.Run("show: in account", func(t *testing.T) {
-		id := sharedRuntime(t)
+		id := existingRuntimeId
 
 		// Without IN ACCOUNT, SHOW is scoped to the session's database and schema.
 		runtimes, err := client.OpenflowRuntimes.Show(ctx, sdk.NewShowOpenflowRuntimeRequest().
@@ -314,7 +288,7 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 	})
 
 	t.Run("show: in database and in schema", func(t *testing.T) {
-		id := sharedRuntime(t)
+		id := existingRuntimeId
 
 		inDatabase, err := client.OpenflowRuntimes.Show(ctx, sdk.NewShowOpenflowRuntimeRequest().
 			WithIn(sdk.In{Database: id.DatabaseId()}))
@@ -330,7 +304,7 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 	// Both clauses together, in the order Snowflake requires. STARTS WITH on a unique name returns one row on
 	// its own, so LIMIT is covered by "show: with limit" below.
 	t.Run("show: with starts with and limit", func(t *testing.T) {
-		id := sharedRuntime(t)
+		id := existingRuntimeId
 
 		runtimes, err := client.OpenflowRuntimes.Show(ctx, sdk.NewShowOpenflowRuntimeRequest().
 			WithIn(sdk.In{Account: sdk.Bool(true)}).
@@ -344,8 +318,6 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 	// Asserts LIMIT actually limits. Creating a second runtime to guarantee the account holds more than one
 	// costs minutes, so this compares against whatever an unlimited SHOW returns instead of skipping.
 	t.Run("show: with limit", func(t *testing.T) {
-		sharedRuntime(t)
-
 		all, err := client.OpenflowRuntimes.Show(ctx, sdk.NewShowOpenflowRuntimeRequest().
 			WithIn(sdk.In{Account: sdk.Bool(true)}))
 		require.NoError(t, err)
@@ -360,8 +332,8 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 	})
 
 	// ADD and REMOVE edit the list in place, where SET replaces it wholesale. The list runs
-	// none -> one -> two -> one -> none, so later subtests find the shared runtime as they expect.
-	// Its own runtime, since attaching integrations mutates it and the shared one is read-only.
+	// none -> one -> two -> one -> none, so both directions are covered from and back to empty. It creates its
+	// own runtime, since attaching integrations mutates it and the pre-provisioned one must stay as provisioned.
 	t.Run("alter: add and remove external access integrations", func(t *testing.T) {
 		runtime, cleanup := testClientHelper().OpenflowRuntime.Create(t, deploymentId, executeAsRoleId)
 		t.Cleanup(cleanup)

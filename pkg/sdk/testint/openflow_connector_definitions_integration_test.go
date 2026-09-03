@@ -24,9 +24,7 @@ func TestInt_OpenflowConnectorDefinitions(t *testing.T) {
 	t.Run("show", func(t *testing.T) {
 		definitions, err := client.OpenflowConnectorDefinitions.Show(ctx, sdk.NewShowOpenflowConnectorDefinitionRequest())
 		require.NoError(t, err)
-		if len(definitions) == 0 {
-			t.Skip("no Openflow connector definitions are available on this account")
-		}
+		require.NotEmpty(t, definitions)
 
 		// NotEmpty rather than HasName(d.Name), which would compare a field against itself and pass even if
 		// the column never mapped. Every field below is populated on every definition, max_node_count and
@@ -56,9 +54,7 @@ func TestInt_OpenflowConnectorDefinitions(t *testing.T) {
 	t.Run("show: with like", func(t *testing.T) {
 		definitions, err := client.OpenflowConnectorDefinitions.Show(ctx, sdk.NewShowOpenflowConnectorDefinitionRequest())
 		require.NoError(t, err)
-		if len(definitions) == 0 {
-			t.Skip("no Openflow connector definitions are available on this account")
-		}
+		require.NotEmpty(t, definitions)
 		expected := definitions[0]
 
 		filtered, err := client.OpenflowConnectorDefinitions.Show(ctx, sdk.NewShowOpenflowConnectorDefinitionRequest().
@@ -71,14 +67,13 @@ func TestInt_OpenflowConnectorDefinitions(t *testing.T) {
 	t.Run("show: with limit", func(t *testing.T) {
 		definitions, err := client.OpenflowConnectorDefinitions.Show(ctx, sdk.NewShowOpenflowConnectorDefinitionRequest())
 		require.NoError(t, err)
-		if len(definitions) < 2 {
-			t.Skip("this account exposes fewer than two Openflow connector definitions")
-		}
+		require.NotEmpty(t, definitions)
 
 		limited, err := client.OpenflowConnectorDefinitions.Show(ctx, sdk.NewShowOpenflowConnectorDefinitionRequest().
 			WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}))
 		require.NoError(t, err)
 		assert.Len(t, limited, 1)
+		assert.LessOrEqual(t, len(limited), len(definitions), "LIMIT 1 returned more rows than an unlimited SHOW")
 	})
 
 	// Snowflake accepts STARTS WITH here but does not filter on it. LIKE and LIMIT filter on the same command
@@ -87,9 +82,7 @@ func TestInt_OpenflowConnectorDefinitions(t *testing.T) {
 	t.Run("show: with starts with is accepted but not applied", func(t *testing.T) {
 		all, err := client.OpenflowConnectorDefinitions.Show(ctx, sdk.NewShowOpenflowConnectorDefinitionRequest())
 		require.NoError(t, err)
-		if len(all) == 0 {
-			t.Skip("no Openflow connector definitions are available on this account")
-		}
+		require.NotEmpty(t, all)
 
 		unmatched, err := client.OpenflowConnectorDefinitions.Show(ctx, sdk.NewShowOpenflowConnectorDefinitionRequest().
 			WithStartsWith("ZZ_NO_DEFINITION_STARTS_WITH_THIS"))

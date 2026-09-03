@@ -56,13 +56,41 @@ const (
 	OauthWithClientCredentialsClientSecret env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_CLIENT_SECRET"
 	OauthWithClientCredentialsIssuer       env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_ISSUER"
 
-	// OpenflowDeployment names a pre-provisioned, ACTIVE SNOWFLAKE (SPCS) Openflow deployment for the
+	// OpenflowDeployment names a pre-provisioned, ACTIVE SNOWFLAKE Openflow deployment for the
 	// runtime and connector tests to build on. Those objects can only be created inside a deployment that
 	// has reached ACTIVE, and provisioning one takes minutes - so the tests reuse an existing deployment
 	// rather than creating and tearing one down per run. The name is required and the run fails without
 	// it: an account can hold several ACTIVE deployments belonging to other people, and picking one
 	// automatically would create and destroy objects inside it.
 	OpenflowDeployment env = envPrefix + "OPENFLOW_DEPLOYMENT"
+
+	// OpenflowRuntime names a pre-provisioned, ACTIVE Openflow runtime by fully qualified name, for the
+	// subtests that only need a runtime to exist. Creating one takes four to five minutes, so it is
+	// provisioned out of band like the deployment above rather than per run.
+	//
+	// It carries a display name, comment and one integration so that the subtests reading it see every
+	// optional column populated. Provision it with:
+	//
+	//	CREATE DATABASE IF NOT EXISTS TF_PROVIDER_TESTS;
+	//	CREATE SCHEMA IF NOT EXISTS TF_PROVIDER_TESTS.OPENFLOW;
+	//
+	//	-- The runtime needs an integration attached so external_access_integrations is non-empty. An egress
+	//	-- rule with no values reaches nothing, which is all the tests require of it.
+	//	CREATE NETWORK RULE TF_PROVIDER_TESTS.OPENFLOW.TF_PROVIDER_TESTS_OPENFLOW_RULE
+	//	  TYPE = HOST_PORT MODE = EGRESS VALUE_LIST = ();
+	//	CREATE EXTERNAL ACCESS INTEGRATION TF_PROVIDER_TESTS_OPENFLOW_EAI
+	//	  ALLOWED_NETWORK_RULES = (TF_PROVIDER_TESTS.OPENFLOW.TF_PROVIDER_TESTS_OPENFLOW_RULE) ENABLED = TRUE;
+	//
+	//	CREATE OPENFLOW RUNTIME TF_PROVIDER_TESTS.OPENFLOW.TF_PROVIDER_TESTS_RUNTIME
+	//	  IN DEPLOYMENT <the deployment named by TEST_SF_TF_OPENFLOW_DEPLOYMENT>
+	//	  EXECUTE_AS_ROLE = <the role the tests connect as>
+	//	  NODE_TYPE = 'SMALL' MIN_NODES = 1 MAX_NODES = 1
+	//	  EXTERNAL_ACCESS_INTEGRATIONS = (TF_PROVIDER_TESTS_OPENFLOW_EAI)
+	//	  DISPLAY_NAME = 'TF Provider Tests Runtime'
+	//	  COMMENT = 'Shared fixture for the Terraform provider Openflow integration tests';
+	//
+	// The execute-as role must hold usage on the integration, which it does when the same role creates both.
+	OpenflowRuntime env = envPrefix + "OPENFLOW_RUNTIME"
 
 	OpenCatalogAccountLocator             env = envPrefix + "OPEN_CATALOG_ACCOUNT_LOCATOR"
 	OpenCatalogPrimaryOAuthClientId       env = envPrefix + "OPEN_CATALOG_PRIMARY_OAUTH_CLIENT_ID"
