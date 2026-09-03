@@ -7,6 +7,7 @@ import (
 	internalprovider "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
@@ -89,6 +90,7 @@ func acceptanceTestsProvider() *schema.Provider {
 	// family is in place.
 	p.ResourcesMap["snowflake_openflow_deployment_byoc"] = resources.OpenflowDeploymentByoc()
 	p.ResourcesMap["snowflake_openflow_deployment_snowflake_managed"] = resources.OpenflowDeploymentSnowflakeManaged()
+	p.DataSourcesMap["snowflake_openflow_deployments"] = datasources.OpenflowDeployments()
 	return p
 }
 

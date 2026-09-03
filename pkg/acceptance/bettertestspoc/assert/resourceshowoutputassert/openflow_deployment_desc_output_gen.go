@@ -31,6 +31,21 @@ func ImportedOpenflowDeploymentDescribeOutput(t *testing.T, id string) *Openflow
 	return &openflowDeploymentAssert
 }
 
+func OpenflowDeploymentsDatasourceDescribeOutput(t *testing.T, name string) *OpenflowDeploymentDescribeOutputAssert {
+	t.Helper()
+
+	return OpenflowDeploymentsDatasourceDescribeOutputOnIdx(t, name, 0)
+}
+
+func OpenflowDeploymentsDatasourceDescribeOutputOnIdx(t *testing.T, name string, idx int) *OpenflowDeploymentDescribeOutputAssert {
+	t.Helper()
+
+	openflowDeploymentAssert := OpenflowDeploymentDescribeOutputAssert{
+		ResourceAssert: assert.NewDatasourceDescribeOutputAssert(name, "openflow_deployments", idx),
+	}
+	return &openflowDeploymentAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////
