@@ -94,6 +94,7 @@ const (
 	ObjectParameter                                        resource = "snowflake_object_parameter"
 	OpenflowDeploymentByoc                                 resource = "snowflake_openflow_deployment_byoc"
 	OpenflowDeploymentSnowflakeManaged                     resource = "snowflake_openflow_deployment_snowflake_managed"
+	OpenflowRuntime                                        resource = "snowflake_openflow_runtime"
 	PasswordPolicy                                         resource = "snowflake_password_policy"
 	Pipe                                                   resource = "snowflake_pipe"
 	PostgresFork                                           resource = "snowflake_postgres_fork"

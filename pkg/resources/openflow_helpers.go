@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 	"time"
@@ -28,8 +29,8 @@ type openflowWait[S ~string] struct {
 	failed []S
 	// goal completes "waiting for ..." in the error a timeout produces.
 	goal string
-	// missingIsDone treats an object that cannot be read as done, which the teardown waits need and the
-	// waits for a specific status do not.
+	// missingIsDone treats an object that is gone as done, which the teardown waits need and the waits for
+	// a specific status do not. Only ErrObjectNotFound counts: any other error still fails the wait.
 	missingIsDone bool
 }
 
@@ -47,7 +48,7 @@ func waitForOpenflowObject[S ~string](
 	return retry.RetryContext(ctx, openflowPollTimeout(timeout), func() *retry.RetryError {
 		status, err := currentStatus()
 		if err != nil {
-			if wait.missingIsDone {
+			if wait.missingIsDone && errors.Is(err, sdk.ErrObjectNotFound) {
 				return nil
 			}
 			return retry.NonRetryableError(fmt.Errorf("waiting for openflow %s %s: %w", objectKind, name, err))
@@ -120,6 +121,87 @@ func waitForOpenflowDeploymentTerminated(ctx context.Context, client *sdk.Client
 			done:          []sdk.OpenflowDeploymentStatus{sdk.OpenflowDeploymentStatusDeleted},
 			failed:        []sdk.OpenflowDeploymentStatus{sdk.OpenflowDeploymentStatusDeleteFailed},
 			goal:          string(sdk.OpenflowDeploymentStatusDeleted),
+			missingIsDone: true,
+		})
+}
+
+const openflowRuntimeKind = "runtime"
+
+func runtimeStatus(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier) func() (sdk.OpenflowRuntimeStatus, error) {
+	return func() (sdk.OpenflowRuntimeStatus, error) {
+		runtime, err := client.OpenflowRuntimes.ShowByIDSafely(ctx, id)
+		if err != nil {
+			return "", err
+		}
+		return runtime.Status, nil
+	}
+}
+
+// waitForOpenflowRuntimeActive waits out a create or an alter. Every mutating runtime statement is
+// asynchronous, so an update that returns before the runtime settles leaves the following read seeing a
+// transient status and reporting drift.
+func waitForOpenflowRuntimeActive(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, timeout time.Duration) error {
+	return waitForOpenflowObject(ctx, openflowRuntimeKind, id.Name(), timeout,
+		runtimeStatus(ctx, client, id),
+		openflowWait[sdk.OpenflowRuntimeStatus]{
+			done: []sdk.OpenflowRuntimeStatus{sdk.OpenflowRuntimeStatusActive},
+			failed: []sdk.OpenflowRuntimeStatus{
+				sdk.OpenflowRuntimeStatusCreateFailed,
+				sdk.OpenflowRuntimeStatusUpdateFailed,
+				sdk.OpenflowRuntimeStatusActivateFailed,
+				sdk.OpenflowRuntimeStatusRestartFailed,
+				sdk.OpenflowRuntimeStatusUpgradeFailed,
+			},
+			goal: string(sdk.OpenflowRuntimeStatusActive),
+		})
+}
+
+// waitForOpenflowRuntimeUpdated waits out an ALTER. Snowflake accepts a metadata SET on a suspended
+// runtime and leaves it SUSPENDED, so waiting for ACTIVE here would hold until the timeout expires.
+func waitForOpenflowRuntimeUpdated(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, timeout time.Duration) error {
+	return waitForOpenflowObject(ctx, openflowRuntimeKind, id.Name(), timeout,
+		runtimeStatus(ctx, client, id),
+		openflowWait[sdk.OpenflowRuntimeStatus]{
+			done: []sdk.OpenflowRuntimeStatus{
+				sdk.OpenflowRuntimeStatusActive,
+				sdk.OpenflowRuntimeStatusSuspended,
+			},
+			failed: []sdk.OpenflowRuntimeStatus{
+				sdk.OpenflowRuntimeStatusUpdateFailed,
+				sdk.OpenflowRuntimeStatusActivateFailed,
+				sdk.OpenflowRuntimeStatusSuspendFailed,
+				sdk.OpenflowRuntimeStatusRestartFailed,
+				sdk.OpenflowRuntimeStatusUpgradeFailed,
+			},
+			goal: "it to finish updating",
+		})
+}
+
+// waitForOpenflowRuntimeSettled waits out a mutation still in flight. TERMINATE is refused while the
+// runtime is in a transient status, so a destroy racing a create has to let it settle first. A failed
+// runtime counts as settled, since it can still be torn down.
+func waitForOpenflowRuntimeSettled(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, timeout time.Duration) error {
+	settled := slices.DeleteFunc(slices.Clone(sdk.AllOpenflowRuntimeStatuses), func(status sdk.OpenflowRuntimeStatus) bool {
+		return slices.Contains(sdk.OpenflowRuntimeTransientStatuses, status)
+	})
+	return waitForOpenflowObject(ctx, openflowRuntimeKind, id.Name(), timeout,
+		runtimeStatus(ctx, client, id),
+		openflowWait[sdk.OpenflowRuntimeStatus]{
+			done:          settled,
+			goal:          "it to settle",
+			missingIsDone: true,
+		})
+}
+
+// waitForOpenflowRuntimeTerminated waits for TERMINATE to finish, which DROP requires: Snowflake refuses
+// DROP from any status other than DELETED.
+func waitForOpenflowRuntimeTerminated(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, timeout time.Duration) error {
+	return waitForOpenflowObject(ctx, openflowRuntimeKind, id.Name(), timeout,
+		runtimeStatus(ctx, client, id),
+		openflowWait[sdk.OpenflowRuntimeStatus]{
+			done:          []sdk.OpenflowRuntimeStatus{sdk.OpenflowRuntimeStatusDeleted},
+			failed:        []sdk.OpenflowRuntimeStatus{sdk.OpenflowRuntimeStatusDeleteFailed},
+			goal:          string(sdk.OpenflowRuntimeStatusDeleted),
 			missingIsDone: true,
 		})
 }

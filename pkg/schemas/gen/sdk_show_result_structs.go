@@ -42,6 +42,7 @@ var SdkShowResultStructs = []any{
 	sdk.Notebook{},
 	sdk.NotificationIntegration{},
 	sdk.OpenflowDeployment{},
+	sdk.OpenflowRuntime{},
 	sdk.OrganizationAccount{},
 	sdk.Parameter{},
 	sdk.PasswordPolicy{},

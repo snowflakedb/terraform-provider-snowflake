@@ -357,8 +357,6 @@ func TestAcc_OpenflowDeploymentByoc_Rename(t *testing.T) {
 
 // Plan-only, so nothing is created and this runs in seconds.
 func TestAcc_OpenflowDeploymentByoc_Validations(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestOpenflow)
-
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	invalidVpcType := model.OpenflowDeploymentByoc("t", id.Name(), "INVALID")

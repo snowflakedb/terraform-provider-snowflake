@@ -318,6 +318,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.OpenflowDeploymentSnowflakeManaged().Schema,
 	},
 	{
+		name:   "OpenflowRuntime",
+		schema: resources.OpenflowRuntime().Schema,
+	},
+	{
 		name:   "PasswordPolicy",
 		schema: resources.PasswordPolicy().Schema,
 	},

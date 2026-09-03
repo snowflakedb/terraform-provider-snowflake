@@ -394,6 +394,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.OpenflowDeploymentSnowflakeManaged: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.OpenflowDeployments.ShowByID)
 	},
+	resources.OpenflowRuntime: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.OpenflowRuntimes.ShowByID)
+	},
 	resources.PasswordPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.PasswordPolicies.ShowByID)
 	},

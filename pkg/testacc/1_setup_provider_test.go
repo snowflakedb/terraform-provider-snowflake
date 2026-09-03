@@ -90,6 +90,7 @@ func acceptanceTestsProvider() *schema.Provider {
 	// family is in place.
 	p.ResourcesMap["snowflake_openflow_deployment_byoc"] = resources.OpenflowDeploymentByoc()
 	p.ResourcesMap["snowflake_openflow_deployment_snowflake_managed"] = resources.OpenflowDeploymentSnowflakeManaged()
+	p.ResourcesMap["snowflake_openflow_runtime"] = resources.OpenflowRuntime()
 	p.DataSourcesMap["snowflake_openflow_deployments"] = datasources.OpenflowDeployments()
 	return p
 }
