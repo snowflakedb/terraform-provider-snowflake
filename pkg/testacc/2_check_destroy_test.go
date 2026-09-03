@@ -388,6 +388,12 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.OauthIntegrationForPartnerApplications: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.SecurityIntegrations.ShowByID)
 	},
+	resources.OpenflowDeploymentByoc: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.OpenflowDeployments.ShowByID)
+	},
+	resources.OpenflowDeploymentSnowflakeManaged: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.OpenflowDeployments.ShowByID)
+	},
 	resources.PasswordPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.PasswordPolicies.ShowByID)
 	},

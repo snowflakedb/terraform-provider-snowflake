@@ -85,6 +85,10 @@ func acceptanceTestsProvider() *schema.Provider {
 	// p.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
 	// TODO(next postgres prs): Remove postgres resources from here
 	p.ResourcesMap["snowflake_postgres_fork"] = resources.PostgresFork()
+	// TODO(SNOW-4039167): Move the Openflow resources to the production provider once the whole object
+	// family is in place.
+	p.ResourcesMap["snowflake_openflow_deployment_byoc"] = resources.OpenflowDeploymentByoc()
+	p.ResourcesMap["snowflake_openflow_deployment_snowflake_managed"] = resources.OpenflowDeploymentSnowflakeManaged()
 	return p
 }
 

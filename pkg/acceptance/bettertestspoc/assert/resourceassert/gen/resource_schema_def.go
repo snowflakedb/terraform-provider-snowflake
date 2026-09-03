@@ -310,6 +310,14 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.OauthIntegrationForPartnerApplications().Schema,
 	},
 	{
+		name:   "OpenflowDeploymentByoc",
+		schema: resources.OpenflowDeploymentByoc().Schema,
+	},
+	{
+		name:   "OpenflowDeploymentSnowflakeManaged",
+		schema: resources.OpenflowDeploymentSnowflakeManaged().Schema,
+	},
+	{
 		name:   "PasswordPolicy",
 		schema: resources.PasswordPolicy().Schema,
 	},
