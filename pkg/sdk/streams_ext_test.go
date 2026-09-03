@@ -98,18 +98,20 @@ func init() {
 			case_Streams_sql_CreateOnExternalTable_all,
 			func(opts *CreateOnExternalTableStreamOptions) {
 				opts.IfNotExists = new(true)
-				opts.CopyGrants = new(true)
 				opts.On = &OnStream{At: new(true), Statement: OnStreamStatement{Statement: new("123")}}
 				opts.InsertOnly = new(true)
 				opts.Comment = new("some comment")
 			},
-			`CREATE STREAM IF NOT EXISTS %s COPY GRANTS ON EXTERNAL TABLE %s AT (STATEMENT => '123') INSERT_ONLY = true COMMENT = 'some comment'`,
+			`CREATE STREAM IF NOT EXISTS %s ON EXTERNAL TABLE %s AT (STATEMENT => '123') INSERT_ONLY = true COMMENT = 'some comment'`,
 			id.FullyQualifiedName(), externalTableId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_CreateOnExternalTable_orReplace",
-			func(opts *CreateOnExternalTableStreamOptions) { opts.OrReplace = new(true) },
-			"CREATE OR REPLACE STREAM %s ON EXTERNAL TABLE %s",
+			func(opts *CreateOnExternalTableStreamOptions) {
+				opts.OrReplace = new(true)
+				opts.CopyGrants = new(true)
+			},
+			"CREATE OR REPLACE STREAM %s COPY GRANTS ON EXTERNAL TABLE %s",
 			id.FullyQualifiedName(), externalTableId.FullyQualifiedName(),
 		)
 
@@ -128,16 +130,18 @@ func init() {
 			case_Streams_sql_CreateOnDirectoryTable_all,
 			func(opts *CreateOnDirectoryTableStreamOptions) {
 				opts.IfNotExists = new(true)
-				opts.CopyGrants = new(true)
 				opts.Comment = new("some comment")
 			},
-			`CREATE STREAM IF NOT EXISTS %s COPY GRANTS ON STAGE %s COMMENT = 'some comment'`,
+			`CREATE STREAM IF NOT EXISTS %s ON STAGE %s COMMENT = 'some comment'`,
 			id.FullyQualifiedName(), stageId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_CreateOnDirectoryTable_orReplace",
-			func(opts *CreateOnDirectoryTableStreamOptions) { opts.OrReplace = new(true) },
-			"CREATE OR REPLACE STREAM %s ON STAGE %s", id.FullyQualifiedName(), stageId.FullyQualifiedName(),
+			func(opts *CreateOnDirectoryTableStreamOptions) {
+				opts.OrReplace = new(true)
+				opts.CopyGrants = new(true)
+			},
+			"CREATE OR REPLACE STREAM %s COPY GRANTS ON STAGE %s", id.FullyQualifiedName(), stageId.FullyQualifiedName(),
 		)
 
 	streamsTests.CreateOnView.
