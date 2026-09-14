@@ -8,8 +8,10 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
@@ -936,4 +938,246 @@ func TestInt_DatabasesDescribe(t *testing.T) {
 	assertContainsSchema(databaseDetails, schemaTest.ID().Name())
 	assertContainsSchema(databaseDetails, "INFORMATION_SCHEMA")
 	assertContainsSchema(databaseDetails, "PUBLIC")
+}
+
+// TestInt_DatabasesCatalogLinked_WithAdditionalDependencies requires a preconfigured external Iceberg
+// REST catalog integration and external volume, which we can't provision dynamically for now.
+// TODO(SNOW-3725859): Provide them dynamically and move these tests to the main test suite.
+func TestInt_DatabasesCatalogLinked_WithAdditionalDependencies(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	restCatalogId := sdk.NewAccountObjectIdentifier(testenvs.GetOrSkipTest(t, testenvs.CatalogLinkedDatabaseCatalogIntegration))
+	externalVolumeId := sdk.NewAccountObjectIdentifier(testenvs.GetOrSkipTest(t, testenvs.CatalogLinkedDatabaseExternalVolume))
+
+	getConfig := func(t *testing.T, id sdk.AccountObjectIdentifier) *sdk.CatalogLinkedDatabaseConfig {
+		t.Helper()
+		config, err := client.SystemFunctions.GetCatalogLinkedDatabaseConfig(ctx, id)
+		require.NoError(t, err)
+		require.NotNil(t, config)
+		return config
+	}
+
+	t.Run("create: basic", func(t *testing.T) {
+		database, databaseCleanup := testClientHelper().Database.CreateCatalogLinkedDatabase(t, restCatalogId, externalVolumeId)
+		t.Cleanup(databaseCleanup)
+
+		assertThatObject(t, objectassert.DatabaseFromObject(t, database).
+			HasCreatedOnNotEmpty().
+			HasName(database.ID().Name()).
+			HasIsDefault(false).
+			HasOwner("ACCOUNTADMIN").
+			HasComment("").
+			HasTransient(false).
+			HasKind(sdk.DatabaseKindCatalogLinkedDatabase).
+			HasOwnerRoleType("ROLE"))
+
+		assertThatObject(t, objectparametersassert.DatabaseParameters(t, database.ID()).
+			HasDefaultParameterValueOnLevel(sdk.DatabaseParameterDataRetentionTimeInDays, sdk.ParameterTypeSnowflakeDefault).
+			HasDefaultParameterValueOnLevel(sdk.DatabaseParameterMaxDataExtensionTimeInDays, sdk.ParameterTypeSnowflakeDefault).
+			HasExternalVolume(externalVolumeId.Name()).
+			HasDefaultParameterValueOnLevel(sdk.DatabaseParameterCatalog, sdk.ParameterTypeSnowflakeDefault).
+			HasDefaultParameterValueOnLevel(sdk.DatabaseParameterReplaceInvalidCharacters, sdk.ParameterTypeSnowflakeDefault).
+			HasDefaultParameterValueOnLevel(sdk.DatabaseParameterDefaultDdlCollation, sdk.ParameterTypeSnowflakeDefault).
+			HasDefaultParameterValueOnLevel(sdk.DatabaseParameterDefaultNotebookComputePoolCpu, sdk.ParameterTypeSnowflakeDefault).
+			HasDefaultParameterValueOnLevel(sdk.DatabaseParameterDefaultNotebookComputePoolGpu, sdk.ParameterTypeSnowflakeDefault).
+			HasDefaultParameterValueOnLevel(sdk.DatabaseParameterStorageSerializationPolicy, sdk.ParameterTypeSnowflakeDefault).
+			HasDefaultParameterValueOnLevel(sdk.DatabaseParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
+			HasDefaultParameterValueOnLevel(sdk.DatabaseParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
+			HasDefaultParameterValueOnLevel(sdk.DatabaseParameterTraceLevel, sdk.ParameterTypeSnowflakeDefault).
+			HasDefaultParameterValueOnLevel(sdk.DatabaseParameterSuspendTaskAfterNumFailures, sdk.ParameterTypeSnowflakeDefault).
+			HasDefaultParameterValueOnLevel(sdk.DatabaseParameterTaskAutoRetryAttempts, sdk.ParameterTypeSnowflakeDefault).
+			HasDefaultParameterValueOnLevel(sdk.DatabaseParameterUserTaskManagedInitialWarehouseSize, sdk.ParameterTypeSnowflakeDefault).
+			HasDefaultParameterValueOnLevel(sdk.DatabaseParameterUserTaskTimeoutMs, sdk.ParameterTypeSnowflakeDefault).
+			HasDefaultParameterValueOnLevel(sdk.DatabaseParameterUserTaskMinimumTriggerIntervalInSeconds, sdk.ParameterTypeSnowflakeDefault).
+			HasDefaultParameterValueOnLevel(sdk.DatabaseParameterQuotedIdentifiersIgnoreCase, sdk.ParameterTypeSnowflakeDefault).
+			HasDefaultParameterValueOnLevel(sdk.DatabaseParameterEnableConsoleOutput, sdk.ParameterTypeSnowflakeDefault))
+
+		// The values not set at creation are asserted with their documented defaults; they may need
+		// adjustment after a run against a live external catalog.
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
+			HasCatalogIntegration(restCatalogId).
+			HasNoCatalogName().
+			HasExternalVolume(externalVolumeId).
+			HasSyncIntervalSeconds(30).
+			HasNamespaceMode(sdk.CatalogLinkedDatabaseNamespaceModeIgnoreNestedNamespace).
+			HasNoNamespaceFlattenDelimiter().
+			HasAllowedWriteOperations(sdk.CatalogLinkedDatabaseAllowedWriteOperationsAll).
+			HasCatalogCaseSensitivity(sdk.DatabaseCatalogCaseSensitivityCaseInsensitive).
+			HasIsSuspended(false).
+			HasNoAllowedNamespaces().
+			HasNoBlockedNamespaces())
+	})
+
+	t.Run("create: complete", func(t *testing.T) {
+		// new database and schema created on purpose
+		databaseTest, databaseCleanup := testClientHelper().Database.CreateDatabase(t)
+		t.Cleanup(databaseCleanup)
+
+		schemaTest, schemaCleanup := testClientHelper().Schema.CreateSchemaInDatabase(t, databaseTest.ID())
+		t.Cleanup(schemaCleanup)
+
+		tagTest, tagCleanup := testClientHelper().Tag.CreateTagInSchema(t, schemaTest.ID())
+		t.Cleanup(tagCleanup)
+
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		comment := random.Comment()
+		database, cleanup := testClientHelper().Database.CreateCatalogLinkedDatabaseWithRequest(t, sdk.NewCreateCatalogLinkedDatabaseRequest(id).
+			WithLinkedCatalog(*sdk.NewLinkedCatalogRequest().
+				WithCatalog(restCatalogId).
+				WithAllowedNamespaces([]sdk.StringListItemWrapper{{Value: "ns1"}, {Value: "ns2"}}).
+				WithBlockedNamespaces([]sdk.StringListItemWrapper{{Value: "ns3"}}).
+				WithAllowedWriteOperations(sdk.CatalogLinkedDatabaseAllowedWriteOperationsAll).
+				WithNamespaceMode(sdk.CatalogLinkedDatabaseNamespaceModeFlattenNestedNamespace).
+				WithNamespaceFlattenDelimiter("_").
+				WithSyncIntervalSeconds(60)).
+			WithExternalVolume(externalVolumeId).
+			WithComment(comment).
+			WithTag([]sdk.TagAssociation{
+				{
+					Name:  tagTest.ID(),
+					Value: "v1",
+				},
+			}).
+			WithCatalogCaseSensitivity(sdk.DatabaseCatalogCaseSensitivityCaseInsensitive))
+		t.Cleanup(cleanup)
+
+		assertThatObject(t, objectassert.DatabaseFromObject(t, database).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasIsDefault(false).
+			HasOwner("ACCOUNTADMIN").
+			HasComment(comment).
+			HasTransient(false).
+			HasKind(sdk.DatabaseKindCatalogLinkedDatabase).
+			HasOwnerRoleType("ROLE"))
+
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
+			HasCatalogIntegration(restCatalogId).
+			HasNoCatalogName().
+			HasExternalVolume(externalVolumeId).
+			HasSyncIntervalSeconds(60).
+			HasNamespaceMode(sdk.CatalogLinkedDatabaseNamespaceModeFlattenNestedNamespace).
+			HasNamespaceFlattenDelimiter("_").
+			HasAllowedWriteOperations(sdk.CatalogLinkedDatabaseAllowedWriteOperationsAll).
+			HasCatalogCaseSensitivity(sdk.DatabaseCatalogCaseSensitivityCaseInsensitive).
+			HasIsSuspended(false).
+			HasAllowedNamespaces("ns1", "ns2").
+			HasBlockedNamespaces("ns3"))
+
+		assertTagSet(t, tagTest.ID(), database.ID(), sdk.ObjectTypeDatabase, "v1")
+	})
+
+	t.Run("alter: allowed namespaces", func(t *testing.T) {
+		database, databaseCleanup := testClientHelper().Database.CreateCatalogLinkedDatabase(t, restCatalogId, externalVolumeId)
+		t.Cleanup(databaseCleanup)
+
+		err := client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(database.ID()).
+			WithIfExists(true).
+			WithAddToAllowedNamespaces(*sdk.NewAddToAllowedNamespacesRequest([]sdk.StringListItemWrapper{{Value: "ns1"}, {Value: "ns2"}})))
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
+			HasAllowedNamespaces("ns1", "ns2"))
+
+		err = client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(database.ID()).
+			WithRemoveFromAllowedNamespaces(*sdk.NewRemoveFromAllowedNamespacesRequest([]sdk.StringListItemWrapper{{Value: "ns2"}})))
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
+			HasAllowedNamespaces("ns1"))
+
+		err = client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(database.ID()).
+			WithUnsetAllowedNamespaces(true))
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
+			HasNoAllowedNamespaces())
+	})
+
+	t.Run("alter: blocked namespaces", func(t *testing.T) {
+		database, databaseCleanup := testClientHelper().Database.CreateCatalogLinkedDatabase(t, restCatalogId, externalVolumeId)
+		t.Cleanup(databaseCleanup)
+
+		err := client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(database.ID()).
+			WithAddToBlockedNamespaces(*sdk.NewAddToBlockedNamespacesRequest([]sdk.StringListItemWrapper{{Value: "ns3"}, {Value: "ns4"}})))
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
+			HasBlockedNamespaces("ns3", "ns4"))
+
+		err = client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(database.ID()).
+			WithRemoveFromBlockedNamespaces(*sdk.NewRemoveFromBlockedNamespacesRequest([]sdk.StringListItemWrapper{{Value: "ns4"}})))
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
+			HasBlockedNamespaces("ns3"))
+
+		err = client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(database.ID()).
+			WithUnsetBlockedNamespaces(true))
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
+			HasNoBlockedNamespaces())
+	})
+
+	t.Run("alter: set linked catalog parameters", func(t *testing.T) {
+		database, databaseCleanup := testClientHelper().Database.CreateCatalogLinkedDatabase(t, restCatalogId, externalVolumeId)
+		t.Cleanup(databaseCleanup)
+
+		err := client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(database.ID()).
+			WithSet(*sdk.NewCatalogLinkedDatabaseSetRequest().
+				WithSyncIntervalSeconds(120).
+				WithAllowedWriteOperations(sdk.CatalogLinkedDatabaseAllowedWriteOperationsNone)))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
+			HasSyncIntervalSeconds(120).
+			HasAllowedWriteOperations(sdk.CatalogLinkedDatabaseAllowedWriteOperationsNone))
+	})
+
+	t.Run("alter: rename and comment through the generic alter", func(t *testing.T) {
+		database, databaseCleanup := testClientHelper().Database.CreateCatalogLinkedDatabase(t, restCatalogId, externalVolumeId)
+		t.Cleanup(databaseCleanup)
+
+		newName := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(database.ID()).WithRenameTo(newName))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Database.DropDatabaseFunc(t, newName))
+
+		comment := random.Comment()
+		err = client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(newName).WithSet(*sdk.NewDatabaseSetRequest().WithComment(comment)))
+		require.NoError(t, err)
+
+		renamed, err := client.Databases.ShowByID(ctx, newName)
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.DatabaseFromObject(t, renamed).
+			HasName(newName.Name()).
+			HasComment(comment).
+			HasKind(sdk.DatabaseKindCatalogLinkedDatabase))
+
+		err = client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(newName).WithUnset(*sdk.NewDatabaseUnsetRequest().WithComment(true)))
+		require.NoError(t, err)
+
+		unset, err := client.Databases.ShowByID(ctx, newName)
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.DatabaseFromObject(t, unset).
+			HasComment(""))
+	})
+
+	t.Run("get catalog link status", func(t *testing.T) {
+		database, databaseCleanup := testClientHelper().Database.CreateCatalogLinkedDatabase(t, restCatalogId, externalVolumeId)
+		t.Cleanup(databaseCleanup)
+
+		// The execution state may not be reported before the first link attempt (the default
+		// SYNC_INTERVAL_SECONDS is 30), so poll a bit longer than that.
+		require.EventuallyWithT(t, func(collect *assert.CollectT) {
+			status, err := client.SystemFunctions.GetCatalogLinkStatus(ctx, database.ID())
+			assert.NoError(collect, err)
+			if assert.NotNil(collect, status) {
+				assert.NotEmpty(collect, status.ExecutionState)
+			}
+		}, 60*time.Second, 2*time.Second)
+
+		// The failure-related fields are state- and timing-dependent (the docs show failureDetails
+		// populated even for a RUNNING link), so only the execution state is asserted.
+		status, err := client.SystemFunctions.GetCatalogLinkStatus(ctx, database.ID())
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.CatalogLinkStatusFromObject(t, status).
+			HasExecutionStateNotEmpty())
+	})
 }
