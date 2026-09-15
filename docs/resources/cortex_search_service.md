@@ -117,6 +117,7 @@ Read-Only:
 - `indexing_error` (String)
 - `indexing_state` (String)
 - `name` (String)
+- `primary_key_columns` (List of String)
 - `schema_name` (String)
 - `search_column` (String)
 - `service_query_url` (String)
