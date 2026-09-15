@@ -15,11 +15,13 @@ type CortexSearchServiceModel struct {
 	Schema             tfconfig.Variable `json:"schema,omitempty"`
 	Name               tfconfig.Variable `json:"name,omitempty"`
 	Attributes         tfconfig.Variable `json:"attributes,omitempty"`
+	AutoSuspend        tfconfig.Variable `json:"auto_suspend,omitempty"`
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	CreatedOn          tfconfig.Variable `json:"created_on,omitempty"`
 	EmbeddingModel     tfconfig.Variable `json:"embedding_model,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	On                 tfconfig.Variable `json:"on,omitempty"`
+	PrimaryKey         tfconfig.Variable `json:"primary_key,omitempty"`
 	Query              tfconfig.Variable `json:"query,omitempty"`
 	TargetLag          tfconfig.Variable `json:"target_lag,omitempty"`
 	Warehouse          tfconfig.Variable `json:"warehouse,omitempty"`
@@ -127,6 +129,11 @@ func (c *CortexSearchServiceModel) WithName(name string) *CortexSearchServiceMod
 
 // attributes attribute type is not yet supported, so WithAttributes can't be generated
 
+func (c *CortexSearchServiceModel) WithAutoSuspend(autoSuspend int) *CortexSearchServiceModel {
+	c.AutoSuspend = tfconfig.IntegerVariable(autoSuspend)
+	return c
+}
+
 func (c *CortexSearchServiceModel) WithComment(comment string) *CortexSearchServiceModel {
 	c.Comment = tfconfig.StringVariable(comment)
 	return c
@@ -151,6 +158,8 @@ func (c *CortexSearchServiceModel) WithOn(on string) *CortexSearchServiceModel {
 	c.On = tfconfig.StringVariable(on)
 	return c
 }
+
+// primary_key attribute type is not yet supported, so WithPrimaryKey can't be generated
 
 func (c *CortexSearchServiceModel) WithQuery(query string) *CortexSearchServiceModel {
 	c.Query = tfconfig.StringVariable(query)
@@ -191,6 +200,11 @@ func (c *CortexSearchServiceModel) WithAttributesValue(value tfconfig.Variable) 
 	return c
 }
 
+func (c *CortexSearchServiceModel) WithAutoSuspendValue(value tfconfig.Variable) *CortexSearchServiceModel {
+	c.AutoSuspend = value
+	return c
+}
+
 func (c *CortexSearchServiceModel) WithCommentValue(value tfconfig.Variable) *CortexSearchServiceModel {
 	c.Comment = value
 	return c
@@ -213,6 +227,11 @@ func (c *CortexSearchServiceModel) WithFullyQualifiedNameValue(value tfconfig.Va
 
 func (c *CortexSearchServiceModel) WithOnValue(value tfconfig.Variable) *CortexSearchServiceModel {
 	c.On = value
+	return c
+}
+
+func (c *CortexSearchServiceModel) WithPrimaryKeyValue(value tfconfig.Variable) *CortexSearchServiceModel {
+	c.PrimaryKey = value
 	return c
 }
 

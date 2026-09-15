@@ -24,6 +24,17 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.21.x ➞ v2.22.0
+
+### *(new feature)* New fields in `snowflake_cortex_search_service` resource
+
+We added `primary_key` and `auto_suspend` fields to the `snowflake_cortex_search_service` resource.
+
+- `primary_key` specifies the column(s) in the base table that uniquely identify each row, enabling optimized (incremental) refreshes when the underlying data changes. Changing this field requires recreating the resource.
+- `auto_suspend` specifies the number of seconds of inactivity after which the Cortex search service automatically suspends its serving compute. Removing it from the configuration resets it to the Snowflake default (no automatic suspension) instead of leaving the previously set value in place.
+
+No configuration changes are needed for existing configurations; both fields are optional.
+
 ## v2.20.x ➞ v2.21.0
 
 ### *(breaking change)* Renamed constraint column fields in `snowflake_iceberg_table`

@@ -77,6 +77,11 @@ var DescribeCortexSearchServiceSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"primary_key_columns": {
+		Type:     schema.TypeList,
+		Computed: true,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+	},
 }
 
 var _ = DescribeCortexSearchServiceSchema
@@ -110,6 +115,7 @@ func CortexSearchServiceDetailsToSchema(details *sdk.CortexSearchServiceDetails)
 	if details.EmbeddingModel != nil {
 		detailsSchema["embedding_model"] = *details.EmbeddingModel
 	}
+	detailsSchema["primary_key_columns"] = details.PrimaryKeyColumns
 	return detailsSchema
 }
 
