@@ -12,3 +12,11 @@ func (c *CortexSearchServiceModel) WithAttributes(attrs ...string) *CortexSearch
 		),
 	)
 }
+
+func (c *CortexSearchServiceModel) WithPrimaryKey(cols ...string) *CortexSearchServiceModel {
+	return c.WithPrimaryKeyValue(
+		tfconfig.SetVariable(
+			collections.Map(cols, func(col string) tfconfig.Variable { return tfconfig.StringVariable(col) })...,
+		),
+	)
+}

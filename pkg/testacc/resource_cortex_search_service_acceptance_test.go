@@ -10,6 +10,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -46,12 +47,16 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 		WithAttributes("SOME_OTHER_TEXT").
 		WithComment("Terraform acceptance test - updated").
 		WithEmbeddingModel("snowflake-arctic-embed-m-v1.5").
+		WithPrimaryKey("SOME_TEXT").
+		WithAutoSuspend(3600).
 		WithDependsOn(tableModelComplete.ResourceReference())
 
 	cssModelForImport := model.CortexSearchService("css", TestDatabaseName, TestSchemaName, id.Name(), "SOME_TEXT",
 		fmt.Sprintf("select SOME_TEXT, SOME_OTHER_TEXT from %s", tableId.FullyQualifiedName()), "2 minutes", newWarehouse.ID().Name()).
 		WithAttributes("SOME_OTHER_TEXT").
 		WithComment("Terraform acceptance test - updated").
+		WithPrimaryKey("SOME_TEXT").
+		WithAutoSuspend(3600).
 		WithDependsOn(tableModelComplete.ResourceReference())
 
 	resourceName := "snowflake_cortex_search_service.css"
@@ -82,6 +87,8 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "query", fmt.Sprintf("select SOME_TEXT from %s", tableId.FullyQualifiedName())),
 					resource.TestCheckResourceAttrSet(resourceName, "created_on"),
 					resource.TestCheckNoResourceAttr(resourceName, "embedding_model"),
+					resource.TestCheckNoResourceAttr(resourceName, "primary_key"),
+					resource.TestCheckResourceAttr(resourceName, "auto_suspend", r.IntDefaultString),
 
 					resource.TestCheckResourceAttrSet(resourceName, "describe_output.0.created_on"),
 					resource.TestCheckResourceAttr(resourceName, "describe_output.0.name", id.Name()),
@@ -124,6 +131,9 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "query", fmt.Sprintf("select SOME_TEXT, SOME_OTHER_TEXT from %s", tableId.FullyQualifiedName())),
 					resource.TestCheckResourceAttrSet(resourceName, "created_on"),
 					resource.TestCheckResourceAttr(resourceName, "embedding_model", "snowflake-arctic-embed-m-v1.5"),
+					resource.TestCheckResourceAttr(resourceName, "primary_key.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "primary_key.0", "SOME_TEXT"),
+					resource.TestCheckResourceAttr(resourceName, "auto_suspend", "3600"),
 
 					resource.TestCheckResourceAttrSet(resourceName, "describe_output.0.created_on"),
 					resource.TestCheckResourceAttr(resourceName, "describe_output.0.name", id.Name()),
@@ -154,7 +164,7 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				// currently not set in read because the early implementation on Snowflake side did not return these values on SHOW/DESCRIBE
-				ImportStateVerifyIgnore: []string{"attributes", "on", "query", "target_lag", "warehouse", "describe_output.0.data_timestamp"},
+				ImportStateVerifyIgnore: []string{"attributes", "on", "query", "target_lag", "warehouse", "describe_output.0.data_timestamp", "primary_key", "auto_suspend"},
 			},
 		},
 	})

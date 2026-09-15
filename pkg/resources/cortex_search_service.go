@@ -15,6 +15,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var cortexSearchServiceSchema = map[string]*schema.Schema{
@@ -40,6 +41,13 @@ var cortexSearchServiceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,
 		Description: "Specifies the column to use as the search column for the Cortex search service; must be a text value.",
+		ForceNew:    true,
+	},
+	"primary_key": {
+		Type:        schema.TypeSet,
+		Optional:    true,
+		Elem:        &schema.Schema{Type: schema.TypeString},
+		Description: "Specifies the column(s) in the base table that uniquely identify each row, used to enable optimized (incremental) refreshes when the underlying data changes. All primary key columns must use the TEXT data type.",
 		ForceNew:    true,
 	},
 	"attributes": {
@@ -71,6 +79,13 @@ var cortexSearchServiceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
 		Description: "Specifies a comment for the Cortex search service.",
+	},
+	"auto_suspend": {
+		Type:             schema.TypeInt,
+		Optional:         true,
+		Default:          IntDefault,
+		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1800)),
+		Description:      "Specifies the number of seconds of inactivity after which the Cortex search service automatically suspends its serving compute, releasing the resources. Minimum value is 1800 (30 minutes). If unset, Snowflake defaults to no automatic suspension.",
 	},
 	"query": {
 		Type:             schema.TypeString,
@@ -252,11 +267,17 @@ func CreateCortexSearchService(ctx context.Context, d *schema.ResourceData, meta
 	if v, ok := d.GetOk("embedding_model"); ok {
 		request.WithEmbeddingModel(v.(string))
 	}
+	if v, ok := d.GetOk("primary_key"); ok && len(v.(*schema.Set).List()) > 0 {
+		request.WithPrimaryKey(expandStringList(v.(*schema.Set).List()))
+	}
 	if v, ok := d.GetOk("attributes"); ok && len(v.(*schema.Set).List()) > 0 {
 		attributes := sdk.AttributesRequest{
 			Columns: expandStringList(v.(*schema.Set).List()),
 		}
 		request.WithAttributes(attributes)
+	}
+	if v := d.Get("auto_suspend").(int); v != IntDefault {
+		request.WithAutoSuspend(v)
 	}
 	var diags diag.Diagnostics
 	if err := client.CortexSearchServices.Create(ctx, request); err != nil {
@@ -289,10 +310,24 @@ func UpdateCortexSearchService(ctx context.Context, d *schema.ResourceData, meta
 		set.WithComment(comment)
 	}
 
+	setDefaults := sdk.NewCortexSearchServiceSetDefaultsRequest()
+	if err := intAttributeWithSpecialDefaultUpdate(d, "auto_suspend", &set.AutoSuspend, &setDefaults.AutoSuspend); err != nil {
+		return diag.FromErr(err)
+	}
+
 	var diags diag.Diagnostics
 	if *set != *sdk.NewCortexSearchServiceSetRequest() {
 		request.WithSet(*set)
 		if err := client.CortexSearchServices.Alter(ctx, request); err != nil {
+			diags = append(diags, diag.FromErr(err)...)
+		}
+	}
+
+	// AUTO_SUSPEND cannot be reset with a generic UNSET; Snowflake requires a dedicated
+	// SET AUTO_SUSPEND = NULL statement, which is mutually exclusive with the SET clause above.
+	if setDefaults.AutoSuspend != nil {
+		resetRequest := sdk.NewAlterCortexSearchServiceRequest(id).WithSetDefaults(*setDefaults)
+		if err := client.CortexSearchServices.Alter(ctx, resetRequest); err != nil {
 			diags = append(diags, diag.FromErr(err)...)
 		}
 	}
