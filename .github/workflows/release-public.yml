@@ -39,7 +39,7 @@ jobs:
 
           echo "fingerprint=$fingerprint" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         # we need to fetch all history and tags
         # so we build the proper version
         with:
@@ -47,7 +47,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ inputs.tag || github.ref }}
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version-file: ./go.mod
 

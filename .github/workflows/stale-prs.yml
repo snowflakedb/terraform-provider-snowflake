@@ -18,7 +18,7 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-      - uses: actions/stale@v11.0.0
+      - uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
         with:
           # Only pull requests are processed; setting the issue values to -1 disables issue handling.
           days-before-issue-stale: -1
