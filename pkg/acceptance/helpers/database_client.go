@@ -101,16 +101,11 @@ func (c *DatabaseClient) CreateCatalogLinkedDatabaseWithRequest(t *testing.T, re
 	id := request.ID()
 	err := c.client().CreateCatalogLinked(ctx, request)
 	require.NoError(t, err)
-	cleanup := c.DropDatabaseFunc(t, id)
 
 	database, err := c.client().ShowByID(ctx, id)
-	if err != nil {
-		// Register the cleanup here so a failing ShowByID does not leak the database.
-		t.Cleanup(cleanup)
-	}
 	require.NoError(t, err)
 
-	return database, cleanup
+	return database, c.DropDatabaseFunc(t, id)
 }
 
 func (c *DatabaseClient) DropDatabaseFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {

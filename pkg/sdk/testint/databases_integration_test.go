@@ -1068,7 +1068,9 @@ func TestInt_DatabasesCatalogLinked_WithAdditionalDependencies(t *testing.T) {
 		assertTagSet(t, tagTest.ID(), database.ID(), sdk.ObjectTypeDatabase, "v1")
 	})
 
-	t.Run("alter: allowed namespaces", func(t *testing.T) {
+	// All the ALTER actions share one database: each ALTER accepts exactly one action, but creating
+	// a database per action would multiply the load on the external catalog.
+	t.Run("alter: update linked catalog", func(t *testing.T) {
 		database, databaseCleanup := testClientHelper().Database.CreateCatalogLinkedDatabase(t, restCatalogId, externalVolumeId)
 		t.Cleanup(databaseCleanup)
 
@@ -1076,58 +1078,46 @@ func TestInt_DatabasesCatalogLinked_WithAdditionalDependencies(t *testing.T) {
 			WithIfExists(true).
 			WithAddToAllowedNamespaces(*sdk.NewAddToAllowedNamespacesRequest([]sdk.StringListItemWrapper{{Value: "ns1"}, {Value: "ns2"}})))
 		require.NoError(t, err)
-		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
-			HasAllowedNamespaces("ns1", "ns2"))
 
 		err = client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(database.ID()).
-			WithRemoveFromAllowedNamespaces(*sdk.NewRemoveFromAllowedNamespacesRequest([]sdk.StringListItemWrapper{{Value: "ns2"}})))
-		require.NoError(t, err)
-		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
-			HasAllowedNamespaces("ns1"))
-
-		err = client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(database.ID()).
-			WithUnsetAllowedNamespaces(true))
-		require.NoError(t, err)
-		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
-			HasNoAllowedNamespaces())
-	})
-
-	t.Run("alter: blocked namespaces", func(t *testing.T) {
-		database, databaseCleanup := testClientHelper().Database.CreateCatalogLinkedDatabase(t, restCatalogId, externalVolumeId)
-		t.Cleanup(databaseCleanup)
-
-		err := client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(database.ID()).
 			WithAddToBlockedNamespaces(*sdk.NewAddToBlockedNamespacesRequest([]sdk.StringListItemWrapper{{Value: "ns3"}, {Value: "ns4"}})))
 		require.NoError(t, err)
-		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
-			HasBlockedNamespaces("ns3", "ns4"))
 
 		err = client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(database.ID()).
-			WithRemoveFromBlockedNamespaces(*sdk.NewRemoveFromBlockedNamespacesRequest([]sdk.StringListItemWrapper{{Value: "ns4"}})))
-		require.NoError(t, err)
-		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
-			HasBlockedNamespaces("ns3"))
-
-		err = client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(database.ID()).
-			WithUnsetBlockedNamespaces(true))
-		require.NoError(t, err)
-		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
-			HasNoBlockedNamespaces())
-	})
-
-	t.Run("alter: set linked catalog parameters", func(t *testing.T) {
-		database, databaseCleanup := testClientHelper().Database.CreateCatalogLinkedDatabase(t, restCatalogId, externalVolumeId)
-		t.Cleanup(databaseCleanup)
-
-		err := client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(database.ID()).
 			WithSet(*sdk.NewCatalogLinkedDatabaseSetRequest().
 				WithSyncIntervalSeconds(120).
 				WithAllowedWriteOperations(sdk.CatalogLinkedDatabaseAllowedWriteOperationsNone)))
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
+			HasAllowedNamespaces("ns1", "ns2").
+			HasBlockedNamespaces("ns3", "ns4").
 			HasSyncIntervalSeconds(120).
 			HasAllowedWriteOperations(sdk.CatalogLinkedDatabaseAllowedWriteOperationsNone))
+
+		err = client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(database.ID()).
+			WithRemoveFromAllowedNamespaces(*sdk.NewRemoveFromAllowedNamespacesRequest([]sdk.StringListItemWrapper{{Value: "ns2"}})))
+		require.NoError(t, err)
+
+		err = client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(database.ID()).
+			WithRemoveFromBlockedNamespaces(*sdk.NewRemoveFromBlockedNamespacesRequest([]sdk.StringListItemWrapper{{Value: "ns4"}})))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
+			HasAllowedNamespaces("ns1").
+			HasBlockedNamespaces("ns3"))
+
+		err = client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(database.ID()).
+			WithUnsetAllowedNamespaces(true))
+		require.NoError(t, err)
+
+		err = client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(database.ID()).
+			WithUnsetBlockedNamespaces(true))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
+			HasNoAllowedNamespaces().
+			HasNoBlockedNamespaces())
 	})
 
 	t.Run("alter: rename and comment through the generic alter", func(t *testing.T) {
