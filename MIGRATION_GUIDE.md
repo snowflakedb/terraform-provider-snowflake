@@ -35,6 +35,25 @@ The current value is also exposed in the new `parameters` output block (result o
 
 No action is required; this is a non-breaking addition.
 
+### *(bugfix)* Fixed permadiff issue with the `unsupported_ddl_action` attribute
+
+Using a lowercase value for `unsupported_ddl_action` (for example `"ignore"` or `"fail"`) could result in a permadiff (like ` ~ unsupported_ddl_action = "IGNORE" -> "ignore"`).
+
+This version adds validation and case-insensitive diff suppression to `unsupported_ddl_action`, so such permadiffs are avoided. The change applies to:
+
+- [`snowflake_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/user)
+- [`snowflake_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user)
+- [`snowflake_legacy_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user)
+- [`snowflake_task`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/task)
+- [`snowflake_current_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_account)
+- [`snowflake_current_organization_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_organization_account)
+
+Invalid values are now rejected at plan time.
+
+No action is needed.
+
+Reference: [#5210](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5210).
+
 ## v2.20.x ➞ v2.21.0
 
 ### *(breaking change)* Renamed constraint column fields in `snowflake_iceberg_table`

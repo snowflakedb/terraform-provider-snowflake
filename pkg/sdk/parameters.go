@@ -1931,6 +1931,11 @@ const (
 	UnsupportedDDLActionFail   UnsupportedDDLAction = "FAIL"
 )
 
+var AllUnsupportedDDLActions = []UnsupportedDDLAction{
+	UnsupportedDDLActionIgnore,
+	UnsupportedDDLActionFail,
+}
+
 func ToUnsupportedDDLAction(s string) (UnsupportedDDLAction, error) {
 	switch strings.ToUpper(s) {
 	case string(UnsupportedDDLActionIgnore):

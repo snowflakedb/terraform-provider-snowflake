@@ -673,6 +673,45 @@ func serviceUserConfigWithIncompatibleAttribute(userId sdk.AccountObjectIdentifi
 	`, userId.FullyQualifiedName(), key, value)
 }
 
+// TestAcc_ServiceUser_UnsupportedDdlActionIgnoreCasing proves the fix for
+// https://github.com/snowflakedb/terraform-provider-snowflake/issues/5210.
+// Setting unsupported_ddl_action to the lowercase Snowflake default ("ignore")
+// caused a persistent plan on older provider versions because Snowflake stores
+// the canonical IGNORE after SET.
+func TestAcc_ServiceUser_UnsupportedDdlActionIgnoreCasing(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	userModel := model.ServiceUser("w", id.Name()).
+		WithUnsupportedDdlAction(strings.ToLower(string(sdk.UnsupportedDDLActionIgnore)))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ServiceUser),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.21.0"),
+				Config:            config.FromModels(t, userModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(userModel.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, userModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
+}
+
 func TestAcc_ServiceUser_migrateFromV2_11_0(t *testing.T) {
 	userId := testClient().Ids.RandomAccountObjectIdentifier()
 
