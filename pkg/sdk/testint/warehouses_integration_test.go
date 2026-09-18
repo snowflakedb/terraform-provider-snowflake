@@ -1026,9 +1026,13 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 		assertThatObject(
 			t, objectparametersassert.WarehouseInteractiveParameters(t, id).
 				HasMaxConcurrencyLevel(8).
+				HasMaxConcurrencyLevelLevel(sdk.ParameterTypeSnowflakeDefault).
 				HasStatementQueuedTimeoutInSeconds(0).
-				HasStatementTimeoutInSeconds(172800).
-				HasFallbackWarehouse(""),
+				HasStatementQueuedTimeoutInSecondsLevel(sdk.ParameterTypeSnowflakeDefault).
+				HasStatementTimeoutInSeconds(5).
+				HasStatementTimeoutInSecondsLevel(testClientHelper().SnowflakeDefaults.DefaultStatementTimeoutInSecondsLevel(t)).
+				HasFallbackWarehouse("").
+				HasFallbackWarehouseLevel(sdk.ParameterTypeSnowflakeDefault),
 		)
 	})
 
@@ -1042,7 +1046,10 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 		err := client.Warehouses.CreateInteractive(ctx, sdk.NewCreateInteractiveWarehouseRequest(id).
 			WithTables([]sdk.SchemaObjectIdentifier{table1.ID(), table2.ID()}).
 			WithWarehouseSize(sdk.WarehouseSizeXSmall).
-			WithComment("interactive warehouse"))
+			WithComment("interactive warehouse").
+			WithMaxConcurrencyLevel(4).
+			WithStatementQueuedTimeoutInSeconds(10).
+			WithStatementTimeoutInSeconds(4))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
@@ -1067,10 +1074,14 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 		)
 		assertThatObject(
 			t, objectparametersassert.WarehouseInteractiveParameters(t, id).
-				HasMaxConcurrencyLevel(8).
-				HasStatementQueuedTimeoutInSeconds(0).
-				HasStatementTimeoutInSeconds(172800).
-				HasFallbackWarehouse(""),
+				HasMaxConcurrencyLevel(4).
+				HasMaxConcurrencyLevelLevel(sdk.ParameterTypeWarehouse).
+				HasStatementQueuedTimeoutInSeconds(10).
+				HasStatementQueuedTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse).
+				HasStatementTimeoutInSeconds(4).
+				HasStatementTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse).
+				HasFallbackWarehouse("").
+				HasFallbackWarehouseLevel(sdk.ParameterTypeSnowflakeDefault),
 		)
 	})
 
