@@ -34,6 +34,7 @@ type CreateTaskRequest struct {
 	ServerlessTaskMinStatementSize          *WarehouseSize
 	ServerlessTaskMaxStatementSize          *WarehouseSize
 	After                                   []SchemaObjectIdentifier
+	ExecuteAsUser                           *AccountObjectIdentifier
 	When                                    *string
 	sql                                     string // required
 }
@@ -57,6 +58,7 @@ type CreateOrAlterTaskRequest struct {
 	Finalize                    *SchemaObjectIdentifier
 	TaskAutoRetryAttempts       *int
 	After                       []SchemaObjectIdentifier
+	ExecuteAsUser               *AccountObjectIdentifier
 	When                        *string
 	sql                         string // required
 }
@@ -69,21 +71,23 @@ type CloneTaskRequest struct {
 }
 
 type AlterTaskRequest struct {
-	IfExists      *bool
-	name          SchemaObjectIdentifier // required
-	Resume        *bool
-	Suspend       *bool
-	RemoveAfter   []SchemaObjectIdentifier
-	AddAfter      []SchemaObjectIdentifier
-	Set           *TaskSetRequest
-	Unset         *TaskUnsetRequest
-	SetTags       []TagAssociation
-	UnsetTags     []ObjectIdentifier
-	SetFinalize   *SchemaObjectIdentifier
-	UnsetFinalize *bool
-	ModifyAs      *string
-	ModifyWhen    *string
-	RemoveWhen    *bool
+	IfExists           *bool
+	name               SchemaObjectIdentifier // required
+	Resume             *bool
+	Suspend            *bool
+	RemoveAfter        []SchemaObjectIdentifier
+	AddAfter           []SchemaObjectIdentifier
+	Set                *TaskSetRequest
+	Unset              *TaskUnsetRequest
+	SetTags            []TagAssociation
+	UnsetTags          []ObjectIdentifier
+	SetFinalize        *SchemaObjectIdentifier
+	UnsetFinalize      *bool
+	SetExecuteAsUser   *AccountObjectIdentifier
+	UnsetExecuteAsUser *bool
+	ModifyAs           *string
+	ModifyWhen         *string
+	RemoveWhen         *bool
 }
 
 type TaskSetRequest struct {

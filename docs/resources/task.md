@@ -144,6 +144,7 @@ resource "snowflake_task" "test" {
   config                      = "{\"key\":\"value\"}"
   allow_overlapping_execution = true
   error_integration           = snowflake_notification_integration.example.fully_qualified_name
+  execute_as_user             = snowflake_user.task_user.fully_qualified_name
   when                        = "SYSTEM$STREAM_HAS_DATA('<stream_name>')"
   comment                     = "complete task"
 
@@ -251,6 +252,7 @@ resource "snowflake_task" "test" {
 - `error_integration` (String) Specifies the name of the notification integration used for error notifications. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`. For more information about this resource, see [docs](./notification_integration).
 - `error_on_nondeterministic_merge` (Boolean) Specifies whether to return an error when the [MERGE](https://docs.snowflake.com/en/sql-reference/sql/merge) command is used to update or delete a target row that joins multiple source rows and the system cannot determine the action to perform on the target row. For more information, check [ERROR_ON_NONDETERMINISTIC_MERGE docs](https://docs.snowflake.com/en/sql-reference/parameters#error-on-nondeterministic-merge).
 - `error_on_nondeterministic_update` (Boolean) Specifies whether to return an error when the [UPDATE](https://docs.snowflake.com/en/sql-reference/sql/update) command is used to update a target row that joins multiple source rows and the system cannot determine the action to perform on the target row. For more information, check [ERROR_ON_NONDETERMINISTIC_UPDATE docs](https://docs.snowflake.com/en/sql-reference/parameters#error-on-nondeterministic-update).
+- `execute_as_user` (String) Specifies the user on whose behalf the task runs instead of the system service, with the task owner role's privileges plus that user's identity and default secondary roles. The task owner role must be granted IMPERSONATE on this user, and the user must be granted the task owner role. When the task runs, the session primary role is the task owner role and the user's default secondary roles are activated. The task SQL statement may use USE ROLE or USE SECONDARY ROLES to adjust the session. For more information, see [Run tasks with user privileges](https://docs.snowflake.com/en/user-guide/tasks-intro#run-tasks-with-user-privileges). Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`. For more information about this resource, see [docs](./user).
 - `finalize` (String) Specifies the name of a root task that the finalizer task is associated with. Finalizer tasks run after all other tasks in the task graph run to completion. You can define the SQL of a finalizer task to handle notifications and the release and cleanup of resources that a task graph uses. For more information, see [Release and cleanup of task graphs](https://docs.snowflake.com/en/user-guide/tasks-graphs.html#label-finalizer-task). Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `geography_output_format` (String) Display format for [GEOGRAPHY values](https://docs.snowflake.com/en/sql-reference/data-types-geospatial.html#label-data-types-geography). For more information, check [GEOGRAPHY_OUTPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#geography-output-format).
 - `geometry_output_format` (String) Display format for [GEOMETRY values](https://docs.snowflake.com/en/sql-reference/data-types-geospatial.html#label-data-types-geometry). For more information, check [GEOMETRY_OUTPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#geometry-output-format).
@@ -1155,6 +1157,7 @@ Read-Only:
 - `database_name` (String)
 - `definition` (String)
 - `error_integration` (String)
+- `execute_as_user` (String)
 - `id` (String)
 - `last_committed_on` (String)
 - `last_suspended_on` (String)

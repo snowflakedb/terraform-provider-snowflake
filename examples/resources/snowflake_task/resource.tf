@@ -124,6 +124,7 @@ resource "snowflake_task" "test" {
   config                      = "{\"key\":\"value\"}"
   allow_overlapping_execution = true
   error_integration           = snowflake_notification_integration.example.fully_qualified_name
+  execute_as_user             = snowflake_user.task_user.fully_qualified_name
   when                        = "SYSTEM$STREAM_HAS_DATA('<stream_name>')"
   comment                     = "complete task"
 

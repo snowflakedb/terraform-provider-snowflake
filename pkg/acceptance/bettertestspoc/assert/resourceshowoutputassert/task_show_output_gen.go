@@ -150,6 +150,11 @@ func (t *TaskShowOutputAssert) HasLastSuspendedReason(expected string) *TaskShow
 	return t
 }
 
+func (t *TaskShowOutputAssert) HasExecuteAsUser(expected sdk.AccountObjectIdentifier) *TaskShowOutputAssert {
+	t.StringValueSet("execute_as_user", expected.Name())
+	return t
+}
+
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
@@ -261,5 +266,10 @@ func (t *TaskShowOutputAssert) HasNoLastSuspendedReason() *TaskShowOutputAssert 
 
 func (t *TaskShowOutputAssert) HasNoTargetCompletionInterval() *TaskShowOutputAssert {
 	t.ValueNotSet("target_completion_interval")
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoExecuteAsUser() *TaskShowOutputAssert {
+	t.ValueNotSet("execute_as_user")
 	return t
 }

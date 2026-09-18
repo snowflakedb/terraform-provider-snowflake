@@ -157,6 +157,11 @@ func (t *TaskResourceAssert) HasErrorOnNondeterministicUpdate(expected bool) *Ta
 	return t
 }
 
+func (t *TaskResourceAssert) HasExecuteAsUser(expected string) *TaskResourceAssert {
+	t.StringValueSet("execute_as_user", expected)
+	return t
+}
+
 func (t *TaskResourceAssert) HasFinalize(expected string) *TaskResourceAssert {
 	t.StringValueSet("finalize", expected)
 	return t
@@ -535,6 +540,11 @@ func (t *TaskResourceAssert) HasErrorOnNondeterministicUpdateString(expected str
 	return t
 }
 
+func (t *TaskResourceAssert) HasExecuteAsUserString(expected string) *TaskResourceAssert {
+	t.ValueSet("execute_as_user", expected)
+	return t
+}
+
 func (t *TaskResourceAssert) HasFinalizeString(expected string) *TaskResourceAssert {
 	t.ValueSet("finalize", expected)
 	return t
@@ -909,6 +919,11 @@ func (t *TaskResourceAssert) HasNoErrorOnNondeterministicUpdate() *TaskResourceA
 	return t
 }
 
+func (t *TaskResourceAssert) HasNoExecuteAsUser() *TaskResourceAssert {
+	t.ValueNotSet("execute_as_user")
+	return t
+}
+
 func (t *TaskResourceAssert) HasNoFinalize() *TaskResourceAssert {
 	t.ValueNotSet("finalize")
 	return t
@@ -1270,6 +1285,11 @@ func (t *TaskResourceAssert) HasErrorOnNondeterministicMergeEmpty() *TaskResourc
 
 func (t *TaskResourceAssert) HasErrorOnNondeterministicUpdateEmpty() *TaskResourceAssert {
 	t.ValueSet("error_on_nondeterministic_update", "")
+	return t
+}
+
+func (t *TaskResourceAssert) HasExecuteAsUserEmpty() *TaskResourceAssert {
+	t.ValueSet("execute_as_user", "")
 	return t
 }
 
@@ -1644,6 +1664,11 @@ func (t *TaskResourceAssert) HasErrorOnNondeterministicMergeNotEmpty() *TaskReso
 
 func (t *TaskResourceAssert) HasErrorOnNondeterministicUpdateNotEmpty() *TaskResourceAssert {
 	t.ValuePresent("error_on_nondeterministic_update")
+	return t
+}
+
+func (t *TaskResourceAssert) HasExecuteAsUserNotEmpty() *TaskResourceAssert {
+	t.ValuePresent("execute_as_user")
 	return t
 }
 

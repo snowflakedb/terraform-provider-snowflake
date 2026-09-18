@@ -36,6 +36,7 @@ type TaskModel struct {
 	ErrorIntegration                         tfconfig.Variable `json:"error_integration,omitempty"`
 	ErrorOnNondeterministicMerge             tfconfig.Variable `json:"error_on_nondeterministic_merge,omitempty"`
 	ErrorOnNondeterministicUpdate            tfconfig.Variable `json:"error_on_nondeterministic_update,omitempty"`
+	ExecuteAsUser                            tfconfig.Variable `json:"execute_as_user,omitempty"`
 	Finalize                                 tfconfig.Variable `json:"finalize,omitempty"`
 	FullyQualifiedName                       tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	GeographyOutputFormat                    tfconfig.Variable `json:"geography_output_format,omitempty"`
@@ -286,6 +287,11 @@ func (t *TaskModel) WithErrorOnNondeterministicMerge(errorOnNondeterministicMerg
 
 func (t *TaskModel) WithErrorOnNondeterministicUpdate(errorOnNondeterministicUpdate bool) *TaskModel {
 	t.ErrorOnNondeterministicUpdate = tfconfig.BoolVariable(errorOnNondeterministicUpdate)
+	return t
+}
+
+func (t *TaskModel) WithExecuteAsUser(executeAsUser string) *TaskModel {
+	t.ExecuteAsUser = tfconfig.StringVariable(executeAsUser)
 	return t
 }
 
@@ -669,6 +675,11 @@ func (t *TaskModel) WithErrorOnNondeterministicMergeValue(value tfconfig.Variabl
 
 func (t *TaskModel) WithErrorOnNondeterministicUpdateValue(value tfconfig.Variable) *TaskModel {
 	t.ErrorOnNondeterministicUpdate = value
+	return t
+}
+
+func (t *TaskModel) WithExecuteAsUserValue(value tfconfig.Variable) *TaskModel {
+	t.ExecuteAsUser = value
 	return t
 }
 

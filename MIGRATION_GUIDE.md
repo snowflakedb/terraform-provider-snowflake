@@ -26,6 +26,20 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.21.x ➞ v2.22.0
 
+### *(new feature)* `execute_as_user` on `snowflake_task`
+
+We added optional [`execute_as_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/task#execute_as_user-1) to the stable [`snowflake_task`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/task) resource.
+It maps to Snowflake [`EXECUTE AS USER`](https://docs.snowflake.com/en/user-guide/tasks-intro#run-tasks-with-user-privileges): the task runs with the task owner role's privileges plus that user's identity and default secondary roles, instead of the system service user.
+
+The value is also available in `show_output.execute_as_user` on the resource and in the [`snowflake_tasks`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/tasks) data source.
+
+Snowflake requires:
+
+- the task owner role to have `IMPERSONATE` on the target user
+- the target user to be granted the task owner role
+
+Omitting the field keeps the previous behavior (system user). No configuration changes are required unless you want to adopt this feature.
+
 ### *(new feature)* New `service_caller_token_validity_secs` field in `snowflake_service`
 
 A new field has been added to the [`snowflake_service`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service) resource:

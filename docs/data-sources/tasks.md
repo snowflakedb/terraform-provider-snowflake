@@ -1001,6 +1001,7 @@ Read-Only:
 - `database_name` (String)
 - `definition` (String)
 - `error_integration` (String)
+- `execute_as_user` (String)
 - `id` (String)
 - `last_committed_on` (String)
 - `last_suspended_on` (String)

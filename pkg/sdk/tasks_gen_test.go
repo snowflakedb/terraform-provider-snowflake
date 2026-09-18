@@ -11,6 +11,7 @@ var tasksTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 const (
 	case_Tasks_validation_Create_name_ValidIdentifier                                    testCaseName = "validation_Create_name_ValidIdentifier"
 	case_Tasks_validation_Create_ErrorIntegration_ValidIdentifierIfSet                   testCaseName = "validation_Create_ErrorIntegration_ValidIdentifierIfSet"
+	case_Tasks_validation_Create_ExecuteAsUser_ValidIdentifierIfSet                      testCaseName = "validation_Create_ExecuteAsUser_ValidIdentifierIfSet"
 	case_Tasks_validation_Create_opts_ConflictingFields                                  testCaseName = "validation_Create_opts_ConflictingFields"
 	case_Tasks_validation_Create_Config_NoDoubleDollarQuotesIfSet                        testCaseName = "validation_Create_Config_NoDoubleDollarQuotesIfSet"
 	case_Tasks_validation_Create_opts_Warehouse_ExactlyOneValueSet_NoneSet               testCaseName = "validation_Create_opts_Warehouse_ExactlyOneValueSet_NoneSet"
@@ -19,6 +20,7 @@ const (
 	case_Tasks_sql_Create_all                                                            testCaseName = "sql_Create_all"
 	case_Tasks_validation_CreateOrAlter_name_ValidIdentifier                             testCaseName = "validation_CreateOrAlter_name_ValidIdentifier"
 	case_Tasks_validation_CreateOrAlter_ErrorIntegration_ValidIdentifierIfSet            testCaseName = "validation_CreateOrAlter_ErrorIntegration_ValidIdentifierIfSet"
+	case_Tasks_validation_CreateOrAlter_ExecuteAsUser_ValidIdentifierIfSet               testCaseName = "validation_CreateOrAlter_ExecuteAsUser_ValidIdentifierIfSet"
 	case_Tasks_validation_CreateOrAlter_Config_NoDoubleDollarQuotesIfSet                 testCaseName = "validation_CreateOrAlter_Config_NoDoubleDollarQuotesIfSet"
 	case_Tasks_validation_CreateOrAlter_opts_Warehouse_ExactlyOneValueSet_NoneSet        testCaseName = "validation_CreateOrAlter_opts_Warehouse_ExactlyOneValueSet_NoneSet"
 	case_Tasks_validation_CreateOrAlter_opts_Warehouse_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_CreateOrAlter_opts_Warehouse_ExactlyOneValueSet_MoreThanOneSet"
@@ -28,6 +30,7 @@ const (
 	case_Tasks_validation_Clone_sourceTask_ValidIdentifier                               testCaseName = "validation_Clone_sourceTask_ValidIdentifier"
 	case_Tasks_sql_Clone_basic                                                           testCaseName = "sql_Clone_basic"
 	case_Tasks_validation_Alter_name_ValidIdentifier                                     testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Tasks_validation_Alter_SetExecuteAsUser_ValidIdentifierIfSet                    testCaseName = "validation_Alter_SetExecuteAsUser_ValidIdentifierIfSet"
 	case_Tasks_validation_Alter_opts_ExactlyOneValueSet_NoneSet                          testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_Tasks_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                   testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_Tasks_validation_Alter_opts_Set_AtLeastOneValueSet                              testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
@@ -45,6 +48,8 @@ const (
 	case_Tasks_sql_Alter_UnsetTags                                                       testCaseName = "sql_Alter_UnsetTags"
 	case_Tasks_sql_Alter_SetFinalize                                                     testCaseName = "sql_Alter_SetFinalize"
 	case_Tasks_sql_Alter_UnsetFinalize                                                   testCaseName = "sql_Alter_UnsetFinalize"
+	case_Tasks_sql_Alter_SetExecuteAsUser                                                testCaseName = "sql_Alter_SetExecuteAsUser"
+	case_Tasks_sql_Alter_UnsetExecuteAsUser                                              testCaseName = "sql_Alter_UnsetExecuteAsUser"
 	case_Tasks_sql_Alter_ModifyAs                                                        testCaseName = "sql_Alter_ModifyAs"
 	case_Tasks_sql_Alter_ModifyWhen                                                      testCaseName = "sql_Alter_ModifyWhen"
 	case_Tasks_sql_Alter_RemoveWhen                                                      testCaseName = "sql_Alter_RemoveWhen"
@@ -96,6 +101,13 @@ var tasksTests = TasksTestsContext{
 				ExpectedErr: ErrInvalidObjectIdentifier,
 				DefaultModify: func(opts *CreateTaskOptions) {
 					opts.ErrorIntegration = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*CreateTaskOptions]{
+				Name:        case_Tasks_validation_Create_ExecuteAsUser_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateTaskOptions) {
+					opts.ExecuteAsUser = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*CreateTaskOptions]{
@@ -157,6 +169,13 @@ var tasksTests = TasksTestsContext{
 				ExpectedErr: ErrInvalidObjectIdentifier,
 				DefaultModify: func(opts *CreateOrAlterTaskOptions) {
 					opts.ErrorIntegration = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*CreateOrAlterTaskOptions]{
+				Name:        case_Tasks_validation_CreateOrAlter_ExecuteAsUser_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateOrAlterTaskOptions) {
+					opts.ExecuteAsUser = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*CreateOrAlterTaskOptions]{
@@ -236,8 +255,15 @@ var tasksTests = TasksTestsContext{
 				},
 			},
 			validationCase[*AlterTaskOptions]{
+				Name:        case_Tasks_validation_Alter_SetExecuteAsUser_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterTaskOptions) {
+					opts.SetExecuteAsUser = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterTaskOptions]{
 				Name:        case_Tasks_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterTaskOptions", "Resume", "Suspend", "RemoveAfter", "AddAfter", "Set", "Unset", "SetTags", "UnsetTags", "SetFinalize", "UnsetFinalize", "ModifyAs", "ModifyWhen", "RemoveWhen"),
+				ExpectedErr: errExactlyOneOf("AlterTaskOptions", "Resume", "Suspend", "RemoveAfter", "AddAfter", "Set", "Unset", "SetTags", "UnsetTags", "SetFinalize", "UnsetFinalize", "SetExecuteAsUser", "UnsetExecuteAsUser", "ModifyAs", "ModifyWhen", "RemoveWhen"),
 				DefaultModify: func(opts *AlterTaskOptions) {
 					opts.Resume = nil
 					opts.Suspend = nil
@@ -249,6 +275,8 @@ var tasksTests = TasksTestsContext{
 					opts.UnsetTags = nil
 					opts.SetFinalize = nil
 					opts.UnsetFinalize = nil
+					opts.SetExecuteAsUser = nil
+					opts.UnsetExecuteAsUser = nil
 					opts.ModifyAs = nil
 					opts.ModifyWhen = nil
 					opts.RemoveWhen = nil
@@ -256,7 +284,7 @@ var tasksTests = TasksTestsContext{
 			},
 			validationCase[*AlterTaskOptions]{
 				Name:        case_Tasks_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("AlterTaskOptions", "Resume", "Suspend", "RemoveAfter", "AddAfter", "Set", "Unset", "SetTags", "UnsetTags", "SetFinalize", "UnsetFinalize", "ModifyAs", "ModifyWhen", "RemoveWhen"),
+				ExpectedErr: errExactlyOneOf("AlterTaskOptions", "Resume", "Suspend", "RemoveAfter", "AddAfter", "Set", "Unset", "SetTags", "UnsetTags", "SetFinalize", "UnsetFinalize", "SetExecuteAsUser", "UnsetExecuteAsUser", "ModifyAs", "ModifyWhen", "RemoveWhen"),
 				DefaultModify: func(opts *AlterTaskOptions) {
 					opts.Resume = new(true)
 					opts.Suspend = new(true)
@@ -357,6 +385,12 @@ var tasksTests = TasksTestsContext{
 			},
 			sqlCase[*AlterTaskOptions]{
 				Name: case_Tasks_sql_Alter_UnsetFinalize,
+			},
+			sqlCase[*AlterTaskOptions]{
+				Name: case_Tasks_sql_Alter_SetExecuteAsUser,
+			},
+			sqlCase[*AlterTaskOptions]{
+				Name: case_Tasks_sql_Alter_UnsetExecuteAsUser,
 			},
 			sqlCase[*AlterTaskOptions]{
 				Name: case_Tasks_sql_Alter_ModifyAs,

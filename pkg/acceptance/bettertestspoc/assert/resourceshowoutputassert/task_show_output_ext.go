@@ -12,6 +12,11 @@ func (t *TaskShowOutputAssert) HasErrorIntegrationEmpty() *TaskShowOutputAssert 
 	return t
 }
 
+func (t *TaskShowOutputAssert) HasExecuteAsUserEmpty() *TaskShowOutputAssert {
+	t.StringValueSet("execute_as_user", "")
+	return t
+}
+
 func (t *TaskShowOutputAssert) HasCreatedOnNotEmpty() *TaskShowOutputAssert {
 	t.ValuePresent("created_on")
 	return t

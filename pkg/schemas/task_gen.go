@@ -72,6 +72,10 @@ var ShowTaskSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"execute_as_user": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	"last_committed_on": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -164,6 +168,9 @@ func TaskToSchema(task *sdk.Task) map[string]any {
 	taskSchema["allow_overlapping_execution"] = task.AllowOverlappingExecution
 	if task.ErrorIntegration != nil {
 		taskSchema["error_integration"] = task.ErrorIntegration.Name()
+	}
+	if task.ExecuteAsUser != nil {
+		taskSchema["execute_as_user"] = task.ExecuteAsUser.Name()
 	}
 	taskSchema["last_committed_on"] = task.LastCommittedOn
 	taskSchema["last_suspended_on"] = task.LastSuspendedOn

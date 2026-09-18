@@ -312,7 +312,7 @@ func getPredecessors(predecessors string) ([]string, error) {
 	return predecessorNames, err
 }
 
-// additionalConvert handles the four fields in taskDBRow that cannot be expressed
+// additionalConvert handles the fields in taskDBRow that cannot be expressed
 // by the generator: predecessors (JSON + row context), warehouse / error_integration
 // ("null" string exclusion), and target_completion_interval (custom parser).
 func (r taskDBRow) additionalConvert(result *Task) error {
