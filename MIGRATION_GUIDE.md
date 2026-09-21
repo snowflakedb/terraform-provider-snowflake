@@ -49,6 +49,21 @@ The current value is also exposed in the new `parameters` output block (result o
 
 No action is required; this is a non-breaking addition.
 
+### *(new feature)* Additional `type` and `mode` values in `snowflake_network_rule`
+
+The [`snowflake_network_rule`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/network_rule) resource now accepts additional `type` and `mode` values, matching [CREATE NETWORK RULE](https://docs.snowflake.com/en/sql-reference/sql/create-network-rule#required-parameters).
+
+New `type` values:
+- `IPV6` — IPv6 addresses (AWS only; use with `MODE = INGRESS`)
+- `COMPUTE_POOL` — Snowpark Container Services compute pools; `value_list` is compute pool names or `ALL` (use with `MODE = INGRESS`)
+
+New `mode` value:
+- `SNOWFLAKE_MANAGED_STORAGE_VOLUME` — requests to an AWS Snowflake-managed storage volume (use with `TYPE = AWSVPCEID`)
+
+No action is required; this is a non-breaking addition.
+
+Reference: [#5212](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5212).
+
 ### *(bugfix)* Fixed permadiff issue with the `unsupported_ddl_action` attribute
 
 Using a lowercase value for `unsupported_ddl_action` (for example `"ignore"` or `"fail"`) could result in a permadiff (like ` ~ unsupported_ddl_action = "IGNORE" -> "ignore"`).

@@ -9,11 +9,11 @@ import (
 var (
 	NetworkRuleTypeEnumDef = g.NewEnum(
 		"NetworkRuleType", "NetworkRuleTypes",
-		"IPV4", "AWSVPCEID", "AZURELINKID", "GCPPSCID", "HOST_PORT", "PRIVATE_HOST_PORT",
+		"IPV4", "IPV6", "AWSVPCEID", "AZURELINKID", "GCPPSCID", "HOST_PORT", "PRIVATE_HOST_PORT", "COMPUTE_POOL",
 	)
 	NetworkRuleModeEnumDef = g.NewEnum(
 		"NetworkRuleMode", "NetworkRuleModes",
-		"INGRESS", "INTERNAL_STAGE", "EGRESS", "POSTGRES_INGRESS", "POSTGRES_EGRESS",
+		"INGRESS", "INTERNAL_STAGE", "SNOWFLAKE_MANAGED_STORAGE_VOLUME", "EGRESS", "POSTGRES_INGRESS", "POSTGRES_EGRESS",
 	)
 )
 
