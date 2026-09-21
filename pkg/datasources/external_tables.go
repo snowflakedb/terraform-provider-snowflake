@@ -69,8 +69,7 @@ func ReadExternalTables(ctx context.Context, d *schema.ResourceData, meta any) d
 	schemaName := d.Get("schema").(string)
 
 	schemaId := sdk.NewDatabaseObjectIdentifier(databaseName, schemaName)
-	showIn := sdk.NewShowExternalTableInRequest().WithSchema(schemaId)
-	externalTables, err := client.ExternalTables.Show(ctx, sdk.NewShowExternalTableRequest().WithIn(*showIn))
+	externalTables, err := client.ExternalTables.Show(ctx, sdk.NewShowExternalTableRequest().WithIn(sdk.In{Schema: schemaId}))
 	if err != nil {
 		log.Printf("[DEBUG] failed when searching external tables in schema (%s), err = %s", schemaId.FullyQualifiedName(), err.Error())
 		d.SetId("")

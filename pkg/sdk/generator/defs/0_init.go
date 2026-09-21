@@ -30,6 +30,7 @@ func init() {
 		dynamicTablesDef,
 		dataMetricFunctionReferencesDef,
 		eventTablesDef,
+		externalTablesDef,
 		externalAccessIntegrationsDef,
 		externalFunctionsDef,
 		externalVolumesDef,

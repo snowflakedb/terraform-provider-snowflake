@@ -173,16 +173,16 @@ func CreateExternalTable(ctx context.Context, d *schema.ResourceData, meta any) 
 	fileFormat := d.Get("file_format").(string)
 
 	tableColumns := d.Get("column").([]any)
-	columnRequests := make([]*sdk.ExternalTableColumnRequest, len(tableColumns))
+	columnRequests := make([]sdk.ExternalTableColumnRequest, len(tableColumns))
 	for i, col := range tableColumns {
 		columnDef := map[string]string{}
 		for key, val := range col.(map[string]any) {
 			columnDef[key] = val.(string)
 		}
-		columnRequests[i] = sdk.NewExternalTableColumnRequest(
+		columnRequests[i] = *sdk.NewExternalTableColumnRequest(
 			columnDef["name"],
 			sdk.DataType(columnDef["type"]),
-			columnDef["as"],
+			*sdk.NewAsExpressionRequest(columnDef["as"]),
 		)
 	}
 	autoRefresh := d.Get("auto_refresh").(bool)
@@ -198,13 +198,9 @@ func CreateExternalTable(ctx context.Context, d *schema.ResourceData, meta any) 
 	awsSnsTopic, hasAwsSnsTopic := d.GetOk("aws_sns_topic")
 	comment, hasComment := d.GetOk("comment")
 
-	var tagAssociationRequests []*sdk.TagAssociationRequest
+	var tagAssociations []sdk.TagAssociation
 	if _, ok := d.GetOk("tag"); ok {
-		tagAssociations := getPropertyTags(d, "tag")
-		tagAssociationRequests = make([]*sdk.TagAssociationRequest, len(tagAssociations))
-		for i, t := range tagAssociations {
-			tagAssociationRequests[i] = sdk.NewTagAssociationRequest(t.Name, t.Value)
-		}
+		tagAssociations = getPropertyTags(d, "tag")
 	}
 
 	switch {
@@ -214,9 +210,9 @@ func CreateExternalTable(ctx context.Context, d *schema.ResourceData, meta any) 
 			WithPartitionBy(partitionBy).
 			WithRefreshOnCreate(refreshOnCreate).
 			WithAutoRefresh(autoRefresh).
-			WithRawFileFormat(fileFormat).
+			WithRawFileFormat(*sdk.NewRawFileFormatRequest(fileFormat)).
 			WithCopyGrants(copyGrants).
-			WithTag(tagAssociationRequests)
+			WithTag(tagAssociations)
 		if hasComment {
 			req = req.WithComment(comment.(string))
 		}
@@ -230,9 +226,9 @@ func CreateExternalTable(ctx context.Context, d *schema.ResourceData, meta any) 
 			WithPartitionBy(partitionBy).
 			WithRefreshOnCreate(refreshOnCreate).
 			WithAutoRefresh(autoRefresh).
-			WithRawFileFormat(fileFormat).
+			WithRawFileFormat(*sdk.NewRawFileFormatRequest(fileFormat)).
 			WithCopyGrants(copyGrants).
-			WithTag(tagAssociationRequests)
+			WithTag(tagAssociations)
 		if hasPattern {
 			req = req.WithPattern(pattern.(string))
 		}
@@ -297,18 +293,14 @@ func UpdateExternalTable(ctx context.Context, d *schema.ResourceData, meta any) 
 		unsetTags, setTags := GetTagsDiff(d, "tag")
 
 		if len(unsetTags) > 0 {
-			err := client.ExternalTables.Alter(ctx, sdk.NewAlterExternalTableRequest(id).WithUnsetTag(unsetTags))
+			err := client.ExternalTables.Alter(ctx, sdk.NewAlterExternalTableRequest(id).WithUnsetTags(unsetTags))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error setting tags on %v, err = %w", d.Id(), err))
 			}
 		}
 
 		if len(setTags) > 0 {
-			tagAssociationRequests := make([]*sdk.TagAssociationRequest, len(setTags))
-			for i, t := range setTags {
-				tagAssociationRequests[i] = sdk.NewTagAssociationRequest(t.Name, t.Value)
-			}
-			err := client.ExternalTables.Alter(ctx, sdk.NewAlterExternalTableRequest(id).WithSetTag(tagAssociationRequests))
+			err := client.ExternalTables.Alter(ctx, sdk.NewAlterExternalTableRequest(id).WithSetTags(setTags))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error setting tags on %v, err = %w", d.Id(), err))
 			}
