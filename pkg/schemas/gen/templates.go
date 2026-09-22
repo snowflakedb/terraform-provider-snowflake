@@ -11,7 +11,9 @@ import (
 var (
 	//go:embed templates/schema.tmpl
 	schemaTemplateContent string
-	SchemaTemplate, _     = template.New("schemaTemplate").Parse(schemaTemplateContent)
+	SchemaTemplate, _     = template.New("schemaTemplate").Funcs(genhelpers.BuildTemplateFuncMap(
+		genhelpers.FirstLetterLowercase,
+	)).Parse(schemaTemplateContent)
 
 	//go:embed templates/to_schema_mapper.tmpl
 	toSchemaMapperTemplateContent string

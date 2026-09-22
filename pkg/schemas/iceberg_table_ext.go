@@ -5,11 +5,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func init() {
-	DescribeIcebergTableDetailsSchema["type"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
+func (icebergTableDetailsToSchemaMapper) additionalSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"type": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 	}
+}
+
+func (icebergTableDetailsToSchemaMapper) additionalToSchema(src *sdk.IcebergTableDetails, dst map[string]any) {
+	dst["type"] = src.TypeString()
 }
 
 func icebergTablePartitionSpecsToSchema(partitionSpecs []sdk.IcebergTablePartitionSpec) []map[string]any {
@@ -35,9 +41,7 @@ func icebergTablePartitionSpecsToSchema(partitionSpecs []sdk.IcebergTablePartiti
 func IcebergTableDetailsListToSchema(details []sdk.IcebergTableDetails) []map[string]any {
 	result := make([]map[string]any, len(details))
 	for i := range details {
-		row := IcebergTableDetailsToSchema(&details[i])
-		row["type"] = details[i].TypeString()
-		result[i] = row
+		result[i] = IcebergTableDetailsToSchema(&details[i])
 	}
 	return result
 }

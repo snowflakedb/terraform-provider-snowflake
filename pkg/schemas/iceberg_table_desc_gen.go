@@ -7,8 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type icebergTableDetailsToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.IcebergTableDetails] = icebergTableDetailsToSchemaMapper{}
+
 // DescribeIcebergTableDetailsSchema represents output of DESCRIBE query for the single IcebergTableDetails.
-var DescribeIcebergTableDetailsSchema = map[string]*schema.Schema{
+var DescribeIcebergTableDetailsSchema = mergeSchema(map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -65,7 +69,7 @@ var DescribeIcebergTableDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}
+}, icebergTableDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeIcebergTableDetailsSchema
 
@@ -103,6 +107,7 @@ func IcebergTableDetailsToSchema(icebergTableDetails *sdk.IcebergTableDetails) m
 	if icebergTableDetails.WriteDefault != nil {
 		icebergTableDetailsSchema["write_default"] = (*icebergTableDetails.WriteDefault)
 	}
+	icebergTableDetailsToSchemaMapper{}.additionalToSchema(icebergTableDetails, icebergTableDetailsSchema)
 	return icebergTableDetailsSchema
 }
 

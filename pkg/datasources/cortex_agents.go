@@ -86,10 +86,10 @@ func ReadCortexAgents(ctx context.Context, d *schema.ResourceData, meta any) dia
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			describeOut = []map[string]any{schemas.CortexAgentDetailsToSchemaWithProfile(details)}
+			describeOut = []map[string]any{schemas.CortexAgentDetailsToSchema(details)}
 		}
 		flattened[i] = map[string]any{
-			resources.ShowOutputAttributeName:     []map[string]any{schemas.CortexAgentToSchemaWithProfile(&ca)},
+			resources.ShowOutputAttributeName:     []map[string]any{schemas.CortexAgentToSchema(&ca)},
 			resources.DescribeOutputAttributeName: describeOut,
 		}
 	}

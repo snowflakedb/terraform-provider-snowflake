@@ -7,8 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type cortexAgentToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.CortexAgent] = cortexAgentToSchemaMapper{}
+
 // ShowCortexAgentSchema represents output of SHOW query for the single CortexAgent.
-var ShowCortexAgentSchema = map[string]*schema.Schema{
+var ShowCortexAgentSchema = mergeSchema(map[string]*schema.Schema{
 	"created_on": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -33,7 +37,7 @@ var ShowCortexAgentSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}
+}, cortexAgentToSchemaMapper{}.additionalSchema())
 
 var _ = ShowCortexAgentSchema
 
@@ -45,6 +49,7 @@ func CortexAgentToSchema(cortexAgent *sdk.CortexAgent) map[string]any {
 	cortexAgentSchema["schema_name"] = cortexAgent.SchemaName
 	cortexAgentSchema["owner"] = cortexAgent.Owner
 	cortexAgentSchema["comment"] = cortexAgent.Comment
+	cortexAgentToSchemaMapper{}.additionalToSchema(cortexAgent, cortexAgentSchema)
 	return cortexAgentSchema
 }
 

@@ -18,14 +18,17 @@ type ShowResultSchemaDef struct {
 	TypeOverrides map[string]schema.ValueType
 	// UsedAsListEntry generates NameSchema (no Show/Describe prefix) for a property-row list Elem.
 	UsedAsListEntry bool
+	// AdditionalMapping generates a mapper type that must implement additionalSchemaMapper[T] in *_ext.go. Not inferred from SkipFields.
+	AdditionalMapping bool
 }
 
 // ShowResultSchemaDetails is the extracted generator input (struct fields + definition metadata).
 type ShowResultSchemaDetails struct {
-	IsDescribe      bool
-	SkipFields      []string
-	TypeOverrides   map[string]schema.ValueType
-	UsedAsListEntry bool
+	IsDescribe        bool
+	SkipFields        []string
+	TypeOverrides     map[string]schema.ValueType
+	UsedAsListEntry   bool
+	AdditionalMapping bool
 	genhelpers.StructDetails
 }
 
@@ -40,7 +43,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.CatalogIntegration{}},
 	{ObjectStruct: sdk.ComputePool{}},
 	{ObjectStruct: sdk.Connection{}},
-	{ObjectStruct: sdk.CortexAgent{}, SkipFields: []string{"profile"}},
+	{ObjectStruct: sdk.CortexAgent{}, SkipFields: []string{"profile"}, AdditionalMapping: true},
 	{ObjectStruct: sdk.DatabaseRole{}},
 	{ObjectStruct: sdk.Database{}},
 	{ObjectStruct: sdk.DynamicTable{}},
@@ -78,7 +81,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.PasswordPolicy{}},
 	{ObjectStruct: sdk.Pipe{}},
 	{ObjectStruct: sdk.PolicyReference{}},
-	{ObjectStruct: sdk.PostgresInstance{}},
+	{ObjectStruct: sdk.PostgresInstance{}, SkipFields: []string{"is_highly_available"}, AdditionalMapping: true},
 	{ObjectStruct: sdk.Procedure{}},
 	{ObjectStruct: sdk.ReplicationAccount{}},
 	{ObjectStruct: sdk.ReplicationDatabase{}},
@@ -108,8 +111,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.Warehouse{}},
 	{ObjectStruct: sdk.CatalogIntegrationAwsGlueDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.CatalogIntegrationObjectStorageDetails{}, IsDescribe: true},
-	{ObjectStruct: sdk.CortexAgentDetails{}, IsDescribe: true, SkipFields: []string{"profile"}},
-	{ObjectStruct: sdk.IcebergTableDetails{}, IsDescribe: true, SkipFields: []string{"type", "data_type_raw"}},
+	{ObjectStruct: sdk.CortexAgentDetails{}, IsDescribe: true, SkipFields: []string{"profile"}, AdditionalMapping: true},
+	{ObjectStruct: sdk.IcebergTableDetails{}, IsDescribe: true, SkipFields: []string{"type", "data_type_raw"}, AdditionalMapping: true},
 	{ObjectStruct: sdk.McpServerDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.PasswordPolicyDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.SecurityIntegrationProperty{}, UsedAsListEntry: true},
@@ -124,11 +127,12 @@ func GetShowResultSchemaDetails() []ShowResultSchemaDetails {
 	allDetails := make([]ShowResultSchemaDetails, len(SdkShowResultStructs))
 	for idx, d := range SdkShowResultStructs {
 		allDetails[idx] = ShowResultSchemaDetails{
-			IsDescribe:      d.IsDescribe,
-			SkipFields:      d.SkipFields,
-			TypeOverrides:   d.TypeOverrides,
-			UsedAsListEntry: d.UsedAsListEntry,
-			StructDetails:   genhelpers.ExtractStructDetails(d.ObjectStruct),
+			IsDescribe:        d.IsDescribe,
+			SkipFields:        d.SkipFields,
+			TypeOverrides:     d.TypeOverrides,
+			UsedAsListEntry:   d.UsedAsListEntry,
+			AdditionalMapping: d.AdditionalMapping,
+			StructDetails:     genhelpers.ExtractStructDetails(d.ObjectStruct),
 		}
 	}
 	return allDetails

@@ -2,6 +2,7 @@
 
 {{ $nameLowerCase := FirstLetterLowercase .Name }}
 {{ $schemaName := $nameLowerCase | printf "%sSchema" }}
+{{ $mapperTypeName := $nameLowerCase | printf "%sToSchemaMapper" }}
 func {{ .Name }}ToSchema({{ $nameLowerCase }} *{{ .SdkType }}) map[string]any {
 {{ $schemaName }} := make(map[string]any)
 {{- range .SchemaFields }}
@@ -12,6 +13,9 @@ func {{ .Name }}ToSchema({{ $nameLowerCase }} *{{ .SdkType }}) map[string]any {
     {{- else -}}
         {{ $schemaName }}["{{ .Name }}"] = {{ RunMapper .Mapper $nameLowerCase "." .OriginalName }}
     {{- end -}}
+{{- end }}
+{{- if .AdditionalMapping }}
+    {{ $mapperTypeName }}{}.additionalToSchema({{ $nameLowerCase }}, {{ $schemaName }})
 {{- end }}
 return {{ $schemaName }}
 }

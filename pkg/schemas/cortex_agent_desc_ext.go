@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func (cortexAgentToSchemaMapper) additionalSchema() map[string]*schema.Schema {
+func (cortexAgentDetailsToSchemaMapper) additionalSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"profile": {
 			Type:     schema.TypeList,
@@ -30,7 +30,7 @@ func (cortexAgentToSchemaMapper) additionalSchema() map[string]*schema.Schema {
 	}
 }
 
-func (cortexAgentToSchemaMapper) additionalToSchema(src *sdk.CortexAgent, dst map[string]any) {
+func (cortexAgentDetailsToSchemaMapper) additionalToSchema(src *sdk.CortexAgentDetails, dst map[string]any) {
 	dst["profile"] = []map[string]any{
 		{
 			"display_name": src.Profile.DisplayName,

@@ -197,8 +197,8 @@ func ReadCortexAgent(ctx context.Context, d *schema.ResourceData, meta any) diag
 		d.Set("specification", details.AgentSpec),
 		d.Set("comment", details.Comment),
 		d.Set("profile", profileList),
-		d.Set(ShowOutputAttributeName, []map[string]any{schemas.CortexAgentToSchemaWithProfile(agent)}),
-		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CortexAgentDetailsToSchemaWithProfile(details)}),
+		d.Set(ShowOutputAttributeName, []map[string]any{schemas.CortexAgentToSchema(agent)}),
+		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CortexAgentDetailsToSchema(details)}),
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 	)
 	return diag.FromErr(errs)

@@ -9,11 +9,12 @@ import (
 )
 
 type ShowResultSchemaModel struct {
-	Name            string
-	SdkType         string
-	IsDescribe      bool
-	UsedAsListEntry bool
-	SchemaFields    []SchemaField
+	Name              string
+	SdkType           string
+	IsDescribe        bool
+	UsedAsListEntry   bool
+	AdditionalMapping bool
+	SchemaFields      []SchemaField
 
 	*genhelpers.PreambleModel
 }
@@ -55,11 +56,12 @@ func ModelFromStructDetails(sdkStruct ShowResultSchemaDetails, preamble *genhelp
 	}
 
 	return ShowResultSchemaModel{
-		Name:            name,
-		SdkType:         sdkStruct.Name,
-		IsDescribe:      sdkStruct.IsDescribe,
-		UsedAsListEntry: sdkStruct.UsedAsListEntry,
-		SchemaFields:    schemaFields,
-		PreambleModel:   preamble,
+		Name:              name,
+		SdkType:           sdkStruct.Name,
+		IsDescribe:        sdkStruct.IsDescribe,
+		UsedAsListEntry:   sdkStruct.UsedAsListEntry,
+		AdditionalMapping: sdkStruct.AdditionalMapping,
+		SchemaFields:      schemaFields,
+		PreambleModel:     preamble,
 	}
 }

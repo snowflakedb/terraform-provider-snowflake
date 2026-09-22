@@ -7,8 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type cortexAgentDetailsToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.CortexAgentDetails] = cortexAgentDetailsToSchemaMapper{}
+
 // DescribeCortexAgentDetailsSchema represents output of DESCRIBE query for the single CortexAgentDetails.
-var DescribeCortexAgentDetailsSchema = map[string]*schema.Schema{
+var DescribeCortexAgentDetailsSchema = mergeSchema(map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -49,7 +53,7 @@ var DescribeCortexAgentDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}
+}, cortexAgentDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeCortexAgentDetailsSchema
 
@@ -71,6 +75,7 @@ func CortexAgentDetailsToSchema(cortexAgentDetails *sdk.CortexAgentDetails) map[
 	if cortexAgentDetails.Aliases != nil {
 		cortexAgentDetailsSchema["aliases"] = (*cortexAgentDetails.Aliases)
 	}
+	cortexAgentDetailsToSchemaMapper{}.additionalToSchema(cortexAgentDetails, cortexAgentDetailsSchema)
 	return cortexAgentDetailsSchema
 }
 

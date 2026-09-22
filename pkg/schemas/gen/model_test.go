@@ -83,6 +83,21 @@ func Test_ModelFromStructDetails_UsedAsListEntry(t *testing.T) {
 	assert.Equal(t, "security_integration_property_gen.go", model.Filename())
 }
 
+func Test_ModelFromStructDetails_AdditionalMapping(t *testing.T) {
+	details := ShowResultSchemaDetails{
+		AdditionalMapping: true,
+		StructDetails: genhelpers.StructDetails{
+			Name: "sdk.PostgresInstance",
+			Fields: []genhelpers.Field{
+				{Name: "Name", ConcreteType: "string", UnderlyingType: "string"},
+			},
+		},
+	}
+
+	model := ModelFromStructDetails(details, nil)
+	assert.True(t, model.AdditionalMapping)
+}
+
 func Test_ModelFromStructDetails_IsDescribeAndUsedAsListEntry(t *testing.T) {
 	details := ShowResultSchemaDetails{
 		IsDescribe:      true,

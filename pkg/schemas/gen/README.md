@@ -14,7 +14,7 @@ generation all SDK objects will have:
 - describe output schema when `IsDescribe` is set (`DescribeXSchema` in `{snake}_desc_gen.go`, `_details` suffix trimmed)
 - mapper from the SDK object to the generated schema (e.g. [user_gen](../user_gen.go))
 
-Unscoped generate and `generate-show-output-schemas-check` skip objects in `SHOW_OUTPUT_SCHEMAS_EXCLUDE` (Makefile). This generator is **Converging**. Customizations belong in `*_ext.go` (use `SkipFields` on the definition when the generated field must be omitted).
+Unscoped generate and `generate-show-output-schemas-check` skip objects in `SHOW_OUTPUT_SCHEMAS_EXCLUDE` (Makefile). This generator is **Converging**. Customizations belong in `*_ext.go`: `SkipFields` omits a generated key; `AdditionalMapping` plus `additionalSchema` / `additionalToSchema` on the generated mapper type re-adds public keys. Callers always use generated `XToSchema`.
 
 ### How it works
 
@@ -83,6 +83,7 @@ If you change the show output struct in the SDK:
    - struct DESCRIBE: `{ObjectStruct: sdk.<Singular>Details{}, IsDescribe: true}` → `Describe<Singular>DetailsSchema` in `<singular>_desc_gen.go`
    - property-row list entry: `{ObjectStruct: sdk.<Type>{}, UsedAsListEntry: true}` → `<Type>Schema` in `<type>_gen.go`
    - `SkipFields: []string{"snake_case_key"}` omits that key from the schema map and `ToSchema` (use when `*_ext.go` owns the field, or the field should stay omitted)
+   - `AdditionalMapping: true` generates an empty mapper type that must implement `additionalSchemaMapper[T]` in `*_ext.go` (schema keys + mapper). Callers always use generated `XToSchema`. Not inferred from `SkipFields`.
 2. Check if you don't introduce a type that is unsupported (check [supported types](#supported-types)
    and [known limitations](#known-limitations)).
 3. Run generation according to [instructions](#invoking-the-generation).
