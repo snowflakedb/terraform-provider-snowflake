@@ -25,7 +25,7 @@ func inheritedGrantsRequireExperiment(blockNames ...string) schema.CustomizeDiff
 			return nil
 		}
 		providerCtx := meta.(*provider.Context)
-		if !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.InheritedGrants, providerCtx.EnabledExperiments) {
+		if !providerCtx.Experiments.IsEnabled(experimentalfeatures.InheritedGrants) {
 			return fmt.Errorf("using an `inherited` block requires the %q experiment to be enabled. Add it to the `experimental_features_enabled` list in the provider configuration", experimentalfeatures.InheritedGrants)
 		}
 		return nil

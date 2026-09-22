@@ -266,8 +266,29 @@ var (
 	ActiveExperimentalFeatureNames = sdk.AsStringList(activeExperimentalFeatureNames)
 )
 
-func IsExperimentEnabled(experiment ExperimentalFeature, enabledExperiments []string) bool {
-	return slices.ContainsFunc(enabledExperiments, func(s string) bool {
-		return strings.EqualFold(string(experiment), s)
+// Experiments contains the configured experiment set.
+// Construct with New; do not assemble it by hand.
+type Experiments struct {
+	userEnabled []string
+}
+
+// New builds the experiment set from the user-configured enabled list.
+func New(userEnabled []string) Experiments {
+	return Experiments{userEnabled: userEnabled}
+}
+
+// IsEnabled reports whether the given experiment is on for this provider instance.
+func (e Experiments) IsEnabled(feature ExperimentalFeature) bool {
+	return isListed(feature, e.userEnabled)
+}
+
+// UserEnabled returns a copy of the user-configured experimental_features_enabled list.
+func (e Experiments) UserEnabled() []string {
+	return slices.Clone(e.userEnabled)
+}
+
+func isListed(feature ExperimentalFeature, names []string) bool {
+	return slices.ContainsFunc(names, func(s string) bool {
+		return strings.EqualFold(string(feature), s)
 	})
 }

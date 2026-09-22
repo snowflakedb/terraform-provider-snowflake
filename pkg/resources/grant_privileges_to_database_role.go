@@ -696,7 +696,7 @@ func DeleteGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 	// Snowflake reports), and an empty list makes the revoke fail validation before any SQL is sent, which
 	// leaves the resource impossible to destroy or replace. Update already derives them from the id.
 	privileges := getDatabaseRolePrivilegesFromId(id)
-	safely := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments)
+	safely := providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy)
 	err = revokeDatabaseRolePrivileges(ctx, client, d, id, privileges, &sdk.RevokePrivilegesFromDatabaseRoleOptions{}, safely)
 	if err != nil {
 		return diag.Diagnostics{

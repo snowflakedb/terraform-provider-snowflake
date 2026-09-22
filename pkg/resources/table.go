@@ -732,7 +732,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 
 	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments) && (d.HasChange("database") || d.HasChange("schema")) {
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema")) {
 		tableRenameFn := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
 			return func() error {
 				return client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(currentId).WithNewName(&targetId))

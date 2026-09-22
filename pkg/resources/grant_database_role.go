@@ -224,7 +224,7 @@ func DeleteGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta a
 	granteeName := parts[2]
 	revokeFunc := client.DatabaseRoles.Revoke
 	revokeFromShareFunc := client.DatabaseRoles.RevokeFromShare
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments) {
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy) {
 		revokeFunc = client.DatabaseRoles.RevokeSafely
 		revokeFromShareFunc = client.DatabaseRoles.RevokeFromShareSafely
 	}

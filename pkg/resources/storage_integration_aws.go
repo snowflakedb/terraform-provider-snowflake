@@ -151,7 +151,7 @@ func ImportStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, me
 		return nil, err
 	}
 
-	setDefaults := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ImportBooleanDefault, providerCtx.EnabledExperiments)
+	setDefaults := providerCtx.Experiments.IsEnabled(experimentalfeatures.ImportBooleanDefault)
 
 	usePrivateLinkEndpointValue := booleanStringFromBool(awsDetails.UsePrivatelinkEndpoint)
 	if setDefaults {

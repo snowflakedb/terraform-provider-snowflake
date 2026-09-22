@@ -28,7 +28,7 @@ func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
 	t.Setenv(snowflakeenvs.Account, "")
 	d := schema.TestResourceDataRaw(t, GetProviderSchema(), map[string]any{})
 
-	config, diags := getDriverConfigFromTerraform(d, nil)
+	config, diags := getDriverConfigFromTerraform(d, experimentalfeatures.Experiments{})
 
 	require.Empty(t, diags)
 	assert.Equal(t, "terraform-provider-snowflake", config.Application)
@@ -153,7 +153,7 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 		"disable_saml_url_check":                 "true",
 	})
 
-	config, diags := getDriverConfigFromTerraform(d, nil)
+	config, diags := getDriverConfigFromTerraform(d, experimentalfeatures.Experiments{})
 
 	require.Empty(t, diags)
 
@@ -285,7 +285,7 @@ func TestGetDriverConfigFromTerraform_AccountFallback(t *testing.T) {
 			t.Setenv(snowflakeenvs.Account, tc.accountEnvValue)
 			d := schema.TestResourceDataRaw(t, GetProviderSchema(), tc.configuration)
 
-			config, diags := getDriverConfigFromTerraform(d, tc.enabledExperiments)
+			config, diags := getDriverConfigFromTerraform(d, experimentalfeatures.New(tc.enabledExperiments))
 
 			if tc.expectedError != "" {
 				require.True(t, diags.HasError())

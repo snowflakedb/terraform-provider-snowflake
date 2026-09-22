@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_IsExperimentEnabled(t *testing.T) {
+func Test_Experiments_IsEnabled(t *testing.T) {
 	type test struct {
 		input       experimentalfeatures.ExperimentalFeature
 		enabledList []string
@@ -35,8 +35,21 @@ func Test_IsExperimentEnabled(t *testing.T) {
 
 	for _, tc := range valid {
 		t.Run(fmt.Sprintf("List: %v, feature: %s", tc.enabledList, tc.input), func(t *testing.T) {
-			got := experimentalfeatures.IsExperimentEnabled(tc.input, tc.enabledList)
+			got := experimentalfeatures.New(tc.enabledList).IsEnabled(tc.input)
 			require.Equal(t, tc.expected, got)
 		})
 	}
+
+	t.Run("zero value is disabled", func(t *testing.T) {
+		require.False(t, experimentalfeatures.Experiments{}.IsEnabled(feature))
+	})
+}
+
+func Test_Experiments_UserEnabled(t *testing.T) {
+	enabled := []string{string(experimentalfeatures.HierarchyRenames)}
+	experiments := experimentalfeatures.New(enabled)
+	got := experiments.UserEnabled()
+	require.Equal(t, enabled, got)
+	got[0] = "mutated"
+	require.Equal(t, enabled, experiments.UserEnabled())
 }

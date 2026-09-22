@@ -829,8 +829,9 @@ func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.D
 	if v, ok := s.GetOk("experimental_features_enabled"); ok {
 		enabledExperiments = expandStringList(v.(*schema.Set).List())
 	}
+	experiments := experimentalfeatures.New(enabledExperiments)
 
-	config, diags := getDriverConfigFromTerraform(s, enabledExperiments)
+	config, diags := getDriverConfigFromTerraform(s, experiments)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -850,7 +851,7 @@ func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.D
 
 	if v, ok := s.GetOk("profile"); ok && v.(string) != "" {
 		profile := v.(string)
-		rejectAccountField := !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ProviderConfigurationAccountFallback, enabledExperiments)
+		rejectAccountField := !experiments.IsEnabled(experimentalfeatures.ProviderConfigurationAccountFallback)
 		tomlConfig, err := GetDriverConfigFromTOML(profile, verifyPermissions, useLegacyTomlFile, rejectAccountField)
 		if err != nil {
 			return nil, append(diags, diag.FromErr(err)...)
@@ -866,7 +867,7 @@ func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.D
 		return nil, append(diags, diag.FromErr(err)...)
 	}
 	// If authenticator was not set but the token was, we set to OAuth for backward compatibility. Will be removed in v3.
-	if !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.AuthenticatorExplicitOnly, enabledExperiments) {
+	if !experiments.IsEnabled(experimentalfeatures.AuthenticatorExplicitOnly) {
 		if config.Authenticator == sdk.GosnowflakeAuthTypeEmpty {
 			if config.Token != "" {
 				config.Authenticator = gosnowflake.AuthTypeOAuth
@@ -897,7 +898,7 @@ func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.D
 		}
 	}
 
-	providerCtx.EnabledExperiments = enabledExperiments
+	providerCtx.Experiments = experiments
 
 	spanID, err := telemetry.NewSpanID()
 	if err != nil {
@@ -975,7 +976,7 @@ func GetDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFil
 	return profileConfig, nil
 }
 
-func getDriverConfigFromTerraform(s *schema.ResourceData, enabledExperiments []string) (*gosnowflake.Config, diag.Diagnostics) {
+func getDriverConfigFromTerraform(s *schema.ResourceData, experiments experimentalfeatures.Experiments) (*gosnowflake.Config, diag.Diagnostics) {
 	config := sdk.EmptyDriverConfigWithApplication("terraform-provider-snowflake")
 	var diags diag.Diagnostics
 
@@ -1088,7 +1089,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData, enabledExperiments []s
 	// so that it can never trigger the validation below if the experiment is not enabled.
 	accountEnvValue := oswrapper.Getenv(snowflakeenvs.Account)
 
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ProviderConfigurationAccountFallback, enabledExperiments) {
+	if experiments.IsEnabled(experimentalfeatures.ProviderConfigurationAccountFallback) {
 		if account == "" {
 			account = accountEnvValue
 		}
@@ -1142,7 +1143,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData, enabledExperiments []s
 				return nil, diag.FromErr(fmt.Errorf("could not retrieve access token from refresh token, err = %w", err))
 			}
 			config.Token = accessToken
-			if !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.AuthenticatorExplicitOnly, enabledExperiments) {
+			if !experiments.IsEnabled(experimentalfeatures.AuthenticatorExplicitOnly) {
 				config.Authenticator = gosnowflake.AuthTypeOAuth
 			}
 		}

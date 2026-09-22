@@ -206,7 +206,7 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 	providerCtx := meta.(*provider.Context)
 	client := providerCtx.Client
 
-	if d.Get("no_allowed_values").(bool) && !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues, providerCtx.EnabledExperiments) {
+	if d.Get("no_allowed_values").(bool) && !providerCtx.Experiments.IsEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues) {
 		return diag.FromErr(fmt.Errorf("no_allowed_values is not supported when the %s experiment is disabled", experimentalfeatures.TagsAllowEmptyAllowedValues))
 	}
 
@@ -262,7 +262,7 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 	}
 
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues, providerCtx.EnabledExperiments) {
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues) {
 		if d.Get("no_allowed_values").(bool) {
 			// We have to temporarily add and remove allowed value for Snowflake to make the tag block any value.
 			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd(*sdk.NewTagAddRequest().WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings([]string{tempTagAllowedValue})))); err != nil {
@@ -312,7 +312,7 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return diag.FromErr(err)
 	}
 
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues, providerCtx.EnabledExperiments) {
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues) {
 		if err := d.Set("no_allowed_values", reflect.DeepEqual(tag.AllowedValues, []string{})); err != nil {
 			return diag.FromErr(err)
 		}
@@ -423,7 +423,7 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 	}
 
-	experimentEnabled := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues, providerCtx.EnabledExperiments)
+	experimentEnabled := providerCtx.Experiments.IsEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues)
 	noAllowedValues := d.Get("no_allowed_values").(bool)
 	if noAllowedValues && !experimentEnabled {
 		return diag.FromErr(fmt.Errorf("no_allowed_values is not supported when the %s experiment is disabled", experimentalfeatures.TagsAllowEmptyAllowedValues))

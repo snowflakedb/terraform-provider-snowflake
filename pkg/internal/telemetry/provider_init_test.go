@@ -39,10 +39,10 @@ func Test_NewSpanID(t *testing.T) {
 
 func Test_providerInitFields(t *testing.T) {
 	providerCtx := &internalprovider.Context{
-		EnabledExperiments: []string{
+		Experiments: experimentalfeatures.New([]string{
 			string(experimentalfeatures.HierarchyRenames),
 			string(experimentalfeatures.InheritedGrants),
-		},
+		}),
 		EnabledFeatures: []string{
 			string(previewfeatures.AlertResource),
 		},

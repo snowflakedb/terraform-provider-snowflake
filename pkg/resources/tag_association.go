@@ -184,7 +184,7 @@ func ReadContextTagAssociation(ctx context.Context, d *schema.ResourceData, meta
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	safeDestroy := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagAssociationSafeDestroy, providerCtx.EnabledExperiments)
+	safeDestroy := providerCtx.Experiments.IsEnabled(experimentalfeatures.TagAssociationSafeDestroy)
 	var correctObjectIds []string
 	for _, oid := range ids {
 		objectTagValue, err := client.SystemFunctions.GetTag(ctx, tagId, oid, objectType)
@@ -267,7 +267,7 @@ func UpdateContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 			}
 		}
 
-		safeDestroy := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagAssociationSafeDestroy, providerCtx.EnabledExperiments)
+		safeDestroy := providerCtx.Experiments.IsEnabled(experimentalfeatures.TagAssociationSafeDestroy)
 		for _, id := range removedIds {
 			request := sdk.NewUnsetTagRequest(objectType, id).WithUnsetTags([]sdk.ObjectIdentifier{tagId}).WithIfExists(true)
 			if safeDestroy {
@@ -316,7 +316,7 @@ func DeleteContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	safeDestroy := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagAssociationSafeDestroy, providerCtx.EnabledExperiments)
+	safeDestroy := providerCtx.Experiments.IsEnabled(experimentalfeatures.TagAssociationSafeDestroy)
 	for _, id := range ids {
 		request := sdk.NewUnsetTagRequest(objectType, id).WithUnsetTags([]sdk.ObjectIdentifier{tagId}).WithIfExists(true)
 		if safeDestroy {

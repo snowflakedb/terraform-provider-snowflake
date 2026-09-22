@@ -23,7 +23,7 @@ func providerInitFields(providerCtx *internalprovider.Context) map[string]string
 		}
 	}
 	return map[string]string{
-		"experimental_features_enabled": collections.SortedJoinStrings(providerCtx.EnabledExperiments, ","),
+		"experimental_features_enabled": collections.SortedJoinStrings(providerCtx.Experiments.UserEnabled(), ","),
 		"preview_features_enabled":      collections.SortedJoinStrings(providerCtx.EnabledFeatures, ","),
 		"os":                            runtime.GOOS,
 		"arch":                          runtime.GOARCH,

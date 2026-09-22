@@ -640,7 +640,7 @@ func ImportGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 	}
 
 	providerCtx := m.(*provider.Context)
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsImportValidation, providerCtx.EnabledExperiments) {
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsImportValidation) {
 		if err := validateGrantPrivilegesToAccountRoleImport(ctx, m, id); err != nil {
 			return nil, fmt.Errorf("grant import validation: %w", err)
 		}
@@ -974,7 +974,7 @@ func DeleteGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 
 	privileges := getAccountRolePrivilegesFromSchema(d)
 	opts := &sdk.RevokePrivilegesFromAccountRoleOptions{}
-	safely := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments)
+	safely := providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy)
 	err = revokeAccountRolePrivileges(ctx, client, d, id, privileges, opts, safely)
 	if err != nil {
 		return diag.Diagnostics{
@@ -997,7 +997,7 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 	providerCtx := meta.(*provider.Context)
 
 	strictPrivilegeManagement := d.Get("strict_privilege_management").(bool)
-	if strictPrivilegeManagement && !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement, providerCtx.EnabledExperiments) {
+	if strictPrivilegeManagement && !providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement) {
 		return diag.Errorf("to use `strict_privilege_management`, you need to first specify the `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` feature in the `experimental_features_enabled` field at the provider level")
 	}
 

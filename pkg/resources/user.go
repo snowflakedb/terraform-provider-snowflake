@@ -309,7 +309,7 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		providerCtx := meta.(*provider.Context)
 		client := providerCtx.Client
-		if _, ok := d.GetOk("default_workload_identity"); ok && !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity, providerCtx.EnabledExperiments) {
+		if _, ok := d.GetOk("default_workload_identity"); ok && !providerCtx.Experiments.IsEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity) {
 			return diag.Errorf("to use `default_workload_identity`, you need to first specify the `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` feature in the `experimental_features_enabled` field at the provider level")
 		}
 
@@ -543,7 +543,7 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 					)
 				}
 				providerCtx := meta.(*provider.Context)
-				if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity, providerCtx.EnabledExperiments) &&
+				if providerCtx.Experiments.IsEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity) &&
 					(userType == sdk.UserTypeService || userType == sdk.UserTypeLegacyService) {
 					wifMethods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, sdk.NewShowUserWorkloadIdentityAuthenticationMethodOptionsUserRequest(id))
 					if err != nil {
@@ -584,7 +584,7 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		providerCtx := meta.(*provider.Context)
 		client := providerCtx.Client
-		if ok := d.HasChange("default_workload_identity"); ok && !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity, providerCtx.EnabledExperiments) {
+		if ok := d.HasChange("default_workload_identity"); ok && !providerCtx.Experiments.IsEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity) {
 			return diag.Errorf("to use `default_workload_identity`, you need to first specify the `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` feature in the `experimental_features_enabled` field at the provider level")
 		}
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())

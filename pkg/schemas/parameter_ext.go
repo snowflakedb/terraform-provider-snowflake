@@ -9,7 +9,7 @@ import (
 // ParameterToSchemaReducedOutput limits the `parameters` output only to the value and level values.
 // It utilizes the experimentalfeatures.ParametersReducedOutput experiment.
 func ParameterToSchemaReducedOutput(parameter *sdk.Parameter, providerCtx *provider.Context) map[string]any {
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ParametersReducedOutput, providerCtx.EnabledExperiments) {
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.ParametersReducedOutput) {
 		parameterSchema := make(map[string]any)
 		parameterSchema["value"] = parameter.Value
 		parameterSchema["level"] = string(parameter.Level)

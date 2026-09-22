@@ -926,7 +926,7 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 		return diag.FromErr(err)
 	}
 
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments) && (d.HasChange("database") || d.HasChange("schema")) {
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema")) {
 		hybridTableRenameFn := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
 			return func() error {
 				return client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(currentId).WithRenameTo(targetId))
