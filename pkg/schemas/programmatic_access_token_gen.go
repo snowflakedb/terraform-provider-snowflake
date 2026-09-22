@@ -58,20 +58,20 @@ func ProgrammaticAccessTokenToSchema(programmaticAccessToken *sdk.ProgrammaticAc
 	programmaticAccessTokenSchema["name"] = programmaticAccessToken.Name
 	programmaticAccessTokenSchema["user_name"] = programmaticAccessToken.UserName.Name()
 	if programmaticAccessToken.RoleRestriction != nil {
-		programmaticAccessTokenSchema["role_restriction"] = programmaticAccessToken.RoleRestriction.Name()
+		programmaticAccessTokenSchema["role_restriction"] = (*programmaticAccessToken.RoleRestriction).Name()
 	}
 	programmaticAccessTokenSchema["expires_at"] = programmaticAccessToken.ExpiresAt.String()
 	programmaticAccessTokenSchema["status"] = string(programmaticAccessToken.Status)
 	if programmaticAccessToken.Comment != nil {
-		programmaticAccessTokenSchema["comment"] = programmaticAccessToken.Comment
+		programmaticAccessTokenSchema["comment"] = (*programmaticAccessToken.Comment)
 	}
 	programmaticAccessTokenSchema["created_on"] = programmaticAccessToken.CreatedOn.String()
 	programmaticAccessTokenSchema["created_by"] = programmaticAccessToken.CreatedBy
 	if programmaticAccessToken.MinsToBypassNetworkPolicyRequirement != nil {
-		programmaticAccessTokenSchema["mins_to_bypass_network_policy_requirement"] = programmaticAccessToken.MinsToBypassNetworkPolicyRequirement
+		programmaticAccessTokenSchema["mins_to_bypass_network_policy_requirement"] = (*programmaticAccessToken.MinsToBypassNetworkPolicyRequirement)
 	}
 	if programmaticAccessToken.RotatedTo != nil {
-		programmaticAccessTokenSchema["rotated_to"] = programmaticAccessToken.RotatedTo
+		programmaticAccessTokenSchema["rotated_to"] = (*programmaticAccessToken.RotatedTo)
 	}
 	return programmaticAccessTokenSchema
 }

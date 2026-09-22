@@ -60,11 +60,11 @@ func NotebookToSchema(notebook *sdk.Notebook) map[string]any {
 	notebookSchema["database_name"] = notebook.DatabaseName
 	notebookSchema["schema_name"] = notebook.SchemaName
 	if notebook.Comment != nil {
-		notebookSchema["comment"] = notebook.Comment
+		notebookSchema["comment"] = (*notebook.Comment)
 	}
 	notebookSchema["owner"] = notebook.Owner
 	if notebook.QueryWarehouse != nil {
-		notebookSchema["query_warehouse"] = notebook.QueryWarehouse.Name()
+		notebookSchema["query_warehouse"] = (*notebook.QueryWarehouse).Name()
 	}
 	notebookSchema["url_id"] = notebook.UrlId
 	notebookSchema["owner_role_type"] = notebook.OwnerRoleType

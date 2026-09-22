@@ -123,53 +123,53 @@ func ListingToSchema(listing *sdk.Listing) map[string]any {
 	listingSchema["name"] = listing.Name
 	listingSchema["title"] = listing.Title
 	if listing.Subtitle != nil {
-		listingSchema["subtitle"] = listing.Subtitle
+		listingSchema["subtitle"] = (*listing.Subtitle)
 	}
 	listingSchema["profile"] = listing.Profile
 	listingSchema["created_on"] = listing.CreatedOn.String()
 	listingSchema["updated_on"] = listing.UpdatedOn
 	if listing.PublishedOn != nil {
-		listingSchema["published_on"] = listing.PublishedOn
+		listingSchema["published_on"] = (*listing.PublishedOn)
 	}
 	listingSchema["state"] = string(listing.State)
 	if listing.ReviewState != nil {
-		listingSchema["review_state"] = listing.ReviewState
+		listingSchema["review_state"] = (*listing.ReviewState)
 	}
 	if listing.Comment != nil {
-		listingSchema["comment"] = listing.Comment
+		listingSchema["comment"] = (*listing.Comment)
 	}
 	listingSchema["owner"] = listing.Owner
 	listingSchema["owner_role_type"] = listing.OwnerRoleType
 	if listing.Regions != nil {
-		listingSchema["regions"] = listing.Regions
+		listingSchema["regions"] = (*listing.Regions)
 	}
 	listingSchema["target_accounts"] = listing.TargetAccounts
 	listingSchema["is_monetized"] = listing.IsMonetized
 	listingSchema["is_application"] = listing.IsApplication
 	listingSchema["is_targeted"] = listing.IsTargeted
 	if listing.IsLimitedTrial != nil {
-		listingSchema["is_limited_trial"] = listing.IsLimitedTrial
+		listingSchema["is_limited_trial"] = (*listing.IsLimitedTrial)
 	}
 	if listing.IsByRequest != nil {
-		listingSchema["is_by_request"] = listing.IsByRequest
+		listingSchema["is_by_request"] = (*listing.IsByRequest)
 	}
 	if listing.Distribution != nil {
-		listingSchema["distribution"] = listing.Distribution
+		listingSchema["distribution"] = (*listing.Distribution)
 	}
 	if listing.IsMountlessQueryable != nil {
-		listingSchema["is_mountless_queryable"] = listing.IsMountlessQueryable
+		listingSchema["is_mountless_queryable"] = (*listing.IsMountlessQueryable)
 	}
 	if listing.RejectedOn != nil {
-		listingSchema["rejected_on"] = listing.RejectedOn
+		listingSchema["rejected_on"] = (*listing.RejectedOn)
 	}
 	if listing.OrganizationProfileName != nil {
-		listingSchema["organization_profile_name"] = listing.OrganizationProfileName
+		listingSchema["organization_profile_name"] = (*listing.OrganizationProfileName)
 	}
 	if listing.UniformListingLocator != nil {
-		listingSchema["uniform_listing_locator"] = listing.UniformListingLocator
+		listingSchema["uniform_listing_locator"] = (*listing.UniformListingLocator)
 	}
 	if listing.DetailedTargetAccounts != nil {
-		listingSchema["detailed_target_accounts"] = listing.DetailedTargetAccounts
+		listingSchema["detailed_target_accounts"] = (*listing.DetailedTargetAccounts)
 	}
 	return listingSchema
 }

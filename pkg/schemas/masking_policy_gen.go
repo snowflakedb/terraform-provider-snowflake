@@ -37,12 +37,12 @@ var ShowMaskingPolicySchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"exempt_other_policies": {
-		Type:     schema.TypeBool,
-		Computed: true,
-	},
 	"owner_role_type": {
 		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"exempt_other_policies": {
+		Type:     schema.TypeBool,
 		Computed: true,
 	},
 }
@@ -58,8 +58,8 @@ func MaskingPolicyToSchema(maskingPolicy *sdk.MaskingPolicy) map[string]any {
 	maskingPolicySchema["kind"] = maskingPolicy.Kind
 	maskingPolicySchema["owner"] = maskingPolicy.Owner
 	maskingPolicySchema["comment"] = maskingPolicy.Comment
-	maskingPolicySchema["exempt_other_policies"] = maskingPolicy.ExemptOtherPolicies
 	maskingPolicySchema["owner_role_type"] = maskingPolicy.OwnerRoleType
+	maskingPolicySchema["exempt_other_policies"] = maskingPolicy.ExemptOtherPolicies
 	return maskingPolicySchema
 }
 

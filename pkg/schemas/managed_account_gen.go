@@ -60,7 +60,7 @@ func ManagedAccountToSchema(managedAccount *sdk.ManagedAccount) map[string]any {
 	managedAccountSchema["account_locator_url"] = managedAccount.AccountLocatorURL
 	managedAccountSchema["is_reader"] = managedAccount.IsReader
 	if managedAccount.Comment != nil {
-		managedAccountSchema["comment"] = managedAccount.Comment
+		managedAccountSchema["comment"] = (*managedAccount.Comment)
 	}
 	return managedAccountSchema
 }

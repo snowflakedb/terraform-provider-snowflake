@@ -209,7 +209,7 @@ generate-issue-labels-check: generate-issue-labels ## check that issue labels ha
 # To generate one of them:
 #   make generate-show-output-schemas SHOW_OUTPUT_SCHEMAS_EXCLUDE= SF_TF_GENERATOR_ARGS='--filter-object-names=sdk.Warehouse'
 # Do not put spaces around names: --exclude-object-names does not trim each item.
-SHOW_OUTPUT_SCHEMAS_EXCLUDE ?= sdk.AuthenticationPolicy,sdk.CatalogIntegrationAwsGlueDetails,sdk.CatalogIntegrationObjectStorageDetails,sdk.DynamicTable,sdk.Function,sdk.GitRepository,sdk.Listing,sdk.ManagedAccount,sdk.MaskingPolicy,sdk.MaterializedView,sdk.Notebook,sdk.PolicyReference,sdk.Procedure,sdk.ProgrammaticAccessToken,sdk.ResourceMonitor,sdk.Schema,sdk.SessionPolicy,sdk.SessionPolicyDetails,sdk.Share,sdk.StorageIntegrationAllDetails,sdk.StorageIntegrationAwsDetails,sdk.StorageIntegrationAzureDetails,sdk.StorageIntegrationGcsDetails,sdk.Table,sdk.Warehouse
+SHOW_OUTPUT_SCHEMAS_EXCLUDE ?= sdk.CatalogIntegrationAwsGlueDetails,sdk.CatalogIntegrationObjectStorageDetails,sdk.SessionPolicyDetails,sdk.StorageIntegrationAllDetails,sdk.StorageIntegrationAwsDetails,sdk.StorageIntegrationAzureDetails,sdk.StorageIntegrationGcsDetails,sdk.Warehouse
 
 generate-show-output-schemas: ## Generate show output schemas with mappers
 	SF_TF_GENERATOR_ARGS='$(strip $(if $(SHOW_OUTPUT_SCHEMAS_EXCLUDE),--exclude-object-names=$(SHOW_OUTPUT_SCHEMAS_EXCLUDE)) $(SF_TF_GENERATOR_ARGS))' go generate ./pkg/schemas/generate.go

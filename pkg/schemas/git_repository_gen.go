@@ -66,15 +66,15 @@ func GitRepositoryToSchema(gitRepository *sdk.GitRepository) map[string]any {
 	gitRepositorySchema["origin"] = gitRepository.Origin
 	gitRepositorySchema["api_integration"] = gitRepository.ApiIntegration.Name()
 	if gitRepository.GitCredentials != nil {
-		gitRepositorySchema["git_credentials"] = gitRepository.GitCredentials.FullyQualifiedName()
+		gitRepositorySchema["git_credentials"] = (*gitRepository.GitCredentials).FullyQualifiedName()
 	}
 	gitRepositorySchema["owner"] = gitRepository.Owner
 	gitRepositorySchema["owner_role_type"] = gitRepository.OwnerRoleType
 	if gitRepository.Comment != nil {
-		gitRepositorySchema["comment"] = gitRepository.Comment
+		gitRepositorySchema["comment"] = (*gitRepository.Comment)
 	}
 	if gitRepository.LastFetchedAt != nil {
-		gitRepositorySchema["last_fetched_at"] = gitRepository.LastFetchedAt.String()
+		gitRepositorySchema["last_fetched_at"] = (*gitRepository.LastFetchedAt).String()
 	}
 	return gitRepositorySchema
 }

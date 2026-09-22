@@ -112,26 +112,26 @@ func TableToSchema(table *sdk.Table) map[string]any {
 	tableSchema["cluster_by"] = table.ClusterBy
 	tableSchema["rows"] = table.Rows
 	if table.Bytes != nil {
-		tableSchema["bytes"] = table.Bytes
+		tableSchema["bytes"] = (*table.Bytes)
 	}
 	tableSchema["owner"] = table.Owner
 	tableSchema["retention_time"] = table.RetentionTime
 	if table.DroppedOn != nil {
-		tableSchema["dropped_on"] = table.DroppedOn
+		tableSchema["dropped_on"] = (*table.DroppedOn)
 	}
 	tableSchema["automatic_clustering"] = table.AutomaticClustering
 	tableSchema["change_tracking"] = table.ChangeTracking
 	tableSchema["search_optimization"] = table.SearchOptimization
 	tableSchema["search_optimization_progress"] = table.SearchOptimizationProgress
 	if table.SearchOptimizationBytes != nil {
-		tableSchema["search_optimization_bytes"] = table.SearchOptimizationBytes
+		tableSchema["search_optimization_bytes"] = (*table.SearchOptimizationBytes)
 	}
 	tableSchema["is_external"] = table.IsExternal
 	tableSchema["enable_schema_evolution"] = table.EnableSchemaEvolution
 	tableSchema["owner_role_type"] = table.OwnerRoleType
 	tableSchema["is_event"] = table.IsEvent
 	if table.Budget != nil {
-		tableSchema["budget"] = table.Budget
+		tableSchema["budget"] = (*table.Budget)
 	}
 	return tableSchema
 }
