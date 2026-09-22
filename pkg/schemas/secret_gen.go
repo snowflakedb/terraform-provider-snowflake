@@ -7,8 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type secretToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.Secret] = secretToSchemaMapper{}
+
 // ShowSecretSchema represents output of SHOW query for the single Secret.
-var ShowSecretSchema = map[string]*schema.Schema{
+var ShowSecretSchema = mergeSchema(map[string]*schema.Schema{
 	"created_on": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -37,17 +41,11 @@ var ShowSecretSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"oauth_scopes": {
-		// adjusted manually
-		Type:     schema.TypeSet,
-		Elem:     &schema.Schema{Type: schema.TypeString},
-		Computed: true,
-	},
 	"owner_role_type": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}
+}, secretToSchemaMapper{}.additionalSchema())
 
 var _ = ShowSecretSchema
 
@@ -59,11 +57,11 @@ func SecretToSchema(secret *sdk.Secret) map[string]any {
 	secretSchema["database_name"] = secret.DatabaseName
 	secretSchema["owner"] = secret.Owner
 	if secret.Comment != nil {
-		secretSchema["comment"] = secret.Comment
+		secretSchema["comment"] = (*secret.Comment)
 	}
 	secretSchema["secret_type"] = secret.SecretType
-	secretSchema["oauth_scopes"] = secret.OauthScopes
 	secretSchema["owner_role_type"] = secret.OwnerRoleType
+	secretToSchemaMapper{}.additionalToSchema(secret, secretSchema)
 	return secretSchema
 }
 

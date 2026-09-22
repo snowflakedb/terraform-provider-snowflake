@@ -75,7 +75,6 @@ func DatabaseToSchema(database *sdk.Database) map[string]any {
 	databaseSchema["name"] = database.Name
 	databaseSchema["is_default"] = database.IsDefault
 	databaseSchema["is_current"] = database.IsCurrent
-	// adjusted manually
 	if database.Origin != nil {
 		databaseSchema["origin"] = database.Origin.FullyQualifiedName()
 	}

@@ -7,8 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type replicationAccountToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.ReplicationAccount] = replicationAccountToSchemaMapper{}
+
 // ShowReplicationAccountSchema represents output of SHOW query for the single ReplicationAccount.
-var ShowReplicationAccountSchema = map[string]*schema.Schema{
+var ShowReplicationAccountSchema = mergeSchema(map[string]*schema.Schema{
 	"snowflake_region": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -25,10 +29,6 @@ var ShowReplicationAccountSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"comment": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
 	"organization_name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -37,7 +37,7 @@ var ShowReplicationAccountSchema = map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
-}
+}, replicationAccountToSchemaMapper{}.additionalSchema())
 
 var _ = ShowReplicationAccountSchema
 
@@ -49,10 +49,7 @@ func ReplicationAccountToSchema(replicationAccount *sdk.ReplicationAccount) map[
 	replicationAccountSchema["account_locator"] = replicationAccount.AccountLocator
 	replicationAccountSchema["organization_name"] = replicationAccount.OrganizationName
 	replicationAccountSchema["is_org_admin"] = replicationAccount.IsOrgAdmin
-	// adjusted manually
-	if replicationAccount.Comment.Valid {
-		replicationAccountSchema["comment"] = replicationAccount.Comment.String
-	}
+	replicationAccountToSchemaMapper{}.additionalToSchema(replicationAccount, replicationAccountSchema)
 	return replicationAccountSchema
 }
 

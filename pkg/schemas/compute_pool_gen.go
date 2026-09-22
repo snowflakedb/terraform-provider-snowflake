@@ -7,8 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type computePoolToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.ComputePool] = computePoolToSchemaMapper{}
+
 // ShowComputePoolSchema represents output of SHOW query for the single ComputePool.
-var ShowComputePoolSchema = map[string]*schema.Schema{
+var ShowComputePoolSchema = mergeSchema(map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -27,12 +31,6 @@ var ShowComputePoolSchema = map[string]*schema.Schema{
 	},
 	"instance_family": {
 		Type:     schema.TypeString,
-		Computed: true,
-	},
-	"backup_instance_families": {
-		// Adjusted manually.
-		Type:     schema.TypeList,
-		Elem:     &schema.Schema{Type: schema.TypeString},
 		Computed: true,
 	},
 	"num_services": {
@@ -91,7 +89,7 @@ var ShowComputePoolSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}
+}, computePoolToSchemaMapper{}.additionalSchema())
 
 var _ = ShowComputePoolSchema
 
@@ -102,8 +100,6 @@ func ComputePoolToSchema(computePool *sdk.ComputePool) map[string]any {
 	computePoolSchema["min_nodes"] = computePool.MinNodes
 	computePoolSchema["max_nodes"] = computePool.MaxNodes
 	computePoolSchema["instance_family"] = string(computePool.InstanceFamily)
-	// Adjusted manually.
-	computePoolSchema["backup_instance_families"] = computePool.BackupInstanceFamilies
 	computePoolSchema["num_services"] = computePool.NumServices
 	computePoolSchema["num_jobs"] = computePool.NumJobs
 	computePoolSchema["auto_suspend_secs"] = computePool.AutoSuspendSecs
@@ -116,12 +112,13 @@ func ComputePoolToSchema(computePool *sdk.ComputePool) map[string]any {
 	computePoolSchema["updated_on"] = computePool.UpdatedOn.String()
 	computePoolSchema["owner"] = computePool.Owner
 	if computePool.Comment != nil {
-		computePoolSchema["comment"] = computePool.Comment
+		computePoolSchema["comment"] = (*computePool.Comment)
 	}
 	computePoolSchema["is_exclusive"] = computePool.IsExclusive
 	if computePool.Application != nil {
-		computePoolSchema["application"] = computePool.Application.Name()
+		computePoolSchema["application"] = (*computePool.Application).Name()
 	}
+	computePoolToSchemaMapper{}.additionalToSchema(computePool, computePoolSchema)
 	return computePoolSchema
 }
 

@@ -10,6 +10,10 @@ func {{ .Name }}ToSchema({{ $nameLowerCase }} *{{ .SdkType }}) map[string]any {
         if {{ $nameLowerCase }}.{{ .OriginalName }} != nil {
         {{ $schemaName }}["{{ .Name }}"] = {{ RunMapper .Mapper "(*" $nameLowerCase "." .OriginalName ")" }}
         }
+    {{- else if .IsOriginalTypeInterface -}}
+        if {{ $nameLowerCase }}.{{ .OriginalName }} != nil {
+        {{ $schemaName }}["{{ .Name }}"] = {{ RunMapper .Mapper $nameLowerCase "." .OriginalName }}
+        }
     {{- else -}}
         {{ $schemaName }}["{{ .Name }}"] = {{ RunMapper .Mapper $nameLowerCase "." .OriginalName }}
     {{- end -}}

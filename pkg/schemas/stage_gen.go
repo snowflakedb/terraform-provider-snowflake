@@ -89,21 +89,20 @@ func StageToSchema(stage *sdk.Stage) map[string]any {
 	stageSchema["owner"] = stage.Owner
 	stageSchema["comment"] = stage.Comment
 	if stage.Region != nil {
-		stageSchema["region"] = stage.Region
+		stageSchema["region"] = (*stage.Region)
 	}
-	stageSchema["type"] = stage.Type
+	stageSchema["type"] = string(stage.Type)
 	if stage.Cloud != nil {
-		stageSchema["cloud"] = stage.Cloud
+		stageSchema["cloud"] = string((*stage.Cloud))
 	}
 	if stage.StorageIntegration != nil {
-		// adjusted manually
-		stageSchema["storage_integration"] = stage.StorageIntegration.Name()
+		stageSchema["storage_integration"] = (*stage.StorageIntegration).Name()
 	}
 	if stage.Endpoint != nil {
-		stageSchema["endpoint"] = stage.Endpoint
+		stageSchema["endpoint"] = (*stage.Endpoint)
 	}
 	if stage.OwnerRoleType != nil {
-		stageSchema["owner_role_type"] = stage.OwnerRoleType
+		stageSchema["owner_role_type"] = (*stage.OwnerRoleType)
 	}
 	stageSchema["directory_enabled"] = stage.DirectoryEnabled
 	return stageSchema

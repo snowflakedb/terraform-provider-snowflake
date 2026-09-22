@@ -161,3 +161,31 @@ func Test_Field_IsPointer(t *testing.T) {
 		assert.False(t, field.IsPointer())
 	})
 }
+
+func Test_Field_IsInterface(t *testing.T) {
+	t.Run("is an interface", func(t *testing.T) {
+		field := genhelpers.Field{UnderlyingType: "interface"}
+
+		assert.True(t, field.IsInterface())
+	})
+
+	t.Run("is a pointer to interface", func(t *testing.T) {
+		field := genhelpers.Field{UnderlyingType: "*interface"}
+
+		assert.True(t, field.IsInterface())
+	})
+
+	t.Run("is not an interface", func(t *testing.T) {
+		field := genhelpers.Field{UnderlyingType: "struct"}
+
+		assert.False(t, field.IsInterface())
+
+		field = genhelpers.Field{UnderlyingType: "*struct"}
+
+		assert.False(t, field.IsInterface())
+
+		field = genhelpers.Field{UnderlyingType: "string"}
+
+		assert.False(t, field.IsInterface())
+	})
+}

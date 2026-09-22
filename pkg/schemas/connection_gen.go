@@ -7,8 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type connectionToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.Connection] = connectionToSchemaMapper{}
+
 // ShowConnectionSchema represents output of SHOW query for the single Connection.
-var ShowConnectionSchema = map[string]*schema.Schema{
+var ShowConnectionSchema = mergeSchema(map[string]*schema.Schema{
 	"region_group": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -41,12 +45,6 @@ var ShowConnectionSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"failover_allowed_to_accounts": {
-		// adjusted manually
-		Type:     schema.TypeList,
-		Elem:     &schema.Schema{Type: schema.TypeString},
-		Computed: true,
-	},
 	"connection_url": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -59,33 +57,28 @@ var ShowConnectionSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}
+}, connectionToSchemaMapper{}.additionalSchema())
 
 var _ = ShowConnectionSchema
 
 func ConnectionToSchema(connection *sdk.Connection) map[string]any {
 	connectionSchema := make(map[string]any)
 	if connection.RegionGroup != nil {
-		connectionSchema["region_group"] = connection.RegionGroup
+		connectionSchema["region_group"] = (*connection.RegionGroup)
 	}
 	connectionSchema["snowflake_region"] = connection.SnowflakeRegion
 	connectionSchema["created_on"] = connection.CreatedOn.String()
 	connectionSchema["account_name"] = connection.AccountName
 	connectionSchema["name"] = connection.Name
 	if connection.Comment != nil {
-		connectionSchema["comment"] = connection.Comment
+		connectionSchema["comment"] = (*connection.Comment)
 	}
 	connectionSchema["is_primary"] = connection.IsPrimary
 	connectionSchema["primary"] = connection.Primary.FullyQualifiedName()
-	// adjusted manually
-	var allowedAccounts []string
-	for _, accountId := range connection.FailoverAllowedToAccounts {
-		allowedAccounts = append(allowedAccounts, accountId.Name())
-	}
-	connectionSchema["failover_allowed_to_accounts"] = allowedAccounts
 	connectionSchema["connection_url"] = connection.ConnectionUrl
 	connectionSchema["organization_name"] = connection.OrganizationName
 	connectionSchema["account_locator"] = connection.AccountLocator
+	connectionToSchemaMapper{}.additionalToSchema(connection, connectionSchema)
 	return connectionSchema
 }
 

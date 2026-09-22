@@ -58,14 +58,14 @@ The following types are supported currently in the generator (schema and mapping
     - `sdk.DatabaseObjectIdentifier`
     - `sdk.SchemaObjectIdentifier`
     - `sdk.TableColumnIdentifier`
-- `sdk.ObjectIdentifier` interface
+- `sdk.ObjectIdentifier` interface (nil-guarded; no dereference)
 
 ##### To schema mappings
 
 Given SDK struct field can be mapped to the generated schema depending on its type:
 - no mapping (`Identity`) - used for `string` and other basic types
 - string value mapping (`ToString`) - used e.g. for `time.Time`
-- fully qualified name mapping (`FullyQualifiedName`) - used for all identifiers and `sdk.ObjectIdentifier` interface
+- fully qualified name mapping (`FullyQualifiedName`) - used for all identifiers and `sdk.ObjectIdentifier` interface (nil-guarded when the field is an interface)
 - casting (`CastToString` and `CastToInt`) - used for enums with underlying type `string` or `int`
 
 ##### Changing the SDK object's show output

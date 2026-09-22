@@ -7,8 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type tagToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.Tag] = tagToSchemaMapper{}
+
 // ShowTagSchema represents output of SHOW query for the single Tag.
-var ShowTagSchema = map[string]*schema.Schema{
+var ShowTagSchema = mergeSchema(map[string]*schema.Schema{
 	"created_on": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -33,12 +37,6 @@ var ShowTagSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"allowed_values": {
-		// Adjusted manually.
-		Type:     schema.TypeSet,
-		Elem:     &schema.Schema{Type: schema.TypeString},
-		Computed: true,
-	},
 	"owner_role_type": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -51,7 +49,7 @@ var ShowTagSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}
+}, tagToSchemaMapper{}.additionalSchema())
 
 var _ = ShowTagSchema
 
@@ -63,14 +61,14 @@ func TagToSchema(tag *sdk.Tag) map[string]any {
 	tagSchema["schema_name"] = tag.SchemaName
 	tagSchema["owner"] = tag.Owner
 	tagSchema["comment"] = tag.Comment
-	tagSchema["allowed_values"] = tag.AllowedValues
 	tagSchema["owner_role_type"] = tag.OwnerRoleType
 	if tag.Propagate != nil {
 		tagSchema["propagate"] = string((*tag.Propagate))
 	}
 	if tag.OnConflict != nil {
-		tagSchema["on_conflict"] = string((*tag.OnConflict))
+		tagSchema["on_conflict"] = (*tag.OnConflict)
 	}
+	tagToSchemaMapper{}.additionalToSchema(tag, tagSchema)
 	return tagSchema
 }
 

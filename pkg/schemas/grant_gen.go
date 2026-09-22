@@ -66,9 +66,13 @@ func GrantToSchema(grant *sdk.Grant) map[string]any {
 	grantSchema["created_on"] = grant.CreatedOn.String()
 	grantSchema["privilege"] = grant.Privilege
 	grantSchema["granted_on"] = string(grant.GrantedOn)
-	grantSchema["name"] = grant.Name.FullyQualifiedName()
+	if grant.Name != nil {
+		grantSchema["name"] = grant.Name.FullyQualifiedName()
+	}
 	grantSchema["granted_to"] = string(grant.GrantedTo)
-	grantSchema["grantee_name"] = grant.GranteeName.FullyQualifiedName()
+	if grant.GranteeName != nil {
+		grantSchema["grantee_name"] = grant.GranteeName.FullyQualifiedName()
+	}
 	grantSchema["grant_option"] = grant.GrantOption
 	grantSchema["granted_by"] = grant.GrantedBy.Name()
 	if grant.IsInherited != nil {
