@@ -285,7 +285,7 @@ func TestGetDriverConfigFromTerraform_AccountFallback(t *testing.T) {
 			t.Setenv(snowflakeenvs.Account, tc.accountEnvValue)
 			d := schema.TestResourceDataRaw(t, GetProviderSchema(), tc.configuration)
 
-			config, diags := getDriverConfigFromTerraform(d, experimentalfeatures.New(tc.enabledExperiments))
+			config, diags := getDriverConfigFromTerraform(d, experimentalfeatures.New(tc.enabledExperiments, nil))
 
 			if tc.expectedError != "" {
 				require.True(t, diags.HasError())

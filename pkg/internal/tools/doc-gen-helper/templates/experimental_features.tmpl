@@ -1,12 +1,42 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/tools/doc-gen-helper.ExperimentalFeatures*/ -}}
-{{ if gt (len .ActiveExperiments) 0 }}### Active experiments{{ end }}
+Experiments follow a short lifecycle so successful changes can become default provider behavior in a minor release:
 
-The following experiments are currently active. Depending on the feedback, we may decide to include them as default behavior/stable feature of the provider in the future.
+1. **Opt-in** — opt-in via `experimental_features_enabled`.
+2. **Enabled by default** — on unless listed in `experimental_features_disabled`. The opt-out is available for two minor versions.
+3. **Promoted** — now default provider behavior. Listing the name in either list is a no-op. The name is dropped in the next major version.
+4. **Discontinued** — the experiment was abandoned and the old behavior stays. Listing the name in either list is a no-op. The name is dropped in the next major version.
+
+If the same name is listed in both `experimental_features_enabled` and `experimental_features_disabled`, the disabled list wins.
+{{ if gt (len .ActiveExperiments) 0 }}
+### Opt-in experiments
+
+The following experiments can be currently enabled. Depending on the feedback, we may decide to include them as default behavior/stable feature of the provider in the future.
 
 To share feedback please reach out to us through your Snowflake account manager.
 {{ range .ActiveExperiments }}
 #### {{ .Name }}
 {{ .Description }}
+{{ end }}
+{{ end }}
+{{ if gt (len .EnabledByDefaultExperiments) 0 }}### Experiments enabled by default
+
+The following experiments are enabled by default. You can opt out by listing them in `experimental_features_disabled`. They will be promoted to default provider behavior (and the opt-out removed) in the listed versions.
+
+To share feedback please reach out to us through your Snowflake account manager.
+{{ range .EnabledByDefaultExperiments }}
+#### {{ .Name }}
+{{ .Description }}
+{{ end }}
+{{ end }}
+{{ if gt (len .PromotedExperiments) 0 }}### Promoted experiments
+
+The following experiments are now default provider behavior.
+Setting them in `experimental_features_enabled` or `experimental_features_disabled` will have no effect on the provider's behavior.
+They will be removed from the allowed-value lists in the next major release of the provider.
+
+{{ range .PromotedExperiments -}}
+    - `{{ .Name }}`
+{{ end -}}
 {{ end }}
 {{ if gt (len .DiscontinuedExperiments) 0 }}### Discontinued experiments
 

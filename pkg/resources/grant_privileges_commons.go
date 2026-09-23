@@ -14,7 +14,7 @@ import (
 )
 
 // inheritedGrantsRequireExperiment returns a CustomizeDiff that fails the plan when an `inherited`
-// block is used in any of the given blocks while the INHERITED_GRANTS experiment is not enabled.
+// block is used in any of the given blocks while the INHERITED_GRANTS experiment is disabled.
 func inheritedGrantsRequireExperiment(blockNames ...string) schema.CustomizeDiffFunc {
 	return func(ctx context.Context, d *schema.ResourceDiff, meta any) error {
 		rawConfig := d.GetRawConfig()
@@ -26,7 +26,7 @@ func inheritedGrantsRequireExperiment(blockNames ...string) schema.CustomizeDiff
 		}
 		providerCtx := meta.(*provider.Context)
 		if !providerCtx.Experiments.IsEnabled(experimentalfeatures.InheritedGrants) {
-			return fmt.Errorf("using an `inherited` block requires the %q experiment to be enabled. Add it to the `experimental_features_enabled` list in the provider configuration", experimentalfeatures.InheritedGrants)
+			return fmt.Errorf("using an `inherited` block requires the %q experiment to be enabled. Remove it from the `experimental_features_disabled` list in the provider configuration", experimentalfeatures.InheritedGrants)
 		}
 		return nil
 	}

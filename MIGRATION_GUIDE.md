@@ -26,6 +26,43 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.21.x ➞ v2.22.0
 
+### *(new feature)* Experimental features lifecycle and `experimental_features_disabled`
+
+Experimental features now follow a BCR-like lifecycle so successful experiments can become default provider behavior in a **minor** release:
+
+| State              | Behavior                         | How to toggle                                     |
+|--------------------|----------------------------------|---------------------------------------------------|
+| Opt-in             | Opt-in                           | List the name in `experimental_features_enabled`  |
+| Enabled by default | On unless opted out              | List the name in `experimental_features_disabled` |
+| Promoted           | Always on (now default behavior) | Listing the name in either list is a no-op        |
+| Discontinued       | Always off (old behavior stays)  | Listing the name in either list is a no-op        |
+
+A new provider field [`experimental_features_disabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_disabled-1) opts out of experiments that are enabled by default. If the same name is listed in both lists, `experimental_features_disabled` wins. Neither list can be set via environment variables.
+
+Promoted and discontinued names stay accepted until the next major version, then they are removed from the allowed-value lists.
+
+No action is required unless you want to disable an experiment that is enabled by default.
+
+### *(new feature)* `INHERITED_GRANTS` is enabled by default
+
+The `INHERITED_GRANTS` experiment is now enabled by default. Using an `inherited` block in [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) or [`snowflake_grant_privileges_to_database_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_database_role) no longer requires listing `INHERITED_GRANTS` in `experimental_features_enabled`.
+
+Existing configurations without an `inherited` block are unchanged.
+
+To opt out, add `INHERITED_GRANTS` to `experimental_features_disabled`:
+
+```terraform
+provider "snowflake" {
+  experimental_features_disabled = ["INHERITED_GRANTS"]
+}
+```
+
+Leaving `INHERITED_GRANTS` in `experimental_features_enabled` is redundant and produces a warning.
+
+This experiment will be promoted (the opt-out removed) in **v2.23.0** or **v2.24.0**. After promotion, listing the name in either list will be a no-op until the next major version.
+
+No action is required unless you want to disable inherited grants support.
+
 ### *(new feature)* `execute_as_user` on `snowflake_task`
 
 We added optional [`execute_as_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/task#execute_as_user-1) to the stable [`snowflake_task`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/task) resource.

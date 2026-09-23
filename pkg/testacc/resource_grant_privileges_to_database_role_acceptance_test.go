@@ -630,11 +630,8 @@ func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchema_Inherited_InDat
 		WithOnInheritedSchemasInDatabase(databaseId)
 	ref := resourceModel.ResourceReference()
 
-	providerModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.InheritedGrants)
-
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: inheritedGrantsProviderFactory,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -642,7 +639,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchema_Inherited_InDat
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: accconfig.FromModels(t, providerModel, resourceModel),
+				Config: accconfig.FromModels(t, resourceModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -663,7 +660,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchema_Inherited_InDat
 			},
 			// Import
 			{
-				Config:            accconfig.FromModels(t, providerModel, resourceModel),
+				Config:            accconfig.FromModels(t, resourceModel),
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -684,9 +681,6 @@ func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_Inherited
 		WithOnInheritedSchemaObjectsInDatabase(sdk.PluralObjectTypeTables, databaseId)
 	ref := resourceModel.ResourceReference()
 
-	providerModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.InheritedGrants)
-
 	assertions := resourceassert.GrantPrivilegesToDatabaseRoleResource(t, ref).
 		HasDatabaseRoleName(roleId.FullyQualifiedName()).
 		HasPrivileges(privilege).
@@ -695,7 +689,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_Inherited
 		HasAlwaysApply(false)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: inheritedGrantsProviderFactory,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -703,7 +697,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_Inherited
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: accconfig.FromModels(t, providerModel, resourceModel),
+				Config: accconfig.FromModels(t, resourceModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -721,7 +715,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_Inherited
 			},
 			// Import
 			{
-				Config:            accconfig.FromModels(t, providerModel, resourceModel),
+				Config:            accconfig.FromModels(t, resourceModel),
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -737,7 +731,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_Inherited
 						sdk.InheritedDatabaseRoleGrantIn{Database: new(databaseId)},
 					)
 				},
-				Config: accconfig.FromModels(t, providerModel, resourceModel),
+				Config: accconfig.FromModels(t, resourceModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -768,11 +762,8 @@ func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_Inherited
 		WithOnInheritedSchemaObjectsInSchema(sdk.PluralObjectTypeTables, schemaId)
 	ref := resourceModel.ResourceReference()
 
-	providerModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.InheritedGrants)
-
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: inheritedGrantsProviderFactory,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -780,7 +771,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_Inherited
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: accconfig.FromModels(t, providerModel, resourceModel),
+				Config: accconfig.FromModels(t, resourceModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -803,7 +794,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_Inherited
 			},
 			// Import
 			{
-				Config:            accconfig.FromModels(t, providerModel, resourceModel),
+				Config:            accconfig.FromModels(t, resourceModel),
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -832,11 +823,8 @@ func TestAcc_GrantPrivilegesToDatabaseRole_CompleteUseCase_Inherited_ContainerCh
 		WithOnInheritedSchemaObjectsInSchema(sdk.PluralObjectTypeTables, schemaId)
 	ref := resourceModelInDatabase.ResourceReference()
 
-	providerModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.InheritedGrants)
-
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: inheritedGrantsProviderFactory,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -844,7 +832,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_CompleteUseCase_Inherited_ContainerCh
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: accconfig.FromModels(t, providerModel, resourceModelInDatabase),
+				Config: accconfig.FromModels(t, resourceModelInDatabase),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -866,7 +854,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_CompleteUseCase_Inherited_ContainerCh
 			},
 			// Change the container to all tables in a schema
 			{
-				Config: accconfig.FromModels(t, providerModel, resourceModelInSchema),
+				Config: accconfig.FromModels(t, resourceModelInSchema),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -907,28 +895,25 @@ func TestAcc_GrantPrivilegesToDatabaseRole_Inherited_Validation(t *testing.T) {
 		WithSchemaObjectPrivileges(sdk.SchemaObjectPrivilegeSelect).
 		WithOnInheritedSchemaObjectsInDatabase("INVALID; TYPE", databaseId)
 
-	providerModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.InheritedGrants)
-
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: inheritedGrantsProviderFactory,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDatabaseRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
 			{
-				Config:      accconfig.FromModels(t, providerModel, withGrantOptionModel),
+				Config:      accconfig.FromModels(t, withGrantOptionModel),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile("`with_grant_option` cannot be used together with an `inherited` block"),
 			},
 			{
-				Config:      accconfig.FromModels(t, providerModel, alwaysApplyModel),
+				Config:      accconfig.FromModels(t, alwaysApplyModel),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile("`always_apply` cannot be used together with an `inherited` block"),
 			},
 			{
-				Config:      accconfig.FromModels(t, providerModel, invalidSchemaObjectTypeModel),
+				Config:      accconfig.FromModels(t, invalidSchemaObjectTypeModel),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile("invalid plural object type: INVALID; TYPE contains disallowed characters"),
 			},
@@ -941,6 +926,8 @@ func TestAcc_GrantPrivilegesToDatabaseRole_Inherited_Validation_MissingExperimen
 	t.Cleanup(databaseRoleCleanup)
 
 	databaseId := testClient().Ids.DatabaseId()
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesDisabled(experimentalfeatures.InheritedGrants)
 	onSchemaObjectModel := model.GrantPrivilegesToDatabaseRole("test", databaseRole.ID().FullyQualifiedName()).
 		WithSchemaObjectPrivileges(sdk.SchemaObjectPrivilegeSelect).
 		WithOnInheritedSchemaObjectsInDatabase(sdk.PluralObjectTypeTables, databaseId)
@@ -949,21 +936,21 @@ func TestAcc_GrantPrivilegesToDatabaseRole_Inherited_Validation_MissingExperimen
 		WithOnInheritedSchemasInDatabase(databaseId)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: inheritedGrantsDisabledProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDatabaseRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
 			{
-				Config:      accconfig.FromModels(t, onSchemaObjectModel),
+				Config:      accconfig.FromModels(t, providerModel, onSchemaObjectModel),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("using an `inherited` block requires the .*INHERITED_GRANTS.* experiment to be enabled"),
+				ExpectError: regexp.MustCompile("using an `inherited` block requires the .*INHERITED_GRANTS.* experiment to be enabled. Remove it from the `experimental_features_disabled` list"),
 			},
 			{
-				Config:      accconfig.FromModels(t, onSchemaModel),
+				Config:      accconfig.FromModels(t, providerModel, onSchemaModel),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("using an `inherited` block requires the .*INHERITED_GRANTS.* experiment to be enabled"),
+				ExpectError: regexp.MustCompile("using an `inherited` block requires the .*INHERITED_GRANTS.* experiment to be enabled. Remove it from the `experimental_features_disabled` list"),
 			},
 		},
 	})

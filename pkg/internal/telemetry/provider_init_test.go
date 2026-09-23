@@ -39,16 +39,18 @@ func Test_NewSpanID(t *testing.T) {
 
 func Test_providerInitFields(t *testing.T) {
 	providerCtx := &internalprovider.Context{
-		Experiments: experimentalfeatures.New([]string{
-			string(experimentalfeatures.HierarchyRenames),
-			string(experimentalfeatures.InheritedGrants),
-		}),
+		Experiments: experimentalfeatures.New(
+			[]string{string(experimentalfeatures.HierarchyRenames)},
+			[]string{string(experimentalfeatures.WarehouseShowImprovedPerformance)},
+		),
 		EnabledFeatures: []string{
 			string(previewfeatures.AlertResource),
 		},
 	}
 	got := providerInitFields(providerCtx)
-	require.Equal(t, "HIERARCHY_RENAMES,INHERITED_GRANTS", got["experimental_features_enabled"])
+	require.Equal(t, string(experimentalfeatures.HierarchyRenames), got["experimental_features_enabled"])
+	require.Equal(t, string(experimentalfeatures.WarehouseShowImprovedPerformance), got["experimental_features_disabled"])
+	require.Equal(t, "HIERARCHY_RENAMES,INHERITED_GRANTS", got["experimental_features_effective_enabled"])
 	require.Equal(t, string(previewfeatures.AlertResource), got["preview_features_enabled"])
 	require.Equal(t, runtime.GOOS, got["os"])
 	require.Equal(t, runtime.GOARCH, got["arch"])

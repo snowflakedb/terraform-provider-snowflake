@@ -83,6 +83,16 @@ func experimentalFeatureDescription(feature experimentalfeatures.ExperimentalFea
 	return fmt.Sprintf("This field can be only used when `%s` option is specified in provider block in the [`experimental_features_enabled`](../#experimental_features_enabled-1) field.", feature)
 }
 
+func experimentalFeatureEnabledByDefaultDescription(feature experimentalfeatures.ExperimentalFeature) string {
+	description := fmt.Sprintf("This field is enabled by default as part of the `%s` experimental feature. You can opt out by listing `%s` in [`experimental_features_disabled`](../#experimental_features_disabled-1) in the provider block.", feature, feature)
+	if experiment, ok := experimentalfeatures.GetExperiment(feature); ok {
+		if versions := experiment.RemoveInVersionsPhrase(); versions != "" {
+			return joinWithSpace(description, fmt.Sprintf("This experiment will be removed in %s.", versions))
+		}
+	}
+	return description
+}
+
 func ignoredAfterCreationDescription() string {
 	return "This field is used only when creating the object. Changes on this field are ignored after creation."
 }

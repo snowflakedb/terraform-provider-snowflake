@@ -94,6 +94,15 @@ func (m *SnowflakeModel) WithExperimentalFeaturesEnabled(experimentalFeatures ..
 	return m
 }
 
+func (m *SnowflakeModel) WithExperimentalFeaturesDisabled(experimentalFeatures ...experimentalfeatures.ExperimentalFeature) *SnowflakeModel {
+	experimentalFeaturesDisabledStringVariables := make([]tfconfig.Variable, len(experimentalFeatures))
+	for i, v := range experimentalFeatures {
+		experimentalFeaturesDisabledStringVariables[i] = tfconfig.StringVariable(string(v))
+	}
+	m.ExperimentalFeaturesDisabled = tfconfig.SetVariable(experimentalFeaturesDisabledStringVariables...)
+	return m
+}
+
 func (m *SnowflakeModel) AllFields(tmpConfig *helpers.TmpTomlConfig, tmpUser *helpers.TmpServiceUser) *SnowflakeModel {
 	return SnowflakeProvider().
 		WithProfile(tmpConfig.Profile).

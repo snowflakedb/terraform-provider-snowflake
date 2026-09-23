@@ -196,7 +196,7 @@ To add the experiment:
 - Add it to [`allExperiments`](pkg/provider/experimentalfeatures/experimental_features.go).
 - Guard the logic with conditional statement like (example in the [user resource](pkg/resources/user.go)):
 ```go
-if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity, providerCtx.EnabledExperiments) {
+if providerCtx.Experiments.IsEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity) {
   // new logic here
 } else {
   // old logic here

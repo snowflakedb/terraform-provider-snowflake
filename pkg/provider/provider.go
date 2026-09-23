@@ -413,7 +413,16 @@ func GetProviderSchema() map[string]*schema.Schema {
 				Type:             schema.TypeString,
 				ValidateDiagFunc: validators.StringInSlice(experimentalfeatures.AllExperimentalFeatureNames, true),
 			},
-			Description: fmt.Sprintf("A list of experimental features. Similarly to preview features, they are not yet stable features of the provider. Enabling given experiment is still considered a preview feature, even when applied to the stable resource. These switches offer experiments altering the provider behavior. If the given experiment is successful, it can be considered an addition in the future provider versions. This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Active experiments are: %v.", docs.PossibleValuesListed(experimentalfeatures.ActiveExperimentalFeatureNames)),
+			Description: fmt.Sprintf("A list of experimental features to enable. Similarly to preview features, they are not yet stable features of the provider. Enabling given experiment is still considered a preview feature, even when applied to the stable resource. These switches offer experiments altering the provider behavior. This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Active experiments you can enable are: %v. Names of experiments that are enabled by default, promoted, or discontinued are still accepted (listing them is redundant or a no-op; see the experimental features section).", docs.PossibleValuesListed(experimentalfeatures.ActiveExperimentalFeatureNames)),
+		},
+		"experimental_features_disabled": {
+			Type:     schema.TypeSet,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type:             schema.TypeString,
+				ValidateDiagFunc: validators.StringInSlice(experimentalfeatures.AcceptedInDisabledExperimentalFeatureNames, true),
+			},
+			Description: fmt.Sprintf("A list of experimental features to disable. Use this to opt out of experiments that are enabled by default. This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Experiments you can disable are: %v. Promoted and discontinued experiment names are still accepted as no-ops.", docs.PossibleValuesListed(experimentalfeatures.EnabledByDefaultExperimentalFeatureNames)),
 		},
 		"skip_toml_file_permission_verification": {
 			Type:        schema.TypeBool,
@@ -829,9 +838,23 @@ func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.D
 	if v, ok := s.GetOk("experimental_features_enabled"); ok {
 		enabledExperiments = expandStringList(v.(*schema.Set).List())
 	}
-	experiments := experimentalfeatures.New(enabledExperiments)
+	var disabledExperiments []string
+	if v, ok := s.GetOk("experimental_features_disabled"); ok {
+		disabledExperiments = expandStringList(v.(*schema.Set).List())
+	}
+	experiments := experimentalfeatures.New(enabledExperiments, disabledExperiments)
 
-	config, diags := getDriverConfigFromTerraform(s, experiments)
+	var diags diag.Diagnostics
+	for _, warning := range experimentalfeatures.ExperimentListingWarnings(enabledExperiments, disabledExperiments) {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  warning.Summary,
+			Detail:   warning.Detail,
+		})
+	}
+
+	config, configDiags := getDriverConfigFromTerraform(s, experiments)
+	diags = append(diags, configDiags...)
 	if diags.HasError() {
 		return nil, diags
 	}

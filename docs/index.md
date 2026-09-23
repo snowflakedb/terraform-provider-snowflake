@@ -125,7 +125,8 @@ provider "snowflake" {
 - `disable_telemetry` (Boolean, Deprecated) This field is deprecated. It will be removed in the next major release. Use `params` to set `CLIENT_TELEMETRY_ENABLED` session parameter instead. Setting this field adds `CLIENT_TELEMETRY_ENABLED` with value `false` to `params`. Disables telemetry in the driver. Can also be sourced from the `DISABLE_TELEMETRY` environment variable.
 - `driver_tracing` (String) Specifies the logging level to be used by the driver. Valid options are (case-insensitive): `TRACE` | `DEBUG` | `INFO` | `WARN` | `ERROR` | `FATAL` | `OFF`. The following values are deprecated and will be removed in v3: `WARNING` (uses `WARN` instead), `PRINT` (uses `INFO` instead), `PANIC` (uses `FATAL` instead). Can also be sourced from the `SNOWFLAKE_DRIVER_TRACING` environment variable.
 - `enable_single_use_refresh_tokens` (Boolean) Enables single use refresh tokens for Snowflake IdP. Can also be sourced from the `SNOWFLAKE_ENABLE_SINGLE_USE_REFRESH_TOKENS` environment variable.
-- `experimental_features_enabled` (Set of String) A list of experimental features. Similarly to preview features, they are not yet stable features of the provider. Enabling given experiment is still considered a preview feature, even when applied to the stable resource. These switches offer experiments altering the provider behavior. If the given experiment is successful, it can be considered an addition in the future provider versions. This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Active experiments are: `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE` | `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` | `PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL` | `PARAMETERS_REDUCED_OUTPUT` | `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` | `GRANTS_IMPORT_VALIDATION` | `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` | `IMPORT_BOOLEAN_DEFAULT` | `GRANTS_SAFE_DESTROY` | `TAG_ASSOCIATION_SAFE_DESTROY` | `GRANT_ACCOUNT_ROLE_SHOW_CACHING` | `ACCOUNT_ROLE_SHOW_CACHING` | `GRANTS_SHOW_CACHING` | `GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE` | `HIERARCHY_RENAMES` | `INHERITED_GRANTS` | `OBJECT_PARAMETER_UNSET_ON_DELETE` | `AUTHENTICATOR_EXPLICIT_ONLY` | `PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK`.
+- `experimental_features_disabled` (Set of String) A list of experimental features to disable. Use this to opt out of experiments that are enabled by default. This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Experiments you can disable are: `INHERITED_GRANTS`. Promoted and discontinued experiment names are still accepted as no-ops.
+- `experimental_features_enabled` (Set of String) A list of experimental features to enable. Similarly to preview features, they are not yet stable features of the provider. Enabling given experiment is still considered a preview feature, even when applied to the stable resource. These switches offer experiments altering the provider behavior. This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Active experiments you can enable are: `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE` | `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` | `PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL` | `PARAMETERS_REDUCED_OUTPUT` | `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` | `GRANTS_IMPORT_VALIDATION` | `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` | `IMPORT_BOOLEAN_DEFAULT` | `GRANTS_SAFE_DESTROY` | `TAG_ASSOCIATION_SAFE_DESTROY` | `GRANT_ACCOUNT_ROLE_SHOW_CACHING` | `ACCOUNT_ROLE_SHOW_CACHING` | `GRANTS_SHOW_CACHING` | `GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE` | `HIERARCHY_RENAMES` | `OBJECT_PARAMETER_UNSET_ON_DELETE` | `AUTHENTICATOR_EXPLICIT_ONLY` | `PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK`. Names of experiments that are enabled by default, promoted, or discontinued are still accepted (listing them is redundant or a no-op; see the experimental features section).
 - `external_browser_timeout` (Number) The timeout in seconds for the external browser to complete the authentication. Can also be sourced from the `SNOWFLAKE_EXTERNAL_BROWSER_TIMEOUT` environment variable.
 - `host` (String) Specifies a custom host value used by the driver for privatelink connections. Can also be sourced from the `SNOWFLAKE_HOST` environment variable.
 - `include_retry_reason` (String) Should retried request contain retry reason. Can also be sourced from the `SNOWFLAKE_INCLUDE_RETRY_REASON` environment variable.
@@ -981,11 +982,20 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 Experiments alter the provider behavior.
 Similarly to preview features, they are not yet stable features of the provider.
 Enabling the given experiment is still considered a preview feature, even when applied to the stable resource.
-If the given experiment is successful, it can be considered an addition in the future provider versions.
+Successful experiments can become default provider behavior in a minor release: they start as opt-in (`experimental_features_enabled`), then are enabled by default with a two-minor-version opt-out (`experimental_features_disabled`), then are promoted (or discontinued). Promoted and discontinued names remain accepted no-ops until the next major version.
 
-### Active experiments
+Experiments follow a short lifecycle so successful changes can become default provider behavior in a minor release:
 
-The following experiments are currently active. Depending on the feedback, we may decide to include them as default behavior/stable feature of the provider in the future.
+1. **Opt-in** — opt-in via `experimental_features_enabled`.
+2. **Enabled by default** — on unless listed in `experimental_features_disabled`. The opt-out is available for two minor versions.
+3. **Promoted** — now default provider behavior. Listing the name in either list is a no-op. The name is dropped in the next major version.
+4. **Discontinued** — the experiment was abandoned and the old behavior stays. Listing the name in either list is a no-op. The name is dropped in the next major version.
+
+If the same name is listed in both `experimental_features_enabled` and `experimental_features_disabled`, the disabled list wins.
+
+### Opt-in experiments
+
+The following experiments can be currently enabled. Depending on the feedback, we may decide to include them as default behavior/stable feature of the provider in the future.
 
 To share feedback please reach out to us through your Snowflake account manager.
 
@@ -1112,11 +1122,6 @@ Without this experiment, changing the `database` field on `snowflake_schema` or 
 
 For more information, see the [object renaming guide](./guides/object_renaming_guide).
 
-#### INHERITED_GRANTS
-Enables the `inherited` block in the `on_account_object`, `on_schema`, and `on_schema_object` blocks of the `snowflake_grant_privileges_to_account_role` resource, and in the `on_schema` and `on_schema_object` blocks of the `snowflake_grant_privileges_to_database_role` resource.
-
-Without this experiment, using an `inherited` block results in an error.
-
 #### OBJECT_PARAMETER_UNSET_ON_DELETE
 Changes the delete behavior of the `snowflake_object_parameter` resource to use `ALTER <OBJECT_TYPE> <identifier> UNSET <PARAMETER>` instead of resetting the parameter to its default value.
 
@@ -1137,3 +1142,19 @@ Re-introduces the `account` field as a fallback for `organization_name` and `acc
 When enabled, you can set `account` instead of setting `organization_name` and `account_name` separately. The field accepts both the `org-name` format (e.g. `"myorg-myaccount"`) and an account locator (e.g. `"xy12345"`). If both `organization_name` and `account_name` are set, they take precedence over `account`. The `SNOWFLAKE_ACCOUNT` environment variable is used as the `account` value only when this experiment is enabled.
 
 Without this experiment, setting the `account` field in the provider configuration or in a TOML profile results in an error directing you to enable this experiment. A value coming from the `SNOWFLAKE_ACCOUNT` environment variable is ignored with a warning instead, because this experiment will be enabled by default in v3 and the variable will be taken into account from that version on.
+
+
+### Experiments enabled by default
+
+The following experiments are enabled by default. You can opt out by listing them in `experimental_features_disabled`. They will be promoted to default provider behavior (and the opt-out removed) in the listed versions.
+
+To share feedback please reach out to us through your Snowflake account manager.
+
+#### INHERITED_GRANTS
+Enables the `inherited` block in the `on_account_object`, `on_schema`, and `on_schema_object` blocks of the `snowflake_grant_privileges_to_account_role` resource, and in the `on_schema` and `on_schema_object` blocks of the `snowflake_grant_privileges_to_database_role` resource.
+
+Without this experiment, using an `inherited` block results in an error.
+
+This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
+
+It will be promoted in v2.23.0 or v2.24.0.
