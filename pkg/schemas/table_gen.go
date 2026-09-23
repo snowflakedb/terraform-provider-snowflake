@@ -17,11 +17,11 @@ var ShowTableSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"database_name": {
+	"schema_name": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"schema_name": {
+	"database_name": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
@@ -105,8 +105,8 @@ func TableToSchema(table *sdk.Table) map[string]any {
 	tableSchema := make(map[string]any)
 	tableSchema["created_on"] = table.CreatedOn
 	tableSchema["name"] = table.Name
-	tableSchema["database_name"] = table.DatabaseName
 	tableSchema["schema_name"] = table.SchemaName
+	tableSchema["database_name"] = table.DatabaseName
 	tableSchema["kind"] = table.Kind
 	tableSchema["comment"] = table.Comment
 	tableSchema["cluster_by"] = table.ClusterBy

@@ -94,7 +94,6 @@ type Client struct {
 	Streamlits                   Streamlits
 	Streams                      Streams
 	Tables                       Tables
-	TablesLegacy                 TablesLegacy
 	TagReferences                TagReferences
 	Tags                         Tags
 	Tasks                        Tasks
@@ -244,7 +243,6 @@ func (c *Client) initialize() {
 	c.Streams = &streams{client: c}
 	c.SystemFunctions = &systemFunctions{client: c}
 	c.Tables = &tables{client: c}
-	c.TablesLegacy = &tablesLegacy{client: c}
 	c.TagReferences = &tagReferences{client: c}
 	c.Tags = &tags{client: c}
 	c.Tasks = &tasks{client: c}

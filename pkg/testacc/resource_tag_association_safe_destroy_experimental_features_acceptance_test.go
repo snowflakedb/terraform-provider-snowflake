@@ -45,8 +45,8 @@ func TestAcc_Experimental_TagAssociation_SafeDestroy(t *testing.T) {
 
 				return tagAssociationModel, func() {
 					testClient().Table.AlterWithRequest(t, sdk.NewAlterTableRequest(table.ID()).
-						WithColumnAction(sdk.NewTableColumnActionRequest().
-							WithDropColumns([]string{columnId.Name()})))
+						WithColumnAction(*sdk.NewTableColumnActionRequest().
+							WithDropColumns(*sdk.NewTableColumnAlterDropColumnsRequest([]string{columnId.Name()}))))
 				}
 			},
 		},
@@ -82,9 +82,7 @@ func TestAcc_Experimental_TagAssociation_SafeDestroy(t *testing.T) {
 				table, _ := testClient().Table.CreateWithRequest(
 					t,
 					sdk.NewCreateTableRequest(
-						testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()),
-						[]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("ID", sdk.DataTypeInt), *sdk.NewTableColumnRequest("ID2", sdk.DataTypeInt)},
-					),
+						testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("ID", sdk.DataTypeInt), *sdk.NewTableColumnRequest("ID2", sdk.DataTypeInt)})),
 				)
 
 				columnId := sdk.NewTableColumnIdentifier(table.ID().DatabaseName(), table.ID().SchemaName(), table.ID().Name(), "ID")

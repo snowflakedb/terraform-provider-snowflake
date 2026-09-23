@@ -3,10 +3,230 @@
 package sdk
 
 var (
+	_ validatable = new(CreateTableOptions)
+	_ validatable = new(CreateAsSelectTableOptions)
+	_ validatable = new(CreateUsingTemplateTableOptions)
+	_ validatable = new(CreateLikeTableOptions)
+	_ validatable = new(CreateCloneTableOptions)
+	_ validatable = new(AlterTableOptions)
+	_ validatable = new(DropTableOptions)
+	_ validatable = new(ShowTableOptions)
+	_ validatable = new(DescribeColumnsTableOptions)
+	_ validatable = new(DescribeStageTableOptions)
 	_ validatable = new(DescribeSearchOptimizationTableOptions)
 	_ validatable = new(SelectTableConstraintsTableOptions)
 	_ validatable = new(SelectCheckConstraintsTableOptions)
 )
+
+func (opts *CreateTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	errs = append(errs, opts.additionalValidations())
+	if valueSet(opts.StageFileFormat) {
+		if !exactlyOneValueSet(opts.StageFileFormat.FormatName, opts.StageFileFormat.FileFormatType) {
+			errs = append(errs, errExactlyOneOf("CreateTableOptions.StageFileFormat", "FormatName", "FileFormatType"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateAsSelectTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !valueSet(opts.Columns) {
+		errs = append(errs, errNotSet("CreateAsSelectTableOptions", "Columns"))
+	}
+	if !valueSet(opts.Query) {
+		errs = append(errs, errNotSet("CreateAsSelectTableOptions", "Query"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateUsingTemplateTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateLikeTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !ValidObjectIdentifier(opts.SourceTable) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateCloneTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !ValidObjectIdentifier(opts.SourceTable) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *AlterTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if opts.SwapWith != nil && !ValidObjectIdentifier(opts.SwapWith) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !exactlyOneValueSet(opts.RenameTo, opts.SwapWith, opts.ClusteringAction, opts.ColumnAction, opts.ConstraintAction, opts.ExternalTableAction, opts.SearchOptimizationAction, opts.Set, opts.SetTags, opts.UnsetTags, opts.Unset, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.AddStorageLifecyclePolicy, opts.DropStorageLifecyclePolicy) {
+		errs = append(errs, errExactlyOneOf("AlterTableOptions", "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
+	}
+	errs = append(errs, opts.additionalValidations())
+	if valueSet(opts.ClusteringAction) {
+		if !exactlyOneValueSet(opts.ClusteringAction.ClusterBy, opts.ClusteringAction.Recluster, opts.ClusteringAction.ChangeReclusterState, opts.ClusteringAction.DropClusteringKey) {
+			errs = append(errs, errExactlyOneOf("AlterTableOptions.ClusteringAction", "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey"))
+		}
+	}
+	if valueSet(opts.ColumnAction) {
+		if !exactlyOneValueSet(opts.ColumnAction.Add, opts.ColumnAction.Rename, opts.ColumnAction.Alter, opts.ColumnAction.SetMaskingPolicy, opts.ColumnAction.UnsetMaskingPolicy, opts.ColumnAction.SetTags, opts.ColumnAction.UnsetTags, opts.ColumnAction.DropColumns) {
+			errs = append(errs, errExactlyOneOf("AlterTableOptions.ColumnAction", "Add", "Rename", "Alter", "SetMaskingPolicy", "UnsetMaskingPolicy", "SetTags", "UnsetTags", "DropColumns"))
+		}
+		if valueSet(opts.ColumnAction.Alter) {
+			for _, alter := range opts.ColumnAction.Alter {
+				if !exactlyOneValueSet(alter.DropDefault, alter.SetDefault, alter.NotNullConstraint, alter.DataType, alter.Comment, alter.UnsetComment) {
+					errs = append(errs, errExactlyOneOf("AlterTableOptions.ColumnAction.Alter", "DropDefault", "SetDefault", "NotNullConstraint", "DataType", "Comment", "UnsetComment"))
+				}
+			}
+		}
+	}
+	if valueSet(opts.ConstraintAction) {
+		if !exactlyOneValueSet(opts.ConstraintAction.Add, opts.ConstraintAction.Rename, opts.ConstraintAction.Alter, opts.ConstraintAction.Drop) {
+			errs = append(errs, errExactlyOneOf("AlterTableOptions.ConstraintAction", "Add", "Rename", "Alter", "Drop"))
+		}
+		if valueSet(opts.ConstraintAction.Alter) {
+			if !exactlyOneValueSet(opts.ConstraintAction.Alter.ConstraintName, opts.ConstraintAction.Alter.PrimaryKey, opts.ConstraintAction.Alter.Unique, opts.ConstraintAction.Alter.ForeignKey) {
+				errs = append(errs, errExactlyOneOf("AlterTableOptions.ConstraintAction.Alter", "ConstraintName", "PrimaryKey", "Unique", "ForeignKey"))
+			}
+		}
+		if valueSet(opts.ConstraintAction.Drop) {
+			if !exactlyOneValueSet(opts.ConstraintAction.Drop.ConstraintName, opts.ConstraintAction.Drop.PrimaryKey, opts.ConstraintAction.Drop.Unique, opts.ConstraintAction.Drop.ForeignKey) {
+				errs = append(errs, errExactlyOneOf("AlterTableOptions.ConstraintAction.Drop", "ConstraintName", "PrimaryKey", "Unique", "ForeignKey"))
+			}
+		}
+	}
+	if valueSet(opts.ExternalTableAction) {
+		if !exactlyOneValueSet(opts.ExternalTableAction.Add, opts.ExternalTableAction.Rename, opts.ExternalTableAction.Drop) {
+			errs = append(errs, errExactlyOneOf("AlterTableOptions.ExternalTableAction", "Add", "Rename", "Drop"))
+		}
+		if valueSet(opts.ExternalTableAction.Drop) {
+			if !valueSet(opts.ExternalTableAction.Drop.Names) {
+				errs = append(errs, errNotSet("AlterTableOptions.ExternalTableAction.Drop", "Names"))
+			}
+		}
+	}
+	if valueSet(opts.SearchOptimizationAction) {
+		if !exactlyOneValueSet(opts.SearchOptimizationAction.Add, opts.SearchOptimizationAction.Drop) {
+			errs = append(errs, errExactlyOneOf("AlterTableOptions.SearchOptimizationAction", "Add", "Drop"))
+		}
+		if valueSet(opts.SearchOptimizationAction.Drop) {
+			if valueSet(opts.SearchOptimizationAction.Drop.On) {
+				for _, on := range opts.SearchOptimizationAction.Drop.On {
+					if !exactlyOneValueSet(on.SearchMethodWithTarget, on.ColumnName, on.ExpressionId) {
+						errs = append(errs, errExactlyOneOf("AlterTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"))
+					}
+				}
+			}
+		}
+	}
+	if valueSet(opts.Set) {
+		if valueSet(opts.Set.StageFileFormat) {
+			if !exactlyOneValueSet(opts.Set.StageFileFormat.FormatName, opts.Set.StageFileFormat.FileFormatType) {
+				errs = append(errs, errExactlyOneOf("AlterTableOptions.Set.StageFileFormat", "FormatName", "FileFormatType"))
+			}
+		}
+	}
+	if valueSet(opts.AddStorageLifecyclePolicy) {
+		if !ValidObjectIdentifier(opts.AddStorageLifecyclePolicy.StorageLifecyclePolicy) {
+			errs = append(errs, ErrInvalidObjectIdentifier)
+		}
+		if !valueSet(opts.AddStorageLifecyclePolicy.On) {
+			errs = append(errs, errNotSet("AlterTableOptions.AddStorageLifecyclePolicy", "On"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *DropTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if everyValueSet(opts.Cascade, opts.Restrict) {
+		errs = append(errs, errOneOf("DropTableOptions", "Cascade", "Restrict"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *ShowTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	errs = append(errs, opts.additionalValidations())
+	return JoinErrors(errs...)
+}
+
+func (opts *DescribeColumnsTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *DescribeStageTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
 
 func (opts *DescribeSearchOptimizationTableOptions) validate() error {
 	if opts == nil {

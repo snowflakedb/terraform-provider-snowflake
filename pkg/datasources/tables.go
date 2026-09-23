@@ -73,7 +73,7 @@ func ReadTables(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 		return diag.FromErr(err)
 	}
 
-	tables, err := client.TablesLegacy.Show(ctx, req)
+	tables, err := client.Tables.Show(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -84,7 +84,7 @@ func ReadTables(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 	for i, table := range tables {
 		var tableDescriptions []map[string]any
 		if d.Get("with_describe").(bool) {
-			describeOutput, err := client.TablesLegacy.DescribeColumns(ctx, sdk.NewDescribeTableColumnsRequest(table.ID()))
+			describeOutput, err := client.Tables.DescribeColumns(ctx, sdk.NewDescribeColumnsTableRequest(table.ID()))
 			if err != nil {
 				return diag.FromErr(err)
 			}

@@ -154,12 +154,16 @@ make generate-sdk-examples SF_TF_GENERATOR_ARGS='--help'
 ##### Known issues/limitations
 - The generator was added after parts of the SDK were implemented manually. Some objects don't have the generator definitions which make it harder to keep the up-to-date. All of them should be gradually migrated to the definition-based generation implementation.
 - The implementation of nested fields causes problems when reusing nested definitions (the same `[]Fields` slice is reused causing parent redefinition and incorrect mapping; the root cause being the lack of separation between the definition and model structs). It's currently validated programmatically and the panic is raised (`Field <field> already has a parent`). When it happens, create a function wrapper instead of directly creating a `var` with a definition.
+- Validations on slice / collection fields (`ListQueryStructField` and `WithValidation` nested under those lists) are only partially generated. Until this is fixed, keep the unsupported checks in `additionalValidations()`. Concretely:
+  - Nested validations under a slice that has no validations of its own are skipped. The template emits `// nested validation in <Name> collection is not supported`.
+  - More than one `WithValidation` on a slice field produces invalid Go. Each validation emits its own `for` loop, and the template glues them as `} for` on one line. A single validation on the slice (e.g. one `ExactlyOneValueSet`) is fine.
+  - Nested fields under a slice that *does* have validations use the slice path, not the loop variable.
 
 ##### Remaining TODOs
 
 - Generate `ID()` methods for `Request` structs as already done for `Show` result structs.
 - Generate `ID()` methods for `Describe`/`DescribeDetails` structs as already done for `Show` result structs.
-- Improve validation handling for nested slices (the path is built incorrectly now)
+- Improve validation handling for nested slices (see Known issues/limitations)
 - `PlainStruct`-only fields do not currently trigger the additionalConvert creation, as they are filtered out in the iteration
 
 ##### CI guard targets

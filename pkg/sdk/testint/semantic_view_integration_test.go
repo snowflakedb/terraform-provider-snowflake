@@ -17,21 +17,21 @@ func TestInt_SemanticView(t *testing.T) {
 
 	// create 2 tables and add them to the cleanup queue
 	columns1 := []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest(`"first_a"`, sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
-		*sdk.NewTableColumnRequest(`"first_b"`, sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
-		*sdk.NewTableColumnRequest(`"first_c"`, sdk.DataTypeVARCHAR).WithInlineConstraint(sdk.NewColumnInlineConstraintRequest("pkey", sdk.ColumnConstraintTypePrimaryKey)),
+		*sdk.NewTableColumnRequest(`"first_a"`, sdk.DataTypeNumber).WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*sdk.NewColumnIdentityRequest(1, 1))),
+		*sdk.NewTableColumnRequest(`"first_b"`, sdk.DataTypeNumber).WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*sdk.NewColumnIdentityRequest(1, 1))),
+		*sdk.NewTableColumnRequest(`"first_c"`, sdk.DataTypeVARCHAR).WithInlineConstraint(sdk.ColumnInlineConstraint{Name: sdk.String("pkey"), Type: sdk.ColumnConstraintTypePrimaryKey}),
 	}
 	table1Id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix("lowercase")
-	_, table1Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table1Id, columns1))
+	_, table1Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table1Id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns1)))
 	t.Cleanup(table1Cleanup)
 
 	columns2 := []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest(`"second_a"`, sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
-		*sdk.NewTableColumnRequest(`"second_b"`, sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
-		*sdk.NewTableColumnRequest(`"second_c"`, sdk.DataTypeVARCHAR).WithInlineConstraint(sdk.NewColumnInlineConstraintRequest("pkey", sdk.ColumnConstraintTypePrimaryKey)),
+		*sdk.NewTableColumnRequest(`"second_a"`, sdk.DataTypeNumber).WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*sdk.NewColumnIdentityRequest(1, 1))),
+		*sdk.NewTableColumnRequest(`"second_b"`, sdk.DataTypeNumber).WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*sdk.NewColumnIdentityRequest(1, 1))),
+		*sdk.NewTableColumnRequest(`"second_c"`, sdk.DataTypeVARCHAR).WithInlineConstraint(sdk.ColumnInlineConstraint{Name: sdk.String("pkey"), Type: sdk.ColumnConstraintTypePrimaryKey}),
 	}
 	table2Id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix("lowercase")
-	_, table2Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table2Id, columns2))
+	_, table2Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table2Id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns2)))
 	t.Cleanup(table2Cleanup)
 
 	// create logical table entities using the 2 tables created above

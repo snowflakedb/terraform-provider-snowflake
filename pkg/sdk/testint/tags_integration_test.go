@@ -814,14 +814,10 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return createExternalTable(t)
 			},
 			setTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.TagAssociation) error {
-				setTags := make([]sdk.TagAssociationRequest, len(tags))
-				for i, tag := range tags {
-					setTags[i] = *sdk.NewTagAssociationRequest(tag.Name, tag.Value)
-				}
-				return client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithSetTags(setTags))
+				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithSetTags(tags))
 			},
 			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnsetTags(tags))
+				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnsetTags(tags))
 			},
 		},
 		{
@@ -973,14 +969,10 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return testClientHelper().Table.Create(t)
 			},
 			setTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.TagAssociation) error {
-				setTags := make([]sdk.TagAssociationRequest, len(tags))
-				for i, tag := range tags {
-					setTags[i] = *sdk.NewTagAssociationRequest(tag.Name, tag.Value)
-				}
-				return client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithSetTags(setTags))
+				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithSetTags(tags))
 			},
 			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnsetTags(tags))
+				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnsetTags(tags))
 			},
 		},
 		{
@@ -990,14 +982,10 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return testClientHelper().Table.CreateInteractiveTable(t)
 			},
 			setTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.TagAssociation) error {
-				setTags := make([]sdk.TagAssociationRequest, len(tags))
-				for i, tag := range tags {
-					setTags[i] = *sdk.NewTagAssociationRequest(tag.Name, tag.Value)
-				}
-				return client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithSetTags(setTags))
+				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithSetTags(tags))
 			},
 			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnsetTags(tags))
+				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnsetTags(tags))
 			},
 		},
 		{
@@ -1127,12 +1115,12 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return columnId, objectCleanup
 			},
 			setTags: func(id sdk.TableColumnIdentifier, tags []sdk.TagAssociation) error {
-				return client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id.SchemaObjectId()).WithColumnAction(sdk.NewTableColumnActionRequest().
-					WithSetTags(sdk.NewTableColumnAlterSetTagsActionRequest(id.Name(), tags))))
+				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id.SchemaObjectId()).WithColumnAction(*sdk.NewTableColumnActionRequest().
+					WithSetTags(*sdk.NewTableColumnAlterSetTagsActionRequest(id.Name(), tags))))
 			},
 			unsetTags: func(id sdk.TableColumnIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id.SchemaObjectId()).WithColumnAction(sdk.NewTableColumnActionRequest().
-					WithUnsetTags(sdk.NewTableColumnAlterUnsetTagsActionRequest(id.Name(), tags))))
+				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id.SchemaObjectId()).WithColumnAction(*sdk.NewTableColumnActionRequest().
+					WithUnsetTags(*sdk.NewTableColumnAlterUnsetTagsActionRequest(id.Name(), tags))))
 			},
 		},
 		{
@@ -1322,9 +1310,8 @@ func TestInt_TagsPropagation(t *testing.T) {
 		table, tableCleanup := testClientHelper().Table.CreateWithRequest(
 			t,
 			sdk.NewCreateTableRequest(
-				testClientHelper().Ids.RandomSchemaObjectIdentifier(), []sdk.TableColumnRequest{*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber)},
-			).
-				WithTags([]sdk.TagAssociationRequest{
+				testClientHelper().Ids.RandomSchemaObjectIdentifier(), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber)})).
+				WithTag([]sdk.TagAssociation{
 					{Name: tag.ID(), Value: "v1"},
 				}),
 		)
@@ -1355,9 +1342,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 		table, tableCleanup := testClientHelper().Table.CreateWithRequest(
 			t,
 			sdk.NewCreateTableRequest(
-				testClientHelper().Ids.RandomSchemaObjectIdentifier(),
-				[]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber)},
-			).WithTags([]sdk.TagAssociationRequest{{Name: tag.ID(), Value: "will_be_removed"}}),
+				testClientHelper().Ids.RandomSchemaObjectIdentifier(), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber)})).WithTag([]sdk.TagAssociation{{Name: tag.ID(), Value: "will_be_removed"}}),
 		)
 		t.Cleanup(tableCleanup)
 

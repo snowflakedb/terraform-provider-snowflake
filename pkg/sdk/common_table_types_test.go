@@ -49,49 +49,6 @@ func Test_ToColumnConstraintType(t *testing.T) {
 	}
 }
 
-func Test_ToMatchType(t *testing.T) {
-	type test struct {
-		input string
-		want  MatchType
-	}
-
-	positiveTests := []test{
-		{input: string(FullMatchType), want: FullMatchType},
-		{input: "FULL", want: FullMatchType},
-		{input: "full", want: FullMatchType},
-		{input: string(SimpleMatchType), want: SimpleMatchType},
-		{input: "SIMPLE", want: SimpleMatchType},
-		{input: "simple", want: SimpleMatchType},
-		{input: string(PartialMatchType), want: PartialMatchType},
-		{input: "PARTIAL", want: PartialMatchType},
-		{input: "partial", want: PartialMatchType},
-	}
-
-	negativeTests := []test{
-		{input: "full "},
-		{input: " PARTIAL"},
-		{input: "NOT NULL"},
-		{input: "abc"},
-		{input: ""},
-	}
-
-	for _, tc := range positiveTests {
-		t.Run(tc.input, func(t *testing.T) {
-			got, err := ToMatchType(tc.input)
-			require.NoError(t, err)
-			require.Equal(t, tc.want, got)
-		})
-	}
-
-	for _, tc := range negativeTests {
-		t.Run(tc.input, func(t *testing.T) {
-			got, err := ToMatchType(tc.input)
-			require.Error(t, err)
-			require.Empty(t, got)
-		})
-	}
-}
-
 func Test_ToForeignKeyAction(t *testing.T) {
 	type test struct {
 		input string

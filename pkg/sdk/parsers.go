@@ -33,7 +33,7 @@ func ParseOuterCommaSeparatedStringArray(value string, trimQuotes bool) []string
 	if value == "" {
 		return make([]string, 0)
 	}
-	listItems := splitOuter(value)
+	listItems := splitOuter(value, '[', ']')
 	return applyFormatting(listItems, trimQuotes)
 }
 
@@ -71,7 +71,7 @@ func applyFormatting(listItems []string, trimQuotes bool) []string {
 	return trimmedListItems
 }
 
-func splitOuter(value string) []string {
+func splitOuter(value string, open, close rune) []string {
 	depth := 0
 	idx := 0
 	inQuotes := false
@@ -80,22 +80,22 @@ func splitOuter(value string) []string {
 		switch ch {
 		case '"':
 			inQuotes = !inQuotes
-		case '[':
+		case open:
 			if !inQuotes {
 				depth++
 			}
-		case ']':
+		case close:
 			if !inQuotes {
 				depth--
 			}
 		case ',':
 			if !inQuotes && depth <= 0 {
-				parts = append(parts, value[idx:i])
+				parts = append(parts, strings.TrimSpace(value[idx:i]))
 				idx = i + 1
 			}
 		}
 	}
-	return append(parts, value[idx:])
+	return append(parts, strings.TrimSpace(value[idx:]))
 }
 
 func emptyIfNull(s string) string {

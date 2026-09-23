@@ -29,6 +29,15 @@ func (opts *CreateIcebergTableOptions) validate() error {
 		errs = append(errs, errOneOf("CreateIcebergTableOptions", "PartitionBy", "ClusterBy"))
 	}
 	errs = append(errs, opts.additionalValidations())
+	if valueSet(opts.ColumnsAndConstraints) {
+		if valueSet(opts.ColumnsAndConstraints.OutOfLineConstraint) {
+			for _, outOfLineConstraint := range opts.ColumnsAndConstraints.OutOfLineConstraint {
+				if !exactlyOneValueSet(outOfLineConstraint.UniquePK, outOfLineConstraint.FK, outOfLineConstraint.CH) {
+					errs = append(errs, errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "UniquePK", "FK", "CH"))
+				}
+			}
+		}
+	}
 	if valueSet(opts.PartitionBy) {
 		for _, partitionBy := range opts.PartitionBy {
 			if !exactlyOneValueSet(partitionBy.Identity, partitionBy.Bucket, partitionBy.Truncate, partitionBy.Year, partitionBy.Month, partitionBy.Day, partitionBy.Hour) {

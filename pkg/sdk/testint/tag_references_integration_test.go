@@ -27,9 +27,9 @@ func TestInt_TagReferences(t *testing.T) {
 		}
 		table, tableCleanup := testClientHelper().Table.CreateWithRequest(
 			t,
-			sdk.NewCreateTableRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier(), columns).
-				WithTags([]sdk.TagAssociationRequest{
-					*sdk.NewTagAssociationRequest(tag.ID(), tagValue),
+			sdk.NewCreateTableRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier(), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)).
+				WithTag([]sdk.TagAssociation{
+					{Name: tag.ID(), Value: tagValue},
 				}),
 		)
 		t.Cleanup(tableCleanup)
@@ -70,10 +70,10 @@ func TestInt_TagReferences(t *testing.T) {
 		}
 		table, tableCleanup := testClientHelper().Table.CreateWithRequest(
 			t,
-			sdk.NewCreateTableRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier(), columns).
-				WithTags([]sdk.TagAssociationRequest{
-					*sdk.NewTagAssociationRequest(tag1.ID(), "v1"),
-					*sdk.NewTagAssociationRequest(tag2.ID(), "v2"),
+			sdk.NewCreateTableRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier(), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)).
+				WithTag([]sdk.TagAssociation{
+					{Name: tag1.ID(), Value: "v1"},
+					{Name: tag2.ID(), Value: "v2"},
 				}),
 		)
 		t.Cleanup(tableCleanup)
@@ -128,9 +128,9 @@ func TestInt_TagReferences(t *testing.T) {
 		}
 		table, tableCleanup := testClientHelper().Table.CreateWithRequest(
 			t,
-			sdk.NewCreateTableRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier(), columns).
-				WithTags([]sdk.TagAssociationRequest{
-					*sdk.NewTagAssociationRequest(tag.ID(), "propagated_value"),
+			sdk.NewCreateTableRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier(), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)).
+				WithTag([]sdk.TagAssociation{
+					{Name: tag.ID(), Value: "propagated_value"},
 				}),
 		)
 		t.Cleanup(tableCleanup)

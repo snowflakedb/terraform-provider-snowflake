@@ -34,3 +34,131 @@ func ToTableConstraintType(s string) (TableConstraintType, error) {
 		return "", fmt.Errorf("invalid table constraint type: %s", s)
 	}
 }
+
+type TableScope string
+
+const (
+	TableScopeGlobal TableScope = "GLOBAL"
+	TableScopeLocal  TableScope = "LOCAL"
+)
+
+var AllTableScopes = []TableScope{
+	TableScopeGlobal,
+	TableScopeLocal,
+}
+
+func ToTableScope(s string) (TableScope, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(TableScopeGlobal):
+		return TableScopeGlobal, nil
+	case string(TableScopeLocal):
+		return TableScopeLocal, nil
+	default:
+		return "", fmt.Errorf("invalid table scope: %s", s)
+	}
+}
+
+type TableKind string
+
+const (
+	TableKindTemporary TableKind = "TEMPORARY"
+	TableKindVolatile  TableKind = "VOLATILE"
+	TableKindTransient TableKind = "TRANSIENT"
+)
+
+var AllTableKinds = []TableKind{
+	TableKindTemporary,
+	TableKindVolatile,
+	TableKindTransient,
+}
+
+func ToTableKind(s string) (TableKind, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(TableKindTemporary):
+		return TableKindTemporary, nil
+	case string(TableKindVolatile):
+		return TableKindVolatile, nil
+	case string(TableKindTransient):
+		return TableKindTransient, nil
+	default:
+		return "", fmt.Errorf("invalid table kind: %s", s)
+	}
+}
+
+type CloneMoment string
+
+const (
+	CloneMomentAt     CloneMoment = "AT"
+	CloneMomentBefore CloneMoment = "BEFORE"
+)
+
+var AllCloneMoments = []CloneMoment{
+	CloneMomentAt,
+	CloneMomentBefore,
+}
+
+func ToCloneMoment(s string) (CloneMoment, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(CloneMomentAt):
+		return CloneMomentAt, nil
+	case string(CloneMomentBefore):
+		return CloneMomentBefore, nil
+	default:
+		return "", fmt.Errorf("invalid clone moment: %s", s)
+	}
+}
+
+type ReclusterState string
+
+const (
+	ReclusterStateResume  ReclusterState = "RESUME"
+	ReclusterStateSuspend ReclusterState = "SUSPEND"
+)
+
+var AllReclusterStates = []ReclusterState{
+	ReclusterStateResume,
+	ReclusterStateSuspend,
+}
+
+func ToReclusterState(s string) (ReclusterState, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(ReclusterStateResume):
+		return ReclusterStateResume, nil
+	case string(ReclusterStateSuspend):
+		return ReclusterStateSuspend, nil
+	default:
+		return "", fmt.Errorf("invalid recluster state: %s", s)
+	}
+}
+
+type MatchType string
+
+const (
+	MatchTypeFull    MatchType = "FULL"
+	MatchTypeSimple  MatchType = "SIMPLE"
+	MatchTypePartial MatchType = "PARTIAL"
+)
+
+var AllMatchTypes = []MatchType{
+	MatchTypeFull,
+	MatchTypeSimple,
+	MatchTypePartial,
+}
+
+func ToMatchType(s string) (MatchType, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(MatchTypeFull):
+		return MatchTypeFull, nil
+	case string(MatchTypeSimple):
+		return MatchTypeSimple, nil
+	case string(MatchTypePartial):
+		return MatchTypePartial, nil
+	default:
+		return "", fmt.Errorf("invalid match type: %s", s)
+	}
+}

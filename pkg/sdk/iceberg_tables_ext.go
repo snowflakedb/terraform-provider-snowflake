@@ -76,9 +76,6 @@ func (opts *CreateIcebergTableOptions) additionalValidations() error {
 	// Adjusted manually: OutOfLineConstraint is a slice, validate each element
 	for i, oc := range opts.ColumnsAndConstraints.OutOfLineConstraint {
 		path := fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d]", i)
-		if !exactlyOneValueSet(oc.UniquePK, oc.FK, oc.CH) {
-			errs = append(errs, errExactlyOneOf(path, "UniquePK", "FK", "CH"))
-		}
 		if valueSet(oc.UniquePK) {
 			upPath := path + ".UniquePK"
 			if everyValueSet(oc.UniquePK.Enforced, oc.UniquePK.NotEnforced) {

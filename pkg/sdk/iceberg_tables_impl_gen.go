@@ -629,26 +629,7 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 			}
 		}
 		if r.SearchOptimizationAction.Drop != nil {
-			opts.SearchOptimizationAction.Drop = &TableDropSearchOptimization{}
-			if r.SearchOptimizationAction.Drop.On != nil {
-				on := make([]TableDropSearchOptimizationOn, len(r.SearchOptimizationAction.Drop.On))
-				for i, v := range r.SearchOptimizationAction.Drop.On {
-					on[i] = TableDropSearchOptimizationOn{
-						ColumnName:   v.ColumnName,
-						ExpressionId: v.ExpressionId,
-					}
-					if v.SearchMethodWithTarget != nil {
-						on[i].SearchMethodWithTarget = &TableSearchMethodWithTarget{
-							Method: v.SearchMethodWithTarget.Method,
-						}
-						on[i].SearchMethodWithTarget.Args = TableSearchMethodArgs{
-							Targets:  v.SearchMethodWithTarget.Args.Targets,
-							Analyzer: v.SearchMethodWithTarget.Args.Analyzer,
-						}
-					}
-				}
-				opts.SearchOptimizationAction.Drop.On = on
-			}
+			opts.SearchOptimizationAction.Drop = r.SearchOptimizationAction.Drop.toOpts()
 		}
 	}
 	return opts
@@ -736,4 +717,28 @@ func (r icebergTableDetailsRow) convert() (*IcebergTableDetails, error) {
 		return nil, err
 	}
 	return result, nil
+}
+
+func (r *TableDropSearchOptimizationRequest) toOpts() *TableDropSearchOptimization {
+	opts := &TableDropSearchOptimization{}
+	if r.On != nil {
+		on := make([]TableDropSearchOptimizationOn, len(r.On))
+		for i, v := range r.On {
+			on[i] = TableDropSearchOptimizationOn{
+				ColumnName:   v.ColumnName,
+				ExpressionId: v.ExpressionId,
+			}
+			if v.SearchMethodWithTarget != nil {
+				on[i].SearchMethodWithTarget = &TableSearchMethodWithTarget{
+					Method: v.SearchMethodWithTarget.Method,
+				}
+				on[i].SearchMethodWithTarget.Args = TableSearchMethodArgs{
+					Targets:  v.SearchMethodWithTarget.Args.Targets,
+					Analyzer: v.SearchMethodWithTarget.Args.Analyzer,
+				}
+			}
+		}
+		opts.On = on
+	}
+	return opts
 }

@@ -3,10 +3,421 @@
 package sdk
 
 var (
+	_ optionsProvider[CreateTableOptions]                     = new(CreateTableRequest)
+	_ optionsProvider[CreateAsSelectTableOptions]             = new(CreateAsSelectTableRequest)
+	_ optionsProvider[CreateUsingTemplateTableOptions]        = new(CreateUsingTemplateTableRequest)
+	_ optionsProvider[CreateLikeTableOptions]                 = new(CreateLikeTableRequest)
+	_ optionsProvider[CreateCloneTableOptions]                = new(CreateCloneTableRequest)
+	_ optionsProvider[AlterTableOptions]                      = new(AlterTableRequest)
+	_ optionsProvider[DropTableOptions]                       = new(DropTableRequest)
+	_ optionsProvider[ShowTableOptions]                       = new(ShowTableRequest)
+	_ optionsProvider[DescribeColumnsTableOptions]            = new(DescribeColumnsTableRequest)
+	_ optionsProvider[DescribeStageTableOptions]              = new(DescribeStageTableRequest)
 	_ optionsProvider[DescribeSearchOptimizationTableOptions] = new(DescribeSearchOptimizationTableRequest)
 	_ optionsProvider[SelectTableConstraintsTableOptions]     = new(SelectTableConstraintsTableRequest)
 	_ optionsProvider[SelectCheckConstraintsTableOptions]     = new(SelectCheckConstraintsTableRequest)
 )
+
+type CreateTableRequest struct {
+	OrReplace                  *bool
+	Scope                      *TableScope
+	Kind                       *TableKind
+	IfNotExists                *bool
+	name                       SchemaObjectIdentifier                  // required
+	ColumnsAndConstraints      CreateTableColumnsAndConstraintsRequest // required
+	ClusterBy                  []string
+	EnableSchemaEvolution      *bool
+	StageFileFormat            *LegacyFileFormatRequest
+	StageCopyOptions           *LegacyTableCopyOptionsRequest
+	DataRetentionTimeInDays    *int
+	MaxDataExtensionTimeInDays *int
+	ChangeTracking             *bool
+	DefaultDdlCollation        *string
+	CopyGrants                 *bool
+	RowAccessPolicy            *TableRowAccessPolicyLegacy
+	Tag                        []TagAssociation
+	Comment                    *string
+}
+
+type CreateTableColumnsAndConstraintsRequest struct {
+	Columns             []TableColumnRequest
+	OutOfLineConstraint []OutOfLineConstraintRequest
+}
+
+type TableColumnRequest struct {
+	Name             string   // required
+	ColumnType       DataType // required
+	InlineConstraint *ColumnInlineConstraint
+	NotNull          *bool
+	Collate          *string
+	DefaultValue     *ColumnDefaultValueRequest
+	MaskingPolicy    *ColumnMaskingPolicyRequest
+	Tag              []TagAssociation
+	Comment          *string
+}
+
+type ColumnDefaultValueRequest struct {
+	Expression *string
+	Identity   *ColumnIdentityRequest
+}
+
+type ColumnIdentityRequest struct {
+	Start     int // required
+	Increment int // required
+	Order     *bool
+	Noorder   *bool
+}
+
+type ColumnMaskingPolicyRequest struct {
+	With  *bool
+	Name  SchemaObjectIdentifier // required
+	Using []string
+}
+
+type OutOfLineConstraintRequest struct {
+	Name               *string
+	ConstraintType     ColumnConstraintType // required
+	Columns            []string
+	ForeignKey         *OutOfLineForeignKeyRequest
+	Enforced           *bool
+	NotEnforced        *bool
+	Deferrable         *bool
+	NotDeferrable      *bool
+	InitiallyDeferred  *bool
+	InitiallyImmediate *bool
+	Enable             *bool
+	Disable            *bool
+	Validate           *bool
+	Novalidate         *bool
+	Rely               *bool
+	Norely             *bool
+}
+
+type OutOfLineForeignKeyRequest struct {
+	TableName   SchemaObjectIdentifier // required
+	ColumnNames []string
+	Match       *MatchType
+	On          *ForeignKeyOnAction
+}
+
+type LegacyFileFormatRequest struct {
+	FormatName     *string
+	FileFormatType *FileFormatType
+	Options        *FileFormatTypeOptionsLegacy
+}
+
+type LegacyTableCopyOptionsRequest struct {
+	OnError           *LegacyTableCopyOnErrorOptionsRequest
+	SizeLimit         *int
+	Purge             *bool
+	ReturnFailedOnly  *bool
+	MatchByColumnName *StageCopyColumnMapOption
+	EnforceLength     *bool
+	Truncatecolumns   *bool
+	Force             *bool
+}
+
+type LegacyTableCopyOnErrorOptionsRequest struct {
+	Continue_      *bool
+	SkipFile       *string
+	AbortStatement *bool
+}
+
+type CreateAsSelectTableRequest struct {
+	OrReplace       *bool
+	name            SchemaObjectIdentifier       // required
+	Columns         []TableAsSelectColumnRequest // required
+	ClusterBy       []string
+	CopyGrants      *bool
+	RowAccessPolicy *TableRowAccessPolicyLegacy
+	Query           string // required
+}
+
+type TableAsSelectColumnRequest struct {
+	Name          string // required
+	ColumnType    *DataType
+	MaskingPolicy *SchemaObjectIdentifier
+}
+
+type CreateUsingTemplateTableRequest struct {
+	OrReplace  *bool
+	name       SchemaObjectIdentifier // required
+	CopyGrants *bool
+	Query      []string
+}
+
+type CreateLikeTableRequest struct {
+	OrReplace   *bool
+	name        SchemaObjectIdentifier // required
+	SourceTable SchemaObjectIdentifier // required
+	ClusterBy   []string
+	CopyGrants  *bool
+}
+
+type CreateCloneTableRequest struct {
+	OrReplace   *bool
+	name        SchemaObjectIdentifier // required
+	SourceTable SchemaObjectIdentifier // required
+	ClonePoint  *ClonePointRequest
+	CopyGrants  *bool
+}
+
+type ClonePointRequest struct {
+	Moment CloneMoment // required
+	At     TimeTravel  // required
+}
+
+type AlterTableRequest struct {
+	IfExists                   *bool
+	name                       SchemaObjectIdentifier // required
+	RenameTo                   *SchemaObjectIdentifier
+	SwapWith                   *SchemaObjectIdentifier
+	ClusteringAction           *TableClusteringActionRequest
+	ColumnAction               *TableColumnActionRequest
+	ConstraintAction           *TableConstraintActionRequest
+	ExternalTableAction        *TableExternalTableActionRequest
+	SearchOptimizationAction   *TableSearchOptimizationActionLegacyRequest
+	Set                        *TableSetRequest
+	SetTags                    []TagAssociation
+	UnsetTags                  []ObjectIdentifier
+	Unset                      *TableUnsetRequest
+	AddRowAccessPolicy         *TableAddRowAccessPolicyRequest
+	DropRowAccessPolicy        *TableDropRowAccessPolicyRequest
+	DropAndAddRowAccessPolicy  *TableDropAndAddRowAccessPolicyRequest
+	DropAllRowAccessPolicies   *bool
+	AddStorageLifecyclePolicy  *TableAddStorageLifecyclePolicyRequest
+	DropStorageLifecyclePolicy *bool
+}
+
+type TableClusteringActionRequest struct {
+	ClusterBy            []string
+	Recluster            *TableReclusterActionRequest
+	ChangeReclusterState *TableReclusterChangeStateRequest
+	DropClusteringKey    *bool
+}
+
+type TableReclusterActionRequest struct {
+	MaxSize   *int
+	Condition *string
+}
+
+type TableReclusterChangeStateRequest struct {
+	State *ReclusterState
+}
+
+type TableColumnActionRequest struct {
+	Add                *TableColumnAddActionRequest
+	Rename             *TableColumnRenameActionRequest
+	Alter              []TableColumnAlterActionRequest
+	SetMaskingPolicy   *TableColumnAlterSetMaskingPolicyActionRequest
+	UnsetMaskingPolicy *TableColumnAlterUnsetMaskingPolicyActionRequest
+	SetTags            *TableColumnAlterSetTagsActionRequest
+	UnsetTags          *TableColumnAlterUnsetTagsActionRequest
+	DropColumns        *TableColumnAlterDropColumnsRequest
+}
+
+type TableColumnAddActionRequest struct {
+	IfNotExists      *bool
+	Name             string   // required
+	ColumnType       DataType // required
+	Collate          *string
+	DefaultValue     *ColumnDefaultValueRequest
+	InlineConstraint *TableColumnAddInlineConstraintRequest
+	MaskingPolicy    *ColumnMaskingPolicyRequest
+	Tag              []TagAssociation
+	Comment          *string
+}
+
+type TableColumnAddInlineConstraintRequest struct {
+	NotNull        *bool
+	Name           *string
+	ConstraintType ColumnConstraintType // required
+	ForeignKey     *ColumnAddForeignKeyRequest
+}
+
+type ColumnAddForeignKeyRequest struct {
+	TableName  string // required
+	ColumnName string // required
+}
+
+type TableColumnRenameActionRequest struct {
+	OldName string // required
+	NewName string // required
+}
+
+type TableColumnAlterActionRequest struct {
+	Name              string // required
+	DropDefault       *bool
+	SetDefault        *SequenceName
+	NotNullConstraint *TableColumnNotNullConstraintRequest
+	DataType          *DataType
+	Collate           *string
+	Comment           *string
+	UnsetComment      *bool
+}
+
+type TableColumnNotNullConstraintRequest struct {
+	Set  *bool
+	Drop *bool
+}
+
+type TableColumnAlterSetMaskingPolicyActionRequest struct {
+	ColumnName        string                 // required
+	MaskingPolicyName SchemaObjectIdentifier // required
+	Using             []string
+	Force             *bool
+}
+
+type TableColumnAlterUnsetMaskingPolicyActionRequest struct {
+	ColumnName string // required
+}
+
+type TableColumnAlterSetTagsActionRequest struct {
+	ColumnName string           // required
+	SetTags    []TagAssociation // required
+}
+
+type TableColumnAlterUnsetTagsActionRequest struct {
+	ColumnName string             // required
+	UnsetTags  []ObjectIdentifier // required
+}
+
+type TableColumnAlterDropColumnsRequest struct {
+	IfExists *bool
+	Columns  []string // required
+}
+
+type TableConstraintActionRequest struct {
+	Add    *OutOfLineConstraintRequest
+	Rename *TableConstraintRenameActionRequest
+	Alter  *TableConstraintAlterActionRequest
+	Drop   *TableConstraintDropActionRequest
+}
+
+type TableConstraintRenameActionRequest struct {
+	OldName string // required
+	NewName string // required
+}
+
+type TableConstraintAlterActionRequest struct {
+	ConstraintName *string
+	PrimaryKey     *bool
+	Unique         *bool
+	ForeignKey     *bool
+	Columns        []string
+	Enforced       *bool
+	NotEnforced    *bool
+	Validate       *bool
+	Novalidate     *bool
+	Rely           *bool
+	Norely         *bool
+}
+
+type TableConstraintDropActionRequest struct {
+	ConstraintName *string
+	PrimaryKey     *bool
+	Unique         *bool
+	ForeignKey     *bool
+	Columns        []string
+	Cascade        *bool
+	Restrict       *bool
+}
+
+type TableExternalTableActionRequest struct {
+	Add    *TableExternalTableColumnAddActionRequest
+	Rename *TableExternalTableColumnRenameActionRequest
+	Drop   *TableExternalTableColumnDropActionRequest
+}
+
+type TableExternalTableColumnAddActionRequest struct {
+	IfNotExists *bool
+	Name        string   // required
+	ColumnType  DataType // required
+	Expression  []string
+	Comment     *string
+}
+
+type TableExternalTableColumnRenameActionRequest struct {
+	OldName string // required
+	NewName string // required
+}
+
+type TableExternalTableColumnDropActionRequest struct {
+	IfExists *bool
+	Names    []string // required
+}
+
+type TableSearchOptimizationActionLegacyRequest struct {
+	Add  *AddSearchOptimizationRequest
+	Drop *TableDropSearchOptimizationRequest
+}
+
+type AddSearchOptimizationRequest struct {
+	On []string
+}
+
+type TableSetRequest struct {
+	EnableSchemaEvolution      *bool
+	StageFileFormat            *LegacyFileFormatRequest
+	StageCopyOptions           *LegacyTableCopyOptionsRequest
+	DataRetentionTimeInDays    *int
+	MaxDataExtensionTimeInDays *int
+	ChangeTracking             *bool
+	DefaultDdlCollation        *string
+	Comment                    *string
+}
+
+type TableUnsetRequest struct {
+	DataRetentionTimeInDays    *bool
+	MaxDataExtensionTimeInDays *bool
+	ChangeTracking             *bool
+	DefaultDdlCollation        *bool
+	EnableSchemaEvolution      *bool
+	Comment                    *bool
+}
+
+type TableAddRowAccessPolicyRequest struct {
+	RowAccessPolicy SchemaObjectIdentifier // required
+	On              []string
+}
+
+type TableDropRowAccessPolicyRequest struct {
+	RowAccessPolicy SchemaObjectIdentifier // required
+}
+
+type TableDropAndAddRowAccessPolicyRequest struct {
+	Drop TableDropRowAccessPolicyRequest // required
+	Add  TableAddRowAccessPolicyRequest  // required
+}
+
+type TableAddStorageLifecyclePolicyRequest struct {
+	StorageLifecyclePolicy SchemaObjectIdentifier // required
+	On                     []Column               // required
+}
+
+type DropTableRequest struct {
+	IfExists *bool
+	name     SchemaObjectIdentifier // required
+	Cascade  *bool
+	Restrict *bool
+}
+
+type ShowTableRequest struct {
+	Terse      *bool
+	History    *bool
+	Like       *Like
+	In         *ExtendedIn
+	StartsWith *string
+	Limit      *LimitFrom
+}
+
+type DescribeColumnsTableRequest struct {
+	name SchemaObjectIdentifier // required
+}
+
+type DescribeStageTableRequest struct {
+	name SchemaObjectIdentifier // required
+}
 
 type DescribeSearchOptimizationTableRequest struct {
 	name SchemaObjectIdentifier // required
