@@ -82,6 +82,7 @@ func init() {
 				opts.AutoSuspendSecs = new(600)
 				opts.ExternalAccessIntegrations = &ServiceExternalAccessIntegrations{ExternalAccessIntegrations: []AccountObjectIdentifier{integration1Id}}
 				opts.AutoResume = new(true)
+				opts.ServiceCallerTokenValiditySecs = new(7200)
 				opts.MinInstances = new(1)
 				opts.MinReadyInstances = new(1)
 				opts.MaxInstances = new(3)
@@ -90,7 +91,8 @@ func init() {
 				opts.Comment = &comment
 			},
 			"CREATE SERVICE IF NOT EXISTS %s IN COMPUTE POOL %s FROM SPECIFICATION $$SPEC$$ AUTO_SUSPEND_SECS = 600 "+
-				"EXTERNAL_ACCESS_INTEGRATIONS = (%s) AUTO_RESUME = true MIN_INSTANCES = 1 MIN_READY_INSTANCES = 1 MAX_INSTANCES = 3 "+
+				"EXTERNAL_ACCESS_INTEGRATIONS = (%s) AUTO_RESUME = true SERVICE_CALLER_TOKEN_VALIDITY_SECS = 7200 "+
+				"MIN_INSTANCES = 1 MIN_READY_INSTANCES = 1 MAX_INSTANCES = 3 "+
 				"QUERY_WAREHOUSE = %s TAG (%s = 'value1') COMMENT = '%s'",
 			servicesTestIdSchemaObjectIdentifier.FullyQualifiedName(), computePoolId.FullyQualifiedName(), integration1Id.FullyQualifiedName(),
 			warehouseId.FullyQualifiedName(), tagId.FullyQualifiedName(), comment,
@@ -261,12 +263,13 @@ func init() {
 			case_Services_sql_Alter_Set,
 			func(opts *AlterServiceOptions) {
 				opts.Set = &ServiceSet{
-					MinInstances:      new(2),
-					MaxInstances:      new(5),
-					AutoSuspendSecs:   new(600),
-					MinReadyInstances: new(1),
-					QueryWarehouse:    &warehouseId,
-					AutoResume:        new(true),
+					MinInstances:                   new(2),
+					MaxInstances:                   new(5),
+					AutoSuspendSecs:                new(600),
+					MinReadyInstances:              new(1),
+					QueryWarehouse:                 &warehouseId,
+					AutoResume:                     new(true),
+					ServiceCallerTokenValiditySecs: new(1800),
 					ExternalAccessIntegrations: &ServiceExternalAccessIntegrations{
 						ExternalAccessIntegrations: []AccountObjectIdentifier{integration1Id, integration2Id},
 					},
@@ -274,6 +277,7 @@ func init() {
 				}
 			},
 			`ALTER SERVICE %s SET MIN_INSTANCES = 2 MAX_INSTANCES = 5 AUTO_SUSPEND_SECS = 600 MIN_READY_INSTANCES = 1 QUERY_WAREHOUSE = %s AUTO_RESUME = true`+
+				` SERVICE_CALLER_TOKEN_VALIDITY_SECS = 1800`+
 				` EXTERNAL_ACCESS_INTEGRATIONS = (%s, %s) COMMENT = '%s'`,
 			servicesTestIdSchemaObjectIdentifier.FullyQualifiedName(), warehouseId.FullyQualifiedName(), integration1Id.FullyQualifiedName(), integration2Id.FullyQualifiedName(), comment,
 		).
@@ -281,17 +285,18 @@ func init() {
 			case_Services_sql_Alter_Unset,
 			func(opts *AlterServiceOptions) {
 				opts.Unset = &ServiceUnset{
-					MinInstances:               new(true),
-					AutoSuspendSecs:            new(true),
-					MaxInstances:               new(true),
-					MinReadyInstances:          new(true),
-					QueryWarehouse:             new(true),
-					AutoResume:                 new(true),
-					ExternalAccessIntegrations: new(true),
-					Comment:                    new(true),
+					MinInstances:                   new(true),
+					AutoSuspendSecs:                new(true),
+					MaxInstances:                   new(true),
+					MinReadyInstances:              new(true),
+					QueryWarehouse:                 new(true),
+					AutoResume:                     new(true),
+					ServiceCallerTokenValiditySecs: new(true),
+					ExternalAccessIntegrations:     new(true),
+					Comment:                        new(true),
 				}
 			},
-			"ALTER SERVICE %s UNSET MIN_INSTANCES, AUTO_SUSPEND_SECS, MAX_INSTANCES, MIN_READY_INSTANCES, QUERY_WAREHOUSE, AUTO_RESUME, EXTERNAL_ACCESS_INTEGRATIONS, COMMENT",
+			"ALTER SERVICE %s UNSET MIN_INSTANCES, AUTO_SUSPEND_SECS, MAX_INSTANCES, MIN_READY_INSTANCES, QUERY_WAREHOUSE, AUTO_RESUME, SERVICE_CALLER_TOKEN_VALIDITY_SECS, EXTERNAL_ACCESS_INTEGRATIONS, COMMENT",
 			servicesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(

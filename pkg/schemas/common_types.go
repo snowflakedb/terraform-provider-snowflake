@@ -18,7 +18,7 @@ var DescribePropertyListSchema = &schema.Schema{
 	Type:     schema.TypeList,
 	Computed: true,
 	Elem: &schema.Resource{
-		Schema: ShowSecurityIntegrationPropertySchema,
+		Schema: SecurityIntegrationPropertySchema,
 	},
 }
 

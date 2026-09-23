@@ -7,8 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type openflowConnectorDefinitionToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.OpenflowConnectorDefinition] = openflowConnectorDefinitionToSchemaMapper{}
+
 // ShowOpenflowConnectorDefinitionSchema represents output of SHOW query for the single OpenflowConnectorDefinition.
-var ShowOpenflowConnectorDefinitionSchema = map[string]*schema.Schema{
+var ShowOpenflowConnectorDefinitionSchema = mergeSchema(map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -29,12 +33,6 @@ var ShowOpenflowConnectorDefinitionSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"categories": {
-		// Adjusted manually.
-		Type:     schema.TypeList,
-		Elem:     &schema.Schema{Type: schema.TypeString},
-		Computed: true,
-	},
 	"min_runtime_node_type": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -43,7 +41,7 @@ var ShowOpenflowConnectorDefinitionSchema = map[string]*schema.Schema{
 		Type:     schema.TypeInt,
 		Computed: true,
 	},
-}
+}, openflowConnectorDefinitionToSchemaMapper{}.additionalSchema())
 
 var _ = ShowOpenflowConnectorDefinitionSchema
 
@@ -54,13 +52,13 @@ func OpenflowConnectorDefinitionToSchema(openflowConnectorDefinition *sdk.Openfl
 	openflowConnectorDefinitionSchema["version"] = openflowConnectorDefinition.Version
 	openflowConnectorDefinitionSchema["description"] = openflowConnectorDefinition.Description
 	openflowConnectorDefinitionSchema["display_name"] = openflowConnectorDefinition.DisplayName
-	openflowConnectorDefinitionSchema["categories"] = openflowConnectorDefinition.Categories
 	if openflowConnectorDefinition.MinRuntimeNodeType != nil {
 		openflowConnectorDefinitionSchema["min_runtime_node_type"] = (*openflowConnectorDefinition.MinRuntimeNodeType)
 	}
 	if openflowConnectorDefinition.MaxNodeCount != nil {
 		openflowConnectorDefinitionSchema["max_node_count"] = (*openflowConnectorDefinition.MaxNodeCount)
 	}
+	openflowConnectorDefinitionToSchemaMapper{}.additionalToSchema(openflowConnectorDefinition, openflowConnectorDefinitionSchema)
 	return openflowConnectorDefinitionSchema
 }
 

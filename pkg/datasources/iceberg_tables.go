@@ -100,7 +100,7 @@ func ReadIcebergTables(ctx context.Context, d *schema.ResourceData, meta any) di
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			describeOutput = schemas.IcebergTableDetailsToSchema(details)
+			describeOutput = schemas.IcebergTableDetailsListToSchema(details)
 		}
 
 		var tableParameters []map[string]any

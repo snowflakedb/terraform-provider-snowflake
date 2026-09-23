@@ -35,6 +35,100 @@ We added `primary_key` and `auto_suspend` fields to the `snowflake_cortex_search
 
 No configuration changes are needed for existing configurations; both fields are optional.
 
+### *(new feature)* Experimental features lifecycle and `experimental_features_disabled`
+
+Experimental features now follow a BCR-like lifecycle so successful experiments can become default provider behavior in a **minor** release:
+
+| State              | Behavior                         | How to toggle                                     |
+|--------------------|----------------------------------|---------------------------------------------------|
+| Opt-in             | Opt-in                           | List the name in `experimental_features_enabled`  |
+| Enabled by default | On unless opted out              | List the name in `experimental_features_disabled` |
+| Promoted           | Always on (now default behavior) | Listing the name in either list is a no-op        |
+| Discontinued       | Always off (old behavior stays)  | Listing the name in either list is a no-op        |
+
+A new provider field [`experimental_features_disabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_disabled-1) opts out of experiments that are enabled by default. If the same name is listed in both lists, `experimental_features_disabled` wins. Neither list can be set via environment variables.
+
+Promoted and discontinued names stay accepted until the next major version, then they are removed from the allowed-value lists.
+
+No action is required unless you want to disable an experiment that is enabled by default.
+
+### *(new feature)* `INHERITED_GRANTS` is enabled by default
+
+The `INHERITED_GRANTS` experiment is now enabled by default. Using an `inherited` block in [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) or [`snowflake_grant_privileges_to_database_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_database_role) no longer requires listing `INHERITED_GRANTS` in `experimental_features_enabled`.
+
+Existing configurations without an `inherited` block are unchanged.
+
+To opt out, add `INHERITED_GRANTS` to `experimental_features_disabled`:
+
+```terraform
+provider "snowflake" {
+  experimental_features_disabled = ["INHERITED_GRANTS"]
+}
+```
+
+Leaving `INHERITED_GRANTS` in `experimental_features_enabled` is redundant and produces a warning.
+
+This experiment will be promoted (the opt-out removed) in **v2.23.0** or **v2.24.0**. After promotion, listing the name in either list will be a no-op until the next major version.
+
+No action is required unless you want to disable inherited grants support.
+
+### *(new feature)* `execute_as_user` on `snowflake_task`
+
+We added optional [`execute_as_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/task#execute_as_user-1) to the stable [`snowflake_task`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/task) resource.
+It maps to Snowflake [`EXECUTE AS USER`](https://docs.snowflake.com/en/user-guide/tasks-intro#run-tasks-with-user-privileges): the task runs with the task owner role's privileges plus that user's identity and default secondary roles, instead of the system service user.
+
+The value is also available in `show_output.execute_as_user` on the resource and in the [`snowflake_tasks`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/tasks) data source.
+
+Snowflake requires:
+
+- the task owner role to have `IMPERSONATE` on the target user
+- the target user to be granted the task owner role
+
+Omitting the field keeps the previous behavior (system user). No configuration changes are required unless you want to adopt this feature.
+
+### *(new feature)* New `service_caller_token_validity_secs` field in `snowflake_service`
+
+A new field has been added to the [`snowflake_service`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service) resource:
+- `service_caller_token_validity_secs` — sets [SERVICE_CALLER_TOKEN_VALIDITY_SECS](https://docs.snowflake.com/en/sql-reference/parameters#service-caller-token-validity-secs)
+
+The current value is also exposed in the new `parameters` output block (result of `SHOW PARAMETERS IN SERVICE`).
+
+No action is required; this is a non-breaking addition.
+
+### *(new feature)* Additional `type` and `mode` values in `snowflake_network_rule`
+
+The [`snowflake_network_rule`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/network_rule) resource now accepts additional `type` and `mode` values, matching [CREATE NETWORK RULE](https://docs.snowflake.com/en/sql-reference/sql/create-network-rule#required-parameters).
+
+New `type` values:
+- `IPV6` — IPv6 addresses (AWS only; use with `MODE = INGRESS`)
+- `COMPUTE_POOL` — Snowpark Container Services compute pools; `value_list` is compute pool names or `ALL` (use with `MODE = INGRESS`)
+
+New `mode` value:
+- `SNOWFLAKE_MANAGED_STORAGE_VOLUME` — requests to an AWS Snowflake-managed storage volume (use with `TYPE = AWSVPCEID`)
+
+No action is required; this is a non-breaking addition.
+
+Reference: [#5212](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5212).
+
+### *(bugfix)* Fixed permadiff issue with the `unsupported_ddl_action` attribute
+
+Using a lowercase value for `unsupported_ddl_action` (for example `"ignore"` or `"fail"`) could result in a permadiff (like ` ~ unsupported_ddl_action = "IGNORE" -> "ignore"`).
+
+This version adds validation and case-insensitive diff suppression to `unsupported_ddl_action`, so such permadiffs are avoided. The change applies to:
+
+- [`snowflake_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/user)
+- [`snowflake_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user)
+- [`snowflake_legacy_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user)
+- [`snowflake_task`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/task)
+- [`snowflake_current_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_account)
+- [`snowflake_current_organization_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_organization_account)
+
+Invalid values are now rejected at plan time.
+
+No action is needed.
+
+Reference: [#5210](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5210).
+
 ## v2.20.x ➞ v2.21.0
 
 ### *(breaking change)* Renamed constraint column fields in `snowflake_iceberg_table`

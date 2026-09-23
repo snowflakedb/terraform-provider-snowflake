@@ -131,6 +131,19 @@ var taskSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("error_integration")),
 		Description:      relatedResourceDescription(blocklistedCharactersFieldDescription("Specifies the name of the notification integration used for error notifications."), resources.NotificationIntegration),
 	},
+	"execute_as_user": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+		DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("execute_as_user")),
+		Description: relatedResourceDescription(blocklistedCharactersFieldDescription(joinWithSpace(
+			"Specifies the user on whose behalf the task runs instead of the system service, with the task owner role's privileges plus that user's identity and default secondary roles.",
+			"The task owner role must be granted IMPERSONATE on this user, and the user must be granted the task owner role.",
+			"When the task runs, the session primary role is the task owner role and the user's default secondary roles are activated.",
+			"The task SQL statement may use USE ROLE or USE SECONDARY ROLES to adjust the session.",
+			"For more information, see [Run tasks with user privileges](https://docs.snowflake.com/en/user-guide/tasks-intro#run-tasks-with-user-privileges).",
+		)), resources.User),
+	},
 	"comment": {
 		Type:        schema.TypeString,
 		Optional:    true,
@@ -234,7 +247,7 @@ func Task() *schema.Resource {
 		},
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Task, customdiff.All(
-			ComputedIfAnyAttributeChanged(taskSchema, ShowOutputAttributeName, "name", "started", "warehouse", "user_task_managed_initial_warehouse_size", "schedule", "config", "allow_overlapping_execution", "error_integration", "comment", "finalize", "after", "when", "target_completion_interval"),
+			ComputedIfAnyAttributeChanged(taskSchema, ShowOutputAttributeName, "name", "started", "warehouse", "user_task_managed_initial_warehouse_size", "schedule", "config", "allow_overlapping_execution", "error_integration", "execute_as_user", "comment", "finalize", "after", "when", "target_completion_interval"),
 			ComputedIfAnyAttributeChanged(taskParametersSchema, ParametersAttributeName, collections.Map(sdk.AsStringList(sdk.AllTaskParameters), strings.ToLower)...),
 			ComputedIfAnyAttributeChanged(taskSchema, FullyQualifiedNameAttributeName, "name"),
 			taskParametersCustomDiff,
@@ -316,6 +329,7 @@ func CreateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 		stringAttributeCreate(d, "config", &req.Config),
 		booleanStringAttributeCreate(d, "allow_overlapping_execution", &req.AllowOverlappingExecution),
 		accountObjectIdentifierAttributeCreate(d, "error_integration", &req.ErrorIntegration),
+		accountObjectIdentifierAttributeCreate(d, "execute_as_user", &req.ExecuteAsUser),
 		stringAttributeCreate(d, "comment", &req.Comment),
 		stringAttributeCreate(d, "when", &req.When),
 		attributeMappedValueCreate(d, "target_completion_interval", &req.TargetCompletionInterval, func(v any) (*string, error) {
@@ -439,6 +453,8 @@ func UpdateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 
 	unset := sdk.NewTaskUnsetRequest()
 	set := sdk.NewTaskSetRequest()
+	var setExecuteAsUser *sdk.AccountObjectIdentifier
+	var unsetExecuteAsUser *bool
 
 	err = errors.Join(
 		attributeMappedValueUpdate(d, "user_task_managed_initial_warehouse_size", &set.UserTaskManagedInitialWarehouseSize, &unset.UserTaskManagedInitialWarehouseSize, sdk.ToWarehouseSize),
@@ -446,6 +462,7 @@ func UpdateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 		stringAttributeUpdate(d, "config", &set.Config, &unset.Config),
 		booleanStringAttributeUpdate(d, "allow_overlapping_execution", &set.AllowOverlappingExecution, &unset.AllowOverlappingExecution),
 		accountObjectIdentifierAttributeUpdate(d, "error_integration", &set.ErrorIntegration, &unset.ErrorIntegration),
+		accountObjectIdentifierAttributeUpdate(d, "execute_as_user", &setExecuteAsUser, &unsetExecuteAsUser),
 		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
 	)
 	if err != nil {
@@ -497,6 +514,12 @@ func UpdateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 
 	if *unset != (sdk.TaskUnsetRequest{}) {
 		if err := client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(id).WithUnset(*unset)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if unsetExecuteAsUser != nil && *unsetExecuteAsUser {
+		if err := client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(id).WithUnsetExecuteAsUser(true)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -615,6 +638,12 @@ func UpdateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 		}
 	}
 
+	if setExecuteAsUser != nil {
+		if err := client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(id).WithSetExecuteAsUser(*setExecuteAsUser)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	if d.Get("started").(bool) {
 		if err := waitForTaskStart(ctx, client, id); err != nil {
 			return diag.FromErr(fmt.Errorf("failed to resume task %s, err = %w", id.FullyQualifiedName(), err))
@@ -678,6 +707,9 @@ func ReadTask(withExternalChangesMarking bool) schema.ReadContextFunc {
 			}, nil),
 			attributeMappedValueReadOrDefault(d, "error_integration", task.ErrorIntegration, func(errorIntegration *sdk.AccountObjectIdentifier) (string, error) {
 				return errorIntegration.Name(), nil
+			}, nil),
+			attributeMappedValueReadOrDefault(d, "execute_as_user", task.ExecuteAsUser, func(executeAsUser *sdk.AccountObjectIdentifier) (string, error) {
+				return executeAsUser.Name(), nil
 			}, nil),
 			attributeMappedValueReadOrDefault(d, "warehouse", task.Warehouse, func(warehouse *sdk.AccountObjectIdentifier) (string, error) {
 				return warehouse.Name(), nil

@@ -47,6 +47,8 @@ func TestAcc_Task_Updates(t *testing.T) {
 	taskConfig := `{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`
 	comment := random.Comment()
 	condition := `SYSTEM$STREAM_HAS_DATA('MYSTREAM')`
+	// execute_as_user is omitted: it needs IMPERSONATE on the user and the owner role granted to that user.
+	// Covered by TestAcc_Task_ExecuteAsUser so this portable complete smoke stays free of that setup.
 	completeConfigModel := model.TaskWithId("test", id, true, newStatement).
 		WithWarehouse(warehouse.ID().Name()).
 		WithScheduleMinutes(5).
@@ -78,6 +80,7 @@ func TestAcc_Task_Updates(t *testing.T) {
 						HasConfigString("").
 						HasAllowOverlappingExecutionString(r.BooleanDefault).
 						HasErrorIntegrationString("").
+						HasExecuteAsUserString("").
 						HasCommentString("").
 						HasFinalizeString("").
 						HasAfter().
@@ -99,6 +102,7 @@ func TestAcc_Task_Updates(t *testing.T) {
 						HasCondition("").
 						HasAllowOverlappingExecution(false).
 						HasErrorIntegration(sdk.NewAccountObjectIdentifier("")).
+						HasExecuteAsUserEmpty().
 						HasLastCommittedOn("").
 						HasLastSuspendedOn("").
 						HasOwnerRoleType("ROLE").
@@ -129,6 +133,7 @@ func TestAcc_Task_Updates(t *testing.T) {
 						HasConfigString(taskConfig).
 						HasAllowOverlappingExecutionString(r.BooleanTrue).
 						HasErrorIntegrationString(errorNotificationIntegration.ID().Name()).
+						HasExecuteAsUserString("").
 						HasCommentString(comment).
 						HasFinalizeString("").
 						HasAfter().
@@ -150,6 +155,7 @@ func TestAcc_Task_Updates(t *testing.T) {
 						HasCondition(condition).
 						HasAllowOverlappingExecution(true).
 						HasErrorIntegration(errorNotificationIntegration.ID()).
+						HasExecuteAsUserEmpty().
 						HasLastCommittedOnNotEmpty().
 						HasLastSuspendedOn("").
 						HasOwnerRoleType("ROLE").
@@ -179,6 +185,7 @@ func TestAcc_Task_Updates(t *testing.T) {
 						HasConfigString("").
 						HasAllowOverlappingExecutionString(r.BooleanDefault).
 						HasErrorIntegrationString("").
+						HasExecuteAsUserString("").
 						HasCommentString("").
 						HasFinalizeString("").
 						HasAfter().
@@ -200,6 +207,7 @@ func TestAcc_Task_Updates(t *testing.T) {
 						HasCondition("").
 						HasAllowOverlappingExecution(false).
 						HasErrorIntegration(sdk.NewAccountObjectIdentifier("")).
+						HasExecuteAsUserEmpty().
 						HasLastCommittedOnNotEmpty().
 						HasLastSuspendedOnNotEmpty().
 						HasOwnerRoleType("ROLE").
@@ -415,6 +423,7 @@ func TestAcc_Task_ExternalChanges(t *testing.T) {
 						HasConfigString(taskConfig).
 						HasAllowOverlappingExecutionString(r.BooleanTrue).
 						HasErrorIntegrationString(errorNotificationIntegration.ID().Name()).
+						HasExecuteAsUserString("").
 						HasCommentString(comment).
 						HasFinalizeString("").
 						HasAfter().
@@ -436,6 +445,7 @@ func TestAcc_Task_ExternalChanges(t *testing.T) {
 						HasCondition(condition).
 						HasAllowOverlappingExecution(true).
 						HasErrorIntegration(errorNotificationIntegration.ID()).
+						HasExecuteAsUserEmpty().
 						HasLastCommittedOnNotEmpty().
 						HasLastSuspendedOn("").
 						HasOwnerRoleType("ROLE").
@@ -479,6 +489,7 @@ func TestAcc_Task_ExternalChanges(t *testing.T) {
 						HasConfigString(taskConfig).
 						HasAllowOverlappingExecutionString(r.BooleanTrue).
 						HasErrorIntegrationString(errorNotificationIntegration.ID().Name()).
+						HasExecuteAsUserString("").
 						HasCommentString(comment).
 						HasFinalizeString("").
 						HasAfter().
@@ -500,6 +511,7 @@ func TestAcc_Task_ExternalChanges(t *testing.T) {
 						HasCondition(condition).
 						HasAllowOverlappingExecution(true).
 						HasErrorIntegration(errorNotificationIntegration.ID()).
+						HasExecuteAsUserEmpty().
 						HasLastCommittedOnNotEmpty().
 						HasLastSuspendedOnNotEmpty().
 						HasOwnerRoleType("ROLE").
@@ -524,6 +536,7 @@ func TestAcc_Task_ExternalChanges(t *testing.T) {
 						HasConfigString("").
 						HasAllowOverlappingExecutionString(r.BooleanDefault).
 						HasErrorIntegrationString("").
+						HasExecuteAsUserString("").
 						HasCommentString("").
 						HasFinalizeString("").
 						HasAfter().
@@ -545,6 +558,7 @@ func TestAcc_Task_ExternalChanges(t *testing.T) {
 						HasCondition("").
 						HasAllowOverlappingExecution(false).
 						HasErrorIntegration(sdk.NewAccountObjectIdentifier("")).
+						HasExecuteAsUserEmpty().
 						HasLastCommittedOnNotEmpty().
 						HasLastSuspendedOnNotEmpty().
 						HasOwnerRoleType("ROLE").
@@ -588,6 +602,7 @@ func TestAcc_Task_ExternalChanges(t *testing.T) {
 						HasConfigString("").
 						HasAllowOverlappingExecutionString(r.BooleanDefault).
 						HasErrorIntegrationString("").
+						HasExecuteAsUserString("").
 						HasCommentString("").
 						HasFinalizeString("").
 						HasAfter().
@@ -609,6 +624,7 @@ func TestAcc_Task_ExternalChanges(t *testing.T) {
 						HasCondition("").
 						HasAllowOverlappingExecution(false).
 						HasErrorIntegration(sdk.NewAccountObjectIdentifier("")).
+						HasExecuteAsUserEmpty().
 						HasLastCommittedOnNotEmpty().
 						HasLastSuspendedOnNotEmpty().
 						HasOwnerRoleType("ROLE").

@@ -94,7 +94,7 @@ func ImportStreamOnView(ctx context.Context, d *schema.ResourceData, meta any) (
 	errs := errors.Join(
 		d.Set("append_only", booleanStringFromBool(v.IsAppendOnly())),
 	)
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ImportBooleanDefault, providerCtx.EnabledExperiments) {
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.ImportBooleanDefault) {
 		errs = errors.Join(errs, d.Set("show_initial_rows", BooleanDefault))
 	}
 	if errs != nil {

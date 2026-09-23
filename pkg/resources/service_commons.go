@@ -218,9 +218,10 @@ func ImportServiceFunc(customFieldsHandler func(d *schema.ResourceData, service 
 	}
 }
 
-func ReadServiceCommonFunc(withExternalChangesMarking bool, extraOutputMappingsFunc func(service *sdk.Service) []outputMapping, extraSetStateToValuesFromConfigFields []string) schema.ReadContextFunc {
+func ReadServiceCommonFunc(withExternalChangesMarking bool, extraOutputMappingsFunc func(service *sdk.Service) []outputMapping, extraSetStateToValuesFromConfigFields []string, withParameters bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		client := meta.(*provider.Context).Client
+		providerCtx := meta.(*provider.Context)
+		client := providerCtx.Client
 		id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
@@ -243,6 +244,13 @@ func ReadServiceCommonFunc(withExternalChangesMarking bool, extraOutputMappingsF
 		serviceDetails, err := client.Services.Describe(ctx, id)
 		if err != nil {
 			return diag.FromErr(err)
+		}
+		var serviceParameters []*sdk.Parameter
+		if withParameters {
+			serviceParameters, err = client.Services.ShowParameters(ctx, id)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 		if withExternalChangesMarking {
 			var warehouseFullyQualifiedName string
@@ -270,6 +278,13 @@ func ReadServiceCommonFunc(withExternalChangesMarking bool, extraOutputMappingsF
 			d.Set("comment", service.Comment),
 			d.Set("service_type", service.Type()),
 		)
+		if withParameters {
+			errs = errors.Join(
+				errs,
+				handleServiceParameterRead(d, serviceParameters),
+				d.Set(ParametersAttributeName, []map[string]any{schemas.ServiceParametersToSchema(serviceParameters, providerCtx)}),
+			)
+		}
 		if errs != nil {
 			return diag.FromErr(errs)
 		}

@@ -668,7 +668,8 @@ func TestAcc_GrantPrivilegesToShare_shareNameContainingDots(t *testing.T) {
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.GrantPrivilegesToShareResource(t, grantModel.ResourceReference()).
 						HasToShare(shareId.Name()).
 						HasOnDatabase(database.ID().Name()).

@@ -21,7 +21,7 @@ func toPrivileges(privileges []string) ([]string, error) {
 
 // showGrantsCachedFor caches client.Grants.Show(opts) under experiment, keyed by sdk.StructToSQL(opts).
 func showGrantsCachedFor(ctx context.Context, providerCtx *provider.Context, experiment experimentalfeatures.ExperimentalFeature, opts *sdk.ShowGrantOptions) ([]sdk.Grant, error) {
-	if !experimentalfeatures.IsExperimentEnabled(experiment, providerCtx.EnabledExperiments) {
+	if !providerCtx.Experiments.IsEnabled(experiment) {
 		return providerCtx.Client.Grants.Show(ctx, opts)
 	}
 	key, err := sdk.StructToSQL(opts)
@@ -39,7 +39,7 @@ func showGrantsCached(ctx context.Context, providerCtx *provider.Context, opts *
 }
 
 func invalidateGrantsShowCacheFor(providerCtx *provider.Context, experiment experimentalfeatures.ExperimentalFeature, opts *sdk.ShowGrantOptions) {
-	if opts == nil || !experimentalfeatures.IsExperimentEnabled(experiment, providerCtx.EnabledExperiments) {
+	if opts == nil || !providerCtx.Experiments.IsEnabled(experiment) {
 		return
 	}
 	key, err := sdk.StructToSQL(opts)

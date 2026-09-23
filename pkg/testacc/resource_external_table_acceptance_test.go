@@ -344,7 +344,7 @@ func expectTableToHaveColumnDataTypes(id sdk.SchemaObjectIdentifier, expectedDat
 	return func(s *terraform.State) error {
 		client := TestAccProvider.Meta().(*provider.Context).Client
 		ctx := context.Background()
-		columnsDesc, err := client.ExternalTables.DescribeColumns(ctx, sdk.NewDescribeExternalTableColumnsRequest(id))
+		columnsDesc, err := client.ExternalTables.DescribeColumns(ctx, sdk.NewDescribeColumnsExternalTableRequest(id))
 		if err != nil {
 			return err
 		}

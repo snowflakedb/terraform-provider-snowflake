@@ -250,7 +250,7 @@ func CreateTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	constraintRequest := sdk.NewOutOfLineConstraintRequest(constraintType).WithName(&name)
+	constraintRequest := sdk.NewOutOfLineConstraintRequest(constraintType).WithName(name)
 
 	cc := d.Get("columns").([]any)
 	columns := make([]string, 0, len(cc))
@@ -260,31 +260,31 @@ func CreateTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 	constraintRequest.WithColumns(snowflake.QuoteStringList(columns))
 
 	if v, ok := d.GetOk("enforced"); ok {
-		constraintRequest.WithEnforced(sdk.Bool(v.(bool)))
+		constraintRequest.WithEnforced(v.(bool))
 	}
 
 	if v, ok := d.GetOk("deferrable"); ok {
-		constraintRequest.WithDeferrable(sdk.Bool(v.(bool)))
+		constraintRequest.WithDeferrable(v.(bool))
 	}
 
 	if v, ok := d.GetOk("initially"); ok {
 		if v.(string) == "DEFERRED" {
-			constraintRequest.WithInitiallyDeferred(sdk.Bool(true))
+			constraintRequest.WithInitiallyDeferred(true)
 		} else {
-			constraintRequest.WithInitiallyImmediate(sdk.Bool(true))
+			constraintRequest.WithInitiallyImmediate(true)
 		}
 	}
 
 	if v, ok := d.GetOk("enable"); ok {
-		constraintRequest.WithEnable(sdk.Bool(v.(bool)))
+		constraintRequest.WithEnable(v.(bool))
 	}
 
 	if v, ok := d.GetOk("validate"); ok {
-		constraintRequest.WithValidate(sdk.Bool(v.(bool)))
+		constraintRequest.WithValidate(v.(bool))
 	}
 
 	if v, ok := d.GetOk("rely"); ok {
-		constraintRequest.WithRely(sdk.Bool(v.(bool)))
+		constraintRequest.WithRely(v.(bool))
 	}
 
 	// set foreign key specific settings
@@ -306,13 +306,13 @@ func CreateTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 		for _, c := range cols {
 			fkColumns = append(fkColumns, c.(string))
 		}
-		foreignKeyRequest := sdk.NewOutOfLineForeignKeyRequest(referencedTableIdentifier, snowflake.QuoteStringList(fkColumns))
+		foreignKeyRequest := sdk.NewOutOfLineForeignKeyRequest(referencedTableIdentifier).WithColumnNames(snowflake.QuoteStringList(fkColumns))
 
 		matchType, err := sdk.ToMatchType(foreignKeyProperties["match"].(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		foreignKeyRequest.WithMatch(&matchType)
+		foreignKeyRequest.WithMatch(matchType)
 
 		onUpdate, err := sdk.ToForeignKeyAction(foreignKeyProperties["on_update"].(string))
 		if err != nil {
@@ -322,16 +322,14 @@ func CreateTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		foreignKeyRequest.WithOn(
-			sdk.NewForeignKeyOnAction().
-				WithOnDelete(&onDelete).
-				WithOnUpdate(&onUpdate),
-		)
-		constraintRequest.WithForeignKey(foreignKeyRequest)
+		foreignKeyRequest.WithOn(*sdk.NewForeignKeyOnAction().
+			WithOnDelete(&onDelete).
+			WithOnUpdate(&onUpdate))
+		constraintRequest.WithForeignKey(*foreignKeyRequest)
 	}
 
-	alterStatement := sdk.NewAlterTableRequest(*tableIdentifier).WithConstraintAction(sdk.NewTableConstraintActionRequest().WithAdd(constraintRequest))
-	err = client.TablesLegacy.Alter(ctx, alterStatement)
+	alterStatement := sdk.NewAlterTableRequest(*tableIdentifier).WithConstraintAction(*sdk.NewTableConstraintActionRequest().WithAdd(*constraintRequest))
+	err = client.Tables.Alter(ctx, alterStatement)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error creating table constraint %v err = %w", name, err))
 	}
@@ -411,9 +409,9 @@ func DeleteTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(err)
 	}
 
-	dropRequest := sdk.NewTableConstraintDropActionRequest().WithConstraintName(&tc.name)
-	alterStatement := sdk.NewAlterTableRequest(*tableIdentifier).WithConstraintAction(sdk.NewTableConstraintActionRequest().WithDrop(dropRequest))
-	err = client.TablesLegacy.Alter(ctx, alterStatement)
+	dropRequest := sdk.NewTableConstraintDropActionRequest().WithConstraintName(tc.name)
+	alterStatement := sdk.NewAlterTableRequest(*tableIdentifier).WithConstraintAction(*sdk.NewTableConstraintActionRequest().WithDrop(*dropRequest))
+	err = client.Tables.Alter(ctx, alterStatement)
 	if err != nil {
 		// if the table constraint does not exist, then remove from state file
 		if strings.Contains(err.Error(), "does not exist") {

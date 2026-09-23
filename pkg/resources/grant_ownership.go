@@ -319,7 +319,7 @@ func DeleteGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any)
 			grantFrom,
 			new(sdk.RevokeOwnershipOptions),
 		)
-		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) && experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments) {
+		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) && providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy) {
 			err = nil
 		}
 		if err != nil {
@@ -345,7 +345,7 @@ func DeleteGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any)
 			},
 			getOwnershipGrantOpts(id),
 		)
-		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) && experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments) {
+		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) && providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy) {
 			err = nil
 		}
 		if err != nil {

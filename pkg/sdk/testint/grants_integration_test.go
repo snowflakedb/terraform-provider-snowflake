@@ -1577,7 +1577,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 			*sdk.NewTableColumnRequest("FIRST_A", sdk.DataTypeNumber),
 			*sdk.NewTableColumnRequest("FIRST_B", sdk.DataTypeNumber),
 		}
-		table1, table1Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table1ID, columns1))
+		table1, table1Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table1ID, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns1)))
 		t.Cleanup(table1Cleanup)
 
 		logicalTables := []sdk.LogicalTableRequest{

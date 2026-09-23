@@ -120,10 +120,14 @@ func DynamicTableToSchema(dynamicTable *sdk.DynamicTable) map[string]any {
 	dynamicTableSchema["text"] = dynamicTable.Text
 	dynamicTableSchema["automatic_clustering"] = dynamicTable.AutomaticClustering
 	dynamicTableSchema["scheduling_state"] = string(dynamicTable.SchedulingState)
-	dynamicTableSchema["last_suspended_on"] = dynamicTable.LastSuspendedOn.String()
+	if dynamicTable.LastSuspendedOn != nil {
+		dynamicTableSchema["last_suspended_on"] = (*dynamicTable.LastSuspendedOn).String()
+	}
 	dynamicTableSchema["is_clone"] = dynamicTable.IsClone
 	dynamicTableSchema["is_replica"] = dynamicTable.IsReplica
-	dynamicTableSchema["data_timestamp"] = dynamicTable.DataTimestamp.String()
+	if dynamicTable.DataTimestamp != nil {
+		dynamicTableSchema["data_timestamp"] = (*dynamicTable.DataTimestamp).String()
+	}
 	dynamicTableSchema["owner_role_type"] = dynamicTable.OwnerRoleType
 	return dynamicTableSchema
 }

@@ -7,8 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type resourceMonitorToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.ResourceMonitor] = resourceMonitorToSchemaMapper{}
+
 // ShowResourceMonitorSchema represents output of SHOW query for the single ResourceMonitor.
-var ShowResourceMonitorSchema = map[string]*schema.Schema{
+var ShowResourceMonitorSchema = mergeSchema(map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -41,16 +45,7 @@ var ShowResourceMonitorSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// Adjusted manually: commented out - slice type not supported by generator.
-	// "notify_at": {
-	//	Type:     schema.TypeInvalid,
-	//	Computed: true,
-	// },
 	"suspend_at": {
-		Type:     schema.TypeInt,
-		Computed: true,
-	},
-	"suspend_immediate_at": {
 		Type:     schema.TypeInt,
 		Computed: true,
 	},
@@ -66,12 +61,7 @@ var ShowResourceMonitorSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// Adjusted manually: commented out - slice type not supported by generator.
-	// "notify_users": {
-	//	Type:     schema.TypeInvalid,
-	//	Computed: true,
-	// },
-}
+}, resourceMonitorToSchemaMapper{}.additionalSchema())
 
 var _ = ShowResourceMonitorSchema
 
@@ -85,23 +75,17 @@ func ResourceMonitorToSchema(resourceMonitor *sdk.ResourceMonitor) map[string]an
 		resourceMonitorSchema["level"] = string((*resourceMonitor.Level))
 	}
 	if resourceMonitor.Frequency != nil {
-		resourceMonitorSchema["frequency"] = string(*resourceMonitor.Frequency)
+		resourceMonitorSchema["frequency"] = string((*resourceMonitor.Frequency))
 	}
 	resourceMonitorSchema["start_time"] = resourceMonitor.StartTime
 	resourceMonitorSchema["end_time"] = resourceMonitor.EndTime
-	// Adjusted manually: commented out - slice type not supported by generator.
-	// resourceMonitorSchema["notify_at"] = resourceMonitor.NotifyAt
 	if resourceMonitor.SuspendAt != nil {
 		resourceMonitorSchema["suspend_at"] = (*resourceMonitor.SuspendAt)
-	}
-	if resourceMonitor.SuspendImmediatelyAt != nil {
-		resourceMonitorSchema["suspend_immediate_at"] = (*resourceMonitor.SuspendImmediatelyAt)
 	}
 	resourceMonitorSchema["created_on"] = resourceMonitor.CreatedOn.String()
 	resourceMonitorSchema["owner"] = resourceMonitor.Owner
 	resourceMonitorSchema["comment"] = resourceMonitor.Comment
-	// Adjusted manually: commented out - slice type not supported by generator.
-	// resourceMonitorSchema["notify_users"] = resourceMonitor.NotifyUsers
+	resourceMonitorToSchemaMapper{}.additionalToSchema(resourceMonitor, resourceMonitorSchema)
 	return resourceMonitorSchema
 }
 

@@ -405,6 +405,6 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 Experiments alter the provider behavior.
 Similarly to preview features, they are not yet stable features of the provider.
 Enabling the given experiment is still considered a preview feature, even when applied to the stable resource.
-If the given experiment is successful, it can be considered an addition in the future provider versions.
+Successful experiments can become default provider behavior in a minor release: they start as opt-in (`experimental_features_enabled`), then are enabled by default with a two-minor-version opt-out (`experimental_features_disabled`), then are promoted (or discontinued). Promoted and discontinued names remain accepted no-ops until the next major version.
 
 {{ index (split (codefile "" "examples/additional/experimental_features.MD") "```") 1 | trimspace }}

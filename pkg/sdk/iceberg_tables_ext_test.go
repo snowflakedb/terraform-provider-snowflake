@@ -29,6 +29,19 @@ func init() {
 		withModify(case_IcebergTables_validation_Create_opts_PartitionBy_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateIcebergTableOptions) {
 			opts.PartitionBy = []IcebergTablePartitionExpression{{Identity: new("ID")}, {}}
 		}).
+		withModify(case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateIcebergTableOptions) {
+			refId := randomSchemaObjectIdentifier()
+			opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{
+				UniquePK: &TableOutOfLineUniquePK{Unique: new(true), Columns: []Column{{Value: "ID"}}},
+				FK:       &TableOutOfLineFK{References: refId, Columns: []Column{{Value: "ID"}}},
+			}}
+		}).
+		withModify(case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateIcebergTableOptions) {
+			opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{
+				{UniquePK: &TableOutOfLineUniquePK{Unique: new(true), Columns: []Column{{Value: "ID"}}}},
+				{},
+			}
+		}).
 		withAdditionalValidationCase(
 			"validation_Create_InlineConstraint_ExactlyOneOf_NoneSet",
 			func(opts *CreateIcebergTableOptions) {
@@ -260,30 +273,6 @@ func init() {
 				}
 			},
 			errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.CH", "EnableValidate", "EnableNovalidate"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_OutOfLineConstraint_ExactlyOneOf_NoneSet",
-			func(opts *CreateIcebergTableOptions) {
-				opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
-					Columns:             []IcebergTableColumn{{Name: "ID", ColumnType: dataTypeNumber}},
-					OutOfLineConstraint: []TableOutOfLineConstraint{{}},
-				}
-			},
-			errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "UniquePK", "FK", "CH"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_OutOfLineConstraint_MoreThanOneOf_UniquePK_FK",
-			func(opts *CreateIcebergTableOptions) {
-				refId := randomSchemaObjectIdentifier()
-				opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
-					Columns: []IcebergTableColumn{{Name: "ID", ColumnType: dataTypeNumber}},
-					OutOfLineConstraint: []TableOutOfLineConstraint{{
-						UniquePK: &TableOutOfLineUniquePK{Unique: new(true), Columns: []Column{{Value: "ID"}}},
-						FK:       &TableOutOfLineFK{References: refId, Columns: []Column{{Value: "ID"}}},
-					}},
-				}
-			},
-			errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "UniquePK", "FK", "CH"),
 		).
 		withAdditionalValidationCase(
 			"validation_Create_OutOfLineConstraint_UniquePK_ExactlyOneOf_Unique_PrimaryKey",
@@ -656,7 +645,7 @@ func init() {
 								ForeignKey: new(true),
 								References: fkRefId,
 								RefColumn:  []Column{{Value: "REF_COL"}},
-								Match:      new(FullMatchType),
+								Match:      new(MatchTypeFull),
 								On: &ForeignKeyOnAction{
 									OnUpdate: new(ForeignKeySetNullAction),
 									OnDelete: new(ForeignKeyRestrictAction),
@@ -729,7 +718,7 @@ func init() {
 							Columns:    []Column{{Value: "ID"}},
 							References: fkRefId,
 							RefColumns: []Column{{Value: "COL_A"}, {Value: "COL_B"}},
-							Match:      new(SimpleMatchType),
+							Match:      new(MatchTypeSimple),
 							On: &ForeignKeyOnAction{
 								OnUpdate: new(ForeignKeyCascadeAction),
 								OnDelete: new(ForeignKeyNoAction),
@@ -801,7 +790,7 @@ func init() {
 							Columns:    []Column{{Value: "ID"}},
 							References: fkRefId,
 							RefColumns: []Column{{Value: "COL_A"}},
-							Match:      new(PartialMatchType),
+							Match:      new(MatchTypePartial),
 							On: &ForeignKeyOnAction{
 								OnUpdate: new(ForeignKeySetNullAction),
 								OnDelete: new(ForeignKeySetDefaultAction),
@@ -1329,7 +1318,7 @@ func init() {
 							ForeignKey: new(true),
 							References: fkRefId,
 							RefColumn:  []Column{{Value: "REF_COL"}},
-							Match:      new(PartialMatchType),
+							Match:      new(MatchTypePartial),
 							On: &ForeignKeyOnAction{
 								OnUpdate: new(ForeignKeySetDefaultAction),
 								OnDelete: new(ForeignKeyCascadeAction),

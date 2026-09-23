@@ -23,8 +23,8 @@ func NewTableClient(context *TestClientContext, idsGenerator *IdsGenerator) *Tab
 	}
 }
 
-func (c *TableClient) client() sdk.TablesLegacy {
-	return c.context.client.TablesLegacy
+func (c *TableClient) client() sdk.Tables {
+	return c.context.client.Tables
 }
 
 func (c *TableClient) Create(t *testing.T) (*sdk.Table, func()) {
@@ -61,7 +61,7 @@ func (c *TableClient) CreateWithName(t *testing.T, name string) (*sdk.Table, fun
 	columns := []sdk.TableColumnRequest{
 		*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber),
 	}
-	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.NewSchemaObjectIdentifier(name), columns))
+	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.NewSchemaObjectIdentifier(name), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)))
 }
 
 func (c *TableClient) CreateInSchema(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) (*sdk.Table, func()) {
@@ -70,13 +70,13 @@ func (c *TableClient) CreateInSchema(t *testing.T, schemaId sdk.DatabaseObjectId
 	columns := []sdk.TableColumnRequest{
 		*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber),
 	}
-	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), columns))
+	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)))
 }
 
 func (c *TableClient) CreateWithColumns(t *testing.T, columns []sdk.TableColumnRequest) (*sdk.Table, func()) {
 	t.Helper()
 
-	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifier(), columns))
+	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifier(), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)))
 }
 
 func (c *TableClient) CreateWithPredefinedColumns(t *testing.T) (*sdk.Table, func()) {
@@ -94,7 +94,7 @@ func (c *TableClient) CreateWithPredefinedColumnsInSchema(t *testing.T, schemaId
 		*sdk.NewTableColumnRequest("some_other_text_column", "VARCHAR"),
 	}
 
-	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), columns))
+	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)))
 }
 
 func (c *TableClient) CreateWithPredefinedColumnsForCortexSearchService(t *testing.T) (*sdk.Table, func()) {
@@ -113,7 +113,7 @@ func (c *TableClient) CreateWithPredefinedColumnsForCortexSearchServiceInSchema(
 		*sdk.NewTableColumnRequest("another_text_column", "VARCHAR"),
 	}
 
-	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), columns))
+	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)))
 }
 
 func (c *TableClient) CreateWithPredefinedColumnsLowercased(t *testing.T) (*sdk.Table, func()) {
@@ -125,7 +125,7 @@ func (c *TableClient) CreateWithPredefinedColumnsLowercased(t *testing.T) (*sdk.
 		*sdk.NewTableColumnRequest(`"some_other_text_column"`, "VARCHAR"),
 	}
 
-	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifier(), columns))
+	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifier(), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)))
 }
 
 func (c *TableClient) CreateWithPredefinedColumnsForIcebergTable(t *testing.T) (*sdk.Table, func()) {
@@ -133,7 +133,7 @@ func (c *TableClient) CreateWithPredefinedColumnsForIcebergTable(t *testing.T) (
 
 	table, cleanup := c.CreateWithPredefinedColumns(t)
 
-	err := c.client().Alter(context.Background(), sdk.NewAlterTableRequest(table.ID()).WithConstraintAction(sdk.NewTableConstraintActionRequest().WithAdd(sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithName(new("pk_id")).WithColumns([]string{"id"}))))
+	err := c.client().Alter(context.Background(), sdk.NewAlterTableRequest(table.ID()).WithConstraintAction(*sdk.NewTableConstraintActionRequest().WithAdd(*sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithName("pk_id").WithColumns([]string{"id"}))))
 	require.NoError(t, err)
 
 	return table, cleanup
@@ -146,7 +146,7 @@ func (c *TableClient) CreateWithChangeTrackingInSchema(t *testing.T, schemaId sd
 		*sdk.NewTableColumnRequest("id", "NUMBER"),
 	}
 
-	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), columns).WithChangeTracking(sdk.Pointer(true)))
+	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)).WithChangeTracking(true))
 }
 
 func (c *TableClient) CreateWithChangeTracking(t *testing.T) (*sdk.Table, func()) {
@@ -156,7 +156,7 @@ func (c *TableClient) CreateWithChangeTracking(t *testing.T) (*sdk.Table, func()
 		*sdk.NewTableColumnRequest("id", "NUMBER"),
 	}
 
-	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifier(), columns).WithChangeTracking(sdk.Pointer(true)))
+	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifier(), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)).WithChangeTracking(true))
 }
 
 func (c *TableClient) CreateWithRequest(t *testing.T, req *sdk.CreateTableRequest) (*sdk.Table, func()) {
@@ -191,7 +191,7 @@ func (c *TableClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func
 			return
 		}
 
-		dropErr := c.client().Drop(ctx, sdk.NewDropTableRequest(id).WithIfExists(sdk.Bool(true)))
+		dropErr := c.client().Drop(ctx, sdk.NewDropTableRequest(id).WithIfExists(true))
 		require.NoError(t, dropErr)
 	}
 }
@@ -207,7 +207,7 @@ func (c *TableClient) SetDataRetentionTime(t *testing.T, id sdk.SchemaObjectIden
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, sdk.NewAlterTableRequest(id).WithSet(sdk.NewTableSetRequest().WithDataRetentionTimeInDays(sdk.Int(days))))
+	err := c.client().Alter(ctx, sdk.NewAlterTableRequest(id).WithSet(*sdk.NewTableSetRequest().WithDataRetentionTimeInDays(days)))
 	require.NoError(t, err)
 }
 

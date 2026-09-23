@@ -317,7 +317,7 @@ var servicesTests = ServicesTestsContext{
 			},
 			validationCase[*AlterServiceOptions]{
 				Name:        case_Services_validation_Alter_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterServiceOptions.Set", "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterServiceOptions.Set", "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment", "ServiceCallerTokenValiditySecs"),
 				DefaultModify: func(opts *AlterServiceOptions) {
 					opts.Set = &ServiceSet{}
 					opts.Set.MinInstances = nil
@@ -328,11 +328,12 @@ var servicesTests = ServicesTestsContext{
 					opts.Set.AutoResume = nil
 					opts.Set.ExternalAccessIntegrations = nil
 					opts.Set.Comment = nil
+					opts.Set.ServiceCallerTokenValiditySecs = nil
 				},
 			},
 			validationCase[*AlterServiceOptions]{
 				Name:        case_Services_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterServiceOptions.Unset", "MinInstances", "AutoSuspendSecs", "MaxInstances", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterServiceOptions.Unset", "MinInstances", "AutoSuspendSecs", "MaxInstances", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment", "ServiceCallerTokenValiditySecs"),
 				DefaultModify: func(opts *AlterServiceOptions) {
 					opts.Unset = &ServiceUnset{}
 					opts.Unset.MinInstances = nil
@@ -343,6 +344,7 @@ var servicesTests = ServicesTestsContext{
 					opts.Unset.AutoResume = nil
 					opts.Unset.ExternalAccessIntegrations = nil
 					opts.Unset.Comment = nil
+					opts.Unset.ServiceCallerTokenValiditySecs = nil
 				},
 			},
 		).

@@ -230,7 +230,7 @@ func DeleteAccountRole(ctx context.Context, d *schema.ResourceData, meta any) di
 // snowflake_account_role, snowflake_grant_application_role, and
 // snowflake_grant_privileges_to_account_role.
 func showRoleCached(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.Role, error) {
-	if !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.AccountRoleShowCaching, providerCtx.EnabledExperiments) {
+	if !providerCtx.Experiments.IsEnabled(experimentalfeatures.AccountRoleShowCaching) {
 		return providerCtx.Client.Roles.ShowByIDSafely(ctx, id)
 	}
 	return providerCtx.RoleShowCache.GetOrLoad(ctx, id.FullyQualifiedName(), func(loadCtx context.Context) (*sdk.Role, error) {
@@ -242,7 +242,7 @@ func showRoleCached(ctx context.Context, providerCtx *provider.Context, id sdk.A
 // experiment is enabled. A no-op (not an error) if the cache was never populated for id — Invalidate
 // on an absent key is already a documented no-op.
 func invalidateRoleShowCache(providerCtx *provider.Context, id sdk.AccountObjectIdentifier) {
-	if !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.AccountRoleShowCaching, providerCtx.EnabledExperiments) {
+	if !providerCtx.Experiments.IsEnabled(experimentalfeatures.AccountRoleShowCaching) {
 		return
 	}
 	providerCtx.RoleShowCache.Invalidate(id.FullyQualifiedName())

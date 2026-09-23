@@ -1219,6 +1219,16 @@ var AllProcedureParameters = []ProcedureParameter{
 	ProcedureParameterTraceLevel,
 }
 
+type ServiceParameter string
+
+const (
+	ServiceParameterServiceCallerTokenValiditySecs ServiceParameter = "SERVICE_CALLER_TOKEN_VALIDITY_SECS"
+)
+
+var AllServiceParameters = []ServiceParameter{
+	ServiceParameterServiceCallerTokenValiditySecs,
+}
+
 type IcebergTableParameter string
 
 const (
@@ -1921,6 +1931,11 @@ const (
 	UnsupportedDDLActionFail   UnsupportedDDLAction = "FAIL"
 )
 
+var AllUnsupportedDDLActions = []UnsupportedDDLAction{
+	UnsupportedDDLActionIgnore,
+	UnsupportedDDLActionFail,
+}
+
 func ToUnsupportedDDLAction(s string) (UnsupportedDDLAction, error) {
 	switch strings.ToUpper(s) {
 	case string(UnsupportedDDLActionIgnore):
@@ -2311,11 +2326,12 @@ type ParametersIn struct {
 	Function           SchemaObjectIdentifierWithArguments `ddl:"identifier" sql:"FUNCTION"`
 	Procedure          SchemaObjectIdentifierWithArguments `ddl:"identifier" sql:"PROCEDURE"`
 	OpenflowDeployment AccountObjectIdentifier             `ddl:"identifier" sql:"OPENFLOW DEPLOYMENT"`
+	Service            SchemaObjectIdentifier              `ddl:"identifier" sql:"SERVICE"`
 }
 
 func (v *ParametersIn) validate() error {
-	if !anyValueSet(v.Session, v.Account, v.User, v.Warehouse, v.Database, v.Schema, v.Task, v.Table, v.Function, v.Procedure, v.OpenflowDeployment) {
-		return errors.Join(errAtLeastOneOf("Session", "Account", "User", "Warehouse", "Database", "Schema", "Task", "Table", "Function", "Procedure", "OpenflowDeployment"))
+	if !anyValueSet(v.Session, v.Account, v.User, v.Warehouse, v.Database, v.Schema, v.Task, v.Table, v.Function, v.Procedure, v.OpenflowDeployment, v.Service) {
+		return errors.Join(errAtLeastOneOf("Session", "Account", "User", "Warehouse", "Database", "Schema", "Task", "Table", "Function", "Procedure", "OpenflowDeployment", "Service"))
 	}
 	return nil
 }
@@ -2337,6 +2353,7 @@ const (
 	ParameterTypeFunction           ParameterType = "FUNCTION"
 	ParameterTypeProcedure          ParameterType = "PROCEDURE"
 	ParameterTypeOpenflowDeployment ParameterType = "OPENFLOW_DEPLOYMENT"
+	ParameterTypeService            ParameterType = "SERVICE"
 )
 
 var AllParameterTypes = []ParameterType{
@@ -2493,6 +2510,8 @@ func (v *parameters) ShowObjectParameter(ctx context.Context, parameter ObjectPa
 		opts.In.Function = object.Name.(SchemaObjectIdentifierWithArguments)
 	case ObjectTypeProcedure:
 		opts.In.Procedure = object.Name.(SchemaObjectIdentifierWithArguments)
+	case ObjectTypeService:
+		opts.In.Service = object.Name.(SchemaObjectIdentifier)
 	default:
 		return nil, fmt.Errorf("unsupported object type %s", object.ObjectType)
 	}

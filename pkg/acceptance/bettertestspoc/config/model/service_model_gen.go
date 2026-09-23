@@ -11,22 +11,23 @@ import (
 )
 
 type ServiceModel struct {
-	Database                   tfconfig.Variable `json:"database,omitempty"`
-	Schema                     tfconfig.Variable `json:"schema,omitempty"`
-	Name                       tfconfig.Variable `json:"name,omitempty"`
-	AutoResume                 tfconfig.Variable `json:"auto_resume,omitempty"`
-	AutoSuspendSecs            tfconfig.Variable `json:"auto_suspend_secs,omitempty"`
-	Comment                    tfconfig.Variable `json:"comment,omitempty"`
-	ComputePool                tfconfig.Variable `json:"compute_pool,omitempty"`
-	ExternalAccessIntegrations tfconfig.Variable `json:"external_access_integrations,omitempty"`
-	FromSpecification          tfconfig.Variable `json:"from_specification,omitempty"`
-	FromSpecificationTemplate  tfconfig.Variable `json:"from_specification_template,omitempty"`
-	FullyQualifiedName         tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	MaxInstances               tfconfig.Variable `json:"max_instances,omitempty"`
-	MinInstances               tfconfig.Variable `json:"min_instances,omitempty"`
-	MinReadyInstances          tfconfig.Variable `json:"min_ready_instances,omitempty"`
-	QueryWarehouse             tfconfig.Variable `json:"query_warehouse,omitempty"`
-	ServiceType                tfconfig.Variable `json:"service_type,omitempty"`
+	Database                       tfconfig.Variable `json:"database,omitempty"`
+	Schema                         tfconfig.Variable `json:"schema,omitempty"`
+	Name                           tfconfig.Variable `json:"name,omitempty"`
+	AutoResume                     tfconfig.Variable `json:"auto_resume,omitempty"`
+	AutoSuspendSecs                tfconfig.Variable `json:"auto_suspend_secs,omitempty"`
+	Comment                        tfconfig.Variable `json:"comment,omitempty"`
+	ComputePool                    tfconfig.Variable `json:"compute_pool,omitempty"`
+	ExternalAccessIntegrations     tfconfig.Variable `json:"external_access_integrations,omitempty"`
+	FromSpecification              tfconfig.Variable `json:"from_specification,omitempty"`
+	FromSpecificationTemplate      tfconfig.Variable `json:"from_specification_template,omitempty"`
+	FullyQualifiedName             tfconfig.Variable `json:"fully_qualified_name,omitempty"`
+	MaxInstances                   tfconfig.Variable `json:"max_instances,omitempty"`
+	MinInstances                   tfconfig.Variable `json:"min_instances,omitempty"`
+	MinReadyInstances              tfconfig.Variable `json:"min_ready_instances,omitempty"`
+	QueryWarehouse                 tfconfig.Variable `json:"query_warehouse,omitempty"`
+	ServiceCallerTokenValiditySecs tfconfig.Variable `json:"service_caller_token_validity_secs,omitempty"`
+	ServiceType                    tfconfig.Variable `json:"service_type,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -168,6 +169,11 @@ func (s *ServiceModel) WithQueryWarehouse(queryWarehouse string) *ServiceModel {
 	return s
 }
 
+func (s *ServiceModel) WithServiceCallerTokenValiditySecs(serviceCallerTokenValiditySecs int) *ServiceModel {
+	s.ServiceCallerTokenValiditySecs = tfconfig.IntegerVariable(serviceCallerTokenValiditySecs)
+	return s
+}
+
 func (s *ServiceModel) WithServiceType(serviceType string) *ServiceModel {
 	s.ServiceType = tfconfig.StringVariable(serviceType)
 	return s
@@ -249,6 +255,11 @@ func (s *ServiceModel) WithMinReadyInstancesValue(value tfconfig.Variable) *Serv
 
 func (s *ServiceModel) WithQueryWarehouseValue(value tfconfig.Variable) *ServiceModel {
 	s.QueryWarehouse = value
+	return s
+}
+
+func (s *ServiceModel) WithServiceCallerTokenValiditySecsValue(value tfconfig.Variable) *ServiceModel {
+	s.ServiceCallerTokenValiditySecs = value
 	return s
 }
 

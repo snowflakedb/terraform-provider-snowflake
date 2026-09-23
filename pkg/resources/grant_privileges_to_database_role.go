@@ -151,7 +151,7 @@ var grantPrivilegesToDatabaseRoleSchema = map[string]*schema.Schema{
 					Type:             schema.TypeString,
 					Optional:         true,
 					ForceNew:         true,
-					Description:      joinWithSpace("Configures an inherited privilege to be granted on all current and future schemas in a database. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.", experimentalFeatureDescription(experimentalfeatures.InheritedGrants)),
+					Description:      joinWithSpace("Configures an inherited privilege to be granted on all current and future schemas in a database. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.", experimentalFeatureEnabledByDefaultDescription(experimentalfeatures.InheritedGrants)),
 					ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 					DiffSuppressFunc: suppressIdentifierQuoting,
 					ExactlyOneOf: []string{
@@ -250,7 +250,7 @@ var grantPrivilegesToDatabaseRoleSchema = map[string]*schema.Schema{
 					Type:        schema.TypeList,
 					Optional:    true,
 					ForceNew:    true,
-					Description: joinWithSpace("Configures an inherited privilege to be granted on all current and future objects of a given type in a database or a schema. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.", experimentalFeatureDescription(experimentalfeatures.InheritedGrants)),
+					Description: joinWithSpace("Configures an inherited privilege to be granted on all current and future objects of a given type in a database or a schema. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.", experimentalFeatureEnabledByDefaultDescription(experimentalfeatures.InheritedGrants)),
 					MaxItems:    1,
 					Elem: &schema.Resource{
 						Schema: getGrantPrivilegesOnDatabaseRoleBulkOperationSchema(sdk.ValidGrantToAllPluralObjectTypesString, "inherited"),
@@ -696,7 +696,7 @@ func DeleteGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 	// Snowflake reports), and an empty list makes the revoke fail validation before any SQL is sent, which
 	// leaves the resource impossible to destroy or replace. Update already derives them from the id.
 	privileges := getDatabaseRolePrivilegesFromId(id)
-	safely := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments)
+	safely := providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy)
 	err = revokeDatabaseRolePrivileges(ctx, client, d, id, privileges, &sdk.RevokePrivilegesFromDatabaseRoleOptions{}, safely)
 	if err != nil {
 		return diag.Diagnostics{

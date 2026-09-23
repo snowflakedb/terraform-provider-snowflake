@@ -17,11 +17,11 @@ var ShowTableSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"database_name": {
+	"schema_name": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"schema_name": {
+	"database_name": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
@@ -105,33 +105,33 @@ func TableToSchema(table *sdk.Table) map[string]any {
 	tableSchema := make(map[string]any)
 	tableSchema["created_on"] = table.CreatedOn
 	tableSchema["name"] = table.Name
-	tableSchema["database_name"] = table.DatabaseName
 	tableSchema["schema_name"] = table.SchemaName
+	tableSchema["database_name"] = table.DatabaseName
 	tableSchema["kind"] = table.Kind
 	tableSchema["comment"] = table.Comment
 	tableSchema["cluster_by"] = table.ClusterBy
 	tableSchema["rows"] = table.Rows
 	if table.Bytes != nil {
-		tableSchema["bytes"] = table.Bytes
+		tableSchema["bytes"] = (*table.Bytes)
 	}
 	tableSchema["owner"] = table.Owner
 	tableSchema["retention_time"] = table.RetentionTime
 	if table.DroppedOn != nil {
-		tableSchema["dropped_on"] = table.DroppedOn
+		tableSchema["dropped_on"] = (*table.DroppedOn)
 	}
 	tableSchema["automatic_clustering"] = table.AutomaticClustering
 	tableSchema["change_tracking"] = table.ChangeTracking
 	tableSchema["search_optimization"] = table.SearchOptimization
 	tableSchema["search_optimization_progress"] = table.SearchOptimizationProgress
 	if table.SearchOptimizationBytes != nil {
-		tableSchema["search_optimization_bytes"] = table.SearchOptimizationBytes
+		tableSchema["search_optimization_bytes"] = (*table.SearchOptimizationBytes)
 	}
 	tableSchema["is_external"] = table.IsExternal
 	tableSchema["enable_schema_evolution"] = table.EnableSchemaEvolution
 	tableSchema["owner_role_type"] = table.OwnerRoleType
 	tableSchema["is_event"] = table.IsEvent
 	if table.Budget != nil {
-		tableSchema["budget"] = table.Budget
+		tableSchema["budget"] = (*table.Budget)
 	}
 	return tableSchema
 }

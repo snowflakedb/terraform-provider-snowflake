@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/url"
 	"slices"
 	"strings"
@@ -14,6 +15,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/telemetry"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -411,7 +413,16 @@ func GetProviderSchema() map[string]*schema.Schema {
 				Type:             schema.TypeString,
 				ValidateDiagFunc: validators.StringInSlice(experimentalfeatures.AllExperimentalFeatureNames, true),
 			},
-			Description: fmt.Sprintf("A list of experimental features. Similarly to preview features, they are not yet stable features of the provider. Enabling given experiment is still considered a preview feature, even when applied to the stable resource. These switches offer experiments altering the provider behavior. If the given experiment is successful, it can be considered an addition in the future provider versions. This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Active experiments are: %v.", docs.PossibleValuesListed(experimentalfeatures.ActiveExperimentalFeatureNames)),
+			Description: fmt.Sprintf("A list of experimental features to enable. Similarly to preview features, they are not yet stable features of the provider. Enabling given experiment is still considered a preview feature, even when applied to the stable resource. These switches offer experiments altering the provider behavior. This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Active experiments you can enable are: %v. Names of experiments that are enabled by default, promoted, or discontinued are still accepted (listing them is redundant or a no-op; see the experimental features section).", docs.PossibleValuesListed(experimentalfeatures.ActiveExperimentalFeatureNames)),
+		},
+		"experimental_features_disabled": {
+			Type:     schema.TypeSet,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type:             schema.TypeString,
+				ValidateDiagFunc: validators.StringInSlice(experimentalfeatures.AcceptedInDisabledExperimentalFeatureNames, true),
+			},
+			Description: fmt.Sprintf("A list of experimental features to disable. Use this to opt out of experiments that are enabled by default. This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Experiments you can disable are: %v. Promoted and discontinued experiment names are still accepted as no-ops.", docs.PossibleValuesListed(experimentalfeatures.EnabledByDefaultExperimentalFeatureNames)),
 		},
 		"skip_toml_file_permission_verification": {
 			Type:        schema.TypeBool,
@@ -822,13 +833,28 @@ func getDataSources() map[string]*schema.Resource {
 	}
 }
 
-func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Diagnostics) {
+func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.Diagnostics) {
 	var enabledExperiments []string
 	if v, ok := s.GetOk("experimental_features_enabled"); ok {
 		enabledExperiments = expandStringList(v.(*schema.Set).List())
 	}
+	var disabledExperiments []string
+	if v, ok := s.GetOk("experimental_features_disabled"); ok {
+		disabledExperiments = expandStringList(v.(*schema.Set).List())
+	}
+	experiments := experimentalfeatures.New(enabledExperiments, disabledExperiments)
 
-	config, diags := getDriverConfigFromTerraform(s, enabledExperiments)
+	var diags diag.Diagnostics
+	for _, warning := range experimentalfeatures.ExperimentListingWarnings(enabledExperiments, disabledExperiments) {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  warning.Summary,
+			Detail:   warning.Detail,
+		})
+	}
+
+	config, configDiags := getDriverConfigFromTerraform(s, experiments)
+	diags = append(diags, configDiags...)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -848,7 +874,7 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 
 	if v, ok := s.GetOk("profile"); ok && v.(string) != "" {
 		profile := v.(string)
-		rejectAccountField := !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ProviderConfigurationAccountFallback, enabledExperiments)
+		rejectAccountField := !experiments.IsEnabled(experimentalfeatures.ProviderConfigurationAccountFallback)
 		tomlConfig, err := GetDriverConfigFromTOML(profile, verifyPermissions, useLegacyTomlFile, rejectAccountField)
 		if err != nil {
 			return nil, append(diags, diag.FromErr(err)...)
@@ -864,7 +890,7 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 		return nil, append(diags, diag.FromErr(err)...)
 	}
 	// If authenticator was not set but the token was, we set to OAuth for backward compatibility. Will be removed in v3.
-	if !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.AuthenticatorExplicitOnly, enabledExperiments) {
+	if !experiments.IsEnabled(experimentalfeatures.AuthenticatorExplicitOnly) {
 		if config.Authenticator == sdk.GosnowflakeAuthTypeEmpty {
 			if config.Token != "" {
 				config.Authenticator = gosnowflake.AuthTypeOAuth
@@ -895,7 +921,15 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 		}
 	}
 
-	providerCtx.EnabledExperiments = enabledExperiments
+	providerCtx.Experiments = experiments
+
+	spanID, err := telemetry.NewSpanID()
+	if err != nil {
+		log.Printf("[WARN] failed to generate telemetry span_id: %v", err)
+	} else {
+		providerCtx.SpanID = spanID
+		telemetry.EmitProviderInit(ctx, providerCtx)
+	}
 
 	return providerCtx, diags
 }
@@ -965,7 +999,7 @@ func GetDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFil
 	return profileConfig, nil
 }
 
-func getDriverConfigFromTerraform(s *schema.ResourceData, enabledExperiments []string) (*gosnowflake.Config, diag.Diagnostics) {
+func getDriverConfigFromTerraform(s *schema.ResourceData, experiments experimentalfeatures.Experiments) (*gosnowflake.Config, diag.Diagnostics) {
 	config := sdk.EmptyDriverConfigWithApplication("terraform-provider-snowflake")
 	var diags diag.Diagnostics
 
@@ -1078,7 +1112,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData, enabledExperiments []s
 	// so that it can never trigger the validation below if the experiment is not enabled.
 	accountEnvValue := oswrapper.Getenv(snowflakeenvs.Account)
 
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ProviderConfigurationAccountFallback, enabledExperiments) {
+	if experiments.IsEnabled(experimentalfeatures.ProviderConfigurationAccountFallback) {
 		if account == "" {
 			account = accountEnvValue
 		}
@@ -1132,7 +1166,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData, enabledExperiments []s
 				return nil, diag.FromErr(fmt.Errorf("could not retrieve access token from refresh token, err = %w", err))
 			}
 			config.Token = accessToken
-			if !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.AuthenticatorExplicitOnly, enabledExperiments) {
+			if !experiments.IsEnabled(experimentalfeatures.AuthenticatorExplicitOnly) {
 				config.Authenticator = gosnowflake.AuthTypeOAuth
 			}
 		}

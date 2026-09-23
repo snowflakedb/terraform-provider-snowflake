@@ -24,6 +24,19 @@ func TestInt_Tasks(t *testing.T) {
 	errorIntegration, ErrorIntegrationCleanup := testClientHelper().NotificationIntegration.CreateWithGcpPubSub(t)
 	t.Cleanup(ErrorIntegrationCleanup)
 
+	createUserForTaskImpersonation := func(t *testing.T) *sdk.User {
+		t.Helper()
+		user, userCleanup := testClientHelper().User.CreateUser(t)
+		t.Cleanup(userCleanup)
+		currentRole := testClientHelper().Context.CurrentRole(t)
+		testClientHelper().Grant.GrantPrivilegesOnUserToAccountRole(t, currentRole, user.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeImpersonate}, false)
+		t.Cleanup(func() {
+			testClientHelper().Grant.RevokePrivilegesOnUserFromAccountRole(t, currentRole, user.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeImpersonate})
+		})
+		testClientHelper().Role.GrantRoleToUser(t, currentRole, user.ID())
+		return user
+	}
+
 	assertTask := func(t *testing.T, task *sdk.Task, id sdk.SchemaObjectIdentifier, warehouseId *sdk.AccountObjectIdentifier) {
 		t.Helper()
 		asserts := objectassert.TaskFromObject(t, task).
@@ -41,6 +54,7 @@ func TestInt_Tasks(t *testing.T) {
 			HasCondition("").
 			HasAllowOverlappingExecution(false).
 			HasNoErrorIntegration().
+			HasNoExecuteAsUser().
 			HasLastCommittedOn("").
 			HasLastSuspendedOn("").
 			HasOwnerRoleType("ROLE").
@@ -58,7 +72,7 @@ func TestInt_Tasks(t *testing.T) {
 		assertThatObject(t, asserts)
 	}
 
-	assertTaskWithOptions := func(t *testing.T, task *sdk.Task, id sdk.SchemaObjectIdentifier, comment string, warehouse *sdk.AccountObjectIdentifier, schedule string, condition string, allowOverlappingExecution bool, config string, predecessor *sdk.SchemaObjectIdentifier, errorIntegrationName *sdk.AccountObjectIdentifier) {
+	assertTaskWithOptions := func(t *testing.T, task *sdk.Task, id sdk.SchemaObjectIdentifier, comment string, warehouse *sdk.AccountObjectIdentifier, schedule string, condition string, allowOverlappingExecution bool, config string, predecessor *sdk.SchemaObjectIdentifier, errorIntegrationName *sdk.AccountObjectIdentifier, executeAsUser *sdk.AccountObjectIdentifier) {
 		t.Helper()
 
 		asserts := objectassert.TaskFromObject(t, task).
@@ -97,6 +111,12 @@ func TestInt_Tasks(t *testing.T) {
 			asserts.HasNoErrorIntegration()
 		}
 
+		if executeAsUser != nil {
+			asserts.HasExecuteAsUser(*executeAsUser)
+		} else {
+			asserts.HasNoExecuteAsUser()
+		}
+
 		if warehouse != nil {
 			asserts.HasWarehouse(*warehouse)
 		} else {
@@ -126,6 +146,7 @@ func TestInt_Tasks(t *testing.T) {
 				HasCondition("").
 				HasAllowOverlappingExecution(false).
 				HasNoErrorIntegration().
+				HasNoExecuteAsUser().
 				HasLastCommittedOn("").
 				HasLastSuspendedOn("").
 				HasOwnerRoleType("").
@@ -284,6 +305,7 @@ func TestInt_Tasks(t *testing.T) {
 	})
 
 	t.Run("create task: complete case", func(t *testing.T) {
+		user := createUserForTaskImpersonation(t)
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		err := testClient(t).Tasks.Create(ctx, sdk.NewCreateTaskRequest(id, sql).
@@ -299,6 +321,7 @@ func TestInt_Tasks(t *testing.T) {
 			WithUserTaskTimeoutMs(500).
 			WithSuspendTaskAfterNumFailures(3).
 			WithComment("some comment").
+			WithExecuteAsUser(user.ID()).
 			WithWhen(`SYSTEM$STREAM_HAS_DATA('MYSTREAM')`))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Task.DropFunc(t, id))
@@ -306,7 +329,7 @@ func TestInt_Tasks(t *testing.T) {
 		task, err := testClientHelper().Task.Show(t, id)
 		require.NoError(t, err)
 
-		assertTaskWithOptions(t, task, id, "some comment", sdk.Pointer(testClientHelper().Ids.WarehouseId()), "10 MINUTE", `SYSTEM$STREAM_HAS_DATA('MYSTREAM')`, true, `{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`, nil, sdk.Pointer(errorIntegration.ID()))
+		assertTaskWithOptions(t, task, id, "some comment", sdk.Pointer(testClientHelper().Ids.WarehouseId()), "10 MINUTE", `SYSTEM$STREAM_HAS_DATA('MYSTREAM')`, true, `{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`, nil, sdk.Pointer(errorIntegration.ID()), sdk.Pointer(user.ID()))
 		assertThatObject(
 			t, objectparametersassert.TaskParameters(t, id).
 				HasJsonIndent(4).
@@ -330,7 +353,7 @@ func TestInt_Tasks(t *testing.T) {
 		task, err := testClientHelper().Task.Show(t, id)
 		require.NoError(t, err)
 
-		assertTaskWithOptions(t, task, id, "", nil, "", "", false, "", &rootTaskId, nil)
+		assertTaskWithOptions(t, task, id, "", nil, "", "", false, "", &rootTaskId, nil, nil)
 	})
 
 	t.Run("create task: with after and finalizer", func(t *testing.T) {
@@ -581,6 +604,7 @@ func TestInt_Tasks(t *testing.T) {
 	})
 
 	t.Run("create or alter: complete", func(t *testing.T) {
+		user := createUserForTaskImpersonation(t)
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.Tasks.CreateOrAlter(
 			ctx, sdk.NewCreateOrAlterTaskRequest(id, sql).
@@ -593,6 +617,7 @@ func TestInt_Tasks(t *testing.T) {
 				WithSuspendTaskAfterNumFailures(15).
 				WithComment("some_comment").
 				WithTaskAutoRetryAttempts(15).
+				WithExecuteAsUser(user.ID()).
 				WithWhen(`SYSTEM$STREAM_HAS_DATA('MYSTREAM')`),
 		)
 		require.NoError(t, err)
@@ -610,6 +635,7 @@ func TestInt_Tasks(t *testing.T) {
 				HasAllowOverlappingExecution(true).
 				HasCondition(`SYSTEM$STREAM_HAS_DATA('MYSTREAM')`).
 				HasComment("some_comment").
+				HasExecuteAsUser(user.ID()).
 				HasTaskRelations(sdk.TaskRelations{}),
 		)
 		assertThatObject(
@@ -633,6 +659,7 @@ func TestInt_Tasks(t *testing.T) {
 				HasAllowOverlappingExecution(false).
 				HasCondition("").
 				HasComment("").
+				HasNoExecuteAsUser().
 				HasTaskRelations(sdk.TaskRelations{}),
 		)
 		assertThatObject(
@@ -781,6 +808,26 @@ func TestInt_Tasks(t *testing.T) {
 				HasComment(""),
 		)
 		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).HasAllDefaults())
+	})
+
+	t.Run("alter task: set and unset execute as user", func(t *testing.T) {
+		user1 := createUserForTaskImpersonation(t)
+		user2 := createUserForTaskImpersonation(t)
+		task, taskCleanup := testClientHelper().Task.Create(t)
+		t.Cleanup(taskCleanup)
+		assertThatObject(t, objectassert.Task(t, task.ID()).HasNoExecuteAsUser())
+
+		err := client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSetExecuteAsUser(user1.ID()))
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.Task(t, task.ID()).HasExecuteAsUser(user1.ID()))
+
+		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSetExecuteAsUser(user2.ID()))
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.Task(t, task.ID()).HasExecuteAsUser(user2.ID()))
+
+		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithUnsetExecuteAsUser(true))
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.Task(t, task.ID()).HasNoExecuteAsUser())
 	})
 
 	t.Run("alter task: resume and suspend", func(t *testing.T) {

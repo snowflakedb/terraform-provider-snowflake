@@ -27,6 +27,7 @@ type SnowflakeModel struct {
 	DisableTelemetry                   tfconfig.Variable `json:"disable_telemetry,omitempty"`
 	DriverTracing                      tfconfig.Variable `json:"driver_tracing,omitempty"`
 	EnableSingleUseRefreshTokens       tfconfig.Variable `json:"enable_single_use_refresh_tokens,omitempty"`
+	ExperimentalFeaturesDisabled       tfconfig.Variable `json:"experimental_features_disabled,omitempty"`
 	ExperimentalFeaturesEnabled        tfconfig.Variable `json:"experimental_features_enabled,omitempty"`
 	ExternalBrowserTimeout             tfconfig.Variable `json:"external_browser_timeout,omitempty"`
 	Host                               tfconfig.Variable `json:"host,omitempty"`
@@ -195,6 +196,8 @@ func (s *SnowflakeModel) WithEnableSingleUseRefreshTokens(enableSingleUseRefresh
 	s.EnableSingleUseRefreshTokens = tfconfig.BoolVariable(enableSingleUseRefreshTokens)
 	return s
 }
+
+// experimental_features_disabled attribute type is not yet supported, so WithExperimentalFeaturesDisabled can't be generated
 
 // experimental_features_enabled attribute type is not yet supported, so WithExperimentalFeaturesEnabled can't be generated
 
@@ -530,6 +533,11 @@ func (s *SnowflakeModel) WithDriverTracingValue(value tfconfig.Variable) *Snowfl
 
 func (s *SnowflakeModel) WithEnableSingleUseRefreshTokensValue(value tfconfig.Variable) *SnowflakeModel {
 	s.EnableSingleUseRefreshTokens = value
+	return s
+}
+
+func (s *SnowflakeModel) WithExperimentalFeaturesDisabledValue(value tfconfig.Variable) *SnowflakeModel {
+	s.ExperimentalFeaturesDisabled = value
 	return s
 }
 

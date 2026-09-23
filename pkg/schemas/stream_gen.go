@@ -3,13 +3,16 @@
 package schemas
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type streamToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.Stream] = streamToSchemaMapper{}
+
 // ShowStreamSchema represents output of SHOW query for the single Stream.
-var ShowStreamSchema = map[string]*schema.Schema{
+var ShowStreamSchema = mergeSchema(map[string]*schema.Schema{
 	"created_on": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -42,15 +45,6 @@ var ShowStreamSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// TODO [SNOW-3113144]: should it be list?
-	"base_tables": {
-		// adjusted manually
-		Type: schema.TypeList,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-		Computed: true,
-	},
 	"type": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -75,11 +69,10 @@ var ShowStreamSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}
+}, streamToSchemaMapper{}.additionalSchema())
 
 var _ = ShowStreamSchema
 
-// Adjusted manually.
 func StreamToSchema(stream *sdk.Stream) map[string]any {
 	streamSchema := make(map[string]any)
 	streamSchema["created_on"] = stream.CreatedOn.String()
@@ -87,36 +80,34 @@ func StreamToSchema(stream *sdk.Stream) map[string]any {
 	streamSchema["database_name"] = stream.DatabaseName
 	streamSchema["schema_name"] = stream.SchemaName
 	if stream.Owner != nil {
-		streamSchema["owner"] = stream.Owner
+		streamSchema["owner"] = (*stream.Owner)
 	}
 	if stream.Comment != nil {
-		streamSchema["comment"] = stream.Comment
+		streamSchema["comment"] = (*stream.Comment)
 	}
 	if stream.TableName != nil {
-		streamSchema["table_name"] = stream.TableName.FullyQualifiedName()
+		streamSchema["table_name"] = (*stream.TableName).FullyQualifiedName()
 	}
 	if stream.SourceType != nil {
-		streamSchema["source_type"] = stream.SourceType
-	}
-	if stream.BaseTables != nil {
-		streamSchema["base_tables"] = collections.Map(stream.BaseTables, sdk.SchemaObjectIdentifier.FullyQualifiedName)
+		streamSchema["source_type"] = string((*stream.SourceType))
 	}
 	if stream.Type != nil {
-		streamSchema["type"] = stream.Type
+		streamSchema["type"] = (*stream.Type)
 	}
 	streamSchema["stale"] = stream.Stale
 	if stream.Mode != nil {
-		streamSchema["mode"] = stream.Mode
+		streamSchema["mode"] = string((*stream.Mode))
 	}
 	if stream.StaleAfter != nil {
-		streamSchema["stale_after"] = stream.StaleAfter.String()
+		streamSchema["stale_after"] = (*stream.StaleAfter).String()
 	}
 	if stream.InvalidReason != nil {
-		streamSchema["invalid_reason"] = stream.InvalidReason
+		streamSchema["invalid_reason"] = (*stream.InvalidReason)
 	}
 	if stream.OwnerRoleType != nil {
-		streamSchema["owner_role_type"] = stream.OwnerRoleType
+		streamSchema["owner_role_type"] = (*stream.OwnerRoleType)
 	}
+	streamToSchemaMapper{}.additionalToSchema(stream, streamSchema)
 	return streamSchema
 }
 

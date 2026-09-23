@@ -455,6 +455,52 @@ func (c *GrantClient) GrantPrivilegesOnWarehouseToAccountRole(
 	)
 }
 
+func (c *GrantClient) GrantPrivilegesOnUserToAccountRole(
+	t *testing.T,
+	accountRoleId sdk.AccountObjectIdentifier,
+	userId sdk.AccountObjectIdentifier,
+	privileges []sdk.AccountObjectPrivilege,
+	withGrantOption bool,
+) {
+	t.Helper()
+	c.grantPrivilegesOnAccountLevelObjectToAccountRole(
+		t,
+		accountRoleId,
+		&sdk.AccountRoleGrantOn{
+			AccountObject: &sdk.GrantOnAccountObject{
+				Object: &sdk.Object{
+					ObjectType: sdk.ObjectTypeUser,
+					Name:       userId,
+				},
+			},
+		},
+		privileges,
+		withGrantOption,
+	)
+}
+
+func (c *GrantClient) RevokePrivilegesOnUserFromAccountRole(
+	t *testing.T,
+	accountRoleId sdk.AccountObjectIdentifier,
+	userId sdk.AccountObjectIdentifier,
+	privileges []sdk.AccountObjectPrivilege,
+) {
+	t.Helper()
+	c.revokePrivilegesOnAccountLevelObjectFromAccountRole(
+		t,
+		accountRoleId,
+		&sdk.AccountRoleGrantOn{
+			AccountObject: &sdk.GrantOnAccountObject{
+				Object: &sdk.Object{
+					ObjectType: sdk.ObjectTypeUser,
+					Name:       userId,
+				},
+			},
+		},
+		privileges,
+	)
+}
+
 func (c *GrantClient) grantPrivilegesOnAccountLevelObjectToAccountRole(
 	t *testing.T,
 	accountRoleId sdk.AccountObjectIdentifier,
@@ -475,6 +521,27 @@ func (c *GrantClient) grantPrivilegesOnAccountLevelObjectToAccountRole(
 		&sdk.GrantPrivilegesToAccountRoleOptions{
 			WithGrantOption: sdk.Bool(withGrantOption),
 		},
+	)
+	require.NoError(t, err)
+}
+
+func (c *GrantClient) revokePrivilegesOnAccountLevelObjectFromAccountRole(
+	t *testing.T,
+	accountRoleId sdk.AccountObjectIdentifier,
+	accountObjectGrantOn *sdk.AccountRoleGrantOn,
+	privileges []sdk.AccountObjectPrivilege,
+) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().RevokePrivilegesFromAccountRole(
+		ctx,
+		&sdk.AccountRoleGrantPrivileges{
+			AccountObjectPrivileges: privileges,
+		},
+		accountObjectGrantOn,
+		accountRoleId,
+		new(sdk.RevokePrivilegesFromAccountRoleOptions),
 	)
 	require.NoError(t, err)
 }

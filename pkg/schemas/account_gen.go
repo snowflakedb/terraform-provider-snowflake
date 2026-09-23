@@ -17,11 +17,11 @@ var ShowAccountSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"snowflake_region": {
+	"region_group": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"region_group": {
+	"snowflake_region": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
@@ -133,10 +133,10 @@ func AccountToSchema(account *sdk.Account) map[string]any {
 	accountSchema := make(map[string]any)
 	accountSchema["organization_name"] = account.OrganizationName
 	accountSchema["account_name"] = account.AccountName
-	accountSchema["snowflake_region"] = account.SnowflakeRegion
 	if account.RegionGroup != nil {
 		accountSchema["region_group"] = (*account.RegionGroup)
 	}
+	accountSchema["snowflake_region"] = account.SnowflakeRegion
 	if account.Edition != nil {
 		accountSchema["edition"] = string((*account.Edition))
 	}

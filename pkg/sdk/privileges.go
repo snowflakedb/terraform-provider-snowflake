@@ -111,6 +111,7 @@ const (
 
 	// For USER
 	// AccountObjectPrivilegeModify AccountObjectPrivilege = "MODIFY" (duplicate)
+	AccountObjectPrivilegeImpersonate AccountObjectPrivilege = "IMPERSONATE"
 
 	// For WAREHOUSE
 	// AccountObjectPrivilegeApplyBudget AccountObjectPrivilege = "APPLYBUDGET" (duplicate)

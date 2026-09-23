@@ -103,6 +103,8 @@ func TestAcc_Tasks_BasicUseCase_DifferentFiltering(t *testing.T) {
 	})
 }
 
+// execute_as_user is omitted: it needs IMPERSONATE on the user and the owner role granted to that user.
+// Covered by TestAcc_Task_ExecuteAsUser so this portable complete smoke stays free of that setup.
 func TestAcc_Tasks_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
@@ -139,6 +141,7 @@ func TestAcc_Tasks_CompleteUseCase(t *testing.T) {
 		HasCondition("").
 		HasAllowOverlappingExecution(true).
 		HasErrorIntegrationEmpty().
+		HasExecuteAsUserEmpty().
 		HasLastCommittedOn("").
 		HasLastSuspendedOn("").
 		HasOwnerRoleType("ROLE").

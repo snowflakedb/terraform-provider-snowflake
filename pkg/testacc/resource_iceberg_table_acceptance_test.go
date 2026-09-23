@@ -673,7 +673,7 @@ func TestAcc_IcebergTable_BasicUseCase_Columns(t *testing.T) {
 		Columns:    []sdk.Column{{Value: "REF_ID"}},
 		References: fkRefTable.ID(),
 		RefColumns: []sdk.Column{{Value: "id"}},
-		Match:      new(sdk.SimpleMatchType),
+		Match:      new(sdk.MatchTypeSimple),
 		On: &sdk.ForeignKeyOnAction{
 			OnUpdate: new(sdk.ForeignKeyCascadeAction),
 			OnDelete: new(sdk.ForeignKeySetNullAction),

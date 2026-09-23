@@ -107,6 +107,7 @@ func (r *CreateTaskRequest) toOpts() *CreateTaskOptions {
 		ServerlessTaskMinStatementSize:          r.ServerlessTaskMinStatementSize,
 		ServerlessTaskMaxStatementSize:          r.ServerlessTaskMaxStatementSize,
 		After:                                   r.After,
+		ExecuteAsUser:                           r.ExecuteAsUser,
 		When:                                    r.When,
 		sql:                                     r.sql,
 	}
@@ -133,6 +134,7 @@ func (r *CreateOrAlterTaskRequest) toOpts() *CreateOrAlterTaskOptions {
 		Finalize:                    r.Finalize,
 		TaskAutoRetryAttempts:       r.TaskAutoRetryAttempts,
 		After:                       r.After,
+		ExecuteAsUser:               r.ExecuteAsUser,
 		When:                        r.When,
 		sql:                         r.sql,
 	}
@@ -157,19 +159,21 @@ func (r *CloneTaskRequest) toOpts() *CloneTaskOptions {
 
 func (r *AlterTaskRequest) toOpts() *AlterTaskOptions {
 	opts := &AlterTaskOptions{
-		IfExists:      r.IfExists,
-		name:          r.name,
-		Resume:        r.Resume,
-		Suspend:       r.Suspend,
-		RemoveAfter:   r.RemoveAfter,
-		AddAfter:      r.AddAfter,
-		SetTags:       r.SetTags,
-		UnsetTags:     r.UnsetTags,
-		SetFinalize:   r.SetFinalize,
-		UnsetFinalize: r.UnsetFinalize,
-		ModifyAs:      r.ModifyAs,
-		ModifyWhen:    r.ModifyWhen,
-		RemoveWhen:    r.RemoveWhen,
+		IfExists:           r.IfExists,
+		name:               r.name,
+		Resume:             r.Resume,
+		Suspend:            r.Suspend,
+		RemoveAfter:        r.RemoveAfter,
+		AddAfter:           r.AddAfter,
+		SetTags:            r.SetTags,
+		UnsetTags:          r.UnsetTags,
+		SetFinalize:        r.SetFinalize,
+		UnsetFinalize:      r.UnsetFinalize,
+		SetExecuteAsUser:   r.SetExecuteAsUser,
+		UnsetExecuteAsUser: r.UnsetExecuteAsUser,
+		ModifyAs:           r.ModifyAs,
+		ModifyWhen:         r.ModifyWhen,
+		RemoveWhen:         r.RemoveWhen,
 	}
 	if r.Set != nil {
 		opts.Set = &TaskSet{
@@ -252,6 +256,7 @@ func (r taskDBRow) convert() (*Task, error) {
 	mapNullStringToNonNullableField(&result.Config, r.Config)
 	mapNullStringToNonNullableField(&result.Budget, r.Budget)
 	mapNullStringToNonNullableField(&result.LastSuspendedReason, r.LastSuspendedReason)
+	mapNullStringWithMapping(&result.ExecuteAsUser, r.ExecuteAsUser, ParseAccountObjectIdentifier)
 	if err := r.additionalConvert(result); err != nil {
 		return nil, err
 	}

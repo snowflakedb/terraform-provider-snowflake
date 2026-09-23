@@ -7,17 +7,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type shareToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.Share] = shareToSchemaMapper{}
+
 // ShowShareSchema represents output of SHOW query for the single Share.
-var ShowShareSchema = map[string]*schema.Schema{
+var ShowShareSchema = mergeSchema(map[string]*schema.Schema{
 	"created_on": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
 	"kind": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
-	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
@@ -37,7 +37,7 @@ var ShowShareSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}
+}, shareToSchemaMapper{}.additionalSchema())
 
 var _ = ShowShareSchema
 
@@ -45,11 +45,11 @@ func ShareToSchema(share *sdk.Share) map[string]any {
 	shareSchema := make(map[string]any)
 	shareSchema["created_on"] = share.CreatedOn.String()
 	shareSchema["kind"] = string(share.Kind)
-	shareSchema["name"] = share.ID().FullyQualifiedName()
 	shareSchema["database_name"] = share.DatabaseName.Name()
 	shareSchema["to"] = share.To
 	shareSchema["owner"] = share.Owner
 	shareSchema["comment"] = share.Comment
+	shareToSchemaMapper{}.additionalToSchema(share, shareSchema)
 	return shareSchema
 }
 

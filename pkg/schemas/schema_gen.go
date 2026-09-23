@@ -68,7 +68,7 @@ func SchemaToSchema(schema *sdk.Schema) map[string]any {
 	schemaSchema["owner"] = schema.Owner
 	schemaSchema["comment"] = schema.Comment
 	if schema.Options != nil {
-		schemaSchema["options"] = schema.Options
+		schemaSchema["options"] = (*schema.Options)
 	}
 	schemaSchema["retention_time"] = schema.RetentionTime
 	schemaSchema["owner_role_type"] = schema.OwnerRoleType

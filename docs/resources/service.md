@@ -135,6 +135,7 @@ resource "snowflake_compute_pool" "complete" {
 - `min_instances` (Number) Specifies the minimum number of service instances to run.
 - `min_ready_instances` (Number) Indicates the minimum service instances that must be ready for Snowflake to consider the service is ready to process requests.
 - `query_warehouse` (String) Warehouse to use if a service container connects to Snowflake to execute a query but does not explicitly specify a warehouse to use. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `service_caller_token_validity_secs` (Number) Controls how long a caller's rights login token is valid for Snowpark Container Services. For more information, check [SERVICE_CALLER_TOKEN_VALIDITY_SECS docs](https://docs.snowflake.com/en/sql-reference/parameters#service-caller-token-validity-secs).
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -142,6 +143,7 @@ resource "snowflake_compute_pool" "complete" {
 - `describe_output` (List of Object) Outputs the result of `DESCRIBE SERVICE` for the given service. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
+- `parameters` (List of Object) Outputs the result of `SHOW PARAMETERS IN SERVICE` for the given service. (see [below for nested schema](#nestedatt--parameters))
 - `service_type` (String) Specifies a type for the service. This field is used for checking external changes and recreating the resources if needed.
 - `show_output` (List of Object) Outputs the result of `SHOW SERVICES` for the given service. (see [below for nested schema](#nestedatt--show_output))
 
@@ -225,6 +227,26 @@ Read-Only:
 - `suspended_on` (String)
 - `target_instances` (Number)
 - `updated_on` (String)
+
+
+<a id="nestedatt--parameters"></a>
+### Nested Schema for `parameters`
+
+Read-Only:
+
+- `service_caller_token_validity_secs` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--service_caller_token_validity_secs))
+
+<a id="nestedobjatt--parameters--service_caller_token_validity_secs"></a>
+### Nested Schema for `parameters.service_caller_token_validity_secs`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
 
 
 <a id="nestedatt--show_output"></a>

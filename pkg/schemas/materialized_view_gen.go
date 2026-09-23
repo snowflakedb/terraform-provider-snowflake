@@ -110,7 +110,7 @@ func MaterializedViewToSchema(materializedView *sdk.MaterializedView) map[string
 	materializedViewSchema["created_on"] = materializedView.CreatedOn
 	materializedViewSchema["name"] = materializedView.Name
 	if materializedView.Reserved != nil {
-		materializedViewSchema["reserved"] = materializedView.Reserved
+		materializedViewSchema["reserved"] = (*materializedView.Reserved)
 	}
 	materializedViewSchema["database_name"] = materializedView.DatabaseName
 	materializedViewSchema["schema_name"] = materializedView.SchemaName

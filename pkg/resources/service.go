@@ -3,11 +3,13 @@ package resources
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -54,6 +56,14 @@ var serviceSchema = func() map[string]*schema.Schema {
 			DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("max_instances"),
 			Description:      "Specifies the maximum number of service instances to run.",
 		},
+		ParametersAttributeName: {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `SHOW PARAMETERS IN SERVICE` for the given service.",
+			Elem: &schema.Resource{
+				Schema: schemas.ShowServiceParametersSchema,
+			},
+		},
 	}
 	return collections.MergeMaps(serviceBaseSchema(false), serviceSchema)
 }()
@@ -80,10 +90,12 @@ func Service() *schema.Resource {
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Service, customdiff.All(
 			ComputedIfAnyAttributeChanged(serviceSchema, ShowOutputAttributeName, "auto_suspend_secs", "auto_resume", "min_instances", "max_instances", "min_ready_instances", "query_warehouse", "comment"),
 			ComputedIfAnyAttributeChanged(serviceSchema, DescribeOutputAttributeName, "auto_suspend_secs", "auto_resume", "min_instances", "max_instances", "min_ready_instances", "query_warehouse", "comment"),
+			ComputedIfAnyAttributeChanged(serviceParametersSchema, ParametersAttributeName, collections.Map(sdk.AsStringList(sdk.AllServiceParameters), strings.ToLower)...),
+			serviceParametersCustomDiff,
 			RecreateWhenServiceTypeChangedExternally(sdk.ServiceTypeService),
 		)),
 
-		Schema: serviceSchema,
+		Schema: collections.MergeMaps(serviceSchema, serviceParametersSchema),
 		Importer: &schema.ResourceImporter{
 			StateContext: TrackingImportWrapper(resources.Service, ImportServiceFunc(serviceCustomFieldsHandler)),
 		},
@@ -93,7 +105,7 @@ func Service() *schema.Resource {
 }
 
 func ReadServiceFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
-	return ReadServiceCommonFunc(withExternalChangesMarking, serviceOutputMappingsFunc, []string{"max_instances", "min_instances", "min_ready_instances", "auto_resume", "auto_suspend_secs"})
+	return ReadServiceCommonFunc(withExternalChangesMarking, serviceOutputMappingsFunc, []string{"max_instances", "min_instances", "min_ready_instances", "auto_resume", "auto_suspend_secs"}, true)
 }
 
 func CreateService(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -123,6 +135,12 @@ func CreateService(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	)
 	if errs != nil {
 		return diag.FromErr(errs)
+	}
+	diags := JoinDiags(
+		handleParameterCreate(d, sdk.ServiceParameterServiceCallerTokenValiditySecs, &request.ServiceCallerTokenValiditySecs),
+	)
+	if len(diags) > 0 {
+		return diags
 	}
 	if err := client.Services.Create(ctx, request); err != nil {
 		return diag.FromErr(err)
@@ -173,6 +191,9 @@ func UpdateService(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	)
 	if errs != nil {
 		return diag.FromErr(errs)
+	}
+	if diags := handleServiceParametersUpdate(d, set, unset); len(diags) > 0 {
+		return diags
 	}
 	if (*set != sdk.ServiceSetRequest{}) {
 		if err := client.Services.Alter(ctx, sdk.NewAlterServiceRequest(id).WithSet(*set)); err != nil {

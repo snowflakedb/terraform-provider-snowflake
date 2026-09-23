@@ -21,30 +21,23 @@ func main() {
 		genhelpers.NewPreambleModel(name, version).
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk").
 			WithImport("github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"),
-		getStructDetails,
+		gen.GetShowResultSchemaDetails,
 		gen.ModelFromStructDetails,
 		getFilename,
 		gen.AllTemplates,
 	).
+		WithDescription("Generate SHOW/DESCRIBE output schemas and ToSchema mappers.").
+		WithMakefileCommandPart("show-output-schemas").
 		WithAdditionalObjectsDebugLogs(printAllStructsFields).
 		WithAdditionalObjectsDebugLogs(printUniqueTypes).
 		RunAndHandleOsReturn()
 }
 
-func getStructDetails() []genhelpers.StructDetails {
-	allObjects := append(gen.SdkShowResultStructs, gen.AdditionalStructs...)
-	allStructsDetails := make([]genhelpers.StructDetails, len(allObjects))
-	for idx, s := range allObjects {
-		allStructsDetails[idx] = genhelpers.ExtractStructDetails(s)
-	}
-	return allStructsDetails
+func getFilename(_ gen.ShowResultSchemaDetails, model gen.ShowResultSchemaModel) string {
+	return model.Filename()
 }
 
-func getFilename(_ genhelpers.StructDetails, model gen.ShowResultSchemaModel) string {
-	return genhelpers.ToSnakeCase(model.Name) + "_gen.go"
-}
-
-func printAllStructsFields(allStructs []genhelpers.StructDetails) {
+func printAllStructsFields(allStructs []gen.ShowResultSchemaDetails) {
 	for _, s := range allStructs {
 		fmt.Println("===========================")
 		fmt.Printf("%s\n", s.Name)
@@ -56,7 +49,7 @@ func printAllStructsFields(allStructs []genhelpers.StructDetails) {
 	}
 }
 
-func printUniqueTypes(allStructs []genhelpers.StructDetails) {
+func printUniqueTypes(allStructs []gen.ShowResultSchemaDetails) {
 	uniqueTypes := make(map[string]bool)
 	for _, s := range allStructs {
 		for _, f := range s.Fields {

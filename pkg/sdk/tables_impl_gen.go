@@ -6,11 +6,15 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 var (
 	_ Tables                                         = (*tables)(nil)
+	_ convertibleRow[Table]                          = new(tableDBRow)
+	_ convertibleRow[TableColumnDetails]             = new(tableColumnDetailsRow)
+	_ convertibleRow[TableStageDetails]              = new(tableStageDetailsRow)
 	_ convertibleRow[TableSearchOptimizationDetails] = new(tableSearchOptimizationDetailsRow)
 	_ convertibleRow[TableConstraintDetails]         = new(tableConstraintDetailsRow)
 	_ convertibleRow[TableCheckConstraintDetails]    = new(tableCheckConstraintDetailsRow)
@@ -18,6 +22,87 @@ var (
 
 type tables struct {
 	client *Client
+}
+
+func (v *tables) Create(ctx context.Context, request *CreateTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *tables) CreateAsSelect(ctx context.Context, request *CreateAsSelectTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *tables) CreateUsingTemplate(ctx context.Context, request *CreateUsingTemplateTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *tables) CreateLike(ctx context.Context, request *CreateLikeTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *tables) CreateClone(ctx context.Context, request *CreateCloneTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *tables) Alter(ctx context.Context, request *AlterTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *tables) Drop(ctx context.Context, request *DropTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *tables) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error {
+	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropTableRequest(id).WithIfExists(true)) }, ctx, id)
+}
+
+func (v *tables) Show(ctx context.Context, request *ShowTableRequest) ([]Table, error) {
+	opts := request.toOpts()
+	dbRows, err := validateAndQuery[tableDBRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return convertRows[tableDBRow, Table](dbRows)
+}
+
+func (v *tables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Table, error) {
+	request := NewShowTableRequest().
+		WithLike(Like{Pattern: String(id.Name())}).
+		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}})
+	tables, err := v.Show(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return collections.FindFirst(tables, func(r Table) bool { return r.Name == id.Name() })
+}
+
+func (v *tables) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Table, error) {
+	return SafeShowById(v.client, v.ShowByID, ctx, id)
+}
+
+func (v *tables) DescribeColumns(ctx context.Context, request *DescribeColumnsTableRequest) ([]TableColumnDetails, error) {
+	opts := request.toOpts()
+	dbRows, err := validateAndQuery[tableColumnDetailsRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return convertRows[tableColumnDetailsRow, TableColumnDetails](dbRows)
+}
+
+func (v *tables) DescribeStage(ctx context.Context, request *DescribeStageTableRequest) ([]TableStageDetails, error) {
+	opts := request.toOpts()
+	dbRows, err := validateAndQuery[tableStageDetailsRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return convertRows[tableStageDetailsRow, TableStageDetails](dbRows)
 }
 
 func (v *tables) DescribeSearchOptimization(ctx context.Context, request *DescribeSearchOptimizationTableRequest) ([]TableSearchOptimizationDetails, error) {
@@ -45,6 +130,578 @@ func (v *tables) SelectCheckConstraints(ctx context.Context, request *SelectChec
 		return nil, err
 	}
 	return convertRows[tableCheckConstraintDetailsRow, TableCheckConstraintDetails](dbRows)
+}
+
+func (r *CreateTableRequest) toOpts() *CreateTableOptions {
+	opts := &CreateTableOptions{
+		OrReplace:                  r.OrReplace,
+		Scope:                      r.Scope,
+		Kind:                       r.Kind,
+		IfNotExists:                r.IfNotExists,
+		name:                       r.name,
+		ClusterBy:                  r.ClusterBy,
+		EnableSchemaEvolution:      r.EnableSchemaEvolution,
+		DataRetentionTimeInDays:    r.DataRetentionTimeInDays,
+		MaxDataExtensionTimeInDays: r.MaxDataExtensionTimeInDays,
+		ChangeTracking:             r.ChangeTracking,
+		DefaultDdlCollation:        r.DefaultDdlCollation,
+		CopyGrants:                 r.CopyGrants,
+		RowAccessPolicy:            r.RowAccessPolicy,
+		Tag:                        r.Tag,
+		Comment:                    r.Comment,
+	}
+	opts.ColumnsAndConstraints = CreateTableColumnsAndConstraints{}
+	if r.ColumnsAndConstraints.Columns != nil {
+		columns := make([]TableColumn, len(r.ColumnsAndConstraints.Columns))
+		for i, v := range r.ColumnsAndConstraints.Columns {
+			columns[i] = TableColumn{
+				Name:             v.Name,
+				ColumnType:       v.ColumnType,
+				InlineConstraint: v.InlineConstraint,
+				NotNull:          v.NotNull,
+				Collate:          v.Collate,
+				Tag:              v.Tag,
+				Comment:          v.Comment,
+			}
+			if v.DefaultValue != nil {
+				columns[i].DefaultValue = &ColumnDefaultValue{
+					Expression: v.DefaultValue.Expression,
+				}
+				if v.DefaultValue.Identity != nil {
+					columns[i].DefaultValue.Identity = &ColumnIdentity{
+						Start:     v.DefaultValue.Identity.Start,
+						Increment: v.DefaultValue.Identity.Increment,
+						Order:     v.DefaultValue.Identity.Order,
+						Noorder:   v.DefaultValue.Identity.Noorder,
+					}
+				}
+			}
+			if v.MaskingPolicy != nil {
+				columns[i].MaskingPolicy = &ColumnMaskingPolicy{
+					With:  v.MaskingPolicy.With,
+					Name:  v.MaskingPolicy.Name,
+					Using: v.MaskingPolicy.Using,
+				}
+			}
+		}
+		opts.ColumnsAndConstraints.Columns = columns
+	}
+	if r.ColumnsAndConstraints.OutOfLineConstraint != nil {
+		outOfLineConstraint := make([]OutOfLineConstraint, len(r.ColumnsAndConstraints.OutOfLineConstraint))
+		for i, v := range r.ColumnsAndConstraints.OutOfLineConstraint {
+			outOfLineConstraint[i] = OutOfLineConstraint{
+				Name:               v.Name,
+				ConstraintType:     v.ConstraintType,
+				Columns:            v.Columns,
+				Enforced:           v.Enforced,
+				NotEnforced:        v.NotEnforced,
+				Deferrable:         v.Deferrable,
+				NotDeferrable:      v.NotDeferrable,
+				InitiallyDeferred:  v.InitiallyDeferred,
+				InitiallyImmediate: v.InitiallyImmediate,
+				Enable:             v.Enable,
+				Disable:            v.Disable,
+				Validate:           v.Validate,
+				Novalidate:         v.Novalidate,
+				Rely:               v.Rely,
+				Norely:             v.Norely,
+			}
+			if v.ForeignKey != nil {
+				outOfLineConstraint[i].ForeignKey = &OutOfLineForeignKey{
+					TableName:   v.ForeignKey.TableName,
+					ColumnNames: v.ForeignKey.ColumnNames,
+					Match:       v.ForeignKey.Match,
+					On:          v.ForeignKey.On,
+				}
+			}
+		}
+		opts.ColumnsAndConstraints.OutOfLineConstraint = outOfLineConstraint
+	}
+	if r.StageFileFormat != nil {
+		opts.StageFileFormat = &LegacyFileFormat{
+			FormatName:     r.StageFileFormat.FormatName,
+			FileFormatType: r.StageFileFormat.FileFormatType,
+			Options:        r.StageFileFormat.Options,
+		}
+	}
+	if r.StageCopyOptions != nil {
+		opts.StageCopyOptions = &LegacyTableCopyOptions{
+			SizeLimit:         r.StageCopyOptions.SizeLimit,
+			Purge:             r.StageCopyOptions.Purge,
+			ReturnFailedOnly:  r.StageCopyOptions.ReturnFailedOnly,
+			MatchByColumnName: r.StageCopyOptions.MatchByColumnName,
+			EnforceLength:     r.StageCopyOptions.EnforceLength,
+			Truncatecolumns:   r.StageCopyOptions.Truncatecolumns,
+			Force:             r.StageCopyOptions.Force,
+		}
+		if r.StageCopyOptions.OnError != nil {
+			opts.StageCopyOptions.OnError = &LegacyTableCopyOnErrorOptions{
+				Continue_:      r.StageCopyOptions.OnError.Continue_,
+				SkipFile:       r.StageCopyOptions.OnError.SkipFile,
+				AbortStatement: r.StageCopyOptions.OnError.AbortStatement,
+			}
+		}
+	}
+	return opts
+}
+
+func (r *CreateAsSelectTableRequest) toOpts() *CreateAsSelectTableOptions {
+	opts := &CreateAsSelectTableOptions{
+		OrReplace:       r.OrReplace,
+		name:            r.name,
+		ClusterBy:       r.ClusterBy,
+		CopyGrants:      r.CopyGrants,
+		RowAccessPolicy: r.RowAccessPolicy,
+		Query:           r.Query,
+	}
+	if r.Columns != nil {
+		columns := make([]TableAsSelectColumn, len(r.Columns))
+		for i, v := range r.Columns {
+			columns[i] = TableAsSelectColumn{
+				Name:          v.Name,
+				ColumnType:    v.ColumnType,
+				MaskingPolicy: v.MaskingPolicy,
+			}
+		}
+		opts.Columns = columns
+	}
+	return opts
+}
+
+func (r *CreateUsingTemplateTableRequest) toOpts() *CreateUsingTemplateTableOptions {
+	opts := &CreateUsingTemplateTableOptions{
+		OrReplace:  r.OrReplace,
+		name:       r.name,
+		CopyGrants: r.CopyGrants,
+		Query:      r.Query,
+	}
+	return opts
+}
+
+func (r *CreateLikeTableRequest) toOpts() *CreateLikeTableOptions {
+	opts := &CreateLikeTableOptions{
+		OrReplace:   r.OrReplace,
+		name:        r.name,
+		SourceTable: r.SourceTable,
+		ClusterBy:   r.ClusterBy,
+		CopyGrants:  r.CopyGrants,
+	}
+	return opts
+}
+
+func (r *CreateCloneTableRequest) toOpts() *CreateCloneTableOptions {
+	opts := &CreateCloneTableOptions{
+		OrReplace:   r.OrReplace,
+		name:        r.name,
+		SourceTable: r.SourceTable,
+		CopyGrants:  r.CopyGrants,
+	}
+	if r.ClonePoint != nil {
+		opts.ClonePoint = &ClonePoint{
+			Moment: r.ClonePoint.Moment,
+			At:     r.ClonePoint.At,
+		}
+	}
+	return opts
+}
+
+func (r *AlterTableRequest) toOpts() *AlterTableOptions {
+	opts := &AlterTableOptions{
+		IfExists:                   r.IfExists,
+		name:                       r.name,
+		RenameTo:                   r.RenameTo,
+		SwapWith:                   r.SwapWith,
+		SetTags:                    r.SetTags,
+		UnsetTags:                  r.UnsetTags,
+		DropAllRowAccessPolicies:   r.DropAllRowAccessPolicies,
+		DropStorageLifecyclePolicy: r.DropStorageLifecyclePolicy,
+	}
+	if r.ClusteringAction != nil {
+		opts.ClusteringAction = &TableClusteringAction{
+			ClusterBy:         r.ClusteringAction.ClusterBy,
+			DropClusteringKey: r.ClusteringAction.DropClusteringKey,
+		}
+		if r.ClusteringAction.Recluster != nil {
+			opts.ClusteringAction.Recluster = &TableReclusterAction{
+				MaxSize:   r.ClusteringAction.Recluster.MaxSize,
+				Condition: r.ClusteringAction.Recluster.Condition,
+			}
+		}
+		if r.ClusteringAction.ChangeReclusterState != nil {
+			opts.ClusteringAction.ChangeReclusterState = &TableReclusterChangeState{
+				State: r.ClusteringAction.ChangeReclusterState.State,
+			}
+		}
+	}
+	if r.ColumnAction != nil {
+		opts.ColumnAction = &TableColumnAction{}
+		if r.ColumnAction.Add != nil {
+			opts.ColumnAction.Add = &TableColumnAddAction{
+				IfNotExists: r.ColumnAction.Add.IfNotExists,
+				Name:        r.ColumnAction.Add.Name,
+				ColumnType:  r.ColumnAction.Add.ColumnType,
+				Collate:     r.ColumnAction.Add.Collate,
+				Tag:         r.ColumnAction.Add.Tag,
+				Comment:     r.ColumnAction.Add.Comment,
+			}
+			if r.ColumnAction.Add.DefaultValue != nil {
+				opts.ColumnAction.Add.DefaultValue = &ColumnDefaultValue{
+					Expression: r.ColumnAction.Add.DefaultValue.Expression,
+				}
+				if r.ColumnAction.Add.DefaultValue.Identity != nil {
+					opts.ColumnAction.Add.DefaultValue.Identity = &ColumnIdentity{
+						Start:     r.ColumnAction.Add.DefaultValue.Identity.Start,
+						Increment: r.ColumnAction.Add.DefaultValue.Identity.Increment,
+						Order:     r.ColumnAction.Add.DefaultValue.Identity.Order,
+						Noorder:   r.ColumnAction.Add.DefaultValue.Identity.Noorder,
+					}
+				}
+			}
+			if r.ColumnAction.Add.InlineConstraint != nil {
+				opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{
+					NotNull:        r.ColumnAction.Add.InlineConstraint.NotNull,
+					Name:           r.ColumnAction.Add.InlineConstraint.Name,
+					ConstraintType: r.ColumnAction.Add.InlineConstraint.ConstraintType,
+				}
+				if r.ColumnAction.Add.InlineConstraint.ForeignKey != nil {
+					opts.ColumnAction.Add.InlineConstraint.ForeignKey = &ColumnAddForeignKey{
+						TableName:  r.ColumnAction.Add.InlineConstraint.ForeignKey.TableName,
+						ColumnName: r.ColumnAction.Add.InlineConstraint.ForeignKey.ColumnName,
+					}
+				}
+			}
+			if r.ColumnAction.Add.MaskingPolicy != nil {
+				opts.ColumnAction.Add.MaskingPolicy = &ColumnMaskingPolicy{
+					With:  r.ColumnAction.Add.MaskingPolicy.With,
+					Name:  r.ColumnAction.Add.MaskingPolicy.Name,
+					Using: r.ColumnAction.Add.MaskingPolicy.Using,
+				}
+			}
+		}
+		if r.ColumnAction.Rename != nil {
+			opts.ColumnAction.Rename = &TableColumnRenameAction{
+				OldName: r.ColumnAction.Rename.OldName,
+				NewName: r.ColumnAction.Rename.NewName,
+			}
+		}
+		if r.ColumnAction.Alter != nil {
+			alter := make([]TableColumnAlterAction, len(r.ColumnAction.Alter))
+			for i, v := range r.ColumnAction.Alter {
+				alter[i] = TableColumnAlterAction{
+					Name:         v.Name,
+					DropDefault:  v.DropDefault,
+					SetDefault:   v.SetDefault,
+					DataType:     v.DataType,
+					Collate:      v.Collate,
+					Comment:      v.Comment,
+					UnsetComment: v.UnsetComment,
+				}
+				if v.NotNullConstraint != nil {
+					alter[i].NotNullConstraint = &TableColumnNotNullConstraint{
+						Set:  v.NotNullConstraint.Set,
+						Drop: v.NotNullConstraint.Drop,
+					}
+				}
+			}
+			opts.ColumnAction.Alter = alter
+		}
+		if r.ColumnAction.SetMaskingPolicy != nil {
+			opts.ColumnAction.SetMaskingPolicy = &TableColumnAlterSetMaskingPolicyAction{
+				ColumnName:        r.ColumnAction.SetMaskingPolicy.ColumnName,
+				MaskingPolicyName: r.ColumnAction.SetMaskingPolicy.MaskingPolicyName,
+				Using:             r.ColumnAction.SetMaskingPolicy.Using,
+				Force:             r.ColumnAction.SetMaskingPolicy.Force,
+			}
+		}
+		if r.ColumnAction.UnsetMaskingPolicy != nil {
+			opts.ColumnAction.UnsetMaskingPolicy = &TableColumnAlterUnsetMaskingPolicyAction{
+				ColumnName: r.ColumnAction.UnsetMaskingPolicy.ColumnName,
+			}
+		}
+		if r.ColumnAction.SetTags != nil {
+			opts.ColumnAction.SetTags = &TableColumnAlterSetTagsAction{
+				ColumnName: r.ColumnAction.SetTags.ColumnName,
+				SetTags:    r.ColumnAction.SetTags.SetTags,
+			}
+		}
+		if r.ColumnAction.UnsetTags != nil {
+			opts.ColumnAction.UnsetTags = &TableColumnAlterUnsetTagsAction{
+				ColumnName: r.ColumnAction.UnsetTags.ColumnName,
+				UnsetTags:  r.ColumnAction.UnsetTags.UnsetTags,
+			}
+		}
+		if r.ColumnAction.DropColumns != nil {
+			opts.ColumnAction.DropColumns = &TableColumnAlterDropColumns{
+				IfExists: r.ColumnAction.DropColumns.IfExists,
+				Columns:  r.ColumnAction.DropColumns.Columns,
+			}
+		}
+	}
+	if r.ConstraintAction != nil {
+		opts.ConstraintAction = &TableConstraintAction{}
+		if r.ConstraintAction.Add != nil {
+			opts.ConstraintAction.Add = &OutOfLineConstraint{
+				Name:               r.ConstraintAction.Add.Name,
+				ConstraintType:     r.ConstraintAction.Add.ConstraintType,
+				Columns:            r.ConstraintAction.Add.Columns,
+				Enforced:           r.ConstraintAction.Add.Enforced,
+				NotEnforced:        r.ConstraintAction.Add.NotEnforced,
+				Deferrable:         r.ConstraintAction.Add.Deferrable,
+				NotDeferrable:      r.ConstraintAction.Add.NotDeferrable,
+				InitiallyDeferred:  r.ConstraintAction.Add.InitiallyDeferred,
+				InitiallyImmediate: r.ConstraintAction.Add.InitiallyImmediate,
+				Enable:             r.ConstraintAction.Add.Enable,
+				Disable:            r.ConstraintAction.Add.Disable,
+				Validate:           r.ConstraintAction.Add.Validate,
+				Novalidate:         r.ConstraintAction.Add.Novalidate,
+				Rely:               r.ConstraintAction.Add.Rely,
+				Norely:             r.ConstraintAction.Add.Norely,
+			}
+			if r.ConstraintAction.Add.ForeignKey != nil {
+				opts.ConstraintAction.Add.ForeignKey = &OutOfLineForeignKey{
+					TableName:   r.ConstraintAction.Add.ForeignKey.TableName,
+					ColumnNames: r.ConstraintAction.Add.ForeignKey.ColumnNames,
+					Match:       r.ConstraintAction.Add.ForeignKey.Match,
+					On:          r.ConstraintAction.Add.ForeignKey.On,
+				}
+			}
+		}
+		if r.ConstraintAction.Rename != nil {
+			opts.ConstraintAction.Rename = &TableConstraintRenameAction{
+				OldName: r.ConstraintAction.Rename.OldName,
+				NewName: r.ConstraintAction.Rename.NewName,
+			}
+		}
+		if r.ConstraintAction.Alter != nil {
+			opts.ConstraintAction.Alter = &TableConstraintAlterAction{
+				ConstraintName: r.ConstraintAction.Alter.ConstraintName,
+				PrimaryKey:     r.ConstraintAction.Alter.PrimaryKey,
+				Unique:         r.ConstraintAction.Alter.Unique,
+				ForeignKey:     r.ConstraintAction.Alter.ForeignKey,
+				Columns:        r.ConstraintAction.Alter.Columns,
+				Enforced:       r.ConstraintAction.Alter.Enforced,
+				NotEnforced:    r.ConstraintAction.Alter.NotEnforced,
+				Validate:       r.ConstraintAction.Alter.Validate,
+				Novalidate:     r.ConstraintAction.Alter.Novalidate,
+				Rely:           r.ConstraintAction.Alter.Rely,
+				Norely:         r.ConstraintAction.Alter.Norely,
+			}
+		}
+		if r.ConstraintAction.Drop != nil {
+			opts.ConstraintAction.Drop = &TableConstraintDropAction{
+				ConstraintName: r.ConstraintAction.Drop.ConstraintName,
+				PrimaryKey:     r.ConstraintAction.Drop.PrimaryKey,
+				Unique:         r.ConstraintAction.Drop.Unique,
+				ForeignKey:     r.ConstraintAction.Drop.ForeignKey,
+				Columns:        r.ConstraintAction.Drop.Columns,
+				Cascade:        r.ConstraintAction.Drop.Cascade,
+				Restrict:       r.ConstraintAction.Drop.Restrict,
+			}
+		}
+	}
+	if r.ExternalTableAction != nil {
+		opts.ExternalTableAction = &TableExternalTableAction{}
+		if r.ExternalTableAction.Add != nil {
+			opts.ExternalTableAction.Add = &TableExternalTableColumnAddAction{
+				IfNotExists: r.ExternalTableAction.Add.IfNotExists,
+				Name:        r.ExternalTableAction.Add.Name,
+				ColumnType:  r.ExternalTableAction.Add.ColumnType,
+				Expression:  r.ExternalTableAction.Add.Expression,
+				Comment:     r.ExternalTableAction.Add.Comment,
+			}
+		}
+		if r.ExternalTableAction.Rename != nil {
+			opts.ExternalTableAction.Rename = &TableExternalTableColumnRenameAction{
+				OldName: r.ExternalTableAction.Rename.OldName,
+				NewName: r.ExternalTableAction.Rename.NewName,
+			}
+		}
+		if r.ExternalTableAction.Drop != nil {
+			opts.ExternalTableAction.Drop = &TableExternalTableColumnDropAction{
+				IfExists: r.ExternalTableAction.Drop.IfExists,
+				Names:    r.ExternalTableAction.Drop.Names,
+			}
+		}
+	}
+	if r.SearchOptimizationAction != nil {
+		opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{}
+		if r.SearchOptimizationAction.Add != nil {
+			opts.SearchOptimizationAction.Add = &AddSearchOptimization{
+				On: r.SearchOptimizationAction.Add.On,
+			}
+		}
+		if r.SearchOptimizationAction.Drop != nil {
+			opts.SearchOptimizationAction.Drop = r.SearchOptimizationAction.Drop.toOpts()
+		}
+	}
+	if r.Set != nil {
+		opts.Set = &TableSet{
+			EnableSchemaEvolution:      r.Set.EnableSchemaEvolution,
+			DataRetentionTimeInDays:    r.Set.DataRetentionTimeInDays,
+			MaxDataExtensionTimeInDays: r.Set.MaxDataExtensionTimeInDays,
+			ChangeTracking:             r.Set.ChangeTracking,
+			DefaultDdlCollation:        r.Set.DefaultDdlCollation,
+			Comment:                    r.Set.Comment,
+		}
+		if r.Set.StageFileFormat != nil {
+			opts.Set.StageFileFormat = &LegacyFileFormat{
+				FormatName:     r.Set.StageFileFormat.FormatName,
+				FileFormatType: r.Set.StageFileFormat.FileFormatType,
+				Options:        r.Set.StageFileFormat.Options,
+			}
+		}
+		if r.Set.StageCopyOptions != nil {
+			opts.Set.StageCopyOptions = &LegacyTableCopyOptions{
+				SizeLimit:         r.Set.StageCopyOptions.SizeLimit,
+				Purge:             r.Set.StageCopyOptions.Purge,
+				ReturnFailedOnly:  r.Set.StageCopyOptions.ReturnFailedOnly,
+				MatchByColumnName: r.Set.StageCopyOptions.MatchByColumnName,
+				EnforceLength:     r.Set.StageCopyOptions.EnforceLength,
+				Truncatecolumns:   r.Set.StageCopyOptions.Truncatecolumns,
+				Force:             r.Set.StageCopyOptions.Force,
+			}
+			if r.Set.StageCopyOptions.OnError != nil {
+				opts.Set.StageCopyOptions.OnError = &LegacyTableCopyOnErrorOptions{
+					Continue_:      r.Set.StageCopyOptions.OnError.Continue_,
+					SkipFile:       r.Set.StageCopyOptions.OnError.SkipFile,
+					AbortStatement: r.Set.StageCopyOptions.OnError.AbortStatement,
+				}
+			}
+		}
+	}
+	if r.Unset != nil {
+		opts.Unset = &TableUnset{
+			DataRetentionTimeInDays:    r.Unset.DataRetentionTimeInDays,
+			MaxDataExtensionTimeInDays: r.Unset.MaxDataExtensionTimeInDays,
+			ChangeTracking:             r.Unset.ChangeTracking,
+			DefaultDdlCollation:        r.Unset.DefaultDdlCollation,
+			EnableSchemaEvolution:      r.Unset.EnableSchemaEvolution,
+			Comment:                    r.Unset.Comment,
+		}
+	}
+	if r.AddRowAccessPolicy != nil {
+		opts.AddRowAccessPolicy = &TableAddRowAccessPolicy{
+			RowAccessPolicy: r.AddRowAccessPolicy.RowAccessPolicy,
+			On:              r.AddRowAccessPolicy.On,
+		}
+	}
+	if r.DropRowAccessPolicy != nil {
+		opts.DropRowAccessPolicy = &TableDropRowAccessPolicy{
+			RowAccessPolicy: r.DropRowAccessPolicy.RowAccessPolicy,
+		}
+	}
+	if r.DropAndAddRowAccessPolicy != nil {
+		opts.DropAndAddRowAccessPolicy = &TableDropAndAddRowAccessPolicy{}
+		opts.DropAndAddRowAccessPolicy.Drop = TableDropRowAccessPolicy{
+			RowAccessPolicy: r.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy,
+		}
+		opts.DropAndAddRowAccessPolicy.Add = TableAddRowAccessPolicy{
+			RowAccessPolicy: r.DropAndAddRowAccessPolicy.Add.RowAccessPolicy,
+			On:              r.DropAndAddRowAccessPolicy.Add.On,
+		}
+	}
+	if r.AddStorageLifecyclePolicy != nil {
+		opts.AddStorageLifecyclePolicy = &TableAddStorageLifecyclePolicy{
+			StorageLifecyclePolicy: r.AddStorageLifecyclePolicy.StorageLifecyclePolicy,
+			On:                     r.AddStorageLifecyclePolicy.On,
+		}
+	}
+	return opts
+}
+
+func (r *DropTableRequest) toOpts() *DropTableOptions {
+	opts := &DropTableOptions{
+		IfExists: r.IfExists,
+		name:     r.name,
+		Cascade:  r.Cascade,
+		Restrict: r.Restrict,
+	}
+	return opts
+}
+
+func (r *ShowTableRequest) toOpts() *ShowTableOptions {
+	opts := &ShowTableOptions{
+		Terse:      r.Terse,
+		History:    r.History,
+		Like:       r.Like,
+		In:         r.In,
+		StartsWith: r.StartsWith,
+		Limit:      r.Limit,
+	}
+	return opts
+}
+
+func (r tableDBRow) convert() (*Table, error) {
+	result := &Table{
+		CreatedOn:    r.CreatedOn,
+		Name:         r.Name,
+		SchemaName:   r.SchemaName,
+		DatabaseName: r.DatabaseName,
+		Kind:         r.Kind,
+		Owner:        r.Owner,
+	}
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	mapNullStringToNonNullableField(&result.ClusterBy, r.ClusterBy)
+	mapNullIntToNonNullableField(&result.Rows, r.Rows)
+	mapNullInt(&result.Bytes, r.Bytes)
+	mapNullIntToNonNullableField(&result.RetentionTime, r.RetentionTime)
+	mapNullString(&result.DroppedOn, r.DroppedOn)
+	mapNullStringToRequiredBoolValue(&result.AutomaticClustering, r.AutomaticClustering, "ON")
+	mapNullStringToRequiredBoolValue(&result.ChangeTracking, r.ChangeTracking, "ON")
+	mapNullStringToRequiredBoolValue(&result.SearchOptimization, r.SearchOptimization, "ON")
+	mapNullStringToNonNullableField(&result.SearchOptimizationProgress, r.SearchOptimizationProgress)
+	mapNullInt(&result.SearchOptimizationBytes, r.SearchOptimizationBytes)
+	mapNullStringToRequiredBool(&result.IsExternal, r.IsExternal)
+	mapNullStringToRequiredBool(&result.EnableSchemaEvolution, r.EnableSchemaEvolution)
+	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
+	mapNullStringToRequiredBool(&result.IsEvent, r.IsEvent)
+	mapNullString(&result.Budget, r.Budget)
+	return result, nil
+}
+
+func (r *DescribeColumnsTableRequest) toOpts() *DescribeColumnsTableOptions {
+	opts := &DescribeColumnsTableOptions{
+		name: r.name,
+	}
+	return opts
+}
+
+func (r tableColumnDetailsRow) convert() (*TableColumnDetails, error) {
+	result := &TableColumnDetails{
+		Name:       r.Name,
+		Kind:       r.Kind,
+		IsNullable: r.IsNullable == "Y",
+		IsPrimary:  r.IsPrimary == "Y",
+		IsUnique:   r.IsUnique == "Y",
+	}
+	mapNullString(&result.Default, r.Default)
+	mapNullStringToBool(&result.Check, r.Check)
+	mapNullString(&result.Expression, r.Expression)
+	mapNullString(&result.Comment, r.Comment)
+	mapNullString(&result.PolicyName, r.PolicyName)
+	mapNullString(&result.SchemaEvolutionRecord, r.SchemaEvolutionRecord)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (r *DescribeStageTableRequest) toOpts() *DescribeStageTableOptions {
+	opts := &DescribeStageTableOptions{
+		name: r.name,
+	}
+	return opts
+}
+
+func (r tableStageDetailsRow) convert() (*TableStageDetails, error) {
+	result := &TableStageDetails{
+		ParentProperty:  r.ParentProperty,
+		Property:        r.Property,
+		PropertyType:    r.PropertyType,
+		PropertyValue:   r.PropertyValue,
+		PropertyDefault: r.PropertyDefault,
+	}
+	return result, nil
 }
 
 func (r *DescribeSearchOptimizationTableRequest) toOpts() *DescribeSearchOptimizationTableOptions {

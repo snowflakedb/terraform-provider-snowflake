@@ -112,34 +112,23 @@ func (v *InlineForeignKey) validate() error {
 	return errors.Join(errs...)
 }
 
-type MatchType string
-
-var (
-	FullMatchType    MatchType = "FULL"
-	SimpleMatchType  MatchType = "SIMPLE"
-	PartialMatchType MatchType = "PARTIAL"
-)
-
-var AllMatchTypes = []MatchType{FullMatchType, SimpleMatchType, PartialMatchType}
-
-func ToMatchType(s string) (MatchType, error) {
-	cType := strings.ToUpper(s)
-
-	switch cType {
-	case string(FullMatchType):
-		return FullMatchType, nil
-	case string(SimpleMatchType):
-		return SimpleMatchType, nil
-	case string(PartialMatchType):
-		return PartialMatchType, nil
-	}
-
-	return "", fmt.Errorf("invalid match type: %s", s)
-}
-
 type ForeignKeyOnAction struct {
 	OnUpdate *ForeignKeyAction `ddl:"parameter,no_equals" sql:"ON UPDATE"`
 	OnDelete *ForeignKeyAction `ddl:"parameter,no_equals" sql:"ON DELETE"`
+}
+
+func NewForeignKeyOnAction() *ForeignKeyOnAction {
+	return &ForeignKeyOnAction{}
+}
+
+func (s *ForeignKeyOnAction) WithOnDelete(onDelete *ForeignKeyAction) *ForeignKeyOnAction {
+	s.OnDelete = onDelete
+	return s
+}
+
+func (s *ForeignKeyOnAction) WithOnUpdate(onUpdate *ForeignKeyAction) *ForeignKeyOnAction {
+	s.OnUpdate = onUpdate
+	return s
 }
 
 type ForeignKeyAction string

@@ -93,7 +93,7 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta an
 	roleName := d.Get("role_name").(string)
 	roleIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(roleName)
 
-	safePublicRole := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleSafePublicRole, providerCtx.EnabledExperiments) &&
+	safePublicRole := providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantAccountRoleSafePublicRole) &&
 		roleIdentifier.Name() == snowflakeroles.Public.Name()
 
 	// format of snowflakeResourceID is <role_identifier>|<object type>|<target_identifier>
@@ -124,7 +124,7 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta an
 		log.Printf("[DEBUG] skipping SHOW GRANTS for PUBLIC role grant (%s) — experiment %s enabled", snowflakeResourceID, experimentalfeatures.GrantAccountRoleSafePublicRole)
 		return nil
 	}
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleShowCaching, providerCtx.EnabledExperiments) {
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantAccountRoleShowCaching) {
 		// The trailing Read only re-confirms the grant we just created; this resource has no
 		// computed/server-default fields to populate, so the Read is redundant here. With caching
 		// enabled we skip it to avoid an extra SHOW GRANTS during apply. We still invalidate so any
@@ -148,7 +148,7 @@ func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta any)
 	roleIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(roleName)
 
 	// PUBLIC is always implicitly granted; SHOW GRANTS won't list it as an explicit grant.
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleSafePublicRole, providerCtx.EnabledExperiments) &&
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantAccountRoleSafePublicRole) &&
 		roleIdentifier.Name() == snowflakeroles.Public.Name() {
 		log.Printf("[DEBUG] skipping SHOW GRANTS for PUBLIC role grant (%s) — experiment %s enabled", d.Id(), experimentalfeatures.GrantAccountRoleSafePublicRole)
 		return nil
@@ -200,7 +200,7 @@ func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta an
 	granteeIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(granteeName)
 
 	// PUBLIC is always implicitly granted and cannot be explicitly revoked.
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleSafePublicRole, providerCtx.EnabledExperiments) &&
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantAccountRoleSafePublicRole) &&
 		id.Name() == snowflakeroles.Public.Name() {
 		log.Printf("[DEBUG] skipping REVOKE for PUBLIC role grant (%s) — experiment %s enabled", d.Id(), experimentalfeatures.GrantAccountRoleSafePublicRole)
 		d.SetId("")
@@ -208,7 +208,7 @@ func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta an
 	}
 
 	revokeFunc := client.Roles.Revoke
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments) {
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy) {
 		revokeFunc = client.Roles.RevokeSafely
 	}
 	var err error

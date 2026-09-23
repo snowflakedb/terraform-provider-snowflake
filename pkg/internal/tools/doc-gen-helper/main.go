@@ -76,6 +76,8 @@ func main() {
 	}
 
 	activeExperiments := collections.Map(experimentalfeatures.ActiveExperiments, toExperimentModel)
+	enabledByDefaultExperiments := collections.Map(experimentalfeatures.EnabledByDefaultExperiments, toExperimentModel)
+	promotedExperiments := collections.Map(experimentalfeatures.PromotedExperiments, toExperimentModel)
 	discontinuedExperiments := collections.Map(experimentalfeatures.DiscontinuedExperiments, toExperimentModel)
 
 	if errs := errors.Join(
@@ -88,7 +90,7 @@ func main() {
 		printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeResource, FeatureStatePreview, previewResources}, filepath.Join(additionalExamplesPath, previewResourcesFilename)),
 		printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeDataSource, FeatureStatePreview, previewDataSources}, filepath.Join(additionalExamplesPath, previewDataSourcesFilename)),
 
-		printTo(ExperimentalFeaturesTemplate, ExperimentalFeatures{activeExperiments, discontinuedExperiments}, filepath.Join(additionalExamplesPath, experimentalFeatures)),
+		printTo(ExperimentalFeaturesTemplate, ExperimentalFeatures{activeExperiments, enabledByDefaultExperiments, promotedExperiments, discontinuedExperiments}, filepath.Join(additionalExamplesPath, experimentalFeatures)),
 	); errs != nil {
 		log.Fatal(errs)
 	}

@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// Adjusted manually: renamed from ShowPasswordPolicyDetailsSchema to DescribePasswordPolicyDetailsSchema.
 // DescribePasswordPolicyDetailsSchema represents output of DESCRIBE query for the single PasswordPolicyDetails.
 var DescribePasswordPolicyDetailsSchema = map[string]*schema.Schema{
 	"name": {

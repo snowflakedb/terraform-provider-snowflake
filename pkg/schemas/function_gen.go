@@ -41,15 +41,6 @@ var ShowFunctionSchema = map[string]*schema.Schema{
 		Type:     schema.TypeInt,
 		Computed: true,
 	},
-	// commented out manually
-	// "arguments_old": {
-	//	Type:     schema.TypeInvalid,
-	//	Computed: true,
-	// },
-	// "return_type_old": {
-	//	Type:     schema.TypeString,
-	//	Computed: true,
-	// },
 	"arguments_raw": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -112,9 +103,6 @@ func FunctionToSchema(function *sdk.Function) map[string]any {
 	functionSchema["is_ansi"] = function.IsAnsi
 	functionSchema["min_num_arguments"] = function.MinNumArguments
 	functionSchema["max_num_arguments"] = function.MaxNumArguments
-	// commented out manually
-	// functionSchema["arguments_old"] = function.ArgumentsOld
-	// functionSchema["return_type_old"] = string(function.ReturnTypeOld)
 	functionSchema["arguments_raw"] = function.ArgumentsRaw
 	functionSchema["description"] = function.Description
 	functionSchema["catalog_name"] = function.CatalogName
@@ -122,10 +110,10 @@ func FunctionToSchema(function *sdk.Function) map[string]any {
 	functionSchema["valid_for_clustering"] = function.ValidForClustering
 	functionSchema["is_secure"] = function.IsSecure
 	if function.Secrets != nil {
-		functionSchema["secrets"] = function.Secrets
+		functionSchema["secrets"] = (*function.Secrets)
 	}
 	if function.ExternalAccessIntegrations != nil {
-		functionSchema["external_access_integrations"] = function.ExternalAccessIntegrations
+		functionSchema["external_access_integrations"] = (*function.ExternalAccessIntegrations)
 	}
 	functionSchema["is_external_function"] = function.IsExternalFunction
 	functionSchema["language"] = function.Language

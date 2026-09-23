@@ -48,6 +48,7 @@ type CreateTaskOptions struct {
 	ServerlessTaskMinStatementSize          *WarehouseSize           `ddl:"parameter,single_quotes" sql:"SERVERLESS_TASK_MIN_STATEMENT_SIZE"`
 	ServerlessTaskMaxStatementSize          *WarehouseSize           `ddl:"parameter,single_quotes" sql:"SERVERLESS_TASK_MAX_STATEMENT_SIZE"`
 	After                                   []SchemaObjectIdentifier `ddl:"parameter,no_equals" sql:"AFTER"`
+	ExecuteAsUser                           *AccountObjectIdentifier `ddl:"identifier" sql:"EXECUTE AS USER"`
 	When                                    *string                  `ddl:"parameter,no_quotes,no_equals" sql:"WHEN"`
 	as                                      bool                     `ddl:"static" sql:"AS"`
 	sql                                     string                   `ddl:"keyword,no_quotes"`
@@ -75,6 +76,7 @@ type CreateOrAlterTaskOptions struct {
 	Finalize                    *SchemaObjectIdentifier  `ddl:"identifier,equals" sql:"FINALIZE"`
 	TaskAutoRetryAttempts       *int                     `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
 	After                       []SchemaObjectIdentifier `ddl:"parameter,no_equals" sql:"AFTER"`
+	ExecuteAsUser               *AccountObjectIdentifier `ddl:"identifier" sql:"EXECUTE AS USER"`
 	When                        *string                  `ddl:"parameter,no_quotes,no_equals" sql:"WHEN"`
 	as                          bool                     `ddl:"static" sql:"AS"`
 	sql                         string                   `ddl:"keyword,no_quotes"`
@@ -93,23 +95,25 @@ type CloneTaskOptions struct {
 
 // AlterTaskOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-task.
 type AlterTaskOptions struct {
-	alter         bool                     `ddl:"static" sql:"ALTER"`
-	task          bool                     `ddl:"static" sql:"TASK"`
-	IfExists      *bool                    `ddl:"keyword" sql:"IF EXISTS"`
-	name          SchemaObjectIdentifier   `ddl:"identifier"`
-	Resume        *bool                    `ddl:"keyword" sql:"RESUME"`
-	Suspend       *bool                    `ddl:"keyword" sql:"SUSPEND"`
-	RemoveAfter   []SchemaObjectIdentifier `ddl:"parameter,no_equals" sql:"REMOVE AFTER"`
-	AddAfter      []SchemaObjectIdentifier `ddl:"parameter,no_equals" sql:"ADD AFTER"`
-	Set           *TaskSet                 `ddl:"list,no_parentheses" sql:"SET"`
-	Unset         *TaskUnset               `ddl:"list,no_parentheses" sql:"UNSET"`
-	SetTags       []TagAssociation         `ddl:"keyword" sql:"SET TAG"`
-	UnsetTags     []ObjectIdentifier       `ddl:"keyword" sql:"UNSET TAG"`
-	SetFinalize   *SchemaObjectIdentifier  `ddl:"identifier,equals" sql:"SET FINALIZE"`
-	UnsetFinalize *bool                    `ddl:"keyword" sql:"UNSET FINALIZE"`
-	ModifyAs      *string                  `ddl:"parameter,no_quotes,no_equals" sql:"MODIFY AS"`
-	ModifyWhen    *string                  `ddl:"parameter,no_quotes,no_equals" sql:"MODIFY WHEN"`
-	RemoveWhen    *bool                    `ddl:"keyword" sql:"REMOVE WHEN"`
+	alter              bool                     `ddl:"static" sql:"ALTER"`
+	task               bool                     `ddl:"static" sql:"TASK"`
+	IfExists           *bool                    `ddl:"keyword" sql:"IF EXISTS"`
+	name               SchemaObjectIdentifier   `ddl:"identifier"`
+	Resume             *bool                    `ddl:"keyword" sql:"RESUME"`
+	Suspend            *bool                    `ddl:"keyword" sql:"SUSPEND"`
+	RemoveAfter        []SchemaObjectIdentifier `ddl:"parameter,no_equals" sql:"REMOVE AFTER"`
+	AddAfter           []SchemaObjectIdentifier `ddl:"parameter,no_equals" sql:"ADD AFTER"`
+	Set                *TaskSet                 `ddl:"list,no_parentheses" sql:"SET"`
+	Unset              *TaskUnset               `ddl:"list,no_parentheses" sql:"UNSET"`
+	SetTags            []TagAssociation         `ddl:"keyword" sql:"SET TAG"`
+	UnsetTags          []ObjectIdentifier       `ddl:"keyword" sql:"UNSET TAG"`
+	SetFinalize        *SchemaObjectIdentifier  `ddl:"identifier,equals" sql:"SET FINALIZE"`
+	UnsetFinalize      *bool                    `ddl:"keyword" sql:"UNSET FINALIZE"`
+	SetExecuteAsUser   *AccountObjectIdentifier `ddl:"identifier" sql:"SET EXECUTE AS USER"`
+	UnsetExecuteAsUser *bool                    `ddl:"keyword" sql:"UNSET EXECUTE AS USER"`
+	ModifyAs           *string                  `ddl:"parameter,no_quotes,no_equals" sql:"MODIFY AS"`
+	ModifyWhen         *string                  `ddl:"parameter,no_quotes,no_equals" sql:"MODIFY WHEN"`
+	RemoveWhen         *bool                    `ddl:"keyword" sql:"REMOVE WHEN"`
 }
 
 type TaskSet struct {
@@ -192,6 +196,7 @@ type taskDBRow struct {
 	TaskRelations             string         `db:"task_relations"`
 	LastSuspendedReason       sql.NullString `db:"last_suspended_reason"`
 	TargetCompletionInterval  sql.NullString `db:"target_completion_interval"`
+	ExecuteAsUser             sql.NullString `db:"execute_as_user"`
 }
 
 type Task struct {
@@ -218,6 +223,7 @@ type Task struct {
 	TaskRelations             TaskRelations
 	LastSuspendedReason       string
 	TargetCompletionInterval  *TaskTargetCompletionInterval
+	ExecuteAsUser             *AccountObjectIdentifier
 }
 
 func (v *Task) ID() SchemaObjectIdentifier {

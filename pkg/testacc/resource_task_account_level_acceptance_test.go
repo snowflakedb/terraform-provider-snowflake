@@ -11,6 +11,7 @@ import (
 	configvariable "github.com/hashicorp/terraform-plugin-testing/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceparametersassert"
@@ -176,6 +177,7 @@ func TestAcc_Task_BasicUseCase(t *testing.T) {
 						HasConfigString("").
 						HasAllowOverlappingExecutionString(r.BooleanDefault).
 						HasErrorIntegrationString("").
+						HasExecuteAsUserString("").
 						HasCommentString("").
 						HasFinalizeString("").
 						HasAfter().
@@ -197,6 +199,7 @@ func TestAcc_Task_BasicUseCase(t *testing.T) {
 						HasCondition("").
 						HasAllowOverlappingExecution(false).
 						HasErrorIntegration(sdk.NewAccountObjectIdentifier("")).
+						HasExecuteAsUserEmpty().
 						HasLastCommittedOn("").
 						HasLastSuspendedOn("").
 						HasOwnerRoleType("ROLE").
@@ -223,6 +226,7 @@ func TestAcc_Task_BasicUseCase(t *testing.T) {
 						HasConfigString("").
 						HasAllowOverlappingExecutionString(r.BooleanFalse).
 						HasErrorIntegrationString("").
+						HasExecuteAsUserString("").
 						HasCommentString("").
 						HasFinalizeString("").
 						HasAfterEmpty().
@@ -234,6 +238,8 @@ func TestAcc_Task_BasicUseCase(t *testing.T) {
 	})
 }
 
+// execute_as_user is omitted: it needs IMPERSONATE on the user and the owner role granted to that user.
+// Covered by TestAcc_Task_ExecuteAsUser so this portable complete smoke stays free of that setup.
 func TestAcc_Task_CompleteUseCase(t *testing.T) {
 	currentRole := testClient().Context.CurrentRole(t)
 
@@ -276,6 +282,7 @@ func TestAcc_Task_CompleteUseCase(t *testing.T) {
 						HasConfigString(taskConfig).
 						HasAllowOverlappingExecutionString(r.BooleanTrue).
 						HasErrorIntegrationString(errorNotificationIntegration.ID().Name()).
+						HasExecuteAsUserString("").
 						HasCommentString(comment).
 						HasFinalizeString("").
 						HasAfterEmpty().
@@ -297,6 +304,7 @@ func TestAcc_Task_CompleteUseCase(t *testing.T) {
 						HasCondition(condition).
 						HasAllowOverlappingExecution(true).
 						HasErrorIntegration(errorNotificationIntegration.ID()).
+						HasExecuteAsUserEmpty().
 						HasLastCommittedOnNotEmpty().
 						HasLastSuspendedOn("").
 						HasOwnerRoleType("ROLE").
@@ -325,6 +333,7 @@ func TestAcc_Task_CompleteUseCase(t *testing.T) {
 						HasConfigString(taskConfig).
 						HasAllowOverlappingExecutionString(r.BooleanTrue).
 						HasErrorIntegrationString(errorNotificationIntegration.ID().Name()).
+						HasExecuteAsUserString("").
 						HasCommentString(comment).
 						HasFinalizeString("").
 						HasAfterEmpty().
@@ -640,6 +649,131 @@ func TestAcc_Task_CompleteUseCase_AllParameters(t *testing.T) {
 						HasAllDefaultsExplicit(),
 					resourceparametersassert.TaskResourceParameters(t, configModel.ResourceReference()).
 						HasAllDefaults(),
+				),
+			},
+		},
+	})
+}
+
+// Covers CREATE with execute_as_user set, then ALTER SET / UNSET, import, and external drift revert.
+func TestAcc_Task_ExecuteAsUser(t *testing.T) {
+	currentRole := testClient().Context.CurrentRole(t)
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+
+	user1, user1Cleanup := testClient().User.CreateUser(t)
+	t.Cleanup(user1Cleanup)
+	user2, user2Cleanup := testClient().User.CreateUser(t)
+	t.Cleanup(user2Cleanup)
+
+	testClient().Grant.GrantPrivilegesOnUserToAccountRole(t, currentRole, user1.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeImpersonate}, false)
+	t.Cleanup(func() {
+		testClient().Grant.RevokePrivilegesOnUserFromAccountRole(t, currentRole, user1.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeImpersonate})
+	})
+	testClient().Grant.GrantPrivilegesOnUserToAccountRole(t, currentRole, user2.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeImpersonate}, false)
+	t.Cleanup(func() {
+		testClient().Grant.RevokePrivilegesOnUserFromAccountRole(t, currentRole, user2.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeImpersonate})
+	})
+	testClient().Role.GrantRoleToUser(t, currentRole, user1.ID())
+	testClient().Role.GrantRoleToUser(t, currentRole, user2.ID())
+
+	configUser1 := model.TaskWithId("test", id, false, statement).WithExecuteAsUser(user1.ID().Name())
+	configUser2 := model.TaskWithId("test", id, false, statement).WithExecuteAsUser(user2.ID().Name())
+	configUnset := model.TaskWithId("test", id, false, statement)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, configUser1),
+				Check: assertThat(
+					t,
+					resourceassert.TaskResource(t, configUser1.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanFalse).
+						HasExecuteAsUserString(user1.ID().Name()).
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, configUser1.ResourceReference()).
+						HasName(id.Name()).
+						HasExecuteAsUser(user1.ID()),
+					objectassert.Task(t, id).
+						HasExecuteAsUser(user1.ID()),
+				),
+			},
+			{
+				ResourceName: configUser1.ResourceReference(),
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					resourceassert.ImportedTaskResource(t, helpers.EncodeResourceIdentifier(id)).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanFalse).
+						HasExecuteAsUserString(user1.ID().Name()).
+						HasSqlStatementString(statement),
+				),
+			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(configUser2.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, configUser2),
+				Check: assertThat(
+					t,
+					resourceassert.TaskResource(t, configUser2.ResourceReference()).
+						HasExecuteAsUserString(user2.ID().Name()),
+					resourceshowoutputassert.TaskShowOutput(t, configUser2.ResourceReference()).
+						HasExecuteAsUser(user2.ID()),
+					objectassert.Task(t, id).
+						HasExecuteAsUser(user2.ID()),
+				),
+			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(configUnset.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, configUnset),
+				Check: assertThat(
+					t,
+					resourceassert.TaskResource(t, configUnset.ResourceReference()).
+						HasExecuteAsUserString(""),
+					resourceshowoutputassert.TaskShowOutput(t, configUnset.ResourceReference()).
+						HasExecuteAsUserEmpty(),
+					objectassert.Task(t, id).
+						HasNoExecuteAsUser(),
+				),
+			},
+			{
+				PreConfig: func() {
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithSetExecuteAsUser(user1.ID()))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(configUnset.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, configUnset),
+				Check: assertThat(
+					t,
+					resourceassert.TaskResource(t, configUnset.ResourceReference()).
+						HasExecuteAsUserString(""),
+					resourceshowoutputassert.TaskShowOutput(t, configUnset.ResourceReference()).
+						HasExecuteAsUserEmpty(),
+					objectassert.Task(t, id).
+						HasNoExecuteAsUser(),
 				),
 			},
 		},

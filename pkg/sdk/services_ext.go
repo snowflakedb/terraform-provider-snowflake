@@ -1,10 +1,19 @@
 package sdk
 
 import (
+	"context"
 	"fmt"
 	"slices"
 	"strings"
 )
+
+func (v *services) ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error) {
+	return v.client.Parameters.ShowParameters(ctx, &ShowParametersOptions{
+		In: &ParametersIn{
+			Service: id,
+		},
+	})
+}
 
 func (s *ServiceDetails) ID() SchemaObjectIdentifier {
 	return NewSchemaObjectIdentifier(s.DatabaseName, s.SchemaName, s.Name)

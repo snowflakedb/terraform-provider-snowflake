@@ -79,17 +79,18 @@ func (v *services) ExecuteJob(ctx context.Context, request *ExecuteJobServiceReq
 
 func (r *CreateServiceRequest) toOpts() *CreateServiceOptions {
 	opts := &CreateServiceOptions{
-		IfNotExists:       r.IfNotExists,
-		name:              r.name,
-		InComputePool:     r.InComputePool,
-		AutoSuspendSecs:   r.AutoSuspendSecs,
-		AutoResume:        r.AutoResume,
-		MinInstances:      r.MinInstances,
-		MinReadyInstances: r.MinReadyInstances,
-		MaxInstances:      r.MaxInstances,
-		QueryWarehouse:    r.QueryWarehouse,
-		Tag:               r.Tag,
-		Comment:           r.Comment,
+		IfNotExists:                    r.IfNotExists,
+		name:                           r.name,
+		InComputePool:                  r.InComputePool,
+		AutoSuspendSecs:                r.AutoSuspendSecs,
+		AutoResume:                     r.AutoResume,
+		ServiceCallerTokenValiditySecs: r.ServiceCallerTokenValiditySecs,
+		MinInstances:                   r.MinInstances,
+		MinReadyInstances:              r.MinReadyInstances,
+		MaxInstances:                   r.MaxInstances,
+		QueryWarehouse:                 r.QueryWarehouse,
+		Tag:                            r.Tag,
+		Comment:                        r.Comment,
 	}
 	if r.FromSpecification != nil {
 		opts.FromSpecification = &ServiceFromSpecification{
@@ -147,13 +148,14 @@ func (r *AlterServiceRequest) toOpts() *AlterServiceOptions {
 	}
 	if r.Set != nil {
 		opts.Set = &ServiceSet{
-			MinInstances:      r.Set.MinInstances,
-			MaxInstances:      r.Set.MaxInstances,
-			AutoSuspendSecs:   r.Set.AutoSuspendSecs,
-			MinReadyInstances: r.Set.MinReadyInstances,
-			QueryWarehouse:    r.Set.QueryWarehouse,
-			AutoResume:        r.Set.AutoResume,
-			Comment:           r.Set.Comment,
+			MinInstances:                   r.Set.MinInstances,
+			MaxInstances:                   r.Set.MaxInstances,
+			AutoSuspendSecs:                r.Set.AutoSuspendSecs,
+			MinReadyInstances:              r.Set.MinReadyInstances,
+			QueryWarehouse:                 r.Set.QueryWarehouse,
+			AutoResume:                     r.Set.AutoResume,
+			ServiceCallerTokenValiditySecs: r.Set.ServiceCallerTokenValiditySecs,
+			Comment:                        r.Set.Comment,
 		}
 		if r.Set.ExternalAccessIntegrations != nil {
 			opts.Set.ExternalAccessIntegrations = &ServiceExternalAccessIntegrations{
@@ -163,14 +165,15 @@ func (r *AlterServiceRequest) toOpts() *AlterServiceOptions {
 	}
 	if r.Unset != nil {
 		opts.Unset = &ServiceUnset{
-			MinInstances:               r.Unset.MinInstances,
-			AutoSuspendSecs:            r.Unset.AutoSuspendSecs,
-			MaxInstances:               r.Unset.MaxInstances,
-			MinReadyInstances:          r.Unset.MinReadyInstances,
-			QueryWarehouse:             r.Unset.QueryWarehouse,
-			AutoResume:                 r.Unset.AutoResume,
-			ExternalAccessIntegrations: r.Unset.ExternalAccessIntegrations,
-			Comment:                    r.Unset.Comment,
+			MinInstances:                   r.Unset.MinInstances,
+			AutoSuspendSecs:                r.Unset.AutoSuspendSecs,
+			MaxInstances:                   r.Unset.MaxInstances,
+			MinReadyInstances:              r.Unset.MinReadyInstances,
+			QueryWarehouse:                 r.Unset.QueryWarehouse,
+			AutoResume:                     r.Unset.AutoResume,
+			ServiceCallerTokenValiditySecs: r.Unset.ServiceCallerTokenValiditySecs,
+			ExternalAccessIntegrations:     r.Unset.ExternalAccessIntegrations,
+			Comment:                        r.Unset.Comment,
 		}
 	}
 	return opts

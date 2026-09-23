@@ -4,6 +4,7 @@ import (
 	"errors"
 	"maps"
 	"reflect"
+	"slices"
 	"strings"
 )
 
@@ -64,6 +65,11 @@ func MergeMaps[M ~map[K]V, K comparable, V any](src ...M) M {
 func JoinStrings[S ~string](stringCollection []S, separator string) string {
 	mappedCollection := Map(stringCollection, func(stringValue S) string { return string(stringValue) })
 	return strings.Join(mappedCollection, separator)
+}
+
+// SortedJoinStrings joins the collection like JoinStrings, but sorts it first, leaving the input untouched.
+func SortedJoinStrings[S ~string](stringCollection []S, separator string) string {
+	return JoinStrings(slices.Sorted(slices.Values(stringCollection)), separator)
 }
 
 // CommonPrefixLastIndex returns the index of the last element in the common prefix

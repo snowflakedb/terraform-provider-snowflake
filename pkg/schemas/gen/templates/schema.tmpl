@@ -1,13 +1,43 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas/gen.ShowResultSchemaModel*/ -}}
 
-// Show{{ .Name }}Schema represents output of SHOW query for the single {{ .Name }}.
-var Show{{ .Name }}Schema = map[string]*schema.Schema{
+{{- $schemaPrefix := "Show" }}
+{{- $queryKind := "SHOW" }}
+{{- if .IsDescribe }}
+    {{- $schemaPrefix = "Describe" }}
+    {{- $queryKind = "DESCRIBE" }}
+{{- end }}
+{{- $schemaVar := printf "%s%sSchema" $schemaPrefix .Name }}
+{{- if .UsedAsListEntry }}
+    {{- $schemaVar = printf "%sSchema" .Name }}
+{{- end }}
+{{- $mapperTypeName := FirstLetterLowercase .Name | printf "%sToSchemaMapper" }}
+
+{{- if .AdditionalMapping }}
+type {{ $mapperTypeName }} struct{}
+
+var _ additionalSchemaMapper[{{ .SdkType }}] = {{ $mapperTypeName }}{}
+
+{{ end }}
+{{- if .UsedAsListEntry }}
+// {{ $schemaVar }} represents a single {{ .Name }} row used as a list Elem.
+{{- else }}
+// {{ $schemaVar }} represents output of {{ $queryKind }} query for the single {{ .Name }}.
+{{- end }}
+{{- if .AdditionalMapping }}
+var {{ $schemaVar }} = mergeSchema(map[string]*schema.Schema{
+{{- else }}
+var {{ $schemaVar }} = map[string]*schema.Schema{
+{{- end }}
 {{- range .SchemaFields }}
     "{{ .Name }}": {
     Type:     schema.{{ .SchemaType }},
     Computed: true,
     },
 {{- end }}
+{{- if .AdditionalMapping }}
+}, {{ $mapperTypeName }}{}.additionalSchema())
+{{- else }}
 }
+{{- end }}
 
-var _ = Show{{ .Name }}Schema
+var _ = {{ $schemaVar }}

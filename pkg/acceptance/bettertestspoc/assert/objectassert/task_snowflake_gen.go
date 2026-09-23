@@ -506,3 +506,28 @@ func (t *TaskAssert) HasNoTargetCompletionInterval() *TaskAssert {
 	})
 	return t
 }
+
+func (t *TaskAssert) HasExecuteAsUser(expected sdk.AccountObjectIdentifier) *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.ExecuteAsUser == nil {
+			return fmt.Errorf("expected execute as user to have value; got: nil")
+		}
+		if (*o.ExecuteAsUser).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected execute as user: %v; got: %v", expected.FullyQualifiedName(), (*o.ExecuteAsUser).FullyQualifiedName())
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TaskAssert) HasNoExecuteAsUser() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.ExecuteAsUser != nil {
+			return fmt.Errorf("expected execute as user to be nil; got: %v", *o.ExecuteAsUser)
+		}
+		return nil
+	})
+	return t
+}

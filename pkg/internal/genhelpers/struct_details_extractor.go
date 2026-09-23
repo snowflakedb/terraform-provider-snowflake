@@ -29,6 +29,10 @@ func (f *Field) IsSlice() bool {
 	return strings.HasPrefix(f.ConcreteType, "[]")
 }
 
+func (f *Field) IsInterface() bool {
+	return strings.TrimPrefix(f.UnderlyingType, "*") == "interface"
+}
+
 func (f *Field) ConcreteTypeNoPointer() string {
 	concreteTypeNoPtr, _ := strings.CutPrefix(f.ConcreteType, "*")
 	return concreteTypeNoPtr

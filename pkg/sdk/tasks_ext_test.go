@@ -65,9 +65,10 @@ func init() {
 				opts.ServerlessTaskMinStatementSize = new(WarehouseSizeSmall)
 				opts.ServerlessTaskMaxStatementSize = new(WarehouseSizeLarge)
 				opts.After = []SchemaObjectIdentifier{otherTaskId}
+				opts.ExecuteAsUser = new(NewAccountObjectIdentifier("some_user"))
 				opts.When = new(`SYSTEM$STREAM_HAS_DATA('MYSTREAM')`)
 			},
-			`CREATE TASK IF NOT EXISTS %s WAREHOUSE = %s SCHEDULE = '10 MINUTE' CONFIG = $${"output_dir": "/temp/test_directory/", "learning_rate": 0.1}$$ ALLOW_OVERLAPPING_EXECUTION = true JSON_INDENT = 10, LOCK_TIMEOUT = 5 USER_TASK_TIMEOUT_MS = 5 SUSPEND_TASK_AFTER_NUM_FAILURES = 6 ERROR_INTEGRATION = "some_error_integration" COMMENT = 'some comment' FINALIZE = %s TASK_AUTO_RETRY_ATTEMPTS = 10 TAG (%s = 'v1') USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 10 TARGET_COMPLETION_INTERVAL = '10 MINUTES' SERVERLESS_TASK_MIN_STATEMENT_SIZE = 'SMALL' SERVERLESS_TASK_MAX_STATEMENT_SIZE = 'LARGE' AFTER %s WHEN SYSTEM$STREAM_HAS_DATA('MYSTREAM') AS SELECT CURRENT_TIMESTAMP`,
+			`CREATE TASK IF NOT EXISTS %s WAREHOUSE = %s SCHEDULE = '10 MINUTE' CONFIG = $${"output_dir": "/temp/test_directory/", "learning_rate": 0.1}$$ ALLOW_OVERLAPPING_EXECUTION = true JSON_INDENT = 10, LOCK_TIMEOUT = 5 USER_TASK_TIMEOUT_MS = 5 SUSPEND_TASK_AFTER_NUM_FAILURES = 6 ERROR_INTEGRATION = "some_error_integration" COMMENT = 'some comment' FINALIZE = %s TASK_AUTO_RETRY_ATTEMPTS = 10 TAG (%s = 'v1') USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 10 TARGET_COMPLETION_INTERVAL = '10 MINUTES' SERVERLESS_TASK_MIN_STATEMENT_SIZE = 'SMALL' SERVERLESS_TASK_MAX_STATEMENT_SIZE = 'LARGE' AFTER %s EXECUTE AS USER "some_user" WHEN SYSTEM$STREAM_HAS_DATA('MYSTREAM') AS SELECT CURRENT_TIMESTAMP`,
 			tasksTestIdSchemaObjectIdentifier.FullyQualifiedName(), warehouseId.FullyQualifiedName(), finalizerId.FullyQualifiedName(), tagId.FullyQualifiedName(), otherTaskId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -84,6 +85,13 @@ func init() {
 			"sql_Create_orReplace",
 			func(opts *CreateTaskOptions) { opts.OrReplace = new(true) },
 			"CREATE OR REPLACE TASK %s AS %s", tasksTestIdSchemaObjectIdentifier.FullyQualifiedName(), sql,
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_executeAsUser",
+			func(opts *CreateTaskOptions) {
+				opts.ExecuteAsUser = new(NewAccountObjectIdentifier("some_user"))
+			},
+			`CREATE TASK %s EXECUTE AS USER "some_user" AS %s`, tasksTestIdSchemaObjectIdentifier.FullyQualifiedName(), sql,
 		)
 
 	tasksTests.CreateOrAlter.
@@ -131,10 +139,18 @@ func init() {
 				opts.Finalize = &finalizerId
 				opts.TaskAutoRetryAttempts = new(10)
 				opts.After = []SchemaObjectIdentifier{otherTaskId}
+				opts.ExecuteAsUser = new(NewAccountObjectIdentifier("some_user"))
 				opts.When = new(`SYSTEM$STREAM_HAS_DATA('MYSTREAM')`)
 			},
-			`CREATE OR ALTER TASK %s WAREHOUSE = %s SCHEDULE = '10 MINUTE' CONFIG = $${"output_dir": "/temp/test_directory/", "learning_rate": 0.1}$$ ALLOW_OVERLAPPING_EXECUTION = true USER_TASK_TIMEOUT_MS = 5 JSON_INDENT = 10, LOCK_TIMEOUT = 5 SUSPEND_TASK_AFTER_NUM_FAILURES = 6 ERROR_INTEGRATION = "some_error_integration" COMMENT = 'some comment' FINALIZE = %s TASK_AUTO_RETRY_ATTEMPTS = 10 AFTER %s WHEN SYSTEM$STREAM_HAS_DATA('MYSTREAM') AS SELECT CURRENT_TIMESTAMP`,
+			`CREATE OR ALTER TASK %s WAREHOUSE = %s SCHEDULE = '10 MINUTE' CONFIG = $${"output_dir": "/temp/test_directory/", "learning_rate": 0.1}$$ ALLOW_OVERLAPPING_EXECUTION = true USER_TASK_TIMEOUT_MS = 5 JSON_INDENT = 10, LOCK_TIMEOUT = 5 SUSPEND_TASK_AFTER_NUM_FAILURES = 6 ERROR_INTEGRATION = "some_error_integration" COMMENT = 'some comment' FINALIZE = %s TASK_AUTO_RETRY_ATTEMPTS = 10 AFTER %s EXECUTE AS USER "some_user" WHEN SYSTEM$STREAM_HAS_DATA('MYSTREAM') AS SELECT CURRENT_TIMESTAMP`,
 			tasksTestIdSchemaObjectIdentifier.FullyQualifiedName(), warehouseId.FullyQualifiedName(), finalizerId.FullyQualifiedName(), otherTaskId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateOrAlter_executeAsUser",
+			func(opts *CreateOrAlterTaskOptions) {
+				opts.ExecuteAsUser = new(NewAccountObjectIdentifier("some_user"))
+			},
+			`CREATE OR ALTER TASK %s EXECUTE AS USER "some_user" AS %s`, tasksTestIdSchemaObjectIdentifier.FullyQualifiedName(), sql,
 		)
 
 	sourceTaskId := randomSchemaObjectIdentifier()
@@ -306,6 +322,18 @@ func init() {
 			case_Tasks_sql_Alter_UnsetFinalize,
 			func(opts *AlterTaskOptions) { opts.UnsetFinalize = new(true) },
 			"ALTER TASK %s UNSET FINALIZE", tasksTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tasks_sql_Alter_SetExecuteAsUser,
+			func(opts *AlterTaskOptions) {
+				opts.SetExecuteAsUser = new(NewAccountObjectIdentifier("some_user"))
+			},
+			`ALTER TASK %s SET EXECUTE AS USER "some_user"`, tasksTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tasks_sql_Alter_UnsetExecuteAsUser,
+			func(opts *AlterTaskOptions) { opts.UnsetExecuteAsUser = new(true) },
+			"ALTER TASK %s UNSET EXECUTE AS USER", tasksTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Tasks_sql_Alter_RemoveWhen,

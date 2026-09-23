@@ -130,7 +130,7 @@ func ImportStorageIntegrationAzure(ctx context.Context, d *schema.ResourceData, 
 		return nil, fmt.Errorf("expected AZURE storage provider got %s", azureDetails.Provider)
 	}
 
-	setDefaults := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ImportBooleanDefault, providerCtx.EnabledExperiments)
+	setDefaults := providerCtx.Experiments.IsEnabled(experimentalfeatures.ImportBooleanDefault)
 
 	usePrivateLinkEndpointValue := booleanStringFromBool(azureDetails.UsePrivatelinkEndpoint)
 	if setDefaults {

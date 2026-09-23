@@ -157,7 +157,7 @@ var icebergTableClusteringAction = g.NewQueryStruct("IcebergTableClusteringActio
 	OptionalQueryStructField(
 		"ChangeReclusterState",
 		g.NewQueryStruct("IcebergTableReclusterChangeState").
-			PredefinedQueryStructField("State", g.KindOfTPointer[sdkcommons.ReclusterState](), g.KeywordOptions()).
+			OptionalEnum("State", ReclusterStateEnumDef, g.KeywordOptions()).
 			SQL("RECLUSTER"),
 		g.KeywordOptions(),
 	).

@@ -1,6 +1,15 @@
-### Active experiments
+Experiments follow a short lifecycle so successful changes can become default provider behavior in a minor release:
 
-The following experiments are currently active. Depending on the feedback, we may decide to include them as default behavior/stable feature of the provider in the future.
+1. **Opt-in** — opt-in via `experimental_features_enabled`.
+2. **Enabled by default** — on unless listed in `experimental_features_disabled`. The opt-out is available for two minor versions.
+3. **Promoted** — now default provider behavior. Listing the name in either list is a no-op. The name is dropped in the next major version.
+4. **Discontinued** — the experiment was abandoned and the old behavior stays. Listing the name in either list is a no-op. The name is dropped in the next major version.
+
+If the same name is listed in both `experimental_features_enabled` and `experimental_features_disabled`, the disabled list wins.
+
+### Opt-in experiments
+
+The following experiments can be currently enabled. Depending on the feedback, we may decide to include them as default behavior/stable feature of the provider in the future.
 
 To share feedback please reach out to us through your Snowflake account manager.
 
@@ -127,11 +136,6 @@ Without this experiment, changing the `database` field on `snowflake_schema` or 
 
 For more information, see the [object renaming guide](./guides/object_renaming_guide).
 
-#### INHERITED_GRANTS
-Enables the `inherited` block in the `on_account_object`, `on_schema`, and `on_schema_object` blocks of the `snowflake_grant_privileges_to_account_role` resource, and in the `on_schema` and `on_schema_object` blocks of the `snowflake_grant_privileges_to_database_role` resource.
-
-Without this experiment, using an `inherited` block results in an error.
-
 #### OBJECT_PARAMETER_UNSET_ON_DELETE
 Changes the delete behavior of the `snowflake_object_parameter` resource to use `ALTER <OBJECT_TYPE> <identifier> UNSET <PARAMETER>` instead of resetting the parameter to its default value.
 
@@ -152,5 +156,23 @@ Re-introduces the `account` field as a fallback for `organization_name` and `acc
 When enabled, you can set `account` instead of setting `organization_name` and `account_name` separately. The field accepts both the `org-name` format (e.g. `"myorg-myaccount"`) and an account locator (e.g. `"xy12345"`). If both `organization_name` and `account_name` are set, they take precedence over `account`. The `SNOWFLAKE_ACCOUNT` environment variable is used as the `account` value only when this experiment is enabled.
 
 Without this experiment, setting the `account` field in the provider configuration or in a TOML profile results in an error directing you to enable this experiment. A value coming from the `SNOWFLAKE_ACCOUNT` environment variable is ignored with a warning instead, because this experiment will be enabled by default in v3 and the variable will be taken into account from that version on.
+
+
+### Experiments enabled by default
+
+The following experiments are enabled by default. You can opt out by listing them in `experimental_features_disabled`. They will be promoted to default provider behavior (and the opt-out removed) in the listed versions.
+
+To share feedback please reach out to us through your Snowflake account manager.
+
+#### INHERITED_GRANTS
+Enables the `inherited` block in the `on_account_object`, `on_schema`, and `on_schema_object` blocks of the `snowflake_grant_privileges_to_account_role` resource, and in the `on_schema` and `on_schema_object` blocks of the `snowflake_grant_privileges_to_database_role` resource.
+
+Without this experiment, using an `inherited` block results in an error.
+
+This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
+
+It will be promoted in v2.23.0 or v2.24.0.
+
+
 
 

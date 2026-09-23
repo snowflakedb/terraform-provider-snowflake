@@ -45,8 +45,10 @@ type FeatureStability struct {
 }
 
 type ExperimentalFeatures struct {
-	ActiveExperiments       []Experiment
-	DiscontinuedExperiments []Experiment
+	ActiveExperiments           []Experiment
+	EnabledByDefaultExperiments []Experiment
+	PromotedExperiments         []Experiment
+	DiscontinuedExperiments     []Experiment
 }
 
 type Experiment struct {

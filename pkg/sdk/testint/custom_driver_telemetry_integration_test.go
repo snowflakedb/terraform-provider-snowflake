@@ -4,13 +4,10 @@ package testint
 
 import (
 	"bytes"
-	"context"
-	"fmt"
 	"io"
 	"os"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -50,7 +47,7 @@ func TestInt_Client_CustomDriverTelemetry(t *testing.T) {
 		eventID := random.UUID()
 		t.Logf("event_id=%s", eventID)
 
-		require.NoError(t, addCustomDriverTelemetry(t, client, map[string]string{
+		require.NoError(t, client.AddTelemetry(t.Context(), map[string]string{
 			"source":   "terraform_provider",
 			"type":     "terraform_provider_telemetry_integration_test",
 			"event_id": eventID,
@@ -91,27 +88,6 @@ func captureDriverLogs(t *testing.T) *bytes.Buffer {
 		logger.SetOutput(os.Stderr)
 	})
 	return buf
-}
-
-func addCustomDriverTelemetry(t *testing.T, client *sdk.Client, data map[string]string) error {
-	t.Helper()
-	ctx := context.Background()
-	conn, err := client.GetConn().Conn(ctx)
-	if err != nil {
-		return err
-	}
-	addErr := conn.Raw(func(driverConn any) error {
-		sc, ok := driverConn.(gosnowflake.SnowflakeConnection)
-		if !ok {
-			return fmt.Errorf("driver connection is %T, not gosnowflake.SnowflakeConnection", driverConn)
-		}
-		return sc.AddTelemetryData(ctx, time.Now(), data)
-	})
-	closeErr := conn.Close()
-	if addErr != nil {
-		return addErr
-	}
-	return closeErr
 }
 
 func lastTelemetryPayload(logs string) (string, bool) {

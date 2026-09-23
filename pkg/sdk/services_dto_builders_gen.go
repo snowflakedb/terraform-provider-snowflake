@@ -42,6 +42,11 @@ func (s *CreateServiceRequest) WithAutoResume(autoResume bool) *CreateServiceReq
 	return s
 }
 
+func (s *CreateServiceRequest) WithServiceCallerTokenValiditySecs(serviceCallerTokenValiditySecs int) *CreateServiceRequest {
+	s.ServiceCallerTokenValiditySecs = &serviceCallerTokenValiditySecs
+	return s
+}
+
 func (s *CreateServiceRequest) WithMinInstances(minInstances int) *CreateServiceRequest {
 	s.MinInstances = &minInstances
 	return s
@@ -228,6 +233,11 @@ func (s *ServiceSetRequest) WithAutoResume(autoResume bool) *ServiceSetRequest {
 	return s
 }
 
+func (s *ServiceSetRequest) WithServiceCallerTokenValiditySecs(serviceCallerTokenValiditySecs int) *ServiceSetRequest {
+	s.ServiceCallerTokenValiditySecs = &serviceCallerTokenValiditySecs
+	return s
+}
+
 func (s *ServiceSetRequest) WithExternalAccessIntegrations(externalAccessIntegrations ServiceExternalAccessIntegrationsRequest) *ServiceSetRequest {
 	s.ExternalAccessIntegrations = &externalAccessIntegrations
 	return s
@@ -270,6 +280,11 @@ func (s *ServiceUnsetRequest) WithQueryWarehouse(queryWarehouse bool) *ServiceUn
 
 func (s *ServiceUnsetRequest) WithAutoResume(autoResume bool) *ServiceUnsetRequest {
 	s.AutoResume = &autoResume
+	return s
+}
+
+func (s *ServiceUnsetRequest) WithServiceCallerTokenValiditySecs(serviceCallerTokenValiditySecs bool) *ServiceUnsetRequest {
+	s.ServiceCallerTokenValiditySecs = &serviceCallerTokenValiditySecs
 	return s
 }
 

@@ -143,7 +143,7 @@ func TestAcc_TableStorageLifecyclePolicyAttachment_Table(t *testing.T) {
 			// Unset policy externally - expect attachment to be recreated
 			{
 				PreConfig: func() {
-					testClient().Table.AlterWithRequest(t, sdk.NewAlterTableRequest(table.ID()).WithDropStorageLifecyclePolicy(new(true)))
+					testClient().Table.AlterWithRequest(t, sdk.NewAlterTableRequest(table.ID()).WithDropStorageLifecyclePolicy(true))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

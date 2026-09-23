@@ -15,6 +15,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/customassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
@@ -1178,6 +1179,18 @@ func TestAcc_Service_CompleteUseCase(t *testing.T) {
 		WithMinReadyInstances(1).
 		WithMaxInstances(2).
 		WithQueryWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName()).
+		WithServiceCallerTokenValiditySecs(7200).
+		WithComment(comment)
+
+	modelCompleteChangedParameters := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec).
+		WithAutoSuspendSecs(6767).
+		WithExternalAccessIntegrations(externalAccessIntegrationId).
+		WithAutoResume("true").
+		WithMinInstances(1).
+		WithMinReadyInstances(1).
+		WithMaxInstances(2).
+		WithQueryWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName()).
+		WithServiceCallerTokenValiditySecs(1800).
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
@@ -1205,7 +1218,10 @@ func TestAcc_Service_CompleteUseCase(t *testing.T) {
 						HasMaxInstancesString("2").
 						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
 						HasServiceTypeString(string(sdk.ServiceTypeService)).
+						HasServiceCallerTokenValiditySecsString("7200").
 						HasCommentString(comment),
+					resourceparametersassert.ServiceResourceParameters(t, modelComplete.ResourceReference()).
+						HasServiceCallerTokenValiditySecs(7200),
 					resourceshowoutputassert.ServiceShowOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).
 						HasStatus(sdk.ServiceStatusPending).
@@ -1265,6 +1281,16 @@ func TestAcc_Service_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_upgrading", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.managing_object_domain", "")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.managing_object_name", "")),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, modelCompleteChangedParameters),
+				Check: assertThat(
+					t,
+					resourceassert.ServiceResource(t, modelCompleteChangedParameters.ResourceReference()).
+						HasServiceCallerTokenValiditySecsString("1800"),
+					resourceparametersassert.ServiceResourceParameters(t, modelCompleteChangedParameters.ResourceReference()).
+						HasServiceCallerTokenValiditySecs(1800),
 				),
 			},
 			{

@@ -18,26 +18,28 @@ type Services interface {
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Service, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*ServiceDetails, error)
 	ExecuteJob(ctx context.Context, request *ExecuteJobServiceRequest) error
+	ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error)
 }
 
 // CreateServiceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-service.
 type CreateServiceOptions struct {
-	create                     bool                               `ddl:"static" sql:"CREATE"`
-	service                    bool                               `ddl:"static" sql:"SERVICE"`
-	IfNotExists                *bool                              `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                       SchemaObjectIdentifier             `ddl:"identifier"`
-	InComputePool              AccountObjectIdentifier            `ddl:"identifier" sql:"IN COMPUTE POOL"`
-	FromSpecification          *ServiceFromSpecification          `ddl:"keyword"`
-	FromSpecificationTemplate  *ServiceFromSpecificationTemplate  `ddl:"keyword"`
-	AutoSuspendSecs            *int                               `ddl:"parameter" sql:"AUTO_SUSPEND_SECS"`
-	ExternalAccessIntegrations *ServiceExternalAccessIntegrations `ddl:"parameter,parentheses" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
-	AutoResume                 *bool                              `ddl:"parameter" sql:"AUTO_RESUME"`
-	MinInstances               *int                               `ddl:"parameter" sql:"MIN_INSTANCES"`
-	MinReadyInstances          *int                               `ddl:"parameter" sql:"MIN_READY_INSTANCES"`
-	MaxInstances               *int                               `ddl:"parameter" sql:"MAX_INSTANCES"`
-	QueryWarehouse             *AccountObjectIdentifier           `ddl:"identifier,equals" sql:"QUERY_WAREHOUSE"`
-	Tag                        []TagAssociation                   `ddl:"keyword,parentheses" sql:"TAG"`
-	Comment                    *string                            `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	create                         bool                               `ddl:"static" sql:"CREATE"`
+	service                        bool                               `ddl:"static" sql:"SERVICE"`
+	IfNotExists                    *bool                              `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                           SchemaObjectIdentifier             `ddl:"identifier"`
+	InComputePool                  AccountObjectIdentifier            `ddl:"identifier" sql:"IN COMPUTE POOL"`
+	FromSpecification              *ServiceFromSpecification          `ddl:"keyword"`
+	FromSpecificationTemplate      *ServiceFromSpecificationTemplate  `ddl:"keyword"`
+	AutoSuspendSecs                *int                               `ddl:"parameter" sql:"AUTO_SUSPEND_SECS"`
+	ExternalAccessIntegrations     *ServiceExternalAccessIntegrations `ddl:"parameter,parentheses" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
+	AutoResume                     *bool                              `ddl:"parameter" sql:"AUTO_RESUME"`
+	ServiceCallerTokenValiditySecs *int                               `ddl:"parameter" sql:"SERVICE_CALLER_TOKEN_VALIDITY_SECS"`
+	MinInstances                   *int                               `ddl:"parameter" sql:"MIN_INSTANCES"`
+	MinReadyInstances              *int                               `ddl:"parameter" sql:"MIN_READY_INSTANCES"`
+	MaxInstances                   *int                               `ddl:"parameter" sql:"MAX_INSTANCES"`
+	QueryWarehouse                 *AccountObjectIdentifier           `ddl:"identifier,equals" sql:"QUERY_WAREHOUSE"`
+	Tag                            []TagAssociation                   `ddl:"keyword,parentheses" sql:"TAG"`
+	Comment                        *string                            `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type ServiceExternalAccessIntegrations struct {
@@ -89,25 +91,27 @@ type Restore struct {
 }
 
 type ServiceSet struct {
-	MinInstances               *int                               `ddl:"parameter" sql:"MIN_INSTANCES"`
-	MaxInstances               *int                               `ddl:"parameter" sql:"MAX_INSTANCES"`
-	AutoSuspendSecs            *int                               `ddl:"parameter" sql:"AUTO_SUSPEND_SECS"`
-	MinReadyInstances          *int                               `ddl:"parameter" sql:"MIN_READY_INSTANCES"`
-	QueryWarehouse             *AccountObjectIdentifier           `ddl:"identifier,equals" sql:"QUERY_WAREHOUSE"`
-	AutoResume                 *bool                              `ddl:"parameter" sql:"AUTO_RESUME"`
-	ExternalAccessIntegrations *ServiceExternalAccessIntegrations `ddl:"parameter,parentheses" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
-	Comment                    *string                            `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	MinInstances                   *int                               `ddl:"parameter" sql:"MIN_INSTANCES"`
+	MaxInstances                   *int                               `ddl:"parameter" sql:"MAX_INSTANCES"`
+	AutoSuspendSecs                *int                               `ddl:"parameter" sql:"AUTO_SUSPEND_SECS"`
+	MinReadyInstances              *int                               `ddl:"parameter" sql:"MIN_READY_INSTANCES"`
+	QueryWarehouse                 *AccountObjectIdentifier           `ddl:"identifier,equals" sql:"QUERY_WAREHOUSE"`
+	AutoResume                     *bool                              `ddl:"parameter" sql:"AUTO_RESUME"`
+	ServiceCallerTokenValiditySecs *int                               `ddl:"parameter" sql:"SERVICE_CALLER_TOKEN_VALIDITY_SECS"`
+	ExternalAccessIntegrations     *ServiceExternalAccessIntegrations `ddl:"parameter,parentheses" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
+	Comment                        *string                            `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type ServiceUnset struct {
-	MinInstances               *bool `ddl:"keyword" sql:"MIN_INSTANCES"`
-	AutoSuspendSecs            *bool `ddl:"keyword" sql:"AUTO_SUSPEND_SECS"`
-	MaxInstances               *bool `ddl:"keyword" sql:"MAX_INSTANCES"`
-	MinReadyInstances          *bool `ddl:"keyword" sql:"MIN_READY_INSTANCES"`
-	QueryWarehouse             *bool `ddl:"keyword" sql:"QUERY_WAREHOUSE"`
-	AutoResume                 *bool `ddl:"keyword" sql:"AUTO_RESUME"`
-	ExternalAccessIntegrations *bool `ddl:"keyword" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
-	Comment                    *bool `ddl:"keyword" sql:"COMMENT"`
+	MinInstances                   *bool `ddl:"keyword" sql:"MIN_INSTANCES"`
+	AutoSuspendSecs                *bool `ddl:"keyword" sql:"AUTO_SUSPEND_SECS"`
+	MaxInstances                   *bool `ddl:"keyword" sql:"MAX_INSTANCES"`
+	MinReadyInstances              *bool `ddl:"keyword" sql:"MIN_READY_INSTANCES"`
+	QueryWarehouse                 *bool `ddl:"keyword" sql:"QUERY_WAREHOUSE"`
+	AutoResume                     *bool `ddl:"keyword" sql:"AUTO_RESUME"`
+	ServiceCallerTokenValiditySecs *bool `ddl:"keyword" sql:"SERVICE_CALLER_TOKEN_VALIDITY_SECS"`
+	ExternalAccessIntegrations     *bool `ddl:"keyword" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
+	Comment                        *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
 // DropServiceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-service.

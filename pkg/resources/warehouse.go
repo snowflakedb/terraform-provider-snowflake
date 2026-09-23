@@ -292,7 +292,7 @@ func ImportWarehouse(ctx context.Context, d *schema.ResourceData, meta any) ([]*
 	}
 
 	var w *sdk.Warehouse
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.WarehouseShowImprovedPerformance, providerCtx.EnabledExperiments) {
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.WarehouseShowImprovedPerformance) {
 		w, err = client.Warehouses.ShowByIDExperimental(ctx, id)
 	} else {
 		w, err = client.Warehouses.ShowByID(ctx, id)
@@ -430,7 +430,7 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 		}
 
 		var w *sdk.Warehouse
-		if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.WarehouseShowImprovedPerformance, providerCtx.EnabledExperiments) {
+		if providerCtx.Experiments.IsEnabled(experimentalfeatures.WarehouseShowImprovedPerformance) {
 			w, err = client.Warehouses.ShowByIDExperimentalSafely(ctx, id)
 		} else {
 			w, err = client.Warehouses.ShowByIDSafely(ctx, id)

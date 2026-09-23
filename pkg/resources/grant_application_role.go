@@ -272,7 +272,7 @@ func DeleteContextGrantApplicationRole(ctx context.Context, d *schema.ResourceDa
 	objectType := parts[1]
 	granteeName := parts[2]
 	revokeFunc := client.ApplicationRoles.Revoke
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments) {
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy) {
 		revokeFunc = client.ApplicationRoles.RevokeSafely
 	}
 	switch objectType {

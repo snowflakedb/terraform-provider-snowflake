@@ -21,7 +21,6 @@ var ShowGrantSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// grant_on removed manually
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -30,7 +29,6 @@ var ShowGrantSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// grant_to removed manually
 	"grantee_name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -68,11 +66,13 @@ func GrantToSchema(grant *sdk.Grant) map[string]any {
 	grantSchema["created_on"] = grant.CreatedOn.String()
 	grantSchema["privilege"] = grant.Privilege
 	grantSchema["granted_on"] = string(grant.GrantedOn)
-	// grant_on removed manually
-	grantSchema["name"] = grant.Name.FullyQualifiedName()
+	if grant.Name != nil {
+		grantSchema["name"] = grant.Name.FullyQualifiedName()
+	}
 	grantSchema["granted_to"] = string(grant.GrantedTo)
-	// grant_to removed manually
-	grantSchema["grantee_name"] = grant.GranteeName.FullyQualifiedName()
+	if grant.GranteeName != nil {
+		grantSchema["grantee_name"] = grant.GranteeName.FullyQualifiedName()
+	}
 	grantSchema["grant_option"] = grant.GrantOption
 	grantSchema["granted_by"] = grant.GrantedBy.Name()
 	if grant.IsInherited != nil {

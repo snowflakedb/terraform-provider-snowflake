@@ -314,7 +314,7 @@ func DeleteGrantPrivilegesToShare(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments) {
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy) {
 		err = client.Grants.RevokePrivilegeFromShareSafely(ctx, getObjectPrivilegesFromSchema(d), grantOn, id.ShareName)
 	} else {
 		err = client.Grants.RevokePrivilegeFromShare(ctx, getObjectPrivilegesFromSchema(d), grantOn, id.ShareName)

@@ -3,13 +3,16 @@
 package schemas
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type taskToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.Task] = taskToSchemaMapper{}
+
 // ShowTaskSchema represents output of SHOW query for the single Task.
-var ShowTaskSchema = map[string]*schema.Schema{
+var ShowTaskSchema = mergeSchema(map[string]*schema.Schema{
 	"created_on": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -44,12 +47,6 @@ var ShowTaskSchema = map[string]*schema.Schema{
 	},
 	"schedule": {
 		Type:     schema.TypeString,
-		Computed: true,
-	},
-	"predecessors": {
-		// adjusted manually
-		Type:     schema.TypeSet,
-		Elem:     &schema.Schema{Type: schema.TypeString},
 		Computed: true,
 	},
 	"state": {
@@ -92,54 +89,15 @@ var ShowTaskSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"task_relations": {
-		// adjusted manually
-		Type:     schema.TypeList,
-		Computed: true,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"predecessors": {
-					Type:     schema.TypeList,
-					Computed: true,
-					Elem:     &schema.Schema{Type: schema.TypeString},
-				},
-				"finalizer": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-				"finalized_root_task": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-			},
-		},
-	},
 	"last_suspended_reason": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"target_completion_interval": {
-		// adjusted manually
-		Type:     schema.TypeList,
+	"execute_as_user": {
+		Type:     schema.TypeString,
 		Computed: true,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"hours": {
-					Type:     schema.TypeInt,
-					Computed: true,
-				},
-				"minutes": {
-					Type:     schema.TypeInt,
-					Computed: true,
-				},
-				"seconds": {
-					Type:     schema.TypeInt,
-					Computed: true,
-				},
-			},
-		},
 	},
-}
+}, taskToSchemaMapper{}.additionalSchema())
 
 var _ = ShowTaskSchema
 
@@ -153,52 +111,26 @@ func TaskToSchema(task *sdk.Task) map[string]any {
 	taskSchema["owner"] = task.Owner
 	taskSchema["comment"] = task.Comment
 	if task.Warehouse != nil {
-		taskSchema["warehouse"] = task.Warehouse.Name()
+		taskSchema["warehouse"] = (*task.Warehouse).Name()
 	}
 	taskSchema["schedule"] = task.Schedule
-	// adjusted manually
-	taskSchema["predecessors"] = collections.Map(task.Predecessors, sdk.SchemaObjectIdentifier.FullyQualifiedName)
 	taskSchema["state"] = string(task.State)
 	taskSchema["definition"] = task.Definition
 	taskSchema["condition"] = task.Condition
 	taskSchema["allow_overlapping_execution"] = task.AllowOverlappingExecution
 	if task.ErrorIntegration != nil {
-		taskSchema["error_integration"] = task.ErrorIntegration.Name()
+		taskSchema["error_integration"] = (*task.ErrorIntegration).Name()
 	}
 	taskSchema["last_committed_on"] = task.LastCommittedOn
 	taskSchema["last_suspended_on"] = task.LastSuspendedOn
 	taskSchema["owner_role_type"] = task.OwnerRoleType
 	taskSchema["config"] = task.Config
 	taskSchema["budget"] = task.Budget
-	// adjusted manually
-	// taskSchema["task_relations"] = task.TaskRelations
 	taskSchema["last_suspended_reason"] = task.LastSuspendedReason
-	// This is manually edited, please don't re-generate this file
-	finalizer := ""
-	if task.TaskRelations.FinalizerTask != nil {
-		finalizer = task.TaskRelations.FinalizerTask.FullyQualifiedName()
+	if task.ExecuteAsUser != nil {
+		taskSchema["execute_as_user"] = (*task.ExecuteAsUser).Name()
 	}
-	finalizedRootTask := ""
-	if task.TaskRelations.FinalizedRootTask != nil {
-		finalizedRootTask = task.TaskRelations.FinalizedRootTask.FullyQualifiedName()
-	}
-	taskSchema["task_relations"] = []any{
-		map[string]any{
-			"predecessors":        collections.Map(task.TaskRelations.Predecessors, sdk.SchemaObjectIdentifier.FullyQualifiedName),
-			"finalizer":           finalizer,
-			"finalized_root_task": finalizedRootTask,
-		},
-	}
-	// adjusted manually
-	if task.TargetCompletionInterval != nil {
-		taskSchema["target_completion_interval"] = []any{
-			map[string]any{
-				"hours":   task.TargetCompletionInterval.Hours,
-				"minutes": task.TargetCompletionInterval.Minutes,
-				"seconds": task.TargetCompletionInterval.Seconds,
-			},
-		}
-	}
+	taskToSchemaMapper{}.additionalToSchema(task, taskSchema)
 	return taskSchema
 }
 

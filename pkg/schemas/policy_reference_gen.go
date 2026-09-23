@@ -72,38 +72,38 @@ var _ = ShowPolicyReferenceSchema
 func PolicyReferenceToSchema(policyReference *sdk.PolicyReference) map[string]any {
 	policyReferenceSchema := make(map[string]any)
 	if policyReference.PolicyDb != nil {
-		policyReferenceSchema["policy_db"] = policyReference.PolicyDb
+		policyReferenceSchema["policy_db"] = (*policyReference.PolicyDb)
 	}
 	if policyReference.PolicySchema != nil {
-		policyReferenceSchema["policy_schema"] = policyReference.PolicySchema
+		policyReferenceSchema["policy_schema"] = (*policyReference.PolicySchema)
 	}
 	policyReferenceSchema["policy_name"] = policyReference.PolicyName
 	policyReferenceSchema["policy_kind"] = string(policyReference.PolicyKind)
 	if policyReference.RefDatabaseName != nil {
-		policyReferenceSchema["ref_database_name"] = policyReference.RefDatabaseName
+		policyReferenceSchema["ref_database_name"] = (*policyReference.RefDatabaseName)
 	}
 	if policyReference.RefSchemaName != nil {
-		policyReferenceSchema["ref_schema_name"] = policyReference.RefSchemaName
+		policyReferenceSchema["ref_schema_name"] = (*policyReference.RefSchemaName)
 	}
 	policyReferenceSchema["ref_entity_name"] = policyReference.RefEntityName
 	policyReferenceSchema["ref_entity_domain"] = policyReference.RefEntityDomain
 	if policyReference.RefColumnName != nil {
-		policyReferenceSchema["ref_column_name"] = policyReference.RefColumnName
+		policyReferenceSchema["ref_column_name"] = (*policyReference.RefColumnName)
 	}
 	if policyReference.RefArgColumnNames != nil {
-		policyReferenceSchema["ref_arg_column_names"] = policyReference.RefArgColumnNames
+		policyReferenceSchema["ref_arg_column_names"] = (*policyReference.RefArgColumnNames)
 	}
 	if policyReference.TagDatabase != nil {
-		policyReferenceSchema["tag_database"] = policyReference.TagDatabase
+		policyReferenceSchema["tag_database"] = (*policyReference.TagDatabase)
 	}
 	if policyReference.TagSchema != nil {
-		policyReferenceSchema["tag_schema"] = policyReference.TagSchema
+		policyReferenceSchema["tag_schema"] = (*policyReference.TagSchema)
 	}
 	if policyReference.TagName != nil {
-		policyReferenceSchema["tag_name"] = policyReference.TagName
+		policyReferenceSchema["tag_name"] = (*policyReference.TagName)
 	}
 	if policyReference.PolicyStatus != nil {
-		policyReferenceSchema["policy_status"] = policyReference.PolicyStatus
+		policyReferenceSchema["policy_status"] = (*policyReference.PolicyStatus)
 	}
 	return policyReferenceSchema
 }

@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// ShowSecurityIntegrationPropertySchema represents output of SHOW query for the single SecurityIntegrationProperty.
-var ShowSecurityIntegrationPropertySchema = map[string]*schema.Schema{
+// SecurityIntegrationPropertySchema represents a single SecurityIntegrationProperty row used as a list Elem.
+var SecurityIntegrationPropertySchema = map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -27,7 +27,7 @@ var ShowSecurityIntegrationPropertySchema = map[string]*schema.Schema{
 	},
 }
 
-var _ = ShowSecurityIntegrationPropertySchema
+var _ = SecurityIntegrationPropertySchema
 
 func SecurityIntegrationPropertyToSchema(securityIntegrationProperty *sdk.SecurityIntegrationProperty) map[string]any {
 	securityIntegrationPropertySchema := make(map[string]any)

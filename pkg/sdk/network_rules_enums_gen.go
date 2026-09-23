@@ -11,20 +11,24 @@ type NetworkRuleType string
 
 const (
 	NetworkRuleTypeIpv4            NetworkRuleType = "IPV4"
+	NetworkRuleTypeIpv6            NetworkRuleType = "IPV6"
 	NetworkRuleTypeAwsvpceid       NetworkRuleType = "AWSVPCEID"
 	NetworkRuleTypeAzurelinkid     NetworkRuleType = "AZURELINKID"
 	NetworkRuleTypeGcppscid        NetworkRuleType = "GCPPSCID"
 	NetworkRuleTypeHostPort        NetworkRuleType = "HOST_PORT"
 	NetworkRuleTypePrivateHostPort NetworkRuleType = "PRIVATE_HOST_PORT"
+	NetworkRuleTypeComputePool     NetworkRuleType = "COMPUTE_POOL"
 )
 
 var AllNetworkRuleTypes = []NetworkRuleType{
 	NetworkRuleTypeIpv4,
+	NetworkRuleTypeIpv6,
 	NetworkRuleTypeAwsvpceid,
 	NetworkRuleTypeAzurelinkid,
 	NetworkRuleTypeGcppscid,
 	NetworkRuleTypeHostPort,
 	NetworkRuleTypePrivateHostPort,
+	NetworkRuleTypeComputePool,
 }
 
 func ToNetworkRuleType(s string) (NetworkRuleType, error) {
@@ -32,6 +36,8 @@ func ToNetworkRuleType(s string) (NetworkRuleType, error) {
 	switch s {
 	case string(NetworkRuleTypeIpv4):
 		return NetworkRuleTypeIpv4, nil
+	case string(NetworkRuleTypeIpv6):
+		return NetworkRuleTypeIpv6, nil
 	case string(NetworkRuleTypeAwsvpceid):
 		return NetworkRuleTypeAwsvpceid, nil
 	case string(NetworkRuleTypeAzurelinkid):
@@ -42,6 +48,8 @@ func ToNetworkRuleType(s string) (NetworkRuleType, error) {
 		return NetworkRuleTypeHostPort, nil
 	case string(NetworkRuleTypePrivateHostPort):
 		return NetworkRuleTypePrivateHostPort, nil
+	case string(NetworkRuleTypeComputePool):
+		return NetworkRuleTypeComputePool, nil
 	default:
 		return "", fmt.Errorf("invalid network rule type: %s", s)
 	}
@@ -50,16 +58,18 @@ func ToNetworkRuleType(s string) (NetworkRuleType, error) {
 type NetworkRuleMode string
 
 const (
-	NetworkRuleModeIngress         NetworkRuleMode = "INGRESS"
-	NetworkRuleModeInternalStage   NetworkRuleMode = "INTERNAL_STAGE"
-	NetworkRuleModeEgress          NetworkRuleMode = "EGRESS"
-	NetworkRuleModePostgresIngress NetworkRuleMode = "POSTGRES_INGRESS"
-	NetworkRuleModePostgresEgress  NetworkRuleMode = "POSTGRES_EGRESS"
+	NetworkRuleModeIngress                       NetworkRuleMode = "INGRESS"
+	NetworkRuleModeInternalStage                 NetworkRuleMode = "INTERNAL_STAGE"
+	NetworkRuleModeSnowflakeManagedStorageVolume NetworkRuleMode = "SNOWFLAKE_MANAGED_STORAGE_VOLUME"
+	NetworkRuleModeEgress                        NetworkRuleMode = "EGRESS"
+	NetworkRuleModePostgresIngress               NetworkRuleMode = "POSTGRES_INGRESS"
+	NetworkRuleModePostgresEgress                NetworkRuleMode = "POSTGRES_EGRESS"
 )
 
 var AllNetworkRuleModes = []NetworkRuleMode{
 	NetworkRuleModeIngress,
 	NetworkRuleModeInternalStage,
+	NetworkRuleModeSnowflakeManagedStorageVolume,
 	NetworkRuleModeEgress,
 	NetworkRuleModePostgresIngress,
 	NetworkRuleModePostgresEgress,
@@ -72,6 +82,8 @@ func ToNetworkRuleMode(s string) (NetworkRuleMode, error) {
 		return NetworkRuleModeIngress, nil
 	case string(NetworkRuleModeInternalStage):
 		return NetworkRuleModeInternalStage, nil
+	case string(NetworkRuleModeSnowflakeManagedStorageVolume):
+		return NetworkRuleModeSnowflakeManagedStorageVolume, nil
 	case string(NetworkRuleModeEgress):
 		return NetworkRuleModeEgress, nil
 	case string(NetworkRuleModePostgresIngress):

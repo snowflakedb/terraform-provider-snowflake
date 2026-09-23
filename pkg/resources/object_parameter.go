@@ -202,7 +202,7 @@ func DeleteObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 	onAccount := d.Get("on_account").(bool)
 
 	if onAccount {
-		if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ObjectParameterUnsetOnDelete, providerCtx.EnabledExperiments) {
+		if providerCtx.Experiments.IsEnabled(experimentalfeatures.ObjectParameterUnsetOnDelete) {
 			err := client.Parameters.UnsetObjectParameterOnAccount(ctx, sdk.ObjectParameter(key))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error unsetting account parameter err = %w", err))
@@ -232,7 +232,7 @@ func DeleteObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 			Name:       sdk.NewObjectIdentifierFromFullyQualifiedName(fullyQualifierObjectIdentifier),
 		}
 
-		if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ObjectParameterUnsetOnDelete, providerCtx.EnabledExperiments) {
+		if providerCtx.Experiments.IsEnabled(experimentalfeatures.ObjectParameterUnsetOnDelete) {
 			err = client.Parameters.UnsetObjectParameterOnObject(ctx, o, sdk.ObjectParameter(key))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error unsetting object parameter err = %w", err))

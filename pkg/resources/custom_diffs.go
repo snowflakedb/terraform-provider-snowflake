@@ -61,7 +61,7 @@ func ParameterValueComputedIf[T ~string](key string, parameters []*sdk.Parameter
 			return nil
 		}
 
-		if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ParametersIgnoreValueChangesIfNotOnObjectLevel, providerCtx.EnabledExperiments) {
+		if providerCtx.Experiments.IsEnabled(experimentalfeatures.ParametersIgnoreValueChangesIfNotOnObjectLevel) {
 			// If the configuration is not set, perform SetNewComputed only for parameter being set on the object level (if so, it means that it was set externally, and we have to unset it).
 			// The value change is handled through read.
 			if parameter.Level == objectParameterLevel {
@@ -200,7 +200,7 @@ func ParametersCustomDiff[T ~string](parametersProvider func(context.Context, Re
 		if err != nil {
 			// TODO [next PRs]: should it be a default behavior?
 			providerCtx := meta.(*provider.Context)
-			if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments) {
+			if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) {
 				return nil
 			}
 			return err
@@ -247,7 +247,7 @@ func TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled
 		}
 		o, n := d.GetChange(key)
 		suppressed := suppressIdentifierQuoting("", o.(string), n.(string), nil)
-		return !suppressed && !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments)
+		return !suppressed && !providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames)
 	})
 }
 

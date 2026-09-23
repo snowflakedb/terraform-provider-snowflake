@@ -25,6 +25,9 @@ func (opts *CreateTaskOptions) validate() error {
 	if opts.ErrorIntegration != nil && !ValidObjectIdentifier(opts.ErrorIntegration) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if opts.ExecuteAsUser != nil && !ValidObjectIdentifier(opts.ExecuteAsUser) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateTaskOptions", "OrReplace", "IfNotExists"))
 	}
@@ -49,6 +52,9 @@ func (opts *CreateOrAlterTaskOptions) validate() error {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	if opts.ErrorIntegration != nil && !ValidObjectIdentifier(opts.ErrorIntegration) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if opts.ExecuteAsUser != nil && !ValidObjectIdentifier(opts.ExecuteAsUser) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	if opts.Config != nil && containsDoubleDollarQuotes(*opts.Config) {
@@ -84,8 +90,11 @@ func (opts *AlterTaskOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.Resume, opts.Suspend, opts.RemoveAfter, opts.AddAfter, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.SetFinalize, opts.UnsetFinalize, opts.ModifyAs, opts.ModifyWhen, opts.RemoveWhen) {
-		errs = append(errs, errExactlyOneOf("AlterTaskOptions", "Resume", "Suspend", "RemoveAfter", "AddAfter", "Set", "Unset", "SetTags", "UnsetTags", "SetFinalize", "UnsetFinalize", "ModifyAs", "ModifyWhen", "RemoveWhen"))
+	if opts.SetExecuteAsUser != nil && !ValidObjectIdentifier(opts.SetExecuteAsUser) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !exactlyOneValueSet(opts.Resume, opts.Suspend, opts.RemoveAfter, opts.AddAfter, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.SetFinalize, opts.UnsetFinalize, opts.SetExecuteAsUser, opts.UnsetExecuteAsUser, opts.ModifyAs, opts.ModifyWhen, opts.RemoveWhen) {
+		errs = append(errs, errExactlyOneOf("AlterTaskOptions", "Resume", "Suspend", "RemoveAfter", "AddAfter", "Set", "Unset", "SetTags", "UnsetTags", "SetFinalize", "UnsetFinalize", "SetExecuteAsUser", "UnsetExecuteAsUser", "ModifyAs", "ModifyWhen", "RemoveWhen"))
 	}
 	if valueSet(opts.Set) {
 		errs = append(errs, opts.Set.additionalValidations())

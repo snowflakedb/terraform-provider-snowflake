@@ -7,6 +7,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/telemetry"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 
@@ -326,6 +327,7 @@ func handleServiceIn(d *schema.ResourceData, setField **sdk.ServiceIn) error {
 func TrackingReadWrapper(datasourceName datasources.Datasource, readImplementation schema.ReadContextFunc) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		ctx = tracking.NewContext(ctx, tracking.NewVersionedDatasourceMetadata(datasourceName))
+		telemetry.EmitDatasourceOp(ctx, meta, datasourceName, d.Id())
 		return readImplementation(ctx, d, meta)
 	}
 }

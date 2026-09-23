@@ -3,6 +3,7 @@ package collections
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"testing"
 
@@ -125,6 +126,45 @@ func Test_MapErr(t *testing.T) {
 			_, _ = MapErr[string, int](stringSlice, nil)
 		})
 	})
+}
+
+func Test_SortedJoinStrings(t *testing.T) {
+	type customString string
+
+	stringTests := []struct {
+		name      string
+		input     []string
+		separator string
+		want      string
+	}{
+		{name: "nil collection", input: nil, separator: ",", want: ""},
+		{name: "empty collection", input: []string{}, separator: ",", want: ""},
+		{name: "sorts before joining", input: []string{"C", "A", "B"}, separator: ",", want: "A,B,C"},
+		{name: "custom separator", input: []string{"b", "a"}, separator: ", ", want: "a, b"},
+	}
+	for _, tc := range stringTests {
+		t.Run(tc.name, func(t *testing.T) {
+			original := slices.Clone(tc.input)
+			require.Equal(t, tc.want, SortedJoinStrings(tc.input, tc.separator))
+			require.Equal(t, original, tc.input)
+		})
+	}
+
+	customStringTests := []struct {
+		name      string
+		input     []customString
+		separator string
+		want      string
+	}{
+		{name: "custom string type", input: []customString{"b", "a"}, separator: ", ", want: "a, b"},
+	}
+	for _, tc := range customStringTests {
+		t.Run(tc.name, func(t *testing.T) {
+			original := slices.Clone(tc.input)
+			require.Equal(t, tc.want, SortedJoinStrings(tc.input, tc.separator))
+			require.Equal(t, original, tc.input)
+		})
+	}
 }
 
 func Test_GroupByProperty(t *testing.T) {

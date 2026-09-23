@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -267,6 +268,7 @@ func TestInt_Services(t *testing.T) {
 			WithMinReadyInstances(1).
 			WithMaxInstances(1).
 			WithQueryWarehouse(testClientHelper().Ids.WarehouseId()).
+			WithServiceCallerTokenValiditySecs(7200).
 			WithComment(comment)
 
 		err := client.Services.Create(ctx, request)
@@ -306,6 +308,40 @@ func TestInt_Services(t *testing.T) {
 				HasIsUpgrading(false).
 				HasNoManagingObjectDomain().
 				HasNoManagingObjectName(),
+		)
+
+		params, err := client.Services.ShowParameters(ctx, id)
+		require.NoError(t, err)
+		assertThatObject(
+			t, objectparametersassert.ServiceParametersPrefetched(t, id, params).
+				HasServiceCallerTokenValiditySecs(7200),
+		)
+	})
+
+	t.Run("show parameters", func(t *testing.T) {
+		service, serviceCleanup := testClientHelper().Service.CreateWithId(t, computePool.ID(), testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()))
+		t.Cleanup(serviceCleanup)
+		id := service.ID()
+
+		parameters, err := client.Parameters.ShowParameters(ctx, &sdk.ShowParametersOptions{
+			In: &sdk.ParametersIn{
+				Service: id,
+			},
+		})
+		require.NoError(t, err)
+		assertThatObject(
+			t, objectparametersassert.ServiceParametersPrefetched(t, id, parameters).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
+		)
+
+		// check that ShowParameters on service level works too
+		parameters, err = client.Services.ShowParameters(ctx, id)
+		require.NoError(t, err)
+		assertThatObject(
+			t, objectparametersassert.ServiceParametersPrefetched(t, id, parameters).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -372,14 +408,15 @@ func TestInt_Services(t *testing.T) {
 		t.Cleanup(serviceCleanup)
 
 		err := client.Services.Alter(ctx, sdk.NewAlterServiceRequest(service.ID()).WithSet(sdk.ServiceSetRequest{
-			MinReadyInstances:          sdk.Pointer(1),
-			MinInstances:               sdk.Pointer(2),
-			MaxInstances:               sdk.Pointer(3),
-			AutoSuspendSecs:            sdk.Pointer(3600),
-			QueryWarehouse:             sdk.Pointer(testClientHelper().Ids.WarehouseId()),
-			AutoResume:                 sdk.Pointer(true),
-			ExternalAccessIntegrations: sdk.NewServiceExternalAccessIntegrationsRequest([]sdk.AccountObjectIdentifier{externalAccessIntegrationId}),
-			Comment:                    sdk.Pointer(comment),
+			MinReadyInstances:              sdk.Pointer(1),
+			MinInstances:                   sdk.Pointer(2),
+			MaxInstances:                   sdk.Pointer(3),
+			AutoSuspendSecs:                sdk.Pointer(3600),
+			QueryWarehouse:                 sdk.Pointer(testClientHelper().Ids.WarehouseId()),
+			AutoResume:                     sdk.Pointer(true),
+			ServiceCallerTokenValiditySecs: sdk.Pointer(1800),
+			ExternalAccessIntegrations:     sdk.NewServiceExternalAccessIntegrationsRequest([]sdk.AccountObjectIdentifier{externalAccessIntegrationId}),
+			Comment:                        sdk.Pointer(comment),
 		}))
 		require.NoError(t, err)
 
@@ -397,6 +434,13 @@ func TestInt_Services(t *testing.T) {
 				HasComment(comment).
 				HasAutoSuspendSecs(3600),
 		)
+
+		params, err := client.Services.ShowParameters(ctx, service.ID())
+		require.NoError(t, err)
+		assertThatObject(
+			t, objectparametersassert.ServiceParametersPrefetched(t, service.ID(), params).
+				HasServiceCallerTokenValiditySecs(1800),
+		)
 	})
 
 	t.Run("alter: unset", func(t *testing.T) {
@@ -411,20 +455,22 @@ func TestInt_Services(t *testing.T) {
 			WithExternalAccessIntegrations(*sdk.NewServiceExternalAccessIntegrationsRequest([]sdk.AccountObjectIdentifier{externalAccessIntegrationId})).
 			WithComment(comment).
 			WithAutoSuspendSecs(3600).
-			WithMinReadyInstances(1)
+			WithMinReadyInstances(1).
+			WithServiceCallerTokenValiditySecs(7200)
 
 		service, serviceCleanup := testClientHelper().Service.CreateWithRequest(t, request)
 		t.Cleanup(serviceCleanup)
 
 		err := client.Services.Alter(ctx, sdk.NewAlterServiceRequest(service.ID()).WithUnset(sdk.ServiceUnsetRequest{
-			AutoResume:                 sdk.Pointer(true),
-			MinInstances:               sdk.Pointer(true),
-			MaxInstances:               sdk.Pointer(true),
-			QueryWarehouse:             sdk.Pointer(true),
-			ExternalAccessIntegrations: sdk.Pointer(true),
-			Comment:                    sdk.Pointer(true),
-			AutoSuspendSecs:            sdk.Pointer(true),
-			MinReadyInstances:          sdk.Pointer(true),
+			AutoResume:                     sdk.Pointer(true),
+			MinInstances:                   sdk.Pointer(true),
+			MaxInstances:                   sdk.Pointer(true),
+			QueryWarehouse:                 sdk.Pointer(true),
+			ExternalAccessIntegrations:     sdk.Pointer(true),
+			Comment:                        sdk.Pointer(true),
+			AutoSuspendSecs:                sdk.Pointer(true),
+			MinReadyInstances:              sdk.Pointer(true),
+			ServiceCallerTokenValiditySecs: sdk.Pointer(true),
 		}))
 		require.NoError(t, err)
 
@@ -441,6 +487,13 @@ func TestInt_Services(t *testing.T) {
 				HasNoComment().
 				HasAutoSuspendSecs(0).
 				HasMinReadyInstances(1),
+		)
+
+		params, err := client.Services.ShowParameters(ctx, service.ID())
+		require.NoError(t, err)
+		assertThatObject(
+			t, objectparametersassert.ServiceParametersPrefetched(t, service.ID(), params).
+				HasAllDefaults(),
 		)
 	})
 

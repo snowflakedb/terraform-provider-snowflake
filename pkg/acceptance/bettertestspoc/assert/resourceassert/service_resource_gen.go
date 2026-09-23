@@ -101,6 +101,11 @@ func (s *ServiceResourceAssert) HasQueryWarehouse(expected string) *ServiceResou
 	return s
 }
 
+func (s *ServiceResourceAssert) HasServiceCallerTokenValiditySecs(expected int) *ServiceResourceAssert {
+	s.IntValueSet("service_caller_token_validity_secs", expected)
+	return s
+}
+
 func (s *ServiceResourceAssert) HasServiceType(expected string) *ServiceResourceAssert {
 	s.StringValueSet("service_type", expected)
 	return s
@@ -167,6 +172,11 @@ func (s *ServiceResourceAssert) HasMinReadyInstancesString(expected string) *Ser
 
 func (s *ServiceResourceAssert) HasQueryWarehouseString(expected string) *ServiceResourceAssert {
 	s.ValueSet("query_warehouse", expected)
+	return s
+}
+
+func (s *ServiceResourceAssert) HasServiceCallerTokenValiditySecsString(expected string) *ServiceResourceAssert {
+	s.ValueSet("service_caller_token_validity_secs", expected)
 	return s
 }
 
@@ -239,6 +249,11 @@ func (s *ServiceResourceAssert) HasNoQueryWarehouse() *ServiceResourceAssert {
 	return s
 }
 
+func (s *ServiceResourceAssert) HasNoServiceCallerTokenValiditySecs() *ServiceResourceAssert {
+	s.ValueNotSet("service_caller_token_validity_secs")
+	return s
+}
+
 func (s *ServiceResourceAssert) HasNoServiceType() *ServiceResourceAssert {
 	s.ValueNotSet("service_type")
 	return s
@@ -300,6 +315,11 @@ func (s *ServiceResourceAssert) HasMinReadyInstancesEmpty() *ServiceResourceAsse
 
 func (s *ServiceResourceAssert) HasQueryWarehouseEmpty() *ServiceResourceAssert {
 	s.ValueSet("query_warehouse", "")
+	return s
+}
+
+func (s *ServiceResourceAssert) HasServiceCallerTokenValiditySecsEmpty() *ServiceResourceAssert {
+	s.ValueSet("service_caller_token_validity_secs", "")
 	return s
 }
 
@@ -369,6 +389,11 @@ func (s *ServiceResourceAssert) HasMinReadyInstancesNotEmpty() *ServiceResourceA
 
 func (s *ServiceResourceAssert) HasQueryWarehouseNotEmpty() *ServiceResourceAssert {
 	s.ValuePresent("query_warehouse")
+	return s
+}
+
+func (s *ServiceResourceAssert) HasServiceCallerTokenValiditySecsNotEmpty() *ServiceResourceAssert {
+	s.ValuePresent("service_caller_token_validity_secs")
 	return s
 }
 

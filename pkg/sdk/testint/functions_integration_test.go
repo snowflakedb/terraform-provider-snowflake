@@ -1932,7 +1932,7 @@ func TestInt_Functions(t *testing.T) {
 		assert.Equal(t, "JAVA", *pairs["language"])
 		assert.NotEmpty(t, *pairs["body"])
 		assert.Equal(t, string(sdk.NullInputBehaviorCalledOnNullInput), *pairs["null handling"])
-		assert.Equal(t, string(sdk.VolatileTableKind), *pairs["volatility"])
+		assert.Equal(t, string(sdk.TableKindVolatile), *pairs["volatility"])
 		assert.Nil(t, pairs["external_access_integration"])
 		assert.Nil(t, pairs["secrets"])
 		assert.Equal(t, "[]", *pairs["imports"])

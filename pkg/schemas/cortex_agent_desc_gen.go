@@ -7,8 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// DescribeCortexAgentDetailsSchema represents output of DESCRIBE query for the single Cortex agent.
-var DescribeCortexAgentDetailsSchema = map[string]*schema.Schema{
+type cortexAgentDetailsToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.CortexAgentDetails] = cortexAgentDetailsToSchemaMapper{}
+
+// DescribeCortexAgentDetailsSchema represents output of DESCRIBE query for the single CortexAgentDetails.
+var DescribeCortexAgentDetailsSchema = mergeSchema(map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -28,26 +32,6 @@ var DescribeCortexAgentDetailsSchema = map[string]*schema.Schema{
 	"comment": {
 		Type:     schema.TypeString,
 		Computed: true,
-	},
-	"profile": {
-		Type:     schema.TypeList,
-		Computed: true,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"display_name": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-				"avatar": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-				"color": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-			},
-		},
 	},
 	"agent_spec": {
 		Type:     schema.TypeString,
@@ -69,7 +53,7 @@ var DescribeCortexAgentDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}
+}, cortexAgentDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeCortexAgentDetailsSchema
 
@@ -80,13 +64,6 @@ func CortexAgentDetailsToSchema(cortexAgentDetails *sdk.CortexAgentDetails) map[
 	cortexAgentDetailsSchema["schema_name"] = cortexAgentDetails.SchemaName
 	cortexAgentDetailsSchema["owner"] = cortexAgentDetails.Owner
 	cortexAgentDetailsSchema["comment"] = cortexAgentDetails.Comment
-	cortexAgentDetailsSchema["profile"] = []map[string]any{
-		{
-			"display_name": cortexAgentDetails.Profile.DisplayName,
-			"avatar":       cortexAgentDetails.Profile.Avatar,
-			"color":        cortexAgentDetails.Profile.Color,
-		},
-	}
 	cortexAgentDetailsSchema["agent_spec"] = cortexAgentDetails.AgentSpec
 	cortexAgentDetailsSchema["created_on"] = cortexAgentDetails.CreatedOn.String()
 	if cortexAgentDetails.DefaultVersionName != nil {
@@ -98,6 +75,7 @@ func CortexAgentDetailsToSchema(cortexAgentDetails *sdk.CortexAgentDetails) map[
 	if cortexAgentDetails.Aliases != nil {
 		cortexAgentDetailsSchema["aliases"] = (*cortexAgentDetails.Aliases)
 	}
+	cortexAgentDetailsToSchemaMapper{}.additionalToSchema(cortexAgentDetails, cortexAgentDetailsSchema)
 	return cortexAgentDetailsSchema
 }
 

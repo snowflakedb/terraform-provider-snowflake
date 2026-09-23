@@ -206,7 +206,7 @@ func ImportExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 		return nil, err
 	}
 
-	setDefaults := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ImportBooleanDefault, providerCtx.EnabledExperiments)
+	setDefaults := providerCtx.Experiments.IsEnabled(experimentalfeatures.ImportBooleanDefault)
 
 	if err := importStageCommonFields(d, details, setDefaults); err != nil {
 		return nil, err

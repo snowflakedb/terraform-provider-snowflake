@@ -320,7 +320,8 @@ func TestAcc_GrantDatabaseRole_shareNameContainingDots(t *testing.T) {
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.GrantDatabaseRoleResource(t, grantModel.ResourceReference()).
 						HasDatabaseRoleNameString(databaseRole.ID().FullyQualifiedName()).
 						HasShareNameString(shareId.Name()),

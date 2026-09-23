@@ -3,13 +3,16 @@
 package schemas
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type serviceToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.Service] = serviceToSchemaMapper{}
+
 // ShowServiceSchema represents output of SHOW query for the single Service.
-var ShowServiceSchema = map[string]*schema.Schema{
+var ShowServiceSchema = mergeSchema(map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -60,12 +63,6 @@ var ShowServiceSchema = map[string]*schema.Schema{
 	},
 	"auto_resume": {
 		Type:     schema.TypeBool,
-		Computed: true,
-	},
-	"external_access_integrations": {
-		// Adjusted manually.
-		Type:     schema.TypeSet,
-		Elem:     &schema.Schema{Type: schema.TypeString},
 		Computed: true,
 	},
 	"created_on": {
@@ -124,7 +121,7 @@ var ShowServiceSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}
+}, serviceToSchemaMapper{}.additionalSchema())
 
 var _ = ShowServiceSchema
 
@@ -143,34 +140,33 @@ func ServiceToSchema(service *sdk.Service) map[string]any {
 	serviceSchema["min_instances"] = service.MinInstances
 	serviceSchema["max_instances"] = service.MaxInstances
 	serviceSchema["auto_resume"] = service.AutoResume
-	// Adjusted manually.
-	serviceSchema["external_access_integrations"] = collections.Map(service.ExternalAccessIntegrations, sdk.AccountObjectIdentifier.Name)
 	serviceSchema["created_on"] = service.CreatedOn.String()
 	serviceSchema["updated_on"] = service.UpdatedOn.String()
 	if service.ResumedOn != nil {
-		serviceSchema["resumed_on"] = service.ResumedOn.String()
+		serviceSchema["resumed_on"] = (*service.ResumedOn).String()
 	}
 	if service.SuspendedOn != nil {
-		serviceSchema["suspended_on"] = service.SuspendedOn.String()
+		serviceSchema["suspended_on"] = (*service.SuspendedOn).String()
 	}
 	serviceSchema["auto_suspend_secs"] = service.AutoSuspendSecs
 	if service.Comment != nil {
-		serviceSchema["comment"] = service.Comment
+		serviceSchema["comment"] = (*service.Comment)
 	}
 	serviceSchema["owner_role_type"] = service.OwnerRoleType
 	if service.QueryWarehouse != nil {
-		serviceSchema["query_warehouse"] = service.QueryWarehouse.Name()
+		serviceSchema["query_warehouse"] = (*service.QueryWarehouse).Name()
 	}
 	serviceSchema["is_job"] = service.IsJob
 	serviceSchema["is_async_job"] = service.IsAsyncJob
 	serviceSchema["spec_digest"] = service.SpecDigest
 	serviceSchema["is_upgrading"] = service.IsUpgrading
 	if service.ManagingObjectDomain != nil {
-		serviceSchema["managing_object_domain"] = service.ManagingObjectDomain
+		serviceSchema["managing_object_domain"] = (*service.ManagingObjectDomain)
 	}
 	if service.ManagingObjectName != nil {
-		serviceSchema["managing_object_name"] = service.ManagingObjectName
+		serviceSchema["managing_object_name"] = (*service.ManagingObjectName)
 	}
+	serviceToSchemaMapper{}.additionalToSchema(service, serviceSchema)
 	return serviceSchema
 }
 

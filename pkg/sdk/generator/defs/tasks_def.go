@@ -29,7 +29,8 @@ var taskPairs = g.StructPair("taskDBRow", "Task").
 	OptionalText("budget", g.WithRequiredInPlain()).
 	PlainField("task_relations", "TaskRelations", g.WithManualConvert()).
 	OptionalText("last_suspended_reason", g.WithRequiredInPlain()).
-	Field("target_completion_interval", "sql.NullString", "*TaskTargetCompletionInterval", g.WithPlainFieldName("TargetCompletionInterval"), g.WithManualConvert())
+	Field("target_completion_interval", "sql.NullString", "*TaskTargetCompletionInterval", g.WithPlainFieldName("TargetCompletionInterval"), g.WithManualConvert()).
+	Field("execute_as_user", "sql.NullString", "*AccountObjectIdentifier")
 
 var taskCreateWarehouse = g.NewQueryStruct("CreateTaskWarehouse").
 	OptionalIdentifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("WAREHOUSE")).
@@ -66,12 +67,14 @@ var tasksDef = g.NewInterface(
 			OptionalAssignment("SERVERLESS_TASK_MIN_STATEMENT_SIZE", "WarehouseSize", g.ParameterOptions().SingleQuotes()).
 			OptionalAssignment("SERVERLESS_TASK_MAX_STATEMENT_SIZE", "WarehouseSize", g.ParameterOptions().SingleQuotes()).
 			ListAssignment("AFTER", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().NoEquals()).
+			OptionalIdentifier("ExecuteAsUser", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXECUTE AS USER")).
 			OptionalTextAssignment("WHEN", g.ParameterOptions().NoQuotes().NoEquals()).
 			SQL("AS").
 			Text("sql", g.KeywordOptions().NoQuotes().Required()).
 			WithAdditionalValidations().
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ValidIdentifierIfSet, "ErrorIntegration").
+			WithValidation(g.ValidIdentifierIfSet, "ExecuteAsUser").
 			WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
 			WithValidation(g.NoDoubleDollarQuotesIfSet, "Config"),
 	).
@@ -94,12 +97,14 @@ var tasksDef = g.NewInterface(
 			OptionalIdentifier("Finalize", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Equals().SQL("FINALIZE")).
 			OptionalNumberAssignment("TASK_AUTO_RETRY_ATTEMPTS", g.ParameterOptions()).
 			ListAssignment("AFTER", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().NoEquals()).
+			OptionalIdentifier("ExecuteAsUser", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXECUTE AS USER")).
 			OptionalTextAssignment("WHEN", g.ParameterOptions().NoQuotes().NoEquals()).
 			SQL("AS").
 			Text("sql", g.KeywordOptions().NoQuotes().Required()).
 			WithAdditionalValidations().
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ValidIdentifierIfSet, "ErrorIntegration").
+			WithValidation(g.ValidIdentifierIfSet, "ExecuteAsUser").
 			WithValidation(g.NoDoubleDollarQuotesIfSet, "Config"),
 	).
 	CustomOperation(
@@ -178,11 +183,14 @@ var tasksDef = g.NewInterface(
 			OptionalUnsetTags().
 			OptionalIdentifier("SetFinalize", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Equals().SQL("SET FINALIZE")).
 			OptionalSQL("UNSET FINALIZE").
+			OptionalIdentifier("SetExecuteAsUser", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("SET EXECUTE AS USER")).
+			OptionalSQL("UNSET EXECUTE AS USER").
 			OptionalTextAssignment("MODIFY AS", g.ParameterOptions().NoQuotes().NoEquals()).
 			OptionalTextAssignment("MODIFY WHEN", g.ParameterOptions().NoQuotes().NoEquals()).
 			OptionalSQL("REMOVE WHEN").
 			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ExactlyOneValueSet, "Resume", "Suspend", "RemoveAfter", "AddAfter", "Set", "Unset", "SetTags", "UnsetTags", "SetFinalize", "UnsetFinalize", "ModifyAs", "ModifyWhen", "RemoveWhen"),
+			WithValidation(g.ValidIdentifierIfSet, "SetExecuteAsUser").
+			WithValidation(g.ExactlyOneValueSet, "Resume", "Suspend", "RemoveAfter", "AddAfter", "Set", "Unset", "SetTags", "UnsetTags", "SetFinalize", "UnsetFinalize", "SetExecuteAsUser", "UnsetExecuteAsUser", "ModifyAs", "ModifyWhen", "RemoveWhen"),
 	).
 	DropOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/drop-task",

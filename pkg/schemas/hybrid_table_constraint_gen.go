@@ -7,10 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// ShowHybridTableConstraintSchema is the schema for a single row of the hybrid table's merged
-// constraints view (PRIMARY KEY / UNIQUE / FOREIGN KEY) built by GetConstraints from SHOW PRIMARY KEYS,
-// SHOW UNIQUE KEYS, and SHOW IMPORTED KEYS.
-var ShowHybridTableConstraintSchema = map[string]*schema.Schema{
+type hybridTableConstraintToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.HybridTableConstraint] = hybridTableConstraintToSchemaMapper{}
+
+// ShowHybridTableConstraintSchema represents output of SHOW query for the single HybridTableConstraint.
+var ShowHybridTableConstraintSchema = mergeSchema(map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -19,31 +21,7 @@ var ShowHybridTableConstraintSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"columns": {
-		// adjusted manually
-		Type:     schema.TypeList,
-		Computed: true,
-		Elem:     &schema.Schema{Type: schema.TypeString},
-	},
-	"referenced_table": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
-	"referenced_columns": {
-		// adjusted manually
-		Type:     schema.TypeList,
-		Computed: true,
-		Elem:     &schema.Schema{Type: schema.TypeString},
-	},
-	"delete_rule": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
-	"update_rule": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
-}
+}, hybridTableConstraintToSchemaMapper{}.additionalSchema())
 
 var _ = ShowHybridTableConstraintSchema
 
@@ -51,15 +29,7 @@ func HybridTableConstraintToSchema(hybridTableConstraint *sdk.HybridTableConstra
 	hybridTableConstraintSchema := make(map[string]any)
 	hybridTableConstraintSchema["name"] = hybridTableConstraint.Name
 	hybridTableConstraintSchema["kind"] = string(hybridTableConstraint.Kind)
-	hybridTableConstraintSchema["columns"] = hybridTableConstraint.Columns
-	// adjusted manually: referenced_table/referenced_columns/delete_rule/update_rule are FK-only,
-	// so they are left unset (empty) for PRIMARY KEY / UNIQUE constraints.
-	if hybridTableConstraint.Kind == sdk.ColumnConstraintTypeForeignKey {
-		hybridTableConstraintSchema["referenced_table"] = hybridTableConstraint.ReferencedTable.FullyQualifiedName()
-		hybridTableConstraintSchema["referenced_columns"] = hybridTableConstraint.ReferencedColumns
-		hybridTableConstraintSchema["delete_rule"] = hybridTableConstraint.DeleteRule
-		hybridTableConstraintSchema["update_rule"] = hybridTableConstraint.UpdateRule
-	}
+	hybridTableConstraintToSchemaMapper{}.additionalToSchema(hybridTableConstraint, hybridTableConstraintSchema)
 	return hybridTableConstraintSchema
 }
 

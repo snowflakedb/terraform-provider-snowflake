@@ -157,7 +157,7 @@ func readIcebergTableWithParameterHandler(ctx context.Context, d *schema.Resourc
 		d.Set("comment", comment),
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.IcebergTableToSchema(table)}),
-		d.Set(DescribeOutputAttributeName, schemas.IcebergTableDetailsToSchema(details)),
+		d.Set(DescribeOutputAttributeName, schemas.IcebergTableDetailsListToSchema(details)),
 		d.Set(ParametersAttributeName, []map[string]any{parametersToSchema(parameters, providerCtx)}),
 		handleParameterRead(d, parameters),
 	)

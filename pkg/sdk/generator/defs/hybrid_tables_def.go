@@ -19,7 +19,7 @@ var hybridTableOutOfLineForeignKey = g.NewQueryStruct("HybridTableOutOfLineForei
 	SQL("REFERENCES").
 	Identifier("TableName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 	PredefinedQueryStructField("ColumnNames", "[]Column", g.ParameterOptions().NoEquals().Parentheses()).
-	PredefinedQueryStructField("Match", g.KindOfTPointer[sdkcommons.MatchType](), g.ParameterOptions().NoEquals().SQL("MATCH")).
+	OptionalEnum("Match", MatchTypeEnumDef, g.ParameterOptions().NoEquals().SQL("MATCH")).
 	PredefinedQueryStructField("On", g.KindOfTPointer[sdkcommons.ForeignKeyOnAction](), g.KeywordOptions())
 
 var hybridTableOutOfLineConstraint = g.NewQueryStruct("HybridTableOutOfLineConstraint").
@@ -118,7 +118,7 @@ var hybridTableClusteringAction = g.NewQueryStruct("HybridTableClusteringAction"
 	OptionalQueryStructField(
 		"ChangeReclusterState",
 		g.NewQueryStruct("HybridTableReclusterChangeState").
-			WithField(g.OptionalEnumLegacy[sdkcommons.ReclusterState]("State", g.KeywordOptions())).
+			OptionalEnum("State", ReclusterStateEnumDef, g.KeywordOptions()).
 			SQL("RECLUSTER"),
 		g.KeywordOptions(),
 	).

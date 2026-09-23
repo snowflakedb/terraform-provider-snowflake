@@ -107,6 +107,11 @@ func (s *CreateTaskRequest) WithAfter(after []SchemaObjectIdentifier) *CreateTas
 	return s
 }
 
+func (s *CreateTaskRequest) WithExecuteAsUser(executeAsUser AccountObjectIdentifier) *CreateTaskRequest {
+	s.ExecuteAsUser = &executeAsUser
+	return s
+}
+
 func (s *CreateTaskRequest) WithWhen(when string) *CreateTaskRequest {
 	s.When = &when
 	return s
@@ -197,6 +202,11 @@ func (s *CreateOrAlterTaskRequest) WithAfter(after []SchemaObjectIdentifier) *Cr
 	return s
 }
 
+func (s *CreateOrAlterTaskRequest) WithExecuteAsUser(executeAsUser AccountObjectIdentifier) *CreateOrAlterTaskRequest {
+	s.ExecuteAsUser = &executeAsUser
+	return s
+}
+
 func (s *CreateOrAlterTaskRequest) WithWhen(when string) *CreateOrAlterTaskRequest {
 	s.When = &when
 	return s
@@ -282,6 +292,16 @@ func (s *AlterTaskRequest) WithSetFinalize(setFinalize SchemaObjectIdentifier) *
 
 func (s *AlterTaskRequest) WithUnsetFinalize(unsetFinalize bool) *AlterTaskRequest {
 	s.UnsetFinalize = &unsetFinalize
+	return s
+}
+
+func (s *AlterTaskRequest) WithSetExecuteAsUser(setExecuteAsUser AccountObjectIdentifier) *AlterTaskRequest {
+	s.SetExecuteAsUser = &setExecuteAsUser
+	return s
+}
+
+func (s *AlterTaskRequest) WithUnsetExecuteAsUser(unsetExecuteAsUser bool) *AlterTaskRequest {
+	s.UnsetExecuteAsUser = &unsetExecuteAsUser
 	return s
 }
 

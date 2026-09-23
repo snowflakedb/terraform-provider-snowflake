@@ -69,7 +69,7 @@ func AlertToSchema(alert *sdk.Alert) map[string]any {
 	alertSchema["schema_name"] = alert.SchemaName
 	alertSchema["owner"] = alert.Owner
 	if alert.Comment != nil {
-		alertSchema["comment"] = alert.Comment
+		alertSchema["comment"] = (*alert.Comment)
 	}
 	alertSchema["warehouse"] = alert.Warehouse
 	alertSchema["schedule"] = alert.Schedule
