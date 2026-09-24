@@ -73,7 +73,7 @@ var schemaSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE SCHEMA` for the given object. In order to handle this output, one must grant sufficient privileges, e.g. [grant_ownership](./grant_ownership) on all objects in the schema.",
 		Elem: &schema.Resource{
-			Schema: schemas.SchemaDescribeSchema,
+			Schema: schemas.DescribeSchemaDetailsSchema,
 		},
 	},
 	ParametersAttributeName: {
@@ -293,7 +293,7 @@ func ReadContextSchema(withExternalChangesMarking bool) schema.ReadContextFunc {
 		if err != nil {
 			log.Printf("[DEBUG] describing schema: %s, err: %s", id.FullyQualifiedName(), err)
 		} else {
-			if err = d.Set(DescribeOutputAttributeName, schemas.SchemaDescriptionToSchema(describeResult)); err != nil {
+			if err = d.Set(DescribeOutputAttributeName, schemas.SchemaDetailsListToSchema(describeResult)); err != nil {
 				return diag.FromErr(err)
 			}
 		}

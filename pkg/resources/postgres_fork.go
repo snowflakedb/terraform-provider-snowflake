@@ -132,7 +132,7 @@ var postgresForkSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE POSTGRES INSTANCE` for the given Postgres instance.",
 		Elem: &schema.Resource{
-			Schema: schemas.DescribePostgresInstanceSchema,
+			Schema: schemas.DescribePostgresInstanceDetailsSchema,
 		},
 	},
 }

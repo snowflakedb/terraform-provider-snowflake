@@ -7,7 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// DescribeNetworkPolicySchema represents output of DESCRIBE query for the single NetworkPolicy.
+// DescribeNetworkPolicySchema is the name-keyed consumer for DESCRIBE NETWORK POLICY.
+// The property row is generated as NetworkPolicyPropertySchema / NetworkPolicyPropertyToSchema (UsedAsListEntry).
+// Public describe_output stays four TypeString keys (property.Value), not a list of {name, value} rows.
 var DescribeNetworkPolicySchema = map[string]*schema.Schema{
 	"allowed_ip_list": {
 		Type:     schema.TypeString,

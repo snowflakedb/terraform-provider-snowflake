@@ -43,7 +43,7 @@ var openflowRuntimesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE OPENFLOW RUNTIME.",
 					Elem: &schema.Resource{
-						Schema: schemas.DescribeOpenflowRuntimeSchema,
+						Schema: schemas.DescribeOpenflowRuntimeDetailsSchema,
 					},
 				},
 			},
@@ -84,7 +84,7 @@ func ReadOpenflowRuntimes(ctx context.Context, d *schema.ResourceData, meta any)
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			runtimeDetails = []map[string]any{schemas.OpenflowRuntimeDetailsToSchema(*describeResult)}
+			runtimeDetails = []map[string]any{schemas.OpenflowRuntimeDetailsToSchema(describeResult)}
 		}
 		flattenedRuntimes[i] = map[string]any{
 			resources.ShowOutputAttributeName:     []map[string]any{schemas.OpenflowRuntimeToSchema(&runtime)},

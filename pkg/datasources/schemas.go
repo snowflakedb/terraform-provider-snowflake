@@ -109,7 +109,7 @@ var schemasSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE SCHEMA.",
 					Elem: &schema.Resource{
-						Schema: resourceschemas.SchemaDescribeSchema,
+						Schema: resourceschemas.DescribeSchemaDetailsSchema,
 					},
 				},
 				resources.ParametersAttributeName: {
@@ -199,7 +199,7 @@ func ReadSchemas(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			schemaDescription = resourceschemas.SchemaDescriptionToSchema(describeResult)
+			schemaDescription = resourceschemas.SchemaDetailsListToSchema(describeResult)
 		}
 
 		var schemaParameters []map[string]any

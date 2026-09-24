@@ -102,7 +102,7 @@ var cortexSearchServiceSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE CORTEX SEARCH SERVICE` for the given cortex search service.",
 		Elem: &schema.Resource{
-			Schema: schemas.DescribeCortexSearchServiceSchema,
+			Schema: schemas.DescribeCortexSearchServiceDetailsSchema,
 		},
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,

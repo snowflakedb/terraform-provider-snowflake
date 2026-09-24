@@ -79,7 +79,7 @@ func ReadFileFormats(ctx context.Context, d *schema.ResourceData, meta any) diag
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			fileFormatDescriptions = []map[string]any{schemas.FileFormatAllDetailsToSchema(*details)}
+			fileFormatDescriptions = []map[string]any{schemas.FileFormatAllDetailsToSchema(details)}
 		}
 		flattenedFileFormats[i] = map[string]any{
 			resources.ShowOutputAttributeName:     []map[string]any{schemas.FileFormatToSchema(&fileFormat)},

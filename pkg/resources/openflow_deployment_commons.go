@@ -93,7 +93,7 @@ func openflowDeploymentCommonSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Outputs the result of `DESCRIBE OPENFLOW DEPLOYMENT` for the given deployment.",
 			Elem: &schema.Resource{
-				Schema: schemas.DescribeOpenflowDeploymentSchema,
+				Schema: schemas.DescribeOpenflowDeploymentDetailsSchema,
 			},
 		},
 	}
@@ -201,7 +201,7 @@ func readOpenflowDeploymentFunc(
 
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.OpenflowDeploymentToSchema(deployment)}),
-			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.OpenflowDeploymentDetailsToSchema(*deploymentDetails)}),
+			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.OpenflowDeploymentDetailsToSchema(deploymentDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set("type", string(deployment.Type)),
 			d.Set(ParametersAttributeName, []map[string]any{schemas.OpenflowDeploymentParametersToSchema(parameters, meta.(*provider.Context))}),

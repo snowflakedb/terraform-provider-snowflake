@@ -41,7 +41,7 @@ var computePoolsSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE COMPUTE POOL.",
 					Elem: &schema.Resource{
-						Schema: schemas.DescribeComputePoolSchema,
+						Schema: schemas.DescribeComputePoolDetailsSchema,
 					},
 				},
 			},
@@ -79,7 +79,7 @@ func ReadComputePools(ctx context.Context, d *schema.ResourceData, meta any) dia
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			computePoolDetails = []map[string]any{schemas.ComputePoolDetailsToSchema(*describeResult)}
+			computePoolDetails = []map[string]any{schemas.ComputePoolDetailsToSchema(describeResult)}
 		}
 		flattenedComputePools[i] = map[string]any{
 			resources.ShowOutputAttributeName:     []map[string]any{schemas.ComputePoolToSchema(&computePool)},

@@ -224,7 +224,7 @@ func ReadStorageLifecyclePolicy(ctx context.Context, d *schema.ResourceData, met
 		d.Set("archive_for_days", archiveForDays),
 		d.Set("comment", storageLifecyclePolicy.Comment),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.StorageLifecyclePolicyToSchema(storageLifecyclePolicy)}),
-		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.StorageLifecyclePolicyDetailsToSchema(*storageLifecyclePolicyDescription)}),
+		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.StorageLifecyclePolicyDetailsToSchema(storageLifecyclePolicyDescription)}),
 	)
 	return diag.FromErr(errs)
 }

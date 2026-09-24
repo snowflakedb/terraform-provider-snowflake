@@ -50,7 +50,7 @@ var warehousesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE WAREHOUSE.",
 					Elem: &schema.Resource{
-						Schema: schemas.WarehouseDescribeSchema,
+						Schema: schemas.DescribeWarehouseDetailsSchema,
 					},
 				},
 				resources.ParametersAttributeName: {
@@ -100,7 +100,7 @@ func ReadWarehouses(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			warehouseDescription = schemas.WarehouseDescriptionToSchema(*describeResult)
+			warehouseDescription = []map[string]any{schemas.WarehouseDetailsToSchema(describeResult)}
 		}
 
 		var warehouseParameters []map[string]any

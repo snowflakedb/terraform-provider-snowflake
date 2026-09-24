@@ -123,7 +123,7 @@ var openflowRuntimeSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE OPENFLOW RUNTIME` for the given runtime.",
 		Elem: &schema.Resource{
-			Schema: schemas.DescribeOpenflowRuntimeSchema,
+			Schema: schemas.DescribeOpenflowRuntimeDetailsSchema,
 		},
 	},
 }
@@ -290,7 +290,7 @@ func ReadOpenflowRuntime(withExternalChangesMarking bool) schema.ReadContextFunc
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.OpenflowRuntimeToSchema(runtime)}),
 			d.Set("execute_as_role", runtime.ExecuteAsRole),
-			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.OpenflowRuntimeDetailsToSchema(*runtimeDetails)}),
+			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.OpenflowRuntimeDetailsToSchema(runtimeDetails)}),
 		); errs != nil {
 			return diag.FromErr(errs)
 		}

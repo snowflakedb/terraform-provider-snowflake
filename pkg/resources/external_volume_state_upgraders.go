@@ -34,7 +34,7 @@ func v2_14_0_ExternalVolumeStateUpgrader(ctx context.Context, rawState map[strin
 		return nil, err
 	}
 
-	detailsSchema := schemas.ExternalVolumeDetailsToSchema(details)
+	detailsSchema := schemas.ExternalVolumeDetailsToSchema(&details)
 
 	rawState[DescribeOutputAttributeName] = []any{detailsSchema}
 

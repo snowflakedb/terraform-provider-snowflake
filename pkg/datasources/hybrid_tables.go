@@ -62,7 +62,7 @@ var hybridTablesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE TABLE.",
 					Elem: &schema.Resource{
-						Schema: schemas.DescribeHybridTableSchema,
+						Schema: schemas.DescribeHybridTableDetailsSchema,
 					},
 				},
 				resources.ParametersAttributeName: {

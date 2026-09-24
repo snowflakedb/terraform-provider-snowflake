@@ -108,7 +108,7 @@ var computePoolSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE COMPUTE POOL` for the given compute pool.",
 		Elem: &schema.Resource{
-			Schema: schemas.DescribeComputePoolSchema,
+			Schema: schemas.DescribeComputePoolDetailsSchema,
 		},
 	},
 }
@@ -271,7 +271,7 @@ func ReadComputePoolFunc(withExternalChangesMarking bool) schema.ReadContextFunc
 		}
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ComputePoolToSchema(computePool)}),
-			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ComputePoolDetailsToSchema(*computePoolDetails)}),
+			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ComputePoolDetailsToSchema(computePoolDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set("min_nodes", computePool.MinNodes),
 			d.Set("max_nodes", computePool.MaxNodes),

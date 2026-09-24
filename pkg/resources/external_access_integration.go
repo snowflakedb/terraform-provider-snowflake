@@ -227,7 +227,7 @@ func ReadExternalAccessIntegrationFunc(withExternalChangesMarking bool) schema.R
 			d.Set("comment", details.Comment),
 			d.Set("allowed_network_rules", collections.Map(details.AllowedNetworkRules, sdk.SchemaObjectIdentifier.FullyQualifiedName)),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ExternalAccessIntegrationToSchema(externalAccessIntegration)}),
-			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ExternalAccessIntegrationDetailsToSchema(*details)}),
+			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ExternalAccessIntegrationDetailsToSchema(details)}),
 		)
 
 		return diag.FromErr(errs)

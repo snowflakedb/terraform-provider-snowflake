@@ -42,7 +42,7 @@ var networkRulesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE NETWORK RULE.",
 					Elem: &schema.Resource{
-						Schema: schemas.DescribeNetworkRuleSchema,
+						Schema: schemas.DescribeNetworkRuleDetailsSchema,
 					},
 				},
 			},

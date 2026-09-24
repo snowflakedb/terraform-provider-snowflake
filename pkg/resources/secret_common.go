@@ -54,7 +54,7 @@ var secretCommonSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE SECRET` for the given secret.",
 		Elem: &schema.Resource{
-			Schema: schemas.DescribeSecretSchema,
+			Schema: schemas.DescribeSecretDetailsSchema,
 		},
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
@@ -77,7 +77,7 @@ func handleSecretRead(d *schema.ResourceData,
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set("comment", secret.Comment),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.SecretToSchema(secret)}),
-		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.SecretDescriptionToSchema(*secretDescription)}),
+		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.SecretDetailsToSchema(secretDescription)}),
 	)
 }
 

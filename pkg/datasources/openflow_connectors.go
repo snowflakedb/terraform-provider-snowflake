@@ -43,7 +43,7 @@ var openflowConnectorsSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE OPENFLOW CONNECTOR.",
 					Elem: &schema.Resource{
-						Schema: schemas.DescribeOpenflowConnectorSchema,
+						Schema: schemas.DescribeOpenflowConnectorDetailsSchema,
 					},
 				},
 			},
@@ -84,7 +84,7 @@ func ReadOpenflowConnectors(ctx context.Context, d *schema.ResourceData, meta an
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			connectorDetails = []map[string]any{schemas.OpenflowConnectorDetailsToSchema(*describeResult)}
+			connectorDetails = []map[string]any{schemas.OpenflowConnectorDetailsToSchema(describeResult)}
 		}
 		flattenedConnectors[i] = map[string]any{
 			resources.ShowOutputAttributeName:     []map[string]any{schemas.OpenflowConnectorToSchema(&connector)},

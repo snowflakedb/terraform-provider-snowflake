@@ -45,7 +45,7 @@ var tablesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE TABLES.",
 					Elem: &schema.Resource{
-						Schema: schemas.TableDescribeSchema,
+						Schema: schemas.DescribeTableColumnDetailsSchema,
 					},
 				},
 			},
@@ -88,7 +88,7 @@ func ReadTables(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			tableDescriptions = schemas.TableDescriptionToSchema(describeOutput)
+			tableDescriptions = schemas.TableColumnDetailsListToSchema(describeOutput)
 		}
 
 		flattenedTables[i] = map[string]any{
