@@ -7,8 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// edited manually
-// DescribeCatalogIntegrationObjectStorageDetailsSchema represents output of DESCRIBE query for the single object storage catalog integration.
+// DescribeCatalogIntegrationObjectStorageDetailsSchema represents output of DESCRIBE query for the single CatalogIntegrationObjectStorageDetails.
 var DescribeCatalogIntegrationObjectStorageDetailsSchema = map[string]*schema.Schema{
 	"id": {
 		Type:     schema.TypeString,
@@ -36,7 +35,6 @@ var DescribeCatalogIntegrationObjectStorageDetailsSchema = map[string]*schema.Sc
 	},
 }
 
-// edited manually
 var _ = DescribeCatalogIntegrationObjectStorageDetailsSchema
 
 func CatalogIntegrationObjectStorageDetailsToSchema(catalogIntegrationObjectStorageDetails *sdk.CatalogIntegrationObjectStorageDetails) map[string]any {
