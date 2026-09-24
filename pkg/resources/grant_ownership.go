@@ -91,7 +91,7 @@ var grantOwnershipSchema = map[string]*schema.Schema{
 					Description: "Configures the privilege to be granted on all objects in either a database or schema.",
 					MaxItems:    1,
 					Elem: &schema.Resource{
-						Schema: grantOwnershipBulkOperationSchema("all", sdk.ValidGrantOwnershipAllPluralObjectTypesString),
+						Schema: grantOwnershipBulkOperationSchema("all"),
 					},
 					ExactlyOneOf: []string{
 						"on.0.object_name",
@@ -106,7 +106,7 @@ var grantOwnershipSchema = map[string]*schema.Schema{
 					Description: "Configures the privilege to be granted on all objects in either a database or schema.",
 					MaxItems:    1,
 					Elem: &schema.Resource{
-						Schema: grantOwnershipBulkOperationSchema("future", sdk.ValidGrantOwnershipFuturePluralObjectTypesString),
+						Schema: grantOwnershipBulkOperationSchema("future"),
 					},
 					ExactlyOneOf: []string{
 						"on.0.object_name",
@@ -119,13 +119,13 @@ var grantOwnershipSchema = map[string]*schema.Schema{
 	},
 }
 
-func grantOwnershipBulkOperationSchema(branchName string, validObjectTypesPlural []string) map[string]*schema.Schema {
+func grantOwnershipBulkOperationSchema(branchName string) map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"object_type_plural": {
 			Type:             schema.TypeString,
 			Required:         true,
 			ForceNew:         true,
-			Description:      objectTypeExamplesDescription(joinWithSpace("Specifies the type of object in plural form on which you are transferring ownership.", snowflakeDocumentationLink(snowflakeGrantOwnershipRequiredParametersDocs)), validObjectTypesPlural),
+			Description:      joinWithSpace("Specifies the type of object in plural form on which you are transferring ownership.", snowflakeDocumentationLink(snowflakeGrantOwnershipRequiredParametersDocs)),
 			ValidateDiagFunc: sdkValidation(sdk.ToPluralObjectType),
 		},
 		"in_database": {
