@@ -121,12 +121,12 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.CatalogIntegrationOpenCatalogDetails{}, IsDescribe: true, SkipFields: []string{"rest_config", "rest_authentication"}, AdditionalMapping: true},
 	{ObjectStruct: sdk.ComputePoolDetails{}, IsDescribe: true, SkipFields: []string{"backup_instance_families"}, AdditionalMapping: true},
 	{ObjectStruct: sdk.CortexAgentDetails{}, IsDescribe: true, SkipFields: []string{"profile"}, AdditionalMapping: true},
-	// SkipFields `attribute_columns` / `columns` re-added in ext.
-	// TODO [next PRs]: un-skip attribute_columns / columns once MapToSchemaField maps []string.
-	// TODO [next PRs]: un-skip serving_state / primary_key_columns / scoring_profile_count / full_index_build_interval_days (stale public schema).
+	// SkipFields `attribute_columns` / `columns` / `primary_key_columns` re-added in ext.
+	// TODO [next PRs]: un-skip attribute_columns / columns / primary_key_columns once MapToSchemaField maps []string.
+	// TODO [next PRs]: un-skip serving_state / scoring_profile_count / full_index_build_interval_days (stale public schema).
 	{ObjectStruct: sdk.CortexSearchServiceDetails{}, IsDescribe: true, SkipFields: []string{
-		"attribute_columns", "columns",
-		"serving_state", "primary_key_columns", "scoring_profile_count", "full_index_build_interval_days",
+		"attribute_columns", "columns", "primary_key_columns",
+		"serving_state", "scoring_profile_count", "full_index_build_interval_days",
 	}, AdditionalMapping: true},
 	{ObjectStruct: sdk.DynamicTableDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.EventTableDetails{}, IsDescribe: true},

@@ -26,6 +26,15 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.21.x ➞ v2.22.0
 
+### *(new feature)* New fields in `snowflake_cortex_search_service` resource
+
+We added `primary_key` and `auto_suspend` fields to the `snowflake_cortex_search_service` resource.
+
+- `primary_key` specifies the column(s) in the base table that uniquely identify each row, enabling optimized (incremental) refreshes when the underlying data changes. It is updated in place, and removing it from the configuration unsets it.
+- `auto_suspend` specifies the number of seconds of inactivity after which the Cortex search service automatically suspends its serving compute. Removing it from the configuration resets it to the Snowflake default (no automatic suspension) instead of leaving the previously set value in place. External changes to this field are not detected, because Snowflake does not return it on `SHOW` or `DESCRIBE`.
+
+No configuration changes are needed for existing configurations; both fields are optional.
+
 ### *(new feature)* Experimental features lifecycle and `experimental_features_disabled`
 
 Experimental features now follow a BCR-like lifecycle so successful experiments can become default provider behavior in a **minor** release:
