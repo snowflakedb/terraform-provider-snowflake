@@ -215,7 +215,7 @@ var grantPrivilegesToDatabaseRoleSchema = map[string]*schema.Schema{
 					Description: "Configures the privilege to be granted on all objects in either a database or schema.",
 					MaxItems:    1,
 					Elem: &schema.Resource{
-						Schema: getGrantPrivilegesOnDatabaseRoleBulkOperationSchema(sdk.ValidGrantToAllPluralObjectTypesString, "all"),
+						Schema: getGrantPrivilegesOnDatabaseRoleBulkOperationSchema("all"),
 					},
 					ConflictsWith: []string{
 						"on_schema_object.0.object_type",
@@ -234,7 +234,7 @@ var grantPrivilegesToDatabaseRoleSchema = map[string]*schema.Schema{
 					Description: "Configures the privilege to be granted on future objects in either a database or schema.",
 					MaxItems:    1,
 					Elem: &schema.Resource{
-						Schema: getGrantPrivilegesOnDatabaseRoleBulkOperationSchema(sdk.ValidGrantToFuturePluralObjectTypesString, "future"),
+						Schema: getGrantPrivilegesOnDatabaseRoleBulkOperationSchema("future"),
 					},
 					ConflictsWith: []string{
 						"on_schema_object.0.object_type",
@@ -253,7 +253,7 @@ var grantPrivilegesToDatabaseRoleSchema = map[string]*schema.Schema{
 					Description: joinWithSpace("Configures an inherited privilege to be granted on all current and future objects of a given type in a database or a schema. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.", experimentalFeatureEnabledByDefaultDescription(experimentalfeatures.InheritedGrants)),
 					MaxItems:    1,
 					Elem: &schema.Resource{
-						Schema: getGrantPrivilegesOnDatabaseRoleBulkOperationSchema(sdk.ValidGrantToAllPluralObjectTypesString, "inherited"),
+						Schema: getGrantPrivilegesOnDatabaseRoleBulkOperationSchema("inherited"),
 					},
 					ConflictsWith: []string{
 						"on_schema_object.0.object_type",
@@ -270,7 +270,7 @@ var grantPrivilegesToDatabaseRoleSchema = map[string]*schema.Schema{
 	},
 }
 
-func getGrantPrivilegesOnDatabaseRoleBulkOperationSchema(validGrantToObjectTypes []string, block string) map[string]*schema.Schema {
+func getGrantPrivilegesOnDatabaseRoleBulkOperationSchema(block string) map[string]*schema.Schema {
 	exactlyOneOf := []string{
 		fmt.Sprintf("on_schema_object.0.%s.0.in_database", block),
 		fmt.Sprintf("on_schema_object.0.%s.0.in_schema", block),
@@ -280,7 +280,7 @@ func getGrantPrivilegesOnDatabaseRoleBulkOperationSchema(validGrantToObjectTypes
 			Type:             schema.TypeString,
 			Required:         true,
 			ForceNew:         true,
-			Description:      objectTypeExamplesDescription(joinWithSpace("The plural object type of the schema object on which privileges will be granted.", snowflakeDocumentationLink(snowflakeGrantPrivilegeRequiredParametersDocs)), validGrantToObjectTypes),
+			Description:      joinWithSpace("The plural object type of the schema object on which privileges will be granted.", snowflakeDocumentationLink(snowflakeGrantPrivilegeRequiredParametersDocs)),
 			ValidateDiagFunc: sdkValidation(sdk.ToPluralObjectType),
 		},
 		"in_database": {

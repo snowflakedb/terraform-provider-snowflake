@@ -850,16 +850,7 @@ var tablesDef = g.NewInterface(
 		tableCheckConstraintDetails,
 		tableSelectCheckConstraints,
 	).
-	WithEnums(TableConstraintTypeDef, TableScopeEnumDef, TableKindEnumDef, CloneMomentEnumDef, ReclusterStateEnumDef, MatchTypeEnumDef).
-	// TODO(next-pr): drop this allow-list once SDK unit tests move to generated + *_ext_test.go
-	WithAllowedGenerationParts(
-		g.PartDefault,
-		g.PartDto,
-		g.PartDtoBuilders,
-		g.PartImpl,
-		g.PartValidations,
-		g.PartEnums,
-	)
+	WithEnums(TableConstraintTypeDef, TableScopeEnumDef, TableKindEnumDef, CloneMomentEnumDef, ReclusterStateEnumDef, MatchTypeEnumDef)
 
 var tableSetAggregationPolicy = g.NewQueryStruct("TableSetAggregationPolicy").
 	SQL("SET").

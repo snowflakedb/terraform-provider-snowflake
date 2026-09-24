@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"slices"
 	"strings"
 )
 
@@ -76,60 +75,6 @@ var validGrantOwnershipObjectTypes = []ObjectType{
 	ObjectTypeUser,
 	ObjectTypeView,
 	ObjectTypeWarehouse,
-}
-
-// Database roles are excluded
-var validGrantOwnershipBulkObjectTypes = []ObjectType{
-	ObjectTypeAgent,
-	ObjectTypeAggregationPolicy,
-	ObjectTypeAlert,
-	ObjectTypeAuthenticationPolicy,
-	ObjectTypeComputePool,
-	ObjectTypeCortexSearchService,
-	ObjectTypeDataMetricFunction,
-	ObjectTypeDatabase,
-	ObjectTypeDbtProject,
-	ObjectTypeDynamicTable,
-	ObjectTypeEventTable,
-	ObjectTypeExperiment,
-	ObjectTypeExternalTable,
-	ObjectTypeExternalVolume,
-	ObjectTypeFailoverGroup,
-	ObjectTypeFileFormat,
-	ObjectTypeFunction,
-	ObjectTypeGitRepository,
-	ObjectTypeHybridTable,
-	ObjectTypeIcebergTable,
-	ObjectTypeImageRepository,
-	ObjectTypeIntegration,
-	ObjectTypeInteractiveTable,
-	ObjectTypeMaterializedView,
-	ObjectTypeNetworkPolicy,
-	ObjectTypeNetworkRule,
-	ObjectTypePackagesPolicy,
-	ObjectTypePipe,
-	ObjectTypeProcedure,
-	ObjectTypeMaskingPolicy,
-	ObjectTypePasswordPolicy,
-	ObjectTypeProjectionPolicy,
-	ObjectTypeReplicationGroup,
-	ObjectTypeResourceMonitor,
-	ObjectTypeRole,
-	ObjectTypeRowAccessPolicy,
-	ObjectTypeSchema,
-	ObjectTypeSessionPolicy,
-	ObjectTypeSecret,
-	ObjectTypeSemanticView,
-	ObjectTypeSequence,
-	ObjectTypeStage,
-	ObjectTypeStream,
-	ObjectTypeTable,
-	ObjectTypeTag,
-	ObjectTypeTask,
-	ObjectTypeUser,
-	ObjectTypeView,
-	ObjectTypeWarehouse,
-	ObjectTypeWorkspace,
 }
 
 var validGrantToAccountObjectTypes = []ObjectType{
@@ -204,90 +149,21 @@ var validGrantToSchemaObjectTypes = []ObjectType{
 	ObjectTypeWorkspace,
 }
 
-// TODO(SNOW-2370066): Adjust after adding tests
-// based on https://docs.snowflake.com/en/sql-reference/sql/grant-privilege#restrictions-and-limitations
-var invalidGrantToAllObjectTypes = []ObjectType{
-	ObjectTypeComputePool,
-	ObjectTypeExternalFunction,
-	ObjectTypeGateway,
-	ObjectTypeJoinPolicy,
-	ObjectTypeNotebookProject,
-	// ObjectTypeAggregationPolicy,
-	// ObjectTypeMaskingPolicy,
-	// ObjectTypePackagesPolicy,
-	// ObjectTypeProjectionPolicy,
-	// ObjectTypeRowAccessPolicy,
-	// ObjectTypeSessionPolicy,
-	ObjectTypeStorageLifecyclePolicy,
-	// ObjectTypeTag,
-	ObjectTypeWarehouse,
-}
-
-// based on https://docs.snowflake.com/en/sql-reference/sql/grant-privilege#restrictions-and-limitations
-var invalidGrantToFutureObjectTypes = []ObjectType{
-	ObjectTypeComputePool,
-	ObjectTypeExperiment,
-	ObjectTypeExternalFunction,
-	ObjectTypeGateway,
-	ObjectTypeAggregationPolicy,
-	ObjectTypeJoinPolicy,
-	ObjectTypeNotebookProject,
-	ObjectTypeMaskingPolicy,
-	ObjectTypePackagesPolicy,
-	ObjectTypeProjectionPolicy,
-	ObjectTypeRowAccessPolicy,
-	ObjectTypeSessionPolicy,
-	ObjectTypeSnapshot,
-	ObjectTypeStorageLifecyclePolicy,
-	ObjectTypeTag,
-	ObjectTypeWarehouse,
-}
-
-// A list of object types that are not supported for grant to all or future.
-var invalidGrantToPluralObjectTypes = []ObjectType{
-	ObjectTypeSnowflakeIntelligence,
-}
-
-// based on https://docs.snowflake.com/en/sql-reference/sql/grant-ownership#required-parameters
-var invalidGrantOwnershipFutureObjectTypes = []ObjectType{
-	ObjectTypeExperiment,
-}
-
 var (
-	ValidGrantOwnershipObjectTypesString             = make([]string, len(validGrantOwnershipObjectTypes))
-	ValidGrantOwnershipAllPluralObjectTypesString    = make([]string, len(validGrantOwnershipBulkObjectTypes))
-	ValidGrantOwnershipFuturePluralObjectTypesString = make([]string, 0)
-	ValidGrantToAccountObjectTypesString             = make([]string, len(validGrantToAccountObjectTypes))
-	ValidGrantToAccountObjectPluralTypesString       = make([]string, 0)
-	ValidGrantToSchemaObjectTypesString              = make([]string, len(validGrantToSchemaObjectTypes))
-	ValidGrantToAllPluralObjectTypesString           = make([]string, 0)
-	ValidGrantToFuturePluralObjectTypesString        = make([]string, 0)
+	ValidGrantOwnershipObjectTypesString = make([]string, len(validGrantOwnershipObjectTypes))
+	ValidGrantToAccountObjectTypesString = make([]string, len(validGrantToAccountObjectTypes))
+	ValidGrantToSchemaObjectTypesString  = make([]string, len(validGrantToSchemaObjectTypes))
 )
 
 func init() {
 	for i, objectType := range validGrantOwnershipObjectTypes {
 		ValidGrantOwnershipObjectTypesString[i] = objectType.String()
 	}
-	for i, objectType := range validGrantOwnershipBulkObjectTypes {
-		ValidGrantOwnershipAllPluralObjectTypesString[i] = objectType.Plural().String()
-		if !slices.Contains(invalidGrantOwnershipFutureObjectTypes, objectType) {
-			ValidGrantOwnershipFuturePluralObjectTypesString = append(ValidGrantOwnershipFuturePluralObjectTypesString, objectType.Plural().String())
-		}
-	}
 	for i, objectType := range validGrantToAccountObjectTypes {
 		ValidGrantToAccountObjectTypesString[i] = objectType.String()
-		if !slices.Contains(invalidGrantToPluralObjectTypes, objectType) {
-			ValidGrantToAccountObjectPluralTypesString = append(ValidGrantToAccountObjectPluralTypesString, objectType.Plural().String())
-		}
 	}
 	for i, objectType := range validGrantToSchemaObjectTypes {
 		ValidGrantToSchemaObjectTypesString[i] = objectType.String()
-		if !slices.Contains(invalidGrantToAllObjectTypes, objectType) {
-			ValidGrantToAllPluralObjectTypesString = append(ValidGrantToAllPluralObjectTypesString, objectType.Plural().String())
-		}
-		if !slices.Contains(invalidGrantToFutureObjectTypes, objectType) {
-			ValidGrantToFuturePluralObjectTypesString = append(ValidGrantToFuturePluralObjectTypesString, objectType.Plural().String())
-		}
 	}
 }
 

@@ -8,26 +8,729 @@ import (
 
 func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableConstraintType]{"TableConstraintType", AllTableConstraintTypes, ToTableConstraintType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableScope]{"TableScope", AllTableScopes, ToTableScope})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableKind]{"TableKind", AllTableKinds, ToTableKind})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[CloneMoment]{"CloneMoment", AllCloneMoments, ToCloneMoment})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ReclusterState]{"ReclusterState", AllReclusterStates, ToReclusterState})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MatchType]{"MatchType", AllMatchTypes, ToMatchType})
 }
 
 var tablesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
 const (
-	case_Tables_validation_DescribeSearchOptimization_name_ValidIdentifier testCaseName = "validation_DescribeSearchOptimization_name_ValidIdentifier"
-	case_Tables_sql_DescribeSearchOptimization_basic                       testCaseName = "sql_DescribeSearchOptimization_basic"
-	case_Tables_validation_SelectTableConstraints_Database_ValidIdentifier testCaseName = "validation_SelectTableConstraints_Database_ValidIdentifier"
-	case_Tables_sql_SelectTableConstraints_basic                           testCaseName = "sql_SelectTableConstraints_basic"
-	case_Tables_validation_SelectCheckConstraints_Database_ValidIdentifier testCaseName = "validation_SelectCheckConstraints_Database_ValidIdentifier"
-	case_Tables_sql_SelectCheckConstraints_basic                           testCaseName = "sql_SelectCheckConstraints_basic"
+	case_Tables_validation_Create_name_ValidIdentifier                                                       testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Tables_validation_Create_opts_StageFileFormat_ExactlyOneValueSet_NoneSet                            testCaseName = "validation_Create_opts_StageFileFormat_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Create_opts_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet                     testCaseName = "validation_Create_opts_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_sql_Create_basic                                                                             testCaseName = "sql_Create_basic"
+	case_Tables_sql_Create_all                                                                               testCaseName = "sql_Create_all"
+	case_Tables_validation_CreateAsSelect_name_ValidIdentifier                                               testCaseName = "validation_CreateAsSelect_name_ValidIdentifier"
+	case_Tables_validation_CreateAsSelect_Columns_ValidateValueSet                                           testCaseName = "validation_CreateAsSelect_Columns_ValidateValueSet"
+	case_Tables_validation_CreateAsSelect_Query_ValidateValueSet                                             testCaseName = "validation_CreateAsSelect_Query_ValidateValueSet"
+	case_Tables_sql_CreateAsSelect_basic                                                                     testCaseName = "sql_CreateAsSelect_basic"
+	case_Tables_sql_CreateAsSelect_all                                                                       testCaseName = "sql_CreateAsSelect_all"
+	case_Tables_validation_CreateUsingTemplate_name_ValidIdentifier                                          testCaseName = "validation_CreateUsingTemplate_name_ValidIdentifier"
+	case_Tables_sql_CreateUsingTemplate_basic                                                                testCaseName = "sql_CreateUsingTemplate_basic"
+	case_Tables_sql_CreateUsingTemplate_all                                                                  testCaseName = "sql_CreateUsingTemplate_all"
+	case_Tables_validation_CreateLike_name_ValidIdentifier                                                   testCaseName = "validation_CreateLike_name_ValidIdentifier"
+	case_Tables_validation_CreateLike_SourceTable_ValidIdentifier                                            testCaseName = "validation_CreateLike_SourceTable_ValidIdentifier"
+	case_Tables_sql_CreateLike_basic                                                                         testCaseName = "sql_CreateLike_basic"
+	case_Tables_sql_CreateLike_all                                                                           testCaseName = "sql_CreateLike_all"
+	case_Tables_validation_CreateClone_name_ValidIdentifier                                                  testCaseName = "validation_CreateClone_name_ValidIdentifier"
+	case_Tables_validation_CreateClone_SourceTable_ValidIdentifier                                           testCaseName = "validation_CreateClone_SourceTable_ValidIdentifier"
+	case_Tables_sql_CreateClone_basic                                                                        testCaseName = "sql_CreateClone_basic"
+	case_Tables_sql_CreateClone_all                                                                          testCaseName = "sql_CreateClone_all"
+	case_Tables_validation_Alter_name_ValidIdentifier                                                        testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Tables_validation_Alter_RenameTo_ValidIdentifierIfSet                                               testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_Tables_validation_Alter_SwapWith_ValidIdentifierIfSet                                               testCaseName = "validation_Alter_SwapWith_ValidIdentifierIfSet"
+	case_Tables_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                             testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                      testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet                            testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet                     testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_opts_ColumnAction_ExactlyOneValueSet_NoneSet                                testCaseName = "validation_Alter_opts_ColumnAction_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_ColumnAction_ExactlyOneValueSet_MoreThanOneSet                         testCaseName = "validation_Alter_opts_ColumnAction_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_NoneSet                          testCaseName = "validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_MoreThanOneSet                   testCaseName = "validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_OneValidOneInvalid               testCaseName = "validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Tables_validation_Alter_opts_ConstraintAction_ExactlyOneValueSet_NoneSet                            testCaseName = "validation_Alter_opts_ConstraintAction_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_ConstraintAction_ExactlyOneValueSet_MoreThanOneSet                     testCaseName = "validation_Alter_opts_ConstraintAction_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_opts_ConstraintAction_Alter_ExactlyOneValueSet_NoneSet                      testCaseName = "validation_Alter_opts_ConstraintAction_Alter_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_ConstraintAction_Alter_ExactlyOneValueSet_MoreThanOneSet               testCaseName = "validation_Alter_opts_ConstraintAction_Alter_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_opts_ConstraintAction_Drop_ExactlyOneValueSet_NoneSet                       testCaseName = "validation_Alter_opts_ConstraintAction_Drop_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_ConstraintAction_Drop_ExactlyOneValueSet_MoreThanOneSet                testCaseName = "validation_Alter_opts_ConstraintAction_Drop_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_NoneSet                         testCaseName = "validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_MoreThanOneSet                  testCaseName = "validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_ExternalTableAction_Drop_Names_ValidateValueSet                             testCaseName = "validation_Alter_ExternalTableAction_Drop_Names_ValidateValueSet"
+	case_Tables_validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_NoneSet                    testCaseName = "validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_MoreThanOneSet             testCaseName = "validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_NoneSet            testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet     testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Tables_validation_Alter_opts_Set_StageFileFormat_ExactlyOneValueSet_NoneSet                         testCaseName = "validation_Alter_opts_Set_StageFileFormat_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_Set_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet                  testCaseName = "validation_Alter_opts_Set_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_AddStorageLifecyclePolicy_StorageLifecyclePolicy_ValidIdentifier            testCaseName = "validation_Alter_AddStorageLifecyclePolicy_StorageLifecyclePolicy_ValidIdentifier"
+	case_Tables_validation_Alter_AddStorageLifecyclePolicy_On_ValidateValueSet                               testCaseName = "validation_Alter_AddStorageLifecyclePolicy_On_ValidateValueSet"
+	case_Tables_sql_Alter_RenameTo                                                                           testCaseName = "sql_Alter_RenameTo"
+	case_Tables_sql_Alter_SwapWith                                                                           testCaseName = "sql_Alter_SwapWith"
+	case_Tables_sql_Alter_ClusteringAction                                                                   testCaseName = "sql_Alter_ClusteringAction"
+	case_Tables_sql_Alter_ColumnAction                                                                       testCaseName = "sql_Alter_ColumnAction"
+	case_Tables_sql_Alter_ConstraintAction                                                                   testCaseName = "sql_Alter_ConstraintAction"
+	case_Tables_sql_Alter_ExternalTableAction                                                                testCaseName = "sql_Alter_ExternalTableAction"
+	case_Tables_sql_Alter_SearchOptimizationAction                                                           testCaseName = "sql_Alter_SearchOptimizationAction"
+	case_Tables_sql_Alter_Set                                                                                testCaseName = "sql_Alter_Set"
+	case_Tables_sql_Alter_SetTags                                                                            testCaseName = "sql_Alter_SetTags"
+	case_Tables_sql_Alter_UnsetTags                                                                          testCaseName = "sql_Alter_UnsetTags"
+	case_Tables_sql_Alter_Unset                                                                              testCaseName = "sql_Alter_Unset"
+	case_Tables_sql_Alter_AddRowAccessPolicy                                                                 testCaseName = "sql_Alter_AddRowAccessPolicy"
+	case_Tables_sql_Alter_DropRowAccessPolicy                                                                testCaseName = "sql_Alter_DropRowAccessPolicy"
+	case_Tables_sql_Alter_DropAndAddRowAccessPolicy                                                          testCaseName = "sql_Alter_DropAndAddRowAccessPolicy"
+	case_Tables_sql_Alter_DropAllRowAccessPolicies                                                           testCaseName = "sql_Alter_DropAllRowAccessPolicies"
+	case_Tables_sql_Alter_AddStorageLifecyclePolicy                                                          testCaseName = "sql_Alter_AddStorageLifecyclePolicy"
+	case_Tables_sql_Alter_DropStorageLifecyclePolicy                                                         testCaseName = "sql_Alter_DropStorageLifecyclePolicy"
+	case_Tables_validation_Drop_name_ValidIdentifier                                                         testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Tables_validation_Drop_opts_ConflictingFields                                                       testCaseName = "validation_Drop_opts_ConflictingFields"
+	case_Tables_sql_Drop_basic                                                                               testCaseName = "sql_Drop_basic"
+	case_Tables_sql_Drop_all                                                                                 testCaseName = "sql_Drop_all"
+	case_Tables_sql_Show_basic                                                                               testCaseName = "sql_Show_basic"
+	case_Tables_sql_Show_all                                                                                 testCaseName = "sql_Show_all"
+	case_Tables_sql_Show_Like                                                                                testCaseName = "sql_Show_Like"
+	case_Tables_sql_Show_In                                                                                  testCaseName = "sql_Show_In"
+	case_Tables_sql_Show_StartsWith                                                                          testCaseName = "sql_Show_StartsWith"
+	case_Tables_sql_Show_Limit                                                                               testCaseName = "sql_Show_Limit"
+	case_Tables_validation_DescribeColumns_name_ValidIdentifier                                              testCaseName = "validation_DescribeColumns_name_ValidIdentifier"
+	case_Tables_sql_DescribeColumns_basic                                                                    testCaseName = "sql_DescribeColumns_basic"
+	case_Tables_validation_DescribeStage_name_ValidIdentifier                                                testCaseName = "validation_DescribeStage_name_ValidIdentifier"
+	case_Tables_sql_DescribeStage_basic                                                                      testCaseName = "sql_DescribeStage_basic"
+	case_Tables_validation_DescribeSearchOptimization_name_ValidIdentifier                                   testCaseName = "validation_DescribeSearchOptimization_name_ValidIdentifier"
+	case_Tables_sql_DescribeSearchOptimization_basic                                                         testCaseName = "sql_DescribeSearchOptimization_basic"
+	case_Tables_validation_SelectTableConstraints_Database_ValidIdentifier                                   testCaseName = "validation_SelectTableConstraints_Database_ValidIdentifier"
+	case_Tables_sql_SelectTableConstraints_basic                                                             testCaseName = "sql_SelectTableConstraints_basic"
+	case_Tables_validation_SelectCheckConstraints_Database_ValidIdentifier                                   testCaseName = "validation_SelectCheckConstraints_Database_ValidIdentifier"
+	case_Tables_sql_SelectCheckConstraints_basic                                                             testCaseName = "sql_SelectCheckConstraints_basic"
 )
 
 type TablesTestsContext struct {
+	Create                     *sdkTestCtx[*CreateTableOptions]
+	CreateAsSelect             *sdkTestCtx[*CreateAsSelectTableOptions]
+	CreateUsingTemplate        *sdkTestCtx[*CreateUsingTemplateTableOptions]
+	CreateLike                 *sdkTestCtx[*CreateLikeTableOptions]
+	CreateClone                *sdkTestCtx[*CreateCloneTableOptions]
+	Alter                      *sdkTestCtx[*AlterTableOptions]
+	Drop                       *sdkTestCtx[*DropTableOptions]
+	Show                       *sdkTestCtx[*ShowTableOptions]
+	DescribeColumns            *sdkTestCtx[*DescribeColumnsTableOptions]
+	DescribeStage              *sdkTestCtx[*DescribeStageTableOptions]
 	DescribeSearchOptimization *sdkTestCtx[*DescribeSearchOptimizationTableOptions]
 	SelectTableConstraints     *sdkTestCtx[*SelectTableConstraintsTableOptions]
 	SelectCheckConstraints     *sdkTestCtx[*SelectCheckConstraintsTableOptions]
 }
 
 var tablesTests = TablesTestsContext{
+	Create: newSdkTestCtx[*CreateTableOptions](
+		"Tables", "Create",
+	).
+		withDefaultOpts(func() *CreateTableOptions {
+			return &CreateTableOptions{
+				name: tablesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateTableOptions]{
+				Name:        case_Tables_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateTableOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateTableOptions]{
+				Name:        case_Tables_validation_Create_opts_StageFileFormat_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateTableOptions.StageFileFormat", "FormatName", "FileFormatType"),
+				DefaultModify: func(opts *CreateTableOptions) {
+					opts.StageFileFormat = &LegacyFileFormat{}
+					opts.StageFileFormat.FormatName = nil
+					opts.StageFileFormat.FileFormatType = nil
+				},
+			},
+			validationCase[*CreateTableOptions]{
+				Name:        case_Tables_validation_Create_opts_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateTableOptions.StageFileFormat", "FormatName", "FileFormatType"),
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateTableOptions]{
+				Name:           case_Tables_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateTableOptions]{
+				Name: case_Tables_sql_Create_all,
+			},
+		),
+	CreateAsSelect: newSdkTestCtx[*CreateAsSelectTableOptions](
+		"Tables", "CreateAsSelect",
+	).
+		withDefaultOpts(func() *CreateAsSelectTableOptions {
+			return &CreateAsSelectTableOptions{
+				name: tablesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateAsSelectTableOptions]{
+				Name:        case_Tables_validation_CreateAsSelect_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateAsSelectTableOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateAsSelectTableOptions]{
+				Name:        case_Tables_validation_CreateAsSelect_Columns_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateAsSelectTableOptions", "Columns"),
+				DefaultModify: func(opts *CreateAsSelectTableOptions) {
+					opts.Columns = nil
+				},
+			},
+			validationCase[*CreateAsSelectTableOptions]{
+				Name:        case_Tables_validation_CreateAsSelect_Query_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateAsSelectTableOptions", "Query"),
+				DefaultModify: func(opts *CreateAsSelectTableOptions) {
+					opts.Query = ""
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateAsSelectTableOptions]{
+				Name:           case_Tables_sql_CreateAsSelect_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateAsSelectTableOptions]{
+				Name: case_Tables_sql_CreateAsSelect_all,
+			},
+		),
+	CreateUsingTemplate: newSdkTestCtx[*CreateUsingTemplateTableOptions](
+		"Tables", "CreateUsingTemplate",
+	).
+		withDefaultOpts(func() *CreateUsingTemplateTableOptions {
+			return &CreateUsingTemplateTableOptions{
+				name: tablesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateUsingTemplateTableOptions]{
+				Name:        case_Tables_validation_CreateUsingTemplate_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateUsingTemplateTableOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateUsingTemplateTableOptions]{
+				Name:           case_Tables_sql_CreateUsingTemplate_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateUsingTemplateTableOptions]{
+				Name: case_Tables_sql_CreateUsingTemplate_all,
+			},
+		),
+	CreateLike: newSdkTestCtx[*CreateLikeTableOptions](
+		"Tables", "CreateLike",
+	).
+		withDefaultOpts(func() *CreateLikeTableOptions {
+			return &CreateLikeTableOptions{
+				name: tablesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateLikeTableOptions]{
+				Name:        case_Tables_validation_CreateLike_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateLikeTableOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateLikeTableOptions]{
+				Name:        case_Tables_validation_CreateLike_SourceTable_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateLikeTableOptions) {
+					opts.SourceTable = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateLikeTableOptions]{
+				Name:           case_Tables_sql_CreateLike_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateLikeTableOptions]{
+				Name: case_Tables_sql_CreateLike_all,
+			},
+		),
+	CreateClone: newSdkTestCtx[*CreateCloneTableOptions](
+		"Tables", "CreateClone",
+	).
+		withDefaultOpts(func() *CreateCloneTableOptions {
+			return &CreateCloneTableOptions{
+				name: tablesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateCloneTableOptions]{
+				Name:        case_Tables_validation_CreateClone_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateCloneTableOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateCloneTableOptions]{
+				Name:        case_Tables_validation_CreateClone_SourceTable_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateCloneTableOptions) {
+					opts.SourceTable = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateCloneTableOptions]{
+				Name:           case_Tables_sql_CreateClone_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateCloneTableOptions]{
+				Name: case_Tables_sql_CreateClone_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterTableOptions](
+		"Tables", "Alter",
+	).
+		withDefaultOpts(func() *AlterTableOptions {
+			return &AlterTableOptions{
+				name: tablesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_RenameTo_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.RenameTo = new(emptySchemaObjectIdentifier)
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_SwapWith_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.SwapWith = new(emptySchemaObjectIdentifier)
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions", "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.RenameTo = nil
+					opts.SwapWith = nil
+					opts.ClusteringAction = nil
+					opts.ColumnAction = nil
+					opts.ConstraintAction = nil
+					opts.ExternalTableAction = nil
+					opts.SearchOptimizationAction = nil
+					opts.Set = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+					opts.Unset = nil
+					opts.AddRowAccessPolicy = nil
+					opts.DropRowAccessPolicy = nil
+					opts.DropAndAddRowAccessPolicy = nil
+					opts.DropAllRowAccessPolicies = nil
+					opts.AddStorageLifecyclePolicy = nil
+					opts.DropStorageLifecyclePolicy = nil
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions", "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.RenameTo = new(randomSchemaObjectIdentifier())
+					opts.SwapWith = new(randomSchemaObjectIdentifier())
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ClusteringAction", "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.ClusteringAction = &TableClusteringAction{}
+					opts.ClusteringAction.ClusterBy = nil
+					opts.ClusteringAction.Recluster = nil
+					opts.ClusteringAction.ChangeReclusterState = nil
+					opts.ClusteringAction.DropClusteringKey = nil
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ClusteringAction", "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey"),
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ColumnAction_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ColumnAction", "Add", "Rename", "Alter", "SetMaskingPolicy", "UnsetMaskingPolicy", "SetTags", "UnsetTags", "DropColumns"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.ColumnAction = &TableColumnAction{}
+					opts.ColumnAction.Add = nil
+					opts.ColumnAction.Rename = nil
+					opts.ColumnAction.Alter = nil
+					opts.ColumnAction.SetMaskingPolicy = nil
+					opts.ColumnAction.UnsetMaskingPolicy = nil
+					opts.ColumnAction.SetTags = nil
+					opts.ColumnAction.UnsetTags = nil
+					opts.ColumnAction.DropColumns = nil
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ColumnAction_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ColumnAction", "Add", "Rename", "Alter", "SetMaskingPolicy", "UnsetMaskingPolicy", "SetTags", "UnsetTags", "DropColumns"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.ColumnAction = &TableColumnAction{}
+					opts.ColumnAction.Add = &TableColumnAddAction{}
+					opts.ColumnAction.Rename = &TableColumnRenameAction{}
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ColumnAction.Alter", "DropDefault", "SetDefault", "NotNullConstraint", "DataType", "Comment", "UnsetComment"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.ColumnAction = &TableColumnAction{}
+					opts.ColumnAction.Alter = []TableColumnAlterAction{{}}
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ColumnAction.Alter", "DropDefault", "SetDefault", "NotNullConstraint", "DataType", "Comment", "UnsetComment"),
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_OneValidOneInvalid,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ColumnAction.Alter", "DropDefault", "SetDefault", "NotNullConstraint", "DataType", "Comment", "UnsetComment"),
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ConstraintAction_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ConstraintAction", "Add", "Rename", "Alter", "Drop"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.ConstraintAction = &TableConstraintAction{}
+					opts.ConstraintAction.Add = nil
+					opts.ConstraintAction.Rename = nil
+					opts.ConstraintAction.Alter = nil
+					opts.ConstraintAction.Drop = nil
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ConstraintAction_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ConstraintAction", "Add", "Rename", "Alter", "Drop"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.ConstraintAction = &TableConstraintAction{}
+					opts.ConstraintAction.Add = &OutOfLineConstraint{}
+					opts.ConstraintAction.Rename = &TableConstraintRenameAction{}
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ConstraintAction_Alter_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ConstraintAction.Alter", "ConstraintName", "PrimaryKey", "Unique", "ForeignKey"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.ConstraintAction = &TableConstraintAction{}
+					opts.ConstraintAction.Alter = &TableConstraintAlterAction{}
+					opts.ConstraintAction.Alter.ConstraintName = nil
+					opts.ConstraintAction.Alter.PrimaryKey = nil
+					opts.ConstraintAction.Alter.Unique = nil
+					opts.ConstraintAction.Alter.ForeignKey = nil
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ConstraintAction_Alter_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ConstraintAction.Alter", "ConstraintName", "PrimaryKey", "Unique", "ForeignKey"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.ConstraintAction = &TableConstraintAction{}
+					opts.ConstraintAction.Alter = &TableConstraintAlterAction{}
+					opts.ConstraintAction.Alter.ConstraintName = new("foo")
+					opts.ConstraintAction.Alter.PrimaryKey = new(true)
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ConstraintAction_Drop_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ConstraintAction.Drop", "ConstraintName", "PrimaryKey", "Unique", "ForeignKey"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.ConstraintAction = &TableConstraintAction{}
+					opts.ConstraintAction.Drop = &TableConstraintDropAction{}
+					opts.ConstraintAction.Drop.ConstraintName = nil
+					opts.ConstraintAction.Drop.PrimaryKey = nil
+					opts.ConstraintAction.Drop.Unique = nil
+					opts.ConstraintAction.Drop.ForeignKey = nil
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ConstraintAction_Drop_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ConstraintAction.Drop", "ConstraintName", "PrimaryKey", "Unique", "ForeignKey"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.ConstraintAction = &TableConstraintAction{}
+					opts.ConstraintAction.Drop = &TableConstraintDropAction{}
+					opts.ConstraintAction.Drop.ConstraintName = new("foo")
+					opts.ConstraintAction.Drop.PrimaryKey = new(true)
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ExternalTableAction", "Add", "Rename", "Drop"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.ExternalTableAction = &TableExternalTableAction{}
+					opts.ExternalTableAction.Add = nil
+					opts.ExternalTableAction.Rename = nil
+					opts.ExternalTableAction.Drop = nil
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ExternalTableAction", "Add", "Rename", "Drop"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.ExternalTableAction = &TableExternalTableAction{}
+					opts.ExternalTableAction.Add = &TableExternalTableColumnAddAction{}
+					opts.ExternalTableAction.Rename = &TableExternalTableColumnRenameAction{}
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_ExternalTableAction_Drop_Names_ValidateValueSet,
+				ExpectedErr: errNotSet("AlterTableOptions.ExternalTableAction.Drop", "Names"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.ExternalTableAction = &TableExternalTableAction{}
+					opts.ExternalTableAction.Drop = &TableExternalTableColumnDropAction{}
+					opts.ExternalTableAction.Drop.Names = nil
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.SearchOptimizationAction", "Add", "Drop"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{}
+					opts.SearchOptimizationAction.Add = nil
+					opts.SearchOptimizationAction.Drop = nil
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.SearchOptimizationAction", "Add", "Drop"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{}
+					opts.SearchOptimizationAction.Add = &AddSearchOptimization{}
+					opts.SearchOptimizationAction.Drop = &TableDropSearchOptimization{}
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{}
+					opts.SearchOptimizationAction.Drop = &TableDropSearchOptimization{}
+					opts.SearchOptimizationAction.Drop.On = []TableDropSearchOptimizationOn{{}}
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_Set_StageFileFormat_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.Set.StageFileFormat", "FormatName", "FileFormatType"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.Set = &TableSet{}
+					opts.Set.StageFileFormat = &LegacyFileFormat{}
+					opts.Set.StageFileFormat.FormatName = nil
+					opts.Set.StageFileFormat.FileFormatType = nil
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_Set_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.Set.StageFileFormat", "FormatName", "FileFormatType"),
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_AddStorageLifecyclePolicy_StorageLifecyclePolicy_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.AddStorageLifecyclePolicy = &TableAddStorageLifecyclePolicy{}
+					opts.AddStorageLifecyclePolicy.StorageLifecyclePolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_AddStorageLifecyclePolicy_On_ValidateValueSet,
+				ExpectedErr: errNotSet("AlterTableOptions.AddStorageLifecyclePolicy", "On"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.AddStorageLifecyclePolicy = &TableAddStorageLifecyclePolicy{}
+					opts.AddStorageLifecyclePolicy.On = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_RenameTo,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_SwapWith,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_ClusteringAction,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_ColumnAction,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_ConstraintAction,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_ExternalTableAction,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_SearchOptimizationAction,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_Set,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_UnsetTags,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_Unset,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_AddRowAccessPolicy,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_DropRowAccessPolicy,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_DropAndAddRowAccessPolicy,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_DropAllRowAccessPolicies,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_AddStorageLifecyclePolicy,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_DropStorageLifecyclePolicy,
+			},
+		),
+	Drop: newSdkTestCtx[*DropTableOptions](
+		"Tables", "Drop",
+	).
+		withDefaultOpts(func() *DropTableOptions {
+			return &DropTableOptions{
+				name: tablesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropTableOptions]{
+				Name:        case_Tables_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropTableOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*DropTableOptions]{
+				Name:        case_Tables_validation_Drop_opts_ConflictingFields,
+				ExpectedErr: errOneOf("DropTableOptions", "Cascade", "Restrict"),
+				DefaultModify: func(opts *DropTableOptions) {
+					opts.Cascade = new(true)
+					opts.Restrict = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropTableOptions]{
+				Name:           case_Tables_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropTableOptions]{
+				Name: case_Tables_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowTableOptions](
+		"Tables", "Show",
+	).
+		withDefaultOpts(func() *ShowTableOptions {
+			return &ShowTableOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowTableOptions]{
+				Name:           case_Tables_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowTableOptions]{
+				Name: case_Tables_sql_Show_all,
+			},
+			sqlCase[*ShowTableOptions]{
+				Name: case_Tables_sql_Show_Like,
+			},
+			sqlCase[*ShowTableOptions]{
+				Name: case_Tables_sql_Show_In,
+			},
+			sqlCase[*ShowTableOptions]{
+				Name: case_Tables_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowTableOptions]{
+				Name: case_Tables_sql_Show_Limit,
+			},
+		),
+	DescribeColumns: newSdkTestCtx[*DescribeColumnsTableOptions](
+		"Tables", "DescribeColumns",
+	).
+		withDefaultOpts(func() *DescribeColumnsTableOptions {
+			return &DescribeColumnsTableOptions{
+				name: tablesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeColumnsTableOptions]{
+				Name:        case_Tables_validation_DescribeColumns_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeColumnsTableOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeColumnsTableOptions]{
+				Name:           case_Tables_sql_DescribeColumns_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	DescribeStage: newSdkTestCtx[*DescribeStageTableOptions](
+		"Tables", "DescribeStage",
+	).
+		withDefaultOpts(func() *DescribeStageTableOptions {
+			return &DescribeStageTableOptions{
+				name: tablesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeStageTableOptions]{
+				Name:        case_Tables_validation_DescribeStage_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeStageTableOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeStageTableOptions]{
+				Name:           case_Tables_sql_DescribeStage_basic,
+				NoModifyNeeded: true,
+			},
+		),
 	DescribeSearchOptimization: newSdkTestCtx[*DescribeSearchOptimizationTableOptions](
 		"Tables", "DescribeSearchOptimization",
 	).
@@ -93,6 +796,56 @@ var tablesTests = TablesTestsContext{
 				NoModifyNeeded: true,
 			},
 		),
+}
+
+func TestTables_Create(t *testing.T) {
+	tablesTests.Create.RunValidationCases(t)
+	tablesTests.Create.RunSqlCases(t)
+}
+
+func TestTables_CreateAsSelect(t *testing.T) {
+	tablesTests.CreateAsSelect.RunValidationCases(t)
+	tablesTests.CreateAsSelect.RunSqlCases(t)
+}
+
+func TestTables_CreateUsingTemplate(t *testing.T) {
+	tablesTests.CreateUsingTemplate.RunValidationCases(t)
+	tablesTests.CreateUsingTemplate.RunSqlCases(t)
+}
+
+func TestTables_CreateLike(t *testing.T) {
+	tablesTests.CreateLike.RunValidationCases(t)
+	tablesTests.CreateLike.RunSqlCases(t)
+}
+
+func TestTables_CreateClone(t *testing.T) {
+	tablesTests.CreateClone.RunValidationCases(t)
+	tablesTests.CreateClone.RunSqlCases(t)
+}
+
+func TestTables_Alter(t *testing.T) {
+	tablesTests.Alter.RunValidationCases(t)
+	tablesTests.Alter.RunSqlCases(t)
+}
+
+func TestTables_Drop(t *testing.T) {
+	tablesTests.Drop.RunValidationCases(t)
+	tablesTests.Drop.RunSqlCases(t)
+}
+
+func TestTables_Show(t *testing.T) {
+	tablesTests.Show.RunValidationCases(t)
+	tablesTests.Show.RunSqlCases(t)
+}
+
+func TestTables_DescribeColumns(t *testing.T) {
+	tablesTests.DescribeColumns.RunValidationCases(t)
+	tablesTests.DescribeColumns.RunSqlCases(t)
+}
+
+func TestTables_DescribeStage(t *testing.T) {
+	tablesTests.DescribeStage.RunValidationCases(t)
+	tablesTests.DescribeStage.RunSqlCases(t)
 }
 
 func TestTables_DescribeSearchOptimization(t *testing.T) {
