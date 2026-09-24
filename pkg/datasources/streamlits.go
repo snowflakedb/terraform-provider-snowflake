@@ -92,7 +92,7 @@ var streamlitsSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE STREAMLIT.",
 					Elem: &schema.Resource{
-						Schema: schemas.DescribeStreamlitSchema,
+						Schema: schemas.DescribeStreamlitDetailSchema,
 					},
 				},
 			},
@@ -166,11 +166,7 @@ func ReadStreamlits(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			streamlitDescriptions = make([]map[string]any, 1)
-			streamlitDescriptions[0], err = schemas.StreamlitPropertiesToSchema(*descriptions)
-			if err != nil {
-				return diag.FromErr(err)
-			}
+			streamlitDescriptions = []map[string]any{schemas.StreamlitDetailToSchema(descriptions)}
 		}
 
 		flattenedStreamlits[i] = map[string]any{

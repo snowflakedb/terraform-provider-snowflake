@@ -141,7 +141,7 @@ var externalVolumeSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE EXTERNAL VOLUME` for the given external volume. Because of Terraform limitations, the changes on storage_location field do not mark this field as computed.",
 		Elem: &schema.Resource{
-			Schema: schemas.DescribeExternalVolumeSchema,
+			Schema: schemas.DescribeExternalVolumeDetailsSchema,
 		},
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
@@ -345,7 +345,7 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 
 		storageLocations := readStorageLocations(d, parsedExternalVolumeDescribed, withExternalChangesMarking)
 
-		detailsSchema := schemas.ExternalVolumeDetailsToSchema(parsedExternalVolumeDescribed)
+		detailsSchema := schemas.ExternalVolumeDetailsToSchema(&parsedExternalVolumeDescribed)
 
 		errs := errors.Join(
 			d.Set("comment", externalVolume.Comment),

@@ -227,7 +227,7 @@ var viewSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE VIEW` for the given view.",
 		Elem: &schema.Resource{
-			Schema: schemas.ViewDescribeSchema,
+			Schema: schemas.DescribeViewDetailsSchema,
 		},
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
@@ -586,7 +586,7 @@ func ReadView(withExternalChangesMarking bool) schema.ReadContextFunc {
 		if err != nil {
 			log.Printf("[DEBUG] describing view: %s, err: %s", id.FullyQualifiedName(), err)
 		} else {
-			if err = d.Set(DescribeOutputAttributeName, schemas.ViewDescriptionToSchema(describeResult)); err != nil {
+			if err = d.Set(DescribeOutputAttributeName, schemas.ViewDetailsListToSchema(describeResult)); err != nil {
 				return diag.FromErr(err)
 			}
 			err = handleColumns(d, describeResult, policyRefs)

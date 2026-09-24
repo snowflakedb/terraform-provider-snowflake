@@ -82,7 +82,7 @@ If you change the show output struct in the SDK:
    - SHOW: `{ObjectStruct: sdk.<Singular>{}}` → `Show<Singular>Schema` in `<singular>_gen.go`
    - struct DESCRIBE: `{ObjectStruct: sdk.<Singular>Details{}, IsDescribe: true}` → `Describe<Singular>DetailsSchema` in `<singular>_desc_gen.go`
    - property-row list entry: `{ObjectStruct: sdk.<Type>{}, UsedAsListEntry: true}` → `<Type>Schema` in `<type>_gen.go`
-   - `SkipFields: []string{"snake_case_key"}` omits that key from the schema map and `ToSchema` (use when `*_ext.go` owns the field, or the field should stay omitted)
+   - `SkipFields: []string{"snake_case_key"}` omits that key from the schema map and `ToSchema`. Use when `*_ext.go` owns the field now, when the field is SDK-internal (keep omitted), or when a real SHOW/DESCRIBE property is missing from today’s public schema (skip now, add in a follow-up PR).
    - `AdditionalMapping: true` generates an empty mapper type that must implement `additionalSchemaMapper[T]` in `*_ext.go` (schema keys + mapper). Callers always use generated `XToSchema`. Not inferred from `SkipFields`.
 2. Check if you don't introduce a type that is unsupported (check [supported types](#supported-types)
    and [known limitations](#known-limitations)).

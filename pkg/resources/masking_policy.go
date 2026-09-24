@@ -108,7 +108,7 @@ var maskingPolicySchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE MASKING POLICY` for the given masking policy.",
 		Elem: &schema.Resource{
-			Schema: schemas.DescribeMaskingPolicySchema,
+			Schema: schemas.DescribeMaskingPolicyDetailsSchema,
 		},
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
@@ -320,7 +320,7 @@ func ReadMaskingPolicy(withExternalChangesMarking bool) schema.ReadContextFunc {
 		if err = d.Set(ShowOutputAttributeName, []map[string]any{schemas.MaskingPolicyToSchema(maskingPolicy)}); err != nil {
 			return diag.FromErr(err)
 		}
-		if err = d.Set(DescribeOutputAttributeName, []map[string]any{schemas.MaskingPolicyDescriptionToSchema(*maskingPolicyDescription)}); err != nil {
+		if err = d.Set(DescribeOutputAttributeName, []map[string]any{schemas.MaskingPolicyDetailsToSchema(maskingPolicyDescription)}); err != nil {
 			return diag.FromErr(err)
 		}
 		return nil

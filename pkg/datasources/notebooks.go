@@ -42,7 +42,7 @@ var notebooksSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE NOTEBOOK",
 					Elem: &schema.Resource{
-						Schema: schemas.DescribeNotebookSchema,
+						Schema: schemas.DescribeNotebookDetailsSchema,
 					},
 				},
 			},

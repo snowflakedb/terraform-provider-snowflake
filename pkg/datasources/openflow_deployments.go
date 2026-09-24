@@ -48,7 +48,7 @@ var openflowDeploymentsSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE OPENFLOW DEPLOYMENT.",
 					Elem: &schema.Resource{
-						Schema: schemas.DescribeOpenflowDeploymentSchema,
+						Schema: schemas.DescribeOpenflowDeploymentDetailsSchema,
 					},
 				},
 				resources.ParametersAttributeName: {
@@ -95,7 +95,7 @@ func ReadOpenflowDeployments(ctx context.Context, d *schema.ResourceData, meta a
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			deploymentDetails = []map[string]any{schemas.OpenflowDeploymentDetailsToSchema(*describeResult)}
+			deploymentDetails = []map[string]any{schemas.OpenflowDeploymentDetailsToSchema(describeResult)}
 		}
 		var deploymentParameters []map[string]any
 		if d.Get("with_parameters").(bool) {

@@ -77,7 +77,7 @@ func ReadExternalAccessIntegrations(ctx context.Context, d *schema.ResourceData,
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			describeOutput = []map[string]any{schemas.ExternalAccessIntegrationDetailsToSchema(*details)}
+			describeOutput = []map[string]any{schemas.ExternalAccessIntegrationDetailsToSchema(details)}
 		}
 		flattened[i] = map[string]any{
 			resources.ShowOutputAttributeName:     []map[string]any{schemas.ExternalAccessIntegrationToSchema(&item)},

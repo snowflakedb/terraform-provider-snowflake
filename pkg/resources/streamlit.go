@@ -98,7 +98,7 @@ var streamlitSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE STREAMLIT` for the given streamlit.",
 		Elem: &schema.Resource{
-			Schema: schemas.DescribeStreamlitSchema,
+			Schema: schemas.DescribeStreamlitDetailSchema,
 		},
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
@@ -309,11 +309,7 @@ func ReadContextStreamlit(ctx context.Context, d *schema.ResourceData, meta any)
 	if err = d.Set(ShowOutputAttributeName, []map[string]any{schemas.StreamlitToSchema(streamlit)}); err != nil {
 		return diag.FromErr(err)
 	}
-	schemaDetails, err := schemas.StreamlitPropertiesToSchema(*streamlitDetails)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set(DescribeOutputAttributeName, []map[string]any{schemaDetails}); err != nil {
+	if err = d.Set(DescribeOutputAttributeName, []map[string]any{schemas.StreamlitDetailToSchema(streamlitDetails)}); err != nil {
 		return diag.FromErr(err)
 	}
 

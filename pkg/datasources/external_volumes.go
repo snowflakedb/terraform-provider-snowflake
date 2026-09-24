@@ -39,7 +39,7 @@ var externalVolumesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE EXTERNAL VOLUME.",
 					Elem: &schema.Resource{
-						Schema: schemas.DescribeExternalVolumeSchema,
+						Schema: schemas.DescribeExternalVolumeDetailsSchema,
 					},
 				},
 			},
@@ -79,7 +79,7 @@ func ReadExternalVolumes(ctx context.Context, d *schema.ResourceData, meta any) 
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			evDescriptions = []map[string]any{schemas.ExternalVolumeDetailsToSchema(details)}
+			evDescriptions = []map[string]any{schemas.ExternalVolumeDetailsToSchema(&details)}
 		}
 		flattenedExternalVolumes[i] = map[string]any{
 			resources.ShowOutputAttributeName:     []map[string]any{schemas.ExternalVolumeToSchema(&ev)},

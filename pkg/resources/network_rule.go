@@ -76,7 +76,7 @@ var networkRuleSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE NETWORK RULE` for the given network rule.",
 		Elem: &schema.Resource{
-			Schema: schemas.DescribeNetworkRuleSchema,
+			Schema: schemas.DescribeNetworkRuleDetailsSchema,
 		},
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,

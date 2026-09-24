@@ -104,7 +104,7 @@ var maskingPoliciesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE MASKING POLICY.",
 					Elem: &schema.Resource{
-						Schema: schemas.DescribeMaskingPolicySchema,
+						Schema: schemas.DescribeMaskingPolicyDetailsSchema,
 					},
 				},
 			},
@@ -150,7 +150,7 @@ func ReadMaskingPolicies(ctx context.Context, d *schema.ResourceData, meta any) 
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			policyDescriptions = []map[string]any{schemas.MaskingPolicyDescriptionToSchema(*describeOutput)}
+			policyDescriptions = []map[string]any{schemas.MaskingPolicyDetailsToSchema(describeOutput)}
 		}
 
 		flattenedMaskingPolicies[i] = map[string]any{

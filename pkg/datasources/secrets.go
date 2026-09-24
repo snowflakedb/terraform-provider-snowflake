@@ -88,7 +88,7 @@ var secretsSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE SECRET.",
 					Elem: &schema.Resource{
-						Schema: schemas.DescribeSecretSchema,
+						Schema: schemas.DescribeSecretDetailsSchema,
 					},
 				},
 			},
@@ -128,7 +128,7 @@ func ReadSecrets(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			secretDescriptions = []map[string]any{schemas.SecretDescriptionToSchema(*describeOutput)}
+			secretDescriptions = []map[string]any{schemas.SecretDetailsToSchema(describeOutput)}
 		}
 
 		flattenedSecrets[i] = map[string]any{

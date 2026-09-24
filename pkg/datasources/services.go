@@ -75,7 +75,7 @@ var servicesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE SERVICE.",
 					Elem: &schema.Resource{
-						Schema: schemas.DescribeServiceSchema,
+						Schema: schemas.DescribeServiceDetailsSchema,
 					},
 				},
 			},

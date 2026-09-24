@@ -128,7 +128,7 @@ var openflowConnectorSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE OPENFLOW CONNECTOR` for the given connector.",
 		Elem: &schema.Resource{
-			Schema: schemas.DescribeOpenflowConnectorSchema,
+			Schema: schemas.DescribeOpenflowConnectorDetailsSchema,
 		},
 	},
 }
@@ -305,7 +305,7 @@ func ReadOpenflowConnector(withExternalChangesMarking bool) schema.ReadContextFu
 			d.Set("runtime", sdk.NewSchemaObjectIdentifier(id.DatabaseName(), id.SchemaName(), connector.Runtime).FullyQualifiedName()),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.OpenflowConnectorToSchema(connector)}),
-			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.OpenflowConnectorDetailsToSchema(*connectorDetails)}),
+			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.OpenflowConnectorDetailsToSchema(connectorDetails)}),
 		); errs != nil {
 			return diag.FromErr(errs)
 		}

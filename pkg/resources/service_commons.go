@@ -179,7 +179,7 @@ func serviceBaseSchema(allFieldsForceNew bool) map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Outputs the result of `DESCRIBE SERVICE` for the given service.",
 			Elem: &schema.Resource{
-				Schema: schemas.DescribeServiceSchema,
+				Schema: schemas.DescribeServiceDetailsSchema,
 			},
 		},
 	}

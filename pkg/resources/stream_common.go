@@ -66,7 +66,8 @@ var streamCommonSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE STREAM` for the given stream.",
 		Elem: &schema.Resource{
-			Schema: schemas.DescribeStreamSchema,
+			// DESCRIBE STREAM returns the same row shape as SHOW so reusing the show schema.
+			Schema: schemas.ShowStreamSchema,
 		},
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
@@ -189,7 +190,7 @@ func handleStreamRead(d *schema.ResourceData,
 		d.Set("comment", stream.Comment),
 		d.Set("stream_type", stream.SourceType),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.StreamToSchema(stream)}),
-		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.StreamDescriptionToSchema(*streamDescription)}),
+		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.StreamToSchema(streamDescription)}),
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set("stale", stream.Stale),
 	)

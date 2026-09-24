@@ -44,7 +44,8 @@ var streamsSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE STREAM.",
 					Elem: &schema.Resource{
-						Schema: schemas.DescribeStreamSchema,
+						// DESCRIBE STREAM returns the same row shape as SHOW so reusing the show schema.
+						Schema: schemas.ShowStreamSchema,
 					},
 				},
 			},
@@ -86,7 +87,7 @@ func ReadStreams(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			streamDescriptions = []map[string]any{schemas.StreamDescriptionToSchema(*describeOutput)}
+			streamDescriptions = []map[string]any{schemas.StreamToSchema(describeOutput)}
 		}
 
 		flattenedStreams[i] = map[string]any{

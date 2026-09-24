@@ -83,7 +83,7 @@ func ReadStorageLifecyclePolicies(ctx context.Context, d *schema.ResourceData, m
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			describeOutput = []map[string]any{schemas.StorageLifecyclePolicyDetailsToSchema(*details)}
+			describeOutput = []map[string]any{schemas.StorageLifecyclePolicyDetailsToSchema(details)}
 		}
 		flattened[i] = map[string]any{
 			resources.ShowOutputAttributeName:     []map[string]any{schemas.StorageLifecyclePolicyToSchema(&policy)},

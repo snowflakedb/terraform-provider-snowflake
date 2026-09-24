@@ -75,7 +75,7 @@ var usersSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE USER.",
 					Elem: &schema.Resource{
-						Schema: schemas.UserDescribeSchema,
+						Schema: schemas.DescribeUserDetailsSchema,
 					},
 				},
 				resources.ParametersAttributeName: {
@@ -129,7 +129,7 @@ func ReadUsers(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			userDescription = schemas.UserDescriptionToSchema(*describeResult)
+			userDescription = []map[string]any{schemas.UserDetailsToSchema(describeResult)}
 		}
 
 		var userParameters []map[string]any

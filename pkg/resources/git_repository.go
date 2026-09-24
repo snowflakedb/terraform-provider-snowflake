@@ -78,7 +78,8 @@ var gitRepositorySchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE GIT REPOSITORY` for the given git repository.",
 		Elem: &schema.Resource{
-			Schema: schemas.DescribeGitRepositorySchema,
+			// DESCRIBE GIT REPOSITORY returns the same row shape as SHOW so reusing the show schema.
+			Schema: schemas.ShowGitRepositorySchema,
 		},
 	},
 }
@@ -171,7 +172,7 @@ func ReadGitRepository(ctx context.Context, d *schema.ResourceData, meta any) di
 
 	errs := errors.Join(
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.GitRepositoryToSchema(gitRepository)}),
-		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.GitRepositoryDetailsToSchema(*gitRepositoryDetails)}),
+		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.GitRepositoryToSchema(gitRepositoryDetails)}),
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set("origin", gitRepository.Origin),
 		d.Set("api_integration", gitRepository.ApiIntegration.FullyQualifiedName()),

@@ -43,7 +43,8 @@ var gitRepositoriesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE GIT REPOSITORY.",
 					Elem: &schema.Resource{
-						Schema: schemas.DescribeGitRepositorySchema,
+						// DESCRIBE GIT REPOSITORY returns the same row shape as SHOW so reusing the show schema.
+						Schema: schemas.ShowGitRepositorySchema,
 					},
 				},
 			},
@@ -84,7 +85,7 @@ func ReadGitRepositories(ctx context.Context, d *schema.ResourceData, meta any) 
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			gitRepositoryDetails = []map[string]any{schemas.GitRepositoryDetailsToSchema(*describeResult)}
+			gitRepositoryDetails = []map[string]any{schemas.GitRepositoryToSchema(describeResult)}
 		}
 		flattenedGitRepositories[i] = map[string]any{
 			resources.ShowOutputAttributeName:     []map[string]any{schemas.GitRepositoryToSchema(&gitRepository)},

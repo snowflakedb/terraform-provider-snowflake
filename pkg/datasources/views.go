@@ -98,7 +98,7 @@ var viewsSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE VIEW.",
 					Elem: &schema.Resource{
-						Schema: schemas.ViewDescribeSchema,
+						Schema: schemas.DescribeViewDetailsSchema,
 					},
 				},
 			},
@@ -180,7 +180,7 @@ func ReadViews(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			viewDescriptions = schemas.ViewDescriptionToSchema(describeOutput)
+			viewDescriptions = schemas.ViewDetailsListToSchema(describeOutput)
 		}
 
 		flattenedViews[i] = map[string]any{

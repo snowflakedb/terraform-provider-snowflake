@@ -38,7 +38,7 @@ var listingsSchema = map[string]*schema.Schema{
 					Type:        schema.TypeList,
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE LISTING.",
-					Elem:        &schema.Resource{Schema: schemas.DescribeListingSchema},
+					Elem:        &schema.Resource{Schema: schemas.DescribeListingDetailsSchema},
 				},
 			},
 		},
