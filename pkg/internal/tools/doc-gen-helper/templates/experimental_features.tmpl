@@ -7,13 +7,13 @@ Experiments follow a short lifecycle so successful changes can become default pr
 4. **Discontinued** — the experiment was abandoned and the old behavior stays. Listing the name in either list is a no-op. The name is dropped in the next major version.
 
 If the same name is listed in both `experimental_features_enabled` and `experimental_features_disabled`, the disabled list wins.
-{{ if gt (len .ActiveExperiments) 0 }}
+{{ if gt (len .OptInExperiments) 0 }}
 ### Opt-in experiments
 
 The following experiments can be currently enabled. Depending on the feedback, we may decide to include them as default behavior/stable feature of the provider in the future.
 
 To share feedback please reach out to us through your Snowflake account manager.
-{{ range .ActiveExperiments }}
+{{ range .OptInExperiments }}
 #### {{ .Name }}
 {{ .Description }}
 {{ end }}

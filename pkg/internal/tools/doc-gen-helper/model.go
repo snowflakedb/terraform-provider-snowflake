@@ -45,7 +45,7 @@ type FeatureStability struct {
 }
 
 type ExperimentalFeatures struct {
-	ActiveExperiments           []Experiment
+	OptInExperiments            []Experiment
 	EnabledByDefaultExperiments []Experiment
 	PromotedExperiments         []Experiment
 	DiscontinuedExperiments     []Experiment
