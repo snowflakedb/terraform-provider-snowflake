@@ -7,9 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// edited manually
-// DescribeStorageIntegrationAzureDetailsSchema represents output of DESCRIBE query for the single Azure Storage Integration.
-var DescribeStorageIntegrationAzureDetailsSchema = map[string]*schema.Schema{
+type storageIntegrationAzureDetailsToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.StorageIntegrationAzureDetails] = storageIntegrationAzureDetailsToSchemaMapper{}
+
+// DescribeStorageIntegrationAzureDetailsSchema represents output of DESCRIBE query for the single StorageIntegrationAzureDetails.
+var DescribeStorageIntegrationAzureDetailsSchema = mergeSchema(map[string]*schema.Schema{
 	"id": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -20,18 +23,6 @@ var DescribeStorageIntegrationAzureDetailsSchema = map[string]*schema.Schema{
 	},
 	"provider": {
 		Type:     schema.TypeString,
-		Computed: true,
-	},
-	"allowed_locations": {
-		// adjusted manually
-		Type:     schema.TypeList,
-		Elem:     &schema.Schema{Type: schema.TypeString},
-		Computed: true,
-	},
-	"blocked_locations": {
-		// adjusted manually
-		Type:     schema.TypeList,
-		Elem:     &schema.Schema{Type: schema.TypeString},
 		Computed: true,
 	},
 	"comment": {
@@ -54,9 +45,8 @@ var DescribeStorageIntegrationAzureDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}
+}, storageIntegrationAzureDetailsToSchemaMapper{}.additionalSchema())
 
-// edited manually
 var _ = DescribeStorageIntegrationAzureDetailsSchema
 
 func StorageIntegrationAzureDetailsToSchema(storageIntegrationAzureDetails *sdk.StorageIntegrationAzureDetails) map[string]any {
@@ -64,13 +54,12 @@ func StorageIntegrationAzureDetailsToSchema(storageIntegrationAzureDetails *sdk.
 	storageIntegrationAzureDetailsSchema["id"] = storageIntegrationAzureDetails.Id.Name()
 	storageIntegrationAzureDetailsSchema["enabled"] = storageIntegrationAzureDetails.Enabled
 	storageIntegrationAzureDetailsSchema["provider"] = storageIntegrationAzureDetails.Provider
-	storageIntegrationAzureDetailsSchema["allowed_locations"] = storageIntegrationAzureDetails.AllowedLocations
-	storageIntegrationAzureDetailsSchema["blocked_locations"] = storageIntegrationAzureDetails.BlockedLocations
 	storageIntegrationAzureDetailsSchema["comment"] = storageIntegrationAzureDetails.Comment
 	storageIntegrationAzureDetailsSchema["use_privatelink_endpoint"] = storageIntegrationAzureDetails.UsePrivatelinkEndpoint
 	storageIntegrationAzureDetailsSchema["tenant_id"] = storageIntegrationAzureDetails.TenantId
 	storageIntegrationAzureDetailsSchema["consent_url"] = storageIntegrationAzureDetails.ConsentUrl
 	storageIntegrationAzureDetailsSchema["multi_tenant_app_name"] = storageIntegrationAzureDetails.MultiTenantAppName
+	storageIntegrationAzureDetailsToSchemaMapper{}.additionalToSchema(storageIntegrationAzureDetails, storageIntegrationAzureDetailsSchema)
 	return storageIntegrationAzureDetailsSchema
 }
 

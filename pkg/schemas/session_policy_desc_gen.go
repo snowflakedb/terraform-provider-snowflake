@@ -7,9 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// edited manually
-// DescribeSessionPolicyDetailsSchema represents output of DESCRIBE query for the single session policy.
-var DescribeSessionPolicyDetailsSchema = map[string]*schema.Schema{
+type sessionPolicyDetailsToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.SessionPolicyDetails] = sessionPolicyDetailsToSchemaMapper{}
+
+// DescribeSessionPolicyDetailsSchema represents output of DESCRIBE query for the single SessionPolicyDetails.
+var DescribeSessionPolicyDetailsSchema = mergeSchema(map[string]*schema.Schema{
 	"id": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -34,21 +37,8 @@ var DescribeSessionPolicyDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeInt,
 		Computed: true,
 	},
-	"allowed_secondary_roles": {
-		// adjusted manually
-		Type:     schema.TypeList,
-		Elem:     &schema.Schema{Type: schema.TypeString},
-		Computed: true,
-	},
-	"blocked_secondary_roles": {
-		// adjusted manually
-		Type:     schema.TypeList,
-		Elem:     &schema.Schema{Type: schema.TypeString},
-		Computed: true,
-	},
-}
+}, sessionPolicyDetailsToSchemaMapper{}.additionalSchema())
 
-// edited manually
 var _ = DescribeSessionPolicyDetailsSchema
 
 func SessionPolicyDetailsToSchema(sessionPolicyDetails *sdk.SessionPolicyDetails) map[string]any {
@@ -59,8 +49,7 @@ func SessionPolicyDetailsToSchema(sessionPolicyDetails *sdk.SessionPolicyDetails
 	sessionPolicyDetailsSchema["comment"] = sessionPolicyDetails.Comment
 	sessionPolicyDetailsSchema["session_idle_timeout_mins"] = sessionPolicyDetails.SessionIdleTimeoutMins
 	sessionPolicyDetailsSchema["session_ui_idle_timeout_mins"] = sessionPolicyDetails.SessionUiIdleTimeoutMins
-	sessionPolicyDetailsSchema["allowed_secondary_roles"] = sessionPolicyDetails.AllowedSecondaryRoles
-	sessionPolicyDetailsSchema["blocked_secondary_roles"] = sessionPolicyDetails.BlockedSecondaryRoles
+	sessionPolicyDetailsToSchemaMapper{}.additionalToSchema(sessionPolicyDetails, sessionPolicyDetailsSchema)
 	return sessionPolicyDetailsSchema
 }
 

@@ -129,6 +129,12 @@ No action is needed.
 
 Reference: [#5210](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5210).
 
+### *(bugfix)* Removed the client-side limit on `allowed_values` count in `snowflake_tag`
+
+Previously, [`snowflake_tag`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag) rejected configurations with more than 300 `allowed_values` because of a client-side validation cap, even though Snowflake accepts more. This version removes the upper-bound check; the maximum number of allowed values is now enforced by Snowflake server-side (see [Set a list of allowed tag values](https://docs.snowflake.com/en/user-guide/object-tagging/work#set-a-list-of-allowed-tag-values)). The lower bound is unchanged — at least one value is still required.
+
+No action is needed.
+
 ## v2.20.x ➞ v2.21.0
 
 ### *(breaking change)* Renamed constraint column fields in `snowflake_iceberg_table`

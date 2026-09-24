@@ -7,9 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// edited manually
-// DescribeStorageIntegrationGcsDetailsSchema represents output of DESCRIBE query for the single GCS Storage Integration.
-var DescribeStorageIntegrationGcsDetailsSchema = map[string]*schema.Schema{
+type storageIntegrationGcsDetailsToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.StorageIntegrationGcsDetails] = storageIntegrationGcsDetailsToSchemaMapper{}
+
+// DescribeStorageIntegrationGcsDetailsSchema represents output of DESCRIBE query for the single StorageIntegrationGcsDetails.
+var DescribeStorageIntegrationGcsDetailsSchema = mergeSchema(map[string]*schema.Schema{
 	"id": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -20,18 +23,6 @@ var DescribeStorageIntegrationGcsDetailsSchema = map[string]*schema.Schema{
 	},
 	"provider": {
 		Type:     schema.TypeString,
-		Computed: true,
-	},
-	"allowed_locations": {
-		// adjusted manually
-		Type:     schema.TypeList,
-		Elem:     &schema.Schema{Type: schema.TypeString},
-		Computed: true,
-	},
-	"blocked_locations": {
-		// adjusted manually
-		Type:     schema.TypeList,
-		Elem:     &schema.Schema{Type: schema.TypeString},
 		Computed: true,
 	},
 	"comment": {
@@ -46,9 +37,8 @@ var DescribeStorageIntegrationGcsDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}
+}, storageIntegrationGcsDetailsToSchemaMapper{}.additionalSchema())
 
-// edited manually
 var _ = DescribeStorageIntegrationGcsDetailsSchema
 
 func StorageIntegrationGcsDetailsToSchema(storageIntegrationGcsDetails *sdk.StorageIntegrationGcsDetails) map[string]any {
@@ -56,11 +46,10 @@ func StorageIntegrationGcsDetailsToSchema(storageIntegrationGcsDetails *sdk.Stor
 	storageIntegrationGcsDetailsSchema["id"] = storageIntegrationGcsDetails.Id.Name()
 	storageIntegrationGcsDetailsSchema["enabled"] = storageIntegrationGcsDetails.Enabled
 	storageIntegrationGcsDetailsSchema["provider"] = storageIntegrationGcsDetails.Provider
-	storageIntegrationGcsDetailsSchema["allowed_locations"] = storageIntegrationGcsDetails.AllowedLocations
-	storageIntegrationGcsDetailsSchema["blocked_locations"] = storageIntegrationGcsDetails.BlockedLocations
 	storageIntegrationGcsDetailsSchema["comment"] = storageIntegrationGcsDetails.Comment
 	storageIntegrationGcsDetailsSchema["use_privatelink_endpoint"] = storageIntegrationGcsDetails.UsePrivatelinkEndpoint
 	storageIntegrationGcsDetailsSchema["service_account"] = storageIntegrationGcsDetails.ServiceAccount
+	storageIntegrationGcsDetailsToSchemaMapper{}.additionalToSchema(storageIntegrationGcsDetails, storageIntegrationGcsDetailsSchema)
 	return storageIntegrationGcsDetailsSchema
 }
 

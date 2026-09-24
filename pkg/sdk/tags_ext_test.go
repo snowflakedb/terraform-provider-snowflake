@@ -22,7 +22,7 @@ func init() {
 			func(opts *CreateTagOptions) {
 				opts.AllowedValues = &AllowedValues{Values: []StringAllowEmpty{}}
 			},
-			errIntBetween("AllowedValues", "Values", 1, 300),
+			errIntValue("AllowedValues", "Values", IntErrGreater, 0),
 		).
 		withExpectedSqlf(
 			case_Tags_sql_Create_basic,
@@ -98,21 +98,21 @@ func init() {
 			func(opts *AlterTagOptions) {
 				opts.Add = &TagAdd{AllowedValues: &AllowedValues{Values: []StringAllowEmpty{}}}
 			},
-			errIntBetween("AllowedValues", "Values", 1, 300),
+			errIntValue("AllowedValues", "Values", IntErrGreater, 0),
 		).
 		withAdditionalValidationCase(
 			"validation_Alter_Drop_AllowedValues_count",
 			func(opts *AlterTagOptions) {
 				opts.Drop = &TagDrop{AllowedValues: &AllowedValues{Values: []StringAllowEmpty{}}}
 			},
-			errIntBetween("AllowedValues", "Values", 1, 300),
+			errIntValue("AllowedValues", "Values", IntErrGreater, 0),
 		).
 		withAdditionalValidationCase(
 			"validation_Alter_Set_AllowedValues_count",
 			func(opts *AlterTagOptions) {
 				opts.Set = &TagSet{AllowedValues: &AllowedValues{Values: []StringAllowEmpty{}}}
 			},
-			errIntBetween("AllowedValues", "Values", 1, 300),
+			errIntValue("AllowedValues", "Values", IntErrGreater, 0),
 		).
 		withModifyAndExpectedSqlf(
 			case_Tags_sql_Alter_Add,
@@ -353,4 +353,20 @@ func TestTags_Unset_withColumn(t *testing.T) {
 	request.adjust()
 	opts := request.toOpts()
 	assertOptsValidAndSqlEqualsf(t, opts, `ALTER %s IF EXISTS %s MODIFY COLUMN "%s" UNSET TAG %s, %s`, opts.objectType, id.FullyQualifiedName(), objectId.Name(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
+}
+
+// The SDK enforces only the lower bound on AllowedValues; the maximum is enforced by Snowflake
+// server-side, so a large list — even above the current server default — must pass client-side validation.
+func TestTags_AllowedValues_noClientSideUpperBound(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+
+	// 5001 sits above the current server-side default (5000): the SDK must not impose a ceiling of its own.
+	values := make([]string, 5001)
+	for i := range values {
+		values[i] = fmt.Sprintf("value%d", i)
+	}
+	allowedValues := NewAllowedValuesRequestFromStrings(values)
+
+	assertOptsValid(t, NewCreateTagRequest(id).WithAllowedValues(*allowedValues).toOpts())
+	assertOptsValid(t, NewAlterTagRequest(id).WithAdd(*NewTagAddRequest().WithAllowedValues(*allowedValues)).toOpts())
 }

@@ -7,8 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// edited manually
-// DescribeCatalogIntegrationAwsGlueDetailsSchema represents output of DESCRIBE query for the single AWS Glue catalog integration.
+// DescribeCatalogIntegrationAwsGlueDetailsSchema represents output of DESCRIBE query for the single CatalogIntegrationAwsGlueDetails.
 var DescribeCatalogIntegrationAwsGlueDetailsSchema = map[string]*schema.Schema{
 	"id": {
 		Type:     schema.TypeString,
@@ -60,7 +59,6 @@ var DescribeCatalogIntegrationAwsGlueDetailsSchema = map[string]*schema.Schema{
 	},
 }
 
-// edited manually
 var _ = DescribeCatalogIntegrationAwsGlueDetailsSchema
 
 func CatalogIntegrationAwsGlueDetailsToSchema(catalogIntegrationAwsGlueDetails *sdk.CatalogIntegrationAwsGlueDetails) map[string]any {

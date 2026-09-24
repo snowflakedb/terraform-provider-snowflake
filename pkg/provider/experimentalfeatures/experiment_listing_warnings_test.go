@@ -20,8 +20,8 @@ func Test_experimentListingWarnings(t *testing.T) {
 			name: "empty lists produce no warnings",
 		},
 		{
-			name:        "active in enabled produces no warnings",
-			userEnabled: []string{"ACTIVE_EXP"},
+			name:        "opt-in in enabled produces no warnings",
+			userEnabled: []string{"OPT_IN_EXP"},
 		},
 		{
 			name:          "default-on in enabled is redundant",
@@ -90,15 +90,15 @@ func Test_experimentListingWarnings(t *testing.T) {
 }
 
 func Test_ExperimentListingWarnings_Public(t *testing.T) {
-	active := string(WarehouseShowImprovedPerformance)
+	optIn := string(WarehouseShowImprovedPerformance)
 	defaultOn := string(InheritedGrants)
 
 	t.Run("no warnings for empty lists", func(t *testing.T) {
 		require.Empty(t, ExperimentListingWarnings(nil, nil))
 	})
 
-	t.Run("no warnings for enabling an active experiment", func(t *testing.T) {
-		require.Empty(t, ExperimentListingWarnings([]string{active}, nil))
+	t.Run("no warnings for enabling an opt-in experiment", func(t *testing.T) {
+		require.Empty(t, ExperimentListingWarnings([]string{optIn}, nil))
 	})
 
 	t.Run("default-on listed in enabled is redundant", func(t *testing.T) {

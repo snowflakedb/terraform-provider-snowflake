@@ -8,7 +8,7 @@ import (
 
 func testLifecycleExperiments() []Experiment {
 	return []Experiment{
-		NewActiveExperiment("ACTIVE_EXP", "active"),
+		NewOptInExperiment("OPT_IN_EXP", "opt-in"),
 		NewEnabledByDefaultExperiment("DEFAULT_EXP", []string{"v1.0.0"}, "default on"),
 		NewPromotedExperiment("PROMOTED_EXP"),
 		NewDiscontinuedExperiment("DISCONTINUED_EXP"),
@@ -29,9 +29,9 @@ func Test_computeEffectiveExperimentsEnabled(t *testing.T) {
 			expected: []string{"DEFAULT_EXP"},
 		},
 		{
-			name:        "active in enabled",
-			userEnabled: []string{"ACTIVE_EXP"},
-			expected:    []string{"ACTIVE_EXP", "DEFAULT_EXP"},
+			name:        "opt-in in enabled",
+			userEnabled: []string{"OPT_IN_EXP"},
+			expected:    []string{"OPT_IN_EXP", "DEFAULT_EXP"},
 		},
 		{
 			name:         "default-on in disabled",
@@ -65,9 +65,9 @@ func Test_computeEffectiveExperimentsEnabled(t *testing.T) {
 			expected:     []string{},
 		},
 		{
-			name:         "overlap on active: disabled wins",
-			userEnabled:  []string{"ACTIVE_EXP"},
-			userDisabled: []string{"ACTIVE_EXP"},
+			name:         "overlap on opt-in: disabled wins",
+			userEnabled:  []string{"OPT_IN_EXP"},
+			userDisabled: []string{"OPT_IN_EXP"},
 			expected:     []string{"DEFAULT_EXP"},
 		},
 		{
@@ -84,9 +84,9 @@ func Test_computeEffectiveExperimentsEnabled(t *testing.T) {
 		},
 		{
 			name:         "case-insensitive membership",
-			userEnabled:  []string{"active_exp"},
+			userEnabled:  []string{"opt_in_exp"},
 			userDisabled: []string{"default_exp"},
-			expected:     []string{"ACTIVE_EXP"},
+			expected:     []string{"OPT_IN_EXP"},
 		},
 	}
 

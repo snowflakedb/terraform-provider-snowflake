@@ -30,8 +30,9 @@ func (r tagRow) additionalConvert(result *Tag) error {
 }
 
 func (opts *AllowedValues) additionalValidations() error {
-	if !validateIntInRangeInclusive(len(opts.Values), 1, 300) {
-		return errIntBetween("AllowedValues", "Values", 1, 300)
+	// Only the lower bound is enforced here; Snowflake enforces the maximum number of allowed values server-side.
+	if !validateIntGreaterThan(len(opts.Values), 0) {
+		return errIntValue("AllowedValues", "Values", IntErrGreater, 0)
 	}
 	return nil
 }

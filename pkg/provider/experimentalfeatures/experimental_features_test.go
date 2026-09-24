@@ -80,12 +80,12 @@ func Test_Experiments_UserLists(t *testing.T) {
 }
 
 func Test_ConstructorsAssignState(t *testing.T) {
-	active := NewActiveExperiment("ACTIVE_EXP", "description")
-	require.Equal(t, ExperimentalFeature("ACTIVE_EXP"), active.Name())
-	require.Equal(t, ExperimentalFeatureStateActive, active.state)
-	require.Equal(t, "description", active.Description())
-	require.Empty(t, active.removeInVersions)
-	require.Empty(t, active.RemoveInVersionsPhrase())
+	optIn := NewOptInExperiment("OPT_IN_EXP", "description")
+	require.Equal(t, ExperimentalFeature("OPT_IN_EXP"), optIn.Name())
+	require.Equal(t, ExperimentalFeatureStateOptIn, optIn.state)
+	require.Equal(t, "description", optIn.Description())
+	require.Empty(t, optIn.removeInVersions)
+	require.Empty(t, optIn.RemoveInVersionsPhrase())
 
 	defaultOn := NewEnabledByDefaultExperiment("DEFAULT_EXP", []string{"v2.23.0", "v2.24.0"}, "part one", "part two")
 	require.Equal(t, ExperimentalFeature("DEFAULT_EXP"), defaultOn.Name())
@@ -126,7 +126,7 @@ func Test_EnabledByDefaultExperimentsHaveRemoveInVersions(t *testing.T) {
 }
 
 func Test_ComputeEffectiveExperimentsEnabled_Public(t *testing.T) {
-	active := string(WarehouseShowImprovedPerformance)
+	optIn := string(WarehouseShowImprovedPerformance)
 	defaultOn := string(InheritedGrants)
 
 	t.Run("empty lists enable default-on experiments only", func(t *testing.T) {
@@ -134,9 +134,9 @@ func Test_ComputeEffectiveExperimentsEnabled_Public(t *testing.T) {
 		require.Equal(t, []string{defaultOn}, got)
 	})
 
-	t.Run("active experiment is included when listed in enabled", func(t *testing.T) {
-		got := ComputeEffectiveExperimentsEnabled([]string{active}, nil)
-		require.Equal(t, []string{active, defaultOn}, got)
+	t.Run("opt-in experiment is included when listed in enabled", func(t *testing.T) {
+		got := ComputeEffectiveExperimentsEnabled([]string{optIn}, nil)
+		require.Equal(t, []string{optIn, defaultOn}, got)
 	})
 
 	t.Run("default-on experiment is excluded when listed in disabled", func(t *testing.T) {
@@ -150,7 +150,7 @@ func Test_ComputeEffectiveExperimentsEnabled_Public(t *testing.T) {
 	})
 
 	t.Run("matching is case-insensitive", func(t *testing.T) {
-		got := ComputeEffectiveExperimentsEnabled([]string{strings.ToLower(active)}, []string{strings.ToLower(defaultOn)})
-		require.Equal(t, []string{active}, got)
+		got := ComputeEffectiveExperimentsEnabled([]string{strings.ToLower(optIn)}, []string{strings.ToLower(defaultOn)})
+		require.Equal(t, []string{optIn}, got)
 	})
 }

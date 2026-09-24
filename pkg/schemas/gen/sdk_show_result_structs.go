@@ -116,11 +116,11 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.McpServerDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.PasswordPolicyDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.SecurityIntegrationProperty{}, UsedAsListEntry: true},
-	{ObjectStruct: sdk.SessionPolicyDetails{}, IsDescribe: true},
-	{ObjectStruct: sdk.StorageIntegrationAllDetails{}, IsDescribe: true},
-	{ObjectStruct: sdk.StorageIntegrationAwsDetails{}, IsDescribe: true},
-	{ObjectStruct: sdk.StorageIntegrationAzureDetails{}, IsDescribe: true},
-	{ObjectStruct: sdk.StorageIntegrationGcsDetails{}, IsDescribe: true},
+	{ObjectStruct: sdk.SessionPolicyDetails{}, IsDescribe: true, SkipFields: []string{"allowed_secondary_roles", "blocked_secondary_roles"}, AdditionalMapping: true},
+	{ObjectStruct: sdk.StorageIntegrationAllDetails{}, IsDescribe: true, SkipFields: []string{"allowed_locations", "blocked_locations"}, AdditionalMapping: true},
+	{ObjectStruct: sdk.StorageIntegrationAwsDetails{}, IsDescribe: true, SkipFields: []string{"allowed_locations", "blocked_locations"}, AdditionalMapping: true},
+	{ObjectStruct: sdk.StorageIntegrationAzureDetails{}, IsDescribe: true, SkipFields: []string{"allowed_locations", "blocked_locations"}, AdditionalMapping: true},
+	{ObjectStruct: sdk.StorageIntegrationGcsDetails{}, IsDescribe: true, SkipFields: []string{"allowed_locations", "blocked_locations"}, AdditionalMapping: true},
 }
 
 func GetShowResultSchemaDetails() []ShowResultSchemaDetails {
