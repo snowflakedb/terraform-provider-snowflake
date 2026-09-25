@@ -1,80 +1,19 @@
 package schemas
 
 import (
+	"maps"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func AwsStageDescribeSchema() map[string]*schema.Schema {
-	return collections.MergeMaps(stageDescribeSchema, map[string]*schema.Schema{
-		"privatelink": {
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"use_privatelink_endpoint": {
-						Type:     schema.TypeBool,
-						Computed: true,
-					},
-				},
-			},
-		},
-		"location": {
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"url": {
-						Type:     schema.TypeList,
-						Computed: true,
-						Elem: &schema.Schema{
-							Type: schema.TypeString,
-						},
-					},
-					"aws_access_point_arn": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
-	})
-}
+// TODO [next PRs]: first move only. Generated Stage DESCRIBE schemas are empty because every
+// public key is a nested struct/slice (unmapped today); this ext owns the whole describe_output.
+// Native slices/nested structs should generate those keys and shrink this file.
 
-func AwsCompatibleStageDescribeSchema() map[string]*schema.Schema {
-	return collections.MergeMaps(stageDescribeSchema, map[string]*schema.Schema{
-		"location": {
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"url": {
-						Type:     schema.TypeList,
-						Computed: true,
-						Elem: &schema.Schema{
-							Type: schema.TypeString,
-						},
-					},
-				},
-			},
-		},
-	})
-}
-
-// StageDatasourceDescribeSchema is a helper function used to get the schema for the describe output of the stage data source.
-// It supports all stage types and file format types.
-func StageDatasourceDescribeSchema() map[string]*schema.Schema {
-	// For now, only the aws stage has any additional fields in describe.
-	return AwsStageDescribeSchema()
-}
-
-func CommonStageDescribeSchema() map[string]*schema.Schema {
-	return stageDescribeSchema
-}
-
-var stageDescribeSchema = map[string]*schema.Schema{
-	"directory_table": {
+func stageDirectoryTableDescribeSchema() *schema.Schema {
+	return &schema.Schema{
 		Type: schema.TypeList,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -93,8 +32,11 @@ var stageDescribeSchema = map[string]*schema.Schema{
 			},
 		},
 		Computed: true,
-	},
-	"file_format": {
+	}
+}
+
+func stageFileFormatDescribeSchema() *schema.Schema {
+	return &schema.Schema{
 		Type: schema.TypeList,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -111,7 +53,184 @@ var stageDescribeSchema = map[string]*schema.Schema{
 			},
 		},
 		Computed: true,
-	},
+	}
+}
+
+func stageCommonDescribeSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"directory_table": stageDirectoryTableDescribeSchema(),
+		"file_format":     stageFileFormatDescribeSchema(),
+	}
+}
+
+func stageAwsLocationDescribeSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeList,
+		Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"url": {
+					Type:     schema.TypeList,
+					Computed: true,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+				},
+				"aws_access_point_arn": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+			},
+		},
+	}
+}
+
+func stageCompatibleLocationDescribeSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeList,
+		Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"url": {
+					Type:     schema.TypeList,
+					Computed: true,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+				},
+			},
+		},
+	}
+}
+
+func stagePrivateLinkDescribeSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeList,
+		Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"use_privatelink_endpoint": {
+					Type:     schema.TypeBool,
+					Computed: true,
+				},
+			},
+		},
+	}
+}
+
+func mapStageCommonDescribe(src *sdk.StageCommon, dst map[string]any) {
+	if src.DirectoryTable != nil {
+		dst["directory_table"] = []map[string]any{
+			{
+				"enable":            src.DirectoryTable.Enable,
+				"auto_refresh":      src.DirectoryTable.AutoRefresh,
+				"last_refreshed_on": src.DirectoryTable.LastRefreshedOn,
+			},
+		}
+	}
+
+	fileFormat := map[string]any{
+		"format_name": "",
+		"csv":         []any{},
+		"json":        []any{},
+		"avro":        []any{},
+		"orc":         []any{},
+		"parquet":     []any{},
+		"xml":         []any{},
+	}
+	switch {
+	case src.FileFormatName != nil:
+		fileFormat["format_name"] = src.FileFormatName.FullyQualifiedName()
+	case src.FileFormatCsv != nil:
+		fileFormat["csv"] = []any{stageFileFormatCsvToSchema(src.FileFormatCsv)}
+	case src.FileFormatJson != nil:
+		fileFormat["json"] = []any{stageFileFormatJsonToSchema(src.FileFormatJson)}
+	case src.FileFormatAvro != nil:
+		fileFormat["avro"] = []any{stageFileFormatAvroToSchema(src.FileFormatAvro)}
+	case src.FileFormatOrc != nil:
+		fileFormat["orc"] = []any{stageFileFormatOrcToSchema(src.FileFormatOrc)}
+	case src.FileFormatParquet != nil:
+		fileFormat["parquet"] = []any{stageFileFormatParquetToSchema(src.FileFormatParquet)}
+	case src.FileFormatXml != nil:
+		fileFormat["xml"] = []any{stageFileFormatXmlToSchema(src.FileFormatXml)}
+	}
+	dst["file_format"] = []map[string]any{fileFormat}
+}
+
+func stageCommonFromAws(src *sdk.StageAws) *sdk.StageCommon {
+	return &sdk.StageCommon{
+		FileFormatName:    src.FileFormatName,
+		FileFormatCsv:     src.FileFormatCsv,
+		FileFormatJson:    src.FileFormatJson,
+		FileFormatAvro:    src.FileFormatAvro,
+		FileFormatOrc:     src.FileFormatOrc,
+		FileFormatParquet: src.FileFormatParquet,
+		FileFormatXml:     src.FileFormatXml,
+		DirectoryTable:    src.DirectoryTable,
+	}
+}
+
+func stageCommonFromAwsCompatible(src *sdk.StageAwsCompatible) *sdk.StageCommon {
+	return &sdk.StageCommon{
+		FileFormatName:    src.FileFormatName,
+		FileFormatCsv:     src.FileFormatCsv,
+		FileFormatJson:    src.FileFormatJson,
+		FileFormatAvro:    src.FileFormatAvro,
+		FileFormatOrc:     src.FileFormatOrc,
+		FileFormatParquet: src.FileFormatParquet,
+		FileFormatXml:     src.FileFormatXml,
+		DirectoryTable:    src.DirectoryTable,
+	}
+}
+
+func mapStagePrivateLink(pl *sdk.StagePrivateLink, dst map[string]any) {
+	if pl == nil {
+		return
+	}
+	dst["privatelink"] = []map[string]any{
+		{
+			"use_privatelink_endpoint": pl.UsePrivatelinkEndpoint,
+		},
+	}
+}
+
+func mapStageAwsLocation(loc *sdk.StageLocationDetails, dst map[string]any) {
+	if loc == nil {
+		return
+	}
+	dst["location"] = []map[string]any{
+		{
+			"url":                  loc.Url,
+			"aws_access_point_arn": loc.AwsAccessPointArn,
+		},
+	}
+}
+
+func mapStageCompatibleLocation(loc *sdk.StageLocationDetails, dst map[string]any) {
+	if loc == nil {
+		return
+	}
+	dst["location"] = []map[string]any{
+		{
+			"url": loc.Url,
+		},
+	}
+}
+
+func stageAwsDescribeSchema() map[string]*schema.Schema {
+	return collections.MergeMaps(stageCommonDescribeSchema(), map[string]*schema.Schema{
+		"privatelink": stagePrivateLinkDescribeSchema(),
+		"location":    stageAwsLocationDescribeSchema(),
+	})
+}
+
+func (stageDetailsToSchemaMapper) additionalSchema() map[string]*schema.Schema {
+	// Union / stages DS matches AWS: it is the public-key superset (common + privatelink + location).
+	return stageAwsDescribeSchema()
+}
+
+func (stageDetailsToSchemaMapper) additionalToSchema(src *sdk.StageDetails, dst map[string]any) {
+	maps.Copy(dst, StageAwsToSchema(src.AsAws()))
 }
 
 var csvFileFormatSchema = &schema.Schema{
@@ -437,50 +556,7 @@ var xmlFileFormatSchema = &schema.Schema{
 	},
 }
 
-func StageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) {
-	schema := make(map[string]any)
-
-	if properties.DirectoryTable != nil {
-		schema["directory_table"] = []map[string]any{
-			{
-				"enable":            properties.DirectoryTable.Enable,
-				"auto_refresh":      properties.DirectoryTable.AutoRefresh,
-				"last_refreshed_on": properties.DirectoryTable.LastRefreshedOn,
-			},
-		}
-	}
-
-	fileFormat := map[string]any{
-		"format_name": "",
-		"csv":         []any{},
-		"json":        []any{},
-		"avro":        []any{},
-		"orc":         []any{},
-		"parquet":     []any{},
-		"xml":         []any{},
-	}
-	switch {
-	case properties.FileFormatName != nil:
-		fileFormat["format_name"] = properties.FileFormatName.FullyQualifiedName()
-	case properties.FileFormatCsv != nil:
-		fileFormat["csv"] = []any{StageFileFormatCsvToSchema(properties.FileFormatCsv)}
-	case properties.FileFormatJson != nil:
-		fileFormat["json"] = []any{StageFileFormatJsonToSchema(properties.FileFormatJson)}
-	case properties.FileFormatAvro != nil:
-		fileFormat["avro"] = []any{StageFileFormatAvroToSchema(properties.FileFormatAvro)}
-	case properties.FileFormatOrc != nil:
-		fileFormat["orc"] = []any{StageFileFormatOrcToSchema(properties.FileFormatOrc)}
-	case properties.FileFormatParquet != nil:
-		fileFormat["parquet"] = []any{StageFileFormatParquetToSchema(properties.FileFormatParquet)}
-	case properties.FileFormatXml != nil:
-		fileFormat["xml"] = []any{StageFileFormatXmlToSchema(properties.FileFormatXml)}
-	}
-	schema["file_format"] = []map[string]any{fileFormat}
-
-	return schema, nil
-}
-
-func StageFileFormatJsonToSchema(json *sdk.FileFormatJson) map[string]any {
+func stageFileFormatJsonToSchema(json *sdk.FileFormatJson) map[string]any {
 	return map[string]any{
 		"type":                       string(json.Type),
 		"compression":                string(json.Compression),
@@ -502,7 +578,7 @@ func StageFileFormatJsonToSchema(json *sdk.FileFormatJson) map[string]any {
 	}
 }
 
-func StageFileFormatCsvToSchema(csv *sdk.FileFormatCsv) map[string]any {
+func stageFileFormatCsvToSchema(csv *sdk.FileFormatCsv) map[string]any {
 	return map[string]any{
 		"type":                           string(csv.Type),
 		"record_delimiter":               csv.RecordDelimiter,
@@ -531,54 +607,7 @@ func StageFileFormatCsvToSchema(csv *sdk.FileFormatCsv) map[string]any {
 	}
 }
 
-func AwsStageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) {
-	schema, err := StageDescribeToSchema(properties)
-	if err != nil {
-		return nil, err
-	}
-
-	if properties.Location != nil {
-		schema["location"] = []map[string]any{
-			{
-				"url":                  properties.Location.Url,
-				"aws_access_point_arn": properties.Location.AwsAccessPointArn,
-			},
-		}
-	}
-	if properties.PrivateLink != nil {
-		schema["privatelink"] = []map[string]any{
-			{
-				"use_privatelink_endpoint": properties.PrivateLink.UsePrivatelinkEndpoint,
-			},
-		}
-	}
-	return schema, nil
-}
-
-func AwsCompatibleStageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) {
-	schema, err := StageDescribeToSchema(properties)
-	if err != nil {
-		return nil, err
-	}
-
-	if properties.Location != nil {
-		schema["location"] = []map[string]any{
-			{
-				"url": properties.Location.Url,
-			},
-		}
-	}
-	return schema, nil
-}
-
-// StageDatasourceToDatasourceSchema is a helper function used to fill the object fields in the data source.
-// It supports all stage types and file format types.
-func StageDatasourceToDatasourceSchema(properties sdk.StageDetails) (map[string]any, error) {
-	// For now, only the aws stage has any additional fields in describe.
-	return AwsStageDescribeToSchema(properties)
-}
-
-func StageFileFormatAvroToSchema(avro *sdk.FileFormatAvro) map[string]any {
+func stageFileFormatAvroToSchema(avro *sdk.FileFormatAvro) map[string]any {
 	return map[string]any{
 		"type":                       string(avro.Type),
 		"compression":                string(avro.Compression),
@@ -588,7 +617,7 @@ func StageFileFormatAvroToSchema(avro *sdk.FileFormatAvro) map[string]any {
 	}
 }
 
-func StageFileFormatOrcToSchema(orc *sdk.FileFormatOrc) map[string]any {
+func stageFileFormatOrcToSchema(orc *sdk.FileFormatOrc) map[string]any {
 	return map[string]any{
 		"type":                       string(orc.Type),
 		"trim_space":                 orc.TrimSpace,
@@ -597,7 +626,7 @@ func StageFileFormatOrcToSchema(orc *sdk.FileFormatOrc) map[string]any {
 	}
 }
 
-func StageFileFormatParquetToSchema(parquet *sdk.FileFormatParquet) map[string]any {
+func stageFileFormatParquetToSchema(parquet *sdk.FileFormatParquet) map[string]any {
 	return map[string]any{
 		"type":                       string(parquet.Type),
 		"compression":                string(parquet.Compression),
@@ -610,7 +639,7 @@ func StageFileFormatParquetToSchema(parquet *sdk.FileFormatParquet) map[string]a
 	}
 }
 
-func StageFileFormatXmlToSchema(xml *sdk.FileFormatXml) map[string]any {
+func stageFileFormatXmlToSchema(xml *sdk.FileFormatXml) map[string]any {
 	return map[string]any{
 		"type":                       string(xml.Type),
 		"compression":                string(xml.Compression),

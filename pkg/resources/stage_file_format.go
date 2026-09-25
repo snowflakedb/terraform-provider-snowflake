@@ -485,10 +485,7 @@ func stageFileFormatToSchema(details *sdk.StageDetails, setDefaults bool) []map[
 }
 
 func handleStageFileFormatRead(d *schema.ResourceData, details *sdk.StageDetails) error {
-	fileFormatSchema, err := schemas.StageDescribeToSchema(*details)
-	if err != nil {
-		return err
-	}
+	fileFormatSchema := schemas.StageCommonToSchema(details.AsCommon())
 	fileFormatToCompare := collections.Map(fileFormatSchema["file_format"].([]map[string]any), func(v map[string]any) any {
 		return v
 	})

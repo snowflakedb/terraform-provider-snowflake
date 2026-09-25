@@ -24,7 +24,7 @@ var apiIntegrationGitRepositoryGithubAppSchema = func() map[string]*schema.Schem
 			Computed:    true,
 			Description: "Outputs the result of `DESCRIBE API INTEGRATION` for the given integration.",
 			Elem: &schema.Resource{
-				Schema: schemas.DescribeGitRepositoryGithubAppApiIntegrationSchema,
+				Schema: schemas.DescribeApiIntegrationGitRepositoryGithubAppSchema,
 			},
 		},
 	}
@@ -124,7 +124,7 @@ func ReadApiIntegrationGitRepositoryGithubApp(ctx context.Context, d *schema.Res
 
 	errs := errors.Join(
 		handleApiIntegrationCommonRead(d, id, s, gitDetails.AllowedPrefixes, gitDetails.BlockedPrefixes),
-		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationGitRepositoryGithubAppDetailsToSchema(gitDetails)}),
+		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationGitRepositoryGithubAppToSchema(gitDetails.AsGithubApp())}),
 	)
 	return diag.FromErr(errs)
 }

@@ -38,6 +38,60 @@ func (d StageDetails) ID() SchemaObjectIdentifier {
 	return d.Id
 }
 
+// AsCommon projects DESCRIBE output onto internal / GCS / Azure columns.
+func (d *StageDetails) AsCommon() *StageCommon {
+	if d == nil {
+		return nil
+	}
+	return &StageCommon{
+		FileFormatName:    d.FileFormatName,
+		FileFormatCsv:     d.FileFormatCsv,
+		FileFormatJson:    d.FileFormatJson,
+		FileFormatAvro:    d.FileFormatAvro,
+		FileFormatOrc:     d.FileFormatOrc,
+		FileFormatParquet: d.FileFormatParquet,
+		FileFormatXml:     d.FileFormatXml,
+		DirectoryTable:    d.DirectoryTable,
+	}
+}
+
+// AsAws projects DESCRIBE output onto AWS (S3) columns.
+func (d *StageDetails) AsAws() *StageAws {
+	if d == nil {
+		return nil
+	}
+	return &StageAws{
+		FileFormatName:    d.FileFormatName,
+		FileFormatCsv:     d.FileFormatCsv,
+		FileFormatJson:    d.FileFormatJson,
+		FileFormatAvro:    d.FileFormatAvro,
+		FileFormatOrc:     d.FileFormatOrc,
+		FileFormatParquet: d.FileFormatParquet,
+		FileFormatXml:     d.FileFormatXml,
+		DirectoryTable:    d.DirectoryTable,
+		PrivateLink:       d.PrivateLink,
+		Location:          d.Location,
+	}
+}
+
+// AsAwsCompatible projects DESCRIBE output onto S3-compatible columns.
+func (d *StageDetails) AsAwsCompatible() *StageAwsCompatible {
+	if d == nil {
+		return nil
+	}
+	return &StageAwsCompatible{
+		FileFormatName:    d.FileFormatName,
+		FileFormatCsv:     d.FileFormatCsv,
+		FileFormatJson:    d.FileFormatJson,
+		FileFormatAvro:    d.FileFormatAvro,
+		FileFormatOrc:     d.FileFormatOrc,
+		FileFormatParquet: d.FileFormatParquet,
+		FileFormatXml:     d.FileFormatXml,
+		DirectoryTable:    d.DirectoryTable,
+		Location:          d.Location,
+	}
+}
+
 func (s *stages) DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*StageDetails, error) {
 	props, err := s.Describe(ctx, id)
 	if err != nil {

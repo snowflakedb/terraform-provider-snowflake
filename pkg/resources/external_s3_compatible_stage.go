@@ -93,7 +93,7 @@ var externalS3CompatStageSchema = func() map[string]*schema.Schema {
 			Description: "Specifies a cloud provider for the stage. This field is used for checking external changes and recreating the resources if needed.",
 		},
 	}
-	return collections.MergeMaps(stageCommonSchema(schemas.AwsCompatibleStageDescribeSchema()), s3CompatStage)
+	return collections.MergeMaps(stageCommonSchema(schemas.DescribeStageAwsCompatibleSchema), s3CompatStage)
 }()
 
 func ExternalS3CompatibleStage() *schema.Resource {
@@ -238,10 +238,7 @@ func ReadExternalS3CompatStageFunc(withExternalChangesMarking bool) schema.ReadC
 			return diag.FromErr(err)
 		}
 
-		detailsSchema, err := schemas.AwsCompatibleStageDescribeToSchema(*details)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		detailsSchema := schemas.StageAwsCompatibleToSchema(details.AsAwsCompatible())
 
 		if withExternalChangesMarking {
 			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(

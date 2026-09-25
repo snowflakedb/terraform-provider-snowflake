@@ -41,7 +41,7 @@ var stagesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE STAGE.",
 					Elem: &schema.Resource{
-						Schema: schemas.StageDatasourceDescribeSchema(),
+						Schema: schemas.DescribeStageDetailsSchema,
 					},
 				},
 			},
@@ -81,10 +81,7 @@ func ReadStages(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			describeSchema, err := schemas.StageDatasourceToDatasourceSchema(*details)
-			if err != nil {
-				return diag.FromErr(err)
-			}
+			describeSchema := schemas.StageDetailsToSchema(details)
 			stageDescriptions = []map[string]any{describeSchema}
 		}
 		flattenedStages[i] = map[string]any{

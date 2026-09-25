@@ -100,7 +100,7 @@ var rowAccessPoliciesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE ROW ACCESS POLICY.",
 					Elem: &schema.Resource{
-						Schema: schemas.RowAccessPolicyDescribeSchema,
+						Schema: schemas.DescribeRowAccessPolicyDescriptionSchema,
 					},
 				},
 			},
@@ -193,7 +193,7 @@ func ReadRowAccessPolicies(ctx context.Context, d *schema.ResourceData, meta any
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			policyDescriptions = []map[string]any{schemas.RowAccessPolicyDescriptionToSchema(*describeOutput)}
+			policyDescriptions = []map[string]any{schemas.RowAccessPolicyDescriptionToSchema(describeOutput)}
 		}
 
 		flattenedRowAccessPolicies[i] = map[string]any{

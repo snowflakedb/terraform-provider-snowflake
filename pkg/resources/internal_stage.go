@@ -78,7 +78,7 @@ var internalStageSchema = func() map[string]*schema.Schema {
 			},
 		},
 	}
-	return collections.MergeMaps(stageCommonSchema(schemas.CommonStageDescribeSchema()), internalStage)
+	return collections.MergeMaps(stageCommonSchema(schemas.DescribeStageCommonSchema), internalStage)
 }()
 
 func InternalStage() *schema.Resource {
@@ -238,10 +238,7 @@ func ReadInternalStageFunc(withExternalChangesMarking bool) schema.ReadContextFu
 			return diag.FromErr(err)
 		}
 
-		detailsSchema, err := schemas.StageDescribeToSchema(*details)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		detailsSchema := schemas.StageCommonToSchema(details.AsCommon())
 
 		if withExternalChangesMarking {
 			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(

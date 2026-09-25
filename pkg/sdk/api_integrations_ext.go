@@ -12,115 +12,137 @@ func (r *CreateApiIntegrationRequest) GetName() AccountObjectIdentifier {
 	return r.name
 }
 
-// ApiIntegrationAwsDetails holds the structured output of DESCRIBE API INTEGRATION for AWS integrations.
-type ApiIntegrationAwsDetails struct {
-	Id               AccountObjectIdentifier
-	Enabled          bool
-	ApiKey           string
-	ApiProvider      string
-	ApiAwsRoleArn    string
-	ApiAwsIamUserArn string
-	ApiAwsExternalId string
-	AllowedPrefixes  []string
-	BlockedPrefixes  []string
-	Comment          string
-}
-
 func (d *ApiIntegrationAwsDetails) ID() AccountObjectIdentifier {
 	return d.Id
-}
-
-// ApiIntegrationAzureDetails holds the structured output of DESCRIBE API INTEGRATION for Azure integrations.
-type ApiIntegrationAzureDetails struct {
-	Id                      AccountObjectIdentifier
-	Enabled                 bool
-	ApiKey                  string
-	ApiProvider             string
-	AzureTenantId           string
-	AzureAdApplicationId    string
-	AzureMultiTenantAppName string
-	AzureConsentUrl         string
-	AllowedPrefixes         []string
-	BlockedPrefixes         []string
-	Comment                 string
 }
 
 func (d *ApiIntegrationAzureDetails) ID() AccountObjectIdentifier {
 	return d.Id
 }
 
-// ApiIntegrationGoogleDetails holds the structured output of DESCRIBE API INTEGRATION for Google integrations.
-type ApiIntegrationGoogleDetails struct {
-	Id                      AccountObjectIdentifier
-	Enabled                 bool
-	ApiKey                  string
-	ApiProvider             string
-	GoogleAudience          string
-	GoogleApiServiceAccount string
-	AllowedPrefixes         []string
-	BlockedPrefixes         []string
-	Comment                 string
-}
-
 func (d *ApiIntegrationGoogleDetails) ID() AccountObjectIdentifier {
 	return d.Id
-}
-
-// ApiIntegrationGitHttpsApiDetails holds the structured output of DESCRIBE API INTEGRATION for
-// git HTTPS API integrations (covers token-based, GitHub App, OAuth2, and private-link variants).
-type ApiIntegrationGitHttpsApiDetails struct {
-	Id                           AccountObjectIdentifier
-	Enabled                      bool
-	ApiProvider                  string
-	AllowedAuthenticationSecrets string // "ALL", "NONE", or comma-separated secret identifiers
-	UserAuthType                 string
-	OauthGrant                   string
-	OauthClientId                string
-	OauthClientAuthMethod        string
-	OauthTokenEndpoint           string
-	OauthAuthorizationEndpoint   string
-	OauthAccessTokenValidity     int
-	OauthRefreshTokenValidity    int
-	OauthAllowedScopes           []string
-	OauthUsername                string
-	OauthAssertionIssuer         string
-	OauthResourceUrl             string
-	UsePrivatelinkEndpoint       bool
-	TlsTrustedCertificates       []string
-	AllowedPrefixes              []string
-	BlockedPrefixes              []string
-	Comment                      string
 }
 
 func (d *ApiIntegrationGitHttpsApiDetails) ID() AccountObjectIdentifier {
 	return d.Id
 }
 
-// ApiIntegrationExternalMcpDetails holds the structured output of DESCRIBE API INTEGRATION for
-// external MCP integrations (covers OAuth2 and dynamic-client variants).
-type ApiIntegrationExternalMcpDetails struct {
-	Id                         AccountObjectIdentifier
-	Enabled                    bool
-	ApiProvider                string
-	UserAuthType               string
-	OauthGrant                 string
-	OauthClientId              string
-	OauthClientAuthMethod      string
-	OauthTokenEndpoint         string
-	OauthAuthorizationEndpoint string
-	OauthAccessTokenValidity   int
-	OauthRefreshTokenValidity  int
-	OauthAllowedScopes         []string
-	OauthUsername              string
-	OauthAssertionIssuer       string
-	OauthResourceUrl           string
-	AllowedPrefixes            []string
-	BlockedPrefixes            []string
-	Comment                    string
-}
-
 func (d *ApiIntegrationExternalMcpDetails) ID() AccountObjectIdentifier {
 	return d.Id
+}
+
+func (d *ApiIntegrationAllDetails) ID() AccountObjectIdentifier {
+	return d.Id
+}
+
+// AsToken projects DESCRIBE output onto git token-based resource columns.
+func (d *ApiIntegrationGitHttpsApiDetails) AsToken() *ApiIntegrationGitRepositoryToken {
+	if d == nil {
+		return nil
+	}
+	return &ApiIntegrationGitRepositoryToken{
+		Enabled:                      d.Enabled,
+		ApiProvider:                  d.ApiProvider,
+		AllowedAuthenticationSecrets: d.AllowedAuthenticationSecrets,
+		AllowedPrefixes:              d.AllowedPrefixes,
+		BlockedPrefixes:              d.BlockedPrefixes,
+		Comment:                      d.Comment,
+	}
+}
+
+// AsGithubApp projects DESCRIBE output onto git GitHub App resource columns.
+func (d *ApiIntegrationGitHttpsApiDetails) AsGithubApp() *ApiIntegrationGitRepositoryGithubApp {
+	if d == nil {
+		return nil
+	}
+	return &ApiIntegrationGitRepositoryGithubApp{
+		Enabled:         d.Enabled,
+		ApiProvider:     d.ApiProvider,
+		UserAuthType:    d.UserAuthType,
+		AllowedPrefixes: d.AllowedPrefixes,
+		BlockedPrefixes: d.BlockedPrefixes,
+		Comment:         d.Comment,
+	}
+}
+
+// AsOauth2 projects DESCRIBE output onto git OAuth2 resource columns.
+func (d *ApiIntegrationGitHttpsApiDetails) AsOauth2() *ApiIntegrationGitRepositoryOauth2 {
+	if d == nil {
+		return nil
+	}
+	return &ApiIntegrationGitRepositoryOauth2{
+		Enabled:                    d.Enabled,
+		UserAuthType:               d.UserAuthType,
+		OauthClientId:              d.OauthClientId,
+		OauthTokenEndpoint:         d.OauthTokenEndpoint,
+		OauthAuthorizationEndpoint: d.OauthAuthorizationEndpoint,
+		OauthAccessTokenValidity:   d.OauthAccessTokenValidity,
+		OauthRefreshTokenValidity:  d.OauthRefreshTokenValidity,
+		OauthAllowedScopes:         d.OauthAllowedScopes,
+		OauthUsername:              d.OauthUsername,
+		AllowedPrefixes:            d.AllowedPrefixes,
+		BlockedPrefixes:            d.BlockedPrefixes,
+		Comment:                    d.Comment,
+	}
+}
+
+// AsPrivateLink projects DESCRIBE output onto git private-link resource columns.
+func (d *ApiIntegrationGitHttpsApiDetails) AsPrivateLink() *ApiIntegrationGitRepositoryPrivateLink {
+	if d == nil {
+		return nil
+	}
+	return &ApiIntegrationGitRepositoryPrivateLink{
+		Enabled:                      d.Enabled,
+		ApiProvider:                  d.ApiProvider,
+		AllowedAuthenticationSecrets: d.AllowedAuthenticationSecrets,
+		UsePrivatelinkEndpoint:       d.UsePrivatelinkEndpoint,
+		TlsTrustedCertificates:       d.TlsTrustedCertificates,
+		AllowedPrefixes:              d.AllowedPrefixes,
+		BlockedPrefixes:              d.BlockedPrefixes,
+		Comment:                      d.Comment,
+	}
+}
+
+// AsOauth2 projects DESCRIBE output onto external MCP OAuth2 resource columns.
+func (d *ApiIntegrationExternalMcpDetails) AsOauth2() *ApiIntegrationExternalMcpOauth2 {
+	if d == nil {
+		return nil
+	}
+	return &ApiIntegrationExternalMcpOauth2{
+		Enabled:                    d.Enabled,
+		ApiProvider:                d.ApiProvider,
+		UserAuthType:               d.UserAuthType,
+		OauthGrant:                 d.OauthGrant,
+		OauthClientId:              d.OauthClientId,
+		OauthClientAuthMethod:      d.OauthClientAuthMethod,
+		OauthTokenEndpoint:         d.OauthTokenEndpoint,
+		OauthAuthorizationEndpoint: d.OauthAuthorizationEndpoint,
+		OauthAccessTokenValidity:   d.OauthAccessTokenValidity,
+		OauthRefreshTokenValidity:  d.OauthRefreshTokenValidity,
+		OauthAllowedScopes:         d.OauthAllowedScopes,
+		OauthUsername:              d.OauthUsername,
+		OauthAssertionIssuer:       d.OauthAssertionIssuer,
+		AllowedPrefixes:            d.AllowedPrefixes,
+		BlockedPrefixes:            d.BlockedPrefixes,
+		Comment:                    d.Comment,
+	}
+}
+
+// AsDynamicClient projects DESCRIBE output onto external MCP dynamic-client resource columns.
+func (d *ApiIntegrationExternalMcpDetails) AsDynamicClient() *ApiIntegrationExternalMcpDynamicClient {
+	if d == nil {
+		return nil
+	}
+	return &ApiIntegrationExternalMcpDynamicClient{
+		Enabled:          d.Enabled,
+		ApiProvider:      d.ApiProvider,
+		UserAuthType:     d.UserAuthType,
+		OauthResourceUrl: d.OauthResourceUrl,
+		AllowedPrefixes:  d.AllowedPrefixes,
+		BlockedPrefixes:  d.BlockedPrefixes,
+		Comment:          d.Comment,
+	}
 }
 
 // DescribeAwsDetails fetches and parses describe output for an AWS API integration.
@@ -418,46 +440,6 @@ func parseUserAuthIntoExternalMcp(value string, details *ApiIntegrationExternalM
 		}
 	}
 	return errors.Join(errs...)
-}
-
-// ApiIntegrationAllDetails holds the output of DESCRIBE API INTEGRATION for any provider type.
-// Fields that do not apply to a given provider are zero-valued.
-type ApiIntegrationAllDetails struct {
-	Id                           AccountObjectIdentifier
-	Enabled                      bool
-	ApiKey                       string
-	ApiProvider                  string
-	ApiAwsRoleArn                string
-	ApiAwsIamUserArn             string
-	ApiAwsExternalId             string
-	AzureTenantId                string
-	AzureAdApplicationId         string
-	AzureMultiTenantAppName      string
-	AzureConsentUrl              string
-	GoogleAudience               string
-	GoogleApiServiceAccount      string
-	AllowedAuthenticationSecrets string
-	UserAuthType                 string
-	OauthGrant                   string
-	OauthClientId                string
-	OauthClientAuthMethod        string
-	OauthTokenEndpoint           string
-	OauthAuthorizationEndpoint   string
-	OauthAccessTokenValidity     int
-	OauthRefreshTokenValidity    int
-	OauthAllowedScopes           []string
-	OauthUsername                string
-	OauthAssertionIssuer         string
-	OauthResourceUrl             string
-	UsePrivatelinkEndpoint       bool
-	TlsTrustedCertificates       []string
-	AllowedPrefixes              []string
-	BlockedPrefixes              []string
-	Comment                      string
-}
-
-func (d *ApiIntegrationAllDetails) ID() AccountObjectIdentifier {
-	return d.Id
 }
 
 // DescribeAllDetails fetches and parses describe output for any API integration type.

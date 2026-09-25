@@ -84,7 +84,7 @@ var apiIntegrationGitRepositoryOauth2Schema = func() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Outputs the result of `DESCRIBE API INTEGRATION` for the given integration.",
 			Elem: &schema.Resource{
-				Schema: schemas.DescribeGitRepositoryOauth2ApiIntegrationSchema,
+				Schema: schemas.DescribeApiIntegrationGitRepositoryOauth2Schema,
 			},
 		},
 	}
@@ -219,7 +219,7 @@ func ReadApiIntegrationGitRepositoryOauth2(ctx context.Context, d *schema.Resour
 		d.Set("oauth_refresh_token_validity", gitDetails.OauthRefreshTokenValidity),
 		d.Set("oauth_allowed_scopes", gitDetails.OauthAllowedScopes),
 		d.Set("oauth_username", gitDetails.OauthUsername),
-		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationGitRepositoryOauth2DetailsToSchema(gitDetails)}),
+		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationGitRepositoryOauth2ToSchema(gitDetails.AsOauth2())}),
 	)
 	return diag.FromErr(errs)
 }

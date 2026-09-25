@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func v2_14_0_StageStateUpgrader(describeToSchema func(sdk.StageDetails) (map[string]any, error)) schema.StateUpgradeFunc {
+func v2_14_0_StageStateUpgrader(describeToSchema func(*sdk.StageDetails) map[string]any) schema.StateUpgradeFunc {
 	return func(ctx context.Context, rawState map[string]any, meta any) (map[string]any, error) {
 		if rawState == nil {
 			return rawState, nil
@@ -31,21 +31,18 @@ func v2_14_0_StageStateUpgrader(describeToSchema func(sdk.StageDetails) (map[str
 			return nil, err
 		}
 
-		detailsSchema, err := describeToSchema(*details)
-		if err != nil {
-			return nil, err
-		}
-
-		rawState[DescribeOutputAttributeName] = []any{detailsSchema}
+		rawState[DescribeOutputAttributeName] = []any{describeToSchema(details)}
 
 		return rawState, nil
 	}
 }
 
 var (
-	v2_14_0_ExternalAzureStageStateUpgrader        = v2_14_0_StageStateUpgrader(schemas.StageDescribeToSchema)
-	v2_14_0_ExternalGcsStageStateUpgrader          = v2_14_0_StageStateUpgrader(schemas.StageDescribeToSchema)
-	v2_14_0_ExternalS3CompatibleStageStateUpgrader = v2_14_0_StageStateUpgrader(schemas.AwsCompatibleStageDescribeToSchema)
-	v2_14_0_InternalStageStateUpgrader             = v2_14_0_StageStateUpgrader(schemas.StageDescribeToSchema)
-	v2_14_0_ExternalS3StageStateUpgrader           = v2_14_0_StageStateUpgrader(schemas.AwsStageDescribeToSchema)
+	v2_14_0_ExternalAzureStageStateUpgrader        = v2_14_0_StageStateUpgrader(func(d *sdk.StageDetails) map[string]any { return schemas.StageCommonToSchema(d.AsCommon()) })
+	v2_14_0_ExternalGcsStageStateUpgrader          = v2_14_0_StageStateUpgrader(func(d *sdk.StageDetails) map[string]any { return schemas.StageCommonToSchema(d.AsCommon()) })
+	v2_14_0_ExternalS3CompatibleStageStateUpgrader = v2_14_0_StageStateUpgrader(func(d *sdk.StageDetails) map[string]any {
+		return schemas.StageAwsCompatibleToSchema(d.AsAwsCompatible())
+	})
+	v2_14_0_InternalStageStateUpgrader   = v2_14_0_StageStateUpgrader(func(d *sdk.StageDetails) map[string]any { return schemas.StageCommonToSchema(d.AsCommon()) })
+	v2_14_0_ExternalS3StageStateUpgrader = v2_14_0_StageStateUpgrader(func(d *sdk.StageDetails) map[string]any { return schemas.StageAwsToSchema(d.AsAws()) })
 )

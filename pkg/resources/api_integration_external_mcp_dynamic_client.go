@@ -32,7 +32,7 @@ var apiIntegrationExternalMcpDynamicClientSchema = func() map[string]*schema.Sch
 			Computed:    true,
 			Description: "Outputs the result of `DESCRIBE API INTEGRATION` for the given integration.",
 			Elem: &schema.Resource{
-				Schema: schemas.DescribeExternalMcpDynamicClientApiIntegrationSchema,
+				Schema: schemas.DescribeApiIntegrationExternalMcpDynamicClientSchema,
 			},
 		},
 	}
@@ -143,7 +143,7 @@ func ReadApiIntegrationExternalMcpDynamicClient(ctx context.Context, d *schema.R
 	errs := errors.Join(
 		handleApiIntegrationCommonRead(d, id, s, details.AllowedPrefixes, details.BlockedPrefixes),
 		d.Set("oauth_resource_url", details.OauthResourceUrl),
-		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationExternalMcpDynamicClientDetailsToSchema(details)}),
+		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationExternalMcpDynamicClientToSchema(details.AsDynamicClient())}),
 	)
 	return diag.FromErr(errs)
 }

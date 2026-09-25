@@ -62,7 +62,7 @@ var apiIntegrationExternalMcpOAuth2Schema = func() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Outputs the result of `DESCRIBE API INTEGRATION` for the given integration.",
 			Elem: &schema.Resource{
-				Schema: schemas.DescribeExternalMcpOAuth2ApiIntegrationSchema,
+				Schema: schemas.DescribeApiIntegrationExternalMcpOauth2Schema,
 			},
 		},
 	}
@@ -204,7 +204,7 @@ func ReadApiIntegrationExternalMcpOAuth2(ctx context.Context, d *schema.Resource
 		d.Set("oauth_authorization_endpoint", mcpDetails.OauthAuthorizationEndpoint),
 		d.Set("oauth_client_auth_method", mcpDetails.OauthClientAuthMethod),
 		d.Set("oauth_refresh_token_validity", mcpDetails.OauthRefreshTokenValidity),
-		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationExternalMcpOAuth2DetailsToSchema(mcpDetails)}),
+		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationExternalMcpOauth2ToSchema(mcpDetails.AsOauth2())}),
 	)
 	return diag.FromErr(errs)
 }

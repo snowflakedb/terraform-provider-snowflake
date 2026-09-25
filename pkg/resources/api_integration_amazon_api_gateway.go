@@ -45,7 +45,7 @@ var apiIntegrationAmazonApiGatewaySchema = func() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Outputs the result of `DESCRIBE API INTEGRATION` for the given integration.",
 			Elem: &schema.Resource{
-				Schema: schemas.DescribeAmazonApiGatewayApiIntegrationSchema,
+				Schema: schemas.DescribeApiIntegrationAwsDetailsSchema,
 			},
 		},
 	}
@@ -163,7 +163,7 @@ func ReadApiIntegrationAmazonApiGateway(ctx context.Context, d *schema.ResourceD
 		d.Set("api_provider", string(normalizedProvider)),
 		d.Set("api_aws_role_arn", awsDetails.ApiAwsRoleArn),
 		// api_key intentionally omitted as it is not returned by Snowflake
-		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationAmazonApiGatewayDetailsToSchema(awsDetails)}),
+		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationAwsDetailsToSchema(awsDetails)}),
 	)
 	return diag.FromErr(errs)
 }

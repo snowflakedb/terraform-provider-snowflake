@@ -114,7 +114,7 @@ var externalGcsStageSchema = func() map[string]*schema.Schema {
 			Description: "Specifies a cloud provider for the stage. This field is used for checking external changes and recreating the resources if needed.",
 		},
 	}
-	return collections.MergeMaps(stageCommonSchema(schemas.CommonStageDescribeSchema()), gcsStage)
+	return collections.MergeMaps(stageCommonSchema(schemas.DescribeStageCommonSchema), gcsStage)
 }()
 
 func ExternalGcsStage() *schema.Resource {
@@ -259,10 +259,7 @@ func ReadExternalGcsStageFunc(withExternalChangesMarking bool) schema.ReadContex
 			return diag.FromErr(err)
 		}
 
-		detailsSchema, err := schemas.StageDescribeToSchema(*details)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		detailsSchema := schemas.StageCommonToSchema(details.AsCommon())
 
 		if withExternalChangesMarking {
 			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(

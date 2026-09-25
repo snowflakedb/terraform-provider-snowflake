@@ -113,14 +113,47 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.User{}},
 	{ObjectStruct: sdk.ProgrammaticAccessToken{}},
 	{ObjectStruct: sdk.View{}},
-	// Union of all SHOW WAREHOUSES columns (AllDetails analog). SkipFields `tables` re-added in warehouse_ext.go.
+	// Union of all SHOW WAREHOUSES columns (AllDetails analog). ManualFields `tables` re-added in warehouse_ext.go.
 	// Keep omitted: actives / pendings / failed / suspended / uuid (Snowflake: internal use, will be removed).
-	// TODO [next PRs]: un-skip tables once MapToSchemaField maps []SchemaObjectIdentifier.
+	// TODO [next PRs]: drop tables from ManualFields once MapToSchemaField maps []SchemaObjectIdentifier.
 	{ObjectStruct: sdk.Warehouse{}, SkipFields: []string{"actives", "pendings", "failed", "suspended", "uuid"}, ManualFields: []string{"tables"}},
 	{ObjectStruct: sdk.WarehouseAdaptive{}},
 	{ObjectStruct: sdk.WarehouseInteractive{}, ManualFields: []string{"tables"}},
 	{ObjectStruct: sdk.WarehouseRegular{}},
 	{ObjectStruct: sdk.AlertDetails{}, IsDescribe: true},
+	// SkipFields `id` is the SDK identifier (public schema has no `id`).
+	// ManualFields: api_key is Sensitive; api_provider needs strings.ToLower — neither can be generated.
+	// TODO [next PRs]: drop prefixes/scopes/certs from ManualFields once MapToSchemaField maps []string.
+	{ObjectStruct: sdk.ApiIntegrationAllDetails{}, IsDescribe: true, SkipFields: []string{"id"}, ManualFields: []string{
+		"api_key", "api_provider", "allowed_prefixes", "blocked_prefixes", "oauth_allowed_scopes", "tls_trusted_certificates",
+	}},
+	{ObjectStruct: sdk.ApiIntegrationAwsDetails{}, IsDescribe: true, SkipFields: []string{"id"}, ManualFields: []string{
+		"api_key", "api_provider", "allowed_prefixes", "blocked_prefixes",
+	}},
+	{ObjectStruct: sdk.ApiIntegrationAzureDetails{}, IsDescribe: true, SkipFields: []string{"id"}, ManualFields: []string{
+		"api_key", "api_provider", "allowed_prefixes", "blocked_prefixes",
+	}},
+	{ObjectStruct: sdk.ApiIntegrationExternalMcpDynamicClient{}, IsDescribe: true, ManualFields: []string{
+		"api_provider", "allowed_prefixes", "blocked_prefixes",
+	}},
+	{ObjectStruct: sdk.ApiIntegrationExternalMcpOauth2{}, IsDescribe: true, ManualFields: []string{
+		"api_provider", "allowed_prefixes", "blocked_prefixes", "oauth_allowed_scopes",
+	}},
+	{ObjectStruct: sdk.ApiIntegrationGitRepositoryGithubApp{}, IsDescribe: true, ManualFields: []string{
+		"api_provider", "allowed_prefixes", "blocked_prefixes",
+	}},
+	{ObjectStruct: sdk.ApiIntegrationGitRepositoryOauth2{}, IsDescribe: true, ManualFields: []string{
+		"allowed_prefixes", "blocked_prefixes", "oauth_allowed_scopes",
+	}},
+	{ObjectStruct: sdk.ApiIntegrationGitRepositoryPrivateLink{}, IsDescribe: true, ManualFields: []string{
+		"api_provider", "allowed_prefixes", "blocked_prefixes", "tls_trusted_certificates",
+	}},
+	{ObjectStruct: sdk.ApiIntegrationGitRepositoryToken{}, IsDescribe: true, ManualFields: []string{
+		"api_provider", "allowed_prefixes", "blocked_prefixes",
+	}},
+	{ObjectStruct: sdk.ApiIntegrationGoogleDetails{}, IsDescribe: true, SkipFields: []string{"id"}, ManualFields: []string{
+		"api_key", "api_provider", "allowed_prefixes", "blocked_prefixes",
+	}},
 	// ManualFields uses generator snake_case (OAuth → o_auth, SigV4 → sig_v4); ext re-adds public oauth_* / sigv4_* keys.
 	{ObjectStruct: sdk.CatalogIntegrationAllDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "o_auth_rest_authentication", "bearer_rest_authentication", "sig_v4_rest_authentication"}},
 	{ObjectStruct: sdk.CatalogIntegrationAwsGlueDetails{}, IsDescribe: true},
@@ -136,6 +169,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.CortexSearchServiceDetails{}, IsDescribe: true, ManualFields: []string{"attribute_columns", "columns"}, SkipFields: []string{
 		"serving_state", "primary_key_columns", "scoring_profile_count", "full_index_build_interval_days",
 	}},
+	// Public describe_output Elem is the row (created_on / name / kind). DatabaseDetails is a Rows wrapper; list helper in ext.
+	{ObjectStruct: sdk.DatabaseDetailsRow{}, IsDescribe: true},
 	{ObjectStruct: sdk.DynamicTableDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.EventTableDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.ExternalAccessIntegrationDetails{}, IsDescribe: true, ManualFields: []string{"allowed_network_rules", "allowed_api_authentication_integrations", "allowed_authentication_secrets"}},
@@ -188,11 +223,34 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"normalized_arguments", "normalized_external_access_integrations", "normalized_secrets", "normalized_packages",
 		"snowpark_version",
 	}, ManualFields: []string{"return_data_type"}},
+	// ManualFields `signature` stays ext (slice of structs). `return_type` is string (not datatypes.DataType) so it generates natively.
+	{ObjectStruct: sdk.RowAccessPolicyDescription{}, IsDescribe: true, ManualFields: []string{"signature"}},
 	{ObjectStruct: sdk.SchemaDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.SecretDetails{}, IsDescribe: true, ManualFields: []string{"oauth_scopes"}},
 	{ObjectStruct: sdk.SecurityIntegrationProperty{}, UsedAsListEntry: true},
 	{ObjectStruct: sdk.ServiceDetails{}, IsDescribe: true, ManualFields: []string{"external_access_integrations"}},
 	{ObjectStruct: sdk.SessionPolicyDetails{}, IsDescribe: true, ManualFields: []string{"allowed_secondary_roles", "blocked_secondary_roles"}},
+	// Nested directory_table / file_format / location / privatelink in ext (public key privatelink, not private_link).
+	// Keep omitted: id (SDK identifier), credentials (secret).
+	// TODO [next PRs]: first move only — generated schemas are empty (every public key is nested/slice).
+	// Native slices/nested structs should drop from ManualFields and shrink the ext. Same pattern for API variant DESCRIBE.
+	// TODO [next PRs]: DirectoryTable directory_notification_channel / aws_sns_topic (stale public schema).
+	{ObjectStruct: sdk.StageAws{}, IsDescribe: true, ManualFields: []string{
+		"file_format_name", "file_format_csv", "file_format_json", "file_format_avro", "file_format_orc", "file_format_parquet", "file_format_xml",
+		"directory_table", "private_link", "location",
+	}},
+	{ObjectStruct: sdk.StageAwsCompatible{}, IsDescribe: true, ManualFields: []string{
+		"file_format_name", "file_format_csv", "file_format_json", "file_format_avro", "file_format_orc", "file_format_parquet", "file_format_xml",
+		"directory_table", "location",
+	}},
+	{ObjectStruct: sdk.StageCommon{}, IsDescribe: true, ManualFields: []string{
+		"file_format_name", "file_format_csv", "file_format_json", "file_format_avro", "file_format_orc", "file_format_parquet", "file_format_xml",
+		"directory_table",
+	}},
+	{ObjectStruct: sdk.StageDetails{}, IsDescribe: true, SkipFields: []string{"id", "credentials"}, ManualFields: []string{
+		"file_format_name", "file_format_csv", "file_format_json", "file_format_avro", "file_format_orc", "file_format_parquet", "file_format_xml",
+		"directory_table", "private_link", "location",
+	}},
 	{ObjectStruct: sdk.StorageIntegrationAllDetails{}, IsDescribe: true, ManualFields: []string{"allowed_locations", "blocked_locations"}},
 	{ObjectStruct: sdk.StorageIntegrationAwsDetails{}, IsDescribe: true, ManualFields: []string{"allowed_locations", "blocked_locations"}},
 	{ObjectStruct: sdk.StorageIntegrationAzureDetails{}, IsDescribe: true, ManualFields: []string{"allowed_locations", "blocked_locations"}},

@@ -54,6 +54,188 @@ var (
 	)
 )
 
+// DESCRIBE projections. DESC API INTEGRATION is one property-list; Describe*Details() still
+// return the existing parse structs. Git / External MCP resource schemas are in-memory subsets
+// (warehouse SHOW / Stage DESCRIBE analog).
+var apiIntegrationAwsDetailsDef = g.PlainStruct("ApiIntegrationAwsDetails").
+	AccountObjectIdentifier().
+	Bool("Enabled").
+	Text("ApiKey").
+	Text("ApiProvider").
+	Text("ApiAwsRoleArn").
+	Text("ApiAwsIamUserArn").
+	Text("ApiAwsExternalId").
+	StringList("AllowedPrefixes").
+	StringList("BlockedPrefixes").
+	Text("Comment")
+
+var apiIntegrationAzureDetailsDef = g.PlainStruct("ApiIntegrationAzureDetails").
+	AccountObjectIdentifier().
+	Bool("Enabled").
+	Text("ApiKey").
+	Text("ApiProvider").
+	Text("AzureTenantId").
+	Text("AzureAdApplicationId").
+	Text("AzureMultiTenantAppName").
+	Text("AzureConsentUrl").
+	StringList("AllowedPrefixes").
+	StringList("BlockedPrefixes").
+	Text("Comment")
+
+var apiIntegrationGoogleDetailsDef = g.PlainStruct("ApiIntegrationGoogleDetails").
+	AccountObjectIdentifier().
+	Bool("Enabled").
+	Text("ApiKey").
+	Text("ApiProvider").
+	Text("GoogleAudience").
+	Text("GoogleApiServiceAccount").
+	StringList("AllowedPrefixes").
+	StringList("BlockedPrefixes").
+	Text("Comment")
+
+var apiIntegrationGitHttpsApiDetailsDef = g.PlainStruct("ApiIntegrationGitHttpsApiDetails").
+	AccountObjectIdentifier().
+	Bool("Enabled").
+	Text("ApiProvider").
+	Text("AllowedAuthenticationSecrets").
+	Text("UserAuthType").
+	Text("OauthGrant").
+	Text("OauthClientId").
+	Text("OauthClientAuthMethod").
+	Text("OauthTokenEndpoint").
+	Text("OauthAuthorizationEndpoint").
+	Number("OauthAccessTokenValidity").
+	Number("OauthRefreshTokenValidity").
+	StringList("OauthAllowedScopes").
+	Text("OauthUsername").
+	Text("OauthAssertionIssuer").
+	Text("OauthResourceUrl").
+	Bool("UsePrivatelinkEndpoint").
+	StringList("TlsTrustedCertificates").
+	StringList("AllowedPrefixes").
+	StringList("BlockedPrefixes").
+	Text("Comment")
+
+var apiIntegrationExternalMcpDetailsDef = g.PlainStruct("ApiIntegrationExternalMcpDetails").
+	AccountObjectIdentifier().
+	Bool("Enabled").
+	Text("ApiProvider").
+	Text("UserAuthType").
+	Text("OauthGrant").
+	Text("OauthClientId").
+	Text("OauthClientAuthMethod").
+	Text("OauthTokenEndpoint").
+	Text("OauthAuthorizationEndpoint").
+	Number("OauthAccessTokenValidity").
+	Number("OauthRefreshTokenValidity").
+	StringList("OauthAllowedScopes").
+	Text("OauthUsername").
+	Text("OauthAssertionIssuer").
+	Text("OauthResourceUrl").
+	StringList("AllowedPrefixes").
+	StringList("BlockedPrefixes").
+	Text("Comment")
+
+var apiIntegrationAllDetailsDef = g.PlainStruct("ApiIntegrationAllDetails").
+	AccountObjectIdentifier().
+	Bool("Enabled").
+	Text("ApiKey").
+	Text("ApiProvider").
+	Text("ApiAwsRoleArn").
+	Text("ApiAwsIamUserArn").
+	Text("ApiAwsExternalId").
+	Text("AzureTenantId").
+	Text("AzureAdApplicationId").
+	Text("AzureMultiTenantAppName").
+	Text("AzureConsentUrl").
+	Text("GoogleAudience").
+	Text("GoogleApiServiceAccount").
+	Text("AllowedAuthenticationSecrets").
+	Text("UserAuthType").
+	Text("OauthGrant").
+	Text("OauthClientId").
+	Text("OauthClientAuthMethod").
+	Text("OauthTokenEndpoint").
+	Text("OauthAuthorizationEndpoint").
+	Number("OauthAccessTokenValidity").
+	Number("OauthRefreshTokenValidity").
+	StringList("OauthAllowedScopes").
+	Text("OauthUsername").
+	Text("OauthAssertionIssuer").
+	Text("OauthResourceUrl").
+	Bool("UsePrivatelinkEndpoint").
+	StringList("TlsTrustedCertificates").
+	StringList("AllowedPrefixes").
+	StringList("BlockedPrefixes").
+	Text("Comment")
+
+var apiIntegrationGitRepositoryTokenDef = g.PlainStruct("ApiIntegrationGitRepositoryToken").
+	Bool("Enabled").
+	Text("ApiProvider").
+	Text("AllowedAuthenticationSecrets").
+	StringList("AllowedPrefixes").
+	StringList("BlockedPrefixes").
+	Text("Comment")
+
+var apiIntegrationGitRepositoryGithubAppDef = g.PlainStruct("ApiIntegrationGitRepositoryGithubApp").
+	Bool("Enabled").
+	Text("ApiProvider").
+	Text("UserAuthType").
+	StringList("AllowedPrefixes").
+	StringList("BlockedPrefixes").
+	Text("Comment")
+
+var apiIntegrationGitRepositoryOauth2Def = g.PlainStruct("ApiIntegrationGitRepositoryOauth2").
+	Bool("Enabled").
+	Text("UserAuthType").
+	Text("OauthClientId").
+	Text("OauthTokenEndpoint").
+	Text("OauthAuthorizationEndpoint").
+	Number("OauthAccessTokenValidity").
+	Number("OauthRefreshTokenValidity").
+	StringList("OauthAllowedScopes").
+	Text("OauthUsername").
+	StringList("AllowedPrefixes").
+	StringList("BlockedPrefixes").
+	Text("Comment")
+
+var apiIntegrationGitRepositoryPrivateLinkDef = g.PlainStruct("ApiIntegrationGitRepositoryPrivateLink").
+	Bool("Enabled").
+	Text("ApiProvider").
+	Text("AllowedAuthenticationSecrets").
+	Bool("UsePrivatelinkEndpoint").
+	StringList("TlsTrustedCertificates").
+	StringList("AllowedPrefixes").
+	StringList("BlockedPrefixes").
+	Text("Comment")
+
+var apiIntegrationExternalMcpOauth2Def = g.PlainStruct("ApiIntegrationExternalMcpOauth2").
+	Bool("Enabled").
+	Text("ApiProvider").
+	Text("UserAuthType").
+	Text("OauthGrant").
+	Text("OauthClientId").
+	Text("OauthClientAuthMethod").
+	Text("OauthTokenEndpoint").
+	Text("OauthAuthorizationEndpoint").
+	Number("OauthAccessTokenValidity").
+	Number("OauthRefreshTokenValidity").
+	StringList("OauthAllowedScopes").
+	Text("OauthUsername").
+	Text("OauthAssertionIssuer").
+	StringList("AllowedPrefixes").
+	StringList("BlockedPrefixes").
+	Text("Comment")
+
+var apiIntegrationExternalMcpDynamicClientDef = g.PlainStruct("ApiIntegrationExternalMcpDynamicClient").
+	Bool("Enabled").
+	Text("ApiProvider").
+	Text("UserAuthType").
+	Text("OauthResourceUrl").
+	StringList("AllowedPrefixes").
+	StringList("BlockedPrefixes").
+	Text("Comment")
+
 var apiIntegrationEndpointPrefixDef = g.NewQueryStruct("ApiIntegrationEndpointPrefix").Text("Path", g.KeywordOptions().SingleQuotes().Required())
 
 var apiIntegrationAllowedAuthSecretsDef = g.NewQueryStruct("ApiIntegrationAllowedAuthenticationSecrets").
@@ -420,6 +602,18 @@ var apiIntegrationsDef = g.NewInterface(
 			SQL("API INTEGRATION").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
+		apiIntegrationAwsDetailsDef,
+		apiIntegrationAzureDetailsDef,
+		apiIntegrationGoogleDetailsDef,
+		apiIntegrationGitHttpsApiDetailsDef,
+		apiIntegrationExternalMcpDetailsDef,
+		apiIntegrationAllDetailsDef,
+		apiIntegrationGitRepositoryTokenDef,
+		apiIntegrationGitRepositoryGithubAppDef,
+		apiIntegrationGitRepositoryOauth2Def,
+		apiIntegrationGitRepositoryPrivateLinkDef,
+		apiIntegrationExternalMcpOauth2Def,
+		apiIntegrationExternalMcpDynamicClientDef,
 	).
 	WithShowObjectType("Integration").
 	WithCustomInterfaceMethod(

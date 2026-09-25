@@ -193,7 +193,7 @@ var externalS3StageSchema = func() map[string]*schema.Schema {
 			Description: "Specifies a cloud provider for the stage. This field is used for checking external changes and recreating the resources if needed.",
 		},
 	}
-	return collections.MergeMaps(stageCommonSchema(schemas.AwsStageDescribeSchema()), s3Stage)
+	return collections.MergeMaps(stageCommonSchema(schemas.DescribeStageAwsSchema), s3Stage)
 }()
 
 func ExternalS3Stage() *schema.Resource {
@@ -364,10 +364,7 @@ func ReadExternalS3StageFunc(withExternalChangesMarking bool) schema.ReadContext
 			return diag.FromErr(err)
 		}
 
-		detailsSchema, err := schemas.AwsStageDescribeToSchema(*details)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		detailsSchema := schemas.StageAwsToSchema(details.AsAws())
 
 		if withExternalChangesMarking {
 			var storageIntegrationName string

@@ -396,6 +396,42 @@ type StageDetails struct {
 	Credentials       *StageCredentials
 }
 
+type StageCommon struct {
+	FileFormatName    *SchemaObjectIdentifier
+	FileFormatCsv     *FileFormatCsv
+	FileFormatJson    *FileFormatJson
+	FileFormatAvro    *FileFormatAvro
+	FileFormatOrc     *FileFormatOrc
+	FileFormatParquet *FileFormatParquet
+	FileFormatXml     *FileFormatXml
+	DirectoryTable    *StageDirectoryTable
+}
+
+type StageAws struct {
+	FileFormatName    *SchemaObjectIdentifier
+	FileFormatCsv     *FileFormatCsv
+	FileFormatJson    *FileFormatJson
+	FileFormatAvro    *FileFormatAvro
+	FileFormatOrc     *FileFormatOrc
+	FileFormatParquet *FileFormatParquet
+	FileFormatXml     *FileFormatXml
+	DirectoryTable    *StageDirectoryTable
+	PrivateLink       *StagePrivateLink
+	Location          *StageLocationDetails
+}
+
+type StageAwsCompatible struct {
+	FileFormatName    *SchemaObjectIdentifier
+	FileFormatCsv     *FileFormatCsv
+	FileFormatJson    *FileFormatJson
+	FileFormatAvro    *FileFormatAvro
+	FileFormatOrc     *FileFormatOrc
+	FileFormatParquet *FileFormatParquet
+	FileFormatXml     *FileFormatXml
+	DirectoryTable    *StageDirectoryTable
+	Location          *StageLocationDetails
+}
+
 // ShowStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-stages.
 type ShowStageOptions struct {
 	show   bool        `ddl:"static" sql:"SHOW"`

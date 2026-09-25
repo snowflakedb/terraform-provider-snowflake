@@ -142,7 +142,7 @@ var externalAzureStageSchema = func() map[string]*schema.Schema {
 			Description: "Specifies a cloud provider for the stage. This field is used for checking external changes and recreating the resources if needed.",
 		},
 	}
-	return collections.MergeMaps(stageCommonSchema(schemas.CommonStageDescribeSchema()), azureStage)
+	return collections.MergeMaps(stageCommonSchema(schemas.DescribeStageCommonSchema), azureStage)
 }()
 
 func ExternalAzureStage() *schema.Resource {
@@ -300,10 +300,7 @@ func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadCont
 			return diag.FromErr(err)
 		}
 
-		detailsSchema, err := schemas.StageDescribeToSchema(*details)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		detailsSchema := schemas.StageCommonToSchema(details.AsCommon())
 
 		if withExternalChangesMarking {
 			var storageIntegrationName string

@@ -292,3 +292,194 @@ type ApiIntegrationProperty struct {
 	Value   string
 	Default string
 }
+
+type ApiIntegrationAwsDetails struct {
+	Id               AccountObjectIdentifier
+	Enabled          bool
+	ApiKey           string
+	ApiProvider      string
+	ApiAwsRoleArn    string
+	ApiAwsIamUserArn string
+	ApiAwsExternalId string
+	AllowedPrefixes  []string
+	BlockedPrefixes  []string
+	Comment          string
+}
+
+type ApiIntegrationAzureDetails struct {
+	Id                      AccountObjectIdentifier
+	Enabled                 bool
+	ApiKey                  string
+	ApiProvider             string
+	AzureTenantId           string
+	AzureAdApplicationId    string
+	AzureMultiTenantAppName string
+	AzureConsentUrl         string
+	AllowedPrefixes         []string
+	BlockedPrefixes         []string
+	Comment                 string
+}
+
+type ApiIntegrationGoogleDetails struct {
+	Id                      AccountObjectIdentifier
+	Enabled                 bool
+	ApiKey                  string
+	ApiProvider             string
+	GoogleAudience          string
+	GoogleApiServiceAccount string
+	AllowedPrefixes         []string
+	BlockedPrefixes         []string
+	Comment                 string
+}
+
+type ApiIntegrationGitHttpsApiDetails struct {
+	Id                           AccountObjectIdentifier
+	Enabled                      bool
+	ApiProvider                  string
+	AllowedAuthenticationSecrets string
+	UserAuthType                 string
+	OauthGrant                   string
+	OauthClientId                string
+	OauthClientAuthMethod        string
+	OauthTokenEndpoint           string
+	OauthAuthorizationEndpoint   string
+	OauthAccessTokenValidity     int
+	OauthRefreshTokenValidity    int
+	OauthAllowedScopes           []string
+	OauthUsername                string
+	OauthAssertionIssuer         string
+	OauthResourceUrl             string
+	UsePrivatelinkEndpoint       bool
+	TlsTrustedCertificates       []string
+	AllowedPrefixes              []string
+	BlockedPrefixes              []string
+	Comment                      string
+}
+
+type ApiIntegrationExternalMcpDetails struct {
+	Id                         AccountObjectIdentifier
+	Enabled                    bool
+	ApiProvider                string
+	UserAuthType               string
+	OauthGrant                 string
+	OauthClientId              string
+	OauthClientAuthMethod      string
+	OauthTokenEndpoint         string
+	OauthAuthorizationEndpoint string
+	OauthAccessTokenValidity   int
+	OauthRefreshTokenValidity  int
+	OauthAllowedScopes         []string
+	OauthUsername              string
+	OauthAssertionIssuer       string
+	OauthResourceUrl           string
+	AllowedPrefixes            []string
+	BlockedPrefixes            []string
+	Comment                    string
+}
+
+type ApiIntegrationAllDetails struct {
+	Id                           AccountObjectIdentifier
+	Enabled                      bool
+	ApiKey                       string
+	ApiProvider                  string
+	ApiAwsRoleArn                string
+	ApiAwsIamUserArn             string
+	ApiAwsExternalId             string
+	AzureTenantId                string
+	AzureAdApplicationId         string
+	AzureMultiTenantAppName      string
+	AzureConsentUrl              string
+	GoogleAudience               string
+	GoogleApiServiceAccount      string
+	AllowedAuthenticationSecrets string
+	UserAuthType                 string
+	OauthGrant                   string
+	OauthClientId                string
+	OauthClientAuthMethod        string
+	OauthTokenEndpoint           string
+	OauthAuthorizationEndpoint   string
+	OauthAccessTokenValidity     int
+	OauthRefreshTokenValidity    int
+	OauthAllowedScopes           []string
+	OauthUsername                string
+	OauthAssertionIssuer         string
+	OauthResourceUrl             string
+	UsePrivatelinkEndpoint       bool
+	TlsTrustedCertificates       []string
+	AllowedPrefixes              []string
+	BlockedPrefixes              []string
+	Comment                      string
+}
+
+type ApiIntegrationGitRepositoryToken struct {
+	Enabled                      bool
+	ApiProvider                  string
+	AllowedAuthenticationSecrets string
+	AllowedPrefixes              []string
+	BlockedPrefixes              []string
+	Comment                      string
+}
+
+type ApiIntegrationGitRepositoryGithubApp struct {
+	Enabled         bool
+	ApiProvider     string
+	UserAuthType    string
+	AllowedPrefixes []string
+	BlockedPrefixes []string
+	Comment         string
+}
+
+type ApiIntegrationGitRepositoryOauth2 struct {
+	Enabled                    bool
+	UserAuthType               string
+	OauthClientId              string
+	OauthTokenEndpoint         string
+	OauthAuthorizationEndpoint string
+	OauthAccessTokenValidity   int
+	OauthRefreshTokenValidity  int
+	OauthAllowedScopes         []string
+	OauthUsername              string
+	AllowedPrefixes            []string
+	BlockedPrefixes            []string
+	Comment                    string
+}
+
+type ApiIntegrationGitRepositoryPrivateLink struct {
+	Enabled                      bool
+	ApiProvider                  string
+	AllowedAuthenticationSecrets string
+	UsePrivatelinkEndpoint       bool
+	TlsTrustedCertificates       []string
+	AllowedPrefixes              []string
+	BlockedPrefixes              []string
+	Comment                      string
+}
+
+type ApiIntegrationExternalMcpOauth2 struct {
+	Enabled                    bool
+	ApiProvider                string
+	UserAuthType               string
+	OauthGrant                 string
+	OauthClientId              string
+	OauthClientAuthMethod      string
+	OauthTokenEndpoint         string
+	OauthAuthorizationEndpoint string
+	OauthAccessTokenValidity   int
+	OauthRefreshTokenValidity  int
+	OauthAllowedScopes         []string
+	OauthUsername              string
+	OauthAssertionIssuer       string
+	AllowedPrefixes            []string
+	BlockedPrefixes            []string
+	Comment                    string
+}
+
+type ApiIntegrationExternalMcpDynamicClient struct {
+	Enabled          bool
+	ApiProvider      string
+	UserAuthType     string
+	OauthResourceUrl string
+	AllowedPrefixes  []string
+	BlockedPrefixes  []string
+	Comment          string
+}

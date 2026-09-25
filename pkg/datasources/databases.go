@@ -75,7 +75,7 @@ var databasesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE DATABASE.",
 					Elem: &schema.Resource{
-						Schema: schemas.DatabaseDescribeSchema,
+						Schema: schemas.DescribeDatabaseDetailsRowSchema,
 					},
 				},
 				resources.ParametersAttributeName: {
@@ -145,7 +145,7 @@ func ReadDatabases(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			databaseDescription = schemas.DatabaseDescriptionToSchema(*describeResult)
+			databaseDescription = schemas.DatabaseDetailsListToSchema(describeResult)
 		}
 
 		var databaseParameters []map[string]any

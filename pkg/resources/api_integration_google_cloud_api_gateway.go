@@ -31,7 +31,7 @@ var apiIntegrationGoogleCloudApiGatewaySchema = func() map[string]*schema.Schema
 			Computed:    true,
 			Description: "Outputs the result of `DESCRIBE API INTEGRATION` for the given integration.",
 			Elem: &schema.Resource{
-				Schema: schemas.DescribeGoogleCloudApiGatewayApiIntegrationSchema,
+				Schema: schemas.DescribeApiIntegrationGoogleDetailsSchema,
 			},
 		},
 	}
@@ -138,7 +138,7 @@ func ReadApiIntegrationGoogleCloudApiGateway(ctx context.Context, d *schema.Reso
 	errs := errors.Join(
 		handleApiIntegrationCommonRead(d, id, s, googleDetails.AllowedPrefixes, googleDetails.BlockedPrefixes),
 		d.Set("google_audience", googleDetails.GoogleAudience),
-		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationGoogleCloudApiGatewayDetailsToSchema(googleDetails)}),
+		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationGoogleDetailsToSchema(googleDetails)}),
 	)
 	return diag.FromErr(errs)
 }

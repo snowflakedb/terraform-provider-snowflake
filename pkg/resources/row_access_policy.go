@@ -90,7 +90,7 @@ var rowAccessPolicySchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE ROW ACCESS POLICY` for the given row access policy.",
 		Elem: &schema.Resource{
-			Schema: schemas.RowAccessPolicyDescribeSchema,
+			Schema: schemas.DescribeRowAccessPolicyDescriptionSchema,
 		},
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
@@ -266,7 +266,7 @@ func ReadRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 	if err = d.Set(ShowOutputAttributeName, []map[string]any{schemas.RowAccessPolicyToSchema(rowAccessPolicy)}); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set(DescribeOutputAttributeName, []map[string]any{schemas.RowAccessPolicyDescriptionToSchema(*rowAccessPolicyDescription)}); err != nil {
+	if err = d.Set(DescribeOutputAttributeName, []map[string]any{schemas.RowAccessPolicyDescriptionToSchema(rowAccessPolicyDescription)}); err != nil {
 		return diag.FromErr(err)
 	}
 	return nil

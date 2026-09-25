@@ -35,7 +35,7 @@ var apiIntegrationGitRepositoryPrivateLinkSchema = func() map[string]*schema.Sch
 			Computed:    true,
 			Description: "Outputs the result of `DESCRIBE API INTEGRATION` for the given integration.",
 			Elem: &schema.Resource{
-				Schema: schemas.DescribeGitRepositoryPrivateLinkApiIntegrationSchema,
+				Schema: schemas.DescribeApiIntegrationGitRepositoryPrivateLinkSchema,
 			},
 		},
 	}
@@ -175,7 +175,7 @@ func ReadApiIntegrationGitRepositoryPrivateLink(ctx context.Context, d *schema.R
 		handleApiIntegrationCommonRead(d, id, s, gitDetails.AllowedPrefixes, gitDetails.BlockedPrefixes),
 		d.Set("use_privatelink_endpoint", gitDetails.UsePrivatelinkEndpoint),
 		d.Set("tls_trusted_certificates", normalizedCerts),
-		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationGitRepositoryPrivateLinkDetailsToSchema(gitDetails)}),
+		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationGitRepositoryPrivateLinkToSchema(gitDetails.AsPrivateLink())}),
 	)
 	return diag.FromErr(errs)
 }

@@ -24,7 +24,7 @@ var apiIntegrationGitRepositoryTokenSchema = func() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Outputs the result of `DESCRIBE API INTEGRATION` for the given integration.",
 			Elem: &schema.Resource{
-				Schema: schemas.DescribeGitRepositoryTokenApiIntegrationSchema,
+				Schema: schemas.DescribeApiIntegrationGitRepositoryTokenSchema,
 			},
 		},
 	}
@@ -133,7 +133,7 @@ func ReadApiIntegrationGitRepositoryToken(ctx context.Context, d *schema.Resourc
 
 	errs := errors.Join(
 		handleApiIntegrationCommonRead(d, id, s, gitDetails.AllowedPrefixes, gitDetails.BlockedPrefixes),
-		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationGitRepositoryTokenDetailsToSchema(gitDetails)}),
+		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationGitRepositoryTokenToSchema(gitDetails.AsToken())}),
 	)
 	return diag.FromErr(errs)
 }

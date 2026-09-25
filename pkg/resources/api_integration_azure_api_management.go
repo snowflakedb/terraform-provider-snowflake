@@ -43,7 +43,7 @@ var apiIntegrationAzureApiManagementSchema = func() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Outputs the result of `DESCRIBE API INTEGRATION` for the given integration.",
 			Elem: &schema.Resource{
-				Schema: schemas.DescribeAzureApiManagementApiIntegrationSchema,
+				Schema: schemas.DescribeApiIntegrationAzureDetailsSchema,
 			},
 		},
 	}
@@ -152,7 +152,7 @@ func ReadApiIntegrationAzureApiManagement(ctx context.Context, d *schema.Resourc
 		d.Set("azure_tenant_id", azureDetails.AzureTenantId),
 		d.Set("azure_ad_application_id", azureDetails.AzureAdApplicationId),
 		// api_key intentionally omitted — Snowflake returns a masked value (☺☺☺☺☺☺☺☺☺☺) and external changes cannot be detected
-		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationAzureApiManagementDetailsToSchema(azureDetails)}),
+		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationAzureDetailsToSchema(azureDetails)}),
 	)
 	return diag.FromErr(errs)
 }
