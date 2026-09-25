@@ -42,7 +42,7 @@ var warehousesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of SHOW WAREHOUSES.",
 					Elem: &schema.Resource{
-						Schema: schemas.ShowAllWarehousesSchema,
+						Schema: schemas.ShowWarehouseSchema,
 					},
 				},
 				resources.DescribeOutputAttributeName: {
@@ -113,7 +113,7 @@ func ReadWarehouses(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 
 		flattenedWarehouses[i] = map[string]any{
-			resources.ShowOutputAttributeName:     []map[string]any{schemas.AnyWarehouseToSchema(&warehouse)},
+			resources.ShowOutputAttributeName:     []map[string]any{schemas.WarehouseToSchema(&warehouse)},
 			resources.DescribeOutputAttributeName: warehouseDescription,
 			resources.ParametersAttributeName:     warehouseParameters,
 		}

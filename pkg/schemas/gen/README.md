@@ -14,28 +14,23 @@ generation all SDK objects will have:
 - describe output schema when `IsDescribe` is set (`DescribeXSchema` in `{snake}_desc_gen.go`, `_details` suffix trimmed)
 - mapper from the SDK object to the generated schema (e.g. [user_gen](../user_gen.go))
 
-Unscoped generate and `generate-show-output-schemas-check` skip objects in `SHOW_OUTPUT_SCHEMAS_EXCLUDE` (Makefile). This generator is **Converging**. Customizations belong in `*_ext.go`: `SkipFields` omits a key that should not become public (a comment is left in place); `ManualFields` omits a key that ext must add (a comment is left in place, and the additional-mapping hook is generated). Callers always use generated `XToSchema`.
+`make generate-show-output-schemas` / `generate-show-output-schemas-check` run in `pre-push` / `pre-push-check`. This generator is **Enforced**: unscoped generate is a no-op, and `*_gen.go` must not be edited. Customizations belong in `*_ext.go`: `SkipFields` omits a key that should not become public (a comment is left in place); `ManualFields` omits a key that ext must add (a comment is left in place, and the additional-mapping hook is generated). Callers always use generated `XToSchema`.
 
 ### How it works
 
 ##### Invoking the generation
 
-To regenerate show outputs (skips `SHOW_OUTPUT_SCHEMAS_EXCLUDE`):
+To regenerate show outputs:
 
 ```shell
 make generate-show-output-schemas
 ```
 
-`make generate-show-output-schemas` / `generate-show-output-schemas-check` run in `pre-push` / `pre-push-check` with that exclude list. `make clean-show-output-schemas` deletes every `pkg/schemas/*_gen.go` file.
+`make generate-show-output-schemas` / `generate-show-output-schemas-check` run in `pre-push` / `pre-push-check`. `make clean-show-output-schemas` deletes every `pkg/schemas/*_gen.go` file.
 
 To generate only a chosen subset:
 ```shell
 make generate-show-output-schemas SF_TF_GENERATOR_ARGS="--filter-object-names=sdk.User"
-```
-
-To generate an object that is in `SHOW_OUTPUT_SCHEMAS_EXCLUDE`:
-```shell
-make generate-show-output-schemas SHOW_OUTPUT_SCHEMAS_EXCLUDE= SF_TF_GENERATOR_ARGS='--filter-object-names=sdk.Warehouse'
 ```
 
 ```shell

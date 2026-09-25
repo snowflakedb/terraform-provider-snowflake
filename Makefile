@@ -205,14 +205,8 @@ generate-issue-labels: ## generate GitHub issue labels for resources and data so
 generate-issue-labels-check: generate-issue-labels ## check that issue labels have been generated
 	$(call GIT_DIFF_CHECK,.github/ISSUE_TEMPLATE pkg/scripts/issues/labels_gen.go)
 
-# Objects skipped by unscoped generate-show-output-schemas and generate-show-output-schemas-check.
-# To generate one of them:
-#   make generate-show-output-schemas SHOW_OUTPUT_SCHEMAS_EXCLUDE= SF_TF_GENERATOR_ARGS='--filter-object-names=sdk.Warehouse'
-# Do not put spaces around names: --exclude-object-names does not trim each item.
-SHOW_OUTPUT_SCHEMAS_EXCLUDE ?= sdk.Warehouse
-
 generate-show-output-schemas: ## Generate show output schemas with mappers
-	SF_TF_GENERATOR_ARGS='$(strip $(if $(SHOW_OUTPUT_SCHEMAS_EXCLUDE),--exclude-object-names=$(SHOW_OUTPUT_SCHEMAS_EXCLUDE)) $(SF_TF_GENERATOR_ARGS))' go generate ./pkg/schemas/generate.go
+	go generate ./pkg/schemas/generate.go
 
 generate-show-output-schemas-check: generate-show-output-schemas ## Check that generated show output schemas are up-to-date
 	$(call GIT_DIFF_CHECK,pkg/schemas/*_gen.go)

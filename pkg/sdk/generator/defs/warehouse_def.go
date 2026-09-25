@@ -90,6 +90,90 @@ var warehouseDetailsPairs = g.StructPair("warehouseDetailsRow", "WarehouseDetail
 	Text("name").
 	Text("kind")
 
+// SHOW projections for type-specific Terraform schemas. SHOW WAREHOUSES is one row type;
+// Show() still returns []Warehouse. These structs are in-memory subsets (storage-integration
+// AllDetails analog). Regular covers STANDARD and SNOWPARK-OPTIMIZED SHOW columns.
+var warehouseRegularDef = g.PlainStruct("WarehouseRegular").
+	Text("Name").
+	Enum("State", warehouseStateEnum).
+	Enum("Type", warehouseTypeEnum).
+	OptionalField("Size", warehouseSizeEnum.Kind()).
+	OptionalNumber("MinClusterCount").
+	OptionalNumber("MaxClusterCount").
+	OptionalNumber("StartedClusters").
+	OptionalNumber("Running").
+	OptionalNumber("Queued").
+	Bool("IsDefault").
+	Bool("IsCurrent").
+	OptionalNumber("AutoSuspend").
+	Bool("AutoResume").
+	Field("Available", "float64").
+	Field("Provisioning", "float64").
+	Field("Quiescing", "float64").
+	Field("Other", "float64").
+	Time("CreatedOn").
+	Time("ResumedOn").
+	Time("UpdatedOn").
+	Text("Owner").
+	Text("Comment").
+	OptionalBool("EnableQueryAcceleration").
+	OptionalNumber("QueryAccelerationMaxScaleFactor").
+	Field("ResourceMonitor", "AccountObjectIdentifier").
+	OptionalField("ScalingPolicy", scalingPolicyEnum.Kind()).
+	Text("OwnerRoleType").
+	OptionalField("ResourceConstraint", warehouseResourceConstraintEnum.Kind()).
+	OptionalField("Generation", "WarehouseGeneration")
+
+var warehouseAdaptiveDef = g.PlainStruct("WarehouseAdaptive").
+	Text("Name").
+	Enum("State", warehouseStateEnum).
+	Enum("Type", warehouseTypeEnum).
+	OptionalNumber("Running").
+	OptionalNumber("Queued").
+	Bool("IsDefault").
+	Bool("IsCurrent").
+	Bool("AutoResume").
+	Field("Available", "float64").
+	Field("Provisioning", "float64").
+	Field("Quiescing", "float64").
+	Field("Other", "float64").
+	Time("CreatedOn").
+	Time("ResumedOn").
+	Time("UpdatedOn").
+	Text("Owner").
+	Text("Comment").
+	Field("ResourceMonitor", "AccountObjectIdentifier").
+	Text("OwnerRoleType").
+	OptionalField("MaxQueryPerformanceLevel", maxQueryPerformanceLevelEnum.Kind()).
+	OptionalNumber("QueryThroughputMultiplier")
+
+var warehouseInteractiveDef = g.PlainStruct("WarehouseInteractive").
+	Text("Name").
+	Enum("State", warehouseStateEnum).
+	Enum("Type", warehouseTypeEnum).
+	OptionalField("Size", warehouseSizeEnum.Kind()).
+	OptionalNumber("MinClusterCount").
+	OptionalNumber("MaxClusterCount").
+	OptionalNumber("StartedClusters").
+	OptionalNumber("Running").
+	OptionalNumber("Queued").
+	Bool("IsDefault").
+	Bool("IsCurrent").
+	OptionalNumber("AutoSuspend").
+	Bool("AutoResume").
+	Field("Available", "float64").
+	Field("Provisioning", "float64").
+	Field("Quiescing", "float64").
+	Field("Other", "float64").
+	Time("CreatedOn").
+	Time("ResumedOn").
+	Time("UpdatedOn").
+	Text("Owner").
+	Text("Comment").
+	Field("ResourceMonitor", "AccountObjectIdentifier").
+	Text("OwnerRoleType").
+	Field("Tables", "[]SchemaObjectIdentifier")
+
 var warehouseSetStruct = g.NewQueryStruct("WarehouseSet").
 	OptionalEnumAssignment("WAREHOUSE_TYPE", warehouseTypeEnum, g.ParameterOptions().SingleQuotes()).
 	OptionalEnumAssignment("WAREHOUSE_SIZE", warehouseSizeEnum, g.ParameterOptions().SingleQuotes()).
@@ -263,6 +347,9 @@ var warehousesDef = g.NewInterface(
 		SQL("WAREHOUSE").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
+	warehouseRegularDef,
+	warehouseAdaptiveDef,
+	warehouseInteractiveDef,
 ).ShowParameters("AccountObjectIdentifier").
 	WithCustomInterfaceMethod(
 		"ShowByIDExperimental", "ShowByIDExperimental is a show by id function with improved performance (using starts with and limit)",

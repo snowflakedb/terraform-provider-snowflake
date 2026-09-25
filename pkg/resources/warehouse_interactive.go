@@ -135,7 +135,7 @@ var warehouseInteractiveSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `SHOW WAREHOUSES` for the given interactive warehouse.",
 		Elem: &schema.Resource{
-			Schema: schemas.ShowWarehouseSchemaInteractive,
+			Schema: schemas.ShowWarehouseInteractiveSchema,
 		},
 	},
 	ParametersAttributeName: {
@@ -383,7 +383,7 @@ func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) schema.ReadCo
 			d.Set("fallback_warehouse", fallbackWarehouse),
 			d.Set("tables", tables),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseInteractiveToSchema(w)}),
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseInteractiveToSchema(w.AsInteractive())}),
 			d.Set(ParametersAttributeName, []map[string]any{schemas.WarehouseInteractiveParametersToSchema(warehouseParameters, providerCtx)}),
 		)
 		if errs != nil {

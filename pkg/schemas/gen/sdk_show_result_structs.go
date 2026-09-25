@@ -113,7 +113,13 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.User{}},
 	{ObjectStruct: sdk.ProgrammaticAccessToken{}},
 	{ObjectStruct: sdk.View{}},
-	{ObjectStruct: sdk.Warehouse{}},
+	// Union of all SHOW WAREHOUSES columns (AllDetails analog). SkipFields `tables` re-added in warehouse_ext.go.
+	// Keep omitted: actives / pendings / failed / suspended / uuid (Snowflake: internal use, will be removed).
+	// TODO [next PRs]: un-skip tables once MapToSchemaField maps []SchemaObjectIdentifier.
+	{ObjectStruct: sdk.Warehouse{}, SkipFields: []string{"actives", "pendings", "failed", "suspended", "uuid"}, ManualFields: []string{"tables"}},
+	{ObjectStruct: sdk.WarehouseAdaptive{}},
+	{ObjectStruct: sdk.WarehouseInteractive{}, ManualFields: []string{"tables"}},
+	{ObjectStruct: sdk.WarehouseRegular{}},
 	{ObjectStruct: sdk.AlertDetails{}, IsDescribe: true},
 	// ManualFields uses generator snake_case (OAuth → o_auth, SigV4 → sig_v4); ext re-adds public oauth_* / sigv4_* keys.
 	{ObjectStruct: sdk.CatalogIntegrationAllDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "o_auth_rest_authentication", "bearer_rest_authentication", "sig_v4_rest_authentication"}},

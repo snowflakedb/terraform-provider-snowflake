@@ -3,15 +3,16 @@
 package schemas
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// Adjusted manually: split into common, regular, and adaptive schemas.
+type warehouseToSchemaMapper struct{}
 
-// showWarehouseSchemaCommon contains fields present for all warehouse types.
-var showWarehouseSchemaCommon = map[string]*schema.Schema{
+var _ additionalSchemaMapper[sdk.Warehouse] = warehouseToSchemaMapper{}
+
+// ShowWarehouseSchema represents output of SHOW query for the single Warehouse.
+var ShowWarehouseSchema = mergeSchema(map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -22,6 +23,22 @@ var showWarehouseSchemaCommon = map[string]*schema.Schema{
 	},
 	"type": {
 		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"size": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"min_cluster_count": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+	"max_cluster_count": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+	"started_clusters": {
+		Type:     schema.TypeInt,
 		Computed: true,
 	},
 	"running": {
@@ -38,6 +55,10 @@ var showWarehouseSchemaCommon = map[string]*schema.Schema{
 	},
 	"is_current": {
 		Type:     schema.TypeBool,
+		Computed: true,
+	},
+	"auto_suspend": {
+		Type:     schema.TypeInt,
 		Computed: true,
 	},
 	"auto_resume": {
@@ -80,38 +101,6 @@ var showWarehouseSchemaCommon = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"resource_monitor": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
-	"owner_role_type": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
-}
-
-// showWarehouseSchema contains fields only present for standard and snowpark-optimized warehouses.
-var showWarehouseSchema = map[string]*schema.Schema{
-	"size": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
-	"min_cluster_count": {
-		Type:     schema.TypeInt,
-		Computed: true,
-	},
-	"max_cluster_count": {
-		Type:     schema.TypeInt,
-		Computed: true,
-	},
-	"started_clusters": {
-		Type:     schema.TypeInt,
-		Computed: true,
-	},
-	"auto_suspend": {
-		Type:     schema.TypeInt,
-		Computed: true,
-	},
 	"enable_query_acceleration": {
 		Type:     schema.TypeBool,
 		Computed: true,
@@ -120,7 +109,20 @@ var showWarehouseSchema = map[string]*schema.Schema{
 		Type:     schema.TypeInt,
 		Computed: true,
 	},
+	"resource_monitor": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	// actives is skipped and won't be generated
+	// pendings is skipped and won't be generated
+	// failed is skipped and won't be generated
+	// suspended is skipped and won't be generated
+	// uuid is skipped and won't be generated
 	"scaling_policy": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"owner_role_type": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
@@ -132,14 +134,6 @@ var showWarehouseSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}
-
-// ShowWarehouseSchema contains common and regular fields (used by the warehouse resource and data source).
-var ShowWarehouseSchema = collections.MergeMaps(showWarehouseSchemaCommon, showWarehouseSchema)
-
-// showWarehouseSchemaAdaptive contains fields only present for adaptive warehouses.
-// Adjusted manually.
-var showWarehouseSchemaAdaptive = map[string]*schema.Schema{
 	"max_query_performance_level": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -148,66 +142,28 @@ var showWarehouseSchemaAdaptive = map[string]*schema.Schema{
 		Type:     schema.TypeInt,
 		Computed: true,
 	},
-}
+	// tables: manual addition and mapping is needed
+}, warehouseToSchemaMapper{}.additionalSchema())
 
-// ShowWarehouseSchemaAdaptive contains common and adaptive fields (used by the adaptive warehouse resource).
-// Adjusted manually.
-var ShowWarehouseSchemaAdaptive = collections.MergeMaps(showWarehouseSchemaCommon, showWarehouseSchemaAdaptive)
+var _ = ShowWarehouseSchema
 
-var _ = ShowWarehouseSchemaAdaptive
-
-// showWarehouseSchemaInteractive contains fields only present for interactive warehouses.
-// Adjusted manually.
-var showWarehouseSchemaInteractive = map[string]*schema.Schema{
-	"size": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
-	"min_cluster_count": {
-		Type:     schema.TypeInt,
-		Computed: true,
-	},
-	"max_cluster_count": {
-		Type:     schema.TypeInt,
-		Computed: true,
-	},
-	"started_clusters": {
-		Type:     schema.TypeInt,
-		Computed: true,
-	},
-	"auto_suspend": {
-		Type:     schema.TypeInt,
-		Computed: true,
-	},
-	"tables": {
-		Type:     schema.TypeList,
-		Computed: true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	},
-}
-
-// ShowWarehouseSchemaInteractive contains common and interactive fields (used by the interactive warehouse resource).
-// Adjusted manually.
-var ShowWarehouseSchemaInteractive = collections.MergeMaps(showWarehouseSchemaCommon, showWarehouseSchemaInteractive)
-
-var _ = ShowWarehouseSchemaInteractive
-
-// ShowAllWarehousesSchema merges common, regular, adaptive, and interactive fields.
-// Used in the warehouses data source to cover all warehouse types in a single schema.
-// Adjusted manually.
-var ShowAllWarehousesSchema = collections.MergeMaps(collections.MergeMaps(ShowWarehouseSchema, showWarehouseSchemaAdaptive), showWarehouseSchemaInteractive)
-
-var _ = ShowAllWarehousesSchema
-
-// commonWarehouseToSchema maps fields present in all warehouse types (showWarehouseSchemaCommon).
-// Adjusted manually.
-func commonWarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
+func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	warehouseSchema := make(map[string]any)
 	warehouseSchema["name"] = warehouse.Name
 	warehouseSchema["state"] = string(warehouse.State)
 	warehouseSchema["type"] = string(warehouse.Type)
+	if warehouse.Size != nil {
+		warehouseSchema["size"] = string((*warehouse.Size))
+	}
+	if warehouse.MinClusterCount != nil {
+		warehouseSchema["min_cluster_count"] = (*warehouse.MinClusterCount)
+	}
+	if warehouse.MaxClusterCount != nil {
+		warehouseSchema["max_cluster_count"] = (*warehouse.MaxClusterCount)
+	}
+	if warehouse.StartedClusters != nil {
+		warehouseSchema["started_clusters"] = (*warehouse.StartedClusters)
+	}
 	if warehouse.Running != nil {
 		warehouseSchema["running"] = (*warehouse.Running)
 	}
@@ -216,6 +172,9 @@ func commonWarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	}
 	warehouseSchema["is_default"] = warehouse.IsDefault
 	warehouseSchema["is_current"] = warehouse.IsCurrent
+	if warehouse.AutoSuspend != nil {
+		warehouseSchema["auto_suspend"] = (*warehouse.AutoSuspend)
+	}
 	warehouseSchema["auto_resume"] = warehouse.AutoResume
 	warehouseSchema["available"] = warehouse.Available
 	warehouseSchema["provisioning"] = warehouse.Provisioning
@@ -226,97 +185,37 @@ func commonWarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	warehouseSchema["updated_on"] = warehouse.UpdatedOn.String()
 	warehouseSchema["owner"] = warehouse.Owner
 	warehouseSchema["comment"] = warehouse.Comment
-	warehouseSchema["resource_monitor"] = warehouse.ResourceMonitor.Name()
-	warehouseSchema["owner_role_type"] = warehouse.OwnerRoleType
-	return warehouseSchema
-}
-
-func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
-	warehouseSchema := commonWarehouseToSchema(warehouse)
-	if warehouse.Size != nil {
-		warehouseSchema["size"] = string((*warehouse.Size))
-	}
-	if warehouse.MinClusterCount != nil {
-		warehouseSchema["min_cluster_count"] = (*warehouse.MinClusterCount)
-	}
-	if warehouse.MaxClusterCount != nil {
-		warehouseSchema["max_cluster_count"] = (*warehouse.MaxClusterCount)
-	}
-	if warehouse.StartedClusters != nil {
-		warehouseSchema["started_clusters"] = (*warehouse.StartedClusters)
-	}
-	if warehouse.AutoSuspend != nil {
-		warehouseSchema["auto_suspend"] = (*warehouse.AutoSuspend)
-	}
 	if warehouse.EnableQueryAcceleration != nil {
 		warehouseSchema["enable_query_acceleration"] = (*warehouse.EnableQueryAcceleration)
 	}
 	if warehouse.QueryAccelerationMaxScaleFactor != nil {
 		warehouseSchema["query_acceleration_max_scale_factor"] = (*warehouse.QueryAccelerationMaxScaleFactor)
 	}
+	warehouseSchema["resource_monitor"] = warehouse.ResourceMonitor.Name()
+	// actives is skipped and won't be generated
+	// pendings is skipped and won't be generated
+	// failed is skipped and won't be generated
+	// suspended is skipped and won't be generated
+	// uuid is skipped and won't be generated
 	if warehouse.ScalingPolicy != nil {
 		warehouseSchema["scaling_policy"] = string((*warehouse.ScalingPolicy))
 	}
+	warehouseSchema["owner_role_type"] = warehouse.OwnerRoleType
 	if warehouse.ResourceConstraint != nil {
 		warehouseSchema["resource_constraint"] = string((*warehouse.ResourceConstraint))
 	}
 	if warehouse.Generation != nil {
 		warehouseSchema["generation"] = string((*warehouse.Generation))
 	}
+	if warehouse.MaxQueryPerformanceLevel != nil {
+		warehouseSchema["max_query_performance_level"] = string((*warehouse.MaxQueryPerformanceLevel))
+	}
+	if warehouse.QueryThroughputMultiplier != nil {
+		warehouseSchema["query_throughput_multiplier"] = (*warehouse.QueryThroughputMultiplier)
+	}
+	// tables: manual addition and mapping is needed
+	warehouseToSchemaMapper{}.additionalToSchema(warehouse, warehouseSchema)
 	return warehouseSchema
 }
 
 var _ = WarehouseToSchema
-
-// AnyWarehouseToSchema maps a Warehouse to ShowAllWarehousesSchema fields.
-// Dispatches to the adaptive or regular mapper based on warehouse type.
-// Adjusted manually.
-func AnyWarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
-	if warehouse.IsInteractiveWarehouse() {
-		return WarehouseInteractiveToSchema(warehouse)
-	}
-	if warehouse.Type == sdk.WarehouseTypeAdaptive {
-		return WarehouseAdaptiveToSchema(warehouse)
-	}
-	return WarehouseToSchema(warehouse)
-}
-
-// WarehouseAdaptiveToSchema maps fields in the show output of an adaptive warehouse (showWarehouseSchemaAdaptive).
-// Adjusted manually.
-func WarehouseAdaptiveToSchema(warehouse *sdk.Warehouse) map[string]any {
-	warehouseSchema := commonWarehouseToSchema(warehouse)
-	if warehouse.MaxQueryPerformanceLevel != nil {
-		warehouseSchema["max_query_performance_level"] = string(*warehouse.MaxQueryPerformanceLevel)
-	}
-	if warehouse.QueryThroughputMultiplier != nil {
-		warehouseSchema["query_throughput_multiplier"] = *warehouse.QueryThroughputMultiplier
-	}
-	return warehouseSchema
-}
-
-// WarehouseInteractiveToSchema maps fields in the show output of an interactive warehouse (showWarehouseSchemaInteractive).
-// Adjusted manually.
-func WarehouseInteractiveToSchema(warehouse *sdk.Warehouse) map[string]any {
-	warehouseSchema := commonWarehouseToSchema(warehouse)
-	if warehouse.Size != nil {
-		warehouseSchema["size"] = string((*warehouse.Size))
-	}
-	if warehouse.MinClusterCount != nil {
-		warehouseSchema["min_cluster_count"] = (*warehouse.MinClusterCount)
-	}
-	if warehouse.MaxClusterCount != nil {
-		warehouseSchema["max_cluster_count"] = (*warehouse.MaxClusterCount)
-	}
-	if warehouse.StartedClusters != nil {
-		warehouseSchema["started_clusters"] = (*warehouse.StartedClusters)
-	}
-	if warehouse.AutoSuspend != nil {
-		warehouseSchema["auto_suspend"] = (*warehouse.AutoSuspend)
-	}
-	tables := make([]string, len(warehouse.Tables))
-	for i, table := range warehouse.Tables {
-		tables[i] = table.FullyQualifiedName()
-	}
-	warehouseSchema["tables"] = tables
-	return warehouseSchema
-}

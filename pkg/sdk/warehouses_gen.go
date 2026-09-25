@@ -283,3 +283,87 @@ type WarehouseDetails struct {
 	Name      string
 	Kind      string
 }
+
+type WarehouseRegular struct {
+	Name                            string
+	State                           WarehouseState
+	Type                            WarehouseType
+	Size                            *WarehouseSize
+	MinClusterCount                 *int
+	MaxClusterCount                 *int
+	StartedClusters                 *int
+	Running                         *int
+	Queued                          *int
+	IsDefault                       bool
+	IsCurrent                       bool
+	AutoSuspend                     *int
+	AutoResume                      bool
+	Available                       float64
+	Provisioning                    float64
+	Quiescing                       float64
+	Other                           float64
+	CreatedOn                       time.Time
+	ResumedOn                       time.Time
+	UpdatedOn                       time.Time
+	Owner                           string
+	Comment                         string
+	EnableQueryAcceleration         *bool
+	QueryAccelerationMaxScaleFactor *int
+	ResourceMonitor                 AccountObjectIdentifier
+	ScalingPolicy                   *ScalingPolicy
+	OwnerRoleType                   string
+	ResourceConstraint              *WarehouseResourceConstraint
+	Generation                      *WarehouseGeneration
+}
+
+type WarehouseAdaptive struct {
+	Name                      string
+	State                     WarehouseState
+	Type                      WarehouseType
+	Running                   *int
+	Queued                    *int
+	IsDefault                 bool
+	IsCurrent                 bool
+	AutoResume                bool
+	Available                 float64
+	Provisioning              float64
+	Quiescing                 float64
+	Other                     float64
+	CreatedOn                 time.Time
+	ResumedOn                 time.Time
+	UpdatedOn                 time.Time
+	Owner                     string
+	Comment                   string
+	ResourceMonitor           AccountObjectIdentifier
+	OwnerRoleType             string
+	MaxQueryPerformanceLevel  *MaxQueryPerformanceLevel
+	QueryThroughputMultiplier *int
+}
+
+type WarehouseInteractive struct {
+	Name            string
+	State           WarehouseState
+	Type            WarehouseType
+	Size            *WarehouseSize
+	MinClusterCount *int
+	MaxClusterCount *int
+	StartedClusters *int
+	Running         *int
+	Queued          *int
+	IsDefault       bool
+	IsCurrent       bool
+	AutoSuspend     *int
+	AutoResume      bool
+	Available       float64
+	Provisioning    float64
+	Quiescing       float64
+	Other           float64
+	CreatedOn       time.Time
+	ResumedOn       time.Time
+	UpdatedOn       time.Time
+	Owner           string
+	Comment         string
+	ResourceMonitor AccountObjectIdentifier
+	OwnerRoleType   string
+	Tables          []SchemaObjectIdentifier
+}

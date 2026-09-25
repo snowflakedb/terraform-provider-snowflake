@@ -75,7 +75,7 @@ var warehouseAdaptiveSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `SHOW WAREHOUSES` for the given adaptive warehouse.",
 		Elem: &schema.Resource{
-			Schema: schemas.ShowWarehouseSchemaAdaptive,
+			Schema: schemas.ShowWarehouseAdaptiveSchema,
 		},
 	},
 	ParametersAttributeName: {
@@ -245,7 +245,7 @@ func ReadWarehouseAdaptiveFunc(withExternalChangesMarking bool) schema.ReadConte
 			d.Set("name", w.Name),
 			d.Set("comment", w.Comment),
 			d.Set("warehouse_type", string(w.Type)),
-			d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseAdaptiveToSchema(w)}),
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseAdaptiveToSchema(w.AsAdaptive())}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set(ParametersAttributeName, []map[string]any{schemas.WarehouseAdaptiveParametersToSchema(warehouseParameters, providerCtx)}),
 		)

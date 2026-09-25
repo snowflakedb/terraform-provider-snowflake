@@ -159,7 +159,7 @@ var warehouseSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `SHOW WAREHOUSES` for the given warehouse.",
 		Elem: &schema.Resource{
-			Schema: schemas.ShowWarehouseSchema,
+			Schema: schemas.ShowWarehouseRegularSchema,
 		},
 	},
 	ParametersAttributeName: {
@@ -517,7 +517,7 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			return diags
 		}
 
-		if err = d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseToSchema(w)}); err != nil {
+		if err = d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseRegularToSchema(w.AsRegular())}); err != nil {
 			return diag.FromErr(err)
 		}
 

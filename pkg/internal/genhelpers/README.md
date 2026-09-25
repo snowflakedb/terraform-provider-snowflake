@@ -156,7 +156,7 @@ Never edit `*_gen.go` files. Changes belong in definition files or `*_ext.go` ex
 | Make target                                       | Output location                                                          | State        |
 |---------------------------------------------------|--------------------------------------------------------------------------|--------------|
 | `generate-sdk`                                    | `pkg/sdk/*_gen.go` + `*_gen_test.go`                                     | **Enforced** |
-| `generate-show-output-schemas`                    | `pkg/schemas/*_gen.go`                                                   | Converging   |
+| `generate-show-output-schemas`                    | `pkg/schemas/*_gen.go`                                                   | **Enforced** |
 | `generate-snowflake-object-assertions`            | `pkg/acceptance/bettertestspoc/assert/objectassert/*_gen.go`             | **Enforced** |
 | `generate-snowflake-object-parameters-assertions` | `pkg/acceptance/bettertestspoc/assert/objectparametersassert/*_gen.go`   | **Enforced** |
 | `generate-resource-assertions`                    | `pkg/acceptance/bettertestspoc/assert/resourceassert/*_gen.go`           | **Enforced** |
