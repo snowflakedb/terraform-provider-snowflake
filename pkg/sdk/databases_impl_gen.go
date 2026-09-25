@@ -4,6 +4,8 @@ package sdk
 
 import (
 	"context"
+	"errors"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -110,25 +112,25 @@ func (r *CreateDatabaseRequest) toOpts() *CreateDatabaseOptions {
 		Transient:                               r.Transient,
 		IfNotExists:                             r.IfNotExists,
 		name:                                    r.name,
-		DataRetentionTimeInDays:                 r.DataRetentionTimeInDays,
-		MaxDataExtensionTimeInDays:              r.MaxDataExtensionTimeInDays,
-		ExternalVolume:                          r.ExternalVolume,
 		Catalog:                                 r.Catalog,
-		ReplaceInvalidCharacters:                r.ReplaceInvalidCharacters,
+		DataRetentionTimeInDays:                 r.DataRetentionTimeInDays,
 		DefaultDdlCollation:                     r.DefaultDdlCollation,
 		DefaultNotebookComputePoolCpu:           r.DefaultNotebookComputePoolCpu,
 		DefaultNotebookComputePoolGpu:           r.DefaultNotebookComputePoolGpu,
-		StorageSerializationPolicy:              r.StorageSerializationPolicy,
-		LogLevel:                                r.LogLevel,
+		EnableConsoleOutput:                     r.EnableConsoleOutput,
+		ExternalVolume:                          r.ExternalVolume,
 		LogEventLevel:                           r.LogEventLevel,
-		TraceLevel:                              r.TraceLevel,
+		LogLevel:                                r.LogLevel,
+		MaxDataExtensionTimeInDays:              r.MaxDataExtensionTimeInDays,
+		QuotedIdentifiersIgnoreCase:             r.QuotedIdentifiersIgnoreCase,
+		ReplaceInvalidCharacters:                r.ReplaceInvalidCharacters,
+		StorageSerializationPolicy:              r.StorageSerializationPolicy,
 		SuspendTaskAfterNumFailures:             r.SuspendTaskAfterNumFailures,
 		TaskAutoRetryAttempts:                   r.TaskAutoRetryAttempts,
+		TraceLevel:                              r.TraceLevel,
 		UserTaskManagedInitialWarehouseSize:     r.UserTaskManagedInitialWarehouseSize,
-		UserTaskTimeoutMs:                       r.UserTaskTimeoutMs,
 		UserTaskMinimumTriggerIntervalInSeconds: r.UserTaskMinimumTriggerIntervalInSeconds,
-		QuotedIdentifiersIgnoreCase:             r.QuotedIdentifiersIgnoreCase,
-		EnableConsoleOutput:                     r.EnableConsoleOutput,
+		UserTaskTimeoutMs:                       r.UserTaskTimeoutMs,
 		Comment:                                 r.Comment,
 		Tag:                                     r.Tag,
 	}
@@ -153,23 +155,23 @@ func (r *CreateSharedDatabaseRequest) toOpts() *CreateSharedDatabaseOptions {
 		IfNotExists:                             r.IfNotExists,
 		name:                                    r.name,
 		FromShare:                               r.FromShare,
-		ExternalVolume:                          r.ExternalVolume,
 		Catalog:                                 r.Catalog,
-		ReplaceInvalidCharacters:                r.ReplaceInvalidCharacters,
 		DefaultDdlCollation:                     r.DefaultDdlCollation,
 		DefaultNotebookComputePoolCpu:           r.DefaultNotebookComputePoolCpu,
 		DefaultNotebookComputePoolGpu:           r.DefaultNotebookComputePoolGpu,
-		StorageSerializationPolicy:              r.StorageSerializationPolicy,
-		LogLevel:                                r.LogLevel,
+		EnableConsoleOutput:                     r.EnableConsoleOutput,
+		ExternalVolume:                          r.ExternalVolume,
 		LogEventLevel:                           r.LogEventLevel,
-		TraceLevel:                              r.TraceLevel,
+		LogLevel:                                r.LogLevel,
+		QuotedIdentifiersIgnoreCase:             r.QuotedIdentifiersIgnoreCase,
+		ReplaceInvalidCharacters:                r.ReplaceInvalidCharacters,
+		StorageSerializationPolicy:              r.StorageSerializationPolicy,
 		SuspendTaskAfterNumFailures:             r.SuspendTaskAfterNumFailures,
 		TaskAutoRetryAttempts:                   r.TaskAutoRetryAttempts,
+		TraceLevel:                              r.TraceLevel,
 		UserTaskManagedInitialWarehouseSize:     r.UserTaskManagedInitialWarehouseSize,
-		UserTaskTimeoutMs:                       r.UserTaskTimeoutMs,
 		UserTaskMinimumTriggerIntervalInSeconds: r.UserTaskMinimumTriggerIntervalInSeconds,
-		QuotedIdentifiersIgnoreCase:             r.QuotedIdentifiersIgnoreCase,
-		EnableConsoleOutput:                     r.EnableConsoleOutput,
+		UserTaskTimeoutMs:                       r.UserTaskTimeoutMs,
 		Comment:                                 r.Comment,
 		Tag:                                     r.Tag,
 	}
@@ -183,25 +185,25 @@ func (r *CreateSecondaryDatabaseRequest) toOpts() *CreateSecondaryDatabaseOption
 		IfNotExists:                             r.IfNotExists,
 		name:                                    r.name,
 		PrimaryDatabase:                         r.PrimaryDatabase,
-		DataRetentionTimeInDays:                 r.DataRetentionTimeInDays,
-		MaxDataExtensionTimeInDays:              r.MaxDataExtensionTimeInDays,
-		ExternalVolume:                          r.ExternalVolume,
 		Catalog:                                 r.Catalog,
-		ReplaceInvalidCharacters:                r.ReplaceInvalidCharacters,
+		DataRetentionTimeInDays:                 r.DataRetentionTimeInDays,
 		DefaultDdlCollation:                     r.DefaultDdlCollation,
 		DefaultNotebookComputePoolCpu:           r.DefaultNotebookComputePoolCpu,
 		DefaultNotebookComputePoolGpu:           r.DefaultNotebookComputePoolGpu,
-		StorageSerializationPolicy:              r.StorageSerializationPolicy,
-		LogLevel:                                r.LogLevel,
+		EnableConsoleOutput:                     r.EnableConsoleOutput,
+		ExternalVolume:                          r.ExternalVolume,
 		LogEventLevel:                           r.LogEventLevel,
-		TraceLevel:                              r.TraceLevel,
+		LogLevel:                                r.LogLevel,
+		MaxDataExtensionTimeInDays:              r.MaxDataExtensionTimeInDays,
+		QuotedIdentifiersIgnoreCase:             r.QuotedIdentifiersIgnoreCase,
+		ReplaceInvalidCharacters:                r.ReplaceInvalidCharacters,
+		StorageSerializationPolicy:              r.StorageSerializationPolicy,
 		SuspendTaskAfterNumFailures:             r.SuspendTaskAfterNumFailures,
 		TaskAutoRetryAttempts:                   r.TaskAutoRetryAttempts,
+		TraceLevel:                              r.TraceLevel,
 		UserTaskManagedInitialWarehouseSize:     r.UserTaskManagedInitialWarehouseSize,
-		UserTaskTimeoutMs:                       r.UserTaskTimeoutMs,
 		UserTaskMinimumTriggerIntervalInSeconds: r.UserTaskMinimumTriggerIntervalInSeconds,
-		QuotedIdentifiersIgnoreCase:             r.QuotedIdentifiersIgnoreCase,
-		EnableConsoleOutput:                     r.EnableConsoleOutput,
+		UserTaskTimeoutMs:                       r.UserTaskTimeoutMs,
 		Comment:                                 r.Comment,
 	}
 	return opts
@@ -246,49 +248,49 @@ func (r *AlterDatabaseRequest) toOpts() *AlterDatabaseOptions {
 	}
 	if r.Set != nil {
 		opts.Set = &DatabaseSet{
-			DataRetentionTimeInDays:                 r.Set.DataRetentionTimeInDays,
-			MaxDataExtensionTimeInDays:              r.Set.MaxDataExtensionTimeInDays,
-			ExternalVolume:                          r.Set.ExternalVolume,
 			Catalog:                                 r.Set.Catalog,
-			ReplaceInvalidCharacters:                r.Set.ReplaceInvalidCharacters,
+			DataRetentionTimeInDays:                 r.Set.DataRetentionTimeInDays,
 			DefaultDdlCollation:                     r.Set.DefaultDdlCollation,
 			DefaultNotebookComputePoolCpu:           r.Set.DefaultNotebookComputePoolCpu,
 			DefaultNotebookComputePoolGpu:           r.Set.DefaultNotebookComputePoolGpu,
-			StorageSerializationPolicy:              r.Set.StorageSerializationPolicy,
-			LogLevel:                                r.Set.LogLevel,
+			EnableConsoleOutput:                     r.Set.EnableConsoleOutput,
+			ExternalVolume:                          r.Set.ExternalVolume,
 			LogEventLevel:                           r.Set.LogEventLevel,
-			TraceLevel:                              r.Set.TraceLevel,
+			LogLevel:                                r.Set.LogLevel,
+			MaxDataExtensionTimeInDays:              r.Set.MaxDataExtensionTimeInDays,
+			QuotedIdentifiersIgnoreCase:             r.Set.QuotedIdentifiersIgnoreCase,
+			ReplaceInvalidCharacters:                r.Set.ReplaceInvalidCharacters,
+			StorageSerializationPolicy:              r.Set.StorageSerializationPolicy,
 			SuspendTaskAfterNumFailures:             r.Set.SuspendTaskAfterNumFailures,
 			TaskAutoRetryAttempts:                   r.Set.TaskAutoRetryAttempts,
+			TraceLevel:                              r.Set.TraceLevel,
 			UserTaskManagedInitialWarehouseSize:     r.Set.UserTaskManagedInitialWarehouseSize,
-			UserTaskTimeoutMs:                       r.Set.UserTaskTimeoutMs,
 			UserTaskMinimumTriggerIntervalInSeconds: r.Set.UserTaskMinimumTriggerIntervalInSeconds,
-			QuotedIdentifiersIgnoreCase:             r.Set.QuotedIdentifiersIgnoreCase,
-			EnableConsoleOutput:                     r.Set.EnableConsoleOutput,
+			UserTaskTimeoutMs:                       r.Set.UserTaskTimeoutMs,
 			Comment:                                 r.Set.Comment,
 		}
 	}
 	if r.Unset != nil {
 		opts.Unset = &DatabaseUnset{
-			DataRetentionTimeInDays:                 r.Unset.DataRetentionTimeInDays,
-			MaxDataExtensionTimeInDays:              r.Unset.MaxDataExtensionTimeInDays,
-			ExternalVolume:                          r.Unset.ExternalVolume,
 			Catalog:                                 r.Unset.Catalog,
-			ReplaceInvalidCharacters:                r.Unset.ReplaceInvalidCharacters,
+			DataRetentionTimeInDays:                 r.Unset.DataRetentionTimeInDays,
 			DefaultDdlCollation:                     r.Unset.DefaultDdlCollation,
 			DefaultNotebookComputePoolCpu:           r.Unset.DefaultNotebookComputePoolCpu,
 			DefaultNotebookComputePoolGpu:           r.Unset.DefaultNotebookComputePoolGpu,
-			StorageSerializationPolicy:              r.Unset.StorageSerializationPolicy,
-			LogLevel:                                r.Unset.LogLevel,
+			EnableConsoleOutput:                     r.Unset.EnableConsoleOutput,
+			ExternalVolume:                          r.Unset.ExternalVolume,
 			LogEventLevel:                           r.Unset.LogEventLevel,
-			TraceLevel:                              r.Unset.TraceLevel,
+			LogLevel:                                r.Unset.LogLevel,
+			MaxDataExtensionTimeInDays:              r.Unset.MaxDataExtensionTimeInDays,
+			QuotedIdentifiersIgnoreCase:             r.Unset.QuotedIdentifiersIgnoreCase,
+			ReplaceInvalidCharacters:                r.Unset.ReplaceInvalidCharacters,
+			StorageSerializationPolicy:              r.Unset.StorageSerializationPolicy,
 			SuspendTaskAfterNumFailures:             r.Unset.SuspendTaskAfterNumFailures,
 			TaskAutoRetryAttempts:                   r.Unset.TaskAutoRetryAttempts,
+			TraceLevel:                              r.Unset.TraceLevel,
 			UserTaskManagedInitialWarehouseSize:     r.Unset.UserTaskManagedInitialWarehouseSize,
-			UserTaskTimeoutMs:                       r.Unset.UserTaskTimeoutMs,
 			UserTaskMinimumTriggerIntervalInSeconds: r.Unset.UserTaskMinimumTriggerIntervalInSeconds,
-			QuotedIdentifiersIgnoreCase:             r.Unset.QuotedIdentifiersIgnoreCase,
-			EnableConsoleOutput:                     r.Unset.EnableConsoleOutput,
+			UserTaskTimeoutMs:                       r.Unset.UserTaskTimeoutMs,
 			Comment:                                 r.Unset.Comment,
 		}
 	}
@@ -414,4 +416,41 @@ func (r databaseRow) convert() (*Database, error) {
 		return nil, err
 	}
 	return result, nil
+}
+
+func toDatabaseParametersDetails(params []*Parameter) (*DatabaseParametersDetails, error) {
+	byKey := parametersByKey(params)
+	var d DatabaseParametersDetails
+	if err := errors.Join(
+		fillTypedParameter(byKey["CATALOG"], ParseAccountObjectIdentifier, &d.Catalog),
+		fillTypedParameter(byKey["DATA_RETENTION_TIME_IN_DAYS"], strconv.Atoi, &d.DataRetentionTimeInDays),
+		fillTypedParameter(byKey["DEFAULT_DDL_COLLATION"], identityParse, &d.DefaultDdlCollation),
+		fillTypedParameter(byKey["DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"], identityParse, &d.DefaultNotebookComputePoolCpu),
+		fillTypedParameter(byKey["DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"], identityParse, &d.DefaultNotebookComputePoolGpu),
+		fillTypedParameter(byKey["ENABLE_CONSOLE_OUTPUT"], strconv.ParseBool, &d.EnableConsoleOutput),
+		fillTypedParameter(byKey["EXTERNAL_VOLUME"], ParseAccountObjectIdentifier, &d.ExternalVolume),
+		fillTypedParameter(byKey["LOG_EVENT_LEVEL"], ToLogLevel, &d.LogEventLevel),
+		fillTypedParameter(byKey["LOG_LEVEL"], ToLogLevel, &d.LogLevel),
+		fillTypedParameter(byKey["MAX_DATA_EXTENSION_TIME_IN_DAYS"], strconv.Atoi, &d.MaxDataExtensionTimeInDays),
+		fillTypedParameter(byKey["QUOTED_IDENTIFIERS_IGNORE_CASE"], strconv.ParseBool, &d.QuotedIdentifiersIgnoreCase),
+		fillTypedParameter(byKey["REPLACE_INVALID_CHARACTERS"], strconv.ParseBool, &d.ReplaceInvalidCharacters),
+		fillTypedParameter(byKey["STORAGE_SERIALIZATION_POLICY"], ToStorageSerializationPolicy, &d.StorageSerializationPolicy),
+		fillTypedParameter(byKey["SUSPEND_TASK_AFTER_NUM_FAILURES"], strconv.Atoi, &d.SuspendTaskAfterNumFailures),
+		fillTypedParameter(byKey["TASK_AUTO_RETRY_ATTEMPTS"], strconv.Atoi, &d.TaskAutoRetryAttempts),
+		fillTypedParameter(byKey["TRACE_LEVEL"], ToTraceLevel, &d.TraceLevel),
+		fillTypedParameter(byKey["USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"], ToWarehouseSize, &d.UserTaskManagedInitialWarehouseSize),
+		fillTypedParameter(byKey["USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"], strconv.Atoi, &d.UserTaskMinimumTriggerIntervalInSeconds),
+		fillTypedParameter(byKey["USER_TASK_TIMEOUT_MS"], strconv.Atoi, &d.UserTaskTimeoutMs),
+	); err != nil {
+		return nil, err
+	}
+	return &d, nil
+}
+
+func (v *databases) ShowParametersDetails(ctx context.Context, id AccountObjectIdentifier) (*DatabaseParametersDetails, error) {
+	params, err := v.ShowParameters(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return toDatabaseParametersDetails(params)
 }

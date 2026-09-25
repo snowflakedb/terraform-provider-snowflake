@@ -1166,7 +1166,7 @@ func TestAcc_Schema_EmptyParameterAsDefaultValue(t *testing.T) {
 // database's value, and setting it to empty string should override inheritance with "" on the schema level.
 func TestAcc_Schema_EmptyParameterAsDefaultValue_WithDatabaseLevel(t *testing.T) {
 	dbId := testClient().Ids.RandomAccountObjectIdentifier()
-	db, dbCleanup := testClient().Database.CreateDatabaseWithRequest(t, sdk.NewCreateDatabaseRequest(dbId).WithDefaultDdlCollation("en_US"))
+	db, dbCleanup := testClient().Database.CreateDatabaseWithRequest(t, sdk.NewCreateDatabaseRequest(dbId).WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "en_US"}))
 	t.Cleanup(dbCleanup)
 
 	id := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(db.ID())

@@ -230,7 +230,7 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 							WithExternalVolume(externalVolumeId).
 							WithCatalog(catalogId).
 							WithReplaceInvalidCharacters(true).
-							WithDefaultDdlCollation("en_US").
+							WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "en_US"}).
 							WithDefaultNotebookComputePoolCpu("CPU_X64_S").
 							WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 							WithStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).

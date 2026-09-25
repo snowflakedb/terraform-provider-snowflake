@@ -39,7 +39,7 @@ func init() {
 				opts.ExternalVolume = &externalVolumeId
 				opts.Catalog = &catalogId
 				opts.ReplaceInvalidCharacters = new(true)
-				opts.DefaultDdlCollation = new("en_US")
+				opts.DefaultDdlCollation = new(StringAllowEmpty{Value: "en_US"})
 				opts.DefaultNotebookComputePoolCpu = new("CPU_X64_S")
 				opts.DefaultNotebookComputePoolGpu = new("GPU_NV_S")
 				opts.StorageSerializationPolicy = new(StorageSerializationPolicyCompatible)
@@ -55,8 +55,8 @@ func init() {
 				opts.Comment = new("comment")
 				opts.Tag = []TagAssociation{{Name: tagId, Value: "v1"}}
 			},
-			`CREATE TRANSIENT DATABASE IF NOT EXISTS %s DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 EXTERNAL_VOLUME = %s CATALOG = %s REPLACE_INVALID_CHARACTERS = true DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' STORAGE_SERIALIZATION_POLICY = COMPATIBLE LOG_LEVEL = 'INFO' TRACE_LEVEL = 'PROPAGATE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = MEDIUM USER_TASK_TIMEOUT_MS = 12000 USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 QUOTED_IDENTIFIERS_IGNORE_CASE = true ENABLE_CONSOLE_OUTPUT = true COMMENT = 'comment' TAG (%s = 'v1')`,
-			id.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), catalogId.FullyQualifiedName(), tagId.FullyQualifiedName(),
+			`CREATE TRANSIENT DATABASE IF NOT EXISTS %s CATALOG = %s DATA_RETENTION_TIME_IN_DAYS = 1 DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' ENABLE_CONSOLE_OUTPUT = true EXTERNAL_VOLUME = %s LOG_LEVEL = 'INFO' MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 QUOTED_IDENTIFIERS_IGNORE_CASE = true REPLACE_INVALID_CHARACTERS = true STORAGE_SERIALIZATION_POLICY = 'COMPATIBLE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 TRACE_LEVEL = 'PROPAGATE' USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = 'MEDIUM' USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 USER_TASK_TIMEOUT_MS = 12000 COMMENT = 'comment' TAG (%s = 'v1')`,
+			id.FullyQualifiedName(), catalogId.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), tagId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Create_orReplace",
@@ -133,7 +133,7 @@ func init() {
 				opts.ExternalVolume = &externalVolumeId
 				opts.Catalog = &catalogId
 				opts.ReplaceInvalidCharacters = new(true)
-				opts.DefaultDdlCollation = new("en_US")
+				opts.DefaultDdlCollation = new(StringAllowEmpty{Value: "en_US"})
 				opts.DefaultNotebookComputePoolCpu = new("CPU_X64_S")
 				opts.DefaultNotebookComputePoolGpu = new("GPU_NV_S")
 				opts.StorageSerializationPolicy = new(StorageSerializationPolicyCompatible)
@@ -149,8 +149,8 @@ func init() {
 				opts.Comment = new("comment")
 				opts.Tag = []TagAssociation{{Name: tagId, Value: "v1"}}
 			},
-			`CREATE DATABASE IF NOT EXISTS %s FROM SHARE %s EXTERNAL_VOLUME = %s CATALOG = %s REPLACE_INVALID_CHARACTERS = true DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' STORAGE_SERIALIZATION_POLICY = COMPATIBLE LOG_LEVEL = 'INFO' TRACE_LEVEL = 'PROPAGATE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = MEDIUM USER_TASK_TIMEOUT_MS = 12000 USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 QUOTED_IDENTIFIERS_IGNORE_CASE = true ENABLE_CONSOLE_OUTPUT = true COMMENT = 'comment' TAG (%s = 'v1')`,
-			id.FullyQualifiedName(), fromShareId.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), catalogId.FullyQualifiedName(), tagId.FullyQualifiedName(),
+			`CREATE DATABASE IF NOT EXISTS %s FROM SHARE %s CATALOG = %s DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' ENABLE_CONSOLE_OUTPUT = true EXTERNAL_VOLUME = %s LOG_LEVEL = 'INFO' QUOTED_IDENTIFIERS_IGNORE_CASE = true REPLACE_INVALID_CHARACTERS = true STORAGE_SERIALIZATION_POLICY = 'COMPATIBLE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 TRACE_LEVEL = 'PROPAGATE' USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = 'MEDIUM' USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 USER_TASK_TIMEOUT_MS = 12000 COMMENT = 'comment' TAG (%s = 'v1')`,
+			id.FullyQualifiedName(), fromShareId.FullyQualifiedName(), catalogId.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), tagId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_CreateShared_orReplace",
@@ -181,7 +181,7 @@ func init() {
 				opts.ExternalVolume = &externalVolumeId
 				opts.Catalog = &catalogId
 				opts.ReplaceInvalidCharacters = new(true)
-				opts.DefaultDdlCollation = new("en_US")
+				opts.DefaultDdlCollation = new(StringAllowEmpty{Value: "en_US"})
 				opts.DefaultNotebookComputePoolCpu = new("CPU_X64_S")
 				opts.DefaultNotebookComputePoolGpu = new("GPU_NV_S")
 				opts.StorageSerializationPolicy = new(StorageSerializationPolicyCompatible)
@@ -196,8 +196,8 @@ func init() {
 				opts.EnableConsoleOutput = new(true)
 				opts.Comment = new("comment")
 			},
-			`CREATE TRANSIENT DATABASE IF NOT EXISTS %s AS REPLICA OF %s DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 EXTERNAL_VOLUME = %s CATALOG = %s REPLACE_INVALID_CHARACTERS = true DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' STORAGE_SERIALIZATION_POLICY = COMPATIBLE LOG_LEVEL = 'INFO' TRACE_LEVEL = 'PROPAGATE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = MEDIUM USER_TASK_TIMEOUT_MS = 12000 USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 QUOTED_IDENTIFIERS_IGNORE_CASE = true ENABLE_CONSOLE_OUTPUT = true COMMENT = 'comment'`,
-			id.FullyQualifiedName(), primaryDatabaseId.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), catalogId.FullyQualifiedName(),
+			`CREATE TRANSIENT DATABASE IF NOT EXISTS %s AS REPLICA OF %s CATALOG = %s DATA_RETENTION_TIME_IN_DAYS = 1 DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' ENABLE_CONSOLE_OUTPUT = true EXTERNAL_VOLUME = %s LOG_LEVEL = 'INFO' MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 QUOTED_IDENTIFIERS_IGNORE_CASE = true REPLACE_INVALID_CHARACTERS = true STORAGE_SERIALIZATION_POLICY = 'COMPATIBLE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 TRACE_LEVEL = 'PROPAGATE' USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = 'MEDIUM' USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 USER_TASK_TIMEOUT_MS = 12000 COMMENT = 'comment'`,
+			id.FullyQualifiedName(), primaryDatabaseId.FullyQualifiedName(), catalogId.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_CreateSecondary_orReplace",
@@ -281,7 +281,7 @@ func init() {
 					ExternalVolume:                &externalVolumeId,
 					Catalog:                       &catalogId,
 					ReplaceInvalidCharacters:      new(true),
-					DefaultDdlCollation:           new("en_US"),
+					DefaultDdlCollation:           new(StringAllowEmpty{Value: "en_US"}),
 					DefaultNotebookComputePoolCpu: new("CPU_X64_S"),
 					DefaultNotebookComputePoolGpu: new("GPU_NV_S"),
 					StorageSerializationPolicy:    new(StorageSerializationPolicyCompatible),
@@ -290,8 +290,8 @@ func init() {
 					Comment:                       new("comment"),
 				}
 			},
-			`ALTER DATABASE %s SET DATA_RETENTION_TIME_IN_DAYS = 1, MAX_DATA_EXTENSION_TIME_IN_DAYS = 1, EXTERNAL_VOLUME = %s, CATALOG = %s, REPLACE_INVALID_CHARACTERS = true, DEFAULT_DDL_COLLATION = 'en_US', DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S', DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S', STORAGE_SERIALIZATION_POLICY = COMPATIBLE, LOG_LEVEL = 'ERROR', TRACE_LEVEL = 'PROPAGATE', COMMENT = 'comment'`,
-			id.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), catalogId.FullyQualifiedName(),
+			`ALTER DATABASE %s SET CATALOG = %s, DATA_RETENTION_TIME_IN_DAYS = 1, DEFAULT_DDL_COLLATION = 'en_US', DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S', DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S', EXTERNAL_VOLUME = %s, LOG_LEVEL = 'ERROR', MAX_DATA_EXTENSION_TIME_IN_DAYS = 1, REPLACE_INVALID_CHARACTERS = true, STORAGE_SERIALIZATION_POLICY = 'COMPATIBLE', TRACE_LEVEL = 'PROPAGATE', COMMENT = 'comment'`,
+			id.FullyQualifiedName(), catalogId.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Databases_sql_Alter_Unset,
@@ -311,7 +311,7 @@ func init() {
 					Comment:                       new(true),
 				}
 			},
-			`ALTER DATABASE %s UNSET DATA_RETENTION_TIME_IN_DAYS, MAX_DATA_EXTENSION_TIME_IN_DAYS, EXTERNAL_VOLUME, CATALOG, REPLACE_INVALID_CHARACTERS, DEFAULT_DDL_COLLATION, DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU, DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU, STORAGE_SERIALIZATION_POLICY, LOG_LEVEL, TRACE_LEVEL, COMMENT`,
+			`ALTER DATABASE %s UNSET CATALOG, DATA_RETENTION_TIME_IN_DAYS, DEFAULT_DDL_COLLATION, DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU, DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU, EXTERNAL_VOLUME, LOG_LEVEL, MAX_DATA_EXTENSION_TIME_IN_DAYS, REPLACE_INVALID_CHARACTERS, STORAGE_SERIALIZATION_POLICY, TRACE_LEVEL, COMMENT`,
 			id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(

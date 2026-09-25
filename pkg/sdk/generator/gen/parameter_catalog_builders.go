@@ -39,3 +39,10 @@ func (v *QueryStruct) WithParametersUnset(params ...parameterdefs.ParameterDef) 
 	}
 	return v
 }
+
+// ParameterSqlToFieldName maps a catalog parameter's SQL name to the exported Go field
+// name the generator uses for it. Exported so definitions can derive validation
+// field-name lists that are guaranteed to match generated fields.
+func ParameterSqlToFieldName(p parameterdefs.ParameterDef) string {
+	return sqlToFieldName(p.SqlName, true)
+}

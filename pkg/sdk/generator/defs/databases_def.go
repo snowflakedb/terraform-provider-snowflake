@@ -1,10 +1,23 @@
 package defs
 
 import (
+	"slices"
+
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
+
+var databaseParameters = ParameterDefsForLevel(parameterdefs.ParameterLevelDatabase)
+
+var databaseParameterFieldNames = collections.Map(databaseParameters, g.ParameterSqlToFieldName)
+
+// CREATE DATABASE ... FROM SHARE does not accept the retention parameters.
+var databaseSharedCreateParameters = collections.Filter(databaseParameters, func(p parameterdefs.ParameterDef) bool {
+	return p.SqlName != DataRetentionTimeInDays.SqlName && p.SqlName != MaxDataExtensionTimeInDays.SqlName
+})
 
 // The values are not listed in https://docs.snowflake.com/en/sql-reference/sql/show-databases,
 // but they are documented through the DATABASES view and the SHOW DATABASES usage notes.
@@ -31,66 +44,16 @@ var databasePairs = g.StructPair("databaseRow", "Database").
 	OptionalText("owner_role_type", g.WithRequiredInPlain())
 
 var databaseSetStruct = g.NewQueryStruct("DatabaseSet").
-	OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
-	OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
-	OptionalIdentifier("ExternalVolume", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME").Equals()).
-	OptionalIdentifier("Catalog", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG").Equals()).
-	OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", nil).
-	OptionalTextAssignment("DEFAULT_DDL_COLLATION", g.ParameterOptions().SingleQuotes()).
-	OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU", g.ParameterOptions().SingleQuotes()).
-	OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU", g.ParameterOptions().SingleQuotes()).
-	OptionalAssignment("STORAGE_SERIALIZATION_POLICY", "StorageSerializationPolicy", g.ParameterOptions()).
-	WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_LEVEL"))).
-	WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogEventLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_EVENT_LEVEL"))).
-	WithField(g.OptionalEnumLegacy[sdkcommons.TraceLevel]("TraceLevel", g.ParameterOptions().SingleQuotes().SQL("TRACE_LEVEL"))).
-	OptionalNumberAssignment("SUSPEND_TASK_AFTER_NUM_FAILURES", g.ParameterOptions()).
-	OptionalNumberAssignment("TASK_AUTO_RETRY_ATTEMPTS", g.ParameterOptions()).
-	OptionalAssignment("USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE", "WarehouseSize", g.ParameterOptions()).
-	OptionalNumberAssignment("USER_TASK_TIMEOUT_MS", g.ParameterOptions()).
-	OptionalNumberAssignment("USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS", g.ParameterOptions()).
-	OptionalBooleanAssignment("QUOTED_IDENTIFIERS_IGNORE_CASE", nil).
-	OptionalBooleanAssignment("ENABLE_CONSOLE_OUTPUT", nil).
+	WithParameters(databaseParameters...).
 	OptionalComment().
 	WithValidation(g.ValidIdentifierIfSet, "ExternalVolume").
 	WithValidation(g.ValidIdentifierIfSet, "Catalog").
-	WithValidation(g.AtLeastOneValueSet,
-		"DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ExternalVolume", "Catalog",
-		"ReplaceInvalidCharacters", "DefaultDdlCollation", "DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu",
-		"StorageSerializationPolicy",
-		"LogLevel", "LogEventLevel", "TraceLevel",
-		"SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "UserTaskManagedInitialWarehouseSize",
-		"UserTaskTimeoutMs", "UserTaskMinimumTriggerIntervalInSeconds",
-		"QuotedIdentifiersIgnoreCase", "EnableConsoleOutput", "Comment")
+	WithValidation(g.AtLeastOneValueSet, append(slices.Clone(databaseParameterFieldNames), "Comment")...)
 
 var databaseUnsetStruct = g.NewQueryStruct("DatabaseUnset").
-	OptionalSQL("DATA_RETENTION_TIME_IN_DAYS").
-	OptionalSQL("MAX_DATA_EXTENSION_TIME_IN_DAYS").
-	OptionalSQL("EXTERNAL_VOLUME").
-	OptionalSQL("CATALOG").
-	OptionalSQL("REPLACE_INVALID_CHARACTERS").
-	OptionalSQL("DEFAULT_DDL_COLLATION").
-	OptionalSQL("DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU").
-	OptionalSQL("DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU").
-	OptionalSQL("STORAGE_SERIALIZATION_POLICY").
-	OptionalSQL("LOG_LEVEL").
-	OptionalSQL("LOG_EVENT_LEVEL").
-	OptionalSQL("TRACE_LEVEL").
-	OptionalSQL("SUSPEND_TASK_AFTER_NUM_FAILURES").
-	OptionalSQL("TASK_AUTO_RETRY_ATTEMPTS").
-	OptionalSQL("USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE").
-	OptionalSQL("USER_TASK_TIMEOUT_MS").
-	OptionalSQL("USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS").
-	OptionalSQL("QUOTED_IDENTIFIERS_IGNORE_CASE").
-	OptionalSQL("ENABLE_CONSOLE_OUTPUT").
+	WithParametersUnset(databaseParameters...).
 	OptionalSQL("COMMENT").
-	WithValidation(g.AtLeastOneValueSet,
-		"DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ExternalVolume", "Catalog",
-		"ReplaceInvalidCharacters", "DefaultDdlCollation", "DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu",
-		"StorageSerializationPolicy",
-		"LogLevel", "LogEventLevel", "TraceLevel",
-		"SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "UserTaskManagedInitialWarehouseSize",
-		"UserTaskTimeoutMs", "UserTaskMinimumTriggerIntervalInSeconds",
-		"QuotedIdentifiersIgnoreCase", "EnableConsoleOutput", "Comment")
+	WithValidation(g.AtLeastOneValueSet, append(slices.Clone(databaseParameterFieldNames), "Comment")...)
 
 var (
 	CatalogLinkedDatabaseNamespaceModeEnumDef = g.NewEnum(
@@ -149,25 +112,7 @@ var databasesDef = g.NewInterface(
 		SQL("DATABASE").
 		IfNotExists().
 		Name().
-		OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
-		OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
-		OptionalIdentifier("ExternalVolume", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME").Equals()).
-		OptionalIdentifier("Catalog", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG").Equals()).
-		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", nil).
-		OptionalTextAssignment("DEFAULT_DDL_COLLATION", g.ParameterOptions().SingleQuotes()).
-		OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU", g.ParameterOptions().SingleQuotes()).
-		OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU", g.ParameterOptions().SingleQuotes()).
-		OptionalAssignment("STORAGE_SERIALIZATION_POLICY", "StorageSerializationPolicy", g.ParameterOptions()).
-		WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_LEVEL"))).
-		WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogEventLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_EVENT_LEVEL"))).
-		WithField(g.OptionalEnumLegacy[sdkcommons.TraceLevel]("TraceLevel", g.ParameterOptions().SingleQuotes().SQL("TRACE_LEVEL"))).
-		OptionalNumberAssignment("SUSPEND_TASK_AFTER_NUM_FAILURES", g.ParameterOptions()).
-		OptionalNumberAssignment("TASK_AUTO_RETRY_ATTEMPTS", g.ParameterOptions()).
-		OptionalAssignment("USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE", "WarehouseSize", g.ParameterOptions()).
-		OptionalNumberAssignment("USER_TASK_TIMEOUT_MS", g.ParameterOptions()).
-		OptionalNumberAssignment("USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS", g.ParameterOptions()).
-		OptionalBooleanAssignment("QUOTED_IDENTIFIERS_IGNORE_CASE", nil).
-		OptionalBooleanAssignment("ENABLE_CONSOLE_OUTPUT", nil).
+		WithParameters(databaseParameters...).
 		OptionalComment().
 		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").
@@ -199,23 +144,7 @@ var databasesDef = g.NewInterface(
 		IfNotExists().
 		Name().
 		Identifier("FromShare", g.KindOfT[sdkcommons.ExternalObjectIdentifier](), g.IdentifierOptions().SQL("FROM SHARE").Required()).
-		OptionalIdentifier("ExternalVolume", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME").Equals()).
-		OptionalIdentifier("Catalog", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG").Equals()).
-		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", nil).
-		OptionalTextAssignment("DEFAULT_DDL_COLLATION", g.ParameterOptions().SingleQuotes()).
-		OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU", g.ParameterOptions().SingleQuotes()).
-		OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU", g.ParameterOptions().SingleQuotes()).
-		OptionalAssignment("STORAGE_SERIALIZATION_POLICY", "StorageSerializationPolicy", g.ParameterOptions()).
-		WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_LEVEL"))).
-		WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogEventLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_EVENT_LEVEL"))).
-		WithField(g.OptionalEnumLegacy[sdkcommons.TraceLevel]("TraceLevel", g.ParameterOptions().SingleQuotes().SQL("TRACE_LEVEL"))).
-		OptionalNumberAssignment("SUSPEND_TASK_AFTER_NUM_FAILURES", g.ParameterOptions()).
-		OptionalNumberAssignment("TASK_AUTO_RETRY_ATTEMPTS", g.ParameterOptions()).
-		OptionalAssignment("USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE", "WarehouseSize", g.ParameterOptions()).
-		OptionalNumberAssignment("USER_TASK_TIMEOUT_MS", g.ParameterOptions()).
-		OptionalNumberAssignment("USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS", g.ParameterOptions()).
-		OptionalBooleanAssignment("QUOTED_IDENTIFIERS_IGNORE_CASE", nil).
-		OptionalBooleanAssignment("ENABLE_CONSOLE_OUTPUT", nil).
+		WithParameters(databaseSharedCreateParameters...).
 		OptionalComment().
 		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").
@@ -234,25 +163,7 @@ var databasesDef = g.NewInterface(
 		IfNotExists().
 		Name().
 		Identifier("PrimaryDatabase", g.KindOfT[sdkcommons.ExternalObjectIdentifier](), g.IdentifierOptions().SQL("AS REPLICA OF").Required()).
-		OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
-		OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
-		OptionalIdentifier("ExternalVolume", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME").Equals()).
-		OptionalIdentifier("Catalog", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG").Equals()).
-		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", nil).
-		OptionalTextAssignment("DEFAULT_DDL_COLLATION", g.ParameterOptions().SingleQuotes()).
-		OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU", g.ParameterOptions().SingleQuotes()).
-		OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU", g.ParameterOptions().SingleQuotes()).
-		OptionalAssignment("STORAGE_SERIALIZATION_POLICY", "StorageSerializationPolicy", g.ParameterOptions()).
-		WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_LEVEL"))).
-		WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogEventLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_EVENT_LEVEL"))).
-		WithField(g.OptionalEnumLegacy[sdkcommons.TraceLevel]("TraceLevel", g.ParameterOptions().SingleQuotes().SQL("TRACE_LEVEL"))).
-		OptionalNumberAssignment("SUSPEND_TASK_AFTER_NUM_FAILURES", g.ParameterOptions()).
-		OptionalNumberAssignment("TASK_AUTO_RETRY_ATTEMPTS", g.ParameterOptions()).
-		OptionalAssignment("USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE", "WarehouseSize", g.ParameterOptions()).
-		OptionalNumberAssignment("USER_TASK_TIMEOUT_MS", g.ParameterOptions()).
-		OptionalNumberAssignment("USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS", g.ParameterOptions()).
-		OptionalBooleanAssignment("QUOTED_IDENTIFIERS_IGNORE_CASE", nil).
-		OptionalBooleanAssignment("ENABLE_CONSOLE_OUTPUT", nil).
+		WithParameters(databaseParameters...).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifier, "PrimaryDatabase").
@@ -387,6 +298,7 @@ var databasesDef = g.NewInterface(
 		OptionalLimitFrom(),
 	g.ShowByIDLikeFiltering,
 ).ShowParameters("AccountObjectIdentifier").
+	ShowParametersDetails(databaseParameters...).
 	WithCustomInterfaceMethod(
 		"Use", "Use is based on https://docs.snowflake.com/en/sql-reference/sql/use-database",
 		[]*g.MethodParameter{g.NewMethodParameter("id", "AccountObjectIdentifier")},

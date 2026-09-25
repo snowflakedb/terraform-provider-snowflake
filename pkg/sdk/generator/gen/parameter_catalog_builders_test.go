@@ -92,6 +92,21 @@ func TestParameterCatalogBuilders(t *testing.T) {
 		require.Equal(t, []*MethodParameter{NewMethodParameter("id", "DatabaseObjectIdentifier")}, iface.CustomMethods[0].Parameters)
 		require.Equal(t, []string{"*SchemaParametersDetails", "error"}, iface.CustomMethods[0].ReturnTypes)
 	})
+
+	t.Run("ParameterSqlToFieldName", func(t *testing.T) {
+		tests := []struct {
+			sql  string
+			want string
+		}{
+			{"DATA_RETENTION_TIME_IN_DAYS", "DataRetentionTimeInDays"},
+			{"DEFAULT_DDL_COLLATION", "DefaultDdlCollation"},
+		}
+		for _, tt := range tests {
+			t.Run(tt.sql, func(t *testing.T) {
+				require.Equal(t, tt.want, ParameterSqlToFieldName(parameterdefs.ParameterDef{SqlName: tt.sql}))
+			})
+		}
+	})
 }
 
 func fieldsByName(fields []Field) map[string]Field {

@@ -23,25 +23,25 @@ type CreateDatabaseRequest struct {
 	Transient                               *bool
 	IfNotExists                             *bool
 	name                                    AccountObjectIdentifier // required
-	DataRetentionTimeInDays                 *int
-	MaxDataExtensionTimeInDays              *int
-	ExternalVolume                          *AccountObjectIdentifier
 	Catalog                                 *AccountObjectIdentifier
-	ReplaceInvalidCharacters                *bool
-	DefaultDdlCollation                     *string
+	DataRetentionTimeInDays                 *int
+	DefaultDdlCollation                     *StringAllowEmpty
 	DefaultNotebookComputePoolCpu           *string
 	DefaultNotebookComputePoolGpu           *string
-	StorageSerializationPolicy              *StorageSerializationPolicy
-	LogLevel                                *LogLevel
+	EnableConsoleOutput                     *bool
+	ExternalVolume                          *AccountObjectIdentifier
 	LogEventLevel                           *LogLevel
-	TraceLevel                              *TraceLevel
+	LogLevel                                *LogLevel
+	MaxDataExtensionTimeInDays              *int
+	QuotedIdentifiersIgnoreCase             *bool
+	ReplaceInvalidCharacters                *bool
+	StorageSerializationPolicy              *StorageSerializationPolicy
 	SuspendTaskAfterNumFailures             *int
 	TaskAutoRetryAttempts                   *int
+	TraceLevel                              *TraceLevel
 	UserTaskManagedInitialWarehouseSize     *WarehouseSize
-	UserTaskTimeoutMs                       *int
 	UserTaskMinimumTriggerIntervalInSeconds *int
-	QuotedIdentifiersIgnoreCase             *bool
-	EnableConsoleOutput                     *bool
+	UserTaskTimeoutMs                       *int
 	Comment                                 *string
 	Tag                                     []TagAssociation
 }
@@ -60,23 +60,23 @@ type CreateSharedDatabaseRequest struct {
 	IfNotExists                             *bool
 	name                                    AccountObjectIdentifier  // required
 	FromShare                               ExternalObjectIdentifier // required
-	ExternalVolume                          *AccountObjectIdentifier
 	Catalog                                 *AccountObjectIdentifier
-	ReplaceInvalidCharacters                *bool
-	DefaultDdlCollation                     *string
+	DefaultDdlCollation                     *StringAllowEmpty
 	DefaultNotebookComputePoolCpu           *string
 	DefaultNotebookComputePoolGpu           *string
-	StorageSerializationPolicy              *StorageSerializationPolicy
-	LogLevel                                *LogLevel
+	EnableConsoleOutput                     *bool
+	ExternalVolume                          *AccountObjectIdentifier
 	LogEventLevel                           *LogLevel
-	TraceLevel                              *TraceLevel
+	LogLevel                                *LogLevel
+	QuotedIdentifiersIgnoreCase             *bool
+	ReplaceInvalidCharacters                *bool
+	StorageSerializationPolicy              *StorageSerializationPolicy
 	SuspendTaskAfterNumFailures             *int
 	TaskAutoRetryAttempts                   *int
+	TraceLevel                              *TraceLevel
 	UserTaskManagedInitialWarehouseSize     *WarehouseSize
-	UserTaskTimeoutMs                       *int
 	UserTaskMinimumTriggerIntervalInSeconds *int
-	QuotedIdentifiersIgnoreCase             *bool
-	EnableConsoleOutput                     *bool
+	UserTaskTimeoutMs                       *int
 	Comment                                 *string
 	Tag                                     []TagAssociation
 }
@@ -87,25 +87,25 @@ type CreateSecondaryDatabaseRequest struct {
 	IfNotExists                             *bool
 	name                                    AccountObjectIdentifier  // required
 	PrimaryDatabase                         ExternalObjectIdentifier // required
-	DataRetentionTimeInDays                 *int
-	MaxDataExtensionTimeInDays              *int
-	ExternalVolume                          *AccountObjectIdentifier
 	Catalog                                 *AccountObjectIdentifier
-	ReplaceInvalidCharacters                *bool
-	DefaultDdlCollation                     *string
+	DataRetentionTimeInDays                 *int
+	DefaultDdlCollation                     *StringAllowEmpty
 	DefaultNotebookComputePoolCpu           *string
 	DefaultNotebookComputePoolGpu           *string
-	StorageSerializationPolicy              *StorageSerializationPolicy
-	LogLevel                                *LogLevel
+	EnableConsoleOutput                     *bool
+	ExternalVolume                          *AccountObjectIdentifier
 	LogEventLevel                           *LogLevel
-	TraceLevel                              *TraceLevel
+	LogLevel                                *LogLevel
+	MaxDataExtensionTimeInDays              *int
+	QuotedIdentifiersIgnoreCase             *bool
+	ReplaceInvalidCharacters                *bool
+	StorageSerializationPolicy              *StorageSerializationPolicy
 	SuspendTaskAfterNumFailures             *int
 	TaskAutoRetryAttempts                   *int
+	TraceLevel                              *TraceLevel
 	UserTaskManagedInitialWarehouseSize     *WarehouseSize
-	UserTaskTimeoutMs                       *int
 	UserTaskMinimumTriggerIntervalInSeconds *int
-	QuotedIdentifiersIgnoreCase             *bool
-	EnableConsoleOutput                     *bool
+	UserTaskTimeoutMs                       *int
 	Comment                                 *string
 }
 
@@ -145,48 +145,48 @@ type AlterDatabaseRequest struct {
 }
 
 type DatabaseSetRequest struct {
-	DataRetentionTimeInDays                 *int
-	MaxDataExtensionTimeInDays              *int
-	ExternalVolume                          *AccountObjectIdentifier
 	Catalog                                 *AccountObjectIdentifier
-	ReplaceInvalidCharacters                *bool
-	DefaultDdlCollation                     *string
+	DataRetentionTimeInDays                 *int
+	DefaultDdlCollation                     *StringAllowEmpty
 	DefaultNotebookComputePoolCpu           *string
 	DefaultNotebookComputePoolGpu           *string
-	StorageSerializationPolicy              *StorageSerializationPolicy
-	LogLevel                                *LogLevel
+	EnableConsoleOutput                     *bool
+	ExternalVolume                          *AccountObjectIdentifier
 	LogEventLevel                           *LogLevel
-	TraceLevel                              *TraceLevel
+	LogLevel                                *LogLevel
+	MaxDataExtensionTimeInDays              *int
+	QuotedIdentifiersIgnoreCase             *bool
+	ReplaceInvalidCharacters                *bool
+	StorageSerializationPolicy              *StorageSerializationPolicy
 	SuspendTaskAfterNumFailures             *int
 	TaskAutoRetryAttempts                   *int
+	TraceLevel                              *TraceLevel
 	UserTaskManagedInitialWarehouseSize     *WarehouseSize
-	UserTaskTimeoutMs                       *int
 	UserTaskMinimumTriggerIntervalInSeconds *int
-	QuotedIdentifiersIgnoreCase             *bool
-	EnableConsoleOutput                     *bool
+	UserTaskTimeoutMs                       *int
 	Comment                                 *string
 }
 
 type DatabaseUnsetRequest struct {
-	DataRetentionTimeInDays                 *bool
-	MaxDataExtensionTimeInDays              *bool
-	ExternalVolume                          *bool
 	Catalog                                 *bool
-	ReplaceInvalidCharacters                *bool
+	DataRetentionTimeInDays                 *bool
 	DefaultDdlCollation                     *bool
 	DefaultNotebookComputePoolCpu           *bool
 	DefaultNotebookComputePoolGpu           *bool
-	StorageSerializationPolicy              *bool
-	LogLevel                                *bool
+	EnableConsoleOutput                     *bool
+	ExternalVolume                          *bool
 	LogEventLevel                           *bool
-	TraceLevel                              *bool
+	LogLevel                                *bool
+	MaxDataExtensionTimeInDays              *bool
+	QuotedIdentifiersIgnoreCase             *bool
+	ReplaceInvalidCharacters                *bool
+	StorageSerializationPolicy              *bool
 	SuspendTaskAfterNumFailures             *bool
 	TaskAutoRetryAttempts                   *bool
+	TraceLevel                              *bool
 	UserTaskManagedInitialWarehouseSize     *bool
-	UserTaskTimeoutMs                       *bool
 	UserTaskMinimumTriggerIntervalInSeconds *bool
-	QuotedIdentifiersIgnoreCase             *bool
-	EnableConsoleOutput                     *bool
+	UserTaskTimeoutMs                       *bool
 	Comment                                 *bool
 }
 

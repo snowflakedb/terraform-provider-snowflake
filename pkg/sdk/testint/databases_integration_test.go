@@ -86,7 +86,7 @@ func TestInt_DatabasesCreate(t *testing.T) {
 				WithExternalVolume(externalVolume).
 				WithCatalog(catalog).
 				WithReplaceInvalidCharacters(true).
-				WithDefaultDdlCollation("en_US").
+				WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "en_US"}).
 				WithDefaultNotebookComputePoolCpu("CPU_X64_S").
 				WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 				WithStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
@@ -209,7 +209,7 @@ func TestInt_DatabasesCreateShared(t *testing.T) {
 			WithLogEventLevel(sdk.LogLevelDebug).
 			WithTraceLevel(sdk.TraceLevelAlways).
 			WithReplaceInvalidCharacters(true).
-			WithDefaultDdlCollation("en_US").
+			WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "en_US"}).
 			WithDefaultNotebookComputePoolCpu("CPU_X64_S").
 			WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 			WithStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
@@ -291,7 +291,7 @@ func TestInt_DatabasesCreateSecondary(t *testing.T) {
 			WithExternalVolume(externalVolume).
 			WithCatalog(catalog).
 			WithReplaceInvalidCharacters(true).
-			WithDefaultDdlCollation("en_US").
+			WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "en_US"}).
 			WithDefaultNotebookComputePoolCpu("CPU_X64_S").
 			WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 			WithStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
@@ -477,7 +477,7 @@ func TestInt_DatabasesAlter(t *testing.T) {
 					WithExternalVolume(externalVolumeTest).
 					WithCatalog(catalogIntegrationTest).
 					WithReplaceInvalidCharacters(true).
-					WithDefaultDdlCollation("en_US").
+					WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "en_US"}).
 					WithDefaultNotebookComputePoolCpu("CPU_X64_S").
 					WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 					WithStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
@@ -648,7 +648,7 @@ func TestInt_DatabasesAlterReplication(t *testing.T) {
 				WithMaxDataExtensionTimeInDays(10).
 				WithExternalVolume(externalVolume).
 				WithCatalog(catalog).
-				WithDefaultDdlCollation("en_US").
+				WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "en_US"}).
 				WithDefaultNotebookComputePoolCpu("CPU_X64_S").
 				WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 				WithLogLevel(sdk.LogLevelDebug).
@@ -938,6 +938,80 @@ func TestInt_DatabasesDescribe(t *testing.T) {
 	assertContainsSchema(databaseDetails, schemaTest.ID().Name())
 	assertContainsSchema(databaseDetails, "INFORMATION_SCHEMA")
 	assertContainsSchema(databaseDetails, "PUBLIC")
+}
+
+func TestInt_DatabasesShowParametersDetails(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	externalVolume, externalVolumeCleanup := testClientHelper().ExternalVolume.Create(t)
+	t.Cleanup(externalVolumeCleanup)
+
+	catalog, catalogCleanup := testClientHelper().CatalogIntegration.Create(t)
+	t.Cleanup(catalogCleanup)
+
+	db, cleanup := testClientHelper().Database.CreateDatabaseWithRequest(t,
+		sdk.NewCreateDatabaseRequest(testClientHelper().Ids.RandomAccountObjectIdentifier()).
+			WithCatalog(catalog).
+			WithDataRetentionTimeInDays(5).
+			WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "en_US"}).
+			WithDefaultNotebookComputePoolCpu("CPU_X64_S").
+			WithDefaultNotebookComputePoolGpu("GPU_NV_S").
+			WithEnableConsoleOutput(true).
+			WithExternalVolume(externalVolume).
+			WithLogEventLevel(sdk.LogLevelDebug).
+			WithLogLevel(sdk.LogLevelInfo).
+			WithMaxDataExtensionTimeInDays(10).
+			WithQuotedIdentifiersIgnoreCase(true).
+			WithReplaceInvalidCharacters(true).
+			WithStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
+			WithSuspendTaskAfterNumFailures(10).
+			WithTaskAutoRetryAttempts(10).
+			WithTraceLevel(sdk.TraceLevelPropagate).
+			WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
+			WithUserTaskMinimumTriggerIntervalInSeconds(30).
+			WithUserTaskTimeoutMs(12_000),
+	)
+	t.Cleanup(cleanup)
+
+	details, err := client.Databases.ShowParametersDetails(ctx, db.ID())
+	require.NoError(t, err)
+
+	assertThatObject(t, objectparametersassert.DatabaseParameters(t, db.ID()).
+		HasCatalog(details.Catalog.Value.Name()).
+		HasDataRetentionTimeInDays(details.DataRetentionTimeInDays.Value).
+		HasDefaultDdlCollation(details.DefaultDdlCollation.Value).
+		HasDefaultNotebookComputePoolCpu(details.DefaultNotebookComputePoolCpu.Value).
+		HasDefaultNotebookComputePoolGpu(details.DefaultNotebookComputePoolGpu.Value).
+		HasEnableConsoleOutput(details.EnableConsoleOutput.Value).
+		HasExternalVolume(details.ExternalVolume.Value.Name()).
+		HasLogEventLevel(details.LogEventLevel.Value).
+		HasLogLevel(details.LogLevel.Value).
+		HasMaxDataExtensionTimeInDays(details.MaxDataExtensionTimeInDays.Value).
+		HasQuotedIdentifiersIgnoreCase(details.QuotedIdentifiersIgnoreCase.Value).
+		HasReplaceInvalidCharacters(details.ReplaceInvalidCharacters.Value).
+		HasStorageSerializationPolicy(details.StorageSerializationPolicy.Value).
+		HasSuspendTaskAfterNumFailures(details.SuspendTaskAfterNumFailures.Value).
+		HasTaskAutoRetryAttempts(details.TaskAutoRetryAttempts.Value).
+		HasTraceLevel(details.TraceLevel.Value).
+		HasUserTaskManagedInitialWarehouseSize(details.UserTaskManagedInitialWarehouseSize.Value).
+		HasUserTaskMinimumTriggerIntervalInSeconds(details.UserTaskMinimumTriggerIntervalInSeconds.Value).
+		HasUserTaskTimeoutMs(details.UserTaskTimeoutMs.Value))
+
+	assert.Equal(t, string(sdk.DatabaseParameterDataRetentionTimeInDays), details.DataRetentionTimeInDays.Key)
+	assert.Equal(t, sdk.ParameterTypeDatabase, details.DataRetentionTimeInDays.Level)
+	assert.Equal(t, 1, details.DataRetentionTimeInDays.Default)
+	assert.NotEmpty(t, details.DataRetentionTimeInDays.Description)
+
+	assert.Equal(t, string(sdk.DatabaseParameterLogLevel), details.LogLevel.Key)
+	assert.Equal(t, sdk.ParameterTypeDatabase, details.LogLevel.Level)
+	assert.Equal(t, sdk.LogLevelOff, details.LogLevel.Default)
+	assert.NotEmpty(t, details.LogLevel.Description)
+
+	assert.Equal(t, string(sdk.DatabaseParameterExternalVolume), details.ExternalVolume.Key)
+	assert.Equal(t, sdk.ParameterTypeDatabase, details.ExternalVolume.Level)
+	assert.Equal(t, sdk.AccountObjectIdentifier{}, details.ExternalVolume.Default)
+	assert.NotEmpty(t, details.ExternalVolume.Description)
 }
 
 // TestInt_DatabasesCatalogLinked_WithAdditionalDependencies requires a preconfigured external Iceberg

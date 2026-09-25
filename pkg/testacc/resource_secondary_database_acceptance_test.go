@@ -206,7 +206,7 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 							WithExternalVolume(externalVolumeId).
 							WithCatalog(catalogId).
 							WithReplaceInvalidCharacters(true).
-							WithDefaultDdlCollation("en_US").
+							WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "en_US"}).
 							WithStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
 							WithLogLevel(sdk.LogLevelInfo).
 							WithTraceLevel(sdk.TraceLevelAlways).

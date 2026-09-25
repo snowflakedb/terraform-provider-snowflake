@@ -25,32 +25,17 @@ func (s *CreateDatabaseRequest) WithIfNotExists(ifNotExists bool) *CreateDatabas
 	return s
 }
 
-func (s *CreateDatabaseRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *CreateDatabaseRequest {
-	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
-	return s
-}
-
-func (s *CreateDatabaseRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *CreateDatabaseRequest {
-	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
-	return s
-}
-
-func (s *CreateDatabaseRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *CreateDatabaseRequest {
-	s.ExternalVolume = &externalVolume
-	return s
-}
-
 func (s *CreateDatabaseRequest) WithCatalog(catalog AccountObjectIdentifier) *CreateDatabaseRequest {
 	s.Catalog = &catalog
 	return s
 }
 
-func (s *CreateDatabaseRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateDatabaseRequest {
-	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+func (s *CreateDatabaseRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *CreateDatabaseRequest {
+	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
 	return s
 }
 
-func (s *CreateDatabaseRequest) WithDefaultDdlCollation(defaultDdlCollation string) *CreateDatabaseRequest {
+func (s *CreateDatabaseRequest) WithDefaultDdlCollation(defaultDdlCollation StringAllowEmpty) *CreateDatabaseRequest {
 	s.DefaultDdlCollation = &defaultDdlCollation
 	return s
 }
@@ -65,13 +50,13 @@ func (s *CreateDatabaseRequest) WithDefaultNotebookComputePoolGpu(defaultNoteboo
 	return s
 }
 
-func (s *CreateDatabaseRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *CreateDatabaseRequest {
-	s.StorageSerializationPolicy = &storageSerializationPolicy
+func (s *CreateDatabaseRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *CreateDatabaseRequest {
+	s.EnableConsoleOutput = &enableConsoleOutput
 	return s
 }
 
-func (s *CreateDatabaseRequest) WithLogLevel(logLevel LogLevel) *CreateDatabaseRequest {
-	s.LogLevel = &logLevel
+func (s *CreateDatabaseRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *CreateDatabaseRequest {
+	s.ExternalVolume = &externalVolume
 	return s
 }
 
@@ -80,8 +65,28 @@ func (s *CreateDatabaseRequest) WithLogEventLevel(logEventLevel LogLevel) *Creat
 	return s
 }
 
-func (s *CreateDatabaseRequest) WithTraceLevel(traceLevel TraceLevel) *CreateDatabaseRequest {
-	s.TraceLevel = &traceLevel
+func (s *CreateDatabaseRequest) WithLogLevel(logLevel LogLevel) *CreateDatabaseRequest {
+	s.LogLevel = &logLevel
+	return s
+}
+
+func (s *CreateDatabaseRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *CreateDatabaseRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
+	return s
+}
+
+func (s *CreateDatabaseRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *CreateDatabaseRequest {
+	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
+	return s
+}
+
+func (s *CreateDatabaseRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateDatabaseRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *CreateDatabaseRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *CreateDatabaseRequest {
+	s.StorageSerializationPolicy = &storageSerializationPolicy
 	return s
 }
 
@@ -95,13 +100,13 @@ func (s *CreateDatabaseRequest) WithTaskAutoRetryAttempts(taskAutoRetryAttempts 
 	return s
 }
 
-func (s *CreateDatabaseRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *CreateDatabaseRequest {
-	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
+func (s *CreateDatabaseRequest) WithTraceLevel(traceLevel TraceLevel) *CreateDatabaseRequest {
+	s.TraceLevel = &traceLevel
 	return s
 }
 
-func (s *CreateDatabaseRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *CreateDatabaseRequest {
-	s.UserTaskTimeoutMs = &userTaskTimeoutMs
+func (s *CreateDatabaseRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *CreateDatabaseRequest {
+	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
 	return s
 }
 
@@ -110,13 +115,8 @@ func (s *CreateDatabaseRequest) WithUserTaskMinimumTriggerIntervalInSeconds(user
 	return s
 }
 
-func (s *CreateDatabaseRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *CreateDatabaseRequest {
-	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
-	return s
-}
-
-func (s *CreateDatabaseRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *CreateDatabaseRequest {
-	s.EnableConsoleOutput = &enableConsoleOutput
+func (s *CreateDatabaseRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *CreateDatabaseRequest {
+	s.UserTaskTimeoutMs = &userTaskTimeoutMs
 	return s
 }
 
@@ -183,22 +183,12 @@ func (s *CreateSharedDatabaseRequest) WithIfNotExists(ifNotExists bool) *CreateS
 	return s
 }
 
-func (s *CreateSharedDatabaseRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *CreateSharedDatabaseRequest {
-	s.ExternalVolume = &externalVolume
-	return s
-}
-
 func (s *CreateSharedDatabaseRequest) WithCatalog(catalog AccountObjectIdentifier) *CreateSharedDatabaseRequest {
 	s.Catalog = &catalog
 	return s
 }
 
-func (s *CreateSharedDatabaseRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateSharedDatabaseRequest {
-	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
-	return s
-}
-
-func (s *CreateSharedDatabaseRequest) WithDefaultDdlCollation(defaultDdlCollation string) *CreateSharedDatabaseRequest {
+func (s *CreateSharedDatabaseRequest) WithDefaultDdlCollation(defaultDdlCollation StringAllowEmpty) *CreateSharedDatabaseRequest {
 	s.DefaultDdlCollation = &defaultDdlCollation
 	return s
 }
@@ -213,13 +203,13 @@ func (s *CreateSharedDatabaseRequest) WithDefaultNotebookComputePoolGpu(defaultN
 	return s
 }
 
-func (s *CreateSharedDatabaseRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *CreateSharedDatabaseRequest {
-	s.StorageSerializationPolicy = &storageSerializationPolicy
+func (s *CreateSharedDatabaseRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *CreateSharedDatabaseRequest {
+	s.EnableConsoleOutput = &enableConsoleOutput
 	return s
 }
 
-func (s *CreateSharedDatabaseRequest) WithLogLevel(logLevel LogLevel) *CreateSharedDatabaseRequest {
-	s.LogLevel = &logLevel
+func (s *CreateSharedDatabaseRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *CreateSharedDatabaseRequest {
+	s.ExternalVolume = &externalVolume
 	return s
 }
 
@@ -228,8 +218,23 @@ func (s *CreateSharedDatabaseRequest) WithLogEventLevel(logEventLevel LogLevel) 
 	return s
 }
 
-func (s *CreateSharedDatabaseRequest) WithTraceLevel(traceLevel TraceLevel) *CreateSharedDatabaseRequest {
-	s.TraceLevel = &traceLevel
+func (s *CreateSharedDatabaseRequest) WithLogLevel(logLevel LogLevel) *CreateSharedDatabaseRequest {
+	s.LogLevel = &logLevel
+	return s
+}
+
+func (s *CreateSharedDatabaseRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *CreateSharedDatabaseRequest {
+	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
+	return s
+}
+
+func (s *CreateSharedDatabaseRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateSharedDatabaseRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *CreateSharedDatabaseRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *CreateSharedDatabaseRequest {
+	s.StorageSerializationPolicy = &storageSerializationPolicy
 	return s
 }
 
@@ -243,13 +248,13 @@ func (s *CreateSharedDatabaseRequest) WithTaskAutoRetryAttempts(taskAutoRetryAtt
 	return s
 }
 
-func (s *CreateSharedDatabaseRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *CreateSharedDatabaseRequest {
-	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
+func (s *CreateSharedDatabaseRequest) WithTraceLevel(traceLevel TraceLevel) *CreateSharedDatabaseRequest {
+	s.TraceLevel = &traceLevel
 	return s
 }
 
-func (s *CreateSharedDatabaseRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *CreateSharedDatabaseRequest {
-	s.UserTaskTimeoutMs = &userTaskTimeoutMs
+func (s *CreateSharedDatabaseRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *CreateSharedDatabaseRequest {
+	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
 	return s
 }
 
@@ -258,13 +263,8 @@ func (s *CreateSharedDatabaseRequest) WithUserTaskMinimumTriggerIntervalInSecond
 	return s
 }
 
-func (s *CreateSharedDatabaseRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *CreateSharedDatabaseRequest {
-	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
-	return s
-}
-
-func (s *CreateSharedDatabaseRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *CreateSharedDatabaseRequest {
-	s.EnableConsoleOutput = &enableConsoleOutput
+func (s *CreateSharedDatabaseRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *CreateSharedDatabaseRequest {
+	s.UserTaskTimeoutMs = &userTaskTimeoutMs
 	return s
 }
 
@@ -303,32 +303,17 @@ func (s *CreateSecondaryDatabaseRequest) WithIfNotExists(ifNotExists bool) *Crea
 	return s
 }
 
-func (s *CreateSecondaryDatabaseRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *CreateSecondaryDatabaseRequest {
-	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
-	return s
-}
-
-func (s *CreateSecondaryDatabaseRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *CreateSecondaryDatabaseRequest {
-	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
-	return s
-}
-
-func (s *CreateSecondaryDatabaseRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *CreateSecondaryDatabaseRequest {
-	s.ExternalVolume = &externalVolume
-	return s
-}
-
 func (s *CreateSecondaryDatabaseRequest) WithCatalog(catalog AccountObjectIdentifier) *CreateSecondaryDatabaseRequest {
 	s.Catalog = &catalog
 	return s
 }
 
-func (s *CreateSecondaryDatabaseRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateSecondaryDatabaseRequest {
-	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+func (s *CreateSecondaryDatabaseRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *CreateSecondaryDatabaseRequest {
+	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
 	return s
 }
 
-func (s *CreateSecondaryDatabaseRequest) WithDefaultDdlCollation(defaultDdlCollation string) *CreateSecondaryDatabaseRequest {
+func (s *CreateSecondaryDatabaseRequest) WithDefaultDdlCollation(defaultDdlCollation StringAllowEmpty) *CreateSecondaryDatabaseRequest {
 	s.DefaultDdlCollation = &defaultDdlCollation
 	return s
 }
@@ -343,13 +328,13 @@ func (s *CreateSecondaryDatabaseRequest) WithDefaultNotebookComputePoolGpu(defau
 	return s
 }
 
-func (s *CreateSecondaryDatabaseRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *CreateSecondaryDatabaseRequest {
-	s.StorageSerializationPolicy = &storageSerializationPolicy
+func (s *CreateSecondaryDatabaseRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *CreateSecondaryDatabaseRequest {
+	s.EnableConsoleOutput = &enableConsoleOutput
 	return s
 }
 
-func (s *CreateSecondaryDatabaseRequest) WithLogLevel(logLevel LogLevel) *CreateSecondaryDatabaseRequest {
-	s.LogLevel = &logLevel
+func (s *CreateSecondaryDatabaseRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *CreateSecondaryDatabaseRequest {
+	s.ExternalVolume = &externalVolume
 	return s
 }
 
@@ -358,8 +343,28 @@ func (s *CreateSecondaryDatabaseRequest) WithLogEventLevel(logEventLevel LogLeve
 	return s
 }
 
-func (s *CreateSecondaryDatabaseRequest) WithTraceLevel(traceLevel TraceLevel) *CreateSecondaryDatabaseRequest {
-	s.TraceLevel = &traceLevel
+func (s *CreateSecondaryDatabaseRequest) WithLogLevel(logLevel LogLevel) *CreateSecondaryDatabaseRequest {
+	s.LogLevel = &logLevel
+	return s
+}
+
+func (s *CreateSecondaryDatabaseRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *CreateSecondaryDatabaseRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
+	return s
+}
+
+func (s *CreateSecondaryDatabaseRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *CreateSecondaryDatabaseRequest {
+	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
+	return s
+}
+
+func (s *CreateSecondaryDatabaseRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateSecondaryDatabaseRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *CreateSecondaryDatabaseRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *CreateSecondaryDatabaseRequest {
+	s.StorageSerializationPolicy = &storageSerializationPolicy
 	return s
 }
 
@@ -373,13 +378,13 @@ func (s *CreateSecondaryDatabaseRequest) WithTaskAutoRetryAttempts(taskAutoRetry
 	return s
 }
 
-func (s *CreateSecondaryDatabaseRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *CreateSecondaryDatabaseRequest {
-	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
+func (s *CreateSecondaryDatabaseRequest) WithTraceLevel(traceLevel TraceLevel) *CreateSecondaryDatabaseRequest {
+	s.TraceLevel = &traceLevel
 	return s
 }
 
-func (s *CreateSecondaryDatabaseRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *CreateSecondaryDatabaseRequest {
-	s.UserTaskTimeoutMs = &userTaskTimeoutMs
+func (s *CreateSecondaryDatabaseRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *CreateSecondaryDatabaseRequest {
+	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
 	return s
 }
 
@@ -388,13 +393,8 @@ func (s *CreateSecondaryDatabaseRequest) WithUserTaskMinimumTriggerIntervalInSec
 	return s
 }
 
-func (s *CreateSecondaryDatabaseRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *CreateSecondaryDatabaseRequest {
-	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
-	return s
-}
-
-func (s *CreateSecondaryDatabaseRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *CreateSecondaryDatabaseRequest {
-	s.EnableConsoleOutput = &enableConsoleOutput
+func (s *CreateSecondaryDatabaseRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *CreateSecondaryDatabaseRequest {
+	s.UserTaskTimeoutMs = &userTaskTimeoutMs
 	return s
 }
 
@@ -534,32 +534,17 @@ func NewDatabaseSetRequest() *DatabaseSetRequest {
 	return &s
 }
 
-func (s *DatabaseSetRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *DatabaseSetRequest {
-	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
-	return s
-}
-
-func (s *DatabaseSetRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *DatabaseSetRequest {
-	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
-	return s
-}
-
-func (s *DatabaseSetRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *DatabaseSetRequest {
-	s.ExternalVolume = &externalVolume
-	return s
-}
-
 func (s *DatabaseSetRequest) WithCatalog(catalog AccountObjectIdentifier) *DatabaseSetRequest {
 	s.Catalog = &catalog
 	return s
 }
 
-func (s *DatabaseSetRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *DatabaseSetRequest {
-	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+func (s *DatabaseSetRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *DatabaseSetRequest {
+	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
 	return s
 }
 
-func (s *DatabaseSetRequest) WithDefaultDdlCollation(defaultDdlCollation string) *DatabaseSetRequest {
+func (s *DatabaseSetRequest) WithDefaultDdlCollation(defaultDdlCollation StringAllowEmpty) *DatabaseSetRequest {
 	s.DefaultDdlCollation = &defaultDdlCollation
 	return s
 }
@@ -574,13 +559,13 @@ func (s *DatabaseSetRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookCo
 	return s
 }
 
-func (s *DatabaseSetRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *DatabaseSetRequest {
-	s.StorageSerializationPolicy = &storageSerializationPolicy
+func (s *DatabaseSetRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *DatabaseSetRequest {
+	s.EnableConsoleOutput = &enableConsoleOutput
 	return s
 }
 
-func (s *DatabaseSetRequest) WithLogLevel(logLevel LogLevel) *DatabaseSetRequest {
-	s.LogLevel = &logLevel
+func (s *DatabaseSetRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *DatabaseSetRequest {
+	s.ExternalVolume = &externalVolume
 	return s
 }
 
@@ -589,8 +574,28 @@ func (s *DatabaseSetRequest) WithLogEventLevel(logEventLevel LogLevel) *Database
 	return s
 }
 
-func (s *DatabaseSetRequest) WithTraceLevel(traceLevel TraceLevel) *DatabaseSetRequest {
-	s.TraceLevel = &traceLevel
+func (s *DatabaseSetRequest) WithLogLevel(logLevel LogLevel) *DatabaseSetRequest {
+	s.LogLevel = &logLevel
+	return s
+}
+
+func (s *DatabaseSetRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *DatabaseSetRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
+	return s
+}
+
+func (s *DatabaseSetRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *DatabaseSetRequest {
+	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
+	return s
+}
+
+func (s *DatabaseSetRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *DatabaseSetRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *DatabaseSetRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *DatabaseSetRequest {
+	s.StorageSerializationPolicy = &storageSerializationPolicy
 	return s
 }
 
@@ -604,13 +609,13 @@ func (s *DatabaseSetRequest) WithTaskAutoRetryAttempts(taskAutoRetryAttempts int
 	return s
 }
 
-func (s *DatabaseSetRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *DatabaseSetRequest {
-	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
+func (s *DatabaseSetRequest) WithTraceLevel(traceLevel TraceLevel) *DatabaseSetRequest {
+	s.TraceLevel = &traceLevel
 	return s
 }
 
-func (s *DatabaseSetRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *DatabaseSetRequest {
-	s.UserTaskTimeoutMs = &userTaskTimeoutMs
+func (s *DatabaseSetRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *DatabaseSetRequest {
+	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
 	return s
 }
 
@@ -619,13 +624,8 @@ func (s *DatabaseSetRequest) WithUserTaskMinimumTriggerIntervalInSeconds(userTas
 	return s
 }
 
-func (s *DatabaseSetRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *DatabaseSetRequest {
-	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
-	return s
-}
-
-func (s *DatabaseSetRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *DatabaseSetRequest {
-	s.EnableConsoleOutput = &enableConsoleOutput
+func (s *DatabaseSetRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *DatabaseSetRequest {
+	s.UserTaskTimeoutMs = &userTaskTimeoutMs
 	return s
 }
 
@@ -639,28 +639,13 @@ func NewDatabaseUnsetRequest() *DatabaseUnsetRequest {
 	return &s
 }
 
-func (s *DatabaseUnsetRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays bool) *DatabaseUnsetRequest {
-	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
-	return s
-}
-
-func (s *DatabaseUnsetRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays bool) *DatabaseUnsetRequest {
-	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
-	return s
-}
-
-func (s *DatabaseUnsetRequest) WithExternalVolume(externalVolume bool) *DatabaseUnsetRequest {
-	s.ExternalVolume = &externalVolume
-	return s
-}
-
 func (s *DatabaseUnsetRequest) WithCatalog(catalog bool) *DatabaseUnsetRequest {
 	s.Catalog = &catalog
 	return s
 }
 
-func (s *DatabaseUnsetRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *DatabaseUnsetRequest {
-	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+func (s *DatabaseUnsetRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays bool) *DatabaseUnsetRequest {
+	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
 	return s
 }
 
@@ -679,13 +664,13 @@ func (s *DatabaseUnsetRequest) WithDefaultNotebookComputePoolGpu(defaultNotebook
 	return s
 }
 
-func (s *DatabaseUnsetRequest) WithStorageSerializationPolicy(storageSerializationPolicy bool) *DatabaseUnsetRequest {
-	s.StorageSerializationPolicy = &storageSerializationPolicy
+func (s *DatabaseUnsetRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *DatabaseUnsetRequest {
+	s.EnableConsoleOutput = &enableConsoleOutput
 	return s
 }
 
-func (s *DatabaseUnsetRequest) WithLogLevel(logLevel bool) *DatabaseUnsetRequest {
-	s.LogLevel = &logLevel
+func (s *DatabaseUnsetRequest) WithExternalVolume(externalVolume bool) *DatabaseUnsetRequest {
+	s.ExternalVolume = &externalVolume
 	return s
 }
 
@@ -694,8 +679,28 @@ func (s *DatabaseUnsetRequest) WithLogEventLevel(logEventLevel bool) *DatabaseUn
 	return s
 }
 
-func (s *DatabaseUnsetRequest) WithTraceLevel(traceLevel bool) *DatabaseUnsetRequest {
-	s.TraceLevel = &traceLevel
+func (s *DatabaseUnsetRequest) WithLogLevel(logLevel bool) *DatabaseUnsetRequest {
+	s.LogLevel = &logLevel
+	return s
+}
+
+func (s *DatabaseUnsetRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays bool) *DatabaseUnsetRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
+	return s
+}
+
+func (s *DatabaseUnsetRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *DatabaseUnsetRequest {
+	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
+	return s
+}
+
+func (s *DatabaseUnsetRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *DatabaseUnsetRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *DatabaseUnsetRequest) WithStorageSerializationPolicy(storageSerializationPolicy bool) *DatabaseUnsetRequest {
+	s.StorageSerializationPolicy = &storageSerializationPolicy
 	return s
 }
 
@@ -709,13 +714,13 @@ func (s *DatabaseUnsetRequest) WithTaskAutoRetryAttempts(taskAutoRetryAttempts b
 	return s
 }
 
-func (s *DatabaseUnsetRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize bool) *DatabaseUnsetRequest {
-	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
+func (s *DatabaseUnsetRequest) WithTraceLevel(traceLevel bool) *DatabaseUnsetRequest {
+	s.TraceLevel = &traceLevel
 	return s
 }
 
-func (s *DatabaseUnsetRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs bool) *DatabaseUnsetRequest {
-	s.UserTaskTimeoutMs = &userTaskTimeoutMs
+func (s *DatabaseUnsetRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize bool) *DatabaseUnsetRequest {
+	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
 	return s
 }
 
@@ -724,13 +729,8 @@ func (s *DatabaseUnsetRequest) WithUserTaskMinimumTriggerIntervalInSeconds(userT
 	return s
 }
 
-func (s *DatabaseUnsetRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *DatabaseUnsetRequest {
-	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
-	return s
-}
-
-func (s *DatabaseUnsetRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *DatabaseUnsetRequest {
-	s.EnableConsoleOutput = &enableConsoleOutput
+func (s *DatabaseUnsetRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs bool) *DatabaseUnsetRequest {
+	s.UserTaskTimeoutMs = &userTaskTimeoutMs
 	return s
 }
 
