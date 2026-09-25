@@ -237,7 +237,7 @@ func (i *Interface) newOperationWithDBMapping(
 	kind string,
 	doc string,
 	dbRepresentation *dbStruct,
-	resourceRepresentation *plainStruct,
+	resourceRepresentation *Plain,
 	queryStruct *QueryStruct,
 	addMappingFunc func(op *Operation, from, to *Field),
 	helperStructs ...IntoField,
@@ -316,11 +316,11 @@ func (i *Interface) appendShowByID(filtering []ShowByIDFilteringKind) *Interface
 	return i.ShowByIdOperationWithFiltering(filtering[0], filtering[1:]...)
 }
 
-func (i *Interface) ShowOperation(doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct, filtering ...ShowByIDFilteringKind) *Interface {
+func (i *Interface) ShowOperation(doc string, dbRepresentation *dbStruct, resourceRepresentation *Plain, queryStruct *QueryStruct, filtering ...ShowByIDFilteringKind) *Interface {
 	return i.showOperation(doc, dbRepresentation, resourceRepresentation, queryStruct, addShowMapping, filtering...)
 }
 
-func (i *Interface) showOperation(doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct, addMappingFunc func(op *Operation, from, to *Field), filtering ...ShowByIDFilteringKind) *Interface {
+func (i *Interface) showOperation(doc string, dbRepresentation *dbStruct, resourceRepresentation *Plain, queryStruct *QueryStruct, addMappingFunc func(op *Operation, from, to *Field), filtering ...ShowByIDFilteringKind) *Interface {
 	op := i.newOperationWithDBMapping(string(OperationKindShow), doc, dbRepresentation, resourceRepresentation, queryStruct, addMappingFunc)
 	kind := ShowMappingKindSlice
 	i.ShowObjectName = op.ShowMapping.To.Name
@@ -328,11 +328,11 @@ func (i *Interface) showOperation(doc string, dbRepresentation *dbStruct, resour
 	return i.appendShowByID(filtering)
 }
 
-func (i *Interface) CustomShowOperation(operationName string, showKind ShowMappingKind, doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct) *Interface {
+func (i *Interface) CustomShowOperation(operationName string, showKind ShowMappingKind, doc string, dbRepresentation *dbStruct, resourceRepresentation *Plain, queryStruct *QueryStruct) *Interface {
 	return i.customShowOperation(operationName, showKind, doc, dbRepresentation, resourceRepresentation, queryStruct, addShowMapping)
 }
 
-func (i *Interface) customShowOperation(operationName string, showKind ShowMappingKind, doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct, addMappingFunc func(op *Operation, from, to *Field), helperStructs ...IntoField) *Interface {
+func (i *Interface) customShowOperation(operationName string, showKind ShowMappingKind, doc string, dbRepresentation *dbStruct, resourceRepresentation *Plain, queryStruct *QueryStruct, addMappingFunc func(op *Operation, from, to *Field), helperStructs ...IntoField) *Interface {
 	op := i.newOperationWithDBMapping(operationName, doc, dbRepresentation, resourceRepresentation, queryStruct, addMappingFunc, helperStructs...)
 	op.ShowKind = &showKind
 	return i
@@ -354,11 +354,11 @@ func (i *Interface) ShowByIdOperationWithFiltering(filter ShowByIDFilteringKind,
 	return i
 }
 
-func (i *Interface) DescribeOperation(describeKind DescriptionMappingKind, doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
+func (i *Interface) DescribeOperation(describeKind DescriptionMappingKind, doc string, dbRepresentation *dbStruct, resourceRepresentation *Plain, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
 	return i.describeOperation(describeKind, doc, dbRepresentation, resourceRepresentation, queryStruct, addDescriptionMapping, helperStructs...)
 }
 
-func (i *Interface) describeOperation(describeKind DescriptionMappingKind, doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct, addMappingFunc func(op *Operation, from, to *Field), helperStructs ...IntoField) *Interface {
+func (i *Interface) describeOperation(describeKind DescriptionMappingKind, doc string, dbRepresentation *dbStruct, resourceRepresentation *Plain, queryStruct *QueryStruct, addMappingFunc func(op *Operation, from, to *Field), helperStructs ...IntoField) *Interface {
 	op := i.newOperationWithDBMapping(string(OperationKindDescribe), doc, dbRepresentation, resourceRepresentation, queryStruct, addMappingFunc, helperStructs...)
 	op.DescribeKind = &describeKind
 	return i

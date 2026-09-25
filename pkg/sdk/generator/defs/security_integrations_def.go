@@ -101,45 +101,31 @@ var saml2SecurityIntegrationDetailsDef = g.PlainStruct("Saml2SecurityIntegration
 	OptionalField("AllowedEmailPatterns", "SecurityIntegrationProperty").
 	OptionalField("Comment", "SecurityIntegrationProperty")
 
-var oauthIntegrationForPartnerApplicationsDetailsDef = g.PlainStruct("OauthIntegrationForPartnerApplicationsDetails").
-	OptionalField("OauthClientType", "SecurityIntegrationProperty").
-	OptionalField("Enabled", "SecurityIntegrationProperty").
-	OptionalField("OauthAllowNonTlsRedirectUri", "SecurityIntegrationProperty").
-	OptionalField("OauthEnforcePkce", "SecurityIntegrationProperty").
-	OptionalField("OauthUseSecondaryRoles", "SecurityIntegrationProperty").
-	OptionalField("PreAuthorizedRolesList", "SecurityIntegrationProperty").
-	OptionalField("AllowedRolesList", "SecurityIntegrationProperty").
-	OptionalField("BlockedRolesList", "SecurityIntegrationProperty").
-	OptionalField("OauthIssueRefreshTokens", "SecurityIntegrationProperty").
-	OptionalField("OauthRefreshTokenValidity", "SecurityIntegrationProperty").
-	OptionalField("NetworkPolicy", "SecurityIntegrationProperty").
-	OptionalField("OauthClientRsaPublicKeyFp", "SecurityIntegrationProperty").
-	OptionalField("OauthClientRsaPublicKey2Fp", "SecurityIntegrationProperty").
-	OptionalField("Comment", "SecurityIntegrationProperty").
-	OptionalField("OauthAuthorizationEndpoint", "SecurityIntegrationProperty").
-	OptionalField("OauthTokenEndpoint", "SecurityIntegrationProperty").
-	OptionalField("OauthAllowedAuthorizationEndpoints", "SecurityIntegrationProperty").
-	OptionalField("OauthAllowedTokenEndpoints", "SecurityIntegrationProperty")
+func oauthIntegrationDetailsFields(name string) *g.Plain {
+	return g.PlainStruct(name).
+		OptionalField("OauthClientType", "SecurityIntegrationProperty").
+		OptionalField("Enabled", "SecurityIntegrationProperty").
+		OptionalField("OauthAllowNonTlsRedirectUri", "SecurityIntegrationProperty").
+		OptionalField("OauthEnforcePkce", "SecurityIntegrationProperty").
+		OptionalField("OauthUseSecondaryRoles", "SecurityIntegrationProperty").
+		OptionalField("PreAuthorizedRolesList", "SecurityIntegrationProperty").
+		OptionalField("AllowedRolesList", "SecurityIntegrationProperty").
+		OptionalField("BlockedRolesList", "SecurityIntegrationProperty").
+		OptionalField("OauthIssueRefreshTokens", "SecurityIntegrationProperty").
+		OptionalField("OauthRefreshTokenValidity", "SecurityIntegrationProperty").
+		OptionalField("NetworkPolicy", "SecurityIntegrationProperty").
+		OptionalField("OauthClientRsaPublicKeyFp", "SecurityIntegrationProperty").
+		OptionalField("OauthClientRsaPublicKey2Fp", "SecurityIntegrationProperty").
+		OptionalField("Comment", "SecurityIntegrationProperty").
+		OptionalField("OauthAuthorizationEndpoint", "SecurityIntegrationProperty").
+		OptionalField("OauthTokenEndpoint", "SecurityIntegrationProperty").
+		OptionalField("OauthAllowedAuthorizationEndpoints", "SecurityIntegrationProperty").
+		OptionalField("OauthAllowedTokenEndpoints", "SecurityIntegrationProperty")
+}
 
-var oauthIntegrationForCustomClientsDetailsDef = g.PlainStruct("OauthIntegrationForCustomClientsDetails").
-	OptionalField("OauthClientType", "SecurityIntegrationProperty").
-	OptionalField("Enabled", "SecurityIntegrationProperty").
-	OptionalField("OauthAllowNonTlsRedirectUri", "SecurityIntegrationProperty").
-	OptionalField("OauthEnforcePkce", "SecurityIntegrationProperty").
-	OptionalField("OauthUseSecondaryRoles", "SecurityIntegrationProperty").
-	OptionalField("PreAuthorizedRolesList", "SecurityIntegrationProperty").
-	OptionalField("AllowedRolesList", "SecurityIntegrationProperty").
-	OptionalField("BlockedRolesList", "SecurityIntegrationProperty").
-	OptionalField("OauthIssueRefreshTokens", "SecurityIntegrationProperty").
-	OptionalField("OauthRefreshTokenValidity", "SecurityIntegrationProperty").
-	OptionalField("NetworkPolicy", "SecurityIntegrationProperty").
-	OptionalField("OauthClientRsaPublicKeyFp", "SecurityIntegrationProperty").
-	OptionalField("OauthClientRsaPublicKey2Fp", "SecurityIntegrationProperty").
-	OptionalField("Comment", "SecurityIntegrationProperty").
-	OptionalField("OauthAuthorizationEndpoint", "SecurityIntegrationProperty").
-	OptionalField("OauthTokenEndpoint", "SecurityIntegrationProperty").
-	OptionalField("OauthAllowedAuthorizationEndpoints", "SecurityIntegrationProperty").
-	OptionalField("OauthAllowedTokenEndpoints", "SecurityIntegrationProperty")
+var oauthIntegrationForPartnerApplicationsDetailsDef = oauthIntegrationDetailsFields("OauthIntegrationForPartnerApplicationsDetails")
+
+var oauthIntegrationForCustomClientsDetailsDef = oauthIntegrationDetailsFields("OauthIntegrationForCustomClientsDetails")
 
 var externalOauthSecurityIntegrationDetailsDef = g.PlainStruct("ExternalOauthSecurityIntegrationDetails").
 	OptionalField("Enabled", "SecurityIntegrationProperty").

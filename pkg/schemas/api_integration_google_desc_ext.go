@@ -1,12 +1,13 @@
 package schemas
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func (apiIntegrationGoogleDetailsToSchemaMapper) additionalSchema() map[string]*schema.Schema {
-	return apiIntegrationMergeAdditional(
+	return collections.MergeMaps(
 		apiIntegrationApiKeySchema(),
 		apiIntegrationApiProviderSchema(),
 		apiIntegrationAllowedBlockedPrefixesSchema(),

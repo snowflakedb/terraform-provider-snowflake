@@ -2,7 +2,8 @@ package gen
 
 import "fmt"
 
-type plainStruct struct {
+// Plain is the builder returned by PlainStruct. Defs helpers take *Plain the same way QueryStruct helpers take *QueryStruct.
+type Plain struct {
 	name   string
 	fields []plainField
 }
@@ -12,14 +13,14 @@ type plainField struct {
 	kind string
 }
 
-func PlainStruct(name string) *plainStruct {
-	return &plainStruct{
+func PlainStruct(name string) *Plain {
+	return &Plain{
 		name:   name,
 		fields: make([]plainField, 0),
 	}
 }
 
-func (v *plainStruct) Field(name string, kind string) *plainStruct {
+func (v *Plain) Field(name string, kind string) *Plain {
 	v.fields = append(v.fields, plainField{
 		name: name,
 		kind: kind,
@@ -27,55 +28,55 @@ func (v *plainStruct) Field(name string, kind string) *plainStruct {
 	return v
 }
 
-func (v *plainStruct) OptionalField(name string, kind string) *plainStruct {
+func (v *Plain) OptionalField(name string, kind string) *Plain {
 	return v.Field(name, fmt.Sprintf("*%s", kind))
 }
 
-func (v *plainStruct) Text(name string) *plainStruct {
+func (v *Plain) Text(name string) *Plain {
 	return v.Field(name, "string")
 }
 
-func (v *plainStruct) OptionalText(name string) *plainStruct {
+func (v *Plain) OptionalText(name string) *Plain {
 	return v.Field(name, "*string")
 }
 
-func (v *plainStruct) Time(name string) *plainStruct {
+func (v *Plain) Time(name string) *Plain {
 	return v.Field(name, "time.Time")
 }
 
-func (v *plainStruct) OptionalTime(name string) *plainStruct {
+func (v *Plain) OptionalTime(name string) *Plain {
 	return v.Field(name, "*time.Time")
 }
 
-func (v *plainStruct) Bool(name string) *plainStruct {
+func (v *Plain) Bool(name string) *Plain {
 	return v.Field(name, "bool")
 }
 
-func (v *plainStruct) OptionalBool(name string) *plainStruct {
+func (v *Plain) OptionalBool(name string) *Plain {
 	return v.Field(name, "*bool")
 }
 
-func (v *plainStruct) Number(dbName string) *plainStruct {
+func (v *Plain) Number(dbName string) *Plain {
 	return v.Field(dbName, "int")
 }
 
-func (v *plainStruct) OptionalNumber(dbName string) *plainStruct {
+func (v *Plain) OptionalNumber(dbName string) *Plain {
 	return v.Field(dbName, "*int")
 }
 
-func (v *plainStruct) StringList(dbName string) *plainStruct {
+func (v *Plain) StringList(dbName string) *Plain {
 	return v.Field(dbName, "[]string")
 }
 
-func (v *plainStruct) AccountObjectIdentifier() *plainStruct {
+func (v *Plain) AccountObjectIdentifier() *Plain {
 	return v.Field("Id", "AccountObjectIdentifier")
 }
 
-func (v *plainStruct) SchemaObjectIdentifier() *plainStruct {
+func (v *Plain) SchemaObjectIdentifier() *Plain {
 	return v.Field("Id", "SchemaObjectIdentifier")
 }
 
-func (v *plainStruct) IntoField() *Field {
+func (v *Plain) IntoField() *Field {
 	f := NewField(v.name, v.name, nil, nil)
 	for _, field := range v.fields {
 		f.withField(NewField(field.name, field.kind, nil, nil))

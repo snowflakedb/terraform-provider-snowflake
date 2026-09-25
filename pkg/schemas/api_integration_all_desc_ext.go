@@ -1,23 +1,15 @@
 package schemas
 
 import (
-	"maps"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // TODO [next PRs]: first move — []string prefixes/scopes/certs stay here until MapToSchemaField maps slices natively.
 // api_key is Sensitive and api_provider needs strings.ToLower; neither can be generated.
-
-func apiIntegrationMergeAdditional(parts ...map[string]*schema.Schema) map[string]*schema.Schema {
-	out := make(map[string]*schema.Schema)
-	for _, part := range parts {
-		maps.Copy(out, part)
-	}
-	return out
-}
 
 func apiIntegrationApiKeySchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
@@ -87,7 +79,7 @@ func apiIntegrationAllowedBlockedPrefixesToSchema(allowed, blocked []string, dst
 }
 
 func (apiIntegrationAllDetailsToSchemaMapper) additionalSchema() map[string]*schema.Schema {
-	return apiIntegrationMergeAdditional(
+	return collections.MergeMaps(
 		apiIntegrationApiKeySchema(),
 		apiIntegrationApiProviderSchema(),
 		apiIntegrationAllowedBlockedPrefixesSchema(),

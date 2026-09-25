@@ -43,7 +43,7 @@ func (v *QueryStruct) EnumAssignmentWithFieldName(sqlPrefix string, enum *Enum, 
 	return v.AssignmentWithFieldName(sqlPrefix, enum.Kind(), transformer, fieldName)
 }
 
-// Enum adds a required enum field to a plainStruct.
-func (v *plainStruct) Enum(name string, enum *Enum) *plainStruct {
+// Enum adds a required enum field to a Plain builder.
+func (v *Plain) Enum(name string, enum *Enum) *Plain {
 	return v.Field(name, enum.Kind())
 }

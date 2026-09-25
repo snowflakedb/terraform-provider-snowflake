@@ -29,6 +29,16 @@ var (
 	)
 )
 
+func catalogIntegrationDetailsHead(ps *g.Plain) *g.Plain {
+	return ps.
+		AccountObjectIdentifier().
+		Enum("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef).
+		Enum("TableFormat", CatalogIntegrationTableFormatEnumDef).
+		Bool("Enabled").
+		Number("RefreshIntervalSeconds").
+		Text("Comment")
+}
+
 var openCatalogRestConfigDef = g.NewQueryStruct("OpenCatalogRestConfig").
 	TextAssignment("CATALOG_URI", g.ParameterOptions().SingleQuotes().Required()).
 	OptionalEnumAssignment("CATALOG_API_TYPE", CatalogIntegrationCatalogApiTypeEnumDef, g.ParameterOptions().NoQuotes()).
@@ -217,55 +227,25 @@ var catalogIntegrationsDef = g.NewInterface(
 			SQL("CATALOG INTEGRATION").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
-		g.PlainStruct("CatalogIntegrationAwsGlueDetails").
-			AccountObjectIdentifier().
-			Enum("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef).
-			Enum("TableFormat", CatalogIntegrationTableFormatEnumDef).
-			Bool("Enabled").
-			Number("RefreshIntervalSeconds").
-			Text("Comment").
+		catalogIntegrationDetailsHead(g.PlainStruct("CatalogIntegrationAwsGlueDetails")).
 			Text("GlueAwsRoleArn").
 			Text("GlueCatalogId").
 			Text("GlueRegion").
 			Text("CatalogNamespace").
 			Text("GlueAwsIamUserArn").
 			Text("GlueAwsExternalId"),
-		g.PlainStruct("CatalogIntegrationObjectStorageDetails").
-			AccountObjectIdentifier().
-			Enum("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef).
-			Enum("TableFormat", CatalogIntegrationTableFormatEnumDef).
-			Bool("Enabled").
-			Number("RefreshIntervalSeconds").
-			Text("Comment"),
-		g.PlainStruct("CatalogIntegrationOpenCatalogDetails").
-			AccountObjectIdentifier().
-			Enum("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef).
-			Enum("TableFormat", CatalogIntegrationTableFormatEnumDef).
-			Bool("Enabled").
-			Number("RefreshIntervalSeconds").
-			Text("Comment").
+		catalogIntegrationDetailsHead(g.PlainStruct("CatalogIntegrationObjectStorageDetails")),
+		catalogIntegrationDetailsHead(g.PlainStruct("CatalogIntegrationOpenCatalogDetails")).
 			Text("CatalogNamespace").
 			Field("RestConfig", "OpenCatalogRestConfigDetails").
 			Field("RestAuthentication", "OAuthRestAuthenticationDetails"),
-		g.PlainStruct("CatalogIntegrationIcebergRestDetails").
-			AccountObjectIdentifier().
-			Enum("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef).
-			Enum("TableFormat", CatalogIntegrationTableFormatEnumDef).
-			Bool("Enabled").
-			Number("RefreshIntervalSeconds").
-			Text("Comment").
+		catalogIntegrationDetailsHead(g.PlainStruct("CatalogIntegrationIcebergRestDetails")).
 			Text("CatalogNamespace").
 			Field("RestConfig", "IcebergRestRestConfigDetails").
 			OptionalField("OAuthRestAuthentication", "OAuthRestAuthenticationDetails").
 			OptionalField("BearerRestAuthentication", "BearerRestAuthenticationDetails").
 			OptionalField("SigV4RestAuthentication", "SigV4RestAuthenticationDetails"),
-		g.PlainStruct("CatalogIntegrationAllDetails").
-			AccountObjectIdentifier().
-			Enum("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef).
-			Enum("TableFormat", CatalogIntegrationTableFormatEnumDef).
-			Bool("Enabled").
-			Number("RefreshIntervalSeconds").
-			Text("Comment").
+		catalogIntegrationDetailsHead(g.PlainStruct("CatalogIntegrationAllDetails")).
 			Text("GlueAwsRoleArn").
 			Text("GlueCatalogId").
 			Text("GlueRegion").

@@ -8,6 +8,18 @@ import (
 
 var StorageLocationDef = g.NewQueryStruct("StorageLocation").Text("Path", g.KeywordOptions().SingleQuotes().Required())
 
+func storageIntegrationDetailsHead(ps *g.Plain) *g.Plain {
+	return ps.
+		AccountObjectIdentifier().
+		Bool("Enabled").
+		// TODO [next PRs]: enum?
+		Text("Provider").
+		StringList("AllowedLocations").
+		StringList("BlockedLocations").
+		Text("Comment").
+		Bool("UsePrivatelinkEndpoint")
+}
+
 // DESCRIBE projections. DESC STORAGE INTEGRATION is one property-list; Describe() still
 // returns []StorageIntegrationProperty. Fields are the property rows so today’s nested
 // describe_output keys stay put. Typed scalars already exist as StorageIntegrationAllDetails
@@ -180,47 +192,18 @@ var storageIntegrationsDef = g.NewInterface(
 			SQL("STORAGE INTEGRATION").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
-		g.PlainStruct("StorageIntegrationAwsDetails").
-			AccountObjectIdentifier().
-			Bool("Enabled").
-			// TODO [next PRs]: enum?
-			Text("Provider").
-			StringList("AllowedLocations").
-			StringList("BlockedLocations").
-			Text("Comment").
-			Bool("UsePrivatelinkEndpoint").
+		storageIntegrationDetailsHead(g.PlainStruct("StorageIntegrationAwsDetails")).
 			Text("IamUserArn").
 			Text("RoleArn").
 			Text("ObjectAcl").
 			Text("ExternalId"),
-		g.PlainStruct("StorageIntegrationAzureDetails").
-			AccountObjectIdentifier().
-			Bool("Enabled").
-			Text("Provider").
-			StringList("AllowedLocations").
-			StringList("BlockedLocations").
-			Text("Comment").
-			Bool("UsePrivatelinkEndpoint").
+		storageIntegrationDetailsHead(g.PlainStruct("StorageIntegrationAzureDetails")).
 			Text("TenantId").
 			Text("ConsentUrl").
 			Text("MultiTenantAppName"),
-		g.PlainStruct("StorageIntegrationGcsDetails").
-			AccountObjectIdentifier().
-			Bool("Enabled").
-			Text("Provider").
-			StringList("AllowedLocations").
-			StringList("BlockedLocations").
-			Text("Comment").
-			Bool("UsePrivatelinkEndpoint").
+		storageIntegrationDetailsHead(g.PlainStruct("StorageIntegrationGcsDetails")).
 			Text("ServiceAccount"),
-		g.PlainStruct("StorageIntegrationAllDetails").
-			AccountObjectIdentifier().
-			Bool("Enabled").
-			Text("Provider").
-			StringList("AllowedLocations").
-			StringList("BlockedLocations").
-			Text("Comment").
-			Bool("UsePrivatelinkEndpoint").
+		storageIntegrationDetailsHead(g.PlainStruct("StorageIntegrationAllDetails")).
 			Text("IamUserArn").
 			Text("RoleArn").
 			Text("ObjectAcl").

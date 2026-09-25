@@ -511,8 +511,8 @@ func (p *PairedStructs) asDbStruct() *dbStruct {
 	return s
 }
 
-// asPlainStruct materializes the definition as a *plainStruct following the old implementation.
-func (p *PairedStructs) asPlainStruct() *plainStruct {
+// asPlainStruct materializes the definition as a *Plain following the old implementation.
+func (p *PairedStructs) asPlainStruct() *Plain {
 	s := PlainStruct(p.plainName)
 	for _, f := range p.fields {
 		s.Field(f.resolvedPlainFieldName(), f.plainKind)

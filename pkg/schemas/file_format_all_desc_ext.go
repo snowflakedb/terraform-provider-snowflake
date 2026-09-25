@@ -3,27 +3,22 @@ package schemas
 import (
 	"maps"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func (fileFormatAllDetailsToSchemaMapper) additionalSchema() map[string]*schema.Schema {
-	out := make(map[string]*schema.Schema)
-	for _, s := range []map[string]*schema.Schema{
+	out := collections.MergeMaps(
 		DescribeFileFormatCsvSchema,
 		DescribeFileFormatJsonSchema,
 		DescribeFileFormatAvroSchema,
 		DescribeFileFormatOrcSchema,
 		DescribeFileFormatParquetSchema,
 		DescribeFileFormatXmlSchema,
-	} {
-		for k, v := range s {
-			if k == "id" || k == "type" {
-				continue
-			}
-			out[k] = v
-		}
-	}
+	)
+	delete(out, "id")
+	delete(out, "type")
 	return out
 }
 

@@ -37,40 +37,28 @@ var (
 	)
 )
 
+func stageDescribeCommonFields(ps *g.Plain) *g.Plain {
+	return ps.
+		OptionalField("FileFormatName", "SchemaObjectIdentifier").
+		OptionalField("FileFormatCsv", "FileFormatCsv").
+		OptionalField("FileFormatJson", "FileFormatJson").
+		OptionalField("FileFormatAvro", "FileFormatAvro").
+		OptionalField("FileFormatOrc", "FileFormatOrc").
+		OptionalField("FileFormatParquet", "FileFormatParquet").
+		OptionalField("FileFormatXml", "FileFormatXml").
+		OptionalField("DirectoryTable", "StageDirectoryTable")
+}
+
 // DESCRIBE projections for type-specific Terraform schemas. DESC STAGE is one property-list;
 // DescribeDetails() still returns *StageDetails. These structs are in-memory subsets
 // (warehouse SHOW / storage-integration AllDetails analog). Common covers internal / GCS / Azure.
-var stageCommonDef = g.PlainStruct("StageCommon").
-	OptionalField("FileFormatName", "SchemaObjectIdentifier").
-	OptionalField("FileFormatCsv", "FileFormatCsv").
-	OptionalField("FileFormatJson", "FileFormatJson").
-	OptionalField("FileFormatAvro", "FileFormatAvro").
-	OptionalField("FileFormatOrc", "FileFormatOrc").
-	OptionalField("FileFormatParquet", "FileFormatParquet").
-	OptionalField("FileFormatXml", "FileFormatXml").
-	OptionalField("DirectoryTable", "StageDirectoryTable")
+var stageCommonDef = stageDescribeCommonFields(g.PlainStruct("StageCommon"))
 
-var stageAwsDef = g.PlainStruct("StageAws").
-	OptionalField("FileFormatName", "SchemaObjectIdentifier").
-	OptionalField("FileFormatCsv", "FileFormatCsv").
-	OptionalField("FileFormatJson", "FileFormatJson").
-	OptionalField("FileFormatAvro", "FileFormatAvro").
-	OptionalField("FileFormatOrc", "FileFormatOrc").
-	OptionalField("FileFormatParquet", "FileFormatParquet").
-	OptionalField("FileFormatXml", "FileFormatXml").
-	OptionalField("DirectoryTable", "StageDirectoryTable").
+var stageAwsDef = stageDescribeCommonFields(g.PlainStruct("StageAws")).
 	OptionalField("PrivateLink", "StagePrivateLink").
 	OptionalField("Location", "StageLocationDetails")
 
-var stageAwsCompatibleDef = g.PlainStruct("StageAwsCompatible").
-	OptionalField("FileFormatName", "SchemaObjectIdentifier").
-	OptionalField("FileFormatCsv", "FileFormatCsv").
-	OptionalField("FileFormatJson", "FileFormatJson").
-	OptionalField("FileFormatAvro", "FileFormatAvro").
-	OptionalField("FileFormatOrc", "FileFormatOrc").
-	OptionalField("FileFormatParquet", "FileFormatParquet").
-	OptionalField("FileFormatXml", "FileFormatXml").
-	OptionalField("DirectoryTable", "StageDirectoryTable").
+var stageAwsCompatibleDef = stageDescribeCommonFields(g.PlainStruct("StageAwsCompatible")).
 	OptionalField("Location", "StageLocationDetails")
 
 func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.QueryStruct) *g.QueryStruct {

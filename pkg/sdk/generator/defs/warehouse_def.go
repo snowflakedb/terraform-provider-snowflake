@@ -90,32 +90,48 @@ var warehouseDetailsPairs = g.StructPair("warehouseDetailsRow", "WarehouseDetail
 	Text("name").
 	Text("kind")
 
+func warehouseShowIdentity(ps *g.Plain) *g.Plain {
+	return ps.
+		Text("Name").
+		Enum("State", warehouseStateEnum).
+		Enum("Type", warehouseTypeEnum)
+}
+
+func warehouseShowLoad(ps *g.Plain) *g.Plain {
+	return ps.
+		OptionalNumber("Running").
+		OptionalNumber("Queued").
+		Bool("IsDefault").
+		Bool("IsCurrent")
+}
+
+func warehouseShowAvailability(ps *g.Plain) *g.Plain {
+	return ps.
+		Bool("AutoResume").
+		Field("Available", "float64").
+		Field("Provisioning", "float64").
+		Field("Quiescing", "float64").
+		Field("Other", "float64").
+		Time("CreatedOn").
+		Time("ResumedOn").
+		Time("UpdatedOn").
+		Text("Owner").
+		Text("Comment")
+}
+
 // SHOW projections for type-specific Terraform schemas. SHOW WAREHOUSES is one row type;
 // Show() still returns []Warehouse. These structs are in-memory subsets (storage-integration
 // AllDetails analog). Regular covers STANDARD and SNOWPARK-OPTIMIZED SHOW columns.
-var warehouseRegularDef = g.PlainStruct("WarehouseRegular").
-	Text("Name").
-	Enum("State", warehouseStateEnum).
-	Enum("Type", warehouseTypeEnum).
-	OptionalField("Size", warehouseSizeEnum.Kind()).
-	OptionalNumber("MinClusterCount").
-	OptionalNumber("MaxClusterCount").
-	OptionalNumber("StartedClusters").
-	OptionalNumber("Running").
-	OptionalNumber("Queued").
-	Bool("IsDefault").
-	Bool("IsCurrent").
-	OptionalNumber("AutoSuspend").
-	Bool("AutoResume").
-	Field("Available", "float64").
-	Field("Provisioning", "float64").
-	Field("Quiescing", "float64").
-	Field("Other", "float64").
-	Time("CreatedOn").
-	Time("ResumedOn").
-	Time("UpdatedOn").
-	Text("Owner").
-	Text("Comment").
+var warehouseRegularDef = warehouseShowAvailability(
+	warehouseShowLoad(
+		warehouseShowIdentity(g.PlainStruct("WarehouseRegular")).
+			OptionalField("Size", warehouseSizeEnum.Kind()).
+			OptionalNumber("MinClusterCount").
+			OptionalNumber("MaxClusterCount").
+			OptionalNumber("StartedClusters"),
+	).
+		OptionalNumber("AutoSuspend"),
+).
 	OptionalBool("EnableQueryAcceleration").
 	OptionalNumber("QueryAccelerationMaxScaleFactor").
 	Field("ResourceMonitor", "AccountObjectIdentifier").
@@ -124,52 +140,26 @@ var warehouseRegularDef = g.PlainStruct("WarehouseRegular").
 	OptionalField("ResourceConstraint", warehouseResourceConstraintEnum.Kind()).
 	OptionalField("Generation", "WarehouseGeneration")
 
-var warehouseAdaptiveDef = g.PlainStruct("WarehouseAdaptive").
-	Text("Name").
-	Enum("State", warehouseStateEnum).
-	Enum("Type", warehouseTypeEnum).
-	OptionalNumber("Running").
-	OptionalNumber("Queued").
-	Bool("IsDefault").
-	Bool("IsCurrent").
-	Bool("AutoResume").
-	Field("Available", "float64").
-	Field("Provisioning", "float64").
-	Field("Quiescing", "float64").
-	Field("Other", "float64").
-	Time("CreatedOn").
-	Time("ResumedOn").
-	Time("UpdatedOn").
-	Text("Owner").
-	Text("Comment").
+var warehouseAdaptiveDef = warehouseShowAvailability(
+	warehouseShowLoad(
+		warehouseShowIdentity(g.PlainStruct("WarehouseAdaptive")),
+	),
+).
 	Field("ResourceMonitor", "AccountObjectIdentifier").
 	Text("OwnerRoleType").
 	OptionalField("MaxQueryPerformanceLevel", maxQueryPerformanceLevelEnum.Kind()).
 	OptionalNumber("QueryThroughputMultiplier")
 
-var warehouseInteractiveDef = g.PlainStruct("WarehouseInteractive").
-	Text("Name").
-	Enum("State", warehouseStateEnum).
-	Enum("Type", warehouseTypeEnum).
-	OptionalField("Size", warehouseSizeEnum.Kind()).
-	OptionalNumber("MinClusterCount").
-	OptionalNumber("MaxClusterCount").
-	OptionalNumber("StartedClusters").
-	OptionalNumber("Running").
-	OptionalNumber("Queued").
-	Bool("IsDefault").
-	Bool("IsCurrent").
-	OptionalNumber("AutoSuspend").
-	Bool("AutoResume").
-	Field("Available", "float64").
-	Field("Provisioning", "float64").
-	Field("Quiescing", "float64").
-	Field("Other", "float64").
-	Time("CreatedOn").
-	Time("ResumedOn").
-	Time("UpdatedOn").
-	Text("Owner").
-	Text("Comment").
+var warehouseInteractiveDef = warehouseShowAvailability(
+	warehouseShowLoad(
+		warehouseShowIdentity(g.PlainStruct("WarehouseInteractive")).
+			OptionalField("Size", warehouseSizeEnum.Kind()).
+			OptionalNumber("MinClusterCount").
+			OptionalNumber("MaxClusterCount").
+			OptionalNumber("StartedClusters"),
+	).
+		OptionalNumber("AutoSuspend"),
+).
 	Field("ResourceMonitor", "AccountObjectIdentifier").
 	Text("OwnerRoleType").
 	Field("Tables", "[]SchemaObjectIdentifier")
