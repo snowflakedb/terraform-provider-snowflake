@@ -77,11 +77,13 @@ func NewOptInExperiment(name ExperimentalFeature, description ...string) Experim
 	}
 }
 
+const enabledByDefaultOptOutDescription = "This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`."
+
 func NewEnabledByDefaultExperiment(name ExperimentalFeature, removeInVersions []string, description ...string) Experiment {
 	return Experiment{
 		name:             name,
 		state:            ExperimentalFeatureStateEnabledByDefault,
-		description:      joinWithDoubleNewline(description...),
+		description:      joinWithDoubleNewline(append(slices.Clone(description), enabledByDefaultOptOutDescription)...),
 		removeInVersions: removeInVersions,
 	}
 }
@@ -101,21 +103,24 @@ func NewDiscontinuedExperiment(name ExperimentalFeature) Experiment {
 }
 
 var allExperiments = []Experiment{
-	NewOptInExperiment(
+	NewEnabledByDefaultExperiment(
 		WarehouseShowImprovedPerformance,
+		[]string{"v2.23.0", "v2.24.0"},
 		"It's meant to improve the performance for accounts with many warehouses.",
 		"When enabled, it uses a slightly different SHOW query to read warehouse details (`SHOW WAREHOUSES LIKE '<identifier>' STARTS WITH '<identifier>' LIMIT 1`).",
 		"This feature is enabled by default on the Snowflake side.",
 	),
-	NewOptInExperiment(
+	NewEnabledByDefaultExperiment(
 		GrantsStrictPrivilegeManagement,
+		[]string{"v2.23.0", "v2.24.0"},
 		"The new `strict_privilege_management` flag was added to the `snowflake_grant_privileges_to_account_role` resource.",
 		"It has similar behavior to the `enable_multiple_grants` flag present in the old grant resources, and it makes the resource able to detect external changes for privileges other than those present in the configuration which can make the `snowflake_grant_privileges_to_account_role` resource a central point of knowledge privilege management for a given object and role.",
 		"Read more in our [strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide.",
 		fmt.Sprintf("This feature works independently of the `%s` flag.", GrantsImportValidation),
 	),
-	NewOptInExperiment(
+	NewEnabledByDefaultExperiment(
 		ParametersIgnoreValueChangesIfNotOnObjectLevel,
+		[]string{"v2.23.0", "v2.24.0"},
 		"Currently, not setting the parameter value on the object level can unnecessarily react to external changes to this parameter's value on the higher levels (e.g. not setting `data_retention_time_in_days` on `snowflake_schema` can result in non-empty plan when the parameter value changes on the database/account level).",
 		"When enabled, the provider ignores changes to the parameter value happening on the higher hierarchy levels.",
 	),
@@ -130,8 +135,9 @@ var allExperiments = []Experiment{
 		"The new `default_workload_identity_federation` field was added to the `snowflake_legacy_service_user` and `snowflake_service_user` resources. This field allows for managing WIFs. Due to feature complexity, it requires enabling this experiment.",
 		"Read more in our [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-workload-identity-federation-support-for-service-users).",
 	),
-	NewOptInExperiment(
+	NewEnabledByDefaultExperiment(
 		GrantsImportValidation,
+		[]string{"v2.23.0", "v2.24.0"},
 		"Enables import validation for the `snowflake_grant_privileges_to_account_role` resource.",
 		"When enabled, importing a grant resource with a fixed set of privileges (`privileges` field) will validate that the specified privileges actually exist in Snowflake with the correct `with_grant_option` setting, and error immediately if they don't match.",
 		fmt.Sprintf("This feature works independently of the `%s` flag.", GrantsStrictPrivilegeManagement),
@@ -142,21 +148,24 @@ var allExperiments = []Experiment{
 		"When enabled, the three possible states in Snowflake for allowed values will be supported: `nil` (any value is allowed; whenever `allowed_values` are empty), `empty` (no value is allowed; handled by the `no_allowed_values` field), and `set` (all values defined in `allowed_values` are allowed).",
 		"Otherwise, the `no_allowed_values` field will be ignored (explicit changes will cause updates, but without any effect) and the `allowed_values` field will follow the old behavior: `nil` (any value is allowed; only available whenever tag resource is created without `allowed_values`), `empty` (no value is allowed; always set when updating from filled `allowed_values` set to empty one or completely removed from config), `set` (all values defined in `allowed_values` are allowed).",
 	),
-	NewOptInExperiment(
+	NewEnabledByDefaultExperiment(
 		ImportBooleanDefault,
+		[]string{"v2.23.0", "v2.24.0"},
 		"Changes import behavior for boolean fields using the special `\"default\"` value.",
 		"When enabled, boolean fields using the special `\"default\"` value are set to `\"default\"` during import instead of the actual Snowflake value (e.g., `\"false\"`). This prevents unavoidable diffs on every plan after import.",
 		"Note: this is supported on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`) and stream resources (`snowflake_stream_on_table` and `snowflake_stream_on_view`).",
 	),
-	NewOptInExperiment(
+	NewEnabledByDefaultExperiment(
 		GrantsSafeDestroy,
+		[]string{"v2.23.0", "v2.24.0"},
 		"When enabled, grant destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists.",
 		"Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`, `snowflake_grant_account_role`, `snowflake_grant_database_role`, `snowflake_grant_application_role`, `snowflake_grant_ownership`.",
 		"This prevents errors when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.",
 		"Without this experiment, destroying such resources fails with `does not exist or not authorized`.",
 	),
-	NewOptInExperiment(
+	NewEnabledByDefaultExperiment(
 		TagAssociationSafeDestroy,
+		[]string{"v2.23.0", "v2.24.0"},
 		"When enabled, tag association destroy operations silently succeed when the tagged object (or its parent hierarchy) no longer exists.",
 		"Currently supported by: `snowflake_tag_association`.",
 		"This prevents errors when, for example, a table or schema is deleted externally and the corresponding tag association resource is later removed from the Terraform configuration.",
@@ -187,8 +196,9 @@ var allExperiments = []Experiment{
 		fmt.Sprintf("This is a separate flag from `%s`: enabling this does not enable caching for `snowflake_grant_account_role`, and vice versa. Both can be enabled together.", GrantAccountRoleShowCaching),
 		"Intended for large configurations (thousands of grant resources) where plan and apply time is dominated by redundant `SHOW GRANTS` calls.",
 	),
-	NewOptInExperiment(
+	NewEnabledByDefaultExperiment(
 		GrantAccountRoleSafePublicRole,
+		[]string{"v2.23.0", "v2.24.0"},
 		"When enabled, `snowflake_grant_account_role` treats granting the PUBLIC role as a silent no-op instead of producing an error.",
 		"Snowflake implicitly grants PUBLIC to every role and user (see [Snowflake documentation](https://docs.snowflake.com/en/user-guide/security-access-control-overview#system-defined-roles)), so an explicit `GRANT ROLE PUBLIC` is always a no-op at the SQL level. However, the provider's Read function cannot find the explicit grant via `SHOW GRANTS` and clears the state, causing an inconsistent-result error.",
 		"With this experiment, Create, Read, and Delete all treat PUBLIC role grants as permanent fixtures that require no actual SQL.",
@@ -205,7 +215,6 @@ var allExperiments = []Experiment{
 		[]string{"v2.23.0", "v2.24.0"},
 		"Enables the `inherited` block in the `on_account_object`, `on_schema`, and `on_schema_object` blocks of the `snowflake_grant_privileges_to_account_role` resource, and in the `on_schema` and `on_schema_object` blocks of the `snowflake_grant_privileges_to_database_role` resource.",
 		"Without this experiment, using an `inherited` block results in an error.",
-		"This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.",
 	),
 	NewOptInExperiment(
 		ObjectParameterUnsetOnDelete,

@@ -9,7 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -21,8 +20,8 @@ import (
 //
 // Regression test for https://github.com/snowflakedb/terraform-provider-snowflake/issues/3869.
 func TestAcc_Experimental_TagAssociation_SafeDestroy(t *testing.T) {
-	experimentProviderModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.TagAssociationSafeDestroy)
+	disabledProviderModel := providermodel.SnowflakeProvider().
+		WithAllEnabledByDefaultExperimentsDisabled()
 
 	cases := []struct {
 		name  string
@@ -110,15 +109,15 @@ func TestAcc_Experimental_TagAssociation_SafeDestroy(t *testing.T) {
 						Config:                   config.FromModels(t, tagAssociationModel),
 					},
 					{
-						ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+						ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
 						PreConfig:                preDestroy,
-						Config:                   config.FromModels(t, tagAssociationModel),
+						Config:                   config.FromModels(t, disabledProviderModel, tagAssociationModel),
 						Destroy:                  true,
 						ExpectError:              regexp.MustCompile("does not exist or not authorized"),
 					},
 					{
-						ProtoV6ProviderFactories: tagAssociationSafeDestroyProviderFactory,
-						Config:                   config.FromModels(t, experimentProviderModel, tagAssociationModel),
+						ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+						Config:                   config.FromModels(t, tagAssociationModel),
 						Destroy:                  true,
 					},
 				},

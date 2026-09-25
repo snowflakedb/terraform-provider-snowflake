@@ -7,8 +7,6 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
@@ -50,8 +48,6 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 	newComment := random.Comment()
 
 	storageIntegrationAzureModelNoAttributes := model.StorageIntegrationAzure("w", id.Name(), azureTenantId, false, allowedLocations)
-	storageIntegrationAzureModelNoAttributesUsePrivatelinkEndpointExplicit := model.StorageIntegrationAzure("w", id.Name(), azureTenantId, false, allowedLocations).
-		WithUsePrivatelinkEndpoint("false")
 
 	storageIntegrationAzureAllAttributes := model.StorageIntegrationAzure("w", id.Name(), azureTenantId, false, allowedLocations).
 		WithStorageBlockedLocations(blockedLocations).
@@ -110,22 +106,19 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 				ResourceName:      storageIntegrationAzureModelNoAttributes.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
-				// use_privatelink_endpoint is ignored because IMPORT_BOOLEAN_DEFAULT experiment is not enabled
-				// in this test
-				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
 				ImportStateCheck: assertThatImport(
 					t,
 					resourceassert.ImportedStorageIntegrationAzureResource(t, id.Name()).
-						HasUsePrivatelinkEndpointString(r.BooleanFalse),
+						HasUsePrivatelinkEndpointString(r.BooleanDefault),
 				),
 			},
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(storageIntegrationAzureModelNoAttributesUsePrivatelinkEndpointExplicit.ResourceReference(), plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(storageIntegrationAzureModelNoAttributes.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Config: config.FromModels(t, storageIntegrationAzureModelNoAttributesUsePrivatelinkEndpointExplicit),
+				Config: config.FromModels(t, storageIntegrationAzureModelNoAttributes),
 			},
 			// DESTROY
 			{
@@ -214,13 +207,10 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 				ResourceName:      storageIntegrationAzureAllAttributesChanged.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
-				// use_privatelink_endpoint is ignored because IMPORT_BOOLEAN_DEFAULT experiment is not enabled
-				// in this test
-				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
 				ImportStateCheck: assertThatImport(
 					t,
 					resourceassert.ImportedStorageIntegrationAzureResource(t, id.Name()).
-						HasUsePrivatelinkEndpointString(r.BooleanFalse),
+						HasUsePrivatelinkEndpointString(r.BooleanDefault),
 				),
 			},
 			// UNSET ALL
@@ -332,8 +322,8 @@ func TestAcc_StorageIntegrationAzure_CompleteUseCase(t *testing.T) {
 				),
 			},
 			// Import - with all optionals.
-			// use_privatelink_endpoint is ignored because IMPORT_BOOLEAN_DEFAULT experiment is not enabled
-			// in this test
+			// use_privatelink_endpoint is ignored because import sets it to "default" while the
+			// configuration has an explicit value.
 			{
 				Config:                  config.FromModels(t, storageIntegrationAzureAllAttributes),
 				ResourceName:            ref,
@@ -359,9 +349,6 @@ func TestAcc_StorageIntegrationAzure_Import(t *testing.T) {
 	}
 	comment := random.Comment()
 
-	providerModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportBooleanDefault)
-
 	basicStorageIntegrationAzureModel := model.StorageIntegrationAzure("w1", basicId.Name(), azureTenantId, false, allowedLocations)
 
 	completeStorageIntegrationAzureModel := model.StorageIntegrationAzure("w2", completeId.Name(), azureTenantId, false, allowedLocations).
@@ -385,7 +372,7 @@ func TestAcc_StorageIntegrationAzure_Import(t *testing.T) {
 	t.Cleanup(storageIntegrationCleanup)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: importBooleanDefaultProviderFactory,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -393,7 +380,7 @@ func TestAcc_StorageIntegrationAzure_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Import basic object
 			{
-				Config:             config.FromModels(t, providerModel, basicStorageIntegrationAzureModel),
+				Config:             config.FromModels(t, basicStorageIntegrationAzureModel),
 				ResourceName:       basicRef,
 				ImportState:        true,
 				ImportStateId:      basicId.FullyQualifiedName(),
@@ -401,7 +388,7 @@ func TestAcc_StorageIntegrationAzure_Import(t *testing.T) {
 			},
 			// Import complete object
 			{
-				Config:             config.FromModels(t, providerModel, basicStorageIntegrationAzureModel, completeStorageIntegrationAzureModel),
+				Config:             config.FromModels(t, basicStorageIntegrationAzureModel, completeStorageIntegrationAzureModel),
 				ResourceName:       completeRef,
 				ImportState:        true,
 				ImportStateId:      completeId.FullyQualifiedName(),
@@ -409,7 +396,7 @@ func TestAcc_StorageIntegrationAzure_Import(t *testing.T) {
 			},
 			// Expect empty plan
 			{
-				Config: config.FromModels(t, providerModel, basicStorageIntegrationAzureModel, completeStorageIntegrationAzureModel),
+				Config: config.FromModels(t, basicStorageIntegrationAzureModel, completeStorageIntegrationAzureModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),

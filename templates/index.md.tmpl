@@ -14,7 +14,7 @@ Please follow [creating issues guidelines](https://github.com/snowflakedb/terraf
 
 # Snowflake Provider
 
-~> **Disclaimer** The project is in GA version, but some features are in preview. Such resources and data sources are considered preview features in the provider, regardless of their state in Snowflake. We do not guarantee their stability. They will be reworked and marked as a stable feature in future releases. Breaking changes in these features are expected, even without bumping the major version. They are disabled by default. To use them, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). The list of preview features is available below. Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions. You can also use [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) to alter the provider's behavior. **It's still considered a preview feature, even when applied to the stable resources.**
+~> **Disclaimer** The project is in GA version, but some features are in preview. Such resources and data sources are considered preview features in the provider, regardless of their state in Snowflake. We do not guarantee their stability. They will be reworked and marked as a stable feature in future releases. Breaking changes in these features are expected, even without bumping the major version. They are disabled by default. To use them, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). The list of preview features is available below. Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions. You can also use [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) to opt into experiments that alter the provider's behavior; those opt-in experiments are still considered preview, even when applied to stable resources. Experiments that are enabled by default are no longer preview: they are the provider's current default behavior, with an opt-out via [`experimental_features_disabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_disabled-1).
 
 ~> **Note** Please check the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md) when changing the version of the provider.
 
@@ -403,8 +403,9 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 ## Experimental features
 
 Experiments alter the provider behavior.
-Similarly to preview features, they are not yet stable features of the provider.
-Enabling the given experiment is still considered a preview feature, even when applied to the stable resource.
-Successful experiments can become default provider behavior in a minor release: they start as opt-in (`experimental_features_enabled`), then are enabled by default with a two-minor-version opt-out (`experimental_features_disabled`), then are promoted (or discontinued). Promoted and discontinued names remain accepted no-ops until the next major version.
+
+**Opt-in** experiments (`experimental_features_enabled`) are not yet stable; enabling one is still considered a preview feature, even when applied to a stable resource.
+
+**Enabled by default** experiments are the provider's current default behavior. They are no longer preview features. You can opt out for two minor versions via `experimental_features_disabled`, after which they are promoted (or discontinued). Promoted and discontinued names remain accepted no-ops until the next major version.
 
 {{ index (split (codefile "" "examples/additional/experimental_features.MD") "```") 1 | trimspace }}

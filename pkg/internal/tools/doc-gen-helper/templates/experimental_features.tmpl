@@ -1,4 +1,6 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/tools/doc-gen-helper.ExperimentalFeatures*/ -}}
+Opt-in experiments are not yet stable; enabling one is still considered a preview feature, even when applied to a stable resource. Experiments that are enabled by default are the provider's current default behavior (opt out via `experimental_features_disabled`) and are no longer preview.
+
 Experiments follow a short lifecycle so successful changes can become default provider behavior in a minor release:
 
 1. **Opt-in** — opt-in via `experimental_features_enabled`.
@@ -20,7 +22,7 @@ To share feedback please reach out to us through your Snowflake account manager.
 {{ end }}
 {{ if gt (len .EnabledByDefaultExperiments) 0 }}### Experiments enabled by default
 
-The following experiments are enabled by default. You can opt out by listing them in `experimental_features_disabled`. They will be promoted to default provider behavior (and the opt-out removed) in the listed versions.
+The following experiments are enabled by default. They are the provider's current default behavior and are no longer preview features. You can opt out by listing them in `experimental_features_disabled`. They will be promoted (and the opt-out removed) in the listed versions.
 
 To share feedback please reach out to us through your Snowflake account manager.
 {{ range .EnabledByDefaultExperiments }}

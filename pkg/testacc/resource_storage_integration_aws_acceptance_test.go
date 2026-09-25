@@ -7,8 +7,6 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	tfjson "github.com/hashicorp/terraform-json"
 
@@ -56,8 +54,6 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 	externalId3 := "new-external-id"
 
 	storageIntegrationAwsModelNoAttributes := model.StorageIntegrationAws("w", id.Name(), false, allowedLocations, awsRoleArn, string(sdk.RegularS3Protocol))
-	storageIntegrationAwsModelNoAttributesUsePrivatelinkEndpointExplicit := model.StorageIntegrationAws("w", id.Name(), false, allowedLocations, awsRoleArn, string(sdk.RegularS3Protocol)).
-		WithUsePrivatelinkEndpoint("false")
 
 	storageIntegrationAwsAllAttributes := model.StorageIntegrationAws("w", id.Name(), false, allowedLocations, awsRoleArn, string(sdk.RegularS3Protocol)).
 		WithStorageBlockedLocations(blockedLocations).
@@ -130,22 +126,19 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 				ResourceName:      storageIntegrationAwsModelNoAttributes.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
-				// use_privatelink_endpoint is ignored because IMPORT_BOOLEAN_DEFAULT experiment is not enabled
-				// in this test
-				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
 				ImportStateCheck: assertThatImport(
 					t,
 					resourceassert.ImportedStorageIntegrationAwsResource(t, id.Name()).
-						HasUsePrivatelinkEndpointString(r.BooleanFalse),
+						HasUsePrivatelinkEndpointString(r.BooleanDefault),
 				),
 			},
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(storageIntegrationAwsAllAttributesChanged.ResourceReference(), plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(storageIntegrationAwsModelNoAttributes.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Config: config.FromModels(t, storageIntegrationAwsModelNoAttributesUsePrivatelinkEndpointExplicit),
+				Config: config.FromModels(t, storageIntegrationAwsModelNoAttributes),
 			},
 			// DESTROY
 			{
@@ -399,8 +392,8 @@ func TestAcc_StorageIntegrationAws_CompleteUseCase(t *testing.T) {
 				ResourceName:      complete.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
-				// use_privatelink_endpoint is ignored because IMPORT_BOOLEAN_DEFAULT experiment is not enabled
-				// in this test
+				// use_privatelink_endpoint is ignored because import sets it to "default" while the
+				// configuration has an explicit value.
 				// storage_aws_external_id is not read into state (only handled as an external DESCRIBE change)
 				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint", "storage_aws_external_id"},
 			},
@@ -422,9 +415,6 @@ func TestAcc_StorageIntegrationAws_Import(t *testing.T) {
 	}
 	comment := random.Comment()
 	externalId := "some_external_id"
-
-	providerModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportBooleanDefault)
 
 	basicStorageIntegrationAwsModel := model.StorageIntegrationAws("w1", basicId.Name(), false, allowedLocations, awsRoleArn, string(sdk.RegularS3Protocol))
 
@@ -454,7 +444,7 @@ func TestAcc_StorageIntegrationAws_Import(t *testing.T) {
 	t.Cleanup(storageIntegrationCleanup)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: importBooleanDefaultProviderFactory,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -462,7 +452,7 @@ func TestAcc_StorageIntegrationAws_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Import basic object
 			{
-				Config:             config.FromModels(t, providerModel, basicStorageIntegrationAwsModel),
+				Config:             config.FromModels(t, basicStorageIntegrationAwsModel),
 				ResourceName:       basicRef,
 				ImportState:        true,
 				ImportStateId:      basicId.FullyQualifiedName(),
@@ -470,7 +460,7 @@ func TestAcc_StorageIntegrationAws_Import(t *testing.T) {
 			},
 			// Import complete object
 			{
-				Config:             config.FromModels(t, providerModel, basicStorageIntegrationAwsModel, completeStorageIntegrationAwsModel),
+				Config:             config.FromModels(t, basicStorageIntegrationAwsModel, completeStorageIntegrationAwsModel),
 				ResourceName:       completeRef,
 				ImportState:        true,
 				ImportStateId:      completeId.FullyQualifiedName(),
@@ -478,7 +468,7 @@ func TestAcc_StorageIntegrationAws_Import(t *testing.T) {
 			},
 			// Expect empty plan
 			{
-				Config: config.FromModels(t, providerModel, basicStorageIntegrationAwsModel, completeStorageIntegrationAwsModel),
+				Config: config.FromModels(t, basicStorageIntegrationAwsModel, completeStorageIntegrationAwsModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),

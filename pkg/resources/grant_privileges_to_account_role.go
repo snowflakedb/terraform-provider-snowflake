@@ -95,7 +95,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 			"This means, the flag update doesn't revoke immediately any externally granted privileges.",
 			"This is a Terraform limitation, and two steps are needed to properly show the potential privilege changes (e.g., revoking privileges not specified in the configuration) in the plan.",
 			"External privileges will be detected regardless of their grant option.",
-			"The parameter can be only used when `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` option is specified in provider block in the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) field.",
+			experimentalFeatureEnabledByDefaultDescription(experimentalfeatures.GrantsStrictPrivilegeManagement),
 			"Regular and future grants are treated separately, meaning, more resources need to be defined to control regular and future grants for a given object and role (and for a given database or schema they're defined in for future grants).",
 			"See our [Strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide for more information.",
 		),
@@ -998,7 +998,7 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 
 	strictPrivilegeManagement := d.Get("strict_privilege_management").(bool)
 	if strictPrivilegeManagement && !providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement) {
-		return diag.Errorf("to use `strict_privilege_management`, you need to first specify the `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` feature in the `experimental_features_enabled` field at the provider level")
+		return diag.Errorf("to use `strict_privilege_management`, you need the %q experiment to be enabled. Remove it from the `experimental_features_disabled` list in the provider configuration", experimentalfeatures.GrantsStrictPrivilegeManagement)
 	}
 
 	id, err := ParseGrantPrivilegesToAccountRoleId(d.Id())

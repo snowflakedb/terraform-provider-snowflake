@@ -43,25 +43,39 @@ Promoted and discontinued names stay accepted until the next major version, then
 
 No action is required unless you want to disable an experiment that is enabled by default.
 
-### *(new feature)* `INHERITED_GRANTS` is enabled by default
+### *(new feature)* Experiments enabled by default
 
-The `INHERITED_GRANTS` experiment is now enabled by default. Using an `inherited` block in [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) or [`snowflake_grant_privileges_to_database_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_database_role) no longer requires listing `INHERITED_GRANTS` in `experimental_features_enabled`.
+The following experiments are now enabled by default. Opt out by listing names in [`experimental_features_disabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_disabled-1). Leaving a name in `experimental_features_enabled` is redundant and produces a warning.
 
-Existing configurations without an `inherited` block are unchanged.
+They will be promoted (the opt-out removed) in **v2.23.0** or **v2.24.0**. After promotion, listing the name in either list will be a no-op until the next major version.
 
-To opt out, add `INHERITED_GRANTS` to `experimental_features_disabled`:
+No action is required unless you want to keep the previous behavior for a given experiment.
 
 ```terraform
 provider "snowflake" {
-  experimental_features_disabled = ["INHERITED_GRANTS"]
+  experimental_features_disabled = [
+    "INHERITED_GRANTS",
+    "WAREHOUSE_SHOW_IMPROVED_PERFORMANCE",
+    "GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE",
+    "GRANTS_STRICT_PRIVILEGE_MANAGEMENT",
+    "IMPORT_BOOLEAN_DEFAULT",
+    "GRANTS_IMPORT_VALIDATION",
+    "PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL",
+    "GRANTS_SAFE_DESTROY",
+    "TAG_ASSOCIATION_SAFE_DESTROY",
+  ]
 }
 ```
 
-Leaving `INHERITED_GRANTS` in `experimental_features_enabled` is redundant and produces a warning.
-
-This experiment will be promoted (the opt-out removed) in **v2.23.0** or **v2.24.0**. After promotion, listing the name in either list will be a no-op until the next major version.
-
-No action is required unless you want to disable inherited grants support.
+- **`INHERITED_GRANTS`** — using an `inherited` block in [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) or [`snowflake_grant_privileges_to_database_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_database_role) no longer requires listing the name. Existing configurations without an `inherited` block are unchanged.
+- **`WAREHOUSE_SHOW_IMPROVED_PERFORMANCE`** — warehouse reads use `SHOW WAREHOUSES LIKE '<identifier>' STARTS WITH '<identifier>' LIMIT 1`. Existing warehouse resources keep the same configuration; only the SHOW query used internally changes.
+- **`GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE`** — [`snowflake_grant_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_account_role) treats granting the PUBLIC role as a silent no-op, instead of failing with an inconsistent-result error. Existing configurations that do not grant PUBLIC are unchanged.
+- **`GRANTS_STRICT_PRIVILEGE_MANAGEMENT`** — unlocks the [`strict_privilege_management`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role#strict_privilege_management-1) flag on [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role); the flag itself still defaults to `false`. Existing configurations that do not set the flag are unchanged.
+- **`IMPORT_BOOLEAN_DEFAULT`** — importing stage and stream resources sets boolean fields that use the special `"default"` value to `"default"` instead of the Snowflake-reported value (for example `"false"`). Existing resources already in state are unchanged until they are reimported.
+- **`GRANTS_IMPORT_VALIDATION`** — importing [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) with a fixed `privileges` set validates that those privileges exist in Snowflake with the matching `with_grant_option`. Existing resources already in state are unchanged until they are reimported.
+- **`PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL`** — when a parameter is not set on the object in configuration, the provider ignores value changes coming from a higher hierarchy level (account, database, or schema). Existing configurations that set the parameter on the object are unchanged.
+- **`GRANTS_SAFE_DESTROY`** — destroying a grant resource succeeds silently when the underlying Snowflake object (or its dependencies) no longer exists, instead of failing with `does not exist or not authorized`. Existing grants whose objects still exist are unchanged.
+- **`TAG_ASSOCIATION_SAFE_DESTROY`** — destroying [`snowflake_tag_association`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag_association) succeeds silently when the tagged object (or its parent hierarchy) no longer exists. Existing tag associations whose objects still exist are unchanged.
 
 ### *(new feature)* `execute_as_user` on `snowflake_task`
 

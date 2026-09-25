@@ -22,7 +22,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -81,8 +80,8 @@ func TestAcc_Task_ProveCurrentDriftBehavior(t *testing.T) {
 
 	taskModel := model.TaskWithId("test", id, false, statement)
 	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary)
-	providerModelWithFeatureEnabled := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary).
-		WithExperimentalFeaturesEnabled(experimentalfeatures.ParametersIgnoreValueChangesIfNotOnObjectLevel)
+	providerModelWithFeatureDisabled := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary).
+		WithAllEnabledByDefaultExperimentsDisabled()
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
@@ -91,7 +90,7 @@ func TestAcc_Task_ProveCurrentDriftBehavior(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, providerModel, taskModel),
+				Config: config.FromModels(t, providerModelWithFeatureDisabled, taskModel),
 				Check: assertThat(
 					t,
 					resourceassert.TaskResource(t, taskModel.ResourceReference()).
@@ -104,7 +103,7 @@ func TestAcc_Task_ProveCurrentDriftBehavior(t *testing.T) {
 					revertParameter := secondaryTestClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterStatementTimeoutInSeconds, "43200")
 					t.Cleanup(revertParameter)
 				},
-				Config: config.FromModels(t, providerModel, taskModel),
+				Config: config.FromModels(t, providerModelWithFeatureDisabled, taskModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(taskModel.ResourceReference(), plancheck.ResourceActionNoop),
@@ -120,13 +119,13 @@ func TestAcc_Task_ProveCurrentDriftBehavior(t *testing.T) {
 				),
 				ExpectError: regexp.MustCompile(`(?s)After applying this test step, the non-refresh plan was not empty.*~ update in-place.*# snowflake_task.test will be updated in-place.*~ statement_timeout_in_seconds\s+=\s+43200 -> \(known after apply\)`),
 			},
-			// one more time but with the experimental feature enabled
+			// one more time but with the experimental feature enabled (default)
 			{
 				PreConfig: func() {
 					revertParameter := secondaryTestClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterStatementTimeoutInSeconds, "43200")
 					t.Cleanup(revertParameter)
 				},
-				Config: config.FromModels(t, providerModelWithFeatureEnabled, taskModel),
+				Config: config.FromModels(t, providerModel, taskModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(taskModel.ResourceReference(), plancheck.ResourceActionNoop),

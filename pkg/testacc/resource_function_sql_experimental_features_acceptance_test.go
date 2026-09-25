@@ -12,7 +12,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -36,11 +35,10 @@ func TestAcc_FunctionSql_ParametersIgnoreValueChangesIfNotOnObjectLevel(t *testi
 
 	functionModel := model.FunctionSqlBasicInline("test", id, definition, dataType.ToLegacyDataTypeSql()).
 		WithArgument(argName, dataType)
-	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary).
-		WithExperimentalFeaturesEnabled(experimentalfeatures.ParametersIgnoreValueChangesIfNotOnObjectLevel)
+	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: providerFactoryUsingCache("TestAcc_FunctionSql_ParametersIgnoreValueChangesIfNotOnObjectLevel"),
+		ProtoV6ProviderFactories: secondaryAccountProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

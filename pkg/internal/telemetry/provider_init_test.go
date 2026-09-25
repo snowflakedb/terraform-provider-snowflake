@@ -50,7 +50,7 @@ func Test_providerInitFields(t *testing.T) {
 	got := providerInitFields(providerCtx)
 	require.Equal(t, string(experimentalfeatures.HierarchyRenames), got["experimental_features_enabled"])
 	require.Equal(t, string(experimentalfeatures.WarehouseShowImprovedPerformance), got["experimental_features_disabled"])
-	require.Equal(t, "HIERARCHY_RENAMES,INHERITED_GRANTS", got["experimental_features_effective_enabled"])
+	require.Equal(t, "GRANTS_IMPORT_VALIDATION,GRANTS_SAFE_DESTROY,GRANTS_STRICT_PRIVILEGE_MANAGEMENT,GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE,HIERARCHY_RENAMES,IMPORT_BOOLEAN_DEFAULT,INHERITED_GRANTS,PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL,TAG_ASSOCIATION_SAFE_DESTROY", got["experimental_features_effective_enabled"])
 	require.Equal(t, string(previewfeatures.AlertResource), got["preview_features_enabled"])
 	require.Equal(t, runtime.GOOS, got["os"])
 	require.Equal(t, runtime.GOARCH, got["arch"])

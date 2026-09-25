@@ -54,22 +54,15 @@ var (
 	// dedicated (isolated) session rather than the shared default one to avoid leaking that state into other tests.
 	interactiveWarehouseProviderFactory, interactiveWarehouseProvider = providerFactoryUsingCacheReturningProvider("InteractiveWarehouse")
 	explicitAccountAdminRoleProviderFactory                           = providerFactoryUsingCache("ExplicitAccountAdminRole")
-	strictPrivilegeManagementGrantProviderFactory                     = providerFactoryUsingCache("StrictPrivilegeManagementGrantProvider")
-	grantsImportValidationProviderFactory                             = providerFactoryUsingCache("GrantsImportValidationProvider")
-	grantsImportValidationAndStrictProviderFactory                    = providerFactoryUsingCache("GrantsImportValidationAndStrictProvider")
 	userEnableDefaultWorkloadIdentityProviderFactory                  = providerFactoryUsingCache("UserEnableDefaultWorkloadIdentity")
 	s3StageProviderFactory                                            = providerFactoryUsingCache("StageExternalS3")
-	grantsSafeDestroyProviderFactory                                  = providerFactoryUsingCache("GrantsSafeDestroy")
-	tagAssociationSafeDestroyProviderFactory                          = providerFactoryUsingCache("TagAssociationSafeDestroy")
-	grantAccountRoleSafePublicRoleProviderFactory                     = providerFactoryUsingCache("GrantAccountRoleSafePublicRole")
+	enabledByDefaultExperimentsDisabledProviderFactory                = providerFactoryUsingCache("EnabledByDefaultExperimentsDisabled")
 	objectParameterUnsetOnDeleteProviderFactory                       = providerFactoryUsingCache("ObjectParameterUnsetOnDelete")
 	grantAccountRoleShowCachingProviderFactory                        = providerFactoryUsingCache("GrantAccountRoleShowCaching")
 	accountRoleShowCachingProviderFactory                             = providerFactoryUsingCache("AccountRoleShowCaching")
 	grantsShowCachingProviderFactory                                  = providerFactoryUsingCache("GrantsShowCaching")
-	importBooleanDefaultProviderFactory                               = providerFactoryUsingCache("ImportBooleanDefault")
 	experimentalHierarchyRenamesProviderFactory                       = providerFactoryUsingCache("ExperimentalHierarchyRenames")
 	activeWarehouseSetOnUserProviderFactory                           = providerFactoryUsingCache("ActiveWarehouseSetOnUser")
-	inheritedGrantsDisabledProviderFactory                            = providerFactoryUsingCache("InheritedGrantsDisabledProvider")
 )
 
 // TODO [SNOW-2661409]: secondary account can have also a different configuration, so for now we need to be careful; let's add some hash check for the config or something else to mitigate

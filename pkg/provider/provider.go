@@ -413,7 +413,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 				Type:             schema.TypeString,
 				ValidateDiagFunc: validators.StringInSlice(experimentalfeatures.AllExperimentalFeatureNames, true),
 			},
-			Description: fmt.Sprintf("A list of experimental features to enable. Similarly to preview features, they are not yet stable features of the provider. Enabling given experiment is still considered a preview feature, even when applied to the stable resource. These switches offer experiments altering the provider behavior. This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Opt-in experiments you can enable are: %v. Names of experiments that are enabled by default, promoted, or discontinued are still accepted (listing them is redundant or a no-op; see the experimental features section).", docs.PossibleValuesListed(experimentalfeatures.OptInExperimentalFeatureNames)),
+			Description: fmt.Sprintf("A list of opt-in experimental features to enable. Opt-in experiments are not yet stable; enabling one is still considered a preview feature, even when applied to a stable resource. Experiments that are already enabled by default are not preview — listing them here is redundant. These switches offer experiments altering the provider behavior. This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Opt-in experiments you can enable are: %v. Names of experiments that are enabled by default, promoted, or discontinued are still accepted (listing them is redundant or a no-op; see the experimental features section).", docs.PossibleValuesListed(experimentalfeatures.OptInExperimentalFeatureNames)),
 		},
 		"experimental_features_disabled": {
 			Type:     schema.TypeSet,
@@ -422,7 +422,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 				Type:             schema.TypeString,
 				ValidateDiagFunc: validators.StringInSlice(experimentalfeatures.AcceptedInDisabledExperimentalFeatureNames, true),
 			},
-			Description: fmt.Sprintf("A list of experimental features to disable. Use this to opt out of experiments that are enabled by default. This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Experiments you can disable are: %v. Promoted and discontinued experiment names are still accepted as no-ops.", docs.PossibleValuesListed(experimentalfeatures.EnabledByDefaultExperimentalFeatureNames)),
+			Description: fmt.Sprintf("A list of experimental features to disable. Use this to opt out of experiments that are enabled by default (current default behavior, not preview features). This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Experiments you can disable are: %v. Promoted and discontinued experiment names are still accepted as no-ops.", docs.PossibleValuesListed(experimentalfeatures.EnabledByDefaultExperimentalFeatureNames)),
 		},
 		"skip_toml_file_permission_verification": {
 			Type:        schema.TypeBool,

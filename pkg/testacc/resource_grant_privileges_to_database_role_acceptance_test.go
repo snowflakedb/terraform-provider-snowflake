@@ -15,7 +15,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -927,7 +926,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_Inherited_Validation_MissingExperimen
 
 	databaseId := testClient().Ids.DatabaseId()
 	providerModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesDisabled(experimentalfeatures.InheritedGrants)
+		WithAllEnabledByDefaultExperimentsDisabled()
 	onSchemaObjectModel := model.GrantPrivilegesToDatabaseRole("test", databaseRole.ID().FullyQualifiedName()).
 		WithSchemaObjectPrivileges(sdk.SchemaObjectPrivilegeSelect).
 		WithOnInheritedSchemaObjectsInDatabase(sdk.PluralObjectTypeTables, databaseId)
@@ -936,7 +935,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_Inherited_Validation_MissingExperimen
 		WithOnInheritedSchemasInDatabase(databaseId)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: inheritedGrantsDisabledProviderFactory,
+		ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

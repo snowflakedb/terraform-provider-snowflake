@@ -12,11 +12,9 @@ With this change, we removed the possibility to specify the `enable_multiple_gra
 We wanted to bring back this option to allow you to specify whether resource should revoke any privileges granted externally.
 This functionality was added as `strict_privilege_management` flag that, for now, only exists in the [grant_privileges_to_account_role](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) resource.
 
-It's not enabled by default and to use it, you have to enable this feature on the provider level
-by adding `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` value to the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) provider field.
-It's similar to the existing [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.10.0/docs#preview_features_enabled-1),
-but instead of enabling the use of the whole resources, it's meant to slightly alter the provider's behavior.
-**It's still considered a preview feature, even when applied to the stable resources.**
+The `strict_privilege_management` flag still defaults to `false`. Set it to `true` on the resource to use it.
+The `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` experiment that unlocks this flag is enabled by default.
+To opt out, add `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` to [`experimental_features_disabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_disabled-1).
 
 Related feature request: [#3973](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3973)
 
@@ -27,10 +25,6 @@ We want to ensure the role has a list of configured privileges set on the databa
 no other privilege should be available for this role on this database. Now, we could fulfill such requirement with the following configuration:
 
 ```terraform
-provider "snowflake" {
-  experimental_features_enabled = [ "GRANTS_STRICT_PRIVILEGE_MANAGEMENT" ]
-}
-
 resource "snowflake_grant_privileges_to_account_role" "test" {
   account_role_name = "TEST_ROLE"
   privileges = [ "MODIFY", "MONITOR" ]
@@ -83,10 +77,6 @@ A similar conflict (but in a different form) would appear when only one of those
 Below example shows such conflict:
 
 ```terraform
-provider "snowflake" {
-  experimental_features_enabled = [ "GRANTS_STRICT_PRIVILEGE_MANAGEMENT" ]
-}
-
 resource "snowflake_grant_privileges_to_account_role" "conflicting_1" {
   account_role_name = "TEST_ROLE"
   privileges = [ "MODIFY" ]
@@ -136,10 +126,6 @@ You can then use a parent role that includes the privileges from both of these r
 Below example shows this could be represented within Terraform configuration:
 
 ```terraform
-provider "snowflake" {
-  experimental_features_enabled = [ "GRANTS_STRICT_PRIVILEGE_MANAGEMENT" ]
-}
-
 resource "snowflake_account_role" "parent" {
   name = "TEST_ROLE_PARENT" 
 }

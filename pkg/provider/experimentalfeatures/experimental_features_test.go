@@ -15,8 +15,8 @@ func Test_Experiments_IsEnabled(t *testing.T) {
 		expected    bool
 	}
 
-	feature := WarehouseShowImprovedPerformance
-	lowercaseFeature := ExperimentalFeature(strings.ToLower(string(WarehouseShowImprovedPerformance)))
+	feature := HierarchyRenames
+	lowercaseFeature := ExperimentalFeature(strings.ToLower(string(HierarchyRenames)))
 
 	listWithFeature := []string{string(feature)}
 	listWithFeatureLowercase := []string{string(lowercaseFeature)}
@@ -45,6 +45,14 @@ func Test_Experiments_IsEnabled(t *testing.T) {
 
 	t.Run("default-on experiment is enabled without being listed", func(t *testing.T) {
 		require.True(t, New(nil, nil).IsEnabled(InheritedGrants))
+		require.True(t, New(nil, nil).IsEnabled(WarehouseShowImprovedPerformance))
+		require.True(t, New(nil, nil).IsEnabled(GrantAccountRoleSafePublicRole))
+		require.True(t, New(nil, nil).IsEnabled(GrantsStrictPrivilegeManagement))
+		require.True(t, New(nil, nil).IsEnabled(ImportBooleanDefault))
+		require.True(t, New(nil, nil).IsEnabled(GrantsImportValidation))
+		require.True(t, New(nil, nil).IsEnabled(ParametersIgnoreValueChangesIfNotOnObjectLevel))
+		require.True(t, New(nil, nil).IsEnabled(GrantsSafeDestroy))
+		require.True(t, New(nil, nil).IsEnabled(TagAssociationSafeDestroy))
 	})
 
 	t.Run("default-on experiment can be disabled", func(t *testing.T) {
@@ -59,7 +67,7 @@ func Test_Experiments_IsEnabled(t *testing.T) {
 
 func Test_Experiments_UserLists(t *testing.T) {
 	enabled := []string{string(HierarchyRenames)}
-	disabled := []string{string(InheritedGrants)}
+	disabled := []string{string(InheritedGrants), string(WarehouseShowImprovedPerformance), string(GrantAccountRoleSafePublicRole), string(GrantsStrictPrivilegeManagement), string(ImportBooleanDefault), string(GrantsImportValidation), string(ParametersIgnoreValueChangesIfNotOnObjectLevel), string(GrantsSafeDestroy), string(TagAssociationSafeDestroy)}
 	experiments := New(enabled, disabled)
 
 	gotEnabled := experiments.UserEnabled()
@@ -90,19 +98,19 @@ func Test_ConstructorsAssignState(t *testing.T) {
 	defaultOn := NewEnabledByDefaultExperiment("DEFAULT_EXP", []string{"v2.23.0", "v2.24.0"}, "part one", "part two")
 	require.Equal(t, ExperimentalFeature("DEFAULT_EXP"), defaultOn.Name())
 	require.Equal(t, ExperimentalFeatureStateEnabledByDefault, defaultOn.state)
-	require.Equal(t, "part one\n\npart two\n\nIt will be promoted in v2.23.0 or v2.24.0.", defaultOn.Description())
+	require.Equal(t, "part one\n\npart two\n\n"+enabledByDefaultOptOutDescription+"\n\nIt will be promoted in v2.23.0 or v2.24.0.", defaultOn.Description())
 	require.Equal(t, []string{"v2.23.0", "v2.24.0"}, defaultOn.removeInVersions)
 	require.Equal(t, "v2.23.0 or v2.24.0", defaultOn.RemoveInVersionsPhrase())
 
 	defaultOnNoVersions := NewEnabledByDefaultExperiment("DEFAULT_EXP_NO_VERSIONS", nil, "only body")
-	require.Equal(t, "only body", defaultOnNoVersions.Description())
+	require.Equal(t, "only body\n\n"+enabledByDefaultOptOutDescription, defaultOnNoVersions.Description())
 
 	oneVersion := NewEnabledByDefaultExperiment("ONE", []string{"v2.23.0"}, "body")
-	require.Equal(t, "body\n\nIt will be promoted in v2.23.0.", oneVersion.Description())
+	require.Equal(t, "body\n\n"+enabledByDefaultOptOutDescription+"\n\nIt will be promoted in v2.23.0.", oneVersion.Description())
 	require.Equal(t, "v2.23.0", oneVersion.RemoveInVersionsPhrase())
 
 	threeVersions := NewEnabledByDefaultExperiment("THREE", []string{"v2.23.0", "v2.24.0", "v2.25.0"}, "body")
-	require.Equal(t, "body\n\nIt will be promoted in v2.23.0, v2.24.0, or v2.25.0.", threeVersions.Description())
+	require.Equal(t, "body\n\n"+enabledByDefaultOptOutDescription+"\n\nIt will be promoted in v2.23.0, v2.24.0, or v2.25.0.", threeVersions.Description())
 	require.Equal(t, "v2.23.0, v2.24.0, or v2.25.0", threeVersions.RemoveInVersionsPhrase())
 
 	promoted := NewPromotedExperiment("PROMOTED_EXP")
@@ -126,31 +134,40 @@ func Test_EnabledByDefaultExperimentsHaveRemoveInVersions(t *testing.T) {
 }
 
 func Test_ComputeEffectiveExperimentsEnabled_Public(t *testing.T) {
-	optIn := string(WarehouseShowImprovedPerformance)
-	defaultOn := string(InheritedGrants)
+	optIn := string(HierarchyRenames)
+	warehouse := string(WarehouseShowImprovedPerformance)
+	grantsStrict := string(GrantsStrictPrivilegeManagement)
+	parametersIgnore := string(ParametersIgnoreValueChangesIfNotOnObjectLevel)
+	grantsImport := string(GrantsImportValidation)
+	importBoolean := string(ImportBooleanDefault)
+	grantsSafeDestroy := string(GrantsSafeDestroy)
+	tagAssociationSafeDestroy := string(TagAssociationSafeDestroy)
+	safePublic := string(GrantAccountRoleSafePublicRole)
+	inherited := string(InheritedGrants)
+	allDefaultOn := []string{warehouse, grantsStrict, parametersIgnore, grantsImport, importBoolean, grantsSafeDestroy, tagAssociationSafeDestroy, safePublic, inherited}
 
 	t.Run("empty lists enable default-on experiments only", func(t *testing.T) {
 		got := ComputeEffectiveExperimentsEnabled(nil, nil)
-		require.Equal(t, []string{defaultOn}, got)
+		require.Equal(t, allDefaultOn, got)
 	})
 
 	t.Run("opt-in experiment is included when listed in enabled", func(t *testing.T) {
 		got := ComputeEffectiveExperimentsEnabled([]string{optIn}, nil)
-		require.Equal(t, []string{optIn, defaultOn}, got)
+		require.Equal(t, []string{warehouse, grantsStrict, parametersIgnore, grantsImport, importBoolean, grantsSafeDestroy, tagAssociationSafeDestroy, safePublic, optIn, inherited}, got)
 	})
 
 	t.Run("default-on experiment is excluded when listed in disabled", func(t *testing.T) {
-		got := ComputeEffectiveExperimentsEnabled(nil, []string{defaultOn})
+		got := ComputeEffectiveExperimentsEnabled(nil, allDefaultOn)
 		require.Empty(t, got)
 	})
 
 	t.Run("overlap: disabled wins for default-on experiment", func(t *testing.T) {
-		got := ComputeEffectiveExperimentsEnabled([]string{defaultOn}, []string{defaultOn})
+		got := ComputeEffectiveExperimentsEnabled(allDefaultOn, allDefaultOn)
 		require.Empty(t, got)
 	})
 
 	t.Run("matching is case-insensitive", func(t *testing.T) {
-		got := ComputeEffectiveExperimentsEnabled([]string{strings.ToLower(optIn)}, []string{strings.ToLower(defaultOn)})
-		require.Equal(t, []string{optIn}, got)
+		got := ComputeEffectiveExperimentsEnabled([]string{strings.ToLower(optIn)}, []string{strings.ToLower(inherited)})
+		require.Equal(t, []string{warehouse, grantsStrict, parametersIgnore, grantsImport, importBoolean, grantsSafeDestroy, tagAssociationSafeDestroy, safePublic, optIn}, got)
 	})
 }

@@ -9,7 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -33,8 +32,8 @@ func TestAcc_Experimental_GrantOwnership_SafeDestroy_MissingSchema(t *testing.T)
 		},
 	}}).WithAccountRoleName(role.ID().Name())
 
-	experimentProviderModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
+	disabledProviderModel := providermodel.SnowflakeProvider().
+		WithAllEnabledByDefaultExperimentsDisabled()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -48,16 +47,16 @@ func TestAcc_Experimental_GrantOwnership_SafeDestroy_MissingSchema(t *testing.T)
 			},
 			// Drop the schema externally, then try to destroy without experiment — expect failure.
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
 				PreConfig:                testClient().Schema.DropSchemaFunc(t, schema.ID()),
-				Config:                   config.FromModels(t, grantModel),
+				Config:                   config.FromModels(t, disabledProviderModel, grantModel),
 				Destroy:                  true,
 				ExpectError:              regexp.MustCompile("does not exist or not authorized"),
 			},
-			// Destroy with GRANTS_SAFE_DESTROY experiment — succeeds.
+			// Destroy with GRANTS_SAFE_DESTROY enabled by default — succeeds.
 			{
-				ProtoV6ProviderFactories: grantsSafeDestroyProviderFactory,
-				Config:                   config.FromModels(t, experimentProviderModel, grantModel),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, grantModel),
 				Destroy:                  true,
 			},
 		},
@@ -82,8 +81,8 @@ func TestAcc_Experimental_GrantOwnership_SafeDestroy_MissingDatabase(t *testing.
 		},
 	}}).WithAccountRoleName(role.ID().Name())
 
-	experimentProviderModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
+	disabledProviderModel := providermodel.SnowflakeProvider().
+		WithAllEnabledByDefaultExperimentsDisabled()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -97,16 +96,16 @@ func TestAcc_Experimental_GrantOwnership_SafeDestroy_MissingDatabase(t *testing.
 			},
 			// Drop the database externally, then try to destroy without experiment — expect failure.
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
 				PreConfig:                testClient().Database.DropDatabaseFunc(t, database.ID()),
-				Config:                   config.FromModels(t, grantModel),
+				Config:                   config.FromModels(t, disabledProviderModel, grantModel),
 				Destroy:                  true,
 				ExpectError:              regexp.MustCompile("does not exist or not authorized"),
 			},
-			// Destroy with GRANTS_SAFE_DESTROY experiment — succeeds.
+			// Destroy with GRANTS_SAFE_DESTROY enabled by default — succeeds.
 			{
-				ProtoV6ProviderFactories: grantsSafeDestroyProviderFactory,
-				Config:                   config.FromModels(t, experimentProviderModel, grantModel),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, grantModel),
 				Destroy:                  true,
 			},
 		},

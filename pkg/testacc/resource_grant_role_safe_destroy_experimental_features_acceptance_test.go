@@ -11,7 +11,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -34,8 +33,8 @@ func TestAcc_Experimental_GrantAccountRole_SafeDestroy_MissingParentRole(t *test
 	grantModel := model.GrantAccountRole("test", role.ID().Name()).
 		WithParentRoleName(parentRole.ID().Name())
 
-	experimentProviderModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
+	disabledProviderModel := providermodel.SnowflakeProvider().
+		WithAllEnabledByDefaultExperimentsDisabled()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -49,8 +48,8 @@ func TestAcc_Experimental_GrantAccountRole_SafeDestroy_MissingParentRole(t *test
 			},
 			// Drop the parent role externally and destroy WITHOUT experiment — must error.
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, grantModel),
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
+				Config:                   config.FromModels(t, disabledProviderModel, grantModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.Execute(testClient().Role.DropRoleFunc(t, parentRole.ID())),
@@ -61,7 +60,7 @@ func TestAcc_Experimental_GrantAccountRole_SafeDestroy_MissingParentRole(t *test
 			},
 			// Recreate the parent role, drop it again in PreApply, then destroy with GRANTS_SAFE_DESTROY — succeeds.
 			{
-				ProtoV6ProviderFactories: grantsSafeDestroyProviderFactory,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					testClient().Role.CreateRoleWithIdentifier(t, parentRole.ID())
 				},
@@ -70,7 +69,7 @@ func TestAcc_Experimental_GrantAccountRole_SafeDestroy_MissingParentRole(t *test
 						planchecks.Execute(testClient().Role.DropRoleFunc(t, parentRole.ID())),
 					},
 				},
-				Config:  config.FromModels(t, experimentProviderModel, grantModel),
+				Config:  config.FromModels(t, grantModel),
 				Destroy: true,
 			},
 		},
@@ -90,8 +89,8 @@ func TestAcc_Experimental_GrantAccountRole_SafeDestroy_MissingRole(t *testing.T)
 	grantModel := model.GrantAccountRole("test", role.ID().Name()).
 		WithParentRoleName(parentRole.ID().Name())
 
-	experimentProviderModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
+	disabledProviderModel := providermodel.SnowflakeProvider().
+		WithAllEnabledByDefaultExperimentsDisabled()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -105,8 +104,8 @@ func TestAcc_Experimental_GrantAccountRole_SafeDestroy_MissingRole(t *testing.T)
 			},
 			// Drop the granted role externally WITHOUT experiment — must error.
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, grantModel),
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
+				Config:                   config.FromModels(t, disabledProviderModel, grantModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.Execute(testClient().Role.DropRoleFunc(t, role.ID())),
@@ -117,7 +116,7 @@ func TestAcc_Experimental_GrantAccountRole_SafeDestroy_MissingRole(t *testing.T)
 			},
 			// Recreate the granted role, drop it again in PreApply, then destroy with GRANTS_SAFE_DESTROY — succeeds.
 			{
-				ProtoV6ProviderFactories: grantsSafeDestroyProviderFactory,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					testClient().Role.CreateRoleWithIdentifier(t, role.ID())
 				},
@@ -126,7 +125,7 @@ func TestAcc_Experimental_GrantAccountRole_SafeDestroy_MissingRole(t *testing.T)
 						planchecks.Execute(testClient().Role.DropRoleFunc(t, role.ID())),
 					},
 				},
-				Config:  config.FromModels(t, experimentProviderModel, grantModel),
+				Config:  config.FromModels(t, grantModel),
 				Destroy: true,
 			},
 		},
@@ -146,8 +145,8 @@ func TestAcc_Experimental_GrantDatabaseRole_SafeDestroy_MissingParentRole(t *tes
 	grantModel := model.GrantDatabaseRole("test", dbRole.ID().FullyQualifiedName()).
 		WithParentRoleName(parentRole.ID().Name())
 
-	experimentProviderModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
+	disabledProviderModel := providermodel.SnowflakeProvider().
+		WithAllEnabledByDefaultExperimentsDisabled()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -161,8 +160,8 @@ func TestAcc_Experimental_GrantDatabaseRole_SafeDestroy_MissingParentRole(t *tes
 			},
 			// Drop the parent account role externally WITHOUT experiment — must error.
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, grantModel),
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
+				Config:                   config.FromModels(t, disabledProviderModel, grantModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.Execute(testClient().Role.DropRoleFunc(t, parentRole.ID())),
@@ -173,7 +172,7 @@ func TestAcc_Experimental_GrantDatabaseRole_SafeDestroy_MissingParentRole(t *tes
 			},
 			// Recreate the parent account role, drop it again in PreApply, then destroy with GRANTS_SAFE_DESTROY — succeeds.
 			{
-				ProtoV6ProviderFactories: grantsSafeDestroyProviderFactory,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					testClient().Role.CreateRoleWithIdentifier(t, parentRole.ID())
 				},
@@ -182,7 +181,7 @@ func TestAcc_Experimental_GrantDatabaseRole_SafeDestroy_MissingParentRole(t *tes
 						planchecks.Execute(testClient().Role.DropRoleFunc(t, parentRole.ID())),
 					},
 				},
-				Config:  config.FromModels(t, experimentProviderModel, grantModel),
+				Config:  config.FromModels(t, grantModel),
 				Destroy: true,
 			},
 		},
@@ -202,8 +201,8 @@ func TestAcc_Experimental_GrantDatabaseRole_SafeDestroy_MissingDatabaseRole(t *t
 	grantModel := model.GrantDatabaseRole("test", dbRole.ID().FullyQualifiedName()).
 		WithParentRoleName(parentRole.ID().Name())
 
-	experimentProviderModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
+	disabledProviderModel := providermodel.SnowflakeProvider().
+		WithAllEnabledByDefaultExperimentsDisabled()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -217,8 +216,8 @@ func TestAcc_Experimental_GrantDatabaseRole_SafeDestroy_MissingDatabaseRole(t *t
 			},
 			// Drop the database role externally WITHOUT experiment — must error.
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, grantModel),
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
+				Config:                   config.FromModels(t, disabledProviderModel, grantModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.Execute(testClient().DatabaseRole.CleanupDatabaseRoleFunc(t, dbRole.ID())),
@@ -229,7 +228,7 @@ func TestAcc_Experimental_GrantDatabaseRole_SafeDestroy_MissingDatabaseRole(t *t
 			},
 			// Recreate the database role, drop it again in PreApply, then destroy with GRANTS_SAFE_DESTROY — succeeds.
 			{
-				ProtoV6ProviderFactories: grantsSafeDestroyProviderFactory,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					testClient().DatabaseRole.CreateDatabaseRoleInDatabaseWithName(t, dbRole.ID().DatabaseId(), dbRole.ID().Name())
 				},
@@ -238,7 +237,7 @@ func TestAcc_Experimental_GrantDatabaseRole_SafeDestroy_MissingDatabaseRole(t *t
 						planchecks.Execute(testClient().DatabaseRole.CleanupDatabaseRoleFunc(t, dbRole.ID())),
 					},
 				},
-				Config:  config.FromModels(t, experimentProviderModel, grantModel),
+				Config:  config.FromModels(t, grantModel),
 				Destroy: true,
 			},
 		},
@@ -263,8 +262,8 @@ func TestAcc_Experimental_GrantApplicationRole_SafeDestroy_MissingParentAccountR
 	grantModel := model.GrantApplicationRole("test", appRoleFullName).
 		WithParentAccountRoleName(parentRole.ID().Name())
 
-	experimentProviderModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
+	disabledProviderModel := providermodel.SnowflakeProvider().
+		WithAllEnabledByDefaultExperimentsDisabled()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -278,8 +277,8 @@ func TestAcc_Experimental_GrantApplicationRole_SafeDestroy_MissingParentAccountR
 			},
 			// Drop the parent account role externally WITHOUT experiment — must error.
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, grantModel),
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
+				Config:                   config.FromModels(t, disabledProviderModel, grantModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.Execute(testClient().Role.DropRoleFunc(t, parentRole.ID())),
@@ -290,7 +289,7 @@ func TestAcc_Experimental_GrantApplicationRole_SafeDestroy_MissingParentAccountR
 			},
 			// Recreate the parent account role, drop it again in PreApply, then destroy with GRANTS_SAFE_DESTROY — succeeds.
 			{
-				ProtoV6ProviderFactories: grantsSafeDestroyProviderFactory,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					testClient().Role.CreateRoleWithIdentifier(t, parentRole.ID())
 				},
@@ -299,7 +298,7 @@ func TestAcc_Experimental_GrantApplicationRole_SafeDestroy_MissingParentAccountR
 						planchecks.Execute(testClient().Role.DropRoleFunc(t, parentRole.ID())),
 					},
 				},
-				Config:  config.FromModels(t, experimentProviderModel, grantModel),
+				Config:  config.FromModels(t, grantModel),
 				Destroy: true,
 			},
 		},
@@ -325,8 +324,8 @@ func TestAcc_Experimental_GrantApplicationRole_SafeDestroy_MissingApplication(t 
 	grantModel := model.GrantApplicationRole("test", appRoleFullName).
 		WithParentAccountRoleName(parentRole.ID().Name())
 
-	experimentProviderModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
+	disabledProviderModel := providermodel.SnowflakeProvider().
+		WithAllEnabledByDefaultExperimentsDisabled()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -340,8 +339,8 @@ func TestAcc_Experimental_GrantApplicationRole_SafeDestroy_MissingApplication(t 
 			},
 			// Drop the grantee application externally WITHOUT experiment — must error.
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, grantModel),
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
+				Config:                   config.FromModels(t, disabledProviderModel, grantModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.Execute(testClient().Application.DropApplicationFunc(t, app.ID())),
@@ -352,7 +351,7 @@ func TestAcc_Experimental_GrantApplicationRole_SafeDestroy_MissingApplication(t 
 			},
 			// Recreate the grantee application, drop it again in PreApply, then destroy with GRANTS_SAFE_DESTROY — succeeds.
 			{
-				ProtoV6ProviderFactories: grantsSafeDestroyProviderFactory,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					testClient().Application.CreateApplicationWithIdentifier(t, app.ID(), appPackage.ID(), "v1")
 				},
@@ -361,7 +360,7 @@ func TestAcc_Experimental_GrantApplicationRole_SafeDestroy_MissingApplication(t 
 						planchecks.Execute(testClient().Application.DropApplicationFunc(t, app.ID())),
 					},
 				},
-				Config:  config.FromModels(t, experimentProviderModel, grantModel),
+				Config:  config.FromModels(t, grantModel),
 				Destroy: true,
 			},
 		},

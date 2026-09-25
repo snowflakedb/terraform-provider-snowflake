@@ -103,6 +103,17 @@ func (m *SnowflakeModel) WithExperimentalFeaturesDisabled(experimentalFeatures .
 	return m
 }
 
+// WithAllEnabledByDefaultExperimentsDisabled lists every current ENABLED_BY_DEFAULT experiment in
+// experimental_features_disabled. Pair it with a dedicated factory cache key whose first Configure
+// includes this list (first Configure of a cache key wins).
+func (m *SnowflakeModel) WithAllEnabledByDefaultExperimentsDisabled() *SnowflakeModel {
+	features := make([]experimentalfeatures.ExperimentalFeature, 0, len(experimentalfeatures.EnabledByDefaultExperiments))
+	for _, experiment := range experimentalfeatures.EnabledByDefaultExperiments {
+		features = append(features, experiment.Name())
+	}
+	return m.WithExperimentalFeaturesDisabled(features...)
+}
+
 func (m *SnowflakeModel) AllFields(tmpConfig *helpers.TmpTomlConfig, tmpUser *helpers.TmpServiceUser) *SnowflakeModel {
 	return SnowflakeProvider().
 		WithProfile(tmpConfig.Profile).

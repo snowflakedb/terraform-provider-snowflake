@@ -25,7 +25,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -876,8 +875,8 @@ func TestAcc_StreamOnTable_ExternalStreamTypeChange(t *testing.T) {
 }
 
 // TestAcc_Experimental_StreamOnTable_ImportBooleanDefaults verifies that importing a stream on table
-// without the IMPORT_BOOLEAN_DEFAULT experiment causes a permadiff (non-empty plan), and that enabling
-// the experiment fixes it by setting show_initial_rows to "default" instead of leaving it unset.
+// with IMPORT_BOOLEAN_DEFAULT disabled causes a permadiff (non-empty plan), and that the experiment
+// (enabled by default) fixes it by setting show_initial_rows to "default" instead of leaving it unset.
 // Regression test for https://github.com/snowflakedb/terraform-provider-snowflake/issues/3896.
 func TestAcc_Experimental_StreamOnTable_ImportBooleanDefaults(t *testing.T) {
 	table, tableCleanup := testClient().Table.CreateWithChangeTracking(t)
@@ -885,8 +884,8 @@ func TestAcc_Experimental_StreamOnTable_ImportBooleanDefaults(t *testing.T) {
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	providerModelWithExperiment := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportBooleanDefault)
+	providerModelWithoutExperiment := providermodel.SnowflakeProvider().
+		WithAllEnabledByDefaultExperimentsDisabled()
 
 	streamModel := model.StreamOnTableBase("test", id, table.ID()).
 		WithAppendOnly(r.BooleanFalse)
@@ -905,10 +904,10 @@ func TestAcc_Experimental_StreamOnTable_ImportBooleanDefaults(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.StreamOnTable),
 		Steps: []resource.TestStep{
-			// Import WITHOUT experiment — show_initial_rows is not set during import.
+			// Import with experiment disabled — show_initial_rows is not set during import.
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, streamModel),
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
+				Config:                   config.FromModels(t, providerModelWithoutExperiment, streamModel),
 				ResourceName:             streamModel.ResourceReference(),
 				ImportState:              true,
 				ImportStateId:            id.FullyQualifiedName(),
@@ -918,10 +917,10 @@ func TestAcc_Experimental_StreamOnTable_ImportBooleanDefaults(t *testing.T) {
 				),
 				ImportStatePersist: true,
 			},
-			// Plan WITHOUT experiment — proves the bug: config has "default", state has nil → permadiff.
+			// Plan with experiment disabled — proves the old behavior: config has "default", state has nil → permadiff.
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, streamModel),
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
+				Config:                   config.FromModels(t, providerModelWithoutExperiment, streamModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -932,15 +931,15 @@ func TestAcc_Experimental_StreamOnTable_ImportBooleanDefaults(t *testing.T) {
 			},
 			// Destroy to clear Terraform state before reimporting with the experiment enabled.
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, streamModel),
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
+				Config:                   config.FromModels(t, providerModelWithoutExperiment, streamModel),
 				Destroy:                  true,
 			},
-			// Import WITH experiment — show_initial_rows is set to "default".
+			// Import with experiment enabled (default) — show_initial_rows is set to "default".
 			{
 				PreConfig:                createStream,
-				ProtoV6ProviderFactories: importBooleanDefaultProviderFactory,
-				Config:                   config.FromModels(t, providerModelWithExperiment, streamModel),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, streamModel),
 				ResourceName:             streamModel.ResourceReference(),
 				ImportState:              true,
 				ImportStatePersist:       true,
@@ -950,10 +949,10 @@ func TestAcc_Experimental_StreamOnTable_ImportBooleanDefaults(t *testing.T) {
 					importchecks.TestCheckResourceAttrInstanceState(resourceId, "show_initial_rows", r.BooleanDefault),
 				),
 			},
-			// Plan WITH experiment — proves the fix: config and state both have "default" → no diff.
+			// Plan with experiment enabled (default) — proves the fix: config and state both have "default" → no diff.
 			{
-				ProtoV6ProviderFactories: importBooleanDefaultProviderFactory,
-				Config:                   config.FromModels(t, providerModelWithExperiment, streamModel),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, streamModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),

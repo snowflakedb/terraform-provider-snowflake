@@ -1,3 +1,5 @@
+Opt-in experiments are not yet stable; enabling one is still considered a preview feature, even when applied to a stable resource. Experiments that are enabled by default are the provider's current default behavior (opt out via `experimental_features_disabled`) and are no longer preview.
+
 Experiments follow a short lifecycle so successful changes can become default provider behavior in a minor release:
 
 1. **Opt-in** — opt-in via `experimental_features_enabled`.
@@ -13,27 +15,6 @@ The following experiments can be currently enabled. Depending on the feedback, w
 
 To share feedback please reach out to us through your Snowflake account manager.
 
-#### WAREHOUSE_SHOW_IMPROVED_PERFORMANCE
-It's meant to improve the performance for accounts with many warehouses.
-
-When enabled, it uses a slightly different SHOW query to read warehouse details (`SHOW WAREHOUSES LIKE '<identifier>' STARTS WITH '<identifier>' LIMIT 1`).
-
-This feature is enabled by default on the Snowflake side.
-
-#### GRANTS_STRICT_PRIVILEGE_MANAGEMENT
-The new `strict_privilege_management` flag was added to the `snowflake_grant_privileges_to_account_role` resource.
-
-It has similar behavior to the `enable_multiple_grants` flag present in the old grant resources, and it makes the resource able to detect external changes for privileges other than those present in the configuration which can make the `snowflake_grant_privileges_to_account_role` resource a central point of knowledge privilege management for a given object and role.
-
-Read more in our [strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide.
-
-This feature works independently of the `GRANTS_IMPORT_VALIDATION` flag.
-
-#### PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL
-Currently, not setting the parameter value on the object level can unnecessarily react to external changes to this parameter's value on the higher levels (e.g. not setting `data_retention_time_in_days` on `snowflake_schema` can result in non-empty plan when the parameter value changes on the database/account level).
-
-When enabled, the provider ignores changes to the parameter value happening on the higher hierarchy levels.
-
 #### PARAMETERS_REDUCED_OUTPUT
 Currently, the `parameters` field in various resources contains a verbatim output for the `SHOW PARAMETERS IN <object>` command. One of the fields contained in the output is the `description`. It does not change and is repeated for all objects containing the given parameter. It leads to an excessive output (check e.g., [#3118](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3118)).
 
@@ -46,44 +27,12 @@ The new `default_workload_identity_federation` field was added to the `snowflake
 
 Read more in our [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-workload-identity-federation-support-for-service-users).
 
-#### GRANTS_IMPORT_VALIDATION
-Enables import validation for the `snowflake_grant_privileges_to_account_role` resource.
-
-When enabled, importing a grant resource with a fixed set of privileges (`privileges` field) will validate that the specified privileges actually exist in Snowflake with the correct `with_grant_option` setting, and error immediately if they don't match.
-
-This feature works independently of the `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` flag.
-
 #### TAGS_ALLOW_EMPTY_ALLOWED_VALUES
 Enables behavior changes for the `allowed_values` field in the `snowflake_tag` resource.
 
 When enabled, the three possible states in Snowflake for allowed values will be supported: `nil` (any value is allowed; whenever `allowed_values` are empty), `empty` (no value is allowed; handled by the `no_allowed_values` field), and `set` (all values defined in `allowed_values` are allowed).
 
 Otherwise, the `no_allowed_values` field will be ignored (explicit changes will cause updates, but without any effect) and the `allowed_values` field will follow the old behavior: `nil` (any value is allowed; only available whenever tag resource is created without `allowed_values`), `empty` (no value is allowed; always set when updating from filled `allowed_values` set to empty one or completely removed from config), `set` (all values defined in `allowed_values` are allowed).
-
-#### IMPORT_BOOLEAN_DEFAULT
-Changes import behavior for boolean fields using the special `"default"` value.
-
-When enabled, boolean fields using the special `"default"` value are set to `"default"` during import instead of the actual Snowflake value (e.g., `"false"`). This prevents unavoidable diffs on every plan after import.
-
-Note: this is supported on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`) and stream resources (`snowflake_stream_on_table` and `snowflake_stream_on_view`).
-
-#### GRANTS_SAFE_DESTROY
-When enabled, grant destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists.
-
-Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`, `snowflake_grant_account_role`, `snowflake_grant_database_role`, `snowflake_grant_application_role`, `snowflake_grant_ownership`.
-
-This prevents errors when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.
-
-Without this experiment, destroying such resources fails with `does not exist or not authorized`.
-
-#### TAG_ASSOCIATION_SAFE_DESTROY
-When enabled, tag association destroy operations silently succeed when the tagged object (or its parent hierarchy) no longer exists.
-
-Currently supported by: `snowflake_tag_association`.
-
-This prevents errors when, for example, a table or schema is deleted externally and the corresponding tag association resource is later removed from the Terraform configuration.
-
-Without this experiment, destroying such resources fails with `does not exist or not authorized`.
 
 #### GRANT_ACCOUNT_ROLE_SHOW_CACHING
 Enables per-plan in-memory caching of `SHOW GRANTS OF ROLE` results for the `snowflake_grant_account_role` resource.
@@ -120,13 +69,6 @@ This is a separate flag from `GRANT_ACCOUNT_ROLE_SHOW_CACHING`: enabling this do
 
 Intended for large configurations (thousands of grant resources) where plan and apply time is dominated by redundant `SHOW GRANTS` calls.
 
-#### GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE
-When enabled, `snowflake_grant_account_role` treats granting the PUBLIC role as a silent no-op instead of producing an error.
-
-Snowflake implicitly grants PUBLIC to every role and user (see [Snowflake documentation](https://docs.snowflake.com/en/user-guide/security-access-control-overview#system-defined-roles)), so an explicit `GRANT ROLE PUBLIC` is always a no-op at the SQL level. However, the provider's Read function cannot find the explicit grant via `SHOW GRANTS` and clears the state, causing an inconsistent-result error.
-
-With this experiment, Create, Read, and Delete all treat PUBLIC role grants as permanent fixtures that require no actual SQL.
-
 #### HIERARCHY_RENAMES
 When enabled, allows in-place handling of hierarchy renames and moves for supported resources.
 
@@ -160,9 +102,101 @@ Without this experiment, setting the `account` field in the provider configurati
 
 ### Experiments enabled by default
 
-The following experiments are enabled by default. You can opt out by listing them in `experimental_features_disabled`. They will be promoted to default provider behavior (and the opt-out removed) in the listed versions.
+The following experiments are enabled by default. They are the provider's current default behavior and are no longer preview features. You can opt out by listing them in `experimental_features_disabled`. They will be promoted (and the opt-out removed) in the listed versions.
 
 To share feedback please reach out to us through your Snowflake account manager.
+
+#### WAREHOUSE_SHOW_IMPROVED_PERFORMANCE
+It's meant to improve the performance for accounts with many warehouses.
+
+When enabled, it uses a slightly different SHOW query to read warehouse details (`SHOW WAREHOUSES LIKE '<identifier>' STARTS WITH '<identifier>' LIMIT 1`).
+
+This feature is enabled by default on the Snowflake side.
+
+This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
+
+It will be promoted in v2.23.0 or v2.24.0.
+
+#### GRANTS_STRICT_PRIVILEGE_MANAGEMENT
+The new `strict_privilege_management` flag was added to the `snowflake_grant_privileges_to_account_role` resource.
+
+It has similar behavior to the `enable_multiple_grants` flag present in the old grant resources, and it makes the resource able to detect external changes for privileges other than those present in the configuration which can make the `snowflake_grant_privileges_to_account_role` resource a central point of knowledge privilege management for a given object and role.
+
+Read more in our [strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide.
+
+This feature works independently of the `GRANTS_IMPORT_VALIDATION` flag.
+
+This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
+
+It will be promoted in v2.23.0 or v2.24.0.
+
+#### PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL
+Currently, not setting the parameter value on the object level can unnecessarily react to external changes to this parameter's value on the higher levels (e.g. not setting `data_retention_time_in_days` on `snowflake_schema` can result in non-empty plan when the parameter value changes on the database/account level).
+
+When enabled, the provider ignores changes to the parameter value happening on the higher hierarchy levels.
+
+This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
+
+It will be promoted in v2.23.0 or v2.24.0.
+
+#### GRANTS_IMPORT_VALIDATION
+Enables import validation for the `snowflake_grant_privileges_to_account_role` resource.
+
+When enabled, importing a grant resource with a fixed set of privileges (`privileges` field) will validate that the specified privileges actually exist in Snowflake with the correct `with_grant_option` setting, and error immediately if they don't match.
+
+This feature works independently of the `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` flag.
+
+This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
+
+It will be promoted in v2.23.0 or v2.24.0.
+
+#### IMPORT_BOOLEAN_DEFAULT
+Changes import behavior for boolean fields using the special `"default"` value.
+
+When enabled, boolean fields using the special `"default"` value are set to `"default"` during import instead of the actual Snowflake value (e.g., `"false"`). This prevents unavoidable diffs on every plan after import.
+
+Note: this is supported on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`) and stream resources (`snowflake_stream_on_table` and `snowflake_stream_on_view`).
+
+This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
+
+It will be promoted in v2.23.0 or v2.24.0.
+
+#### GRANTS_SAFE_DESTROY
+When enabled, grant destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists.
+
+Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`, `snowflake_grant_account_role`, `snowflake_grant_database_role`, `snowflake_grant_application_role`, `snowflake_grant_ownership`.
+
+This prevents errors when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.
+
+Without this experiment, destroying such resources fails with `does not exist or not authorized`.
+
+This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
+
+It will be promoted in v2.23.0 or v2.24.0.
+
+#### TAG_ASSOCIATION_SAFE_DESTROY
+When enabled, tag association destroy operations silently succeed when the tagged object (or its parent hierarchy) no longer exists.
+
+Currently supported by: `snowflake_tag_association`.
+
+This prevents errors when, for example, a table or schema is deleted externally and the corresponding tag association resource is later removed from the Terraform configuration.
+
+Without this experiment, destroying such resources fails with `does not exist or not authorized`.
+
+This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
+
+It will be promoted in v2.23.0 or v2.24.0.
+
+#### GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE
+When enabled, `snowflake_grant_account_role` treats granting the PUBLIC role as a silent no-op instead of producing an error.
+
+Snowflake implicitly grants PUBLIC to every role and user (see [Snowflake documentation](https://docs.snowflake.com/en/user-guide/security-access-control-overview#system-defined-roles)), so an explicit `GRANT ROLE PUBLIC` is always a no-op at the SQL level. However, the provider's Read function cannot find the explicit grant via `SHOW GRANTS` and clears the state, causing an inconsistent-result error.
+
+With this experiment, Create, Read, and Delete all treat PUBLIC role grants as permanent fixtures that require no actual SQL.
+
+This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
+
+It will be promoted in v2.23.0 or v2.24.0.
 
 #### INHERITED_GRANTS
 Enables the `inherited` block in the `on_account_object`, `on_schema`, and `on_schema_object` blocks of the `snowflake_grant_privileges_to_account_role` resource, and in the `on_schema` and `on_schema_object` blocks of the `snowflake_grant_privileges_to_database_role` resource.
