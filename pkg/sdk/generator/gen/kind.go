@@ -2,6 +2,12 @@ package gen
 
 import "reflect"
 
+const (
+	KindBool   = "bool"
+	KindInt    = "int"
+	KindString = "string"
+)
+
 func KindOfT[T any]() string {
 	t := reflect.TypeFor[T]()
 	return t.Name()

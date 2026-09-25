@@ -9,5 +9,6 @@ type (
 	ForeignKeyOnAction     struct{}
 	InlineForeignKey       struct{}
 	OutOfLineForeignKey    struct{}
+	StringAllowEmpty       struct{}
 	TableContact           struct{}
 )

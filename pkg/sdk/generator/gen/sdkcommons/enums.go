@@ -3,12 +3,14 @@ package sdkcommons
 type (
 	ColumnConstraintType                                     string
 	WarehouseGeneration                                      string
+	WarehouseSize                                            string
 	AutoEventLogging                                         string
 	ComputePoolInstanceFamily                                string
 	DataType                                                 string
 	ImageRepositoryEncryptionType                            string
 	LogLevel                                                 string
 	MetricLevel                                              string
+	StorageSerializationPolicy                               string
 	NullInputBehavior                                        string
 	ReturnNullValues                                         string
 	ReturnResultsBehavior                                    string

@@ -17,3 +17,26 @@ client *Client
 {{ template "implementationFunctions" . }}
 
 {{ template "implementationMappings" . }}
+{{- if .ParametersDetails }}
+
+func to{{ .NameSingular }}ParametersDetails(params []*Parameter) (*{{ .NameSingular }}ParametersDetails, error) {
+	byKey := parametersByKey(params)
+	var d {{ .NameSingular }}ParametersDetails
+	if err := errors.Join(
+	{{- range .ParametersDetails.Fields }}
+		fillTypedParameter(byKey["{{ .Key }}"], {{ .Parser }}, &d.{{ .FieldName }}),
+	{{- end }}
+	); err != nil {
+		return nil, err
+	}
+	return &d, nil
+}
+
+func (v *{{ .NameLowerCased }}) ShowParametersDetails(ctx context.Context, id {{ .IdentifierKind }}) (*{{ .NameSingular }}ParametersDetails, error) {
+	params, err := v.ShowParameters(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return to{{ .NameSingular }}ParametersDetails(params)
+}
+{{- end }}

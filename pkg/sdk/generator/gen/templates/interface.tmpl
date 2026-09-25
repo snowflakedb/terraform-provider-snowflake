@@ -47,3 +47,11 @@ type {{ .Name }} interface {
 		{{ .Name }}(ctx context.Context{{ range .Parameters }}, {{ .Name }} {{ .Kind }}{{ end }}){{ if eq (len .ReturnTypes) 1 }} {{ index .ReturnTypes 0 }}{{ else if gt (len .ReturnTypes) 1 }} ({{ join .ReturnTypes ", " }}){{ end }}
 	{{- end }}
 }
+{{ if .ParametersDetails }}
+// {{ .NameSingular }}ParametersDetails holds the object's parameters with values parsed into their Go types.
+type {{ .NameSingular }}ParametersDetails struct {
+{{- range .ParametersDetails.Fields }}
+	{{ .FieldName }} TypedParameter[{{ .GoType }}]
+{{- end }}
+}
+{{- end }}
