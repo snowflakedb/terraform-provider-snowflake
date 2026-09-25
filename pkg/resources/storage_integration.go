@@ -132,7 +132,7 @@ var storageIntegrationSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE STORAGE INTEGRATION` for the given storage integration.",
 		Elem: &schema.Resource{
-			Schema: schemas.DescribeStorageIntegrationSchema,
+			Schema: schemas.DescribeStorageIntegrationDetailsSchema,
 		},
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,

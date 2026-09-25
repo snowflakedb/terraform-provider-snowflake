@@ -91,3 +91,38 @@ func (v AuthenticationPolicyDetails) GetSecurityIntegrations() ([]AccountObjectI
 	}
 	return ParseCommaSeparatedAccountObjectIdentifierArray(raw.Value)
 }
+
+// AsAuthenticationPolicyDescribe projects DESCRIBE output onto TypeString describe_output columns.
+func AsAuthenticationPolicyDescribe(descriptions []AuthenticationPolicyDescription) *AuthenticationPolicyDescribeDetails {
+	if descriptions == nil {
+		return nil
+	}
+	details := &AuthenticationPolicyDescribeDetails{}
+	for _, description := range descriptions {
+		switch description.Property {
+		case "NAME":
+			details.Name = description.Value
+		case "OWNER":
+			details.Owner = description.Value
+		case "AUTHENTICATION_METHODS":
+			details.AuthenticationMethods = description.Value
+		case "MFA_ENROLLMENT":
+			details.MfaEnrollment = description.Value
+		case "CLIENT_TYPES":
+			details.ClientTypes = description.Value
+		case "SECURITY_INTEGRATIONS":
+			details.SecurityIntegrations = description.Value
+		case "COMMENT":
+			details.Comment = description.Value
+		case "CLIENT_POLICY":
+			details.ClientPolicy = description.Value
+		case "MFA_POLICY":
+			details.MfaPolicy = description.Value
+		case "PAT_POLICY":
+			details.PatPolicy = description.Value
+		case "WORKLOAD_IDENTITY_POLICY":
+			details.WorkloadIdentityPolicy = description.Value
+		}
+	}
+	return details
+}

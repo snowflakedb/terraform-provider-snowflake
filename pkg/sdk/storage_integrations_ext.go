@@ -238,3 +238,43 @@ func parseAllProperties(properties []StorageIntegrationProperty, id AccountObjec
 	}
 	return details, errors.Join(errs...)
 }
+
+// AsStorageIntegrationDescribe projects DESCRIBE output onto the legacy name-keyed resource columns.
+func AsStorageIntegrationDescribe(properties []StorageIntegrationProperty) *StorageIntegrationDetails {
+	if properties == nil {
+		return nil
+	}
+	details := &StorageIntegrationDetails{}
+	for _, property := range properties {
+		p := property
+		switch p.Name {
+		case "ENABLED":
+			details.Enabled = &p
+		case "STORAGE_PROVIDER":
+			details.StorageProvider = &p
+		case "STORAGE_ALLOWED_LOCATIONS":
+			details.StorageAllowedLocations = &p
+		case "STORAGE_BLOCKED_LOCATIONS":
+			details.StorageBlockedLocations = &p
+		case "STORAGE_AWS_IAM_USER_ARN":
+			details.StorageAwsIamUserArn = &p
+		case "STORAGE_AWS_OBJECT_ACL":
+			details.StorageAwsObjectAcl = &p
+		case "STORAGE_AWS_ROLE_ARN":
+			details.StorageAwsRoleArn = &p
+		case "STORAGE_AWS_EXTERNAL_ID":
+			details.StorageAwsExternalId = &p
+		case "STORAGE_GCP_SERVICE_ACCOUNT":
+			details.StorageGcpServiceAccount = &p
+		case "AZURE_CONSENT_URL":
+			details.AzureConsentUrl = &p
+		case "AZURE_MULTI_TENANT_APP_NAME":
+			details.AzureMultiTenantAppName = &p
+		case "USE_PRIVATELINK_ENDPOINT":
+			details.UsePrivatelinkEndpoint = &p
+		case "COMMENT":
+			details.Comment = &p
+		}
+	}
+	return details
+}

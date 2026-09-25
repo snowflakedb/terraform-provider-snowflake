@@ -255,7 +255,7 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE AUTHENTICATION POLICY` for the given policy.",
 		Elem: &schema.Resource{
-			Schema: schemas.AuthenticationPolicyDescribeSchema,
+			Schema: schemas.DescribeAuthenticationPolicyDescribeDetailsSchema,
 		},
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
@@ -537,7 +537,7 @@ func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.Rea
 			d.Set("comment", authenticationPolicy.Comment),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.AuthenticationPolicyToSchema(authenticationPolicy)}),
-			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.AuthenticationPolicyDescriptionToSchema(authenticationPolicyDescriptions)}),
+			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.AuthenticationPolicyDescriptionsToSchema(authenticationPolicyDescriptions)}),
 		); err != nil {
 			return append(diags, diag.FromErr(err)...)
 		}

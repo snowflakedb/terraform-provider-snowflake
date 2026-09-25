@@ -14,6 +14,7 @@ var ParameterListSchema = &schema.Schema{
 }
 
 // DescribePropertyListSchema represents Snowflake property object returned by DESCRIBE query.
+// TODO [v3]: remove once nested property-list describe_output consumers are flattened to typed details.
 var DescribePropertyListSchema = &schema.Schema{
 	Type:     schema.TypeList,
 	Computed: true,

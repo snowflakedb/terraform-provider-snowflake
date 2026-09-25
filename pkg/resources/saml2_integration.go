@@ -146,7 +146,7 @@ var saml2IntegrationSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE SECURITY INTEGRATION` for the given integration.",
 		Elem: &schema.Resource{
-			Schema: schemas.DescribeSaml2IntegrationSchema,
+			Schema: schemas.DescribeSaml2SecurityIntegrationDetailsSchema,
 		},
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,

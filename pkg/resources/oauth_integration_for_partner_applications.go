@@ -115,7 +115,7 @@ var oauthIntegrationForPartnerApplicationsSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE SECURITY INTEGRATION` for the given integration.",
 		Elem: &schema.Resource{
-			Schema: schemas.DescribeOauthIntegrationForPartnerApplications,
+			Schema: schemas.DescribeOauthIntegrationForPartnerApplicationsDetailsSchema,
 		},
 	},
 	RelatedParametersAttributeName: {

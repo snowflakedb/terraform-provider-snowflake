@@ -44,7 +44,7 @@ var authenticationPoliciesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE AUTHENTICATION POLICY.",
 					Elem: &schema.Resource{
-						Schema: schemas.AuthenticationPolicyDescribeSchema,
+						Schema: schemas.DescribeAuthenticationPolicyDescribeDetailsSchema,
 					},
 				},
 			},
@@ -89,7 +89,7 @@ func ReadAuthenticationPolicies(ctx context.Context, d *schema.ResourceData, met
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			authenticationPolicyDescriptions = []map[string]any{schemas.AuthenticationPolicyDescriptionToSchema(describeResult)}
+			authenticationPolicyDescriptions = []map[string]any{schemas.AuthenticationPolicyDescriptionsToSchema(describeResult)}
 		}
 		flattenedAuthenticationPolicies[i] = map[string]any{
 			resources.ShowOutputAttributeName:     []map[string]any{schemas.AuthenticationPolicyToSchema(&authenticationPolicy)},

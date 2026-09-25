@@ -90,6 +90,22 @@ var (
 							WithValidation(g.AtLeastOneValueSet, "AllowedProviders", "AllowedAwsAccounts", "AllowedAzureIssuers", "AllowedOidcIssuers")
 )
 
+// DESCRIBE projections. DESC AUTHENTICATION POLICY is one property-list; Describe() still
+// returns []AuthenticationPolicyDescription. Fields are the property .Value strings so
+// today’s TypeString describe_output keys generate natively.
+var authenticationPolicyDescribeDetailsDef = g.PlainStruct("AuthenticationPolicyDescribeDetails").
+	Text("Name").
+	Text("Owner").
+	Text("AuthenticationMethods").
+	Text("MfaEnrollment").
+	Text("ClientTypes").
+	Text("SecurityIntegrations").
+	Text("Comment").
+	Text("ClientPolicy").
+	Text("MfaPolicy").
+	Text("PatPolicy").
+	Text("WorkloadIdentityPolicy")
+
 var authenticationPoliciesDef = g.NewInterface(
 	"AuthenticationPolicies",
 	"AuthenticationPolicy",
@@ -213,6 +229,7 @@ var authenticationPoliciesDef = g.NewInterface(
 			SQL("AUTHENTICATION POLICY").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
+		authenticationPolicyDescribeDetailsDef,
 	).
 	WithEnums(
 		AuthenticationMethodsOptionEnumDef,

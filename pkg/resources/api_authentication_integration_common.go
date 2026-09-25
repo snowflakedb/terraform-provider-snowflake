@@ -82,7 +82,7 @@ var apiAuthCommonSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE SECURITY INTEGRATIONS` for the given security integration.",
 		Elem: &schema.Resource{
-			Schema: schemas.DescribeApiAuthSecurityIntegrationSchema,
+			Schema: schemas.DescribeApiAuthenticationSecurityIntegrationDetailsSchema,
 		},
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,

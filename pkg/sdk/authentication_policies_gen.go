@@ -193,3 +193,17 @@ type AuthenticationPolicyDescription struct {
 	Default     string
 	Description string
 }
+
+type AuthenticationPolicyDescribeDetails struct {
+	Name                   string
+	Owner                  string
+	AuthenticationMethods  string
+	MfaEnrollment          string
+	ClientTypes            string
+	SecurityIntegrations   string
+	Comment                string
+	ClientPolicy           string
+	MfaPolicy              string
+	PatPolicy              string
+	WorkloadIdentityPolicy string
+}

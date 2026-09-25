@@ -83,7 +83,7 @@ var scimIntegrationSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE SECURITY INTEGRATIONS` for the given security integration.",
 		Elem: &schema.Resource{
-			Schema: schemas.DescribeScimSecurityIntegrationSchema,
+			Schema: schemas.DescribeScimSecurityIntegrationDetailsSchema,
 		},
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,

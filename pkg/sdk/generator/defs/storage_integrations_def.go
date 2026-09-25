@@ -8,6 +8,25 @@ import (
 
 var StorageLocationDef = g.NewQueryStruct("StorageLocation").Text("Path", g.KeywordOptions().SingleQuotes().Required())
 
+// DESCRIBE projections. DESC STORAGE INTEGRATION is one property-list; Describe() still
+// returns []StorageIntegrationProperty. Fields are the property rows so today’s nested
+// describe_output keys stay put. Typed scalars already exist as StorageIntegrationAllDetails
+// / DescribeAwsDetails (legacy resource still nested).
+var storageIntegrationDetailsDef = g.PlainStruct("StorageIntegrationDetails").
+	OptionalField("Enabled", "StorageIntegrationProperty").
+	OptionalField("StorageProvider", "StorageIntegrationProperty").
+	OptionalField("StorageAllowedLocations", "StorageIntegrationProperty").
+	OptionalField("StorageBlockedLocations", "StorageIntegrationProperty").
+	OptionalField("StorageAwsIamUserArn", "StorageIntegrationProperty").
+	OptionalField("StorageAwsObjectAcl", "StorageIntegrationProperty").
+	OptionalField("StorageAwsRoleArn", "StorageIntegrationProperty").
+	OptionalField("StorageAwsExternalId", "StorageIntegrationProperty").
+	OptionalField("StorageGcpServiceAccount", "StorageIntegrationProperty").
+	OptionalField("AzureConsentUrl", "StorageIntegrationProperty").
+	OptionalField("AzureMultiTenantAppName", "StorageIntegrationProperty").
+	OptionalField("UsePrivatelinkEndpoint", "StorageIntegrationProperty").
+	OptionalField("Comment", "StorageIntegrationProperty")
+
 var storageIntegrationsDef = g.NewInterface(
 	"StorageIntegrations",
 	"StorageIntegration",
@@ -210,6 +229,7 @@ var storageIntegrationsDef = g.NewInterface(
 			Text("ConsentUrl").
 			Text("MultiTenantAppName").
 			Text("ServiceAccount"),
+		storageIntegrationDetailsDef,
 	).
 	WithCustomInterfaceMethod(
 		"DescribeAwsDetails",

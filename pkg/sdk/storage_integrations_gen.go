@@ -234,3 +234,19 @@ type StorageIntegrationAllDetails struct {
 	MultiTenantAppName     string
 	ServiceAccount         string
 }
+
+type StorageIntegrationDetails struct {
+	Enabled                  *StorageIntegrationProperty
+	StorageProvider          *StorageIntegrationProperty
+	StorageAllowedLocations  *StorageIntegrationProperty
+	StorageBlockedLocations  *StorageIntegrationProperty
+	StorageAwsIamUserArn     *StorageIntegrationProperty
+	StorageAwsObjectAcl      *StorageIntegrationProperty
+	StorageAwsRoleArn        *StorageIntegrationProperty
+	StorageAwsExternalId     *StorageIntegrationProperty
+	StorageGcpServiceAccount *StorageIntegrationProperty
+	AzureConsentUrl          *StorageIntegrationProperty
+	AzureMultiTenantAppName  *StorageIntegrationProperty
+	UsePrivatelinkEndpoint   *StorageIntegrationProperty
+	Comment                  *StorageIntegrationProperty
+}

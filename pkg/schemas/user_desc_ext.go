@@ -6,7 +6,7 @@ import (
 )
 
 // TODO [next PRs]: every UserDetails field is *XxxProperty (Value/DefaultValue/Description),
-// which the generator cannot map, so this ext owns the whole schema. P2 should choose SDK
+// which the generator cannot map, so this ext owns the whole schema. Follow-up should choose SDK
 // flattening to scalars vs native XxxProperty unwrap, then un-skip and delete this file.
 
 func (userDetailsToSchemaMapper) additionalSchema() map[string]*schema.Schema {

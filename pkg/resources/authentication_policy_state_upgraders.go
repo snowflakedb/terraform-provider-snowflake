@@ -36,7 +36,7 @@ func v2_9_0_AuthenticationPolicyStateUpgrader(ctx context.Context, rawState map[
 	if err != nil {
 		return nil, err
 	}
-	describeOutputState := schemas.AuthenticationPolicyDescriptionToSchema(describeOutput)
+	describeOutputState := schemas.AuthenticationPolicyDescriptionsToSchema(describeOutput)
 	rawState[DescribeOutputAttributeName] = []any{describeOutputState}
 
 	return rawState, nil

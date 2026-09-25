@@ -536,6 +536,106 @@ type SecurityIntegrationProperty struct {
 	Default string
 }
 
+type ScimSecurityIntegrationDetails struct {
+	Enabled       *SecurityIntegrationProperty
+	NetworkPolicy *SecurityIntegrationProperty
+	RunAsRole     *SecurityIntegrationProperty
+	SyncPassword  *SecurityIntegrationProperty
+	Comment       *SecurityIntegrationProperty
+}
+
+type Saml2SecurityIntegrationDetails struct {
+	Saml2Issuer                    *SecurityIntegrationProperty
+	Saml2SsoUrl                    *SecurityIntegrationProperty
+	Saml2Provider                  *SecurityIntegrationProperty
+	Saml2SpInitiatedLoginPageLabel *SecurityIntegrationProperty
+	Saml2EnableSpInitiated         *SecurityIntegrationProperty
+	Saml2SignRequest               *SecurityIntegrationProperty
+	Saml2RequestedNameidFormat     *SecurityIntegrationProperty
+	Saml2PostLogoutRedirectUrl     *SecurityIntegrationProperty
+	Saml2ForceAuthn                *SecurityIntegrationProperty
+	Saml2SnowflakeIssuerUrl        *SecurityIntegrationProperty
+	Saml2SnowflakeAcsUrl           *SecurityIntegrationProperty
+	Saml2SnowflakeMetadata         *SecurityIntegrationProperty
+	Saml2DigestMethodsUsed         *SecurityIntegrationProperty
+	Saml2SignatureMethodsUsed      *SecurityIntegrationProperty
+	AllowedUserDomains             *SecurityIntegrationProperty
+	AllowedEmailPatterns           *SecurityIntegrationProperty
+	Comment                        *SecurityIntegrationProperty
+}
+
+type OauthIntegrationForPartnerApplicationsDetails struct {
+	OauthClientType                    *SecurityIntegrationProperty
+	Enabled                            *SecurityIntegrationProperty
+	OauthAllowNonTlsRedirectUri        *SecurityIntegrationProperty
+	OauthEnforcePkce                   *SecurityIntegrationProperty
+	OauthUseSecondaryRoles             *SecurityIntegrationProperty
+	PreAuthorizedRolesList             *SecurityIntegrationProperty
+	AllowedRolesList                   *SecurityIntegrationProperty
+	BlockedRolesList                   *SecurityIntegrationProperty
+	OauthIssueRefreshTokens            *SecurityIntegrationProperty
+	OauthRefreshTokenValidity          *SecurityIntegrationProperty
+	NetworkPolicy                      *SecurityIntegrationProperty
+	OauthClientRsaPublicKeyFp          *SecurityIntegrationProperty
+	OauthClientRsaPublicKey2Fp         *SecurityIntegrationProperty
+	Comment                            *SecurityIntegrationProperty
+	OauthAuthorizationEndpoint         *SecurityIntegrationProperty
+	OauthTokenEndpoint                 *SecurityIntegrationProperty
+	OauthAllowedAuthorizationEndpoints *SecurityIntegrationProperty
+	OauthAllowedTokenEndpoints         *SecurityIntegrationProperty
+}
+
+type OauthIntegrationForCustomClientsDetails struct {
+	OauthClientType                    *SecurityIntegrationProperty
+	Enabled                            *SecurityIntegrationProperty
+	OauthAllowNonTlsRedirectUri        *SecurityIntegrationProperty
+	OauthEnforcePkce                   *SecurityIntegrationProperty
+	OauthUseSecondaryRoles             *SecurityIntegrationProperty
+	PreAuthorizedRolesList             *SecurityIntegrationProperty
+	AllowedRolesList                   *SecurityIntegrationProperty
+	BlockedRolesList                   *SecurityIntegrationProperty
+	OauthIssueRefreshTokens            *SecurityIntegrationProperty
+	OauthRefreshTokenValidity          *SecurityIntegrationProperty
+	NetworkPolicy                      *SecurityIntegrationProperty
+	OauthClientRsaPublicKeyFp          *SecurityIntegrationProperty
+	OauthClientRsaPublicKey2Fp         *SecurityIntegrationProperty
+	Comment                            *SecurityIntegrationProperty
+	OauthAuthorizationEndpoint         *SecurityIntegrationProperty
+	OauthTokenEndpoint                 *SecurityIntegrationProperty
+	OauthAllowedAuthorizationEndpoints *SecurityIntegrationProperty
+	OauthAllowedTokenEndpoints         *SecurityIntegrationProperty
+}
+
+type ExternalOauthSecurityIntegrationDetails struct {
+	Enabled                                    *SecurityIntegrationProperty
+	ExternalOauthIssuer                        *SecurityIntegrationProperty
+	ExternalOauthJwsKeysUrl                    *SecurityIntegrationProperty
+	ExternalOauthAnyRoleMode                   *SecurityIntegrationProperty
+	ExternalOauthRsaPublicKey                  *SecurityIntegrationProperty
+	ExternalOauthRsaPublicKey2                 *SecurityIntegrationProperty
+	ExternalOauthBlockedRolesList              *SecurityIntegrationProperty
+	ExternalOauthAllowedRolesList              *SecurityIntegrationProperty
+	ExternalOauthAudienceList                  *SecurityIntegrationProperty
+	ExternalOauthTokenUserMappingClaim         *SecurityIntegrationProperty
+	ExternalOauthSnowflakeUserMappingAttribute *SecurityIntegrationProperty
+	ExternalOauthScopeDelimiter                *SecurityIntegrationProperty
+	Comment                                    *SecurityIntegrationProperty
+}
+
+type ApiAuthenticationSecurityIntegrationDetails struct {
+	Enabled                    *SecurityIntegrationProperty
+	OauthAccessTokenValidity   *SecurityIntegrationProperty
+	OauthRefreshTokenValidity  *SecurityIntegrationProperty
+	OauthClientAuthMethod      *SecurityIntegrationProperty
+	OauthAuthorizationEndpoint *SecurityIntegrationProperty
+	OauthTokenEndpoint         *SecurityIntegrationProperty
+	OauthAllowedScopes         *SecurityIntegrationProperty
+	OauthGrant                 *SecurityIntegrationProperty
+	ParentIntegration          *SecurityIntegrationProperty
+	AuthType                   *SecurityIntegrationProperty
+	Comment                    *SecurityIntegrationProperty
+}
+
 // ShowSecurityIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-integrations.
 type ShowSecurityIntegrationOptions struct {
 	show                 bool  `ddl:"static" sql:"SHOW"`

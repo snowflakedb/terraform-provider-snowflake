@@ -71,6 +71,104 @@ var (
 	tokenUserMappingClaimDef = g.NewQueryStruct("TokenUserMappingClaim").Text("Claim", g.KeywordOptions().SingleQuotes().Required())
 )
 
+// DESCRIBE projections. DESC SECURITY INTEGRATION is one property-list; Describe() still
+// returns []SecurityIntegrationProperty. Fields are the property rows so today’s nested
+// describe_output keys stay put. Provider v3: typed scalars + Describe*Details parse
+// (API/storage-integration analog; breaking: enabled.0.value → enabled).
+var scimSecurityIntegrationDetailsDef = g.PlainStruct("ScimSecurityIntegrationDetails").
+	OptionalField("Enabled", "SecurityIntegrationProperty").
+	OptionalField("NetworkPolicy", "SecurityIntegrationProperty").
+	OptionalField("RunAsRole", "SecurityIntegrationProperty").
+	OptionalField("SyncPassword", "SecurityIntegrationProperty").
+	OptionalField("Comment", "SecurityIntegrationProperty")
+
+var saml2SecurityIntegrationDetailsDef = g.PlainStruct("Saml2SecurityIntegrationDetails").
+	OptionalField("Saml2Issuer", "SecurityIntegrationProperty").
+	OptionalField("Saml2SsoUrl", "SecurityIntegrationProperty").
+	OptionalField("Saml2Provider", "SecurityIntegrationProperty").
+	OptionalField("Saml2SpInitiatedLoginPageLabel", "SecurityIntegrationProperty").
+	OptionalField("Saml2EnableSpInitiated", "SecurityIntegrationProperty").
+	OptionalField("Saml2SignRequest", "SecurityIntegrationProperty").
+	OptionalField("Saml2RequestedNameidFormat", "SecurityIntegrationProperty").
+	OptionalField("Saml2PostLogoutRedirectUrl", "SecurityIntegrationProperty").
+	OptionalField("Saml2ForceAuthn", "SecurityIntegrationProperty").
+	OptionalField("Saml2SnowflakeIssuerUrl", "SecurityIntegrationProperty").
+	OptionalField("Saml2SnowflakeAcsUrl", "SecurityIntegrationProperty").
+	OptionalField("Saml2SnowflakeMetadata", "SecurityIntegrationProperty").
+	OptionalField("Saml2DigestMethodsUsed", "SecurityIntegrationProperty").
+	OptionalField("Saml2SignatureMethodsUsed", "SecurityIntegrationProperty").
+	OptionalField("AllowedUserDomains", "SecurityIntegrationProperty").
+	OptionalField("AllowedEmailPatterns", "SecurityIntegrationProperty").
+	OptionalField("Comment", "SecurityIntegrationProperty")
+
+var oauthIntegrationForPartnerApplicationsDetailsDef = g.PlainStruct("OauthIntegrationForPartnerApplicationsDetails").
+	OptionalField("OauthClientType", "SecurityIntegrationProperty").
+	OptionalField("Enabled", "SecurityIntegrationProperty").
+	OptionalField("OauthAllowNonTlsRedirectUri", "SecurityIntegrationProperty").
+	OptionalField("OauthEnforcePkce", "SecurityIntegrationProperty").
+	OptionalField("OauthUseSecondaryRoles", "SecurityIntegrationProperty").
+	OptionalField("PreAuthorizedRolesList", "SecurityIntegrationProperty").
+	OptionalField("AllowedRolesList", "SecurityIntegrationProperty").
+	OptionalField("BlockedRolesList", "SecurityIntegrationProperty").
+	OptionalField("OauthIssueRefreshTokens", "SecurityIntegrationProperty").
+	OptionalField("OauthRefreshTokenValidity", "SecurityIntegrationProperty").
+	OptionalField("NetworkPolicy", "SecurityIntegrationProperty").
+	OptionalField("OauthClientRsaPublicKeyFp", "SecurityIntegrationProperty").
+	OptionalField("OauthClientRsaPublicKey2Fp", "SecurityIntegrationProperty").
+	OptionalField("Comment", "SecurityIntegrationProperty").
+	OptionalField("OauthAuthorizationEndpoint", "SecurityIntegrationProperty").
+	OptionalField("OauthTokenEndpoint", "SecurityIntegrationProperty").
+	OptionalField("OauthAllowedAuthorizationEndpoints", "SecurityIntegrationProperty").
+	OptionalField("OauthAllowedTokenEndpoints", "SecurityIntegrationProperty")
+
+var oauthIntegrationForCustomClientsDetailsDef = g.PlainStruct("OauthIntegrationForCustomClientsDetails").
+	OptionalField("OauthClientType", "SecurityIntegrationProperty").
+	OptionalField("Enabled", "SecurityIntegrationProperty").
+	OptionalField("OauthAllowNonTlsRedirectUri", "SecurityIntegrationProperty").
+	OptionalField("OauthEnforcePkce", "SecurityIntegrationProperty").
+	OptionalField("OauthUseSecondaryRoles", "SecurityIntegrationProperty").
+	OptionalField("PreAuthorizedRolesList", "SecurityIntegrationProperty").
+	OptionalField("AllowedRolesList", "SecurityIntegrationProperty").
+	OptionalField("BlockedRolesList", "SecurityIntegrationProperty").
+	OptionalField("OauthIssueRefreshTokens", "SecurityIntegrationProperty").
+	OptionalField("OauthRefreshTokenValidity", "SecurityIntegrationProperty").
+	OptionalField("NetworkPolicy", "SecurityIntegrationProperty").
+	OptionalField("OauthClientRsaPublicKeyFp", "SecurityIntegrationProperty").
+	OptionalField("OauthClientRsaPublicKey2Fp", "SecurityIntegrationProperty").
+	OptionalField("Comment", "SecurityIntegrationProperty").
+	OptionalField("OauthAuthorizationEndpoint", "SecurityIntegrationProperty").
+	OptionalField("OauthTokenEndpoint", "SecurityIntegrationProperty").
+	OptionalField("OauthAllowedAuthorizationEndpoints", "SecurityIntegrationProperty").
+	OptionalField("OauthAllowedTokenEndpoints", "SecurityIntegrationProperty")
+
+var externalOauthSecurityIntegrationDetailsDef = g.PlainStruct("ExternalOauthSecurityIntegrationDetails").
+	OptionalField("Enabled", "SecurityIntegrationProperty").
+	OptionalField("ExternalOauthIssuer", "SecurityIntegrationProperty").
+	OptionalField("ExternalOauthJwsKeysUrl", "SecurityIntegrationProperty").
+	OptionalField("ExternalOauthAnyRoleMode", "SecurityIntegrationProperty").
+	OptionalField("ExternalOauthRsaPublicKey", "SecurityIntegrationProperty").
+	OptionalField("ExternalOauthRsaPublicKey2", "SecurityIntegrationProperty").
+	OptionalField("ExternalOauthBlockedRolesList", "SecurityIntegrationProperty").
+	OptionalField("ExternalOauthAllowedRolesList", "SecurityIntegrationProperty").
+	OptionalField("ExternalOauthAudienceList", "SecurityIntegrationProperty").
+	OptionalField("ExternalOauthTokenUserMappingClaim", "SecurityIntegrationProperty").
+	OptionalField("ExternalOauthSnowflakeUserMappingAttribute", "SecurityIntegrationProperty").
+	OptionalField("ExternalOauthScopeDelimiter", "SecurityIntegrationProperty").
+	OptionalField("Comment", "SecurityIntegrationProperty")
+
+var apiAuthenticationSecurityIntegrationDetailsDef = g.PlainStruct("ApiAuthenticationSecurityIntegrationDetails").
+	OptionalField("Enabled", "SecurityIntegrationProperty").
+	OptionalField("OauthAccessTokenValidity", "SecurityIntegrationProperty").
+	OptionalField("OauthRefreshTokenValidity", "SecurityIntegrationProperty").
+	OptionalField("OauthClientAuthMethod", "SecurityIntegrationProperty").
+	OptionalField("OauthAuthorizationEndpoint", "SecurityIntegrationProperty").
+	OptionalField("OauthTokenEndpoint", "SecurityIntegrationProperty").
+	OptionalField("OauthAllowedScopes", "SecurityIntegrationProperty").
+	OptionalField("OauthGrant", "SecurityIntegrationProperty").
+	OptionalField("ParentIntegration", "SecurityIntegrationProperty").
+	OptionalField("AuthType", "SecurityIntegrationProperty").
+	OptionalField("Comment", "SecurityIntegrationProperty")
+
 func createSecurityIntegrationOperation(structName string, opts func(qs *g.QueryStruct) *g.QueryStruct) *g.QueryStruct {
 	qs := g.NewQueryStruct(structName).
 		Create().
@@ -660,6 +758,12 @@ var securityIntegrationsDef = g.NewInterface(
 			SQL("SECURITY INTEGRATION").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
+		scimSecurityIntegrationDetailsDef,
+		saml2SecurityIntegrationDetailsDef,
+		oauthIntegrationForPartnerApplicationsDetailsDef,
+		oauthIntegrationForCustomClientsDetailsDef,
+		externalOauthSecurityIntegrationDetailsDef,
+		apiAuthenticationSecurityIntegrationDetailsDef,
 	).
 	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-integrations",

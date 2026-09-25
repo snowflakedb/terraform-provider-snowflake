@@ -44,7 +44,7 @@ var networkPoliciesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE NETWORK POLICIES.",
 					Elem: &schema.Resource{
-						Schema: schemas.DescribeNetworkPolicySchema,
+						Schema: schemas.DescribeNetworkPolicyDetailsSchema,
 					},
 				},
 			},

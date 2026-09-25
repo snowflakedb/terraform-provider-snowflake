@@ -121,6 +121,14 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.WarehouseInteractive{}, ManualFields: []string{"tables"}},
 	{ObjectStruct: sdk.WarehouseRegular{}},
 	{ObjectStruct: sdk.AlertDetails{}, IsDescribe: true},
+	// Nested DescribePropertyListSchema in ext (today’s public describe_output).
+	// TODO [v3]: flatten to typed scalars (enabled.0.value → enabled) via a details
+	// struct + DescribeApiAuthDetails parse (API/storage-integration analog); native TypeList of the property row is not the end state.
+	{ObjectStruct: sdk.ApiAuthenticationSecurityIntegrationDetails{}, IsDescribe: true, ManualFields: []string{
+		"enabled", "oauth_access_token_validity", "oauth_refresh_token_validity", "oauth_client_auth_method",
+		"oauth_authorization_endpoint", "oauth_token_endpoint", "oauth_allowed_scopes", "oauth_grant",
+		"parent_integration", "auth_type", "comment",
+	}},
 	// SkipFields `id` is the SDK identifier (public schema has no `id`).
 	// ManualFields: api_key is Sensitive; api_provider needs strings.ToLower — neither can be generated.
 	// TODO [next PRs]: drop prefixes/scopes/certs from ManualFields once MapToSchemaField maps []string.
@@ -154,6 +162,10 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.ApiIntegrationGoogleDetails{}, IsDescribe: true, SkipFields: []string{"id"}, ManualFields: []string{
 		"api_key", "api_provider", "allowed_prefixes", "blocked_prefixes",
 	}},
+	// TypeString of each property .Value (today’s public describe_output).
+	{ObjectStruct: sdk.AuthenticationPolicyDescribeDetails{}, IsDescribe: true},
+	// Property-row list entry (same pattern as SecurityIntegrationProperty / NetworkPolicyProperty).
+	{ObjectStruct: sdk.AuthenticationPolicyDescription{}, UsedAsListEntry: true},
 	// ManualFields uses generator snake_case (OAuth → o_auth, SigV4 → sig_v4); ext re-adds public oauth_* / sigv4_* keys.
 	{ObjectStruct: sdk.CatalogIntegrationAllDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "o_auth_rest_authentication", "bearer_rest_authentication", "sig_v4_rest_authentication"}},
 	{ObjectStruct: sdk.CatalogIntegrationAwsGlueDetails{}, IsDescribe: true},
@@ -174,6 +186,17 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.DynamicTableDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.EventTableDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.ExternalAccessIntegrationDetails{}, IsDescribe: true, ManualFields: []string{"allowed_network_rules", "allowed_api_authentication_integrations", "allowed_authentication_secrets"}},
+	// Nested DescribePropertyListSchema in ext (today’s public describe_output).
+	// ManualFields `external_oauth_rsa_public_key2` is ToSnakeCase of ExternalOauthRsaPublicKey2;
+	// public key is external_oauth_rsa_public_key_2.
+	// TODO [v3]: flatten to typed scalars (enabled.0.value → enabled) via a details
+	// struct + DescribeExternalOauthDetails parse (API/storage-integration analog); native TypeList of the property row is not the end state.
+	{ObjectStruct: sdk.ExternalOauthSecurityIntegrationDetails{}, IsDescribe: true, ManualFields: []string{
+		"enabled", "external_oauth_issuer", "external_oauth_jws_keys_url", "external_oauth_any_role_mode",
+		"external_oauth_rsa_public_key", "external_oauth_rsa_public_key2", "external_oauth_blocked_roles_list",
+		"external_oauth_allowed_roles_list", "external_oauth_audience_list", "external_oauth_token_user_mapping_claim",
+		"external_oauth_snowflake_user_mapping_attribute", "external_oauth_scope_delimiter", "comment",
+	}},
 	// SkipFields `id` is the SDK identifier (public schema has no `id`); nested storage_locations is ManualFields.
 	{ObjectStruct: sdk.ExternalVolumeDetails{}, IsDescribe: true, SkipFields: []string{"id"}, ManualFields: []string{"storage_locations"}},
 	// ManualFields nested type-specific structs (public schema is a flat union of per-type keys; nested mapping in ext).
@@ -203,11 +226,39 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.MaskingPolicyDetails{}, IsDescribe: true, ManualFields: []string{"signature", "return_type"}},
 	{ObjectStruct: sdk.MaterializedViewDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.McpServerDetails{}, IsDescribe: true},
-	// Property-row list entry (same pattern as SecurityIntegrationProperty). Flattened DescribeNetworkPolicySchema stays the name-keyed consumer.
+	// TypeString of each property .Value (today’s public describe_output).
+	{ObjectStruct: sdk.NetworkPolicyDetails{}, IsDescribe: true},
+	// Property-row list entry (same pattern as SecurityIntegrationProperty). Flattened DescribeNetworkPolicyDetailsSchema stays the name-keyed consumer.
 	{ObjectStruct: sdk.NetworkPolicyProperty{}, UsedAsListEntry: true},
 	{ObjectStruct: sdk.NetworkRuleDetails{}, IsDescribe: true, ManualFields: []string{"value_list"}},
 	// SkipFields `id` is the SDK identifier (public schema uses `name`).
 	{ObjectStruct: sdk.NotebookDetails{}, IsDescribe: true, SkipFields: []string{"id"}},
+	// Nested DescribePropertyListSchema in ext (today’s public describe_output).
+	// ManualFields `oauth_client_rsa_public_key2_fp` is ToSnakeCase of OauthClientRsaPublicKey2Fp;
+	// public key is oauth_client_rsa_public_key_2_fp.
+	// TODO [v3]: flatten to typed scalars (enabled.0.value → enabled) via a details
+	// struct + DescribeOauthCustomDetails parse (API/storage-integration analog); native TypeList of the property row is not the end state.
+	{ObjectStruct: sdk.OauthIntegrationForCustomClientsDetails{}, IsDescribe: true, ManualFields: []string{
+		"oauth_client_type", "enabled", "oauth_allow_non_tls_redirect_uri", "oauth_enforce_pkce",
+		"oauth_use_secondary_roles", "pre_authorized_roles_list", "allowed_roles_list", "blocked_roles_list",
+		"oauth_issue_refresh_tokens", "oauth_refresh_token_validity", "network_policy",
+		"oauth_client_rsa_public_key_fp", "oauth_client_rsa_public_key2_fp", "comment",
+		"oauth_authorization_endpoint", "oauth_token_endpoint",
+		"oauth_allowed_authorization_endpoints", "oauth_allowed_token_endpoints",
+	}},
+	// Nested DescribePropertyListSchema in ext (today’s public describe_output).
+	// ManualFields `oauth_client_rsa_public_key2_fp` is ToSnakeCase of OauthClientRsaPublicKey2Fp;
+	// public key is oauth_client_rsa_public_key_2_fp.
+	// TODO [v3]: flatten to typed scalars (enabled.0.value → enabled) via a details
+	// struct + DescribeOauthPartnerDetails parse (API/storage-integration analog); native TypeList of the property row is not the end state.
+	{ObjectStruct: sdk.OauthIntegrationForPartnerApplicationsDetails{}, IsDescribe: true, ManualFields: []string{
+		"oauth_client_type", "enabled", "oauth_allow_non_tls_redirect_uri", "oauth_enforce_pkce",
+		"oauth_use_secondary_roles", "pre_authorized_roles_list", "allowed_roles_list", "blocked_roles_list",
+		"oauth_issue_refresh_tokens", "oauth_refresh_token_validity", "network_policy",
+		"oauth_client_rsa_public_key_fp", "oauth_client_rsa_public_key2_fp", "comment",
+		"oauth_authorization_endpoint", "oauth_token_endpoint",
+		"oauth_allowed_authorization_endpoints", "oauth_allowed_token_endpoints",
+	}},
 	// SkipFields `id` is the SDK identifier (public schema uses `name`).
 	{ObjectStruct: sdk.OpenflowConnectorDetails{}, IsDescribe: true, SkipFields: []string{"id"}},
 	{ObjectStruct: sdk.OpenflowDeploymentDetails{}, IsDescribe: true},
@@ -225,7 +276,23 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	}, ManualFields: []string{"return_data_type"}},
 	// ManualFields `signature` stays ext (slice of structs). `return_type` is string (not datatypes.DataType) so it generates natively.
 	{ObjectStruct: sdk.RowAccessPolicyDescription{}, IsDescribe: true, ManualFields: []string{"signature"}},
+	// Nested DescribePropertyListSchema in ext (today’s public describe_output).
+	// TODO [v3]: flatten to typed scalars (enabled.0.value → enabled) via a details
+	// struct + DescribeSaml2Details parse (API/storage-integration analog); native TypeList of the property row is not the end state.
+	{ObjectStruct: sdk.Saml2SecurityIntegrationDetails{}, IsDescribe: true, ManualFields: []string{
+		"saml2_issuer", "saml2_sso_url", "saml2_provider", "saml2_sp_initiated_login_page_label",
+		"saml2_enable_sp_initiated", "saml2_sign_request", "saml2_requested_nameid_format",
+		"saml2_post_logout_redirect_url", "saml2_force_authn", "saml2_snowflake_issuer_url",
+		"saml2_snowflake_acs_url", "saml2_snowflake_metadata", "saml2_digest_methods_used",
+		"saml2_signature_methods_used", "allowed_user_domains", "allowed_email_patterns", "comment",
+	}},
 	{ObjectStruct: sdk.SchemaDetails{}, IsDescribe: true},
+	// Nested DescribePropertyListSchema in ext (today’s public describe_output).
+	// TODO [v3]: flatten to typed scalars (enabled.0.value → enabled) via a details
+	// struct + DescribeScimDetails parse (API/storage-integration analog); native TypeList of the property row is not the end state.
+	{ObjectStruct: sdk.ScimSecurityIntegrationDetails{}, IsDescribe: true, ManualFields: []string{
+		"enabled", "network_policy", "run_as_role", "sync_password", "comment",
+	}},
 	{ObjectStruct: sdk.SecretDetails{}, IsDescribe: true, ManualFields: []string{"oauth_scopes"}},
 	{ObjectStruct: sdk.SecurityIntegrationProperty{}, UsedAsListEntry: true},
 	{ObjectStruct: sdk.ServiceDetails{}, IsDescribe: true, ManualFields: []string{"external_access_integrations"}},
@@ -254,7 +321,18 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.StorageIntegrationAllDetails{}, IsDescribe: true, ManualFields: []string{"allowed_locations", "blocked_locations"}},
 	{ObjectStruct: sdk.StorageIntegrationAwsDetails{}, IsDescribe: true, ManualFields: []string{"allowed_locations", "blocked_locations"}},
 	{ObjectStruct: sdk.StorageIntegrationAzureDetails{}, IsDescribe: true, ManualFields: []string{"allowed_locations", "blocked_locations"}},
+	// Nested DescribePropertyListSchema in ext (today’s public describe_output on the legacy resource).
+	// TODO [v3]: flatten to typed scalars (enabled.0.value → enabled) via StorageIntegrationAllDetails
+	// / DescribeDetails (already exist); native TypeList of the property row is not the end state.
+	{ObjectStruct: sdk.StorageIntegrationDetails{}, IsDescribe: true, ManualFields: []string{
+		"enabled", "storage_provider", "storage_allowed_locations", "storage_blocked_locations",
+		"storage_aws_iam_user_arn", "storage_aws_object_acl", "storage_aws_role_arn", "storage_aws_external_id",
+		"storage_gcp_service_account", "azure_consent_url", "azure_multi_tenant_app_name",
+		"use_privatelink_endpoint", "comment",
+	}},
 	{ObjectStruct: sdk.StorageIntegrationGcsDetails{}, IsDescribe: true, ManualFields: []string{"allowed_locations", "blocked_locations"}},
+	// Property-row list entry (same pattern as SecurityIntegrationProperty). Nested DescribeStorageIntegrationDetailsSchema stays the name-keyed consumer.
+	{ObjectStruct: sdk.StorageIntegrationProperty{}, UsedAsListEntry: true},
 	// TODO [next PRs]: drop return_type from ManualFields once MapToSchemaField maps datatypes.DataType via ToSql(); signature stays ext (slice of structs).
 	{ObjectStruct: sdk.StorageLifecyclePolicyDetails{}, IsDescribe: true, ManualFields: []string{"signature", "return_type"}},
 	// ManualFields `root_location` (ParseRootLocation rewrite) and []string TypeSets.
@@ -262,7 +340,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	// ManualFields `check`: SDK is *bool; public describe_output is TypeString.
 	{ObjectStruct: sdk.TableColumnDetails{}, IsDescribe: true, ManualFields: []string{"check"}},
 	// TODO [next PRs]: UserDetails ManualFields+ext is temporary (no XxxProperty mapping).
-	// P2: flatten the SDK struct or add dedicated property handling, then drop ManualFields.
+	// Flatten the SDK struct or add dedicated property handling, then drop ManualFields.
 	// Keep omitted: password (secret). Add later: rsa_public_key_last_set_time / rsa_public_key2_last_set_time (stale public schema).
 	{ObjectStruct: sdk.UserDetails{}, IsDescribe: true, SkipFields: []string{
 		"password", "rsa_public_key_last_set_time", "rsa_public_key2_last_set_time",

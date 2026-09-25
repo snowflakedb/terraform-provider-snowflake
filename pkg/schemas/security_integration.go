@@ -10,13 +10,14 @@ import (
 )
 
 var (
+	// TODO [v3]: MergeMaps of nested property-list schemas; replace when variants flatten to typed details.
 	SecurityIntegrationDescribeSchema = collections.MergeMaps(
-		DescribeApiAuthSecurityIntegrationSchema,
-		DescribeExternalOauthSecurityIntegrationSchema,
-		DescribeOauthIntegrationForCustomClients,
-		DescribeOauthIntegrationForPartnerApplications,
-		DescribeSaml2IntegrationSchema,
-		DescribeScimSecurityIntegrationSchema,
+		DescribeApiAuthenticationSecurityIntegrationDetailsSchema,
+		DescribeExternalOauthSecurityIntegrationDetailsSchema,
+		DescribeOauthIntegrationForCustomClientsDetailsSchema,
+		DescribeOauthIntegrationForPartnerApplicationsDetailsSchema,
+		DescribeSaml2SecurityIntegrationDetailsSchema,
+		DescribeScimSecurityIntegrationDetailsSchema,
 	)
 	allSecurityIntegrationPropertiesNames = slices.Concat(
 		ApiAuthenticationPropertiesNames,

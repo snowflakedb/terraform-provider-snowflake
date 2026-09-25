@@ -149,3 +149,10 @@ type NetworkPolicyProperty struct {
 	Name  string
 	Value string
 }
+
+type NetworkPolicyDetails struct {
+	AllowedIpList          string
+	BlockedIpList          string
+	AllowedNetworkRuleList string
+	BlockedNetworkRuleList string
+}

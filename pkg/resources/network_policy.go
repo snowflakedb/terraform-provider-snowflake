@@ -77,7 +77,7 @@ var networkPolicySchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE NETWORK POLICY` for the given network policy.",
 		Elem: &schema.Resource{
-			Schema: schemas.DescribeNetworkPolicySchema,
+			Schema: schemas.DescribeNetworkPolicyDetailsSchema,
 		},
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
