@@ -312,9 +312,9 @@ func TestAcc_Warehouses_CompleteUseCase_InteractiveWarehouse(t *testing.T) {
 			HasOwnerNotEmpty().
 			HasComment(comment).
 			HasEnableQueryAcceleration(false).
-			HasQueryAccelerationMaxScaleFactor(0).
+			HasQueryAccelerationMaxScaleFactor(8).
 			HasResourceMonitor(resourceMonitor.ID()).
-			HasScalingPolicyEmpty().
+			HasScalingPolicy(sdk.ScalingPolicyStandard).
 			HasOwnerRoleTypeNotEmpty().
 			HasResourceConstraintEmpty().
 			HasGenerationEmpty().

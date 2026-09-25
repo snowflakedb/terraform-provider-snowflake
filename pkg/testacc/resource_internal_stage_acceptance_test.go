@@ -382,11 +382,13 @@ func TestAcc_InternalStage_CompleteUseCase(t *testing.T) {
 				),
 			},
 			{
-				Config:                  accconfig.FromModels(t, modelComplete),
-				ResourceName:            modelComplete.ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"encryption", "file_format"},
+				Config:            accconfig.FromModels(t, modelComplete),
+				ResourceName:      modelComplete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				// directory.auto_refresh is ignored because IMPORT_BOOLEAN_DEFAULT
+				// (enabled by default) writes "default" while the config has "false".
+				ImportStateVerifyIgnore: []string{"encryption", "file_format", "directory"},
 			},
 		},
 	})
