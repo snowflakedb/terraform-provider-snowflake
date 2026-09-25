@@ -49,6 +49,7 @@ var ShowTaskSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// predecessors: manual addition and mapping is needed
 	"state": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -89,10 +90,12 @@ var ShowTaskSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// task_relations: manual addition and mapping is needed
 	"last_suspended_reason": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// target_completion_interval: manual addition and mapping is needed
 	"execute_as_user": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -114,6 +117,7 @@ func TaskToSchema(task *sdk.Task) map[string]any {
 		taskSchema["warehouse"] = (*task.Warehouse).Name()
 	}
 	taskSchema["schedule"] = task.Schedule
+	// predecessors: manual addition and mapping is needed
 	taskSchema["state"] = string(task.State)
 	taskSchema["definition"] = task.Definition
 	taskSchema["condition"] = task.Condition
@@ -126,7 +130,9 @@ func TaskToSchema(task *sdk.Task) map[string]any {
 	taskSchema["owner_role_type"] = task.OwnerRoleType
 	taskSchema["config"] = task.Config
 	taskSchema["budget"] = task.Budget
+	// task_relations: manual addition and mapping is needed
 	taskSchema["last_suspended_reason"] = task.LastSuspendedReason
+	// target_completion_interval: manual addition and mapping is needed
 	if task.ExecuteAsUser != nil {
 		taskSchema["execute_as_user"] = (*task.ExecuteAsUser).Name()
 	}

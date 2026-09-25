@@ -41,6 +41,8 @@ var DescribeCortexSearchServiceDetailsSchema = mergeSchema(map[string]*schema.Sc
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// attribute_columns: manual addition and mapping is needed
+	// columns: manual addition and mapping is needed
 	"definition": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -69,10 +71,14 @@ var DescribeCortexSearchServiceDetailsSchema = mergeSchema(map[string]*schema.Sc
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// serving_state is skipped and won't be generated
 	"embedding_model": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// primary_key_columns is skipped and won't be generated
+	// scoring_profile_count is skipped and won't be generated
+	// full_index_build_interval_days is skipped and won't be generated
 }, cortexSearchServiceDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeCortexSearchServiceDetailsSchema
@@ -88,6 +94,8 @@ func CortexSearchServiceDetailsToSchema(cortexSearchServiceDetails *sdk.CortexSe
 	if cortexSearchServiceDetails.SearchColumn != nil {
 		cortexSearchServiceDetailsSchema["search_column"] = (*cortexSearchServiceDetails.SearchColumn)
 	}
+	// attribute_columns: manual addition and mapping is needed
+	// columns: manual addition and mapping is needed
 	if cortexSearchServiceDetails.Definition != nil {
 		cortexSearchServiceDetailsSchema["definition"] = (*cortexSearchServiceDetails.Definition)
 	}
@@ -101,9 +109,13 @@ func CortexSearchServiceDetailsToSchema(cortexSearchServiceDetails *sdk.CortexSe
 	if cortexSearchServiceDetails.IndexingError != nil {
 		cortexSearchServiceDetailsSchema["indexing_error"] = (*cortexSearchServiceDetails.IndexingError)
 	}
+	// serving_state is skipped and won't be generated
 	if cortexSearchServiceDetails.EmbeddingModel != nil {
 		cortexSearchServiceDetailsSchema["embedding_model"] = (*cortexSearchServiceDetails.EmbeddingModel)
 	}
+	// primary_key_columns is skipped and won't be generated
+	// scoring_profile_count is skipped and won't be generated
+	// full_index_build_interval_days is skipped and won't be generated
 	cortexSearchServiceDetailsToSchemaMapper{}.additionalToSchema(cortexSearchServiceDetails, cortexSearchServiceDetailsSchema)
 	return cortexSearchServiceDetailsSchema
 }

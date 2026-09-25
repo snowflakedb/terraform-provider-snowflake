@@ -13,6 +13,7 @@ var _ additionalSchemaMapper[sdk.ProcedureDetails] = procedureDetailsToSchemaMap
 
 // DescribeProcedureDetailsSchema represents output of DESCRIBE query for the single ProcedureDetails.
 var DescribeProcedureDetailsSchema = mergeSchema(map[string]*schema.Schema{
+	// id is skipped and won't be generated
 	"signature": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -73,16 +74,25 @@ var DescribeProcedureDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// normalized_imports is skipped and won't be generated
+	// normalized_target_path is skipped and won't be generated
+	// return_data_type: manual addition and mapping is needed
 	"return_not_null": {
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
+	// normalized_arguments is skipped and won't be generated
+	// normalized_external_access_integrations is skipped and won't be generated
+	// normalized_secrets is skipped and won't be generated
+	// normalized_packages is skipped and won't be generated
+	// snowpark_version is skipped and won't be generated
 }, procedureDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeProcedureDetailsSchema
 
 func ProcedureDetailsToSchema(procedureDetails *sdk.ProcedureDetails) map[string]any {
 	procedureDetailsSchema := make(map[string]any)
+	// id is skipped and won't be generated
 	procedureDetailsSchema["signature"] = procedureDetails.Signature
 	procedureDetailsSchema["returns"] = procedureDetails.Returns
 	procedureDetailsSchema["language"] = procedureDetails.Language
@@ -120,7 +130,15 @@ func ProcedureDetailsToSchema(procedureDetails *sdk.ProcedureDetails) map[string
 		procedureDetailsSchema["installed_packages"] = (*procedureDetails.InstalledPackages)
 	}
 	procedureDetailsSchema["execute_as"] = procedureDetails.ExecuteAs
+	// normalized_imports is skipped and won't be generated
+	// normalized_target_path is skipped and won't be generated
+	// return_data_type: manual addition and mapping is needed
 	procedureDetailsSchema["return_not_null"] = procedureDetails.ReturnNotNull
+	// normalized_arguments is skipped and won't be generated
+	// normalized_external_access_integrations is skipped and won't be generated
+	// normalized_secrets is skipped and won't be generated
+	// normalized_packages is skipped and won't be generated
+	// snowpark_version is skipped and won't be generated
 	procedureDetailsToSchemaMapper{}.additionalToSchema(procedureDetails, procedureDetailsSchema)
 	return procedureDetailsSchema
 }

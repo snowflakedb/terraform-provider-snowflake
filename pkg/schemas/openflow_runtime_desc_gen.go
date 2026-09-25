@@ -13,6 +13,7 @@ var _ additionalSchemaMapper[sdk.OpenflowRuntimeDetails] = openflowRuntimeDetail
 
 // DescribeOpenflowRuntimeDetailsSchema represents output of DESCRIBE query for the single OpenflowRuntimeDetails.
 var DescribeOpenflowRuntimeDetailsSchema = mergeSchema(map[string]*schema.Schema{
+	// id is skipped and won't be generated
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -41,6 +42,7 @@ var DescribeOpenflowRuntimeDetailsSchema = mergeSchema(map[string]*schema.Schema
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// external_access_integrations: manual addition and mapping is needed
 	"initially_suspended": {
 		Type:     schema.TypeBool,
 		Computed: true,
@@ -75,6 +77,7 @@ var _ = DescribeOpenflowRuntimeDetailsSchema
 
 func OpenflowRuntimeDetailsToSchema(openflowRuntimeDetails *sdk.OpenflowRuntimeDetails) map[string]any {
 	openflowRuntimeDetailsSchema := make(map[string]any)
+	// id is skipped and won't be generated
 	openflowRuntimeDetailsSchema["name"] = openflowRuntimeDetails.Name
 	openflowRuntimeDetailsSchema["status"] = string(openflowRuntimeDetails.Status)
 	openflowRuntimeDetailsSchema["deployment"] = openflowRuntimeDetails.Deployment
@@ -84,6 +87,7 @@ func OpenflowRuntimeDetailsToSchema(openflowRuntimeDetails *sdk.OpenflowRuntimeD
 	if openflowRuntimeDetails.DisplayName != nil {
 		openflowRuntimeDetailsSchema["display_name"] = (*openflowRuntimeDetails.DisplayName)
 	}
+	// external_access_integrations: manual addition and mapping is needed
 	openflowRuntimeDetailsSchema["initially_suspended"] = openflowRuntimeDetails.InitiallySuspended
 	if openflowRuntimeDetails.ExecuteAsRole != nil {
 		openflowRuntimeDetailsSchema["execute_as_role"] = (*openflowRuntimeDetails.ExecuteAsRole)

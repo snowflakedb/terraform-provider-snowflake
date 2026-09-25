@@ -14,7 +14,7 @@ generation all SDK objects will have:
 - describe output schema when `IsDescribe` is set (`DescribeXSchema` in `{snake}_desc_gen.go`, `_details` suffix trimmed)
 - mapper from the SDK object to the generated schema (e.g. [user_gen](../user_gen.go))
 
-Unscoped generate and `generate-show-output-schemas-check` skip objects in `SHOW_OUTPUT_SCHEMAS_EXCLUDE` (Makefile). This generator is **Converging**. Customizations belong in `*_ext.go`: `SkipFields` omits a generated key; `AdditionalMapping` plus `additionalSchema` / `additionalToSchema` on the generated mapper type re-adds public keys. Callers always use generated `XToSchema`.
+Unscoped generate and `generate-show-output-schemas-check` skip objects in `SHOW_OUTPUT_SCHEMAS_EXCLUDE` (Makefile). This generator is **Converging**. Customizations belong in `*_ext.go`: `SkipFields` omits a key that should not become public (a comment is left in place); `ManualFields` omits a key that ext must add (a comment is left in place, and the additional-mapping hook is generated). Callers always use generated `XToSchema`.
 
 ### How it works
 
@@ -82,8 +82,8 @@ If you change the show output struct in the SDK:
    - SHOW: `{ObjectStruct: sdk.<Singular>{}}` → `Show<Singular>Schema` in `<singular>_gen.go`
    - struct DESCRIBE: `{ObjectStruct: sdk.<Singular>Details{}, IsDescribe: true}` → `Describe<Singular>DetailsSchema` in `<singular>_desc_gen.go`
    - property-row list entry: `{ObjectStruct: sdk.<Type>{}, UsedAsListEntry: true}` → `<Type>Schema` in `<type>_gen.go`
-   - `SkipFields: []string{"snake_case_key"}` omits that key from the schema map and `ToSchema`. Use when `*_ext.go` owns the field now, when the field is SDK-internal (keep omitted), or when a real SHOW/DESCRIBE property is missing from today’s public schema (skip now, add in a follow-up PR).
-   - `AdditionalMapping: true` generates an empty mapper type that must implement `additionalSchemaMapper[T]` in `*_ext.go` (schema keys + mapper). Callers always use generated `XToSchema`. Not inferred from `SkipFields`.
+   - `SkipFields: []string{"snake_case_key"}` omits that key from the schema map and `ToSchema` (comment: skipped and won't be generated). Use when the field is SDK-internal (keep omitted) or a real SHOW/DESCRIBE property is missing from today’s public schema (skip now, add in a follow-up PR).
+   - `ManualFields: []string{"snake_case_key"}` omits that key the same way (comment: manual addition and mapping is needed) and generates an empty mapper type that must implement `additionalSchemaMapper[T]` in `*_ext.go`. Use when the generator cannot emit the public mapping (slices, nested structs, renames, custom conversion). Callers always use generated `XToSchema`.
 2. Check if you don't introduce a type that is unsupported (check [supported types](#supported-types)
    and [known limitations](#known-limitations)).
 3. Run generation according to [instructions](#invoking-the-generation).

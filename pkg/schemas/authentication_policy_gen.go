@@ -45,6 +45,7 @@ var ShowAuthenticationPolicySchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// target_scopes is skipped and won't be generated
 }
 
 var _ = ShowAuthenticationPolicySchema
@@ -60,6 +61,7 @@ func AuthenticationPolicyToSchema(authenticationPolicy *sdk.AuthenticationPolicy
 	authenticationPolicySchema["owner"] = authenticationPolicy.Owner
 	authenticationPolicySchema["owner_role_type"] = authenticationPolicy.OwnerRoleType
 	authenticationPolicySchema["options"] = authenticationPolicy.Options
+	// target_scopes is skipped and won't be generated
 	return authenticationPolicySchema
 }
 

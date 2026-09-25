@@ -93,6 +93,8 @@ var DescribePostgresInstanceDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// has_any_running_operations is skipped and won't be generated
+	// operation_errors is skipped and won't be generated
 }
 
 var _ = DescribePostgresInstanceDetailsSchema
@@ -134,6 +136,8 @@ func PostgresInstanceDetailsToSchema(postgresInstanceDetails *sdk.PostgresInstan
 	if postgresInstanceDetails.StorageIntegration != nil {
 		postgresInstanceDetailsSchema["storage_integration"] = (*postgresInstanceDetails.StorageIntegration).Name()
 	}
+	// has_any_running_operations is skipped and won't be generated
+	// operation_errors is skipped and won't be generated
 	return postgresInstanceDetailsSchema
 }
 

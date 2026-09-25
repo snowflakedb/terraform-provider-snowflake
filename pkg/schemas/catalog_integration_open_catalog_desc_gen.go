@@ -41,6 +41,8 @@ var DescribeCatalogIntegrationOpenCatalogDetailsSchema = mergeSchema(map[string]
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// rest_config: manual addition and mapping is needed
+	// rest_authentication: manual addition and mapping is needed
 }, catalogIntegrationOpenCatalogDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeCatalogIntegrationOpenCatalogDetailsSchema
@@ -54,6 +56,8 @@ func CatalogIntegrationOpenCatalogDetailsToSchema(catalogIntegrationOpenCatalogD
 	catalogIntegrationOpenCatalogDetailsSchema["refresh_interval_seconds"] = catalogIntegrationOpenCatalogDetails.RefreshIntervalSeconds
 	catalogIntegrationOpenCatalogDetailsSchema["comment"] = catalogIntegrationOpenCatalogDetails.Comment
 	catalogIntegrationOpenCatalogDetailsSchema["catalog_namespace"] = catalogIntegrationOpenCatalogDetails.CatalogNamespace
+	// rest_config: manual addition and mapping is needed
+	// rest_authentication: manual addition and mapping is needed
 	catalogIntegrationOpenCatalogDetailsToSchemaMapper{}.additionalToSchema(catalogIntegrationOpenCatalogDetails, catalogIntegrationOpenCatalogDetailsSchema)
 	return catalogIntegrationOpenCatalogDetailsSchema
 }

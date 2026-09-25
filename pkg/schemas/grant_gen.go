@@ -21,6 +21,7 @@ var ShowGrantSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// grant_on is skipped and won't be generated
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -29,6 +30,7 @@ var ShowGrantSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// grant_to is skipped and won't be generated
 	"grantee_name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -66,10 +68,12 @@ func GrantToSchema(grant *sdk.Grant) map[string]any {
 	grantSchema["created_on"] = grant.CreatedOn.String()
 	grantSchema["privilege"] = grant.Privilege
 	grantSchema["granted_on"] = string(grant.GrantedOn)
+	// grant_on is skipped and won't be generated
 	if grant.Name != nil {
 		grantSchema["name"] = grant.Name.FullyQualifiedName()
 	}
 	grantSchema["granted_to"] = string(grant.GrantedTo)
+	// grant_to is skipped and won't be generated
 	if grant.GranteeName != nil {
 		grantSchema["grantee_name"] = grant.GranteeName.FullyQualifiedName()
 	}

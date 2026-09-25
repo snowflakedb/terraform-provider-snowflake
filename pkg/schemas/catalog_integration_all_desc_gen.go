@@ -61,6 +61,10 @@ var DescribeCatalogIntegrationAllDetailsSchema = mergeSchema(map[string]*schema.
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// rest_config: manual addition and mapping is needed
+	// o_auth_rest_authentication: manual addition and mapping is needed
+	// bearer_rest_authentication: manual addition and mapping is needed
+	// sig_v4_rest_authentication: manual addition and mapping is needed
 }, catalogIntegrationAllDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeCatalogIntegrationAllDetailsSchema
@@ -79,6 +83,10 @@ func CatalogIntegrationAllDetailsToSchema(catalogIntegrationAllDetails *sdk.Cata
 	catalogIntegrationAllDetailsSchema["catalog_namespace"] = catalogIntegrationAllDetails.CatalogNamespace
 	catalogIntegrationAllDetailsSchema["glue_aws_iam_user_arn"] = catalogIntegrationAllDetails.GlueAwsIamUserArn
 	catalogIntegrationAllDetailsSchema["glue_aws_external_id"] = catalogIntegrationAllDetails.GlueAwsExternalId
+	// rest_config: manual addition and mapping is needed
+	// o_auth_rest_authentication: manual addition and mapping is needed
+	// bearer_rest_authentication: manual addition and mapping is needed
+	// sig_v4_rest_authentication: manual addition and mapping is needed
 	catalogIntegrationAllDetailsToSchemaMapper{}.additionalToSchema(catalogIntegrationAllDetails, catalogIntegrationAllDetailsSchema)
 	return catalogIntegrationAllDetailsSchema
 }

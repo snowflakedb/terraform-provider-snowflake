@@ -41,6 +41,10 @@ var DescribeCatalogIntegrationIcebergRestDetailsSchema = mergeSchema(map[string]
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// rest_config: manual addition and mapping is needed
+	// o_auth_rest_authentication: manual addition and mapping is needed
+	// bearer_rest_authentication: manual addition and mapping is needed
+	// sig_v4_rest_authentication: manual addition and mapping is needed
 }, catalogIntegrationIcebergRestDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeCatalogIntegrationIcebergRestDetailsSchema
@@ -54,6 +58,10 @@ func CatalogIntegrationIcebergRestDetailsToSchema(catalogIntegrationIcebergRestD
 	catalogIntegrationIcebergRestDetailsSchema["refresh_interval_seconds"] = catalogIntegrationIcebergRestDetails.RefreshIntervalSeconds
 	catalogIntegrationIcebergRestDetailsSchema["comment"] = catalogIntegrationIcebergRestDetails.Comment
 	catalogIntegrationIcebergRestDetailsSchema["catalog_namespace"] = catalogIntegrationIcebergRestDetails.CatalogNamespace
+	// rest_config: manual addition and mapping is needed
+	// o_auth_rest_authentication: manual addition and mapping is needed
+	// bearer_rest_authentication: manual addition and mapping is needed
+	// sig_v4_rest_authentication: manual addition and mapping is needed
 	catalogIntegrationIcebergRestDetailsToSchemaMapper{}.additionalToSchema(catalogIntegrationIcebergRestDetails, catalogIntegrationIcebergRestDetailsSchema)
 	return catalogIntegrationIcebergRestDetailsSchema
 }

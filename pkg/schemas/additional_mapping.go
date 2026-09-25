@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// additionalSchemaMapper is implemented by generated mapper types when AdditionalMapping is set.
+// additionalSchemaMapper is implemented by generated mapper types when ManualFields is non-empty.
 // The *_ext.go files provide the implementation.
 type additionalSchemaMapper[T any] interface {
 	additionalSchema() map[string]*schema.Schema

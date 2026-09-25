@@ -25,6 +25,8 @@ var DescribeStorageIntegrationAzureDetailsSchema = mergeSchema(map[string]*schem
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// allowed_locations: manual addition and mapping is needed
+	// blocked_locations: manual addition and mapping is needed
 	"comment": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -54,6 +56,8 @@ func StorageIntegrationAzureDetailsToSchema(storageIntegrationAzureDetails *sdk.
 	storageIntegrationAzureDetailsSchema["id"] = storageIntegrationAzureDetails.Id.Name()
 	storageIntegrationAzureDetailsSchema["enabled"] = storageIntegrationAzureDetails.Enabled
 	storageIntegrationAzureDetailsSchema["provider"] = storageIntegrationAzureDetails.Provider
+	// allowed_locations: manual addition and mapping is needed
+	// blocked_locations: manual addition and mapping is needed
 	storageIntegrationAzureDetailsSchema["comment"] = storageIntegrationAzureDetails.Comment
 	storageIntegrationAzureDetailsSchema["use_privatelink_endpoint"] = storageIntegrationAzureDetails.UsePrivatelinkEndpoint
 	storageIntegrationAzureDetailsSchema["tenant_id"] = storageIntegrationAzureDetails.TenantId

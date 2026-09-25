@@ -45,6 +45,7 @@ var ShowConnectionSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// failover_allowed_to_accounts: manual addition and mapping is needed
 	"connection_url": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -75,6 +76,7 @@ func ConnectionToSchema(connection *sdk.Connection) map[string]any {
 	}
 	connectionSchema["is_primary"] = connection.IsPrimary
 	connectionSchema["primary"] = connection.Primary.FullyQualifiedName()
+	// failover_allowed_to_accounts: manual addition and mapping is needed
 	connectionSchema["connection_url"] = connection.ConnectionUrl
 	connectionSchema["organization_name"] = connection.OrganizationName
 	connectionSchema["account_locator"] = connection.AccountLocator

@@ -69,6 +69,7 @@ var ShowPostgresInstanceSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// is_highly_available: manual addition and mapping is needed
 	"retention_time": {
 		Type:     schema.TypeInt,
 		Computed: true,
@@ -109,6 +110,7 @@ func PostgresInstanceToSchema(postgresInstance *sdk.PostgresInstance) map[string
 	if postgresInstance.PostgresSettings != nil {
 		postgresInstanceSchema["postgres_settings"] = (*postgresInstance.PostgresSettings)
 	}
+	// is_highly_available: manual addition and mapping is needed
 	postgresInstanceSchema["retention_time"] = postgresInstance.RetentionTime
 	postgresInstanceSchema["state"] = string(postgresInstance.State)
 	if postgresInstance.Comment != nil {

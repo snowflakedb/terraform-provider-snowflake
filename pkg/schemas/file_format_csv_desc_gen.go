@@ -81,6 +81,7 @@ var DescribeFileFormatCsvSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// null_if: manual addition and mapping is needed
 	"error_on_column_count_mismatch": {
 		Type:     schema.TypeBool,
 		Computed: true,
@@ -132,6 +133,7 @@ func FileFormatCsvToSchema(fileFormatCsv *sdk.FileFormatCsv) map[string]any {
 	fileFormatCsvSchema["escape_unenclosed_field"] = fileFormatCsv.EscapeUnenclosedField
 	fileFormatCsvSchema["trim_space"] = fileFormatCsv.TrimSpace
 	fileFormatCsvSchema["field_optionally_enclosed_by"] = fileFormatCsv.FieldOptionallyEnclosedBy
+	// null_if: manual addition and mapping is needed
 	fileFormatCsvSchema["error_on_column_count_mismatch"] = fileFormatCsv.ErrorOnColumnCountMismatch
 	fileFormatCsvSchema["validate_utf8"] = fileFormatCsv.ValidateUtf8
 	fileFormatCsvSchema["replace_invalid_characters"] = fileFormatCsv.ReplaceInvalidCharacters

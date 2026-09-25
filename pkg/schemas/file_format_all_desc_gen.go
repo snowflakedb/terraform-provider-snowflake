@@ -21,6 +21,12 @@ var DescribeFileFormatAllDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// csv: manual addition and mapping is needed
+	// json: manual addition and mapping is needed
+	// avro: manual addition and mapping is needed
+	// orc: manual addition and mapping is needed
+	// parquet: manual addition and mapping is needed
+	// xml: manual addition and mapping is needed
 }, fileFormatAllDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeFileFormatAllDetailsSchema
@@ -29,6 +35,12 @@ func FileFormatAllDetailsToSchema(fileFormatAllDetails *sdk.FileFormatAllDetails
 	fileFormatAllDetailsSchema := make(map[string]any)
 	fileFormatAllDetailsSchema["id"] = fileFormatAllDetails.Id.FullyQualifiedName()
 	fileFormatAllDetailsSchema["type"] = string(fileFormatAllDetails.Type)
+	// csv: manual addition and mapping is needed
+	// json: manual addition and mapping is needed
+	// avro: manual addition and mapping is needed
+	// orc: manual addition and mapping is needed
+	// parquet: manual addition and mapping is needed
+	// xml: manual addition and mapping is needed
 	fileFormatAllDetailsToSchemaMapper{}.additionalToSchema(fileFormatAllDetails, fileFormatAllDetailsSchema)
 	return fileFormatAllDetailsSchema
 }

@@ -2,6 +2,7 @@ package schemas
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -39,6 +40,8 @@ func (streamlitDetailToSchemaMapper) additionalToSchema(src *sdk.StreamlitDetail
 		if len(location) > 0 {
 			rootLocation = fmt.Sprintf("%s/%s", rootLocation, location)
 		}
+	} else {
+		log.Printf("[WARN] failed to parse streamlit root_location, keeping unparsed value: %v", err)
 	}
 	dst["root_location"] = rootLocation
 	dst["user_packages"] = src.UserPackages

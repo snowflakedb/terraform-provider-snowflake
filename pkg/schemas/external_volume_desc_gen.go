@@ -13,6 +13,8 @@ var _ additionalSchemaMapper[sdk.ExternalVolumeDetails] = externalVolumeDetailsT
 
 // DescribeExternalVolumeDetailsSchema represents output of DESCRIBE query for the single ExternalVolumeDetails.
 var DescribeExternalVolumeDetailsSchema = mergeSchema(map[string]*schema.Schema{
+	// id is skipped and won't be generated
+	// storage_locations: manual addition and mapping is needed
 	"active": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -31,6 +33,8 @@ var _ = DescribeExternalVolumeDetailsSchema
 
 func ExternalVolumeDetailsToSchema(externalVolumeDetails *sdk.ExternalVolumeDetails) map[string]any {
 	externalVolumeDetailsSchema := make(map[string]any)
+	// id is skipped and won't be generated
+	// storage_locations: manual addition and mapping is needed
 	externalVolumeDetailsSchema["active"] = externalVolumeDetails.Active
 	externalVolumeDetailsSchema["comment"] = externalVolumeDetails.Comment
 	externalVolumeDetailsSchema["allow_writes"] = externalVolumeDetails.AllowWrites

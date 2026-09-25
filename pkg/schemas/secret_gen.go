@@ -41,6 +41,7 @@ var ShowSecretSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// oauth_scopes: manual addition and mapping is needed
 	"owner_role_type": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -60,6 +61,7 @@ func SecretToSchema(secret *sdk.Secret) map[string]any {
 		secretSchema["comment"] = (*secret.Comment)
 	}
 	secretSchema["secret_type"] = secret.SecretType
+	// oauth_scopes: manual addition and mapping is needed
 	secretSchema["owner_role_type"] = secret.OwnerRoleType
 	secretToSchemaMapper{}.additionalToSchema(secret, secretSchema)
 	return secretSchema

@@ -9,6 +9,7 @@ import (
 
 // DescribeNotebookDetailsSchema represents output of DESCRIBE query for the single NotebookDetails.
 var DescribeNotebookDetailsSchema = map[string]*schema.Schema{
+	// id is skipped and won't be generated
 	"title": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -131,6 +132,7 @@ var _ = DescribeNotebookDetailsSchema
 
 func NotebookDetailsToSchema(notebookDetails *sdk.NotebookDetails) map[string]any {
 	notebookDetailsSchema := make(map[string]any)
+	// id is skipped and won't be generated
 	if notebookDetails.Title != nil {
 		notebookDetailsSchema["title"] = (*notebookDetails.Title)
 	}

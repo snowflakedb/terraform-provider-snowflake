@@ -12,12 +12,83 @@ type userDetailsToSchemaMapper struct{}
 var _ additionalSchemaMapper[sdk.UserDetails] = userDetailsToSchemaMapper{}
 
 // DescribeUserDetailsSchema represents output of DESCRIBE query for the single UserDetails.
-var DescribeUserDetailsSchema = mergeSchema(map[string]*schema.Schema{}, userDetailsToSchemaMapper{}.additionalSchema())
+var DescribeUserDetailsSchema = mergeSchema(map[string]*schema.Schema{
+	// name: manual addition and mapping is needed
+	// comment: manual addition and mapping is needed
+	// display_name: manual addition and mapping is needed
+	// type: manual addition and mapping is needed
+	// login_name: manual addition and mapping is needed
+	// first_name: manual addition and mapping is needed
+	// middle_name: manual addition and mapping is needed
+	// last_name: manual addition and mapping is needed
+	// email: manual addition and mapping is needed
+	// password is skipped and won't be generated
+	// must_change_password: manual addition and mapping is needed
+	// disabled: manual addition and mapping is needed
+	// snowflake_lock: manual addition and mapping is needed
+	// snowflake_support: manual addition and mapping is needed
+	// days_to_expiry: manual addition and mapping is needed
+	// mins_to_unlock: manual addition and mapping is needed
+	// default_warehouse: manual addition and mapping is needed
+	// default_namespace: manual addition and mapping is needed
+	// default_role: manual addition and mapping is needed
+	// default_secondary_roles: manual addition and mapping is needed
+	// ext_authn_duo: manual addition and mapping is needed
+	// ext_authn_uid: manual addition and mapping is needed
+	// mins_to_bypass_mfa: manual addition and mapping is needed
+	// mins_to_bypass_network_policy: manual addition and mapping is needed
+	// rsa_public_key: manual addition and mapping is needed
+	// rsa_public_key_fp: manual addition and mapping is needed
+	// rsa_public_key_last_set_time is skipped and won't be generated
+	// rsa_public_key2: manual addition and mapping is needed
+	// rsa_public_key2_fp: manual addition and mapping is needed
+	// rsa_public_key2_last_set_time is skipped and won't be generated
+	// password_last_set_time: manual addition and mapping is needed
+	// custom_landing_page_url: manual addition and mapping is needed
+	// custom_landing_page_url_flush_next_ui_load: manual addition and mapping is needed
+	// has_mfa: manual addition and mapping is needed
+	// has_workload_identity: manual addition and mapping is needed
+}, userDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeUserDetailsSchema
 
 func UserDetailsToSchema(userDetails *sdk.UserDetails) map[string]any {
 	userDetailsSchema := make(map[string]any)
+	// name: manual addition and mapping is needed
+	// comment: manual addition and mapping is needed
+	// display_name: manual addition and mapping is needed
+	// type: manual addition and mapping is needed
+	// login_name: manual addition and mapping is needed
+	// first_name: manual addition and mapping is needed
+	// middle_name: manual addition and mapping is needed
+	// last_name: manual addition and mapping is needed
+	// email: manual addition and mapping is needed
+	// password is skipped and won't be generated
+	// must_change_password: manual addition and mapping is needed
+	// disabled: manual addition and mapping is needed
+	// snowflake_lock: manual addition and mapping is needed
+	// snowflake_support: manual addition and mapping is needed
+	// days_to_expiry: manual addition and mapping is needed
+	// mins_to_unlock: manual addition and mapping is needed
+	// default_warehouse: manual addition and mapping is needed
+	// default_namespace: manual addition and mapping is needed
+	// default_role: manual addition and mapping is needed
+	// default_secondary_roles: manual addition and mapping is needed
+	// ext_authn_duo: manual addition and mapping is needed
+	// ext_authn_uid: manual addition and mapping is needed
+	// mins_to_bypass_mfa: manual addition and mapping is needed
+	// mins_to_bypass_network_policy: manual addition and mapping is needed
+	// rsa_public_key: manual addition and mapping is needed
+	// rsa_public_key_fp: manual addition and mapping is needed
+	// rsa_public_key_last_set_time is skipped and won't be generated
+	// rsa_public_key2: manual addition and mapping is needed
+	// rsa_public_key2_fp: manual addition and mapping is needed
+	// rsa_public_key2_last_set_time is skipped and won't be generated
+	// password_last_set_time: manual addition and mapping is needed
+	// custom_landing_page_url: manual addition and mapping is needed
+	// custom_landing_page_url_flush_next_ui_load: manual addition and mapping is needed
+	// has_mfa: manual addition and mapping is needed
+	// has_workload_identity: manual addition and mapping is needed
 	userDetailsToSchemaMapper{}.additionalToSchema(userDetails, userDetailsSchema)
 	return userDetailsSchema
 }

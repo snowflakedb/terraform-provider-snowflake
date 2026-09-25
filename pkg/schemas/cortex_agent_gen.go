@@ -37,6 +37,7 @@ var ShowCortexAgentSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// profile: manual addition and mapping is needed
 }, cortexAgentToSchemaMapper{}.additionalSchema())
 
 var _ = ShowCortexAgentSchema
@@ -49,6 +50,7 @@ func CortexAgentToSchema(cortexAgent *sdk.CortexAgent) map[string]any {
 	cortexAgentSchema["schema_name"] = cortexAgent.SchemaName
 	cortexAgentSchema["owner"] = cortexAgent.Owner
 	cortexAgentSchema["comment"] = cortexAgent.Comment
+	// profile: manual addition and mapping is needed
 	cortexAgentToSchemaMapper{}.additionalToSchema(cortexAgent, cortexAgentSchema)
 	return cortexAgentSchema
 }

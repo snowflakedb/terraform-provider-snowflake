@@ -23,9 +23,74 @@ func Test_ModelFromStructDetails_SkipFields(t *testing.T) {
 
 	model := ModelFromStructDetails(details, nil)
 
-	require.Len(t, model.SchemaFields, 1)
+	require.Len(t, model.SchemaFields, 3)
 	assert.Equal(t, "kept", model.SchemaFields[0].Name)
 	assert.Equal(t, "Kept", model.SchemaFields[0].OriginalName)
+	assert.False(t, model.SchemaFields[0].Skipped)
+	assert.Equal(t, "skipped_field", model.SchemaFields[1].Name)
+	assert.True(t, model.SchemaFields[1].Skipped)
+	assert.False(t, model.SchemaFields[1].Manual)
+	assert.Equal(t, "also_skipped", model.SchemaFields[2].Name)
+	assert.True(t, model.SchemaFields[2].Skipped)
+	assert.False(t, model.SchemaFields[2].Manual)
+	assert.False(t, model.AdditionalMapping)
+}
+
+func Test_ModelFromStructDetails_ManualFields(t *testing.T) {
+	details := ShowResultSchemaDetails{
+		ManualFields: []string{"manual_field"},
+		StructDetails: genhelpers.StructDetails{
+			Name: "sdk.Example",
+			Fields: []genhelpers.Field{
+				{Name: "Kept", ConcreteType: "string", UnderlyingType: "string"},
+				{Name: "ManualField", ConcreteType: "string", UnderlyingType: "string"},
+			},
+		},
+	}
+
+	model := ModelFromStructDetails(details, nil)
+
+	require.Len(t, model.SchemaFields, 2)
+	assert.Equal(t, "kept", model.SchemaFields[0].Name)
+	assert.False(t, model.SchemaFields[0].Manual)
+	assert.False(t, model.SchemaFields[0].Skipped)
+	assert.Equal(t, "manual_field", model.SchemaFields[1].Name)
+	assert.True(t, model.SchemaFields[1].Manual)
+	assert.False(t, model.SchemaFields[1].Skipped)
+	assert.True(t, model.AdditionalMapping)
+}
+
+func Test_ModelFromStructDetails_SkipAndManualOverlap(t *testing.T) {
+	details := ShowResultSchemaDetails{
+		SkipFields:   []string{"shared"},
+		ManualFields: []string{"shared"},
+		StructDetails: genhelpers.StructDetails{
+			Name: "sdk.Example",
+			Fields: []genhelpers.Field{
+				{Name: "Shared", ConcreteType: "string", UnderlyingType: "string"},
+			},
+		},
+	}
+
+	assert.PanicsWithValue(t, "SkipFields and ManualFields for sdk.Example overlap: shared", func() {
+		ModelFromStructDetails(details, nil)
+	})
+}
+
+func Test_ModelFromStructDetails_ManualFieldsUnknownKey(t *testing.T) {
+	details := ShowResultSchemaDetails{
+		ManualFields: []string{"not_a_field"},
+		StructDetails: genhelpers.StructDetails{
+			Name: "sdk.Example",
+			Fields: []genhelpers.Field{
+				{Name: "Kept", ConcreteType: "string", UnderlyingType: "string"},
+			},
+		},
+	}
+
+	assert.PanicsWithValue(t, "ManualFields for sdk.Example contain unknown schema keys: not_a_field", func() {
+		ModelFromStructDetails(details, nil)
+	})
 }
 
 func Test_ModelFromStructDetails_SkipFieldsUnknownKey(t *testing.T) {
@@ -83,19 +148,20 @@ func Test_ModelFromStructDetails_UsedAsListEntry(t *testing.T) {
 	assert.Equal(t, "security_integration_property_gen.go", model.Filename())
 }
 
-func Test_ModelFromStructDetails_AdditionalMapping(t *testing.T) {
-	details := ShowResultSchemaDetails{
-		AdditionalMapping: true,
+func Test_ModelFromStructDetails_AdditionalMappingInferredFromManualFields(t *testing.T) {
+	withoutManual := ShowResultSchemaDetails{
 		StructDetails: genhelpers.StructDetails{
-			Name: "sdk.PostgresInstance",
+			Name: "sdk.Example",
 			Fields: []genhelpers.Field{
 				{Name: "Name", ConcreteType: "string", UnderlyingType: "string"},
 			},
 		},
 	}
+	assert.False(t, ModelFromStructDetails(withoutManual, nil).AdditionalMapping)
 
-	model := ModelFromStructDetails(details, nil)
-	assert.True(t, model.AdditionalMapping)
+	withManual := withoutManual
+	withManual.ManualFields = []string{"name"}
+	assert.True(t, ModelFromStructDetails(withManual, nil).AdditionalMapping)
 }
 
 func Test_ModelFromStructDetails_IsDescribeAndUsedAsListEntry(t *testing.T) {

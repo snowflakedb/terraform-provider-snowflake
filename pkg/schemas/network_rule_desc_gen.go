@@ -45,6 +45,7 @@ var DescribeNetworkRuleDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// value_list: manual addition and mapping is needed
 }, networkRuleDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeNetworkRuleDetailsSchema
@@ -59,6 +60,7 @@ func NetworkRuleDetailsToSchema(networkRuleDetails *sdk.NetworkRuleDetails) map[
 	networkRuleDetailsSchema["comment"] = networkRuleDetails.Comment
 	networkRuleDetailsSchema["type"] = string(networkRuleDetails.Type)
 	networkRuleDetailsSchema["mode"] = string(networkRuleDetails.Mode)
+	// value_list: manual addition and mapping is needed
 	networkRuleDetailsToSchemaMapper{}.additionalToSchema(networkRuleDetails, networkRuleDetailsSchema)
 	return networkRuleDetailsSchema
 }

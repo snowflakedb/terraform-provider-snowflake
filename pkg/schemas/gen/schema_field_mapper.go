@@ -14,6 +14,8 @@ type SchemaField struct {
 	IsOriginalTypePointer   bool
 	IsOriginalTypeInterface bool
 	Mapper                  genhelpers.Mapper
+	Skipped                 bool
+	Manual                  bool
 }
 
 // TODO [SNOW-1501905]: handle other basic type variants
@@ -27,31 +29,42 @@ func MapToSchemaField(field genhelpers.Field) SchemaField {
 	name := genhelpers.ToSnakeCase(field.Name)
 	switch concreteTypeWithoutPtr {
 	case "string":
-		return SchemaField{name, schema.TypeString, field.Name, isPointer, isInterface, genhelpers.Identity}
+		return schemaField(name, schema.TypeString, field.Name, isPointer, isInterface, genhelpers.Identity)
 	case "int":
-		return SchemaField{name, schema.TypeInt, field.Name, isPointer, isInterface, genhelpers.Identity}
+		return schemaField(name, schema.TypeInt, field.Name, isPointer, isInterface, genhelpers.Identity)
 	case "float64":
-		return SchemaField{name, schema.TypeFloat, field.Name, isPointer, isInterface, genhelpers.Identity}
+		return schemaField(name, schema.TypeFloat, field.Name, isPointer, isInterface, genhelpers.Identity)
 	case "bool":
-		return SchemaField{name, schema.TypeBool, field.Name, isPointer, isInterface, genhelpers.Identity}
+		return schemaField(name, schema.TypeBool, field.Name, isPointer, isInterface, genhelpers.Identity)
 	case "time.Time":
-		return SchemaField{name, schema.TypeString, field.Name, isPointer, isInterface, genhelpers.ToString}
+		return schemaField(name, schema.TypeString, field.Name, isPointer, isInterface, genhelpers.ToString)
 	case "sdk.AccountObjectIdentifier":
-		return SchemaField{name, schema.TypeString, field.Name, isPointer, isInterface, genhelpers.Name}
+		return schemaField(name, schema.TypeString, field.Name, isPointer, isInterface, genhelpers.Name)
 	case "sdk.AccountIdentifier", "sdk.ExternalObjectIdentifier", "sdk.DatabaseObjectIdentifier",
 		"sdk.SchemaObjectIdentifier", "sdk.TableColumnIdentifier":
-		return SchemaField{name, schema.TypeString, field.Name, isPointer, isInterface, genhelpers.FullyQualifiedName}
+		return schemaField(name, schema.TypeString, field.Name, isPointer, isInterface, genhelpers.FullyQualifiedName)
 	case "sdk.ObjectIdentifier":
-		return SchemaField{name, schema.TypeString, field.Name, isPointer, isInterface, genhelpers.FullyQualifiedName}
+		return schemaField(name, schema.TypeString, field.Name, isPointer, isInterface, genhelpers.FullyQualifiedName)
 	}
 
 	underlyingTypeWithoutPtr, _ := strings.CutPrefix(field.UnderlyingType, "*")
 	isSdkDeclaredObject := strings.HasPrefix(concreteTypeWithoutPtr, "sdk.")
 	switch {
 	case isSdkDeclaredObject && underlyingTypeWithoutPtr == "string":
-		return SchemaField{name, schema.TypeString, field.Name, isPointer, isInterface, genhelpers.CastToString}
+		return schemaField(name, schema.TypeString, field.Name, isPointer, isInterface, genhelpers.CastToString)
 	case isSdkDeclaredObject && underlyingTypeWithoutPtr == "int":
-		return SchemaField{name, schema.TypeInt, field.Name, isPointer, isInterface, genhelpers.CastToInt}
+		return schemaField(name, schema.TypeInt, field.Name, isPointer, isInterface, genhelpers.CastToInt)
 	}
-	return SchemaField{name, schema.TypeInvalid, field.Name, isPointer, isInterface, genhelpers.Identity}
+	return schemaField(name, schema.TypeInvalid, field.Name, isPointer, isInterface, genhelpers.Identity)
+}
+
+func schemaField(name string, schemaType schema.ValueType, originalName string, isPointer, isInterface bool, mapper genhelpers.Mapper) SchemaField {
+	return SchemaField{
+		Name:                    name,
+		SchemaType:              schemaType,
+		OriginalName:            originalName,
+		IsOriginalTypePointer:   isPointer,
+		IsOriginalTypeInterface: isInterface,
+		Mapper:                  mapper,
+	}
 }

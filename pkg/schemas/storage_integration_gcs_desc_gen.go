@@ -25,6 +25,8 @@ var DescribeStorageIntegrationGcsDetailsSchema = mergeSchema(map[string]*schema.
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// allowed_locations: manual addition and mapping is needed
+	// blocked_locations: manual addition and mapping is needed
 	"comment": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -46,6 +48,8 @@ func StorageIntegrationGcsDetailsToSchema(storageIntegrationGcsDetails *sdk.Stor
 	storageIntegrationGcsDetailsSchema["id"] = storageIntegrationGcsDetails.Id.Name()
 	storageIntegrationGcsDetailsSchema["enabled"] = storageIntegrationGcsDetails.Enabled
 	storageIntegrationGcsDetailsSchema["provider"] = storageIntegrationGcsDetails.Provider
+	// allowed_locations: manual addition and mapping is needed
+	// blocked_locations: manual addition and mapping is needed
 	storageIntegrationGcsDetailsSchema["comment"] = storageIntegrationGcsDetails.Comment
 	storageIntegrationGcsDetailsSchema["use_privatelink_endpoint"] = storageIntegrationGcsDetails.UsePrivatelinkEndpoint
 	storageIntegrationGcsDetailsSchema["service_account"] = storageIntegrationGcsDetails.ServiceAccount

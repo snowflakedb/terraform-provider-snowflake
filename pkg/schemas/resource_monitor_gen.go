@@ -45,10 +45,12 @@ var ShowResourceMonitorSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// notify_at is skipped and won't be generated
 	"suspend_at": {
 		Type:     schema.TypeInt,
 		Computed: true,
 	},
+	// suspend_immediately_at: manual addition and mapping is needed
 	"created_on": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -61,6 +63,7 @@ var ShowResourceMonitorSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// notify_users is skipped and won't be generated
 }, resourceMonitorToSchemaMapper{}.additionalSchema())
 
 var _ = ShowResourceMonitorSchema
@@ -79,12 +82,15 @@ func ResourceMonitorToSchema(resourceMonitor *sdk.ResourceMonitor) map[string]an
 	}
 	resourceMonitorSchema["start_time"] = resourceMonitor.StartTime
 	resourceMonitorSchema["end_time"] = resourceMonitor.EndTime
+	// notify_at is skipped and won't be generated
 	if resourceMonitor.SuspendAt != nil {
 		resourceMonitorSchema["suspend_at"] = (*resourceMonitor.SuspendAt)
 	}
+	// suspend_immediately_at: manual addition and mapping is needed
 	resourceMonitorSchema["created_on"] = resourceMonitor.CreatedOn.String()
 	resourceMonitorSchema["owner"] = resourceMonitor.Owner
 	resourceMonitorSchema["comment"] = resourceMonitor.Comment
+	// notify_users is skipped and won't be generated
 	resourceMonitorToSchemaMapper{}.additionalToSchema(resourceMonitor, resourceMonitorSchema)
 	return resourceMonitorSchema
 }

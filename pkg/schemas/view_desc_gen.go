@@ -41,6 +41,7 @@ var DescribeViewDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
+	// check: manual addition and mapping is needed
 	"expression": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -72,6 +73,7 @@ func ViewDetailsToSchema(viewDetails *sdk.ViewDetails) map[string]any {
 	}
 	viewDetailsSchema["is_primary"] = viewDetails.IsPrimary
 	viewDetailsSchema["is_unique"] = viewDetails.IsUnique
+	// check: manual addition and mapping is needed
 	if viewDetails.Expression != nil {
 		viewDetailsSchema["expression"] = (*viewDetails.Expression)
 	}

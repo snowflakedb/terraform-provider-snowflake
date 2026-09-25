@@ -37,6 +37,7 @@ var ShowTagSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// allowed_values: manual addition and mapping is needed
 	"owner_role_type": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -61,6 +62,7 @@ func TagToSchema(tag *sdk.Tag) map[string]any {
 	tagSchema["schema_name"] = tag.SchemaName
 	tagSchema["owner"] = tag.Owner
 	tagSchema["comment"] = tag.Comment
+	// allowed_values: manual addition and mapping is needed
 	tagSchema["owner_role_type"] = tag.OwnerRoleType
 	if tag.Propagate != nil {
 		tagSchema["propagate"] = string((*tag.Propagate))

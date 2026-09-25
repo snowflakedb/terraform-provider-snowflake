@@ -29,10 +29,16 @@ var {{ $schemaVar }} = mergeSchema(map[string]*schema.Schema{
 var {{ $schemaVar }} = map[string]*schema.Schema{
 {{- end }}
 {{- range .SchemaFields }}
+    {{- if .Manual }}
+    // {{ .Name }}: manual addition and mapping is needed
+    {{- else if .Skipped }}
+    // {{ .Name }} is skipped and won't be generated
+    {{- else }}
     "{{ .Name }}": {
     Type:     schema.{{ .SchemaType }},
     Computed: true,
     },
+    {{- end }}
 {{- end }}
 {{- if .AdditionalMapping }}
 }, {{ $mapperTypeName }}{}.additionalSchema())

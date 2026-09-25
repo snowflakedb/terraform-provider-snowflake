@@ -41,6 +41,7 @@ var DescribeTableColumnDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
+	// check: manual addition and mapping is needed
 	"expression": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -76,6 +77,7 @@ func TableColumnDetailsToSchema(tableColumnDetails *sdk.TableColumnDetails) map[
 	}
 	tableColumnDetailsSchema["is_primary"] = tableColumnDetails.IsPrimary
 	tableColumnDetailsSchema["is_unique"] = tableColumnDetails.IsUnique
+	// check: manual addition and mapping is needed
 	if tableColumnDetails.Expression != nil {
 		tableColumnDetailsSchema["expression"] = (*tableColumnDetails.Expression)
 	}

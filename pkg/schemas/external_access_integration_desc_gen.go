@@ -17,6 +17,9 @@ var DescribeExternalAccessIntegrationDetailsSchema = mergeSchema(map[string]*sch
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// allowed_network_rules: manual addition and mapping is needed
+	// allowed_api_authentication_integrations: manual addition and mapping is needed
+	// allowed_authentication_secrets: manual addition and mapping is needed
 	"enabled": {
 		Type:     schema.TypeBool,
 		Computed: true,
@@ -32,6 +35,9 @@ var _ = DescribeExternalAccessIntegrationDetailsSchema
 func ExternalAccessIntegrationDetailsToSchema(externalAccessIntegrationDetails *sdk.ExternalAccessIntegrationDetails) map[string]any {
 	externalAccessIntegrationDetailsSchema := make(map[string]any)
 	externalAccessIntegrationDetailsSchema["id"] = externalAccessIntegrationDetails.Id.Name()
+	// allowed_network_rules: manual addition and mapping is needed
+	// allowed_api_authentication_integrations: manual addition and mapping is needed
+	// allowed_authentication_secrets: manual addition and mapping is needed
 	externalAccessIntegrationDetailsSchema["enabled"] = externalAccessIntegrationDetails.Enabled
 	externalAccessIntegrationDetailsSchema["comment"] = externalAccessIntegrationDetails.Comment
 	externalAccessIntegrationDetailsToSchemaMapper{}.additionalToSchema(externalAccessIntegrationDetails, externalAccessIntegrationDetailsSchema)

@@ -33,6 +33,7 @@ var DescribeFileFormatAvroSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
+	// null_if: manual addition and mapping is needed
 }, fileFormatAvroToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeFileFormatAvroSchema
@@ -44,6 +45,7 @@ func FileFormatAvroToSchema(fileFormatAvro *sdk.FileFormatAvro) map[string]any {
 	fileFormatAvroSchema["compression"] = string(fileFormatAvro.Compression)
 	fileFormatAvroSchema["trim_space"] = fileFormatAvro.TrimSpace
 	fileFormatAvroSchema["replace_invalid_characters"] = fileFormatAvro.ReplaceInvalidCharacters
+	// null_if: manual addition and mapping is needed
 	fileFormatAvroToSchemaMapper{}.additionalToSchema(fileFormatAvro, fileFormatAvroSchema)
 	return fileFormatAvroSchema
 }

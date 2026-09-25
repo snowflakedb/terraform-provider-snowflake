@@ -17,6 +17,8 @@ var DescribeIcebergTableDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// type: manual addition and mapping is needed
+	// data_type_raw is skipped and won't be generated
 	"source_iceberg_type": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -76,6 +78,8 @@ var _ = DescribeIcebergTableDetailsSchema
 func IcebergTableDetailsToSchema(icebergTableDetails *sdk.IcebergTableDetails) map[string]any {
 	icebergTableDetailsSchema := make(map[string]any)
 	icebergTableDetailsSchema["name"] = icebergTableDetails.Name
+	// type: manual addition and mapping is needed
+	// data_type_raw is skipped and won't be generated
 	if icebergTableDetails.SourceIcebergType != nil {
 		icebergTableDetailsSchema["source_iceberg_type"] = (*icebergTableDetails.SourceIcebergType)
 	}

@@ -89,6 +89,7 @@ var ShowComputePoolSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// backup_instance_families: manual addition and mapping is needed
 }, computePoolToSchemaMapper{}.additionalSchema())
 
 var _ = ShowComputePoolSchema
@@ -118,6 +119,7 @@ func ComputePoolToSchema(computePool *sdk.ComputePool) map[string]any {
 	if computePool.Application != nil {
 		computePoolSchema["application"] = (*computePool.Application).Name()
 	}
+	// backup_instance_families: manual addition and mapping is needed
 	computePoolToSchemaMapper{}.additionalToSchema(computePool, computePoolSchema)
 	return computePoolSchema
 }

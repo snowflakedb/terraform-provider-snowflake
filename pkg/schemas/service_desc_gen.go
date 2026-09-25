@@ -69,6 +69,7 @@ var DescribeServiceDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
+	// external_access_integrations: manual addition and mapping is needed
 	"created_on": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -145,6 +146,7 @@ func ServiceDetailsToSchema(serviceDetails *sdk.ServiceDetails) map[string]any {
 	serviceDetailsSchema["min_instances"] = serviceDetails.MinInstances
 	serviceDetailsSchema["max_instances"] = serviceDetails.MaxInstances
 	serviceDetailsSchema["auto_resume"] = serviceDetails.AutoResume
+	// external_access_integrations: manual addition and mapping is needed
 	serviceDetailsSchema["created_on"] = serviceDetails.CreatedOn.String()
 	serviceDetailsSchema["updated_on"] = serviceDetails.UpdatedOn.String()
 	if serviceDetails.ResumedOn != nil {

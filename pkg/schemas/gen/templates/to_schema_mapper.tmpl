@@ -6,15 +6,19 @@
 func {{ .Name }}ToSchema({{ $nameLowerCase }} *{{ .SdkType }}) map[string]any {
 {{ $schemaName }} := make(map[string]any)
 {{- range .SchemaFields }}
-    {{ if .IsOriginalTypePointer -}}
+    {{- if .Manual }}
+    // {{ .Name }}: manual addition and mapping is needed
+    {{- else if .Skipped }}
+    // {{ .Name }} is skipped and won't be generated
+    {{- else if .IsOriginalTypePointer }}
         if {{ $nameLowerCase }}.{{ .OriginalName }} != nil {
         {{ $schemaName }}["{{ .Name }}"] = {{ RunMapper .Mapper "(*" $nameLowerCase "." .OriginalName ")" }}
         }
-    {{- else if .IsOriginalTypeInterface -}}
+    {{- else if .IsOriginalTypeInterface }}
         if {{ $nameLowerCase }}.{{ .OriginalName }} != nil {
         {{ $schemaName }}["{{ .Name }}"] = {{ RunMapper .Mapper $nameLowerCase "." .OriginalName }}
         }
-    {{- else -}}
+    {{- else }}
         {{ $schemaName }}["{{ .Name }}"] = {{ RunMapper .Mapper $nameLowerCase "." .OriginalName }}
     {{- end -}}
 {{- end }}

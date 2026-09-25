@@ -37,6 +37,8 @@ var DescribeSessionPolicyDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeInt,
 		Computed: true,
 	},
+	// allowed_secondary_roles: manual addition and mapping is needed
+	// blocked_secondary_roles: manual addition and mapping is needed
 }, sessionPolicyDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeSessionPolicyDetailsSchema
@@ -49,6 +51,8 @@ func SessionPolicyDetailsToSchema(sessionPolicyDetails *sdk.SessionPolicyDetails
 	sessionPolicyDetailsSchema["comment"] = sessionPolicyDetails.Comment
 	sessionPolicyDetailsSchema["session_idle_timeout_mins"] = sessionPolicyDetails.SessionIdleTimeoutMins
 	sessionPolicyDetailsSchema["session_ui_idle_timeout_mins"] = sessionPolicyDetails.SessionUiIdleTimeoutMins
+	// allowed_secondary_roles: manual addition and mapping is needed
+	// blocked_secondary_roles: manual addition and mapping is needed
 	sessionPolicyDetailsToSchemaMapper{}.additionalToSchema(sessionPolicyDetails, sessionPolicyDetailsSchema)
 	return sessionPolicyDetailsSchema
 }

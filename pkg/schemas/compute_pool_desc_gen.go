@@ -89,6 +89,7 @@ var DescribeComputePoolDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// backup_instance_families: manual addition and mapping is needed
 	"error_code": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -126,6 +127,7 @@ func ComputePoolDetailsToSchema(computePoolDetails *sdk.ComputePoolDetails) map[
 	if computePoolDetails.Application != nil {
 		computePoolDetailsSchema["application"] = (*computePoolDetails.Application).Name()
 	}
+	// backup_instance_families: manual addition and mapping is needed
 	computePoolDetailsSchema["error_code"] = computePoolDetails.ErrorCode
 	computePoolDetailsSchema["status_message"] = computePoolDetails.StatusMessage
 	computePoolDetailsToSchemaMapper{}.additionalToSchema(computePoolDetails, computePoolDetailsSchema)

@@ -45,6 +45,7 @@ var ShowSessionPolicySchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// target_scopes is skipped and won't be generated
 }
 
 var _ = ShowSessionPolicySchema
@@ -60,6 +61,7 @@ func SessionPolicyToSchema(sessionPolicy *sdk.SessionPolicy) map[string]any {
 	sessionPolicySchema["comment"] = sessionPolicy.Comment
 	sessionPolicySchema["owner_role_type"] = sessionPolicy.OwnerRoleType
 	sessionPolicySchema["options"] = sessionPolicy.Options
+	// target_scopes is skipped and won't be generated
 	return sessionPolicySchema
 }
 

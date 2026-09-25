@@ -53,6 +53,7 @@ var DescribeSecretDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// oauth_scopes: manual addition and mapping is needed
 	"integration_name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -81,6 +82,7 @@ func SecretDetailsToSchema(secretDetails *sdk.SecretDetails) map[string]any {
 	if secretDetails.OauthRefreshTokenExpiryTime != nil {
 		secretDetailsSchema["oauth_refresh_token_expiry_time"] = (*secretDetails.OauthRefreshTokenExpiryTime).String()
 	}
+	// oauth_scopes: manual addition and mapping is needed
 	if secretDetails.IntegrationName != nil {
 		secretDetailsSchema["integration_name"] = (*secretDetails.IntegrationName)
 	}

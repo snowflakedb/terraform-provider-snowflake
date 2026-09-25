@@ -33,6 +33,7 @@ var DescribeFileFormatXmlSchema = map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
+	// disable_snowflake_data is skipped and won't be generated
 	"disable_auto_convert": {
 		Type:     schema.TypeBool,
 		Computed: true,
@@ -57,6 +58,7 @@ func FileFormatXmlToSchema(fileFormatXml *sdk.FileFormatXml) map[string]any {
 	fileFormatXmlSchema["ignore_utf8_errors"] = fileFormatXml.IgnoreUtf8Errors
 	fileFormatXmlSchema["preserve_space"] = fileFormatXml.PreserveSpace
 	fileFormatXmlSchema["strip_outer_element"] = fileFormatXml.StripOuterElement
+	// disable_snowflake_data is skipped and won't be generated
 	fileFormatXmlSchema["disable_auto_convert"] = fileFormatXml.DisableAutoConvert
 	fileFormatXmlSchema["replace_invalid_characters"] = fileFormatXml.ReplaceInvalidCharacters
 	fileFormatXmlSchema["skip_byte_order_mark"] = fileFormatXml.SkipByteOrderMark

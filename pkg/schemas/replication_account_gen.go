@@ -29,6 +29,7 @@ var ShowReplicationAccountSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// comment: manual addition and mapping is needed
 	"organization_name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -47,6 +48,7 @@ func ReplicationAccountToSchema(replicationAccount *sdk.ReplicationAccount) map[
 	replicationAccountSchema["created_on"] = replicationAccount.CreatedOn.String()
 	replicationAccountSchema["account_name"] = replicationAccount.AccountName
 	replicationAccountSchema["account_locator"] = replicationAccount.AccountLocator
+	// comment: manual addition and mapping is needed
 	replicationAccountSchema["organization_name"] = replicationAccount.OrganizationName
 	replicationAccountSchema["is_org_admin"] = replicationAccount.IsOrgAdmin
 	replicationAccountToSchemaMapper{}.additionalToSchema(replicationAccount, replicationAccountSchema)

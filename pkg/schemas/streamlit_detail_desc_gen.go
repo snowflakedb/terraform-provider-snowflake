@@ -21,6 +21,7 @@ var DescribeStreamlitDetailSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// root_location: manual addition and mapping is needed
 	"main_file": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -37,6 +38,9 @@ var DescribeStreamlitDetailSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// user_packages: manual addition and mapping is needed
+	// import_urls: manual addition and mapping is needed
+	// external_access_integrations: manual addition and mapping is needed
 	"external_access_secrets": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -49,10 +53,14 @@ func StreamlitDetailToSchema(streamlitDetail *sdk.StreamlitDetail) map[string]an
 	streamlitDetailSchema := make(map[string]any)
 	streamlitDetailSchema["name"] = streamlitDetail.Name
 	streamlitDetailSchema["title"] = streamlitDetail.Title
+	// root_location: manual addition and mapping is needed
 	streamlitDetailSchema["main_file"] = streamlitDetail.MainFile
 	streamlitDetailSchema["query_warehouse"] = streamlitDetail.QueryWarehouse
 	streamlitDetailSchema["url_id"] = streamlitDetail.UrlId
 	streamlitDetailSchema["default_packages"] = streamlitDetail.DefaultPackages
+	// user_packages: manual addition and mapping is needed
+	// import_urls: manual addition and mapping is needed
+	// external_access_integrations: manual addition and mapping is needed
 	streamlitDetailSchema["external_access_secrets"] = streamlitDetail.ExternalAccessSecrets
 	streamlitDetailToSchemaMapper{}.additionalToSchema(streamlitDetail, streamlitDetailSchema)
 	return streamlitDetailSchema

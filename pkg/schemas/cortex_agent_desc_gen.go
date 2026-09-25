@@ -33,6 +33,7 @@ var DescribeCortexAgentDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// profile: manual addition and mapping is needed
 	"agent_spec": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -64,6 +65,7 @@ func CortexAgentDetailsToSchema(cortexAgentDetails *sdk.CortexAgentDetails) map[
 	cortexAgentDetailsSchema["schema_name"] = cortexAgentDetails.SchemaName
 	cortexAgentDetailsSchema["owner"] = cortexAgentDetails.Owner
 	cortexAgentDetailsSchema["comment"] = cortexAgentDetails.Comment
+	// profile: manual addition and mapping is needed
 	cortexAgentDetailsSchema["agent_spec"] = cortexAgentDetails.AgentSpec
 	cortexAgentDetailsSchema["created_on"] = cortexAgentDetails.CreatedOn.String()
 	if cortexAgentDetails.DefaultVersionName != nil {

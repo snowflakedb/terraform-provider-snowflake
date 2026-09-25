@@ -29,6 +29,7 @@ var DescribeFileFormatOrcSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
+	// null_if: manual addition and mapping is needed
 }, fileFormatOrcToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeFileFormatOrcSchema
@@ -39,6 +40,7 @@ func FileFormatOrcToSchema(fileFormatOrc *sdk.FileFormatOrc) map[string]any {
 	fileFormatOrcSchema["type"] = string(fileFormatOrc.Type)
 	fileFormatOrcSchema["trim_space"] = fileFormatOrc.TrimSpace
 	fileFormatOrcSchema["replace_invalid_characters"] = fileFormatOrc.ReplaceInvalidCharacters
+	// null_if: manual addition and mapping is needed
 	fileFormatOrcToSchemaMapper{}.additionalToSchema(fileFormatOrc, fileFormatOrcSchema)
 	return fileFormatOrcSchema
 }

@@ -33,6 +33,7 @@ var ShowOpenflowConnectorDefinitionSchema = mergeSchema(map[string]*schema.Schem
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// categories: manual addition and mapping is needed
 	"min_runtime_node_type": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -52,6 +53,7 @@ func OpenflowConnectorDefinitionToSchema(openflowConnectorDefinition *sdk.Openfl
 	openflowConnectorDefinitionSchema["version"] = openflowConnectorDefinition.Version
 	openflowConnectorDefinitionSchema["description"] = openflowConnectorDefinition.Description
 	openflowConnectorDefinitionSchema["display_name"] = openflowConnectorDefinition.DisplayName
+	// categories: manual addition and mapping is needed
 	if openflowConnectorDefinition.MinRuntimeNodeType != nil {
 		openflowConnectorDefinitionSchema["min_runtime_node_type"] = (*openflowConnectorDefinition.MinRuntimeNodeType)
 	}

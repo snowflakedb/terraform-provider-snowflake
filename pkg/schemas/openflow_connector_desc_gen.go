@@ -9,6 +9,7 @@ import (
 
 // DescribeOpenflowConnectorDetailsSchema represents output of DESCRIBE query for the single OpenflowConnectorDetails.
 var DescribeOpenflowConnectorDetailsSchema = map[string]*schema.Schema{
+	// id is skipped and won't be generated
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -95,6 +96,7 @@ var _ = DescribeOpenflowConnectorDetailsSchema
 
 func OpenflowConnectorDetailsToSchema(openflowConnectorDetails *sdk.OpenflowConnectorDetails) map[string]any {
 	openflowConnectorDetailsSchema := make(map[string]any)
+	// id is skipped and won't be generated
 	openflowConnectorDetailsSchema["name"] = openflowConnectorDetails.Name
 	openflowConnectorDetailsSchema["status"] = string(openflowConnectorDetails.Status)
 	openflowConnectorDetailsSchema["runtime"] = openflowConnectorDetails.Runtime

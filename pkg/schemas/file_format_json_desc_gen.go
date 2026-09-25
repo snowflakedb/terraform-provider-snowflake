@@ -49,6 +49,7 @@ var DescribeFileFormatJsonSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
+	// null_if: manual addition and mapping is needed
 	"file_extension": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -96,6 +97,7 @@ func FileFormatJsonToSchema(fileFormatJson *sdk.FileFormatJson) map[string]any {
 	fileFormatJsonSchema["binary_format"] = string(fileFormatJson.BinaryFormat)
 	fileFormatJsonSchema["trim_space"] = fileFormatJson.TrimSpace
 	fileFormatJsonSchema["multi_line"] = fileFormatJson.MultiLine
+	// null_if: manual addition and mapping is needed
 	fileFormatJsonSchema["file_extension"] = fileFormatJson.FileExtension
 	fileFormatJsonSchema["enable_octal"] = fileFormatJson.EnableOctal
 	fileFormatJsonSchema["allow_duplicate"] = fileFormatJson.AllowDuplicate

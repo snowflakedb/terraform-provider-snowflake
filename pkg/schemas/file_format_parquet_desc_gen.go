@@ -45,6 +45,7 @@ var DescribeFileFormatParquetSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
+	// null_if: manual addition and mapping is needed
 }, fileFormatParquetToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeFileFormatParquetSchema
@@ -59,6 +60,7 @@ func FileFormatParquetToSchema(fileFormatParquet *sdk.FileFormatParquet) map[str
 	fileFormatParquetSchema["trim_space"] = fileFormatParquet.TrimSpace
 	fileFormatParquetSchema["use_vectorized_scanner"] = fileFormatParquet.UseVectorizedScanner
 	fileFormatParquetSchema["replace_invalid_characters"] = fileFormatParquet.ReplaceInvalidCharacters
+	// null_if: manual addition and mapping is needed
 	fileFormatParquetToSchemaMapper{}.additionalToSchema(fileFormatParquet, fileFormatParquetSchema)
 	return fileFormatParquetSchema
 }

@@ -41,6 +41,7 @@ var ShowOpenflowRuntimeSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// external_access_integrations: manual addition and mapping is needed
 	"initially_suspended": {
 		Type:     schema.TypeBool,
 		Computed: true,
@@ -92,6 +93,7 @@ func OpenflowRuntimeToSchema(openflowRuntime *sdk.OpenflowRuntime) map[string]an
 	if openflowRuntime.DisplayName != nil {
 		openflowRuntimeSchema["display_name"] = (*openflowRuntime.DisplayName)
 	}
+	// external_access_integrations: manual addition and mapping is needed
 	openflowRuntimeSchema["initially_suspended"] = openflowRuntime.InitiallySuspended
 	openflowRuntimeSchema["database_name"] = openflowRuntime.DatabaseName
 	openflowRuntimeSchema["schema_name"] = openflowRuntime.SchemaName

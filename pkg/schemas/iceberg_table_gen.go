@@ -77,6 +77,8 @@ var ShowIcebergTableSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// auto_refresh_status: manual addition and mapping is needed
+	// partition_specs: manual addition and mapping is needed
 	"current_partition_spec_id": {
 		Type:     schema.TypeInt,
 		Computed: true,
@@ -123,6 +125,8 @@ func IcebergTableToSchema(icebergTable *sdk.IcebergTable) map[string]any {
 	}
 	icebergTableSchema["owner_role_type"] = icebergTable.OwnerRoleType
 	icebergTableSchema["catalog_sync_name"] = icebergTable.CatalogSyncName
+	// auto_refresh_status: manual addition and mapping is needed
+	// partition_specs: manual addition and mapping is needed
 	icebergTableSchema["current_partition_spec_id"] = icebergTable.CurrentPartitionSpecId
 	icebergTableSchema["iceberg_table_format_version"] = icebergTable.IcebergTableFormatVersion
 	icebergTableToSchemaMapper{}.additionalToSchema(icebergTable, icebergTableSchema)

@@ -45,6 +45,7 @@ var ShowStreamSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// base_tables: manual addition and mapping is needed
 	"type": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -91,6 +92,7 @@ func StreamToSchema(stream *sdk.Stream) map[string]any {
 	if stream.SourceType != nil {
 		streamSchema["source_type"] = string((*stream.SourceType))
 	}
+	// base_tables: manual addition and mapping is needed
 	if stream.Type != nil {
 		streamSchema["type"] = (*stream.Type)
 	}

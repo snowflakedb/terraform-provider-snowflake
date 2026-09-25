@@ -13,6 +13,7 @@ var _ additionalSchemaMapper[sdk.FunctionDetails] = functionDetailsToSchemaMappe
 
 // DescribeFunctionDetailsSchema represents output of DESCRIBE query for the single FunctionDetails.
 var DescribeFunctionDetailsSchema = mergeSchema(map[string]*schema.Schema{
+	// id is skipped and won't be generated
 	"signature": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -73,16 +74,24 @@ var DescribeFunctionDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
+	// normalized_imports is skipped and won't be generated
+	// normalized_target_path is skipped and won't be generated
+	// return_data_type: manual addition and mapping is needed
 	"return_not_null": {
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
+	// normalized_arguments is skipped and won't be generated
+	// normalized_external_access_integrations is skipped and won't be generated
+	// normalized_secrets is skipped and won't be generated
+	// normalized_packages is skipped and won't be generated
 }, functionDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeFunctionDetailsSchema
 
 func FunctionDetailsToSchema(functionDetails *sdk.FunctionDetails) map[string]any {
 	functionDetailsSchema := make(map[string]any)
+	// id is skipped and won't be generated
 	functionDetailsSchema["signature"] = functionDetails.Signature
 	functionDetailsSchema["returns"] = functionDetails.Returns
 	functionDetailsSchema["language"] = functionDetails.Language
@@ -122,7 +131,14 @@ func FunctionDetailsToSchema(functionDetails *sdk.FunctionDetails) map[string]an
 	if functionDetails.IsAggregate != nil {
 		functionDetailsSchema["is_aggregate"] = (*functionDetails.IsAggregate)
 	}
+	// normalized_imports is skipped and won't be generated
+	// normalized_target_path is skipped and won't be generated
+	// return_data_type: manual addition and mapping is needed
 	functionDetailsSchema["return_not_null"] = functionDetails.ReturnNotNull
+	// normalized_arguments is skipped and won't be generated
+	// normalized_external_access_integrations is skipped and won't be generated
+	// normalized_secrets is skipped and won't be generated
+	// normalized_packages is skipped and won't be generated
 	functionDetailsToSchemaMapper{}.additionalToSchema(functionDetails, functionDetailsSchema)
 	return functionDetailsSchema
 }
