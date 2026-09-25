@@ -1,6 +1,7 @@
 package schemas
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -16,5 +17,6 @@ func (fileFormatOrcToSchemaMapper) additionalSchema() map[string]*schema.Schema 
 }
 
 func (fileFormatOrcToSchemaMapper) additionalToSchema(src *sdk.FileFormatOrc, dst map[string]any) {
-	dst["null_if"] = src.NullIf
+	// TODO: drop this []any coerce when handleExternalChangesToObjectDeepEqual compares slices in a Terraform-aware way.
+	dst["null_if"] = collections.Map(src.NullIf, func(v string) any { return v })
 }

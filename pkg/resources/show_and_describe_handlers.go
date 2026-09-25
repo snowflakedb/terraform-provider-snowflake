@@ -20,6 +20,14 @@ func handleExternalChangesToObject(d *schema.ResourceData, outputAttributeName s
 	return handleExternalChangesToObjectCmp(d, outputAttributeName, func(a, b any) bool { return a == b }, mappings...)
 }
 
+// handleExternalChangesToObjectDeepEqual compares previous show/describe state with a fresh
+// mapper value via reflect.DeepEqual.
+//
+// TODO: SDKv2 TypeList round-trips as []any on Get, while generated ToSchema may emit native
+// []string. Type-strict DeepEqual then marks every refresh as an external change (file-format
+// null_if after #415). The comparer here should project both slices to []any (nil/empty equal)
+// so mappers can keep native slice types. Do not fix this with collections.Map in ToSchema or
+// per-field normalizeFunc (that's for semantic projections like SHOW options → TRANSIENT).
 func handleExternalChangesToObjectDeepEqual(d *schema.ResourceData, outputAttributeName string, mappings ...outputMapping) error {
 	return handleExternalChangesToObjectCmp(d, outputAttributeName, reflect.DeepEqual, mappings...)
 }

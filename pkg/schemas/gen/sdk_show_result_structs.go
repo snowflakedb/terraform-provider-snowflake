@@ -202,6 +202,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	// ManualFields nested type-specific structs (public schema is a flat union of per-type keys; nested mapping in ext).
 	{ObjectStruct: sdk.FileFormatAllDetails{}, IsDescribe: true, ManualFields: []string{"csv", "json", "avro", "orc", "parquet", "xml"}},
 	// TODO [next PRs]: drop null_if from ManualFields once MapToSchemaField maps []string.
+	// Until handleExternalChangesToObjectDeepEqual is Terraform-aware for TypeList, ext maps []string → []any.
 	{ObjectStruct: sdk.FileFormatAvro{}, IsDescribe: true, ManualFields: []string{"null_if"}},
 	// TODO [next PRs]: drop null_if from ManualFields once MapToSchemaField maps []string.
 	{ObjectStruct: sdk.FileFormatCsv{}, IsDescribe: true, ManualFields: []string{"null_if"}},
