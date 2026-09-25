@@ -339,18 +339,9 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.StreamlitDetail{}, IsDescribe: true, ManualFields: []string{"root_location", "user_packages", "import_urls", "external_access_integrations"}},
 	// ManualFields `check`: SDK is *bool; public describe_output is TypeString.
 	{ObjectStruct: sdk.TableColumnDetails{}, IsDescribe: true, ManualFields: []string{"check"}},
-	// TODO [next PRs]: UserDetails ManualFields+ext is temporary (no XxxProperty mapping).
-	// Flatten the SDK struct or add dedicated property handling, then drop ManualFields.
 	// Keep omitted: password (secret). Add later: rsa_public_key_last_set_time / rsa_public_key2_last_set_time (stale public schema).
 	{ObjectStruct: sdk.UserDetails{}, IsDescribe: true, SkipFields: []string{
 		"password", "rsa_public_key_last_set_time", "rsa_public_key2_last_set_time",
-	}, ManualFields: []string{
-		"name", "comment", "display_name", "type", "login_name", "first_name", "middle_name", "last_name", "email",
-		"must_change_password", "disabled", "snowflake_lock", "snowflake_support", "days_to_expiry", "mins_to_unlock",
-		"default_warehouse", "default_namespace", "default_role", "default_secondary_roles", "ext_authn_duo", "ext_authn_uid",
-		"mins_to_bypass_mfa", "mins_to_bypass_network_policy", "rsa_public_key", "rsa_public_key_fp",
-		"rsa_public_key2", "rsa_public_key2_fp", "password_last_set_time",
-		"custom_landing_page_url", "custom_landing_page_url_flush_next_ui_load", "has_mfa", "has_workload_identity",
 	}},
 	// ManualFields `check`: SDK is *bool; public describe_output is TypeString.
 	{ObjectStruct: sdk.ViewDetails{}, IsDescribe: true, ManualFields: []string{"check"}},

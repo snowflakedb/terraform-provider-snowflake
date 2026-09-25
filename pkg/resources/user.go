@@ -284,10 +284,10 @@ func GetImportUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 
 		err = errors.Join(
 			d.Set("name", id.Name()),
-			setFromStringPropertyIfNotNullOrEmpty(d, "login_name", userDetails.LoginName),
-			setFromStringPropertyIfNotNullOrEmpty(d, "display_name", userDetails.DisplayName),
-			setFromStringPropertyIfNotNullOrEmpty(d, "default_namespace", userDetails.DefaultNamespace),
-			setBooleanStringFromBoolProperty(d, "disabled", userDetails.Disabled),
+			setStringIfNotEmpty(d, "login_name", userDetails.LoginName),
+			setStringIfNotEmpty(d, "display_name", userDetails.DisplayName),
+			setStringIfNotEmpty(d, "default_namespace", userDetails.DefaultNamespace),
+			d.Set("disabled", booleanStringFromBool(userDetails.Disabled)),
 			d.Set("default_secondary_roles_option", u.GetSecondaryRolesOption()),
 			// all others are set in read
 		)
@@ -295,8 +295,7 @@ func GetImportUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			return nil, err
 		}
 		if userType == sdk.UserTypePerson || userType == sdk.UserTypeLegacyService {
-			err := setBooleanStringFromBoolProperty(d, "must_change_password", userDetails.MustChangePassword)
-			if err != nil {
+			if err := d.Set("must_change_password", booleanStringFromBool(userDetails.MustChangePassword)); err != nil {
 				return nil, err
 			}
 		}
@@ -516,19 +515,19 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 			// first_name handled separately for proper user types,
 			// middle_name handled separately for proper user types,
 			// last_name handled separately for proper user types,
-			setFromStringProperty(d, "email", userDetails.Email),
+			d.Set("email", userDetails.Email),
 			// not reading must_change_password on purpose (handled as external change to show output)
 			// not reading disabled on purpose (handled as external change to show output)
 			// not reading days_to_expiry on purpose (they always change)
 			// not reading mins_to_unlock on purpose (they always change)
-			setFromStringProperty(d, "default_warehouse", userDetails.DefaultWarehouse),
+			d.Set("default_warehouse", userDetails.DefaultWarehouse),
 			// not reading default_namespace because one-part namespace seems to be capitalized on Snowflake side (handled as external change to show output)
-			setFromStringProperty(d, "default_role", userDetails.DefaultRole),
+			d.Set("default_role", userDetails.DefaultRole),
 			// not setting default_secondary_role_option (handled as external change to show output)
 			// not reading mins_to_bypass_mfa on purpose (they always change)
-			setFromStringProperty(d, "rsa_public_key", userDetails.RsaPublicKey),
-			setFromStringProperty(d, "rsa_public_key_2", userDetails.RsaPublicKey2),
-			setFromStringProperty(d, "comment", userDetails.Comment),
+			d.Set("rsa_public_key", userDetails.RsaPublicKey),
+			d.Set("rsa_public_key_2", userDetails.RsaPublicKey2),
+			d.Set("comment", userDetails.Comment),
 			// can't read disable_mfa
 			d.Set("user_type", u.Type),
 			// default_workload_identity handled separately for proper user types,
@@ -537,9 +536,9 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 				var errs error
 				if userType == sdk.UserTypePerson {
 					errs = errors.Join(
-						setFromStringProperty(rd, "first_name", ud.FirstName),
-						setFromStringProperty(rd, "middle_name", ud.MiddleName),
-						setFromStringProperty(rd, "last_name", ud.LastName),
+						rd.Set("first_name", ud.FirstName),
+						rd.Set("middle_name", ud.MiddleName),
+						rd.Set("last_name", ud.LastName),
 					)
 				}
 				providerCtx := meta.(*provider.Context)

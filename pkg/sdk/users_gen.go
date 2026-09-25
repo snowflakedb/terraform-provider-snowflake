@@ -330,41 +330,41 @@ type UserProperty struct {
 }
 
 type UserDetails struct {
-	Name                                *StringProperty
-	Comment                             *StringProperty
-	DisplayName                         *StringProperty
-	Type                                *StringProperty
-	LoginName                           *StringProperty
-	FirstName                           *StringProperty
-	MiddleName                          *StringProperty
-	LastName                            *StringProperty
-	Email                               *StringProperty
-	Password                            *StringProperty
-	MustChangePassword                  *BoolProperty
-	Disabled                            *BoolProperty
-	SnowflakeLock                       *BoolProperty
-	SnowflakeSupport                    *BoolProperty
-	DaysToExpiry                        *FloatProperty
-	MinsToUnlock                        *IntProperty
-	DefaultWarehouse                    *StringProperty
-	DefaultNamespace                    *StringProperty
-	DefaultRole                         *StringProperty
-	DefaultSecondaryRoles               *StringProperty
-	ExtAuthnDuo                         *BoolProperty
-	ExtAuthnUid                         *StringProperty
-	MinsToBypassMfa                     *IntProperty
-	MinsToBypassNetworkPolicy           *IntProperty
-	RsaPublicKey                        *StringProperty
-	RsaPublicKeyFp                      *StringProperty
-	RsaPublicKeyLastSetTime             *StringProperty
-	RsaPublicKey2                       *StringProperty
-	RsaPublicKey2Fp                     *StringProperty
-	RsaPublicKey2LastSetTime            *StringProperty
-	PasswordLastSetTime                 *StringProperty
-	CustomLandingPageUrl                *StringProperty
-	CustomLandingPageUrlFlushNextUiLoad *BoolProperty
-	HasMfa                              *BoolProperty
-	HasWorkloadIdentity                 *BoolProperty
+	Name                                string
+	Comment                             string
+	DisplayName                         string
+	Type                                string
+	LoginName                           string
+	FirstName                           string
+	MiddleName                          string
+	LastName                            string
+	Email                               string
+	Password                            string
+	MustChangePassword                  bool
+	Disabled                            bool
+	SnowflakeLock                       bool
+	SnowflakeSupport                    bool
+	DaysToExpiry                        *float64
+	MinsToUnlock                        *int
+	DefaultWarehouse                    string
+	DefaultNamespace                    string
+	DefaultRole                         string
+	DefaultSecondaryRoles               string
+	ExtAuthnDuo                         bool
+	ExtAuthnUid                         string
+	MinsToBypassMfa                     *int
+	MinsToBypassNetworkPolicy           *int
+	RsaPublicKey                        string
+	RsaPublicKeyFp                      string
+	RsaPublicKeyLastSetTime             string
+	RsaPublicKey2                       string
+	RsaPublicKey2Fp                     string
+	RsaPublicKey2LastSetTime            string
+	PasswordLastSetTime                 string
+	CustomLandingPageUrl                string
+	CustomLandingPageUrlFlushNextUiLoad bool
+	HasMfa                              bool
+	HasWorkloadIdentity                 bool
 }
 
 // ShowUserWorkloadIdentityAuthenticationMethodOptionsUserOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-user-workload-identity-authentication-methods.

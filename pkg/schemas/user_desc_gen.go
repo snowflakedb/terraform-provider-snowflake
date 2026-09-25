@@ -7,89 +7,188 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type userDetailsToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.UserDetails] = userDetailsToSchemaMapper{}
-
 // DescribeUserDetailsSchema represents output of DESCRIBE query for the single UserDetails.
-var DescribeUserDetailsSchema = mergeSchema(map[string]*schema.Schema{
-	// name: manual addition and mapping is needed
-	// comment: manual addition and mapping is needed
-	// display_name: manual addition and mapping is needed
-	// type: manual addition and mapping is needed
-	// login_name: manual addition and mapping is needed
-	// first_name: manual addition and mapping is needed
-	// middle_name: manual addition and mapping is needed
-	// last_name: manual addition and mapping is needed
-	// email: manual addition and mapping is needed
+var DescribeUserDetailsSchema = map[string]*schema.Schema{
+	"name": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"comment": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"display_name": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"type": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"login_name": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"first_name": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"middle_name": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"last_name": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"email": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	// password is skipped and won't be generated
-	// must_change_password: manual addition and mapping is needed
-	// disabled: manual addition and mapping is needed
-	// snowflake_lock: manual addition and mapping is needed
-	// snowflake_support: manual addition and mapping is needed
-	// days_to_expiry: manual addition and mapping is needed
-	// mins_to_unlock: manual addition and mapping is needed
-	// default_warehouse: manual addition and mapping is needed
-	// default_namespace: manual addition and mapping is needed
-	// default_role: manual addition and mapping is needed
-	// default_secondary_roles: manual addition and mapping is needed
-	// ext_authn_duo: manual addition and mapping is needed
-	// ext_authn_uid: manual addition and mapping is needed
-	// mins_to_bypass_mfa: manual addition and mapping is needed
-	// mins_to_bypass_network_policy: manual addition and mapping is needed
-	// rsa_public_key: manual addition and mapping is needed
-	// rsa_public_key_fp: manual addition and mapping is needed
+	"must_change_password": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
+	"disabled": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
+	"snowflake_lock": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
+	"snowflake_support": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
+	"days_to_expiry": {
+		Type:     schema.TypeFloat,
+		Computed: true,
+	},
+	"mins_to_unlock": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+	"default_warehouse": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"default_namespace": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"default_role": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"default_secondary_roles": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"ext_authn_duo": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
+	"ext_authn_uid": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"mins_to_bypass_mfa": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+	"mins_to_bypass_network_policy": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+	"rsa_public_key": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"rsa_public_key_fp": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	// rsa_public_key_last_set_time is skipped and won't be generated
-	// rsa_public_key2: manual addition and mapping is needed
-	// rsa_public_key2_fp: manual addition and mapping is needed
+	"rsa_public_key2": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"rsa_public_key2_fp": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	// rsa_public_key2_last_set_time is skipped and won't be generated
-	// password_last_set_time: manual addition and mapping is needed
-	// custom_landing_page_url: manual addition and mapping is needed
-	// custom_landing_page_url_flush_next_ui_load: manual addition and mapping is needed
-	// has_mfa: manual addition and mapping is needed
-	// has_workload_identity: manual addition and mapping is needed
-}, userDetailsToSchemaMapper{}.additionalSchema())
+	"password_last_set_time": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"custom_landing_page_url": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"custom_landing_page_url_flush_next_ui_load": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
+	"has_mfa": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
+	"has_workload_identity": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
+}
 
 var _ = DescribeUserDetailsSchema
 
 func UserDetailsToSchema(userDetails *sdk.UserDetails) map[string]any {
 	userDetailsSchema := make(map[string]any)
-	// name: manual addition and mapping is needed
-	// comment: manual addition and mapping is needed
-	// display_name: manual addition and mapping is needed
-	// type: manual addition and mapping is needed
-	// login_name: manual addition and mapping is needed
-	// first_name: manual addition and mapping is needed
-	// middle_name: manual addition and mapping is needed
-	// last_name: manual addition and mapping is needed
-	// email: manual addition and mapping is needed
+	userDetailsSchema["name"] = userDetails.Name
+	userDetailsSchema["comment"] = userDetails.Comment
+	userDetailsSchema["display_name"] = userDetails.DisplayName
+	userDetailsSchema["type"] = userDetails.Type
+	userDetailsSchema["login_name"] = userDetails.LoginName
+	userDetailsSchema["first_name"] = userDetails.FirstName
+	userDetailsSchema["middle_name"] = userDetails.MiddleName
+	userDetailsSchema["last_name"] = userDetails.LastName
+	userDetailsSchema["email"] = userDetails.Email
 	// password is skipped and won't be generated
-	// must_change_password: manual addition and mapping is needed
-	// disabled: manual addition and mapping is needed
-	// snowflake_lock: manual addition and mapping is needed
-	// snowflake_support: manual addition and mapping is needed
-	// days_to_expiry: manual addition and mapping is needed
-	// mins_to_unlock: manual addition and mapping is needed
-	// default_warehouse: manual addition and mapping is needed
-	// default_namespace: manual addition and mapping is needed
-	// default_role: manual addition and mapping is needed
-	// default_secondary_roles: manual addition and mapping is needed
-	// ext_authn_duo: manual addition and mapping is needed
-	// ext_authn_uid: manual addition and mapping is needed
-	// mins_to_bypass_mfa: manual addition and mapping is needed
-	// mins_to_bypass_network_policy: manual addition and mapping is needed
-	// rsa_public_key: manual addition and mapping is needed
-	// rsa_public_key_fp: manual addition and mapping is needed
+	userDetailsSchema["must_change_password"] = userDetails.MustChangePassword
+	userDetailsSchema["disabled"] = userDetails.Disabled
+	userDetailsSchema["snowflake_lock"] = userDetails.SnowflakeLock
+	userDetailsSchema["snowflake_support"] = userDetails.SnowflakeSupport
+	if userDetails.DaysToExpiry != nil {
+		userDetailsSchema["days_to_expiry"] = (*userDetails.DaysToExpiry)
+	}
+	if userDetails.MinsToUnlock != nil {
+		userDetailsSchema["mins_to_unlock"] = (*userDetails.MinsToUnlock)
+	}
+	userDetailsSchema["default_warehouse"] = userDetails.DefaultWarehouse
+	userDetailsSchema["default_namespace"] = userDetails.DefaultNamespace
+	userDetailsSchema["default_role"] = userDetails.DefaultRole
+	userDetailsSchema["default_secondary_roles"] = userDetails.DefaultSecondaryRoles
+	userDetailsSchema["ext_authn_duo"] = userDetails.ExtAuthnDuo
+	userDetailsSchema["ext_authn_uid"] = userDetails.ExtAuthnUid
+	if userDetails.MinsToBypassMfa != nil {
+		userDetailsSchema["mins_to_bypass_mfa"] = (*userDetails.MinsToBypassMfa)
+	}
+	if userDetails.MinsToBypassNetworkPolicy != nil {
+		userDetailsSchema["mins_to_bypass_network_policy"] = (*userDetails.MinsToBypassNetworkPolicy)
+	}
+	userDetailsSchema["rsa_public_key"] = userDetails.RsaPublicKey
+	userDetailsSchema["rsa_public_key_fp"] = userDetails.RsaPublicKeyFp
 	// rsa_public_key_last_set_time is skipped and won't be generated
-	// rsa_public_key2: manual addition and mapping is needed
-	// rsa_public_key2_fp: manual addition and mapping is needed
+	userDetailsSchema["rsa_public_key2"] = userDetails.RsaPublicKey2
+	userDetailsSchema["rsa_public_key2_fp"] = userDetails.RsaPublicKey2Fp
 	// rsa_public_key2_last_set_time is skipped and won't be generated
-	// password_last_set_time: manual addition and mapping is needed
-	// custom_landing_page_url: manual addition and mapping is needed
-	// custom_landing_page_url_flush_next_ui_load: manual addition and mapping is needed
-	// has_mfa: manual addition and mapping is needed
-	// has_workload_identity: manual addition and mapping is needed
-	userDetailsToSchemaMapper{}.additionalToSchema(userDetails, userDetailsSchema)
+	userDetailsSchema["password_last_set_time"] = userDetails.PasswordLastSetTime
+	userDetailsSchema["custom_landing_page_url"] = userDetails.CustomLandingPageUrl
+	userDetailsSchema["custom_landing_page_url_flush_next_ui_load"] = userDetails.CustomLandingPageUrlFlushNextUiLoad
+	userDetailsSchema["has_mfa"] = userDetails.HasMfa
+	userDetailsSchema["has_workload_identity"] = userDetails.HasWorkloadIdentity
 	return userDetailsSchema
 }
 

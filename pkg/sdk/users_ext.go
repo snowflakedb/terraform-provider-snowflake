@@ -58,75 +58,75 @@ func userDetailsFromRows(rows []UserProperty) *UserDetails {
 	for _, row := range rows {
 		switch row.Property {
 		case "NAME":
-			v.Name = row.toStringProperty()
+			v.Name = row.toStringProperty().Value
 		case "COMMENT":
-			v.Comment = row.toStringProperty()
+			v.Comment = row.toStringProperty().Value
 		case "DISPLAY_NAME":
-			v.DisplayName = row.toStringProperty()
+			v.DisplayName = row.toStringProperty().Value
 		case "TYPE":
-			v.Type = row.toStringProperty()
+			v.Type = row.toStringProperty().Value
 		case "LOGIN_NAME":
-			v.LoginName = row.toStringProperty()
+			v.LoginName = row.toStringProperty().Value
 		case "FIRST_NAME":
-			v.FirstName = row.toStringProperty()
+			v.FirstName = row.toStringProperty().Value
 		case "MIDDLE_NAME":
-			v.MiddleName = row.toStringProperty()
+			v.MiddleName = row.toStringProperty().Value
 		case "LAST_NAME":
-			v.LastName = row.toStringProperty()
+			v.LastName = row.toStringProperty().Value
 		case "EMAIL":
-			v.Email = row.toStringProperty()
+			v.Email = row.toStringProperty().Value
 		case "PASSWORD":
-			v.Password = row.toStringProperty()
+			v.Password = row.toStringProperty().Value
 		case "MUST_CHANGE_PASSWORD":
-			v.MustChangePassword = row.toBoolProperty()
+			v.MustChangePassword = row.toBoolProperty().Value
 		case "DISABLED":
-			v.Disabled = row.toBoolProperty()
+			v.Disabled = row.toBoolProperty().Value
 		case "SNOWFLAKE_LOCK":
-			v.SnowflakeLock = row.toBoolProperty()
+			v.SnowflakeLock = row.toBoolProperty().Value
 		case "SNOWFLAKE_SUPPORT":
-			v.SnowflakeSupport = row.toBoolProperty()
+			v.SnowflakeSupport = row.toBoolProperty().Value
 		case "DAYS_TO_EXPIRY":
-			v.DaysToExpiry = row.toFloatProperty()
+			v.DaysToExpiry = row.toFloatProperty().Value
 		case "MINS_TO_UNLOCK":
-			v.MinsToUnlock = row.toIntProperty()
+			v.MinsToUnlock = row.toIntProperty().Value
 		case "DEFAULT_WAREHOUSE":
-			v.DefaultWarehouse = row.toStringProperty()
+			v.DefaultWarehouse = row.toStringProperty().Value
 		case "DEFAULT_NAMESPACE":
-			v.DefaultNamespace = row.toStringProperty()
+			v.DefaultNamespace = row.toStringProperty().Value
 		case "DEFAULT_ROLE":
-			v.DefaultRole = row.toStringProperty()
+			v.DefaultRole = row.toStringProperty().Value
 		case "DEFAULT_SECONDARY_ROLES":
-			v.DefaultSecondaryRoles = row.toStringProperty()
+			v.DefaultSecondaryRoles = row.toStringProperty().Value
 		case "EXT_AUTHN_DUO":
-			v.ExtAuthnDuo = row.toBoolProperty()
+			v.ExtAuthnDuo = row.toBoolProperty().Value
 		case "EXT_AUTHN_UID":
-			v.ExtAuthnUid = row.toStringProperty()
+			v.ExtAuthnUid = row.toStringProperty().Value
 		case "HAS_MFA":
-			v.HasMfa = row.toBoolProperty()
+			v.HasMfa = row.toBoolProperty().Value
 		case "MINS_TO_BYPASS_MFA":
-			v.MinsToBypassMfa = row.toIntProperty()
+			v.MinsToBypassMfa = row.toIntProperty().Value
 		case "MINS_TO_BYPASS_NETWORK_POLICY":
-			v.MinsToBypassNetworkPolicy = row.toIntProperty()
+			v.MinsToBypassNetworkPolicy = row.toIntProperty().Value
 		case "RSA_PUBLIC_KEY":
-			v.RsaPublicKey = row.toStringProperty()
+			v.RsaPublicKey = row.toStringProperty().Value
 		case "RSA_PUBLIC_KEY_FP":
-			v.RsaPublicKeyFp = row.toStringProperty()
+			v.RsaPublicKeyFp = row.toStringProperty().Value
 		case "RSA_PUBLIC_KEY_LAST_SET_TIME":
-			v.RsaPublicKeyLastSetTime = row.toStringProperty()
+			v.RsaPublicKeyLastSetTime = row.toStringProperty().Value
 		case "RSA_PUBLIC_KEY_2":
-			v.RsaPublicKey2 = row.toStringProperty()
+			v.RsaPublicKey2 = row.toStringProperty().Value
 		case "RSA_PUBLIC_KEY_2_FP":
-			v.RsaPublicKey2Fp = row.toStringProperty()
+			v.RsaPublicKey2Fp = row.toStringProperty().Value
 		case "RSA_PUBLIC_KEY_2_LAST_SET_TIME":
-			v.RsaPublicKey2LastSetTime = row.toStringProperty()
+			v.RsaPublicKey2LastSetTime = row.toStringProperty().Value
 		case "PASSWORD_LAST_SET_TIME":
-			v.PasswordLastSetTime = row.toStringProperty()
+			v.PasswordLastSetTime = row.toStringProperty().Value
 		case "CUSTOM_LANDING_PAGE_URL":
-			v.CustomLandingPageUrl = row.toStringProperty()
+			v.CustomLandingPageUrl = row.toStringProperty().Value
 		case "CUSTOM_LANDING_PAGE_URL_FLUSH_NEXT_UI_LOAD":
-			v.CustomLandingPageUrlFlushNextUiLoad = row.toBoolProperty()
+			v.CustomLandingPageUrlFlushNextUiLoad = row.toBoolProperty().Value
 		case "HAS_WORKLOAD_IDENTITY":
-			v.HasWorkloadIdentity = row.toBoolProperty()
+			v.HasWorkloadIdentity = row.toBoolProperty().Value
 		}
 	}
 	return v

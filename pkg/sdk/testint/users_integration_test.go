@@ -145,9 +145,9 @@ func TestInt_Users(t *testing.T) {
 
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
-		assert.Equal(t, id.Name(), userDetails.Name.Value)
-		assert.Equal(t, strings.ToUpper(loginName), userDetails.LoginName.Value)
-		assert.Equal(t, defaultRole, userDetails.DefaultRole.Value)
+		assert.Equal(t, id.Name(), userDetails.Name)
+		assert.Equal(t, strings.ToUpper(loginName), userDetails.LoginName)
+		assert.Equal(t, defaultRole, userDetails.DefaultRole)
 
 		user, err := client.Users.ShowByID(ctx, id)
 		require.NoError(t, err)
@@ -191,8 +191,8 @@ func TestInt_Users(t *testing.T) {
 
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
-		assert.Equal(t, id.Name(), userDetails.Name.Value)
-		assert.Equal(t, strings.ToUpper(loginName), userDetails.LoginName.Value)
+		assert.Equal(t, id.Name(), userDetails.Name)
+		assert.Equal(t, strings.ToUpper(loginName), userDetails.LoginName)
 
 		user, err := client.Users.ShowByID(ctx, id)
 		require.NoError(t, err)
@@ -215,10 +215,10 @@ func TestInt_Users(t *testing.T) {
 
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
-		assert.Equal(t, id.Name(), userDetails.Name.Value)
-		assert.Equal(t, strings.ToUpper(id.Name()), userDetails.LoginName.Value)
-		assert.Empty(t, userDetails.Password.Value)
-		assert.Empty(t, userDetails.MiddleName.Value)
+		assert.Equal(t, id.Name(), userDetails.Name)
+		assert.Equal(t, strings.ToUpper(id.Name()), userDetails.LoginName)
+		assert.Empty(t, userDetails.Password)
+		assert.Empty(t, userDetails.MiddleName)
 
 		user, err := client.Users.ShowByID(ctx, id)
 		require.NoError(t, err)
@@ -245,8 +245,8 @@ func TestInt_Users(t *testing.T) {
 
 			userDetails, err := client.Users.DescribeDetails(ctx, id)
 			require.NoError(t, err)
-			assert.Equal(t, id.Name(), userDetails.Name.Value)
-			assert.Equal(t, string(userType), userDetails.Type.Value)
+			assert.Equal(t, id.Name(), userDetails.Name)
+			assert.Equal(t, string(userType), userDetails.Type)
 
 			user, err := client.Users.ShowByID(ctx, id)
 			require.NoError(t, err)
@@ -289,10 +289,10 @@ func TestInt_Users(t *testing.T) {
 
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
-		assert.Equal(t, id.Name(), userDetails.Name.Value)
-		assert.Equal(t, strings.ToUpper(newValue), userDetails.LoginName.Value)
-		assert.NotEmpty(t, userDetails.Password.Value)
-		assert.Equal(t, newValue, userDetails.MiddleName.Value)
+		assert.Equal(t, id.Name(), userDetails.Name)
+		assert.Equal(t, strings.ToUpper(newValue), userDetails.LoginName)
+		assert.NotEmpty(t, userDetails.Password)
+		assert.Equal(t, newValue, userDetails.MiddleName)
 
 		user, err := client.Users.ShowByID(ctx, id)
 		require.NoError(t, err)
@@ -364,26 +364,26 @@ func TestInt_Users(t *testing.T) {
 
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
-		assert.Equal(t, id.Name(), userDetails.Name.Value)
-		assert.Equal(t, strings.ToUpper(newValue), userDetails.LoginName.Value)
-		assert.Equal(t, newValue, userDetails.DisplayName.Value)
-		assert.Equal(t, email, userDetails.Email.Value)
-		assert.Equal(t, true, userDetails.Disabled.Value)
-		assert.NotEmpty(t, userDetails.DaysToExpiry.Value)
-		assert.Equal(t, 14, *userDetails.MinsToUnlock.Value)
-		assert.Equal(t, warehouseId.Name(), userDetails.DefaultWarehouse.Value)
-		assert.Equal(t, fmt.Sprintf("%s.%s", schemaId.DatabaseName(), schemaId.Name()), userDetails.DefaultNamespace.Value)
-		assert.Equal(t, roleId.Name(), userDetails.DefaultRole.Value)
-		assert.Equal(t, `["ALL"]`, userDetails.DefaultSecondaryRoles.Value)
-		assert.Equal(t, "some comment", userDetails.Comment.Value)
-		assert.Equal(t, string(sdk.UserTypeService), userDetails.Type.Value)
+		assert.Equal(t, id.Name(), userDetails.Name)
+		assert.Equal(t, strings.ToUpper(newValue), userDetails.LoginName)
+		assert.Equal(t, newValue, userDetails.DisplayName)
+		assert.Equal(t, email, userDetails.Email)
+		assert.Equal(t, true, userDetails.Disabled)
+		assert.NotEmpty(t, userDetails.DaysToExpiry)
+		assert.Equal(t, 14, *userDetails.MinsToUnlock)
+		assert.Equal(t, warehouseId.Name(), userDetails.DefaultWarehouse)
+		assert.Equal(t, fmt.Sprintf("%s.%s", schemaId.DatabaseName(), schemaId.Name()), userDetails.DefaultNamespace)
+		assert.Equal(t, roleId.Name(), userDetails.DefaultRole)
+		assert.Equal(t, `["ALL"]`, userDetails.DefaultSecondaryRoles)
+		assert.Equal(t, "some comment", userDetails.Comment)
+		assert.Equal(t, string(sdk.UserTypeService), userDetails.Type)
 
-		assert.Equal(t, "", userDetails.FirstName.Value)
-		assert.Equal(t, "", userDetails.MiddleName.Value)
-		assert.Equal(t, "", userDetails.LastName.Value)
-		assert.Equal(t, "", userDetails.Password.Value)
-		assert.Equal(t, false, userDetails.MustChangePassword.Value)
-		assert.Nil(t, userDetails.MinsToBypassMfa.Value)
+		assert.Equal(t, "", userDetails.FirstName)
+		assert.Equal(t, "", userDetails.MiddleName)
+		assert.Equal(t, "", userDetails.LastName)
+		assert.Equal(t, "", userDetails.Password)
+		assert.Equal(t, false, userDetails.MustChangePassword)
+		assert.Nil(t, userDetails.MinsToBypassMfa)
 
 		user, err := client.Users.ShowByID(ctx, id)
 		require.NoError(t, err)
@@ -474,26 +474,26 @@ func TestInt_Users(t *testing.T) {
 
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
-		assert.Equal(t, id.Name(), userDetails.Name.Value)
-		assert.Equal(t, strings.ToUpper(newValue), userDetails.LoginName.Value)
-		assert.Equal(t, newValue, userDetails.DisplayName.Value)
-		assert.Equal(t, email, userDetails.Email.Value)
-		assert.Equal(t, true, userDetails.Disabled.Value)
-		assert.NotEmpty(t, userDetails.DaysToExpiry.Value)
-		assert.Equal(t, 14, *userDetails.MinsToUnlock.Value)
-		assert.Equal(t, warehouseId.Name(), userDetails.DefaultWarehouse.Value)
-		assert.Equal(t, fmt.Sprintf("%s.%s", schemaId.DatabaseName(), schemaId.Name()), userDetails.DefaultNamespace.Value)
-		assert.Equal(t, roleId.Name(), userDetails.DefaultRole.Value)
-		assert.Equal(t, `["ALL"]`, userDetails.DefaultSecondaryRoles.Value)
-		assert.Equal(t, "some comment", userDetails.Comment.Value)
-		assert.Equal(t, string(sdk.UserTypeLegacyService), userDetails.Type.Value)
-		assert.NotEmpty(t, userDetails.Password.Value)
-		assert.Equal(t, true, userDetails.MustChangePassword.Value)
+		assert.Equal(t, id.Name(), userDetails.Name)
+		assert.Equal(t, strings.ToUpper(newValue), userDetails.LoginName)
+		assert.Equal(t, newValue, userDetails.DisplayName)
+		assert.Equal(t, email, userDetails.Email)
+		assert.Equal(t, true, userDetails.Disabled)
+		assert.NotEmpty(t, userDetails.DaysToExpiry)
+		assert.Equal(t, 14, *userDetails.MinsToUnlock)
+		assert.Equal(t, warehouseId.Name(), userDetails.DefaultWarehouse)
+		assert.Equal(t, fmt.Sprintf("%s.%s", schemaId.DatabaseName(), schemaId.Name()), userDetails.DefaultNamespace)
+		assert.Equal(t, roleId.Name(), userDetails.DefaultRole)
+		assert.Equal(t, `["ALL"]`, userDetails.DefaultSecondaryRoles)
+		assert.Equal(t, "some comment", userDetails.Comment)
+		assert.Equal(t, string(sdk.UserTypeLegacyService), userDetails.Type)
+		assert.NotEmpty(t, userDetails.Password)
+		assert.Equal(t, true, userDetails.MustChangePassword)
 
-		assert.Equal(t, "", userDetails.FirstName.Value)
-		assert.Equal(t, "", userDetails.MiddleName.Value)
-		assert.Equal(t, "", userDetails.LastName.Value)
-		assert.Nil(t, userDetails.MinsToBypassMfa.Value)
+		assert.Equal(t, "", userDetails.FirstName)
+		assert.Equal(t, "", userDetails.MiddleName)
+		assert.Equal(t, "", userDetails.LastName)
+		assert.Nil(t, userDetails.MinsToBypassMfa)
 
 		user, err := client.Users.ShowByID(ctx, id)
 		require.NoError(t, err)
@@ -839,7 +839,7 @@ func TestInt_Users(t *testing.T) {
 
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
-		assert.Nil(t, userDetails.MinsToBypassMfa.Value)
+		assert.Nil(t, userDetails.MinsToBypassMfa)
 	})
 
 	t.Run("create: set mins to bypass mfa to zero manually", func(t *testing.T) {
@@ -852,7 +852,7 @@ func TestInt_Users(t *testing.T) {
 
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
-		assert.Nil(t, userDetails.MinsToBypassMfa.Value)
+		assert.Nil(t, userDetails.MinsToBypassMfa)
 	})
 
 	t.Run("create: set mins to bypass mfa to one manually", func(t *testing.T) {
@@ -865,7 +865,7 @@ func TestInt_Users(t *testing.T) {
 
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
-		assert.Equal(t, 0, *userDetails.MinsToBypassMfa.Value)
+		assert.Equal(t, 0, *userDetails.MinsToBypassMfa)
 	})
 
 	t.Run("create and alter: problems with public key fingerprints", func(t *testing.T) {
@@ -976,15 +976,15 @@ func TestInt_Users(t *testing.T) {
 
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
-		assert.Equal(t, randomWithHyphenAndMixedCase, userDetails.MiddleName.Value)
+		assert.Equal(t, randomWithHyphenAndMixedCase, userDetails.MiddleName)
 		// login name is always case-insensitive
-		assert.Equal(t, strings.ToUpper(randomWithHyphenAndMixedCase), userDetails.LoginName.Value)
-		assert.Equal(t, randomWithHyphenAndMixedCase, userDetails.DisplayName.Value)
-		assert.Equal(t, randomWithHyphenAndMixedCase, userDetails.FirstName.Value)
-		assert.Equal(t, randomWithHyphenAndMixedCase, userDetails.LastName.Value)
-		assert.Equal(t, randomWithHyphenAndMixedCase, userDetails.DefaultWarehouse.Value)
-		assert.Equal(t, randomWithHyphenAndMixedCase+"."+randomWithHyphenAndMixedCase, userDetails.DefaultNamespace.Value)
-		assert.Equal(t, randomWithHyphenAndMixedCase, userDetails.DefaultRole.Value)
+		assert.Equal(t, strings.ToUpper(randomWithHyphenAndMixedCase), userDetails.LoginName)
+		assert.Equal(t, randomWithHyphenAndMixedCase, userDetails.DisplayName)
+		assert.Equal(t, randomWithHyphenAndMixedCase, userDetails.FirstName)
+		assert.Equal(t, randomWithHyphenAndMixedCase, userDetails.LastName)
+		assert.Equal(t, randomWithHyphenAndMixedCase, userDetails.DefaultWarehouse)
+		assert.Equal(t, randomWithHyphenAndMixedCase+"."+randomWithHyphenAndMixedCase, userDetails.DefaultNamespace)
+		assert.Equal(t, randomWithHyphenAndMixedCase, userDetails.DefaultRole)
 	})
 
 	for _, userType := range sdk.AllUserTypes {
@@ -1103,7 +1103,7 @@ func TestInt_Users(t *testing.T) {
 
 		result, err := client.Users.DescribeDetails(ctx, newID)
 		require.NoError(t, err)
-		assert.Equal(t, newID.Name(), result.Name.Value)
+		assert.Equal(t, newID.Name(), result.Name)
 	})
 
 	t.Run("alter: set and unset object properties", func(t *testing.T) {
@@ -2087,7 +2087,7 @@ func TestInt_Users(t *testing.T) {
 	t.Run("describe: when user exists", func(t *testing.T) {
 		userDetails, err := client.Users.DescribeDetails(ctx, user.ID())
 		require.NoError(t, err)
-		assert.Equal(t, user.Name, userDetails.Name.Value)
+		assert.Equal(t, user.Name, userDetails.Name)
 	})
 
 	t.Run("describe: when user does not exist", func(t *testing.T) {
@@ -2182,8 +2182,7 @@ func TestInt_Users(t *testing.T) {
 
 		fetchedDisabledUserDetails, err := client.Users.DescribeDetails(ctx, disabledUser.ID())
 		require.NoError(t, err)
-		require.NotNil(t, fetchedDisabledUserDetails.Disabled)
-		require.True(t, fetchedDisabledUserDetails.Disabled.Value)
+		require.True(t, fetchedDisabledUserDetails.Disabled)
 
 		role, roleCleanup := testClientHelper().Role.CreateRoleGrantedToCurrentUser(t)
 		t.Cleanup(roleCleanup)
@@ -2339,8 +2338,8 @@ func TestInt_Users(t *testing.T) {
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
 		// both login_name and display_name were unset so the name is used instead
-		assert.Equal(t, id.Name(), userDetails.LoginName.Value)
-		assert.Equal(t, id.Name(), userDetails.DisplayName.Value)
+		assert.Equal(t, id.Name(), userDetails.LoginName)
+		assert.Equal(t, id.Name(), userDetails.DisplayName)
 
 		// we unset both values (expecting that it will result in no change)
 		unsetBoth := sdk.NewAlterUserRequest(id).
@@ -2353,8 +2352,8 @@ func TestInt_Users(t *testing.T) {
 		userDetails, err = client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
 		// but login_name is unchanged whereas display_name is nulled out
-		assert.Equal(t, id.Name(), userDetails.LoginName.Value)
-		assert.Equal(t, "", userDetails.DisplayName.Value)
+		assert.Equal(t, id.Name(), userDetails.LoginName)
+		assert.Equal(t, "", userDetails.DisplayName)
 
 		// we set both values (expecting that it will result in no change)
 		// we use lowercase values on purpose (login_name acts differently than display_name)
@@ -2368,8 +2367,8 @@ func TestInt_Users(t *testing.T) {
 		userDetails, err = client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
 		// they are both set but login_name is uppercase and display_name is lowercase
-		assert.Equal(t, strings.ToUpper(newValue), userDetails.LoginName.Value)
-		assert.Equal(t, strings.ToLower(newValue), userDetails.DisplayName.Value)
+		assert.Equal(t, strings.ToUpper(newValue), userDetails.LoginName)
+		assert.Equal(t, strings.ToLower(newValue), userDetails.DisplayName)
 
 		// we unset both again
 		err = client.Users.Alter(ctx, unsetBoth)
@@ -2377,8 +2376,8 @@ func TestInt_Users(t *testing.T) {
 		userDetails, err = client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
 		// and login_name uses name as fallback and display_name does not
-		assert.Equal(t, id.Name(), userDetails.LoginName.Value)
-		assert.Equal(t, "", userDetails.DisplayName.Value)
+		assert.Equal(t, id.Name(), userDetails.LoginName)
+		assert.Equal(t, "", userDetails.DisplayName)
 	})
 
 	t.Run("default login_name and display_name when the name changes", func(t *testing.T) {
@@ -2391,8 +2390,8 @@ func TestInt_Users(t *testing.T) {
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
 		// login_name and display_name were not set so the name is used instead
-		assert.Equal(t, id.Name(), userDetails.LoginName.Value)
-		assert.Equal(t, id.Name(), userDetails.DisplayName.Value)
+		assert.Equal(t, id.Name(), userDetails.LoginName)
+		assert.Equal(t, id.Name(), userDetails.DisplayName)
 
 		// we rename user
 		newId := testClientHelper().Ids.RandomAccountObjectIdentifier()
@@ -2401,8 +2400,8 @@ func TestInt_Users(t *testing.T) {
 		userDetails, err = client.Users.DescribeDetails(ctx, newId)
 		require.NoError(t, err)
 		// login_name and display_name are unchanged
-		assert.Equal(t, id.Name(), userDetails.LoginName.Value)
-		assert.Equal(t, id.Name(), userDetails.DisplayName.Value)
+		assert.Equal(t, id.Name(), userDetails.LoginName)
+		assert.Equal(t, id.Name(), userDetails.DisplayName)
 
 		// we unset both login_name and display_name
 		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(newId).
@@ -2415,8 +2414,8 @@ func TestInt_Users(t *testing.T) {
 		require.NoError(t, err)
 
 		// login_name and display_name are changed
-		assert.Equal(t, newId.Name(), userDetails.LoginName.Value)
-		assert.Equal(t, "", userDetails.DisplayName.Value)
+		assert.Equal(t, newId.Name(), userDetails.LoginName)
+		assert.Equal(t, "", userDetails.DisplayName)
 	})
 
 	t.Run("email casing is preserved in Snowflake", func(t *testing.T) {
@@ -2431,7 +2430,7 @@ func TestInt_Users(t *testing.T) {
 		userShowOutput, err := client.Users.ShowByID(ctx, id)
 		require.NoError(t, err)
 		// email is returned as uppercase both in describe and in show
-		assert.Equal(t, strings.ToUpper(email), userDetails.Email.Value)
+		assert.Equal(t, strings.ToUpper(email), userDetails.Email)
 		assert.Equal(t, strings.ToUpper(email), userShowOutput.Email)
 
 		// we change it to lowercase
@@ -2445,7 +2444,7 @@ func TestInt_Users(t *testing.T) {
 		userShowOutput, err = client.Users.ShowByID(ctx, id)
 		require.NoError(t, err)
 		// email is returned as lowercase both in describe and in show
-		assert.Equal(t, strings.ToLower(email), userDetails.Email.Value)
+		assert.Equal(t, strings.ToLower(email), userDetails.Email)
 		assert.Equal(t, strings.ToLower(email), userShowOutput.Email)
 	})
 
@@ -2465,8 +2464,8 @@ func TestInt_Users(t *testing.T) {
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
 		// days to expiry is returned
-		assert.NotNil(t, userDetails.DaysToExpiry.Value)
-		assert.LessOrEqual(t, *userDetails.DaysToExpiry.Value, float64(-1))
+		assert.NotNil(t, userDetails.DaysToExpiry)
+		assert.LessOrEqual(t, *userDetails.DaysToExpiry, float64(-1))
 	})
 
 	t.Run("days to expiry set by hand to float value", func(t *testing.T) {
@@ -2497,7 +2496,7 @@ func TestInt_Users(t *testing.T) {
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
 		// days to expiry is null
-		assert.Nil(t, userDetails.DaysToExpiry.Value)
+		assert.Nil(t, userDetails.DaysToExpiry)
 	})
 
 	t.Run("mins to unlock setting by hand to a negative value", func(t *testing.T) {
@@ -2510,7 +2509,7 @@ func TestInt_Users(t *testing.T) {
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
 		// mins to unlock is null by default
-		assert.Nil(t, userDetails.MinsToUnlock.Value)
+		assert.Nil(t, userDetails.MinsToUnlock)
 
 		// try to set manually the negative value
 		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).
@@ -2521,7 +2520,7 @@ func TestInt_Users(t *testing.T) {
 		userDetails, err = client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
 		// mins to unlock is returned but not negative but null
-		assert.Nil(t, userDetails.MinsToUnlock.Value)
+		assert.Nil(t, userDetails.MinsToUnlock)
 	})
 
 	t.Run("mins to unlock set by hand to float value", func(t *testing.T) {
@@ -2552,7 +2551,7 @@ func TestInt_Users(t *testing.T) {
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
 		// mins to unlock is null
-		assert.Nil(t, userDetails.MinsToUnlock.Value)
+		assert.Nil(t, userDetails.MinsToUnlock)
 	})
 
 	t.Run("try to set disable mfa on create", func(t *testing.T) {
@@ -2575,7 +2574,7 @@ func TestInt_Users(t *testing.T) {
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
 		// mins to bypass mfa is null by default
-		assert.Nil(t, userDetails.MinsToBypassMfa.Value)
+		assert.Nil(t, userDetails.MinsToBypassMfa)
 
 		// try to set manually the negative value
 		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).
@@ -2586,7 +2585,7 @@ func TestInt_Users(t *testing.T) {
 		userDetails, err = client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
 		// mins to unlock is returned but not negative but null
-		assert.Nil(t, userDetails.MinsToBypassMfa.Value)
+		assert.Nil(t, userDetails.MinsToBypassMfa)
 	})
 
 	t.Run("mins to bypass mfa setting by hand to zero", func(t *testing.T) {
@@ -2605,7 +2604,7 @@ func TestInt_Users(t *testing.T) {
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
 		// mins to bypass mfa is nil
-		require.Nil(t, userDetails.MinsToBypassMfa.Value)
+		require.Nil(t, userDetails.MinsToBypassMfa)
 	})
 
 	t.Run("default secondary roles: after BCR 2024_08", func(t *testing.T) {
@@ -2618,7 +2617,7 @@ func TestInt_Users(t *testing.T) {
 
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
-		require.Equal(t, `["ALL"]`, userDetails.DefaultSecondaryRoles.Value)
+		require.Equal(t, `["ALL"]`, userDetails.DefaultSecondaryRoles)
 
 		// set to empty, expecting empty list
 		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).
@@ -2629,7 +2628,7 @@ func TestInt_Users(t *testing.T) {
 
 		userDetails, err = client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
-		require.Equal(t, "[]", userDetails.DefaultSecondaryRoles.Value)
+		require.Equal(t, "[]", userDetails.DefaultSecondaryRoles)
 
 		// unset, expecting ALL
 		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).
@@ -2640,6 +2639,6 @@ func TestInt_Users(t *testing.T) {
 
 		userDetails, err = client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
-		require.Equal(t, `["ALL"]`, userDetails.DefaultSecondaryRoles.Value)
+		require.Equal(t, `["ALL"]`, userDetails.DefaultSecondaryRoles)
 	})
 }

@@ -301,42 +301,44 @@ var usersDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-user",
 	describeUserPropertyPairs,
 	describeUserQueryStruct(),
+	// DESCRIBE USER is a property-list; Describe() still returns []UserProperty.
+	// Fields are the property .Value scalars so describe_output keys generate natively.
 	g.PlainStruct("UserDetails").
-		Field("Name", "*StringProperty").
-		Field("Comment", "*StringProperty").
-		Field("DisplayName", "*StringProperty").
-		Field("Type", "*StringProperty").
-		Field("LoginName", "*StringProperty").
-		Field("FirstName", "*StringProperty").
-		Field("MiddleName", "*StringProperty").
-		Field("LastName", "*StringProperty").
-		Field("Email", "*StringProperty").
-		Field("Password", "*StringProperty").
-		Field("MustChangePassword", "*BoolProperty").
-		Field("Disabled", "*BoolProperty").
-		Field("SnowflakeLock", "*BoolProperty").
-		Field("SnowflakeSupport", "*BoolProperty").
-		Field("DaysToExpiry", "*FloatProperty").
-		Field("MinsToUnlock", "*IntProperty").
-		Field("DefaultWarehouse", "*StringProperty").
-		Field("DefaultNamespace", "*StringProperty").
-		Field("DefaultRole", "*StringProperty").
-		Field("DefaultSecondaryRoles", "*StringProperty").
-		Field("ExtAuthnDuo", "*BoolProperty").
-		Field("ExtAuthnUid", "*StringProperty").
-		Field("MinsToBypassMfa", "*IntProperty").
-		Field("MinsToBypassNetworkPolicy", "*IntProperty").
-		Field("RsaPublicKey", "*StringProperty").
-		Field("RsaPublicKeyFp", "*StringProperty").
-		Field("RsaPublicKeyLastSetTime", "*StringProperty").
-		Field("RsaPublicKey2", "*StringProperty").
-		Field("RsaPublicKey2Fp", "*StringProperty").
-		Field("RsaPublicKey2LastSetTime", "*StringProperty").
-		Field("PasswordLastSetTime", "*StringProperty").
-		Field("CustomLandingPageUrl", "*StringProperty").
-		Field("CustomLandingPageUrlFlushNextUiLoad", "*BoolProperty").
-		Field("HasMfa", "*BoolProperty").
-		Field("HasWorkloadIdentity", "*BoolProperty"),
+		Text("Name").
+		Text("Comment").
+		Text("DisplayName").
+		Text("Type").
+		Text("LoginName").
+		Text("FirstName").
+		Text("MiddleName").
+		Text("LastName").
+		Text("Email").
+		Text("Password").
+		Bool("MustChangePassword").
+		Bool("Disabled").
+		Bool("SnowflakeLock").
+		Bool("SnowflakeSupport").
+		OptionalField("DaysToExpiry", "float64").
+		OptionalNumber("MinsToUnlock").
+		Text("DefaultWarehouse").
+		Text("DefaultNamespace").
+		Text("DefaultRole").
+		Text("DefaultSecondaryRoles").
+		Bool("ExtAuthnDuo").
+		Text("ExtAuthnUid").
+		OptionalNumber("MinsToBypassMfa").
+		OptionalNumber("MinsToBypassNetworkPolicy").
+		Text("RsaPublicKey").
+		Text("RsaPublicKeyFp").
+		Text("RsaPublicKeyLastSetTime").
+		Text("RsaPublicKey2").
+		Text("RsaPublicKey2Fp").
+		Text("RsaPublicKey2LastSetTime").
+		Text("PasswordLastSetTime").
+		Text("CustomLandingPageUrl").
+		Bool("CustomLandingPageUrlFlushNextUiLoad").
+		Bool("HasMfa").
+		Bool("HasWorkloadIdentity"),
 ).ShowParameters("AccountObjectIdentifier").
 	WithCustomInterfaceMethod(
 		"DescribeDetails",
