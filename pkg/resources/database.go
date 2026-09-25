@@ -258,7 +258,7 @@ func UpdateDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	databaseSetRequest := sdk.NewDatabaseSetRequest()
 	databaseUnsetRequest := sdk.NewDatabaseUnsetRequest()
 
-	if updateParamDiags := handleDatabaseParametersChanges(d, databaseSetRequest, databaseUnsetRequest); len(updateParamDiags) > 0 {
+	if updateParamDiags := handleDatabaseParametersUpdate(d, databaseSetRequest, databaseUnsetRequest); len(updateParamDiags) > 0 {
 		return updateParamDiags
 	}
 
@@ -453,7 +453,7 @@ func ReadDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		}
 	}
 
-	databaseParameters, err := client.Databases.ShowParameters(ctx, id)
+	databaseParameters, err := client.Databases.ShowParametersDetails(ctx, id)
 	if err != nil {
 		return diag.FromErr(err)
 	}

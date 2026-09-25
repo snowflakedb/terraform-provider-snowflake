@@ -6,43 +6,27 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var (
 	ShowDatabaseParametersSchema = make(map[string]*schema.Schema)
-	databaseParameters           = []sdk.AccountParameter{
-		sdk.AccountParameterDataRetentionTimeInDays,
-		sdk.AccountParameterMaxDataExtensionTimeInDays,
-		sdk.AccountParameterExternalVolume,
-		sdk.AccountParameterCatalog,
-		sdk.AccountParameterReplaceInvalidCharacters,
-		sdk.AccountParameterDefaultDdlCollation,
-		sdk.AccountParameterStorageSerializationPolicy,
-		sdk.AccountParameterLogLevel,
-		sdk.AccountParameterLogEventLevel,
-		sdk.AccountParameterTraceLevel,
-		sdk.AccountParameterSuspendTaskAfterNumFailures,
-		sdk.AccountParameterTaskAutoRetryAttempts,
-		sdk.AccountParameterUserTaskManagedInitialWarehouseSize,
-		sdk.AccountParameterUserTaskTimeoutMs,
-		sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds,
-		sdk.AccountParameterQuotedIdentifiersIgnoreCase,
-		sdk.AccountParameterEnableConsoleOutput,
-	}
+	databaseParameters           = defs.ParameterDefsForLevel(parameterdefs.ParameterLevelDatabase)
 )
 
 func init() {
-	for _, param := range databaseParameters {
-		ShowDatabaseParametersSchema[strings.ToLower(string(param))] = ParameterListSchema
+	for _, def := range databaseParameters {
+		ShowDatabaseParametersSchema[def.FieldName()] = ParameterListSchema
 	}
 }
 
 func DatabaseParametersToSchema(parameters []*sdk.Parameter, providerCtx *provider.Context) map[string]any {
 	databaseParametersValue := make(map[string]any)
-	for _, param := range parameters {
-		if slices.Contains(databaseParameters, sdk.AccountParameter(param.Key)) {
-			databaseParametersValue[strings.ToLower(param.Key)] = []map[string]any{ParameterToSchemaReducedOutput(param, providerCtx)}
+	for _, parameter := range parameters {
+		if slices.ContainsFunc(databaseParameters, func(def parameterdefs.ParameterDef) bool { return def.SqlName == parameter.Key }) {
+			databaseParametersValue[strings.ToLower(parameter.Key)] = []map[string]any{ParameterToSchemaReducedOutput(parameter, providerCtx)}
 		}
 	}
 	return databaseParametersValue

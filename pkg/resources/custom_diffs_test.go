@@ -118,6 +118,105 @@ func TestParameterValueComputedIf(t *testing.T) {
 	// of getting into this situation would be in create operation for which custom diffs are skipped.
 }
 
+func TestTypedParameterValueComputedIfByValueType(t *testing.T) {
+	tests := []struct {
+		name            string
+		customDiff      schema.CustomizeDiffFunc
+		valueType       schema.ValueType
+		stateValue      map[string]any
+		wantNewComputed bool
+	}{
+		{
+			name: "enum value matches state",
+			customDiff: resources.StringTypedParameterValueComputedIf("value", sdk.TypedParameter[sdk.LogLevel]{
+				Key:   "VALUE",
+				Value: sdk.LogLevelInfo,
+				Level: sdk.ParameterTypeAccount,
+			}, sdk.ParameterTypeDatabase),
+			valueType:       schema.TypeString,
+			stateValue:      map[string]any{"value": string(sdk.LogLevelInfo)},
+			wantNewComputed: false,
+		},
+		{
+			name: "enum value differs from state",
+			customDiff: resources.StringTypedParameterValueComputedIf("value", sdk.TypedParameter[sdk.LogLevel]{
+				Key:   "VALUE",
+				Value: sdk.LogLevelDebug,
+				Level: sdk.ParameterTypeAccount,
+			}, sdk.ParameterTypeDatabase),
+			valueType:       schema.TypeString,
+			stateValue:      map[string]any{"value": string(sdk.LogLevelInfo)},
+			wantNewComputed: true,
+		},
+		{
+			name: "identifier uses fully qualified name - matches state",
+			customDiff: resources.IdentifierTypedParameterValueComputedIf("value", sdk.TypedParameter[sdk.AccountObjectIdentifier]{
+				Key:   "VALUE",
+				Value: sdk.NewAccountObjectIdentifier("external_volume"),
+				Level: sdk.ParameterTypeAccount,
+			}, sdk.ParameterTypeDatabase),
+			valueType:       schema.TypeString,
+			stateValue:      map[string]any{"value": `"external_volume"`},
+			wantNewComputed: false,
+		},
+		{
+			name: "identifier uses fully qualified name - differs from state",
+			customDiff: resources.IdentifierTypedParameterValueComputedIf("value", sdk.TypedParameter[sdk.AccountObjectIdentifier]{
+				Key:   "VALUE",
+				Value: sdk.NewAccountObjectIdentifier("external_volume_123"),
+				Level: sdk.ParameterTypeAccount,
+			}, sdk.ParameterTypeDatabase),
+			valueType:       schema.TypeString,
+			stateValue:      map[string]any{"value": `"external_volume"`},
+			wantNewComputed: true,
+		},
+		{
+			name: "regular string",
+			customDiff: resources.StringTypedParameterValueComputedIf("value", sdk.TypedParameter[string]{
+				Key:   "VALUE",
+				Value: "value",
+				Level: sdk.ParameterTypeAccount,
+			}, sdk.ParameterTypeDatabase),
+			valueType:       schema.TypeString,
+			stateValue:      map[string]any{"value": "value"},
+			wantNewComputed: false,
+		},
+		{
+			name: "int",
+			customDiff: resources.IntTypedParameterValueComputedIf("value", sdk.TypedParameter[int]{
+				Key:   "VALUE",
+				Value: 42,
+				Level: sdk.ParameterTypeAccount,
+			}, sdk.ParameterTypeDatabase),
+			valueType:       schema.TypeInt,
+			stateValue:      map[string]any{"value": 42},
+			wantNewComputed: false,
+		},
+		{
+			name: "bool",
+			customDiff: resources.BoolTypedParameterValueComputedIf("value", sdk.TypedParameter[bool]{
+				Key:   "VALUE",
+				Value: true,
+				Level: sdk.ParameterTypeAccount,
+			}, sdk.ParameterTypeDatabase),
+			valueType:       schema.TypeBool,
+			stateValue:      map[string]any{"value": true},
+			wantNewComputed: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			providerConfig := createProviderWithValuePropertyAndCustomDiff(t, &schema.Schema{
+				Type:     tt.valueType,
+				Computed: true,
+				Optional: true,
+			}, tt.customDiff)
+			diff := calculateDiff(t, providerConfig, cty.MapValEmpty(cty.String), tt.stateValue)
+			assert.Equal(t, tt.wantNewComputed, diff.Attributes["value"].NewComputed)
+		})
+	}
+}
+
 func createProviderWithValuePropertyAndCustomDiff(t *testing.T, valueSchema *schema.Schema, customDiffFunc schema.CustomizeDiffFunc) *schema.Provider {
 	t.Helper()
 	return &schema.Provider{

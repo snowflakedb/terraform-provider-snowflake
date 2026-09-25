@@ -26,6 +26,17 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.21.x ➞ v2.22.0
 
+### *(new feature)* New database parameters in `snowflake_databases`
+
+The `parameters` output of the [`snowflake_databases`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/databases) data source now exposes:
+
+- `default_notebook_compute_pool_cpu` — the preferred CPU compute pool for notebooks using Container Runtime
+- `default_notebook_compute_pool_gpu` — the preferred GPU compute pool for notebooks using Container Runtime
+
+Both fields include the parameter's value, default, level, key, and description returned by `SHOW PARAMETERS IN DATABASE`.
+
+No action is required; this is a non-breaking addition.
+
 ### *(new feature)* Experimental features lifecycle and `experimental_features_disabled`
 
 Experimental features now follow a BCR-like lifecycle so successful experiments can become default provider behavior in a **minor** release:

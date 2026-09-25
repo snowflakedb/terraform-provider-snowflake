@@ -133,7 +133,7 @@ func UpdateSecondaryDatabase(ctx context.Context, d *schema.ResourceData, meta a
 	databaseSetRequest := sdk.NewDatabaseSetRequest()
 	databaseUnsetRequest := sdk.NewDatabaseUnsetRequest()
 
-	if updateParamDiags := handleDatabaseParametersChanges(d, databaseSetRequest, databaseUnsetRequest); len(updateParamDiags) > 0 {
+	if updateParamDiags := handleDatabaseParametersUpdate(d, databaseSetRequest, databaseUnsetRequest); len(updateParamDiags) > 0 {
 		return updateParamDiags
 	}
 
@@ -223,7 +223,7 @@ func ReadSecondaryDatabase(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(err)
 	}
 
-	secondaryDatabaseParameters, err := client.Databases.ShowParameters(ctx, secondaryDatabaseId)
+	secondaryDatabaseParameters, err := client.Databases.ShowParametersDetails(ctx, secondaryDatabaseId)
 	if err != nil {
 		return diag.FromErr(err)
 	}

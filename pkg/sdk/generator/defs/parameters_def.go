@@ -22,7 +22,7 @@ var (
 		SqlName:     "CATALOG",
 		Kind:        g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 		Levels:      onTable,
-		Description: "The database parameter that specifies the default catalog to use for Iceberg tables.",
+		Description: "The parameter that specifies the default catalog to use for Iceberg tables.",
 	}
 	DataRetentionTimeInDays = parameterdefs.ParameterDef{
 		SqlName:     "DATA_RETENTION_TIME_IN_DAYS",
@@ -58,7 +58,7 @@ var (
 		SqlName:     "EXTERNAL_VOLUME",
 		Kind:        g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 		Levels:      onTable,
-		Description: "The database parameter that specifies the default external volume to use for Iceberg tables.",
+		Description: "The parameter that specifies the default external volume to use for Iceberg tables.",
 	}
 	LogEventLevel = parameterdefs.ParameterDef{
 		SqlName:     "LOG_EVENT_LEVEL",

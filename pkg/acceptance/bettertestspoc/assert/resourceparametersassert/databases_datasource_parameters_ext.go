@@ -12,6 +12,8 @@ func (d *DatabaseResourceParametersAssert) HasAllDefaultParameters() *DatabaseRe
 		HasCatalog("").
 		HasReplaceInvalidCharacters(false).
 		HasDefaultDdlCollation("").
+		HasDefaultNotebookComputePoolCpu("SYSTEM_COMPUTE_POOL_CPU").
+		HasDefaultNotebookComputePoolGpu("SYSTEM_COMPUTE_POOL_GPU").
 		HasStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
 		HasLogLevel(sdk.LogLevelOff).
 		HasTraceLevel(sdk.TraceLevelOff).

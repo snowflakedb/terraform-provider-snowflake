@@ -33,15 +33,34 @@ func BoolParameterValueComputedIf[T ~string](key string, params []*sdk.Parameter
 }
 
 func ParameterValueComputedIf[T ~string](key string, parameters []*sdk.Parameter, objectParameterLevel sdk.ParameterType, parameterName T, valueToString func(v any) string) schema.CustomizeDiffFunc {
+	foundParameter, err := collections.FindFirst(parameters, func(parameter *sdk.Parameter) bool { return parameter.Key == string(parameterName) })
+	if err != nil {
+		log.Printf("[WARN] failed to find parameter: %s", parameterName)
+		return func(context.Context, *schema.ResourceDiff, any) error { return nil }
+	}
+	parameter := *foundParameter
+	return parameterValueComputedIf(key, parameter.Value, parameter.Level, objectParameterLevel, valueToString)
+}
+
+func StringTypedParameterValueComputedIf[T ~string](key string, parameter sdk.TypedParameter[T], objectParameterLevel sdk.ParameterType) schema.CustomizeDiffFunc {
+	return parameterValueComputedIf(key, string(parameter.Value), parameter.Level, objectParameterLevel, func(value any) string { return value.(string) })
+}
+
+func IntTypedParameterValueComputedIf(key string, parameter sdk.TypedParameter[int], objectParameterLevel sdk.ParameterType) schema.CustomizeDiffFunc {
+	return parameterValueComputedIf(key, strconv.Itoa(parameter.Value), parameter.Level, objectParameterLevel, func(value any) string { return strconv.Itoa(value.(int)) })
+}
+
+func BoolTypedParameterValueComputedIf(key string, parameter sdk.TypedParameter[bool], objectParameterLevel sdk.ParameterType) schema.CustomizeDiffFunc {
+	return parameterValueComputedIf(key, strconv.FormatBool(parameter.Value), parameter.Level, objectParameterLevel, func(value any) string { return strconv.FormatBool(value.(bool)) })
+}
+
+func IdentifierTypedParameterValueComputedIf[T sdk.ObjectIdentifier](key string, parameter sdk.TypedParameter[T], objectParameterLevel sdk.ParameterType) schema.CustomizeDiffFunc {
+	return parameterValueComputedIf(key, parameter.Value.FullyQualifiedName(), parameter.Level, objectParameterLevel, func(value any) string { return value.(string) })
+}
+
+func parameterValueComputedIf(key string, parameterValue string, parameterLevel sdk.ParameterType, objectParameterLevel sdk.ParameterType, valueToString func(any) string) schema.CustomizeDiffFunc {
 	return func(ctx context.Context, d *schema.ResourceDiff, meta any) error {
 		providerCtx := meta.(*provider.Context)
-		foundParameter, err := collections.FindFirst(parameters, func(parameter *sdk.Parameter) bool { return parameter.Key == string(parameterName) })
-		if err != nil {
-			log.Printf("[WARN] failed to find parameter: %s", parameterName)
-			return nil
-		}
-		parameter := *foundParameter
-
 		configValue, ok := d.GetRawConfig().AsValueMap()[key]
 
 		// When the value is set in the configuration but the parameter is not set on the object level,
@@ -52,7 +71,7 @@ func ParameterValueComputedIf[T ~string](key string, parameters []*sdk.Parameter
 		//   2. The configured value differs from the inherited value (e.g. empty string overriding a non-empty parent
 		//      value): SDKv2 would otherwise suppress the diff because the field is Computed+Optional and "" is treated
 		//      as "no value", so d.HasChange returns false during update. SetNewComputed forces the update path to run.
-		if ok && !configValue.IsNull() && parameter.Level != objectParameterLevel {
+		if ok && !configValue.IsNull() && parameterLevel != objectParameterLevel {
 			return d.SetNewComputed(key)
 		}
 
@@ -64,14 +83,14 @@ func ParameterValueComputedIf[T ~string](key string, parameters []*sdk.Parameter
 		if providerCtx.Experiments.IsEnabled(experimentalfeatures.ParametersIgnoreValueChangesIfNotOnObjectLevel) {
 			// If the configuration is not set, perform SetNewComputed only for parameter being set on the object level (if so, it means that it was set externally, and we have to unset it).
 			// The value change is handled through read.
-			if parameter.Level == objectParameterLevel {
+			if parameterLevel == objectParameterLevel {
 				return d.SetNewComputed(key)
 			}
 		} else {
 			// If the configuration is not set, perform SetNewComputed for cases like:
 			// 1. Check if the parameter value differs from the one saved in state (if they differ, we'll update the computed value).
 			// 2. Check if the parameter is set on the object level (if so, it means that it was set externally, and we have to unset it).
-			if parameter.Value != valueToString(d.Get(key)) || parameter.Level == objectParameterLevel {
+			if parameterValue != valueToString(d.Get(key)) || parameterLevel == objectParameterLevel {
 				return d.SetNewComputed(key)
 			}
 		}
@@ -221,6 +240,28 @@ func ParametersCustomDiff[T ~string](parametersProvider func(context.Context, Re
 		}
 
 		return customdiff.All(diffFunctions...)(ctx, d, meta)
+	}
+}
+
+func ParametersCustomDiffFromTypedParameters[T any](
+	parametersProvider func(context.Context, ResourceIdProvider, any) (T, error),
+	diffFunctionsProvider func(T) []schema.CustomizeDiffFunc,
+) schema.CustomizeDiffFunc {
+	return func(ctx context.Context, d *schema.ResourceDiff, meta any) error {
+		if d.Id() == "" {
+			return nil
+		}
+
+		params, err := parametersProvider(ctx, d, meta)
+		if err != nil {
+			providerCtx := meta.(*provider.Context)
+			if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) {
+				return nil
+			}
+			return err
+		}
+
+		return customdiff.All(diffFunctionsProvider(params)...)(ctx, d, meta)
 	}
 }
 

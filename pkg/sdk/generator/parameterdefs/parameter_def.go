@@ -1,5 +1,7 @@
 package parameterdefs
 
+import "strings"
+
 // ParameterLevel identifies a catalog consumer set used by ParameterDefsForLevel. It is not
 // the level returned by Snowflake from SHOW PARAMETERS.
 //
@@ -32,4 +34,8 @@ type ParameterDef struct {
 	Kind        string
 	Levels      []ParameterLevel
 	Description string
+}
+
+func (p ParameterDef) FieldName() string {
+	return strings.ToLower(p.SqlName)
 }
