@@ -26,6 +26,7 @@ var multilineAttributesOverrides = map[string][]string{
 var complexListAttributesOverrides = map[string]map[string]string{
 	"GrantOwnership":                {"on": "sdk.OwnershipGrantOn"},
 	"CatalogIntegrationOpenCatalog": {"rest_config": "sdk.OpenCatalogRestConfigRequest", "rest_authentication": "sdk.OAuthRestAuthenticationRequest"},
+	"CatalogLinkedDatabase":         {"linked_catalog": "sdk.LinkedCatalogRequest"},
 	"CatalogIntegrationIcebergRest": {"rest_config": "sdk.IcebergRestRestConfigRequest", "oauth_rest_authentication": "sdk.OAuthRestAuthenticationRequest", "bearer_rest_authentication": "sdk.BearerRestAuthenticationRequest", "sigv4_rest_authentication": "sdk.SigV4RestAuthenticationRequest"}, //nolint:gosec // field-name mapping, not a credential
 	"ExternalVolume":                {"storage_location": "sdk.ExternalVolumeStorageLocationRequest"},
 	"Listing":                       {"manifest": "sdk.StageLocation"},

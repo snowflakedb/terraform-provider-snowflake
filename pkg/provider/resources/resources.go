@@ -28,6 +28,7 @@ const (
 	CatalogIntegrationObjectStorage                        resource = "snowflake_catalog_integration_object_storage"
 	CatalogIntegrationOpenCatalog                          resource = "snowflake_catalog_integration_open_catalog"
 	CatalogIntegrationIcebergRest                          resource = "snowflake_catalog_integration_iceberg_rest"
+	CatalogLinkedDatabase                                  resource = "snowflake_catalog_linked_database"
 	ComputePool                                            resource = "snowflake_compute_pool"
 	CortexAgent                                            resource = "snowflake_cortex_agent"
 	CortexSearchService                                    resource = "snowflake_cortex_search_service"

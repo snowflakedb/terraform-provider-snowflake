@@ -63,6 +63,14 @@ This experiment will be promoted (the opt-out removed) in **v2.23.0** or **v2.24
 
 No action is required unless you want to disable inherited grants support.
 
+### *(new feature)* New catalog-linked database resource
+
+We have added a new preview resource for managing catalog-linked databases: [snowflake_catalog_linked_database](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_linked_database). Check the [official Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-database-catalog-linked) to know more. Note that a reachable external Iceberg REST catalog and a corresponding catalog integration are required.
+
+This feature will be marked as stable in a future release. Breaking changes are expected, even without bumping the major version. To use it, add `snowflake_catalog_linked_database_resource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+
 ### *(new feature)* `execute_as_user` on `snowflake_task`
 
 We added optional [`execute_as_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/task#execute_as_user-1) to the stable [`snowflake_task`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/task) resource.

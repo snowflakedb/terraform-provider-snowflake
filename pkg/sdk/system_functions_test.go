@@ -146,7 +146,7 @@ func Test_parseCatalogLinkedDatabaseConfig(t *testing.T) {
   "allowed_write_operations" : "ALL",
   "catalog_case_sensitivity" : "CASE_INSENSITIVE",
   "is_suspended" : false,
-  "allowed_namespaces" : [ "ns1", "ns2" ],
+  "allowed_namespaces" : [ "'ns1'", "'ns2'" ],
   "blocked_namespaces" : [ "ns3" ]
 }`
 		config, err := parseCatalogLinkedDatabaseConfig(raw)
@@ -168,6 +168,7 @@ func Test_parseCatalogLinkedDatabaseConfig(t *testing.T) {
 		require.Equal(t, DatabaseCatalogCaseSensitivityCaseInsensitive, *config.CatalogCaseSensitivity)
 		require.NotNil(t, config.IsSuspended)
 		require.False(t, *config.IsSuspended)
+		// The quoted values mirror the docs example; unquoted ones must pass through unchanged.
 		require.Equal(t, []string{"ns1", "ns2"}, config.AllowedNamespaces)
 		require.Equal(t, []string{"ns3"}, config.BlockedNamespaces)
 	})
