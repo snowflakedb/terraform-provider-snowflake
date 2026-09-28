@@ -21,94 +21,146 @@ func init() {
 var icebergTablesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
 const (
-	case_IcebergTables_validation_Create_name_ValidIdentifier                                                                 testCaseName = "validation_Create_name_ValidIdentifier"
-	case_IcebergTables_validation_Create_opts_ConflictingFields_OrReplace_IfNotExists                                         testCaseName = "validation_Create_opts_ConflictingFields_OrReplace_IfNotExists"
-	case_IcebergTables_validation_Create_opts_ConflictingFields_PartitionBy_ClusterBy                                         testCaseName = "validation_Create_opts_ConflictingFields_PartitionBy_ClusterBy"
-	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_NoneSet            testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_NoneSet"
-	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_MoreThanOneSet     testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_MoreThanOneSet"
-	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_OneValidOneInvalid testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_OneValidOneInvalid"
-	case_IcebergTables_validation_Create_opts_PartitionBy_ExactlyOneValueSet_NoneSet                                          testCaseName = "validation_Create_opts_PartitionBy_ExactlyOneValueSet_NoneSet"
-	case_IcebergTables_validation_Create_opts_PartitionBy_ExactlyOneValueSet_MoreThanOneSet                                   testCaseName = "validation_Create_opts_PartitionBy_ExactlyOneValueSet_MoreThanOneSet"
-	case_IcebergTables_validation_Create_opts_PartitionBy_ExactlyOneValueSet_OneValidOneInvalid                               testCaseName = "validation_Create_opts_PartitionBy_ExactlyOneValueSet_OneValidOneInvalid"
-	case_IcebergTables_validation_Create_RowAccessPolicy_Name_ValidIdentifier                                                 testCaseName = "validation_Create_RowAccessPolicy_Name_ValidIdentifier"
-	case_IcebergTables_validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier                                  testCaseName = "validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier"
-	case_IcebergTables_sql_Create_basic                                                                                       testCaseName = "sql_Create_basic"
-	case_IcebergTables_sql_Create_all                                                                                         testCaseName = "sql_Create_all"
-	case_IcebergTables_validation_CreateFromIcebergFiles_name_ValidIdentifier                                                 testCaseName = "validation_CreateFromIcebergFiles_name_ValidIdentifier"
-	case_IcebergTables_validation_CreateFromIcebergFiles_opts_ConflictingFields                                               testCaseName = "validation_CreateFromIcebergFiles_opts_ConflictingFields"
-	case_IcebergTables_sql_CreateFromIcebergFiles_basic                                                                       testCaseName = "sql_CreateFromIcebergFiles_basic"
-	case_IcebergTables_sql_CreateFromIcebergFiles_all                                                                         testCaseName = "sql_CreateFromIcebergFiles_all"
-	case_IcebergTables_validation_CreateFromDeltaLake_name_ValidIdentifier                                                    testCaseName = "validation_CreateFromDeltaLake_name_ValidIdentifier"
-	case_IcebergTables_validation_CreateFromDeltaLake_opts_ConflictingFields                                                  testCaseName = "validation_CreateFromDeltaLake_opts_ConflictingFields"
-	case_IcebergTables_sql_CreateFromDeltaLake_basic                                                                          testCaseName = "sql_CreateFromDeltaLake_basic"
-	case_IcebergTables_sql_CreateFromDeltaLake_all                                                                            testCaseName = "sql_CreateFromDeltaLake_all"
-	case_IcebergTables_validation_CreateFromIcebergRest_name_ValidIdentifier                                                  testCaseName = "validation_CreateFromIcebergRest_name_ValidIdentifier"
-	case_IcebergTables_validation_CreateFromIcebergRest_opts_ConflictingFields                                                testCaseName = "validation_CreateFromIcebergRest_opts_ConflictingFields"
-	case_IcebergTables_sql_CreateFromIcebergRest_basic                                                                        testCaseName = "sql_CreateFromIcebergRest_basic"
-	case_IcebergTables_sql_CreateFromIcebergRest_all                                                                          testCaseName = "sql_CreateFromIcebergRest_all"
-	case_IcebergTables_validation_CreateFromAwsGlue_name_ValidIdentifier                                                      testCaseName = "validation_CreateFromAwsGlue_name_ValidIdentifier"
-	case_IcebergTables_validation_CreateFromAwsGlue_opts_ConflictingFields                                                    testCaseName = "validation_CreateFromAwsGlue_opts_ConflictingFields"
-	case_IcebergTables_sql_CreateFromAwsGlue_basic                                                                            testCaseName = "sql_CreateFromAwsGlue_basic"
-	case_IcebergTables_sql_CreateFromAwsGlue_all                                                                              testCaseName = "sql_CreateFromAwsGlue_all"
-	case_IcebergTables_validation_Alter_name_ValidIdentifier                                                                  testCaseName = "validation_Alter_name_ValidIdentifier"
-	case_IcebergTables_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                                       testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_IcebergTables_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                                testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_NoneSet                                     testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_NoneSet"
-	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_MoreThanOneSet                              testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_MoreThanOneSet"
-	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_OneValidOneInvalid                          testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_OneValidOneInvalid"
-	case_IcebergTables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet                                      testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet"
-	case_IcebergTables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet                               testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet"
-	case_IcebergTables_validation_Alter_opts_Set_AtLeastOneValueSet                                                           testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
-	case_IcebergTables_validation_Alter_opts_Unset_AtLeastOneValueSet                                                         testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
-	case_IcebergTables_validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier                                    testCaseName = "validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier"
-	case_IcebergTables_validation_Alter_AddRowAccessPolicy_On_ValidateValueSet                                                testCaseName = "validation_Alter_AddRowAccessPolicy_On_ValidateValueSet"
-	case_IcebergTables_validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier                                   testCaseName = "validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier"
-	case_IcebergTables_validation_Alter_DropAndAddRowAccessPolicy_Drop_RowAccessPolicy_ValidIdentifier                        testCaseName = "validation_Alter_DropAndAddRowAccessPolicy_Drop_RowAccessPolicy_ValidIdentifier"
-	case_IcebergTables_validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier                         testCaseName = "validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier"
-	case_IcebergTables_validation_Alter_DropAndAddRowAccessPolicy_Add_On_ValidateValueSet                                     testCaseName = "validation_Alter_DropAndAddRowAccessPolicy_Add_On_ValidateValueSet"
-	case_IcebergTables_validation_Alter_SetAggregationPolicy_AggregationPolicy_ValidIdentifier                                testCaseName = "validation_Alter_SetAggregationPolicy_AggregationPolicy_ValidIdentifier"
-	case_IcebergTables_validation_Alter_SetJoinPolicy_JoinPolicy_ValidIdentifier                                              testCaseName = "validation_Alter_SetJoinPolicy_JoinPolicy_ValidIdentifier"
-	case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_NoneSet                              testCaseName = "validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_NoneSet"
-	case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_MoreThanOneSet                       testCaseName = "validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_MoreThanOneSet"
-	case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_NoneSet                      testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_NoneSet"
-	case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet               testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet"
-	case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid           testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid"
-	case_IcebergTables_sql_Alter_AddColumnAction                                                                              testCaseName = "sql_Alter_AddColumnAction"
-	case_IcebergTables_sql_Alter_DropColumnAction                                                                             testCaseName = "sql_Alter_DropColumnAction"
-	case_IcebergTables_sql_Alter_RenameColumnAction                                                                           testCaseName = "sql_Alter_RenameColumnAction"
-	case_IcebergTables_sql_Alter_AlterColumnAction                                                                            testCaseName = "sql_Alter_AlterColumnAction"
-	case_IcebergTables_sql_Alter_SetMaskingPolicyOnColumn                                                                     testCaseName = "sql_Alter_SetMaskingPolicyOnColumn"
-	case_IcebergTables_sql_Alter_UnsetMaskingPolicyOnColumn                                                                   testCaseName = "sql_Alter_UnsetMaskingPolicyOnColumn"
-	case_IcebergTables_sql_Alter_SetProjectionPolicyOnColumn                                                                  testCaseName = "sql_Alter_SetProjectionPolicyOnColumn"
-	case_IcebergTables_sql_Alter_UnsetProjectionPolicyOnColumn                                                                testCaseName = "sql_Alter_UnsetProjectionPolicyOnColumn"
-	case_IcebergTables_sql_Alter_SetTagsOnColumn                                                                              testCaseName = "sql_Alter_SetTagsOnColumn"
-	case_IcebergTables_sql_Alter_UnsetTagsOnColumn                                                                            testCaseName = "sql_Alter_UnsetTagsOnColumn"
-	case_IcebergTables_sql_Alter_ClusteringAction                                                                             testCaseName = "sql_Alter_ClusteringAction"
-	case_IcebergTables_sql_Alter_Set                                                                                          testCaseName = "sql_Alter_Set"
-	case_IcebergTables_sql_Alter_Unset                                                                                        testCaseName = "sql_Alter_Unset"
-	case_IcebergTables_sql_Alter_SetTags                                                                                      testCaseName = "sql_Alter_SetTags"
-	case_IcebergTables_sql_Alter_UnsetTags                                                                                    testCaseName = "sql_Alter_UnsetTags"
-	case_IcebergTables_sql_Alter_AddRowAccessPolicy                                                                           testCaseName = "sql_Alter_AddRowAccessPolicy"
-	case_IcebergTables_sql_Alter_DropRowAccessPolicy                                                                          testCaseName = "sql_Alter_DropRowAccessPolicy"
-	case_IcebergTables_sql_Alter_DropAndAddRowAccessPolicy                                                                    testCaseName = "sql_Alter_DropAndAddRowAccessPolicy"
-	case_IcebergTables_sql_Alter_DropAllRowAccessPolicies                                                                     testCaseName = "sql_Alter_DropAllRowAccessPolicies"
-	case_IcebergTables_sql_Alter_SetAggregationPolicy                                                                         testCaseName = "sql_Alter_SetAggregationPolicy"
-	case_IcebergTables_sql_Alter_UnsetAggregationPolicy                                                                       testCaseName = "sql_Alter_UnsetAggregationPolicy"
-	case_IcebergTables_sql_Alter_SetJoinPolicy                                                                                testCaseName = "sql_Alter_SetJoinPolicy"
-	case_IcebergTables_sql_Alter_UnsetJoinPolicy                                                                              testCaseName = "sql_Alter_UnsetJoinPolicy"
-	case_IcebergTables_sql_Alter_SearchOptimizationAction                                                                     testCaseName = "sql_Alter_SearchOptimizationAction"
-	case_IcebergTables_validation_Drop_name_ValidIdentifier                                                                   testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_IcebergTables_validation_Drop_opts_ConflictingFields                                                                 testCaseName = "validation_Drop_opts_ConflictingFields"
-	case_IcebergTables_sql_Drop_basic                                                                                         testCaseName = "sql_Drop_basic"
-	case_IcebergTables_sql_Drop_all                                                                                           testCaseName = "sql_Drop_all"
-	case_IcebergTables_sql_Show_basic                                                                                         testCaseName = "sql_Show_basic"
-	case_IcebergTables_sql_Show_all                                                                                           testCaseName = "sql_Show_all"
-	case_IcebergTables_sql_Show_Like                                                                                          testCaseName = "sql_Show_Like"
-	case_IcebergTables_sql_Show_In                                                                                            testCaseName = "sql_Show_In"
-	case_IcebergTables_sql_Show_StartsWith                                                                                    testCaseName = "sql_Show_StartsWith"
-	case_IcebergTables_sql_Show_Limit                                                                                         testCaseName = "sql_Show_Limit"
-	case_IcebergTables_validation_Describe_name_ValidIdentifier                                                               testCaseName = "validation_Describe_name_ValidIdentifier"
-	case_IcebergTables_sql_Describe_basic                                                                                     testCaseName = "sql_Describe_basic"
+	case_IcebergTables_validation_Create_name_ValidIdentifier                                                                                                testCaseName = "validation_Create_name_ValidIdentifier"
+	case_IcebergTables_validation_Create_opts_ConflictingFields_OrReplace_IfNotExists                                                                        testCaseName = "validation_Create_opts_ConflictingFields_OrReplace_IfNotExists"
+	case_IcebergTables_validation_Create_opts_ConflictingFields_PartitionBy_ClusterBy                                                                        testCaseName = "validation_Create_opts_ConflictingFields_PartitionBy_ClusterBy"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_ExactlyOneValueSet_NoneSet                                      testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_ExactlyOneValueSet_NoneSet"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_ExactlyOneValueSet_MoreThanOneSet                               testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_ExactlyOneValueSet_MoreThanOneSet"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ExactlyOneValueSet_NoneSet                             testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ExactlyOneValueSet_NoneSet"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ExactlyOneValueSet_MoreThanOneSet                      testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ExactlyOneValueSet_MoreThanOneSet"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Enforced_NotEnforced                 testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Enforced_NotEnforced"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Deferrable_NotDeferrable             testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Deferrable_NotDeferrable"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_InitiallyDeferred_InitiallyImmediate testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_InitiallyDeferred_InitiallyImmediate"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Enable_Disable                       testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Enable_Disable"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Validate_Novalidate                  testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Validate_Novalidate"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Rely_Norely                          testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Rely_Norely"
+	case_IcebergTables_validation_Create_ColumnsAndConstraints_Columns_InlineConstraint_FK_References_ValidIdentifier                                        testCaseName = "validation_Create_ColumnsAndConstraints_Columns_InlineConstraint_FK_References_ValidIdentifier"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Enforced_NotEnforced                       testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Enforced_NotEnforced"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Deferrable_NotDeferrable                   testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Deferrable_NotDeferrable"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_InitiallyDeferred_InitiallyImmediate       testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_InitiallyDeferred_InitiallyImmediate"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Enable_Disable                             testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Enable_Disable"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Validate_Novalidate                        testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Validate_Novalidate"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Rely_Norely                                testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Rely_Norely"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_CH_ConflictingFields                                            testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_CH_ConflictingFields"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_NoneSet                                           testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_NoneSet"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_MoreThanOneSet                                    testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_MoreThanOneSet"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_OneValidOneInvalid                                testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_OneValidOneInvalid"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ExactlyOneValueSet_NoneSet                                  testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ExactlyOneValueSet_NoneSet"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ExactlyOneValueSet_MoreThanOneSet                           testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ExactlyOneValueSet_MoreThanOneSet"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Enforced_NotEnforced                      testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Enforced_NotEnforced"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Deferrable_NotDeferrable                  testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Deferrable_NotDeferrable"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_InitiallyDeferred_InitiallyImmediate      testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_InitiallyDeferred_InitiallyImmediate"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Enable_Disable                            testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Enable_Disable"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Validate_Novalidate                       testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Validate_Novalidate"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Rely_Norely                               testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Rely_Norely"
+	case_IcebergTables_validation_Create_ColumnsAndConstraints_OutOfLineConstraint_FK_References_ValidIdentifier                                             testCaseName = "validation_Create_ColumnsAndConstraints_OutOfLineConstraint_FK_References_ValidIdentifier"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Enforced_NotEnforced                            testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Enforced_NotEnforced"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Deferrable_NotDeferrable                        testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Deferrable_NotDeferrable"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_InitiallyDeferred_InitiallyImmediate            testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_InitiallyDeferred_InitiallyImmediate"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Enable_Disable                                  testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Enable_Disable"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Validate_Novalidate                             testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Validate_Novalidate"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Rely_Norely                                     testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Rely_Norely"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_CH_ConflictingFields                                                 testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_CH_ConflictingFields"
+	case_IcebergTables_validation_Create_opts_PartitionBy_ExactlyOneValueSet_NoneSet                                                                         testCaseName = "validation_Create_opts_PartitionBy_ExactlyOneValueSet_NoneSet"
+	case_IcebergTables_validation_Create_opts_PartitionBy_ExactlyOneValueSet_MoreThanOneSet                                                                  testCaseName = "validation_Create_opts_PartitionBy_ExactlyOneValueSet_MoreThanOneSet"
+	case_IcebergTables_validation_Create_opts_PartitionBy_ExactlyOneValueSet_OneValidOneInvalid                                                              testCaseName = "validation_Create_opts_PartitionBy_ExactlyOneValueSet_OneValidOneInvalid"
+	case_IcebergTables_validation_Create_RowAccessPolicy_Name_ValidIdentifier                                                                                testCaseName = "validation_Create_RowAccessPolicy_Name_ValidIdentifier"
+	case_IcebergTables_validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier                                                                 testCaseName = "validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier"
+	case_IcebergTables_sql_Create_basic                                                                                                                      testCaseName = "sql_Create_basic"
+	case_IcebergTables_sql_Create_all                                                                                                                        testCaseName = "sql_Create_all"
+	case_IcebergTables_validation_CreateFromIcebergFiles_name_ValidIdentifier                                                                                testCaseName = "validation_CreateFromIcebergFiles_name_ValidIdentifier"
+	case_IcebergTables_validation_CreateFromIcebergFiles_opts_ConflictingFields                                                                              testCaseName = "validation_CreateFromIcebergFiles_opts_ConflictingFields"
+	case_IcebergTables_sql_CreateFromIcebergFiles_basic                                                                                                      testCaseName = "sql_CreateFromIcebergFiles_basic"
+	case_IcebergTables_sql_CreateFromIcebergFiles_all                                                                                                        testCaseName = "sql_CreateFromIcebergFiles_all"
+	case_IcebergTables_validation_CreateFromDeltaLake_name_ValidIdentifier                                                                                   testCaseName = "validation_CreateFromDeltaLake_name_ValidIdentifier"
+	case_IcebergTables_validation_CreateFromDeltaLake_opts_ConflictingFields                                                                                 testCaseName = "validation_CreateFromDeltaLake_opts_ConflictingFields"
+	case_IcebergTables_sql_CreateFromDeltaLake_basic                                                                                                         testCaseName = "sql_CreateFromDeltaLake_basic"
+	case_IcebergTables_sql_CreateFromDeltaLake_all                                                                                                           testCaseName = "sql_CreateFromDeltaLake_all"
+	case_IcebergTables_validation_CreateFromIcebergRest_name_ValidIdentifier                                                                                 testCaseName = "validation_CreateFromIcebergRest_name_ValidIdentifier"
+	case_IcebergTables_validation_CreateFromIcebergRest_opts_ConflictingFields                                                                               testCaseName = "validation_CreateFromIcebergRest_opts_ConflictingFields"
+	case_IcebergTables_sql_CreateFromIcebergRest_basic                                                                                                       testCaseName = "sql_CreateFromIcebergRest_basic"
+	case_IcebergTables_sql_CreateFromIcebergRest_all                                                                                                         testCaseName = "sql_CreateFromIcebergRest_all"
+	case_IcebergTables_validation_CreateFromAwsGlue_name_ValidIdentifier                                                                                     testCaseName = "validation_CreateFromAwsGlue_name_ValidIdentifier"
+	case_IcebergTables_validation_CreateFromAwsGlue_opts_ConflictingFields                                                                                   testCaseName = "validation_CreateFromAwsGlue_opts_ConflictingFields"
+	case_IcebergTables_sql_CreateFromAwsGlue_basic                                                                                                           testCaseName = "sql_CreateFromAwsGlue_basic"
+	case_IcebergTables_sql_CreateFromAwsGlue_all                                                                                                             testCaseName = "sql_CreateFromAwsGlue_all"
+	case_IcebergTables_validation_Alter_name_ValidIdentifier                                                                                                 testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_IcebergTables_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                                                                      testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_IcebergTables_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                                                               testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_ExactlyOneValueSet_NoneSet                                                     testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_ExactlyOneValueSet_NoneSet"
+	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_ExactlyOneValueSet_MoreThanOneSet                                              testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_ExactlyOneValueSet_MoreThanOneSet"
+	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ExactlyOneValueSet_NoneSet                                            testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ExactlyOneValueSet_NoneSet"
+	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ExactlyOneValueSet_MoreThanOneSet                                     testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ExactlyOneValueSet_MoreThanOneSet"
+	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ConflictingFields_Enforced_NotEnforced                                testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ConflictingFields_Enforced_NotEnforced"
+	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ConflictingFields_Deferrable_NotDeferrable                            testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ConflictingFields_Deferrable_NotDeferrable"
+	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ConflictingFields_InitiallyDeferred_InitiallyImmediate                testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ConflictingFields_InitiallyDeferred_InitiallyImmediate"
+	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ConflictingFields_Enable_Disable                                      testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ConflictingFields_Enable_Disable"
+	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ConflictingFields_Validate_Novalidate                                 testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ConflictingFields_Validate_Novalidate"
+	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ConflictingFields_Rely_Norely                                         testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ConflictingFields_Rely_Norely"
+	case_IcebergTables_validation_Alter_AddColumnAction_InlineConstraint_FK_References_ValidIdentifier                                                       testCaseName = "validation_Alter_AddColumnAction_InlineConstraint_FK_References_ValidIdentifier"
+	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Enforced_NotEnforced                                      testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Enforced_NotEnforced"
+	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Deferrable_NotDeferrable                                  testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Deferrable_NotDeferrable"
+	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_InitiallyDeferred_InitiallyImmediate                      testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_InitiallyDeferred_InitiallyImmediate"
+	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Enable_Disable                                            testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Enable_Disable"
+	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Validate_Novalidate                                       testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Validate_Novalidate"
+	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Rely_Norely                                               testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Rely_Norely"
+	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_CH_ConflictingFields                                                           testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_CH_ConflictingFields"
+	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_NoneSet                                                                    testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_NoneSet"
+	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_MoreThanOneSet                                                             testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_MoreThanOneSet"
+	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_OneValidOneInvalid                                                         testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_OneValidOneInvalid"
+	case_IcebergTables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet                                                                     testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet"
+	case_IcebergTables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet                                                              testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet"
+	case_IcebergTables_validation_Alter_opts_Set_AtLeastOneValueSet                                                                                          testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_IcebergTables_validation_Alter_opts_Unset_AtLeastOneValueSet                                                                                        testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_IcebergTables_validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier                                                                   testCaseName = "validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier"
+	case_IcebergTables_validation_Alter_AddRowAccessPolicy_On_ValidateValueSet                                                                               testCaseName = "validation_Alter_AddRowAccessPolicy_On_ValidateValueSet"
+	case_IcebergTables_validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier                                                                  testCaseName = "validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier"
+	case_IcebergTables_validation_Alter_DropAndAddRowAccessPolicy_Drop_RowAccessPolicy_ValidIdentifier                                                       testCaseName = "validation_Alter_DropAndAddRowAccessPolicy_Drop_RowAccessPolicy_ValidIdentifier"
+	case_IcebergTables_validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier                                                        testCaseName = "validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier"
+	case_IcebergTables_validation_Alter_DropAndAddRowAccessPolicy_Add_On_ValidateValueSet                                                                    testCaseName = "validation_Alter_DropAndAddRowAccessPolicy_Add_On_ValidateValueSet"
+	case_IcebergTables_validation_Alter_SetAggregationPolicy_AggregationPolicy_ValidIdentifier                                                               testCaseName = "validation_Alter_SetAggregationPolicy_AggregationPolicy_ValidIdentifier"
+	case_IcebergTables_validation_Alter_SetJoinPolicy_JoinPolicy_ValidIdentifier                                                                             testCaseName = "validation_Alter_SetJoinPolicy_JoinPolicy_ValidIdentifier"
+	case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_NoneSet                                                             testCaseName = "validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_NoneSet"
+	case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_MoreThanOneSet                                                      testCaseName = "validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_MoreThanOneSet"
+	case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_NoneSet                                                     testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_NoneSet"
+	case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet                                              testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet"
+	case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid                                          testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid"
+	case_IcebergTables_sql_Alter_AddColumnAction                                                                                                             testCaseName = "sql_Alter_AddColumnAction"
+	case_IcebergTables_sql_Alter_DropColumnAction                                                                                                            testCaseName = "sql_Alter_DropColumnAction"
+	case_IcebergTables_sql_Alter_RenameColumnAction                                                                                                          testCaseName = "sql_Alter_RenameColumnAction"
+	case_IcebergTables_sql_Alter_AlterColumnAction                                                                                                           testCaseName = "sql_Alter_AlterColumnAction"
+	case_IcebergTables_sql_Alter_SetMaskingPolicyOnColumn                                                                                                    testCaseName = "sql_Alter_SetMaskingPolicyOnColumn"
+	case_IcebergTables_sql_Alter_UnsetMaskingPolicyOnColumn                                                                                                  testCaseName = "sql_Alter_UnsetMaskingPolicyOnColumn"
+	case_IcebergTables_sql_Alter_SetProjectionPolicyOnColumn                                                                                                 testCaseName = "sql_Alter_SetProjectionPolicyOnColumn"
+	case_IcebergTables_sql_Alter_UnsetProjectionPolicyOnColumn                                                                                               testCaseName = "sql_Alter_UnsetProjectionPolicyOnColumn"
+	case_IcebergTables_sql_Alter_SetTagsOnColumn                                                                                                             testCaseName = "sql_Alter_SetTagsOnColumn"
+	case_IcebergTables_sql_Alter_UnsetTagsOnColumn                                                                                                           testCaseName = "sql_Alter_UnsetTagsOnColumn"
+	case_IcebergTables_sql_Alter_ClusteringAction                                                                                                            testCaseName = "sql_Alter_ClusteringAction"
+	case_IcebergTables_sql_Alter_Set                                                                                                                         testCaseName = "sql_Alter_Set"
+	case_IcebergTables_sql_Alter_Unset                                                                                                                       testCaseName = "sql_Alter_Unset"
+	case_IcebergTables_sql_Alter_SetTags                                                                                                                     testCaseName = "sql_Alter_SetTags"
+	case_IcebergTables_sql_Alter_UnsetTags                                                                                                                   testCaseName = "sql_Alter_UnsetTags"
+	case_IcebergTables_sql_Alter_AddRowAccessPolicy                                                                                                          testCaseName = "sql_Alter_AddRowAccessPolicy"
+	case_IcebergTables_sql_Alter_DropRowAccessPolicy                                                                                                         testCaseName = "sql_Alter_DropRowAccessPolicy"
+	case_IcebergTables_sql_Alter_DropAndAddRowAccessPolicy                                                                                                   testCaseName = "sql_Alter_DropAndAddRowAccessPolicy"
+	case_IcebergTables_sql_Alter_DropAllRowAccessPolicies                                                                                                    testCaseName = "sql_Alter_DropAllRowAccessPolicies"
+	case_IcebergTables_sql_Alter_SetAggregationPolicy                                                                                                        testCaseName = "sql_Alter_SetAggregationPolicy"
+	case_IcebergTables_sql_Alter_UnsetAggregationPolicy                                                                                                      testCaseName = "sql_Alter_UnsetAggregationPolicy"
+	case_IcebergTables_sql_Alter_SetJoinPolicy                                                                                                               testCaseName = "sql_Alter_SetJoinPolicy"
+	case_IcebergTables_sql_Alter_UnsetJoinPolicy                                                                                                             testCaseName = "sql_Alter_UnsetJoinPolicy"
+	case_IcebergTables_sql_Alter_SearchOptimizationAction                                                                                                    testCaseName = "sql_Alter_SearchOptimizationAction"
+	case_IcebergTables_validation_Drop_name_ValidIdentifier                                                                                                  testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_IcebergTables_validation_Drop_opts_ConflictingFields                                                                                                testCaseName = "validation_Drop_opts_ConflictingFields"
+	case_IcebergTables_sql_Drop_basic                                                                                                                        testCaseName = "sql_Drop_basic"
+	case_IcebergTables_sql_Drop_all                                                                                                                          testCaseName = "sql_Drop_all"
+	case_IcebergTables_sql_Show_basic                                                                                                                        testCaseName = "sql_Show_basic"
+	case_IcebergTables_sql_Show_all                                                                                                                          testCaseName = "sql_Show_all"
+	case_IcebergTables_sql_Show_Like                                                                                                                         testCaseName = "sql_Show_Like"
+	case_IcebergTables_sql_Show_In                                                                                                                           testCaseName = "sql_Show_In"
+	case_IcebergTables_sql_Show_StartsWith                                                                                                                   testCaseName = "sql_Show_StartsWith"
+	case_IcebergTables_sql_Show_Limit                                                                                                                        testCaseName = "sql_Show_Limit"
+	case_IcebergTables_validation_Describe_name_ValidIdentifier                                                                                              testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_IcebergTables_sql_Describe_basic                                                                                                                    testCaseName = "sql_Describe_basic"
 )
 
 type IcebergTablesTestsContext struct {
@@ -153,6 +205,202 @@ var icebergTablesTests = IcebergTablesTestsContext{
 				ExpectedErr: errOneOf("CreateIcebergTableOptions", "PartitionBy", "ClusterBy"),
 			},
 			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint", "UniquePK", "FK", "CH"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK = nil
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK = nil
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.CH = nil
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint", "UniquePK", "FK", "CH"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK = &TableColumnInlineFK{}
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Unique", "PrimaryKey"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK.Unique = nil
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK.PrimaryKey = nil
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Unique", "PrimaryKey"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK.Unique = new(true)
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK.PrimaryKey = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Enforced_NotEnforced,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Enforced", "NotEnforced"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK.Enforced = new(true)
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK.NotEnforced = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Deferrable_NotDeferrable,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Deferrable", "NotDeferrable"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK.Deferrable = new(true)
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK.NotDeferrable = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_InitiallyDeferred_InitiallyImmediate,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "InitiallyDeferred", "InitiallyImmediate"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK.InitiallyDeferred = new(true)
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK.InitiallyImmediate = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Enable_Disable,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Enable", "Disable"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK.Enable = new(true)
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK.Disable = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Validate_Novalidate,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Validate", "Novalidate"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK.Validate = new(true)
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK.Novalidate = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Rely_Norely,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Rely", "Norely"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK.Rely = new(true)
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK.Norely = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_ColumnsAndConstraints_Columns_InlineConstraint_FK_References_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK = &TableColumnInlineFK{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK.References = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Enforced_NotEnforced,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.FK", "Enforced", "NotEnforced"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK = &TableColumnInlineFK{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK.Enforced = new(true)
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK.NotEnforced = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Deferrable_NotDeferrable,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.FK", "Deferrable", "NotDeferrable"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK = &TableColumnInlineFK{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK.Deferrable = new(true)
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK.NotDeferrable = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_InitiallyDeferred_InitiallyImmediate,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.FK", "InitiallyDeferred", "InitiallyImmediate"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK = &TableColumnInlineFK{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK.InitiallyDeferred = new(true)
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK.InitiallyImmediate = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Enable_Disable,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.FK", "Enable", "Disable"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK = &TableColumnInlineFK{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK.Enable = new(true)
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK.Disable = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Validate_Novalidate,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.FK", "Validate", "Novalidate"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK = &TableColumnInlineFK{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK.Validate = new(true)
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK.Novalidate = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Rely_Norely,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.FK", "Rely", "Norely"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK = &TableColumnInlineFK{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK.Rely = new(true)
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.FK.Norely = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_CH_ConflictingFields,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.CH", "EnableValidate", "EnableNovalidate"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.CH = &TableColumnInlineCH{}
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.CH.EnableValidate = new(true)
+					opts.ColumnsAndConstraints.Columns[0].InlineConstraint.CH.EnableNovalidate = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_NoneSet,
 				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "UniquePK", "FK", "CH"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
@@ -166,6 +414,165 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_OneValidOneInvalid,
 				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "UniquePK", "FK", "CH"),
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Unique", "PrimaryKey"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK = &TableOutOfLineUniquePK{}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK.Unique = nil
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK.PrimaryKey = nil
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Unique", "PrimaryKey"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK = &TableOutOfLineUniquePK{}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK.Unique = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK.PrimaryKey = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Enforced_NotEnforced,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Enforced", "NotEnforced"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK = &TableOutOfLineUniquePK{}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK.Enforced = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK.NotEnforced = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Deferrable_NotDeferrable,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Deferrable", "NotDeferrable"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK = &TableOutOfLineUniquePK{}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK.Deferrable = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK.NotDeferrable = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_InitiallyDeferred_InitiallyImmediate,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "InitiallyDeferred", "InitiallyImmediate"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK = &TableOutOfLineUniquePK{}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK.InitiallyDeferred = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK.InitiallyImmediate = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Enable_Disable,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Enable", "Disable"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK = &TableOutOfLineUniquePK{}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK.Enable = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK.Disable = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Validate_Novalidate,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Validate", "Novalidate"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK = &TableOutOfLineUniquePK{}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK.Validate = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK.Novalidate = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Rely_Norely,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Rely", "Norely"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK = &TableOutOfLineUniquePK{}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK.Rely = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK.Norely = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_ColumnsAndConstraints_OutOfLineConstraint_FK_References_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK = &TableOutOfLineFK{}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK.References = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Enforced_NotEnforced,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.FK", "Enforced", "NotEnforced"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK = &TableOutOfLineFK{}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK.Enforced = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK.NotEnforced = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Deferrable_NotDeferrable,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.FK", "Deferrable", "NotDeferrable"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK = &TableOutOfLineFK{}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK.Deferrable = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK.NotDeferrable = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_InitiallyDeferred_InitiallyImmediate,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.FK", "InitiallyDeferred", "InitiallyImmediate"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK = &TableOutOfLineFK{}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK.InitiallyDeferred = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK.InitiallyImmediate = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Enable_Disable,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.FK", "Enable", "Disable"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK = &TableOutOfLineFK{}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK.Enable = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK.Disable = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Validate_Novalidate,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.FK", "Validate", "Novalidate"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK = &TableOutOfLineFK{}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK.Validate = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK.Novalidate = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Rely_Norely,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.FK", "Rely", "Norely"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK = &TableOutOfLineFK{}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK.Rely = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK.Norely = new(true)
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_CH_ConflictingFields,
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.CH", "EnableValidate", "EnableNovalidate"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].CH = &TableOutOfLineCH{}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].CH.EnableValidate = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].CH.EnableNovalidate = new(true)
+				},
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_PartitionBy_ExactlyOneValueSet_NoneSet,
@@ -396,6 +803,202 @@ var icebergTablesTests = IcebergTablesTestsContext{
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
 					opts.AddColumnAction = &IcebergTableAddColumnAction{}
 					opts.DropColumnAction = &TableDropColumnAction{}
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint", "UniquePK", "FK", "CH"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.AddColumnAction.InlineConstraint.UniquePK = nil
+					opts.AddColumnAction.InlineConstraint.FK = nil
+					opts.AddColumnAction.InlineConstraint.CH = nil
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint", "UniquePK", "FK", "CH"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.AddColumnAction.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
+					opts.AddColumnAction.InlineConstraint.FK = &TableColumnInlineFK{}
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Unique", "PrimaryKey"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.AddColumnAction.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
+					opts.AddColumnAction.InlineConstraint.UniquePK.Unique = nil
+					opts.AddColumnAction.InlineConstraint.UniquePK.PrimaryKey = nil
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Unique", "PrimaryKey"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.AddColumnAction.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
+					opts.AddColumnAction.InlineConstraint.UniquePK.Unique = new(true)
+					opts.AddColumnAction.InlineConstraint.UniquePK.PrimaryKey = new(true)
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ConflictingFields_Enforced_NotEnforced,
+				ExpectedErr: errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Enforced", "NotEnforced"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.AddColumnAction.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
+					opts.AddColumnAction.InlineConstraint.UniquePK.Enforced = new(true)
+					opts.AddColumnAction.InlineConstraint.UniquePK.NotEnforced = new(true)
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ConflictingFields_Deferrable_NotDeferrable,
+				ExpectedErr: errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Deferrable", "NotDeferrable"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.AddColumnAction.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
+					opts.AddColumnAction.InlineConstraint.UniquePK.Deferrable = new(true)
+					opts.AddColumnAction.InlineConstraint.UniquePK.NotDeferrable = new(true)
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ConflictingFields_InitiallyDeferred_InitiallyImmediate,
+				ExpectedErr: errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "InitiallyDeferred", "InitiallyImmediate"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.AddColumnAction.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
+					opts.AddColumnAction.InlineConstraint.UniquePK.InitiallyDeferred = new(true)
+					opts.AddColumnAction.InlineConstraint.UniquePK.InitiallyImmediate = new(true)
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ConflictingFields_Enable_Disable,
+				ExpectedErr: errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Enable", "Disable"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.AddColumnAction.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
+					opts.AddColumnAction.InlineConstraint.UniquePK.Enable = new(true)
+					opts.AddColumnAction.InlineConstraint.UniquePK.Disable = new(true)
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ConflictingFields_Validate_Novalidate,
+				ExpectedErr: errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Validate", "Novalidate"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.AddColumnAction.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
+					opts.AddColumnAction.InlineConstraint.UniquePK.Validate = new(true)
+					opts.AddColumnAction.InlineConstraint.UniquePK.Novalidate = new(true)
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_UniquePK_ConflictingFields_Rely_Norely,
+				ExpectedErr: errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Rely", "Norely"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.AddColumnAction.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
+					opts.AddColumnAction.InlineConstraint.UniquePK.Rely = new(true)
+					opts.AddColumnAction.InlineConstraint.UniquePK.Norely = new(true)
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_AddColumnAction_InlineConstraint_FK_References_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.AddColumnAction.InlineConstraint.FK = &TableColumnInlineFK{}
+					opts.AddColumnAction.InlineConstraint.FK.References = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Enforced_NotEnforced,
+				ExpectedErr: errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Enforced", "NotEnforced"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.AddColumnAction.InlineConstraint.FK = &TableColumnInlineFK{}
+					opts.AddColumnAction.InlineConstraint.FK.Enforced = new(true)
+					opts.AddColumnAction.InlineConstraint.FK.NotEnforced = new(true)
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Deferrable_NotDeferrable,
+				ExpectedErr: errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Deferrable", "NotDeferrable"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.AddColumnAction.InlineConstraint.FK = &TableColumnInlineFK{}
+					opts.AddColumnAction.InlineConstraint.FK.Deferrable = new(true)
+					opts.AddColumnAction.InlineConstraint.FK.NotDeferrable = new(true)
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_InitiallyDeferred_InitiallyImmediate,
+				ExpectedErr: errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "InitiallyDeferred", "InitiallyImmediate"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.AddColumnAction.InlineConstraint.FK = &TableColumnInlineFK{}
+					opts.AddColumnAction.InlineConstraint.FK.InitiallyDeferred = new(true)
+					opts.AddColumnAction.InlineConstraint.FK.InitiallyImmediate = new(true)
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Enable_Disable,
+				ExpectedErr: errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Enable", "Disable"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.AddColumnAction.InlineConstraint.FK = &TableColumnInlineFK{}
+					opts.AddColumnAction.InlineConstraint.FK.Enable = new(true)
+					opts.AddColumnAction.InlineConstraint.FK.Disable = new(true)
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Validate_Novalidate,
+				ExpectedErr: errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Validate", "Novalidate"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.AddColumnAction.InlineConstraint.FK = &TableColumnInlineFK{}
+					opts.AddColumnAction.InlineConstraint.FK.Validate = new(true)
+					opts.AddColumnAction.InlineConstraint.FK.Novalidate = new(true)
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Rely_Norely,
+				ExpectedErr: errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Rely", "Norely"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.AddColumnAction.InlineConstraint.FK = &TableColumnInlineFK{}
+					opts.AddColumnAction.InlineConstraint.FK.Rely = new(true)
+					opts.AddColumnAction.InlineConstraint.FK.Norely = new(true)
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_CH_ConflictingFields,
+				ExpectedErr: errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.CH", "EnableValidate", "EnableNovalidate"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.AddColumnAction.InlineConstraint.CH = &TableColumnInlineCH{}
+					opts.AddColumnAction.InlineConstraint.CH.EnableValidate = new(true)
+					opts.AddColumnAction.InlineConstraint.CH.EnableNovalidate = new(true)
 				},
 			},
 			validationCase[*AlterIcebergTableOptions]{

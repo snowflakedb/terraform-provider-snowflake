@@ -38,10 +38,10 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		return baseUrl + "*"
 	}
 
-	s3StorageLocationsBasic := []sdk.ExternalVolumeStorageLocationItem{
-		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+	s3StorageLocationsBasic := []sdk.ExternalVolumeStorageLocationItemRequest{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocationRequest{
 			Name: "s3_testing_storage_location_basic",
-			S3StorageLocationParams: &sdk.S3StorageLocationParams{
+			S3StorageLocationParams: &sdk.S3StorageLocationParamsRequest{
 				StorageProvider:   sdk.S3StorageProviderS3,
 				StorageAwsRoleArn: awsRoleARN,
 				StorageBaseUrl:    awsBaseUrl,
@@ -49,16 +49,16 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		}},
 	}
 
-	s3StorageLocationsComplete := []sdk.ExternalVolumeStorageLocationItem{
-		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+	s3StorageLocationsComplete := []sdk.ExternalVolumeStorageLocationItemRequest{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocationRequest{
 			Name: "s3_testing_storage_location_complete",
-			S3StorageLocationParams: &sdk.S3StorageLocationParams{
+			S3StorageLocationParams: &sdk.S3StorageLocationParamsRequest{
 				StorageProvider:        sdk.S3StorageProviderS3,
 				StorageAwsRoleArn:      awsRoleARN,
 				StorageBaseUrl:         awsBaseUrl,
 				StorageAwsExternalId:   sdk.String(awsExternalId),
 				UsePrivatelinkEndpoint: sdk.Bool(true),
-				Encryption: &sdk.ExternalVolumeS3Encryption{
+				Encryption: &sdk.ExternalVolumeS3EncryptionRequest{
 					EncryptionType: sdk.S3EncryptionTypeAwsSseKms,
 					KmsKeyId:       &awsKmsKeyId,
 				},
@@ -67,10 +67,10 @@ func TestInt_ExternalVolumes(t *testing.T) {
 	}
 
 	s3GovBaseUrl := strings.Replace(awsBaseUrl, "s3://", "s3gov://", 1)
-	s3GovStorageLocationsBasic := []sdk.ExternalVolumeStorageLocationItem{
-		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+	s3GovStorageLocationsBasic := []sdk.ExternalVolumeStorageLocationItemRequest{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocationRequest{
 			Name: "s3gov_testing_storage_location_basic",
-			S3StorageLocationParams: &sdk.S3StorageLocationParams{
+			S3StorageLocationParams: &sdk.S3StorageLocationParamsRequest{
 				StorageProvider:   sdk.S3StorageProviderS3gov,
 				StorageAwsRoleArn: awsRoleARN,
 				StorageBaseUrl:    s3GovBaseUrl,
@@ -78,15 +78,15 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		}},
 	}
 
-	s3GovStorageLocationsComplete := []sdk.ExternalVolumeStorageLocationItem{
-		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+	s3GovStorageLocationsComplete := []sdk.ExternalVolumeStorageLocationItemRequest{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocationRequest{
 			Name: "s3gov_testing_storage_location_complete",
-			S3StorageLocationParams: &sdk.S3StorageLocationParams{
+			S3StorageLocationParams: &sdk.S3StorageLocationParamsRequest{
 				StorageProvider:      sdk.S3StorageProviderS3gov,
 				StorageAwsRoleArn:    awsRoleARN,
 				StorageBaseUrl:       s3GovBaseUrl,
 				StorageAwsExternalId: sdk.String(awsExternalId),
-				Encryption: &sdk.ExternalVolumeS3Encryption{
+				Encryption: &sdk.ExternalVolumeS3EncryptionRequest{
 					EncryptionType: sdk.S3EncryptionTypeAwsSseKms,
 					KmsKeyId:       &awsKmsKeyId,
 				},
@@ -94,21 +94,21 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		}},
 	}
 
-	gcsStorageLocationsBasic := []sdk.ExternalVolumeStorageLocationItem{
-		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+	gcsStorageLocationsBasic := []sdk.ExternalVolumeStorageLocationItemRequest{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocationRequest{
 			Name: "gcs_testing_storage_location_basic",
-			GCSStorageLocationParams: &sdk.GCSStorageLocationParams{
+			GCSStorageLocationParams: &sdk.GCSStorageLocationParamsRequest{
 				StorageBaseUrl: gcsBaseUrl,
 			},
 		}},
 	}
 
-	gcsStorageLocationsComplete := []sdk.ExternalVolumeStorageLocationItem{
-		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+	gcsStorageLocationsComplete := []sdk.ExternalVolumeStorageLocationItemRequest{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocationRequest{
 			Name: "gcs_testing_storage_location_complete",
-			GCSStorageLocationParams: &sdk.GCSStorageLocationParams{
+			GCSStorageLocationParams: &sdk.GCSStorageLocationParamsRequest{
 				StorageBaseUrl: gcsBaseUrl,
-				Encryption: &sdk.ExternalVolumeGCSEncryption{
+				Encryption: &sdk.ExternalVolumeGCSEncryptionRequest{
 					EncryptionType: sdk.GCSEncryptionTypeGcsSseKms,
 					KmsKeyId:       &gcsKmsKeyId,
 				},
@@ -116,13 +116,13 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		}},
 	}
 
-	s3CompatStorageLocationsBasic := []sdk.ExternalVolumeStorageLocationItem{
-		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+	s3CompatStorageLocationsBasic := []sdk.ExternalVolumeStorageLocationItemRequest{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocationRequest{
 			Name: "s3compat_testing_storage_location_basic",
-			S3CompatStorageLocationParams: &sdk.S3CompatStorageLocationParams{
+			S3CompatStorageLocationParams: &sdk.S3CompatStorageLocationParamsRequest{
 				StorageBaseUrl:  s3CompatBaseUrl,
 				StorageEndpoint: s3CompatEndpoint,
-				Credentials: sdk.ExternalVolumeS3CompatCredentials{
+				Credentials: sdk.ExternalVolumeS3CompatCredentialsRequest{
 					AwsKeyId:     awsKmsKeyId,
 					AwsSecretKey: awsSecretKey,
 				},
@@ -130,10 +130,10 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		}},
 	}
 
-	azureStorageLocations := []sdk.ExternalVolumeStorageLocationItem{
-		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+	azureStorageLocations := []sdk.ExternalVolumeStorageLocationItemRequest{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocationRequest{
 			Name: "azure_testing_storage_location",
-			AzureStorageLocationParams: &sdk.AzureStorageLocationParams{
+			AzureStorageLocationParams: &sdk.AzureStorageLocationParamsRequest{
 				AzureTenantId:  azureTenantId,
 				StorageBaseUrl: azureBaseUrl,
 			},
@@ -371,10 +371,10 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			t.Skip("Skipping test, requires Azure pre-prod deployment")
 		}
 
-		azureStorageLocationsWithPrivatelink := []sdk.ExternalVolumeStorageLocationItem{
-			{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+		azureStorageLocationsWithPrivatelink := []sdk.ExternalVolumeStorageLocationItemRequest{
+			{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocationRequest{
 				Name: "azure_testing_storage_location_privatelink",
-				AzureStorageLocationParams: &sdk.AzureStorageLocationParams{
+				AzureStorageLocationParams: &sdk.AzureStorageLocationParamsRequest{
 					AzureTenantId:          azureTenantId,
 					StorageBaseUrl:         azureBaseUrl,
 					UsePrivatelinkEndpoint: sdk.Bool(true),

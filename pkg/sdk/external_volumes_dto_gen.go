@@ -13,24 +13,10 @@ var (
 type CreateExternalVolumeRequest struct {
 	OrReplace        *bool
 	IfNotExists      *bool
-	name             AccountObjectIdentifier             // required
-	StorageLocations []ExternalVolumeStorageLocationItem // required
+	name             AccountObjectIdentifier                    // required
+	StorageLocations []ExternalVolumeStorageLocationItemRequest // required
 	AllowWrites      *bool
 	Comment          *string
-}
-
-type AlterExternalVolumeRequest struct {
-	IfExists              *bool
-	name                  AccountObjectIdentifier // required
-	RemoveStorageLocation *string
-	Set                   *AlterExternalVolumeSetRequest
-	AddStorageLocation    *ExternalVolumeStorageLocationItemRequest
-	UpdateStorageLocation *AlterExternalVolumeUpdateStorageLocationRequest
-}
-
-type AlterExternalVolumeSetRequest struct {
-	AllowWrites *bool
-	Comment     *string
 }
 
 type ExternalVolumeStorageLocationItemRequest struct {
@@ -85,6 +71,20 @@ type S3CompatStorageLocationParamsRequest struct {
 type ExternalVolumeS3CompatCredentialsRequest struct {
 	AwsKeyId     string // required
 	AwsSecretKey string // required
+}
+
+type AlterExternalVolumeRequest struct {
+	IfExists              *bool
+	name                  AccountObjectIdentifier // required
+	RemoveStorageLocation *string
+	Set                   *AlterExternalVolumeSetRequest
+	AddStorageLocation    *ExternalVolumeStorageLocationItemRequest
+	UpdateStorageLocation *AlterExternalVolumeUpdateStorageLocationRequest
+}
+
+type AlterExternalVolumeSetRequest struct {
+	AllowWrites *bool
+	Comment     *string
 }
 
 type AlterExternalVolumeUpdateStorageLocationRequest struct {

@@ -73,12 +73,65 @@ func (v *externalVolumes) ShowByIDSafely(ctx context.Context, id AccountObjectId
 
 func (r *CreateExternalVolumeRequest) toOpts() *CreateExternalVolumeOptions {
 	opts := &CreateExternalVolumeOptions{
-		OrReplace:        r.OrReplace,
-		IfNotExists:      r.IfNotExists,
-		name:             r.name,
-		StorageLocations: r.StorageLocations,
-		AllowWrites:      r.AllowWrites,
-		Comment:          r.Comment,
+		OrReplace:   r.OrReplace,
+		IfNotExists: r.IfNotExists,
+		name:        r.name,
+		AllowWrites: r.AllowWrites,
+		Comment:     r.Comment,
+	}
+	if r.StorageLocations != nil {
+		storageLocations := make([]ExternalVolumeStorageLocationItem, len(r.StorageLocations))
+		for i, v := range r.StorageLocations {
+			storageLocations[i] = ExternalVolumeStorageLocationItem{}
+			storageLocations[i].ExternalVolumeStorageLocation = ExternalVolumeStorageLocation{
+				Name: v.ExternalVolumeStorageLocation.Name,
+			}
+			if v.ExternalVolumeStorageLocation.S3StorageLocationParams != nil {
+				storageLocations[i].ExternalVolumeStorageLocation.S3StorageLocationParams = &S3StorageLocationParams{
+					StorageProvider:          v.ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider,
+					StorageAwsRoleArn:        v.ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn,
+					StorageBaseUrl:           v.ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl,
+					StorageAwsExternalId:     v.ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId,
+					StorageAwsAccessPointArn: v.ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsAccessPointArn,
+					UsePrivatelinkEndpoint:   v.ExternalVolumeStorageLocation.S3StorageLocationParams.UsePrivatelinkEndpoint,
+				}
+				if v.ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption != nil {
+					storageLocations[i].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption = &ExternalVolumeS3Encryption{
+						EncryptionType: v.ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType,
+						KmsKeyId:       v.ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.KmsKeyId,
+					}
+				}
+			}
+			if v.ExternalVolumeStorageLocation.GCSStorageLocationParams != nil {
+				storageLocations[i].ExternalVolumeStorageLocation.GCSStorageLocationParams = &GCSStorageLocationParams{
+					StorageBaseUrl: v.ExternalVolumeStorageLocation.GCSStorageLocationParams.StorageBaseUrl,
+				}
+				if v.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption != nil {
+					storageLocations[i].ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption = &ExternalVolumeGCSEncryption{
+						EncryptionType: v.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.EncryptionType,
+						KmsKeyId:       v.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.KmsKeyId,
+					}
+				}
+			}
+			if v.ExternalVolumeStorageLocation.AzureStorageLocationParams != nil {
+				storageLocations[i].ExternalVolumeStorageLocation.AzureStorageLocationParams = &AzureStorageLocationParams{
+					AzureTenantId:          v.ExternalVolumeStorageLocation.AzureStorageLocationParams.AzureTenantId,
+					StorageBaseUrl:         v.ExternalVolumeStorageLocation.AzureStorageLocationParams.StorageBaseUrl,
+					UsePrivatelinkEndpoint: v.ExternalVolumeStorageLocation.AzureStorageLocationParams.UsePrivatelinkEndpoint,
+				}
+			}
+			if v.ExternalVolumeStorageLocation.S3CompatStorageLocationParams != nil {
+				storageLocations[i].ExternalVolumeStorageLocation.S3CompatStorageLocationParams = &S3CompatStorageLocationParams{
+					StorageBaseUrl:  v.ExternalVolumeStorageLocation.S3CompatStorageLocationParams.StorageBaseUrl,
+					StorageEndpoint: v.ExternalVolumeStorageLocation.S3CompatStorageLocationParams.StorageEndpoint,
+				}
+				storageLocations[i].ExternalVolumeStorageLocation.S3CompatStorageLocationParams.Credentials = ExternalVolumeS3CompatCredentials{
+					AwsKeyId:     v.ExternalVolumeStorageLocation.S3CompatStorageLocationParams.Credentials.AwsKeyId,
+					AwsSecretKey: v.ExternalVolumeStorageLocation.S3CompatStorageLocationParams.Credentials.AwsSecretKey,
+				}
+			}
+		}
+		opts.StorageLocations = storageLocations
 	}
 	return opts
 }

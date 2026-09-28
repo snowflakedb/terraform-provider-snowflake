@@ -4,7 +4,7 @@ package sdk
 
 func NewCreateExternalVolumeRequest(
 	name AccountObjectIdentifier,
-	storageLocations []ExternalVolumeStorageLocationItem,
+	storageLocations []ExternalVolumeStorageLocationItemRequest,
 ) *CreateExternalVolumeRequest {
 	s := CreateExternalVolumeRequest{}
 	s.name = name
@@ -28,54 +28,6 @@ func (s *CreateExternalVolumeRequest) WithAllowWrites(allowWrites bool) *CreateE
 }
 
 func (s *CreateExternalVolumeRequest) WithComment(comment string) *CreateExternalVolumeRequest {
-	s.Comment = &comment
-	return s
-}
-
-func NewAlterExternalVolumeRequest(
-	name AccountObjectIdentifier,
-) *AlterExternalVolumeRequest {
-	s := AlterExternalVolumeRequest{}
-	s.name = name
-	return &s
-}
-
-func (s *AlterExternalVolumeRequest) WithIfExists(ifExists bool) *AlterExternalVolumeRequest {
-	s.IfExists = &ifExists
-	return s
-}
-
-func (s *AlterExternalVolumeRequest) WithRemoveStorageLocation(removeStorageLocation string) *AlterExternalVolumeRequest {
-	s.RemoveStorageLocation = &removeStorageLocation
-	return s
-}
-
-func (s *AlterExternalVolumeRequest) WithSet(set AlterExternalVolumeSetRequest) *AlterExternalVolumeRequest {
-	s.Set = &set
-	return s
-}
-
-func (s *AlterExternalVolumeRequest) WithAddStorageLocation(addStorageLocation ExternalVolumeStorageLocationItemRequest) *AlterExternalVolumeRequest {
-	s.AddStorageLocation = &addStorageLocation
-	return s
-}
-
-func (s *AlterExternalVolumeRequest) WithUpdateStorageLocation(updateStorageLocation AlterExternalVolumeUpdateStorageLocationRequest) *AlterExternalVolumeRequest {
-	s.UpdateStorageLocation = &updateStorageLocation
-	return s
-}
-
-func NewAlterExternalVolumeSetRequest() *AlterExternalVolumeSetRequest {
-	s := AlterExternalVolumeSetRequest{}
-	return &s
-}
-
-func (s *AlterExternalVolumeSetRequest) WithAllowWrites(allowWrites bool) *AlterExternalVolumeSetRequest {
-	s.AllowWrites = &allowWrites
-	return s
-}
-
-func (s *AlterExternalVolumeSetRequest) WithComment(comment string) *AlterExternalVolumeSetRequest {
 	s.Comment = &comment
 	return s
 }
@@ -222,6 +174,54 @@ func NewExternalVolumeS3CompatCredentialsRequest(
 	s.AwsKeyId = awsKeyId
 	s.AwsSecretKey = awsSecretKey
 	return &s
+}
+
+func NewAlterExternalVolumeRequest(
+	name AccountObjectIdentifier,
+) *AlterExternalVolumeRequest {
+	s := AlterExternalVolumeRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *AlterExternalVolumeRequest) WithIfExists(ifExists bool) *AlterExternalVolumeRequest {
+	s.IfExists = &ifExists
+	return s
+}
+
+func (s *AlterExternalVolumeRequest) WithRemoveStorageLocation(removeStorageLocation string) *AlterExternalVolumeRequest {
+	s.RemoveStorageLocation = &removeStorageLocation
+	return s
+}
+
+func (s *AlterExternalVolumeRequest) WithSet(set AlterExternalVolumeSetRequest) *AlterExternalVolumeRequest {
+	s.Set = &set
+	return s
+}
+
+func (s *AlterExternalVolumeRequest) WithAddStorageLocation(addStorageLocation ExternalVolumeStorageLocationItemRequest) *AlterExternalVolumeRequest {
+	s.AddStorageLocation = &addStorageLocation
+	return s
+}
+
+func (s *AlterExternalVolumeRequest) WithUpdateStorageLocation(updateStorageLocation AlterExternalVolumeUpdateStorageLocationRequest) *AlterExternalVolumeRequest {
+	s.UpdateStorageLocation = &updateStorageLocation
+	return s
+}
+
+func NewAlterExternalVolumeSetRequest() *AlterExternalVolumeSetRequest {
+	s := AlterExternalVolumeSetRequest{}
+	return &s
+}
+
+func (s *AlterExternalVolumeSetRequest) WithAllowWrites(allowWrites bool) *AlterExternalVolumeSetRequest {
+	s.AllowWrites = &allowWrites
+	return s
+}
+
+func (s *AlterExternalVolumeSetRequest) WithComment(comment string) *AlterExternalVolumeSetRequest {
+	s.Comment = &comment
+	return s
 }
 
 func NewAlterExternalVolumeUpdateStorageLocationRequest(

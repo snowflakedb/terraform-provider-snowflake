@@ -49,44 +49,6 @@ func init() {
 			errNotSet("CreateTableOptions", "Columns"),
 		).
 		withAdditionalValidationCase(
-			"validation_Create_DefaultValue_ExactlyOneOf_Expression_Identity",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:       "FIRST_COLUMN",
-					ColumnType: DataTypeVARCHAR,
-					DefaultValue: &ColumnDefaultValue{
-						Expression: new("1"),
-						Identity:   &ColumnIdentity{Start: 1, Increment: 1},
-					},
-				}}
-			},
-			errExactlyOneOf("DefaultValue", "Expression", "Identity"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_Identity_Order_Noorder",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:       "FIRST_COLUMN",
-					ColumnType: DataTypeVARCHAR,
-					DefaultValue: &ColumnDefaultValue{
-						Identity: &ColumnIdentity{Start: 1, Increment: 1, Order: new(true), Noorder: new(true)},
-					},
-				}}
-			},
-			errMoreThanOneOf("Identity", "Order", "Noorder"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_MaskingPolicy_invalidIdentifier",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:          "FIRST_COLUMN",
-					ColumnType:    DataTypeVARCHAR,
-					MaskingPolicy: &ColumnMaskingPolicy{Name: emptySchemaObjectIdentifier},
-				}}
-			},
-			errInvalidIdentifier("ColumnMaskingPolicy", "Name"),
-		).
-		withAdditionalValidationCase(
 			"validation_Create_columnTag_invalidIdentifier",
 			func(opts *CreateTableOptions) {
 				opts.ColumnsAndConstraints.Columns = []TableColumn{{
@@ -226,13 +188,6 @@ func init() {
 			errMoreThanOneOf("ColumnInlineConstraint", "Rely", "Norely"),
 		).
 		withAdditionalValidationCase(
-			"validation_Create_outOfLineConstraint_noColumns",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{ConstraintType: ColumnConstraintTypeUnique}}
-			},
-			errNotSet("OutOfLineConstraint", "Columns"),
-		).
-		withAdditionalValidationCase(
 			"validation_Create_outOfLineConstraint_emptyType",
 			func(opts *CreateTableOptions) {
 				opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{Name: new("OUT_OF_LINE_CONSTRAINT"), Columns: []string{"COLUMN_1"}}}
@@ -274,48 +229,6 @@ func init() {
 				}}
 			},
 			errSet("OutOfLineConstraint", "ForeignKey"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_outOfLineConstraint_Enforced_NotEnforced",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{ConstraintType: ColumnConstraintTypeUnique, Columns: []string{"COLUMN_1"}, Enforced: new(true), NotEnforced: new(true)}}
-			},
-			errMoreThanOneOf("OutOfLineConstraint", "Enforced", "NotEnforced"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_outOfLineConstraint_Deferrable_NotDeferrable",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{ConstraintType: ColumnConstraintTypeUnique, Columns: []string{"COLUMN_1"}, Deferrable: new(true), NotDeferrable: new(true)}}
-			},
-			errMoreThanOneOf("OutOfLineConstraint", "Deferrable", "NotDeferrable"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_outOfLineConstraint_InitiallyDeferred_InitiallyImmediate",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{ConstraintType: ColumnConstraintTypeUnique, Columns: []string{"COLUMN_1"}, InitiallyDeferred: new(true), InitiallyImmediate: new(true)}}
-			},
-			errMoreThanOneOf("OutOfLineConstraint", "InitiallyDeferred", "InitiallyImmediate"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_outOfLineConstraint_Enable_Disable",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{ConstraintType: ColumnConstraintTypeUnique, Columns: []string{"COLUMN_1"}, Enable: new(true), Disable: new(true)}}
-			},
-			errMoreThanOneOf("OutOfLineConstraint", "Enable", "Disable"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_outOfLineConstraint_Validate_Novalidate",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{ConstraintType: ColumnConstraintTypeUnique, Columns: []string{"COLUMN_1"}, Validate: new(true), Novalidate: new(true)}}
-			},
-			errMoreThanOneOf("OutOfLineConstraint", "Validate", "Novalidate"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_outOfLineConstraint_Rely_Norely",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{ConstraintType: ColumnConstraintTypeUnique, Columns: []string{"COLUMN_1"}, Rely: new(true), Norely: new(true)}}
-			},
-			errMoreThanOneOf("OutOfLineConstraint", "Rely", "Norely"),
 		).
 		withExpectedSqlf(
 			case_Tables_sql_Create_basic,
@@ -556,13 +469,6 @@ func init() {
 				{},
 			}}
 		}).
-		withAdditionalValidationCase(
-			"validation_Alter_ConstraintAction_Add_ColumnsNotSet",
-			func(opts *AlterTableOptions) {
-				opts.ConstraintAction = &TableConstraintAction{Add: &OutOfLineConstraint{ConstraintType: ColumnConstraintTypeUnique}}
-			},
-			errNotSet("OutOfLineConstraint", "Columns"),
-		).
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Alter_RenameTo,
 			func(opts *AlterTableOptions) { opts.RenameTo = &renameTarget },

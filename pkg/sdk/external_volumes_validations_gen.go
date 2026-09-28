@@ -15,13 +15,24 @@ func (opts *CreateExternalVolumeOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
+	if !valueSet(opts.StorageLocations) {
+		errs = append(errs, errNotSet("CreateExternalVolumeOptions", "StorageLocations"))
+	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateExternalVolumeOptions", "OrReplace", "IfNotExists"))
 	}
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations())
+	if valueSet(opts.StorageLocations) {
+		for _, storageLocation := range opts.StorageLocations {
+			if valueSet(storageLocation.ExternalVolumeStorageLocation) {
+				if !exactlyOneValueSet(storageLocation.ExternalVolumeStorageLocation.S3StorageLocationParams, storageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams, storageLocation.ExternalVolumeStorageLocation.AzureStorageLocationParams, storageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams) {
+					errs = append(errs, errExactlyOneOf("CreateExternalVolumeOptions.StorageLocations.ExternalVolumeStorageLocation", "S3StorageLocationParams", "GCSStorageLocationParams", "AzureStorageLocationParams", "S3CompatStorageLocationParams"))
+				}
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 

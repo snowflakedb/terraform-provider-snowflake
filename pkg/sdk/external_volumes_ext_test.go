@@ -95,37 +95,6 @@ func init() {
 				StorageLocations: []ExternalVolumeStorageLocationItem{s3Basic},
 			}
 		}).
-		withAdditionalValidationCase(
-			"validation_Create_StorageLocations_notSet",
-			func(opts *CreateExternalVolumeOptions) {
-				opts.StorageLocations = []ExternalVolumeStorageLocationItem{}
-			},
-			errNotSet("CreateExternalVolumeOptions", "StorageLocations"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_StorageLocations_exactlyOneProvider_noneSet",
-			func(opts *CreateExternalVolumeOptions) {
-				opts.StorageLocations = []ExternalVolumeStorageLocationItem{
-					s3Basic,
-					{},
-				}
-			},
-			errExactlyOneOf("CreateExternalVolumeOptions.StorageLocation[1]", "S3StorageLocationParams", "GCSStorageLocationParams", "AzureStorageLocationParams", "S3CompatStorageLocationParams"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_StorageLocations_exactlyOneProvider_moreThanOneSet",
-			func(opts *CreateExternalVolumeOptions) {
-				opts.StorageLocations = []ExternalVolumeStorageLocationItem{{
-					ExternalVolumeStorageLocation: ExternalVolumeStorageLocation{
-						Name:                       "multi",
-						S3StorageLocationParams:    s3Basic.ExternalVolumeStorageLocation.S3StorageLocationParams,
-						GCSStorageLocationParams:   gcsBasic.ExternalVolumeStorageLocation.GCSStorageLocationParams,
-						AzureStorageLocationParams: azureBasic.ExternalVolumeStorageLocation.AzureStorageLocationParams,
-					},
-				}}
-			},
-			errExactlyOneOf("CreateExternalVolumeOptions.StorageLocation[0]", "S3StorageLocationParams", "GCSStorageLocationParams", "AzureStorageLocationParams", "S3CompatStorageLocationParams"),
-		).
 		withExpectedSqlf(
 			case_ExternalVolumes_sql_Create_basic,
 			`CREATE EXTERNAL VOLUME %s STORAGE_LOCATIONS = ((NAME = 's3_basic' STORAGE_PROVIDER = 'S3' STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::123456789012:role/myrole' STORAGE_BASE_URL = 's3://my-bucket/path'))`,

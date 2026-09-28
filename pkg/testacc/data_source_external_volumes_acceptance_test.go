@@ -22,10 +22,10 @@ func TestAcc_ExternalVolumes_BasicUseCase_DifferentFiltering(t *testing.T) {
 	idTwo := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
 	idThree := testClient().Ids.RandomAccountObjectIdentifier()
 
-	storageLocations := []sdk.ExternalVolumeStorageLocationItem{
-		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+	storageLocations := []sdk.ExternalVolumeStorageLocationItemRequest{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocationRequest{
 			Name: "my-s3-us-west-2",
-			S3StorageLocationParams: &sdk.S3StorageLocationParams{
+			S3StorageLocationParams: &sdk.S3StorageLocationParamsRequest{
 				StorageProvider:   sdk.S3StorageProviderS3,
 				StorageAwsRoleArn: "arn:aws:iam::123456789012:role/myrole",
 				StorageBaseUrl:    "s3://my-example-bucket/",
@@ -95,34 +95,34 @@ func TestAcc_ExternalVolumes_CompleteUseCase(t *testing.T) {
 	s3CompatAwsKeyId := "AKIAIOSFODNN7EXAMPLE"
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	storageLocations := []sdk.ExternalVolumeStorageLocationItem{
-		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+	storageLocations := []sdk.ExternalVolumeStorageLocationItemRequest{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocationRequest{
 			Name: s3LocationName,
-			S3StorageLocationParams: &sdk.S3StorageLocationParams{
+			S3StorageLocationParams: &sdk.S3StorageLocationParamsRequest{
 				StorageProvider:   sdk.S3StorageProviderS3,
 				StorageAwsRoleArn: s3RoleArn,
 				StorageBaseUrl:    s3BaseUrl,
 			},
 		}},
-		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocationRequest{
 			Name: gcsLocationName,
-			GCSStorageLocationParams: &sdk.GCSStorageLocationParams{
+			GCSStorageLocationParams: &sdk.GCSStorageLocationParamsRequest{
 				StorageBaseUrl: gcsBaseUrl,
 			},
 		}},
-		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocationRequest{
 			Name: azureLocationName,
-			AzureStorageLocationParams: &sdk.AzureStorageLocationParams{
+			AzureStorageLocationParams: &sdk.AzureStorageLocationParamsRequest{
 				AzureTenantId:  azureTenantId,
 				StorageBaseUrl: azureBaseUrl,
 			},
 		}},
-		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocationRequest{
 			Name: s3CompatLocationName,
-			S3CompatStorageLocationParams: &sdk.S3CompatStorageLocationParams{
+			S3CompatStorageLocationParams: &sdk.S3CompatStorageLocationParamsRequest{
 				StorageBaseUrl:  s3CompatBaseUrl,
 				StorageEndpoint: s3CompatEndpoint,
-				Credentials: sdk.ExternalVolumeS3CompatCredentials{
+				Credentials: sdk.ExternalVolumeS3CompatCredentialsRequest{
 					AwsKeyId:     s3CompatAwsKeyId,
 					AwsSecretKey: s3CompatAwsSecretKey,
 				},

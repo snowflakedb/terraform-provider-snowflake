@@ -39,24 +39,6 @@ func (opts *CreateTableOptions) additionalValidations() error {
 				errs = append(errs, err)
 			}
 		}
-		if column.DefaultValue != nil {
-			if ok := exactlyOneValueSet(
-				column.DefaultValue.Expression,
-				column.DefaultValue.Identity,
-			); !ok {
-				errs = append(errs, errExactlyOneOf("DefaultValue", "Expression", "Identity"))
-			}
-			if identity := column.DefaultValue.Identity; valueSet(identity) {
-				if moreThanOneValueSet(identity.Order, identity.Noorder) {
-					errs = append(errs, errMoreThanOneOf("Identity", "Order", "Noorder"))
-				}
-			}
-		}
-		if column.MaskingPolicy != nil {
-			if !ValidObjectIdentifier(column.MaskingPolicy.Name) {
-				errs = append(errs, errInvalidIdentifier("ColumnMaskingPolicy", "Name"))
-			}
-		}
 		for _, tag := range column.Tag {
 			if !ValidObjectIdentifier(tag.Name) {
 				errs = append(errs, errInvalidIdentifier("TagAssociation", "Name"))
@@ -112,27 +94,6 @@ func (v *OutOfLineConstraint) validate() error {
 		}
 	default:
 		errs = append(errs, errInvalidValue("OutOfLineConstraint", "ConstraintType", string(v.ConstraintType)))
-	}
-	if len(v.Columns) == 0 {
-		errs = append(errs, errNotSet("OutOfLineConstraint", "Columns"))
-	}
-	if moreThanOneValueSet(v.Enforced, v.NotEnforced) {
-		errs = append(errs, errMoreThanOneOf("OutOfLineConstraint", "Enforced", "NotEnforced"))
-	}
-	if moreThanOneValueSet(v.Deferrable, v.NotDeferrable) {
-		errs = append(errs, errMoreThanOneOf("OutOfLineConstraint", "Deferrable", "NotDeferrable"))
-	}
-	if moreThanOneValueSet(v.InitiallyDeferred, v.InitiallyImmediate) {
-		errs = append(errs, errMoreThanOneOf("OutOfLineConstraint", "InitiallyDeferred", "InitiallyImmediate"))
-	}
-	if moreThanOneValueSet(v.Enable, v.Disable) {
-		errs = append(errs, errMoreThanOneOf("OutOfLineConstraint", "Enable", "Disable"))
-	}
-	if moreThanOneValueSet(v.Validate, v.Novalidate) {
-		errs = append(errs, errMoreThanOneOf("OutOfLineConstraint", "Validate", "Novalidate"))
-	}
-	if moreThanOneValueSet(v.Rely, v.Norely) {
-		errs = append(errs, errMoreThanOneOf("OutOfLineConstraint", "Rely", "Norely"))
 	}
 	return JoinErrors(errs...)
 }

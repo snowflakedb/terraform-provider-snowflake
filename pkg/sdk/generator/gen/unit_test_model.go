@@ -267,6 +267,9 @@ func deriveConflictingFieldsModify(v *Validation, f *Field) ([]string, bool) {
 	if f.IsPointer() {
 		prime = append(prime, fmt.Sprintf("opts%s = &%s{}", f.IndexedPath(), f.KindNoPtr()))
 	}
+	if f.IsSlice() {
+		prime = append(prime, fmt.Sprintf("opts%s = []%s{{}}", f.IndexedPath(), f.KindNoPtr()))
+	}
 	stmts := make([]string, 0, len(v.FieldNames))
 	for _, name := range v.FieldNames {
 		child := f.FindChild(name)
@@ -289,6 +292,9 @@ func deriveAtLeastOneValueSetModify(v *Validation, f *Field) ([]string, bool) {
 	prime := primeAncestors(f)
 	if f.IsPointer() {
 		prime = append(prime, fmt.Sprintf("opts%s = &%s{}", f.IndexedPath(), f.KindNoPtr()))
+	}
+	if f.IsSlice() {
+		prime = append(prime, fmt.Sprintf("opts%s = []%s{{}}", f.IndexedPath(), f.KindNoPtr()))
 	}
 	stmts := make([]string, 0, len(v.FieldNames))
 	for _, name := range v.FieldNames {

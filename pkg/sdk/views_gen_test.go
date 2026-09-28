@@ -15,6 +15,8 @@ var viewsTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 const (
 	case_Views_validation_Create_name_ValidIdentifier                                          testCaseName = "validation_Create_name_ValidIdentifier"
 	case_Views_validation_Create_opts_ConflictingFields                                        testCaseName = "validation_Create_opts_ConflictingFields"
+	case_Views_validation_Create_Columns_ProjectionPolicy_ProjectionPolicy_ValidIdentifier     testCaseName = "validation_Create_Columns_ProjectionPolicy_ProjectionPolicy_ValidIdentifier"
+	case_Views_validation_Create_Columns_MaskingPolicy_MaskingPolicy_ValidIdentifier           testCaseName = "validation_Create_Columns_MaskingPolicy_MaskingPolicy_ValidIdentifier"
 	case_Views_validation_Create_RowAccessPolicy_RowAccessPolicy_ValidIdentifier               testCaseName = "validation_Create_RowAccessPolicy_RowAccessPolicy_ValidIdentifier"
 	case_Views_validation_Create_RowAccessPolicy_On_ValidateValueSet                           testCaseName = "validation_Create_RowAccessPolicy_On_ValidateValueSet"
 	case_Views_validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier           testCaseName = "validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier"
@@ -101,6 +103,24 @@ var viewsTests = ViewsTestsContext{
 				DefaultModify: func(opts *CreateViewOptions) {
 					opts.OrReplace = new(true)
 					opts.IfNotExists = new(true)
+				},
+			},
+			validationCase[*CreateViewOptions]{
+				Name:        case_Views_validation_Create_Columns_ProjectionPolicy_ProjectionPolicy_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateViewOptions) {
+					opts.Columns = []ViewColumn{{}}
+					opts.Columns[0].ProjectionPolicy = &ViewColumnProjectionPolicy{}
+					opts.Columns[0].ProjectionPolicy.ProjectionPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateViewOptions]{
+				Name:        case_Views_validation_Create_Columns_MaskingPolicy_MaskingPolicy_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateViewOptions) {
+					opts.Columns = []ViewColumn{{}}
+					opts.Columns[0].MaskingPolicy = &ViewColumnMaskingPolicy{}
+					opts.Columns[0].MaskingPolicy.MaskingPolicy = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CreateViewOptions]{

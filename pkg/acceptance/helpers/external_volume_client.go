@@ -31,14 +31,14 @@ func (c *ExternalVolumeClient) Create(t *testing.T) (sdk.AccountObjectIdentifier
 
 	id := c.ids.RandomAccountObjectIdentifier()
 	kmsKeyId := "1234abcd-12ab-34cd-56ef-1234567890ab"
-	storageLocations := []sdk.ExternalVolumeStorageLocationItem{
-		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+	storageLocations := []sdk.ExternalVolumeStorageLocationItemRequest{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocationRequest{
 			Name: "my-s3-us-west-2",
-			S3StorageLocationParams: &sdk.S3StorageLocationParams{
+			S3StorageLocationParams: &sdk.S3StorageLocationParamsRequest{
 				StorageProvider:   sdk.S3StorageProviderS3,
 				StorageAwsRoleArn: "arn:aws:iam::123456789012:role/myrole",
 				StorageBaseUrl:    "s3://my-example-bucket/",
-				Encryption: &sdk.ExternalVolumeS3Encryption{
+				Encryption: &sdk.ExternalVolumeS3EncryptionRequest{
 					EncryptionType: sdk.S3EncryptionTypeAwsSseKms,
 					KmsKeyId:       &kmsKeyId,
 				},
@@ -67,13 +67,13 @@ func (c *ExternalVolumeClient) CreateWithRequest(t *testing.T, req *sdk.CreateEx
 func (c *ExternalVolumeClient) CreateS3Compat(t *testing.T, s3CompatBaseUrl string, s3CompatEndpoint string, awsKeyId string, awsSecretKey string) (sdk.AccountObjectIdentifier, func()) {
 	t.Helper()
 	id := c.ids.RandomAccountObjectIdentifier()
-	storageLocations := []sdk.ExternalVolumeStorageLocationItem{
-		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+	storageLocations := []sdk.ExternalVolumeStorageLocationItemRequest{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocationRequest{
 			Name: "my-s3compat-loc",
-			S3CompatStorageLocationParams: &sdk.S3CompatStorageLocationParams{
+			S3CompatStorageLocationParams: &sdk.S3CompatStorageLocationParamsRequest{
 				StorageBaseUrl:  s3CompatBaseUrl,
 				StorageEndpoint: s3CompatEndpoint,
-				Credentials: sdk.ExternalVolumeS3CompatCredentials{
+				Credentials: sdk.ExternalVolumeS3CompatCredentialsRequest{
 					AwsKeyId:     awsKeyId,
 					AwsSecretKey: awsSecretKey,
 				},

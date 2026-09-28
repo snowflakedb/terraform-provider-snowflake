@@ -72,10 +72,12 @@ var viewColumn = g.NewQueryStruct("ViewColumn").
 
 var viewColumnMaskingPolicy = g.NewQueryStruct("ViewColumnMaskingPolicy").
 	Identifier("MaskingPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("MASKING POLICY").Required()).
-	ListAssignment("USING", "Column", g.ParameterOptions().NoEquals().Parentheses())
+	ListAssignment("USING", "Column", g.ParameterOptions().NoEquals().Parentheses()).
+	WithValidation(g.ValidIdentifier, "MaskingPolicy")
 
 var viewColumnProjectionPolicy = g.NewQueryStruct("ViewColumnProjectionPolicy").
-	Identifier("ProjectionPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PROJECTION POLICY").Required())
+	Identifier("ProjectionPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PROJECTION POLICY").Required()).
+	WithValidation(g.ValidIdentifier, "ProjectionPolicy")
 
 func viewRowAccessPolicy() *g.QueryStruct {
 	return g.NewQueryStruct("ViewRowAccessPolicy").
@@ -222,8 +224,7 @@ var viewsDef = g.NewInterface(
 			SQL("AS").
 			Text("sql", g.KeywordOptions().NoQuotes().Required()).
 			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
-			WithAdditionalValidations(),
+			WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
 	).
 	CustomOperation(
 		"Alter",

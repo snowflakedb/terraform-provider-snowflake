@@ -21,7 +21,20 @@ func (opts *CreateViewOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateViewOptions", "OrReplace", "IfNotExists"))
 	}
-	errs = append(errs, opts.additionalValidations())
+	if valueSet(opts.Columns) {
+		for _, column := range opts.Columns {
+			if valueSet(column.ProjectionPolicy) {
+				if !ValidObjectIdentifier(column.ProjectionPolicy.ProjectionPolicy) {
+					errs = append(errs, ErrInvalidObjectIdentifier)
+				}
+			}
+			if valueSet(column.MaskingPolicy) {
+				if !ValidObjectIdentifier(column.MaskingPolicy.MaskingPolicy) {
+					errs = append(errs, ErrInvalidObjectIdentifier)
+				}
+			}
+		}
+	}
 	if valueSet(opts.RowAccessPolicy) {
 		if !ValidObjectIdentifier(opts.RowAccessPolicy.RowAccessPolicy) {
 			errs = append(errs, ErrInvalidObjectIdentifier)

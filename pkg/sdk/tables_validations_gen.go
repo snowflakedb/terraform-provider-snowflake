@@ -27,6 +27,52 @@ func (opts *CreateTableOptions) validate() error {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	errs = append(errs, opts.additionalValidations())
+	if valueSet(opts.ColumnsAndConstraints) {
+		if valueSet(opts.ColumnsAndConstraints.Columns) {
+			for _, column := range opts.ColumnsAndConstraints.Columns {
+				if valueSet(column.DefaultValue) {
+					if !exactlyOneValueSet(column.DefaultValue.Expression, column.DefaultValue.Identity) {
+						errs = append(errs, errExactlyOneOf("CreateTableOptions.ColumnsAndConstraints.Columns.DefaultValue", "Expression", "Identity"))
+					}
+					if valueSet(column.DefaultValue.Identity) {
+						if everyValueSet(column.DefaultValue.Identity.Order, column.DefaultValue.Identity.Noorder) {
+							errs = append(errs, errOneOf("CreateTableOptions.ColumnsAndConstraints.Columns.DefaultValue.Identity", "Order", "Noorder"))
+						}
+					}
+				}
+				if valueSet(column.MaskingPolicy) {
+					if !ValidObjectIdentifier(column.MaskingPolicy.Name) {
+						errs = append(errs, ErrInvalidObjectIdentifier)
+					}
+				}
+			}
+		}
+		if valueSet(opts.ColumnsAndConstraints.OutOfLineConstraint) {
+			for _, outOfLineConstraint := range opts.ColumnsAndConstraints.OutOfLineConstraint {
+				if !valueSet(outOfLineConstraint.Columns) {
+					errs = append(errs, errNotSet("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "Columns"))
+				}
+				if everyValueSet(outOfLineConstraint.Enforced, outOfLineConstraint.NotEnforced) {
+					errs = append(errs, errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "Enforced", "NotEnforced"))
+				}
+				if everyValueSet(outOfLineConstraint.Deferrable, outOfLineConstraint.NotDeferrable) {
+					errs = append(errs, errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "Deferrable", "NotDeferrable"))
+				}
+				if everyValueSet(outOfLineConstraint.InitiallyDeferred, outOfLineConstraint.InitiallyImmediate) {
+					errs = append(errs, errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "InitiallyDeferred", "InitiallyImmediate"))
+				}
+				if everyValueSet(outOfLineConstraint.Enable, outOfLineConstraint.Disable) {
+					errs = append(errs, errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "Enable", "Disable"))
+				}
+				if everyValueSet(outOfLineConstraint.Validate, outOfLineConstraint.Novalidate) {
+					errs = append(errs, errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "Validate", "Novalidate"))
+				}
+				if everyValueSet(outOfLineConstraint.Rely, outOfLineConstraint.Norely) {
+					errs = append(errs, errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "Rely", "Norely"))
+				}
+			}
+		}
+	}
 	if valueSet(opts.StageFileFormat) {
 		if !exactlyOneValueSet(opts.StageFileFormat.FormatName, opts.StageFileFormat.FileFormatType) {
 			errs = append(errs, errExactlyOneOf("CreateTableOptions.StageFileFormat", "FormatName", "FileFormatType"))
@@ -118,6 +164,23 @@ func (opts *AlterTableOptions) validate() error {
 		if !exactlyOneValueSet(opts.ColumnAction.Add, opts.ColumnAction.Rename, opts.ColumnAction.Alter, opts.ColumnAction.SetMaskingPolicy, opts.ColumnAction.UnsetMaskingPolicy, opts.ColumnAction.SetTags, opts.ColumnAction.UnsetTags, opts.ColumnAction.DropColumns) {
 			errs = append(errs, errExactlyOneOf("AlterTableOptions.ColumnAction", "Add", "Rename", "Alter", "SetMaskingPolicy", "UnsetMaskingPolicy", "SetTags", "UnsetTags", "DropColumns"))
 		}
+		if valueSet(opts.ColumnAction.Add) {
+			if valueSet(opts.ColumnAction.Add.DefaultValue) {
+				if !exactlyOneValueSet(opts.ColumnAction.Add.DefaultValue.Expression, opts.ColumnAction.Add.DefaultValue.Identity) {
+					errs = append(errs, errExactlyOneOf("AlterTableOptions.ColumnAction.Add.DefaultValue", "Expression", "Identity"))
+				}
+				if valueSet(opts.ColumnAction.Add.DefaultValue.Identity) {
+					if everyValueSet(opts.ColumnAction.Add.DefaultValue.Identity.Order, opts.ColumnAction.Add.DefaultValue.Identity.Noorder) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.DefaultValue.Identity", "Order", "Noorder"))
+					}
+				}
+			}
+			if valueSet(opts.ColumnAction.Add.MaskingPolicy) {
+				if !ValidObjectIdentifier(opts.ColumnAction.Add.MaskingPolicy.Name) {
+					errs = append(errs, ErrInvalidObjectIdentifier)
+				}
+			}
+		}
 		if valueSet(opts.ColumnAction.Alter) {
 			for _, alter := range opts.ColumnAction.Alter {
 				if !exactlyOneValueSet(alter.DropDefault, alter.SetDefault, alter.NotNullConstraint, alter.DataType, alter.Comment, alter.UnsetComment) {
@@ -129,6 +192,29 @@ func (opts *AlterTableOptions) validate() error {
 	if valueSet(opts.ConstraintAction) {
 		if !exactlyOneValueSet(opts.ConstraintAction.Add, opts.ConstraintAction.Rename, opts.ConstraintAction.Alter, opts.ConstraintAction.Drop) {
 			errs = append(errs, errExactlyOneOf("AlterTableOptions.ConstraintAction", "Add", "Rename", "Alter", "Drop"))
+		}
+		if valueSet(opts.ConstraintAction.Add) {
+			if !valueSet(opts.ConstraintAction.Add.Columns) {
+				errs = append(errs, errNotSet("AlterTableOptions.ConstraintAction.Add", "Columns"))
+			}
+			if everyValueSet(opts.ConstraintAction.Add.Enforced, opts.ConstraintAction.Add.NotEnforced) {
+				errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add", "Enforced", "NotEnforced"))
+			}
+			if everyValueSet(opts.ConstraintAction.Add.Deferrable, opts.ConstraintAction.Add.NotDeferrable) {
+				errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add", "Deferrable", "NotDeferrable"))
+			}
+			if everyValueSet(opts.ConstraintAction.Add.InitiallyDeferred, opts.ConstraintAction.Add.InitiallyImmediate) {
+				errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add", "InitiallyDeferred", "InitiallyImmediate"))
+			}
+			if everyValueSet(opts.ConstraintAction.Add.Enable, opts.ConstraintAction.Add.Disable) {
+				errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add", "Enable", "Disable"))
+			}
+			if everyValueSet(opts.ConstraintAction.Add.Validate, opts.ConstraintAction.Add.Novalidate) {
+				errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add", "Validate", "Novalidate"))
+			}
+			if everyValueSet(opts.ConstraintAction.Add.Rely, opts.ConstraintAction.Add.Norely) {
+				errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add", "Rely", "Norely"))
+			}
 		}
 		if valueSet(opts.ConstraintAction.Alter) {
 			if !exactlyOneValueSet(opts.ConstraintAction.Alter.ConstraintName, opts.ConstraintAction.Alter.PrimaryKey, opts.ConstraintAction.Alter.Unique, opts.ConstraintAction.Alter.ForeignKey) {

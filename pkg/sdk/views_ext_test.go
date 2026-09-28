@@ -26,30 +26,6 @@ func init() {
 				sql:  sql,
 			}
 		}).
-		withAdditionalValidationCase(
-			"validation_Create_Columns_MaskingPolicy_ValidIdentifier",
-			func(opts *CreateViewOptions) {
-				opts.Columns = []ViewColumn{{
-					Name: "foo",
-					MaskingPolicy: &ViewColumnMaskingPolicy{
-						MaskingPolicy: emptySchemaObjectIdentifier,
-					},
-				}}
-			},
-			errInvalidIdentifier("CreateViewOptions.Columns[0]", "MaskingPolicy"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_Columns_ProjectionPolicy_ValidIdentifier",
-			func(opts *CreateViewOptions) {
-				opts.Columns = []ViewColumn{{
-					Name: "foo",
-					ProjectionPolicy: &ViewColumnProjectionPolicy{
-						ProjectionPolicy: emptySchemaObjectIdentifier,
-					},
-				}}
-			},
-			errInvalidIdentifier("CreateViewOptions.Columns[0]", "ProjectionPolicy"),
-		).
 		withExpectedSqlf(
 			case_Views_sql_Create_basic,
 			"CREATE VIEW %s AS %s", id.FullyQualifiedName(), sql,

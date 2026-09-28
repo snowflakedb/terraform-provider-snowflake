@@ -18,8 +18,11 @@ func init() {
 var externalVolumesTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 
 const (
+	case_ExternalVolumes_validation_Create_StorageLocations_ValidateValueSet                                                      testCaseName = "validation_Create_StorageLocations_ValidateValueSet"
 	case_ExternalVolumes_validation_Create_opts_ConflictingFields                                                                 testCaseName = "validation_Create_opts_ConflictingFields"
 	case_ExternalVolumes_validation_Create_name_ValidIdentifier                                                                   testCaseName = "validation_Create_name_ValidIdentifier"
+	case_ExternalVolumes_validation_Create_opts_StorageLocations_ExternalVolumeStorageLocation_ExactlyOneValueSet_NoneSet         testCaseName = "validation_Create_opts_StorageLocations_ExternalVolumeStorageLocation_ExactlyOneValueSet_NoneSet"
+	case_ExternalVolumes_validation_Create_opts_StorageLocations_ExternalVolumeStorageLocation_ExactlyOneValueSet_MoreThanOneSet  testCaseName = "validation_Create_opts_StorageLocations_ExternalVolumeStorageLocation_ExactlyOneValueSet_MoreThanOneSet"
 	case_ExternalVolumes_sql_Create_basic                                                                                         testCaseName = "sql_Create_basic"
 	case_ExternalVolumes_sql_Create_all                                                                                           testCaseName = "sql_Create_all"
 	case_ExternalVolumes_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                                         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
@@ -60,6 +63,13 @@ var externalVolumesTests = ExternalVolumesTestsContext{
 		}).
 		withValidationCases(
 			validationCase[*CreateExternalVolumeOptions]{
+				Name:        case_ExternalVolumes_validation_Create_StorageLocations_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateExternalVolumeOptions", "StorageLocations"),
+				DefaultModify: func(opts *CreateExternalVolumeOptions) {
+					opts.StorageLocations = nil
+				},
+			},
+			validationCase[*CreateExternalVolumeOptions]{
 				Name:        case_ExternalVolumes_validation_Create_opts_ConflictingFields,
 				ExpectedErr: errOneOf("CreateExternalVolumeOptions", "OrReplace", "IfNotExists"),
 				DefaultModify: func(opts *CreateExternalVolumeOptions) {
@@ -72,6 +82,26 @@ var externalVolumesTests = ExternalVolumesTestsContext{
 				ExpectedErr: ErrInvalidObjectIdentifier,
 				DefaultModify: func(opts *CreateExternalVolumeOptions) {
 					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateExternalVolumeOptions]{
+				Name:        case_ExternalVolumes_validation_Create_opts_StorageLocations_ExternalVolumeStorageLocation_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateExternalVolumeOptions.StorageLocations.ExternalVolumeStorageLocation", "S3StorageLocationParams", "GCSStorageLocationParams", "AzureStorageLocationParams", "S3CompatStorageLocationParams"),
+				DefaultModify: func(opts *CreateExternalVolumeOptions) {
+					opts.StorageLocations = []ExternalVolumeStorageLocationItem{{}}
+					opts.StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams = nil
+					opts.StorageLocations[0].ExternalVolumeStorageLocation.GCSStorageLocationParams = nil
+					opts.StorageLocations[0].ExternalVolumeStorageLocation.AzureStorageLocationParams = nil
+					opts.StorageLocations[0].ExternalVolumeStorageLocation.S3CompatStorageLocationParams = nil
+				},
+			},
+			validationCase[*CreateExternalVolumeOptions]{
+				Name:        case_ExternalVolumes_validation_Create_opts_StorageLocations_ExternalVolumeStorageLocation_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateExternalVolumeOptions.StorageLocations.ExternalVolumeStorageLocation", "S3StorageLocationParams", "GCSStorageLocationParams", "AzureStorageLocationParams", "S3CompatStorageLocationParams"),
+				DefaultModify: func(opts *CreateExternalVolumeOptions) {
+					opts.StorageLocations = []ExternalVolumeStorageLocationItem{{}}
+					opts.StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams = &S3StorageLocationParams{}
+					opts.StorageLocations[0].ExternalVolumeStorageLocation.GCSStorageLocationParams = &GCSStorageLocationParams{}
 				},
 			},
 		).

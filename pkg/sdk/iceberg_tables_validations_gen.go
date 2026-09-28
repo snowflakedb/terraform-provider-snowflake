@@ -28,12 +28,122 @@ func (opts *CreateIcebergTableOptions) validate() error {
 	if everyValueSet(opts.PartitionBy, opts.ClusterBy) {
 		errs = append(errs, errOneOf("CreateIcebergTableOptions", "PartitionBy", "ClusterBy"))
 	}
-	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.ColumnsAndConstraints) {
+		if valueSet(opts.ColumnsAndConstraints.Columns) {
+			for _, column := range opts.ColumnsAndConstraints.Columns {
+				if valueSet(column.InlineConstraint) {
+					if !exactlyOneValueSet(column.InlineConstraint.UniquePK, column.InlineConstraint.FK, column.InlineConstraint.CH) {
+						errs = append(errs, errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint", "UniquePK", "FK", "CH"))
+					}
+					if valueSet(column.InlineConstraint.UniquePK) {
+						if !exactlyOneValueSet(column.InlineConstraint.UniquePK.Unique, column.InlineConstraint.UniquePK.PrimaryKey) {
+							errs = append(errs, errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Unique", "PrimaryKey"))
+						}
+						if everyValueSet(column.InlineConstraint.UniquePK.Enforced, column.InlineConstraint.UniquePK.NotEnforced) {
+							errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Enforced", "NotEnforced"))
+						}
+						if everyValueSet(column.InlineConstraint.UniquePK.Deferrable, column.InlineConstraint.UniquePK.NotDeferrable) {
+							errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Deferrable", "NotDeferrable"))
+						}
+						if everyValueSet(column.InlineConstraint.UniquePK.InitiallyDeferred, column.InlineConstraint.UniquePK.InitiallyImmediate) {
+							errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "InitiallyDeferred", "InitiallyImmediate"))
+						}
+						if everyValueSet(column.InlineConstraint.UniquePK.Enable, column.InlineConstraint.UniquePK.Disable) {
+							errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Enable", "Disable"))
+						}
+						if everyValueSet(column.InlineConstraint.UniquePK.Validate, column.InlineConstraint.UniquePK.Novalidate) {
+							errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Validate", "Novalidate"))
+						}
+						if everyValueSet(column.InlineConstraint.UniquePK.Rely, column.InlineConstraint.UniquePK.Norely) {
+							errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Rely", "Norely"))
+						}
+					}
+					if valueSet(column.InlineConstraint.FK) {
+						if !ValidObjectIdentifier(column.InlineConstraint.FK.References) {
+							errs = append(errs, ErrInvalidObjectIdentifier)
+						}
+						if everyValueSet(column.InlineConstraint.FK.Enforced, column.InlineConstraint.FK.NotEnforced) {
+							errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.FK", "Enforced", "NotEnforced"))
+						}
+						if everyValueSet(column.InlineConstraint.FK.Deferrable, column.InlineConstraint.FK.NotDeferrable) {
+							errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.FK", "Deferrable", "NotDeferrable"))
+						}
+						if everyValueSet(column.InlineConstraint.FK.InitiallyDeferred, column.InlineConstraint.FK.InitiallyImmediate) {
+							errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.FK", "InitiallyDeferred", "InitiallyImmediate"))
+						}
+						if everyValueSet(column.InlineConstraint.FK.Enable, column.InlineConstraint.FK.Disable) {
+							errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.FK", "Enable", "Disable"))
+						}
+						if everyValueSet(column.InlineConstraint.FK.Validate, column.InlineConstraint.FK.Novalidate) {
+							errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.FK", "Validate", "Novalidate"))
+						}
+						if everyValueSet(column.InlineConstraint.FK.Rely, column.InlineConstraint.FK.Norely) {
+							errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.FK", "Rely", "Norely"))
+						}
+					}
+					if valueSet(column.InlineConstraint.CH) {
+						if everyValueSet(column.InlineConstraint.CH.EnableValidate, column.InlineConstraint.CH.EnableNovalidate) {
+							errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.CH", "EnableValidate", "EnableNovalidate"))
+						}
+					}
+				}
+			}
+		}
 		if valueSet(opts.ColumnsAndConstraints.OutOfLineConstraint) {
 			for _, outOfLineConstraint := range opts.ColumnsAndConstraints.OutOfLineConstraint {
 				if !exactlyOneValueSet(outOfLineConstraint.UniquePK, outOfLineConstraint.FK, outOfLineConstraint.CH) {
 					errs = append(errs, errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "UniquePK", "FK", "CH"))
+				}
+				if valueSet(outOfLineConstraint.UniquePK) {
+					if !exactlyOneValueSet(outOfLineConstraint.UniquePK.Unique, outOfLineConstraint.UniquePK.PrimaryKey) {
+						errs = append(errs, errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Unique", "PrimaryKey"))
+					}
+					if everyValueSet(outOfLineConstraint.UniquePK.Enforced, outOfLineConstraint.UniquePK.NotEnforced) {
+						errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Enforced", "NotEnforced"))
+					}
+					if everyValueSet(outOfLineConstraint.UniquePK.Deferrable, outOfLineConstraint.UniquePK.NotDeferrable) {
+						errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Deferrable", "NotDeferrable"))
+					}
+					if everyValueSet(outOfLineConstraint.UniquePK.InitiallyDeferred, outOfLineConstraint.UniquePK.InitiallyImmediate) {
+						errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "InitiallyDeferred", "InitiallyImmediate"))
+					}
+					if everyValueSet(outOfLineConstraint.UniquePK.Enable, outOfLineConstraint.UniquePK.Disable) {
+						errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Enable", "Disable"))
+					}
+					if everyValueSet(outOfLineConstraint.UniquePK.Validate, outOfLineConstraint.UniquePK.Novalidate) {
+						errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Validate", "Novalidate"))
+					}
+					if everyValueSet(outOfLineConstraint.UniquePK.Rely, outOfLineConstraint.UniquePK.Norely) {
+						errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Rely", "Norely"))
+					}
+				}
+				if valueSet(outOfLineConstraint.FK) {
+					if !ValidObjectIdentifier(outOfLineConstraint.FK.References) {
+						errs = append(errs, ErrInvalidObjectIdentifier)
+					}
+					if everyValueSet(outOfLineConstraint.FK.Enforced, outOfLineConstraint.FK.NotEnforced) {
+						errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.FK", "Enforced", "NotEnforced"))
+					}
+					if everyValueSet(outOfLineConstraint.FK.Deferrable, outOfLineConstraint.FK.NotDeferrable) {
+						errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.FK", "Deferrable", "NotDeferrable"))
+					}
+					if everyValueSet(outOfLineConstraint.FK.InitiallyDeferred, outOfLineConstraint.FK.InitiallyImmediate) {
+						errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.FK", "InitiallyDeferred", "InitiallyImmediate"))
+					}
+					if everyValueSet(outOfLineConstraint.FK.Enable, outOfLineConstraint.FK.Disable) {
+						errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.FK", "Enable", "Disable"))
+					}
+					if everyValueSet(outOfLineConstraint.FK.Validate, outOfLineConstraint.FK.Novalidate) {
+						errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.FK", "Validate", "Novalidate"))
+					}
+					if everyValueSet(outOfLineConstraint.FK.Rely, outOfLineConstraint.FK.Norely) {
+						errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.FK", "Rely", "Norely"))
+					}
+				}
+				if valueSet(outOfLineConstraint.CH) {
+					if everyValueSet(outOfLineConstraint.CH.EnableValidate, outOfLineConstraint.CH.EnableNovalidate) {
+						errs = append(errs, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.CH", "EnableValidate", "EnableNovalidate"))
+					}
 				}
 			}
 		}
@@ -125,7 +235,64 @@ func (opts *AlterIcebergTableOptions) validate() error {
 	if !exactlyOneValueSet(opts.AddColumnAction, opts.DropColumnAction, opts.RenameColumnAction, opts.AlterColumnAction, opts.SetMaskingPolicyOnColumn, opts.UnsetMaskingPolicyOnColumn, opts.SetProjectionPolicyOnColumn, opts.UnsetProjectionPolicyOnColumn, opts.SetTagsOnColumn, opts.UnsetTagsOnColumn, opts.ClusteringAction, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.SetAggregationPolicy, opts.UnsetAggregationPolicy, opts.SetJoinPolicy, opts.UnsetJoinPolicy, opts.SearchOptimizationAction) {
 		errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions", "AddColumnAction", "DropColumnAction", "RenameColumnAction", "AlterColumnAction", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn", "ClusteringAction", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy", "SearchOptimizationAction"))
 	}
-	errs = append(errs, opts.additionalValidations())
+	if valueSet(opts.AddColumnAction) {
+		if valueSet(opts.AddColumnAction.InlineConstraint) {
+			if !exactlyOneValueSet(opts.AddColumnAction.InlineConstraint.UniquePK, opts.AddColumnAction.InlineConstraint.FK, opts.AddColumnAction.InlineConstraint.CH) {
+				errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint", "UniquePK", "FK", "CH"))
+			}
+			if valueSet(opts.AddColumnAction.InlineConstraint.UniquePK) {
+				if !exactlyOneValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Unique, opts.AddColumnAction.InlineConstraint.UniquePK.PrimaryKey) {
+					errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Unique", "PrimaryKey"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Enforced, opts.AddColumnAction.InlineConstraint.UniquePK.NotEnforced) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Enforced", "NotEnforced"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Deferrable, opts.AddColumnAction.InlineConstraint.UniquePK.NotDeferrable) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Deferrable", "NotDeferrable"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.InitiallyDeferred, opts.AddColumnAction.InlineConstraint.UniquePK.InitiallyImmediate) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "InitiallyDeferred", "InitiallyImmediate"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Enable, opts.AddColumnAction.InlineConstraint.UniquePK.Disable) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Enable", "Disable"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Validate, opts.AddColumnAction.InlineConstraint.UniquePK.Novalidate) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Validate", "Novalidate"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Rely, opts.AddColumnAction.InlineConstraint.UniquePK.Norely) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Rely", "Norely"))
+				}
+			}
+			if valueSet(opts.AddColumnAction.InlineConstraint.FK) {
+				if !ValidObjectIdentifier(opts.AddColumnAction.InlineConstraint.FK.References) {
+					errs = append(errs, ErrInvalidObjectIdentifier)
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.FK.Enforced, opts.AddColumnAction.InlineConstraint.FK.NotEnforced) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Enforced", "NotEnforced"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.FK.Deferrable, opts.AddColumnAction.InlineConstraint.FK.NotDeferrable) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Deferrable", "NotDeferrable"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.FK.InitiallyDeferred, opts.AddColumnAction.InlineConstraint.FK.InitiallyImmediate) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "InitiallyDeferred", "InitiallyImmediate"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.FK.Enable, opts.AddColumnAction.InlineConstraint.FK.Disable) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Enable", "Disable"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.FK.Validate, opts.AddColumnAction.InlineConstraint.FK.Novalidate) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Validate", "Novalidate"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.FK.Rely, opts.AddColumnAction.InlineConstraint.FK.Norely) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Rely", "Norely"))
+				}
+			}
+			if valueSet(opts.AddColumnAction.InlineConstraint.CH) {
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.CH.EnableValidate, opts.AddColumnAction.InlineConstraint.CH.EnableNovalidate) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.CH", "EnableValidate", "EnableNovalidate"))
+				}
+			}
+		}
+	}
 	if valueSet(opts.AlterColumnAction) {
 		for _, alterColumnAction := range opts.AlterColumnAction {
 			if !exactlyOneValueSet(alterColumnAction.SetNotNull, alterColumnAction.DropNotNull, alterColumnAction.DataType, alterColumnAction.Comment, alterColumnAction.UnsetComment, alterColumnAction.SetWriteDefault, alterColumnAction.DropWriteDefault) {

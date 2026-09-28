@@ -68,6 +68,7 @@ var sliceValidationExamplesTests = SliceValidationExamplesTestsContext{
 				Name:        case_SliceValidationExamples_validation_Create_opts_DualChecks_ConflictingFields,
 				ExpectedErr: errOneOf("CreateSliceValidationExampleOptions.DualChecks", "B", "C"),
 				DefaultModify: func(opts *CreateSliceValidationExampleOptions) {
+					opts.DualChecks = []DualCheckItem{{}}
 					opts.DualChecks[0].B = new("foo")
 					opts.DualChecks[0].C = new("foo")
 				},

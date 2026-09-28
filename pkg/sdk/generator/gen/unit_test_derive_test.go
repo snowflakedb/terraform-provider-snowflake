@@ -270,6 +270,91 @@ func Test_Field_AccessExpr(t *testing.T) {
 	}
 }
 
+func Test_Validation_DeriveModify_usesIndexedPath(t *testing.T) {
+	tests := []struct {
+		name          string
+		root          *gen.Field
+		field         func(root *gen.Field) *gen.Field
+		validation    *gen.Validation
+		expectedLast  string
+		expectedPrime []string
+	}{
+		{
+			name: "no slice ancestor — Path-style assignment",
+			root: &gen.Field{Name: "Root", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "MaskingPolicy", Kind: "*ColumnMaskingPolicy", Fields: []gen.Field{
+					{Name: "Name", Kind: "SchemaObjectIdentifier"},
+				}},
+			}},
+			field:        func(root *gen.Field) *gen.Field { return &root.Fields[0] },
+			validation:   gen.NewValidation(gen.ValidIdentifier, "Name"),
+			expectedLast: "opts.MaskingPolicy.Name = emptySchemaObjectIdentifier",
+			expectedPrime: []string{
+				"opts.MaskingPolicy = &ColumnMaskingPolicy{}",
+			},
+		},
+		{
+			name: "slice ancestor — assignment goes through [0]",
+			root: &gen.Field{Name: "Root", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "Columns", Kind: "[]TableColumn", Fields: []gen.Field{
+					{Name: "MaskingPolicy", Kind: "*ColumnMaskingPolicy", Fields: []gen.Field{
+						{Name: "Name", Kind: "SchemaObjectIdentifier"},
+					}},
+				}},
+			}},
+			field:        func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0] },
+			validation:   gen.NewValidation(gen.ValidIdentifier, "Name"),
+			expectedLast: "opts.Columns[0].MaskingPolicy.Name = emptySchemaObjectIdentifier",
+			expectedPrime: []string{
+				"opts.Columns = []TableColumn{{}}",
+				"opts.Columns[0].MaskingPolicy = &ColumnMaskingPolicy{}",
+			},
+		},
+		{
+			name: "validation on a slice field — assignment goes through the element",
+			root: &gen.Field{Name: "Root", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "OutOfLineConstraint", Kind: "[]OutOfLineConstraint", Fields: []gen.Field{
+					{Name: "Columns", Kind: "[]string"},
+				}},
+			}},
+			field:        func(root *gen.Field) *gen.Field { return &root.Fields[0] },
+			validation:   gen.NewValidation(gen.ValidateValueSet, "Columns"),
+			expectedLast: "opts.OutOfLineConstraint[0].Columns = nil",
+			expectedPrime: []string{
+				"opts.OutOfLineConstraint = []OutOfLineConstraint{{}}",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			root := buildTree(tt.root)
+			field := tt.field(root)
+			lines, ok := tt.validation.DeriveModify(field)
+			require.True(t, ok)
+			require.Equal(t, append(append([]string{}, tt.expectedPrime...), tt.expectedLast), lines)
+		})
+	}
+}
+
+func Test_deriveConflictingFieldsModify_primesSlice(t *testing.T) {
+	root := buildTree(&gen.Field{Name: "Root", Kind: "RootOptions", Fields: []gen.Field{
+		{Name: "OutOfLineConstraint", Kind: "[]OutOfLineConstraint", Fields: []gen.Field{
+			{Name: "Enforced", Kind: "*bool"},
+			{Name: "NotEnforced", Kind: "*bool"},
+		}},
+	}})
+	field := &root.Fields[0]
+	v := gen.NewValidation(gen.ConflictingFields, "Enforced", "NotEnforced")
+	lines, ok := gen.DeriveConflictingFieldsModify(v, field)
+	require.True(t, ok)
+	require.Equal(t, []string{
+		"opts.OutOfLineConstraint = []OutOfLineConstraint{{}}",
+		"opts.OutOfLineConstraint[0].Enforced = new(true)",
+		"opts.OutOfLineConstraint[0].NotEnforced = new(true)",
+	}, lines)
+}
+
 func Test_Validation_TestExpectedError(t *testing.T) {
 	tests := []struct {
 		name           string

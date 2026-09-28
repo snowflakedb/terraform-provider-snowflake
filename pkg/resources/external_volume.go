@@ -271,7 +271,12 @@ func CreateContextExternalVolume(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(fmt.Errorf("error creating external volume %v err = %w", id.Name(), err))
 	}
 
-	req := sdk.NewCreateExternalVolumeRequest(id, storageLocations)
+	storageLocationRequests, err := collections.MapErr(storageLocations, storageLocationItemToRequest)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("error creating external volume %v err = %w", id.Name(), err))
+	}
+
+	req := sdk.NewCreateExternalVolumeRequest(id, storageLocationRequests)
 
 	errs := errors.Join(
 		stringAttributeCreateBuilder(d, "comment", req.WithComment),
@@ -792,15 +797,10 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 	}), nil
 }
 
-func addStorageLocation(
-	addedLocationItem sdk.ExternalVolumeStorageLocationItem,
-	client *sdk.Client,
-	ctx context.Context,
-	id sdk.AccountObjectIdentifier,
-) error {
+func storageLocationItemToRequest(addedLocationItem sdk.ExternalVolumeStorageLocationItem) (sdk.ExternalVolumeStorageLocationItemRequest, error) {
 	storageProvider, err := sdk.GetStorageLocationStorageProvider(addedLocationItem)
 	if err != nil {
-		return err
+		return sdk.ExternalVolumeStorageLocationItemRequest{}, err
 	}
 
 	var newStorageLocationreq *sdk.ExternalVolumeStorageLocationRequest
@@ -869,10 +869,24 @@ func addStorageLocation(
 		)
 		newStorageLocationreq = sdk.NewExternalVolumeStorageLocationRequest(addedLocationItem.ExternalVolumeStorageLocation.Name).WithS3CompatStorageLocationParams(*s3CompatParamsRequest)
 	default:
-		return fmt.Errorf("unsupported storage provider: %s", storageProvider)
+		return sdk.ExternalVolumeStorageLocationItemRequest{}, fmt.Errorf("unsupported storage provider: %s", storageProvider)
 	}
 
-	return client.ExternalVolumes.Alter(ctx, sdk.NewAlterExternalVolumeRequest(id).WithAddStorageLocation(sdk.ExternalVolumeStorageLocationItemRequest{ExternalVolumeStorageLocation: *newStorageLocationreq}))
+	return sdk.ExternalVolumeStorageLocationItemRequest{ExternalVolumeStorageLocation: *newStorageLocationreq}, nil
+}
+
+func addStorageLocation(
+	addedLocationItem sdk.ExternalVolumeStorageLocationItem,
+	client *sdk.Client,
+	ctx context.Context,
+	id sdk.AccountObjectIdentifier,
+) error {
+	req, err := storageLocationItemToRequest(addedLocationItem)
+	if err != nil {
+		return err
+	}
+
+	return client.ExternalVolumes.Alter(ctx, sdk.NewAlterExternalVolumeRequest(id).WithAddStorageLocation(req))
 }
 
 func removeStorageLocation(

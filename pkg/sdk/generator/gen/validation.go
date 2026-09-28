@@ -215,19 +215,19 @@ func (v *Validation) DeriveModify(f *Field) ([]string, bool) {
 
 	switch v.Type {
 	case ValidIdentifier:
-		return append(prime, fmt.Sprintf("opts%s.%s = %s", f.Path(), targetFieldName, emptyIdentifierVar(target.KindNoPtr()))), true
+		return append(prime, fmt.Sprintf("opts%s.%s = %s", f.IndexedElemPath(), targetFieldName, emptyIdentifierVar(target.KindNoPtr()))), true
 
 	case ValidIdentifierIfSet:
-		return append(prime, fmt.Sprintf("opts%s.%s = new(%s)", f.Path(), targetFieldName, emptyIdentifierVar(target.KindNoPtr()))), true
+		return append(prime, fmt.Sprintf("opts%s.%s = new(%s)", f.IndexedElemPath(), targetFieldName, emptyIdentifierVar(target.KindNoPtr()))), true
 
 	case ValidateValueSet:
-		return append(prime, fmt.Sprintf("opts%s.%s = %s", f.Path(), targetFieldName, zeroValueFor(target))), true
+		return append(prime, fmt.Sprintf("opts%s.%s = %s", f.IndexedElemPath(), targetFieldName, zeroValueFor(target))), true
 
 	case NoDoubleDollarQuotes:
-		return append(prime, fmt.Sprintf(`opts%s.%s = "$$"`, f.Path(), targetFieldName)), true
+		return append(prime, fmt.Sprintf(`opts%s.%s = "$$"`, f.IndexedElemPath(), targetFieldName)), true
 
 	case NoDoubleDollarQuotesIfSet:
-		return append(prime, fmt.Sprintf(`opts%s.%s = String("$$")`, f.Path(), targetFieldName)), true
+		return append(prime, fmt.Sprintf(`opts%s.%s = String("$$")`, f.IndexedElemPath(), targetFieldName)), true
 
 	case ValidateValue:
 		// ValidateValue calls sub.validate(); no mechanical modification is derivable without

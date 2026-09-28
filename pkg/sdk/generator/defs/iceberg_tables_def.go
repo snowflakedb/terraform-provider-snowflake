@@ -238,8 +238,7 @@ var icebergTablesDef = g.NewInterface(
 		PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().Parentheses().SQL("WITH CONTACT")).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
-		WithValidation(g.ConflictingFields, "PartitionBy", "ClusterBy").
-		WithAdditionalValidations(),
+		WithValidation(g.ConflictingFields, "PartitionBy", "ClusterBy"),
 ).CustomOperation(
 	"CreateFromIcebergFiles",
 	"https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-iceberg-files",
@@ -411,8 +410,7 @@ var icebergTablesDef = g.NewInterface(
 			g.KeywordOptions(),
 		).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "AddColumnAction", "DropColumnAction", "RenameColumnAction", "AlterColumnAction", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn", "ClusteringAction", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy", "SearchOptimizationAction").
-		WithAdditionalValidations(),
+		WithValidation(g.ExactlyOneValueSet, "AddColumnAction", "DropColumnAction", "RenameColumnAction", "AlterColumnAction", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn", "ClusteringAction", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy", "SearchOptimizationAction"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-iceberg-table",
 	g.NewQueryStruct("DropIcebergTable").
