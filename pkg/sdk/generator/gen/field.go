@@ -156,6 +156,17 @@ func (f *Field) Path() string {
 	}
 }
 
+// AccessExpr is the Go expression to read this field in a validate() body.
+// Drop-in for today's `opts` + Path(). When a slice ancestor exists, the path is relative
+// to that slice's loop variable (SliceElemVar), not to opts.
+func (f *Field) AccessExpr() string {
+	if f.hasSliceAncestor() {
+		anc := f.sliceAncestor()
+		return anc.SliceElemVar() + strings.TrimPrefix(f.Path(), anc.Path())
+	}
+	return "opts" + f.Path()
+}
+
 // IndexedPath is Path with a [0] inserted after every slice ancestor, so a field reached through
 // a slice addresses its single generated element (e.g. .Arguments[0].ArgDataType).
 func (f *Field) IndexedPath() string {

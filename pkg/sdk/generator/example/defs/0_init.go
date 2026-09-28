@@ -13,6 +13,7 @@ func init() {
 		gen.AllSdkObjectDefinitions,
 		DatabaseRoles,
 		ToOptsOptionalExample,
+		SliceValidationExample,
 		SequencesDef,
 		PartialGenerationExample,
 		PairedStructExample,

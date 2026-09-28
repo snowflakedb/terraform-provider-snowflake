@@ -1,23 +1,41 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen.Field*/ -}}
 
 {{- $field := . -}}
-{{- range .Validations }}
-    {{- if .IsAdditionalValidations }}
+{{- if $field.IsSlice -}}
+    {{- range .Validations }}
+        {{- if .IsAdditionalValidations }}
         errs = append(errs, opts{{ $field.Path }}.additionalValidations())
-    {{- else }}
-        {{- if $field.IsSlice }}for _, {{ $field.SliceElemVar }} := range opts{{ $field.Path }} { {{ end }}
+        {{- end }}
+    {{- end }}
+    for _, {{ $field.SliceElemVar }} := range {{ $field.AccessExpr }} {
+        {{- range $field.Validations }}
+            {{- if not .IsAdditionalValidations }}
             if {{ .Condition $field }} {
                 errs = append(errs, {{ .ReturnedError $field }})
             }
-        {{- if $field.IsSlice }} } {{ end }}
-    {{- end }}
-{{- end -}}
-{{- range .Fields }}
-    {{- if .HasAnyValidationInSubtree }}
-        {{- if and .IsSlice (not .Validations) }}
-            // nested validation in {{ .Name }} collection is not supported
+            {{- end }}
+        {{- end -}}
+        {{- range .Fields }}
+            {{- if .HasAnyValidationInSubtree }}
+            if valueSet({{ .AccessExpr }}) {
+                {{- template "validationImplementation" . }}{{/* Recursive call */}}
+            }
+            {{- end -}}
+        {{- end }}
+    }
+{{- else -}}
+    {{- range .Validations }}
+        {{- if .IsAdditionalValidations }}
+        errs = append(errs, opts{{ $field.Path }}.additionalValidations())
         {{- else }}
-            if valueSet(opts{{ .Path }}) {
+            if {{ .Condition $field }} {
+                errs = append(errs, {{ .ReturnedError $field }})
+            }
+        {{- end }}
+    {{- end -}}
+    {{- range .Fields }}
+        {{- if .HasAnyValidationInSubtree }}
+            if valueSet({{ .AccessExpr }}) {
                 {{- template "validationImplementation" . }}{{/* Recursive call */}}
             }
         {{- end -}}

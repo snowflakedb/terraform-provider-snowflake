@@ -98,7 +98,7 @@ func (v *Validation) paramsQuoted() []string {
 func (v *Validation) fieldsWithPath(field *Field) []string {
 	params := make([]string, len(v.FieldNames))
 	for i, s := range v.FieldNames {
-		params[i] = fmt.Sprintf("opts%s.%s", field.Path(), s)
+		params[i] = fmt.Sprintf("%s.%s", field.AccessExpr(), s)
 	}
 	return params
 }

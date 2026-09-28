@@ -112,6 +112,7 @@ Additional example definitions covering specific generator features:
 - [sequences_def.go](example/defs/sequences_def.go) — full CRUD with `ShowOperationWithPairedStructs` and `DescribeOperationWithPairedStructs`
 - [paired_struct_def.go](example/defs/paired_struct_def.go) — all `PairedStructs` field methods and options (see [PairedStructs](#pairedstructs) below)
 - [to_opts_optional_example_def.go](example/defs/to_opts_optional_example_def.go) — `ListQueryStructField` with slice-of-structs toOpts, optional nested fields
+- [slice_validation_example_def.go](example/defs/slice_validation_example_def.go) — `validate()` for lists of objects: multiple `WithValidation`s on a slice, nested structs under a slice, nested `ListQueryStructField`
 - [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) — `DropOperation` with `WithDropSafelyHook()` and `WithDropSafelyForce()` options
 - [instance_method_example_def.go](example/defs/instance_method_example_def.go) — `InstanceMethodOperation` and `InstanceMethodOperationScalar`
 - [enum_example_def.go](example/defs/enum_examples_def.go) — enum definitions with `Enum` and `OptionalEnum`
@@ -154,16 +155,14 @@ make generate-sdk-examples SF_TF_GENERATOR_ARGS='--help'
 ##### Known issues/limitations
 - The generator was added after parts of the SDK were implemented manually. Some objects don't have the generator definitions which make it harder to keep the up-to-date. All of them should be gradually migrated to the definition-based generation implementation.
 - The implementation of nested fields causes problems when reusing nested definitions (the same `[]Fields` slice is reused causing parent redefinition and incorrect mapping; the root cause being the lack of separation between the definition and model structs). It's currently validated programmatically and the panic is raised (`Field <field> already has a parent`). When it happens, create a function wrapper instead of directly creating a `var` with a definition.
-- Validations on slice / collection fields (`ListQueryStructField` and `WithValidation` nested under those lists) are only partially generated. Until this is fixed, keep the unsupported checks in `additionalValidations()`. Concretely:
-  - Nested validations under a slice that has no validations of its own are skipped. The template emits `// nested validation in <Name> collection is not supported`.
-  - More than one `WithValidation` on a slice field produces invalid Go. Each validation emits its own `for` loop, and the template glues them as `} for` on one line. A single validation on the slice (e.g. one `ExactlyOneValueSet`) is fine.
-  - Nested fields under a slice that *does* have validations use the slice path, not the loop variable.
+- Nested slice validations (lists of objects, nested structs under those lists, nested lists of objects) are generated. See [slice_validation_example_def.go](example/defs/slice_validation_example_def.go). Remaining gaps:
+  - Production defs still commented. tables / iceberg / views still have commented `WithValidation`s and hand-written `additionalValidations()`. The generator can emit those checks; enabling them is a follow-up.
+  - DSL gap: per-element checks on flat identifier / `[]TagAssociation` lists (`List` / `ListAssignment` / `OptionalTags()`). Still `additionalValidations()`. Not a template bug.
 
 ##### Remaining TODOs
 
 - Generate `ID()` methods for `Request` structs as already done for `Show` result structs.
 - Generate `ID()` methods for `Describe`/`DescribeDetails` structs as already done for `Show` result structs.
-- Improve validation handling for nested slices (see Known issues/limitations)
 - `PlainStruct`-only fields do not currently trigger the additionalConvert creation, as they are filtered out in the iteration
 - Generate field-subset `AsXxx` projection methods (see Potential Improvements)
 

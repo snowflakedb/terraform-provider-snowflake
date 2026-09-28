@@ -210,6 +210,66 @@ func Test_Field_IndexedPath_IndexedElemPath(t *testing.T) {
 	}
 }
 
+func Test_Field_AccessExpr(t *testing.T) {
+	tests := []struct {
+		name               string
+		root               *gen.Field
+		target             func(root *gen.Field) *gen.Field
+		expectedAccessExpr string
+	}{
+		{
+			name: "no slice ancestor — opts + Path",
+			root: &gen.Field{Name: "Root", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "A", Kind: "AStruct", Fields: []gen.Field{
+					{Name: "B", Kind: "string"},
+				}},
+			}},
+			target:             func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0] },
+			expectedAccessExpr: "opts.A.B",
+		},
+		{
+			name: "field directly under a slice — elemVar + .Child",
+			root: &gen.Field{Name: "Root", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "Arguments", Kind: "[]Argument", Fields: []gen.Field{
+					{Name: "ArgDataType", Kind: "string"},
+				}},
+			}},
+			target:             func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0] },
+			expectedAccessExpr: "argument.ArgDataType",
+		},
+		{
+			name: "nested struct under a slice — elemVar + .Child.Grandchild",
+			root: &gen.Field{Name: "Root", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "Arguments", Kind: "[]Argument", Fields: []gen.Field{
+					{Name: "Nested", Kind: "NestedStruct", Fields: []gen.Field{
+						{Name: "Leaf", Kind: "string"},
+					}},
+				}},
+			}},
+			target:             func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0].Fields[0] },
+			expectedAccessExpr: "argument.Nested.Leaf",
+		},
+		{
+			name: "nested list under a slice — inner slice field itself is outerElem.Inner",
+			root: &gen.Field{Name: "Root", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "Outer", Kind: "[]Outer", Fields: []gen.Field{
+					{Name: "Inner", Kind: "[]Inner"},
+				}},
+			}},
+			target:             func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0] },
+			expectedAccessExpr: "outer.Inner",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			root := buildTree(tt.root)
+			target := tt.target(root)
+			require.Equal(t, tt.expectedAccessExpr, target.AccessExpr())
+		})
+	}
+}
+
 func Test_Validation_TestExpectedError(t *testing.T) {
 	tests := []struct {
 		name           string

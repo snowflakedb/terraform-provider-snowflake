@@ -21,8 +21,20 @@ func (opts *CreateSemanticViewOptions) validate() error {
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateSemanticViewOptions", "IfNotExists", "OrReplace"))
 	}
-	errs = append(errs, opts.additionalValidations())
-	// nested validation in SemanticViewRelationships collection is not supported
+	if valueSet(opts.SemanticViewRelationships) {
+		for _, semanticViewRelationship := range opts.SemanticViewRelationships {
+			if valueSet(semanticViewRelationship.TableNameOrAlias) {
+				if !exactlyOneValueSet(semanticViewRelationship.TableNameOrAlias.RelationshipTableName, semanticViewRelationship.TableNameOrAlias.RelationshipTableAlias) {
+					errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.SemanticViewRelationships.TableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
+				}
+			}
+			if valueSet(semanticViewRelationship.RefTableNameOrAlias) {
+				if !exactlyOneValueSet(semanticViewRelationship.RefTableNameOrAlias.RelationshipTableName, semanticViewRelationship.RefTableNameOrAlias.RelationshipTableAlias) {
+					errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.SemanticViewRelationships.RefTableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
+				}
+			}
+		}
+	}
 	if valueSet(opts.SemanticViewMetrics) {
 		for _, semanticViewMetric := range opts.SemanticViewMetrics {
 			if !exactlyOneValueSet(semanticViewMetric.SemanticExpression, semanticViewMetric.WindowFunctionMetricDefinition) {
