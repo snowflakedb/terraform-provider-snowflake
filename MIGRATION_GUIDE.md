@@ -1,8 +1,10 @@
 # Migration guide
 
-This document is meant to help you migrate your Terraform config to the new newest version. In migration guides, we will only
-describe deprecations or breaking changes and help you to change your configuration to keep the same (or similar) behavior
-across different versions.
+This document is meant to help you migrate your Terraform config to the newest version. Migration guide entries describe deprecations
+and breaking changes, and help you to change your configuration to keep the same (or similar) behavior across different versions.
+They also describe new features, such as new resources, data sources, and fields. New features are included because they can affect
+an existing configuration too: a newly added `show_output` field, for example, has no value in state yet, so the next plan reports an
+update for every managed resource that exposes it.
 
 To keep your configuration up to date, we also recommend reading the [Snowflake BCR migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md)
 for changes required after enabling given [Snowflake BCR Bundle](https://docs.snowflake.com/en/release-notes/behavior-changes).
