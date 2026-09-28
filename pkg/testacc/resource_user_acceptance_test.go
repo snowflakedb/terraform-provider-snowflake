@@ -1733,7 +1733,7 @@ func TestAcc_User_gh3655(t *testing.T) {
 	networkPolicyId := testClient().Ids.RandomAccountObjectIdentifier()
 	userId := testClient().Ids.RandomAccountObjectIdentifier()
 
-	networkPolicyModel := model.NetworkPolicy("test", networkPolicyId.Name())
+	networkPolicyModel := model.NetworkPolicy("test", networkPolicyId.Name()).WithBlockedIps("1.1.1.1")
 	userModel := model.User("test", userId.Name()).
 		WithNetworkPolicyValue(config.UnquotedWrapperVariable("snowflake_network_policy.test.fully_qualified_name"))
 
