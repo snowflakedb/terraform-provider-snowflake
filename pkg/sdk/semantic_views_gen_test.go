@@ -18,6 +18,7 @@ const (
 	case_SemanticViews_validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_NoneSet                                  testCaseName = "validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_NoneSet"
 	case_SemanticViews_validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_MoreThanOneSet                           testCaseName = "validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_MoreThanOneSet"
 	case_SemanticViews_validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_OneValidOneInvalid                       testCaseName = "validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_OneValidOneInvalid"
+	case_SemanticViews_validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_BothInvalid                              testCaseName = "validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_BothInvalid"
 	case_SemanticViews_sql_Create_basic                                                                                       testCaseName = "sql_Create_basic"
 	case_SemanticViews_sql_Create_all                                                                                         testCaseName = "sql_Create_all"
 	case_SemanticViews_validation_Alter_name_ValidIdentifier                                                                  testCaseName = "validation_Alter_name_ValidIdentifier"
@@ -74,7 +75,7 @@ var semanticViewsTests = SemanticViewsTestsContext{
 			},
 			validationCase[*CreateSemanticViewOptions]{
 				Name:        case_SemanticViews_validation_Create_opts_SemanticViewRelationships_TableNameOrAlias_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewRelationships.TableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"),
+				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewRelationships[0].TableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"),
 				DefaultModify: func(opts *CreateSemanticViewOptions) {
 					opts.SemanticViewRelationships = []SemanticViewRelationship{{}}
 					opts.SemanticViewRelationships[0].TableNameOrAlias = &RelationshipTableAlias{}
@@ -84,7 +85,7 @@ var semanticViewsTests = SemanticViewsTestsContext{
 			},
 			validationCase[*CreateSemanticViewOptions]{
 				Name:        case_SemanticViews_validation_Create_opts_SemanticViewRelationships_TableNameOrAlias_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewRelationships.TableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"),
+				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewRelationships[0].TableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"),
 				DefaultModify: func(opts *CreateSemanticViewOptions) {
 					opts.SemanticViewRelationships = []SemanticViewRelationship{{}}
 					opts.SemanticViewRelationships[0].TableNameOrAlias = &RelationshipTableAlias{}
@@ -94,7 +95,7 @@ var semanticViewsTests = SemanticViewsTestsContext{
 			},
 			validationCase[*CreateSemanticViewOptions]{
 				Name:        case_SemanticViews_validation_Create_opts_SemanticViewRelationships_RefTableNameOrAlias_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewRelationships.RefTableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"),
+				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewRelationships[0].RefTableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"),
 				DefaultModify: func(opts *CreateSemanticViewOptions) {
 					opts.SemanticViewRelationships = []SemanticViewRelationship{{}}
 					opts.SemanticViewRelationships[0].RefTableNameOrAlias = &RelationshipTableAlias{}
@@ -104,7 +105,7 @@ var semanticViewsTests = SemanticViewsTestsContext{
 			},
 			validationCase[*CreateSemanticViewOptions]{
 				Name:        case_SemanticViews_validation_Create_opts_SemanticViewRelationships_RefTableNameOrAlias_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewRelationships.RefTableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"),
+				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewRelationships[0].RefTableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"),
 				DefaultModify: func(opts *CreateSemanticViewOptions) {
 					opts.SemanticViewRelationships = []SemanticViewRelationship{{}}
 					opts.SemanticViewRelationships[0].RefTableNameOrAlias = &RelationshipTableAlias{}
@@ -114,18 +115,28 @@ var semanticViewsTests = SemanticViewsTestsContext{
 			},
 			validationCase[*CreateSemanticViewOptions]{
 				Name:        case_SemanticViews_validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewMetrics", "SemanticExpression", "WindowFunctionMetricDefinition"),
+				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewMetrics[0]", "SemanticExpression", "WindowFunctionMetricDefinition"),
 				DefaultModify: func(opts *CreateSemanticViewOptions) {
 					opts.SemanticViewMetrics = []MetricDefinition{{}}
 				},
 			},
 			validationCase[*CreateSemanticViewOptions]{
 				Name:        case_SemanticViews_validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewMetrics", "SemanticExpression", "WindowFunctionMetricDefinition"),
+				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewMetrics[0]", "SemanticExpression", "WindowFunctionMetricDefinition"),
 			},
 			validationCase[*CreateSemanticViewOptions]{
 				Name:        case_SemanticViews_validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewMetrics", "SemanticExpression", "WindowFunctionMetricDefinition"),
+				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewMetrics[1]", "SemanticExpression", "WindowFunctionMetricDefinition"),
+			},
+			validationCase[*CreateSemanticViewOptions]{
+				Name: case_SemanticViews_validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("CreateSemanticViewOptions.SemanticViewMetrics[0]", "SemanticExpression", "WindowFunctionMetricDefinition"),
+					errExactlyOneOf("CreateSemanticViewOptions.SemanticViewMetrics[1]", "SemanticExpression", "WindowFunctionMetricDefinition"),
+				},
+				DefaultModify: func(opts *CreateSemanticViewOptions) {
+					opts.SemanticViewMetrics = []MetricDefinition{{}, {}}
+				},
 			},
 		).
 		withSqlCases(

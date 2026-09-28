@@ -8,7 +8,8 @@ import (
 
 // Slice-validation case matrix. Nested QueryStructs that themselves have struct children
 // are function wrappers — sharing them as a var panics (`Field already has a parent`).
-// SliceElemVar is CutSuffix(name, "s"); list field names must stay distinct (Items / SubItems).
+// SliceElemVar is CutSuffix(name, "s"); list field names must stay distinct
+// (Items / SubItems / LeafItems → itemIdx, subItemIdx, leafItemIdx).
 
 // Case 1: slice with two WithValidations (previously emitted invalid `} for` Go).
 func sliceValidationDualCheck() *g.QueryStruct {
@@ -50,12 +51,19 @@ func sliceValidationCheckedItem() *g.QueryStruct {
 		WithValidation(g.ExactlyOneValueSet, "Left", "Right")
 }
 
-// Case 4: nested ListQueryStructField (list of objects containing a list of objects).
-func sliceValidationSubItem() *g.QueryStruct {
-	return g.NewQueryStruct("SubItem").
+// Case 4: three nested ListQueryStructFields (list of objects containing a list
+// containing a list). Validation sits on the innermost slice so generated
+// validate() / tests prove Items[%d].SubItems[%d].LeafItems[%d].
+func sliceValidationLeafItem() *g.QueryStruct {
+	return g.NewQueryStruct("LeafItem").
 		OptionalText("Name", g.KeywordOptions()).
 		OptionalText("Alias", g.KeywordOptions()).
 		WithValidation(g.ExactlyOneValueSet, "Name", "Alias")
+}
+
+func sliceValidationSubItem() *g.QueryStruct {
+	return g.NewQueryStruct("SubItem").
+		ListQueryStructField("LeafItems", sliceValidationLeafItem(), g.KeywordOptions().SQL("LEAF_ITEMS"))
 }
 
 func sliceValidationItem() *g.QueryStruct {

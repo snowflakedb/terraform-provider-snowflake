@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateHybridTableOptions)
 	_ validatable = new(AlterHybridTableOptions)
@@ -55,9 +57,9 @@ func (opts *AlterHybridTableOptions) validate() error {
 		}
 	}
 	if valueSet(opts.AlterColumnAction) {
-		for _, alterColumnAction := range opts.AlterColumnAction {
+		for alterColumnActionIdx, alterColumnAction := range opts.AlterColumnAction {
 			if !exactlyOneValueSet(alterColumnAction.DropDefault, alterColumnAction.SetDefault, alterColumnAction.DataType, alterColumnAction.Comment, alterColumnAction.UnsetComment) {
-				errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction", "DropDefault", "SetDefault", "DataType", "Comment", "UnsetComment"))
+				errs = append(errs, errExactlyOneOf(fmt.Sprintf("AlterHybridTableOptions.AlterColumnAction[%d]", alterColumnActionIdx), "DropDefault", "SetDefault", "DataType", "Comment", "UnsetComment"))
 			}
 		}
 	}

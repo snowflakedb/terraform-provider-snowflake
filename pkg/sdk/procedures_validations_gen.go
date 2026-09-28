@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateForJavaProcedureOptions)
 	_ validatable = new(CreateForJavaScriptProcedureOptions)
@@ -39,9 +41,9 @@ func (opts *CreateForJavaProcedureOptions) validate() error {
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Arguments) {
-		for _, argument := range opts.Arguments {
+		for argumentIdx, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForJavaProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForJavaProcedureOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
 			}
 		}
 	}
@@ -56,9 +58,9 @@ func (opts *CreateForJavaProcedureOptions) validate() error {
 		}
 		if valueSet(opts.Returns.Table) {
 			if valueSet(opts.Returns.Table.Columns) {
-				for _, column := range opts.Returns.Table.Columns {
+				for columnIdx, column := range opts.Returns.Table.Columns {
 					if !exactlyOneValueSet(column.ColumnDataTypeOld, column.ColumnDataType) {
-						errs = append(errs, errExactlyOneOf("CreateForJavaProcedureOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForJavaProcedureOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataTypeOld", "ColumnDataType"))
 					}
 				}
 			}
@@ -82,9 +84,9 @@ func (opts *CreateForJavaScriptProcedureOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("CreateForJavaScriptProcedureOptions", "ResultDataTypeOld", "ResultDataType"))
 	}
 	if valueSet(opts.Arguments) {
-		for _, argument := range opts.Arguments {
+		for argumentIdx, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForJavaScriptProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForJavaScriptProcedureOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
 			}
 		}
 	}
@@ -109,9 +111,9 @@ func (opts *CreateForPythonProcedureOptions) validate() error {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	if valueSet(opts.Arguments) {
-		for _, argument := range opts.Arguments {
+		for argumentIdx, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForPythonProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForPythonProcedureOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
 			}
 		}
 	}
@@ -126,9 +128,9 @@ func (opts *CreateForPythonProcedureOptions) validate() error {
 		}
 		if valueSet(opts.Returns.Table) {
 			if valueSet(opts.Returns.Table.Columns) {
-				for _, column := range opts.Returns.Table.Columns {
+				for columnIdx, column := range opts.Returns.Table.Columns {
 					if !exactlyOneValueSet(column.ColumnDataTypeOld, column.ColumnDataType) {
-						errs = append(errs, errExactlyOneOf("CreateForPythonProcedureOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForPythonProcedureOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataTypeOld", "ColumnDataType"))
 					}
 				}
 			}
@@ -156,9 +158,9 @@ func (opts *CreateForScalaProcedureOptions) validate() error {
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Arguments) {
-		for _, argument := range opts.Arguments {
+		for argumentIdx, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForScalaProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForScalaProcedureOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
 			}
 		}
 	}
@@ -173,9 +175,9 @@ func (opts *CreateForScalaProcedureOptions) validate() error {
 		}
 		if valueSet(opts.Returns.Table) {
 			if valueSet(opts.Returns.Table.Columns) {
-				for _, column := range opts.Returns.Table.Columns {
+				for columnIdx, column := range opts.Returns.Table.Columns {
 					if !exactlyOneValueSet(column.ColumnDataTypeOld, column.ColumnDataType) {
-						errs = append(errs, errExactlyOneOf("CreateForScalaProcedureOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForScalaProcedureOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataTypeOld", "ColumnDataType"))
 					}
 				}
 			}
@@ -196,9 +198,9 @@ func (opts *CreateForSQLProcedureOptions) validate() error {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	if valueSet(opts.Arguments) {
-		for _, argument := range opts.Arguments {
+		for argumentIdx, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForSQLProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForSQLProcedureOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
 			}
 		}
 	}
@@ -213,9 +215,9 @@ func (opts *CreateForSQLProcedureOptions) validate() error {
 		}
 		if valueSet(opts.Returns.Table) {
 			if valueSet(opts.Returns.Table.Columns) {
-				for _, column := range opts.Returns.Table.Columns {
+				for columnIdx, column := range opts.Returns.Table.Columns {
 					if !exactlyOneValueSet(column.ColumnDataTypeOld, column.ColumnDataType) {
-						errs = append(errs, errExactlyOneOf("CreateForSQLProcedureOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForSQLProcedureOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataTypeOld", "ColumnDataType"))
 					}
 				}
 			}
@@ -313,9 +315,9 @@ func (opts *CreateAndCallForJavaProcedureOptions) validate() error {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	if valueSet(opts.Arguments) {
-		for _, argument := range opts.Arguments {
+		for argumentIdx, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateAndCallForJavaProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateAndCallForJavaProcedureOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
 			}
 		}
 	}
@@ -330,9 +332,9 @@ func (opts *CreateAndCallForJavaProcedureOptions) validate() error {
 		}
 		if valueSet(opts.Returns.Table) {
 			if valueSet(opts.Returns.Table.Columns) {
-				for _, column := range opts.Returns.Table.Columns {
+				for columnIdx, column := range opts.Returns.Table.Columns {
 					if !exactlyOneValueSet(column.ColumnDataTypeOld, column.ColumnDataType) {
-						errs = append(errs, errExactlyOneOf("CreateAndCallForJavaProcedureOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateAndCallForJavaProcedureOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataTypeOld", "ColumnDataType"))
 					}
 				}
 			}
@@ -362,9 +364,9 @@ func (opts *CreateAndCallForScalaProcedureOptions) validate() error {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	if valueSet(opts.Arguments) {
-		for _, argument := range opts.Arguments {
+		for argumentIdx, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateAndCallForScalaProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateAndCallForScalaProcedureOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
 			}
 		}
 	}
@@ -379,9 +381,9 @@ func (opts *CreateAndCallForScalaProcedureOptions) validate() error {
 		}
 		if valueSet(opts.Returns.Table) {
 			if valueSet(opts.Returns.Table.Columns) {
-				for _, column := range opts.Returns.Table.Columns {
+				for columnIdx, column := range opts.Returns.Table.Columns {
 					if !exactlyOneValueSet(column.ColumnDataTypeOld, column.ColumnDataType) {
-						errs = append(errs, errExactlyOneOf("CreateAndCallForScalaProcedureOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateAndCallForScalaProcedureOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataTypeOld", "ColumnDataType"))
 					}
 				}
 			}
@@ -408,9 +410,9 @@ func (opts *CreateAndCallForJavaScriptProcedureOptions) validate() error {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	if valueSet(opts.Arguments) {
-		for _, argument := range opts.Arguments {
+		for argumentIdx, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateAndCallForJavaScriptProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateAndCallForJavaScriptProcedureOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
 			}
 		}
 	}
@@ -438,9 +440,9 @@ func (opts *CreateAndCallForPythonProcedureOptions) validate() error {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	if valueSet(opts.Arguments) {
-		for _, argument := range opts.Arguments {
+		for argumentIdx, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateAndCallForPythonProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateAndCallForPythonProcedureOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
 			}
 		}
 	}
@@ -455,9 +457,9 @@ func (opts *CreateAndCallForPythonProcedureOptions) validate() error {
 		}
 		if valueSet(opts.Returns.Table) {
 			if valueSet(opts.Returns.Table.Columns) {
-				for _, column := range opts.Returns.Table.Columns {
+				for columnIdx, column := range opts.Returns.Table.Columns {
 					if !exactlyOneValueSet(column.ColumnDataTypeOld, column.ColumnDataType) {
-						errs = append(errs, errExactlyOneOf("CreateAndCallForPythonProcedureOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateAndCallForPythonProcedureOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataTypeOld", "ColumnDataType"))
 					}
 				}
 			}
@@ -481,9 +483,9 @@ func (opts *CreateAndCallForSQLProcedureOptions) validate() error {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	if valueSet(opts.Arguments) {
-		for _, argument := range opts.Arguments {
+		for argumentIdx, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateAndCallForSQLProcedureOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
 			}
 		}
 	}
@@ -498,9 +500,9 @@ func (opts *CreateAndCallForSQLProcedureOptions) validate() error {
 		}
 		if valueSet(opts.Returns.Table) {
 			if valueSet(opts.Returns.Table.Columns) {
-				for _, column := range opts.Returns.Table.Columns {
+				for columnIdx, column := range opts.Returns.Table.Columns {
 					if !exactlyOneValueSet(column.ColumnDataTypeOld, column.ColumnDataType) {
-						errs = append(errs, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateAndCallForSQLProcedureOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataTypeOld", "ColumnDataType"))
 					}
 				}
 			}

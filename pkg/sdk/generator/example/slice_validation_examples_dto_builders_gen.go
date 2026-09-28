@@ -125,12 +125,22 @@ func NewSubItemRequest() *SubItemRequest {
 	return &s
 }
 
-func (s *SubItemRequest) WithName(name string) *SubItemRequest {
+func (s *SubItemRequest) WithLeafItems(leafItems []LeafItemRequest) *SubItemRequest {
+	s.LeafItems = leafItems
+	return s
+}
+
+func NewLeafItemRequest() *LeafItemRequest {
+	s := LeafItemRequest{}
+	return &s
+}
+
+func (s *LeafItemRequest) WithName(name string) *LeafItemRequest {
 	s.Name = &name
 	return s
 }
 
-func (s *SubItemRequest) WithAlias(alias string) *SubItemRequest {
+func (s *LeafItemRequest) WithAlias(alias string) *LeafItemRequest {
 	s.Alias = &alias
 	return s
 }

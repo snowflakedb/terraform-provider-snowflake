@@ -2,6 +2,8 @@
 
 package example
 
+import "fmt"
+
 var _ validatable = new(CreateSliceValidationExampleOptions)
 
 func (opts *CreateSliceValidationExampleOptions) validate() error {
@@ -13,42 +15,46 @@ func (opts *CreateSliceValidationExampleOptions) validate() error {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	if valueSet(opts.DualChecks) {
-		for _, dualCheck := range opts.DualChecks {
+		for dualCheckIdx, dualCheck := range opts.DualChecks {
 			if !exactlyOneValueSet(dualCheck.A, dualCheck.B) {
-				errs = append(errs, errExactlyOneOf("CreateSliceValidationExampleOptions.DualChecks", "A", "B"))
+				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateSliceValidationExampleOptions.DualChecks[%d]", dualCheckIdx), "A", "B"))
 			}
 			if everyValueSet(dualCheck.B, dualCheck.C) {
-				errs = append(errs, errOneOf("CreateSliceValidationExampleOptions.DualChecks", "B", "C"))
+				errs = append(errs, errOneOf(fmt.Sprintf("CreateSliceValidationExampleOptions.DualChecks[%d]", dualCheckIdx), "B", "C"))
 			}
 		}
 	}
 	if valueSet(opts.PlainItems) {
-		for _, plainItem := range opts.PlainItems {
+		for plainItemIdx, plainItem := range opts.PlainItems {
 			if valueSet(plainItem.Nested) {
 				if !exactlyOneValueSet(plainItem.Nested.X, plainItem.Nested.Y) {
-					errs = append(errs, errExactlyOneOf("CreateSliceValidationExampleOptions.PlainItems.Nested", "X", "Y"))
+					errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateSliceValidationExampleOptions.PlainItems[%d].Nested", plainItemIdx), "X", "Y"))
 				}
 			}
 		}
 	}
 	if valueSet(opts.CheckedItems) {
-		for _, checkedItem := range opts.CheckedItems {
+		for checkedItemIdx, checkedItem := range opts.CheckedItems {
 			if !exactlyOneValueSet(checkedItem.Left, checkedItem.Right) {
-				errs = append(errs, errExactlyOneOf("CreateSliceValidationExampleOptions.CheckedItems", "Left", "Right"))
+				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateSliceValidationExampleOptions.CheckedItems[%d]", checkedItemIdx), "Left", "Right"))
 			}
 			if valueSet(checkedItem.Nested) {
 				if !exactlyOneValueSet(checkedItem.Nested.P, checkedItem.Nested.Q) {
-					errs = append(errs, errExactlyOneOf("CreateSliceValidationExampleOptions.CheckedItems.Nested", "P", "Q"))
+					errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateSliceValidationExampleOptions.CheckedItems[%d].Nested", checkedItemIdx), "P", "Q"))
 				}
 			}
 		}
 	}
 	if valueSet(opts.Items) {
-		for _, item := range opts.Items {
+		for itemIdx, item := range opts.Items {
 			if valueSet(item.SubItems) {
-				for _, subItem := range item.SubItems {
-					if !exactlyOneValueSet(subItem.Name, subItem.Alias) {
-						errs = append(errs, errExactlyOneOf("CreateSliceValidationExampleOptions.Items.SubItems", "Name", "Alias"))
+				for subItemIdx, subItem := range item.SubItems {
+					if valueSet(subItem.LeafItems) {
+						for leafItemIdx, leafItem := range subItem.LeafItems {
+							if !exactlyOneValueSet(leafItem.Name, leafItem.Alias) {
+								errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateSliceValidationExampleOptions.Items[%d].SubItems[%d].LeafItems[%d]", itemIdx, subItemIdx, leafItemIdx), "Name", "Alias"))
+							}
+						}
 					}
 				}
 			}

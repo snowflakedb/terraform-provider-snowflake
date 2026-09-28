@@ -30,6 +30,9 @@ type validationCase[PT validatable] struct {
 	Name testCaseName
 	// ExpectedErr is matched as a substring against the joined validation error, see assertOptsInvalidJoinedErrors.
 	ExpectedErr error
+	// ExpectedErrs is used instead of ExpectedErr when the case must match more than one error
+	// (BothInvalid: indexes [0] and [1]). Resolution: ext withExpectedErr overlay, then ExpectedErrs, then ExpectedErr.
+	ExpectedErrs []error
 	// DefaultModify is the automatically generated modification, or nil when the generator could not derive one.
 	// A nil DefaultModify with no ext registration fails the test with instructions.
 	DefaultModify func(PT)
@@ -219,21 +222,22 @@ func (c *sdkTestCtx[PT]) RunValidationCases(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(string(tc.Name), func(t *testing.T) {
 			opts := c.prepareOpts(t, tc)
-			expectedErr := c.expectedErr(t, tc)
-			assertOptsInvalidJoinedErrors(t, opts, expectedErr)
+			assertOptsInvalidJoinedErrors(t, opts, c.resolveExpectedErrs(t, tc)...)
 		})
 	}
 }
 
-// expectedErr resolves the error a validation case must fail with — ext registration first,
-// generated default second, loud failure last (mirrors prepareOpts's resolution order).
-func (c *sdkTestCtx[PT]) expectedErr(t *testing.T, tc validationCase[PT]) error {
+// resolveExpectedErrs resolves the error(s) a validation case must fail with — ext overlay first,
+// then generated ExpectedErrs, then generated ExpectedErr, then a loud failure (mirrors prepareOpts).
+func (c *sdkTestCtx[PT]) resolveExpectedErrs(t *testing.T, tc validationCase[PT]) []error {
 	t.Helper()
 	switch {
 	case c.expectedErrs[tc.Name] != nil:
-		return c.expectedErrs[tc.Name] // ext wins
+		return []error{c.expectedErrs[tc.Name]} // ext wins (single overlay)
+	case len(tc.ExpectedErrs) > 0:
+		return tc.ExpectedErrs
 	case tc.ExpectedErr != nil:
-		return tc.ExpectedErr // generated default
+		return []error{tc.ExpectedErr}
 	default:
 		t.Fatalf(
 			"no expected error registered for case %[1]q — the generator could not derive one (ValidateValue delegates to a nested struct's own validate()).\nRegister it in %[2]s:\n\n\t%[3]s.\n\t\twithExpectedErr(%[4]s, ...)\n\nOr if a modification also needs to be registered at the same time:\n\n\t%[3]s.\n\t\twithModifyAndExpectedErr(%[4]s, func(opts %[5]s) { ... }, ...)\n",

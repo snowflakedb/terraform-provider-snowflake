@@ -6,7 +6,13 @@
 	{{- $constName := print $constPrefix .Name }}
 	validationCase[{{ $optsType }}]{
 		Name:         {{ $constName }},
-		{{- if .HasExpectedErr }}
+		{{- if .HasExpectedErrs }}
+		ExpectedErrs: []error{
+		{{- range .ExpectedErrLines }}
+			{{ . }},
+		{{- end }}
+		},
+		{{- else if .HasExpectedErr }}
 		ExpectedErr: {{ .ExpectedErrLine }},
 		{{- end }}
 		{{- if .HasModify }}

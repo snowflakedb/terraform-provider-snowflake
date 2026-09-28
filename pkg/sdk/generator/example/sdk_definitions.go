@@ -195,6 +195,7 @@ type testCaseName string
 type validationCase[PT validatable] struct {
 	Name          testCaseName
 	ExpectedErr   error
+	ExpectedErrs  []error
 	DefaultModify func(PT)
 }
 

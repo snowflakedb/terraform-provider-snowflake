@@ -43,6 +43,10 @@ type NestedListItemRequest struct {
 }
 
 type SubItemRequest struct {
+	LeafItems []LeafItemRequest
+}
+
+type LeafItemRequest struct {
 	Name  *string
 	Alias *string
 }

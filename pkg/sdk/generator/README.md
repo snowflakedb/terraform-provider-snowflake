@@ -112,7 +112,7 @@ Additional example definitions covering specific generator features:
 - [sequences_def.go](example/defs/sequences_def.go) — full CRUD with `ShowOperationWithPairedStructs` and `DescribeOperationWithPairedStructs`
 - [paired_struct_def.go](example/defs/paired_struct_def.go) — all `PairedStructs` field methods and options (see [PairedStructs](#pairedstructs) below)
 - [to_opts_optional_example_def.go](example/defs/to_opts_optional_example_def.go) — `ListQueryStructField` with slice-of-structs toOpts, optional nested fields
-- [slice_validation_example_def.go](example/defs/slice_validation_example_def.go) — `validate()` for lists of objects: multiple `WithValidation`s on a slice, nested structs under a slice, nested `ListQueryStructField`
+- [slice_validation_example_def.go](example/defs/slice_validation_example_def.go) — `validate()` for lists of objects: multiple `WithValidation`s on a slice, nested structs under a slice, N-deep nested `ListQueryStructField` (Items → SubItems → LeafItems)
 - [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) — `DropOperation` with `WithDropSafelyHook()` and `WithDropSafelyForce()` options
 - [instance_method_example_def.go](example/defs/instance_method_example_def.go) — `InstanceMethodOperation` and `InstanceMethodOperationScalar`
 - [enum_example_def.go](example/defs/enum_examples_def.go) — enum definitions with `Enum` and `OptionalEnum`
@@ -155,8 +155,8 @@ make generate-sdk-examples SF_TF_GENERATOR_ARGS='--help'
 ##### Known issues/limitations
 - The generator was added after parts of the SDK were implemented manually. Some objects don't have the generator definitions which make it harder to keep the up-to-date. All of them should be gradually migrated to the definition-based generation implementation.
 - The implementation of nested fields causes problems when reusing nested definitions (the same `[]Fields` slice is reused causing parent redefinition and incorrect mapping; the root cause being the lack of separation between the definition and model structs). It's currently validated programmatically and the panic is raised (`Field <field> already has a parent`). When it happens, create a function wrapper instead of directly creating a `var` with a definition.
-- Nested slice validations (lists of objects, nested structs under those lists, nested lists of objects) are generated. See [slice_validation_example_def.go](example/defs/slice_validation_example_def.go). Remaining gaps:
-  - Error messages do not include the slice index of the failing element. The generated `for` is `for _, elem := range ...`, `ValidIdentifier` returns generic `ErrInvalidObjectIdentifier`, and other rules use unindexed `PathWithRoot()` (e.g. `CreateViewOptions.Columns.MaskingPolicy` rather than `Columns[i]`). Hand-written `additionalValidations()` used `fmt.Sprintf("...[%d]...", i)`.
+- Nested slice validations:
+  - `ValidIdentifier` / `ValidIdentifierIfSet` still return generic `ErrInvalidObjectIdentifier` (no field path or index). Identifier-field context is a separate TODO (see Potential Improvements).
   - DSL gap: per-element checks on flat identifier / `[]TagAssociation` lists (`List` / `ListAssignment` / `OptionalTags()`). Still `additionalValidations()`. Not a template bug.
 
 ##### Remaining TODOs
@@ -177,6 +177,7 @@ SDK unit tests are fully generated for every object (`unit_tests`, enabled by de
 - Package-level id vars and per-operation test contexts (`*TestsContext` struct + var)
 - Generated constants for every case name (compile-time safety: stale references in `*_ext_test.go` break the build)
 - Derived default modifications for mechanically-derivable cases (e.g. zeroing an identifier field, priming a container struct)
+- For slice validations: `NoneSet` / `MoreThanOneSet` / `ConflictingFields` `ExpectedErr` uses `[0]` on the validated slice; `OneValidOneInvalid` uses `[1]` (ext `{valid, invalid}` convention); `BothInvalid` (two failing elements) asserts both via `ExpectedErrs`
 - `Test<Object>_<Op>` functions that delegate to the context's runners
 
 The `*_ext_test.go` file (hand-written, never overwritten) supplies:
@@ -339,6 +340,6 @@ See [functions_def.go](defs/functions_def.go) (originator) and [notebooks_def.go
 - better handling of list of strings/identifiers
   - there should be no need to define custom types every time
   - more clear definition of lists that can be empty vs cannot be empty
-- add more context to validated identifiers, so that error contains the affected field
+- add more context to validated identifiers, so that error contains the affected field (`ValidIdentifier` still returns generic `ErrInvalidObjectIdentifier`)
 - generate field-subset `AsXxx` projections from PlainStructs. Methods like `Warehouse.AsRegular`, `StageDetails.AsAws`, and `ApiIntegrationGitHttpsApiDetails.AsToken` are mechanical: nil-guard + copy the intersecting fields. Property-list parsers (`AsScim`, `AsNetworkPolicyDescribe`, and similar name-keyed row switches) are a different shape and are not in scope for that generator.
 - include the slice index in generated validation errors, so a failing list element is identifiable (see Known issues above)

@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateForJavaFunctionOptions)
 	_ validatable = new(CreateForJavascriptFunctionOptions)
@@ -30,9 +32,9 @@ func (opts *CreateForJavaFunctionOptions) validate() error {
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Arguments) {
-		for _, argument := range opts.Arguments {
+		for argumentIdx, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForJavaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForJavaFunctionOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
 			}
 		}
 	}
@@ -47,9 +49,9 @@ func (opts *CreateForJavaFunctionOptions) validate() error {
 		}
 		if valueSet(opts.Returns.Table) {
 			if valueSet(opts.Returns.Table.Columns) {
-				for _, column := range opts.Returns.Table.Columns {
+				for columnIdx, column := range opts.Returns.Table.Columns {
 					if !exactlyOneValueSet(column.ColumnDataTypeOld, column.ColumnDataType) {
-						errs = append(errs, errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForJavaFunctionOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataTypeOld", "ColumnDataType"))
 					}
 				}
 			}
@@ -73,9 +75,9 @@ func (opts *CreateForJavascriptFunctionOptions) validate() error {
 		errs = append(errs, errOneOf("CreateForJavascriptFunctionOptions", "OrReplace", "IfNotExists"))
 	}
 	if valueSet(opts.Arguments) {
-		for _, argument := range opts.Arguments {
+		for argumentIdx, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForJavascriptFunctionOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
 			}
 		}
 	}
@@ -90,9 +92,9 @@ func (opts *CreateForJavascriptFunctionOptions) validate() error {
 		}
 		if valueSet(opts.Returns.Table) {
 			if valueSet(opts.Returns.Table.Columns) {
-				for _, column := range opts.Returns.Table.Columns {
+				for columnIdx, column := range opts.Returns.Table.Columns {
 					if !exactlyOneValueSet(column.ColumnDataTypeOld, column.ColumnDataType) {
-						errs = append(errs, errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForJavascriptFunctionOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataTypeOld", "ColumnDataType"))
 					}
 				}
 			}
@@ -120,9 +122,9 @@ func (opts *CreateForPythonFunctionOptions) validate() error {
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Arguments) {
-		for _, argument := range opts.Arguments {
+		for argumentIdx, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForPythonFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForPythonFunctionOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
 			}
 		}
 	}
@@ -137,9 +139,9 @@ func (opts *CreateForPythonFunctionOptions) validate() error {
 		}
 		if valueSet(opts.Returns.Table) {
 			if valueSet(opts.Returns.Table.Columns) {
-				for _, column := range opts.Returns.Table.Columns {
+				for columnIdx, column := range opts.Returns.Table.Columns {
 					if !exactlyOneValueSet(column.ColumnDataTypeOld, column.ColumnDataType) {
-						errs = append(errs, errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForPythonFunctionOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataTypeOld", "ColumnDataType"))
 					}
 				}
 			}
@@ -167,9 +169,9 @@ func (opts *CreateForScalaFunctionOptions) validate() error {
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Arguments) {
-		for _, argument := range opts.Arguments {
+		for argumentIdx, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForScalaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForScalaFunctionOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
 			}
 		}
 	}
@@ -191,9 +193,9 @@ func (opts *CreateForSQLFunctionOptions) validate() error {
 		errs = append(errs, errOneOf("CreateForSQLFunctionOptions", "OrReplace", "IfNotExists"))
 	}
 	if valueSet(opts.Arguments) {
-		for _, argument := range opts.Arguments {
+		for argumentIdx, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForSQLFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForSQLFunctionOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
 			}
 		}
 	}
@@ -208,9 +210,9 @@ func (opts *CreateForSQLFunctionOptions) validate() error {
 		}
 		if valueSet(opts.Returns.Table) {
 			if valueSet(opts.Returns.Table.Columns) {
-				for _, column := range opts.Returns.Table.Columns {
+				for columnIdx, column := range opts.Returns.Table.Columns {
 					if !exactlyOneValueSet(column.ColumnDataTypeOld, column.ColumnDataType) {
-						errs = append(errs, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForSQLFunctionOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataTypeOld", "ColumnDataType"))
 					}
 				}
 			}

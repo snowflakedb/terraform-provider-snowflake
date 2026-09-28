@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateTableOptions)
 	_ validatable = new(CreateAsSelectTableOptions)
@@ -29,14 +31,14 @@ func (opts *CreateTableOptions) validate() error {
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.ColumnsAndConstraints) {
 		if valueSet(opts.ColumnsAndConstraints.Columns) {
-			for _, column := range opts.ColumnsAndConstraints.Columns {
+			for columnIdx, column := range opts.ColumnsAndConstraints.Columns {
 				if valueSet(column.DefaultValue) {
 					if !exactlyOneValueSet(column.DefaultValue.Expression, column.DefaultValue.Identity) {
-						errs = append(errs, errExactlyOneOf("CreateTableOptions.ColumnsAndConstraints.Columns.DefaultValue", "Expression", "Identity"))
+						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].DefaultValue", columnIdx), "Expression", "Identity"))
 					}
 					if valueSet(column.DefaultValue.Identity) {
 						if everyValueSet(column.DefaultValue.Identity.Order, column.DefaultValue.Identity.Noorder) {
-							errs = append(errs, errOneOf("CreateTableOptions.ColumnsAndConstraints.Columns.DefaultValue.Identity", "Order", "Noorder"))
+							errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].DefaultValue.Identity", columnIdx), "Order", "Noorder"))
 						}
 					}
 				}
@@ -48,27 +50,27 @@ func (opts *CreateTableOptions) validate() error {
 			}
 		}
 		if valueSet(opts.ColumnsAndConstraints.OutOfLineConstraint) {
-			for _, outOfLineConstraint := range opts.ColumnsAndConstraints.OutOfLineConstraint {
+			for outOfLineConstraintIdx, outOfLineConstraint := range opts.ColumnsAndConstraints.OutOfLineConstraint {
 				if !valueSet(outOfLineConstraint.Columns) {
-					errs = append(errs, errNotSet("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "Columns"))
+					errs = append(errs, errNotSet(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d]", outOfLineConstraintIdx), "Columns"))
 				}
 				if everyValueSet(outOfLineConstraint.Enforced, outOfLineConstraint.NotEnforced) {
-					errs = append(errs, errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "Enforced", "NotEnforced"))
+					errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d]", outOfLineConstraintIdx), "Enforced", "NotEnforced"))
 				}
 				if everyValueSet(outOfLineConstraint.Deferrable, outOfLineConstraint.NotDeferrable) {
-					errs = append(errs, errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "Deferrable", "NotDeferrable"))
+					errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d]", outOfLineConstraintIdx), "Deferrable", "NotDeferrable"))
 				}
 				if everyValueSet(outOfLineConstraint.InitiallyDeferred, outOfLineConstraint.InitiallyImmediate) {
-					errs = append(errs, errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "InitiallyDeferred", "InitiallyImmediate"))
+					errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d]", outOfLineConstraintIdx), "InitiallyDeferred", "InitiallyImmediate"))
 				}
 				if everyValueSet(outOfLineConstraint.Enable, outOfLineConstraint.Disable) {
-					errs = append(errs, errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "Enable", "Disable"))
+					errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d]", outOfLineConstraintIdx), "Enable", "Disable"))
 				}
 				if everyValueSet(outOfLineConstraint.Validate, outOfLineConstraint.Novalidate) {
-					errs = append(errs, errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "Validate", "Novalidate"))
+					errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d]", outOfLineConstraintIdx), "Validate", "Novalidate"))
 				}
 				if everyValueSet(outOfLineConstraint.Rely, outOfLineConstraint.Norely) {
-					errs = append(errs, errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "Rely", "Norely"))
+					errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d]", outOfLineConstraintIdx), "Rely", "Norely"))
 				}
 			}
 		}
@@ -182,9 +184,9 @@ func (opts *AlterTableOptions) validate() error {
 			}
 		}
 		if valueSet(opts.ColumnAction.Alter) {
-			for _, alter := range opts.ColumnAction.Alter {
+			for alterIdx, alter := range opts.ColumnAction.Alter {
 				if !exactlyOneValueSet(alter.DropDefault, alter.SetDefault, alter.NotNullConstraint, alter.DataType, alter.Comment, alter.UnsetComment) {
-					errs = append(errs, errExactlyOneOf("AlterTableOptions.ColumnAction.Alter", "DropDefault", "SetDefault", "NotNullConstraint", "DataType", "Comment", "UnsetComment"))
+					errs = append(errs, errExactlyOneOf(fmt.Sprintf("AlterTableOptions.ColumnAction.Alter[%d]", alterIdx), "DropDefault", "SetDefault", "NotNullConstraint", "DataType", "Comment", "UnsetComment"))
 				}
 			}
 		}
@@ -243,9 +245,9 @@ func (opts *AlterTableOptions) validate() error {
 		}
 		if valueSet(opts.SearchOptimizationAction.Drop) {
 			if valueSet(opts.SearchOptimizationAction.Drop.On) {
-				for _, on := range opts.SearchOptimizationAction.Drop.On {
+				for onIdx, on := range opts.SearchOptimizationAction.Drop.On {
 					if !exactlyOneValueSet(on.SearchMethodWithTarget, on.ColumnName, on.ExpressionId) {
-						errs = append(errs, errExactlyOneOf("AlterTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"))
+						errs = append(errs, errExactlyOneOf(fmt.Sprintf("AlterTableOptions.SearchOptimizationAction.Drop.On[%d]", onIdx), "SearchMethodWithTarget", "ColumnName", "ExpressionId"))
 					}
 				}
 			}

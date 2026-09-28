@@ -9,23 +9,27 @@ import (
 var sliceValidationExamplesTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 
 const (
-	case_SliceValidationExamples_validation_Create_name_ValidIdentifier                                       testCaseName = "validation_Create_name_ValidIdentifier"
-	case_SliceValidationExamples_validation_Create_opts_DualChecks_ExactlyOneValueSet_NoneSet                 testCaseName = "validation_Create_opts_DualChecks_ExactlyOneValueSet_NoneSet"
-	case_SliceValidationExamples_validation_Create_opts_DualChecks_ExactlyOneValueSet_MoreThanOneSet          testCaseName = "validation_Create_opts_DualChecks_ExactlyOneValueSet_MoreThanOneSet"
-	case_SliceValidationExamples_validation_Create_opts_DualChecks_ExactlyOneValueSet_OneValidOneInvalid      testCaseName = "validation_Create_opts_DualChecks_ExactlyOneValueSet_OneValidOneInvalid"
-	case_SliceValidationExamples_validation_Create_opts_DualChecks_ConflictingFields                          testCaseName = "validation_Create_opts_DualChecks_ConflictingFields"
-	case_SliceValidationExamples_validation_Create_opts_PlainItems_Nested_ExactlyOneValueSet_NoneSet          testCaseName = "validation_Create_opts_PlainItems_Nested_ExactlyOneValueSet_NoneSet"
-	case_SliceValidationExamples_validation_Create_opts_PlainItems_Nested_ExactlyOneValueSet_MoreThanOneSet   testCaseName = "validation_Create_opts_PlainItems_Nested_ExactlyOneValueSet_MoreThanOneSet"
-	case_SliceValidationExamples_validation_Create_opts_CheckedItems_ExactlyOneValueSet_NoneSet               testCaseName = "validation_Create_opts_CheckedItems_ExactlyOneValueSet_NoneSet"
-	case_SliceValidationExamples_validation_Create_opts_CheckedItems_ExactlyOneValueSet_MoreThanOneSet        testCaseName = "validation_Create_opts_CheckedItems_ExactlyOneValueSet_MoreThanOneSet"
-	case_SliceValidationExamples_validation_Create_opts_CheckedItems_ExactlyOneValueSet_OneValidOneInvalid    testCaseName = "validation_Create_opts_CheckedItems_ExactlyOneValueSet_OneValidOneInvalid"
-	case_SliceValidationExamples_validation_Create_opts_CheckedItems_Nested_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Create_opts_CheckedItems_Nested_ExactlyOneValueSet_NoneSet"
-	case_SliceValidationExamples_validation_Create_opts_CheckedItems_Nested_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Create_opts_CheckedItems_Nested_ExactlyOneValueSet_MoreThanOneSet"
-	case_SliceValidationExamples_validation_Create_opts_Items_SubItems_ExactlyOneValueSet_NoneSet             testCaseName = "validation_Create_opts_Items_SubItems_ExactlyOneValueSet_NoneSet"
-	case_SliceValidationExamples_validation_Create_opts_Items_SubItems_ExactlyOneValueSet_MoreThanOneSet      testCaseName = "validation_Create_opts_Items_SubItems_ExactlyOneValueSet_MoreThanOneSet"
-	case_SliceValidationExamples_validation_Create_opts_Items_SubItems_ExactlyOneValueSet_OneValidOneInvalid  testCaseName = "validation_Create_opts_Items_SubItems_ExactlyOneValueSet_OneValidOneInvalid"
-	case_SliceValidationExamples_sql_Create_basic                                                             testCaseName = "sql_Create_basic"
-	case_SliceValidationExamples_sql_Create_all                                                               testCaseName = "sql_Create_all"
+	case_SliceValidationExamples_validation_Create_name_ValidIdentifier                                                testCaseName = "validation_Create_name_ValidIdentifier"
+	case_SliceValidationExamples_validation_Create_opts_DualChecks_ExactlyOneValueSet_NoneSet                          testCaseName = "validation_Create_opts_DualChecks_ExactlyOneValueSet_NoneSet"
+	case_SliceValidationExamples_validation_Create_opts_DualChecks_ExactlyOneValueSet_MoreThanOneSet                   testCaseName = "validation_Create_opts_DualChecks_ExactlyOneValueSet_MoreThanOneSet"
+	case_SliceValidationExamples_validation_Create_opts_DualChecks_ExactlyOneValueSet_OneValidOneInvalid               testCaseName = "validation_Create_opts_DualChecks_ExactlyOneValueSet_OneValidOneInvalid"
+	case_SliceValidationExamples_validation_Create_opts_DualChecks_ExactlyOneValueSet_BothInvalid                      testCaseName = "validation_Create_opts_DualChecks_ExactlyOneValueSet_BothInvalid"
+	case_SliceValidationExamples_validation_Create_opts_DualChecks_ConflictingFields                                   testCaseName = "validation_Create_opts_DualChecks_ConflictingFields"
+	case_SliceValidationExamples_validation_Create_opts_DualChecks_ConflictingFields_BothInvalid                       testCaseName = "validation_Create_opts_DualChecks_ConflictingFields_BothInvalid"
+	case_SliceValidationExamples_validation_Create_opts_PlainItems_Nested_ExactlyOneValueSet_NoneSet                   testCaseName = "validation_Create_opts_PlainItems_Nested_ExactlyOneValueSet_NoneSet"
+	case_SliceValidationExamples_validation_Create_opts_PlainItems_Nested_ExactlyOneValueSet_MoreThanOneSet            testCaseName = "validation_Create_opts_PlainItems_Nested_ExactlyOneValueSet_MoreThanOneSet"
+	case_SliceValidationExamples_validation_Create_opts_CheckedItems_ExactlyOneValueSet_NoneSet                        testCaseName = "validation_Create_opts_CheckedItems_ExactlyOneValueSet_NoneSet"
+	case_SliceValidationExamples_validation_Create_opts_CheckedItems_ExactlyOneValueSet_MoreThanOneSet                 testCaseName = "validation_Create_opts_CheckedItems_ExactlyOneValueSet_MoreThanOneSet"
+	case_SliceValidationExamples_validation_Create_opts_CheckedItems_ExactlyOneValueSet_OneValidOneInvalid             testCaseName = "validation_Create_opts_CheckedItems_ExactlyOneValueSet_OneValidOneInvalid"
+	case_SliceValidationExamples_validation_Create_opts_CheckedItems_ExactlyOneValueSet_BothInvalid                    testCaseName = "validation_Create_opts_CheckedItems_ExactlyOneValueSet_BothInvalid"
+	case_SliceValidationExamples_validation_Create_opts_CheckedItems_Nested_ExactlyOneValueSet_NoneSet                 testCaseName = "validation_Create_opts_CheckedItems_Nested_ExactlyOneValueSet_NoneSet"
+	case_SliceValidationExamples_validation_Create_opts_CheckedItems_Nested_ExactlyOneValueSet_MoreThanOneSet          testCaseName = "validation_Create_opts_CheckedItems_Nested_ExactlyOneValueSet_MoreThanOneSet"
+	case_SliceValidationExamples_validation_Create_opts_Items_SubItems_LeafItems_ExactlyOneValueSet_NoneSet            testCaseName = "validation_Create_opts_Items_SubItems_LeafItems_ExactlyOneValueSet_NoneSet"
+	case_SliceValidationExamples_validation_Create_opts_Items_SubItems_LeafItems_ExactlyOneValueSet_MoreThanOneSet     testCaseName = "validation_Create_opts_Items_SubItems_LeafItems_ExactlyOneValueSet_MoreThanOneSet"
+	case_SliceValidationExamples_validation_Create_opts_Items_SubItems_LeafItems_ExactlyOneValueSet_OneValidOneInvalid testCaseName = "validation_Create_opts_Items_SubItems_LeafItems_ExactlyOneValueSet_OneValidOneInvalid"
+	case_SliceValidationExamples_validation_Create_opts_Items_SubItems_LeafItems_ExactlyOneValueSet_BothInvalid        testCaseName = "validation_Create_opts_Items_SubItems_LeafItems_ExactlyOneValueSet_BothInvalid"
+	case_SliceValidationExamples_sql_Create_basic                                                                      testCaseName = "sql_Create_basic"
+	case_SliceValidationExamples_sql_Create_all                                                                        testCaseName = "sql_Create_all"
 )
 
 type SliceValidationExamplesTestsContext struct {
@@ -51,22 +55,32 @@ var sliceValidationExamplesTests = SliceValidationExamplesTestsContext{
 			},
 			validationCase[*CreateSliceValidationExampleOptions]{
 				Name:        case_SliceValidationExamples_validation_Create_opts_DualChecks_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.DualChecks", "A", "B"),
+				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.DualChecks[0]", "A", "B"),
 				DefaultModify: func(opts *CreateSliceValidationExampleOptions) {
 					opts.DualChecks = []DualCheckItem{{}}
 				},
 			},
 			validationCase[*CreateSliceValidationExampleOptions]{
 				Name:        case_SliceValidationExamples_validation_Create_opts_DualChecks_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.DualChecks", "A", "B"),
+				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.DualChecks[0]", "A", "B"),
 			},
 			validationCase[*CreateSliceValidationExampleOptions]{
 				Name:        case_SliceValidationExamples_validation_Create_opts_DualChecks_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.DualChecks", "A", "B"),
+				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.DualChecks[1]", "A", "B"),
+			},
+			validationCase[*CreateSliceValidationExampleOptions]{
+				Name: case_SliceValidationExamples_validation_Create_opts_DualChecks_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("CreateSliceValidationExampleOptions.DualChecks[0]", "A", "B"),
+					errExactlyOneOf("CreateSliceValidationExampleOptions.DualChecks[1]", "A", "B"),
+				},
+				DefaultModify: func(opts *CreateSliceValidationExampleOptions) {
+					opts.DualChecks = []DualCheckItem{{}, {}}
+				},
 			},
 			validationCase[*CreateSliceValidationExampleOptions]{
 				Name:        case_SliceValidationExamples_validation_Create_opts_DualChecks_ConflictingFields,
-				ExpectedErr: errOneOf("CreateSliceValidationExampleOptions.DualChecks", "B", "C"),
+				ExpectedErr: errOneOf("CreateSliceValidationExampleOptions.DualChecks[0]", "B", "C"),
 				DefaultModify: func(opts *CreateSliceValidationExampleOptions) {
 					opts.DualChecks = []DualCheckItem{{}}
 					opts.DualChecks[0].B = new("foo")
@@ -74,8 +88,22 @@ var sliceValidationExamplesTests = SliceValidationExamplesTestsContext{
 				},
 			},
 			validationCase[*CreateSliceValidationExampleOptions]{
+				Name: case_SliceValidationExamples_validation_Create_opts_DualChecks_ConflictingFields_BothInvalid,
+				ExpectedErrs: []error{
+					errOneOf("CreateSliceValidationExampleOptions.DualChecks[0]", "B", "C"),
+					errOneOf("CreateSliceValidationExampleOptions.DualChecks[1]", "B", "C"),
+				},
+				DefaultModify: func(opts *CreateSliceValidationExampleOptions) {
+					opts.DualChecks = []DualCheckItem{{}, {}}
+					opts.DualChecks[0].B = new("foo")
+					opts.DualChecks[0].C = new("foo")
+					opts.DualChecks[1].B = new("foo")
+					opts.DualChecks[1].C = new("foo")
+				},
+			},
+			validationCase[*CreateSliceValidationExampleOptions]{
 				Name:        case_SliceValidationExamples_validation_Create_opts_PlainItems_Nested_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.PlainItems.Nested", "X", "Y"),
+				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.PlainItems[0].Nested", "X", "Y"),
 				DefaultModify: func(opts *CreateSliceValidationExampleOptions) {
 					opts.PlainItems = []PlainItem{{}}
 					opts.PlainItems[0].Nested = &NestedNoOwn{}
@@ -85,7 +113,7 @@ var sliceValidationExamplesTests = SliceValidationExamplesTestsContext{
 			},
 			validationCase[*CreateSliceValidationExampleOptions]{
 				Name:        case_SliceValidationExamples_validation_Create_opts_PlainItems_Nested_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.PlainItems.Nested", "X", "Y"),
+				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.PlainItems[0].Nested", "X", "Y"),
 				DefaultModify: func(opts *CreateSliceValidationExampleOptions) {
 					opts.PlainItems = []PlainItem{{}}
 					opts.PlainItems[0].Nested = &NestedNoOwn{}
@@ -95,22 +123,32 @@ var sliceValidationExamplesTests = SliceValidationExamplesTestsContext{
 			},
 			validationCase[*CreateSliceValidationExampleOptions]{
 				Name:        case_SliceValidationExamples_validation_Create_opts_CheckedItems_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.CheckedItems", "Left", "Right"),
+				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.CheckedItems[0]", "Left", "Right"),
 				DefaultModify: func(opts *CreateSliceValidationExampleOptions) {
 					opts.CheckedItems = []CheckedItem{{}}
 				},
 			},
 			validationCase[*CreateSliceValidationExampleOptions]{
 				Name:        case_SliceValidationExamples_validation_Create_opts_CheckedItems_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.CheckedItems", "Left", "Right"),
+				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.CheckedItems[0]", "Left", "Right"),
 			},
 			validationCase[*CreateSliceValidationExampleOptions]{
 				Name:        case_SliceValidationExamples_validation_Create_opts_CheckedItems_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.CheckedItems", "Left", "Right"),
+				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.CheckedItems[1]", "Left", "Right"),
+			},
+			validationCase[*CreateSliceValidationExampleOptions]{
+				Name: case_SliceValidationExamples_validation_Create_opts_CheckedItems_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("CreateSliceValidationExampleOptions.CheckedItems[0]", "Left", "Right"),
+					errExactlyOneOf("CreateSliceValidationExampleOptions.CheckedItems[1]", "Left", "Right"),
+				},
+				DefaultModify: func(opts *CreateSliceValidationExampleOptions) {
+					opts.CheckedItems = []CheckedItem{{}, {}}
+				},
 			},
 			validationCase[*CreateSliceValidationExampleOptions]{
 				Name:        case_SliceValidationExamples_validation_Create_opts_CheckedItems_Nested_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.CheckedItems.Nested", "P", "Q"),
+				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.CheckedItems[0].Nested", "P", "Q"),
 				DefaultModify: func(opts *CreateSliceValidationExampleOptions) {
 					opts.CheckedItems = []CheckedItem{{}}
 					opts.CheckedItems[0].Nested = &NestedWithOwn{}
@@ -120,7 +158,7 @@ var sliceValidationExamplesTests = SliceValidationExamplesTestsContext{
 			},
 			validationCase[*CreateSliceValidationExampleOptions]{
 				Name:        case_SliceValidationExamples_validation_Create_opts_CheckedItems_Nested_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.CheckedItems.Nested", "P", "Q"),
+				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.CheckedItems[0].Nested", "P", "Q"),
 				DefaultModify: func(opts *CreateSliceValidationExampleOptions) {
 					opts.CheckedItems = []CheckedItem{{}}
 					opts.CheckedItems[0].Nested = &NestedWithOwn{}
@@ -129,20 +167,33 @@ var sliceValidationExamplesTests = SliceValidationExamplesTestsContext{
 				},
 			},
 			validationCase[*CreateSliceValidationExampleOptions]{
-				Name:        case_SliceValidationExamples_validation_Create_opts_Items_SubItems_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.Items.SubItems", "Name", "Alias"),
+				Name:        case_SliceValidationExamples_validation_Create_opts_Items_SubItems_LeafItems_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.Items[0].SubItems[0].LeafItems[0]", "Name", "Alias"),
 				DefaultModify: func(opts *CreateSliceValidationExampleOptions) {
 					opts.Items = []NestedListItem{{}}
 					opts.Items[0].SubItems = []SubItem{{}}
+					opts.Items[0].SubItems[0].LeafItems = []LeafItem{{}}
 				},
 			},
 			validationCase[*CreateSliceValidationExampleOptions]{
-				Name:        case_SliceValidationExamples_validation_Create_opts_Items_SubItems_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.Items.SubItems", "Name", "Alias"),
+				Name:        case_SliceValidationExamples_validation_Create_opts_Items_SubItems_LeafItems_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.Items[0].SubItems[0].LeafItems[0]", "Name", "Alias"),
 			},
 			validationCase[*CreateSliceValidationExampleOptions]{
-				Name:        case_SliceValidationExamples_validation_Create_opts_Items_SubItems_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.Items.SubItems", "Name", "Alias"),
+				Name:        case_SliceValidationExamples_validation_Create_opts_Items_SubItems_LeafItems_ExactlyOneValueSet_OneValidOneInvalid,
+				ExpectedErr: errExactlyOneOf("CreateSliceValidationExampleOptions.Items[0].SubItems[0].LeafItems[1]", "Name", "Alias"),
+			},
+			validationCase[*CreateSliceValidationExampleOptions]{
+				Name: case_SliceValidationExamples_validation_Create_opts_Items_SubItems_LeafItems_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("CreateSliceValidationExampleOptions.Items[0].SubItems[0].LeafItems[0]", "Name", "Alias"),
+					errExactlyOneOf("CreateSliceValidationExampleOptions.Items[0].SubItems[0].LeafItems[1]", "Name", "Alias"),
+				},
+				DefaultModify: func(opts *CreateSliceValidationExampleOptions) {
+					opts.Items = []NestedListItem{{}}
+					opts.Items[0].SubItems = []SubItem{{}}
+					opts.Items[0].SubItems[0].LeafItems = []LeafItem{{}, {}}
+				},
 			},
 		).
 		withSqlCases(

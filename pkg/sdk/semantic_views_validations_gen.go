@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateSemanticViewOptions)
 	_ validatable = new(AlterSemanticViewOptions)
@@ -22,23 +24,23 @@ func (opts *CreateSemanticViewOptions) validate() error {
 		errs = append(errs, errOneOf("CreateSemanticViewOptions", "IfNotExists", "OrReplace"))
 	}
 	if valueSet(opts.SemanticViewRelationships) {
-		for _, semanticViewRelationship := range opts.SemanticViewRelationships {
+		for semanticViewRelationshipIdx, semanticViewRelationship := range opts.SemanticViewRelationships {
 			if valueSet(semanticViewRelationship.TableNameOrAlias) {
 				if !exactlyOneValueSet(semanticViewRelationship.TableNameOrAlias.RelationshipTableName, semanticViewRelationship.TableNameOrAlias.RelationshipTableAlias) {
-					errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.SemanticViewRelationships.TableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
+					errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateSemanticViewOptions.SemanticViewRelationships[%d].TableNameOrAlias", semanticViewRelationshipIdx), "RelationshipTableName", "RelationshipTableAlias"))
 				}
 			}
 			if valueSet(semanticViewRelationship.RefTableNameOrAlias) {
 				if !exactlyOneValueSet(semanticViewRelationship.RefTableNameOrAlias.RelationshipTableName, semanticViewRelationship.RefTableNameOrAlias.RelationshipTableAlias) {
-					errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.SemanticViewRelationships.RefTableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
+					errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateSemanticViewOptions.SemanticViewRelationships[%d].RefTableNameOrAlias", semanticViewRelationshipIdx), "RelationshipTableName", "RelationshipTableAlias"))
 				}
 			}
 		}
 	}
 	if valueSet(opts.SemanticViewMetrics) {
-		for _, semanticViewMetric := range opts.SemanticViewMetrics {
+		for semanticViewMetricIdx, semanticViewMetric := range opts.SemanticViewMetrics {
 			if !exactlyOneValueSet(semanticViewMetric.SemanticExpression, semanticViewMetric.WindowFunctionMetricDefinition) {
-				errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.SemanticViewMetrics", "SemanticExpression", "WindowFunctionMetricDefinition"))
+				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateSemanticViewOptions.SemanticViewMetrics[%d]", semanticViewMetricIdx), "SemanticExpression", "WindowFunctionMetricDefinition"))
 			}
 		}
 	}

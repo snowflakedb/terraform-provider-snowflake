@@ -136,6 +136,28 @@ func (f *Field) SliceElemVar() string {
 	return name
 }
 
+// SliceIndexVar is the for-loop index next to SliceElemVar (e.g. "argumentIdx").
+// Nested slices each get their own; do not reuse toOpts' constant "i".
+func (f *Field) SliceIndexVar() string {
+	return f.SliceElemVar() + "Idx"
+}
+
+// NeedsSliceIndexVar reports whether the validate() loop must bind SliceIndexVar.
+// False for ValidIdentifier-only subtrees so the index is not an unused variable.
+func (f *Field) NeedsSliceIndexVar() bool {
+	for _, v := range f.Validations {
+		if v.hasIndexedErrorPath() {
+			return true
+		}
+	}
+	for i := range f.Fields {
+		if f.Fields[i].NeedsSliceIndexVar() {
+			return true
+		}
+	}
+	return false
+}
+
 // ShouldBeInDto checks if field is not some static SQL field which should not be interacted with by SDK user
 // TODO: this is a very naive implementation, consider fixing it with DSL builder connection
 func (f *Field) ShouldBeInDto() bool {
@@ -178,8 +200,15 @@ func (f *Field) IndexedPath() string {
 
 // IndexedElemPath is IndexedPath with a trailing [0] appended when f itself is a slice.
 func (f *Field) IndexedElemPath() string {
+	return f.IndexedElemPathAt(0)
+}
+
+// IndexedElemPathAt is IndexedPath with a trailing [i] appended when f itself is a slice.
+// Ancestor slices stay [0] (same as IndexedPath). Used to assign through a second element
+// in BothInvalid unit-test DefaultModify.
+func (f *Field) IndexedElemPathAt(i int) string {
 	if f.IsSlice() {
-		return f.IndexedPath() + "[0]"
+		return f.IndexedPath() + fmt.Sprintf("[%d]", i)
 	}
 	return f.IndexedPath()
 }
@@ -191,6 +220,51 @@ func (f *Field) PathWithRoot() string {
 	} else {
 		return fmt.Sprintf("%s.%s", f.Parent.PathWithRoot(), f.Name)
 	}
+}
+
+// PathWithRootExpr is the Go expression for PathWithRoot in a validate() body
+// (quoted literal, or fmt.Sprintf inserting each slice's SliceIndexVar).
+func (f *Field) PathWithRootExpr() string {
+	var indexVars []string
+	format := f.pathWithRootIndexed(func(seg *Field) string {
+		indexVars = append(indexVars, seg.SliceIndexVar())
+		return "[%d]"
+	})
+	if len(indexVars) == 0 {
+		return fmt.Sprintf("%q", format)
+	}
+	return fmt.Sprintf("fmt.Sprintf(%q, %s)", format, strings.Join(indexVars, ", "))
+}
+
+// PathWithRootForTest is PathWithRoot with concrete indexes after every slice.
+// failingSlice (if on the path) uses [failingIndex]; every other slice uses [0].
+// Pass failingSlice == nil for all [0].
+func (f *Field) PathWithRootForTest(failingSlice *Field, failingIndex int) string {
+	return f.pathWithRootIndexed(func(seg *Field) string {
+		idx := 0
+		if failingSlice != nil && seg == failingSlice {
+			idx = failingIndex
+		}
+		return fmt.Sprintf("[%d]", idx)
+	})
+}
+
+func (f *Field) pathFromRoot() []*Field {
+	return append(f.AncestorsFromRoot(), f)
+}
+
+func (f *Field) pathWithRootIndexed(sliceSuffix func(*Field) string) string {
+	var b strings.Builder
+	for i, seg := range f.pathFromRoot() {
+		if i > 0 {
+			b.WriteByte('.')
+		}
+		b.WriteString(seg.Name)
+		if seg.IsSlice() {
+			b.WriteString(sliceSuffix(seg))
+		}
+	}
+	return b.String()
 }
 
 // DtoKind returns what should be fields kind in generated DTO, because it may differ from Kind

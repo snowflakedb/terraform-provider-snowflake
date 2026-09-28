@@ -270,6 +270,334 @@ func Test_Field_AccessExpr(t *testing.T) {
 	}
 }
 
+func Test_Field_SliceIndexVar(t *testing.T) {
+	tests := []struct {
+		name     string
+		field    *gen.Field
+		expected string
+	}{
+		{name: "Arguments", field: &gen.Field{Name: "Arguments"}, expected: "argumentIdx"},
+		{name: "Columns", field: &gen.Field{Name: "Columns"}, expected: "columnIdx"},
+		{name: "On", field: &gen.Field{Name: "On"}, expected: "onIdx"},
+		{name: "LeafItems", field: &gen.Field{Name: "LeafItems"}, expected: "leafItemIdx"},
+		{name: "DualChecks", field: &gen.Field{Name: "DualChecks"}, expected: "dualCheckIdx"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.expected, tt.field.SliceIndexVar())
+		})
+	}
+}
+
+func Test_Field_NeedsSliceIndexVar(t *testing.T) {
+	tests := []struct {
+		name     string
+		root     *gen.Field
+		target   func(root *gen.Field) *gen.Field
+		expected bool
+	}{
+		{
+			name: "slice with only ValidIdentifier in subtree — unused index would not compile",
+			root: &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "Columns", Kind: "[]Column", Fields: []gen.Field{
+					{Name: "MaskingPolicy", Kind: "*MaskingPolicy", Validations: []*gen.Validation{
+						gen.NewValidation(gen.ValidIdentifier, "Name"),
+					}, Fields: []gen.Field{
+						{Name: "Name", Kind: "SchemaObjectIdentifier"},
+					}},
+				}},
+			}},
+			target:   func(root *gen.Field) *gen.Field { return &root.Fields[0] },
+			expected: false,
+		},
+		{
+			name: "slice with its own ExactlyOneValueSet",
+			root: &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "Arguments", Kind: "[]Argument", Validations: []*gen.Validation{
+					gen.NewValidation(gen.ExactlyOneValueSet, "ArgDataTypeOld", "ArgDataType"),
+				}, Fields: []gen.Field{
+					{Name: "ArgDataTypeOld", Kind: "DataType"},
+					{Name: "ArgDataType", Kind: "datatypes.DataType"},
+				}},
+			}},
+			target:   func(root *gen.Field) *gen.Field { return &root.Fields[0] },
+			expected: true,
+		},
+		{
+			name: "slice with nested path-bearing validation — outer index is referenced",
+			root: &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "Items", Kind: "[]Item", Fields: []gen.Field{
+					{Name: "SubItems", Kind: "[]SubItem", Validations: []*gen.Validation{
+						gen.NewValidation(gen.ExactlyOneValueSet, "Name", "Alias"),
+					}, Fields: []gen.Field{
+						{Name: "Name", Kind: "*string"},
+						{Name: "Alias", Kind: "*string"},
+					}},
+				}},
+			}},
+			target:   func(root *gen.Field) *gen.Field { return &root.Fields[0] },
+			expected: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			root := buildTree(tt.root)
+			require.Equal(t, tt.expected, tt.target(root).NeedsSliceIndexVar())
+		})
+	}
+}
+
+func Test_Validation_ReturnedError_usesPathWithRootExpr(t *testing.T) {
+	noSlice := buildTree(&gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+		{Name: "Set", Kind: "*Set", Fields: []gen.Field{
+			{Name: "A", Kind: "*string"},
+			{Name: "B", Kind: "*string"},
+		}},
+	}})
+	slice := buildTree(&gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+		{Name: "Arguments", Kind: "[]Argument", Fields: []gen.Field{
+			{Name: "ArgDataTypeOld", Kind: "DataType"},
+			{Name: "ArgDataType", Kind: "datatypes.DataType"},
+		}},
+	}})
+	nested := buildTree(threeLevelSliceTree())
+
+	v := gen.NewValidation(gen.ExactlyOneValueSet, "ArgDataTypeOld", "ArgDataType")
+	require.Equal(t, `errExactlyOneOf("RootOptions.Set", "A","B")`,
+		gen.NewValidation(gen.ExactlyOneValueSet, "A", "B").ReturnedError(&noSlice.Fields[0]))
+	require.Equal(t, `errExactlyOneOf(fmt.Sprintf("RootOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld","ArgDataType")`,
+		v.ReturnedError(&slice.Fields[0]))
+	require.Equal(t, `errExactlyOneOf(fmt.Sprintf("RootOptions.Items[%d].SubItems[%d].LeafItems[%d]", itemIdx, subItemIdx, leafItemIdx), "Name","Alias")`,
+		gen.NewValidation(gen.ExactlyOneValueSet, "Name", "Alias").ReturnedError(&nested.Fields[0].Fields[0].Fields[0]))
+	require.Equal(t, "ErrInvalidObjectIdentifier",
+		gen.NewValidation(gen.ValidIdentifier, "name").ReturnedError(noSlice))
+}
+
+func threeLevelSliceTree() *gen.Field {
+	return &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+		{Name: "Items", Kind: "[]Item", Fields: []gen.Field{
+			{Name: "SubItems", Kind: "[]SubItem", Fields: []gen.Field{
+				{Name: "LeafItems", Kind: "[]LeafItem", Fields: []gen.Field{
+					{Name: "Name", Kind: "string"},
+				}},
+			}},
+		}},
+	}}
+}
+
+func Test_Field_PathWithRootExpr(t *testing.T) {
+	tests := []struct {
+		name     string
+		root     *gen.Field
+		target   func(root *gen.Field) *gen.Field
+		expected string
+	}{
+		{
+			name: "no slice — quoted PathWithRoot",
+			root: &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "A", Kind: "AStruct", Fields: []gen.Field{
+					{Name: "B", Kind: "string"},
+				}},
+			}},
+			target:   func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0] },
+			expected: `"RootOptions.A.B"`,
+		},
+		{
+			name: "one slice — the slice field itself",
+			root: &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "Arguments", Kind: "[]Argument"},
+			}},
+			target:   func(root *gen.Field) *gen.Field { return &root.Fields[0] },
+			expected: `fmt.Sprintf("RootOptions.Arguments[%d]", argumentIdx)`,
+		},
+		{
+			name: "one slice — child of the element",
+			root: &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "Arguments", Kind: "[]Argument", Fields: []gen.Field{
+					{Name: "ArgDataType", Kind: "string"},
+				}},
+			}},
+			target:   func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0] },
+			expected: `fmt.Sprintf("RootOptions.Arguments[%d].ArgDataType", argumentIdx)`,
+		},
+		{
+			name: "nested struct under a slice",
+			root: &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "Arguments", Kind: "[]Argument", Fields: []gen.Field{
+					{Name: "Nested", Kind: "NestedStruct", Fields: []gen.Field{
+						{Name: "Leaf", Kind: "string"},
+					}},
+				}},
+			}},
+			target:   func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0].Fields[0] },
+			expected: `fmt.Sprintf("RootOptions.Arguments[%d].Nested.Leaf", argumentIdx)`,
+		},
+		{
+			name: "two nested slices — inner slice field",
+			root: &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "Items", Kind: "[]Item", Fields: []gen.Field{
+					{Name: "SubItems", Kind: "[]SubItem"},
+				}},
+			}},
+			target:   func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0] },
+			expected: `fmt.Sprintf("RootOptions.Items[%d].SubItems[%d]", itemIdx, subItemIdx)`,
+		},
+		{
+			name:     "three nested slices — innermost slice field",
+			root:     threeLevelSliceTree(),
+			target:   func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0].Fields[0] },
+			expected: `fmt.Sprintf("RootOptions.Items[%d].SubItems[%d].LeafItems[%d]", itemIdx, subItemIdx, leafItemIdx)`,
+		},
+		{
+			name:     "three nested slices — leaf child of innermost element",
+			root:     threeLevelSliceTree(),
+			target:   func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0].Fields[0].Fields[0] },
+			expected: `fmt.Sprintf("RootOptions.Items[%d].SubItems[%d].LeafItems[%d].Name", itemIdx, subItemIdx, leafItemIdx)`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			root := buildTree(tt.root)
+			target := tt.target(root)
+			require.Equal(t, tt.expected, target.PathWithRootExpr())
+			// PathWithRoot stays unindexed — it is used in generator panics, not validate() bodies.
+			require.NotContains(t, target.PathWithRoot(), "[")
+		})
+	}
+}
+
+func Test_Field_PathWithRootForTest(t *testing.T) {
+	tests := []struct {
+		name         string
+		root         *gen.Field
+		target       func(root *gen.Field) *gen.Field
+		failingSlice func(root *gen.Field) *gen.Field
+		failingIndex int
+		expected     string
+	}{
+		{
+			name: "no slice — equals PathWithRoot",
+			root: &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "A", Kind: "AStruct", Fields: []gen.Field{
+					{Name: "B", Kind: "string"},
+				}},
+			}},
+			target:       func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0] },
+			failingSlice: func(root *gen.Field) *gen.Field { return nil },
+			expected:     "RootOptions.A.B",
+		},
+		{
+			name: "one slice — all [0] when failingSlice is nil",
+			root: &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "Arguments", Kind: "[]Argument", Fields: []gen.Field{
+					{Name: "ArgDataType", Kind: "string"},
+				}},
+			}},
+			target:       func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0] },
+			failingSlice: func(root *gen.Field) *gen.Field { return nil },
+			expected:     "RootOptions.Arguments[0].ArgDataType",
+		},
+		{
+			name: "one slice — OneValidOneInvalid uses [1] on the slice",
+			root: &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "Arguments", Kind: "[]Argument"},
+			}},
+			target:       func(root *gen.Field) *gen.Field { return &root.Fields[0] },
+			failingSlice: func(root *gen.Field) *gen.Field { return &root.Fields[0] },
+			failingIndex: 1,
+			expected:     "RootOptions.Arguments[1]",
+		},
+		{
+			name:         "three nested slices — default all [0]",
+			root:         threeLevelSliceTree(),
+			target:       func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0].Fields[0] },
+			failingSlice: func(root *gen.Field) *gen.Field { return nil },
+			expected:     "RootOptions.Items[0].SubItems[0].LeafItems[0]",
+		},
+		{
+			name:         "three nested slices — [1] only on the innermost (OneValidOneInvalid / BothInvalid[1])",
+			root:         threeLevelSliceTree(),
+			target:       func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0].Fields[0] },
+			failingSlice: func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0].Fields[0] },
+			failingIndex: 1,
+			expected:     "RootOptions.Items[0].SubItems[0].LeafItems[1]",
+		},
+		{
+			name:         "three nested slices — BothInvalid[0] on the innermost",
+			root:         threeLevelSliceTree(),
+			target:       func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0].Fields[0] },
+			failingSlice: func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0].Fields[0] },
+			failingIndex: 0,
+			expected:     "RootOptions.Items[0].SubItems[0].LeafItems[0]",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			root := buildTree(tt.root)
+			target := tt.target(root)
+			require.Equal(t, tt.expected, target.PathWithRootForTest(tt.failingSlice(root), tt.failingIndex))
+		})
+	}
+}
+
+func Test_Field_IndexedElemPathAt(t *testing.T) {
+	tests := []struct {
+		name     string
+		root     *gen.Field
+		target   func(root *gen.Field) *gen.Field
+		index    int
+		expected string
+	}{
+		{
+			name: "non-slice — equals IndexedPath regardless of i",
+			root: &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "A", Kind: "string"},
+			}},
+			target:   func(root *gen.Field) *gen.Field { return &root.Fields[0] },
+			index:    1,
+			expected: ".A",
+		},
+		{
+			name: "slice at 0 — equals IndexedElemPath",
+			root: &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "Arguments", Kind: "[]Argument"},
+			}},
+			target:   func(root *gen.Field) *gen.Field { return &root.Fields[0] },
+			index:    0,
+			expected: ".Arguments[0]",
+		},
+		{
+			name: "slice at 1",
+			root: &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+				{Name: "Arguments", Kind: "[]Argument"},
+			}},
+			target:   func(root *gen.Field) *gen.Field { return &root.Fields[0] },
+			index:    1,
+			expected: ".Arguments[1]",
+		},
+		{
+			name:     "nested slice at 1 — ancestors stay [0]",
+			root:     threeLevelSliceTree(),
+			target:   func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0].Fields[0] },
+			index:    1,
+			expected: ".Items[0].SubItems[0].LeafItems[1]",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			root := buildTree(tt.root)
+			target := tt.target(root)
+			require.Equal(t, tt.expected, target.IndexedElemPathAt(tt.index))
+			if tt.index == 0 && target.IsSlice() {
+				require.Equal(t, target.IndexedElemPath(), target.IndexedElemPathAt(0))
+			}
+		})
+	}
+}
+
 func Test_Validation_DeriveModify_usesIndexedPath(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -355,13 +683,57 @@ func Test_deriveConflictingFieldsModify_primesSlice(t *testing.T) {
 	}, lines)
 }
 
+func Test_BuildMultiFieldValidationCases_ConflictingFields_BothInvalid(t *testing.T) {
+	root := buildTree(&gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+		{Name: "DualChecks", Kind: "[]DualCheckItem", Fields: []gen.Field{
+			{Name: "B", Kind: "*string"},
+			{Name: "C", Kind: "*string"},
+		}},
+	}})
+	field := &root.Fields[0]
+	v := gen.NewValidation(gen.ConflictingFields, "B", "C")
+	cases := gen.BuildMultiFieldValidationCases(v, field, "Create", false)
+
+	bySuffix := map[string]*gen.ValidationTestCase{}
+	for _, c := range cases {
+		bySuffix[c.Name] = c
+	}
+	both := bySuffix["validation_Create_opts_DualChecks_ConflictingFields_BothInvalid"]
+	require.NotNil(t, both)
+	require.Equal(t, []string{
+		`errOneOf("RootOptions.DualChecks[0]", "B","C")`,
+		`errOneOf("RootOptions.DualChecks[1]", "B","C")`,
+	}, both.ExpectedErrLines)
+	require.True(t, both.HasModify)
+	require.Equal(t, []string{
+		"opts.DualChecks = []DualCheckItem{{}, {}}",
+		`opts.DualChecks[0].B = new("foo")`,
+		`opts.DualChecks[0].C = new("foo")`,
+		`opts.DualChecks[1].B = new("foo")`,
+		`opts.DualChecks[1].C = new("foo")`,
+	}, both.ModifyLines)
+}
+
 func Test_Validation_TestExpectedError(t *testing.T) {
+	sliceTree := buildTree(&gen.Field{Name: "CreateFooOptions", Kind: "CreateFooOptions", Fields: []gen.Field{
+		{Name: "Arguments", Kind: "[]Argument", Fields: []gen.Field{
+			{Name: "ArgDataTypeOld", Kind: "DataType"},
+			{Name: "ArgDataType", Kind: "datatypes.DataType"},
+		}},
+	}})
+	arguments := &sliceTree.Fields[0]
+
+	nestedTree := buildTree(threeLevelSliceTree())
+	leafItems := &nestedTree.Fields[0].Fields[0].Fields[0]
+
 	tests := []struct {
-		name           string
-		validation     *gen.Validation
-		field          *gen.Field
-		expectedOk     bool
-		expectedErrSub string // substring the returned expression must contain, when expectedOk
+		name         string
+		validation   *gen.Validation
+		field        *gen.Field
+		failingSlice *gen.Field
+		failingIndex int
+		expectedOk   bool
+		expectedErr  string
 	}{
 		{
 			name:       "ValidateValue — never derivable, delegates to a nested struct's own validate()",
@@ -370,25 +742,113 @@ func Test_Validation_TestExpectedError(t *testing.T) {
 			expectedOk: false,
 		},
 		{
-			name:           "ValidIdentifier — delegates to ReturnedError",
-			validation:     gen.NewValidation(gen.ValidIdentifier, "name"),
-			field:          &gen.Field{Name: "opts", Kind: "CreateFooOptions"},
-			expectedOk:     true,
-			expectedErrSub: "ErrInvalidObjectIdentifier",
+			name:        "ValidIdentifier — generic sentinel, no path",
+			validation:  gen.NewValidation(gen.ValidIdentifier, "name"),
+			field:       &gen.Field{Name: "opts", Kind: "CreateFooOptions"},
+			expectedOk:  true,
+			expectedErr: "ErrInvalidObjectIdentifier",
+		},
+		{
+			name:        "ExactlyOneValueSet on a slice — default all [0]",
+			validation:  gen.NewValidation(gen.ExactlyOneValueSet, "ArgDataTypeOld", "ArgDataType"),
+			field:       arguments,
+			expectedOk:  true,
+			expectedErr: `errExactlyOneOf("CreateFooOptions.Arguments[0]", "ArgDataTypeOld","ArgDataType")`,
+		},
+		{
+			name:         "ExactlyOneValueSet on a slice — OneValidOneInvalid uses [1]",
+			validation:   gen.NewValidation(gen.ExactlyOneValueSet, "ArgDataTypeOld", "ArgDataType"),
+			field:        arguments,
+			failingSlice: arguments,
+			failingIndex: 1,
+			expectedOk:   true,
+			expectedErr:  `errExactlyOneOf("CreateFooOptions.Arguments[1]", "ArgDataTypeOld","ArgDataType")`,
+		},
+		{
+			name:        "three nested slices — default all [0]",
+			validation:  gen.NewValidation(gen.ExactlyOneValueSet, "Name", "Alias"),
+			field:       leafItems,
+			expectedOk:  true,
+			expectedErr: `errExactlyOneOf("RootOptions.Items[0].SubItems[0].LeafItems[0]", "Name","Alias")`,
+		},
+		{
+			name:         "three nested slices — [1] only on the validated innermost slice",
+			validation:   gen.NewValidation(gen.ExactlyOneValueSet, "Name", "Alias"),
+			field:        leafItems,
+			failingSlice: leafItems,
+			failingIndex: 1,
+			expectedOk:   true,
+			expectedErr:  `errExactlyOneOf("RootOptions.Items[0].SubItems[0].LeafItems[1]", "Name","Alias")`,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			line, ok := tt.validation.TestExpectedError(tt.field)
+			line, ok := tt.validation.TestExpectedError(tt.field, tt.failingSlice, tt.failingIndex)
 			require.Equal(t, tt.expectedOk, ok)
 			if tt.expectedOk {
-				require.Equal(t, tt.expectedErrSub, line)
+				require.Equal(t, tt.expectedErr, line)
 			} else {
 				require.Empty(t, line)
 			}
 		})
 	}
+}
+
+func Test_BuildMultiFieldValidationCases_OneValidOneInvalid_usesIndexOne(t *testing.T) {
+	root := buildTree(&gen.Field{Name: "CreateFooOptions", Kind: "CreateFooOptions", Fields: []gen.Field{
+		{Name: "Arguments", Kind: "[]Argument", Fields: []gen.Field{
+			{Name: "ArgDataTypeOld", Kind: "DataType"},
+			{Name: "ArgDataType", Kind: "datatypes.DataType"},
+		}},
+	}})
+	arguments := &root.Fields[0]
+	v := gen.NewValidation(gen.ExactlyOneValueSet, "ArgDataTypeOld", "ArgDataType")
+
+	cases := gen.BuildMultiFieldValidationCases(v, arguments, "CreateForJava", false)
+
+	bySuffix := map[string]*gen.ValidationTestCase{}
+	for _, c := range cases {
+		bySuffix[c.Name] = c
+	}
+	require.Equal(t, `errExactlyOneOf("CreateFooOptions.Arguments[0]", "ArgDataTypeOld","ArgDataType")`, bySuffix["validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_NoneSet"].ExpectedErrLine)
+	require.Equal(t, `errExactlyOneOf("CreateFooOptions.Arguments[0]", "ArgDataTypeOld","ArgDataType")`, bySuffix["validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"].ExpectedErrLine)
+	require.Equal(t, `errExactlyOneOf("CreateFooOptions.Arguments[1]", "ArgDataTypeOld","ArgDataType")`, bySuffix["validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"].ExpectedErrLine)
+
+	both := bySuffix["validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_BothInvalid"]
+	require.NotNil(t, both)
+	require.True(t, both.HasExpectedErrs())
+	require.Equal(t, []string{
+		`errExactlyOneOf("CreateFooOptions.Arguments[0]", "ArgDataTypeOld","ArgDataType")`,
+		`errExactlyOneOf("CreateFooOptions.Arguments[1]", "ArgDataTypeOld","ArgDataType")`,
+	}, both.ExpectedErrLines)
+	require.True(t, both.HasModify)
+	require.Equal(t, []string{
+		"opts.Arguments = []Argument{{}, {}}",
+	}, both.ModifyLines)
+}
+
+func Test_BuildMultiFieldValidationCases_BothInvalid_threeLevelPriming(t *testing.T) {
+	root := buildTree(threeLevelSliceTree())
+	leafItems := &root.Fields[0].Fields[0].Fields[0]
+	v := gen.NewValidation(gen.ExactlyOneValueSet, "Name", "Alias")
+	cases := gen.BuildMultiFieldValidationCases(v, leafItems, "Create", false)
+
+	bySuffix := map[string]*gen.ValidationTestCase{}
+	for _, c := range cases {
+		bySuffix[c.Name] = c
+	}
+	both := bySuffix["validation_Create_opts_Items_SubItems_LeafItems_ExactlyOneValueSet_BothInvalid"]
+	require.NotNil(t, both)
+	require.Equal(t, []string{
+		`errExactlyOneOf("RootOptions.Items[0].SubItems[0].LeafItems[0]", "Name","Alias")`,
+		`errExactlyOneOf("RootOptions.Items[0].SubItems[0].LeafItems[1]", "Name","Alias")`,
+	}, both.ExpectedErrLines)
+	require.Equal(t, []string{
+		"opts.Items = []Item{{}}",
+		"opts.Items[0].SubItems = []SubItem{{}}",
+		"opts.Items[0].SubItems[0].LeafItems = []LeafItem{{}, {}}",
+	}, both.ModifyLines)
 }
 
 func Test_DefaultOptsFieldFor(t *testing.T) {

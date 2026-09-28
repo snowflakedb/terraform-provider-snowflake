@@ -52,6 +52,10 @@ type NestedListItem struct {
 }
 
 type SubItem struct {
+	LeafItems []LeafItem `ddl:"keyword" sql:"LEAF_ITEMS"`
+}
+
+type LeafItem struct {
 	Name  *string `ddl:"keyword"`
 	Alias *string `ddl:"keyword"`
 }

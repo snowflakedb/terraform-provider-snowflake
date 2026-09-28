@@ -45,6 +45,7 @@ const (
 	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_NoneSet                                           testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_NoneSet"
 	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_MoreThanOneSet                                    testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_MoreThanOneSet"
 	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_OneValidOneInvalid                                testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_OneValidOneInvalid"
+	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_BothInvalid                                       testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_BothInvalid"
 	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ExactlyOneValueSet_NoneSet                                  testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ExactlyOneValueSet_NoneSet"
 	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ExactlyOneValueSet_MoreThanOneSet                           testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ExactlyOneValueSet_MoreThanOneSet"
 	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Enforced_NotEnforced                      testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Enforced_NotEnforced"
@@ -64,6 +65,7 @@ const (
 	case_IcebergTables_validation_Create_opts_PartitionBy_ExactlyOneValueSet_NoneSet                                                                         testCaseName = "validation_Create_opts_PartitionBy_ExactlyOneValueSet_NoneSet"
 	case_IcebergTables_validation_Create_opts_PartitionBy_ExactlyOneValueSet_MoreThanOneSet                                                                  testCaseName = "validation_Create_opts_PartitionBy_ExactlyOneValueSet_MoreThanOneSet"
 	case_IcebergTables_validation_Create_opts_PartitionBy_ExactlyOneValueSet_OneValidOneInvalid                                                              testCaseName = "validation_Create_opts_PartitionBy_ExactlyOneValueSet_OneValidOneInvalid"
+	case_IcebergTables_validation_Create_opts_PartitionBy_ExactlyOneValueSet_BothInvalid                                                                     testCaseName = "validation_Create_opts_PartitionBy_ExactlyOneValueSet_BothInvalid"
 	case_IcebergTables_validation_Create_RowAccessPolicy_Name_ValidIdentifier                                                                                testCaseName = "validation_Create_RowAccessPolicy_Name_ValidIdentifier"
 	case_IcebergTables_validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier                                                                 testCaseName = "validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier"
 	case_IcebergTables_sql_Create_basic                                                                                                                      testCaseName = "sql_Create_basic"
@@ -108,6 +110,7 @@ const (
 	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_NoneSet                                                                    testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_NoneSet"
 	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_MoreThanOneSet                                                             testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_MoreThanOneSet"
 	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_OneValidOneInvalid                                                         testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_OneValidOneInvalid"
+	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_BothInvalid                                                                testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_BothInvalid"
 	case_IcebergTables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet                                                                     testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet"
 	case_IcebergTables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet                                                              testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet"
 	case_IcebergTables_validation_Alter_opts_Set_AtLeastOneValueSet                                                                                          testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
@@ -125,6 +128,7 @@ const (
 	case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_NoneSet                                                     testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_NoneSet"
 	case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet                                              testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet"
 	case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid                                          testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid"
+	case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_BothInvalid                                                 testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_BothInvalid"
 	case_IcebergTables_sql_Alter_AddColumnAction                                                                                                             testCaseName = "sql_Alter_AddColumnAction"
 	case_IcebergTables_sql_Alter_DropColumnAction                                                                                                            testCaseName = "sql_Alter_DropColumnAction"
 	case_IcebergTables_sql_Alter_RenameColumnAction                                                                                                          testCaseName = "sql_Alter_RenameColumnAction"
@@ -206,7 +210,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint", "UniquePK", "FK", "CH"),
+				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint", "UniquePK", "FK", "CH"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
@@ -217,7 +221,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint", "UniquePK", "FK", "CH"),
+				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint", "UniquePK", "FK", "CH"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
@@ -227,7 +231,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Unique", "PrimaryKey"),
+				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK", "Unique", "PrimaryKey"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
@@ -238,7 +242,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Unique", "PrimaryKey"),
+				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK", "Unique", "PrimaryKey"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
@@ -249,7 +253,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Enforced_NotEnforced,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Enforced", "NotEnforced"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK", "Enforced", "NotEnforced"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
@@ -260,7 +264,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Deferrable_NotDeferrable,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Deferrable", "NotDeferrable"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK", "Deferrable", "NotDeferrable"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
@@ -271,7 +275,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_InitiallyDeferred_InitiallyImmediate,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "InitiallyDeferred", "InitiallyImmediate"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK", "InitiallyDeferred", "InitiallyImmediate"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
@@ -282,7 +286,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Enable_Disable,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Enable", "Disable"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK", "Enable", "Disable"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
@@ -293,7 +297,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Validate_Novalidate,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Validate", "Novalidate"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK", "Validate", "Novalidate"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
@@ -304,7 +308,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_UniquePK_ConflictingFields_Rely_Norely,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.UniquePK", "Rely", "Norely"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK", "Rely", "Norely"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
@@ -325,7 +329,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Enforced_NotEnforced,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.FK", "Enforced", "NotEnforced"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.FK", "Enforced", "NotEnforced"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
@@ -336,7 +340,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Deferrable_NotDeferrable,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.FK", "Deferrable", "NotDeferrable"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.FK", "Deferrable", "NotDeferrable"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
@@ -347,7 +351,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_InitiallyDeferred_InitiallyImmediate,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.FK", "InitiallyDeferred", "InitiallyImmediate"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.FK", "InitiallyDeferred", "InitiallyImmediate"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
@@ -358,7 +362,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Enable_Disable,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.FK", "Enable", "Disable"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.FK", "Enable", "Disable"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
@@ -369,7 +373,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Validate_Novalidate,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.FK", "Validate", "Novalidate"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.FK", "Validate", "Novalidate"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
@@ -380,7 +384,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Rely_Norely,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.FK", "Rely", "Norely"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.FK", "Rely", "Norely"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
@@ -391,7 +395,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_CH_ConflictingFields,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns.InlineConstraint.CH", "EnableValidate", "EnableNovalidate"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.CH", "EnableValidate", "EnableNovalidate"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
@@ -402,22 +406,32 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "UniquePK", "FK", "CH"),
+				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "UniquePK", "FK", "CH"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
 				},
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "UniquePK", "FK", "CH"),
+				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "UniquePK", "FK", "CH"),
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "UniquePK", "FK", "CH"),
+				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[1]", "UniquePK", "FK", "CH"),
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name: case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "UniquePK", "FK", "CH"),
+					errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[1]", "UniquePK", "FK", "CH"),
+				},
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}, {}}
+				},
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Unique", "PrimaryKey"),
+				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK", "Unique", "PrimaryKey"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK = &TableOutOfLineUniquePK{}
@@ -427,7 +441,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Unique", "PrimaryKey"),
+				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK", "Unique", "PrimaryKey"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK = &TableOutOfLineUniquePK{}
@@ -437,7 +451,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Enforced_NotEnforced,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Enforced", "NotEnforced"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK", "Enforced", "NotEnforced"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK = &TableOutOfLineUniquePK{}
@@ -447,7 +461,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Deferrable_NotDeferrable,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Deferrable", "NotDeferrable"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK", "Deferrable", "NotDeferrable"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK = &TableOutOfLineUniquePK{}
@@ -457,7 +471,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_InitiallyDeferred_InitiallyImmediate,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "InitiallyDeferred", "InitiallyImmediate"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK", "InitiallyDeferred", "InitiallyImmediate"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK = &TableOutOfLineUniquePK{}
@@ -467,7 +481,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Enable_Disable,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Enable", "Disable"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK", "Enable", "Disable"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK = &TableOutOfLineUniquePK{}
@@ -477,7 +491,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Validate_Novalidate,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Validate", "Novalidate"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK", "Validate", "Novalidate"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK = &TableOutOfLineUniquePK{}
@@ -487,7 +501,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_UniquePK_ConflictingFields_Rely_Norely,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.UniquePK", "Rely", "Norely"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK", "Rely", "Norely"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK = &TableOutOfLineUniquePK{}
@@ -506,7 +520,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Enforced_NotEnforced,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.FK", "Enforced", "NotEnforced"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].FK", "Enforced", "NotEnforced"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK = &TableOutOfLineFK{}
@@ -516,7 +530,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Deferrable_NotDeferrable,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.FK", "Deferrable", "NotDeferrable"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].FK", "Deferrable", "NotDeferrable"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK = &TableOutOfLineFK{}
@@ -526,7 +540,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_InitiallyDeferred_InitiallyImmediate,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.FK", "InitiallyDeferred", "InitiallyImmediate"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].FK", "InitiallyDeferred", "InitiallyImmediate"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK = &TableOutOfLineFK{}
@@ -536,7 +550,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Enable_Disable,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.FK", "Enable", "Disable"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].FK", "Enable", "Disable"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK = &TableOutOfLineFK{}
@@ -546,7 +560,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Validate_Novalidate,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.FK", "Validate", "Novalidate"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].FK", "Validate", "Novalidate"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK = &TableOutOfLineFK{}
@@ -556,7 +570,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Rely_Norely,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.FK", "Rely", "Norely"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].FK", "Rely", "Norely"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK = &TableOutOfLineFK{}
@@ -566,7 +580,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_CH_ConflictingFields,
-				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint.CH", "EnableValidate", "EnableNovalidate"),
+				ExpectedErr: errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].CH", "EnableValidate", "EnableNovalidate"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].CH = &TableOutOfLineCH{}
@@ -576,18 +590,28 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_PartitionBy_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.PartitionBy", "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"),
+				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.PartitionBy[0]", "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.PartitionBy = []IcebergTablePartitionExpression{{}}
 				},
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_PartitionBy_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.PartitionBy", "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"),
+				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.PartitionBy[0]", "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"),
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_PartitionBy_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.PartitionBy", "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"),
+				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.PartitionBy[1]", "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"),
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name: case_IcebergTables_validation_Create_opts_PartitionBy_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("CreateIcebergTableOptions.PartitionBy[0]", "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"),
+					errExactlyOneOf("CreateIcebergTableOptions.PartitionBy[1]", "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"),
+				},
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.PartitionBy = []IcebergTablePartitionExpression{{}, {}}
+				},
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_RowAccessPolicy_Name_ValidIdentifier,
@@ -1003,18 +1027,28 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*AlterIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterIcebergTableOptions.AlterColumnAction", "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"),
+				ExpectedErr: errExactlyOneOf("AlterIcebergTableOptions.AlterColumnAction[0]", "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
 					opts.AlterColumnAction = []IcebergTableAlterColumnAction{{}}
 				},
 			},
 			validationCase[*AlterIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("AlterIcebergTableOptions.AlterColumnAction", "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"),
+				ExpectedErr: errExactlyOneOf("AlterIcebergTableOptions.AlterColumnAction[0]", "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"),
 			},
 			validationCase[*AlterIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("AlterIcebergTableOptions.AlterColumnAction", "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"),
+				ExpectedErr: errExactlyOneOf("AlterIcebergTableOptions.AlterColumnAction[1]", "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"),
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name: case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("AlterIcebergTableOptions.AlterColumnAction[0]", "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"),
+					errExactlyOneOf("AlterIcebergTableOptions.AlterColumnAction[1]", "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"),
+				},
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AlterColumnAction = []IcebergTableAlterColumnAction{{}, {}}
+				},
 			},
 			validationCase[*AlterIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet,
@@ -1150,7 +1184,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*AlterIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
+				ExpectedErr: errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction.Drop.On[0]", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
 					opts.SearchOptimizationAction = &TableSearchOptimizationAction{}
 					opts.SearchOptimizationAction.Drop = &TableDropSearchOptimization{}
@@ -1159,11 +1193,23 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*AlterIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
+				ExpectedErr: errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction.Drop.On[0]", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
 			},
 			validationCase[*AlterIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
+				ExpectedErr: errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction.Drop.On[1]", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name: case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction.Drop.On[0]", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
+					errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction.Drop.On[1]", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
+				},
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.SearchOptimizationAction = &TableSearchOptimizationAction{}
+					opts.SearchOptimizationAction.Drop = &TableDropSearchOptimization{}
+					opts.SearchOptimizationAction.Drop.On = []TableDropSearchOptimizationOn{{}, {}}
+				},
 			},
 		).
 		withSqlCases(

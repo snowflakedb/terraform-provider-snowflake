@@ -24,6 +24,7 @@ const (
 	case_HybridTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_NoneSet            testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_NoneSet"
 	case_HybridTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_MoreThanOneSet     testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_MoreThanOneSet"
 	case_HybridTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_OneValidOneInvalid testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_OneValidOneInvalid"
+	case_HybridTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_BothInvalid        testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_BothInvalid"
 	case_HybridTables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet             testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet"
 	case_HybridTables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet      testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet"
 	case_HybridTables_validation_Alter_opts_Set_AtLeastOneValueSet                                  testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
@@ -213,18 +214,28 @@ var hybridTablesTests = HybridTablesTestsContext{
 			},
 			validationCase[*AlterHybridTableOptions]{
 				Name:        case_HybridTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction", "DropDefault", "SetDefault", "DataType", "Comment", "UnsetComment"),
+				ExpectedErr: errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction[0]", "DropDefault", "SetDefault", "DataType", "Comment", "UnsetComment"),
 				DefaultModify: func(opts *AlterHybridTableOptions) {
 					opts.AlterColumnAction = []HybridTableAlterColumnAction{{}}
 				},
 			},
 			validationCase[*AlterHybridTableOptions]{
 				Name:        case_HybridTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction", "DropDefault", "SetDefault", "DataType", "Comment", "UnsetComment"),
+				ExpectedErr: errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction[0]", "DropDefault", "SetDefault", "DataType", "Comment", "UnsetComment"),
 			},
 			validationCase[*AlterHybridTableOptions]{
 				Name:        case_HybridTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction", "DropDefault", "SetDefault", "DataType", "Comment", "UnsetComment"),
+				ExpectedErr: errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction[1]", "DropDefault", "SetDefault", "DataType", "Comment", "UnsetComment"),
+			},
+			validationCase[*AlterHybridTableOptions]{
+				Name: case_HybridTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction[0]", "DropDefault", "SetDefault", "DataType", "Comment", "UnsetComment"),
+					errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction[1]", "DropDefault", "SetDefault", "DataType", "Comment", "UnsetComment"),
+				},
+				DefaultModify: func(opts *AlterHybridTableOptions) {
+					opts.AlterColumnAction = []HybridTableAlterColumnAction{{}, {}}
+				},
 			},
 			validationCase[*AlterHybridTableOptions]{
 				Name:        case_HybridTables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet,

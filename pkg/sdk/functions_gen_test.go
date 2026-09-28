@@ -18,6 +18,7 @@ const (
 	case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_NoneSet                              testCaseName = "validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_NoneSet"
 	case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                       testCaseName = "validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
 	case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                   testCaseName = "validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_BothInvalid                          testCaseName = "validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_BothInvalid"
 	case_Functions_validation_CreateForJava_opts_Returns_ExactlyOneValueSet_NoneSet                                testCaseName = "validation_CreateForJava_opts_Returns_ExactlyOneValueSet_NoneSet"
 	case_Functions_validation_CreateForJava_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                         testCaseName = "validation_CreateForJava_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
 	case_Functions_validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet                 testCaseName = "validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
@@ -25,6 +26,7 @@ const (
 	case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet                  testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
 	case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet           testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
 	case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid       testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid              testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
 	case_Functions_sql_CreateForJava_basic                                                                         testCaseName = "sql_CreateForJava_basic"
 	case_Functions_sql_CreateForJava_all                                                                           testCaseName = "sql_CreateForJava_all"
 	case_Functions_validation_CreateForJavascript_FunctionDefinition_ValidateValueSet                              testCaseName = "validation_CreateForJavascript_FunctionDefinition_ValidateValueSet"
@@ -33,6 +35,7 @@ const (
 	case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_NoneSet                        testCaseName = "validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_NoneSet"
 	case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                 testCaseName = "validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
 	case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid             testCaseName = "validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_BothInvalid                    testCaseName = "validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_BothInvalid"
 	case_Functions_validation_CreateForJavascript_opts_Returns_ExactlyOneValueSet_NoneSet                          testCaseName = "validation_CreateForJavascript_opts_Returns_ExactlyOneValueSet_NoneSet"
 	case_Functions_validation_CreateForJavascript_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                   testCaseName = "validation_CreateForJavascript_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
 	case_Functions_validation_CreateForJavascript_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet           testCaseName = "validation_CreateForJavascript_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
@@ -40,6 +43,7 @@ const (
 	case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet            testCaseName = "validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
 	case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet     testCaseName = "validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
 	case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid testCaseName = "validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid        testCaseName = "validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
 	case_Functions_sql_CreateForJavascript_basic                                                                   testCaseName = "sql_CreateForJavascript_basic"
 	case_Functions_sql_CreateForJavascript_all                                                                     testCaseName = "sql_CreateForJavascript_all"
 	case_Functions_validation_CreateForPython_name_ValidIdentifier                                                 testCaseName = "validation_CreateForPython_name_ValidIdentifier"
@@ -49,6 +53,7 @@ const (
 	case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_NoneSet                            testCaseName = "validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_NoneSet"
 	case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                     testCaseName = "validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
 	case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                 testCaseName = "validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_BothInvalid                        testCaseName = "validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_BothInvalid"
 	case_Functions_validation_CreateForPython_opts_Returns_ExactlyOneValueSet_NoneSet                              testCaseName = "validation_CreateForPython_opts_Returns_ExactlyOneValueSet_NoneSet"
 	case_Functions_validation_CreateForPython_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                       testCaseName = "validation_CreateForPython_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
 	case_Functions_validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet               testCaseName = "validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
@@ -56,6 +61,7 @@ const (
 	case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet                testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
 	case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet         testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
 	case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid     testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid            testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
 	case_Functions_sql_CreateForPython_basic                                                                       testCaseName = "sql_CreateForPython_basic"
 	case_Functions_sql_CreateForPython_all                                                                         testCaseName = "sql_CreateForPython_all"
 	case_Functions_validation_CreateForScala_name_ValidIdentifier                                                  testCaseName = "validation_CreateForScala_name_ValidIdentifier"
@@ -66,6 +72,7 @@ const (
 	case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_NoneSet                             testCaseName = "validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_NoneSet"
 	case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                      testCaseName = "validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
 	case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                  testCaseName = "validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_BothInvalid                         testCaseName = "validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_BothInvalid"
 	case_Functions_sql_CreateForScala_basic                                                                        testCaseName = "sql_CreateForScala_basic"
 	case_Functions_sql_CreateForScala_all                                                                          testCaseName = "sql_CreateForScala_all"
 	case_Functions_validation_CreateForSQL_FunctionDefinition_ValidateValueSet                                     testCaseName = "validation_CreateForSQL_FunctionDefinition_ValidateValueSet"
@@ -74,6 +81,7 @@ const (
 	case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_NoneSet                               testCaseName = "validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_NoneSet"
 	case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                        testCaseName = "validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
 	case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                    testCaseName = "validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_BothInvalid                           testCaseName = "validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_BothInvalid"
 	case_Functions_validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_NoneSet                                 testCaseName = "validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_NoneSet"
 	case_Functions_validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                          testCaseName = "validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
 	case_Functions_validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet                  testCaseName = "validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
@@ -81,6 +89,7 @@ const (
 	case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet                   testCaseName = "validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
 	case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet            testCaseName = "validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
 	case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid        testCaseName = "validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid               testCaseName = "validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
 	case_Functions_sql_CreateForSQL_basic                                                                          testCaseName = "sql_CreateForSQL_basic"
 	case_Functions_sql_CreateForSQL_all                                                                            testCaseName = "sql_CreateForSQL_all"
 	case_Functions_validation_Alter_name_ValidIdentifier                                                           testCaseName = "validation_Alter_name_ValidIdentifier"
@@ -153,18 +162,28 @@ var functionsTests = FunctionsTestsContext{
 			},
 			validationCase[*CreateForJavaFunctionOptions]{
 				Name:        case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
 				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
 					opts.Arguments = []FunctionArgument{{}}
 				},
 			},
 			validationCase[*CreateForJavaFunctionOptions]{
 				Name:        case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
 			},
 			validationCase[*CreateForJavaFunctionOptions]{
 				Name:        case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
+			},
+			validationCase[*CreateForJavaFunctionOptions]{
+				Name: case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("CreateForJavaFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+					errExactlyOneOf("CreateForJavaFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
+				},
+				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
+					opts.Arguments = []FunctionArgument{{}, {}}
+				},
 			},
 			validationCase[*CreateForJavaFunctionOptions]{
 				Name:        case_Functions_validation_CreateForJava_opts_Returns_ExactlyOneValueSet_NoneSet,
@@ -197,7 +216,7 @@ var functionsTests = FunctionsTestsContext{
 			},
 			validationCase[*CreateForJavaFunctionOptions]{
 				Name:        case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
 				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
 					opts.Returns.Table = &FunctionReturnsTable{}
 					opts.Returns.Table.Columns = []FunctionColumn{{}}
@@ -205,11 +224,22 @@ var functionsTests = FunctionsTestsContext{
 			},
 			validationCase[*CreateForJavaFunctionOptions]{
 				Name:        case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
 			},
 			validationCase[*CreateForJavaFunctionOptions]{
 				Name:        case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
+			},
+			validationCase[*CreateForJavaFunctionOptions]{
+				Name: case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
+					errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
+				},
+				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
+					opts.Returns.Table = &FunctionReturnsTable{}
+					opts.Returns.Table.Columns = []FunctionColumn{{}, {}}
+				},
 			},
 		).
 		withSqlCases(
@@ -254,18 +284,28 @@ var functionsTests = FunctionsTestsContext{
 			},
 			validationCase[*CreateForJavascriptFunctionOptions]{
 				Name:        case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
 				DefaultModify: func(opts *CreateForJavascriptFunctionOptions) {
 					opts.Arguments = []FunctionArgument{{}}
 				},
 			},
 			validationCase[*CreateForJavascriptFunctionOptions]{
 				Name:        case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
 			},
 			validationCase[*CreateForJavascriptFunctionOptions]{
 				Name:        case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
+			},
+			validationCase[*CreateForJavascriptFunctionOptions]{
+				Name: case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+					errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
+				},
+				DefaultModify: func(opts *CreateForJavascriptFunctionOptions) {
+					opts.Arguments = []FunctionArgument{{}, {}}
+				},
 			},
 			validationCase[*CreateForJavascriptFunctionOptions]{
 				Name:        case_Functions_validation_CreateForJavascript_opts_Returns_ExactlyOneValueSet_NoneSet,
@@ -298,7 +338,7 @@ var functionsTests = FunctionsTestsContext{
 			},
 			validationCase[*CreateForJavascriptFunctionOptions]{
 				Name:        case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
 				DefaultModify: func(opts *CreateForJavascriptFunctionOptions) {
 					opts.Returns.Table = &FunctionReturnsTable{}
 					opts.Returns.Table.Columns = []FunctionColumn{{}}
@@ -306,11 +346,22 @@ var functionsTests = FunctionsTestsContext{
 			},
 			validationCase[*CreateForJavascriptFunctionOptions]{
 				Name:        case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
 			},
 			validationCase[*CreateForJavascriptFunctionOptions]{
 				Name:        case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
+			},
+			validationCase[*CreateForJavascriptFunctionOptions]{
+				Name: case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
+					errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
+				},
+				DefaultModify: func(opts *CreateForJavascriptFunctionOptions) {
+					opts.Returns.Table = &FunctionReturnsTable{}
+					opts.Returns.Table.Columns = []FunctionColumn{{}, {}}
+				},
 			},
 		).
 		withSqlCases(
@@ -362,18 +413,28 @@ var functionsTests = FunctionsTestsContext{
 			},
 			validationCase[*CreateForPythonFunctionOptions]{
 				Name:        case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
 				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
 					opts.Arguments = []FunctionArgument{{}}
 				},
 			},
 			validationCase[*CreateForPythonFunctionOptions]{
 				Name:        case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
 			},
 			validationCase[*CreateForPythonFunctionOptions]{
 				Name:        case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
+			},
+			validationCase[*CreateForPythonFunctionOptions]{
+				Name: case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("CreateForPythonFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+					errExactlyOneOf("CreateForPythonFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
+				},
+				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
+					opts.Arguments = []FunctionArgument{{}, {}}
+				},
 			},
 			validationCase[*CreateForPythonFunctionOptions]{
 				Name:        case_Functions_validation_CreateForPython_opts_Returns_ExactlyOneValueSet_NoneSet,
@@ -406,7 +467,7 @@ var functionsTests = FunctionsTestsContext{
 			},
 			validationCase[*CreateForPythonFunctionOptions]{
 				Name:        case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
 				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
 					opts.Returns.Table = &FunctionReturnsTable{}
 					opts.Returns.Table.Columns = []FunctionColumn{{}}
@@ -414,11 +475,22 @@ var functionsTests = FunctionsTestsContext{
 			},
 			validationCase[*CreateForPythonFunctionOptions]{
 				Name:        case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
 			},
 			validationCase[*CreateForPythonFunctionOptions]{
 				Name:        case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
+			},
+			validationCase[*CreateForPythonFunctionOptions]{
+				Name: case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
+					errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
+				},
+				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
+					opts.Returns.Table = &FunctionReturnsTable{}
+					opts.Returns.Table.Columns = []FunctionColumn{{}, {}}
+				},
 			},
 		).
 		withSqlCases(
@@ -475,18 +547,28 @@ var functionsTests = FunctionsTestsContext{
 			},
 			validationCase[*CreateForScalaFunctionOptions]{
 				Name:        case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForScalaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForScalaFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
 				DefaultModify: func(opts *CreateForScalaFunctionOptions) {
 					opts.Arguments = []FunctionArgument{{}}
 				},
 			},
 			validationCase[*CreateForScalaFunctionOptions]{
 				Name:        case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForScalaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForScalaFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
 			},
 			validationCase[*CreateForScalaFunctionOptions]{
 				Name:        case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForScalaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForScalaFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
+			},
+			validationCase[*CreateForScalaFunctionOptions]{
+				Name: case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("CreateForScalaFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+					errExactlyOneOf("CreateForScalaFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
+				},
+				DefaultModify: func(opts *CreateForScalaFunctionOptions) {
+					opts.Arguments = []FunctionArgument{{}, {}}
+				},
 			},
 		).
 		withSqlCases(
@@ -531,18 +613,28 @@ var functionsTests = FunctionsTestsContext{
 			},
 			validationCase[*CreateForSQLFunctionOptions]{
 				Name:        case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
 				DefaultModify: func(opts *CreateForSQLFunctionOptions) {
 					opts.Arguments = []FunctionArgument{{}}
 				},
 			},
 			validationCase[*CreateForSQLFunctionOptions]{
 				Name:        case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
 			},
 			validationCase[*CreateForSQLFunctionOptions]{
 				Name:        case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
+			},
+			validationCase[*CreateForSQLFunctionOptions]{
+				Name: case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("CreateForSQLFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+					errExactlyOneOf("CreateForSQLFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
+				},
+				DefaultModify: func(opts *CreateForSQLFunctionOptions) {
+					opts.Arguments = []FunctionArgument{{}, {}}
+				},
 			},
 			validationCase[*CreateForSQLFunctionOptions]{
 				Name:        case_Functions_validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_NoneSet,
@@ -575,7 +667,7 @@ var functionsTests = FunctionsTestsContext{
 			},
 			validationCase[*CreateForSQLFunctionOptions]{
 				Name:        case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
 				DefaultModify: func(opts *CreateForSQLFunctionOptions) {
 					opts.Returns.Table = &FunctionReturnsTable{}
 					opts.Returns.Table.Columns = []FunctionColumn{{}}
@@ -583,11 +675,22 @@ var functionsTests = FunctionsTestsContext{
 			},
 			validationCase[*CreateForSQLFunctionOptions]{
 				Name:        case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
 			},
 			validationCase[*CreateForSQLFunctionOptions]{
 				Name:        case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
+			},
+			validationCase[*CreateForSQLFunctionOptions]{
+				Name: case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
+					errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
+				},
+				DefaultModify: func(opts *CreateForSQLFunctionOptions) {
+					opts.Returns.Table = &FunctionReturnsTable{}
+					opts.Returns.Table.Columns = []FunctionColumn{{}, {}}
+				},
 			},
 		).
 		withSqlCases(

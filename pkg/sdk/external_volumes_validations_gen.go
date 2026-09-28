@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateExternalVolumeOptions)
 	_ validatable = new(AlterExternalVolumeOptions)
@@ -25,10 +27,10 @@ func (opts *CreateExternalVolumeOptions) validate() error {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	if valueSet(opts.StorageLocations) {
-		for _, storageLocation := range opts.StorageLocations {
+		for storageLocationIdx, storageLocation := range opts.StorageLocations {
 			if valueSet(storageLocation.ExternalVolumeStorageLocation) {
 				if !exactlyOneValueSet(storageLocation.ExternalVolumeStorageLocation.S3StorageLocationParams, storageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams, storageLocation.ExternalVolumeStorageLocation.AzureStorageLocationParams, storageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams) {
-					errs = append(errs, errExactlyOneOf("CreateExternalVolumeOptions.StorageLocations.ExternalVolumeStorageLocation", "S3StorageLocationParams", "GCSStorageLocationParams", "AzureStorageLocationParams", "S3CompatStorageLocationParams"))
+					errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateExternalVolumeOptions.StorageLocations[%d].ExternalVolumeStorageLocation", storageLocationIdx), "S3StorageLocationParams", "GCSStorageLocationParams", "AzureStorageLocationParams", "S3CompatStorageLocationParams"))
 				}
 			}
 		}

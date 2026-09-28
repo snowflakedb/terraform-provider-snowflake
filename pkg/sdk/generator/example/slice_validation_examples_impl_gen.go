@@ -68,9 +68,16 @@ func (r *CreateSliceValidationExampleRequest) toOpts() *CreateSliceValidationExa
 			if v.SubItems != nil {
 				subItems := make([]SubItem, len(v.SubItems))
 				for i, v := range v.SubItems {
-					subItems[i] = SubItem{
-						Name:  v.Name,
-						Alias: v.Alias,
+					subItems[i] = SubItem{}
+					if v.LeafItems != nil {
+						leafItems := make([]LeafItem, len(v.LeafItems))
+						for i, v := range v.LeafItems {
+							leafItems[i] = LeafItem{
+								Name:  v.Name,
+								Alias: v.Alias,
+							}
+						}
+						subItems[i].LeafItems = leafItems
 					}
 				}
 				items[i].SubItems = subItems

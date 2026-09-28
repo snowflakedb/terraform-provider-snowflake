@@ -160,39 +160,57 @@ func (v *Validation) Condition(field *Field) string {
 	panic("condition for validation unknown")
 }
 
+func (v *Validation) hasIndexedErrorPath() bool {
+	switch v.Type {
+	case ValidIdentifier, ValidIdentifierIfSet, ValidateValue, AdditionalValidations:
+		return false
+	default:
+		return true
+	}
+}
+
 // TestExpectedError returns the Go expression for the error a unit test case should assert, and true if one is derivable.
-// It differs from ReturnedError only for ValidateValue:
-// "err" is a valid expression inside the generated validate() body (where it is in scope)
-// but not inside a unit test case, so ext must supply the concrete error alongside the modification DeriveModify defers.
-func (v *Validation) TestExpectedError(field *Field) (string, bool) {
+// Unlike ReturnedError (validate() body, PathWithRootExpr), this uses a quoted PathWithRootForTest so
+// the generated case can be a struct literal. failingSlice/failingIndex select which slice on the path
+// is not [0]; pass failingSlice == nil for the default all-[0] path.
+func (v *Validation) TestExpectedError(field *Field, failingSlice *Field, failingIndex int) (string, bool) {
 	if v.Type == ValidateValue {
 		return "", false
 	}
-	return v.ReturnedError(field), true
+	if v.Type == ValidIdentifier || v.Type == ValidIdentifierIfSet {
+		return "ErrInvalidObjectIdentifier", true
+	}
+	return v.errorWithPathExpr(fmt.Sprintf("%q", field.PathWithRootForTest(failingSlice, failingIndex))), true
 }
 
 func (v *Validation) ReturnedError(field *Field) string {
 	switch v.Type {
-	case ValidIdentifier:
+	case ValidIdentifier, ValidIdentifierIfSet:
 		return "ErrInvalidObjectIdentifier"
-	case ValidIdentifierIfSet:
-		return "ErrInvalidObjectIdentifier"
-	case ConflictingFields:
-		return fmt.Sprintf(`errOneOf("%s", %s)`, field.PathWithRoot(), strings.Join(v.paramsQuoted(), ","))
-	case MoreThanOneValueSet:
-		return fmt.Sprintf(`errMoreThanOneOf("%s", %s)`, field.PathWithRoot(), strings.Join(v.paramsQuoted(), ","))
-	case ExactlyOneValueSet:
-		return fmt.Sprintf(`errExactlyOneOf("%s", %s)`, field.PathWithRoot(), strings.Join(v.paramsQuoted(), ","))
-	case AtLeastOneValueSet:
-		return fmt.Sprintf(`errAtLeastOneOf("%s", %s)`, field.PathWithRoot(), strings.Join(v.paramsQuoted(), ","))
-	case ValidateValueSet:
-		return fmt.Sprintf(`errNotSet("%s", %s)`, field.PathWithRoot(), strings.Join(v.paramsQuoted(), ","))
 	case ValidateValue:
 		return "err"
 	case AdditionalValidations:
 		log.Panicf("ReturnedError() must not be called for AdditionalValidations type")
+		panic("unreachable")
+	default:
+		return v.errorWithPathExpr(field.PathWithRootExpr())
+	}
+}
+
+func (v *Validation) errorWithPathExpr(pathExpr string) string {
+	switch v.Type {
+	case ConflictingFields:
+		return fmt.Sprintf(`errOneOf(%s, %s)`, pathExpr, strings.Join(v.paramsQuoted(), ","))
+	case MoreThanOneValueSet:
+		return fmt.Sprintf(`errMoreThanOneOf(%s, %s)`, pathExpr, strings.Join(v.paramsQuoted(), ","))
+	case ExactlyOneValueSet:
+		return fmt.Sprintf(`errExactlyOneOf(%s, %s)`, pathExpr, strings.Join(v.paramsQuoted(), ","))
+	case AtLeastOneValueSet:
+		return fmt.Sprintf(`errAtLeastOneOf(%s, %s)`, pathExpr, strings.Join(v.paramsQuoted(), ","))
+	case ValidateValueSet:
+		return fmt.Sprintf(`errNotSet(%s, %s)`, pathExpr, strings.Join(v.paramsQuoted(), ","))
 	case NoDoubleDollarQuotes, NoDoubleDollarQuotesIfSet:
-		return fmt.Sprintf(`errDoubleDollarQuotesNotAllowed("%s", "%s")`, field.PathWithRoot(), v.FieldNames[0])
+		return fmt.Sprintf(`errDoubleDollarQuotesNotAllowed(%s, %s)`, pathExpr, fmt.Sprintf("%q", v.FieldNames[0]))
 	}
 	panic("condition for validation unknown")
 }

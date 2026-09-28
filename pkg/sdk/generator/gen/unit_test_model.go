@@ -57,16 +57,23 @@ type OperationTestModel struct {
 type ValidationTestCase struct {
 	// Name is the case name used as the t.Run string.
 	Name string
-	// ExpectedErrLine is the error expression, pre-rendered from Validation.TestExpectedError
-	// so the template and the validation body cannot drift. Empty when !HasExpectedErr.
+	// ExpectedErrLine is TestExpectedError rendered for a struct literal (concrete indexes).
+	// Empty when !HasExpectedErr. Distinct from ReturnedError (validate() body, PathWithRootExpr).
 	ExpectedErrLine string
 	// HasExpectedErr is false when the generator could not derive an expected error.
 	HasExpectedErr bool
+	// ExpectedErrLines is used instead of ExpectedErrLine when asserting more than one error.
+	ExpectedErrLines []string
 	// ModifyLines are the statements of the DefaultModify closure body, or nil when not derivable.
 	ModifyLines []string
 	// HasModify is false when the generator could not derive a modification;
 	// the template then omits DefaultModify so the harness fails loudly asking ext to supply it.
 	HasModify bool
+}
+
+// HasExpectedErrs reports whether this case asserts multiple errors (BothInvalid).
+func (c *ValidationTestCase) HasExpectedErrs() bool {
+	return len(c.ExpectedErrLines) > 0
 }
 
 // SqlTestCase is a fully prepared SQL case.
@@ -187,11 +194,11 @@ func collectValidationCases(f *Field, opName string, out *[]*ValidationTestCase)
 }
 
 func buildCasesForValidation(v *Validation, f *Field, opName string, disambiguate bool) []*ValidationTestCase {
-	expectedErrLine, hasExpectedErr := v.TestExpectedError(f)
 	if !v.IsMultiField() {
+		expectedErrLine, hasExpectedErr := v.TestExpectedError(f, nil, 0)
 		return []*ValidationTestCase{buildSingleFieldValidationCase(v, f, opName, expectedErrLine, hasExpectedErr)}
 	}
-	return buildMultiFieldValidationCases(v, f, opName, expectedErrLine, disambiguate)
+	return buildMultiFieldValidationCases(v, f, opName, disambiguate)
 }
 
 func buildSingleFieldValidationCase(v *Validation, f *Field, opName, expectedErrLine string, hasExpectedErr bool) *ValidationTestCase {
@@ -212,50 +219,81 @@ func buildSingleFieldValidationCase(v *Validation, f *Field, opName, expectedErr
 }
 
 // buildMultiFieldValidationCases generates per-shape cases for multi-field validations:
-// ConflictingFields   -> one case (all fields set)
-// AtLeastOneValueSet  -> one case (all fields zeroed)
-// ExactlyOneValueSet  -> NoneSet + MoreThanOneSet (+ OneValidOneInvalid for slices)
-// MoreThanOneValueSet -> MoreThanOneSet (+ OneValidOneInvalid for slices)
-func buildMultiFieldValidationCases(v *Validation, f *Field, opName, expectedErrLine string, disambiguate bool) []*ValidationTestCase {
+// ConflictingFields   -> one case (all fields set) + BothInvalid when the container is a slice
+// AtLeastOneValueSet  -> one case (all fields zeroed) + BothInvalid when the container is a slice
+// ExactlyOneValueSet  -> NoneSet + MoreThanOneSet (+ OneValidOneInvalid + BothInvalid for slices)
+// MoreThanOneValueSet -> MoreThanOneSet (+ OneValidOneInvalid + BothInvalid for slices)
+func buildMultiFieldValidationCases(v *Validation, f *Field, opName string, disambiguate bool) []*ValidationTestCase {
 	baseName := fmt.Sprintf("validation_%s_%s_%s", opName, f.SlugPath(), v.TypeName())
 	if disambiguate {
 		baseName = fmt.Sprintf("%s_%s", baseName, strings.Join(v.FieldNames, "_"))
 	}
 
-	tc := func(name string, lines []string, ok bool) *ValidationTestCase {
-		return &ValidationTestCase{Name: name, ExpectedErrLine: expectedErrLine, HasExpectedErr: true, ModifyLines: lines, HasModify: ok}
+	errAt := func(failingSlice *Field, failingIndex int) string {
+		line, ok := v.TestExpectedError(f, failingSlice, failingIndex)
+		if !ok {
+			panic(fmt.Sprintf("TestExpectedError must succeed for multi-field validation %s on %s", v.TypeName(), f.PathWithRoot()))
+		}
+		return line
+	}
+	defaultErr := errAt(nil, 0)
+
+	tc := func(name string, lines []string, ok bool, expectedErr string) *ValidationTestCase {
+		return &ValidationTestCase{Name: name, ExpectedErrLine: expectedErr, HasExpectedErr: true, ModifyLines: lines, HasModify: ok}
+	}
+	bothInvalid := func(name string, lines []string, ok bool) *ValidationTestCase {
+		return &ValidationTestCase{
+			Name:             name,
+			ExpectedErrLines: []string{errAt(f, 0), errAt(f, 1)},
+			ModifyLines:      lines,
+			HasModify:        ok,
+		}
 	}
 
 	var cases []*ValidationTestCase
 	switch v.Type {
 	case ConflictingFields:
 		lines, ok := deriveConflictingFieldsModify(v, f)
-		cases = append(cases, tc(baseName, lines, ok))
+		cases = append(cases, tc(baseName, lines, ok, defaultErr))
+		if f.IsSlice() {
+			bothLines, bothOk := deriveListedFieldsOnNElements(v, f, 2, nonZeroValueFor)
+			cases = append(cases, bothInvalid(baseName+"_BothInvalid", bothLines, bothOk))
+		}
 
 	case AtLeastOneValueSet:
 		lines, ok := deriveAtLeastOneValueSetModify(v, f)
-		cases = append(cases, tc(baseName, lines, ok))
+		cases = append(cases, tc(baseName, lines, ok, defaultErr))
+		if f.IsSlice() {
+			bothLines, bothOk := deriveListedFieldsOnNElements(v, f, 2, func(child *Field) (string, bool) {
+				return zeroValueFor(child), true
+			})
+			cases = append(cases, bothInvalid(baseName+"_BothInvalid", bothLines, bothOk))
+		}
 
 	case ExactlyOneValueSet:
 		noneSetLines, noneSetOk := deriveNoneSetModify(v, f)
-		cases = append(cases, tc(baseName+"_NoneSet", noneSetLines, noneSetOk))
+		cases = append(cases, tc(baseName+"_NoneSet", noneSetLines, noneSetOk, defaultErr))
 		// MoreThanOneSet is unreachable by construction with a single field - there is nothing
 		// else to set alongside it - so it is only emitted when there are >= 2 fields to conflict.
 		if len(v.FieldNames) >= 2 {
 			moreThanOneSetLines, moreThanOneSetOk := deriveMoreThanOneSetModify(v, f)
-			cases = append(cases, tc(baseName+"_MoreThanOneSet", moreThanOneSetLines, moreThanOneSetOk))
+			cases = append(cases, tc(baseName+"_MoreThanOneSet", moreThanOneSetLines, moreThanOneSetOk, defaultErr))
 		}
 		if f.IsSlice() {
-			cases = append(cases, tc(baseName+"_OneValidOneInvalid", nil, false))
+			cases = append(cases, tc(baseName+"_OneValidOneInvalid", nil, false, errAt(f, 1)))
+			bothLines, bothOk := deriveBothInvalidNoneSetModify(f)
+			cases = append(cases, bothInvalid(baseName+"_BothInvalid", bothLines, bothOk))
 		}
 
 	case MoreThanOneValueSet:
 		if len(v.FieldNames) >= 2 {
 			moreThanOneSetLines, moreThanOneSetOk := deriveMoreThanOneSetModify(v, f)
-			cases = append(cases, tc(baseName+"_MoreThanOneSet", moreThanOneSetLines, moreThanOneSetOk))
+			cases = append(cases, tc(baseName+"_MoreThanOneSet", moreThanOneSetLines, moreThanOneSetOk, defaultErr))
 		}
 		if f.IsSlice() {
-			cases = append(cases, tc(baseName+"_OneValidOneInvalid", nil, false))
+			cases = append(cases, tc(baseName+"_OneValidOneInvalid", nil, false, errAt(f, 1)))
+			// Same domain-knowledge hole as MoreThanOneSet on slices — ext must supply the modify.
+			cases = append(cases, bothInvalid(baseName+"_BothInvalid", nil, false))
 		}
 	}
 	return cases
@@ -326,6 +364,49 @@ func deriveNoneSetModify(v *Validation, f *Field) ([]string, bool) {
 			return nil, false
 		}
 		stmts = append(stmts, fmt.Sprintf("opts%s.%s = %s", f.IndexedElemPath(), name, zeroValueFor(child)))
+	}
+	return append(prime, stmts...), true
+}
+
+func emptyStructElems(n int) string {
+	parts := make([]string, n)
+	for i := range parts {
+		parts[i] = "{}"
+	}
+	return strings.Join(parts, ", ")
+}
+
+// deriveBothInvalidNoneSetModify is NoneSet on two empty slice elements (both fail ExactlyOneValueSet).
+func deriveBothInvalidNoneSetModify(f *Field) ([]string, bool) {
+	if !f.IsSlice() {
+		return nil, false
+	}
+	prime := primeAncestors(f)
+	return append(prime, fmt.Sprintf("opts%s = []%s{%s}", f.IndexedPath(), f.KindNoPtr(), emptyStructElems(2))), true
+}
+
+// deriveListedFieldsOnNElements primes a slice of n empty elements and assigns every listed field
+// on each element via valueFor (ConflictingFields / AtLeastOneValueSet BothInvalid).
+func deriveListedFieldsOnNElements(v *Validation, f *Field, n int, valueFor func(*Field) (string, bool)) ([]string, bool) {
+	if !f.IsSlice() {
+		return nil, false
+	}
+	prime := primeAncestors(f)
+	prime = append(prime, fmt.Sprintf("opts%s = []%s{%s}", f.IndexedPath(), f.KindNoPtr(), emptyStructElems(n)))
+	stmts := make([]string, 0, n*len(v.FieldNames))
+	for i := range n {
+		elemPath := f.IndexedElemPathAt(i)
+		for _, name := range v.FieldNames {
+			child := f.FindChild(name)
+			if child == nil {
+				return nil, false
+			}
+			val, ok := valueFor(child)
+			if !ok {
+				return nil, false
+			}
+			stmts = append(stmts, fmt.Sprintf("opts%s.%s = %s", elemPath, name, val))
+		}
 	}
 	return append(prime, stmts...), true
 }

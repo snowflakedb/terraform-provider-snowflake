@@ -18,116 +18,124 @@ func init() {
 var tablesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
 const (
-	case_Tables_validation_Create_name_ValidIdentifier                                                                                  testCaseName = "validation_Create_name_ValidIdentifier"
-	case_Tables_validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_ExactlyOneValueSet_NoneSet                            testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_ExactlyOneValueSet_NoneSet"
-	case_Tables_validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_ExactlyOneValueSet_MoreThanOneSet                     testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_ExactlyOneValueSet_MoreThanOneSet"
-	case_Tables_validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_Identity_ConflictingFields                            testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_Identity_ConflictingFields"
-	case_Tables_validation_Create_ColumnsAndConstraints_Columns_MaskingPolicy_Name_ValidIdentifier                                      testCaseName = "validation_Create_ColumnsAndConstraints_Columns_MaskingPolicy_Name_ValidIdentifier"
-	case_Tables_validation_Create_ColumnsAndConstraints_OutOfLineConstraint_Columns_ValidateValueSet                                    testCaseName = "validation_Create_ColumnsAndConstraints_OutOfLineConstraint_Columns_ValidateValueSet"
-	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Enforced_NotEnforced                 testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Enforced_NotEnforced"
-	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Deferrable_NotDeferrable             testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Deferrable_NotDeferrable"
-	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_InitiallyDeferred_InitiallyImmediate testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_InitiallyDeferred_InitiallyImmediate"
-	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Enable_Disable                       testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Enable_Disable"
-	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Validate_Novalidate                  testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Validate_Novalidate"
-	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Rely_Norely                          testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Rely_Norely"
-	case_Tables_validation_Create_opts_StageFileFormat_ExactlyOneValueSet_NoneSet                                                       testCaseName = "validation_Create_opts_StageFileFormat_ExactlyOneValueSet_NoneSet"
-	case_Tables_validation_Create_opts_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet                                                testCaseName = "validation_Create_opts_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet"
-	case_Tables_sql_Create_basic                                                                                                        testCaseName = "sql_Create_basic"
-	case_Tables_sql_Create_all                                                                                                          testCaseName = "sql_Create_all"
-	case_Tables_validation_CreateAsSelect_name_ValidIdentifier                                                                          testCaseName = "validation_CreateAsSelect_name_ValidIdentifier"
-	case_Tables_validation_CreateAsSelect_Columns_ValidateValueSet                                                                      testCaseName = "validation_CreateAsSelect_Columns_ValidateValueSet"
-	case_Tables_validation_CreateAsSelect_Query_ValidateValueSet                                                                        testCaseName = "validation_CreateAsSelect_Query_ValidateValueSet"
-	case_Tables_sql_CreateAsSelect_basic                                                                                                testCaseName = "sql_CreateAsSelect_basic"
-	case_Tables_sql_CreateAsSelect_all                                                                                                  testCaseName = "sql_CreateAsSelect_all"
-	case_Tables_validation_CreateUsingTemplate_name_ValidIdentifier                                                                     testCaseName = "validation_CreateUsingTemplate_name_ValidIdentifier"
-	case_Tables_sql_CreateUsingTemplate_basic                                                                                           testCaseName = "sql_CreateUsingTemplate_basic"
-	case_Tables_sql_CreateUsingTemplate_all                                                                                             testCaseName = "sql_CreateUsingTemplate_all"
-	case_Tables_validation_CreateLike_name_ValidIdentifier                                                                              testCaseName = "validation_CreateLike_name_ValidIdentifier"
-	case_Tables_validation_CreateLike_SourceTable_ValidIdentifier                                                                       testCaseName = "validation_CreateLike_SourceTable_ValidIdentifier"
-	case_Tables_sql_CreateLike_basic                                                                                                    testCaseName = "sql_CreateLike_basic"
-	case_Tables_sql_CreateLike_all                                                                                                      testCaseName = "sql_CreateLike_all"
-	case_Tables_validation_CreateClone_name_ValidIdentifier                                                                             testCaseName = "validation_CreateClone_name_ValidIdentifier"
-	case_Tables_validation_CreateClone_SourceTable_ValidIdentifier                                                                      testCaseName = "validation_CreateClone_SourceTable_ValidIdentifier"
-	case_Tables_sql_CreateClone_basic                                                                                                   testCaseName = "sql_CreateClone_basic"
-	case_Tables_sql_CreateClone_all                                                                                                     testCaseName = "sql_CreateClone_all"
-	case_Tables_validation_Alter_name_ValidIdentifier                                                                                   testCaseName = "validation_Alter_name_ValidIdentifier"
-	case_Tables_validation_Alter_RenameTo_ValidIdentifierIfSet                                                                          testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
-	case_Tables_validation_Alter_SwapWith_ValidIdentifierIfSet                                                                          testCaseName = "validation_Alter_SwapWith_ValidIdentifierIfSet"
-	case_Tables_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                                                        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_Tables_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                                                 testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Tables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet                                                       testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet"
-	case_Tables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet                                                testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet"
-	case_Tables_validation_Alter_opts_ColumnAction_ExactlyOneValueSet_NoneSet                                                           testCaseName = "validation_Alter_opts_ColumnAction_ExactlyOneValueSet_NoneSet"
-	case_Tables_validation_Alter_opts_ColumnAction_ExactlyOneValueSet_MoreThanOneSet                                                    testCaseName = "validation_Alter_opts_ColumnAction_ExactlyOneValueSet_MoreThanOneSet"
-	case_Tables_validation_Alter_opts_ColumnAction_Add_DefaultValue_ExactlyOneValueSet_NoneSet                                          testCaseName = "validation_Alter_opts_ColumnAction_Add_DefaultValue_ExactlyOneValueSet_NoneSet"
-	case_Tables_validation_Alter_opts_ColumnAction_Add_DefaultValue_ExactlyOneValueSet_MoreThanOneSet                                   testCaseName = "validation_Alter_opts_ColumnAction_Add_DefaultValue_ExactlyOneValueSet_MoreThanOneSet"
-	case_Tables_validation_Alter_opts_ColumnAction_Add_DefaultValue_Identity_ConflictingFields                                          testCaseName = "validation_Alter_opts_ColumnAction_Add_DefaultValue_Identity_ConflictingFields"
-	case_Tables_validation_Alter_ColumnAction_Add_MaskingPolicy_Name_ValidIdentifier                                                    testCaseName = "validation_Alter_ColumnAction_Add_MaskingPolicy_Name_ValidIdentifier"
-	case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_NoneSet                                                     testCaseName = "validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_NoneSet"
-	case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_MoreThanOneSet                                              testCaseName = "validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_MoreThanOneSet"
-	case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_OneValidOneInvalid                                          testCaseName = "validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Tables_validation_Alter_opts_ConstraintAction_ExactlyOneValueSet_NoneSet                                                       testCaseName = "validation_Alter_opts_ConstraintAction_ExactlyOneValueSet_NoneSet"
-	case_Tables_validation_Alter_opts_ConstraintAction_ExactlyOneValueSet_MoreThanOneSet                                                testCaseName = "validation_Alter_opts_ConstraintAction_ExactlyOneValueSet_MoreThanOneSet"
-	case_Tables_validation_Alter_ConstraintAction_Add_Columns_ValidateValueSet                                                          testCaseName = "validation_Alter_ConstraintAction_Add_Columns_ValidateValueSet"
-	case_Tables_validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Enforced_NotEnforced                                       testCaseName = "validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Enforced_NotEnforced"
-	case_Tables_validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Deferrable_NotDeferrable                                   testCaseName = "validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Deferrable_NotDeferrable"
-	case_Tables_validation_Alter_opts_ConstraintAction_Add_ConflictingFields_InitiallyDeferred_InitiallyImmediate                       testCaseName = "validation_Alter_opts_ConstraintAction_Add_ConflictingFields_InitiallyDeferred_InitiallyImmediate"
-	case_Tables_validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Enable_Disable                                             testCaseName = "validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Enable_Disable"
-	case_Tables_validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Validate_Novalidate                                        testCaseName = "validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Validate_Novalidate"
-	case_Tables_validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Rely_Norely                                                testCaseName = "validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Rely_Norely"
-	case_Tables_validation_Alter_opts_ConstraintAction_Alter_ExactlyOneValueSet_NoneSet                                                 testCaseName = "validation_Alter_opts_ConstraintAction_Alter_ExactlyOneValueSet_NoneSet"
-	case_Tables_validation_Alter_opts_ConstraintAction_Alter_ExactlyOneValueSet_MoreThanOneSet                                          testCaseName = "validation_Alter_opts_ConstraintAction_Alter_ExactlyOneValueSet_MoreThanOneSet"
-	case_Tables_validation_Alter_opts_ConstraintAction_Drop_ExactlyOneValueSet_NoneSet                                                  testCaseName = "validation_Alter_opts_ConstraintAction_Drop_ExactlyOneValueSet_NoneSet"
-	case_Tables_validation_Alter_opts_ConstraintAction_Drop_ExactlyOneValueSet_MoreThanOneSet                                           testCaseName = "validation_Alter_opts_ConstraintAction_Drop_ExactlyOneValueSet_MoreThanOneSet"
-	case_Tables_validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_NoneSet                                                    testCaseName = "validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_NoneSet"
-	case_Tables_validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_MoreThanOneSet                                             testCaseName = "validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_MoreThanOneSet"
-	case_Tables_validation_Alter_ExternalTableAction_Drop_Names_ValidateValueSet                                                        testCaseName = "validation_Alter_ExternalTableAction_Drop_Names_ValidateValueSet"
-	case_Tables_validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_NoneSet                                               testCaseName = "validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_NoneSet"
-	case_Tables_validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_MoreThanOneSet                                        testCaseName = "validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_MoreThanOneSet"
-	case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_NoneSet                                       testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_NoneSet"
-	case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet                                testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet"
-	case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid                            testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Tables_validation_Alter_opts_Set_StageFileFormat_ExactlyOneValueSet_NoneSet                                                    testCaseName = "validation_Alter_opts_Set_StageFileFormat_ExactlyOneValueSet_NoneSet"
-	case_Tables_validation_Alter_opts_Set_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet                                             testCaseName = "validation_Alter_opts_Set_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet"
-	case_Tables_validation_Alter_AddStorageLifecyclePolicy_StorageLifecyclePolicy_ValidIdentifier                                       testCaseName = "validation_Alter_AddStorageLifecyclePolicy_StorageLifecyclePolicy_ValidIdentifier"
-	case_Tables_validation_Alter_AddStorageLifecyclePolicy_On_ValidateValueSet                                                          testCaseName = "validation_Alter_AddStorageLifecyclePolicy_On_ValidateValueSet"
-	case_Tables_sql_Alter_RenameTo                                                                                                      testCaseName = "sql_Alter_RenameTo"
-	case_Tables_sql_Alter_SwapWith                                                                                                      testCaseName = "sql_Alter_SwapWith"
-	case_Tables_sql_Alter_ClusteringAction                                                                                              testCaseName = "sql_Alter_ClusteringAction"
-	case_Tables_sql_Alter_ColumnAction                                                                                                  testCaseName = "sql_Alter_ColumnAction"
-	case_Tables_sql_Alter_ConstraintAction                                                                                              testCaseName = "sql_Alter_ConstraintAction"
-	case_Tables_sql_Alter_ExternalTableAction                                                                                           testCaseName = "sql_Alter_ExternalTableAction"
-	case_Tables_sql_Alter_SearchOptimizationAction                                                                                      testCaseName = "sql_Alter_SearchOptimizationAction"
-	case_Tables_sql_Alter_Set                                                                                                           testCaseName = "sql_Alter_Set"
-	case_Tables_sql_Alter_SetTags                                                                                                       testCaseName = "sql_Alter_SetTags"
-	case_Tables_sql_Alter_UnsetTags                                                                                                     testCaseName = "sql_Alter_UnsetTags"
-	case_Tables_sql_Alter_Unset                                                                                                         testCaseName = "sql_Alter_Unset"
-	case_Tables_sql_Alter_AddRowAccessPolicy                                                                                            testCaseName = "sql_Alter_AddRowAccessPolicy"
-	case_Tables_sql_Alter_DropRowAccessPolicy                                                                                           testCaseName = "sql_Alter_DropRowAccessPolicy"
-	case_Tables_sql_Alter_DropAndAddRowAccessPolicy                                                                                     testCaseName = "sql_Alter_DropAndAddRowAccessPolicy"
-	case_Tables_sql_Alter_DropAllRowAccessPolicies                                                                                      testCaseName = "sql_Alter_DropAllRowAccessPolicies"
-	case_Tables_sql_Alter_AddStorageLifecyclePolicy                                                                                     testCaseName = "sql_Alter_AddStorageLifecyclePolicy"
-	case_Tables_sql_Alter_DropStorageLifecyclePolicy                                                                                    testCaseName = "sql_Alter_DropStorageLifecyclePolicy"
-	case_Tables_validation_Drop_name_ValidIdentifier                                                                                    testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_Tables_validation_Drop_opts_ConflictingFields                                                                                  testCaseName = "validation_Drop_opts_ConflictingFields"
-	case_Tables_sql_Drop_basic                                                                                                          testCaseName = "sql_Drop_basic"
-	case_Tables_sql_Drop_all                                                                                                            testCaseName = "sql_Drop_all"
-	case_Tables_sql_Show_basic                                                                                                          testCaseName = "sql_Show_basic"
-	case_Tables_sql_Show_all                                                                                                            testCaseName = "sql_Show_all"
-	case_Tables_sql_Show_Like                                                                                                           testCaseName = "sql_Show_Like"
-	case_Tables_sql_Show_In                                                                                                             testCaseName = "sql_Show_In"
-	case_Tables_sql_Show_StartsWith                                                                                                     testCaseName = "sql_Show_StartsWith"
-	case_Tables_sql_Show_Limit                                                                                                          testCaseName = "sql_Show_Limit"
-	case_Tables_validation_DescribeColumns_name_ValidIdentifier                                                                         testCaseName = "validation_DescribeColumns_name_ValidIdentifier"
-	case_Tables_sql_DescribeColumns_basic                                                                                               testCaseName = "sql_DescribeColumns_basic"
-	case_Tables_validation_DescribeStage_name_ValidIdentifier                                                                           testCaseName = "validation_DescribeStage_name_ValidIdentifier"
-	case_Tables_sql_DescribeStage_basic                                                                                                 testCaseName = "sql_DescribeStage_basic"
-	case_Tables_validation_DescribeSearchOptimization_name_ValidIdentifier                                                              testCaseName = "validation_DescribeSearchOptimization_name_ValidIdentifier"
-	case_Tables_sql_DescribeSearchOptimization_basic                                                                                    testCaseName = "sql_DescribeSearchOptimization_basic"
-	case_Tables_validation_SelectTableConstraints_Database_ValidIdentifier                                                              testCaseName = "validation_SelectTableConstraints_Database_ValidIdentifier"
-	case_Tables_sql_SelectTableConstraints_basic                                                                                        testCaseName = "sql_SelectTableConstraints_basic"
-	case_Tables_validation_SelectCheckConstraints_Database_ValidIdentifier                                                              testCaseName = "validation_SelectCheckConstraints_Database_ValidIdentifier"
-	case_Tables_sql_SelectCheckConstraints_basic                                                                                        testCaseName = "sql_SelectCheckConstraints_basic"
+	case_Tables_validation_Create_name_ValidIdentifier                                                                                              testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Tables_validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_ExactlyOneValueSet_NoneSet                                        testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_ExactlyOneValueSet_MoreThanOneSet                                 testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_Identity_ConflictingFields                                        testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_Identity_ConflictingFields"
+	case_Tables_validation_Create_ColumnsAndConstraints_Columns_MaskingPolicy_Name_ValidIdentifier                                                  testCaseName = "validation_Create_ColumnsAndConstraints_Columns_MaskingPolicy_Name_ValidIdentifier"
+	case_Tables_validation_Create_ColumnsAndConstraints_OutOfLineConstraint_Columns_ValidateValueSet                                                testCaseName = "validation_Create_ColumnsAndConstraints_OutOfLineConstraint_Columns_ValidateValueSet"
+	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Enforced_NotEnforced                             testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Enforced_NotEnforced"
+	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Enforced_NotEnforced_BothInvalid                 testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Enforced_NotEnforced_BothInvalid"
+	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Deferrable_NotDeferrable                         testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Deferrable_NotDeferrable"
+	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Deferrable_NotDeferrable_BothInvalid             testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Deferrable_NotDeferrable_BothInvalid"
+	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_InitiallyDeferred_InitiallyImmediate             testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_InitiallyDeferred_InitiallyImmediate"
+	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_InitiallyDeferred_InitiallyImmediate_BothInvalid testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_InitiallyDeferred_InitiallyImmediate_BothInvalid"
+	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Enable_Disable                                   testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Enable_Disable"
+	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Enable_Disable_BothInvalid                       testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Enable_Disable_BothInvalid"
+	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Validate_Novalidate                              testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Validate_Novalidate"
+	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Validate_Novalidate_BothInvalid                  testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Validate_Novalidate_BothInvalid"
+	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Rely_Norely                                      testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Rely_Norely"
+	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Rely_Norely_BothInvalid                          testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Rely_Norely_BothInvalid"
+	case_Tables_validation_Create_opts_StageFileFormat_ExactlyOneValueSet_NoneSet                                                                   testCaseName = "validation_Create_opts_StageFileFormat_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Create_opts_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet                                                            testCaseName = "validation_Create_opts_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_sql_Create_basic                                                                                                                    testCaseName = "sql_Create_basic"
+	case_Tables_sql_Create_all                                                                                                                      testCaseName = "sql_Create_all"
+	case_Tables_validation_CreateAsSelect_name_ValidIdentifier                                                                                      testCaseName = "validation_CreateAsSelect_name_ValidIdentifier"
+	case_Tables_validation_CreateAsSelect_Columns_ValidateValueSet                                                                                  testCaseName = "validation_CreateAsSelect_Columns_ValidateValueSet"
+	case_Tables_validation_CreateAsSelect_Query_ValidateValueSet                                                                                    testCaseName = "validation_CreateAsSelect_Query_ValidateValueSet"
+	case_Tables_sql_CreateAsSelect_basic                                                                                                            testCaseName = "sql_CreateAsSelect_basic"
+	case_Tables_sql_CreateAsSelect_all                                                                                                              testCaseName = "sql_CreateAsSelect_all"
+	case_Tables_validation_CreateUsingTemplate_name_ValidIdentifier                                                                                 testCaseName = "validation_CreateUsingTemplate_name_ValidIdentifier"
+	case_Tables_sql_CreateUsingTemplate_basic                                                                                                       testCaseName = "sql_CreateUsingTemplate_basic"
+	case_Tables_sql_CreateUsingTemplate_all                                                                                                         testCaseName = "sql_CreateUsingTemplate_all"
+	case_Tables_validation_CreateLike_name_ValidIdentifier                                                                                          testCaseName = "validation_CreateLike_name_ValidIdentifier"
+	case_Tables_validation_CreateLike_SourceTable_ValidIdentifier                                                                                   testCaseName = "validation_CreateLike_SourceTable_ValidIdentifier"
+	case_Tables_sql_CreateLike_basic                                                                                                                testCaseName = "sql_CreateLike_basic"
+	case_Tables_sql_CreateLike_all                                                                                                                  testCaseName = "sql_CreateLike_all"
+	case_Tables_validation_CreateClone_name_ValidIdentifier                                                                                         testCaseName = "validation_CreateClone_name_ValidIdentifier"
+	case_Tables_validation_CreateClone_SourceTable_ValidIdentifier                                                                                  testCaseName = "validation_CreateClone_SourceTable_ValidIdentifier"
+	case_Tables_sql_CreateClone_basic                                                                                                               testCaseName = "sql_CreateClone_basic"
+	case_Tables_sql_CreateClone_all                                                                                                                 testCaseName = "sql_CreateClone_all"
+	case_Tables_validation_Alter_name_ValidIdentifier                                                                                               testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Tables_validation_Alter_RenameTo_ValidIdentifierIfSet                                                                                      testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_Tables_validation_Alter_SwapWith_ValidIdentifierIfSet                                                                                      testCaseName = "validation_Alter_SwapWith_ValidIdentifierIfSet"
+	case_Tables_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                                                                    testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                                                             testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet                                                                   testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet                                                            testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_opts_ColumnAction_ExactlyOneValueSet_NoneSet                                                                       testCaseName = "validation_Alter_opts_ColumnAction_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_ColumnAction_ExactlyOneValueSet_MoreThanOneSet                                                                testCaseName = "validation_Alter_opts_ColumnAction_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_opts_ColumnAction_Add_DefaultValue_ExactlyOneValueSet_NoneSet                                                      testCaseName = "validation_Alter_opts_ColumnAction_Add_DefaultValue_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_ColumnAction_Add_DefaultValue_ExactlyOneValueSet_MoreThanOneSet                                               testCaseName = "validation_Alter_opts_ColumnAction_Add_DefaultValue_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_opts_ColumnAction_Add_DefaultValue_Identity_ConflictingFields                                                      testCaseName = "validation_Alter_opts_ColumnAction_Add_DefaultValue_Identity_ConflictingFields"
+	case_Tables_validation_Alter_ColumnAction_Add_MaskingPolicy_Name_ValidIdentifier                                                                testCaseName = "validation_Alter_ColumnAction_Add_MaskingPolicy_Name_ValidIdentifier"
+	case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_NoneSet                                                                 testCaseName = "validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_MoreThanOneSet                                                          testCaseName = "validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_OneValidOneInvalid                                                      testCaseName = "validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_BothInvalid                                                             testCaseName = "validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_BothInvalid"
+	case_Tables_validation_Alter_opts_ConstraintAction_ExactlyOneValueSet_NoneSet                                                                   testCaseName = "validation_Alter_opts_ConstraintAction_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_ConstraintAction_ExactlyOneValueSet_MoreThanOneSet                                                            testCaseName = "validation_Alter_opts_ConstraintAction_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_ConstraintAction_Add_Columns_ValidateValueSet                                                                      testCaseName = "validation_Alter_ConstraintAction_Add_Columns_ValidateValueSet"
+	case_Tables_validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Enforced_NotEnforced                                                   testCaseName = "validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Enforced_NotEnforced"
+	case_Tables_validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Deferrable_NotDeferrable                                               testCaseName = "validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Deferrable_NotDeferrable"
+	case_Tables_validation_Alter_opts_ConstraintAction_Add_ConflictingFields_InitiallyDeferred_InitiallyImmediate                                   testCaseName = "validation_Alter_opts_ConstraintAction_Add_ConflictingFields_InitiallyDeferred_InitiallyImmediate"
+	case_Tables_validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Enable_Disable                                                         testCaseName = "validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Enable_Disable"
+	case_Tables_validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Validate_Novalidate                                                    testCaseName = "validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Validate_Novalidate"
+	case_Tables_validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Rely_Norely                                                            testCaseName = "validation_Alter_opts_ConstraintAction_Add_ConflictingFields_Rely_Norely"
+	case_Tables_validation_Alter_opts_ConstraintAction_Alter_ExactlyOneValueSet_NoneSet                                                             testCaseName = "validation_Alter_opts_ConstraintAction_Alter_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_ConstraintAction_Alter_ExactlyOneValueSet_MoreThanOneSet                                                      testCaseName = "validation_Alter_opts_ConstraintAction_Alter_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_opts_ConstraintAction_Drop_ExactlyOneValueSet_NoneSet                                                              testCaseName = "validation_Alter_opts_ConstraintAction_Drop_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_ConstraintAction_Drop_ExactlyOneValueSet_MoreThanOneSet                                                       testCaseName = "validation_Alter_opts_ConstraintAction_Drop_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_NoneSet                                                                testCaseName = "validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_MoreThanOneSet                                                         testCaseName = "validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_ExternalTableAction_Drop_Names_ValidateValueSet                                                                    testCaseName = "validation_Alter_ExternalTableAction_Drop_Names_ValidateValueSet"
+	case_Tables_validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_NoneSet                                                           testCaseName = "validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_MoreThanOneSet                                                    testCaseName = "validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_NoneSet                                                   testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet                                            testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid                                        testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_BothInvalid                                               testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_BothInvalid"
+	case_Tables_validation_Alter_opts_Set_StageFileFormat_ExactlyOneValueSet_NoneSet                                                                testCaseName = "validation_Alter_opts_Set_StageFileFormat_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_Set_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet                                                         testCaseName = "validation_Alter_opts_Set_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_AddStorageLifecyclePolicy_StorageLifecyclePolicy_ValidIdentifier                                                   testCaseName = "validation_Alter_AddStorageLifecyclePolicy_StorageLifecyclePolicy_ValidIdentifier"
+	case_Tables_validation_Alter_AddStorageLifecyclePolicy_On_ValidateValueSet                                                                      testCaseName = "validation_Alter_AddStorageLifecyclePolicy_On_ValidateValueSet"
+	case_Tables_sql_Alter_RenameTo                                                                                                                  testCaseName = "sql_Alter_RenameTo"
+	case_Tables_sql_Alter_SwapWith                                                                                                                  testCaseName = "sql_Alter_SwapWith"
+	case_Tables_sql_Alter_ClusteringAction                                                                                                          testCaseName = "sql_Alter_ClusteringAction"
+	case_Tables_sql_Alter_ColumnAction                                                                                                              testCaseName = "sql_Alter_ColumnAction"
+	case_Tables_sql_Alter_ConstraintAction                                                                                                          testCaseName = "sql_Alter_ConstraintAction"
+	case_Tables_sql_Alter_ExternalTableAction                                                                                                       testCaseName = "sql_Alter_ExternalTableAction"
+	case_Tables_sql_Alter_SearchOptimizationAction                                                                                                  testCaseName = "sql_Alter_SearchOptimizationAction"
+	case_Tables_sql_Alter_Set                                                                                                                       testCaseName = "sql_Alter_Set"
+	case_Tables_sql_Alter_SetTags                                                                                                                   testCaseName = "sql_Alter_SetTags"
+	case_Tables_sql_Alter_UnsetTags                                                                                                                 testCaseName = "sql_Alter_UnsetTags"
+	case_Tables_sql_Alter_Unset                                                                                                                     testCaseName = "sql_Alter_Unset"
+	case_Tables_sql_Alter_AddRowAccessPolicy                                                                                                        testCaseName = "sql_Alter_AddRowAccessPolicy"
+	case_Tables_sql_Alter_DropRowAccessPolicy                                                                                                       testCaseName = "sql_Alter_DropRowAccessPolicy"
+	case_Tables_sql_Alter_DropAndAddRowAccessPolicy                                                                                                 testCaseName = "sql_Alter_DropAndAddRowAccessPolicy"
+	case_Tables_sql_Alter_DropAllRowAccessPolicies                                                                                                  testCaseName = "sql_Alter_DropAllRowAccessPolicies"
+	case_Tables_sql_Alter_AddStorageLifecyclePolicy                                                                                                 testCaseName = "sql_Alter_AddStorageLifecyclePolicy"
+	case_Tables_sql_Alter_DropStorageLifecyclePolicy                                                                                                testCaseName = "sql_Alter_DropStorageLifecyclePolicy"
+	case_Tables_validation_Drop_name_ValidIdentifier                                                                                                testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Tables_validation_Drop_opts_ConflictingFields                                                                                              testCaseName = "validation_Drop_opts_ConflictingFields"
+	case_Tables_sql_Drop_basic                                                                                                                      testCaseName = "sql_Drop_basic"
+	case_Tables_sql_Drop_all                                                                                                                        testCaseName = "sql_Drop_all"
+	case_Tables_sql_Show_basic                                                                                                                      testCaseName = "sql_Show_basic"
+	case_Tables_sql_Show_all                                                                                                                        testCaseName = "sql_Show_all"
+	case_Tables_sql_Show_Like                                                                                                                       testCaseName = "sql_Show_Like"
+	case_Tables_sql_Show_In                                                                                                                         testCaseName = "sql_Show_In"
+	case_Tables_sql_Show_StartsWith                                                                                                                 testCaseName = "sql_Show_StartsWith"
+	case_Tables_sql_Show_Limit                                                                                                                      testCaseName = "sql_Show_Limit"
+	case_Tables_validation_DescribeColumns_name_ValidIdentifier                                                                                     testCaseName = "validation_DescribeColumns_name_ValidIdentifier"
+	case_Tables_sql_DescribeColumns_basic                                                                                                           testCaseName = "sql_DescribeColumns_basic"
+	case_Tables_validation_DescribeStage_name_ValidIdentifier                                                                                       testCaseName = "validation_DescribeStage_name_ValidIdentifier"
+	case_Tables_sql_DescribeStage_basic                                                                                                             testCaseName = "sql_DescribeStage_basic"
+	case_Tables_validation_DescribeSearchOptimization_name_ValidIdentifier                                                                          testCaseName = "validation_DescribeSearchOptimization_name_ValidIdentifier"
+	case_Tables_sql_DescribeSearchOptimization_basic                                                                                                testCaseName = "sql_DescribeSearchOptimization_basic"
+	case_Tables_validation_SelectTableConstraints_Database_ValidIdentifier                                                                          testCaseName = "validation_SelectTableConstraints_Database_ValidIdentifier"
+	case_Tables_sql_SelectTableConstraints_basic                                                                                                    testCaseName = "sql_SelectTableConstraints_basic"
+	case_Tables_validation_SelectCheckConstraints_Database_ValidIdentifier                                                                          testCaseName = "validation_SelectCheckConstraints_Database_ValidIdentifier"
+	case_Tables_sql_SelectCheckConstraints_basic                                                                                                    testCaseName = "sql_SelectCheckConstraints_basic"
 )
 
 type TablesTestsContext struct {
@@ -165,7 +173,7 @@ var tablesTests = TablesTestsContext{
 			},
 			validationCase[*CreateTableOptions]{
 				Name:        case_Tables_validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateTableOptions.ColumnsAndConstraints.Columns.DefaultValue", "Expression", "Identity"),
+				ExpectedErr: errExactlyOneOf("CreateTableOptions.ColumnsAndConstraints.Columns[0].DefaultValue", "Expression", "Identity"),
 				DefaultModify: func(opts *CreateTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []TableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].DefaultValue = &ColumnDefaultValue{}
@@ -175,7 +183,7 @@ var tablesTests = TablesTestsContext{
 			},
 			validationCase[*CreateTableOptions]{
 				Name:        case_Tables_validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateTableOptions.ColumnsAndConstraints.Columns.DefaultValue", "Expression", "Identity"),
+				ExpectedErr: errExactlyOneOf("CreateTableOptions.ColumnsAndConstraints.Columns[0].DefaultValue", "Expression", "Identity"),
 				DefaultModify: func(opts *CreateTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []TableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].DefaultValue = &ColumnDefaultValue{}
@@ -185,7 +193,7 @@ var tablesTests = TablesTestsContext{
 			},
 			validationCase[*CreateTableOptions]{
 				Name:        case_Tables_validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_Identity_ConflictingFields,
-				ExpectedErr: errOneOf("CreateTableOptions.ColumnsAndConstraints.Columns.DefaultValue.Identity", "Order", "Noorder"),
+				ExpectedErr: errOneOf("CreateTableOptions.ColumnsAndConstraints.Columns[0].DefaultValue.Identity", "Order", "Noorder"),
 				DefaultModify: func(opts *CreateTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []TableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].DefaultValue = &ColumnDefaultValue{}
@@ -205,7 +213,7 @@ var tablesTests = TablesTestsContext{
 			},
 			validationCase[*CreateTableOptions]{
 				Name:        case_Tables_validation_Create_ColumnsAndConstraints_OutOfLineConstraint_Columns_ValidateValueSet,
-				ExpectedErr: errNotSet("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "Columns"),
+				ExpectedErr: errNotSet("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "Columns"),
 				DefaultModify: func(opts *CreateTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].Columns = nil
@@ -213,7 +221,7 @@ var tablesTests = TablesTestsContext{
 			},
 			validationCase[*CreateTableOptions]{
 				Name:        case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Enforced_NotEnforced,
-				ExpectedErr: errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "Enforced", "NotEnforced"),
+				ExpectedErr: errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "Enforced", "NotEnforced"),
 				DefaultModify: func(opts *CreateTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].Enforced = new(true)
@@ -221,8 +229,22 @@ var tablesTests = TablesTestsContext{
 				},
 			},
 			validationCase[*CreateTableOptions]{
+				Name: case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Enforced_NotEnforced_BothInvalid,
+				ExpectedErrs: []error{
+					errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "Enforced", "NotEnforced"),
+					errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[1]", "Enforced", "NotEnforced"),
+				},
+				DefaultModify: func(opts *CreateTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{}, {}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].Enforced = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].NotEnforced = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[1].Enforced = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[1].NotEnforced = new(true)
+				},
+			},
+			validationCase[*CreateTableOptions]{
 				Name:        case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Deferrable_NotDeferrable,
-				ExpectedErr: errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "Deferrable", "NotDeferrable"),
+				ExpectedErr: errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "Deferrable", "NotDeferrable"),
 				DefaultModify: func(opts *CreateTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].Deferrable = new(true)
@@ -230,8 +252,22 @@ var tablesTests = TablesTestsContext{
 				},
 			},
 			validationCase[*CreateTableOptions]{
+				Name: case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Deferrable_NotDeferrable_BothInvalid,
+				ExpectedErrs: []error{
+					errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "Deferrable", "NotDeferrable"),
+					errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[1]", "Deferrable", "NotDeferrable"),
+				},
+				DefaultModify: func(opts *CreateTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{}, {}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].Deferrable = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].NotDeferrable = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[1].Deferrable = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[1].NotDeferrable = new(true)
+				},
+			},
+			validationCase[*CreateTableOptions]{
 				Name:        case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_InitiallyDeferred_InitiallyImmediate,
-				ExpectedErr: errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "InitiallyDeferred", "InitiallyImmediate"),
+				ExpectedErr: errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "InitiallyDeferred", "InitiallyImmediate"),
 				DefaultModify: func(opts *CreateTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].InitiallyDeferred = new(true)
@@ -239,8 +275,22 @@ var tablesTests = TablesTestsContext{
 				},
 			},
 			validationCase[*CreateTableOptions]{
+				Name: case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_InitiallyDeferred_InitiallyImmediate_BothInvalid,
+				ExpectedErrs: []error{
+					errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "InitiallyDeferred", "InitiallyImmediate"),
+					errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[1]", "InitiallyDeferred", "InitiallyImmediate"),
+				},
+				DefaultModify: func(opts *CreateTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{}, {}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].InitiallyDeferred = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].InitiallyImmediate = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[1].InitiallyDeferred = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[1].InitiallyImmediate = new(true)
+				},
+			},
+			validationCase[*CreateTableOptions]{
 				Name:        case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Enable_Disable,
-				ExpectedErr: errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "Enable", "Disable"),
+				ExpectedErr: errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "Enable", "Disable"),
 				DefaultModify: func(opts *CreateTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].Enable = new(true)
@@ -248,8 +298,22 @@ var tablesTests = TablesTestsContext{
 				},
 			},
 			validationCase[*CreateTableOptions]{
+				Name: case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Enable_Disable_BothInvalid,
+				ExpectedErrs: []error{
+					errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "Enable", "Disable"),
+					errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[1]", "Enable", "Disable"),
+				},
+				DefaultModify: func(opts *CreateTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{}, {}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].Enable = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].Disable = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[1].Enable = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[1].Disable = new(true)
+				},
+			},
+			validationCase[*CreateTableOptions]{
 				Name:        case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Validate_Novalidate,
-				ExpectedErr: errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "Validate", "Novalidate"),
+				ExpectedErr: errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "Validate", "Novalidate"),
 				DefaultModify: func(opts *CreateTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].Validate = new(true)
@@ -257,12 +321,40 @@ var tablesTests = TablesTestsContext{
 				},
 			},
 			validationCase[*CreateTableOptions]{
+				Name: case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Validate_Novalidate_BothInvalid,
+				ExpectedErrs: []error{
+					errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "Validate", "Novalidate"),
+					errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[1]", "Validate", "Novalidate"),
+				},
+				DefaultModify: func(opts *CreateTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{}, {}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].Validate = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].Novalidate = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[1].Validate = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[1].Novalidate = new(true)
+				},
+			},
+			validationCase[*CreateTableOptions]{
 				Name:        case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Rely_Norely,
-				ExpectedErr: errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint", "Rely", "Norely"),
+				ExpectedErr: errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "Rely", "Norely"),
 				DefaultModify: func(opts *CreateTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].Rely = new(true)
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].Norely = new(true)
+				},
+			},
+			validationCase[*CreateTableOptions]{
+				Name: case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Rely_Norely_BothInvalid,
+				ExpectedErrs: []error{
+					errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "Rely", "Norely"),
+					errOneOf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[1]", "Rely", "Norely"),
+				},
+				DefaultModify: func(opts *CreateTableOptions) {
+					opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{}, {}}
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].Rely = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[0].Norely = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[1].Rely = new(true)
+					opts.ColumnsAndConstraints.OutOfLineConstraint[1].Norely = new(true)
 				},
 			},
 			validationCase[*CreateTableOptions]{
@@ -566,7 +658,7 @@ var tablesTests = TablesTestsContext{
 			},
 			validationCase[*AlterTableOptions]{
 				Name:        case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterTableOptions.ColumnAction.Alter", "DropDefault", "SetDefault", "NotNullConstraint", "DataType", "Comment", "UnsetComment"),
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ColumnAction.Alter[0]", "DropDefault", "SetDefault", "NotNullConstraint", "DataType", "Comment", "UnsetComment"),
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Alter = []TableColumnAlterAction{{}}
@@ -574,11 +666,22 @@ var tablesTests = TablesTestsContext{
 			},
 			validationCase[*AlterTableOptions]{
 				Name:        case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("AlterTableOptions.ColumnAction.Alter", "DropDefault", "SetDefault", "NotNullConstraint", "DataType", "Comment", "UnsetComment"),
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ColumnAction.Alter[0]", "DropDefault", "SetDefault", "NotNullConstraint", "DataType", "Comment", "UnsetComment"),
 			},
 			validationCase[*AlterTableOptions]{
 				Name:        case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("AlterTableOptions.ColumnAction.Alter", "DropDefault", "SetDefault", "NotNullConstraint", "DataType", "Comment", "UnsetComment"),
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ColumnAction.Alter[1]", "DropDefault", "SetDefault", "NotNullConstraint", "DataType", "Comment", "UnsetComment"),
+			},
+			validationCase[*AlterTableOptions]{
+				Name: case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("AlterTableOptions.ColumnAction.Alter[0]", "DropDefault", "SetDefault", "NotNullConstraint", "DataType", "Comment", "UnsetComment"),
+					errExactlyOneOf("AlterTableOptions.ColumnAction.Alter[1]", "DropDefault", "SetDefault", "NotNullConstraint", "DataType", "Comment", "UnsetComment"),
+				},
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.ColumnAction = &TableColumnAction{}
+					opts.ColumnAction.Alter = []TableColumnAlterAction{{}, {}}
+				},
 			},
 			validationCase[*AlterTableOptions]{
 				Name:        case_Tables_validation_Alter_opts_ConstraintAction_ExactlyOneValueSet_NoneSet,
@@ -761,7 +864,7 @@ var tablesTests = TablesTestsContext{
 			},
 			validationCase[*AlterTableOptions]{
 				Name:        case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.SearchOptimizationAction.Drop.On[0]", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{}
 					opts.SearchOptimizationAction.Drop = &TableDropSearchOptimization{}
@@ -770,11 +873,23 @@ var tablesTests = TablesTestsContext{
 			},
 			validationCase[*AlterTableOptions]{
 				Name:        case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("AlterTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.SearchOptimizationAction.Drop.On[0]", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
 			},
 			validationCase[*AlterTableOptions]{
 				Name:        case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("AlterTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.SearchOptimizationAction.Drop.On[1]", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
+			},
+			validationCase[*AlterTableOptions]{
+				Name: case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("AlterTableOptions.SearchOptimizationAction.Drop.On[0]", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
+					errExactlyOneOf("AlterTableOptions.SearchOptimizationAction.Drop.On[1]", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
+				},
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{}
+					opts.SearchOptimizationAction.Drop = &TableDropSearchOptimization{}
+					opts.SearchOptimizationAction.Drop.On = []TableDropSearchOptimizationOn{{}, {}}
+				},
 			},
 			validationCase[*AlterTableOptions]{
 				Name:        case_Tables_validation_Alter_opts_Set_StageFileFormat_ExactlyOneValueSet_NoneSet,
