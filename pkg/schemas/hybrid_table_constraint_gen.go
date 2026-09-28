@@ -21,9 +21,17 @@ var ShowHybridTableConstraintSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// columns: manual addition and mapping is needed
+	"columns": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	// referenced_table: manual addition and mapping is needed
-	// referenced_columns: manual addition and mapping is needed
+	"referenced_columns": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	// delete_rule: manual addition and mapping is needed
 	// update_rule: manual addition and mapping is needed
 }, hybridTableConstraintToSchemaMapper{}.additionalSchema())
@@ -34,9 +42,9 @@ func HybridTableConstraintToSchema(hybridTableConstraint *sdk.HybridTableConstra
 	hybridTableConstraintSchema := make(map[string]any)
 	hybridTableConstraintSchema["name"] = hybridTableConstraint.Name
 	hybridTableConstraintSchema["kind"] = string(hybridTableConstraint.Kind)
-	// columns: manual addition and mapping is needed
+	hybridTableConstraintSchema["columns"] = hybridTableConstraint.Columns
 	// referenced_table: manual addition and mapping is needed
-	// referenced_columns: manual addition and mapping is needed
+	hybridTableConstraintSchema["referenced_columns"] = hybridTableConstraint.ReferencedColumns
 	// delete_rule: manual addition and mapping is needed
 	// update_rule: manual addition and mapping is needed
 	hybridTableConstraintToSchemaMapper{}.additionalToSchema(hybridTableConstraint, hybridTableConstraintSchema)

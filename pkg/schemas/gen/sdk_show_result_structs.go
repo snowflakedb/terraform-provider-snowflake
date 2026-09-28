@@ -18,8 +18,9 @@ type ShowResultSchemaDef struct {
 	// (unsupported conversion, rename, nested/slice mapping). A comment is left in place
 	// and the additional-mapping hook is generated.
 	ManualFields []string
-	// TypeOverrides maps snake_case schema keys to a Terraform schema type.
-	// Currently, no logic is implemented.
+	// TypeOverrides maps snake_case schema keys to a Terraform schema type
+	// (type only; mapper stays the generated one). Native []string defaults to
+	// TypeList; use TypeSet here when the public schema is a set.
 	TypeOverrides map[string]schema.ValueType
 	// UsedAsListEntry generates NameSchema (no Show/Describe prefix) for a property-row list Elem.
 	UsedAsListEntry bool
@@ -44,7 +45,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.Application{}},
 	{ObjectStruct: sdk.AuthenticationPolicy{}, SkipFields: []string{"target_scopes"}}, // TODO [next PRs]: un-skip target_scopes (stale public schema).
 	{ObjectStruct: sdk.CatalogIntegration{}},
-	{ObjectStruct: sdk.ComputePool{}, ManualFields: []string{"backup_instance_families"}},
+	{ObjectStruct: sdk.ComputePool{}},
 	{ObjectStruct: sdk.Connection{}, ManualFields: []string{"failover_allowed_to_accounts"}},
 	{ObjectStruct: sdk.CortexAgent{}, ManualFields: []string{"profile"}},
 	{ObjectStruct: sdk.DatabaseRole{}},
@@ -62,7 +63,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.GitRepository{}},
 	{ObjectStruct: sdk.Grant{}, SkipFields: []string{"grant_on", "grant_to"}},
 	{ObjectStruct: sdk.HybridTable{}},
-	{ObjectStruct: sdk.HybridTableConstraint{}, ManualFields: []string{"columns", "referenced_table", "referenced_columns", "delete_rule", "update_rule"}},
+	// ManualFields: FK-only scalars (zero-value for PK/UNIQUE; ext leaves them unset).
+	{ObjectStruct: sdk.HybridTableConstraint{}, ManualFields: []string{"referenced_table", "delete_rule", "update_rule"}},
 	{ObjectStruct: sdk.HybridTableIndex{}},
 	{ObjectStruct: sdk.IcebergTable{}, ManualFields: []string{"auto_refresh_status", "partition_specs"}},
 	{ObjectStruct: sdk.ImageRepository{}},
@@ -75,7 +77,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.NetworkRule{}},
 	{ObjectStruct: sdk.Notebook{}},
 	{ObjectStruct: sdk.NotificationIntegration{}},
-	{ObjectStruct: sdk.OpenflowConnectorDefinition{}, ManualFields: []string{"categories"}},
+	{ObjectStruct: sdk.OpenflowConnectorDefinition{}},
 	{ObjectStruct: sdk.OpenflowConnector{}},
 	{ObjectStruct: sdk.OpenflowDeployment{}},
 	{ObjectStruct: sdk.OpenflowRuntime{}, ManualFields: []string{"external_access_integrations"}},
@@ -93,7 +95,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.Role{}},
 	{ObjectStruct: sdk.RowAccessPolicy{}},
 	{ObjectStruct: sdk.Schema{}},
-	{ObjectStruct: sdk.Secret{}, ManualFields: []string{"oauth_scopes"}},
+	{ObjectStruct: sdk.Secret{}, TypeOverrides: map[string]schema.ValueType{"oauth_scopes": schema.TypeSet}},
 	{ObjectStruct: sdk.SecurityIntegration{}},
 	{ObjectStruct: sdk.SemanticView{}},
 	{ObjectStruct: sdk.Service{}, ManualFields: []string{"external_access_integrations"}},
@@ -108,7 +110,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.Streamlit{}},
 	{ObjectStruct: sdk.Stream{}, ManualFields: []string{"base_tables"}},
 	{ObjectStruct: sdk.Table{}},
-	{ObjectStruct: sdk.Tag{}, ManualFields: []string{"allowed_values"}},
+	{ObjectStruct: sdk.Tag{}, TypeOverrides: map[string]schema.ValueType{"allowed_values": schema.TypeSet}},
 	{ObjectStruct: sdk.Task{}, ManualFields: []string{"predecessors", "task_relations", "target_completion_interval"}},
 	{ObjectStruct: sdk.User{}},
 	{ObjectStruct: sdk.ProgrammaticAccessToken{}},
@@ -173,12 +175,10 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.CatalogIntegrationIcebergRestDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "o_auth_rest_authentication", "bearer_rest_authentication", "sig_v4_rest_authentication"}},
 	{ObjectStruct: sdk.CatalogIntegrationObjectStorageDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.CatalogIntegrationOpenCatalogDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "rest_authentication"}},
-	{ObjectStruct: sdk.ComputePoolDetails{}, IsDescribe: true, ManualFields: []string{"backup_instance_families"}},
+	{ObjectStruct: sdk.ComputePoolDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.CortexAgentDetails{}, IsDescribe: true, ManualFields: []string{"profile"}},
-	// ManualFields `attribute_columns` / `columns` re-added in ext.
-	// TODO [next PRs]: un-skip attribute_columns / columns once MapToSchemaField maps []string.
 	// TODO [next PRs]: un-skip serving_state / primary_key_columns / scoring_profile_count / full_index_build_interval_days (stale public schema).
-	{ObjectStruct: sdk.CortexSearchServiceDetails{}, IsDescribe: true, ManualFields: []string{"attribute_columns", "columns"}, SkipFields: []string{
+	{ObjectStruct: sdk.CortexSearchServiceDetails{}, IsDescribe: true, SkipFields: []string{
 		"serving_state", "primary_key_columns", "scoring_profile_count", "full_index_build_interval_days",
 	}},
 	// Public describe_output Elem is the row (created_on / name / kind). DatabaseDetails is a Rows wrapper; list helper in ext.
@@ -201,17 +201,11 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.ExternalVolumeDetails{}, IsDescribe: true, SkipFields: []string{"id"}, ManualFields: []string{"storage_locations"}},
 	// ManualFields nested type-specific structs (public schema is a flat union of per-type keys; nested mapping in ext).
 	{ObjectStruct: sdk.FileFormatAllDetails{}, IsDescribe: true, ManualFields: []string{"csv", "json", "avro", "orc", "parquet", "xml"}},
-	// TODO [next PRs]: drop null_if from ManualFields once MapToSchemaField maps []string.
-	// Until handleExternalChangesToObjectDeepEqual is Terraform-aware for TypeList, ext maps []string → []any.
-	{ObjectStruct: sdk.FileFormatAvro{}, IsDescribe: true, ManualFields: []string{"null_if"}},
-	// TODO [next PRs]: drop null_if from ManualFields once MapToSchemaField maps []string.
-	{ObjectStruct: sdk.FileFormatCsv{}, IsDescribe: true, ManualFields: []string{"null_if"}},
-	// TODO [next PRs]: drop null_if from ManualFields once MapToSchemaField maps []string.
-	{ObjectStruct: sdk.FileFormatJson{}, IsDescribe: true, ManualFields: []string{"null_if"}},
-	// TODO [next PRs]: drop null_if from ManualFields once MapToSchemaField maps []string.
-	{ObjectStruct: sdk.FileFormatOrc{}, IsDescribe: true, ManualFields: []string{"null_if"}},
-	// TODO [next PRs]: drop null_if from ManualFields once MapToSchemaField maps []string.
-	{ObjectStruct: sdk.FileFormatParquet{}, IsDescribe: true, ManualFields: []string{"null_if"}},
+	{ObjectStruct: sdk.FileFormatAvro{}, IsDescribe: true},
+	{ObjectStruct: sdk.FileFormatCsv{}, IsDescribe: true},
+	{ObjectStruct: sdk.FileFormatJson{}, IsDescribe: true},
+	{ObjectStruct: sdk.FileFormatOrc{}, IsDescribe: true},
+	{ObjectStruct: sdk.FileFormatParquet{}, IsDescribe: true},
 	// TODO [next PRs]: un-skip disable_snowflake_data (stale public schema; still a DESCRIBE column).
 	{ObjectStruct: sdk.FileFormatXml{}, IsDescribe: true, SkipFields: []string{"disable_snowflake_data"}},
 	// SkipFields omits SDK-only identifier/normalized fields (not Snowflake DESCRIBE properties; schema is not wired yet).
@@ -294,10 +288,10 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.ScimSecurityIntegrationDetails{}, IsDescribe: true, ManualFields: []string{
 		"enabled", "network_policy", "run_as_role", "sync_password", "comment",
 	}},
-	{ObjectStruct: sdk.SecretDetails{}, IsDescribe: true, ManualFields: []string{"oauth_scopes"}},
+	{ObjectStruct: sdk.SecretDetails{}, IsDescribe: true, TypeOverrides: map[string]schema.ValueType{"oauth_scopes": schema.TypeSet}},
 	{ObjectStruct: sdk.SecurityIntegrationProperty{}, UsedAsListEntry: true},
 	{ObjectStruct: sdk.ServiceDetails{}, IsDescribe: true, ManualFields: []string{"external_access_integrations"}},
-	{ObjectStruct: sdk.SessionPolicyDetails{}, IsDescribe: true, ManualFields: []string{"allowed_secondary_roles", "blocked_secondary_roles"}},
+	{ObjectStruct: sdk.SessionPolicyDetails{}, IsDescribe: true},
 	// Nested directory_table / file_format / location / privatelink in ext (public key privatelink, not private_link).
 	// Keep omitted: id (SDK identifier), credentials (secret).
 	// TODO [next PRs]: first move only — generated schemas are empty (every public key is nested/slice).
@@ -319,9 +313,9 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"file_format_name", "file_format_csv", "file_format_json", "file_format_avro", "file_format_orc", "file_format_parquet", "file_format_xml",
 		"directory_table", "private_link", "location",
 	}},
-	{ObjectStruct: sdk.StorageIntegrationAllDetails{}, IsDescribe: true, ManualFields: []string{"allowed_locations", "blocked_locations"}},
-	{ObjectStruct: sdk.StorageIntegrationAwsDetails{}, IsDescribe: true, ManualFields: []string{"allowed_locations", "blocked_locations"}},
-	{ObjectStruct: sdk.StorageIntegrationAzureDetails{}, IsDescribe: true, ManualFields: []string{"allowed_locations", "blocked_locations"}},
+	{ObjectStruct: sdk.StorageIntegrationAllDetails{}, IsDescribe: true},
+	{ObjectStruct: sdk.StorageIntegrationAwsDetails{}, IsDescribe: true},
+	{ObjectStruct: sdk.StorageIntegrationAzureDetails{}, IsDescribe: true},
 	// Nested DescribePropertyListSchema in ext (today’s public describe_output on the legacy resource).
 	// TODO [v3]: flatten to typed scalars (enabled.0.value → enabled) via StorageIntegrationAllDetails
 	// / DescribeDetails (already exist); native TypeList of the property row is not the end state.
@@ -331,7 +325,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"storage_gcp_service_account", "azure_consent_url", "azure_multi_tenant_app_name",
 		"use_privatelink_endpoint", "comment",
 	}},
-	{ObjectStruct: sdk.StorageIntegrationGcsDetails{}, IsDescribe: true, ManualFields: []string{"allowed_locations", "blocked_locations"}},
+	{ObjectStruct: sdk.StorageIntegrationGcsDetails{}, IsDescribe: true},
 	// Property-row list entry (same pattern as SecurityIntegrationProperty). Nested DescribeStorageIntegrationDetailsSchema stays the name-keyed consumer.
 	{ObjectStruct: sdk.StorageIntegrationProperty{}, UsedAsListEntry: true},
 	// TODO [next PRs]: drop return_type from ManualFields once MapToSchemaField maps datatypes.DataType via ToSql(); signature stays ext (slice of structs).

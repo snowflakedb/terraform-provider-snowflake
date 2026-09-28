@@ -7,12 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type fileFormatParquetToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.FileFormatParquet] = fileFormatParquetToSchemaMapper{}
-
 // DescribeFileFormatParquetSchema represents output of DESCRIBE query for the single FileFormatParquet.
-var DescribeFileFormatParquetSchema = mergeSchema(map[string]*schema.Schema{
+var DescribeFileFormatParquetSchema = map[string]*schema.Schema{
 	"id": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -45,8 +41,12 @@ var DescribeFileFormatParquetSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
-	// null_if: manual addition and mapping is needed
-}, fileFormatParquetToSchemaMapper{}.additionalSchema())
+	"null_if": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
+}
 
 var _ = DescribeFileFormatParquetSchema
 
@@ -60,8 +60,7 @@ func FileFormatParquetToSchema(fileFormatParquet *sdk.FileFormatParquet) map[str
 	fileFormatParquetSchema["trim_space"] = fileFormatParquet.TrimSpace
 	fileFormatParquetSchema["use_vectorized_scanner"] = fileFormatParquet.UseVectorizedScanner
 	fileFormatParquetSchema["replace_invalid_characters"] = fileFormatParquet.ReplaceInvalidCharacters
-	// null_if: manual addition and mapping is needed
-	fileFormatParquetToSchemaMapper{}.additionalToSchema(fileFormatParquet, fileFormatParquetSchema)
+	fileFormatParquetSchema["null_if"] = fileFormatParquet.NullIf
 	return fileFormatParquetSchema
 }
 

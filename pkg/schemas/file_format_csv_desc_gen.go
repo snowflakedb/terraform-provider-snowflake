@@ -7,12 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type fileFormatCsvToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.FileFormatCsv] = fileFormatCsvToSchemaMapper{}
-
 // DescribeFileFormatCsvSchema represents output of DESCRIBE query for the single FileFormatCsv.
-var DescribeFileFormatCsvSchema = mergeSchema(map[string]*schema.Schema{
+var DescribeFileFormatCsvSchema = map[string]*schema.Schema{
 	"id": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -81,7 +77,11 @@ var DescribeFileFormatCsvSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// null_if: manual addition and mapping is needed
+	"null_if": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	"error_on_column_count_mismatch": {
 		Type:     schema.TypeBool,
 		Computed: true,
@@ -110,7 +110,7 @@ var DescribeFileFormatCsvSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
-}, fileFormatCsvToSchemaMapper{}.additionalSchema())
+}
 
 var _ = DescribeFileFormatCsvSchema
 
@@ -133,7 +133,7 @@ func FileFormatCsvToSchema(fileFormatCsv *sdk.FileFormatCsv) map[string]any {
 	fileFormatCsvSchema["escape_unenclosed_field"] = fileFormatCsv.EscapeUnenclosedField
 	fileFormatCsvSchema["trim_space"] = fileFormatCsv.TrimSpace
 	fileFormatCsvSchema["field_optionally_enclosed_by"] = fileFormatCsv.FieldOptionallyEnclosedBy
-	// null_if: manual addition and mapping is needed
+	fileFormatCsvSchema["null_if"] = fileFormatCsv.NullIf
 	fileFormatCsvSchema["error_on_column_count_mismatch"] = fileFormatCsv.ErrorOnColumnCountMismatch
 	fileFormatCsvSchema["validate_utf8"] = fileFormatCsv.ValidateUtf8
 	fileFormatCsvSchema["replace_invalid_characters"] = fileFormatCsv.ReplaceInvalidCharacters
@@ -141,7 +141,6 @@ func FileFormatCsvToSchema(fileFormatCsv *sdk.FileFormatCsv) map[string]any {
 	fileFormatCsvSchema["skip_byte_order_mark"] = fileFormatCsv.SkipByteOrderMark
 	fileFormatCsvSchema["encoding"] = string(fileFormatCsv.Encoding)
 	fileFormatCsvSchema["multi_line"] = fileFormatCsv.MultiLine
-	fileFormatCsvToSchemaMapper{}.additionalToSchema(fileFormatCsv, fileFormatCsvSchema)
 	return fileFormatCsvSchema
 }
 

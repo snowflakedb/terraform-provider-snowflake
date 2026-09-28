@@ -21,15 +21,12 @@ func handleExternalChangesToObject(d *schema.ResourceData, outputAttributeName s
 }
 
 // handleExternalChangesToObjectDeepEqual compares previous show/describe state with a fresh
-// mapper value via reflect.DeepEqual.
-//
-// TODO: SDKv2 TypeList round-trips as []any on Get, while generated ToSchema may emit native
-// []string. Type-strict DeepEqual then marks every refresh as an external change (file-format
-// null_if after #415). The comparer here should project both slices to []any (nil/empty equal)
-// so mappers can keep native slice types. Do not fix this with collections.Map in ToSchema or
-// per-field normalizeFunc (that's for semantic projections like SHOW options → TRANSIENT).
+// mapper value. SDKv2 TypeList round-trips as []any on Get, while generated ToSchema emits
+// native []string; type-strict DeepEqual would then mark every refresh as an external change.
+// Both sides are projected to []any first (nil and empty slices compare equal).
+// normalizeFunc stays for semantic projections (SHOW options → TRANSIENT), not type coercion.
 func handleExternalChangesToObjectDeepEqual(d *schema.ResourceData, outputAttributeName string, mappings ...outputMapping) error {
-	return handleExternalChangesToObjectCmp(d, outputAttributeName, reflect.DeepEqual, mappings...)
+	return handleExternalChangesToObjectCmp(d, outputAttributeName, sliceAwareDeepEqual, mappings...)
 }
 
 func handleExternalChangesToObjectCmp(d *schema.ResourceData, outputAttributeName string, cmpFunc func(any, any) bool, mappings ...outputMapping) error {
@@ -51,6 +48,41 @@ func handleExternalChangesToObjectCmp(d *schema.ResourceData, outputAttributeNam
 		}
 	}
 	return nil
+}
+
+// sliceAwareDeepEqual is reflect.DeepEqual with TypeList-friendly slice comparison:
+// []string vs []any with the same elements are equal, and nil/empty slices are equal.
+func sliceAwareDeepEqual(a, b any) bool {
+	as, aSlice := asAnySlice(a)
+	bs, bSlice := asAnySlice(b)
+	switch {
+	case aSlice && bSlice:
+		return reflect.DeepEqual(as, bs)
+	case aSlice && b == nil:
+		return len(as) == 0
+	case bSlice && a == nil:
+		return len(bs) == 0
+	default:
+		return reflect.DeepEqual(a, b)
+	}
+}
+
+func asAnySlice(v any) ([]any, bool) {
+	if v == nil {
+		return nil, false
+	}
+	rv := reflect.ValueOf(v)
+	if rv.Kind() != reflect.Slice {
+		return nil, false
+	}
+	if rv.IsNil() || rv.Len() == 0 {
+		return []any{}, true
+	}
+	out := make([]any, rv.Len())
+	for i := range out {
+		out[i] = rv.Index(i).Interface()
+	}
+	return out, true
 }
 
 func handleExternalChangesToObjectInFlatDescribeDeepEqual(d *schema.ResourceData, mappings ...outputMapping) error {

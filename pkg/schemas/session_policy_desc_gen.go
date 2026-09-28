@@ -7,12 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type sessionPolicyDetailsToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.SessionPolicyDetails] = sessionPolicyDetailsToSchemaMapper{}
-
 // DescribeSessionPolicyDetailsSchema represents output of DESCRIBE query for the single SessionPolicyDetails.
-var DescribeSessionPolicyDetailsSchema = mergeSchema(map[string]*schema.Schema{
+var DescribeSessionPolicyDetailsSchema = map[string]*schema.Schema{
 	"id": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -37,9 +33,17 @@ var DescribeSessionPolicyDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeInt,
 		Computed: true,
 	},
-	// allowed_secondary_roles: manual addition and mapping is needed
-	// blocked_secondary_roles: manual addition and mapping is needed
-}, sessionPolicyDetailsToSchemaMapper{}.additionalSchema())
+	"allowed_secondary_roles": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
+	"blocked_secondary_roles": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
+}
 
 var _ = DescribeSessionPolicyDetailsSchema
 
@@ -51,9 +55,8 @@ func SessionPolicyDetailsToSchema(sessionPolicyDetails *sdk.SessionPolicyDetails
 	sessionPolicyDetailsSchema["comment"] = sessionPolicyDetails.Comment
 	sessionPolicyDetailsSchema["session_idle_timeout_mins"] = sessionPolicyDetails.SessionIdleTimeoutMins
 	sessionPolicyDetailsSchema["session_ui_idle_timeout_mins"] = sessionPolicyDetails.SessionUiIdleTimeoutMins
-	// allowed_secondary_roles: manual addition and mapping is needed
-	// blocked_secondary_roles: manual addition and mapping is needed
-	sessionPolicyDetailsToSchemaMapper{}.additionalToSchema(sessionPolicyDetails, sessionPolicyDetailsSchema)
+	sessionPolicyDetailsSchema["allowed_secondary_roles"] = sessionPolicyDetails.AllowedSecondaryRoles
+	sessionPolicyDetailsSchema["blocked_secondary_roles"] = sessionPolicyDetails.BlockedSecondaryRoles
 	return sessionPolicyDetailsSchema
 }
 

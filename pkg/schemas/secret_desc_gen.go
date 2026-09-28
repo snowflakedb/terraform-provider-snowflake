@@ -7,12 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type secretDetailsToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.SecretDetails] = secretDetailsToSchemaMapper{}
-
 // DescribeSecretDetailsSchema represents output of DESCRIBE query for the single SecretDetails.
-var DescribeSecretDetailsSchema = mergeSchema(map[string]*schema.Schema{
+var DescribeSecretDetailsSchema = map[string]*schema.Schema{
 	"created_on": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -53,12 +49,16 @@ var DescribeSecretDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// oauth_scopes: manual addition and mapping is needed
+	"oauth_scopes": {
+		Type:     schema.TypeSet,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	"integration_name": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}, secretDetailsToSchemaMapper{}.additionalSchema())
+}
 
 var _ = DescribeSecretDetailsSchema
 
@@ -82,11 +82,10 @@ func SecretDetailsToSchema(secretDetails *sdk.SecretDetails) map[string]any {
 	if secretDetails.OauthRefreshTokenExpiryTime != nil {
 		secretDetailsSchema["oauth_refresh_token_expiry_time"] = (*secretDetails.OauthRefreshTokenExpiryTime).String()
 	}
-	// oauth_scopes: manual addition and mapping is needed
+	secretDetailsSchema["oauth_scopes"] = secretDetails.OauthScopes
 	if secretDetails.IntegrationName != nil {
 		secretDetailsSchema["integration_name"] = (*secretDetails.IntegrationName)
 	}
-	secretDetailsToSchemaMapper{}.additionalToSchema(secretDetails, secretDetailsSchema)
 	return secretDetailsSchema
 }
 

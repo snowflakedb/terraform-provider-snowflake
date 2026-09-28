@@ -7,12 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type fileFormatJsonToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.FileFormatJson] = fileFormatJsonToSchemaMapper{}
-
 // DescribeFileFormatJsonSchema represents output of DESCRIBE query for the single FileFormatJson.
-var DescribeFileFormatJsonSchema = mergeSchema(map[string]*schema.Schema{
+var DescribeFileFormatJsonSchema = map[string]*schema.Schema{
 	"id": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -49,7 +45,11 @@ var DescribeFileFormatJsonSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
-	// null_if: manual addition and mapping is needed
+	"null_if": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	"file_extension": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -82,7 +82,7 @@ var DescribeFileFormatJsonSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
-}, fileFormatJsonToSchemaMapper{}.additionalSchema())
+}
 
 var _ = DescribeFileFormatJsonSchema
 
@@ -97,7 +97,7 @@ func FileFormatJsonToSchema(fileFormatJson *sdk.FileFormatJson) map[string]any {
 	fileFormatJsonSchema["binary_format"] = string(fileFormatJson.BinaryFormat)
 	fileFormatJsonSchema["trim_space"] = fileFormatJson.TrimSpace
 	fileFormatJsonSchema["multi_line"] = fileFormatJson.MultiLine
-	// null_if: manual addition and mapping is needed
+	fileFormatJsonSchema["null_if"] = fileFormatJson.NullIf
 	fileFormatJsonSchema["file_extension"] = fileFormatJson.FileExtension
 	fileFormatJsonSchema["enable_octal"] = fileFormatJson.EnableOctal
 	fileFormatJsonSchema["allow_duplicate"] = fileFormatJson.AllowDuplicate
@@ -106,7 +106,6 @@ func FileFormatJsonToSchema(fileFormatJson *sdk.FileFormatJson) map[string]any {
 	fileFormatJsonSchema["replace_invalid_characters"] = fileFormatJson.ReplaceInvalidCharacters
 	fileFormatJsonSchema["ignore_utf8_errors"] = fileFormatJson.IgnoreUtf8Errors
 	fileFormatJsonSchema["skip_byte_order_mark"] = fileFormatJson.SkipByteOrderMark
-	fileFormatJsonToSchemaMapper{}.additionalToSchema(fileFormatJson, fileFormatJsonSchema)
 	return fileFormatJsonSchema
 }
 

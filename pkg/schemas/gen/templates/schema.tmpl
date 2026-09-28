@@ -36,6 +36,9 @@ var {{ $schemaVar }} = map[string]*schema.Schema{
     {{- else }}
     "{{ .Name }}": {
     Type:     schema.{{ .SchemaType }},
+    {{- if .IsListOrSet }}
+    Elem:     &schema.Schema{Type: schema.TypeString},
+    {{- end }}
     Computed: true,
     },
     {{- end }}

@@ -7,12 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type storageIntegrationAwsDetailsToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.StorageIntegrationAwsDetails] = storageIntegrationAwsDetailsToSchemaMapper{}
-
 // DescribeStorageIntegrationAwsDetailsSchema represents output of DESCRIBE query for the single StorageIntegrationAwsDetails.
-var DescribeStorageIntegrationAwsDetailsSchema = mergeSchema(map[string]*schema.Schema{
+var DescribeStorageIntegrationAwsDetailsSchema = map[string]*schema.Schema{
 	"id": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -25,8 +21,16 @@ var DescribeStorageIntegrationAwsDetailsSchema = mergeSchema(map[string]*schema.
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// allowed_locations: manual addition and mapping is needed
-	// blocked_locations: manual addition and mapping is needed
+	"allowed_locations": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
+	"blocked_locations": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	"comment": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -51,7 +55,7 @@ var DescribeStorageIntegrationAwsDetailsSchema = mergeSchema(map[string]*schema.
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}, storageIntegrationAwsDetailsToSchemaMapper{}.additionalSchema())
+}
 
 var _ = DescribeStorageIntegrationAwsDetailsSchema
 
@@ -60,15 +64,14 @@ func StorageIntegrationAwsDetailsToSchema(storageIntegrationAwsDetails *sdk.Stor
 	storageIntegrationAwsDetailsSchema["id"] = storageIntegrationAwsDetails.Id.Name()
 	storageIntegrationAwsDetailsSchema["enabled"] = storageIntegrationAwsDetails.Enabled
 	storageIntegrationAwsDetailsSchema["provider"] = storageIntegrationAwsDetails.Provider
-	// allowed_locations: manual addition and mapping is needed
-	// blocked_locations: manual addition and mapping is needed
+	storageIntegrationAwsDetailsSchema["allowed_locations"] = storageIntegrationAwsDetails.AllowedLocations
+	storageIntegrationAwsDetailsSchema["blocked_locations"] = storageIntegrationAwsDetails.BlockedLocations
 	storageIntegrationAwsDetailsSchema["comment"] = storageIntegrationAwsDetails.Comment
 	storageIntegrationAwsDetailsSchema["use_privatelink_endpoint"] = storageIntegrationAwsDetails.UsePrivatelinkEndpoint
 	storageIntegrationAwsDetailsSchema["iam_user_arn"] = storageIntegrationAwsDetails.IamUserArn
 	storageIntegrationAwsDetailsSchema["role_arn"] = storageIntegrationAwsDetails.RoleArn
 	storageIntegrationAwsDetailsSchema["object_acl"] = storageIntegrationAwsDetails.ObjectAcl
 	storageIntegrationAwsDetailsSchema["external_id"] = storageIntegrationAwsDetails.ExternalId
-	storageIntegrationAwsDetailsToSchemaMapper{}.additionalToSchema(storageIntegrationAwsDetails, storageIntegrationAwsDetailsSchema)
 	return storageIntegrationAwsDetailsSchema
 }
 

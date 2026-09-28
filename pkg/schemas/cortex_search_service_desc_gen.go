@@ -7,12 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type cortexSearchServiceDetailsToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.CortexSearchServiceDetails] = cortexSearchServiceDetailsToSchemaMapper{}
-
 // DescribeCortexSearchServiceDetailsSchema represents output of DESCRIBE query for the single CortexSearchServiceDetails.
-var DescribeCortexSearchServiceDetailsSchema = mergeSchema(map[string]*schema.Schema{
+var DescribeCortexSearchServiceDetailsSchema = map[string]*schema.Schema{
 	"created_on": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -41,8 +37,16 @@ var DescribeCortexSearchServiceDetailsSchema = mergeSchema(map[string]*schema.Sc
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// attribute_columns: manual addition and mapping is needed
-	// columns: manual addition and mapping is needed
+	"attribute_columns": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
+	"columns": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	"definition": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -79,7 +83,7 @@ var DescribeCortexSearchServiceDetailsSchema = mergeSchema(map[string]*schema.Sc
 	// primary_key_columns is skipped and won't be generated
 	// scoring_profile_count is skipped and won't be generated
 	// full_index_build_interval_days is skipped and won't be generated
-}, cortexSearchServiceDetailsToSchemaMapper{}.additionalSchema())
+}
 
 var _ = DescribeCortexSearchServiceDetailsSchema
 
@@ -94,8 +98,8 @@ func CortexSearchServiceDetailsToSchema(cortexSearchServiceDetails *sdk.CortexSe
 	if cortexSearchServiceDetails.SearchColumn != nil {
 		cortexSearchServiceDetailsSchema["search_column"] = (*cortexSearchServiceDetails.SearchColumn)
 	}
-	// attribute_columns: manual addition and mapping is needed
-	// columns: manual addition and mapping is needed
+	cortexSearchServiceDetailsSchema["attribute_columns"] = cortexSearchServiceDetails.AttributeColumns
+	cortexSearchServiceDetailsSchema["columns"] = cortexSearchServiceDetails.Columns
 	if cortexSearchServiceDetails.Definition != nil {
 		cortexSearchServiceDetailsSchema["definition"] = (*cortexSearchServiceDetails.Definition)
 	}
@@ -116,7 +120,6 @@ func CortexSearchServiceDetailsToSchema(cortexSearchServiceDetails *sdk.CortexSe
 	// primary_key_columns is skipped and won't be generated
 	// scoring_profile_count is skipped and won't be generated
 	// full_index_build_interval_days is skipped and won't be generated
-	cortexSearchServiceDetailsToSchemaMapper{}.additionalToSchema(cortexSearchServiceDetails, cortexSearchServiceDetailsSchema)
 	return cortexSearchServiceDetailsSchema
 }
 

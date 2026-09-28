@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -58,6 +59,80 @@ func Test_ModelFromStructDetails_ManualFields(t *testing.T) {
 	assert.True(t, model.SchemaFields[1].Manual)
 	assert.False(t, model.SchemaFields[1].Skipped)
 	assert.True(t, model.AdditionalMapping)
+}
+
+func Test_ModelFromStructDetails_TypeOverrides(t *testing.T) {
+	details := ShowResultSchemaDetails{
+		TypeOverrides: map[string]schema.ValueType{"oauth_scopes": schema.TypeSet},
+		StructDetails: genhelpers.StructDetails{
+			Name: "sdk.Secret",
+			Fields: []genhelpers.Field{
+				{Name: "Name", ConcreteType: "string", UnderlyingType: "string"},
+				{Name: "OauthScopes", ConcreteType: "[]string", UnderlyingType: "slice"},
+			},
+		},
+	}
+
+	model := ModelFromStructDetails(details, nil)
+
+	require.Len(t, model.SchemaFields, 2)
+	assert.Equal(t, schema.TypeString, model.SchemaFields[0].SchemaType)
+	assert.Equal(t, "oauth_scopes", model.SchemaFields[1].Name)
+	assert.Equal(t, schema.TypeSet, model.SchemaFields[1].SchemaType)
+	assert.False(t, model.SchemaFields[1].Manual)
+	assert.False(t, model.SchemaFields[1].Skipped)
+	assert.True(t, model.SchemaFields[1].IsListOrSet())
+	assert.False(t, model.AdditionalMapping)
+}
+
+func Test_ModelFromStructDetails_TypeOverridesUnknownKey(t *testing.T) {
+	details := ShowResultSchemaDetails{
+		TypeOverrides: map[string]schema.ValueType{"not_a_field": schema.TypeSet},
+		StructDetails: genhelpers.StructDetails{
+			Name: "sdk.Example",
+			Fields: []genhelpers.Field{
+				{Name: "Kept", ConcreteType: "string", UnderlyingType: "string"},
+			},
+		},
+	}
+
+	assert.PanicsWithValue(t, "TypeOverrides for sdk.Example contain unknown schema keys: not_a_field", func() {
+		ModelFromStructDetails(details, nil)
+	})
+}
+
+func Test_ModelFromStructDetails_TypeOverridesAndManualOverlap(t *testing.T) {
+	details := ShowResultSchemaDetails{
+		ManualFields:  []string{"oauth_scopes"},
+		TypeOverrides: map[string]schema.ValueType{"oauth_scopes": schema.TypeSet},
+		StructDetails: genhelpers.StructDetails{
+			Name: "sdk.Secret",
+			Fields: []genhelpers.Field{
+				{Name: "OauthScopes", ConcreteType: "[]string", UnderlyingType: "slice"},
+			},
+		},
+	}
+
+	assert.PanicsWithValue(t, "ManualFields and TypeOverrides for sdk.Secret overlap: oauth_scopes", func() {
+		ModelFromStructDetails(details, nil)
+	})
+}
+
+func Test_ModelFromStructDetails_TypeOverridesAndSkipOverlap(t *testing.T) {
+	details := ShowResultSchemaDetails{
+		SkipFields:    []string{"oauth_scopes"},
+		TypeOverrides: map[string]schema.ValueType{"oauth_scopes": schema.TypeSet},
+		StructDetails: genhelpers.StructDetails{
+			Name: "sdk.Secret",
+			Fields: []genhelpers.Field{
+				{Name: "OauthScopes", ConcreteType: "[]string", UnderlyingType: "slice"},
+			},
+		},
+	}
+
+	assert.PanicsWithValue(t, "SkipFields and TypeOverrides for sdk.Secret overlap: oauth_scopes", func() {
+		ModelFromStructDetails(details, nil)
+	})
 }
 
 func Test_ModelFromStructDetails_SkipAndManualOverlap(t *testing.T) {

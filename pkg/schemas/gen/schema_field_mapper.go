@@ -18,9 +18,13 @@ type SchemaField struct {
 	Manual                  bool
 }
 
+func (f SchemaField) IsListOrSet() bool {
+	return f.SchemaType == schema.TypeList || f.SchemaType == schema.TypeSet
+}
+
 // TODO [SNOW-1501905]: handle other basic type variants
 // TODO [SNOW-1501905]: handle any other interface (error)
-// TODO [SNOW-1501905]: handle slices
+// TODO [SNOW-1501905]: handle remaining slices (identifiers, enums, other numerics)
 // TODO [SNOW-1501905]: handle structs (chosen one or all)
 func MapToSchemaField(field genhelpers.Field) SchemaField {
 	isPointer := field.IsPointer()
@@ -30,6 +34,8 @@ func MapToSchemaField(field genhelpers.Field) SchemaField {
 	switch concreteTypeWithoutPtr {
 	case "string":
 		return schemaField(name, schema.TypeString, field.Name, isPointer, isInterface, genhelpers.Identity)
+	case "[]string":
+		return schemaField(name, schema.TypeList, field.Name, isPointer, isInterface, genhelpers.Identity)
 	case "int":
 		return schemaField(name, schema.TypeInt, field.Name, isPointer, isInterface, genhelpers.Identity)
 	case "float64":

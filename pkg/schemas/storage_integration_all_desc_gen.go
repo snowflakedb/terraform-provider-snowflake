@@ -7,12 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type storageIntegrationAllDetailsToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.StorageIntegrationAllDetails] = storageIntegrationAllDetailsToSchemaMapper{}
-
 // DescribeStorageIntegrationAllDetailsSchema represents output of DESCRIBE query for the single StorageIntegrationAllDetails.
-var DescribeStorageIntegrationAllDetailsSchema = mergeSchema(map[string]*schema.Schema{
+var DescribeStorageIntegrationAllDetailsSchema = map[string]*schema.Schema{
 	"id": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -25,8 +21,16 @@ var DescribeStorageIntegrationAllDetailsSchema = mergeSchema(map[string]*schema.
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// allowed_locations: manual addition and mapping is needed
-	// blocked_locations: manual addition and mapping is needed
+	"allowed_locations": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
+	"blocked_locations": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	"comment": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -67,7 +71,7 @@ var DescribeStorageIntegrationAllDetailsSchema = mergeSchema(map[string]*schema.
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}, storageIntegrationAllDetailsToSchemaMapper{}.additionalSchema())
+}
 
 var _ = DescribeStorageIntegrationAllDetailsSchema
 
@@ -76,8 +80,8 @@ func StorageIntegrationAllDetailsToSchema(storageIntegrationAllDetails *sdk.Stor
 	storageIntegrationAllDetailsSchema["id"] = storageIntegrationAllDetails.Id.Name()
 	storageIntegrationAllDetailsSchema["enabled"] = storageIntegrationAllDetails.Enabled
 	storageIntegrationAllDetailsSchema["provider"] = storageIntegrationAllDetails.Provider
-	// allowed_locations: manual addition and mapping is needed
-	// blocked_locations: manual addition and mapping is needed
+	storageIntegrationAllDetailsSchema["allowed_locations"] = storageIntegrationAllDetails.AllowedLocations
+	storageIntegrationAllDetailsSchema["blocked_locations"] = storageIntegrationAllDetails.BlockedLocations
 	storageIntegrationAllDetailsSchema["comment"] = storageIntegrationAllDetails.Comment
 	storageIntegrationAllDetailsSchema["use_privatelink_endpoint"] = storageIntegrationAllDetails.UsePrivatelinkEndpoint
 	storageIntegrationAllDetailsSchema["iam_user_arn"] = storageIntegrationAllDetails.IamUserArn
@@ -88,7 +92,6 @@ func StorageIntegrationAllDetailsToSchema(storageIntegrationAllDetails *sdk.Stor
 	storageIntegrationAllDetailsSchema["consent_url"] = storageIntegrationAllDetails.ConsentUrl
 	storageIntegrationAllDetailsSchema["multi_tenant_app_name"] = storageIntegrationAllDetails.MultiTenantAppName
 	storageIntegrationAllDetailsSchema["service_account"] = storageIntegrationAllDetails.ServiceAccount
-	storageIntegrationAllDetailsToSchemaMapper{}.additionalToSchema(storageIntegrationAllDetails, storageIntegrationAllDetailsSchema)
 	return storageIntegrationAllDetailsSchema
 }
 

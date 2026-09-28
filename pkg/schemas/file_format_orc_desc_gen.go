@@ -7,12 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type fileFormatOrcToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.FileFormatOrc] = fileFormatOrcToSchemaMapper{}
-
 // DescribeFileFormatOrcSchema represents output of DESCRIBE query for the single FileFormatOrc.
-var DescribeFileFormatOrcSchema = mergeSchema(map[string]*schema.Schema{
+var DescribeFileFormatOrcSchema = map[string]*schema.Schema{
 	"id": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -29,8 +25,12 @@ var DescribeFileFormatOrcSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
-	// null_if: manual addition and mapping is needed
-}, fileFormatOrcToSchemaMapper{}.additionalSchema())
+	"null_if": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
+}
 
 var _ = DescribeFileFormatOrcSchema
 
@@ -40,8 +40,7 @@ func FileFormatOrcToSchema(fileFormatOrc *sdk.FileFormatOrc) map[string]any {
 	fileFormatOrcSchema["type"] = string(fileFormatOrc.Type)
 	fileFormatOrcSchema["trim_space"] = fileFormatOrc.TrimSpace
 	fileFormatOrcSchema["replace_invalid_characters"] = fileFormatOrc.ReplaceInvalidCharacters
-	// null_if: manual addition and mapping is needed
-	fileFormatOrcToSchemaMapper{}.additionalToSchema(fileFormatOrc, fileFormatOrcSchema)
+	fileFormatOrcSchema["null_if"] = fileFormatOrc.NullIf
 	return fileFormatOrcSchema
 }
 

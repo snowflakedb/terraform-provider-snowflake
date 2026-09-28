@@ -7,12 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type fileFormatAvroToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.FileFormatAvro] = fileFormatAvroToSchemaMapper{}
-
 // DescribeFileFormatAvroSchema represents output of DESCRIBE query for the single FileFormatAvro.
-var DescribeFileFormatAvroSchema = mergeSchema(map[string]*schema.Schema{
+var DescribeFileFormatAvroSchema = map[string]*schema.Schema{
 	"id": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -33,8 +29,12 @@ var DescribeFileFormatAvroSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
-	// null_if: manual addition and mapping is needed
-}, fileFormatAvroToSchemaMapper{}.additionalSchema())
+	"null_if": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
+}
 
 var _ = DescribeFileFormatAvroSchema
 
@@ -45,8 +45,7 @@ func FileFormatAvroToSchema(fileFormatAvro *sdk.FileFormatAvro) map[string]any {
 	fileFormatAvroSchema["compression"] = string(fileFormatAvro.Compression)
 	fileFormatAvroSchema["trim_space"] = fileFormatAvro.TrimSpace
 	fileFormatAvroSchema["replace_invalid_characters"] = fileFormatAvro.ReplaceInvalidCharacters
-	// null_if: manual addition and mapping is needed
-	fileFormatAvroToSchemaMapper{}.additionalToSchema(fileFormatAvro, fileFormatAvroSchema)
+	fileFormatAvroSchema["null_if"] = fileFormatAvro.NullIf
 	return fileFormatAvroSchema
 }
 

@@ -54,6 +54,7 @@ The following types are supported currently in the generator (schema and mapping
     - `sdk.SchemaObjectIdentifier`
     - `sdk.TableColumnIdentifier`
 - `sdk.ObjectIdentifier` interface (nil-guarded; no dereference)
+- slices of string (`[]string`; default TypeList with TypeString `Elem`; `TypeOverrides` to TypeSet)
 
 ##### To schema mappings
 
@@ -78,7 +79,8 @@ If you change the show output struct in the SDK:
    - struct DESCRIBE: `{ObjectStruct: sdk.<Singular>Details{}, IsDescribe: true}` → `Describe<Singular>DetailsSchema` in `<singular>_desc_gen.go`
    - property-row list entry: `{ObjectStruct: sdk.<Type>{}, UsedAsListEntry: true}` → `<Type>Schema` in `<type>_gen.go`
    - `SkipFields: []string{"snake_case_key"}` omits that key from the schema map and `ToSchema` (comment: skipped and won't be generated). Use when the field is SDK-internal (keep omitted) or a real SHOW/DESCRIBE property is missing from today’s public schema (skip now, add in a follow-up PR).
-   - `ManualFields: []string{"snake_case_key"}` omits that key the same way (comment: manual addition and mapping is needed) and generates an empty mapper type that must implement `additionalSchemaMapper[T]` in `*_ext.go`. Use when the generator cannot emit the public mapping (slices, nested structs, renames, custom conversion). Callers always use generated `XToSchema`.
+   - `ManualFields: []string{"snake_case_key"}` omits that key the same way (comment: manual addition and mapping is needed) and generates an empty mapper type that must implement `additionalSchemaMapper[T]` in `*_ext.go`. Use when the generator cannot emit the public mapping (nested structs, identifier slices, renames, custom conversion). Callers always use generated `XToSchema`.
+   - `TypeOverrides: map[string]schema.ValueType{"snake_case_key": schema.TypeSet}` changes the generated Terraform type only (mapper unchanged). Native `[]string` defaults to TypeList; override to TypeSet when that is the public schema. Cannot overlap SkipFields or ManualFields.
 2. Check if you don't introduce a type that is unsupported (check [supported types](#supported-types)
    and [known limitations](#known-limitations)).
 3. Run generation according to [instructions](#invoking-the-generation).
@@ -90,7 +92,7 @@ If you change the show output struct in the SDK:
 - The following types (already existing in the SDK show output structs) are not yet supported (for all of them the
   schema will be generated with `schema.TypeInvalid`:
     - other basic types (e.g. `int8`, etc.)
-    - slices of basic types (`[]int`, `[]string`)
+    - slices of basic types other than `[]string` (e.g. `[]int`)
     - slices of identifiers (`[]sdk.AccountIdentifier`, `[]sdk.SchemaObjectIdentifier`)
     - slices of enums (`[]sdk.IntegrationType`, `[]sdk.PluralObjectType`)
     - structs (`sdk.FileFormatTypeOptions`)

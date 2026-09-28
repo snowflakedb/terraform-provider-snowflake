@@ -7,12 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type computePoolToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.ComputePool] = computePoolToSchemaMapper{}
-
 // ShowComputePoolSchema represents output of SHOW query for the single ComputePool.
-var ShowComputePoolSchema = mergeSchema(map[string]*schema.Schema{
+var ShowComputePoolSchema = map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -89,8 +85,12 @@ var ShowComputePoolSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// backup_instance_families: manual addition and mapping is needed
-}, computePoolToSchemaMapper{}.additionalSchema())
+	"backup_instance_families": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
+}
 
 var _ = ShowComputePoolSchema
 
@@ -119,8 +119,7 @@ func ComputePoolToSchema(computePool *sdk.ComputePool) map[string]any {
 	if computePool.Application != nil {
 		computePoolSchema["application"] = (*computePool.Application).Name()
 	}
-	// backup_instance_families: manual addition and mapping is needed
-	computePoolToSchemaMapper{}.additionalToSchema(computePool, computePoolSchema)
+	computePoolSchema["backup_instance_families"] = computePool.BackupInstanceFamilies
 	return computePoolSchema
 }
 

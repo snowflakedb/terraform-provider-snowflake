@@ -7,12 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type computePoolDetailsToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.ComputePoolDetails] = computePoolDetailsToSchemaMapper{}
-
 // DescribeComputePoolDetailsSchema represents output of DESCRIBE query for the single ComputePoolDetails.
-var DescribeComputePoolDetailsSchema = mergeSchema(map[string]*schema.Schema{
+var DescribeComputePoolDetailsSchema = map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -89,7 +85,11 @@ var DescribeComputePoolDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// backup_instance_families: manual addition and mapping is needed
+	"backup_instance_families": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	"error_code": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -98,7 +98,7 @@ var DescribeComputePoolDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}, computePoolDetailsToSchemaMapper{}.additionalSchema())
+}
 
 var _ = DescribeComputePoolDetailsSchema
 
@@ -127,10 +127,9 @@ func ComputePoolDetailsToSchema(computePoolDetails *sdk.ComputePoolDetails) map[
 	if computePoolDetails.Application != nil {
 		computePoolDetailsSchema["application"] = (*computePoolDetails.Application).Name()
 	}
-	// backup_instance_families: manual addition and mapping is needed
+	computePoolDetailsSchema["backup_instance_families"] = computePoolDetails.BackupInstanceFamilies
 	computePoolDetailsSchema["error_code"] = computePoolDetails.ErrorCode
 	computePoolDetailsSchema["status_message"] = computePoolDetails.StatusMessage
-	computePoolDetailsToSchemaMapper{}.additionalToSchema(computePoolDetails, computePoolDetailsSchema)
 	return computePoolDetailsSchema
 }
 

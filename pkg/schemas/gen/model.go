@@ -34,8 +34,18 @@ func ModelFromStructDetails(sdkStruct ShowResultSchemaDetails, preamble *genhelp
 	name, _ := strings.CutPrefix(sdkStruct.Name, "sdk.")
 	skip := keyedSet(sdkStruct.SkipFields)
 	manual := keyedSet(sdkStruct.ManualFields)
+	overrides := make(map[string]struct{}, len(sdkStruct.TypeOverrides))
+	for key := range sdkStruct.TypeOverrides {
+		overrides[key] = struct{}{}
+	}
 	if overlap := intersectingKeys(skip, manual); len(overlap) > 0 {
 		panic(fmt.Sprintf("SkipFields and ManualFields for %s overlap: %s", sdkStruct.Name, strings.Join(overlap, ", ")))
+	}
+	if overlap := intersectingKeys(skip, overrides); len(overlap) > 0 {
+		panic(fmt.Sprintf("SkipFields and TypeOverrides for %s overlap: %s", sdkStruct.Name, strings.Join(overlap, ", ")))
+	}
+	if overlap := intersectingKeys(manual, overrides); len(overlap) > 0 {
+		panic(fmt.Sprintf("ManualFields and TypeOverrides for %s overlap: %s", sdkStruct.Name, strings.Join(overlap, ", ")))
 	}
 
 	schemaFields := make([]SchemaField, 0, len(sdkStruct.Fields))
@@ -49,6 +59,10 @@ func ModelFromStructDetails(sdkStruct ShowResultSchemaDetails, preamble *genhelp
 			delete(manual, schemaField.Name)
 			schemaField.Manual = true
 		}
+		if override, ok := sdkStruct.TypeOverrides[schemaField.Name]; ok {
+			delete(overrides, schemaField.Name)
+			schemaField.SchemaType = override
+		}
 		schemaFields = append(schemaFields, schemaField)
 	}
 	if unmatched := sortedKeys(skip); len(unmatched) > 0 {
@@ -56,6 +70,9 @@ func ModelFromStructDetails(sdkStruct ShowResultSchemaDetails, preamble *genhelp
 	}
 	if unmatched := sortedKeys(manual); len(unmatched) > 0 {
 		panic(fmt.Sprintf("ManualFields for %s contain unknown schema keys: %s", sdkStruct.Name, strings.Join(unmatched, ", ")))
+	}
+	if unmatched := sortedKeys(overrides); len(unmatched) > 0 {
+		panic(fmt.Sprintf("TypeOverrides for %s contain unknown schema keys: %s", sdkStruct.Name, strings.Join(unmatched, ", ")))
 	}
 
 	return ShowResultSchemaModel{

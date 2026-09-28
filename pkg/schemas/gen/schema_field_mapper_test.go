@@ -127,8 +127,16 @@ func Test_MapToSchemaField(t *testing.T) {
 			expected: expectedValues{"unexported_table_column_identifier_ptr", schema.TypeString, true, false, genhelpers.FullyQualifiedName},
 		},
 		{
-			field:    genhelpers.Field{Name: "unexportedInterface", ConcreteType: "sdk.ObjectIdentifier", UnderlyingType: "interface"},
-			expected: expectedValues{"unexported_interface", schema.TypeString, false, true, genhelpers.FullyQualifiedName},
+			field:    genhelpers.Field{Name: "unexportedStringSlice", ConcreteType: "[]string", UnderlyingType: "slice"},
+			expected: expectedValues{"unexported_string_slice", schema.TypeList, false, false, genhelpers.Identity},
+		},
+		{
+			field:    genhelpers.Field{Name: "unexportedStringSlicePtr", ConcreteType: "*[]string", UnderlyingType: "*slice"},
+			expected: expectedValues{"unexported_string_slice_ptr", schema.TypeList, true, false, genhelpers.Identity},
+		},
+		{
+			field:    genhelpers.Field{Name: "unexportedIntSlice", ConcreteType: "[]int", UnderlyingType: "slice"},
+			expected: expectedValues{"unexported_int_slice", schema.TypeInvalid, false, false, genhelpers.Identity},
 		},
 	}
 
