@@ -399,6 +399,70 @@ func TestAcc_Database_CompleteUseCase(t *testing.T) {
 	})
 }
 
+// TestAcc_Database_EmptyParameterAsDefaultValue is the database counterpart of
+// TestAcc_Schema_EmptyParameterAsDefaultValue (https://github.com/snowflakedb/terraform-provider-snowflake/issues/3510).
+// It proves the empty-string path that previously did not apply: set a collation, unset it (null) so
+// Terraform no longer treats the field as "already set", then set default_ddl_collation = "" and assert
+// Snowflake has an empty value at DATABASE.
+//
+// Follow-up: TestAcc_Schema_EmptyParameterAsDefaultValue then sets the value back to a non-empty
+// collation and jumps straight to "". That still does not SET empty (an intermediate null is required),
+// but schema keeps a non-empty plan because it has a computed parameters block marked computed from
+// CustomizeDiff. snowflake_database has no such block, so the same jump is a silent no-op (empty plan,
+// Snowflake still has the previous collation). A follow-up should adjust database parameter handling to
+// match schema so that jump is at least visible in the plan (and ideally applies the empty string).
+func TestAcc_Database_EmptyParameterAsDefaultValue(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	parameterSet := model.Database("test", id.Name()).WithDefaultDdlCollation("en_nz")
+	parameterSetToNull := model.Database("test", id.Name()).WithDefaultDdlCollationValue(accconfig.ReplacementPlaceholderVariable(accconfig.SnowflakeProviderConfigNull))
+	parameterSetToEmptyString := model.Database("test", id.Name()).WithDefaultDdlCollation("")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Database),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, parameterSet),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "name", id.Name()),
+					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "default_ddl_collation", "en_nz"),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, parameterSetToNull),
+				Check: assertThat(
+					t,
+					assert.Check(resource.TestCheckResourceAttr(parameterSetToNull.ResourceReference(), "name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(parameterSetToNull.ResourceReference(), "default_ddl_collation", "")),
+					objectparametersassert.DatabaseParameters(t, id).
+						HasDefaultDefaultDdlCollationValue(),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, parameterSetToEmptyString),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(parameterSetToEmptyString.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation", tfjson.ActionUpdate, sdk.String(""), nil),
+						planchecks.PrintPlanDetails(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation"),
+					},
+				},
+				Check: assertThat(
+					t,
+					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation", "")),
+					objectparametersassert.DatabaseParameters(t, id).
+						HasDefaultDdlCollation("").
+						HasDefaultDdlCollationLevel(sdk.ParameterTypeDatabase),
+				),
+			},
+		},
+	})
+}
+
 // For now, this test can sometimes fail (if account parameters are changed in the meantime).
 // We could set the known parameters here, however, we need to test behavior for the database when they are not set.
 // We could try ignoring the changes to parameters too.
