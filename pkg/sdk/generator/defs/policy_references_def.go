@@ -80,13 +80,4 @@ var policyReferencesDef = g.NewInterface(
 		).WithValidation(g.ValidateValueSet, "parameters"),
 	policyReferenceParametersDef,
 	policyReferenceFunctionArgumentsDef,
-).WithEnums(PolicyEntityDomainEnumDef, PolicyKindEnumDef).
-	// TODO(next-pr): drop this allow-list once SDK unit tests move to generated + *_ext_test.go
-	WithAllowedGenerationParts(
-		g.PartDefault,
-		g.PartDto,
-		g.PartDtoBuilders,
-		g.PartImpl,
-		g.PartValidations,
-		g.PartEnums,
-	)
+).WithEnums(PolicyEntityDomainEnumDef, PolicyKindEnumDef)
