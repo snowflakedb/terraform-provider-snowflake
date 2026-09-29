@@ -136,8 +136,8 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 			HasCommentString(comment).
 			HasDataRetentionTimeInDaysString("15").
 			HasMaxDataExtensionTimeInDaysString("3").
-			HasExternalVolumeString(externalVolumeId.Name()).
-			HasCatalogString(catalogId.Name()).
+			HasExternalVolumeString(externalVolumeId.FullyQualifiedName()).
+			HasCatalogString(catalogId.FullyQualifiedName()).
 			HasReplaceInvalidCharactersString("true").
 			HasDefaultDdlCollationString("en_US").
 			HasDefaultNotebookComputePoolCpuString("CPU_X64_S").
@@ -348,8 +348,8 @@ func TestAcc_Schema_CompleteUseCase(t *testing.T) {
 						HasCommentString(comment).
 						HasDataRetentionTimeInDaysString("1").
 						HasMaxDataExtensionTimeInDaysString("3").
-						HasExternalVolumeString(externalVolumeId.Name()).
-						HasCatalogString(catalogId.Name()).
+						HasExternalVolumeString(externalVolumeId.FullyQualifiedName()).
+						HasCatalogString(catalogId.FullyQualifiedName()).
 						HasReplaceInvalidCharactersString("true").
 						HasDefaultDdlCollationString("en_US").
 						HasDefaultNotebookComputePoolCpuString("CPU_X64_S").

@@ -15,10 +15,17 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
+var schemaParameterFieldNames = collections.Map(
+	defs.ParameterDefsForLevel(parameterdefs.ParameterLevelSchema),
+	func(p parameterdefs.ParameterDef) string { return p.FieldName() },
 )
 
 var schemaSchema = map[string]*schema.Schema{
@@ -110,7 +117,7 @@ func Schema() *schema.Resource {
 			ComputedIfAnyAttributeChanged(schemaSchema, ShowOutputAttributeName, "name", "database", "comment", "with_managed_access", "is_transient"),
 			ComputedIfAnyAttributeChanged(schemaSchema, DescribeOutputAttributeName, "name", "database"),
 			ComputedIfAnyAttributeChanged(schemaSchema, FullyQualifiedNameAttributeName, "name", "database"),
-			ComputedIfAnyAttributeChanged(schemaParametersSchema, ParametersAttributeName, collections.Map(sdk.AsStringList(sdk.AllSchemaParameters), strings.ToLower)...),
+			ComputedIfAnyAttributeChanged(schemaParametersSchema, ParametersAttributeName, schemaParameterFieldNames...),
 			schemaParametersCustomDiff,
 		)),
 
@@ -259,7 +266,12 @@ func ReadContextSchema(withExternalChangesMarking bool) schema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		schemaParameters, err := client.Schemas.ShowParameters(ctx, id)
+		rawSchemaParameters, err := client.Schemas.ShowParameters(ctx, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		schemaParameters, err := client.Schemas.ShowParametersDetails(ctx, id)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -302,7 +314,7 @@ func ReadContextSchema(withExternalChangesMarking bool) schema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		if err = d.Set(ParametersAttributeName, []map[string]any{schemas.SchemaParametersToSchema(schemaParameters, providerCtx)}); err != nil {
+		if err = d.Set(ParametersAttributeName, []map[string]any{schemas.SchemaParametersToSchema(rawSchemaParameters, providerCtx)}); err != nil {
 			return diag.FromErr(err)
 		}
 		return nil

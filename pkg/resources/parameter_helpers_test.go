@@ -40,6 +40,38 @@ func TestHandleDatabaseParameterRead(t *testing.T) {
 	require.Equal(t, string(sdk.LogLevelInfo), d.Get("log_level"))
 }
 
+func TestHandleSchemaParameterRead(t *testing.T) {
+	state := make(map[string]any, len(schemaParametersSchema))
+	for key, s := range schemaParametersSchema {
+		switch s.Type {
+		case schema.TypeInt:
+			state[key] = 0
+		case schema.TypeBool:
+			state[key] = false
+		default:
+			state[key] = ""
+		}
+	}
+	d := schema.TestResourceDataRaw(t, schemaParametersSchema, state)
+
+	diags := handleSchemaParameterRead(d, &sdk.SchemaParametersDetails{
+		ExternalVolume:          sdk.TypedParameter[sdk.AccountObjectIdentifier]{Value: sdk.NewAccountObjectIdentifier("external_volume")},
+		Catalog:                 sdk.TypedParameter[sdk.AccountObjectIdentifier]{},
+		DataRetentionTimeInDays: sdk.TypedParameter[int]{Value: 7},
+		EnableConsoleOutput:     sdk.TypedParameter[bool]{Value: true},
+		LogLevel:                sdk.TypedParameter[sdk.LogLevel]{Value: sdk.LogLevelInfo},
+		PipeExecutionPaused:     sdk.TypedParameter[bool]{Value: true},
+	})
+
+	require.Empty(t, diags)
+	require.Equal(t, `"external_volume"`, d.Get("external_volume"))
+	require.Equal(t, "", d.Get("catalog"))
+	require.Equal(t, 7, d.Get("data_retention_time_in_days"))
+	require.Equal(t, true, d.Get("enable_console_output"))
+	require.Equal(t, string(sdk.LogLevelInfo), d.Get("log_level"))
+	require.Equal(t, true, d.Get("pipe_execution_paused"))
+}
+
 func TestParameterSchema_AllCatalogKindsAreHandled(t *testing.T) {
 	for _, parameter := range defs.AllParameters {
 		t.Run(parameter.SqlName, func(t *testing.T) {

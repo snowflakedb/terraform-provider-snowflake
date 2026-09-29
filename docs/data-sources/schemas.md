@@ -169,6 +169,8 @@ Read-Only:
 - `catalog` (List of Object) (see [below for nested schema](#nestedobjatt--schemas--parameters--catalog))
 - `data_retention_time_in_days` (List of Object) (see [below for nested schema](#nestedobjatt--schemas--parameters--data_retention_time_in_days))
 - `default_ddl_collation` (List of Object) (see [below for nested schema](#nestedobjatt--schemas--parameters--default_ddl_collation))
+- `default_notebook_compute_pool_cpu` (List of Object) (see [below for nested schema](#nestedobjatt--schemas--parameters--default_notebook_compute_pool_cpu))
+- `default_notebook_compute_pool_gpu` (List of Object) (see [below for nested schema](#nestedobjatt--schemas--parameters--default_notebook_compute_pool_gpu))
 - `enable_console_output` (List of Object) (see [below for nested schema](#nestedobjatt--schemas--parameters--enable_console_output))
 - `external_volume` (List of Object) (see [below for nested schema](#nestedobjatt--schemas--parameters--external_volume))
 - `log_event_level` (List of Object) (see [below for nested schema](#nestedobjatt--schemas--parameters--log_event_level))
@@ -211,6 +213,30 @@ Read-Only:
 
 <a id="nestedobjatt--schemas--parameters--default_ddl_collation"></a>
 ### Nested Schema for `schemas.parameters.default_ddl_collation`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--schemas--parameters--default_notebook_compute_pool_cpu"></a>
+### Nested Schema for `schemas.parameters.default_notebook_compute_pool_cpu`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--schemas--parameters--default_notebook_compute_pool_gpu"></a>
+### Nested Schema for `schemas.parameters.default_notebook_compute_pool_gpu`
 
 Read-Only:
 

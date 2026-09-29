@@ -10,7 +10,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var (
@@ -18,47 +17,17 @@ var (
 	sharedDatabaseParametersSchema = make(map[string]*schema.Schema)
 )
 
-var databaseParameterIntRanges = map[string]schema.SchemaValidateDiagFunc{
-	// Choosing a higher range than the documented one (for the standard edition or transient databases, the maximum number is 1).
-	defs.DataRetentionTimeInDays.SqlName:     validation.ToDiagFunc(validation.IntBetween(0, 90)),
-	defs.MaxDataExtensionTimeInDays.SqlName:  validation.ToDiagFunc(validation.IntBetween(0, 90)),
-	defs.UserTaskTimeoutMs.SqlName:           validation.ToDiagFunc(validation.IntBetween(0, 86400000)),
-	defs.SuspendTaskAfterNumFailures.SqlName: validation.ToDiagFunc(validation.IntAtLeast(0)),
-	defs.TaskAutoRetryAttempts.SqlName:       validation.ToDiagFunc(validation.IntAtLeast(0)),
-}
-
-var databaseValidAccountObjectIdentifierParameters = []parameterdefs.ParameterDef{
-	defs.DefaultNotebookComputePoolCpu,
-	defs.DefaultNotebookComputePoolGpu,
-}
-
 var sharedDatabaseNotApplicableParameters = []string{
 	defs.DataRetentionTimeInDays.SqlName,
 	defs.MaxDataExtensionTimeInDays.SqlName,
 }
 
-func databaseParameterSchemaFor(p parameterdefs.ParameterDef) *schema.Schema {
-	s := parameterSchema(p)
-
-	if validate, ok := databaseParameterIntRanges[p.SqlName]; ok {
-		s.ValidateDiagFunc = validate
-	}
-	if slices.ContainsFunc(databaseValidAccountObjectIdentifierParameters, func(validIdentifierParameter parameterdefs.ParameterDef) bool {
-		return validIdentifierParameter.SqlName == p.SqlName
-	}) {
-		s.ValidateDiagFunc = IsValidIdentifier[sdk.AccountObjectIdentifier]()
-		s.DiffSuppressFunc = suppressIdentifierQuoting
-	}
-
-	return s
-}
-
 func init() {
 	for _, p := range defs.ParameterDefsForLevel(parameterdefs.ParameterLevelDatabase) {
-		databaseParametersSchema[p.FieldName()] = databaseParameterSchemaFor(p)
+		databaseParametersSchema[p.FieldName()] = parameterSchema(p)
 
 		if !slices.Contains(sharedDatabaseNotApplicableParameters, p.SqlName) {
-			sharedSchema := databaseParameterSchemaFor(p)
+			sharedSchema := parameterSchema(p)
 			sharedSchema.ForceNew = true
 			sharedDatabaseParametersSchema[p.FieldName()] = sharedSchema
 		}

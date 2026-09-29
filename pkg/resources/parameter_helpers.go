@@ -2,10 +2,13 @@ package resources
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 type enumParameterMetadata struct {
@@ -32,6 +35,19 @@ var primitiveParameterValueTypes = map[string]schema.ValueType{
 	"int":              schema.TypeInt,
 	"string":           schema.TypeString,
 	"StringAllowEmpty": schema.TypeString,
+}
+
+var parameterIntAtLeastZero = []parameterdefs.ParameterDef{
+	defs.DataRetentionTimeInDays,
+	defs.MaxDataExtensionTimeInDays,
+	defs.SuspendTaskAfterNumFailures,
+	defs.TaskAutoRetryAttempts,
+	defs.UserTaskTimeoutMs,
+}
+
+var validAccountObjectIdentifierParameters = []parameterdefs.ParameterDef{
+	defs.DefaultNotebookComputePoolCpu,
+	defs.DefaultNotebookComputePoolGpu,
 }
 
 // parameterSchema derives a resource schema entry from a catalog parameter.
@@ -61,6 +77,17 @@ func parameterSchema(p parameterdefs.ParameterDef) *schema.Schema {
 		s.Description = enrichWithReferenceToParameterDocs(p.SqlName, joinWithSpace(p.Description, enumMetadata.optionsDescription))
 	case isIdentifier:
 		s.ValidateDiagFunc = identifierValidator
+		s.DiffSuppressFunc = suppressIdentifierQuoting
+	}
+	if slices.ContainsFunc(parameterIntAtLeastZero, func(intParameter parameterdefs.ParameterDef) bool {
+		return intParameter.SqlName == p.SqlName
+	}) {
+		s.ValidateDiagFunc = validation.ToDiagFunc(validation.IntAtLeast(0))
+	}
+	if slices.ContainsFunc(validAccountObjectIdentifierParameters, func(validIdentifierParameter parameterdefs.ParameterDef) bool {
+		return validIdentifierParameter.SqlName == p.SqlName
+	}) {
+		s.ValidateDiagFunc = IsValidIdentifier[sdk.AccountObjectIdentifier]()
 		s.DiffSuppressFunc = suppressIdentifierQuoting
 	}
 

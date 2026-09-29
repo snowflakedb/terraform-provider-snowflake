@@ -28,6 +28,38 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.21.x ➞ v2.22.0
 
+### *(enhancement)* Loosened integer parameter validation on database and schema resources
+
+Client-side upper bounds on integer object parameters have been removed. The provider now only rejects values below `0` (`IntAtLeast(0)`) and lets Snowflake enforce account-specific or edition-specific maxima.
+
+Previously rejected values that Snowflake accepts (for example a `DATA_RETENTION_TIME_IN_DAYS` above `90`, or a `USER_TASK_TIMEOUT_MS` above `86400000`) now pass plan validation and fail only if Snowflake rejects them.
+
+Affected fields:
+
+- `data_retention_time_in_days` (was `0`–`90`)
+- `max_data_extension_time_in_days` (was `0`–`90`)
+- `user_task_timeout_ms` (was `0`–`86400000`)
+
+on:
+
+- [`snowflake_database`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/database)
+- [`snowflake_secondary_database`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/secondary_database)
+- [`snowflake_shared_database`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/shared_database) (`user_task_timeout_ms` only)
+- [`snowflake_schema`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/schema)
+
+No configuration changes are required. Existing values remain valid.
+
+### *(new feature)* New schema parameters in `snowflake_schema` and `snowflake_schemas`
+
+The `parameters` output of the [`snowflake_schema`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/schema) resource and the [`snowflake_schemas`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/schemas) data source now exposes:
+
+- `default_notebook_compute_pool_cpu` — the preferred CPU compute pool for notebooks using Container Runtime
+- `default_notebook_compute_pool_gpu` — the preferred GPU compute pool for notebooks using Container Runtime
+
+Both fields include the parameter's value, default, level, key, and description returned by `SHOW PARAMETERS IN SCHEMA`.
+
+No action is required; this is a non-breaking addition.
+
 ### *(new feature)* New database parameters in `snowflake_databases`
 
 The `parameters` output of the [`snowflake_databases`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/databases) data source now exposes:

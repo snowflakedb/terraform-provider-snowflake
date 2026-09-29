@@ -2,165 +2,139 @@ package resources
 
 import (
 	"context"
-	"strconv"
-	"strings"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var (
-	schemaParametersSchema     = make(map[string]*schema.Schema)
-	schemaParametersCustomDiff = ParametersCustomDiff(
-		schemaParametersProvider,
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterDataRetentionTimeInDays, valueTypeInt, sdk.ParameterTypeSchema},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterMaxDataExtensionTimeInDays, valueTypeInt, sdk.ParameterTypeSchema},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterExternalVolume, valueTypeString, sdk.ParameterTypeSchema},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterCatalog, valueTypeString, sdk.ParameterTypeSchema},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterReplaceInvalidCharacters, valueTypeBool, sdk.ParameterTypeSchema},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterDefaultDdlCollation, valueTypeString, sdk.ParameterTypeSchema},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterDefaultNotebookComputePoolCpu, valueTypeString, sdk.ParameterTypeSchema},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterDefaultNotebookComputePoolGpu, valueTypeString, sdk.ParameterTypeSchema},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterStorageSerializationPolicy, valueTypeString, sdk.ParameterTypeSchema},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterLogLevel, valueTypeString, sdk.ParameterTypeSchema},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterLogEventLevel, valueTypeString, sdk.ParameterTypeSchema},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterTraceLevel, valueTypeString, sdk.ParameterTypeSchema},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterSuspendTaskAfterNumFailures, valueTypeInt, sdk.ParameterTypeSchema},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterTaskAutoRetryAttempts, valueTypeInt, sdk.ParameterTypeSchema},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterUserTaskManagedInitialWarehouseSize, valueTypeString, sdk.ParameterTypeSchema},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterUserTaskTimeoutMs, valueTypeInt, sdk.ParameterTypeSchema},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterUserTaskMinimumTriggerIntervalInSeconds, valueTypeInt, sdk.ParameterTypeSchema},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterQuotedIdentifiersIgnoreCase, valueTypeBool, sdk.ParameterTypeSchema},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterEnableConsoleOutput, valueTypeBool, sdk.ParameterTypeSchema},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterPipeExecutionPaused, valueTypeBool, sdk.ParameterTypeSchema},
-	)
-)
+var schemaParametersSchema = make(map[string]*schema.Schema)
 
 func init() {
-	additionalSchemaParameterFields := []parameterDef[sdk.ObjectParameter]{
-		{Name: sdk.ObjectParameterPipeExecutionPaused, Type: schema.TypeBool, Description: "Specifies whether to pause a running pipe, primarily in preparation for transferring ownership of the pipe to a different role."},
+	for _, p := range defs.ParameterDefsForLevel(parameterdefs.ParameterLevelSchema) {
+		schemaParametersSchema[p.FieldName()] = parameterSchema(p)
 	}
-
-	additionalSchemaParameters := make(map[string]*schema.Schema)
-	for _, field := range additionalSchemaParameterFields {
-		fieldName := strings.ToLower(string(field.Name))
-
-		additionalSchemaParameters[fieldName] = &schema.Schema{
-			Type:        field.Type,
-			Description: enrichWithReferenceToParameterDocs(field.Name, field.Description),
-			Computed:    true,
-			Optional:    true,
-		}
-	}
-	schemaParametersSchema = collections.MergeMaps(databaseParametersSchema, additionalSchemaParameters)
-}
-
-func schemaParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) ([]*sdk.Parameter, error) {
-	return parametersProvider(ctx, d, meta.(*provider.Context), schemaParametersProviderFunc, sdk.ParseDatabaseObjectIdentifier)
-}
-
-func schemaParametersProviderFunc(c *sdk.Client) showParametersFunc[sdk.DatabaseObjectIdentifier] {
-	return c.Schemas.ShowParameters
-}
-
-func handleSchemaParameterRead(d *schema.ResourceData, schemaParameters []*sdk.Parameter) diag.Diagnostics {
-	for _, parameter := range schemaParameters {
-		switch parameter.Key {
-		case
-			string(sdk.ObjectParameterDataRetentionTimeInDays),
-			string(sdk.ObjectParameterMaxDataExtensionTimeInDays),
-			string(sdk.ObjectParameterSuspendTaskAfterNumFailures),
-			string(sdk.ObjectParameterTaskAutoRetryAttempts),
-			string(sdk.ObjectParameterUserTaskTimeoutMs),
-			string(sdk.ObjectParameterUserTaskMinimumTriggerIntervalInSeconds):
-			value, err := strconv.Atoi(parameter.Value)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			if err := d.Set(strings.ToLower(parameter.Key), value); err != nil {
-				return diag.FromErr(err)
-			}
-		case
-			string(sdk.ObjectParameterExternalVolume),
-			string(sdk.ObjectParameterCatalog),
-			string(sdk.ObjectParameterDefaultDdlCollation),
-			string(sdk.ObjectParameterDefaultNotebookComputePoolCpu),
-			string(sdk.ObjectParameterDefaultNotebookComputePoolGpu),
-			string(sdk.ObjectParameterStorageSerializationPolicy),
-			string(sdk.ObjectParameterLogLevel),
-			string(sdk.ObjectParameterLogEventLevel),
-			string(sdk.ObjectParameterTraceLevel),
-			string(sdk.ObjectParameterUserTaskManagedInitialWarehouseSize):
-			if err := d.Set(strings.ToLower(parameter.Key), parameter.Value); err != nil {
-				return diag.FromErr(err)
-			}
-		case
-			string(sdk.ObjectParameterPipeExecutionPaused),
-			string(sdk.ObjectParameterReplaceInvalidCharacters),
-			string(sdk.ObjectParameterQuotedIdentifiersIgnoreCase),
-			string(sdk.ObjectParameterEnableConsoleOutput):
-			value, err := strconv.ParseBool(parameter.Value)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			if err := d.Set(strings.ToLower(parameter.Key), value); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-	}
-
-	return nil
 }
 
 func handleSchemaParametersCreate(d *schema.ResourceData, req *sdk.CreateSchemaRequest) diag.Diagnostics {
 	return JoinDiags(
-		handleParameterCreate(d, sdk.ObjectParameterDataRetentionTimeInDays, &req.DataRetentionTimeInDays),
-		handleParameterCreate(d, sdk.ObjectParameterMaxDataExtensionTimeInDays, &req.MaxDataExtensionTimeInDays),
-		handleParameterCreateWithMapping(d, sdk.ObjectParameterExternalVolume, &req.ExternalVolume, stringToAccountObjectIdentifier),
-		handleParameterCreateWithMapping(d, sdk.ObjectParameterCatalog, &req.Catalog, stringToAccountObjectIdentifier),
-		handleParameterCreate(d, sdk.ObjectParameterPipeExecutionPaused, &req.PipeExecutionPaused),
-		handleParameterCreate(d, sdk.ObjectParameterReplaceInvalidCharacters, &req.ReplaceInvalidCharacters),
-		handleParameterCreateWithMapping(d, sdk.ObjectParameterDefaultDdlCollation, &req.DefaultDdlCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
-		handleParameterCreate(d, sdk.ObjectParameterDefaultNotebookComputePoolCpu, &req.DefaultNotebookComputePoolCpu),
-		handleParameterCreate(d, sdk.ObjectParameterDefaultNotebookComputePoolGpu, &req.DefaultNotebookComputePoolGpu),
-		handleParameterCreateWithMapping(d, sdk.ObjectParameterStorageSerializationPolicy, &req.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
-		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogLevel, &req.LogLevel, sdk.ToLogLevel),
-		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogEventLevel, &req.LogEventLevel, sdk.ToLogLevel),
-		handleParameterCreateWithMapping(d, sdk.ObjectParameterTraceLevel, &req.TraceLevel, sdk.ToTraceLevel),
-		handleParameterCreate(d, sdk.ObjectParameterSuspendTaskAfterNumFailures, &req.SuspendTaskAfterNumFailures),
-		handleParameterCreate(d, sdk.ObjectParameterTaskAutoRetryAttempts, &req.TaskAutoRetryAttempts),
-		handleParameterCreateWithMapping(d, sdk.ObjectParameterUserTaskManagedInitialWarehouseSize, &req.UserTaskManagedInitialWarehouseSize, sdk.ToWarehouseSize),
-		handleParameterCreate(d, sdk.ObjectParameterUserTaskTimeoutMs, &req.UserTaskTimeoutMs),
-		handleParameterCreate(d, sdk.ObjectParameterUserTaskMinimumTriggerIntervalInSeconds, &req.UserTaskMinimumTriggerIntervalInSeconds),
-		handleParameterCreate(d, sdk.ObjectParameterQuotedIdentifiersIgnoreCase, &req.QuotedIdentifiersIgnoreCase),
-		handleParameterCreate(d, sdk.ObjectParameterEnableConsoleOutput, &req.EnableConsoleOutput),
+		handleParameterCreateWithMapping(d, defs.Catalog.FieldName(), &req.Catalog, stringToAccountObjectIdentifier),
+		handleParameterCreate(d, defs.DataRetentionTimeInDays.FieldName(), &req.DataRetentionTimeInDays),
+		handleParameterCreateWithMapping(d, defs.DefaultDdlCollation.FieldName(), &req.DefaultDdlCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
+		handleParameterCreate(d, defs.DefaultNotebookComputePoolCpu.FieldName(), &req.DefaultNotebookComputePoolCpu),
+		handleParameterCreate(d, defs.DefaultNotebookComputePoolGpu.FieldName(), &req.DefaultNotebookComputePoolGpu),
+		handleParameterCreate(d, defs.EnableConsoleOutput.FieldName(), &req.EnableConsoleOutput),
+		handleParameterCreateWithMapping(d, defs.ExternalVolume.FieldName(), &req.ExternalVolume, stringToAccountObjectIdentifier),
+		handleParameterCreateWithMapping(d, defs.LogEventLevel.FieldName(), &req.LogEventLevel, sdk.ToLogLevel),
+		handleParameterCreateWithMapping(d, defs.LogLevel.FieldName(), &req.LogLevel, sdk.ToLogLevel),
+		handleParameterCreate(d, defs.MaxDataExtensionTimeInDays.FieldName(), &req.MaxDataExtensionTimeInDays),
+		handleParameterCreate(d, defs.PipeExecutionPaused.FieldName(), &req.PipeExecutionPaused),
+		handleParameterCreate(d, defs.QuotedIdentifiersIgnoreCase.FieldName(), &req.QuotedIdentifiersIgnoreCase),
+		handleParameterCreate(d, defs.ReplaceInvalidCharacters.FieldName(), &req.ReplaceInvalidCharacters),
+		handleParameterCreateWithMapping(d, defs.StorageSerializationPolicy.FieldName(), &req.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
+		handleParameterCreate(d, defs.SuspendTaskAfterNumFailures.FieldName(), &req.SuspendTaskAfterNumFailures),
+		handleParameterCreate(d, defs.TaskAutoRetryAttempts.FieldName(), &req.TaskAutoRetryAttempts),
+		handleParameterCreateWithMapping(d, defs.TraceLevel.FieldName(), &req.TraceLevel, sdk.ToTraceLevel),
+		handleParameterCreateWithMapping(d, defs.UserTaskManagedInitialWarehouseSize.FieldName(), &req.UserTaskManagedInitialWarehouseSize, sdk.ToWarehouseSize),
+		handleParameterCreate(d, defs.UserTaskMinimumTriggerIntervalInSeconds.FieldName(), &req.UserTaskMinimumTriggerIntervalInSeconds),
+		handleParameterCreate(d, defs.UserTaskTimeoutMs.FieldName(), &req.UserTaskTimeoutMs),
 	)
 }
 
 func handleSchemaParametersChanges(d *schema.ResourceData, set *sdk.SchemaSetRequest, unset *sdk.SchemaUnsetRequest) diag.Diagnostics {
 	return JoinDiags(
-		handleParameterUpdate(d, sdk.ObjectParameterDataRetentionTimeInDays, &set.DataRetentionTimeInDays, &unset.DataRetentionTimeInDays),
-		handleParameterUpdate(d, sdk.ObjectParameterMaxDataExtensionTimeInDays, &set.MaxDataExtensionTimeInDays, &unset.MaxDataExtensionTimeInDays),
-		handleParameterUpdateWithMapping(d, sdk.ObjectParameterExternalVolume, &set.ExternalVolume, &unset.ExternalVolume, stringToAccountObjectIdentifier),
-		handleParameterUpdateWithMapping(d, sdk.ObjectParameterCatalog, &set.Catalog, &unset.Catalog, stringToAccountObjectIdentifier),
-		handleParameterUpdate(d, sdk.ObjectParameterPipeExecutionPaused, &set.PipeExecutionPaused, &unset.PipeExecutionPaused),
-		handleParameterUpdate(d, sdk.ObjectParameterReplaceInvalidCharacters, &set.ReplaceInvalidCharacters, &unset.ReplaceInvalidCharacters),
-		handleParameterUpdateWithMapping(d, sdk.ObjectParameterDefaultDdlCollation, &set.DefaultDdlCollation, &unset.DefaultDdlCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
-		handleParameterUpdate(d, sdk.ObjectParameterDefaultNotebookComputePoolCpu, &set.DefaultNotebookComputePoolCpu, &unset.DefaultNotebookComputePoolCpu),
-		handleParameterUpdate(d, sdk.ObjectParameterDefaultNotebookComputePoolGpu, &set.DefaultNotebookComputePoolGpu, &unset.DefaultNotebookComputePoolGpu),
-		handleParameterUpdateWithMapping(d, sdk.ObjectParameterStorageSerializationPolicy, &set.StorageSerializationPolicy, &unset.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
-		handleParameterUpdateWithMapping(d, sdk.ObjectParameterLogLevel, &set.LogLevel, &unset.LogLevel, sdk.ToLogLevel),
-		handleParameterUpdateWithMapping(d, sdk.ObjectParameterLogEventLevel, &set.LogEventLevel, &unset.LogEventLevel, sdk.ToLogLevel),
-		handleParameterUpdateWithMapping(d, sdk.ObjectParameterTraceLevel, &set.TraceLevel, &unset.TraceLevel, sdk.ToTraceLevel),
-		handleParameterUpdate(d, sdk.ObjectParameterSuspendTaskAfterNumFailures, &set.SuspendTaskAfterNumFailures, &unset.SuspendTaskAfterNumFailures),
-		handleParameterUpdate(d, sdk.ObjectParameterTaskAutoRetryAttempts, &set.TaskAutoRetryAttempts, &unset.TaskAutoRetryAttempts),
-		handleParameterUpdateWithMapping(d, sdk.ObjectParameterUserTaskManagedInitialWarehouseSize, &set.UserTaskManagedInitialWarehouseSize, &unset.UserTaskManagedInitialWarehouseSize, sdk.ToWarehouseSize),
-		handleParameterUpdate(d, sdk.ObjectParameterUserTaskTimeoutMs, &set.UserTaskTimeoutMs, &unset.UserTaskTimeoutMs),
-		handleParameterUpdate(d, sdk.ObjectParameterUserTaskMinimumTriggerIntervalInSeconds, &set.UserTaskMinimumTriggerIntervalInSeconds, &unset.UserTaskMinimumTriggerIntervalInSeconds),
-		handleParameterUpdate(d, sdk.ObjectParameterQuotedIdentifiersIgnoreCase, &set.QuotedIdentifiersIgnoreCase, &unset.QuotedIdentifiersIgnoreCase),
-		handleParameterUpdate(d, sdk.ObjectParameterEnableConsoleOutput, &set.EnableConsoleOutput, &unset.EnableConsoleOutput),
+		handleParameterUpdateWithMapping(d, defs.Catalog.FieldName(), &set.Catalog, &unset.Catalog, stringToAccountObjectIdentifier),
+		handleParameterUpdate(d, defs.DataRetentionTimeInDays.FieldName(), &set.DataRetentionTimeInDays, &unset.DataRetentionTimeInDays),
+		handleParameterUpdateWithMapping(d, defs.DefaultDdlCollation.FieldName(), &set.DefaultDdlCollation, &unset.DefaultDdlCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
+		handleParameterUpdate(d, defs.DefaultNotebookComputePoolCpu.FieldName(), &set.DefaultNotebookComputePoolCpu, &unset.DefaultNotebookComputePoolCpu),
+		handleParameterUpdate(d, defs.DefaultNotebookComputePoolGpu.FieldName(), &set.DefaultNotebookComputePoolGpu, &unset.DefaultNotebookComputePoolGpu),
+		handleParameterUpdate(d, defs.EnableConsoleOutput.FieldName(), &set.EnableConsoleOutput, &unset.EnableConsoleOutput),
+		handleParameterUpdateWithMapping(d, defs.ExternalVolume.FieldName(), &set.ExternalVolume, &unset.ExternalVolume, stringToAccountObjectIdentifier),
+		handleParameterUpdateWithMapping(d, defs.LogEventLevel.FieldName(), &set.LogEventLevel, &unset.LogEventLevel, sdk.ToLogLevel),
+		handleParameterUpdateWithMapping(d, defs.LogLevel.FieldName(), &set.LogLevel, &unset.LogLevel, sdk.ToLogLevel),
+		handleParameterUpdate(d, defs.MaxDataExtensionTimeInDays.FieldName(), &set.MaxDataExtensionTimeInDays, &unset.MaxDataExtensionTimeInDays),
+		handleParameterUpdate(d, defs.PipeExecutionPaused.FieldName(), &set.PipeExecutionPaused, &unset.PipeExecutionPaused),
+		handleParameterUpdate(d, defs.QuotedIdentifiersIgnoreCase.FieldName(), &set.QuotedIdentifiersIgnoreCase, &unset.QuotedIdentifiersIgnoreCase),
+		handleParameterUpdate(d, defs.ReplaceInvalidCharacters.FieldName(), &set.ReplaceInvalidCharacters, &unset.ReplaceInvalidCharacters),
+		handleParameterUpdateWithMapping(d, defs.StorageSerializationPolicy.FieldName(), &set.StorageSerializationPolicy, &unset.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
+		handleParameterUpdate(d, defs.SuspendTaskAfterNumFailures.FieldName(), &set.SuspendTaskAfterNumFailures, &unset.SuspendTaskAfterNumFailures),
+		handleParameterUpdate(d, defs.TaskAutoRetryAttempts.FieldName(), &set.TaskAutoRetryAttempts, &unset.TaskAutoRetryAttempts),
+		handleParameterUpdateWithMapping(d, defs.TraceLevel.FieldName(), &set.TraceLevel, &unset.TraceLevel, sdk.ToTraceLevel),
+		handleParameterUpdateWithMapping(d, defs.UserTaskManagedInitialWarehouseSize.FieldName(), &set.UserTaskManagedInitialWarehouseSize, &unset.UserTaskManagedInitialWarehouseSize, sdk.ToWarehouseSize),
+		handleParameterUpdate(d, defs.UserTaskMinimumTriggerIntervalInSeconds.FieldName(), &set.UserTaskMinimumTriggerIntervalInSeconds, &unset.UserTaskMinimumTriggerIntervalInSeconds),
+		handleParameterUpdate(d, defs.UserTaskTimeoutMs.FieldName(), &set.UserTaskTimeoutMs, &unset.UserTaskTimeoutMs),
 	)
+}
+
+func handleSchemaParameterRead(d *schema.ResourceData, parameters *sdk.SchemaParametersDetails) diag.Diagnostics {
+	set := func(key string, value any) diag.Diagnostics {
+		if err := d.Set(key, value); err != nil {
+			return diag.FromErr(err)
+		}
+		return nil
+	}
+
+	return JoinDiags(
+		set(defs.Catalog.FieldName(), parameters.Catalog.Value.FullyQualifiedName()),
+		set(defs.DataRetentionTimeInDays.FieldName(), parameters.DataRetentionTimeInDays.Value),
+		set(defs.DefaultDdlCollation.FieldName(), parameters.DefaultDdlCollation.Value),
+		set(defs.DefaultNotebookComputePoolCpu.FieldName(), parameters.DefaultNotebookComputePoolCpu.Value),
+		set(defs.DefaultNotebookComputePoolGpu.FieldName(), parameters.DefaultNotebookComputePoolGpu.Value),
+		set(defs.EnableConsoleOutput.FieldName(), parameters.EnableConsoleOutput.Value),
+		set(defs.ExternalVolume.FieldName(), parameters.ExternalVolume.Value.FullyQualifiedName()),
+		set(defs.LogEventLevel.FieldName(), parameters.LogEventLevel.Value),
+		set(defs.LogLevel.FieldName(), parameters.LogLevel.Value),
+		set(defs.MaxDataExtensionTimeInDays.FieldName(), parameters.MaxDataExtensionTimeInDays.Value),
+		set(defs.PipeExecutionPaused.FieldName(), parameters.PipeExecutionPaused.Value),
+		set(defs.QuotedIdentifiersIgnoreCase.FieldName(), parameters.QuotedIdentifiersIgnoreCase.Value),
+		set(defs.ReplaceInvalidCharacters.FieldName(), parameters.ReplaceInvalidCharacters.Value),
+		set(defs.StorageSerializationPolicy.FieldName(), parameters.StorageSerializationPolicy.Value),
+		set(defs.SuspendTaskAfterNumFailures.FieldName(), parameters.SuspendTaskAfterNumFailures.Value),
+		set(defs.TaskAutoRetryAttempts.FieldName(), parameters.TaskAutoRetryAttempts.Value),
+		set(defs.TraceLevel.FieldName(), parameters.TraceLevel.Value),
+		set(defs.UserTaskManagedInitialWarehouseSize.FieldName(), parameters.UserTaskManagedInitialWarehouseSize.Value),
+		set(defs.UserTaskMinimumTriggerIntervalInSeconds.FieldName(), parameters.UserTaskMinimumTriggerIntervalInSeconds.Value),
+		set(defs.UserTaskTimeoutMs.FieldName(), parameters.UserTaskTimeoutMs.Value),
+	)
+}
+
+var schemaParametersCustomDiff = ParametersCustomDiffFromTypedParameters(
+	schemaParametersProvider,
+	schemaParameterDiffFunctions,
+)
+
+func schemaParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) (*sdk.SchemaParametersDetails, error) {
+	id, err := sdk.ParseDatabaseObjectIdentifier(d.Id())
+	if err != nil {
+		return nil, err
+	}
+	return meta.(*provider.Context).Client.Schemas.ShowParametersDetails(ctx, id)
+}
+
+func schemaParameterDiffFunctions(parameters *sdk.SchemaParametersDetails) []schema.CustomizeDiffFunc {
+	return []schema.CustomizeDiffFunc{
+		IdentifierTypedParameterValueComputedIf(defs.Catalog.FieldName(), parameters.Catalog, sdk.ParameterTypeSchema),
+		IntTypedParameterValueComputedIf(defs.DataRetentionTimeInDays.FieldName(), parameters.DataRetentionTimeInDays, sdk.ParameterTypeSchema),
+		StringTypedParameterValueComputedIf(defs.DefaultDdlCollation.FieldName(), parameters.DefaultDdlCollation, sdk.ParameterTypeSchema),
+		StringTypedParameterValueComputedIf(defs.DefaultNotebookComputePoolCpu.FieldName(), parameters.DefaultNotebookComputePoolCpu, sdk.ParameterTypeSchema),
+		StringTypedParameterValueComputedIf(defs.DefaultNotebookComputePoolGpu.FieldName(), parameters.DefaultNotebookComputePoolGpu, sdk.ParameterTypeSchema),
+		BoolTypedParameterValueComputedIf(defs.EnableConsoleOutput.FieldName(), parameters.EnableConsoleOutput, sdk.ParameterTypeSchema),
+		IdentifierTypedParameterValueComputedIf(defs.ExternalVolume.FieldName(), parameters.ExternalVolume, sdk.ParameterTypeSchema),
+		StringTypedParameterValueComputedIf(defs.LogEventLevel.FieldName(), parameters.LogEventLevel, sdk.ParameterTypeSchema),
+		StringTypedParameterValueComputedIf(defs.LogLevel.FieldName(), parameters.LogLevel, sdk.ParameterTypeSchema),
+		IntTypedParameterValueComputedIf(defs.MaxDataExtensionTimeInDays.FieldName(), parameters.MaxDataExtensionTimeInDays, sdk.ParameterTypeSchema),
+		BoolTypedParameterValueComputedIf(defs.PipeExecutionPaused.FieldName(), parameters.PipeExecutionPaused, sdk.ParameterTypeSchema),
+		BoolTypedParameterValueComputedIf(defs.QuotedIdentifiersIgnoreCase.FieldName(), parameters.QuotedIdentifiersIgnoreCase, sdk.ParameterTypeSchema),
+		BoolTypedParameterValueComputedIf(defs.ReplaceInvalidCharacters.FieldName(), parameters.ReplaceInvalidCharacters, sdk.ParameterTypeSchema),
+		StringTypedParameterValueComputedIf(defs.StorageSerializationPolicy.FieldName(), parameters.StorageSerializationPolicy, sdk.ParameterTypeSchema),
+		IntTypedParameterValueComputedIf(defs.SuspendTaskAfterNumFailures.FieldName(), parameters.SuspendTaskAfterNumFailures, sdk.ParameterTypeSchema),
+		IntTypedParameterValueComputedIf(defs.TaskAutoRetryAttempts.FieldName(), parameters.TaskAutoRetryAttempts, sdk.ParameterTypeSchema),
+		StringTypedParameterValueComputedIf(defs.TraceLevel.FieldName(), parameters.TraceLevel, sdk.ParameterTypeSchema),
+		StringTypedParameterValueComputedIf(defs.UserTaskManagedInitialWarehouseSize.FieldName(), parameters.UserTaskManagedInitialWarehouseSize, sdk.ParameterTypeSchema),
+		IntTypedParameterValueComputedIf(defs.UserTaskMinimumTriggerIntervalInSeconds.FieldName(), parameters.UserTaskMinimumTriggerIntervalInSeconds, sdk.ParameterTypeSchema),
+		IntTypedParameterValueComputedIf(defs.UserTaskTimeoutMs.FieldName(), parameters.UserTaskTimeoutMs, sdk.ParameterTypeSchema),
+	}
 }
