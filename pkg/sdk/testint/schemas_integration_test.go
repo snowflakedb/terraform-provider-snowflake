@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -593,4 +594,81 @@ func TestInt_Schemas(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, schema.Name, after.Name)
 	})
+}
+
+func TestInt_SchemasShowParametersDetails(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	externalVolume, externalVolumeCleanup := testClientHelper().ExternalVolume.Create(t)
+	t.Cleanup(externalVolumeCleanup)
+
+	catalog, catalogCleanup := testClientHelper().CatalogIntegration.Create(t)
+	t.Cleanup(catalogCleanup)
+
+	id := testClientHelper().Ids.RandomDatabaseObjectIdentifier()
+	schema, cleanup := testClientHelper().Schema.CreateSchemaWithRequest(t, id,
+		sdk.NewCreateSchemaRequest(id).
+			WithCatalog(catalog).
+			WithDataRetentionTimeInDays(5).
+			WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "en_US"}).
+			WithDefaultNotebookComputePoolCpu("CPU_X64_S").
+			WithDefaultNotebookComputePoolGpu("GPU_NV_S").
+			WithEnableConsoleOutput(true).
+			WithExternalVolume(externalVolume).
+			WithLogEventLevel(sdk.LogLevelDebug).
+			WithLogLevel(sdk.LogLevelInfo).
+			WithMaxDataExtensionTimeInDays(10).
+			WithPipeExecutionPaused(true).
+			WithQuotedIdentifiersIgnoreCase(true).
+			WithReplaceInvalidCharacters(true).
+			WithStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
+			WithSuspendTaskAfterNumFailures(10).
+			WithTaskAutoRetryAttempts(10).
+			WithTraceLevel(sdk.TraceLevelPropagate).
+			WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
+			WithUserTaskMinimumTriggerIntervalInSeconds(30).
+			WithUserTaskTimeoutMs(12_000),
+	)
+	t.Cleanup(cleanup)
+
+	details, err := client.Schemas.ShowParametersDetails(ctx, schema.ID())
+	require.NoError(t, err)
+
+	assertThatObject(t, objectparametersassert.SchemaParameters(t, schema.ID()).
+		HasStringParameterValue(sdk.ObjectParameterCatalog, details.Catalog.Value.Name()).
+		HasIntParameterValue(sdk.ObjectParameterDataRetentionTimeInDays, details.DataRetentionTimeInDays.Value).
+		HasDefaultDdlCollation(details.DefaultDdlCollation.Value).
+		HasDefaultNotebookComputePoolCpu(details.DefaultNotebookComputePoolCpu.Value).
+		HasDefaultNotebookComputePoolGpu(details.DefaultNotebookComputePoolGpu.Value).
+		HasBoolParameterValue(sdk.ObjectParameterEnableConsoleOutput, details.EnableConsoleOutput.Value).
+		HasStringParameterValue(sdk.ObjectParameterExternalVolume, details.ExternalVolume.Value.Name()).
+		HasStringParameterValue(sdk.ObjectParameterLogEventLevel, string(details.LogEventLevel.Value)).
+		HasStringParameterValue(sdk.ObjectParameterLogLevel, string(details.LogLevel.Value)).
+		HasIntParameterValue(sdk.ObjectParameterMaxDataExtensionTimeInDays, details.MaxDataExtensionTimeInDays.Value).
+		HasBoolParameterValue(sdk.ObjectParameterPipeExecutionPaused, details.PipeExecutionPaused.Value).
+		HasBoolParameterValue(sdk.ObjectParameterQuotedIdentifiersIgnoreCase, details.QuotedIdentifiersIgnoreCase.Value).
+		HasBoolParameterValue(sdk.ObjectParameterReplaceInvalidCharacters, details.ReplaceInvalidCharacters.Value).
+		HasStringParameterValue(sdk.ObjectParameterStorageSerializationPolicy, string(details.StorageSerializationPolicy.Value)).
+		HasIntParameterValue(sdk.ObjectParameterSuspendTaskAfterNumFailures, details.SuspendTaskAfterNumFailures.Value).
+		HasIntParameterValue(sdk.ObjectParameterTaskAutoRetryAttempts, details.TaskAutoRetryAttempts.Value).
+		HasStringParameterValue(sdk.ObjectParameterTraceLevel, string(details.TraceLevel.Value)).
+		HasStringParameterValue(sdk.ObjectParameterUserTaskManagedInitialWarehouseSize, string(details.UserTaskManagedInitialWarehouseSize.Value)).
+		HasIntParameterValue(sdk.ObjectParameterUserTaskMinimumTriggerIntervalInSeconds, details.UserTaskMinimumTriggerIntervalInSeconds.Value).
+		HasIntParameterValue(sdk.ObjectParameterUserTaskTimeoutMs, details.UserTaskTimeoutMs.Value))
+
+	assert.Equal(t, string(sdk.ObjectParameterDataRetentionTimeInDays), details.DataRetentionTimeInDays.Key)
+	assert.Equal(t, sdk.ParameterTypeSchema, details.DataRetentionTimeInDays.Level)
+	assert.Equal(t, 1, details.DataRetentionTimeInDays.Default)
+	assert.NotEmpty(t, details.DataRetentionTimeInDays.Description)
+
+	assert.Equal(t, string(sdk.ObjectParameterLogLevel), details.LogLevel.Key)
+	assert.Equal(t, sdk.ParameterTypeSchema, details.LogLevel.Level)
+	assert.Equal(t, sdk.LogLevelOff, details.LogLevel.Default)
+	assert.NotEmpty(t, details.LogLevel.Description)
+
+	assert.Equal(t, string(sdk.ObjectParameterExternalVolume), details.ExternalVolume.Key)
+	assert.Equal(t, sdk.ParameterTypeSchema, details.ExternalVolume.Level)
+	assert.Equal(t, sdk.AccountObjectIdentifier{}, details.ExternalVolume.Default)
+	assert.NotEmpty(t, details.ExternalVolume.Description)
 }

@@ -211,57 +211,57 @@ var schemasTests = SchemasTestsContext{
 			},
 			validationCase[*AlterSchemaOptions]{
 				Name:        case_Schemas_validation_Alter_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterSchemaOptions.Set", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ExternalVolume", "Catalog", "PipeExecutionPaused", "ReplaceInvalidCharacters", "DefaultDdlCollation", "DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu", "StorageSerializationPolicy", "LogLevel", "LogEventLevel", "TraceLevel", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "UserTaskManagedInitialWarehouseSize", "UserTaskTimeoutMs", "UserTaskMinimumTriggerIntervalInSeconds", "QuotedIdentifiersIgnoreCase", "EnableConsoleOutput", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterSchemaOptions.Set", "Catalog", "DataRetentionTimeInDays", "DefaultDdlCollation", "DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu", "EnableConsoleOutput", "ExternalVolume", "LogEventLevel", "LogLevel", "MaxDataExtensionTimeInDays", "PipeExecutionPaused", "QuotedIdentifiersIgnoreCase", "ReplaceInvalidCharacters", "StorageSerializationPolicy", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "TraceLevel", "UserTaskManagedInitialWarehouseSize", "UserTaskMinimumTriggerIntervalInSeconds", "UserTaskTimeoutMs", "Comment"),
 				DefaultModify: func(opts *AlterSchemaOptions) {
 					opts.Set = &SchemaSet{}
-					opts.Set.DataRetentionTimeInDays = nil
-					opts.Set.MaxDataExtensionTimeInDays = nil
-					opts.Set.ExternalVolume = nil
 					opts.Set.Catalog = nil
-					opts.Set.PipeExecutionPaused = nil
-					opts.Set.ReplaceInvalidCharacters = nil
+					opts.Set.DataRetentionTimeInDays = nil
 					opts.Set.DefaultDdlCollation = nil
 					opts.Set.DefaultNotebookComputePoolCpu = nil
 					opts.Set.DefaultNotebookComputePoolGpu = nil
-					opts.Set.StorageSerializationPolicy = nil
-					opts.Set.LogLevel = nil
+					opts.Set.EnableConsoleOutput = nil
+					opts.Set.ExternalVolume = nil
 					opts.Set.LogEventLevel = nil
-					opts.Set.TraceLevel = nil
+					opts.Set.LogLevel = nil
+					opts.Set.MaxDataExtensionTimeInDays = nil
+					opts.Set.PipeExecutionPaused = nil
+					opts.Set.QuotedIdentifiersIgnoreCase = nil
+					opts.Set.ReplaceInvalidCharacters = nil
+					opts.Set.StorageSerializationPolicy = nil
 					opts.Set.SuspendTaskAfterNumFailures = nil
 					opts.Set.TaskAutoRetryAttempts = nil
+					opts.Set.TraceLevel = nil
 					opts.Set.UserTaskManagedInitialWarehouseSize = nil
-					opts.Set.UserTaskTimeoutMs = nil
 					opts.Set.UserTaskMinimumTriggerIntervalInSeconds = nil
-					opts.Set.QuotedIdentifiersIgnoreCase = nil
-					opts.Set.EnableConsoleOutput = nil
+					opts.Set.UserTaskTimeoutMs = nil
 					opts.Set.Comment = nil
 				},
 			},
 			validationCase[*AlterSchemaOptions]{
 				Name:        case_Schemas_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterSchemaOptions.Unset", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ExternalVolume", "Catalog", "PipeExecutionPaused", "ReplaceInvalidCharacters", "DefaultDdlCollation", "DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu", "StorageSerializationPolicy", "LogLevel", "LogEventLevel", "TraceLevel", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "UserTaskManagedInitialWarehouseSize", "UserTaskTimeoutMs", "UserTaskMinimumTriggerIntervalInSeconds", "QuotedIdentifiersIgnoreCase", "EnableConsoleOutput", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterSchemaOptions.Unset", "Catalog", "DataRetentionTimeInDays", "DefaultDdlCollation", "DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu", "EnableConsoleOutput", "ExternalVolume", "LogEventLevel", "LogLevel", "MaxDataExtensionTimeInDays", "PipeExecutionPaused", "QuotedIdentifiersIgnoreCase", "ReplaceInvalidCharacters", "StorageSerializationPolicy", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "TraceLevel", "UserTaskManagedInitialWarehouseSize", "UserTaskMinimumTriggerIntervalInSeconds", "UserTaskTimeoutMs", "Comment"),
 				DefaultModify: func(opts *AlterSchemaOptions) {
 					opts.Unset = &SchemaUnset{}
-					opts.Unset.DataRetentionTimeInDays = nil
-					opts.Unset.MaxDataExtensionTimeInDays = nil
-					opts.Unset.ExternalVolume = nil
 					opts.Unset.Catalog = nil
-					opts.Unset.PipeExecutionPaused = nil
-					opts.Unset.ReplaceInvalidCharacters = nil
+					opts.Unset.DataRetentionTimeInDays = nil
 					opts.Unset.DefaultDdlCollation = nil
 					opts.Unset.DefaultNotebookComputePoolCpu = nil
 					opts.Unset.DefaultNotebookComputePoolGpu = nil
-					opts.Unset.StorageSerializationPolicy = nil
-					opts.Unset.LogLevel = nil
+					opts.Unset.EnableConsoleOutput = nil
+					opts.Unset.ExternalVolume = nil
 					opts.Unset.LogEventLevel = nil
-					opts.Unset.TraceLevel = nil
+					opts.Unset.LogLevel = nil
+					opts.Unset.MaxDataExtensionTimeInDays = nil
+					opts.Unset.PipeExecutionPaused = nil
+					opts.Unset.QuotedIdentifiersIgnoreCase = nil
+					opts.Unset.ReplaceInvalidCharacters = nil
+					opts.Unset.StorageSerializationPolicy = nil
 					opts.Unset.SuspendTaskAfterNumFailures = nil
 					opts.Unset.TaskAutoRetryAttempts = nil
+					opts.Unset.TraceLevel = nil
 					opts.Unset.UserTaskManagedInitialWarehouseSize = nil
-					opts.Unset.UserTaskTimeoutMs = nil
 					opts.Unset.UserTaskMinimumTriggerIntervalInSeconds = nil
-					opts.Unset.QuotedIdentifiersIgnoreCase = nil
-					opts.Unset.EnableConsoleOutput = nil
+					opts.Unset.UserTaskTimeoutMs = nil
 					opts.Unset.Comment = nil
 				},
 			},

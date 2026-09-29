@@ -20,8 +20,33 @@ type Schemas interface {
 	ShowByIDSafely(ctx context.Context, id DatabaseObjectIdentifier) (*Schema, error)
 	Describe(ctx context.Context, id DatabaseObjectIdentifier) ([]SchemaDetails, error)
 	ShowParameters(ctx context.Context, id DatabaseObjectIdentifier) ([]*Parameter, error)
+	ShowParametersDetails(ctx context.Context, id DatabaseObjectIdentifier) (*SchemaParametersDetails, error)
 	// Use is based on https://docs.snowflake.com/en/sql-reference/sql/use-schema
 	Use(ctx context.Context, id DatabaseObjectIdentifier) error
+}
+
+// SchemaParametersDetails holds the object's parameters with values parsed into their Go types.
+type SchemaParametersDetails struct {
+	Catalog                                 TypedParameter[AccountObjectIdentifier]
+	DataRetentionTimeInDays                 TypedParameter[int]
+	DefaultDdlCollation                     TypedParameter[string]
+	DefaultNotebookComputePoolCpu           TypedParameter[string]
+	DefaultNotebookComputePoolGpu           TypedParameter[string]
+	EnableConsoleOutput                     TypedParameter[bool]
+	ExternalVolume                          TypedParameter[AccountObjectIdentifier]
+	LogEventLevel                           TypedParameter[LogLevel]
+	LogLevel                                TypedParameter[LogLevel]
+	MaxDataExtensionTimeInDays              TypedParameter[int]
+	PipeExecutionPaused                     TypedParameter[bool]
+	QuotedIdentifiersIgnoreCase             TypedParameter[bool]
+	ReplaceInvalidCharacters                TypedParameter[bool]
+	StorageSerializationPolicy              TypedParameter[StorageSerializationPolicy]
+	SuspendTaskAfterNumFailures             TypedParameter[int]
+	TaskAutoRetryAttempts                   TypedParameter[int]
+	TraceLevel                              TypedParameter[TraceLevel]
+	UserTaskManagedInitialWarehouseSize     TypedParameter[WarehouseSize]
+	UserTaskMinimumTriggerIntervalInSeconds TypedParameter[int]
+	UserTaskTimeoutMs                       TypedParameter[int]
 }
 
 // CreateSchemaOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-schema.
@@ -33,26 +58,26 @@ type CreateSchemaOptions struct {
 	IfNotExists                             *bool                       `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                                    DatabaseObjectIdentifier    `ddl:"identifier"`
 	WithManagedAccess                       *bool                       `ddl:"keyword" sql:"WITH MANAGED ACCESS"`
-	DataRetentionTimeInDays                 *int                        `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays              *int                        `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	ExternalVolume                          *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"EXTERNAL_VOLUME"`
 	Catalog                                 *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"CATALOG"`
-	PipeExecutionPaused                     *bool                       `ddl:"parameter" sql:"PIPE_EXECUTION_PAUSED"`
-	ReplaceInvalidCharacters                *bool                       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	DataRetentionTimeInDays                 *int                        `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	DefaultDdlCollation                     *StringAllowEmpty           `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
 	DefaultNotebookComputePoolCpu           *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"`
 	DefaultNotebookComputePoolGpu           *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"`
-	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
-	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
+	EnableConsoleOutput                     *bool                       `ddl:"parameter" sql:"ENABLE_CONSOLE_OUTPUT"`
+	ExternalVolume                          *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"EXTERNAL_VOLUME"`
 	LogEventLevel                           *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
-	TraceLevel                              *TraceLevel                 `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`
+	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
+	MaxDataExtensionTimeInDays              *int                        `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	PipeExecutionPaused                     *bool                       `ddl:"parameter" sql:"PIPE_EXECUTION_PAUSED"`
+	QuotedIdentifiersIgnoreCase             *bool                       `ddl:"parameter" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
+	ReplaceInvalidCharacters                *bool                       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter,single_quotes" sql:"STORAGE_SERIALIZATION_POLICY"`
 	SuspendTaskAfterNumFailures             *int                        `ddl:"parameter" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
 	TaskAutoRetryAttempts                   *int                        `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
-	UserTaskManagedInitialWarehouseSize     *WarehouseSize              `ddl:"parameter" sql:"USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"`
-	UserTaskTimeoutMs                       *int                        `ddl:"parameter" sql:"USER_TASK_TIMEOUT_MS"`
+	TraceLevel                              *TraceLevel                 `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`
+	UserTaskManagedInitialWarehouseSize     *WarehouseSize              `ddl:"parameter,single_quotes" sql:"USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"`
 	UserTaskMinimumTriggerIntervalInSeconds *int                        `ddl:"parameter" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
-	QuotedIdentifiersIgnoreCase             *bool                       `ddl:"parameter" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
-	EnableConsoleOutput                     *bool                       `ddl:"parameter" sql:"ENABLE_CONSOLE_OUTPUT"`
+	UserTaskTimeoutMs                       *int                        `ddl:"parameter" sql:"USER_TASK_TIMEOUT_MS"`
 	Comment                                 *string                     `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	Tag                                     []TagAssociation            `ddl:"keyword,parentheses" sql:"TAG"`
 }
@@ -85,50 +110,50 @@ type AlterSchemaOptions struct {
 }
 
 type SchemaSet struct {
-	DataRetentionTimeInDays                 *int                        `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays              *int                        `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	ExternalVolume                          *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"EXTERNAL_VOLUME"`
 	Catalog                                 *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"CATALOG"`
-	PipeExecutionPaused                     *bool                       `ddl:"parameter" sql:"PIPE_EXECUTION_PAUSED"`
-	ReplaceInvalidCharacters                *bool                       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	DataRetentionTimeInDays                 *int                        `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	DefaultDdlCollation                     *StringAllowEmpty           `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
 	DefaultNotebookComputePoolCpu           *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"`
 	DefaultNotebookComputePoolGpu           *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"`
-	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
-	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
+	EnableConsoleOutput                     *bool                       `ddl:"parameter" sql:"ENABLE_CONSOLE_OUTPUT"`
+	ExternalVolume                          *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"EXTERNAL_VOLUME"`
 	LogEventLevel                           *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
-	TraceLevel                              *TraceLevel                 `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`
+	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
+	MaxDataExtensionTimeInDays              *int                        `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	PipeExecutionPaused                     *bool                       `ddl:"parameter" sql:"PIPE_EXECUTION_PAUSED"`
+	QuotedIdentifiersIgnoreCase             *bool                       `ddl:"parameter" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
+	ReplaceInvalidCharacters                *bool                       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter,single_quotes" sql:"STORAGE_SERIALIZATION_POLICY"`
 	SuspendTaskAfterNumFailures             *int                        `ddl:"parameter" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
 	TaskAutoRetryAttempts                   *int                        `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
-	UserTaskManagedInitialWarehouseSize     *WarehouseSize              `ddl:"parameter" sql:"USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"`
-	UserTaskTimeoutMs                       *int                        `ddl:"parameter" sql:"USER_TASK_TIMEOUT_MS"`
+	TraceLevel                              *TraceLevel                 `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`
+	UserTaskManagedInitialWarehouseSize     *WarehouseSize              `ddl:"parameter,single_quotes" sql:"USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"`
 	UserTaskMinimumTriggerIntervalInSeconds *int                        `ddl:"parameter" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
-	QuotedIdentifiersIgnoreCase             *bool                       `ddl:"parameter" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
-	EnableConsoleOutput                     *bool                       `ddl:"parameter" sql:"ENABLE_CONSOLE_OUTPUT"`
+	UserTaskTimeoutMs                       *int                        `ddl:"parameter" sql:"USER_TASK_TIMEOUT_MS"`
 	Comment                                 *string                     `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type SchemaUnset struct {
-	DataRetentionTimeInDays                 *bool `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays              *bool `ddl:"keyword" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	ExternalVolume                          *bool `ddl:"keyword" sql:"EXTERNAL_VOLUME"`
 	Catalog                                 *bool `ddl:"keyword" sql:"CATALOG"`
-	PipeExecutionPaused                     *bool `ddl:"keyword" sql:"PIPE_EXECUTION_PAUSED"`
-	ReplaceInvalidCharacters                *bool `ddl:"keyword" sql:"REPLACE_INVALID_CHARACTERS"`
+	DataRetentionTimeInDays                 *bool `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	DefaultDdlCollation                     *bool `ddl:"keyword" sql:"DEFAULT_DDL_COLLATION"`
 	DefaultNotebookComputePoolCpu           *bool `ddl:"keyword" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"`
 	DefaultNotebookComputePoolGpu           *bool `ddl:"keyword" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"`
-	StorageSerializationPolicy              *bool `ddl:"keyword" sql:"STORAGE_SERIALIZATION_POLICY"`
-	LogLevel                                *bool `ddl:"keyword" sql:"LOG_LEVEL"`
+	EnableConsoleOutput                     *bool `ddl:"keyword" sql:"ENABLE_CONSOLE_OUTPUT"`
+	ExternalVolume                          *bool `ddl:"keyword" sql:"EXTERNAL_VOLUME"`
 	LogEventLevel                           *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
-	TraceLevel                              *bool `ddl:"keyword" sql:"TRACE_LEVEL"`
+	LogLevel                                *bool `ddl:"keyword" sql:"LOG_LEVEL"`
+	MaxDataExtensionTimeInDays              *bool `ddl:"keyword" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	PipeExecutionPaused                     *bool `ddl:"keyword" sql:"PIPE_EXECUTION_PAUSED"`
+	QuotedIdentifiersIgnoreCase             *bool `ddl:"keyword" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
+	ReplaceInvalidCharacters                *bool `ddl:"keyword" sql:"REPLACE_INVALID_CHARACTERS"`
+	StorageSerializationPolicy              *bool `ddl:"keyword" sql:"STORAGE_SERIALIZATION_POLICY"`
 	SuspendTaskAfterNumFailures             *bool `ddl:"keyword" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
 	TaskAutoRetryAttempts                   *bool `ddl:"keyword" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
+	TraceLevel                              *bool `ddl:"keyword" sql:"TRACE_LEVEL"`
 	UserTaskManagedInitialWarehouseSize     *bool `ddl:"keyword" sql:"USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"`
-	UserTaskTimeoutMs                       *bool `ddl:"keyword" sql:"USER_TASK_TIMEOUT_MS"`
 	UserTaskMinimumTriggerIntervalInSeconds *bool `ddl:"keyword" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
-	QuotedIdentifiersIgnoreCase             *bool `ddl:"keyword" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
-	EnableConsoleOutput                     *bool `ddl:"keyword" sql:"ENABLE_CONSOLE_OUTPUT"`
+	UserTaskTimeoutMs                       *bool `ddl:"keyword" sql:"USER_TASK_TIMEOUT_MS"`
 	Comment                                 *bool `ddl:"keyword" sql:"COMMENT"`
 }
 

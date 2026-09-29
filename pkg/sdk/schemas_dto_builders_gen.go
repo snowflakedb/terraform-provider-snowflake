@@ -30,33 +30,13 @@ func (s *CreateSchemaRequest) WithWithManagedAccess(withManagedAccess bool) *Cre
 	return s
 }
 
-func (s *CreateSchemaRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *CreateSchemaRequest {
-	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
-	return s
-}
-
-func (s *CreateSchemaRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *CreateSchemaRequest {
-	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
-	return s
-}
-
-func (s *CreateSchemaRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *CreateSchemaRequest {
-	s.ExternalVolume = &externalVolume
-	return s
-}
-
 func (s *CreateSchemaRequest) WithCatalog(catalog AccountObjectIdentifier) *CreateSchemaRequest {
 	s.Catalog = &catalog
 	return s
 }
 
-func (s *CreateSchemaRequest) WithPipeExecutionPaused(pipeExecutionPaused bool) *CreateSchemaRequest {
-	s.PipeExecutionPaused = &pipeExecutionPaused
-	return s
-}
-
-func (s *CreateSchemaRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateSchemaRequest {
-	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+func (s *CreateSchemaRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *CreateSchemaRequest {
+	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
 	return s
 }
 
@@ -75,13 +55,13 @@ func (s *CreateSchemaRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookC
 	return s
 }
 
-func (s *CreateSchemaRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *CreateSchemaRequest {
-	s.StorageSerializationPolicy = &storageSerializationPolicy
+func (s *CreateSchemaRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *CreateSchemaRequest {
+	s.EnableConsoleOutput = &enableConsoleOutput
 	return s
 }
 
-func (s *CreateSchemaRequest) WithLogLevel(logLevel LogLevel) *CreateSchemaRequest {
-	s.LogLevel = &logLevel
+func (s *CreateSchemaRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *CreateSchemaRequest {
+	s.ExternalVolume = &externalVolume
 	return s
 }
 
@@ -90,8 +70,33 @@ func (s *CreateSchemaRequest) WithLogEventLevel(logEventLevel LogLevel) *CreateS
 	return s
 }
 
-func (s *CreateSchemaRequest) WithTraceLevel(traceLevel TraceLevel) *CreateSchemaRequest {
-	s.TraceLevel = &traceLevel
+func (s *CreateSchemaRequest) WithLogLevel(logLevel LogLevel) *CreateSchemaRequest {
+	s.LogLevel = &logLevel
+	return s
+}
+
+func (s *CreateSchemaRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *CreateSchemaRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
+	return s
+}
+
+func (s *CreateSchemaRequest) WithPipeExecutionPaused(pipeExecutionPaused bool) *CreateSchemaRequest {
+	s.PipeExecutionPaused = &pipeExecutionPaused
+	return s
+}
+
+func (s *CreateSchemaRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *CreateSchemaRequest {
+	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
+	return s
+}
+
+func (s *CreateSchemaRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateSchemaRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *CreateSchemaRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *CreateSchemaRequest {
+	s.StorageSerializationPolicy = &storageSerializationPolicy
 	return s
 }
 
@@ -105,13 +110,13 @@ func (s *CreateSchemaRequest) WithTaskAutoRetryAttempts(taskAutoRetryAttempts in
 	return s
 }
 
-func (s *CreateSchemaRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *CreateSchemaRequest {
-	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
+func (s *CreateSchemaRequest) WithTraceLevel(traceLevel TraceLevel) *CreateSchemaRequest {
+	s.TraceLevel = &traceLevel
 	return s
 }
 
-func (s *CreateSchemaRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *CreateSchemaRequest {
-	s.UserTaskTimeoutMs = &userTaskTimeoutMs
+func (s *CreateSchemaRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *CreateSchemaRequest {
+	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
 	return s
 }
 
@@ -120,13 +125,8 @@ func (s *CreateSchemaRequest) WithUserTaskMinimumTriggerIntervalInSeconds(userTa
 	return s
 }
 
-func (s *CreateSchemaRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *CreateSchemaRequest {
-	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
-	return s
-}
-
-func (s *CreateSchemaRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *CreateSchemaRequest {
-	s.EnableConsoleOutput = &enableConsoleOutput
+func (s *CreateSchemaRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *CreateSchemaRequest {
+	s.UserTaskTimeoutMs = &userTaskTimeoutMs
 	return s
 }
 
@@ -226,33 +226,13 @@ func NewSchemaSetRequest() *SchemaSetRequest {
 	return &s
 }
 
-func (s *SchemaSetRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *SchemaSetRequest {
-	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
-	return s
-}
-
-func (s *SchemaSetRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *SchemaSetRequest {
-	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
-	return s
-}
-
-func (s *SchemaSetRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *SchemaSetRequest {
-	s.ExternalVolume = &externalVolume
-	return s
-}
-
 func (s *SchemaSetRequest) WithCatalog(catalog AccountObjectIdentifier) *SchemaSetRequest {
 	s.Catalog = &catalog
 	return s
 }
 
-func (s *SchemaSetRequest) WithPipeExecutionPaused(pipeExecutionPaused bool) *SchemaSetRequest {
-	s.PipeExecutionPaused = &pipeExecutionPaused
-	return s
-}
-
-func (s *SchemaSetRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *SchemaSetRequest {
-	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+func (s *SchemaSetRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *SchemaSetRequest {
+	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
 	return s
 }
 
@@ -271,13 +251,13 @@ func (s *SchemaSetRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookComp
 	return s
 }
 
-func (s *SchemaSetRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *SchemaSetRequest {
-	s.StorageSerializationPolicy = &storageSerializationPolicy
+func (s *SchemaSetRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *SchemaSetRequest {
+	s.EnableConsoleOutput = &enableConsoleOutput
 	return s
 }
 
-func (s *SchemaSetRequest) WithLogLevel(logLevel LogLevel) *SchemaSetRequest {
-	s.LogLevel = &logLevel
+func (s *SchemaSetRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *SchemaSetRequest {
+	s.ExternalVolume = &externalVolume
 	return s
 }
 
@@ -286,8 +266,33 @@ func (s *SchemaSetRequest) WithLogEventLevel(logEventLevel LogLevel) *SchemaSetR
 	return s
 }
 
-func (s *SchemaSetRequest) WithTraceLevel(traceLevel TraceLevel) *SchemaSetRequest {
-	s.TraceLevel = &traceLevel
+func (s *SchemaSetRequest) WithLogLevel(logLevel LogLevel) *SchemaSetRequest {
+	s.LogLevel = &logLevel
+	return s
+}
+
+func (s *SchemaSetRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *SchemaSetRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
+	return s
+}
+
+func (s *SchemaSetRequest) WithPipeExecutionPaused(pipeExecutionPaused bool) *SchemaSetRequest {
+	s.PipeExecutionPaused = &pipeExecutionPaused
+	return s
+}
+
+func (s *SchemaSetRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *SchemaSetRequest {
+	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
+	return s
+}
+
+func (s *SchemaSetRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *SchemaSetRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *SchemaSetRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *SchemaSetRequest {
+	s.StorageSerializationPolicy = &storageSerializationPolicy
 	return s
 }
 
@@ -301,13 +306,13 @@ func (s *SchemaSetRequest) WithTaskAutoRetryAttempts(taskAutoRetryAttempts int) 
 	return s
 }
 
-func (s *SchemaSetRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *SchemaSetRequest {
-	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
+func (s *SchemaSetRequest) WithTraceLevel(traceLevel TraceLevel) *SchemaSetRequest {
+	s.TraceLevel = &traceLevel
 	return s
 }
 
-func (s *SchemaSetRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *SchemaSetRequest {
-	s.UserTaskTimeoutMs = &userTaskTimeoutMs
+func (s *SchemaSetRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *SchemaSetRequest {
+	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
 	return s
 }
 
@@ -316,13 +321,8 @@ func (s *SchemaSetRequest) WithUserTaskMinimumTriggerIntervalInSeconds(userTaskM
 	return s
 }
 
-func (s *SchemaSetRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *SchemaSetRequest {
-	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
-	return s
-}
-
-func (s *SchemaSetRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *SchemaSetRequest {
-	s.EnableConsoleOutput = &enableConsoleOutput
+func (s *SchemaSetRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *SchemaSetRequest {
+	s.UserTaskTimeoutMs = &userTaskTimeoutMs
 	return s
 }
 
@@ -336,33 +336,13 @@ func NewSchemaUnsetRequest() *SchemaUnsetRequest {
 	return &s
 }
 
-func (s *SchemaUnsetRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays bool) *SchemaUnsetRequest {
-	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
-	return s
-}
-
-func (s *SchemaUnsetRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays bool) *SchemaUnsetRequest {
-	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
-	return s
-}
-
-func (s *SchemaUnsetRequest) WithExternalVolume(externalVolume bool) *SchemaUnsetRequest {
-	s.ExternalVolume = &externalVolume
-	return s
-}
-
 func (s *SchemaUnsetRequest) WithCatalog(catalog bool) *SchemaUnsetRequest {
 	s.Catalog = &catalog
 	return s
 }
 
-func (s *SchemaUnsetRequest) WithPipeExecutionPaused(pipeExecutionPaused bool) *SchemaUnsetRequest {
-	s.PipeExecutionPaused = &pipeExecutionPaused
-	return s
-}
-
-func (s *SchemaUnsetRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *SchemaUnsetRequest {
-	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+func (s *SchemaUnsetRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays bool) *SchemaUnsetRequest {
+	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
 	return s
 }
 
@@ -381,13 +361,13 @@ func (s *SchemaUnsetRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookCo
 	return s
 }
 
-func (s *SchemaUnsetRequest) WithStorageSerializationPolicy(storageSerializationPolicy bool) *SchemaUnsetRequest {
-	s.StorageSerializationPolicy = &storageSerializationPolicy
+func (s *SchemaUnsetRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *SchemaUnsetRequest {
+	s.EnableConsoleOutput = &enableConsoleOutput
 	return s
 }
 
-func (s *SchemaUnsetRequest) WithLogLevel(logLevel bool) *SchemaUnsetRequest {
-	s.LogLevel = &logLevel
+func (s *SchemaUnsetRequest) WithExternalVolume(externalVolume bool) *SchemaUnsetRequest {
+	s.ExternalVolume = &externalVolume
 	return s
 }
 
@@ -396,8 +376,33 @@ func (s *SchemaUnsetRequest) WithLogEventLevel(logEventLevel bool) *SchemaUnsetR
 	return s
 }
 
-func (s *SchemaUnsetRequest) WithTraceLevel(traceLevel bool) *SchemaUnsetRequest {
-	s.TraceLevel = &traceLevel
+func (s *SchemaUnsetRequest) WithLogLevel(logLevel bool) *SchemaUnsetRequest {
+	s.LogLevel = &logLevel
+	return s
+}
+
+func (s *SchemaUnsetRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays bool) *SchemaUnsetRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
+	return s
+}
+
+func (s *SchemaUnsetRequest) WithPipeExecutionPaused(pipeExecutionPaused bool) *SchemaUnsetRequest {
+	s.PipeExecutionPaused = &pipeExecutionPaused
+	return s
+}
+
+func (s *SchemaUnsetRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *SchemaUnsetRequest {
+	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
+	return s
+}
+
+func (s *SchemaUnsetRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *SchemaUnsetRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *SchemaUnsetRequest) WithStorageSerializationPolicy(storageSerializationPolicy bool) *SchemaUnsetRequest {
+	s.StorageSerializationPolicy = &storageSerializationPolicy
 	return s
 }
 
@@ -411,13 +416,13 @@ func (s *SchemaUnsetRequest) WithTaskAutoRetryAttempts(taskAutoRetryAttempts boo
 	return s
 }
 
-func (s *SchemaUnsetRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize bool) *SchemaUnsetRequest {
-	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
+func (s *SchemaUnsetRequest) WithTraceLevel(traceLevel bool) *SchemaUnsetRequest {
+	s.TraceLevel = &traceLevel
 	return s
 }
 
-func (s *SchemaUnsetRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs bool) *SchemaUnsetRequest {
-	s.UserTaskTimeoutMs = &userTaskTimeoutMs
+func (s *SchemaUnsetRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize bool) *SchemaUnsetRequest {
+	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
 	return s
 }
 
@@ -426,13 +431,8 @@ func (s *SchemaUnsetRequest) WithUserTaskMinimumTriggerIntervalInSeconds(userTas
 	return s
 }
 
-func (s *SchemaUnsetRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *SchemaUnsetRequest {
-	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
-	return s
-}
-
-func (s *SchemaUnsetRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *SchemaUnsetRequest {
-	s.EnableConsoleOutput = &enableConsoleOutput
+func (s *SchemaUnsetRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs bool) *SchemaUnsetRequest {
+	s.UserTaskTimeoutMs = &userTaskTimeoutMs
 	return s
 }
 

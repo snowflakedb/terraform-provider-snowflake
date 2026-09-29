@@ -78,6 +78,12 @@ var (
 		Levels:      onTable,
 		Description: "Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period for tables in the database to prevent streams on the tables from becoming stale.",
 	}
+	PipeExecutionPaused = parameterdefs.ParameterDef{
+		SqlName:     "PIPE_EXECUTION_PAUSED",
+		Kind:        g.KindBool,
+		Levels:      []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelSchema},
+		Description: "Specifies whether to pause a running pipe, primarily in preparation for transferring ownership of the pipe to a different role.",
+	}
 	QuotedIdentifiersIgnoreCase = parameterdefs.ParameterDef{
 		SqlName:     "QUOTED_IDENTIFIERS_IGNORE_CASE",
 		Kind:        g.KindBool,
@@ -145,6 +151,7 @@ var AllParameters = []parameterdefs.ParameterDef{
 	LogEventLevel,
 	LogLevel,
 	MaxDataExtensionTimeInDays,
+	PipeExecutionPaused,
 	QuotedIdentifiersIgnoreCase,
 	ReplaceInvalidCharacters,
 	StorageSerializationPolicy,

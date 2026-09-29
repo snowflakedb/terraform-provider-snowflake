@@ -18,26 +18,26 @@ type CreateSchemaRequest struct {
 	IfNotExists                             *bool
 	name                                    DatabaseObjectIdentifier // required
 	WithManagedAccess                       *bool
-	DataRetentionTimeInDays                 *int
-	MaxDataExtensionTimeInDays              *int
-	ExternalVolume                          *AccountObjectIdentifier
 	Catalog                                 *AccountObjectIdentifier
-	PipeExecutionPaused                     *bool
-	ReplaceInvalidCharacters                *bool
+	DataRetentionTimeInDays                 *int
 	DefaultDdlCollation                     *StringAllowEmpty
 	DefaultNotebookComputePoolCpu           *string
 	DefaultNotebookComputePoolGpu           *string
-	StorageSerializationPolicy              *StorageSerializationPolicy
-	LogLevel                                *LogLevel
+	EnableConsoleOutput                     *bool
+	ExternalVolume                          *AccountObjectIdentifier
 	LogEventLevel                           *LogLevel
-	TraceLevel                              *TraceLevel
+	LogLevel                                *LogLevel
+	MaxDataExtensionTimeInDays              *int
+	PipeExecutionPaused                     *bool
+	QuotedIdentifiersIgnoreCase             *bool
+	ReplaceInvalidCharacters                *bool
+	StorageSerializationPolicy              *StorageSerializationPolicy
 	SuspendTaskAfterNumFailures             *int
 	TaskAutoRetryAttempts                   *int
+	TraceLevel                              *TraceLevel
 	UserTaskManagedInitialWarehouseSize     *WarehouseSize
-	UserTaskTimeoutMs                       *int
 	UserTaskMinimumTriggerIntervalInSeconds *int
-	QuotedIdentifiersIgnoreCase             *bool
-	EnableConsoleOutput                     *bool
+	UserTaskTimeoutMs                       *int
 	Comment                                 *string
 	Tag                                     []TagAssociation
 }
@@ -64,50 +64,50 @@ type AlterSchemaRequest struct {
 }
 
 type SchemaSetRequest struct {
-	DataRetentionTimeInDays                 *int
-	MaxDataExtensionTimeInDays              *int
-	ExternalVolume                          *AccountObjectIdentifier
 	Catalog                                 *AccountObjectIdentifier
-	PipeExecutionPaused                     *bool
-	ReplaceInvalidCharacters                *bool
+	DataRetentionTimeInDays                 *int
 	DefaultDdlCollation                     *StringAllowEmpty
 	DefaultNotebookComputePoolCpu           *string
 	DefaultNotebookComputePoolGpu           *string
-	StorageSerializationPolicy              *StorageSerializationPolicy
-	LogLevel                                *LogLevel
+	EnableConsoleOutput                     *bool
+	ExternalVolume                          *AccountObjectIdentifier
 	LogEventLevel                           *LogLevel
-	TraceLevel                              *TraceLevel
+	LogLevel                                *LogLevel
+	MaxDataExtensionTimeInDays              *int
+	PipeExecutionPaused                     *bool
+	QuotedIdentifiersIgnoreCase             *bool
+	ReplaceInvalidCharacters                *bool
+	StorageSerializationPolicy              *StorageSerializationPolicy
 	SuspendTaskAfterNumFailures             *int
 	TaskAutoRetryAttempts                   *int
+	TraceLevel                              *TraceLevel
 	UserTaskManagedInitialWarehouseSize     *WarehouseSize
-	UserTaskTimeoutMs                       *int
 	UserTaskMinimumTriggerIntervalInSeconds *int
-	QuotedIdentifiersIgnoreCase             *bool
-	EnableConsoleOutput                     *bool
+	UserTaskTimeoutMs                       *int
 	Comment                                 *string
 }
 
 type SchemaUnsetRequest struct {
-	DataRetentionTimeInDays                 *bool
-	MaxDataExtensionTimeInDays              *bool
-	ExternalVolume                          *bool
 	Catalog                                 *bool
-	PipeExecutionPaused                     *bool
-	ReplaceInvalidCharacters                *bool
+	DataRetentionTimeInDays                 *bool
 	DefaultDdlCollation                     *bool
 	DefaultNotebookComputePoolCpu           *bool
 	DefaultNotebookComputePoolGpu           *bool
-	StorageSerializationPolicy              *bool
-	LogLevel                                *bool
+	EnableConsoleOutput                     *bool
+	ExternalVolume                          *bool
 	LogEventLevel                           *bool
-	TraceLevel                              *bool
+	LogLevel                                *bool
+	MaxDataExtensionTimeInDays              *bool
+	PipeExecutionPaused                     *bool
+	QuotedIdentifiersIgnoreCase             *bool
+	ReplaceInvalidCharacters                *bool
+	StorageSerializationPolicy              *bool
 	SuspendTaskAfterNumFailures             *bool
 	TaskAutoRetryAttempts                   *bool
+	TraceLevel                              *bool
 	UserTaskManagedInitialWarehouseSize     *bool
-	UserTaskTimeoutMs                       *bool
 	UserTaskMinimumTriggerIntervalInSeconds *bool
-	QuotedIdentifiersIgnoreCase             *bool
-	EnableConsoleOutput                     *bool
+	UserTaskTimeoutMs                       *bool
 	Comment                                 *bool
 }
 
