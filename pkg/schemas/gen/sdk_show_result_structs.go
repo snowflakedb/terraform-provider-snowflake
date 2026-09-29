@@ -177,9 +177,9 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.CatalogIntegrationOpenCatalogDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "rest_authentication"}},
 	{ObjectStruct: sdk.ComputePoolDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.CortexAgentDetails{}, IsDescribe: true, ManualFields: []string{"profile"}},
-	// TODO [next PRs]: un-skip serving_state / primary_key_columns / scoring_profile_count / full_index_build_interval_days (stale public schema).
+	// TODO [next PRs]: un-skip serving_state / scoring_profile_count / full_index_build_interval_days (stale public schema).
 	{ObjectStruct: sdk.CortexSearchServiceDetails{}, IsDescribe: true, SkipFields: []string{
-		"serving_state", "primary_key_columns", "scoring_profile_count", "full_index_build_interval_days",
+		"serving_state", "scoring_profile_count", "full_index_build_interval_days",
 	}},
 	// Public describe_output Elem is the row (created_on / name / kind). DatabaseDetails is a Rows wrapper; list helper in ext.
 	{ObjectStruct: sdk.DatabaseDetailsRow{}, IsDescribe: true},

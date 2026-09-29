@@ -80,7 +80,11 @@ var DescribeCortexSearchServiceDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// primary_key_columns is skipped and won't be generated
+	"primary_key_columns": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	// scoring_profile_count is skipped and won't be generated
 	// full_index_build_interval_days is skipped and won't be generated
 }
@@ -117,7 +121,7 @@ func CortexSearchServiceDetailsToSchema(cortexSearchServiceDetails *sdk.CortexSe
 	if cortexSearchServiceDetails.EmbeddingModel != nil {
 		cortexSearchServiceDetailsSchema["embedding_model"] = (*cortexSearchServiceDetails.EmbeddingModel)
 	}
-	// primary_key_columns is skipped and won't be generated
+	cortexSearchServiceDetailsSchema["primary_key_columns"] = cortexSearchServiceDetails.PrimaryKeyColumns
 	// scoring_profile_count is skipped and won't be generated
 	// full_index_build_interval_days is skipped and won't be generated
 	return cortexSearchServiceDetailsSchema

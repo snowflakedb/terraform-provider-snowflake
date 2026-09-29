@@ -52,6 +52,11 @@ func (c *CortexSearchServiceResourceAssert) HasAttributes(expected ...string) *C
 	return c
 }
 
+func (c *CortexSearchServiceResourceAssert) HasAutoSuspend(expected int) *CortexSearchServiceResourceAssert {
+	c.IntValueSet("auto_suspend", expected)
+	return c
+}
+
 func (c *CortexSearchServiceResourceAssert) HasComment(expected string) *CortexSearchServiceResourceAssert {
 	c.StringValueSet("comment", expected)
 	return c
@@ -74,6 +79,11 @@ func (c *CortexSearchServiceResourceAssert) HasFullyQualifiedName(expected strin
 
 func (c *CortexSearchServiceResourceAssert) HasOn(expected string) *CortexSearchServiceResourceAssert {
 	c.StringValueSet("on", expected)
+	return c
+}
+
+func (c *CortexSearchServiceResourceAssert) HasPrimaryKey(expected ...string) *CortexSearchServiceResourceAssert {
+	c.SetContainsExactlyStringValues("primary_key", expected...)
 	return c
 }
 
@@ -108,6 +118,11 @@ func (c *CortexSearchServiceResourceAssert) HasSchemaString(expected string) *Co
 
 func (c *CortexSearchServiceResourceAssert) HasNameString(expected string) *CortexSearchServiceResourceAssert {
 	c.ValueSet("name", expected)
+	return c
+}
+
+func (c *CortexSearchServiceResourceAssert) HasAutoSuspendString(expected string) *CortexSearchServiceResourceAssert {
+	c.ValueSet("auto_suspend", expected)
 	return c
 }
 
@@ -170,6 +185,11 @@ func (c *CortexSearchServiceResourceAssert) HasNoName() *CortexSearchServiceReso
 	return c
 }
 
+func (c *CortexSearchServiceResourceAssert) HasNoAutoSuspend() *CortexSearchServiceResourceAssert {
+	c.ValueNotSet("auto_suspend")
+	return c
+}
+
 func (c *CortexSearchServiceResourceAssert) HasNoComment() *CortexSearchServiceResourceAssert {
 	c.ValueNotSet("comment")
 	return c
@@ -219,6 +239,11 @@ func (c *CortexSearchServiceResourceAssert) HasAttributesEmpty() *CortexSearchSe
 	return c
 }
 
+func (c *CortexSearchServiceResourceAssert) HasAutoSuspendEmpty() *CortexSearchServiceResourceAssert {
+	c.ValueSet("auto_suspend", "")
+	return c
+}
+
 func (c *CortexSearchServiceResourceAssert) HasCommentEmpty() *CortexSearchServiceResourceAssert {
 	c.ValueSet("comment", "")
 	return c
@@ -239,6 +264,11 @@ func (c *CortexSearchServiceResourceAssert) HasFullyQualifiedNameEmpty() *Cortex
 	return c
 }
 
+func (c *CortexSearchServiceResourceAssert) HasPrimaryKeyEmpty() *CortexSearchServiceResourceAssert {
+	c.ValueSet("primary_key.#", "0")
+	return c
+}
+
 ///////////////////////////////
 // Attribute presence checks //
 ///////////////////////////////
@@ -255,6 +285,11 @@ func (c *CortexSearchServiceResourceAssert) HasSchemaNotEmpty() *CortexSearchSer
 
 func (c *CortexSearchServiceResourceAssert) HasNameNotEmpty() *CortexSearchServiceResourceAssert {
 	c.ValuePresent("name")
+	return c
+}
+
+func (c *CortexSearchServiceResourceAssert) HasAutoSuspendNotEmpty() *CortexSearchServiceResourceAssert {
+	c.ValuePresent("auto_suspend")
 	return c
 }
 
