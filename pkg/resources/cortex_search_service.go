@@ -15,6 +15,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var cortexSearchServiceSchema = map[string]*schema.Schema{
@@ -41,6 +42,12 @@ var cortexSearchServiceSchema = map[string]*schema.Schema{
 		Required:    true,
 		Description: "Specifies the column to use as the search column for the Cortex search service; must be a text value.",
 		ForceNew:    true,
+	},
+	"primary_key": {
+		Type:        schema.TypeSet,
+		Optional:    true,
+		Elem:        &schema.Schema{Type: schema.TypeString},
+		Description: "Specifies the column(s) in the base table that uniquely identify each row, used to enable optimized (incremental) refreshes when the underlying data changes. All primary key columns must use the TEXT data type.",
 	},
 	"attributes": {
 		Type:        schema.TypeSet,
@@ -71,6 +78,12 @@ var cortexSearchServiceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
 		Description: "Specifies a comment for the Cortex search service.",
+	},
+	"auto_suspend": {
+		Type:             schema.TypeInt,
+		Optional:         true,
+		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+		Description:      externalChangesNotDetectedFieldDescription("Specifies the number of seconds of inactivity after which the Cortex search service automatically suspends its serving compute, releasing the resources. Snowflake requires a minimum of 1800 (30 minutes). If unset, Snowflake defaults to no automatic suspension."),
 	},
 	"query": {
 		Type:             schema.TypeString,
@@ -111,7 +124,7 @@ func CortexSearchService() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(
 			resources.CortexSearchService,
-			ComputedIfAnyAttributeChanged(cortexSearchServiceSchema, DescribeOutputAttributeName, "embedding_model"),
+			ComputedIfAnyAttributeChanged(cortexSearchServiceSchema, DescribeOutputAttributeName, "embedding_model", "primary_key"),
 		),
 
 		Schema: cortexSearchServiceSchema,
@@ -138,6 +151,12 @@ func ImportCortexSearchService(ctx context.Context, d *schema.ResourceData, meta
 
 	if cortexSearchServiceDetails.EmbeddingModel != nil {
 		if err := d.Set("embedding_model", *cortexSearchServiceDetails.EmbeddingModel); err != nil {
+			return nil, err
+		}
+	}
+
+	if len(cortexSearchServiceDetails.PrimaryKeyColumns) > 0 {
+		if err := d.Set("primary_key", cortexSearchServiceDetails.PrimaryKeyColumns); err != nil {
 			return nil, err
 		}
 	}
@@ -200,9 +219,20 @@ func GetReadCortexSearchServiceFunc(withExternalChangesMarking bool) schema.Read
 			if cortexSearchServiceDetails.EmbeddingModel != nil {
 				embeddingModel = *cortexSearchServiceDetails.EmbeddingModel
 			}
-			if err = handleExternalChangesToObjectInFlatDescribe(
+			normalizeStringList := func(v any) any {
+				if list, ok := v.([]any); ok {
+					return expandStringList(list)
+				}
+				return v
+			}
+			primaryKeyColumns := cortexSearchServiceDetails.PrimaryKeyColumns
+			if primaryKeyColumns == nil {
+				primaryKeyColumns = []string{}
+			}
+			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(
 				d,
 				outputMapping{"embedding_model", "embedding_model", embeddingModel, embeddingModel, nil},
+				outputMapping{"primary_key_columns", "primary_key", primaryKeyColumns, primaryKeyColumns, normalizeStringList},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -210,6 +240,7 @@ func GetReadCortexSearchServiceFunc(withExternalChangesMarking bool) schema.Read
 
 		if err = setStateToValuesFromConfig(d, cortexSearchServiceSchema, []string{
 			"embedding_model",
+			"primary_key",
 		}); err != nil {
 			return diag.FromErr(err)
 		}
@@ -252,11 +283,17 @@ func CreateCortexSearchService(ctx context.Context, d *schema.ResourceData, meta
 	if v, ok := d.GetOk("embedding_model"); ok {
 		request.WithEmbeddingModel(v.(string))
 	}
+	if v, ok := d.GetOk("primary_key"); ok && len(v.(*schema.Set).List()) > 0 {
+		request.WithPrimaryKey(expandStringList(v.(*schema.Set).List()))
+	}
 	if v, ok := d.GetOk("attributes"); ok && len(v.(*schema.Set).List()) > 0 {
 		attributes := sdk.AttributesRequest{
 			Columns: expandStringList(v.(*schema.Set).List()),
 		}
 		request.WithAttributes(attributes)
+	}
+	if v, ok := d.GetOk("auto_suspend"); ok {
+		request.WithAutoSuspend(v.(int))
 	}
 	var diags diag.Diagnostics
 	if err := client.CortexSearchServices.Create(ctx, request); err != nil {
@@ -289,10 +326,38 @@ func UpdateCortexSearchService(ctx context.Context, d *schema.ResourceData, meta
 		set.WithComment(comment)
 	}
 
+	setDefaults := sdk.NewCortexSearchServiceSetDefaultsRequest()
+	if err := intAttributeUpdate(d, "auto_suspend", &set.AutoSuspend, &setDefaults.AutoSuspend); err != nil {
+		return diag.FromErr(err)
+	}
+
 	var diags diag.Diagnostics
 	if *set != *sdk.NewCortexSearchServiceSetRequest() {
 		request.WithSet(*set)
 		if err := client.CortexSearchServices.Alter(ctx, request); err != nil {
+			diags = append(diags, diag.FromErr(err)...)
+		}
+	}
+
+	// AUTO_SUSPEND cannot be reset with a generic UNSET; Snowflake requires a dedicated
+	// SET AUTO_SUSPEND = NULL statement, which is mutually exclusive with the SET clause above.
+	if setDefaults.AutoSuspend != nil {
+		resetRequest := sdk.NewAlterCortexSearchServiceRequest(id).WithSetDefaults(*setDefaults)
+		if err := client.CortexSearchServices.Alter(ctx, resetRequest); err != nil {
+			diags = append(diags, diag.FromErr(err)...)
+		}
+	}
+
+	// PRIMARY KEY has dedicated SET and UNSET clauses, both mutually exclusive with the SET clause above.
+	if d.HasChange("primary_key") {
+		primaryKeyRequest := sdk.NewAlterCortexSearchServiceRequest(id)
+		if v, ok := d.GetOk("primary_key"); ok && v.(*schema.Set).Len() > 0 {
+			setPrimaryKey := sdk.NewCortexSearchServiceSetPrimaryKeyRequest().WithPrimaryKey(expandStringList(v.(*schema.Set).List()))
+			primaryKeyRequest.WithSetPrimaryKey(*setPrimaryKey)
+		} else {
+			primaryKeyRequest.WithUnsetPrimaryKey(true)
+		}
+		if err := client.CortexSearchServices.Alter(ctx, primaryKeyRequest); err != nil {
 			diags = append(diags, diag.FromErr(err)...)
 		}
 	}

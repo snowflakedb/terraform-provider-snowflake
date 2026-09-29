@@ -77,8 +77,10 @@ resource "snowflake_cortex_search_service" "test" {
 ### Optional
 
 - `attributes` (Set of String) Specifies the list of columns in the base table to enable filtering on when issuing queries to the service.
+- `auto_suspend` (Number) Specifies the number of seconds of inactivity after which the Cortex search service automatically suspends its serving compute, releasing the resources. Snowflake requires a minimum of 1800 (30 minutes). If unset, Snowflake defaults to no automatic suspension. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
 - `comment` (String) Specifies a comment for the Cortex search service.
 - `embedding_model` (String) Specifies the embedding model to use for the Cortex search service.
+- `primary_key` (Set of String) Specifies the column(s) in the base table that uniquely identify each row, used to enable optimized (incremental) refreshes when the underlying data changes. All primary key columns must use the TEXT data type.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -115,6 +117,7 @@ Read-Only:
 - `indexing_error` (String)
 - `indexing_state` (String)
 - `name` (String)
+- `primary_key_columns` (List of String)
 - `schema_name` (String)
 - `search_column` (String)
 - `service_query_url` (String)

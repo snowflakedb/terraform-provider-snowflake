@@ -28,6 +28,15 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.21.x ➞ v2.22.0
 
+### *(new feature)* New fields in `snowflake_cortex_search_service` resource
+
+We added `primary_key` and `auto_suspend` fields to the `snowflake_cortex_search_service` resource.
+
+- `primary_key` specifies the column(s) in the base table that uniquely identify each row, enabling optimized (incremental) refreshes when the underlying data changes. It is updated in place, and removing it from the configuration unsets it.
+- `auto_suspend` specifies the number of seconds of inactivity after which the Cortex search service automatically suspends its serving compute. Removing it from the configuration resets it to the Snowflake default (no automatic suspension) instead of leaving the previously set value in place. External changes to this field are not detected, because Snowflake does not return it on `SHOW` or `DESCRIBE`.
+
+No configuration changes are needed for existing configurations; both fields are optional.
+
 ### *(enhancement)* Loosened integer parameter validation on database and schema resources
 
 Client-side upper bounds on integer object parameters have been removed. The provider now only rejects values below `0` (`IntAtLeast(0)`) and lets Snowflake enforce account-specific or edition-specific maxima.
