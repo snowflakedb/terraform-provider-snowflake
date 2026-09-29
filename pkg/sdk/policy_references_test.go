@@ -7,45 +7,45 @@ import (
 
 func TestPolicyReferencesGetForEntity(t *testing.T) {
 	t.Run("validation: missing parameters", func(t *testing.T) {
-		opts := &getForEntityPolicyReferenceOptions{}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("getForEntityPolicyReferenceOptions", "parameters"))
+		opts := &GetForEntityPolicyReferenceOptions{}
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GetForEntityPolicyReferenceOptions", "parameters"))
 	})
 
 	t.Run("validation: missing arguments", func(t *testing.T) {
-		opts := &getForEntityPolicyReferenceOptions{
+		opts := &GetForEntityPolicyReferenceOptions{
 			parameters: &policyReferenceParameters{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("policyReferenceParameters", "arguments"))
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GetForEntityPolicyReferenceOptions.parameters", "arguments"))
 	})
 
 	t.Run("validation: missing refEntityName", func(t *testing.T) {
-		opts := &getForEntityPolicyReferenceOptions{
+		opts := &GetForEntityPolicyReferenceOptions{
 			parameters: &policyReferenceParameters{
 				arguments: &policyReferenceFunctionArguments{
-					refEntityDomain: Pointer(PolicyEntityDomainUser),
+					RefEntityDomain: PolicyEntityDomainUser,
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("policyReferenceFunctionArguments", "refEntityName"))
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GetForEntityPolicyReferenceOptions.parameters.arguments", "refEntityName"))
 	})
 
 	t.Run("validation: missing refEntityDomain", func(t *testing.T) {
-		opts := &getForEntityPolicyReferenceOptions{
+		opts := &GetForEntityPolicyReferenceOptions{
 			parameters: &policyReferenceParameters{
 				arguments: &policyReferenceFunctionArguments{
 					refEntityName: []ObjectIdentifier{NewAccountObjectIdentifierFromFullyQualifiedName("user_name")},
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("policyReferenceFunctionArguments", "refEntityDomain"))
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GetForEntityPolicyReferenceOptions.parameters.arguments", "RefEntityDomain"))
 	})
 
 	t.Run("user domain", func(t *testing.T) {
-		opts := &getForEntityPolicyReferenceOptions{
+		opts := &GetForEntityPolicyReferenceOptions{
 			parameters: &policyReferenceParameters{
 				arguments: &policyReferenceFunctionArguments{
 					refEntityName:   []ObjectIdentifier{NewAccountObjectIdentifier("user_name")},
-					refEntityDomain: Pointer(PolicyEntityDomainUser),
+					RefEntityDomain: PolicyEntityDomainUser,
 				},
 			},
 		}
@@ -54,11 +54,11 @@ func TestPolicyReferencesGetForEntity(t *testing.T) {
 
 	t.Run("table domain", func(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
-		opts := &getForEntityPolicyReferenceOptions{
+		opts := &GetForEntityPolicyReferenceOptions{
 			parameters: &policyReferenceParameters{
 				arguments: &policyReferenceFunctionArguments{
 					refEntityName:   []ObjectIdentifier{id},
-					refEntityDomain: Pointer(PolicyEntityDomainTable),
+					RefEntityDomain: PolicyEntityDomainTable,
 				},
 			},
 		}
@@ -66,11 +66,11 @@ func TestPolicyReferencesGetForEntity(t *testing.T) {
 	})
 
 	t.Run("account domain", func(t *testing.T) {
-		opts := &getForEntityPolicyReferenceOptions{
+		opts := &GetForEntityPolicyReferenceOptions{
 			parameters: &policyReferenceParameters{
 				arguments: &policyReferenceFunctionArguments{
 					refEntityName:   []ObjectIdentifier{NewAccountObjectIdentifier("account_name")},
-					refEntityDomain: Pointer(PolicyEntityDomainAccount),
+					RefEntityDomain: PolicyEntityDomainAccount,
 				},
 			},
 		}
@@ -78,11 +78,11 @@ func TestPolicyReferencesGetForEntity(t *testing.T) {
 	})
 
 	t.Run("integration domain", func(t *testing.T) {
-		opts := &getForEntityPolicyReferenceOptions{
+		opts := &GetForEntityPolicyReferenceOptions{
 			parameters: &policyReferenceParameters{
 				arguments: &policyReferenceFunctionArguments{
 					refEntityName:   []ObjectIdentifier{NewAccountObjectIdentifier("integration_name")},
-					refEntityDomain: Pointer(PolicyEntityDomainIntegration),
+					RefEntityDomain: PolicyEntityDomainIntegration,
 				},
 			},
 		}
@@ -91,11 +91,11 @@ func TestPolicyReferencesGetForEntity(t *testing.T) {
 
 	t.Run("tag domain", func(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
-		opts := &getForEntityPolicyReferenceOptions{
+		opts := &GetForEntityPolicyReferenceOptions{
 			parameters: &policyReferenceParameters{
 				arguments: &policyReferenceFunctionArguments{
 					refEntityName:   []ObjectIdentifier{id},
-					refEntityDomain: Pointer(PolicyEntityDomainTag),
+					RefEntityDomain: PolicyEntityDomainTag,
 				},
 			},
 		}
@@ -104,11 +104,11 @@ func TestPolicyReferencesGetForEntity(t *testing.T) {
 
 	t.Run("view domain", func(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
-		opts := &getForEntityPolicyReferenceOptions{
+		opts := &GetForEntityPolicyReferenceOptions{
 			parameters: &policyReferenceParameters{
 				arguments: &policyReferenceFunctionArguments{
 					refEntityName:   []ObjectIdentifier{id},
-					refEntityDomain: Pointer(PolicyEntityDomainView),
+					RefEntityDomain: PolicyEntityDomainView,
 				},
 			},
 		}

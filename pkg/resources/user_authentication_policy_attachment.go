@@ -86,7 +86,7 @@ func ReadUserAuthenticationPolicyAttachment(ctx context.Context, d *schema.Resou
 	}
 
 	// Note: there is no alphanumeric id for an attachment, so we retrieve the authentication policies attached to a certain user.
-	policyReferences, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(userName, sdk.PolicyEntityDomainUser))
+	policyReferences, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequestCustom(userName, sdk.PolicyEntityDomainUser))
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 			d.SetId("")

@@ -541,7 +541,7 @@ func handlePolicyReferences(policyRefs []sdk.PolicyReference, d *schema.Resource
 // row_access_policy and aggregation_policy in the resource state, and returns the fetched references
 // so callers can also derive column-level (masking/projection) policy state from them.
 func readRootLevelPolicies(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, domain sdk.PolicyEntityDomain, d *schema.ResourceData) ([]sdk.PolicyReference, error) {
-	policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(id, domain))
+	policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequestCustom(id, domain))
 	if err != nil {
 		return nil, err
 	}

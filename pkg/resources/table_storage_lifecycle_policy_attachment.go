@@ -115,7 +115,7 @@ func ReadTableStorageLifecyclePolicyAttachment(ctx context.Context, d *schema.Re
 
 	// We use PolicyEntityDomainTable for both table variants, as the POLICY_REFERENCES function does not accept
 	// DYNAMIC_TABLE as a REF_ENTITY_DOMAIN value.
-	policyReferences, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(tableName, sdk.PolicyEntityDomainTable))
+	policyReferences, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequestCustom(tableName, sdk.PolicyEntityDomainTable))
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 			d.SetId("")

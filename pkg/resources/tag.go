@@ -360,7 +360,7 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			return d.Set("ordered_allowed_values", tag.AllowedValues)
 		}(),
 		func() error {
-			policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(id, sdk.PolicyEntityDomainTag))
+			policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequestCustom(id, sdk.PolicyEntityDomainTag))
 			if err != nil {
 				return fmt.Errorf("getting policy references for view: %w", err)
 			}
@@ -587,7 +587,7 @@ func DeleteContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 	}
 
 	// before dropping the resource, all policies must be unset
-	policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(id, sdk.PolicyEntityDomainTag))
+	policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequestCustom(id, sdk.PolicyEntityDomainTag))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("getting policy references for view: %w", err))
 	}

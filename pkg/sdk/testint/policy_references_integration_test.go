@@ -31,7 +31,7 @@ func TestInt_PolicyReferences(t *testing.T) {
 		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).WithSet(*sdk.NewUserSetRequest().WithPasswordPolicy(passwordPolicyId)))
 		require.NoError(t, err)
 
-		policyReferences, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(user.ID(), sdk.PolicyEntityDomainUser))
+		policyReferences, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequestCustom(user.ID(), sdk.PolicyEntityDomainUser))
 		require.NoError(t, err)
 		require.GreaterOrEqual(t, len(policyReferences), 1)
 
@@ -55,7 +55,7 @@ func TestInt_PolicyReferences(t *testing.T) {
 		))
 		require.NoError(t, err)
 
-		policyReferences, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(tag.ID(), sdk.PolicyEntityDomainTag))
+		policyReferences, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequestCustom(tag.ID(), sdk.PolicyEntityDomainTag))
 		require.NoError(t, err)
 		require.Len(t, policyReferences, 1)
 		require.Equal(t, maskingPolicy.ID().Name(), policyReferences[0].PolicyName)

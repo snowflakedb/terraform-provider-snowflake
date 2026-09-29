@@ -220,7 +220,7 @@ func (c *Client) initialize() {
 	c.Parameters = &parameters{client: c}
 	c.PasswordPolicies = &passwordPolicies{client: c}
 	c.Pipes = &pipes{client: c}
-	c.PolicyReferences = &policyReference{client: c}
+	c.PolicyReferences = &policyReferences{client: c}
 	c.PostgresInstances = &postgresInstances{client: c}
 	c.Procedures = &procedures{client: c}
 	c.ReplicationFunctions = &replicationFunctions{client: c}

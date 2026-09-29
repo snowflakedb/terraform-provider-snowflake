@@ -74,7 +74,7 @@ func ReadUserPasswordPolicyAttachment(ctx context.Context, d *schema.ResourceDat
 
 	// Note: there is no alphanumeric id for an attachment, so we retrieve the password policies attached to a certain user.
 	userName := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(parts[0])
-	policyReferences, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(userName, sdk.PolicyEntityDomainUser))
+	policyReferences, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequestCustom(userName, sdk.PolicyEntityDomainUser))
 	if err != nil {
 		return diag.FromErr(err)
 	}

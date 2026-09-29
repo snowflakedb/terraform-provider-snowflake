@@ -27,7 +27,7 @@ func (c *PolicyReferencesClient) GetPolicyReferences(t *testing.T, objectId sdk.
 	t.Helper()
 	ctx := context.Background()
 
-	return c.client().GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(
+	return c.client().GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequestCustom(
 		objectId,
 		entity,
 	))

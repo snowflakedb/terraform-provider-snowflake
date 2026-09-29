@@ -141,7 +141,7 @@ func ReadCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	attachedPolicies, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(sdk.NewAccountObjectIdentifier(organizationAccount.AccountLocator), sdk.PolicyEntityDomainAccount))
+	attachedPolicies, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequestCustom(sdk.NewAccountObjectIdentifier(organizationAccount.AccountLocator), sdk.PolicyEntityDomainAccount))
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -57,6 +57,7 @@ func init() {
 		organizationAccountsDef,
 		passwordPoliciesDef,
 		pipesDef,
+		policyReferencesDef,
 		postgresInstancesDef,
 		proceduresDef,
 		resourceMonitorsDef,
