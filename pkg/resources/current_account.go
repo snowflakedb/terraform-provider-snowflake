@@ -148,11 +148,11 @@ func CreateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 		return diag.FromErr(errs)
 	}
 
-	setParameters := new(sdk.AccountParameters)
+	setParameters := sdk.NewAccountParametersRequest()
 	if diags := handleAccountParametersCreate(d, setParameters); diags != nil {
 		return diags
 	}
-	if *setParameters != (sdk.AccountParameters{}) {
+	if *setParameters != (sdk.AccountParametersRequest{}) {
 		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithParameters(*setParameters))); err != nil {
 			return diag.FromErr(err)
 		}
@@ -281,17 +281,17 @@ func UpdateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 		return diag.FromErr(errs)
 	}
 
-	setParameters := new(sdk.AccountParameters)
-	unsetParameters := new(sdk.AccountParametersUnset)
+	setParameters := sdk.NewAccountParametersRequest()
+	unsetParameters := sdk.NewAccountParametersUnsetRequest()
 	if diags := handleAccountParametersUpdate(d, setParameters, unsetParameters); diags != nil {
 		return diags
 	}
-	if *setParameters != (sdk.AccountParameters{}) {
+	if *setParameters != (sdk.AccountParametersRequest{}) {
 		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithParameters(*setParameters))); err != nil {
 			return diag.FromErr(err)
 		}
 	}
-	if *unsetParameters != (sdk.AccountParametersUnset{}) {
+	if *unsetParameters != (sdk.AccountParametersUnsetRequest{}) {
 		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithUnset(*sdk.NewAccountUnsetRequest().WithParameters(*unsetParameters))); err != nil {
 			return diag.FromErr(err)
 		}

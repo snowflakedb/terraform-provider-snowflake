@@ -1,7 +1,14 @@
 package sdkcommons
 
 type (
+	ActivePythonProfiler                                     string
+	BinaryInputFormat                                        string
+	BinaryOutputFormat                                       string
+	ClientTimestampTypeMapping                               string
 	ColumnConstraintType                                     string
+	DefaultNullOrdering                                      string
+	GeographyOutputFormat                                    string
+	GeometryOutputFormat                                     string
 	WarehouseGeneration                                      string
 	WarehouseSize                                            string
 	AutoEventLogging                                         string
@@ -19,7 +26,10 @@ type (
 	SecretType                                               string
 	SequenceName                                             string
 	TaskState                                                string
+	TimestampTypeMapping                                     string
 	TraceLevel                                               string
+	TransactionDefaultIsolationLevel                         string
+	UnsupportedDDLAction                                     string
 )
 
 // copied from SDK for now

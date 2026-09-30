@@ -262,17 +262,17 @@ func UpdateCurrentOrganizationAccount(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	setParameters := new(sdk.AccountParameters)
-	unsetParameters := new(sdk.AccountParametersUnset)
+	setParameters := sdk.NewAccountParametersRequest()
+	unsetParameters := sdk.NewAccountParametersUnsetRequest()
 	if diags := handleAccountParametersUpdate(d, setParameters, unsetParameters); diags != nil {
 		return diags
 	}
-	if *setParameters != (sdk.AccountParameters{}) {
+	if *setParameters != (sdk.AccountParametersRequest{}) {
 		if err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithParameters(*setParameters))); err != nil {
 			return diag.FromErr(err)
 		}
 	}
-	if *unsetParameters != (sdk.AccountParametersUnset{}) {
+	if *unsetParameters != (sdk.AccountParametersUnsetRequest{}) {
 		if err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithUnset(*sdk.NewOrganizationAccountUnsetRequest().WithParameters(*unsetParameters))); err != nil {
 			return diag.FromErr(err)
 		}

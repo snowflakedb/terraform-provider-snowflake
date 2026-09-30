@@ -77,20 +77,24 @@ func (r *AlterOrganizationAccountRequest) toOpts() *AlterOrganizationAccountOpti
 	}
 	if r.Set != nil {
 		opts.Set = &OrganizationAccountSet{
-			Parameters:      r.Set.Parameters,
 			ResourceMonitor: r.Set.ResourceMonitor,
 			PasswordPolicy:  r.Set.PasswordPolicy,
 			SessionPolicy:   r.Set.SessionPolicy,
 			Comment:         r.Set.Comment,
 		}
+		if r.Set.Parameters != nil {
+			opts.Set.Parameters = r.Set.Parameters.toOpts()
+		}
 	}
 	if r.Unset != nil {
 		opts.Unset = &OrganizationAccountUnset{
-			Parameters:      r.Unset.Parameters,
 			ResourceMonitor: r.Unset.ResourceMonitor,
 			PasswordPolicy:  r.Unset.PasswordPolicy,
 			SessionPolicy:   r.Unset.SessionPolicy,
 			Comment:         r.Unset.Comment,
+		}
+		if r.Unset.Parameters != nil {
+			opts.Unset.Parameters = r.Unset.Parameters.toOpts()
 		}
 	}
 	if r.RenameTo != nil {

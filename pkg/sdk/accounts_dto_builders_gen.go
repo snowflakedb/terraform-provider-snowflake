@@ -124,7 +124,7 @@ func NewAccountSetRequest() *AccountSetRequest {
 	return &s
 }
 
-func (s *AccountSetRequest) WithParameters(parameters AccountParameters) *AccountSetRequest {
+func (s *AccountSetRequest) WithParameters(parameters AccountParametersRequest) *AccountSetRequest {
 	s.Parameters = &parameters
 	return s
 }
@@ -176,6 +176,731 @@ func (s *AccountSetRequest) WithOrgAdmin(orgAdmin bool) *AccountSetRequest {
 
 func (s *AccountSetRequest) WithForce(force bool) *AccountSetRequest {
 	s.Force = &force
+	return s
+}
+
+func NewAccountParametersRequest() *AccountParametersRequest {
+	s := AccountParametersRequest{}
+	return &s
+}
+
+func (s *AccountParametersRequest) WithAbortDetachedQuery(abortDetachedQuery bool) *AccountParametersRequest {
+	s.AbortDetachedQuery = &abortDetachedQuery
+	return s
+}
+
+func (s *AccountParametersRequest) WithActivePythonProfiler(activePythonProfiler ActivePythonProfiler) *AccountParametersRequest {
+	s.ActivePythonProfiler = &activePythonProfiler
+	return s
+}
+
+func (s *AccountParametersRequest) WithAllowBindValuesAccess(allowBindValuesAccess bool) *AccountParametersRequest {
+	s.AllowBindValuesAccess = &allowBindValuesAccess
+	return s
+}
+
+func (s *AccountParametersRequest) WithAllowClientMfaCaching(allowClientMfaCaching bool) *AccountParametersRequest {
+	s.AllowClientMfaCaching = &allowClientMfaCaching
+	return s
+}
+
+func (s *AccountParametersRequest) WithAllowIdToken(allowIdToken bool) *AccountParametersRequest {
+	s.AllowIdToken = &allowIdToken
+	return s
+}
+
+func (s *AccountParametersRequest) WithAllowedSpcsWorkloadTypes(allowedSpcsWorkloadTypes string) *AccountParametersRequest {
+	s.AllowedSpcsWorkloadTypes = &allowedSpcsWorkloadTypes
+	return s
+}
+
+func (s *AccountParametersRequest) WithAutocommit(autocommit bool) *AccountParametersRequest {
+	s.Autocommit = &autocommit
+	return s
+}
+
+func (s *AccountParametersRequest) WithBaseLocationPrefix(baseLocationPrefix string) *AccountParametersRequest {
+	s.BaseLocationPrefix = &baseLocationPrefix
+	return s
+}
+
+func (s *AccountParametersRequest) WithBinaryInputFormat(binaryInputFormat BinaryInputFormat) *AccountParametersRequest {
+	s.BinaryInputFormat = &binaryInputFormat
+	return s
+}
+
+func (s *AccountParametersRequest) WithBinaryOutputFormat(binaryOutputFormat BinaryOutputFormat) *AccountParametersRequest {
+	s.BinaryOutputFormat = &binaryOutputFormat
+	return s
+}
+
+func (s *AccountParametersRequest) WithCatalog(catalog AccountObjectIdentifier) *AccountParametersRequest {
+	s.Catalog = &catalog
+	return s
+}
+
+func (s *AccountParametersRequest) WithCatalogSync(catalogSync string) *AccountParametersRequest {
+	s.CatalogSync = &catalogSync
+	return s
+}
+
+func (s *AccountParametersRequest) WithClientEnableLogInfoStatementParameters(clientEnableLogInfoStatementParameters bool) *AccountParametersRequest {
+	s.ClientEnableLogInfoStatementParameters = &clientEnableLogInfoStatementParameters
+	return s
+}
+
+func (s *AccountParametersRequest) WithClientEncryptionKeySize(clientEncryptionKeySize int) *AccountParametersRequest {
+	s.ClientEncryptionKeySize = &clientEncryptionKeySize
+	return s
+}
+
+func (s *AccountParametersRequest) WithClientMemoryLimit(clientMemoryLimit int) *AccountParametersRequest {
+	s.ClientMemoryLimit = &clientMemoryLimit
+	return s
+}
+
+func (s *AccountParametersRequest) WithClientMetadataRequestUseConnectionCtx(clientMetadataRequestUseConnectionCtx bool) *AccountParametersRequest {
+	s.ClientMetadataRequestUseConnectionCtx = &clientMetadataRequestUseConnectionCtx
+	return s
+}
+
+func (s *AccountParametersRequest) WithClientMetadataUseSessionDatabase(clientMetadataUseSessionDatabase bool) *AccountParametersRequest {
+	s.ClientMetadataUseSessionDatabase = &clientMetadataUseSessionDatabase
+	return s
+}
+
+func (s *AccountParametersRequest) WithClientPrefetchThreads(clientPrefetchThreads int) *AccountParametersRequest {
+	s.ClientPrefetchThreads = &clientPrefetchThreads
+	return s
+}
+
+func (s *AccountParametersRequest) WithClientResultChunkSize(clientResultChunkSize int) *AccountParametersRequest {
+	s.ClientResultChunkSize = &clientResultChunkSize
+	return s
+}
+
+func (s *AccountParametersRequest) WithClientResultColumnCaseInsensitive(clientResultColumnCaseInsensitive bool) *AccountParametersRequest {
+	s.ClientResultColumnCaseInsensitive = &clientResultColumnCaseInsensitive
+	return s
+}
+
+func (s *AccountParametersRequest) WithClientSessionKeepAlive(clientSessionKeepAlive bool) *AccountParametersRequest {
+	s.ClientSessionKeepAlive = &clientSessionKeepAlive
+	return s
+}
+
+func (s *AccountParametersRequest) WithClientSessionKeepAliveHeartbeatFrequency(clientSessionKeepAliveHeartbeatFrequency int) *AccountParametersRequest {
+	s.ClientSessionKeepAliveHeartbeatFrequency = &clientSessionKeepAliveHeartbeatFrequency
+	return s
+}
+
+func (s *AccountParametersRequest) WithClientTimestampTypeMapping(clientTimestampTypeMapping ClientTimestampTypeMapping) *AccountParametersRequest {
+	s.ClientTimestampTypeMapping = &clientTimestampTypeMapping
+	return s
+}
+
+func (s *AccountParametersRequest) WithCortexCodeCliDailyEstCreditLimitPerUser(cortexCodeCliDailyEstCreditLimitPerUser int) *AccountParametersRequest {
+	s.CortexCodeCliDailyEstCreditLimitPerUser = &cortexCodeCliDailyEstCreditLimitPerUser
+	return s
+}
+
+func (s *AccountParametersRequest) WithCortexCodeDesktopDailyEstCreditLimitPerUser(cortexCodeDesktopDailyEstCreditLimitPerUser int) *AccountParametersRequest {
+	s.CortexCodeDesktopDailyEstCreditLimitPerUser = &cortexCodeDesktopDailyEstCreditLimitPerUser
+	return s
+}
+
+func (s *AccountParametersRequest) WithCortexCodeSnowsightDailyEstCreditLimitPerUser(cortexCodeSnowsightDailyEstCreditLimitPerUser int) *AccountParametersRequest {
+	s.CortexCodeSnowsightDailyEstCreditLimitPerUser = &cortexCodeSnowsightDailyEstCreditLimitPerUser
+	return s
+}
+
+func (s *AccountParametersRequest) WithCortexEnabledCrossRegion(cortexEnabledCrossRegion string) *AccountParametersRequest {
+	s.CortexEnabledCrossRegion = &cortexEnabledCrossRegion
+	return s
+}
+
+func (s *AccountParametersRequest) WithCortexModelsAllowlist(cortexModelsAllowlist string) *AccountParametersRequest {
+	s.CortexModelsAllowlist = &cortexModelsAllowlist
+	return s
+}
+
+func (s *AccountParametersRequest) WithCsvTimestampFormat(csvTimestampFormat string) *AccountParametersRequest {
+	s.CsvTimestampFormat = &csvTimestampFormat
+	return s
+}
+
+func (s *AccountParametersRequest) WithDataMetricSchedule(dataMetricSchedule string) *AccountParametersRequest {
+	s.DataMetricSchedule = &dataMetricSchedule
+	return s
+}
+
+func (s *AccountParametersRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *AccountParametersRequest {
+	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
+	return s
+}
+
+func (s *AccountParametersRequest) WithDateInputFormat(dateInputFormat string) *AccountParametersRequest {
+	s.DateInputFormat = &dateInputFormat
+	return s
+}
+
+func (s *AccountParametersRequest) WithDateOutputFormat(dateOutputFormat string) *AccountParametersRequest {
+	s.DateOutputFormat = &dateOutputFormat
+	return s
+}
+
+func (s *AccountParametersRequest) WithDefaultDbtVersion(defaultDbtVersion string) *AccountParametersRequest {
+	s.DefaultDbtVersion = &defaultDbtVersion
+	return s
+}
+
+func (s *AccountParametersRequest) WithDefaultDdlCollation(defaultDdlCollation StringAllowEmpty) *AccountParametersRequest {
+	s.DefaultDdlCollation = &defaultDdlCollation
+	return s
+}
+
+func (s *AccountParametersRequest) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu string) *AccountParametersRequest {
+	s.DefaultNotebookComputePoolCpu = &defaultNotebookComputePoolCpu
+	return s
+}
+
+func (s *AccountParametersRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu string) *AccountParametersRequest {
+	s.DefaultNotebookComputePoolGpu = &defaultNotebookComputePoolGpu
+	return s
+}
+
+func (s *AccountParametersRequest) WithDefaultNullOrdering(defaultNullOrdering DefaultNullOrdering) *AccountParametersRequest {
+	s.DefaultNullOrdering = &defaultNullOrdering
+	return s
+}
+
+func (s *AccountParametersRequest) WithDefaultStreamlitComputePool(defaultStreamlitComputePool string) *AccountParametersRequest {
+	s.DefaultStreamlitComputePool = &defaultStreamlitComputePool
+	return s
+}
+
+func (s *AccountParametersRequest) WithDefaultStreamlitNotebookWarehouse(defaultStreamlitNotebookWarehouse AccountObjectIdentifier) *AccountParametersRequest {
+	s.DefaultStreamlitNotebookWarehouse = &defaultStreamlitNotebookWarehouse
+	return s
+}
+
+func (s *AccountParametersRequest) WithDisableUiDownloadButton(disableUiDownloadButton bool) *AccountParametersRequest {
+	s.DisableUiDownloadButton = &disableUiDownloadButton
+	return s
+}
+
+func (s *AccountParametersRequest) WithDisableUserPrivilegeGrants(disableUserPrivilegeGrants bool) *AccountParametersRequest {
+	s.DisableUserPrivilegeGrants = &disableUserPrivilegeGrants
+	return s
+}
+
+func (s *AccountParametersRequest) WithDisallowedSpcsWorkloadTypes(disallowedSpcsWorkloadTypes string) *AccountParametersRequest {
+	s.DisallowedSpcsWorkloadTypes = &disallowedSpcsWorkloadTypes
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnableAutomaticSensitiveDataClassificationLog(enableAutomaticSensitiveDataClassificationLog bool) *AccountParametersRequest {
+	s.EnableAutomaticSensitiveDataClassificationLog = &enableAutomaticSensitiveDataClassificationLog
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnableBudgetEventLogging(enableBudgetEventLogging bool) *AccountParametersRequest {
+	s.EnableBudgetEventLogging = &enableBudgetEventLogging
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *AccountParametersRequest {
+	s.EnableConsoleOutput = &enableConsoleOutput
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnableCortexAnalyst(enableCortexAnalyst bool) *AccountParametersRequest {
+	s.EnableCortexAnalyst = &enableCortexAnalyst
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnableDataCompaction(enableDataCompaction bool) *AccountParametersRequest {
+	s.EnableDataCompaction = &enableDataCompaction
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnableEgressCostOptimizer(enableEgressCostOptimizer bool) *AccountParametersRequest {
+	s.EnableEgressCostOptimizer = &enableEgressCostOptimizer
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnableGetDdlUseDataTypeAlias(enableGetDdlUseDataTypeAlias bool) *AccountParametersRequest {
+	s.EnableGetDdlUseDataTypeAlias = &enableGetDdlUseDataTypeAlias
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnableIcebergMergeOnRead(enableIcebergMergeOnRead bool) *AccountParametersRequest {
+	s.EnableIcebergMergeOnRead = &enableIcebergMergeOnRead
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnableIdentifierFirstLogin(enableIdentifierFirstLogin bool) *AccountParametersRequest {
+	s.EnableIdentifierFirstLogin = &enableIdentifierFirstLogin
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnableInternalStagesPrivatelink(enableInternalStagesPrivatelink bool) *AccountParametersRequest {
+	s.EnableInternalStagesPrivatelink = &enableInternalStagesPrivatelink
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnableNotebookCreationInPersonalDb(enableNotebookCreationInPersonalDb bool) *AccountParametersRequest {
+	s.EnableNotebookCreationInPersonalDb = &enableNotebookCreationInPersonalDb
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnablePerAccountAppServicePrivatelinkUrl(enablePerAccountAppServicePrivatelinkUrl bool) *AccountParametersRequest {
+	s.EnablePerAccountAppServicePrivatelinkUrl = &enablePerAccountAppServicePrivatelinkUrl
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnablePersonalDatabase(enablePersonalDatabase bool) *AccountParametersRequest {
+	s.EnablePersonalDatabase = &enablePersonalDatabase
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement(enableSpcsBlockStorageSnowflakeFullEncryptionEnforcement bool) *AccountParametersRequest {
+	s.EnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement = &enableSpcsBlockStorageSnowflakeFullEncryptionEnforcement
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnableTagPropagationEventLogging(enableTagPropagationEventLogging bool) *AccountParametersRequest {
+	s.EnableTagPropagationEventLogging = &enableTagPropagationEventLogging
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnableTriSecretAndRekeyOptOutForImageRepository(enableTriSecretAndRekeyOptOutForImageRepository bool) *AccountParametersRequest {
+	s.EnableTriSecretAndRekeyOptOutForImageRepository = &enableTriSecretAndRekeyOptOutForImageRepository
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnableTriSecretAndRekeyOptOutForSpcsBlockStorage(enableTriSecretAndRekeyOptOutForSpcsBlockStorage bool) *AccountParametersRequest {
+	s.EnableTriSecretAndRekeyOptOutForSpcsBlockStorage = &enableTriSecretAndRekeyOptOutForSpcsBlockStorage
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnableUnhandledExceptionsReporting(enableUnhandledExceptionsReporting bool) *AccountParametersRequest {
+	s.EnableUnhandledExceptionsReporting = &enableUnhandledExceptionsReporting
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnableUnloadPhysicalTypeOptimization(enableUnloadPhysicalTypeOptimization bool) *AccountParametersRequest {
+	s.EnableUnloadPhysicalTypeOptimization = &enableUnloadPhysicalTypeOptimization
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnableUnredactedQuerySyntaxError(enableUnredactedQuerySyntaxError bool) *AccountParametersRequest {
+	s.EnableUnredactedQuerySyntaxError = &enableUnredactedQuerySyntaxError
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnableUnredactedSecureObjectError(enableUnredactedSecureObjectError bool) *AccountParametersRequest {
+	s.EnableUnredactedSecureObjectError = &enableUnredactedSecureObjectError
+	return s
+}
+
+func (s *AccountParametersRequest) WithEnforceNetworkRulesForInternalStages(enforceNetworkRulesForInternalStages bool) *AccountParametersRequest {
+	s.EnforceNetworkRulesForInternalStages = &enforceNetworkRulesForInternalStages
+	return s
+}
+
+func (s *AccountParametersRequest) WithErrorOnNondeterministicMerge(errorOnNondeterministicMerge bool) *AccountParametersRequest {
+	s.ErrorOnNondeterministicMerge = &errorOnNondeterministicMerge
+	return s
+}
+
+func (s *AccountParametersRequest) WithErrorOnNondeterministicUpdate(errorOnNondeterministicUpdate bool) *AccountParametersRequest {
+	s.ErrorOnNondeterministicUpdate = &errorOnNondeterministicUpdate
+	return s
+}
+
+func (s *AccountParametersRequest) WithEventTable(eventTable SchemaObjectIdentifier) *AccountParametersRequest {
+	s.EventTable = &eventTable
+	return s
+}
+
+func (s *AccountParametersRequest) WithExternalOauthAddPrivilegedRolesToBlockedList(externalOauthAddPrivilegedRolesToBlockedList bool) *AccountParametersRequest {
+	s.ExternalOauthAddPrivilegedRolesToBlockedList = &externalOauthAddPrivilegedRolesToBlockedList
+	return s
+}
+
+func (s *AccountParametersRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *AccountParametersRequest {
+	s.ExternalVolume = &externalVolume
+	return s
+}
+
+func (s *AccountParametersRequest) WithGeographyOutputFormat(geographyOutputFormat GeographyOutputFormat) *AccountParametersRequest {
+	s.GeographyOutputFormat = &geographyOutputFormat
+	return s
+}
+
+func (s *AccountParametersRequest) WithGeometryOutputFormat(geometryOutputFormat GeometryOutputFormat) *AccountParametersRequest {
+	s.GeometryOutputFormat = &geometryOutputFormat
+	return s
+}
+
+func (s *AccountParametersRequest) WithHybridTableLockTimeout(hybridTableLockTimeout int) *AccountParametersRequest {
+	s.HybridTableLockTimeout = &hybridTableLockTimeout
+	return s
+}
+
+func (s *AccountParametersRequest) WithIcebergVersionDefault(icebergVersionDefault int) *AccountParametersRequest {
+	s.IcebergVersionDefault = &icebergVersionDefault
+	return s
+}
+
+func (s *AccountParametersRequest) WithInitialReplicationSizeLimitInTb(initialReplicationSizeLimitInTb string) *AccountParametersRequest {
+	s.InitialReplicationSizeLimitInTb = &initialReplicationSizeLimitInTb
+	return s
+}
+
+func (s *AccountParametersRequest) WithJdbcTreatDecimalAsInt(jdbcTreatDecimalAsInt bool) *AccountParametersRequest {
+	s.JdbcTreatDecimalAsInt = &jdbcTreatDecimalAsInt
+	return s
+}
+
+func (s *AccountParametersRequest) WithJdbcTreatTimestampNtzAsUtc(jdbcTreatTimestampNtzAsUtc bool) *AccountParametersRequest {
+	s.JdbcTreatTimestampNtzAsUtc = &jdbcTreatTimestampNtzAsUtc
+	return s
+}
+
+func (s *AccountParametersRequest) WithJdbcUseSessionTimezone(jdbcUseSessionTimezone bool) *AccountParametersRequest {
+	s.JdbcUseSessionTimezone = &jdbcUseSessionTimezone
+	return s
+}
+
+func (s *AccountParametersRequest) WithJsTreatIntegerAsBigint(jsTreatIntegerAsBigint bool) *AccountParametersRequest {
+	s.JsTreatIntegerAsBigint = &jsTreatIntegerAsBigint
+	return s
+}
+
+func (s *AccountParametersRequest) WithJsonIndent(jsonIndent int) *AccountParametersRequest {
+	s.JsonIndent = &jsonIndent
+	return s
+}
+
+func (s *AccountParametersRequest) WithListingAutoFulfillmentReplicationRefreshSchedule(listingAutoFulfillmentReplicationRefreshSchedule string) *AccountParametersRequest {
+	s.ListingAutoFulfillmentReplicationRefreshSchedule = &listingAutoFulfillmentReplicationRefreshSchedule
+	return s
+}
+
+func (s *AccountParametersRequest) WithLockTimeout(lockTimeout int) *AccountParametersRequest {
+	s.LockTimeout = &lockTimeout
+	return s
+}
+
+func (s *AccountParametersRequest) WithLogEventLevel(logEventLevel LogLevel) *AccountParametersRequest {
+	s.LogEventLevel = &logEventLevel
+	return s
+}
+
+func (s *AccountParametersRequest) WithLogLevel(logLevel LogLevel) *AccountParametersRequest {
+	s.LogLevel = &logLevel
+	return s
+}
+
+func (s *AccountParametersRequest) WithMaxConcurrencyLevel(maxConcurrencyLevel int) *AccountParametersRequest {
+	s.MaxConcurrencyLevel = &maxConcurrencyLevel
+	return s
+}
+
+func (s *AccountParametersRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *AccountParametersRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
+	return s
+}
+
+func (s *AccountParametersRequest) WithMetricLevel(metricLevel MetricLevel) *AccountParametersRequest {
+	s.MetricLevel = &metricLevel
+	return s
+}
+
+func (s *AccountParametersRequest) WithMinDataRetentionTimeInDays(minDataRetentionTimeInDays int) *AccountParametersRequest {
+	s.MinDataRetentionTimeInDays = &minDataRetentionTimeInDays
+	return s
+}
+
+func (s *AccountParametersRequest) WithMultiStatementCount(multiStatementCount int) *AccountParametersRequest {
+	s.MultiStatementCount = &multiStatementCount
+	return s
+}
+
+func (s *AccountParametersRequest) WithNetworkPolicy(networkPolicy AccountObjectIdentifier) *AccountParametersRequest {
+	s.NetworkPolicy = &networkPolicy
+	return s
+}
+
+func (s *AccountParametersRequest) WithNoorderSequenceAsDefault(noorderSequenceAsDefault bool) *AccountParametersRequest {
+	s.NoorderSequenceAsDefault = &noorderSequenceAsDefault
+	return s
+}
+
+func (s *AccountParametersRequest) WithOauthAddPrivilegedRolesToBlockedList(oauthAddPrivilegedRolesToBlockedList bool) *AccountParametersRequest {
+	s.OauthAddPrivilegedRolesToBlockedList = &oauthAddPrivilegedRolesToBlockedList
+	return s
+}
+
+func (s *AccountParametersRequest) WithOdbcTreatDecimalAsInt(odbcTreatDecimalAsInt bool) *AccountParametersRequest {
+	s.OdbcTreatDecimalAsInt = &odbcTreatDecimalAsInt
+	return s
+}
+
+func (s *AccountParametersRequest) WithPeriodicDataRekeying(periodicDataRekeying bool) *AccountParametersRequest {
+	s.PeriodicDataRekeying = &periodicDataRekeying
+	return s
+}
+
+func (s *AccountParametersRequest) WithPipeExecutionPaused(pipeExecutionPaused bool) *AccountParametersRequest {
+	s.PipeExecutionPaused = &pipeExecutionPaused
+	return s
+}
+
+func (s *AccountParametersRequest) WithPreventLoadFromInlineUrl(preventLoadFromInlineUrl bool) *AccountParametersRequest {
+	s.PreventLoadFromInlineUrl = &preventLoadFromInlineUrl
+	return s
+}
+
+func (s *AccountParametersRequest) WithPreventUnloadToInlineUrl(preventUnloadToInlineUrl bool) *AccountParametersRequest {
+	s.PreventUnloadToInlineUrl = &preventUnloadToInlineUrl
+	return s
+}
+
+func (s *AccountParametersRequest) WithPreventUnloadToInternalStages(preventUnloadToInternalStages bool) *AccountParametersRequest {
+	s.PreventUnloadToInternalStages = &preventUnloadToInternalStages
+	return s
+}
+
+func (s *AccountParametersRequest) WithPythonProfilerModules(pythonProfilerModules string) *AccountParametersRequest {
+	s.PythonProfilerModules = &pythonProfilerModules
+	return s
+}
+
+func (s *AccountParametersRequest) WithPythonProfilerTargetStage(pythonProfilerTargetStage SchemaObjectIdentifier) *AccountParametersRequest {
+	s.PythonProfilerTargetStage = &pythonProfilerTargetStage
+	return s
+}
+
+func (s *AccountParametersRequest) WithQueryTag(queryTag string) *AccountParametersRequest {
+	s.QueryTag = &queryTag
+	return s
+}
+
+func (s *AccountParametersRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *AccountParametersRequest {
+	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
+	return s
+}
+
+func (s *AccountParametersRequest) WithReadConsistencyMode(readConsistencyMode string) *AccountParametersRequest {
+	s.ReadConsistencyMode = &readConsistencyMode
+	return s
+}
+
+func (s *AccountParametersRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *AccountParametersRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *AccountParametersRequest) WithRequireStorageIntegrationForStageCreation(requireStorageIntegrationForStageCreation bool) *AccountParametersRequest {
+	s.RequireStorageIntegrationForStageCreation = &requireStorageIntegrationForStageCreation
+	return s
+}
+
+func (s *AccountParametersRequest) WithRequireStorageIntegrationForStageOperation(requireStorageIntegrationForStageOperation bool) *AccountParametersRequest {
+	s.RequireStorageIntegrationForStageOperation = &requireStorageIntegrationForStageOperation
+	return s
+}
+
+func (s *AccountParametersRequest) WithRowTimestampDefault(rowTimestampDefault bool) *AccountParametersRequest {
+	s.RowTimestampDefault = &rowTimestampDefault
+	return s
+}
+
+func (s *AccountParametersRequest) WithRowsPerResultset(rowsPerResultset int) *AccountParametersRequest {
+	s.RowsPerResultset = &rowsPerResultset
+	return s
+}
+
+func (s *AccountParametersRequest) WithS3StageVpceDnsName(s3StageVpceDnsName string) *AccountParametersRequest {
+	s.S3StageVpceDnsName = &s3StageVpceDnsName
+	return s
+}
+
+func (s *AccountParametersRequest) WithSearchPath(searchPath string) *AccountParametersRequest {
+	s.SearchPath = &searchPath
+	return s
+}
+
+func (s *AccountParametersRequest) WithServerlessTaskMaxStatementSize(serverlessTaskMaxStatementSize WarehouseSize) *AccountParametersRequest {
+	s.ServerlessTaskMaxStatementSize = &serverlessTaskMaxStatementSize
+	return s
+}
+
+func (s *AccountParametersRequest) WithServerlessTaskMinStatementSize(serverlessTaskMinStatementSize WarehouseSize) *AccountParametersRequest {
+	s.ServerlessTaskMinStatementSize = &serverlessTaskMinStatementSize
+	return s
+}
+
+func (s *AccountParametersRequest) WithShareRestrictions(shareRestrictions bool) *AccountParametersRequest {
+	s.ShareRestrictions = &shareRestrictions
+	return s
+}
+
+func (s *AccountParametersRequest) WithSimulatedDataSharingConsumer(simulatedDataSharingConsumer string) *AccountParametersRequest {
+	s.SimulatedDataSharingConsumer = &simulatedDataSharingConsumer
+	return s
+}
+
+func (s *AccountParametersRequest) WithSqlTraceQueryText(sqlTraceQueryText string) *AccountParametersRequest {
+	s.SqlTraceQueryText = &sqlTraceQueryText
+	return s
+}
+
+func (s *AccountParametersRequest) WithSsoLoginPage(ssoLoginPage bool) *AccountParametersRequest {
+	s.SsoLoginPage = &ssoLoginPage
+	return s
+}
+
+func (s *AccountParametersRequest) WithStatementQueuedTimeoutInSeconds(statementQueuedTimeoutInSeconds int) *AccountParametersRequest {
+	s.StatementQueuedTimeoutInSeconds = &statementQueuedTimeoutInSeconds
+	return s
+}
+
+func (s *AccountParametersRequest) WithStatementTimeoutInSeconds(statementTimeoutInSeconds int) *AccountParametersRequest {
+	s.StatementTimeoutInSeconds = &statementTimeoutInSeconds
+	return s
+}
+
+func (s *AccountParametersRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *AccountParametersRequest {
+	s.StorageSerializationPolicy = &storageSerializationPolicy
+	return s
+}
+
+func (s *AccountParametersRequest) WithStrictJsonOutput(strictJsonOutput bool) *AccountParametersRequest {
+	s.StrictJsonOutput = &strictJsonOutput
+	return s
+}
+
+func (s *AccountParametersRequest) WithSuspendTaskAfterNumFailures(suspendTaskAfterNumFailures int) *AccountParametersRequest {
+	s.SuspendTaskAfterNumFailures = &suspendTaskAfterNumFailures
+	return s
+}
+
+func (s *AccountParametersRequest) WithTaskAutoRetryAttempts(taskAutoRetryAttempts int) *AccountParametersRequest {
+	s.TaskAutoRetryAttempts = &taskAutoRetryAttempts
+	return s
+}
+
+func (s *AccountParametersRequest) WithTimeInputFormat(timeInputFormat string) *AccountParametersRequest {
+	s.TimeInputFormat = &timeInputFormat
+	return s
+}
+
+func (s *AccountParametersRequest) WithTimeOutputFormat(timeOutputFormat string) *AccountParametersRequest {
+	s.TimeOutputFormat = &timeOutputFormat
+	return s
+}
+
+func (s *AccountParametersRequest) WithTimestampDayIsAlways24H(timestampDayIsAlways24H bool) *AccountParametersRequest {
+	s.TimestampDayIsAlways24H = &timestampDayIsAlways24H
+	return s
+}
+
+func (s *AccountParametersRequest) WithTimestampInputFormat(timestampInputFormat string) *AccountParametersRequest {
+	s.TimestampInputFormat = &timestampInputFormat
+	return s
+}
+
+func (s *AccountParametersRequest) WithTimestampLtzOutputFormat(timestampLtzOutputFormat string) *AccountParametersRequest {
+	s.TimestampLtzOutputFormat = &timestampLtzOutputFormat
+	return s
+}
+
+func (s *AccountParametersRequest) WithTimestampNtzOutputFormat(timestampNtzOutputFormat string) *AccountParametersRequest {
+	s.TimestampNtzOutputFormat = &timestampNtzOutputFormat
+	return s
+}
+
+func (s *AccountParametersRequest) WithTimestampOutputFormat(timestampOutputFormat string) *AccountParametersRequest {
+	s.TimestampOutputFormat = &timestampOutputFormat
+	return s
+}
+
+func (s *AccountParametersRequest) WithTimestampTypeMapping(timestampTypeMapping TimestampTypeMapping) *AccountParametersRequest {
+	s.TimestampTypeMapping = &timestampTypeMapping
+	return s
+}
+
+func (s *AccountParametersRequest) WithTimestampTzOutputFormat(timestampTzOutputFormat string) *AccountParametersRequest {
+	s.TimestampTzOutputFormat = &timestampTzOutputFormat
+	return s
+}
+
+func (s *AccountParametersRequest) WithTimezone(timezone string) *AccountParametersRequest {
+	s.Timezone = &timezone
+	return s
+}
+
+func (s *AccountParametersRequest) WithTraceLevel(traceLevel TraceLevel) *AccountParametersRequest {
+	s.TraceLevel = &traceLevel
+	return s
+}
+
+func (s *AccountParametersRequest) WithTransactionAbortOnError(transactionAbortOnError bool) *AccountParametersRequest {
+	s.TransactionAbortOnError = &transactionAbortOnError
+	return s
+}
+
+func (s *AccountParametersRequest) WithTransactionDefaultIsolationLevel(transactionDefaultIsolationLevel TransactionDefaultIsolationLevel) *AccountParametersRequest {
+	s.TransactionDefaultIsolationLevel = &transactionDefaultIsolationLevel
+	return s
+}
+
+func (s *AccountParametersRequest) WithTwoDigitCenturyStart(twoDigitCenturyStart int) *AccountParametersRequest {
+	s.TwoDigitCenturyStart = &twoDigitCenturyStart
+	return s
+}
+
+func (s *AccountParametersRequest) WithUnsupportedDdlAction(unsupportedDdlAction UnsupportedDDLAction) *AccountParametersRequest {
+	s.UnsupportedDdlAction = &unsupportedDdlAction
+	return s
+}
+
+func (s *AccountParametersRequest) WithUseCachedResult(useCachedResult bool) *AccountParametersRequest {
+	s.UseCachedResult = &useCachedResult
+	return s
+}
+
+func (s *AccountParametersRequest) WithUseWorkspacesForSql(useWorkspacesForSql string) *AccountParametersRequest {
+	s.UseWorkspacesForSql = &useWorkspacesForSql
+	return s
+}
+
+func (s *AccountParametersRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *AccountParametersRequest {
+	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
+	return s
+}
+
+func (s *AccountParametersRequest) WithUserTaskMinimumTriggerIntervalInSeconds(userTaskMinimumTriggerIntervalInSeconds int) *AccountParametersRequest {
+	s.UserTaskMinimumTriggerIntervalInSeconds = &userTaskMinimumTriggerIntervalInSeconds
+	return s
+}
+
+func (s *AccountParametersRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *AccountParametersRequest {
+	s.UserTaskTimeoutMs = &userTaskTimeoutMs
+	return s
+}
+
+func (s *AccountParametersRequest) WithWeekOfYearPolicy(weekOfYearPolicy int) *AccountParametersRequest {
+	s.WeekOfYearPolicy = &weekOfYearPolicy
+	return s
+}
+
+func (s *AccountParametersRequest) WithWeekStart(weekStart int) *AccountParametersRequest {
+	s.WeekStart = &weekStart
 	return s
 }
 
@@ -259,7 +984,7 @@ func NewAccountUnsetRequest() *AccountUnsetRequest {
 	return &s
 }
 
-func (s *AccountUnsetRequest) WithParameters(parameters AccountParametersUnset) *AccountUnsetRequest {
+func (s *AccountUnsetRequest) WithParameters(parameters AccountParametersUnsetRequest) *AccountUnsetRequest {
 	s.Parameters = &parameters
 	return s
 }
@@ -301,6 +1026,731 @@ func (s *AccountUnsetRequest) WithResourceMonitor(resourceMonitor bool) *Account
 
 func (s *AccountUnsetRequest) WithConsumptionBillingEntity(consumptionBillingEntity bool) *AccountUnsetRequest {
 	s.ConsumptionBillingEntity = &consumptionBillingEntity
+	return s
+}
+
+func NewAccountParametersUnsetRequest() *AccountParametersUnsetRequest {
+	s := AccountParametersUnsetRequest{}
+	return &s
+}
+
+func (s *AccountParametersUnsetRequest) WithAbortDetachedQuery(abortDetachedQuery bool) *AccountParametersUnsetRequest {
+	s.AbortDetachedQuery = &abortDetachedQuery
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithActivePythonProfiler(activePythonProfiler bool) *AccountParametersUnsetRequest {
+	s.ActivePythonProfiler = &activePythonProfiler
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithAllowBindValuesAccess(allowBindValuesAccess bool) *AccountParametersUnsetRequest {
+	s.AllowBindValuesAccess = &allowBindValuesAccess
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithAllowClientMfaCaching(allowClientMfaCaching bool) *AccountParametersUnsetRequest {
+	s.AllowClientMfaCaching = &allowClientMfaCaching
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithAllowIdToken(allowIdToken bool) *AccountParametersUnsetRequest {
+	s.AllowIdToken = &allowIdToken
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithAllowedSpcsWorkloadTypes(allowedSpcsWorkloadTypes bool) *AccountParametersUnsetRequest {
+	s.AllowedSpcsWorkloadTypes = &allowedSpcsWorkloadTypes
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithAutocommit(autocommit bool) *AccountParametersUnsetRequest {
+	s.Autocommit = &autocommit
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithBaseLocationPrefix(baseLocationPrefix bool) *AccountParametersUnsetRequest {
+	s.BaseLocationPrefix = &baseLocationPrefix
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithBinaryInputFormat(binaryInputFormat bool) *AccountParametersUnsetRequest {
+	s.BinaryInputFormat = &binaryInputFormat
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithBinaryOutputFormat(binaryOutputFormat bool) *AccountParametersUnsetRequest {
+	s.BinaryOutputFormat = &binaryOutputFormat
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithCatalog(catalog bool) *AccountParametersUnsetRequest {
+	s.Catalog = &catalog
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithCatalogSync(catalogSync bool) *AccountParametersUnsetRequest {
+	s.CatalogSync = &catalogSync
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithClientEnableLogInfoStatementParameters(clientEnableLogInfoStatementParameters bool) *AccountParametersUnsetRequest {
+	s.ClientEnableLogInfoStatementParameters = &clientEnableLogInfoStatementParameters
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithClientEncryptionKeySize(clientEncryptionKeySize bool) *AccountParametersUnsetRequest {
+	s.ClientEncryptionKeySize = &clientEncryptionKeySize
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithClientMemoryLimit(clientMemoryLimit bool) *AccountParametersUnsetRequest {
+	s.ClientMemoryLimit = &clientMemoryLimit
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithClientMetadataRequestUseConnectionCtx(clientMetadataRequestUseConnectionCtx bool) *AccountParametersUnsetRequest {
+	s.ClientMetadataRequestUseConnectionCtx = &clientMetadataRequestUseConnectionCtx
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithClientMetadataUseSessionDatabase(clientMetadataUseSessionDatabase bool) *AccountParametersUnsetRequest {
+	s.ClientMetadataUseSessionDatabase = &clientMetadataUseSessionDatabase
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithClientPrefetchThreads(clientPrefetchThreads bool) *AccountParametersUnsetRequest {
+	s.ClientPrefetchThreads = &clientPrefetchThreads
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithClientResultChunkSize(clientResultChunkSize bool) *AccountParametersUnsetRequest {
+	s.ClientResultChunkSize = &clientResultChunkSize
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithClientResultColumnCaseInsensitive(clientResultColumnCaseInsensitive bool) *AccountParametersUnsetRequest {
+	s.ClientResultColumnCaseInsensitive = &clientResultColumnCaseInsensitive
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithClientSessionKeepAlive(clientSessionKeepAlive bool) *AccountParametersUnsetRequest {
+	s.ClientSessionKeepAlive = &clientSessionKeepAlive
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithClientSessionKeepAliveHeartbeatFrequency(clientSessionKeepAliveHeartbeatFrequency bool) *AccountParametersUnsetRequest {
+	s.ClientSessionKeepAliveHeartbeatFrequency = &clientSessionKeepAliveHeartbeatFrequency
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithClientTimestampTypeMapping(clientTimestampTypeMapping bool) *AccountParametersUnsetRequest {
+	s.ClientTimestampTypeMapping = &clientTimestampTypeMapping
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithCortexCodeCliDailyEstCreditLimitPerUser(cortexCodeCliDailyEstCreditLimitPerUser bool) *AccountParametersUnsetRequest {
+	s.CortexCodeCliDailyEstCreditLimitPerUser = &cortexCodeCliDailyEstCreditLimitPerUser
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithCortexCodeDesktopDailyEstCreditLimitPerUser(cortexCodeDesktopDailyEstCreditLimitPerUser bool) *AccountParametersUnsetRequest {
+	s.CortexCodeDesktopDailyEstCreditLimitPerUser = &cortexCodeDesktopDailyEstCreditLimitPerUser
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithCortexCodeSnowsightDailyEstCreditLimitPerUser(cortexCodeSnowsightDailyEstCreditLimitPerUser bool) *AccountParametersUnsetRequest {
+	s.CortexCodeSnowsightDailyEstCreditLimitPerUser = &cortexCodeSnowsightDailyEstCreditLimitPerUser
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithCortexEnabledCrossRegion(cortexEnabledCrossRegion bool) *AccountParametersUnsetRequest {
+	s.CortexEnabledCrossRegion = &cortexEnabledCrossRegion
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithCortexModelsAllowlist(cortexModelsAllowlist bool) *AccountParametersUnsetRequest {
+	s.CortexModelsAllowlist = &cortexModelsAllowlist
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithCsvTimestampFormat(csvTimestampFormat bool) *AccountParametersUnsetRequest {
+	s.CsvTimestampFormat = &csvTimestampFormat
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithDataMetricSchedule(dataMetricSchedule bool) *AccountParametersUnsetRequest {
+	s.DataMetricSchedule = &dataMetricSchedule
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays bool) *AccountParametersUnsetRequest {
+	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithDateInputFormat(dateInputFormat bool) *AccountParametersUnsetRequest {
+	s.DateInputFormat = &dateInputFormat
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithDateOutputFormat(dateOutputFormat bool) *AccountParametersUnsetRequest {
+	s.DateOutputFormat = &dateOutputFormat
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithDefaultDbtVersion(defaultDbtVersion bool) *AccountParametersUnsetRequest {
+	s.DefaultDbtVersion = &defaultDbtVersion
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithDefaultDdlCollation(defaultDdlCollation bool) *AccountParametersUnsetRequest {
+	s.DefaultDdlCollation = &defaultDdlCollation
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu bool) *AccountParametersUnsetRequest {
+	s.DefaultNotebookComputePoolCpu = &defaultNotebookComputePoolCpu
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu bool) *AccountParametersUnsetRequest {
+	s.DefaultNotebookComputePoolGpu = &defaultNotebookComputePoolGpu
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithDefaultNullOrdering(defaultNullOrdering bool) *AccountParametersUnsetRequest {
+	s.DefaultNullOrdering = &defaultNullOrdering
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithDefaultStreamlitComputePool(defaultStreamlitComputePool bool) *AccountParametersUnsetRequest {
+	s.DefaultStreamlitComputePool = &defaultStreamlitComputePool
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithDefaultStreamlitNotebookWarehouse(defaultStreamlitNotebookWarehouse bool) *AccountParametersUnsetRequest {
+	s.DefaultStreamlitNotebookWarehouse = &defaultStreamlitNotebookWarehouse
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithDisableUiDownloadButton(disableUiDownloadButton bool) *AccountParametersUnsetRequest {
+	s.DisableUiDownloadButton = &disableUiDownloadButton
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithDisableUserPrivilegeGrants(disableUserPrivilegeGrants bool) *AccountParametersUnsetRequest {
+	s.DisableUserPrivilegeGrants = &disableUserPrivilegeGrants
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithDisallowedSpcsWorkloadTypes(disallowedSpcsWorkloadTypes bool) *AccountParametersUnsetRequest {
+	s.DisallowedSpcsWorkloadTypes = &disallowedSpcsWorkloadTypes
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnableAutomaticSensitiveDataClassificationLog(enableAutomaticSensitiveDataClassificationLog bool) *AccountParametersUnsetRequest {
+	s.EnableAutomaticSensitiveDataClassificationLog = &enableAutomaticSensitiveDataClassificationLog
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnableBudgetEventLogging(enableBudgetEventLogging bool) *AccountParametersUnsetRequest {
+	s.EnableBudgetEventLogging = &enableBudgetEventLogging
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *AccountParametersUnsetRequest {
+	s.EnableConsoleOutput = &enableConsoleOutput
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnableCortexAnalyst(enableCortexAnalyst bool) *AccountParametersUnsetRequest {
+	s.EnableCortexAnalyst = &enableCortexAnalyst
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnableDataCompaction(enableDataCompaction bool) *AccountParametersUnsetRequest {
+	s.EnableDataCompaction = &enableDataCompaction
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnableEgressCostOptimizer(enableEgressCostOptimizer bool) *AccountParametersUnsetRequest {
+	s.EnableEgressCostOptimizer = &enableEgressCostOptimizer
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnableGetDdlUseDataTypeAlias(enableGetDdlUseDataTypeAlias bool) *AccountParametersUnsetRequest {
+	s.EnableGetDdlUseDataTypeAlias = &enableGetDdlUseDataTypeAlias
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnableIcebergMergeOnRead(enableIcebergMergeOnRead bool) *AccountParametersUnsetRequest {
+	s.EnableIcebergMergeOnRead = &enableIcebergMergeOnRead
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnableIdentifierFirstLogin(enableIdentifierFirstLogin bool) *AccountParametersUnsetRequest {
+	s.EnableIdentifierFirstLogin = &enableIdentifierFirstLogin
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnableInternalStagesPrivatelink(enableInternalStagesPrivatelink bool) *AccountParametersUnsetRequest {
+	s.EnableInternalStagesPrivatelink = &enableInternalStagesPrivatelink
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnableNotebookCreationInPersonalDb(enableNotebookCreationInPersonalDb bool) *AccountParametersUnsetRequest {
+	s.EnableNotebookCreationInPersonalDb = &enableNotebookCreationInPersonalDb
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnablePerAccountAppServicePrivatelinkUrl(enablePerAccountAppServicePrivatelinkUrl bool) *AccountParametersUnsetRequest {
+	s.EnablePerAccountAppServicePrivatelinkUrl = &enablePerAccountAppServicePrivatelinkUrl
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnablePersonalDatabase(enablePersonalDatabase bool) *AccountParametersUnsetRequest {
+	s.EnablePersonalDatabase = &enablePersonalDatabase
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement(enableSpcsBlockStorageSnowflakeFullEncryptionEnforcement bool) *AccountParametersUnsetRequest {
+	s.EnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement = &enableSpcsBlockStorageSnowflakeFullEncryptionEnforcement
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnableTagPropagationEventLogging(enableTagPropagationEventLogging bool) *AccountParametersUnsetRequest {
+	s.EnableTagPropagationEventLogging = &enableTagPropagationEventLogging
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnableTriSecretAndRekeyOptOutForImageRepository(enableTriSecretAndRekeyOptOutForImageRepository bool) *AccountParametersUnsetRequest {
+	s.EnableTriSecretAndRekeyOptOutForImageRepository = &enableTriSecretAndRekeyOptOutForImageRepository
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnableTriSecretAndRekeyOptOutForSpcsBlockStorage(enableTriSecretAndRekeyOptOutForSpcsBlockStorage bool) *AccountParametersUnsetRequest {
+	s.EnableTriSecretAndRekeyOptOutForSpcsBlockStorage = &enableTriSecretAndRekeyOptOutForSpcsBlockStorage
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnableUnhandledExceptionsReporting(enableUnhandledExceptionsReporting bool) *AccountParametersUnsetRequest {
+	s.EnableUnhandledExceptionsReporting = &enableUnhandledExceptionsReporting
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnableUnloadPhysicalTypeOptimization(enableUnloadPhysicalTypeOptimization bool) *AccountParametersUnsetRequest {
+	s.EnableUnloadPhysicalTypeOptimization = &enableUnloadPhysicalTypeOptimization
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnableUnredactedQuerySyntaxError(enableUnredactedQuerySyntaxError bool) *AccountParametersUnsetRequest {
+	s.EnableUnredactedQuerySyntaxError = &enableUnredactedQuerySyntaxError
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnableUnredactedSecureObjectError(enableUnredactedSecureObjectError bool) *AccountParametersUnsetRequest {
+	s.EnableUnredactedSecureObjectError = &enableUnredactedSecureObjectError
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEnforceNetworkRulesForInternalStages(enforceNetworkRulesForInternalStages bool) *AccountParametersUnsetRequest {
+	s.EnforceNetworkRulesForInternalStages = &enforceNetworkRulesForInternalStages
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithErrorOnNondeterministicMerge(errorOnNondeterministicMerge bool) *AccountParametersUnsetRequest {
+	s.ErrorOnNondeterministicMerge = &errorOnNondeterministicMerge
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithErrorOnNondeterministicUpdate(errorOnNondeterministicUpdate bool) *AccountParametersUnsetRequest {
+	s.ErrorOnNondeterministicUpdate = &errorOnNondeterministicUpdate
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithEventTable(eventTable bool) *AccountParametersUnsetRequest {
+	s.EventTable = &eventTable
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithExternalOauthAddPrivilegedRolesToBlockedList(externalOauthAddPrivilegedRolesToBlockedList bool) *AccountParametersUnsetRequest {
+	s.ExternalOauthAddPrivilegedRolesToBlockedList = &externalOauthAddPrivilegedRolesToBlockedList
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithExternalVolume(externalVolume bool) *AccountParametersUnsetRequest {
+	s.ExternalVolume = &externalVolume
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithGeographyOutputFormat(geographyOutputFormat bool) *AccountParametersUnsetRequest {
+	s.GeographyOutputFormat = &geographyOutputFormat
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithGeometryOutputFormat(geometryOutputFormat bool) *AccountParametersUnsetRequest {
+	s.GeometryOutputFormat = &geometryOutputFormat
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithHybridTableLockTimeout(hybridTableLockTimeout bool) *AccountParametersUnsetRequest {
+	s.HybridTableLockTimeout = &hybridTableLockTimeout
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithIcebergVersionDefault(icebergVersionDefault bool) *AccountParametersUnsetRequest {
+	s.IcebergVersionDefault = &icebergVersionDefault
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithInitialReplicationSizeLimitInTb(initialReplicationSizeLimitInTb bool) *AccountParametersUnsetRequest {
+	s.InitialReplicationSizeLimitInTb = &initialReplicationSizeLimitInTb
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithJdbcTreatDecimalAsInt(jdbcTreatDecimalAsInt bool) *AccountParametersUnsetRequest {
+	s.JdbcTreatDecimalAsInt = &jdbcTreatDecimalAsInt
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithJdbcTreatTimestampNtzAsUtc(jdbcTreatTimestampNtzAsUtc bool) *AccountParametersUnsetRequest {
+	s.JdbcTreatTimestampNtzAsUtc = &jdbcTreatTimestampNtzAsUtc
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithJdbcUseSessionTimezone(jdbcUseSessionTimezone bool) *AccountParametersUnsetRequest {
+	s.JdbcUseSessionTimezone = &jdbcUseSessionTimezone
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithJsTreatIntegerAsBigint(jsTreatIntegerAsBigint bool) *AccountParametersUnsetRequest {
+	s.JsTreatIntegerAsBigint = &jsTreatIntegerAsBigint
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithJsonIndent(jsonIndent bool) *AccountParametersUnsetRequest {
+	s.JsonIndent = &jsonIndent
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithListingAutoFulfillmentReplicationRefreshSchedule(listingAutoFulfillmentReplicationRefreshSchedule bool) *AccountParametersUnsetRequest {
+	s.ListingAutoFulfillmentReplicationRefreshSchedule = &listingAutoFulfillmentReplicationRefreshSchedule
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithLockTimeout(lockTimeout bool) *AccountParametersUnsetRequest {
+	s.LockTimeout = &lockTimeout
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithLogEventLevel(logEventLevel bool) *AccountParametersUnsetRequest {
+	s.LogEventLevel = &logEventLevel
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithLogLevel(logLevel bool) *AccountParametersUnsetRequest {
+	s.LogLevel = &logLevel
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithMaxConcurrencyLevel(maxConcurrencyLevel bool) *AccountParametersUnsetRequest {
+	s.MaxConcurrencyLevel = &maxConcurrencyLevel
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays bool) *AccountParametersUnsetRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithMetricLevel(metricLevel bool) *AccountParametersUnsetRequest {
+	s.MetricLevel = &metricLevel
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithMinDataRetentionTimeInDays(minDataRetentionTimeInDays bool) *AccountParametersUnsetRequest {
+	s.MinDataRetentionTimeInDays = &minDataRetentionTimeInDays
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithMultiStatementCount(multiStatementCount bool) *AccountParametersUnsetRequest {
+	s.MultiStatementCount = &multiStatementCount
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithNetworkPolicy(networkPolicy bool) *AccountParametersUnsetRequest {
+	s.NetworkPolicy = &networkPolicy
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithNoorderSequenceAsDefault(noorderSequenceAsDefault bool) *AccountParametersUnsetRequest {
+	s.NoorderSequenceAsDefault = &noorderSequenceAsDefault
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithOauthAddPrivilegedRolesToBlockedList(oauthAddPrivilegedRolesToBlockedList bool) *AccountParametersUnsetRequest {
+	s.OauthAddPrivilegedRolesToBlockedList = &oauthAddPrivilegedRolesToBlockedList
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithOdbcTreatDecimalAsInt(odbcTreatDecimalAsInt bool) *AccountParametersUnsetRequest {
+	s.OdbcTreatDecimalAsInt = &odbcTreatDecimalAsInt
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithPeriodicDataRekeying(periodicDataRekeying bool) *AccountParametersUnsetRequest {
+	s.PeriodicDataRekeying = &periodicDataRekeying
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithPipeExecutionPaused(pipeExecutionPaused bool) *AccountParametersUnsetRequest {
+	s.PipeExecutionPaused = &pipeExecutionPaused
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithPreventLoadFromInlineUrl(preventLoadFromInlineUrl bool) *AccountParametersUnsetRequest {
+	s.PreventLoadFromInlineUrl = &preventLoadFromInlineUrl
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithPreventUnloadToInlineUrl(preventUnloadToInlineUrl bool) *AccountParametersUnsetRequest {
+	s.PreventUnloadToInlineUrl = &preventUnloadToInlineUrl
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithPreventUnloadToInternalStages(preventUnloadToInternalStages bool) *AccountParametersUnsetRequest {
+	s.PreventUnloadToInternalStages = &preventUnloadToInternalStages
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithPythonProfilerModules(pythonProfilerModules bool) *AccountParametersUnsetRequest {
+	s.PythonProfilerModules = &pythonProfilerModules
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithPythonProfilerTargetStage(pythonProfilerTargetStage bool) *AccountParametersUnsetRequest {
+	s.PythonProfilerTargetStage = &pythonProfilerTargetStage
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithQueryTag(queryTag bool) *AccountParametersUnsetRequest {
+	s.QueryTag = &queryTag
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *AccountParametersUnsetRequest {
+	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithReadConsistencyMode(readConsistencyMode bool) *AccountParametersUnsetRequest {
+	s.ReadConsistencyMode = &readConsistencyMode
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *AccountParametersUnsetRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithRequireStorageIntegrationForStageCreation(requireStorageIntegrationForStageCreation bool) *AccountParametersUnsetRequest {
+	s.RequireStorageIntegrationForStageCreation = &requireStorageIntegrationForStageCreation
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithRequireStorageIntegrationForStageOperation(requireStorageIntegrationForStageOperation bool) *AccountParametersUnsetRequest {
+	s.RequireStorageIntegrationForStageOperation = &requireStorageIntegrationForStageOperation
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithRowTimestampDefault(rowTimestampDefault bool) *AccountParametersUnsetRequest {
+	s.RowTimestampDefault = &rowTimestampDefault
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithRowsPerResultset(rowsPerResultset bool) *AccountParametersUnsetRequest {
+	s.RowsPerResultset = &rowsPerResultset
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithS3StageVpceDnsName(s3StageVpceDnsName bool) *AccountParametersUnsetRequest {
+	s.S3StageVpceDnsName = &s3StageVpceDnsName
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithSearchPath(searchPath bool) *AccountParametersUnsetRequest {
+	s.SearchPath = &searchPath
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithServerlessTaskMaxStatementSize(serverlessTaskMaxStatementSize bool) *AccountParametersUnsetRequest {
+	s.ServerlessTaskMaxStatementSize = &serverlessTaskMaxStatementSize
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithServerlessTaskMinStatementSize(serverlessTaskMinStatementSize bool) *AccountParametersUnsetRequest {
+	s.ServerlessTaskMinStatementSize = &serverlessTaskMinStatementSize
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithShareRestrictions(shareRestrictions bool) *AccountParametersUnsetRequest {
+	s.ShareRestrictions = &shareRestrictions
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithSimulatedDataSharingConsumer(simulatedDataSharingConsumer bool) *AccountParametersUnsetRequest {
+	s.SimulatedDataSharingConsumer = &simulatedDataSharingConsumer
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithSqlTraceQueryText(sqlTraceQueryText bool) *AccountParametersUnsetRequest {
+	s.SqlTraceQueryText = &sqlTraceQueryText
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithSsoLoginPage(ssoLoginPage bool) *AccountParametersUnsetRequest {
+	s.SsoLoginPage = &ssoLoginPage
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithStatementQueuedTimeoutInSeconds(statementQueuedTimeoutInSeconds bool) *AccountParametersUnsetRequest {
+	s.StatementQueuedTimeoutInSeconds = &statementQueuedTimeoutInSeconds
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithStatementTimeoutInSeconds(statementTimeoutInSeconds bool) *AccountParametersUnsetRequest {
+	s.StatementTimeoutInSeconds = &statementTimeoutInSeconds
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithStorageSerializationPolicy(storageSerializationPolicy bool) *AccountParametersUnsetRequest {
+	s.StorageSerializationPolicy = &storageSerializationPolicy
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithStrictJsonOutput(strictJsonOutput bool) *AccountParametersUnsetRequest {
+	s.StrictJsonOutput = &strictJsonOutput
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithSuspendTaskAfterNumFailures(suspendTaskAfterNumFailures bool) *AccountParametersUnsetRequest {
+	s.SuspendTaskAfterNumFailures = &suspendTaskAfterNumFailures
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithTaskAutoRetryAttempts(taskAutoRetryAttempts bool) *AccountParametersUnsetRequest {
+	s.TaskAutoRetryAttempts = &taskAutoRetryAttempts
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithTimeInputFormat(timeInputFormat bool) *AccountParametersUnsetRequest {
+	s.TimeInputFormat = &timeInputFormat
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithTimeOutputFormat(timeOutputFormat bool) *AccountParametersUnsetRequest {
+	s.TimeOutputFormat = &timeOutputFormat
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithTimestampDayIsAlways24H(timestampDayIsAlways24H bool) *AccountParametersUnsetRequest {
+	s.TimestampDayIsAlways24H = &timestampDayIsAlways24H
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithTimestampInputFormat(timestampInputFormat bool) *AccountParametersUnsetRequest {
+	s.TimestampInputFormat = &timestampInputFormat
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithTimestampLtzOutputFormat(timestampLtzOutputFormat bool) *AccountParametersUnsetRequest {
+	s.TimestampLtzOutputFormat = &timestampLtzOutputFormat
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithTimestampNtzOutputFormat(timestampNtzOutputFormat bool) *AccountParametersUnsetRequest {
+	s.TimestampNtzOutputFormat = &timestampNtzOutputFormat
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithTimestampOutputFormat(timestampOutputFormat bool) *AccountParametersUnsetRequest {
+	s.TimestampOutputFormat = &timestampOutputFormat
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithTimestampTypeMapping(timestampTypeMapping bool) *AccountParametersUnsetRequest {
+	s.TimestampTypeMapping = &timestampTypeMapping
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithTimestampTzOutputFormat(timestampTzOutputFormat bool) *AccountParametersUnsetRequest {
+	s.TimestampTzOutputFormat = &timestampTzOutputFormat
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithTimezone(timezone bool) *AccountParametersUnsetRequest {
+	s.Timezone = &timezone
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithTraceLevel(traceLevel bool) *AccountParametersUnsetRequest {
+	s.TraceLevel = &traceLevel
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithTransactionAbortOnError(transactionAbortOnError bool) *AccountParametersUnsetRequest {
+	s.TransactionAbortOnError = &transactionAbortOnError
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithTransactionDefaultIsolationLevel(transactionDefaultIsolationLevel bool) *AccountParametersUnsetRequest {
+	s.TransactionDefaultIsolationLevel = &transactionDefaultIsolationLevel
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithTwoDigitCenturyStart(twoDigitCenturyStart bool) *AccountParametersUnsetRequest {
+	s.TwoDigitCenturyStart = &twoDigitCenturyStart
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithUnsupportedDdlAction(unsupportedDdlAction bool) *AccountParametersUnsetRequest {
+	s.UnsupportedDdlAction = &unsupportedDdlAction
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithUseCachedResult(useCachedResult bool) *AccountParametersUnsetRequest {
+	s.UseCachedResult = &useCachedResult
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithUseWorkspacesForSql(useWorkspacesForSql bool) *AccountParametersUnsetRequest {
+	s.UseWorkspacesForSql = &useWorkspacesForSql
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize bool) *AccountParametersUnsetRequest {
+	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithUserTaskMinimumTriggerIntervalInSeconds(userTaskMinimumTriggerIntervalInSeconds bool) *AccountParametersUnsetRequest {
+	s.UserTaskMinimumTriggerIntervalInSeconds = &userTaskMinimumTriggerIntervalInSeconds
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs bool) *AccountParametersUnsetRequest {
+	s.UserTaskTimeoutMs = &userTaskTimeoutMs
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithWeekOfYearPolicy(weekOfYearPolicy bool) *AccountParametersUnsetRequest {
+	s.WeekOfYearPolicy = &weekOfYearPolicy
+	return s
+}
+
+func (s *AccountParametersUnsetRequest) WithWeekStart(weekStart bool) *AccountParametersUnsetRequest {
+	s.WeekStart = &weekStart
 	return s
 }
 

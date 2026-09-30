@@ -14,6 +14,15 @@ func (v *organizationAccounts) ShowParameters(ctx context.Context) ([]*Parameter
 	})
 }
 
+// Organization accounts expose the same parameters as regular accounts, so they reuse AccountParametersDetails.
+func (v *organizationAccounts) ShowParametersDetails(ctx context.Context) (*AccountParametersDetails, error) {
+	params, err := v.ShowParameters(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return toAccountParametersDetails(params)
+}
+
 func (v *organizationAccounts) UnsetAllParameters(ctx context.Context) error {
 	return v.client.Accounts.UnsetAllParameters(ctx)
 }

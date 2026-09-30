@@ -14,7 +14,7 @@ import (
 
 // setAndUnsetAccountParametersTest is a common test used for different account kinds.
 func setAndUnsetAccountParametersTest(
-	setParameters func(ctx context.Context, parameters sdk.AccountParameters) error,
+	setParameters func(ctx context.Context, parameters sdk.AccountParametersRequest) error,
 	unsetAllParameters func(ctx context.Context) error,
 	showParameters func(ctx context.Context) ([]*sdk.Parameter, error),
 ) func(t *testing.T) {
@@ -45,140 +45,141 @@ func setAndUnsetAccountParametersTest(
 		// - PythonProfilerModules
 		// - S3StageVpceDnsName
 		// - SimulatedDataSharingConsumer
-		err := setParameters(context.Background(), sdk.AccountParameters{
-			AbortDetachedQuery:                                       sdk.Bool(true),
-			AllowBindValuesAccess:                                    sdk.Bool(true),
-			AllowClientMFACaching:                                    sdk.Bool(true),
-			AllowedSpcsWorkloadTypes:                                 sdk.String("ALL"),
-			AllowIDToken:                                             sdk.Bool(true),
-			Autocommit:                                               sdk.Bool(false),
-			BaseLocationPrefix:                                       sdk.String("STORAGE_BASE_URL/"),
-			BinaryInputFormat:                                        sdk.Pointer(sdk.BinaryInputFormatBase64),
-			BinaryOutputFormat:                                       sdk.Pointer(sdk.BinaryOutputFormatBase64),
-			Catalog:                                                  sdk.String(helpers.TestDatabaseCatalog.Name()),
-			ClientEnableLogInfoStatementParameters:                   sdk.Bool(true),
-			ClientEncryptionKeySize:                                  sdk.Int(256),
-			ClientMemoryLimit:                                        sdk.Int(1540),
-			ClientMetadataRequestUseConnectionCtx:                    sdk.Bool(true),
-			ClientMetadataUseSessionDatabase:                         sdk.Bool(true),
-			ClientPrefetchThreads:                                    sdk.Int(5),
-			ClientResultChunkSize:                                    sdk.Int(159),
-			ClientResultColumnCaseInsensitive:                        sdk.Bool(true),
-			ClientSessionKeepAlive:                                   sdk.Bool(true),
-			ClientSessionKeepAliveHeartbeatFrequency:                 sdk.Int(3599),
-			ClientTimestampTypeMapping:                               sdk.Pointer(sdk.ClientTimestampTypeMappingNtz),
-			CortexCodeCliDailyEstCreditLimitPerUser:                  sdk.Int(10),
-			CortexCodeDesktopDailyEstCreditLimitPerUser:              sdk.Int(20),
-			CortexCodeSnowsightDailyEstCreditLimitPerUser:            sdk.Int(30),
-			CortexEnabledCrossRegion:                                 sdk.String("ANY_REGION"),
-			CortexModelsAllowlist:                                    sdk.String("All"),
-			CsvTimestampFormat:                                       sdk.String("YYYY-MM-DD"),
-			DataMetricSchedule:                                       sdk.String("60 MINUTES"),
-			DataRetentionTimeInDays:                                  sdk.Int(2),
-			DateInputFormat:                                          sdk.String("YYYY-MM-DD"),
-			DateOutputFormat:                                         sdk.String("YYYY-MM-DD"),
-			DefaultDbtVersion:                                        sdk.String("1.9.4"),
-			DefaultDDLCollation:                                      sdk.String("en-cs"),
-			DefaultNotebookComputePoolCpu:                            sdk.String("CPU_X64_S"),
-			DefaultNotebookComputePoolGpu:                            sdk.String("GPU_NV_S"),
-			DefaultNullOrdering:                                      sdk.Pointer(sdk.DefaultNullOrderingFirst),
-			DefaultStreamlitComputePool:                              sdk.String("SYSTEM_COMPUTE_POOL_GPU"),
-			DefaultStreamlitNotebookWarehouse:                        sdk.Pointer(warehouseId),
-			DisallowedSpcsWorkloadTypes:                              sdk.String(""),
-			DisableUiDownloadButton:                                  sdk.Bool(true),
-			DisableUserPrivilegeGrants:                               sdk.Bool(true),
-			EnableAutomaticSensitiveDataClassificationLog:            sdk.Bool(false),
-			EnableBudgetEventLogging:                                 sdk.Bool(true),
-			EnableDataCompaction:                                     sdk.Bool(true),
-			EnableEgressCostOptimizer:                                sdk.Bool(false),
-			EnableGetDdlUseDataTypeAlias:                             sdk.Bool(false),
-			EnableIcebergMergeOnRead:                                 sdk.Bool(true),
-			EnableNotebookCreationInPersonalDb:                       sdk.Bool(false),
-			EnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement: sdk.Bool(false),
-			EnableTagPropagationEventLogging:                         sdk.Bool(false),
-			EnableIdentifierFirstLogin:                               sdk.Bool(false),
-			EnableTriSecretAndRekeyOptOutForImageRepository:          sdk.Bool(true),
-			EnableTriSecretAndRekeyOptOutForSpcsBlockStorage:         sdk.Bool(true),
-			EnableUnhandledExceptionsReporting:                       sdk.Bool(false),
-			EnableUnloadPhysicalTypeOptimization:                     sdk.Bool(false),
-			EnableUnredactedQuerySyntaxError:                         sdk.Bool(true),
-			EnableUnredactedSecureObjectError:                        sdk.Bool(true),
-			EnforceNetworkRulesForInternalStages:                     sdk.Bool(true),
-			ErrorOnNondeterministicMerge:                             sdk.Bool(false),
-			ErrorOnNondeterministicUpdate:                            sdk.Bool(true),
-			EventTable:                                               sdk.Pointer(eventTable.ID()),
-			ExternalOAuthAddPrivilegedRolesToBlockedList:             sdk.Bool(false),
-			ExternalVolume:                                           sdk.Pointer(externalVolumeId),
-			GeographyOutputFormat:                                    sdk.Pointer(sdk.GeographyOutputFormatWKT),
-			GeometryOutputFormat:                                     sdk.Pointer(sdk.GeometryOutputFormatWKT),
-			HybridTableLockTimeout:                                   sdk.Int(3599),
-			IcebergVersionDefault:                                    sdk.Int(2),
-			InitialReplicationSizeLimitInTB:                          sdk.String("9.9"),
-			JdbcTreatDecimalAsInt:                                    sdk.Bool(false),
-			JdbcTreatTimestampNtzAsUtc:                               sdk.Bool(true),
-			JdbcUseSessionTimezone:                                   sdk.Bool(false),
-			JsonIndent:                                               sdk.Int(4),
-			JsTreatIntegerAsBigInt:                                   sdk.Bool(true),
-			ListingAutoFulfillmentReplicationRefreshSchedule:         sdk.String("2 minutes"),
-			LockTimeout:                                              sdk.Int(43201),
-			LogLevel:                                                 sdk.Pointer(sdk.LogLevelInfo),
-			LogEventLevel:                                            sdk.Pointer(sdk.LogLevelInfo),
-			MaxConcurrencyLevel:                                      sdk.Int(7),
-			MaxDataExtensionTimeInDays:                               sdk.Int(13),
-			MetricLevel:                                              sdk.Pointer(sdk.MetricLevelAll),
-			MinDataRetentionTimeInDays:                               sdk.Int(1),
-			MultiStatementCount:                                      sdk.Int(0),
-			NetworkPolicy:                                            sdk.Pointer(networkPolicy.ID()),
-			NoorderSequenceAsDefault:                                 sdk.Bool(false),
-			OAuthAddPrivilegedRolesToBlockedList:                     sdk.Bool(false),
-			OdbcTreatDecimalAsInt:                                    sdk.Bool(true),
-			PeriodicDataRekeying:                                     sdk.Bool(false),
-			PipeExecutionPaused:                                      sdk.Bool(true),
-			PreventUnloadToInlineURL:                                 sdk.Bool(true),
-			PreventUnloadToInternalStages:                            sdk.Bool(true),
-			PythonProfilerTargetStage:                                sdk.Pointer(stage.ID()),
-			QueryTag:                                                 sdk.String("test-query-tag"),
-			QuotedIdentifiersIgnoreCase:                              sdk.Bool(true),
-			ReadConsistencyMode:                                      sdk.String("SESSION"),
-			ReplaceInvalidCharacters:                                 sdk.Bool(true),
-			RequireStorageIntegrationForStageCreation:                sdk.Bool(true),
-			RequireStorageIntegrationForStageOperation:               sdk.Bool(true),
-			RowTimestampDefault:                                      sdk.Bool(false),
-			RowsPerResultset:                                         sdk.Int(1000),
-			SearchPath:                                               sdk.String("$current, $public"),
-			ServerlessTaskMaxStatementSize:                           sdk.Pointer(sdk.WarehouseSize("6X-LARGE")),
-			ServerlessTaskMinStatementSize:                           sdk.Pointer(sdk.WarehouseSizeSmall),
-			SsoLoginPage:                                             sdk.Bool(true),
-			SqlTraceQueryText:                                        sdk.String("OFF"),
-			StatementQueuedTimeoutInSeconds:                          sdk.Int(1),
-			StatementTimeoutInSeconds:                                sdk.Int(1),
-			StorageSerializationPolicy:                               sdk.Pointer(sdk.StorageSerializationPolicyOptimized),
-			StrictJsonOutput:                                         sdk.Bool(true),
-			SuspendTaskAfterNumFailures:                              sdk.Int(3),
-			TaskAutoRetryAttempts:                                    sdk.Int(3),
-			TimestampDayIsAlways24h:                                  sdk.Bool(true),
-			TimestampInputFormat:                                     sdk.String("YYYY-MM-DD"),
-			TimestampLtzOutputFormat:                                 sdk.String("YYYY-MM-DD"),
-			TimestampNtzOutputFormat:                                 sdk.String("YYYY-MM-DD"),
-			TimestampOutputFormat:                                    sdk.String("YYYY-MM-DD"),
-			TimestampTypeMapping:                                     sdk.Pointer(sdk.TimestampTypeMappingLtz),
-			TimestampTzOutputFormat:                                  sdk.String("YYYY-MM-DD"),
-			Timezone:                                                 sdk.String("Europe/London"),
-			TimeInputFormat:                                          sdk.String("YYYY-MM-DD"),
-			TimeOutputFormat:                                         sdk.String("YYYY-MM-DD"),
-			TraceLevel:                                               sdk.Pointer(sdk.TraceLevelPropagate),
-			TransactionAbortOnError:                                  sdk.Bool(true),
-			TransactionDefaultIsolationLevel:                         sdk.Pointer(sdk.TransactionDefaultIsolationLevelReadCommitted),
-			TwoDigitCenturyStart:                                     sdk.Int(1971),
-			UnsupportedDdlAction:                                     sdk.Pointer(sdk.UnsupportedDDLActionFail),
-			UserTaskManagedInitialWarehouseSize:                      sdk.Pointer(sdk.WarehouseSizeX6Large),
-			UserTaskMinimumTriggerIntervalInSeconds:                  sdk.Int(10),
-			UserTaskTimeoutMs:                                        sdk.Int(10),
-			UseCachedResult:                                          sdk.Bool(false),
-			UseWorkspacesForSql:                                      sdk.String("unset"),
-			WeekOfYearPolicy:                                         sdk.Int(1),
-			WeekStart:                                                sdk.Int(1),
-		})
+		err := setParameters(context.Background(),
+			*sdk.NewAccountParametersRequest().
+				WithAbortDetachedQuery(true).
+				WithAllowBindValuesAccess(true).
+				WithAllowClientMfaCaching(true).
+				WithAllowedSpcsWorkloadTypes("ALL").
+				WithAllowIdToken(true).
+				WithAutocommit(false).
+				WithBaseLocationPrefix("STORAGE_BASE_URL/").
+				WithBinaryInputFormat(sdk.BinaryInputFormatBase64).
+				WithBinaryOutputFormat(sdk.BinaryOutputFormatBase64).
+				WithCatalog(helpers.TestDatabaseCatalog).
+				WithClientEnableLogInfoStatementParameters(true).
+				WithClientEncryptionKeySize(256).
+				WithClientMemoryLimit(1540).
+				WithClientMetadataRequestUseConnectionCtx(true).
+				WithClientMetadataUseSessionDatabase(true).
+				WithClientPrefetchThreads(5).
+				WithClientResultChunkSize(159).
+				WithClientResultColumnCaseInsensitive(true).
+				WithClientSessionKeepAlive(true).
+				WithClientSessionKeepAliveHeartbeatFrequency(3599).
+				WithClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingNtz).
+				WithCortexCodeCliDailyEstCreditLimitPerUser(10).
+				WithCortexCodeDesktopDailyEstCreditLimitPerUser(20).
+				WithCortexCodeSnowsightDailyEstCreditLimitPerUser(30).
+				WithCortexEnabledCrossRegion("ANY_REGION").
+				WithCortexModelsAllowlist("All").
+				WithCsvTimestampFormat("YYYY-MM-DD").
+				WithDataMetricSchedule("60 MINUTES").
+				WithDataRetentionTimeInDays(2).
+				WithDateInputFormat("YYYY-MM-DD").
+				WithDateOutputFormat("YYYY-MM-DD").
+				WithDefaultDbtVersion("1.9.4").
+				WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "en-cs"}).
+				WithDefaultNotebookComputePoolCpu("CPU_X64_S").
+				WithDefaultNotebookComputePoolGpu("GPU_NV_S").
+				WithDefaultNullOrdering(sdk.DefaultNullOrderingFirst).
+				WithDefaultStreamlitComputePool("SYSTEM_COMPUTE_POOL_GPU").
+				WithDefaultStreamlitNotebookWarehouse(warehouseId).
+				WithDisallowedSpcsWorkloadTypes("").
+				WithDisableUiDownloadButton(true).
+				WithDisableUserPrivilegeGrants(true).
+				WithEnableAutomaticSensitiveDataClassificationLog(false).
+				WithEnableBudgetEventLogging(true).
+				WithEnableDataCompaction(true).
+				WithEnableEgressCostOptimizer(false).
+				WithEnableGetDdlUseDataTypeAlias(false).
+				WithEnableIcebergMergeOnRead(true).
+				WithEnableNotebookCreationInPersonalDb(false).
+				WithEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement(false).
+				WithEnableTagPropagationEventLogging(false).
+				WithEnableIdentifierFirstLogin(false).
+				WithEnableTriSecretAndRekeyOptOutForImageRepository(true).
+				WithEnableTriSecretAndRekeyOptOutForSpcsBlockStorage(true).
+				WithEnableUnhandledExceptionsReporting(false).
+				WithEnableUnloadPhysicalTypeOptimization(false).
+				WithEnableUnredactedQuerySyntaxError(true).
+				WithEnableUnredactedSecureObjectError(true).
+				WithEnforceNetworkRulesForInternalStages(true).
+				WithErrorOnNondeterministicMerge(false).
+				WithErrorOnNondeterministicUpdate(true).
+				WithEventTable(eventTable.ID()).
+				WithExternalOauthAddPrivilegedRolesToBlockedList(false).
+				WithExternalVolume(externalVolumeId).
+				WithGeographyOutputFormat(sdk.GeographyOutputFormatWKT).
+				WithGeometryOutputFormat(sdk.GeometryOutputFormatWKT).
+				WithHybridTableLockTimeout(3599).
+				WithIcebergVersionDefault(2).
+				WithInitialReplicationSizeLimitInTb("9.9").
+				WithJdbcTreatDecimalAsInt(false).
+				WithJdbcTreatTimestampNtzAsUtc(true).
+				WithJdbcUseSessionTimezone(false).
+				WithJsonIndent(4).
+				WithJsTreatIntegerAsBigint(true).
+				WithListingAutoFulfillmentReplicationRefreshSchedule("2 minutes").
+				WithLockTimeout(43201).
+				WithLogLevel(sdk.LogLevelInfo).
+				WithLogEventLevel(sdk.LogLevelInfo).
+				WithMaxConcurrencyLevel(7).
+				WithMaxDataExtensionTimeInDays(13).
+				WithMetricLevel(sdk.MetricLevelAll).
+				WithMinDataRetentionTimeInDays(1).
+				WithMultiStatementCount(0).
+				WithNetworkPolicy(networkPolicy.ID()).
+				WithNoorderSequenceAsDefault(false).
+				WithOauthAddPrivilegedRolesToBlockedList(false).
+				WithOdbcTreatDecimalAsInt(true).
+				WithPeriodicDataRekeying(false).
+				WithPipeExecutionPaused(true).
+				WithPreventUnloadToInlineUrl(true).
+				WithPreventUnloadToInternalStages(true).
+				WithPythonProfilerTargetStage(stage.ID()).
+				WithQueryTag("test-query-tag").
+				WithQuotedIdentifiersIgnoreCase(true).
+				WithReadConsistencyMode("SESSION").
+				WithReplaceInvalidCharacters(true).
+				WithRequireStorageIntegrationForStageCreation(true).
+				WithRequireStorageIntegrationForStageOperation(true).
+				WithRowTimestampDefault(false).
+				WithRowsPerResultset(1000).
+				WithSearchPath("$current, $public").
+				WithServerlessTaskMaxStatementSize(sdk.WarehouseSize("6X-LARGE")).
+				WithServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+				WithSsoLoginPage(true).
+				WithSqlTraceQueryText("OFF").
+				WithStatementQueuedTimeoutInSeconds(1).
+				WithStatementTimeoutInSeconds(1).
+				WithStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
+				WithStrictJsonOutput(true).
+				WithSuspendTaskAfterNumFailures(3).
+				WithTaskAutoRetryAttempts(3).
+				WithTimestampDayIsAlways24H(true).
+				WithTimestampInputFormat("YYYY-MM-DD").
+				WithTimestampLtzOutputFormat("YYYY-MM-DD").
+				WithTimestampNtzOutputFormat("YYYY-MM-DD").
+				WithTimestampOutputFormat("YYYY-MM-DD").
+				WithTimestampTypeMapping(sdk.TimestampTypeMappingLtz).
+				WithTimestampTzOutputFormat("YYYY-MM-DD").
+				WithTimezone("Europe/London").
+				WithTimeInputFormat("YYYY-MM-DD").
+				WithTimeOutputFormat("YYYY-MM-DD").
+				WithTraceLevel(sdk.TraceLevelPropagate).
+				WithTransactionAbortOnError(true).
+				WithTransactionDefaultIsolationLevel(sdk.TransactionDefaultIsolationLevelReadCommitted).
+				WithTwoDigitCenturyStart(1971).
+				WithUnsupportedDdlAction(sdk.UnsupportedDDLActionFail).
+				WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeX6Large).
+				WithUserTaskMinimumTriggerIntervalInSeconds(10).
+				WithUserTaskTimeoutMs(10).
+				WithUseCachedResult(false).
+				WithUseWorkspacesForSql("unset").
+				WithWeekOfYearPolicy(1).
+				WithWeekStart(1),
+		)
 		require.NoError(t, err)
 
 		parameters, err := showParameters(context.Background())

@@ -434,7 +434,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 			// Test for external changes
 			{
 				PreConfig: func() {
-					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithParameters(sdk.AccountParameters{AbortDetachedQuery: sdk.Bool(true)})))
+					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithParameters(*sdk.NewAccountParametersRequest().WithAbortDetachedQuery(true))))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

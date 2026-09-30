@@ -40,7 +40,7 @@ type AlterAccountRequest struct {
 }
 
 type AccountSetRequest struct {
-	Parameters               *AccountParameters
+	Parameters               *AccountParametersRequest
 	LegacyParameters         *AccountLevelParametersRequest
 	ResourceMonitor          *AccountObjectIdentifier
 	PackagesPolicy           *SchemaObjectIdentifier
@@ -51,6 +51,153 @@ type AccountSetRequest struct {
 	ConsumptionBillingEntity *string
 	OrgAdmin                 *bool
 	Force                    *bool
+}
+
+type AccountParametersRequest struct {
+	AbortDetachedQuery                                       *bool
+	ActivePythonProfiler                                     *ActivePythonProfiler
+	AllowBindValuesAccess                                    *bool
+	AllowClientMfaCaching                                    *bool
+	AllowIdToken                                             *bool
+	AllowedSpcsWorkloadTypes                                 *string
+	Autocommit                                               *bool
+	BaseLocationPrefix                                       *string
+	BinaryInputFormat                                        *BinaryInputFormat
+	BinaryOutputFormat                                       *BinaryOutputFormat
+	Catalog                                                  *AccountObjectIdentifier
+	CatalogSync                                              *string
+	ClientEnableLogInfoStatementParameters                   *bool
+	ClientEncryptionKeySize                                  *int
+	ClientMemoryLimit                                        *int
+	ClientMetadataRequestUseConnectionCtx                    *bool
+	ClientMetadataUseSessionDatabase                         *bool
+	ClientPrefetchThreads                                    *int
+	ClientResultChunkSize                                    *int
+	ClientResultColumnCaseInsensitive                        *bool
+	ClientSessionKeepAlive                                   *bool
+	ClientSessionKeepAliveHeartbeatFrequency                 *int
+	ClientTimestampTypeMapping                               *ClientTimestampTypeMapping
+	CortexCodeCliDailyEstCreditLimitPerUser                  *int
+	CortexCodeDesktopDailyEstCreditLimitPerUser              *int
+	CortexCodeSnowsightDailyEstCreditLimitPerUser            *int
+	CortexEnabledCrossRegion                                 *string
+	CortexModelsAllowlist                                    *string
+	CsvTimestampFormat                                       *string
+	DataMetricSchedule                                       *string
+	DataRetentionTimeInDays                                  *int
+	DateInputFormat                                          *string
+	DateOutputFormat                                         *string
+	DefaultDbtVersion                                        *string
+	DefaultDdlCollation                                      *StringAllowEmpty
+	DefaultNotebookComputePoolCpu                            *string
+	DefaultNotebookComputePoolGpu                            *string
+	DefaultNullOrdering                                      *DefaultNullOrdering
+	DefaultStreamlitComputePool                              *string
+	DefaultStreamlitNotebookWarehouse                        *AccountObjectIdentifier
+	DisableUiDownloadButton                                  *bool
+	DisableUserPrivilegeGrants                               *bool
+	DisallowedSpcsWorkloadTypes                              *string
+	EnableAutomaticSensitiveDataClassificationLog            *bool
+	EnableBudgetEventLogging                                 *bool
+	EnableConsoleOutput                                      *bool
+	EnableCortexAnalyst                                      *bool
+	EnableDataCompaction                                     *bool
+	EnableEgressCostOptimizer                                *bool
+	EnableGetDdlUseDataTypeAlias                             *bool
+	EnableIcebergMergeOnRead                                 *bool
+	EnableIdentifierFirstLogin                               *bool
+	EnableInternalStagesPrivatelink                          *bool
+	EnableNotebookCreationInPersonalDb                       *bool
+	EnablePerAccountAppServicePrivatelinkUrl                 *bool
+	EnablePersonalDatabase                                   *bool
+	EnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement *bool
+	EnableTagPropagationEventLogging                         *bool
+	EnableTriSecretAndRekeyOptOutForImageRepository          *bool
+	EnableTriSecretAndRekeyOptOutForSpcsBlockStorage         *bool
+	EnableUnhandledExceptionsReporting                       *bool
+	EnableUnloadPhysicalTypeOptimization                     *bool
+	EnableUnredactedQuerySyntaxError                         *bool
+	EnableUnredactedSecureObjectError                        *bool
+	EnforceNetworkRulesForInternalStages                     *bool
+	ErrorOnNondeterministicMerge                             *bool
+	ErrorOnNondeterministicUpdate                            *bool
+	EventTable                                               *SchemaObjectIdentifier
+	ExternalOauthAddPrivilegedRolesToBlockedList             *bool
+	ExternalVolume                                           *AccountObjectIdentifier
+	GeographyOutputFormat                                    *GeographyOutputFormat
+	GeometryOutputFormat                                     *GeometryOutputFormat
+	HybridTableLockTimeout                                   *int
+	IcebergVersionDefault                                    *int
+	InitialReplicationSizeLimitInTb                          *string
+	JdbcTreatDecimalAsInt                                    *bool
+	JdbcTreatTimestampNtzAsUtc                               *bool
+	JdbcUseSessionTimezone                                   *bool
+	JsTreatIntegerAsBigint                                   *bool
+	JsonIndent                                               *int
+	ListingAutoFulfillmentReplicationRefreshSchedule         *string
+	LockTimeout                                              *int
+	LogEventLevel                                            *LogLevel
+	LogLevel                                                 *LogLevel
+	MaxConcurrencyLevel                                      *int
+	MaxDataExtensionTimeInDays                               *int
+	MetricLevel                                              *MetricLevel
+	MinDataRetentionTimeInDays                               *int
+	MultiStatementCount                                      *int
+	NetworkPolicy                                            *AccountObjectIdentifier
+	NoorderSequenceAsDefault                                 *bool
+	OauthAddPrivilegedRolesToBlockedList                     *bool
+	OdbcTreatDecimalAsInt                                    *bool
+	PeriodicDataRekeying                                     *bool
+	PipeExecutionPaused                                      *bool
+	PreventLoadFromInlineUrl                                 *bool
+	PreventUnloadToInlineUrl                                 *bool
+	PreventUnloadToInternalStages                            *bool
+	PythonProfilerModules                                    *string
+	PythonProfilerTargetStage                                *SchemaObjectIdentifier
+	QueryTag                                                 *string
+	QuotedIdentifiersIgnoreCase                              *bool
+	ReadConsistencyMode                                      *string
+	ReplaceInvalidCharacters                                 *bool
+	RequireStorageIntegrationForStageCreation                *bool
+	RequireStorageIntegrationForStageOperation               *bool
+	RowTimestampDefault                                      *bool
+	RowsPerResultset                                         *int
+	S3StageVpceDnsName                                       *string
+	SearchPath                                               *string
+	ServerlessTaskMaxStatementSize                           *WarehouseSize
+	ServerlessTaskMinStatementSize                           *WarehouseSize
+	ShareRestrictions                                        *bool
+	SimulatedDataSharingConsumer                             *string
+	SqlTraceQueryText                                        *string
+	SsoLoginPage                                             *bool
+	StatementQueuedTimeoutInSeconds                          *int
+	StatementTimeoutInSeconds                                *int
+	StorageSerializationPolicy                               *StorageSerializationPolicy
+	StrictJsonOutput                                         *bool
+	SuspendTaskAfterNumFailures                              *int
+	TaskAutoRetryAttempts                                    *int
+	TimeInputFormat                                          *string
+	TimeOutputFormat                                         *string
+	TimestampDayIsAlways24H                                  *bool
+	TimestampInputFormat                                     *string
+	TimestampLtzOutputFormat                                 *string
+	TimestampNtzOutputFormat                                 *string
+	TimestampOutputFormat                                    *string
+	TimestampTypeMapping                                     *TimestampTypeMapping
+	TimestampTzOutputFormat                                  *string
+	Timezone                                                 *string
+	TraceLevel                                               *TraceLevel
+	TransactionAbortOnError                                  *bool
+	TransactionDefaultIsolationLevel                         *TransactionDefaultIsolationLevel
+	TwoDigitCenturyStart                                     *int
+	UnsupportedDdlAction                                     *UnsupportedDDLAction
+	UseCachedResult                                          *bool
+	UseWorkspacesForSql                                      *string
+	UserTaskManagedInitialWarehouseSize                      *WarehouseSize
+	UserTaskMinimumTriggerIntervalInSeconds                  *int
+	UserTaskTimeoutMs                                        *int
+	WeekOfYearPolicy                                         *int
+	WeekStart                                                *int
 }
 
 type AccountLevelParametersRequest struct {
@@ -77,7 +224,7 @@ type AccountFeaturePolicySetRequest struct {
 }
 
 type AccountUnsetRequest struct {
-	Parameters                *AccountParametersUnset
+	Parameters                *AccountParametersUnsetRequest
 	LegacyParameters          *AccountLevelParametersUnsetRequest
 	AuthenticationPolicyUnset *AccountAuthenticationPolicyUnsetRequest
 	FeaturePolicyUnset        *AccountFeaturePolicyUnsetRequest
@@ -86,6 +233,153 @@ type AccountUnsetRequest struct {
 	SessionPolicyUnset        *AccountSessionPolicyUnsetRequest
 	ResourceMonitor           *bool
 	ConsumptionBillingEntity  *bool
+}
+
+type AccountParametersUnsetRequest struct {
+	AbortDetachedQuery                                       *bool
+	ActivePythonProfiler                                     *bool
+	AllowBindValuesAccess                                    *bool
+	AllowClientMfaCaching                                    *bool
+	AllowIdToken                                             *bool
+	AllowedSpcsWorkloadTypes                                 *bool
+	Autocommit                                               *bool
+	BaseLocationPrefix                                       *bool
+	BinaryInputFormat                                        *bool
+	BinaryOutputFormat                                       *bool
+	Catalog                                                  *bool
+	CatalogSync                                              *bool
+	ClientEnableLogInfoStatementParameters                   *bool
+	ClientEncryptionKeySize                                  *bool
+	ClientMemoryLimit                                        *bool
+	ClientMetadataRequestUseConnectionCtx                    *bool
+	ClientMetadataUseSessionDatabase                         *bool
+	ClientPrefetchThreads                                    *bool
+	ClientResultChunkSize                                    *bool
+	ClientResultColumnCaseInsensitive                        *bool
+	ClientSessionKeepAlive                                   *bool
+	ClientSessionKeepAliveHeartbeatFrequency                 *bool
+	ClientTimestampTypeMapping                               *bool
+	CortexCodeCliDailyEstCreditLimitPerUser                  *bool
+	CortexCodeDesktopDailyEstCreditLimitPerUser              *bool
+	CortexCodeSnowsightDailyEstCreditLimitPerUser            *bool
+	CortexEnabledCrossRegion                                 *bool
+	CortexModelsAllowlist                                    *bool
+	CsvTimestampFormat                                       *bool
+	DataMetricSchedule                                       *bool
+	DataRetentionTimeInDays                                  *bool
+	DateInputFormat                                          *bool
+	DateOutputFormat                                         *bool
+	DefaultDbtVersion                                        *bool
+	DefaultDdlCollation                                      *bool
+	DefaultNotebookComputePoolCpu                            *bool
+	DefaultNotebookComputePoolGpu                            *bool
+	DefaultNullOrdering                                      *bool
+	DefaultStreamlitComputePool                              *bool
+	DefaultStreamlitNotebookWarehouse                        *bool
+	DisableUiDownloadButton                                  *bool
+	DisableUserPrivilegeGrants                               *bool
+	DisallowedSpcsWorkloadTypes                              *bool
+	EnableAutomaticSensitiveDataClassificationLog            *bool
+	EnableBudgetEventLogging                                 *bool
+	EnableConsoleOutput                                      *bool
+	EnableCortexAnalyst                                      *bool
+	EnableDataCompaction                                     *bool
+	EnableEgressCostOptimizer                                *bool
+	EnableGetDdlUseDataTypeAlias                             *bool
+	EnableIcebergMergeOnRead                                 *bool
+	EnableIdentifierFirstLogin                               *bool
+	EnableInternalStagesPrivatelink                          *bool
+	EnableNotebookCreationInPersonalDb                       *bool
+	EnablePerAccountAppServicePrivatelinkUrl                 *bool
+	EnablePersonalDatabase                                   *bool
+	EnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement *bool
+	EnableTagPropagationEventLogging                         *bool
+	EnableTriSecretAndRekeyOptOutForImageRepository          *bool
+	EnableTriSecretAndRekeyOptOutForSpcsBlockStorage         *bool
+	EnableUnhandledExceptionsReporting                       *bool
+	EnableUnloadPhysicalTypeOptimization                     *bool
+	EnableUnredactedQuerySyntaxError                         *bool
+	EnableUnredactedSecureObjectError                        *bool
+	EnforceNetworkRulesForInternalStages                     *bool
+	ErrorOnNondeterministicMerge                             *bool
+	ErrorOnNondeterministicUpdate                            *bool
+	EventTable                                               *bool
+	ExternalOauthAddPrivilegedRolesToBlockedList             *bool
+	ExternalVolume                                           *bool
+	GeographyOutputFormat                                    *bool
+	GeometryOutputFormat                                     *bool
+	HybridTableLockTimeout                                   *bool
+	IcebergVersionDefault                                    *bool
+	InitialReplicationSizeLimitInTb                          *bool
+	JdbcTreatDecimalAsInt                                    *bool
+	JdbcTreatTimestampNtzAsUtc                               *bool
+	JdbcUseSessionTimezone                                   *bool
+	JsTreatIntegerAsBigint                                   *bool
+	JsonIndent                                               *bool
+	ListingAutoFulfillmentReplicationRefreshSchedule         *bool
+	LockTimeout                                              *bool
+	LogEventLevel                                            *bool
+	LogLevel                                                 *bool
+	MaxConcurrencyLevel                                      *bool
+	MaxDataExtensionTimeInDays                               *bool
+	MetricLevel                                              *bool
+	MinDataRetentionTimeInDays                               *bool
+	MultiStatementCount                                      *bool
+	NetworkPolicy                                            *bool
+	NoorderSequenceAsDefault                                 *bool
+	OauthAddPrivilegedRolesToBlockedList                     *bool
+	OdbcTreatDecimalAsInt                                    *bool
+	PeriodicDataRekeying                                     *bool
+	PipeExecutionPaused                                      *bool
+	PreventLoadFromInlineUrl                                 *bool
+	PreventUnloadToInlineUrl                                 *bool
+	PreventUnloadToInternalStages                            *bool
+	PythonProfilerModules                                    *bool
+	PythonProfilerTargetStage                                *bool
+	QueryTag                                                 *bool
+	QuotedIdentifiersIgnoreCase                              *bool
+	ReadConsistencyMode                                      *bool
+	ReplaceInvalidCharacters                                 *bool
+	RequireStorageIntegrationForStageCreation                *bool
+	RequireStorageIntegrationForStageOperation               *bool
+	RowTimestampDefault                                      *bool
+	RowsPerResultset                                         *bool
+	S3StageVpceDnsName                                       *bool
+	SearchPath                                               *bool
+	ServerlessTaskMaxStatementSize                           *bool
+	ServerlessTaskMinStatementSize                           *bool
+	ShareRestrictions                                        *bool
+	SimulatedDataSharingConsumer                             *bool
+	SqlTraceQueryText                                        *bool
+	SsoLoginPage                                             *bool
+	StatementQueuedTimeoutInSeconds                          *bool
+	StatementTimeoutInSeconds                                *bool
+	StorageSerializationPolicy                               *bool
+	StrictJsonOutput                                         *bool
+	SuspendTaskAfterNumFailures                              *bool
+	TaskAutoRetryAttempts                                    *bool
+	TimeInputFormat                                          *bool
+	TimeOutputFormat                                         *bool
+	TimestampDayIsAlways24H                                  *bool
+	TimestampInputFormat                                     *bool
+	TimestampLtzOutputFormat                                 *bool
+	TimestampNtzOutputFormat                                 *bool
+	TimestampOutputFormat                                    *bool
+	TimestampTypeMapping                                     *bool
+	TimestampTzOutputFormat                                  *bool
+	Timezone                                                 *bool
+	TraceLevel                                               *bool
+	TransactionAbortOnError                                  *bool
+	TransactionDefaultIsolationLevel                         *bool
+	TwoDigitCenturyStart                                     *bool
+	UnsupportedDdlAction                                     *bool
+	UseCachedResult                                          *bool
+	UseWorkspacesForSql                                      *bool
+	UserTaskManagedInitialWarehouseSize                      *bool
+	UserTaskMinimumTriggerIntervalInSeconds                  *bool
+	UserTaskTimeoutMs                                        *bool
+	WeekOfYearPolicy                                         *bool
+	WeekStart                                                *bool
 }
 
 type AccountLevelParametersUnsetRequest struct {

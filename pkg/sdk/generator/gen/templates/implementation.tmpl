@@ -32,8 +32,8 @@ func to{{ .NameSingular }}ParametersDetails(params []*Parameter) (*{{ .NameSingu
 	return &d, nil
 }
 
-func (v *{{ .NameLowerCased }}) ShowParametersDetails(ctx context.Context, id {{ .IdentifierKind }}) (*{{ .NameSingular }}ParametersDetails, error) {
-	params, err := v.ShowParameters(ctx, id)
+func (v *{{ .NameLowerCased }}) ShowParametersDetails(ctx context.Context{{ if not .ParametersDetails.WithoutIdentifier }}, id {{ .IdentifierKind }}{{ end }}) (*{{ .NameSingular }}ParametersDetails, error) {
+	params, err := v.ShowParameters(ctx{{ if not .ParametersDetails.WithoutIdentifier }}, id{{ end }})
 	if err != nil {
 		return nil, err
 	}

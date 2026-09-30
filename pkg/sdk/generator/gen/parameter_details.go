@@ -15,11 +15,22 @@ type ParameterDetailField struct {
 
 // ParametersDetailsConfig holds the data needed to generate the typed parameters-details accessor.
 type ParametersDetailsConfig struct {
-	Fields []ParameterDetailField
+	Fields            []ParameterDetailField
+	WithoutIdentifier bool
 }
 
 // ShowParametersDetails declares a typed ShowParametersDetails accessor for the given catalog parameters.
 func (i *Interface) ShowParametersDetails(params ...parameterdefs.ParameterDef) *Interface {
+	return i.showParametersDetails(false, params...)
+}
+
+// ShowParametersDetailsWithoutIdentifier declares a typed ShowParametersDetails accessor for
+// account-scoped SHOW PARAMETERS, which does not accept an object identifier.
+func (i *Interface) ShowParametersDetailsWithoutIdentifier(params ...parameterdefs.ParameterDef) *Interface {
+	return i.showParametersDetails(true, params...)
+}
+
+func (i *Interface) showParametersDetails(withoutIdentifier bool, params ...parameterdefs.ParameterDef) *Interface {
 	fields := make([]ParameterDetailField, 0, len(params))
 	for _, p := range params {
 		f := ParameterDetailField{FieldName: sqlToFieldName(p.SqlName, true), Key: p.SqlName}
@@ -45,11 +56,15 @@ func (i *Interface) ShowParametersDetails(params ...parameterdefs.ParameterDef) 
 		}
 		fields = append(fields, f)
 	}
-	i.ParametersDetails = &ParametersDetailsConfig{Fields: fields}
+	i.ParametersDetails = &ParametersDetailsConfig{Fields: fields, WithoutIdentifier: withoutIdentifier}
+	parameters := []*MethodParameter{NewMethodParameter("id", i.IdentifierKind)}
+	if withoutIdentifier {
+		parameters = nil
+	}
 	return i.WithCustomInterfaceMethod(
 		"ShowParametersDetails",
 		"",
-		[]*MethodParameter{NewMethodParameter("id", i.IdentifierKind)},
+		parameters,
 		"*"+i.NameSingular+"ParametersDetails", "error",
 	)
 }

@@ -91,6 +91,10 @@ func (m *mockOrganizationAccounts) ShowParameters(ctx context.Context) ([]*sdk.P
 	return nil, nil
 }
 
+func (m *mockOrganizationAccounts) ShowParametersDetails(ctx context.Context) (*sdk.AccountParametersDetails, error) {
+	return nil, nil
+}
+
 func (m *mockOrganizationAccounts) UnsetAllParameters(ctx context.Context) error {
 	return nil
 }

@@ -14,6 +14,7 @@ type OrganizationAccounts interface {
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*OrganizationAccount, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*OrganizationAccount, error)
 	ShowParameters(ctx context.Context) ([]*Parameter, error)
+	ShowParametersDetails(ctx context.Context) (*AccountParametersDetails, error)
 	UnsetAllParameters(ctx context.Context) error
 	// UnsetPolicySafely unsets a policy on the current account by a given supported kind.
 	// It ignores an error that occurs on the Snowflake side whenever you try to unset policy which is already unset.

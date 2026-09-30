@@ -46,7 +46,7 @@ var organizationAccountsDef = g.NewInterface(
 				"Set",
 				g.NewQueryStruct("OrganizationAccountSet").
 					// Currently, Organization Accounts use the same set of parameters as regular accounts
-					PredefinedQueryStructField("Parameters", g.KindOfTPointer[sdkcommons.AccountParameters](), g.ListOptions().NoParentheses()).
+					OptionalSharedQueryStructField("Parameters", accountParametersStruct(), g.ListOptions().NoParentheses()).
 					OptionalIdentifier("ResourceMonitor", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("RESOURCE_MONITOR")).
 					OptionalIdentifier("PasswordPolicy", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PASSWORD POLICY")).
 					OptionalIdentifier("SessionPolicy", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("SESSION POLICY")).
@@ -57,7 +57,7 @@ var organizationAccountsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"Unset",
 				g.NewQueryStruct("OrganizationAccountUnset").
-					PredefinedQueryStructField("Parameters", g.KindOfTPointer[sdkcommons.AccountParametersUnset](), g.ListOptions().NoParentheses()).
+					OptionalSharedQueryStructField("Parameters", accountParametersUnsetStruct(), g.ListOptions().NoParentheses()).
 					OptionalSQL("RESOURCE_MONITOR").
 					OptionalSQL("PASSWORD POLICY").
 					OptionalSQL("SESSION POLICY").
@@ -113,6 +113,7 @@ var organizationAccountsDef = g.NewInterface(
 			OptionalLike(),
 	).
 	WithCustomInterfaceMethod("ShowParameters", "", nil, "[]*Parameter", "error").
+	WithCustomInterfaceMethod("ShowParametersDetails", "", nil, "*AccountParametersDetails", "error").
 	WithCustomInterfaceMethod("UnsetAllParameters", "", nil, "error").
 	WithCustomInterfaceMethod(
 		"UnsetPolicySafely",

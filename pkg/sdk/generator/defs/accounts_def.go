@@ -1,11 +1,17 @@
-//go:build sdk_generation
-
 package defs
 
 import (
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
+
+// ACCOUNT_EXT is a superset of ACCOUNT, so it yields every parameter settable on an account.
+var accountParameters = ParameterDefsForLevel(parameterdefs.ParameterLevelAccountExt)
+
+var accountParameterFieldNames = collections.Map(accountParameters, g.ParameterSqlToFieldName)
 
 var accountEditionDef = g.NewEnum("AccountEdition", "AccountEditions", "STANDARD", "ENTERPRISE", "BUSINESS_CRITICAL")
 
@@ -77,9 +83,23 @@ func accountAuthenticationPolicyUnset() *g.QueryStruct {
 		WithValidation(g.ConflictingFields, "ForAllPersonUsers", "ForAllServiceUsers")
 }
 
+func accountParametersStruct() *g.QueryStruct {
+	return g.NewQueryStruct("AccountParameters").
+		WithParameters(accountParameters...).
+		WithValidation(g.AtLeastOneValueSet, accountParameterFieldNames...).
+		WithSharedToOpts()
+}
+
+func accountParametersUnsetStruct() *g.QueryStruct {
+	return g.NewQueryStruct("AccountParametersUnset").
+		WithParametersUnset(accountParameters...).
+		WithValidation(g.AtLeastOneValueSet, accountParameterFieldNames...).
+		WithSharedToOpts()
+}
+
 func accountSet() *g.QueryStruct {
 	return g.NewQueryStruct("AccountSet").
-		PredefinedQueryStructField("Parameters", "*AccountParameters", g.ListOptions().NoParentheses()).
+		OptionalQueryStructField("Parameters", accountParametersStruct(), g.ListOptions().NoParentheses()).
 		OptionalQueryStructField("LegacyParameters", accountLevelParameters(), g.ListOptions().NoParentheses()).
 		OptionalIdentifier("ResourceMonitor", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("RESOURCE_MONITOR")).
 		OptionalIdentifier("PackagesPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PACKAGES POLICY")).
@@ -96,7 +116,7 @@ func accountSet() *g.QueryStruct {
 
 func accountUnset() *g.QueryStruct {
 	return g.NewQueryStruct("AccountUnset").
-		PredefinedQueryStructField("Parameters", "*AccountParametersUnset", g.ListOptions().NoParentheses()).
+		OptionalQueryStructField("Parameters", accountParametersUnsetStruct(), g.ListOptions().NoParentheses()).
 		OptionalQueryStructField("LegacyParameters", accountLevelParametersUnset(), g.ListOptions().NoParentheses()).
 		OptionalQueryStructField("AuthenticationPolicyUnset", accountAuthenticationPolicyUnset(), g.KeywordOptions()).
 		OptionalQueryStructField("FeaturePolicyUnset", accountFeaturePolicyUnset(), g.KeywordOptions()).
@@ -217,6 +237,7 @@ var accountsDef = g.NewInterface(
 		[]*g.MethodParameter{},
 		"[]*Parameter", "error",
 	).
+	ShowParametersDetailsWithoutIdentifier(accountParameters...).
 	WithCustomInterfaceMethod(
 		"UnsetAllParameters",
 		"",

@@ -101,7 +101,7 @@ func NewOrganizationAccountSetRequest() *OrganizationAccountSetRequest {
 	return &s
 }
 
-func (s *OrganizationAccountSetRequest) WithParameters(parameters AccountParameters) *OrganizationAccountSetRequest {
+func (s *OrganizationAccountSetRequest) WithParameters(parameters AccountParametersRequest) *OrganizationAccountSetRequest {
 	s.Parameters = &parameters
 	return s
 }
@@ -131,7 +131,7 @@ func NewOrganizationAccountUnsetRequest() *OrganizationAccountUnsetRequest {
 	return &s
 }
 
-func (s *OrganizationAccountUnsetRequest) WithParameters(parameters AccountParametersUnset) *OrganizationAccountUnsetRequest {
+func (s *OrganizationAccountUnsetRequest) WithParameters(parameters AccountParametersUnsetRequest) *OrganizationAccountUnsetRequest {
 	s.Parameters = &parameters
 	return s
 }
