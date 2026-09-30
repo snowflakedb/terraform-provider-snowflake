@@ -32,6 +32,18 @@ type Field struct {
 	IsShared bool
 	// GenerateSharedToOpts marks that a standalone toOpts() method should be generated for this struct.
 	GenerateSharedToOpts bool
+	// SetParameters and UnsetParameters generate the SetParameterFromRaw/UnsetParameterFromRaw
+	// writers on this struct's Request type, scoped to these parameters.
+	SetParameters   []ParameterField
+	UnsetParameters []ParameterField
+}
+
+// ParameterField is a catalog parameter recorded on a struct. Parser is resolved from the kind once
+// at build time (see InfoForKind), so templates carry no kind logic. Unused for unset.
+type ParameterField struct {
+	SqlName   string
+	FieldName string
+	Parser    string
 }
 
 func NewField(name string, kind string, tagBuilder *TagBuilder, transformer FieldTransformer) *Field {

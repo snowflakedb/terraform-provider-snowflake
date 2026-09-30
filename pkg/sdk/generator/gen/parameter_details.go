@@ -1,7 +1,8 @@
 package gen
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+	"fmt"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
 
@@ -33,28 +34,16 @@ func (i *Interface) ShowParametersDetailsWithoutIdentifier(params ...parameterde
 func (i *Interface) showParametersDetails(withoutIdentifier bool, params ...parameterdefs.ParameterDef) *Interface {
 	fields := make([]ParameterDetailField, 0, len(params))
 	for _, p := range params {
-		f := ParameterDetailField{FieldName: sqlToFieldName(p.SqlName, true), Key: p.SqlName}
-		if p.Kind == KindOfT[sdkcommons.StringAllowEmpty]() {
-			f.GoType, f.Parser = "string", "identityParse"
-			fields = append(fields, f)
-			continue
+		info, err := InfoForKind(p.Kind)
+		if err != nil {
+			panic(fmt.Sprintf("parameter %s: %v", p.SqlName, err))
 		}
-		switch p.Kind {
-		case KindBool:
-			f.GoType, f.Parser = "bool", "strconv.ParseBool"
-		case KindInt:
-			f.GoType, f.Parser = "int", "strconv.Atoi"
-		case KindString:
-			f.GoType, f.Parser = "string", "identityParse"
-		default:
-			f.GoType = p.Kind
-			if _, err := ToObjectIdentifierKind(p.Kind); err == nil {
-				f.Parser = "Parse" + p.Kind
-			} else {
-				f.Parser = "To" + p.Kind
-			}
-		}
-		fields = append(fields, f)
+		fields = append(fields, ParameterDetailField{
+			FieldName: sqlToFieldName(p.SqlName, true),
+			Key:       p.SqlName,
+			GoType:    info.GoType,
+			Parser:    info.ReadParser,
+		})
 	}
 	i.ParametersDetails = &ParametersDetailsConfig{Fields: fields, WithoutIdentifier: withoutIdentifier}
 	parameters := []*MethodParameter{NewMethodParameter("id", i.IdentifierKind)}

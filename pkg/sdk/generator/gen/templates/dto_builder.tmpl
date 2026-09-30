@@ -26,3 +26,30 @@ func (s *{{ $name }}) With{{ .Name }}({{ FirstLetterLowercase .Name }}  {{ if .I
 }
     {{- end }}
 {{ end }}
+
+{{- with .SetParameters }}
+func (s *{{ $name }}) SetParameterFromRaw(key string, value string) error {
+    switch key {
+    {{- range . }}
+    case "{{ .SqlName }}":
+        return assignParsedParameter(value, {{ .Parser }}, &s.{{ .FieldName }})
+    {{- end }}
+    default:
+        return ErrParameterNotSupported
+    }
+}
+{{ end }}
+
+{{- with .UnsetParameters }}
+func (s *{{ $name }}) UnsetParameterFromRaw(key string) error {
+    switch key {
+    {{- range . }}
+    case "{{ .SqlName }}":
+        s.{{ .FieldName }} = Bool(true)
+    {{- end }}
+    default:
+        return ErrParameterNotSupported
+    }
+    return nil
+}
+{{ end }}

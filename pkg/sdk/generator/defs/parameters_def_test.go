@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/stretchr/testify/require"
 )
@@ -28,6 +29,24 @@ func TestAllParameters_wellFormed(t *testing.T) {
 			if slices.Contains(p.Levels, parameterdefs.ParameterLevelAccount) && !slices.Contains(p.Levels, parameterdefs.ParameterLevelAccountExt) {
 				t.Error("ParameterLevelAccount without ParameterLevelAccountExt")
 			}
+		})
+	}
+}
+
+// TestAllParameters_haveParsers asserts every catalog entry resolves to everything the generated read
+// and write accessors are built from. Without this, adding a parameter with a new kind would fail
+// during generation rather than here.
+func TestAllParameters_haveParsers(t *testing.T) {
+	for _, p := range AllParameters {
+		t.Run(p.SqlName, func(t *testing.T) {
+			info, err := g.InfoForKind(p.Kind)
+			require.NoError(t, err)
+			require.NotEmpty(t, p.SqlName)
+			require.NotEmpty(t, g.ParameterSqlToFieldName(p))
+			require.NotEmpty(t, info.GoType)
+			require.NotEmpty(t, info.FieldType)
+			require.NotEmpty(t, info.ReadParser)
+			require.NotEmpty(t, info.WriteParser)
 		})
 	}
 }

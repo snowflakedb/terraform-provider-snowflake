@@ -551,3 +551,13 @@ func Test_ParseTableColumnSignatureWithVectorSupport(t *testing.T) {
 		})
 	}
 }
+
+func TestToStringAllowEmpty(t *testing.T) {
+	for _, raw := range []string{"", "en_US"} {
+		t.Run("raw="+raw, func(t *testing.T) {
+			value, err := ToStringAllowEmpty(raw)
+			require.NoError(t, err)
+			require.Equal(t, StringAllowEmpty{Value: raw}, value)
+		})
+	}
+}

@@ -50,6 +50,17 @@ func fillTypedParameter[T any](raw *Parameter, parse func(string) (T, error), ta
 	return nil
 }
 
+// assignParsedParameter is the write-direction mirror of fillTypedParameter, used by the generated
+// SetParameterFromRaw writers.
+func assignParsedParameter[T any](raw string, parse func(string) (T, error), target **T) error {
+	value, err := parse(raw)
+	if err != nil {
+		return err
+	}
+	*target = &value
+	return nil
+}
+
 // identityParse is the parser for string-valued parameters.
 func identityParse(s string) (string, error) { return s, nil }
 

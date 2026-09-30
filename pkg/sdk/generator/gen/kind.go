@@ -1,12 +1,59 @@
 package gen
 
-import "reflect"
+import (
+	"fmt"
+	"reflect"
+	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+)
 
 const (
 	KindBool   = "bool"
 	KindInt    = "int"
 	KindString = "string"
 )
+
+// KindInfo is the single source for converting a kind between its SQL string form and Go, shared by
+// both generated directions: ShowParametersDetails (read) and SetParameterFromRaw (write).
+type KindInfo struct {
+	GoType      string
+	FieldType   string // differs from GoType only for StringAllowEmpty
+	ReadParser  string
+	WriteParser string
+}
+
+// InfoForKind resolves a kind's conversion info. Any bare named type that is neither a primitive nor
+// an identifier is assumed to be an SDK enum with a To<Enum> converter, so a missing converter fails
+// when compiling the generated code rather than here.
+func InfoForKind(kind string) (KindInfo, error) {
+	switch kind {
+	case KindBool:
+		return KindInfo{GoType: KindBool, FieldType: KindBool, ReadParser: "strconv.ParseBool", WriteParser: "strconv.ParseBool"}, nil
+	case KindInt:
+		return KindInfo{GoType: KindInt, FieldType: KindInt, ReadParser: "strconv.Atoi", WriteParser: "strconv.Atoi"}, nil
+	case KindString:
+		return KindInfo{GoType: KindString, FieldType: KindString, ReadParser: "identityParse", WriteParser: "identityParse"}, nil
+	case KindOfT[sdkcommons.StringAllowEmpty]():
+		// The wrapper exists so an empty string still renders in SQL; readers get a plain string.
+		return KindInfo{GoType: KindString, FieldType: kind, ReadParser: "identityParse", WriteParser: "ToStringAllowEmpty"}, nil
+	}
+	if !isBareGoTypeName(kind) {
+		return KindInfo{}, fmt.Errorf("cannot derive parsers for kind %q; expected a primitive, an identifier, or an enum type name", kind)
+	}
+	parser := "To" + kind
+	if _, err := ToObjectIdentifierKind(kind); err == nil {
+		parser = "Parse" + kind
+	}
+	return KindInfo{GoType: kind, FieldType: kind, ReadParser: parser, WriteParser: parser}, nil
+}
+
+func isBareGoTypeName(kind string) bool {
+	if kind == "" {
+		return false
+	}
+	return !strings.ContainsAny(kind, "*[]{}. ")
+}
 
 func KindOfT[T any]() string {
 	t := reflect.TypeFor[T]()

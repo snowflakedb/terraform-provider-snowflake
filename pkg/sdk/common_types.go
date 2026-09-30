@@ -482,6 +482,12 @@ type StringAllowEmpty struct {
 	Value string `ddl:"keyword,single_quotes"`
 }
 
+// ToStringAllowEmpty never fails; the error return matches the parser signature that the generated
+// parameter writers expect.
+func ToStringAllowEmpty(s string) (StringAllowEmpty, error) {
+	return StringAllowEmpty{Value: s}, nil
+}
+
 // Location allows implementation of custom SQL structs.
 type Location interface {
 	ToSql() string

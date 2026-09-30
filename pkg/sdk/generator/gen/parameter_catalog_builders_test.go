@@ -93,6 +93,87 @@ func TestParameterCatalogBuilders(t *testing.T) {
 		require.Equal(t, []string{"*SchemaParametersDetails", "error"}, iface.CustomMethods[0].ReturnTypes)
 	})
 
+	t.Run("InfoForKind", func(t *testing.T) {
+		tests := []struct {
+			goType string
+			want   string
+		}{
+			{KindBool, "strconv.ParseBool"},
+			{KindInt, "strconv.Atoi"},
+			{KindString, "identityParse"},
+			{"StringAllowEmpty", "ToStringAllowEmpty"},
+			{"AccountObjectIdentifier", "ParseAccountObjectIdentifier"},
+			{"DatabaseObjectIdentifier", "ParseDatabaseObjectIdentifier"},
+			{"SchemaObjectIdentifier", "ParseSchemaObjectIdentifier"},
+			// Unknown named types are assumed to be SDK enums; a missing To<Enum> converter shows up
+			// as a compilation error in the generated code rather than here.
+			{"LogLevel", "ToLogLevel"},
+			{"WarehouseSize", "ToWarehouseSize"},
+		}
+		for _, tt := range tests {
+			t.Run(tt.goType, func(t *testing.T) {
+				info, err := InfoForKind(tt.goType)
+				require.NoError(t, err)
+				require.Equal(t, tt.want, info.WriteParser)
+			})
+		}
+
+		// Kinds that are not bare named types have no derivable parser.
+		for _, invalid := range []string{"", "*int", "[]string", "map[string]string", "sdk.LogLevel", "Log Level"} {
+			t.Run("invalid/"+invalid, func(t *testing.T) {
+				_, err := InfoForKind(invalid)
+				require.Error(t, err)
+			})
+		}
+
+		// StringAllowEmpty is the one kind whose read and write sides legitimately differ: the
+		// wrapper exists so an empty string still renders in SQL, while readers get a plain string.
+		t.Run("StringAllowEmpty read/write divergence", func(t *testing.T) {
+			info, err := InfoForKind("StringAllowEmpty")
+			require.NoError(t, err)
+			require.Equal(t, KindInfo{
+				GoType:      "string",
+				ReadParser:  "identityParse",
+				FieldType:   "StringAllowEmpty",
+				WriteParser: "ToStringAllowEmpty",
+			}, info)
+		})
+	})
+
+	t.Run("SetParameters scopes writers to catalog parameters", func(t *testing.T) {
+		root := NewQueryStruct("DatabaseSet").
+			WithParameters(intParameter, enumParameter, identifierParameter).
+			OptionalComment().
+			IntoField()
+
+		// Order follows the catalog, and each entry carries the parser resolved from its kind.
+		require.Equal(t, []ParameterField{
+			{SqlName: "DATA_RETENTION_TIME_IN_DAYS", FieldName: "DataRetentionTimeInDays", Parser: "strconv.Atoi"},
+			{SqlName: "LOG_LEVEL", FieldName: "LogLevel", Parser: "ToLogLevel"},
+			{SqlName: "CATALOG", FieldName: "Catalog", Parser: "ParseAccountObjectIdentifier"},
+		}, root.SetParameters)
+		// Comment lives on the same struct but is not a parameter, so it must not be writable by key.
+		require.NotContains(t, sqlNamesOf(root.SetParameters), "COMMENT")
+		require.Empty(t, root.UnsetParameters)
+	})
+
+	t.Run("UnsetParameters scopes writers to catalog parameters", func(t *testing.T) {
+		root := NewQueryStruct("DatabaseUnset").
+			WithParametersUnset(intParameter, enumParameter).
+			OptionalSQL("COMMENT").
+			IntoField()
+
+		require.Equal(t, []string{"DATA_RETENTION_TIME_IN_DAYS", "LOG_LEVEL"}, sqlNamesOf(root.UnsetParameters))
+		require.Empty(t, root.SetParameters)
+	})
+
+	t.Run("structs without catalog parameters generate no writers", func(t *testing.T) {
+		root := NewQueryStruct("DropDatabase").OptionalComment().IntoField()
+
+		require.Empty(t, root.SetParameters)
+		require.Empty(t, root.UnsetParameters)
+	})
+
 	t.Run("ParameterSqlToFieldName", func(t *testing.T) {
 		tests := []struct {
 			sql  string
@@ -107,6 +188,14 @@ func TestParameterCatalogBuilders(t *testing.T) {
 			})
 		}
 	})
+}
+
+func sqlNamesOf(parameters []ParameterField) []string {
+	names := make([]string, 0, len(parameters))
+	for _, p := range parameters {
+		names = append(names, p.SqlName)
+	}
+	return names
 }
 
 func fieldsByName(fields []Field) map[string]Field {

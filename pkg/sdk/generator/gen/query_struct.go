@@ -11,6 +11,10 @@ type QueryStruct struct {
 	fields       []*Field
 	validations  []*Validation
 	sharedToOpts bool
+	// Recorded by WithParameters/WithParametersUnset. Presence drives writer generation; the contents
+	// scope the writers, since a parameter struct may also hold unrelated fields (e.g. Comment).
+	setParameters   []ParameterField
+	unsetParameters []ParameterField
 }
 
 func NewQueryStruct(name string) *QueryStruct {
@@ -26,6 +30,8 @@ func (v *QueryStruct) IntoField() *Field {
 		withFields(v.fields...).
 		withValidations(v.validations...)
 	f.GenerateSharedToOpts = v.sharedToOpts
+	f.SetParameters = v.setParameters
+	f.UnsetParameters = v.unsetParameters
 	return f
 }
 

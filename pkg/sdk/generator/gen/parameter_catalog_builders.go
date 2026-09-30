@@ -1,6 +1,8 @@
 package gen
 
 import (
+	"fmt"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
@@ -10,6 +12,7 @@ import (
 // string/enum parameters.
 func (v *QueryStruct) WithParameters(params ...parameterdefs.ParameterDef) *QueryStruct {
 	for _, p := range params {
+		v.setParameters = append(v.setParameters, newParameterField(p))
 		if p.Kind == KindOfT[sdkcommons.StringAllowEmpty]() {
 			v.OptionalAssignment(p.SqlName, p.Kind, ParameterOptions())
 			continue
@@ -35,9 +38,22 @@ func (v *QueryStruct) WithParameters(params ...parameterdefs.ParameterDef) *Quer
 // WithParametersUnset expands catalog parameters into ALTER-UNSET keyword fields.
 func (v *QueryStruct) WithParametersUnset(params ...parameterdefs.ParameterDef) *QueryStruct {
 	for _, p := range params {
+		v.unsetParameters = append(v.unsetParameters, newParameterField(p))
 		v.OptionalSQL(p.SqlName)
 	}
 	return v
+}
+
+func newParameterField(p parameterdefs.ParameterDef) ParameterField {
+	info, err := InfoForKind(p.Kind)
+	if err != nil {
+		panic(fmt.Sprintf("parameter %s: %v", p.SqlName, err))
+	}
+	return ParameterField{
+		SqlName:   p.SqlName,
+		FieldName: sqlToFieldName(p.SqlName, true),
+		Parser:    info.WriteParser,
+	}
 }
 
 // ParameterSqlToFieldName maps a catalog parameter's SQL name to the exported Go field

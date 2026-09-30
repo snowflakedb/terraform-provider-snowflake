@@ -2,6 +2,8 @@
 
 package sdk
 
+import "strconv"
+
 func NewCreateSchemaRequest(
 	name DatabaseObjectIdentifier,
 ) *CreateSchemaRequest {
@@ -138,6 +140,53 @@ func (s *CreateSchemaRequest) WithComment(comment string) *CreateSchemaRequest {
 func (s *CreateSchemaRequest) WithTag(tag []TagAssociation) *CreateSchemaRequest {
 	s.Tag = tag
 	return s
+}
+
+func (s *CreateSchemaRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "CATALOG":
+		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.Catalog)
+	case "DATA_RETENTION_TIME_IN_DAYS":
+		return assignParsedParameter(value, strconv.Atoi, &s.DataRetentionTimeInDays)
+	case "DEFAULT_DDL_COLLATION":
+		return assignParsedParameter(value, ToStringAllowEmpty, &s.DefaultDdlCollation)
+	case "DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU":
+		return assignParsedParameter(value, identityParse, &s.DefaultNotebookComputePoolCpu)
+	case "DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU":
+		return assignParsedParameter(value, identityParse, &s.DefaultNotebookComputePoolGpu)
+	case "ENABLE_CONSOLE_OUTPUT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
+	case "EXTERNAL_VOLUME":
+		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.ExternalVolume)
+	case "LOG_EVENT_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
+	case "LOG_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":
+		return assignParsedParameter(value, strconv.Atoi, &s.MaxDataExtensionTimeInDays)
+	case "PIPE_EXECUTION_PAUSED":
+		return assignParsedParameter(value, strconv.ParseBool, &s.PipeExecutionPaused)
+	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.QuotedIdentifiersIgnoreCase)
+	case "REPLACE_INVALID_CHARACTERS":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ReplaceInvalidCharacters)
+	case "STORAGE_SERIALIZATION_POLICY":
+		return assignParsedParameter(value, ToStorageSerializationPolicy, &s.StorageSerializationPolicy)
+	case "SUSPEND_TASK_AFTER_NUM_FAILURES":
+		return assignParsedParameter(value, strconv.Atoi, &s.SuspendTaskAfterNumFailures)
+	case "TASK_AUTO_RETRY_ATTEMPTS":
+		return assignParsedParameter(value, strconv.Atoi, &s.TaskAutoRetryAttempts)
+	case "TRACE_LEVEL":
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+	case "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE":
+		return assignParsedParameter(value, ToWarehouseSize, &s.UserTaskManagedInitialWarehouseSize)
+	case "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.UserTaskMinimumTriggerIntervalInSeconds)
+	case "USER_TASK_TIMEOUT_MS":
+		return assignParsedParameter(value, strconv.Atoi, &s.UserTaskTimeoutMs)
+	default:
+		return ErrParameterNotSupported
+	}
 }
 
 func NewCloneSchemaRequest(
@@ -331,6 +380,53 @@ func (s *SchemaSetRequest) WithComment(comment string) *SchemaSetRequest {
 	return s
 }
 
+func (s *SchemaSetRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "CATALOG":
+		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.Catalog)
+	case "DATA_RETENTION_TIME_IN_DAYS":
+		return assignParsedParameter(value, strconv.Atoi, &s.DataRetentionTimeInDays)
+	case "DEFAULT_DDL_COLLATION":
+		return assignParsedParameter(value, ToStringAllowEmpty, &s.DefaultDdlCollation)
+	case "DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU":
+		return assignParsedParameter(value, identityParse, &s.DefaultNotebookComputePoolCpu)
+	case "DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU":
+		return assignParsedParameter(value, identityParse, &s.DefaultNotebookComputePoolGpu)
+	case "ENABLE_CONSOLE_OUTPUT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
+	case "EXTERNAL_VOLUME":
+		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.ExternalVolume)
+	case "LOG_EVENT_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
+	case "LOG_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":
+		return assignParsedParameter(value, strconv.Atoi, &s.MaxDataExtensionTimeInDays)
+	case "PIPE_EXECUTION_PAUSED":
+		return assignParsedParameter(value, strconv.ParseBool, &s.PipeExecutionPaused)
+	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.QuotedIdentifiersIgnoreCase)
+	case "REPLACE_INVALID_CHARACTERS":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ReplaceInvalidCharacters)
+	case "STORAGE_SERIALIZATION_POLICY":
+		return assignParsedParameter(value, ToStorageSerializationPolicy, &s.StorageSerializationPolicy)
+	case "SUSPEND_TASK_AFTER_NUM_FAILURES":
+		return assignParsedParameter(value, strconv.Atoi, &s.SuspendTaskAfterNumFailures)
+	case "TASK_AUTO_RETRY_ATTEMPTS":
+		return assignParsedParameter(value, strconv.Atoi, &s.TaskAutoRetryAttempts)
+	case "TRACE_LEVEL":
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+	case "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE":
+		return assignParsedParameter(value, ToWarehouseSize, &s.UserTaskManagedInitialWarehouseSize)
+	case "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.UserTaskMinimumTriggerIntervalInSeconds)
+	case "USER_TASK_TIMEOUT_MS":
+		return assignParsedParameter(value, strconv.Atoi, &s.UserTaskTimeoutMs)
+	default:
+		return ErrParameterNotSupported
+	}
+}
+
 func NewSchemaUnsetRequest() *SchemaUnsetRequest {
 	s := SchemaUnsetRequest{}
 	return &s
@@ -439,6 +535,54 @@ func (s *SchemaUnsetRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs bool) *Sche
 func (s *SchemaUnsetRequest) WithComment(comment bool) *SchemaUnsetRequest {
 	s.Comment = &comment
 	return s
+}
+
+func (s *SchemaUnsetRequest) UnsetParameterFromRaw(key string) error {
+	switch key {
+	case "CATALOG":
+		s.Catalog = Bool(true)
+	case "DATA_RETENTION_TIME_IN_DAYS":
+		s.DataRetentionTimeInDays = Bool(true)
+	case "DEFAULT_DDL_COLLATION":
+		s.DefaultDdlCollation = Bool(true)
+	case "DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU":
+		s.DefaultNotebookComputePoolCpu = Bool(true)
+	case "DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU":
+		s.DefaultNotebookComputePoolGpu = Bool(true)
+	case "ENABLE_CONSOLE_OUTPUT":
+		s.EnableConsoleOutput = Bool(true)
+	case "EXTERNAL_VOLUME":
+		s.ExternalVolume = Bool(true)
+	case "LOG_EVENT_LEVEL":
+		s.LogEventLevel = Bool(true)
+	case "LOG_LEVEL":
+		s.LogLevel = Bool(true)
+	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":
+		s.MaxDataExtensionTimeInDays = Bool(true)
+	case "PIPE_EXECUTION_PAUSED":
+		s.PipeExecutionPaused = Bool(true)
+	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
+		s.QuotedIdentifiersIgnoreCase = Bool(true)
+	case "REPLACE_INVALID_CHARACTERS":
+		s.ReplaceInvalidCharacters = Bool(true)
+	case "STORAGE_SERIALIZATION_POLICY":
+		s.StorageSerializationPolicy = Bool(true)
+	case "SUSPEND_TASK_AFTER_NUM_FAILURES":
+		s.SuspendTaskAfterNumFailures = Bool(true)
+	case "TASK_AUTO_RETRY_ATTEMPTS":
+		s.TaskAutoRetryAttempts = Bool(true)
+	case "TRACE_LEVEL":
+		s.TraceLevel = Bool(true)
+	case "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE":
+		s.UserTaskManagedInitialWarehouseSize = Bool(true)
+	case "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS":
+		s.UserTaskMinimumTriggerIntervalInSeconds = Bool(true)
+	case "USER_TASK_TIMEOUT_MS":
+		s.UserTaskTimeoutMs = Bool(true)
+	default:
+		return ErrParameterNotSupported
+	}
+	return nil
 }
 
 func NewDropSchemaRequest(

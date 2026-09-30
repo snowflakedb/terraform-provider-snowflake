@@ -40,6 +40,9 @@ var (
 	// Note: this is a fragile substring match — Snowflake may change the message in future versions,
 	// or an unrelated error could accidentally match. Treat retries as best-effort.
 	ErrPostgresOperationMustBeComplete = errors.New("must be complete before issuing ALTER")
+
+	// ErrParameterNotSupported signals that a SetParameterFromRaw called on dto builder doesn't support the given parameter key.
+	ErrParameterNotSupported = NewError("parameter not supported on this object")
 )
 
 type IntErrType string
