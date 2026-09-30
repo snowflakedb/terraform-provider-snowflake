@@ -363,17 +363,10 @@ func (cfg accountObjectSweeperConfig[T]) effectiveStalePeriod() time.Duration {
 // grantOwnershipToAccountadmin builds the takeOwnership function for the objects of the given type.
 func grantOwnershipToAccountadmin(client *sdk.Client, objectType sdk.ObjectType) func(ctx context.Context, id sdk.AccountObjectIdentifier) error {
 	return func(ctx context.Context, id sdk.AccountObjectIdentifier) error {
-		return client.Grants.GrantOwnership(
-			ctx,
-			sdk.OwnershipGrantOn{Object: &sdk.Object{
-				ObjectType: objectType,
-				Name:       id,
-			}},
-			sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
-			},
-			nil,
-		)
+		return client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(
+			*sdk.NewOwnershipGrantOnRequest().WithObject(sdk.Object{ObjectType: objectType, Name: id}),
+			*sdk.NewOwnershipGrantToRequest().WithAccountRoleName(snowflakeroles.Accountadmin),
+		))
 	}
 }
 

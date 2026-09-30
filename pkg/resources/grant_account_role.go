@@ -129,9 +129,8 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta an
 		// computed/server-default fields to populate, so the Read is redundant here. With caching
 		// enabled we skip it to avoid an extra SHOW GRANTS during apply. We still invalidate so any
 		// later Read for this role in the same plan observes the new grant.
-		invalidateGrantsShowCacheFor(providerCtx, experimentalfeatures.GrantAccountRoleShowCaching, &sdk.ShowGrantOptions{
-			Of: &sdk.ShowGrantsOf{Role: roleIdentifier},
-		})
+		invalidateGrantsShowCacheFor(providerCtx, experimentalfeatures.GrantAccountRoleShowCaching, sdk.NewShowGrantsRequest().
+			WithOf(*sdk.NewShowGrantsOfRequest().WithRole(roleIdentifier)))
 		log.Printf("[DEBUG] skipping trailing SHOW GRANTS read after create (%s) — experiment %s enabled", snowflakeResourceID, experimentalfeatures.GrantAccountRoleShowCaching)
 		return nil
 	}
@@ -160,9 +159,8 @@ func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta any)
 	}
 	targetIdentifier := parts[2]
 
-	showOpts := &sdk.ShowGrantOptions{
-		Of: &sdk.ShowGrantsOf{Role: roleIdentifier},
-	}
+	showOpts := sdk.NewShowGrantsRequest().
+		WithOf(*sdk.NewShowGrantsOfRequest().WithRole(roleIdentifier))
 	grants, err := showGrantsCachedFor(ctx, providerCtx, experimentalfeatures.GrantAccountRoleShowCaching, showOpts)
 	if err != nil {
 		log.Printf("[DEBUG] role (%s) not found", roleIdentifier.FullyQualifiedName())
@@ -223,9 +221,8 @@ func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta an
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	invalidateGrantsShowCacheFor(providerCtx, experimentalfeatures.GrantAccountRoleShowCaching, &sdk.ShowGrantOptions{
-		Of: &sdk.ShowGrantsOf{Role: id},
-	})
+	invalidateGrantsShowCacheFor(providerCtx, experimentalfeatures.GrantAccountRoleShowCaching, sdk.NewShowGrantsRequest().
+		WithOf(*sdk.NewShowGrantsOfRequest().WithRole(id)))
 	d.SetId("")
 	return nil
 }

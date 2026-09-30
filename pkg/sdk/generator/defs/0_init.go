@@ -38,6 +38,7 @@ func init() {
 		fileFormatsDef,
 		functionsDef,
 		gitRepositoriesDef,
+		grantsDef,
 		hybridTablesDef,
 		icebergTablesDef,
 		imageRepositoriesDef,

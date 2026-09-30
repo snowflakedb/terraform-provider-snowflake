@@ -17,27 +17,19 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 	ctx := testContext(t)
 
 	assertPrivilegeGrantedOnPipe := func(pipeId sdk.SchemaObjectIdentifier, privilege sdk.SchemaObjectPrivilege) {
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			On: &sdk.ShowGrantsOn{
-				Object: &sdk.Object{
-					ObjectType: sdk.ObjectTypePipe,
-					Name:       pipeId,
-				},
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+			ObjectType: sdk.ObjectTypePipe,
+			Name:       pipeId,
+		})))
 		require.NoError(t, err)
 		require.Contains(t, grantsToPrivileges(grants), privilege.String())
 	}
 
 	assertPrivilegeNotGrantedOnPipe := func(pipeId sdk.SchemaObjectIdentifier, privilege sdk.SchemaObjectPrivilege) {
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			On: &sdk.ShowGrantsOn{
-				Object: &sdk.Object{
-					ObjectType: sdk.ObjectTypePipe,
-					Name:       pipeId,
-				},
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+			ObjectType: sdk.ObjectTypePipe,
+			Name:       pipeId,
+		})))
 		require.NoError(t, err)
 		require.NotContains(t, grantsToPrivileges(grants), privilege.String())
 	}
@@ -45,22 +37,11 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 	t.Run("on account", func(t *testing.T) {
 		roleTest, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
-		privileges := &sdk.AccountRoleGrantPrivileges{
-			GlobalPrivileges: []sdk.GlobalPrivilege{sdk.GlobalPrivilegeMonitorUsage, sdk.GlobalPrivilegeApplyTag},
-		}
-		on := &sdk.AccountRoleGrantOn{
-			Account: sdk.Bool(true),
-		}
-		opts := &sdk.GrantPrivilegesToAccountRoleOptions{
-			WithGrantOption: sdk.Bool(true),
-		}
-		err := client.Grants.GrantPrivilegesToAccountRole(ctx, privileges, on, roleTest.ID(), opts)
+		privileges := *sdk.NewAccountRoleGrantPrivilegesRequest().WithGlobalPrivileges([]sdk.GlobalPrivilege{sdk.GlobalPrivilegeMonitorUsage, sdk.GlobalPrivilegeApplyTag})
+		on := *sdk.NewAccountRoleGrantOnRequest().WithAccount(true)
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on).WithWithGrantOption(true))
 		require.NoError(t, err)
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		assert.Len(t, grants, 2)
 		// The order of the grants is not guaranteed
@@ -76,13 +57,9 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 		}
 
 		// now revoke and verify that the grant(s) are gone
-		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, sdk.NewRevokePrivilegesFromAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		assert.Empty(t, grants)
 	})
@@ -92,36 +69,22 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 		t.Cleanup(roleCleanup)
 		resourceMonitorTest, resourceMonitorCleanup := testClientHelper().ResourceMonitor.CreateResourceMonitor(t)
 		t.Cleanup(resourceMonitorCleanup)
-		privileges := &sdk.AccountRoleGrantPrivileges{
-			AccountObjectPrivileges: []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeMonitor},
-		}
-		on := &sdk.AccountRoleGrantOn{
-			AccountObject: &sdk.GrantOnAccountObject{
-				Object: &sdk.Object{
-					ObjectType: sdk.ObjectTypeResourceMonitor,
-					Name:       resourceMonitorTest.ID(),
-				},
-			},
-		}
-		err := client.Grants.GrantPrivilegesToAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		privileges := *sdk.NewAccountRoleGrantPrivilegesRequest().WithAccountObjectPrivileges([]sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeMonitor})
+		on := *sdk.NewAccountRoleGrantOnRequest().WithAccountObject(*sdk.NewGrantOnAccountObjectRequest().WithObject(sdk.Object{
+			ObjectType: sdk.ObjectTypeResourceMonitor,
+			Name:       resourceMonitorTest.ID(),
+		}))
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		assert.Len(t, grants, 1)
 		assert.Equal(t, sdk.AccountObjectPrivilegeMonitor.String(), grants[0].Privilege)
 
 		// now revoke and verify that the grant(s) are gone
-		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, sdk.NewRevokePrivilegesFromAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		assert.Empty(t, grants)
 	})
@@ -135,38 +98,24 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 		connection, connectionCleanup := testClientHelper().Connection.Create(t)
 		t.Cleanup(connectionCleanup)
 
-		privileges := &sdk.AccountRoleGrantPrivileges{
-			AccountObjectPrivileges: []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeFailover},
-		}
-		on := &sdk.AccountRoleGrantOn{
-			AccountObject: &sdk.GrantOnAccountObject{
-				Object: &sdk.Object{
-					ObjectType: sdk.ObjectTypeConnection,
-					Name:       connection.ID(),
-				},
-			},
-		}
+		privileges := *sdk.NewAccountRoleGrantPrivilegesRequest().WithAccountObjectPrivileges([]sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeFailover})
+		on := *sdk.NewAccountRoleGrantOnRequest().WithAccountObject(*sdk.NewGrantOnAccountObjectRequest().WithObject(sdk.Object{
+			ObjectType: sdk.ObjectTypeConnection,
+			Name:       connection.ID(),
+		}))
 
-		err := client.Grants.GrantPrivilegesToAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
 
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		assert.Len(t, grants, 1)
 		assert.Equal(t, sdk.AccountObjectPrivilegeFailover.String(), grants[0].Privilege)
 
 		// now revoke and verify that the grant(s) are gone
-		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, sdk.NewRevokePrivilegesFromAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		assert.Empty(t, grants)
 	})
@@ -174,33 +123,19 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 	t.Run("on schema", func(t *testing.T) {
 		roleTest, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
-		privileges := &sdk.AccountRoleGrantPrivileges{
-			SchemaPrivileges: []sdk.SchemaPrivilege{sdk.SchemaPrivilegeCreateAlert},
-		}
-		on := &sdk.AccountRoleGrantOn{
-			Schema: &sdk.GrantOnSchema{
-				Schema: sdk.Pointer(testClientHelper().Ids.SchemaId()),
-			},
-		}
-		err := client.Grants.GrantPrivilegesToAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		privileges := *sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaPrivileges([]sdk.SchemaPrivilege{sdk.SchemaPrivilegeCreateAlert})
+		on := *sdk.NewAccountRoleGrantOnRequest().WithSchema(*sdk.NewGrantOnSchemaRequest().WithSchema(testClientHelper().Ids.SchemaId()))
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		assert.Len(t, grants, 1)
 		assert.Equal(t, sdk.SchemaPrivilegeCreateAlert.String(), grants[0].Privilege)
 
 		// now revoke and verify that the grant(s) are gone
-		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, sdk.NewRevokePrivilegesFromAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		assert.Empty(t, grants)
 	})
@@ -210,37 +145,20 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 		t.Cleanup(roleCleanup)
 		tableTest, tableTestCleanup := testClientHelper().Table.Create(t)
 		t.Cleanup(tableTestCleanup)
-		privileges := &sdk.AccountRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
-		}
-		on := &sdk.AccountRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				All: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypeTables,
-					InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-				},
-			},
-		}
-		err := client.Grants.GrantPrivilegesToAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		privileges := *sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect})
+		on := *sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeTables).WithInSchema(testClientHelper().Ids.SchemaId())))
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		selectPrivilege, err := collections.FindFirst[sdk.Grant](grants, func(g sdk.Grant) bool { return g.Privilege == sdk.SchemaObjectPrivilegeSelect.String() })
 		require.NoError(t, err)
 		assert.Equal(t, tableTest.ID().FullyQualifiedName(), selectPrivilege.Name.FullyQualifiedName())
 
 		// now revoke and verify that the grant(s) are gone
-		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, sdk.NewRevokePrivilegesFromAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		assert.Empty(t, grants)
 	})
@@ -253,37 +171,23 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 		cortex, cortexCleanup := testClientHelper().CortexSearchService.CreateCortexSearchService(t, table.ID())
 		t.Cleanup(cortexCleanup)
 
-		privileges := &sdk.AccountRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeUsage},
-		}
-		on := &sdk.AccountRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				SchemaObject: &sdk.Object{
-					ObjectType: sdk.ObjectTypeCortexSearchService,
-					Name:       cortex.ID(),
-				},
-			},
-		}
-		err := client.Grants.GrantPrivilegesToAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		privileges := *sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeUsage})
+		on := *sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithSchemaObject(sdk.Object{
+			ObjectType: sdk.ObjectTypeCortexSearchService,
+			Name:       cortex.ID(),
+		}))
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		selectPrivilege, err := collections.FindFirst[sdk.Grant](grants, func(g sdk.Grant) bool { return g.Privilege == sdk.SchemaObjectPrivilegeUsage.String() })
 		require.NoError(t, err)
 		assert.Equal(t, cortex.ID().FullyQualifiedName(), selectPrivilege.Name.FullyQualifiedName())
 
 		// now revoke and verify that the grant(s) are gone
-		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, sdk.NewRevokePrivilegesFromAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		assert.Empty(t, grants)
 	})
@@ -296,25 +200,12 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 		cortex, cortexCleanup := testClientHelper().CortexSearchService.CreateCortexSearchService(t, table.ID())
 		t.Cleanup(cortexCleanup)
 
-		privileges := &sdk.AccountRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeUsage},
-		}
-		on := &sdk.AccountRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				All: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypeCortexSearchServices,
-					InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-				},
-			},
-		}
-		err := client.Grants.GrantPrivilegesToAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		privileges := *sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeUsage})
+		on := *sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeCortexSearchServices).WithInSchema(testClientHelper().Ids.SchemaId())))
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
 
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		usagePrivilege, err := collections.FindFirst[sdk.Grant](grants, func(g sdk.Grant) bool {
 			return g.Privilege == sdk.SchemaObjectPrivilegeUsage.String()
@@ -324,13 +215,9 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 		assert.Equal(t, sdk.ObjectTypeCortexSearchService, usagePrivilege.GrantedOn)
 
 		// now revoke and verify that the grant(s) are gone
-		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, sdk.NewRevokePrivilegesFromAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		assert.Empty(t, grants)
 	})
@@ -341,24 +228,14 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 		interactiveTable, interactiveTableCleanup := testClientHelper().Table.CreateInteractiveTable(t)
 		t.Cleanup(interactiveTableCleanup)
 
-		privileges := &sdk.AccountRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
-		}
-		on := &sdk.AccountRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				SchemaObject: &sdk.Object{
-					ObjectType: sdk.ObjectTypeInteractiveTable,
-					Name:       interactiveTable.ID(),
-				},
-			},
-		}
-		err := client.Grants.GrantPrivilegesToAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		privileges := *sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect})
+		on := *sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithSchemaObject(sdk.Object{
+			ObjectType: sdk.ObjectTypeInteractiveTable,
+			Name:       interactiveTable.ID(),
+		}))
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		require.Len(t, grants, 1)
 		assert.Equal(t, sdk.SchemaObjectPrivilegeSelect.String(), grants[0].Privilege)
@@ -369,13 +246,9 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 		assert.False(t, grants[0].GrantOption)
 
 		// now revoke and verify that the grant(s) are gone
-		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, sdk.NewRevokePrivilegesFromAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		assert.Empty(t, grants)
 	})
@@ -383,37 +256,19 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 	t.Run("on future schema object", func(t *testing.T) {
 		roleTest, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
-		privileges := &sdk.AccountRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
-		}
-		on := &sdk.AccountRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				Future: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypeExternalTables,
-					InDatabase:       sdk.Pointer(testClientHelper().Ids.DatabaseId()),
-				},
-			},
-		}
-		err := client.Grants.GrantPrivilegesToAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		privileges := *sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect})
+		on := *sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeExternalTables).WithInDatabase(testClientHelper().Ids.DatabaseId())))
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			Future: sdk.Bool(true),
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithFuture(true).WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		assert.Len(t, grants, 1)
 		assert.Equal(t, sdk.SchemaObjectPrivilegeSelect.String(), grants[0].Privilege)
 
 		// now revoke and verify that the grant(s) are gone
-		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, sdk.NewRevokePrivilegesFromAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		assert.Empty(t, grants)
 	})
@@ -422,40 +277,21 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 		roleTest, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
 
-		privileges := &sdk.AccountRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeUsage},
-		}
-		on := &sdk.AccountRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				Future: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypeCortexSearchServices,
-					InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-				},
-			},
-		}
-		err := client.Grants.GrantPrivilegesToAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		privileges := *sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeUsage})
+		on := *sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeCortexSearchServices).WithInSchema(testClientHelper().Ids.SchemaId())))
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
 
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			Future: sdk.Bool(true),
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithFuture(true).WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		assert.Len(t, grants, 1)
 		assert.Equal(t, sdk.SchemaObjectPrivilegeUsage.String(), grants[0].Privilege)
 		assert.Equal(t, sdk.ObjectTypeCortexSearchService, grants[0].GrantOn)
 
 		// now revoke and verify that the grant(s) are gone
-		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, sdk.NewRevokePrivilegesFromAccountRoleRequest(roleTest.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			Future: sdk.Bool(true),
-			To: &sdk.ShowGrantsTo{
-				Role: roleTest.ID(),
-			},
-		})
+		grants, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithFuture(true).WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleTest.ID())))
 		require.NoError(t, err)
 		assert.Empty(t, grants)
 	})
@@ -476,42 +312,12 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 		role, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
 
-		err := client.Grants.GrantPrivilegesToAccountRole(
-			ctx,
-			&sdk.AccountRoleGrantPrivileges{
-				SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor},
-			},
-			&sdk.AccountRoleGrantOn{
-				SchemaObject: &sdk.GrantOnSchemaObject{
-					All: &sdk.GrantOnSchemaObjectIn{
-						PluralObjectType: sdk.PluralObjectTypePipes,
-						InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-					},
-				},
-			},
-			role.ID(),
-			&sdk.GrantPrivilegesToAccountRoleOptions{},
-		)
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(role.ID()).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypePipes).WithInSchema(testClientHelper().Ids.SchemaId())))))
 		require.NoError(t, err)
 		assertPrivilegeGrantedOnPipe(pipe.ID(), sdk.SchemaObjectPrivilegeMonitor)
 		assertPrivilegeGrantedOnPipe(secondPipe.ID(), sdk.SchemaObjectPrivilegeMonitor)
 
-		err = client.Grants.RevokePrivilegesFromAccountRole(
-			ctx,
-			&sdk.AccountRoleGrantPrivileges{
-				SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor},
-			},
-			&sdk.AccountRoleGrantOn{
-				SchemaObject: &sdk.GrantOnSchemaObject{
-					All: &sdk.GrantOnSchemaObjectIn{
-						PluralObjectType: sdk.PluralObjectTypePipes,
-						InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-					},
-				},
-			},
-			role.ID(),
-			&sdk.RevokePrivilegesFromAccountRoleOptions{},
-		)
+		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, sdk.NewRevokePrivilegesFromAccountRoleRequest(role.ID()).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypePipes).WithInSchema(testClientHelper().Ids.SchemaId())))))
 		require.NoError(t, err)
 		assertPrivilegeNotGrantedOnPipe(pipe.ID(), sdk.SchemaObjectPrivilegeMonitor)
 		assertPrivilegeNotGrantedOnPipe(secondPipe.ID(), sdk.SchemaObjectPrivilegeMonitor)
@@ -533,43 +339,13 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 		role, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
 
-		err := client.Grants.GrantPrivilegesToAccountRole(
-			ctx,
-			&sdk.AccountRoleGrantPrivileges{
-				SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeInsert}, // Invalid privilege
-			},
-			&sdk.AccountRoleGrantOn{
-				SchemaObject: &sdk.GrantOnSchemaObject{
-					All: &sdk.GrantOnSchemaObjectIn{
-						PluralObjectType: sdk.PluralObjectTypePipes,
-						InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-					},
-				},
-			},
-			role.ID(),
-			&sdk.GrantPrivilegesToAccountRoleOptions{},
-		)
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(role.ID()).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeInsert})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypePipes).WithInSchema(testClientHelper().Ids.SchemaId())))))
 		require.Error(t, err)
 		joined, ok := err.(interface{ Unwrap() []error }) //nolint:all
 		require.True(t, ok)
 		require.Len(t, joined.Unwrap(), 2)
 
-		err = client.Grants.RevokePrivilegesFromAccountRole(
-			ctx,
-			&sdk.AccountRoleGrantPrivileges{
-				SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeInsert}, // Invalid privilege
-			},
-			&sdk.AccountRoleGrantOn{
-				SchemaObject: &sdk.GrantOnSchemaObject{
-					All: &sdk.GrantOnSchemaObjectIn{
-						PluralObjectType: sdk.PluralObjectTypePipes,
-						InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-					},
-				},
-			},
-			role.ID(),
-			&sdk.RevokePrivilegesFromAccountRoleOptions{},
-		)
+		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, sdk.NewRevokePrivilegesFromAccountRoleRequest(role.ID()).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeInsert})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypePipes).WithInSchema(testClientHelper().Ids.SchemaId())))))
 		require.Error(t, err)
 		joined, ok = err.(interface{ Unwrap() []error }) //nolint:all
 		require.True(t, ok)
@@ -582,27 +358,19 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 	ctx := testContext(t)
 
 	assertPrivilegeGrantedOnPipe := func(pipeId sdk.SchemaObjectIdentifier, privilege sdk.SchemaObjectPrivilege) {
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			On: &sdk.ShowGrantsOn{
-				Object: &sdk.Object{
-					ObjectType: sdk.ObjectTypePipe,
-					Name:       pipeId,
-				},
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+			ObjectType: sdk.ObjectTypePipe,
+			Name:       pipeId,
+		})))
 		require.NoError(t, err)
 		require.Contains(t, grantsToPrivileges(grants), privilege.String())
 	}
 
 	assertPrivilegeNotGrantedOnPipe := func(pipeId sdk.SchemaObjectIdentifier, privilege sdk.SchemaObjectPrivilege) {
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			On: &sdk.ShowGrantsOn{
-				Object: &sdk.Object{
-					ObjectType: sdk.ObjectTypePipe,
-					Name:       pipeId,
-				},
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+			ObjectType: sdk.ObjectTypePipe,
+			Name:       pipeId,
+		})))
 		require.NoError(t, err)
 		require.NotContains(t, grantsToPrivileges(grants), privilege.String())
 	}
@@ -611,21 +379,13 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
 		t.Cleanup(databaseRoleCleanup)
 
-		privileges := &sdk.DatabaseRoleGrantPrivileges{
-			DatabasePrivileges: []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeCreateSchema},
-		}
-		on := &sdk.DatabaseRoleGrantOn{
-			Database: sdk.Pointer(testClientHelper().Ids.DatabaseId()),
-		}
+		privileges := *sdk.NewDatabaseRoleGrantPrivilegesRequest().WithDatabasePrivileges([]sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeCreateSchema})
+		on := *sdk.NewDatabaseRoleGrantOnRequest().WithDatabase(testClientHelper().Ids.DatabaseId())
 
-		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
+		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, sdk.NewGrantPrivilegesToDatabaseRoleRequest(databaseRole.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
 
-		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRole.ID(),
-			},
-		})
+		returnedGrants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRole.ID())))
 		require.NoError(t, err)
 		// Expecting two grants because database role has usage on database by default
 		require.Len(t, returnedGrants, 2)
@@ -640,14 +400,10 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		assert.Equal(t, sdk.ObjectTypeDatabaseRole, createSchemaPrivilege.GrantedTo)
 
 		// now revoke and verify that the new grant is gone
-		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
+		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, sdk.NewRevokePrivilegesFromDatabaseRoleRequest(databaseRole.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
 
-		returnedGrants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRole.ID(),
-			},
-		})
+		returnedGrants, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRole.ID())))
 		require.NoError(t, err)
 		assert.Len(t, returnedGrants, 1)
 		assert.Equal(t, sdk.AccountObjectPrivilegeUsage.String(), returnedGrants[0].Privilege)
@@ -657,23 +413,13 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
 		t.Cleanup(databaseRoleCleanup)
 
-		privileges := &sdk.DatabaseRoleGrantPrivileges{
-			SchemaPrivileges: []sdk.SchemaPrivilege{sdk.SchemaPrivilegeCreateAlert},
-		}
-		on := &sdk.DatabaseRoleGrantOn{
-			Schema: &sdk.GrantOnSchema{
-				Schema: sdk.Pointer(testClientHelper().Ids.SchemaId()),
-			},
-		}
+		privileges := *sdk.NewDatabaseRoleGrantPrivilegesRequest().WithSchemaPrivileges([]sdk.SchemaPrivilege{sdk.SchemaPrivilegeCreateAlert})
+		on := *sdk.NewDatabaseRoleGrantOnRequest().WithSchema(*sdk.NewGrantOnSchemaRequest().WithSchema(testClientHelper().Ids.SchemaId()))
 
-		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
+		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, sdk.NewGrantPrivilegesToDatabaseRoleRequest(databaseRole.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
 
-		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRole.ID(),
-			},
-		})
+		returnedGrants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRole.ID())))
 		require.NoError(t, err)
 		// Expecting two grants because database role has usage on database by default
 		require.Len(t, returnedGrants, 2)
@@ -688,14 +434,10 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		assert.Equal(t, sdk.ObjectTypeDatabaseRole, createAlertPrivilege.GrantedTo)
 
 		// now revoke and verify that the new grant is gone
-		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
+		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, sdk.NewRevokePrivilegesFromDatabaseRoleRequest(databaseRole.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
 
-		returnedGrants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRole.ID(),
-			},
-		})
+		returnedGrants, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRole.ID())))
 		require.NoError(t, err)
 		assert.Len(t, returnedGrants, 1)
 		assert.Equal(t, sdk.AccountObjectPrivilegeUsage.String(), returnedGrants[0].Privilege)
@@ -707,26 +449,13 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 
 		table, _ := testClientHelper().Table.Create(t)
 
-		privileges := &sdk.DatabaseRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
-		}
-		on := &sdk.DatabaseRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				All: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypeTables,
-					InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-				},
-			},
-		}
+		privileges := *sdk.NewDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect})
+		on := *sdk.NewDatabaseRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeTables).WithInSchema(testClientHelper().Ids.SchemaId())))
 
-		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
+		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, sdk.NewGrantPrivilegesToDatabaseRoleRequest(databaseRole.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
 
-		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRole.ID(),
-			},
-		})
+		returnedGrants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRole.ID())))
 		require.NoError(t, err)
 		// Expecting two grants because database role has usage on database by default
 		require.LessOrEqual(t, 2, len(returnedGrants))
@@ -741,14 +470,10 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		assert.Equal(t, table.ID().FullyQualifiedName(), selectPrivilege.Name.FullyQualifiedName())
 
 		// now revoke and verify that the new grant is gone
-		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
+		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, sdk.NewRevokePrivilegesFromDatabaseRoleRequest(databaseRole.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
 
-		returnedGrants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRole.ID(),
-			},
-		})
+		returnedGrants, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRole.ID())))
 		require.NoError(t, err)
 		assert.Len(t, returnedGrants, 1)
 		assert.Equal(t, sdk.AccountObjectPrivilegeUsage.String(), returnedGrants[0].Privilege)
@@ -762,24 +487,14 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		cortex, cortexCleanup := testClientHelper().CortexSearchService.CreateCortexSearchService(t, table.ID())
 		t.Cleanup(cortexCleanup)
 
-		privileges := &sdk.DatabaseRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeUsage},
-		}
-		on := &sdk.DatabaseRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				SchemaObject: &sdk.Object{
-					ObjectType: sdk.ObjectTypeCortexSearchService,
-					Name:       cortex.ID(),
-				},
-			},
-		}
-		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
+		privileges := *sdk.NewDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeUsage})
+		on := *sdk.NewDatabaseRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithSchemaObject(sdk.Object{
+			ObjectType: sdk.ObjectTypeCortexSearchService,
+			Name:       cortex.ID(),
+		}))
+		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, sdk.NewGrantPrivilegesToDatabaseRoleRequest(databaseRole.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRole.ID(),
-			},
-		})
+		returnedGrants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRole.ID())))
 		require.NoError(t, err)
 		// Expecting two grants because database role has usage on database by default
 		require.LessOrEqual(t, 2, len(returnedGrants))
@@ -794,13 +509,9 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		assert.Equal(t, cortex.ID().FullyQualifiedName(), selectPrivilege.Name.FullyQualifiedName())
 
 		// now revoke and verify that the new grant is gone
-		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
+		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, sdk.NewRevokePrivilegesFromDatabaseRoleRequest(databaseRole.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		returnedGrants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRole.ID(),
-			},
-		})
+		returnedGrants, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRole.ID())))
 		require.NoError(t, err)
 		assert.Len(t, returnedGrants, 1)
 		assert.Equal(t, sdk.AccountObjectPrivilegeUsage.String(), returnedGrants[0].Privilege)
@@ -810,26 +521,12 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
 		t.Cleanup(databaseRoleCleanup)
 
-		privileges := &sdk.DatabaseRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
-		}
-		on := &sdk.DatabaseRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				Future: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypeExternalTables,
-					InDatabase:       sdk.Pointer(testClientHelper().Ids.DatabaseId()),
-				},
-			},
-		}
-		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
+		privileges := *sdk.NewDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect})
+		on := *sdk.NewDatabaseRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeExternalTables).WithInDatabase(testClientHelper().Ids.DatabaseId())))
+		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, sdk.NewGrantPrivilegesToDatabaseRoleRequest(databaseRole.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
 
-		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			Future: sdk.Bool(true),
-			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRole.ID(),
-			},
-		})
+		returnedGrants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithFuture(true).WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRole.ID())))
 		require.NoError(t, err)
 		require.Len(t, returnedGrants, 1)
 
@@ -838,15 +535,10 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		assert.Equal(t, sdk.ObjectTypeDatabaseRole, returnedGrants[0].GrantTo)
 
 		// now revoke and verify that the new grant is gone
-		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
+		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, sdk.NewRevokePrivilegesFromDatabaseRoleRequest(databaseRole.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
 
-		returnedGrants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			Future: sdk.Bool(true),
-			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRole.ID(),
-			},
-		})
+		returnedGrants, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithFuture(true).WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRole.ID())))
 		require.NoError(t, err)
 		assert.Empty(t, returnedGrants)
 	})
@@ -855,39 +547,20 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
 		t.Cleanup(databaseRoleCleanup)
 
-		privileges := &sdk.DatabaseRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeUsage},
-		}
-		on := &sdk.DatabaseRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				Future: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypeCortexSearchServices,
-					InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-				},
-			},
-		}
-		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
+		privileges := *sdk.NewDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeUsage})
+		on := *sdk.NewDatabaseRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeCortexSearchServices).WithInSchema(testClientHelper().Ids.SchemaId())))
+		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, sdk.NewGrantPrivilegesToDatabaseRoleRequest(databaseRole.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			Future: sdk.Bool(true),
-			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRole.ID(),
-			},
-		})
+		returnedGrants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithFuture(true).WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRole.ID())))
 		require.NoError(t, err)
 		assert.Len(t, returnedGrants, 1)
 		assert.Equal(t, sdk.SchemaObjectPrivilegeUsage.String(), returnedGrants[0].Privilege)
 		assert.Equal(t, sdk.ObjectTypeCortexSearchService, returnedGrants[0].GrantOn)
 
 		// now revoke and verify that the new grant is gone
-		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, on, databaseRole.ID(), nil)
+		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, sdk.NewRevokePrivilegesFromDatabaseRoleRequest(databaseRole.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
-		returnedGrants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			Future: sdk.Bool(true),
-			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRole.ID(),
-			},
-		})
+		returnedGrants, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithFuture(true).WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRole.ID())))
 		require.NoError(t, err)
 		assert.Empty(t, returnedGrants)
 	})
@@ -908,42 +581,12 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		role, roleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
 		t.Cleanup(roleCleanup)
 
-		err := client.Grants.GrantPrivilegesToDatabaseRole(
-			ctx,
-			&sdk.DatabaseRoleGrantPrivileges{
-				SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor},
-			},
-			&sdk.DatabaseRoleGrantOn{
-				SchemaObject: &sdk.GrantOnSchemaObject{
-					All: &sdk.GrantOnSchemaObjectIn{
-						PluralObjectType: sdk.PluralObjectTypePipes,
-						InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-					},
-				},
-			},
-			testClientHelper().Ids.NewDatabaseObjectIdentifier(role.Name),
-			&sdk.GrantPrivilegesToDatabaseRoleOptions{},
-		)
+		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, sdk.NewGrantPrivilegesToDatabaseRoleRequest(testClientHelper().Ids.NewDatabaseObjectIdentifier(role.Name)).WithPrivileges(*sdk.NewDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor})).WithOn(*sdk.NewDatabaseRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypePipes).WithInSchema(testClientHelper().Ids.SchemaId())))))
 		require.NoError(t, err)
 		assertPrivilegeGrantedOnPipe(pipe.ID(), sdk.SchemaObjectPrivilegeMonitor)
 		assertPrivilegeGrantedOnPipe(secondPipe.ID(), sdk.SchemaObjectPrivilegeMonitor)
 
-		err = client.Grants.RevokePrivilegesFromDatabaseRole(
-			ctx,
-			&sdk.DatabaseRoleGrantPrivileges{
-				SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor},
-			},
-			&sdk.DatabaseRoleGrantOn{
-				SchemaObject: &sdk.GrantOnSchemaObject{
-					All: &sdk.GrantOnSchemaObjectIn{
-						PluralObjectType: sdk.PluralObjectTypePipes,
-						InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-					},
-				},
-			},
-			testClientHelper().Ids.NewDatabaseObjectIdentifier(role.Name),
-			&sdk.RevokePrivilegesFromDatabaseRoleOptions{},
-		)
+		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, sdk.NewRevokePrivilegesFromDatabaseRoleRequest(testClientHelper().Ids.NewDatabaseObjectIdentifier(role.Name)).WithPrivileges(*sdk.NewDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor})).WithOn(*sdk.NewDatabaseRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypePipes).WithInSchema(testClientHelper().Ids.SchemaId())))))
 		require.NoError(t, err)
 		assertPrivilegeNotGrantedOnPipe(pipe.ID(), sdk.SchemaObjectPrivilegeMonitor)
 		assertPrivilegeNotGrantedOnPipe(secondPipe.ID(), sdk.SchemaObjectPrivilegeMonitor)
@@ -965,43 +608,13 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		role, roleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
 		t.Cleanup(roleCleanup)
 
-		err := client.Grants.GrantPrivilegesToDatabaseRole(
-			ctx,
-			&sdk.DatabaseRoleGrantPrivileges{
-				SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeInsert}, // Invalid privilege
-			},
-			&sdk.DatabaseRoleGrantOn{
-				SchemaObject: &sdk.GrantOnSchemaObject{
-					All: &sdk.GrantOnSchemaObjectIn{
-						PluralObjectType: sdk.PluralObjectTypePipes,
-						InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-					},
-				},
-			},
-			testClientHelper().Ids.NewDatabaseObjectIdentifier(role.Name),
-			&sdk.GrantPrivilegesToDatabaseRoleOptions{},
-		)
+		err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, sdk.NewGrantPrivilegesToDatabaseRoleRequest(testClientHelper().Ids.NewDatabaseObjectIdentifier(role.Name)).WithPrivileges(*sdk.NewDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeInsert})).WithOn(*sdk.NewDatabaseRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypePipes).WithInSchema(testClientHelper().Ids.SchemaId())))))
 		require.Error(t, err)
 		joined, ok := err.(interface{ Unwrap() []error }) //nolint:all
 		require.True(t, ok)
 		require.Len(t, joined.Unwrap(), 2)
 
-		err = client.Grants.RevokePrivilegesFromDatabaseRole(
-			ctx,
-			&sdk.DatabaseRoleGrantPrivileges{
-				SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeInsert}, // Invalid privilege
-			},
-			&sdk.DatabaseRoleGrantOn{
-				SchemaObject: &sdk.GrantOnSchemaObject{
-					All: &sdk.GrantOnSchemaObjectIn{
-						PluralObjectType: sdk.PluralObjectTypePipes,
-						InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-					},
-				},
-			},
-			testClientHelper().Ids.NewDatabaseObjectIdentifier(role.Name),
-			&sdk.RevokePrivilegesFromDatabaseRoleOptions{},
-		)
+		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, sdk.NewRevokePrivilegesFromDatabaseRoleRequest(testClientHelper().Ids.NewDatabaseObjectIdentifier(role.Name)).WithPrivileges(*sdk.NewDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeInsert})).WithOn(*sdk.NewDatabaseRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypePipes).WithInSchema(testClientHelper().Ids.SchemaId())))))
 		require.Error(t, err)
 		joined, ok = err.(interface{ Unwrap() []error }) //nolint:all
 		require.True(t, ok)
@@ -1029,15 +642,11 @@ func TestInt_GrantPrivilegeToShare(t *testing.T) {
 
 	grantShareOnDatabase := func(t *testing.T, share *sdk.Share) {
 		t.Helper()
-		err := client.Grants.GrantPrivilegeToShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{
-			Database: testClientHelper().Ids.DatabaseId(),
-		}, share.ID())
+		err := client.Grants.GrantPrivilegeToShare(ctx, sdk.NewGrantPrivilegeToShareRequest(share.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(testClientHelper().Ids.DatabaseId())))
 		require.NoError(t, err)
 
 		t.Cleanup(func() {
-			err := client.Grants.RevokePrivilegeFromShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{
-				Database: testClientHelper().Ids.DatabaseId(),
-			}, share.ID())
+			err := client.Grants.RevokePrivilegeFromShare(ctx, sdk.NewRevokePrivilegeFromShareRequest(share.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(testClientHelper().Ids.DatabaseId())))
 			assert.NoError(t, err)
 		})
 	}
@@ -1047,58 +656,32 @@ func TestInt_GrantPrivilegeToShare(t *testing.T) {
 		table, tableCleanup := testClientHelper().Table.Create(t)
 		t.Cleanup(tableCleanup)
 
-		err := client.Grants.GrantPrivilegeToShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, &sdk.ShareGrantOn{
-			Table: &sdk.OnTable{
-				AllInSchema: testClientHelper().Ids.SchemaId(),
-			},
-		}, shareTest.ID())
+		err := client.Grants.GrantPrivilegeToShare(ctx, sdk.NewGrantPrivilegeToShareRequest(shareTest.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}).WithOn(*sdk.NewShareGrantOnRequest().WithTable(*sdk.NewOnTableRequest().WithAllInSchema(testClientHelper().Ids.SchemaId()))))
 		require.NoError(t, err)
 
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			On: &sdk.ShowGrantsOn{
-				Object: &sdk.Object{
-					ObjectType: sdk.ObjectTypeTable,
-					Name:       table.ID(),
-				},
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+			ObjectType: sdk.ObjectTypeTable,
+			Name:       table.ID(),
+		})))
 		require.NoError(t, err)
 		assertGrant(t, grants, table.ID(), sdk.ObjectPrivilegeSelect, sdk.ObjectTypeTable, shareTest.ID(), shareTest.ID().Name())
 
-		_, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Share: &sdk.ShowGrantsToShare{
-					Name: shareTest.ID(),
-				},
-			},
-		})
+		_, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithShare(*sdk.NewShowGrantsToShareRequest().WithName(shareTest.ID()))))
 		require.NoError(t, err)
 
 		function := testClientHelper().Function.CreateSecure(t)
 
-		err = client.Grants.GrantPrivilegeToShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{
-			Function: function.ID(),
-		}, shareTest.ID())
+		err = client.Grants.GrantPrivilegeToShare(ctx, sdk.NewGrantPrivilegeToShareRequest(shareTest.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).WithOn(*sdk.NewShareGrantOnRequest().WithFunction(function.ID())))
 		require.NoError(t, err)
 
-		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			On: &sdk.ShowGrantsOn{
-				Object: &sdk.Object{
-					ObjectType: sdk.ObjectTypeFunction,
-					Name:       function.ID(),
-				},
-			},
-		})
+		grants, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+			ObjectType: sdk.ObjectTypeFunction,
+			Name:       function.ID(),
+		})))
 		require.NoError(t, err)
 		assertGrant(t, grants, function.ID(), sdk.ObjectPrivilegeUsage, sdk.ObjectTypeFunction, shareTest.ID(), shareTest.ID().Name())
 
-		_, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Share: &sdk.ShowGrantsToShare{
-					Name: shareTest.ID(),
-				},
-			},
-		})
+		_, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithShare(*sdk.NewShowGrantsToShareRequest().WithName(shareTest.ID()))))
 		require.NoError(t, err)
 
 		applicationPackage, cleanupAppPackage := testClientHelper().ApplicationPackage.CreateApplicationPackage(t)
@@ -1106,21 +689,10 @@ func TestInt_GrantPrivilegeToShare(t *testing.T) {
 		// TODO [SNOW-1284382]: alter the test when the syntax starts working
 		// 2024/03/29 17:04:20 [DEBUG] sql-conn-query: [query SHOW GRANTS TO SHARE "0a8DMkl3NOx7" IN APPLICATION PACKAGE "hziiAtqY" err 001003 (42000): SQL compilation error:
 		// syntax error line 1 at position 39 unexpected 'APPLICATION'. duration 445.248042ms args {}] (IYA62698)
-		_, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Share: &sdk.ShowGrantsToShare{
-					Name:                 shareTest.ID(),
-					InApplicationPackage: sdk.Pointer(applicationPackage.ID()),
-				},
-			},
-		})
+		_, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithShare(*sdk.NewShowGrantsToShareRequest().WithName(shareTest.ID()).WithInApplicationPackage(applicationPackage.ID()))))
 		require.Error(t, err)
 
-		err = client.Grants.RevokePrivilegeFromShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, &sdk.ShareGrantOn{
-			Table: &sdk.OnTable{
-				AllInSchema: testClientHelper().Ids.SchemaId(),
-			},
-		}, shareTest.ID())
+		err = client.Grants.RevokePrivilegeFromShare(ctx, sdk.NewRevokePrivilegeFromShareRequest(shareTest.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}).WithOn(*sdk.NewShareGrantOnRequest().WithTable(*sdk.NewOnTableRequest().WithAllInSchema(testClientHelper().Ids.SchemaId()))))
 		require.NoError(t, err)
 	})
 
@@ -1131,31 +703,17 @@ func TestInt_GrantPrivilegeToShare(t *testing.T) {
 		table, tableCleanup := testClientHelper().Table.Create(t)
 		t.Cleanup(tableCleanup)
 
-		err := client.Grants.GrantPrivilegeToShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, &sdk.ShareGrantOn{
-			Table: &sdk.OnTable{
-				AllInSchema: testClientHelper().Ids.SchemaId(),
-			},
-		}, shareTest.ID())
+		err := client.Grants.GrantPrivilegeToShare(ctx, sdk.NewGrantPrivilegeToShareRequest(shareTest.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}).WithOn(*sdk.NewShareGrantOnRequest().WithTable(*sdk.NewOnTableRequest().WithAllInSchema(testClientHelper().Ids.SchemaId()))))
 		require.NoError(t, err)
 
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			On: &sdk.ShowGrantsOn{
-				Object: &sdk.Object{
-					ObjectType: sdk.ObjectTypeTable,
-					Name:       table.ID(),
-				},
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+			ObjectType: sdk.ObjectTypeTable,
+			Name:       table.ID(),
+		})))
 		require.NoError(t, err)
 		assertGrant(t, grants, table.ID(), sdk.ObjectPrivilegeSelect, sdk.ObjectTypeTable, shareTest.ID(), shareTest.ID().Name())
 
-		_, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Share: &sdk.ShowGrantsToShare{
-					Name: shareTest.ID(),
-				},
-			},
-		})
+		_, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithShare(*sdk.NewShowGrantsToShareRequest().WithName(shareTest.ID()))))
 		require.NoError(t, err)
 	})
 }
@@ -1165,18 +723,14 @@ func TestInt_RevokePrivilegeFromShare(t *testing.T) {
 	ctx := testContext(t)
 	shareTest, shareCleanup := testClientHelper().Share.CreateShare(t)
 	t.Cleanup(shareCleanup)
-	err := client.Grants.GrantPrivilegeToShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{
-		Database: testClientHelper().Ids.DatabaseId(),
-	}, shareTest.ID())
+	err := client.Grants.GrantPrivilegeToShare(ctx, sdk.NewGrantPrivilegeToShareRequest(shareTest.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(testClientHelper().Ids.DatabaseId())))
 	require.NoError(t, err)
 	t.Run("without options", func(t *testing.T) {
-		err = client.Grants.RevokePrivilegeFromShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, nil, shareTest.ID())
+		err = client.Grants.RevokePrivilegeFromShare(ctx, sdk.NewRevokePrivilegeFromShareRequest(shareTest.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}))
 		require.Error(t, err)
 	})
 	t.Run("with options", func(t *testing.T) {
-		err = client.Grants.RevokePrivilegeFromShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{
-			Database: testClientHelper().Ids.DatabaseId(),
-		}, shareTest.ID())
+		err = client.Grants.RevokePrivilegeFromShare(ctx, sdk.NewRevokePrivilegeFromShareRequest(shareTest.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(testClientHelper().Ids.DatabaseId())))
 		require.NoError(t, err)
 	})
 }
@@ -1193,16 +747,12 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 	copyStatement := createPipeCopyStatement(t, table, stage)
 
-	checkOwnershipOnObjectToRole := func(t *testing.T, on sdk.OwnershipGrantOn, role sdk.AccountObjectIdentifier) {
+	checkOwnershipOnObjectToRole := func(t *testing.T, on sdk.OwnershipGrantOnRequest, role sdk.AccountObjectIdentifier) {
 		t.Helper()
 		if on.Object == nil {
 			t.Error("only on.Object check is supported")
 		}
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			On: &sdk.ShowGrantsOn{
-				Object: on.Object,
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(*on.Object)))
 		require.NoError(t, err)
 		_, err = collections.FindFirst(grants, func(grant sdk.Grant) bool {
 			return grant.Privilege == "OWNERSHIP" && grant.GranteeName.Name() == role.Name()
@@ -1210,63 +760,25 @@ func TestInt_GrantOwnership(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	grantOwnershipToRole := func(t *testing.T, roleName sdk.AccountObjectIdentifier, on sdk.OwnershipGrantOn, outboundOpts *sdk.OwnershipCurrentGrantsOutboundPrivileges) {
+	grantOwnershipToRole := func(t *testing.T, roleName sdk.AccountObjectIdentifier, on sdk.OwnershipGrantOnRequest, outboundOpts *sdk.OwnershipCurrentGrantsOutboundPrivileges) {
 		t.Helper()
 
-		var opts *sdk.GrantOwnershipOptions
+		request := sdk.NewGrantOwnershipRequest(on, *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(roleName))
 		if outboundOpts != nil {
-			opts = &sdk.GrantOwnershipOptions{
-				CurrentGrants: &sdk.OwnershipCurrentGrants{
-					OutboundPrivileges: *outboundOpts,
-				},
-			}
+			request.WithCurrentGrants(*sdk.NewOwnershipCurrentGrantsRequest(*outboundOpts))
 		}
 
-		err := client.Grants.GrantOwnership(
-			ctx,
-			on,
-			sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(roleName),
-			},
-			opts,
-		)
+		err := client.Grants.GrantOwnership(ctx, request)
 		require.NoError(t, err)
 	}
 
 	grantDatabaseAndSchemaUsage := func(t *testing.T, roleId sdk.AccountObjectIdentifier) {
 		t.Helper()
 
-		err := client.Grants.GrantPrivilegesToAccountRole(
-			ctx,
-			&sdk.AccountRoleGrantPrivileges{
-				AccountObjectPrivileges: []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage},
-			},
-			&sdk.AccountRoleGrantOn{
-				AccountObject: &sdk.GrantOnAccountObject{
-					Object: &sdk.Object{
-						ObjectType: sdk.ObjectTypeDatabase,
-						Name:       testClientHelper().Ids.DatabaseId(),
-					},
-				},
-			},
-			roleId,
-			new(sdk.GrantPrivilegesToAccountRoleOptions),
-		)
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(roleId).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithAccountObjectPrivileges([]sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithAccountObject(*sdk.NewGrantOnAccountObjectRequest().WithObject(sdk.Object{ObjectType: sdk.ObjectTypeDatabase, Name: testClientHelper().Ids.DatabaseId()}))))
 		require.NoError(t, err)
 
-		err = client.Grants.GrantPrivilegesToAccountRole(
-			ctx,
-			&sdk.AccountRoleGrantPrivileges{
-				SchemaPrivileges: []sdk.SchemaPrivilege{sdk.SchemaPrivilegeUsage, sdk.SchemaPrivilegeCreatePipe, sdk.SchemaPrivilegeCreateTask},
-			},
-			&sdk.AccountRoleGrantOn{
-				Schema: &sdk.GrantOnSchema{
-					Schema: sdk.Pointer(testClientHelper().Ids.SchemaId()),
-				},
-			},
-			roleId,
-			new(sdk.GrantPrivilegesToAccountRoleOptions),
-		)
+		err = client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(roleId).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaPrivileges([]sdk.SchemaPrivilege{sdk.SchemaPrivilegeUsage, sdk.SchemaPrivilegeCreatePipe, sdk.SchemaPrivilegeCreateTask})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithSchema(*sdk.NewGrantOnSchemaRequest().WithSchema(testClientHelper().Ids.SchemaId()))))
 		require.NoError(t, err)
 	}
 
@@ -1275,40 +787,10 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		grantDatabaseAndSchemaUsage(t, role.ID())
 
-		err := client.Grants.GrantPrivilegesToAccountRole(
-			ctx,
-			&sdk.AccountRoleGrantPrivileges{
-				SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect, sdk.SchemaObjectPrivilegeInsert},
-			},
-			&sdk.AccountRoleGrantOn{
-				SchemaObject: &sdk.GrantOnSchemaObject{
-					SchemaObject: &sdk.Object{
-						ObjectType: sdk.ObjectTypeTable,
-						Name:       table.ID(),
-					},
-				},
-			},
-			role.ID(),
-			new(sdk.GrantPrivilegesToAccountRoleOptions),
-		)
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(role.ID()).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect, sdk.SchemaObjectPrivilegeInsert})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithSchemaObject(sdk.Object{ObjectType: sdk.ObjectTypeTable, Name: table.ID()}))))
 		require.NoError(t, err)
 
-		err = client.Grants.GrantPrivilegesToAccountRole(
-			ctx,
-			&sdk.AccountRoleGrantPrivileges{
-				SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeRead},
-			},
-			&sdk.AccountRoleGrantOn{
-				SchemaObject: &sdk.GrantOnSchemaObject{
-					SchemaObject: &sdk.Object{
-						ObjectType: sdk.ObjectTypeStage,
-						Name:       stage.ID(),
-					},
-				},
-			},
-			role.ID(),
-			new(sdk.GrantPrivilegesToAccountRoleOptions),
-		)
+		err = client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(role.ID()).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeRead})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithSchemaObject(sdk.Object{ObjectType: sdk.ObjectTypeStage, Name: stage.ID()}))))
 		require.NoError(t, err)
 	}
 
@@ -1317,82 +799,40 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		grantDatabaseAndSchemaUsage(t, roleId)
 
-		err := client.Grants.GrantPrivilegesToAccountRole(
-			ctx,
-			&sdk.AccountRoleGrantPrivileges{
-				AccountObjectPrivileges: []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage},
-			},
-			&sdk.AccountRoleGrantOn{
-				AccountObject: &sdk.GrantOnAccountObject{
-					Object: &sdk.Object{
-						ObjectType: sdk.ObjectTypeWarehouse,
-						Name:       testClientHelper().Ids.WarehouseId(),
-					},
-				},
-			},
-			roleId,
-			new(sdk.GrantPrivilegesToAccountRoleOptions),
-		)
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(roleId).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithAccountObjectPrivileges([]sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithAccountObject(*sdk.NewGrantOnAccountObjectRequest().WithObject(sdk.Object{ObjectType: sdk.ObjectTypeWarehouse, Name: testClientHelper().Ids.WarehouseId()}))))
 		require.NoError(t, err)
 
-		err = client.Grants.GrantPrivilegesToAccountRole(
-			ctx,
-			&sdk.AccountRoleGrantPrivileges{
-				GlobalPrivileges: []sdk.GlobalPrivilege{sdk.GlobalPrivilegeExecuteTask},
-			},
-			&sdk.AccountRoleGrantOn{
-				Account: sdk.Bool(true),
-			},
-			roleId,
-			new(sdk.GrantPrivilegesToAccountRoleOptions),
-		)
+		err = client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(roleId).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithGlobalPrivileges([]sdk.GlobalPrivilege{sdk.GlobalPrivilegeExecuteTask})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithAccount(true)))
 		require.NoError(t, err)
 	}
 
 	makeAccountRoleOperableOnPipe := func(t *testing.T, grantingRole sdk.AccountObjectIdentifier, pipe *sdk.Pipe) {
 		t.Helper()
 
-		err := client.Grants.GrantPrivilegesToAccountRole(
-			ctx,
-			&sdk.AccountRoleGrantPrivileges{
-				SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeOperate, sdk.SchemaObjectPrivilegeMonitor},
-			},
-			&sdk.AccountRoleGrantOn{
-				SchemaObject: &sdk.GrantOnSchemaObject{
-					SchemaObject: &sdk.Object{
-						ObjectType: sdk.ObjectTypePipe,
-						Name:       pipe.ID(),
-					},
-				},
-			},
-			grantingRole,
-			new(sdk.GrantPrivilegesToAccountRoleOptions),
-		)
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(grantingRole).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeOperate, sdk.SchemaObjectPrivilegeMonitor})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithSchemaObject(sdk.Object{ObjectType: sdk.ObjectTypePipe, Name: pipe.ID()}))))
 		require.NoError(t, err)
 	}
 
-	ownershipGrantOnObject := func(objectType sdk.ObjectType, identifier sdk.ObjectIdentifier) sdk.OwnershipGrantOn {
-		return sdk.OwnershipGrantOn{
-			Object: &sdk.Object{
-				ObjectType: objectType,
-				Name:       identifier,
-			},
-		}
+	ownershipGrantOnObject := func(objectType sdk.ObjectType, identifier sdk.ObjectIdentifier) sdk.OwnershipGrantOnRequest {
+		return *sdk.NewOwnershipGrantOnRequest().WithObject(sdk.Object{
+			ObjectType: objectType,
+			Name:       identifier,
+		})
 	}
 
-	ownershipGrantOnPipe := func(pipe *sdk.Pipe) sdk.OwnershipGrantOn {
+	ownershipGrantOnPipe := func(pipe *sdk.Pipe) sdk.OwnershipGrantOnRequest {
 		return ownershipGrantOnObject(sdk.ObjectTypePipe, pipe.ID())
 	}
 
-	ownershipGrantOnCortexSearchService := func(cortexSearchService *sdk.CortexSearchService) sdk.OwnershipGrantOn {
+	ownershipGrantOnCortexSearchService := func(cortexSearchService *sdk.CortexSearchService) sdk.OwnershipGrantOnRequest {
 		return ownershipGrantOnObject(sdk.ObjectTypeCortexSearchService, cortexSearchService.ID())
 	}
 
-	ownershipGrantOnTask := func(task *sdk.Task) sdk.OwnershipGrantOn {
+	ownershipGrantOnTask := func(task *sdk.Task) sdk.OwnershipGrantOnRequest {
 		return ownershipGrantOnObject(sdk.ObjectTypeTask, task.ID())
 	}
 
-	ownershipGrantOnSemanticView := func(semanticView *sdk.SemanticView) sdk.OwnershipGrantOn {
+	ownershipGrantOnSemanticView := func(semanticView *sdk.SemanticView) sdk.OwnershipGrantOnRequest {
 		return ownershipGrantOnObject(sdk.ObjectTypeSemanticView, semanticView.ID())
 	}
 
@@ -1403,24 +843,16 @@ func TestInt_GrantOwnership(t *testing.T) {
 		databaseRoleId := testClientHelper().Ids.NewDatabaseObjectIdentifier(databaseRole.Name)
 		table, _ := testClientHelper().Table.Create(t)
 
-		on := sdk.OwnershipGrantOn{
-			Object: &sdk.Object{
-				ObjectType: sdk.ObjectTypeTable,
-				Name:       table.ID(),
-			},
-		}
-		to := sdk.OwnershipGrantTo{
-			DatabaseRoleName: &databaseRoleId,
-		}
+		on := *sdk.NewOwnershipGrantOnRequest().WithObject(sdk.Object{
+			ObjectType: sdk.ObjectTypeTable,
+			Name:       table.ID(),
+		})
+		to := *sdk.NewOwnershipGrantToRequest().WithDatabaseRoleName(databaseRoleId)
 
-		err := client.Grants.GrantOwnership(ctx, on, to, nil)
+		err := client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(on, to))
 		require.NoError(t, err)
 
-		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRoleId,
-			},
-		})
+		returnedGrants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRoleId)))
 		require.NoError(t, err)
 		// Expecting two grants because database role has usage on database by default
 		require.Len(t, returnedGrants, 2)
@@ -1441,25 +873,13 @@ func TestInt_GrantOwnership(t *testing.T) {
 		t.Cleanup(roleCleanup)
 		roleId := role.ID()
 
-		on := sdk.OwnershipGrantOn{
-			Future: &sdk.GrantOnSchemaObjectIn{
-				PluralObjectType: sdk.PluralObjectTypeExternalTables,
-				InDatabase:       sdk.Pointer(testClientHelper().Ids.DatabaseId()),
-			},
-		}
-		to := sdk.OwnershipGrantTo{
-			AccountRoleName: &roleId,
-		}
+		on := *sdk.NewOwnershipGrantOnRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeExternalTables).WithInDatabase(testClientHelper().Ids.DatabaseId()))
+		to := *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(roleId)
 
-		err := client.Grants.GrantOwnership(ctx, on, to, nil)
+		err := client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(on, to))
 		require.NoError(t, err)
 
-		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			Future: sdk.Bool(true),
-			To: &sdk.ShowGrantsTo{
-				Role: roleId,
-			},
-		})
+		returnedGrants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithFuture(true).WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleId)))
 		require.NoError(t, err)
 		require.Len(t, returnedGrants, 1)
 
@@ -1477,27 +897,17 @@ func TestInt_GrantOwnership(t *testing.T) {
 		t.Cleanup(roleCleanup)
 		roleId := role.ID()
 
-		on := sdk.OwnershipGrantOn{
-			Object: &sdk.Object{
-				ObjectType: sdk.ObjectTypeWarehouse,
-				Name:       testClientHelper().Ids.WarehouseId(),
-			},
-		}
-		to := sdk.OwnershipGrantTo{
-			AccountRoleName: &roleId,
-		}
-		currentGrants := sdk.OwnershipCurrentGrants{
-			OutboundPrivileges: sdk.Copy,
-		}
+		on := *sdk.NewOwnershipGrantOnRequest().WithObject(sdk.Object{
+			ObjectType: sdk.ObjectTypeWarehouse,
+			Name:       testClientHelper().Ids.WarehouseId(),
+		})
+		to := *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(roleId)
+		currentGrants := *sdk.NewOwnershipCurrentGrantsRequest(sdk.Copy)
 
-		err := client.Grants.GrantOwnership(ctx, on, to, &sdk.GrantOwnershipOptions{CurrentGrants: &currentGrants})
+		err := client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(on, to).WithCurrentGrants(currentGrants))
 		require.NoError(t, err)
 
-		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: roleId,
-			},
-		})
+		returnedGrants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleId)))
 		require.NoError(t, err)
 		require.Len(t, returnedGrants, 1)
 
@@ -1518,14 +928,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 		role, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
 
-		err = client.Grants.GrantOwnership(
-			ctx,
-			ownershipGrantOnPipe(pipe),
-			sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(role.ID()),
-			},
-			new(sdk.GrantOwnershipOptions),
-		)
+		err = client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(ownershipGrantOnPipe(pipe), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())))
 		require.NoError(t, err)
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnPipe(pipe), role.ID())
 
@@ -1548,14 +951,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 		cortex, cortexCleanup := testClientHelper().CortexSearchService.CreateCortexSearchService(t, table.ID())
 		t.Cleanup(cortexCleanup)
 
-		err := client.Grants.GrantOwnership(
-			ctx,
-			ownershipGrantOnObject(sdk.ObjectTypeCortexSearchService, cortex.ID()),
-			sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(role.ID()),
-			},
-			new(sdk.GrantOwnershipOptions),
-		)
+		err := client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(ownershipGrantOnObject(sdk.ObjectTypeCortexSearchService, cortex.ID()), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())))
 		require.NoError(t, err)
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnCortexSearchService(cortex), role.ID())
 
@@ -1592,14 +988,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 		semanticView, semanticViewCleanup := testClientHelper().SemanticView.CreateWithRequest(t, req)
 		t.Cleanup(semanticViewCleanup)
 
-		err := client.Grants.GrantOwnership(
-			ctx,
-			ownershipGrantOnObject(sdk.ObjectTypeSemanticView, semanticView.ID()),
-			sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(role.ID()),
-			},
-			new(sdk.GrantOwnershipOptions),
-		)
+		err := client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(ownershipGrantOnObject(sdk.ObjectTypeSemanticView, semanticView.ID()), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())))
 		require.NoError(t, err)
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnSemanticView(semanticView), role.ID())
 
@@ -1614,25 +1003,13 @@ func TestInt_GrantOwnership(t *testing.T) {
 		t.Cleanup(roleCleanup)
 		roleId := role.ID()
 
-		on := sdk.OwnershipGrantOn{
-			Future: &sdk.GrantOnSchemaObjectIn{
-				PluralObjectType: sdk.PluralObjectTypeSemanticViews,
-				InDatabase:       sdk.Pointer(testClientHelper().Ids.DatabaseId()),
-			},
-		}
-		to := sdk.OwnershipGrantTo{
-			AccountRoleName: &roleId,
-		}
+		on := *sdk.NewOwnershipGrantOnRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeSemanticViews).WithInDatabase(testClientHelper().Ids.DatabaseId()))
+		to := *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(roleId)
 
-		err := client.Grants.GrantOwnership(ctx, on, to, nil)
+		err := client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(on, to))
 		require.NoError(t, err)
 
-		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			Future: sdk.Bool(true),
-			To: &sdk.ShowGrantsTo{
-				Role: roleId,
-			},
-		})
+		returnedGrants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithFuture(true).WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleId)))
 		require.NoError(t, err)
 		require.Len(t, returnedGrants, 1)
 
@@ -1652,21 +1029,10 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		on := ownershipGrantOnObject(sdk.ObjectTypeAgent, agentId)
 
-		err := client.Grants.GrantOwnership(
-			ctx,
-			on,
-			sdk.OwnershipGrantTo{
-				AccountRoleName: new(role.ID()),
-			},
-			new(sdk.GrantOwnershipOptions),
-		)
+		err := client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(on, *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())))
 		require.NoError(t, err)
 
-		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			On: &sdk.ShowGrantsOn{
-				Object: on.Object,
-			},
-		})
+		returnedGrants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(*on.Object)))
 		require.NoError(t, err)
 
 		ownership, err := collections.FindFirst(returnedGrants, func(g sdk.Grant) bool { return g.Privilege == sdk.SchemaObjectOwnership.String() })
@@ -1689,21 +1055,10 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		on := ownershipGrantOnObject(sdk.ObjectTypeInteractiveTable, interactiveTable.ID())
 
-		err := client.Grants.GrantOwnership(
-			ctx,
-			on,
-			sdk.OwnershipGrantTo{
-				AccountRoleName: new(role.ID()),
-			},
-			new(sdk.GrantOwnershipOptions),
-		)
+		err := client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(on, *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())))
 		require.NoError(t, err)
 
-		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			On: &sdk.ShowGrantsOn{
-				Object: on.Object,
-			},
-		})
+		returnedGrants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(*on.Object)))
 		require.NoError(t, err)
 
 		ownership, err := collections.FindFirst(returnedGrants, func(g sdk.Grant) bool { return g.Privilege == sdk.SchemaObjectOwnership.String() })
@@ -1722,25 +1077,13 @@ func TestInt_GrantOwnership(t *testing.T) {
 		t.Cleanup(roleCleanup)
 		roleId := role.ID()
 
-		on := sdk.OwnershipGrantOn{
-			Future: &sdk.GrantOnSchemaObjectIn{
-				PluralObjectType: sdk.PluralObjectTypeAgents,
-				InDatabase:       new(testClientHelper().Ids.DatabaseId()),
-			},
-		}
-		to := sdk.OwnershipGrantTo{
-			AccountRoleName: &roleId,
-		}
+		on := *sdk.NewOwnershipGrantOnRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeAgents).WithInDatabase(testClientHelper().Ids.DatabaseId()))
+		to := *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(roleId)
 
-		err := client.Grants.GrantOwnership(ctx, on, to, nil)
+		err := client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(on, to))
 		require.NoError(t, err)
 
-		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			Future: new(true),
-			To: &sdk.ShowGrantsTo{
-				Role: roleId,
-			},
-		})
+		returnedGrants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithFuture(true).WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleId)))
 		require.NoError(t, err)
 		require.Len(t, returnedGrants, 1)
 
@@ -1786,18 +1129,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, sdk.RunningPipeExecutionState, pipeExecutionState)
 
-		err = client.Grants.GrantOwnership(
-			ctx,
-			ownershipGrantOnPipe(pipe),
-			sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(role.ID()),
-			},
-			&sdk.GrantOwnershipOptions{
-				CurrentGrants: &sdk.OwnershipCurrentGrants{
-					OutboundPrivileges: sdk.Revoke, // To revoke MONITOR privilege from ACCOUNTADMIN automatically
-				},
-			},
-		)
+		err = client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(ownershipGrantOnPipe(pipe), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())).WithCurrentGrants(*sdk.NewOwnershipCurrentGrantsRequest(sdk.Revoke)))
 		require.NoError(t, err)
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnPipe(pipe), role.ID())
 
@@ -1844,18 +1176,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, sdk.RunningPipeExecutionState, pipeExecutionState)
 
-		err = client.Grants.GrantOwnership(
-			ctx,
-			ownershipGrantOnPipe(pipe),
-			sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(role.ID()),
-			},
-			&sdk.GrantOwnershipOptions{
-				CurrentGrants: &sdk.OwnershipCurrentGrants{
-					OutboundPrivileges: sdk.Copy, // With copy, we'll be able to resume the pipe after ownership transfer
-				},
-			},
-		)
+		err = client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(ownershipGrantOnPipe(pipe), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())).WithCurrentGrants(*sdk.NewOwnershipCurrentGrantsRequest(sdk.Copy)))
 		require.NoError(t, err)
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnPipe(pipe), role.ID())
 
@@ -1897,14 +1218,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		usePreviousRole()
 
-		err = client.Grants.GrantOwnership(
-			ctx,
-			ownershipGrantOnPipe(pipe),
-			sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(role.ID()),
-			},
-			new(sdk.GrantOwnershipOptions),
-		)
+		err = client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(ownershipGrantOnPipe(pipe), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())))
 		require.ErrorContains(t, err, fmt.Sprintf("Pipe %s not in paused state. To pause pipe run ALTER PIPE %s SET PIPE_EXECUTION_PAUSED=true", pipe.Name, pipe.Name))
 	})
 
@@ -1939,14 +1253,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		usePreviousRole()
 
-		err = client.Grants.GrantOwnership(
-			ctx,
-			ownershipGrantOnPipe(pipe),
-			sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(role.ID()),
-			},
-			new(sdk.GrantOwnershipOptions),
-		)
+		err = client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(ownershipGrantOnPipe(pipe), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())))
 		require.NoError(t, err)
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnPipe(pipe), role.ID())
 	})
@@ -1969,20 +1276,8 @@ func TestInt_GrantOwnership(t *testing.T) {
 		role, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
 
-		onAllPipesInSchema := sdk.OwnershipGrantOn{
-			All: &sdk.GrantOnSchemaObjectIn{
-				PluralObjectType: sdk.PluralObjectTypePipes,
-				InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-			},
-		}
-		err = client.Grants.GrantOwnership(
-			ctx,
-			onAllPipesInSchema,
-			sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(role.ID()),
-			},
-			new(sdk.GrantOwnershipOptions),
-		)
+		onAllPipesInSchema := *sdk.NewOwnershipGrantOnRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypePipes).WithInSchema(testClientHelper().Ids.SchemaId()))
+		err = client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(onAllPipesInSchema, *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())))
 		require.NoError(t, err)
 
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnPipe(pipe), role.ID())
@@ -2016,14 +1311,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, sdk.TaskStateStarted, task.State)
 
-		err = client.Grants.GrantOwnership(
-			ctx,
-			ownershipGrantOnTask(task),
-			sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(role.ID()),
-			},
-			new(sdk.GrantOwnershipOptions),
-		)
+		err = client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(ownershipGrantOnTask(task), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())))
 		require.NoError(t, err)
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnTask(task), role.ID())
 
@@ -2064,14 +1352,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, sdk.TaskStateStarted, task.State)
 
-		err = client.Grants.GrantOwnership(
-			ctx,
-			ownershipGrantOnTask(task),
-			sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(role.ID()),
-			},
-			new(sdk.GrantOwnershipOptions),
-		)
+		err = client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(ownershipGrantOnTask(task), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())))
 		require.ErrorContains(t, err, "Unable to update graph with root task") // cannot suspend the root task without the ownership or operate privileges
 	})
 
@@ -2097,22 +1378,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 		task, taskCleanup := testClientHelper().Task.CreateWithSchedule(t)
 		t.Cleanup(taskCleanup)
 
-		err := client.Grants.GrantPrivilegesToAccountRole(
-			ctx,
-			&sdk.AccountRoleGrantPrivileges{
-				SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeOperate},
-			},
-			&sdk.AccountRoleGrantOn{
-				SchemaObject: &sdk.GrantOnSchemaObject{
-					SchemaObject: &sdk.Object{
-						ObjectType: sdk.ObjectTypeTask,
-						Name:       task.ID(),
-					},
-				},
-			},
-			currentRole,
-			new(sdk.GrantPrivilegesToAccountRoleOptions),
-		)
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(currentRole).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeOperate})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithSchemaObject(sdk.Object{ObjectType: sdk.ObjectTypeTask, Name: task.ID()}))))
 		require.NoError(t, err)
 
 		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithResume(true))
@@ -2129,18 +1395,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, sdk.TaskStateStarted, currentTask.State)
 
-		err = client.Grants.GrantOwnership(
-			ctx,
-			ownershipGrantOnTask(task),
-			sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(role.ID()),
-			},
-			&sdk.GrantOwnershipOptions{
-				CurrentGrants: &sdk.OwnershipCurrentGrants{
-					OutboundPrivileges: sdk.Copy,
-				},
-			},
-		)
+		err = client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(ownershipGrantOnTask(task), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())).WithCurrentGrants(*sdk.NewOwnershipCurrentGrantsRequest(sdk.Copy)))
 		require.NoError(t, err)
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnTask(task), role.ID())
 
@@ -2173,20 +1428,8 @@ func TestInt_GrantOwnership(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, sdk.TaskStateStarted, currentSecondTask.State)
 
-		onAllTasks := sdk.OwnershipGrantOn{
-			All: &sdk.GrantOnSchemaObjectIn{
-				PluralObjectType: sdk.PluralObjectTypeTasks,
-				InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-			},
-		}
-		err = client.Grants.GrantOwnership(
-			ctx,
-			onAllTasks,
-			sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(role.ID()),
-			},
-			new(sdk.GrantOwnershipOptions),
-		)
+		onAllTasks := *sdk.NewOwnershipGrantOnRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeTasks).WithInSchema(testClientHelper().Ids.SchemaId()))
+		err = client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(onAllTasks, *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())))
 		require.NoError(t, err)
 
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnTask(task), role.ID())
@@ -2227,40 +1470,10 @@ func TestInt_GrantOwnership(t *testing.T) {
 		secondTask, secondTaskCleanup := testClientHelper().Task.CreateWithAfter(t, task.ID())
 		t.Cleanup(secondTaskCleanup)
 
-		err := client.Grants.GrantPrivilegesToAccountRole(
-			ctx,
-			&sdk.AccountRoleGrantPrivileges{
-				SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeOperate},
-			},
-			&sdk.AccountRoleGrantOn{
-				SchemaObject: &sdk.GrantOnSchemaObject{
-					SchemaObject: &sdk.Object{
-						ObjectType: sdk.ObjectTypeTask,
-						Name:       task.ID(),
-					},
-				},
-			},
-			currentRole,
-			new(sdk.GrantPrivilegesToAccountRoleOptions),
-		)
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(currentRole).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeOperate})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithSchemaObject(sdk.Object{ObjectType: sdk.ObjectTypeTask, Name: task.ID()}))))
 		require.NoError(t, err)
 
-		err = client.Grants.GrantPrivilegesToAccountRole(
-			ctx,
-			&sdk.AccountRoleGrantPrivileges{
-				SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeOperate},
-			},
-			&sdk.AccountRoleGrantOn{
-				SchemaObject: &sdk.GrantOnSchemaObject{
-					SchemaObject: &sdk.Object{
-						ObjectType: sdk.ObjectTypeTask,
-						Name:       secondTask.ID(),
-					},
-				},
-			},
-			currentRole,
-			new(sdk.GrantPrivilegesToAccountRoleOptions),
-		)
+		err = client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(currentRole).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeOperate})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithSchemaObject(sdk.Object{ObjectType: sdk.ObjectTypeTask, Name: secondTask.ID()}))))
 		require.NoError(t, err)
 
 		usePreviousRole()
@@ -2287,24 +1500,8 @@ func TestInt_GrantOwnership(t *testing.T) {
 		require.Equal(t, sdk.TaskStateStarted, currentSecondTask.State)
 		usePreviousRole()
 
-		onAllTasks := sdk.OwnershipGrantOn{
-			All: &sdk.GrantOnSchemaObjectIn{
-				PluralObjectType: sdk.PluralObjectTypeTasks,
-				InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-			},
-		}
-		err = client.Grants.GrantOwnership(
-			ctx,
-			onAllTasks,
-			sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(role.ID()),
-			},
-			&sdk.GrantOwnershipOptions{
-				CurrentGrants: &sdk.OwnershipCurrentGrants{
-					OutboundPrivileges: sdk.Copy,
-				},
-			},
-		)
+		onAllTasks := *sdk.NewOwnershipGrantOnRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeTasks).WithInSchema(testClientHelper().Ids.SchemaId()))
+		err = client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(onAllTasks, *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())).WithCurrentGrants(*sdk.NewOwnershipCurrentGrantsRequest(sdk.Copy)))
 		require.NoError(t, err)
 
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnTask(task), role.ID())
@@ -2337,9 +1534,7 @@ func TestInt_RevokeOwnership(t *testing.T) {
 	}
 
 	t.Run("validation: revoke on non-future is rejected", func(t *testing.T) {
-		err := client.Grants.RevokeOwnership(ctx, sdk.RevokeOwnershipGrantOn{}, sdk.OwnershipGrantTo{
-			AccountRoleName: sdk.Pointer(testClientHelper().Ids.RandomAccountObjectIdentifier()),
-		}, new(sdk.RevokeOwnershipOptions))
+		err := client.Grants.RevokeOwnership(ctx, sdk.NewRevokeOwnershipRequest(*sdk.NewRevokeOwnershipGrantOnRequest(), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(testClientHelper().Ids.RandomAccountObjectIdentifier())))
 		require.Error(t, err)
 	})
 
@@ -2348,12 +1543,9 @@ func TestInt_RevokeOwnership(t *testing.T) {
 		t.Cleanup(roleCleanup)
 		roleId := role.ID()
 
-		futureExternalTablesInDatabase := &sdk.GrantOnSchemaObjectIn{
-			PluralObjectType: sdk.PluralObjectTypeExternalTables,
-			InDatabase:       sdk.Pointer(testClientHelper().Ids.DatabaseId()),
-		}
+		futureExternalTablesInDatabase := *sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeExternalTables).WithInDatabase(testClientHelper().Ids.DatabaseId())
 
-		err := client.Grants.GrantOwnership(ctx, sdk.OwnershipGrantOn{Future: futureExternalTablesInDatabase}, sdk.OwnershipGrantTo{AccountRoleName: &roleId}, nil)
+		err := client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(*sdk.NewOwnershipGrantOnRequest().WithFuture(futureExternalTablesInDatabase), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(roleId)))
 		require.NoError(t, err)
 
 		grants, err := testClientHelper().Grant.ShowFutureGrantsInDatabase(t, testClientHelper().Ids.DatabaseId())
@@ -2362,12 +1554,7 @@ func TestInt_RevokeOwnership(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, sdk.ObjectTypeExternalTable, ownershipGrant.GrantOn)
 
-		err = client.Grants.RevokeOwnership(
-			ctx,
-			sdk.RevokeOwnershipGrantOn{Future: futureExternalTablesInDatabase},
-			sdk.OwnershipGrantTo{AccountRoleName: &roleId},
-			new(sdk.RevokeOwnershipOptions),
-		)
+		err = client.Grants.RevokeOwnership(ctx, sdk.NewRevokeOwnershipRequest(*sdk.NewRevokeOwnershipGrantOnRequest().WithFuture(futureExternalTablesInDatabase), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(roleId)))
 		require.NoError(t, err)
 
 		grants, err = testClientHelper().Grant.ShowFutureGrantsInDatabase(t, testClientHelper().Ids.DatabaseId())
@@ -2381,12 +1568,9 @@ func TestInt_RevokeOwnership(t *testing.T) {
 		t.Cleanup(roleCleanup)
 		roleId := role.ID()
 
-		futureExternalTablesInSchema := &sdk.GrantOnSchemaObjectIn{
-			PluralObjectType: sdk.PluralObjectTypeExternalTables,
-			InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-		}
+		futureExternalTablesInSchema := *sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeExternalTables).WithInSchema(testClientHelper().Ids.SchemaId())
 
-		err := client.Grants.GrantOwnership(ctx, sdk.OwnershipGrantOn{Future: futureExternalTablesInSchema}, sdk.OwnershipGrantTo{AccountRoleName: &roleId}, nil)
+		err := client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(*sdk.NewOwnershipGrantOnRequest().WithFuture(futureExternalTablesInSchema), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(roleId)))
 		require.NoError(t, err)
 
 		grants, err := testClientHelper().Grant.ShowFutureGrantsInSchema(t, testClientHelper().Ids.SchemaId())
@@ -2394,12 +1578,7 @@ func TestInt_RevokeOwnership(t *testing.T) {
 		_, err = findFutureOwnershipGrant(t, grants, roleId)
 		require.NoError(t, err)
 
-		err = client.Grants.RevokeOwnership(
-			ctx,
-			sdk.RevokeOwnershipGrantOn{Future: futureExternalTablesInSchema},
-			sdk.OwnershipGrantTo{AccountRoleName: &roleId},
-			&sdk.RevokeOwnershipOptions{Cascade: sdk.Bool(true)},
-		)
+		err = client.Grants.RevokeOwnership(ctx, sdk.NewRevokeOwnershipRequest(*sdk.NewRevokeOwnershipGrantOnRequest().WithFuture(futureExternalTablesInSchema), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(roleId)).WithCascade(true))
 		require.NoError(t, err)
 
 		grants, err = testClientHelper().Grant.ShowFutureGrantsInSchema(t, testClientHelper().Ids.SchemaId())
@@ -2413,12 +1592,9 @@ func TestInt_RevokeOwnership(t *testing.T) {
 		t.Cleanup(databaseRoleCleanup)
 		databaseRoleId := testClientHelper().Ids.NewDatabaseObjectIdentifier(databaseRole.Name)
 
-		futureExternalTablesInDatabase := &sdk.GrantOnSchemaObjectIn{
-			PluralObjectType: sdk.PluralObjectTypeExternalTables,
-			InDatabase:       sdk.Pointer(testClientHelper().Ids.DatabaseId()),
-		}
+		futureExternalTablesInDatabase := *sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeExternalTables).WithInDatabase(testClientHelper().Ids.DatabaseId())
 
-		err := client.Grants.GrantOwnership(ctx, sdk.OwnershipGrantOn{Future: futureExternalTablesInDatabase}, sdk.OwnershipGrantTo{DatabaseRoleName: &databaseRoleId}, nil)
+		err := client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(*sdk.NewOwnershipGrantOnRequest().WithFuture(futureExternalTablesInDatabase), *sdk.NewOwnershipGrantToRequest().WithDatabaseRoleName(databaseRoleId)))
 		require.NoError(t, err)
 
 		grants, err := testClientHelper().Grant.ShowFutureGrantsInDatabase(t, testClientHelper().Ids.DatabaseId())
@@ -2427,12 +1603,7 @@ func TestInt_RevokeOwnership(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, sdk.ObjectTypeExternalTable, ownershipGrant.GrantOn)
 
-		err = client.Grants.RevokeOwnership(
-			ctx,
-			sdk.RevokeOwnershipGrantOn{Future: futureExternalTablesInDatabase},
-			sdk.OwnershipGrantTo{DatabaseRoleName: &databaseRoleId},
-			&sdk.RevokeOwnershipOptions{Restrict: sdk.Bool(true)},
-		)
+		err = client.Grants.RevokeOwnership(ctx, sdk.NewRevokeOwnershipRequest(*sdk.NewRevokeOwnershipGrantOnRequest().WithFuture(futureExternalTablesInDatabase), *sdk.NewOwnershipGrantToRequest().WithDatabaseRoleName(databaseRoleId)).WithRestrict(true))
 		require.NoError(t, err)
 
 		grants, err = testClientHelper().Grant.ShowFutureGrantsInDatabase(t, testClientHelper().Ids.DatabaseId())
@@ -2449,14 +1620,10 @@ func TestInt_ShowGrants(t *testing.T) {
 	shareTest, shareCleanup := testClientHelper().Share.CreateShare(t)
 	t.Cleanup(shareCleanup)
 
-	err := client.Grants.GrantPrivilegeToShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{
-		Database: testClientHelper().Ids.DatabaseId(),
-	}, shareTest.ID())
+	err := client.Grants.GrantPrivilegeToShare(ctx, sdk.NewGrantPrivilegeToShareRequest(shareTest.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(testClientHelper().Ids.DatabaseId())))
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		err = client.Grants.RevokePrivilegeFromShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{
-			Database: testClientHelper().Ids.DatabaseId(),
-		}, shareTest.ID())
+		err = client.Grants.RevokePrivilegeFromShare(ctx, sdk.NewRevokePrivilegeFromShareRequest(shareTest.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(testClientHelper().Ids.DatabaseId())))
 		require.NoError(t, err)
 	})
 
@@ -2466,14 +1633,10 @@ func TestInt_ShowGrants(t *testing.T) {
 	})
 
 	t.Run("with options", func(t *testing.T) {
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			On: &sdk.ShowGrantsOn{
-				Object: &sdk.Object{
-					ObjectType: sdk.ObjectTypeDatabase,
-					Name:       testClientHelper().Ids.DatabaseId(),
-				},
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+			ObjectType: sdk.ObjectTypeDatabase,
+			Name:       testClientHelper().Ids.DatabaseId(),
+		})))
 		require.NoError(t, err)
 		assert.LessOrEqual(t, 2, len(grants))
 	})
@@ -2487,25 +1650,15 @@ func TestInt_ShowGrants(t *testing.T) {
 		role, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
 
-		privileges := &sdk.AccountRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
-		}
-		on := &sdk.AccountRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				SchemaObject: &sdk.Object{
-					ObjectType: sdk.ObjectTypeTable,
-					Name:       table.ID(),
-				},
-			},
-		}
-		err = client.Grants.GrantPrivilegesToAccountRole(ctx, privileges, on, role.ID(), nil)
+		privileges := *sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect})
+		on := *sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithSchemaObject(sdk.Object{
+			ObjectType: sdk.ObjectTypeTable,
+			Name:       table.ID(),
+		}))
+		err = client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(role.ID()).WithPrivileges(privileges).WithOn(on))
 		require.NoError(t, err)
 
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: role.ID(),
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(role.ID())))
 		require.NoError(t, err)
 		assert.Equal(t, table.ID().FullyQualifiedName(), grants[0].Name.FullyQualifiedName())
 	})
@@ -2516,11 +1669,7 @@ func TestInt_ShowGrants(t *testing.T) {
 
 		testClientHelper().Grant.GrantDatabaseRoleToApplication(t, role.ID(), testClientHelper().Ids.SnowflakeApplicationId())
 
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			Of: &sdk.ShowGrantsOf{
-				DatabaseRole: role.ID(),
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOf(*sdk.NewShowGrantsOfRequest().WithDatabaseRole(role.ID())))
 		require.NoError(t, err)
 		assert.Equal(t, sdk.ObjectTypeApplication, grants[0].GrantedTo)
 		assert.Equal(t, testClientHelper().Ids.SnowflakeApplicationId().Name(), grants[0].GranteeName.Name())
@@ -2545,11 +1694,7 @@ func TestInt_ShowGrants(t *testing.T) {
 		err := client.DatabaseRoles.Grant(ctx, sdk.NewGrantDatabaseRoleRequest(childRole.ID()).WithDatabaseRole(parentRole.ID()))
 		require.NoError(t, err)
 
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			Of: &sdk.ShowGrantsOf{
-				DatabaseRole: childRole.ID(),
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOf(*sdk.NewShowGrantsOfRequest().WithDatabaseRole(childRole.ID())))
 		require.NoError(t, err)
 		require.Len(t, grants, 1)
 		assert.Equal(t, sdk.ObjectTypeDatabaseRole, grants[0].GrantedTo)
@@ -2563,23 +1708,10 @@ func TestInt_ShowGrants(t *testing.T) {
 		role, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
 
-		err := client.Grants.GrantInheritedPrivilegesToAccountRole(
-			ctx,
-			sdk.InheritedAccountRoleGrantPrivileges{
-				SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
-			},
-			sdk.PluralObjectTypeTables,
-			sdk.InheritedAccountRoleGrantIn{Database: new(database.ID())},
-			role.ID(),
-		)
+		err := client.Grants.GrantInheritedPrivilegesToAccountRole(ctx, sdk.NewGrantInheritedPrivilegesToAccountRoleRequest(sdk.PluralObjectTypeTables, *sdk.NewInheritedAccountRoleGrantInRequest().WithDatabase(database.ID()), role.ID()).WithPrivileges(*sdk.NewInheritedAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect})))
 		require.NoError(t, err)
 
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			Inherited: new(true),
-			In: &sdk.ShowGrantsIn{
-				Database: new(database.ID()),
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithInherited(true).WithIn(*sdk.NewShowGrantsInRequest().WithDatabase(database.ID())))
 		require.NoError(t, err)
 		require.Len(t, grants, 1)
 		grant := grants[0]
@@ -2613,23 +1745,10 @@ func TestInt_ShowGrants_DMFsWithTableArgument(t *testing.T) {
 	)
 	t.Cleanup(functionCleanup)
 
-	err := client.Grants.GrantPrivilegesToAccountRole(ctx, &sdk.AccountRoleGrantPrivileges{
-		SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeUsage},
-	}, &sdk.AccountRoleGrantOn{
-		SchemaObject: &sdk.GrantOnSchemaObject{
-			SchemaObject: &sdk.Object{
-				ObjectType: sdk.ObjectTypeFunction,
-				Name:       functionId,
-			},
-		},
-	}, role.ID(), nil)
+	err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(role.ID()).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeUsage})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithSchemaObject(sdk.Object{ObjectType: sdk.ObjectTypeFunction, Name: functionId}))))
 	require.NoError(t, err)
 
-	grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-		To: &sdk.ShowGrantsTo{
-			Role: role.ID(),
-		},
-	})
+	grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(role.ID())))
 	require.NoError(t, err)
 
 	functionGrant, err := collections.FindFirst[sdk.Grant](grants, func(g sdk.Grant) bool {
@@ -2650,15 +1769,13 @@ func TestInt_GrantAndRevokeInheritedPrivilegesToAccountRole(t *testing.T) {
 		role, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
 
-		privileges := sdk.InheritedAccountRoleGrantPrivileges{
-			AccountObjectPrivileges: []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage},
-		}
-		in := sdk.InheritedAccountRoleGrantIn{Account: new(true)}
+		privileges := *sdk.NewInheritedAccountRoleGrantPrivilegesRequest().WithAccountObjectPrivileges([]sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage})
+		in := *sdk.NewInheritedAccountRoleGrantInRequest().WithAccount(true)
 
-		err := client.Grants.GrantInheritedPrivilegesToAccountRole(ctx, privileges, sdk.PluralObjectTypeWarehouses, in, role.ID())
+		err := client.Grants.GrantInheritedPrivilegesToAccountRole(ctx, sdk.NewGrantInheritedPrivilegesToAccountRoleRequest(sdk.PluralObjectTypeWarehouses, in, role.ID()).WithPrivileges(privileges))
 		require.NoError(t, err)
 
-		grant := findInheritedGrant(t, sdk.ShowGrantsTo{Role: role.ID()}, sdk.AccountObjectPrivilegeUsage.String())
+		grant := findInheritedGrant(t, *sdk.NewShowGrantsToRequest().WithRole(role.ID()), sdk.AccountObjectPrivilegeUsage.String())
 		assert.Equal(t, sdk.AccountObjectPrivilegeUsage.String(), grant.Privilege)
 		assert.Equal(t, sdk.ObjectTypeWarehouse, grant.GrantedOn)
 		assert.Empty(t, grant.Name)
@@ -2671,24 +1788,22 @@ func TestInt_GrantAndRevokeInheritedPrivilegesToAccountRole(t *testing.T) {
 		assert.Nil(t, grant.InheritedFromDatabase)
 		assert.Nil(t, grant.InheritedFromSchema)
 
-		err = client.Grants.RevokeInheritedPrivilegesFromAccountRole(ctx, privileges, sdk.PluralObjectTypeWarehouses, in, role.ID())
+		err = client.Grants.RevokeInheritedPrivilegesFromAccountRole(ctx, sdk.NewRevokeInheritedPrivilegesFromAccountRoleRequest(sdk.PluralObjectTypeWarehouses, in, role.ID()).WithPrivileges(privileges))
 		require.NoError(t, err)
-		assertNoInheritedGrants(t, sdk.ShowGrantsTo{Role: role.ID()})
+		assertNoInheritedGrants(t, *sdk.NewShowGrantsToRequest().WithRole(role.ID()))
 	})
 
 	t.Run("on all tables in database", func(t *testing.T) {
 		role, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
 
-		privileges := sdk.InheritedAccountRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
-		}
-		in := sdk.InheritedAccountRoleGrantIn{Database: new(databaseId)}
+		privileges := *sdk.NewInheritedAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect})
+		in := *sdk.NewInheritedAccountRoleGrantInRequest().WithDatabase(databaseId)
 
-		err := client.Grants.GrantInheritedPrivilegesToAccountRole(ctx, privileges, sdk.PluralObjectTypeTables, in, role.ID())
+		err := client.Grants.GrantInheritedPrivilegesToAccountRole(ctx, sdk.NewGrantInheritedPrivilegesToAccountRoleRequest(sdk.PluralObjectTypeTables, in, role.ID()).WithPrivileges(privileges))
 		require.NoError(t, err)
 
-		grant := findInheritedGrant(t, sdk.ShowGrantsTo{Role: role.ID()}, sdk.SchemaObjectPrivilegeSelect.String())
+		grant := findInheritedGrant(t, *sdk.NewShowGrantsToRequest().WithRole(role.ID()), sdk.SchemaObjectPrivilegeSelect.String())
 		assert.Equal(t, sdk.SchemaObjectPrivilegeSelect.String(), grant.Privilege)
 		assert.Equal(t, sdk.ObjectTypeTable, grant.GrantedOn)
 		assert.Empty(t, grant.Name)
@@ -2702,24 +1817,22 @@ func TestInt_GrantAndRevokeInheritedPrivilegesToAccountRole(t *testing.T) {
 		assert.Equal(t, databaseId.Name(), *grant.InheritedFromDatabase)
 		assert.Nil(t, grant.InheritedFromSchema)
 
-		err = client.Grants.RevokeInheritedPrivilegesFromAccountRole(ctx, privileges, sdk.PluralObjectTypeTables, in, role.ID())
+		err = client.Grants.RevokeInheritedPrivilegesFromAccountRole(ctx, sdk.NewRevokeInheritedPrivilegesFromAccountRoleRequest(sdk.PluralObjectTypeTables, in, role.ID()).WithPrivileges(privileges))
 		require.NoError(t, err)
-		assertNoInheritedGrants(t, sdk.ShowGrantsTo{Role: role.ID()})
+		assertNoInheritedGrants(t, *sdk.NewShowGrantsToRequest().WithRole(role.ID()))
 	})
 
 	t.Run("on all tables in schema", func(t *testing.T) {
 		role, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
 
-		privileges := sdk.InheritedAccountRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeInsert},
-		}
-		in := sdk.InheritedAccountRoleGrantIn{Schema: new(schemaId)}
+		privileges := *sdk.NewInheritedAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeInsert})
+		in := *sdk.NewInheritedAccountRoleGrantInRequest().WithSchema(schemaId)
 
-		err := client.Grants.GrantInheritedPrivilegesToAccountRole(ctx, privileges, sdk.PluralObjectTypeTables, in, role.ID())
+		err := client.Grants.GrantInheritedPrivilegesToAccountRole(ctx, sdk.NewGrantInheritedPrivilegesToAccountRoleRequest(sdk.PluralObjectTypeTables, in, role.ID()).WithPrivileges(privileges))
 		require.NoError(t, err)
 
-		grant := findInheritedGrant(t, sdk.ShowGrantsTo{Role: role.ID()}, sdk.SchemaObjectPrivilegeInsert.String())
+		grant := findInheritedGrant(t, *sdk.NewShowGrantsToRequest().WithRole(role.ID()), sdk.SchemaObjectPrivilegeInsert.String())
 		assert.Equal(t, sdk.SchemaObjectPrivilegeInsert.String(), grant.Privilege)
 		assert.Equal(t, sdk.ObjectTypeTable, grant.GrantedOn)
 		assert.Empty(t, grant.Name)
@@ -2734,9 +1847,9 @@ func TestInt_GrantAndRevokeInheritedPrivilegesToAccountRole(t *testing.T) {
 		require.NotNil(t, grant.InheritedFromSchema)
 		assert.Equal(t, schemaId.Name(), *grant.InheritedFromSchema)
 
-		err = client.Grants.RevokeInheritedPrivilegesFromAccountRole(ctx, privileges, sdk.PluralObjectTypeTables, in, role.ID())
+		err = client.Grants.RevokeInheritedPrivilegesFromAccountRole(ctx, sdk.NewRevokeInheritedPrivilegesFromAccountRoleRequest(sdk.PluralObjectTypeTables, in, role.ID()).WithPrivileges(privileges))
 		require.NoError(t, err)
-		assertNoInheritedGrants(t, sdk.ShowGrantsTo{Role: role.ID()})
+		assertNoInheritedGrants(t, *sdk.NewShowGrantsToRequest().WithRole(role.ID()))
 	})
 }
 
@@ -2751,15 +1864,13 @@ func TestInt_GrantAndRevokeInheritedPrivilegesToDatabaseRole(t *testing.T) {
 		role, roleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
 		t.Cleanup(roleCleanup)
 
-		privileges := sdk.InheritedDatabaseRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
-		}
-		in := sdk.InheritedDatabaseRoleGrantIn{Database: new(databaseId)}
+		privileges := *sdk.NewInheritedDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect})
+		in := *sdk.NewInheritedDatabaseRoleGrantInRequest().WithDatabase(databaseId)
 
-		err := client.Grants.GrantInheritedPrivilegesToDatabaseRole(ctx, privileges, sdk.PluralObjectTypeTables, in, role.ID())
+		err := client.Grants.GrantInheritedPrivilegesToDatabaseRole(ctx, sdk.NewGrantInheritedPrivilegesToDatabaseRoleRequest(sdk.PluralObjectTypeTables, in, role.ID()).WithPrivileges(privileges))
 		require.NoError(t, err)
 
-		grant := findInheritedGrant(t, sdk.ShowGrantsTo{DatabaseRole: role.ID()}, sdk.SchemaObjectPrivilegeSelect.String())
+		grant := findInheritedGrant(t, *sdk.NewShowGrantsToRequest().WithDatabaseRole(role.ID()), sdk.SchemaObjectPrivilegeSelect.String())
 		assert.Equal(t, sdk.SchemaObjectPrivilegeSelect.String(), grant.Privilege)
 		assert.Equal(t, sdk.ObjectTypeTable, grant.GrantedOn)
 		assert.Empty(t, grant.Name)
@@ -2773,24 +1884,22 @@ func TestInt_GrantAndRevokeInheritedPrivilegesToDatabaseRole(t *testing.T) {
 		assert.Equal(t, databaseId.Name(), *grant.InheritedFromDatabase)
 		assert.Nil(t, grant.InheritedFromSchema)
 
-		err = client.Grants.RevokeInheritedPrivilegesFromDatabaseRole(ctx, privileges, sdk.PluralObjectTypeTables, in, role.ID())
+		err = client.Grants.RevokeInheritedPrivilegesFromDatabaseRole(ctx, sdk.NewRevokeInheritedPrivilegesFromDatabaseRoleRequest(sdk.PluralObjectTypeTables, in, role.ID()).WithPrivileges(privileges))
 		require.NoError(t, err)
-		assertNoInheritedGrants(t, sdk.ShowGrantsTo{DatabaseRole: role.ID()})
+		assertNoInheritedGrants(t, *sdk.NewShowGrantsToRequest().WithDatabaseRole(role.ID()))
 	})
 
 	t.Run("on all tables in schema", func(t *testing.T) {
 		role, roleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
 		t.Cleanup(roleCleanup)
 
-		privileges := sdk.InheritedDatabaseRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeInsert},
-		}
-		in := sdk.InheritedDatabaseRoleGrantIn{Schema: new(schemaId)}
+		privileges := *sdk.NewInheritedDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeInsert})
+		in := *sdk.NewInheritedDatabaseRoleGrantInRequest().WithSchema(schemaId)
 
-		err := client.Grants.GrantInheritedPrivilegesToDatabaseRole(ctx, privileges, sdk.PluralObjectTypeTables, in, role.ID())
+		err := client.Grants.GrantInheritedPrivilegesToDatabaseRole(ctx, sdk.NewGrantInheritedPrivilegesToDatabaseRoleRequest(sdk.PluralObjectTypeTables, in, role.ID()).WithPrivileges(privileges))
 		require.NoError(t, err)
 
-		grant := findInheritedGrant(t, sdk.ShowGrantsTo{DatabaseRole: role.ID()}, sdk.SchemaObjectPrivilegeInsert.String())
+		grant := findInheritedGrant(t, *sdk.NewShowGrantsToRequest().WithDatabaseRole(role.ID()), sdk.SchemaObjectPrivilegeInsert.String())
 		assert.Equal(t, sdk.SchemaObjectPrivilegeInsert.String(), grant.Privilege)
 		assert.Equal(t, sdk.ObjectTypeTable, grant.GrantedOn)
 		assert.Empty(t, grant.Name)
@@ -2805,17 +1914,17 @@ func TestInt_GrantAndRevokeInheritedPrivilegesToDatabaseRole(t *testing.T) {
 		require.NotNil(t, grant.InheritedFromSchema)
 		assert.Equal(t, schemaId.Name(), *grant.InheritedFromSchema)
 
-		err = client.Grants.RevokeInheritedPrivilegesFromDatabaseRole(ctx, privileges, sdk.PluralObjectTypeTables, in, role.ID())
+		err = client.Grants.RevokeInheritedPrivilegesFromDatabaseRole(ctx, sdk.NewRevokeInheritedPrivilegesFromDatabaseRoleRequest(sdk.PluralObjectTypeTables, in, role.ID()).WithPrivileges(privileges))
 		require.NoError(t, err)
-		assertNoInheritedGrants(t, sdk.ShowGrantsTo{DatabaseRole: role.ID()})
+		assertNoInheritedGrants(t, *sdk.NewShowGrantsToRequest().WithDatabaseRole(role.ID()))
 	})
 }
 
-func findInheritedGrant(t *testing.T, to sdk.ShowGrantsTo, privilege string) *sdk.Grant {
+func findInheritedGrant(t *testing.T, to sdk.ShowGrantsToRequest, privilege string) *sdk.Grant {
 	t.Helper()
 	client := testClient(t)
 	ctx := testContext(t)
-	grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{To: &to})
+	grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(to))
 	require.NoError(t, err)
 	grant, err := collections.FindFirst(grants, func(g sdk.Grant) bool {
 		return g.IsInherited != nil && *g.IsInherited && g.Privilege == privilege
@@ -2824,11 +1933,11 @@ func findInheritedGrant(t *testing.T, to sdk.ShowGrantsTo, privilege string) *sd
 	return grant
 }
 
-func assertNoInheritedGrants(t *testing.T, to sdk.ShowGrantsTo) {
+func assertNoInheritedGrants(t *testing.T, to sdk.ShowGrantsToRequest) {
 	t.Helper()
 	client := testClient(t)
 	ctx := testContext(t)
-	grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{To: &to})
+	grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(to))
 	require.NoError(t, err)
 	for _, grant := range grants {
 		require.NotNil(t, grant.IsInherited)

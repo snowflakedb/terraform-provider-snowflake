@@ -831,11 +831,9 @@ func CheckGrantApplicationRoleDestroy(s *terraform.State) error {
 		applicationRoleName := ids[0]
 		objectType := ids[1]
 		parentRoleName := ids[2]
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			Of: &sdk.ShowGrantsOf{
-				ApplicationRole: sdk.NewDatabaseObjectIdentifierFromFullyQualifiedName(applicationRoleName),
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().
+			WithOf(*sdk.NewShowGrantsOfRequest().
+				WithApplicationRole(sdk.NewDatabaseObjectIdentifierFromFullyQualifiedName(applicationRoleName))))
 		if err != nil {
 			continue
 		}

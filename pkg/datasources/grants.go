@@ -337,27 +337,27 @@ func Grants() *schema.Resource {
 func ReadGrants(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	var opts *sdk.ShowGrantOptions
+	var opts *sdk.ShowGrantsRequest
 	var err error
 	var inherited bool
 	if grantsOn, ok := d.GetOk("grants_on"); ok {
-		opts, err = buildOptsForGrantsOn(grantsOn.([]any)[0].(map[string]any))
+		opts, err = buildRequestForGrantsOn(grantsOn.([]any)[0].(map[string]any))
 	}
 	if grantsTo, ok := d.GetOk("grants_to"); ok {
-		opts, err = buildOptsForGrantsTo(grantsTo.([]any)[0].(map[string]any))
+		opts, err = buildRequestForGrantsTo(grantsTo.([]any)[0].(map[string]any))
 	}
 	if grantsOf, ok := d.GetOk("grants_of"); ok {
-		opts, err = buildOptsForGrantsOf(grantsOf.([]any)[0].(map[string]any))
+		opts, err = buildRequestForGrantsOf(grantsOf.([]any)[0].(map[string]any))
 	}
 	if futureGrantsIn, ok := d.GetOk("future_grants_in"); ok {
-		opts, err = buildOptsForFutureGrantsIn(futureGrantsIn.([]any)[0].(map[string]any))
+		opts, err = buildRequestForFutureGrantsIn(futureGrantsIn.([]any)[0].(map[string]any))
 	}
 	if futureGrantsTo, ok := d.GetOk("future_grants_to"); ok {
-		opts, err = buildOptsForFutureGrantsTo(futureGrantsTo.([]any)[0].(map[string]any))
+		opts, err = buildRequestForFutureGrantsTo(futureGrantsTo.([]any)[0].(map[string]any))
 	}
 	if inheritedGrantsIn, ok := d.GetOk("inherited_grants_in"); ok {
 		inherited = true
-		opts, err = buildOptsForInheritedGrantsIn(inheritedGrantsIn.([]any)[0].(map[string]any))
+		opts, err = buildRequestForInheritedGrantsIn(inheritedGrantsIn.([]any)[0].(map[string]any))
 	}
 	if err != nil {
 		return diag.FromErr(err)
@@ -377,17 +377,15 @@ func ReadGrants(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 	return nil
 }
 
-func buildOptsForGrantsOn(grantsOn map[string]any) (*sdk.ShowGrantOptions, error) {
-	opts := new(sdk.ShowGrantOptions)
+func buildRequestForGrantsOn(grantsOn map[string]any) (*sdk.ShowGrantsRequest, error) {
+	opts := sdk.NewShowGrantsRequest()
 
 	objectType := grantsOn["object_type"].(string)
 	objectName := grantsOn["object_name"].(string)
 	account := grantsOn["account"].(bool)
 
 	if account {
-		opts.On = &sdk.ShowGrantsOn{
-			Account: sdk.Bool(true),
-		}
+		opts.WithOn(*sdk.NewShowGrantsOnRequest().WithAccount(true))
 	} else {
 		if objectType == "" || objectName == "" {
 			return nil, fmt.Errorf("object_type (%s) or object_name (%s) missing", objectType, objectName)
@@ -412,63 +410,51 @@ func buildOptsForGrantsOn(grantsOn map[string]any) (*sdk.ShowGrantOptions, error
 			}
 		}
 
-		opts.On = &sdk.ShowGrantsOn{
-			Object: &sdk.Object{
-				ObjectType: sdkObjectType,
-				Name:       objectId,
-			},
-		}
+		opts.WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+			ObjectType: sdkObjectType,
+			Name:       objectId,
+		}))
 	}
 	return opts, nil
 }
 
-func buildOptsForGrantsTo(grantsTo map[string]any) (*sdk.ShowGrantOptions, error) {
-	opts := new(sdk.ShowGrantOptions)
+func buildRequestForGrantsTo(grantsTo map[string]any) (*sdk.ShowGrantsRequest, error) {
+	opts := sdk.NewShowGrantsRequest()
 
 	if application := grantsTo["application"].(string); application != "" {
 		applicationId, err := sdk.ParseAccountObjectIdentifier(application)
 		if err != nil {
 			return nil, err
 		}
-		opts.To = &sdk.ShowGrantsTo{
-			Application: applicationId,
-		}
+		opts.WithTo(*sdk.NewShowGrantsToRequest().WithApplication(applicationId))
 	}
 	if applicationRole := grantsTo["application_role"].(string); applicationRole != "" {
 		applicationRoleId, err := sdk.ParseDatabaseObjectIdentifier(applicationRole)
 		if err != nil {
 			return nil, err
 		}
-		opts.To = &sdk.ShowGrantsTo{
-			ApplicationRole: applicationRoleId,
-		}
+		opts.WithTo(*sdk.NewShowGrantsToRequest().WithApplicationRole(applicationRoleId))
 	}
 	if accountRole := grantsTo["account_role"].(string); accountRole != "" {
 		accountRoleId, err := sdk.ParseAccountObjectIdentifier(accountRole)
 		if err != nil {
 			return nil, err
 		}
-		opts.To = &sdk.ShowGrantsTo{
-			Role: accountRoleId,
-		}
+		opts.WithTo(*sdk.NewShowGrantsToRequest().WithRole(accountRoleId))
 	}
 	if databaseRole := grantsTo["database_role"].(string); databaseRole != "" {
 		databaseRoleId, err := sdk.ParseDatabaseObjectIdentifier(databaseRole)
 		if err != nil {
 			return nil, err
 		}
-		opts.To = &sdk.ShowGrantsTo{
-			DatabaseRole: databaseRoleId,
-		}
+		opts.WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRoleId))
 	}
 	if user := grantsTo["user"].(string); user != "" {
 		userId, err := sdk.ParseAccountObjectIdentifier(user)
 		if err != nil {
 			return nil, err
 		}
-		opts.To = &sdk.ShowGrantsTo{
-			User: userId,
-		}
+		opts.WithTo(*sdk.NewShowGrantsToRequest().WithUser(userId))
 	}
 	if share := grantsTo["share"]; share != nil && len(share.([]any)) > 0 {
 		shareMap := share.([]any)[0].(map[string]any)
@@ -476,11 +462,7 @@ func buildOptsForGrantsTo(grantsTo map[string]any) (*sdk.ShowGrantOptions, error
 		if err != nil {
 			return nil, err
 		}
-		opts.To = &sdk.ShowGrantsTo{
-			Share: &sdk.ShowGrantsToShare{
-				Name: sharedId,
-			},
-		}
+		opts.WithTo(*sdk.NewShowGrantsToRequest().WithShare(*sdk.NewShowGrantsToShareRequest().WithName(sharedId)))
 		// TODO [SNOW-1284382]: Uncomment after SHOW GRANTS TO SHARE <share_name> IN APPLICATION PACKAGE <app_package_name> syntax starts working.
 		// if inApplicationPackage := shareMap["in_application_package"]; inApplicationPackage != "" {
 		//	opts.To.Share.InApplicationPackage = sdk.Pointer(sdk.NewAccountObjectIdentifier(inApplicationPackage.(string)))
@@ -489,124 +471,99 @@ func buildOptsForGrantsTo(grantsTo map[string]any) (*sdk.ShowGrantOptions, error
 	return opts, nil
 }
 
-func buildOptsForGrantsOf(grantsOf map[string]any) (*sdk.ShowGrantOptions, error) {
-	opts := new(sdk.ShowGrantOptions)
+func buildRequestForGrantsOf(grantsOf map[string]any) (*sdk.ShowGrantsRequest, error) {
+	opts := sdk.NewShowGrantsRequest()
 
 	if accountRole := grantsOf["account_role"].(string); accountRole != "" {
 		accountRoleId, err := sdk.ParseAccountObjectIdentifier(accountRole)
 		if err != nil {
 			return nil, err
 		}
-		opts.Of = &sdk.ShowGrantsOf{
-			Role: accountRoleId,
-		}
+		opts.WithOf(*sdk.NewShowGrantsOfRequest().WithRole(accountRoleId))
 	}
 	if databaseRole := grantsOf["database_role"].(string); databaseRole != "" {
 		databaseRoleId, err := sdk.ParseDatabaseObjectIdentifier(databaseRole)
 		if err != nil {
 			return nil, err
 		}
-		opts.Of = &sdk.ShowGrantsOf{
-			DatabaseRole: databaseRoleId,
-		}
+		opts.WithOf(*sdk.NewShowGrantsOfRequest().WithDatabaseRole(databaseRoleId))
 	}
 	if applicationRole := grantsOf["application_role"].(string); applicationRole != "" {
 		applicationRoleId, err := sdk.ParseDatabaseObjectIdentifier(applicationRole)
 		if err != nil {
 			return nil, err
 		}
-		opts.Of = &sdk.ShowGrantsOf{
-			ApplicationRole: applicationRoleId,
-		}
+		opts.WithOf(*sdk.NewShowGrantsOfRequest().WithApplicationRole(applicationRoleId))
 	}
 	if share := grantsOf["share"].(string); share != "" {
 		shareId, err := sdk.ParseAccountObjectIdentifier(share)
 		if err != nil {
 			return nil, err
 		}
-		opts.Of = &sdk.ShowGrantsOf{
-			Share: shareId,
-		}
+		opts.WithOf(*sdk.NewShowGrantsOfRequest().WithShare(shareId))
 	}
 	return opts, nil
 }
 
-func buildOptsForFutureGrantsIn(futureGrantsIn map[string]any) (*sdk.ShowGrantOptions, error) {
-	opts := new(sdk.ShowGrantOptions)
-	opts.Future = sdk.Bool(true)
+func buildRequestForFutureGrantsIn(futureGrantsIn map[string]any) (*sdk.ShowGrantsRequest, error) {
+	opts := sdk.NewShowGrantsRequest().WithFuture(true)
 
 	if db := futureGrantsIn["database"].(string); db != "" {
 		databaseId, err := sdk.ParseAccountObjectIdentifier(db)
 		if err != nil {
 			return nil, err
 		}
-		opts.In = &sdk.ShowGrantsIn{
-			Database: sdk.Pointer(databaseId),
-		}
+		opts.WithIn(*sdk.NewShowGrantsInRequest().WithDatabase(databaseId))
 	}
 	if sc := futureGrantsIn["schema"].(string); sc != "" {
 		schemaId, err := sdk.ParseDatabaseObjectIdentifier(sc)
 		if err != nil {
 			return nil, err
 		}
-		opts.In = &sdk.ShowGrantsIn{
-			Schema: sdk.Pointer(schemaId),
-		}
+		opts.WithIn(*sdk.NewShowGrantsInRequest().WithSchema(schemaId))
 	}
 	return opts, nil
 }
 
-func buildOptsForFutureGrantsTo(futureGrantsTo map[string]any) (*sdk.ShowGrantOptions, error) {
-	opts := new(sdk.ShowGrantOptions)
-	opts.Future = sdk.Bool(true)
+func buildRequestForFutureGrantsTo(futureGrantsTo map[string]any) (*sdk.ShowGrantsRequest, error) {
+	opts := sdk.NewShowGrantsRequest().WithFuture(true)
 
 	if accountRole := futureGrantsTo["account_role"].(string); accountRole != "" {
 		accountRoleId, err := sdk.ParseAccountObjectIdentifier(accountRole)
 		if err != nil {
 			return nil, err
 		}
-		opts.To = &sdk.ShowGrantsTo{
-			Role: accountRoleId,
-		}
+		opts.WithTo(*sdk.NewShowGrantsToRequest().WithRole(accountRoleId))
 	}
 	if databaseRole := futureGrantsTo["database_role"].(string); databaseRole != "" {
 		databaseRoleId, err := sdk.ParseDatabaseObjectIdentifier(databaseRole)
 		if err != nil {
 			return nil, err
 		}
-		opts.To = &sdk.ShowGrantsTo{
-			DatabaseRole: databaseRoleId,
-		}
+		opts.WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRoleId))
 	}
 	return opts, nil
 }
 
-func buildOptsForInheritedGrantsIn(inheritedGrantsIn map[string]any) (*sdk.ShowGrantOptions, error) {
-	opts := new(sdk.ShowGrantOptions)
-	opts.Inherited = new(true)
+func buildRequestForInheritedGrantsIn(inheritedGrantsIn map[string]any) (*sdk.ShowGrantsRequest, error) {
+	opts := sdk.NewShowGrantsRequest().WithInherited(true)
 
 	if account := inheritedGrantsIn["account"].(bool); account {
-		opts.In = &sdk.ShowGrantsIn{
-			Account: new(true),
-		}
+		opts.WithIn(*sdk.NewShowGrantsInRequest().WithAccount(true))
 	}
 	if db := inheritedGrantsIn["database"].(string); db != "" {
 		databaseId, err := sdk.ParseAccountObjectIdentifier(db)
 		if err != nil {
 			return nil, err
 		}
-		opts.In = &sdk.ShowGrantsIn{
-			Database: new(databaseId),
-		}
+		opts.WithIn(*sdk.NewShowGrantsInRequest().WithDatabase(databaseId))
 	}
 	if sc := inheritedGrantsIn["schema"].(string); sc != "" {
 		schemaId, err := sdk.ParseDatabaseObjectIdentifier(sc)
 		if err != nil {
 			return nil, err
 		}
-		opts.In = &sdk.ShowGrantsIn{
-			Schema: new(schemaId),
-		}
+		opts.WithIn(*sdk.NewShowGrantsInRequest().WithSchema(schemaId))
 	}
 	return opts, nil
 }

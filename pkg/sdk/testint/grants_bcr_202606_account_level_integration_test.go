@@ -72,18 +72,12 @@ func observeGrant(
 ) (grantObservations, error) {
 	t.Helper()
 
-	privileges := &sdk.DatabaseRoleGrantPrivileges{
-		SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
-	}
-	on := func(objectType sdk.ObjectType) *sdk.DatabaseRoleGrantOn {
-		return &sdk.DatabaseRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				SchemaObject: &sdk.Object{ObjectType: objectType, Name: target.id},
-			},
-		}
+	privileges := sdk.NewDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect})
+	on := func(objectType sdk.ObjectType) *sdk.DatabaseRoleGrantOnRequest {
+		return sdk.NewDatabaseRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithSchemaObject(sdk.Object{ObjectType: objectType, Name: target.id}))
 	}
 
-	err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on(grantAs), databaseRoleId, new(sdk.GrantPrivilegesToDatabaseRoleOptions))
+	err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, sdk.NewGrantPrivilegesToDatabaseRoleRequest(databaseRoleId).WithPrivileges(*privileges).WithOn(*on(grantAs)))
 	require.NoErrorf(t, err, "GRANT SELECT ON %s %s failed", grantAs, target.id.FullyQualifiedName())
 
 	observations := grantObservations{
@@ -96,11 +90,11 @@ func observeGrant(
 	t.Logf("  SHOW GRANTS ON %s   -> %s", target.specificType, observations.onSpecific)
 	t.Logf("  SHOW GRANTS TO DATABASE ROLE -> %s", observations.toDatabaseRole)
 
-	revokeErr := client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, on(revokeAs), databaseRoleId, new(sdk.RevokePrivilegesFromDatabaseRoleOptions))
+	revokeErr := client.Grants.RevokePrivilegesFromDatabaseRole(ctx, sdk.NewRevokePrivilegesFromDatabaseRoleRequest(databaseRoleId).WithPrivileges(*privileges).WithOn(*on(revokeAs)))
 	if revokeErr != nil {
 		t.Logf("  REVOKE SELECT ON %s %s failed: %v", revokeAs, target.id.FullyQualifiedName(), revokeErr)
 		// Fall back to the specific type so the next case starts from a clean slate.
-		require.NoError(t, client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, on(target.specificType), databaseRoleId, new(sdk.RevokePrivilegesFromDatabaseRoleOptions)))
+		require.NoError(t, client.Grants.RevokePrivilegesFromDatabaseRole(ctx, sdk.NewRevokePrivilegesFromDatabaseRoleRequest(databaseRoleId).WithPrivileges(*privileges).WithOn(*on(target.specificType))))
 	}
 	return observations, revokeErr
 }
@@ -115,9 +109,7 @@ func observeShowGrantsOnObject(
 ) grantObservation {
 	t.Helper()
 
-	grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-		On: &sdk.ShowGrantsOn{Object: &sdk.Object{ObjectType: objectType, Name: id}},
-	})
+	grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{ObjectType: objectType, Name: id})))
 	if err != nil {
 		return grantObservation{err: err}
 	}

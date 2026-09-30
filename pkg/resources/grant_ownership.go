@@ -256,12 +256,11 @@ func CreateGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	err = client.Grants.GrantOwnership(
-		ctx,
-		*grantOn,
-		grantTo,
-		getOwnershipGrantOpts(id),
-	)
+	grantOwnershipReq := sdk.NewGrantOwnershipRequest(*grantOn, grantTo)
+	if currentGrants := getOwnershipCurrentGrants(id); currentGrants != nil {
+		grantOwnershipReq.WithCurrentGrants(*currentGrants)
+	}
+	err = client.Grants.GrantOwnership(ctx, grantOwnershipReq)
 	if err != nil {
 		return diag.Diagnostics{
 			diag.Diagnostic{
@@ -313,11 +312,10 @@ func DeleteGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any)
 
 		err = client.Grants.RevokeOwnership(
 			ctx,
-			sdk.RevokeOwnershipGrantOn{
-				Future: grantOn.Future,
-			},
-			grantFrom,
-			new(sdk.RevokeOwnershipOptions),
+			sdk.NewRevokeOwnershipRequest(
+				*sdk.NewRevokeOwnershipGrantOnRequest().WithFuture(*grantOn.Future),
+				grantFrom,
+			),
 		)
 		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) && providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy) {
 			err = nil
@@ -337,14 +335,15 @@ func DeleteGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any)
 			return diag.FromErr(err)
 		}
 
-		err = client.Grants.GrantOwnership( // TODO: Should we always set outbound privileges to COPY in delete operation or set it to the config value?
-			ctx,
+		// TODO: Should we always set outbound privileges to COPY in delete operation or set it to the config value?
+		grantOwnershipReq := sdk.NewGrantOwnershipRequest(
 			*grantOn,
-			sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(accountRoleName),
-			},
-			getOwnershipGrantOpts(id),
+			*sdk.NewOwnershipGrantToRequest().WithAccountRoleName(accountRoleName),
 		)
+		if currentGrants := getOwnershipCurrentGrants(id); currentGrants != nil {
+			grantOwnershipReq.WithCurrentGrants(*currentGrants)
+		}
+		err = client.Grants.GrantOwnership(ctx, grantOwnershipReq)
 		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) && providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy) {
 			err = nil
 		}
@@ -540,8 +539,8 @@ func GetOnObjectIdentifier(objectType sdk.ObjectType, objectName string) (sdk.Ob
 	}
 }
 
-func getOwnershipGrantOn(d *schema.ResourceData) (*sdk.OwnershipGrantOn, error) {
-	ownershipGrantOn := new(sdk.OwnershipGrantOn)
+func getOwnershipGrantOn(d *schema.ResourceData) (*sdk.OwnershipGrantOnRequest, error) {
+	ownershipGrantOn := sdk.NewOwnershipGrantOnRequest()
 
 	on := d.Get("on").([]any)[0].(map[string]any)
 	onObjectType := on["object_type"].(string)
@@ -559,66 +558,62 @@ func getOwnershipGrantOn(d *schema.ResourceData) (*sdk.OwnershipGrantOn, error) 
 		if err != nil {
 			return nil, err
 		}
-		ownershipGrantOn.Object = &sdk.Object{
+		ownershipGrantOn.WithObject(sdk.Object{
 			ObjectType: objectType,
 			Name:       objectName,
-		}
+		})
 	case len(onAll) > 0:
 		grantOnSchemaObjectIn, err := getGrantOnSchemaObjectIn(onAll[0].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
-		ownershipGrantOn.All = grantOnSchemaObjectIn
+		ownershipGrantOn.WithAll(*grantOnSchemaObjectIn)
 	case len(onFuture) > 0:
 		grantOnSchemaObjectIn, err := getGrantOnSchemaObjectIn(onFuture[0].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
-		ownershipGrantOn.Future = grantOnSchemaObjectIn
+		ownershipGrantOn.WithFuture(*grantOnSchemaObjectIn)
 	}
 
 	return ownershipGrantOn, nil
 }
 
-func getOwnershipGrantTo(d *schema.ResourceData) (sdk.OwnershipGrantTo, error) {
-	var ownershipGrantTo sdk.OwnershipGrantTo
+func getOwnershipGrantTo(d *schema.ResourceData) (sdk.OwnershipGrantToRequest, error) {
+	ownershipGrantTo := sdk.NewOwnershipGrantToRequest()
 
 	if accountRoleName, ok := d.GetOk("account_role_name"); ok {
 		accountRoleId, err := sdk.ParseAccountObjectIdentifier(accountRoleName.(string))
 		if err != nil {
-			return ownershipGrantTo, err
+			return *ownershipGrantTo, err
 		}
-		ownershipGrantTo.AccountRoleName = &accountRoleId
+		ownershipGrantTo.WithAccountRoleName(accountRoleId)
 	}
 
 	if databaseRoleName, ok := d.GetOk("database_role_name"); ok {
 		databaseRoleId, err := sdk.ParseDatabaseObjectIdentifier(databaseRoleName.(string))
 		if err != nil {
-			return ownershipGrantTo, err
+			return *ownershipGrantTo, err
 		}
-		ownershipGrantTo.DatabaseRoleName = sdk.Pointer(databaseRoleId)
+		ownershipGrantTo.WithDatabaseRoleName(databaseRoleId)
 	}
 
-	return ownershipGrantTo, nil
+	return *ownershipGrantTo, nil
 }
 
-func getOwnershipGrantOpts(id *GrantOwnershipId) *sdk.GrantOwnershipOptions {
-	opts := new(sdk.GrantOwnershipOptions)
-
+func getOwnershipCurrentGrants(id *GrantOwnershipId) *sdk.OwnershipCurrentGrantsRequest {
 	if id != nil && id.OutboundPrivilegesBehavior != nil {
 		outboundPrivileges := id.OutboundPrivilegesBehavior.ToOwnershipCurrentGrantsOutboundPrivileges()
 		if outboundPrivileges != nil {
-			opts.CurrentGrants = &sdk.OwnershipCurrentGrants{
-				OutboundPrivileges: *outboundPrivileges,
-			}
+			return sdk.NewOwnershipCurrentGrantsRequest(*outboundPrivileges)
 		}
 	}
 
-	return opts
+	return nil
 }
 
-func prepareShowGrantsRequestForGrantOwnership(id *GrantOwnershipId) (*sdk.ShowGrantOptions, []sdk.ObjectType) {
-	opts := new(sdk.ShowGrantOptions)
+func prepareShowGrantsRequestForGrantOwnership(id *GrantOwnershipId) (*sdk.ShowGrantsRequest, []sdk.ObjectType) {
+	opts := sdk.NewShowGrantsRequest()
 	var expectedGrantedOn []sdk.ObjectType
 
 	switch id.Kind {
@@ -632,12 +627,10 @@ func prepareShowGrantsRequestForGrantOwnership(id *GrantOwnershipId) (*sdk.ShowG
 		default:
 			expectedGrantedOn = []sdk.ObjectType{data.ObjectType}
 		}
-		opts.On = &sdk.ShowGrantsOn{
-			Object: &sdk.Object{
-				ObjectType: data.ObjectType,
-				Name:       data.ObjectName,
-			},
-		}
+		opts.WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+			ObjectType: data.ObjectType,
+			Name:       data.ObjectName,
+		}))
 	case OnAllGrantOwnershipKind: // TODO: discuss if we want to let users do this (lose control over ownership for all objects in x during delete operation - we can also add a flag that would skip delete operation when on_all is set)
 		switch data := id.Data.(*BulkOperationGrantData); data.Kind {
 		case InDatabaseBulkOperationGrantKind:
@@ -649,17 +642,13 @@ func prepareShowGrantsRequestForGrantOwnership(id *GrantOwnershipId) (*sdk.ShowG
 	case OnFutureGrantOwnershipKind:
 		data := id.Data.(*BulkOperationGrantData)
 		expectedGrantedOn = []sdk.ObjectType{data.ObjectNamePlural.Singular()}
-		opts.Future = sdk.Bool(true)
+		opts.WithFuture(true)
 
 		switch data.Kind {
 		case InDatabaseBulkOperationGrantKind:
-			opts.In = &sdk.ShowGrantsIn{
-				Database: data.Database,
-			}
+			opts.WithIn(*sdk.NewShowGrantsInRequest().WithDatabase(*data.Database))
 		case InSchemaBulkOperationGrantKind:
-			opts.In = &sdk.ShowGrantsIn{
-				Schema: data.Schema,
-			}
+			opts.WithIn(*sdk.NewShowGrantsInRequest().WithSchema(*data.Schema))
 		}
 	}
 

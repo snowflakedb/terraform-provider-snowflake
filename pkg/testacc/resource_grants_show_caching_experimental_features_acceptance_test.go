@@ -145,12 +145,12 @@ func TestAcc_GrantsShowCaching_CrossResource_OwnershipAndPrivilegesShareCache(t 
 
 	experimentProviderModel := providermodel.SnowflakeProvider().
 		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsShowCaching)
-	ownershipModel := model.GrantOwnership("ownership", []sdk.OwnershipGrantOn{{
-		Object: &sdk.Object{
+	ownershipModel := model.GrantOwnership("ownership", []sdk.OwnershipGrantOnRequest{
+		*sdk.NewOwnershipGrantOnRequest().WithObject(sdk.Object{
 			ObjectType: sdk.ObjectTypeDatabase,
 			Name:       database.ID(),
-		},
-	}}).
+		}),
+	}).
 		WithAccountRoleName(roleOwner.ID().Name()).
 		WithOutboundPrivileges("COPY")
 	privilegesModel := model.GrantPrivilegesToAccountRole("privileges", roleGrantee.ID().Name()).

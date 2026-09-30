@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func checkResourceOwnershipIsGranted(opts *sdk.ShowGrantOptions, grantOn sdk.ObjectType, roleName string, objectNames ...string) func(s *terraform.State) error {
+func checkResourceOwnershipIsGranted(opts *sdk.ShowGrantsRequest, grantOn sdk.ObjectType, roleName string, objectNames ...string) func(s *terraform.State) error {
 	return func(s *terraform.State) error {
 		client := TestAccProvider.Meta().(*provider.Context).Client
 		ctx := context.Background()

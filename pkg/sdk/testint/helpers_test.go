@@ -25,14 +25,10 @@ func createDatabaseFromShare(t *testing.T) (*sdk.Database, func()) {
 
 	databaseId := sharedDatabase.ID()
 
-	err := secondaryClient.Grants.GrantPrivilegeToShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{
-		Database: sharedDatabase.ID(),
-	}, shareTest.ID())
+	err := secondaryClient.Grants.GrantPrivilegeToShare(ctx, sdk.NewGrantPrivilegeToShareRequest(shareTest.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(sharedDatabase.ID())))
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		err := secondaryClient.Grants.RevokePrivilegeFromShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{
-			Database: sharedDatabase.ID(),
-		}, shareTest.ID())
+		err := secondaryClient.Grants.RevokePrivilegeFromShare(ctx, sdk.NewRevokePrivilegeFromShareRequest(shareTest.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(sharedDatabase.ID())))
 		require.NoError(t, err)
 	})
 
@@ -105,14 +101,10 @@ func createShare(t *testing.T, ctx context.Context, client *sdk.Client) (*sdk.Sh
 	object, objectCleanup := testClientHelper().Share.CreateShare(t)
 	t.Cleanup(objectCleanup)
 
-	err := client.Grants.GrantPrivilegeToShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{
-		Database: testClientHelper().Ids.DatabaseId(),
-	}, object.ID())
+	err := client.Grants.GrantPrivilegeToShare(ctx, sdk.NewGrantPrivilegeToShareRequest(object.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(testClientHelper().Ids.DatabaseId())))
 	require.NoError(t, err)
 	cleanup := func() {
-		err = client.Grants.RevokePrivilegeFromShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{
-			Database: testClientHelper().Ids.DatabaseId(),
-		}, object.ID())
+		err = client.Grants.RevokePrivilegeFromShare(ctx, sdk.NewRevokePrivilegeFromShareRequest(object.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(testClientHelper().Ids.DatabaseId())))
 		require.NoError(t, err)
 	}
 	return object, cleanup

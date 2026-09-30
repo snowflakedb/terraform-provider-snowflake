@@ -115,36 +115,12 @@ func TestInt_PipeForceResume(t *testing.T) {
 	require.NoError(t, err)
 
 	// Move the ownership to the role and back to the currently used role by the client
-	err = client.Grants.GrantOwnership(
-		ctx,
-		sdk.OwnershipGrantOn{
-			Object: &sdk.Object{
-				ObjectType: sdk.ObjectTypePipe,
-				Name:       pipe.ID(),
-			},
-		},
-		sdk.OwnershipGrantTo{
-			AccountRoleName: sdk.Pointer(role.ID()),
-		},
-		new(sdk.GrantOwnershipOptions),
-	)
+	err = client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(*sdk.NewOwnershipGrantOnRequest().WithObject(sdk.Object{ObjectType: sdk.ObjectTypePipe, Name: pipe.ID()}), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())))
 	require.NoError(t, err)
 
 	currentRole := testClientHelper().Context.CurrentRole(t)
 
-	err = client.Grants.GrantOwnership(
-		ctx,
-		sdk.OwnershipGrantOn{
-			Object: &sdk.Object{
-				ObjectType: sdk.ObjectTypePipe,
-				Name:       pipe.ID(),
-			},
-		},
-		sdk.OwnershipGrantTo{
-			AccountRoleName: sdk.Pointer(currentRole),
-		},
-		new(sdk.GrantOwnershipOptions),
-	)
+	err = client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(*sdk.NewOwnershipGrantOnRequest().WithObject(sdk.Object{ObjectType: sdk.ObjectTypePipe, Name: pipe.ID()}), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(currentRole)))
 	require.NoError(t, err)
 
 	// Try to resume with ALTER (error)

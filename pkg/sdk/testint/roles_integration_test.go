@@ -258,11 +258,7 @@ func TestInt_Roles(t *testing.T) {
 		require.NoError(t, err)
 
 		// SHOW GRANTS OF ROLE PUBLIC does NOT contain an explicit grant to the parent role
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			Of: &sdk.ShowGrantsOf{
-				Role: publicRoleID,
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOf(*sdk.NewShowGrantsOfRequest().WithRole(publicRoleID)))
 		require.NoError(t, err)
 
 		_, err = collections.FindFirst(grants, func(grant sdk.Grant) bool {
@@ -284,11 +280,7 @@ func TestInt_Roles(t *testing.T) {
 		require.NoError(t, err)
 
 		// SHOW GRANTS OF ROLE PUBLIC does NOT contain an explicit grant to the user
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			Of: &sdk.ShowGrantsOf{
-				Role: publicRoleID,
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOf(*sdk.NewShowGrantsOfRequest().WithRole(publicRoleID)))
 		require.NoError(t, err)
 
 		_, err = collections.FindFirst(grants, func(grant sdk.Grant) bool {

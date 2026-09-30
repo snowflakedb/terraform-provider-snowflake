@@ -57,11 +57,8 @@ func (c *TestClient) EnsureEssentialRolesExist(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("showing role %s: %w", roleGrant.RoleID.Name(), err)
 		}
-		grants, err := c.context.client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			Of: &sdk.ShowGrantsOf{
-				Role: roleGrant.RoleID,
-			},
-		})
+		grants, err := c.context.client.Grants.Show(ctx, sdk.NewShowGrantsRequest().
+			WithOf(*sdk.NewShowGrantsOfRequest().WithRole(roleGrant.RoleID)))
 		if err != nil {
 			return fmt.Errorf("showing grants for role %s: %w", roleGrant.RoleID.Name(), err)
 		}

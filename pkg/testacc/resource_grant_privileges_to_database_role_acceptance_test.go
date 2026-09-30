@@ -725,9 +725,9 @@ func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_Inherited
 					testClient().Grant.RevokeInheritedPrivilegesFromDatabaseRole(
 						t,
 						roleId,
-						sdk.InheritedDatabaseRoleGrantPrivileges{SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect}},
+						*sdk.NewInheritedDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect}),
 						sdk.PluralObjectTypeTables,
-						sdk.InheritedDatabaseRoleGrantIn{Database: new(databaseId)},
+						*sdk.NewInheritedDatabaseRoleGrantInRequest().WithDatabase(databaseId),
 					)
 				},
 				Config: accconfig.FromModels(t, resourceModel),

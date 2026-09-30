@@ -55,11 +55,7 @@ func TestAcc_GrantOwnership_BasicUseCase_OnObject_Database_ToAccountRole(t *test
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", string(sdk.ObjectTypeDatabase)),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", databaseName),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|DATABASE|%s", accountRoleFullyQualifiedName, databaseFullyQualifiedName)),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						To: &sdk.ShowGrantsTo{
-							Role: accountRoleId,
-						},
-					}, sdk.ObjectTypeDatabase, accountRoleName, databaseFullyQualifiedName),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(accountRoleId)), sdk.ObjectTypeDatabase, accountRoleName, databaseFullyQualifiedName),
 				),
 			},
 			{
@@ -104,11 +100,7 @@ func TestAcc_GrantOwnership_Regression_IdentifiersWithDots(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", string(sdk.ObjectTypeDatabase)),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", databaseName),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|DATABASE|%s", accountRoleFullyQualifiedName, databaseFullyQualifiedName)),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						To: &sdk.ShowGrantsTo{
-							Role: accountRoleId,
-						},
-					}, sdk.ObjectTypeDatabase, accountRoleName, databaseFullyQualifiedName),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(accountRoleId)), sdk.ObjectTypeDatabase, accountRoleName, databaseFullyQualifiedName),
 				),
 			},
 			{
@@ -155,11 +147,7 @@ func TestAcc_GrantOwnership_OnObject_Schema_ToAccountRole(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", string(sdk.ObjectTypeSchema)),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", schemaFullyQualifiedName),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|SCHEMA|%s", accountRoleFullyQualifiedName, schemaFullyQualifiedName)),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						To: &sdk.ShowGrantsTo{
-							Role: accountRoleId,
-						},
-					}, sdk.ObjectTypeSchema, accountRoleName, schemaFullyQualifiedName),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(accountRoleId)), sdk.ObjectTypeSchema, accountRoleName, schemaFullyQualifiedName),
 				),
 			},
 			{
@@ -206,11 +194,7 @@ func TestAcc_GrantOwnership_BasicUseCase_OnObject_Schema_ToDatabaseRole(t *testi
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", string(sdk.ObjectTypeSchema)),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", schemaFullyQualifiedName),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToDatabaseRole|%s||OnObject|SCHEMA|%s", databaseRoleFullyQualifiedName, schemaFullyQualifiedName)),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						To: &sdk.ShowGrantsTo{
-							DatabaseRole: databaseRoleId,
-						},
-					}, sdk.ObjectTypeSchema, databaseRoleName, schemaFullyQualifiedName),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRoleId)), sdk.ObjectTypeSchema, databaseRoleName, schemaFullyQualifiedName),
 				),
 			},
 			{
@@ -257,11 +241,7 @@ func TestAcc_GrantOwnership_BasicUseCase_OnObject_Table_ToAccountRole(t *testing
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", string(sdk.ObjectTypeTable)),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", tableId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|TABLE|%s", accountRoleId.FullyQualifiedName(), tableId.FullyQualifiedName())),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						To: &sdk.ShowGrantsTo{
-							Role: accountRoleId,
-						},
-					}, sdk.ObjectTypeTable, accountRoleName, tableId.FullyQualifiedName()),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(accountRoleId)), sdk.ObjectTypeTable, accountRoleName, tableId.FullyQualifiedName()),
 				),
 			},
 			{
@@ -311,11 +291,7 @@ func TestAcc_GrantOwnership_OnObject_Table_ToDatabaseRole(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", string(sdk.ObjectTypeTable)),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", tableFullyQualifiedName),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToDatabaseRole|%s||OnObject|TABLE|%s", databaseRoleFullyQualifiedName, tableFullyQualifiedName)),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						To: &sdk.ShowGrantsTo{
-							DatabaseRole: databaseRoleId,
-						},
-					}, sdk.ObjectTypeTable, databaseRoleName, tableFullyQualifiedName),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRoleId)), sdk.ObjectTypeTable, databaseRoleName, tableFullyQualifiedName),
 				),
 			},
 			{
@@ -369,11 +345,7 @@ func TestAcc_GrantOwnership_BasicUseCase_OnObject_ProcedureWithArguments_ToAccou
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", string(sdk.ObjectTypeProcedure)),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", procedureId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|PROCEDURE|%s", accountRoleId.FullyQualifiedName(), procedureId.FullyQualifiedName())),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						To: &sdk.ShowGrantsTo{
-							Role: accountRoleId,
-						},
-					}, sdk.ObjectTypeProcedure, accountRoleId.Name(), procedureId.FullyQualifiedName()),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(accountRoleId)), sdk.ObjectTypeProcedure, accountRoleId.Name(), procedureId.FullyQualifiedName()),
 				),
 			},
 			{
@@ -420,11 +392,7 @@ func TestAcc_GrantOwnership_OnObject_ProcedureWithoutArguments_ToDatabaseRole(t 
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", string(sdk.ObjectTypeProcedure)),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", procedureId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToDatabaseRole|%s||OnObject|PROCEDURE|%s", databaseRoleId.FullyQualifiedName(), procedureId.FullyQualifiedName())),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						To: &sdk.ShowGrantsTo{
-							DatabaseRole: databaseRoleId,
-						},
-					}, sdk.ObjectTypeProcedure, databaseRoleId.Name(), procedureId.FullyQualifiedName()),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRoleId)), sdk.ObjectTypeProcedure, databaseRoleId.Name(), procedureId.FullyQualifiedName()),
 				),
 			},
 			{
@@ -472,11 +440,7 @@ func TestAcc_GrantOwnership_BasicUseCase_OnAll_InDatabase_ToAccountRole(t *testi
 					resource.TestCheckResourceAttr(resourceName, "on.0.all.0.object_type_plural", string(sdk.PluralObjectTypeTables)),
 					resource.TestCheckResourceAttr(resourceName, "on.0.all.0.in_database", databaseId.Name()),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnAll|TABLES|InDatabase|%s", accountRoleId.FullyQualifiedName(), databaseId.FullyQualifiedName())),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						To: &sdk.ShowGrantsTo{
-							Role: accountRoleId,
-						},
-					}, sdk.ObjectTypeTable, accountRoleId.Name(), tableId.FullyQualifiedName(), secondTableId.FullyQualifiedName()),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(accountRoleId)), sdk.ObjectTypeTable, accountRoleId.Name(), tableId.FullyQualifiedName(), secondTableId.FullyQualifiedName()),
 				),
 			},
 			{
@@ -526,11 +490,7 @@ func TestAcc_GrantOwnership_BasicUseCase_OnAll_InSchema_ToAccountRole(t *testing
 					resource.TestCheckResourceAttr(resourceName, "on.0.all.0.object_type_plural", string(sdk.PluralObjectTypeTables)),
 					resource.TestCheckResourceAttr(resourceName, "on.0.all.0.in_schema", schemaId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnAll|TABLES|InSchema|%s", accountRoleId.FullyQualifiedName(), schemaId.FullyQualifiedName())),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						To: &sdk.ShowGrantsTo{
-							Role: accountRoleId,
-						},
-					}, sdk.ObjectTypeTable, accountRoleName, tableId.FullyQualifiedName(), secondTableId.FullyQualifiedName()),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(accountRoleId)), sdk.ObjectTypeTable, accountRoleName, tableId.FullyQualifiedName(), secondTableId.FullyQualifiedName()),
 				),
 			},
 			{
@@ -575,12 +535,7 @@ func TestAcc_GrantOwnership_BasicUseCase_OnFuture_InDatabase_ToAccountRole(t *te
 					resource.TestCheckResourceAttr(resourceName, "on.0.future.0.object_type_plural", string(sdk.PluralObjectTypeTables)),
 					resource.TestCheckResourceAttr(resourceName, "on.0.future.0.in_database", databaseName),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnFuture|TABLES|InDatabase|%s", accountRoleFullyQualifiedName, databaseFullyQualifiedName)),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						Future: sdk.Bool(true),
-						In: &sdk.ShowGrantsIn{
-							Database: sdk.Pointer(databaseId),
-						},
-					}, sdk.ObjectTypeTable, accountRoleName, fmt.Sprintf(`"%s"."<TABLE>"`, databaseName)),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithFuture(true).WithIn(*sdk.NewShowGrantsInRequest().WithDatabase(databaseId)), sdk.ObjectTypeTable, accountRoleName, fmt.Sprintf(`"%s"."<TABLE>"`, databaseName)),
 				),
 			},
 			{
@@ -629,12 +584,7 @@ func TestAcc_GrantOwnership_BasicUseCase_OnFuture_InSchema_ToAccountRole(t *test
 					resource.TestCheckResourceAttr(resourceName, "on.0.future.0.object_type_plural", string(sdk.PluralObjectTypeTables)),
 					resource.TestCheckResourceAttr(resourceName, "on.0.future.0.in_schema", schemaFullyQualifiedName),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnFuture|TABLES|InSchema|%s", accountRoleFullyQualifiedName, schemaFullyQualifiedName)),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						Future: sdk.Bool(true),
-						In: &sdk.ShowGrantsIn{
-							Schema: sdk.Pointer(schemaId),
-						},
-					}, sdk.ObjectTypeTable, accountRoleName, fmt.Sprintf(`"%s"."%s"."<TABLE>"`, databaseName, schemaName)),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithFuture(true).WithIn(*sdk.NewShowGrantsInRequest().WithSchema(schemaId)), sdk.ObjectTypeTable, accountRoleName, fmt.Sprintf(`"%s"."%s"."<TABLE>"`, databaseName, schemaName)),
 				),
 			},
 			{
@@ -743,11 +693,7 @@ func TestAcc_GrantOwnership_Regression_TargetObjectRemovedOutsideTerraform(t *te
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", string(sdk.ObjectTypeDatabase)),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", databaseName),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|DATABASE|%s", accountRoleFullyQualifiedName, databaseFullyQualifiedName)),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						To: &sdk.ShowGrantsTo{
-							Role: accountRoleId,
-						},
-					}, sdk.ObjectTypeDatabase, accountRoleName, databaseFullyQualifiedName),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(accountRoleId)), sdk.ObjectTypeDatabase, accountRoleName, databaseFullyQualifiedName),
 				),
 			},
 			{
@@ -797,11 +743,7 @@ func TestAcc_GrantOwnership_Regression_AccountRoleRemovedOutsideTerraform(t *tes
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", string(sdk.ObjectTypeDatabase)),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", databaseName),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|DATABASE|%s", accountRoleFullyQualifiedName, databaseFullyQualifiedName)),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						To: &sdk.ShowGrantsTo{
-							Role: accountRoleId,
-						},
-					}, sdk.ObjectTypeDatabase, accountRoleName, databaseFullyQualifiedName),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(accountRoleId)), sdk.ObjectTypeDatabase, accountRoleName, databaseFullyQualifiedName),
 				),
 			},
 			{
@@ -857,11 +799,7 @@ func TestAcc_GrantOwnership_OnMaterializedView(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", string(sdk.ObjectTypeMaterializedView)),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", materializedViewId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|MATERIALIZED VIEW|%s", accountRoleId.FullyQualifiedName(), materializedViewId.FullyQualifiedName())),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						To: &sdk.ShowGrantsTo{
-							Role: accountRoleId,
-						},
-					}, sdk.ObjectTypeMaterializedView, accountRoleName, materializedViewId.FullyQualifiedName()),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(accountRoleId)), sdk.ObjectTypeMaterializedView, accountRoleName, materializedViewId.FullyQualifiedName()),
 				),
 			},
 			{
@@ -983,14 +921,10 @@ func TestAcc_GrantOwnership_MoveOwnershipOutsideTerraform(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", string(sdk.ObjectTypeDatabase)),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", databaseName),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|DATABASE|%s", accountRoleFullyQualifiedName, databaseFullyQualifiedName)),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						On: &sdk.ShowGrantsOn{
-							Object: &sdk.Object{
-								ObjectType: sdk.ObjectTypeDatabase,
-								Name:       databaseId,
-							},
-						},
-					}, sdk.ObjectTypeDatabase, accountRoleName, databaseFullyQualifiedName),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+						ObjectType: sdk.ObjectTypeDatabase,
+						Name:       databaseId,
+					})), sdk.ObjectTypeDatabase, accountRoleName, databaseFullyQualifiedName),
 				),
 			},
 		},
@@ -1074,14 +1008,10 @@ func TestAcc_GrantOwnership_OnPipe(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", string(sdk.ObjectTypePipe)),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", pipeId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|PIPE|%s", accountRoleFullyQualifiedName, pipeId.FullyQualifiedName())),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						On: &sdk.ShowGrantsOn{
-							Object: &sdk.Object{
-								ObjectType: sdk.ObjectTypePipe,
-								Name:       pipeId,
-							},
-						},
-					}, sdk.ObjectTypePipe, accountRoleName, pipeId.FullyQualifiedName()),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+						ObjectType: sdk.ObjectTypePipe,
+						Name:       pipeId,
+					})), sdk.ObjectTypePipe, accountRoleName, pipeId.FullyQualifiedName()),
 				),
 			},
 		},
@@ -1122,11 +1052,7 @@ func TestAcc_GrantOwnership_OnAllPipes(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleName),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnAll|PIPES|InSchema|%s", accountRoleFullyQualifiedName, testClient().Ids.SchemaId().FullyQualifiedName())),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						To: &sdk.ShowGrantsTo{
-							Role: accountRoleId,
-						},
-					}, sdk.ObjectTypePipe, accountRoleName, pipeId.FullyQualifiedName(), secondPipeId.FullyQualifiedName()),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(accountRoleId)), sdk.ObjectTypePipe, accountRoleName, pipeId.FullyQualifiedName(), secondPipeId.FullyQualifiedName()),
 				),
 			},
 		},
@@ -1159,14 +1085,10 @@ func TestAcc_GrantOwnership_OnTask(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", string(sdk.ObjectTypeTask)),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", taskId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|TASK|%s", accountRoleId.FullyQualifiedName(), taskId.FullyQualifiedName())),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						On: &sdk.ShowGrantsOn{
-							Object: &sdk.Object{
-								ObjectType: sdk.ObjectTypeTask,
-								Name:       taskId,
-							},
-						},
-					}, sdk.ObjectTypeTask, accountRoleId.Name(), taskId.FullyQualifiedName()),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+						ObjectType: sdk.ObjectTypeTask,
+						Name:       taskId,
+					})), sdk.ObjectTypeTask, accountRoleId.Name(), taskId.FullyQualifiedName()),
 				),
 			},
 		},
@@ -1199,11 +1121,7 @@ func TestAcc_GrantOwnership_OnAllTasks(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleId.Name()),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s|REVOKE|OnAll|TASKS|InSchema|%s", accountRoleId.FullyQualifiedName(), testClient().Ids.SchemaId().FullyQualifiedName())),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						To: &sdk.ShowGrantsTo{
-							Role: accountRoleId,
-						},
-					},
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(accountRoleId)),
 						sdk.ObjectTypeTask, accountRoleId.Name(), taskId.FullyQualifiedName(), secondTaskId.FullyQualifiedName()),
 				),
 			},
@@ -1238,14 +1156,10 @@ func TestAcc_GrantOwnership_OnServerlessTask(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", sdk.ObjectTypeTask.String()),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", taskId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|TASK|%s", accountRoleId.FullyQualifiedName(), taskId.FullyQualifiedName())),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						On: &sdk.ShowGrantsOn{
-							Object: &sdk.Object{
-								ObjectType: sdk.ObjectTypeTask,
-								Name:       taskId,
-							},
-						},
-					}, sdk.ObjectTypeTask, accountRoleId.Name(), taskId.FullyQualifiedName()),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+						ObjectType: sdk.ObjectTypeTask,
+						Name:       taskId,
+					})), sdk.ObjectTypeTask, accountRoleId.Name(), taskId.FullyQualifiedName()),
 				),
 			},
 		},
@@ -1385,11 +1299,7 @@ func TestAcc_GrantOwnership_OnObject_ResourceMonitor_ToAccountRole(t *testing.T)
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", string(sdk.ObjectTypeResourceMonitor)),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", resourceMonitorName),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|RESOURCE MONITOR|%s", accountRoleFullyQualifiedName, resourceMonitorIdFullyQualifiedName)),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						To: &sdk.ShowGrantsTo{
-							Role: accountRoleId,
-						},
-					}, sdk.ObjectTypeResourceMonitor, accountRoleName, resourceMonitorIdFullyQualifiedName),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(accountRoleId)), sdk.ObjectTypeResourceMonitor, accountRoleName, resourceMonitorIdFullyQualifiedName),
 				),
 			},
 			{
@@ -1410,13 +1320,11 @@ func TestAcc_GrantOwnership_OnObject_SnowflakeIntelligence_ToAccountRole(t *test
 	t.Cleanup(roleCleanup)
 	accountRoleId := role.ID()
 
-	resourceModel := model.GrantOwnership("test", []sdk.OwnershipGrantOn{
-		{
-			Object: &sdk.Object{
-				ObjectType: sdk.ObjectTypeSnowflakeIntelligence,
-				Name:       snowflakeIntelligenceId,
-			},
-		},
+	resourceModel := model.GrantOwnership("test", []sdk.OwnershipGrantOnRequest{
+		*sdk.NewOwnershipGrantOnRequest().WithObject(sdk.Object{
+			ObjectType: sdk.ObjectTypeSnowflakeIntelligence,
+			Name:       snowflakeIntelligenceId,
+		}),
 	}).WithAccountRoleName(accountRoleId.FullyQualifiedName())
 	ref := resourceModel.ResourceReference()
 
@@ -1435,11 +1343,7 @@ func TestAcc_GrantOwnership_OnObject_SnowflakeIntelligence_ToAccountRole(t *test
 					assert.Check(resource.TestCheckResourceAttr(ref, "on.0.object_type", string(sdk.ObjectTypeSnowflakeIntelligence))),
 					assert.Check(resource.TestCheckResourceAttr(ref, "on.0.object_name", snowflakeIntelligenceId.FullyQualifiedName())),
 					assert.Check(resource.TestCheckResourceAttr(ref, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|%s|%s", accountRoleId.FullyQualifiedName(), sdk.ObjectTypeSnowflakeIntelligence, snowflakeIntelligenceId.FullyQualifiedName()))),
-					assert.Check(checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						To: &sdk.ShowGrantsTo{
-							Role: accountRoleId,
-						},
-					}, sdk.ObjectTypeSnowflakeIntelligence, accountRoleId.Name(), snowflakeIntelligenceId.FullyQualifiedName())),
+					assert.Check(checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(accountRoleId)), sdk.ObjectTypeSnowflakeIntelligence, accountRoleId.Name(), snowflakeIntelligenceId.FullyQualifiedName())),
 				),
 			},
 			{

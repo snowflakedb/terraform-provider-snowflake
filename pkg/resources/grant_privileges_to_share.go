@@ -188,7 +188,9 @@ func CreateGrantPrivilegesToShare(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	err = client.Grants.GrantPrivilegeToShare(ctx, getObjectPrivilegesFromSchema(d), grantOn, id.ShareName)
+	err = client.Grants.GrantPrivilegeToShare(ctx, sdk.NewGrantPrivilegeToShareRequest(id.ShareName).
+		WithPrivileges(getObjectPrivilegesFromSchema(d)).
+		WithOn(*grantOn))
 	if err != nil {
 		return diag.Diagnostics{
 			diag.Diagnostic{
@@ -249,12 +251,9 @@ func UpdateGrantPrivilegesToShare(ctx context.Context, d *schema.ResourceData, m
 		}
 
 		if len(privilegesToAdd) > 0 {
-			err = client.Grants.GrantPrivilegeToShare(
-				ctx,
-				privilegesToAdd,
-				grantOn,
-				id.ShareName,
-			)
+			err = client.Grants.GrantPrivilegeToShare(ctx, sdk.NewGrantPrivilegeToShareRequest(id.ShareName).
+				WithPrivileges(privilegesToAdd).
+				WithOn(*grantOn))
 			if err != nil {
 				return diag.Diagnostics{
 					diag.Diagnostic{
@@ -267,12 +266,9 @@ func UpdateGrantPrivilegesToShare(ctx context.Context, d *schema.ResourceData, m
 		}
 
 		if len(privilegesToRemove) > 0 {
-			err = client.Grants.RevokePrivilegeFromShare(
-				ctx,
-				privilegesToRemove,
-				grantOn,
-				id.ShareName,
-			)
+			err = client.Grants.RevokePrivilegeFromShare(ctx, sdk.NewRevokePrivilegeFromShareRequest(id.ShareName).
+				WithPrivileges(privilegesToRemove).
+				WithOn(*grantOn))
 			if err != nil {
 				return diag.Diagnostics{
 					diag.Diagnostic{
@@ -315,9 +311,13 @@ func DeleteGrantPrivilegesToShare(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy) {
-		err = client.Grants.RevokePrivilegeFromShareSafely(ctx, getObjectPrivilegesFromSchema(d), grantOn, id.ShareName)
+		err = client.Grants.RevokePrivilegeFromShareSafely(ctx, sdk.NewRevokePrivilegeFromShareRequest(id.ShareName).
+			WithPrivileges(getObjectPrivilegesFromSchema(d)).
+			WithOn(*grantOn))
 	} else {
-		err = client.Grants.RevokePrivilegeFromShare(ctx, getObjectPrivilegesFromSchema(d), grantOn, id.ShareName)
+		err = client.Grants.RevokePrivilegeFromShare(ctx, sdk.NewRevokePrivilegeFromShareRequest(id.ShareName).
+			WithPrivileges(getObjectPrivilegesFromSchema(d)).
+			WithOn(*grantOn))
 	}
 	if err != nil {
 		return diag.Diagnostics{
@@ -504,8 +504,8 @@ func getObjectPrivilegesFromSchema(d *schema.ResourceData) []sdk.ObjectPrivilege
 	return objectPrivileges
 }
 
-func getShareGrantOn(d *schema.ResourceData) (*sdk.ShareGrantOn, error) {
-	grantOn := new(sdk.ShareGrantOn)
+func getShareGrantOn(d *schema.ResourceData) (*sdk.ShareGrantOnRequest, error) {
+	grantOn := sdk.NewShareGrantOnRequest()
 
 	databaseName, databaseNameOk := d.GetOk("on_database")
 	schemaName, schemaNameOk := d.GetOk("on_schema")
@@ -521,54 +521,50 @@ func getShareGrantOn(d *schema.ResourceData) (*sdk.ShareGrantOn, error) {
 		if err != nil {
 			return nil, err
 		}
-		grantOn.Database = databaseId
+		grantOn.WithDatabase(databaseId)
 	case len(schemaName.(string)) > 0 && schemaNameOk:
 		schemaId, err := sdk.ParseDatabaseObjectIdentifier(schemaName.(string))
 		if err != nil {
 			return nil, err
 		}
-		grantOn.Schema = schemaId
+		grantOn.WithSchema(schemaId)
 	case len(functionName.(string)) > 0 && functionNameOk:
 		id, err := sdk.ParseSchemaObjectIdentifierWithArguments(functionName.(string))
 		if err != nil {
 			return nil, err
 		}
-		grantOn.Function = id
+		grantOn.WithFunction(id)
 	case len(tableName.(string)) > 0 && tableNameOk:
 		tableId, err := sdk.ParseSchemaObjectIdentifier(tableName.(string))
 		if err != nil {
 			return nil, err
 		}
-		grantOn.Table = &sdk.OnTable{
-			Name: tableId,
-		}
+		grantOn.WithTable(*sdk.NewOnTableRequest().WithName(tableId))
 	case len(allTablesInSchema.(string)) > 0 && allTablesInSchemaOk:
 		schemaId, err := sdk.ParseDatabaseObjectIdentifier(allTablesInSchema.(string))
 		if err != nil {
 			return nil, err
 		}
-		grantOn.Table = &sdk.OnTable{
-			AllInSchema: schemaId,
-		}
+		grantOn.WithTable(*sdk.NewOnTableRequest().WithAllInSchema(schemaId))
 	case len(tagName.(string)) > 0 && tagNameOk:
 		tagId, err := sdk.ParseSchemaObjectIdentifier(tagName.(string))
 		if err != nil {
 			return nil, err
 		}
-		grantOn.Tag = tagId
+		grantOn.WithTag(tagId)
 	case len(viewName.(string)) > 0 && viewNameOk:
 		viewId, err := sdk.ParseSchemaObjectIdentifier(viewName.(string))
 		if err != nil {
 			return nil, err
 		}
-		grantOn.View = viewId
+		grantOn.WithView(viewId)
 	}
 
 	return grantOn, nil
 }
 
-func prepareShowGrantsRequestForShare(id GrantPrivilegesToShareId) (*sdk.ShowGrantOptions, sdk.ObjectType) {
-	opts := new(sdk.ShowGrantOptions)
+func prepareShowGrantsRequestForShare(id GrantPrivilegesToShareId) (*sdk.ShowGrantsRequest, sdk.ObjectType) {
+	opts := sdk.NewShowGrantsRequest()
 	var objectType sdk.ObjectType
 
 	switch id.Kind {
@@ -589,12 +585,10 @@ func prepareShowGrantsRequestForShare(id GrantPrivilegesToShareId) (*sdk.ShowGra
 		objectType = sdk.ObjectTypeFunction
 	}
 
-	opts.On = &sdk.ShowGrantsOn{
-		Object: &sdk.Object{
-			ObjectType: objectType,
-			Name:       id.Identifier,
-		},
-	}
+	opts.WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+		ObjectType: objectType,
+		Name:       id.Identifier,
+	}))
 
 	return opts, objectType
 }

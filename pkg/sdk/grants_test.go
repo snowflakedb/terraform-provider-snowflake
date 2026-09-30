@@ -10,55 +10,55 @@ import (
 
 func TestGrantPrivilegesToAccountRole(t *testing.T) {
 	t.Run("validation: privilege with disallowed characters", func(t *testing.T) {
-		opts := &GrantPrivilegesToAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &grantPrivilegesToAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				GlobalPrivileges: []GlobalPrivilege{"MONITOR USAGE; SELECT"},
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				Account: new(true),
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("invalid privilege: %s contains disallowed characters; it must follow this regex: %s", "MONITOR USAGE; SELECT", allowedUnquotedCharactersRegex.String()))
 	})
 
 	t.Run("privileges with certain special characters are allowed", func(t *testing.T) {
 		schemaId := randomDatabaseObjectIdentifier()
-		opts := &GrantPrivilegesToAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &grantPrivilegesToAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				SchemaPrivileges: []SchemaPrivilege{"CREATE SNOWFLAKE.ML.ANOMALY_DETECTION", "applybudget"},
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				Schema: &GrantOnSchema{
 					Schema: new(schemaId),
 				},
 			},
-			accountRole:     NewAccountObjectIdentifier("role1"),
+			AccountRole:     NewAccountObjectIdentifier("role1"),
 			WithGrantOption: new(true),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT CREATE SNOWFLAKE.ML.ANOMALY_DETECTION, applybudget ON SCHEMA %s TO ROLE "role1" WITH GRANT OPTION`, schemaId.FullyQualifiedName())
 	})
 
 	t.Run("on account", func(t *testing.T) {
-		opts := &GrantPrivilegesToAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &grantPrivilegesToAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				GlobalPrivileges: []GlobalPrivilege{GlobalPrivilegeMonitorUsage, GlobalPrivilegeApplyTag},
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				Account: Bool(true),
 			},
-			accountRole:     NewAccountObjectIdentifier("role1"),
+			AccountRole:     NewAccountObjectIdentifier("role1"),
 			WithGrantOption: Bool(true),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT MONITOR USAGE, APPLY TAG ON ACCOUNT TO ROLE "role1" WITH GRANT OPTION`)
 	})
 
 	t.Run("on account object", func(t *testing.T) {
-		opts := &GrantPrivilegesToAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &grantPrivilegesToAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				AllPrivileges: Bool(true),
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				AccountObject: &GrantOnAccountObject{
 					Object: &Object{
 						ObjectType: ObjectTypeDatabase,
@@ -66,17 +66,17 @@ func TestGrantPrivilegesToAccountRole(t *testing.T) {
 					},
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT ALL PRIVILEGES ON DATABASE "db1" TO ROLE "role1"`)
 	})
 
 	t.Run("on account object - external volume", func(t *testing.T) {
-		opts := &GrantPrivilegesToAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &grantPrivilegesToAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				AllPrivileges: Bool(true),
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				AccountObject: &GrantOnAccountObject{
 					Object: &Object{
 						ObjectType: ObjectTypeExternalVolume,
@@ -84,17 +84,17 @@ func TestGrantPrivilegesToAccountRole(t *testing.T) {
 					},
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT ALL PRIVILEGES ON EXTERNAL VOLUME "ex volume" TO ROLE "role1"`)
 	})
 
 	t.Run("on account object - compute pool", func(t *testing.T) {
-		opts := &GrantPrivilegesToAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &grantPrivilegesToAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				AllPrivileges: Bool(true),
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				AccountObject: &GrantOnAccountObject{
 					Object: &Object{
 						ObjectType: ObjectTypeComputePool,
@@ -102,17 +102,17 @@ func TestGrantPrivilegesToAccountRole(t *testing.T) {
 					},
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT ALL PRIVILEGES ON COMPUTE POOL "compute pool" TO ROLE "role1"`)
 	})
 
 	t.Run("on account object - connection", func(t *testing.T) {
-		opts := &GrantPrivilegesToAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &grantPrivilegesToAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				AllPrivileges: Bool(true),
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				AccountObject: &GrantOnAccountObject{
 					Object: &Object{
 						ObjectType: ObjectTypeConnection,
@@ -120,30 +120,30 @@ func TestGrantPrivilegesToAccountRole(t *testing.T) {
 					},
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT ALL PRIVILEGES ON CONNECTION "myconn" TO ROLE "role1"`)
 	})
 
 	t.Run("on account object - object is required", func(t *testing.T) {
-		opts := &GrantPrivilegesToAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &grantPrivilegesToAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				AllPrivileges: Bool(true),
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				AccountObject: &GrantOnAccountObject{},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
-		assertOptsInvalid(t, opts, errNotSet("GrantOnAccountObject", "Object"))
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("grantPrivilegesToAccountRoleOptions.On.AccountObject", "Object"))
 	})
 
 	t.Run("on account object - unknown type fallback", func(t *testing.T) {
-		opts := &GrantPrivilegesToAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &grantPrivilegesToAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				AllPrivileges: Bool(true),
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				AccountObject: &GrantOnAccountObject{
 					Object: &Object{
 						ObjectType: ObjectTypePostgresInstance,
@@ -151,17 +151,17 @@ func TestGrantPrivilegesToAccountRole(t *testing.T) {
 					},
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT ALL PRIVILEGES ON POSTGRES INSTANCE "pg1" TO ROLE "role1"`)
 	})
 
 	t.Run("on account object - unknown type fallback rejects injection", func(t *testing.T) {
-		opts := &GrantPrivilegesToAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &grantPrivilegesToAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				AllPrivileges: Bool(true),
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				AccountObject: &GrantOnAccountObject{
 					Object: &Object{
 						ObjectType: ObjectType("TABLE; DROP"),
@@ -169,64 +169,64 @@ func TestGrantPrivilegesToAccountRole(t *testing.T) {
 					},
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("invalid object type: %s contains disallowed characters; it must follow this regex: %s", "TABLE; DROP", allowedUnquotedCharactersRegex.String()))
 	})
 
 	t.Run("on schema", func(t *testing.T) {
 		id := randomDatabaseObjectIdentifier()
-		opts := &GrantPrivilegesToAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &grantPrivilegesToAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				SchemaPrivileges: []SchemaPrivilege{SchemaPrivilegeCreateAlert},
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				Schema: &GrantOnSchema{
 					Schema: Pointer(id),
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT CREATE ALERT ON SCHEMA %s TO ROLE "role1"`, id.FullyQualifiedName())
 	})
 
 	t.Run("on all schemas in database", func(t *testing.T) {
-		opts := &GrantPrivilegesToAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &grantPrivilegesToAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				SchemaPrivileges: []SchemaPrivilege{SchemaPrivilegeCreateAlert},
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				Schema: &GrantOnSchema{
 					AllSchemasInDatabase: Pointer(NewAccountObjectIdentifier("db1")),
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT CREATE ALERT ON ALL SCHEMAS IN DATABASE "db1" TO ROLE "role1"`)
 	})
 
 	t.Run("on all future schemas in database", func(t *testing.T) {
-		opts := &GrantPrivilegesToAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &grantPrivilegesToAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				SchemaPrivileges: []SchemaPrivilege{SchemaPrivilegeCreateAlert},
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				Schema: &GrantOnSchema{
 					FutureSchemasInDatabase: Pointer(NewAccountObjectIdentifier("db1")),
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT CREATE ALERT ON FUTURE SCHEMAS IN DATABASE "db1" TO ROLE "role1"`)
 	})
 
 	t.Run("on schema object", func(t *testing.T) {
 		tableId := randomSchemaObjectIdentifier()
-		opts := &GrantPrivilegesToAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &grantPrivilegesToAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeApply},
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				SchemaObject: &GrantOnSchemaObject{
 					SchemaObject: &Object{
 						ObjectType: ObjectTypeTable,
@@ -234,17 +234,17 @@ func TestGrantPrivilegesToAccountRole(t *testing.T) {
 					},
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT APPLY ON TABLE %s TO ROLE "role1"`, tableId.FullyQualifiedName())
 	})
 
 	t.Run("on future schema object in database", func(t *testing.T) {
-		opts := &GrantPrivilegesToAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &grantPrivilegesToAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeApply},
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				SchemaObject: &GrantOnSchemaObject{
 					Future: &GrantOnSchemaObjectIn{
 						PluralObjectType: PluralObjectTypeTables,
@@ -252,18 +252,18 @@ func TestGrantPrivilegesToAccountRole(t *testing.T) {
 					},
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT APPLY ON FUTURE TABLES IN DATABASE "db1" TO ROLE "role1"`)
 	})
 
 	t.Run("on future schema object in schema", func(t *testing.T) {
 		id := randomDatabaseObjectIdentifier()
-		opts := &GrantPrivilegesToAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &grantPrivilegesToAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeApply},
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				SchemaObject: &GrantOnSchemaObject{
 					Future: &GrantOnSchemaObjectIn{
 						PluralObjectType: PluralObjectTypeTables,
@@ -271,7 +271,7 @@ func TestGrantPrivilegesToAccountRole(t *testing.T) {
 					},
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT APPLY ON FUTURE TABLES IN SCHEMA %s TO ROLE "role1"`, id.FullyQualifiedName())
 	})
@@ -281,37 +281,37 @@ func TestRevokePrivilegesFromAccountRole(t *testing.T) {
 	schemaId := randomDatabaseObjectIdentifier()
 
 	t.Run("validation: privilege with disallowed characters", func(t *testing.T) {
-		opts := &RevokePrivilegesFromAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &revokePrivilegesFromAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				GlobalPrivileges: []GlobalPrivilege{"MONITOR USAGE; SELECT"},
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				Account: new(true),
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("invalid privilege: %s contains disallowed characters; it must follow this regex: %s", "MONITOR USAGE; SELECT", allowedUnquotedCharactersRegex.String()))
 	})
 
 	t.Run("on account", func(t *testing.T) {
-		opts := &RevokePrivilegesFromAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &revokePrivilegesFromAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				GlobalPrivileges: []GlobalPrivilege{GlobalPrivilegeMonitorUsage, GlobalPrivilegeApplyTag},
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				Account: Bool(true),
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `REVOKE MONITOR USAGE, APPLY TAG ON ACCOUNT FROM ROLE "role1"`)
 	})
 
 	t.Run("on account object", func(t *testing.T) {
-		opts := &RevokePrivilegesFromAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &revokePrivilegesFromAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				AllPrivileges: Bool(true),
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				AccountObject: &GrantOnAccountObject{
 					Object: &Object{
 						ObjectType: ObjectTypeDatabase,
@@ -319,17 +319,17 @@ func TestRevokePrivilegesFromAccountRole(t *testing.T) {
 					},
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `REVOKE ALL PRIVILEGES ON DATABASE "db1" FROM ROLE "role1"`)
 	})
 
 	t.Run("on account object", func(t *testing.T) {
-		opts := &RevokePrivilegesFromAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &revokePrivilegesFromAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				AccountObjectPrivileges: []AccountObjectPrivilege{AccountObjectPrivilegeCreateDatabaseRole, AccountObjectPrivilegeModify},
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				AccountObject: &GrantOnAccountObject{
 					Object: &Object{
 						ObjectType: ObjectTypeDatabase,
@@ -337,53 +337,53 @@ func TestRevokePrivilegesFromAccountRole(t *testing.T) {
 					},
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `REVOKE CREATE DATABASE ROLE, MODIFY ON DATABASE "db1" FROM ROLE "role1"`)
 	})
 
 	t.Run("on schema", func(t *testing.T) {
-		opts := &RevokePrivilegesFromAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &revokePrivilegesFromAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				SchemaPrivileges: []SchemaPrivilege{SchemaPrivilegeCreateAlert, SchemaPrivilegeAddSearchOptimization},
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				Schema: &GrantOnSchema{
 					Schema: Pointer(schemaId),
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `REVOKE CREATE ALERT, ADD SEARCH OPTIMIZATION ON SCHEMA %s FROM ROLE "role1"`, schemaId.FullyQualifiedName())
 	})
 
 	t.Run("on all schemas in database + restrict", func(t *testing.T) {
-		opts := &RevokePrivilegesFromAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &revokePrivilegesFromAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				SchemaPrivileges: []SchemaPrivilege{SchemaPrivilegeCreateAlert, SchemaPrivilegeAddSearchOptimization},
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				Schema: &GrantOnSchema{
 					AllSchemasInDatabase: Pointer(NewAccountObjectIdentifier("db1")),
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 			Restrict:    Bool(true),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `REVOKE CREATE ALERT, ADD SEARCH OPTIMIZATION ON ALL SCHEMAS IN DATABASE "db1" FROM ROLE "role1" RESTRICT`)
 	})
 
 	t.Run("on all future schemas in database + cascade", func(t *testing.T) {
-		opts := &RevokePrivilegesFromAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &revokePrivilegesFromAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				SchemaPrivileges: []SchemaPrivilege{SchemaPrivilegeCreateAlert, SchemaPrivilegeAddSearchOptimization},
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				Schema: &GrantOnSchema{
 					FutureSchemasInDatabase: Pointer(NewAccountObjectIdentifier("db1")),
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 			Cascade:     Bool(true),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `REVOKE CREATE ALERT, ADD SEARCH OPTIMIZATION ON FUTURE SCHEMAS IN DATABASE "db1" FROM ROLE "role1" CASCADE`)
@@ -391,11 +391,11 @@ func TestRevokePrivilegesFromAccountRole(t *testing.T) {
 
 	t.Run("on schema object", func(t *testing.T) {
 		tableId := randomSchemaObjectIdentifier()
-		opts := &RevokePrivilegesFromAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &revokePrivilegesFromAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect, SchemaObjectPrivilegeUpdate},
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				SchemaObject: &GrantOnSchemaObject{
 					SchemaObject: &Object{
 						ObjectType: ObjectTypeTable,
@@ -403,17 +403,17 @@ func TestRevokePrivilegesFromAccountRole(t *testing.T) {
 					},
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `REVOKE SELECT, UPDATE ON TABLE %s FROM ROLE "role1"`, tableId.FullyQualifiedName())
 	})
 
 	t.Run("on future schema object in database", func(t *testing.T) {
-		opts := &RevokePrivilegesFromAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &revokePrivilegesFromAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect, SchemaObjectPrivilegeUpdate},
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				SchemaObject: &GrantOnSchemaObject{
 					Future: &GrantOnSchemaObjectIn{
 						PluralObjectType: PluralObjectTypeTables,
@@ -421,18 +421,18 @@ func TestRevokePrivilegesFromAccountRole(t *testing.T) {
 					},
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `REVOKE SELECT, UPDATE ON FUTURE TABLES IN DATABASE "db1" FROM ROLE "role1"`)
 	})
 
 	t.Run("on future schema object in schema", func(t *testing.T) {
 		id := randomDatabaseObjectIdentifier()
-		opts := &RevokePrivilegesFromAccountRoleOptions{
-			privileges: &AccountRoleGrantPrivileges{
+		opts := &revokePrivilegesFromAccountRoleOptions{
+			Privileges: &AccountRoleGrantPrivileges{
 				SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect, SchemaObjectPrivilegeUpdate},
 			},
-			on: &AccountRoleGrantOn{
+			On: &AccountRoleGrantOn{
 				SchemaObject: &GrantOnSchemaObject{
 					Future: &GrantOnSchemaObjectIn{
 						PluralObjectType: PluralObjectTypeTables,
@@ -440,7 +440,7 @@ func TestRevokePrivilegesFromAccountRole(t *testing.T) {
 					},
 				},
 			},
-			accountRole: NewAccountObjectIdentifier("role1"),
+			AccountRole: NewAccountObjectIdentifier("role1"),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `REVOKE SELECT, UPDATE ON FUTURE TABLES IN SCHEMA %s FROM ROLE "role1"`, id.FullyQualifiedName())
 	})
@@ -451,38 +451,38 @@ func TestGrants_GrantPrivilegesToDatabaseRole(t *testing.T) {
 	databaseRoleId := randomDatabaseObjectIdentifierInDatabase(dbId)
 	schemaId := randomDatabaseObjectIdentifierInDatabase(dbId)
 
-	defaultGrantsForDb := func() *GrantPrivilegesToDatabaseRoleOptions {
-		return &GrantPrivilegesToDatabaseRoleOptions{
-			privileges: &DatabaseRoleGrantPrivileges{
+	defaultGrantsForDb := func() *grantPrivilegesToDatabaseRoleOptions {
+		return &grantPrivilegesToDatabaseRoleOptions{
+			Privileges: &DatabaseRoleGrantPrivileges{
 				DatabasePrivileges: []AccountObjectPrivilege{AccountObjectPrivilegeCreateSchema},
 			},
-			on: &DatabaseRoleGrantOn{
+			On: &DatabaseRoleGrantOn{
 				Database: &dbId,
 			},
-			databaseRole: databaseRoleId,
+			DatabaseRole: databaseRoleId,
 		}
 	}
 
-	defaultGrantsForSchema := func() *GrantPrivilegesToDatabaseRoleOptions {
-		return &GrantPrivilegesToDatabaseRoleOptions{
-			privileges: &DatabaseRoleGrantPrivileges{
+	defaultGrantsForSchema := func() *grantPrivilegesToDatabaseRoleOptions {
+		return &grantPrivilegesToDatabaseRoleOptions{
+			Privileges: &DatabaseRoleGrantPrivileges{
 				SchemaPrivileges: []SchemaPrivilege{SchemaPrivilegeCreateAlert},
 			},
-			on: &DatabaseRoleGrantOn{
+			On: &DatabaseRoleGrantOn{
 				Schema: &GrantOnSchema{
 					Schema: Pointer(schemaId),
 				},
 			},
-			databaseRole: databaseRoleId,
+			DatabaseRole: databaseRoleId,
 		}
 	}
 	tableId := randomSchemaObjectIdentifier()
-	defaultGrantsForSchemaObject := func() *GrantPrivilegesToDatabaseRoleOptions {
-		return &GrantPrivilegesToDatabaseRoleOptions{
-			privileges: &DatabaseRoleGrantPrivileges{
+	defaultGrantsForSchemaObject := func() *grantPrivilegesToDatabaseRoleOptions {
+		return &grantPrivilegesToDatabaseRoleOptions{
+			Privileges: &DatabaseRoleGrantPrivileges{
 				SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeApply},
 			},
-			on: &DatabaseRoleGrantOn{
+			On: &DatabaseRoleGrantOn{
 				SchemaObject: &GrantOnSchemaObject{
 					SchemaObject: &Object{
 						ObjectType: ObjectTypeTable,
@@ -490,13 +490,13 @@ func TestGrants_GrantPrivilegesToDatabaseRole(t *testing.T) {
 					},
 				},
 			},
-			databaseRole: databaseRoleId,
+			DatabaseRole: databaseRoleId,
 		}
 	}
 
 	t.Run("validation: privilege with disallowed characters", func(t *testing.T) {
 		opts := defaultGrantsForDb()
-		opts.privileges = &DatabaseRoleGrantPrivileges{
+		opts.Privileges = &DatabaseRoleGrantPrivileges{
 			DatabasePrivileges: []AccountObjectPrivilege{"CREATE SCHEMA--"},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("invalid privilege: %s contains disallowed characters; it must follow this regex: %s", "CREATE SCHEMA--", allowedUnquotedCharactersRegex.String()))
@@ -504,82 +504,82 @@ func TestGrants_GrantPrivilegesToDatabaseRole(t *testing.T) {
 
 	t.Run("validation: nil privileges set", func(t *testing.T) {
 		opts := defaultGrantsForDb()
-		opts.privileges = nil
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GrantPrivilegesToDatabaseRoleOptions", "privileges"))
+		opts.Privileges = nil
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("grantPrivilegesToDatabaseRoleOptions", "Privileges"))
 	})
 
 	t.Run("validation: no privileges set", func(t *testing.T) {
 		opts := defaultGrantsForDb()
-		opts.privileges = &DatabaseRoleGrantPrivileges{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("DatabaseRoleGrantPrivileges", "DatabasePrivileges", "SchemaPrivileges", "SchemaObjectPrivileges", "AllPrivileges"))
+		opts.Privileges = &DatabaseRoleGrantPrivileges{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("grantPrivilegesToDatabaseRoleOptions.Privileges", "DatabasePrivileges", "SchemaPrivileges", "SchemaObjectPrivileges", "AllPrivileges"))
 	})
 
 	t.Run("validation: too many privileges set", func(t *testing.T) {
 		opts := defaultGrantsForDb()
-		opts.privileges = &DatabaseRoleGrantPrivileges{
+		opts.Privileges = &DatabaseRoleGrantPrivileges{
 			DatabasePrivileges: []AccountObjectPrivilege{AccountObjectPrivilegeCreateSchema},
 			SchemaPrivileges:   []SchemaPrivilege{SchemaPrivilegeCreateAlert},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("DatabaseRoleGrantPrivileges", "DatabasePrivileges", "SchemaPrivileges", "SchemaObjectPrivileges", "AllPrivileges"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("grantPrivilegesToDatabaseRoleOptions.Privileges", "DatabasePrivileges", "SchemaPrivileges", "SchemaObjectPrivileges", "AllPrivileges"))
 	})
 
 	t.Run("validation: no on set", func(t *testing.T) {
 		opts := defaultGrantsForDb()
-		opts.on = nil
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GrantPrivilegesToDatabaseRoleOptions", "on"))
+		opts.On = nil
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("grantPrivilegesToDatabaseRoleOptions", "On"))
 	})
 
 	t.Run("validation: no on set", func(t *testing.T) {
 		opts := defaultGrantsForDb()
-		opts.on = &DatabaseRoleGrantOn{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("DatabaseRoleGrantOn", "Database", "Schema", "SchemaObject"))
+		opts.On = &DatabaseRoleGrantOn{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("grantPrivilegesToDatabaseRoleOptions.On", "Database", "Schema", "SchemaObject"))
 	})
 
 	t.Run("validation: too many ons set", func(t *testing.T) {
 		opts := defaultGrantsForDb()
-		opts.on = &DatabaseRoleGrantOn{
+		opts.On = &DatabaseRoleGrantOn{
 			Database: &dbId,
 			Schema: &GrantOnSchema{
 				Schema: Pointer(schemaId),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("DatabaseRoleGrantOn", "Database", "Schema", "SchemaObject"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("grantPrivilegesToDatabaseRoleOptions.On", "Database", "Schema", "SchemaObject"))
 	})
 
 	t.Run("validation: grant on schema", func(t *testing.T) {
 		opts := defaultGrantsForSchema()
-		opts.on.Schema = &GrantOnSchema{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantOnSchema", "Schema", "AllSchemasInDatabase", "FutureSchemasInDatabase"))
+		opts.On.Schema = &GrantOnSchema{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("grantPrivilegesToDatabaseRoleOptions.On.Schema", "Schema", "AllSchemasInDatabase", "FutureSchemasInDatabase"))
 	})
 
 	t.Run("validation: grant on schema object", func(t *testing.T) {
 		opts := defaultGrantsForSchemaObject()
-		opts.on.SchemaObject = &GrantOnSchemaObject{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantOnSchemaObject", "SchemaObject", "All", "Future"))
+		opts.On.SchemaObject = &GrantOnSchemaObject{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("grantPrivilegesToDatabaseRoleOptions.On.SchemaObject", "SchemaObject", "All", "Future"))
 	})
 
 	t.Run("validation: grant on schema object - all", func(t *testing.T) {
 		opts := defaultGrantsForSchemaObject()
-		opts.on = &DatabaseRoleGrantOn{
+		opts.On = &DatabaseRoleGrantOn{
 			SchemaObject: &GrantOnSchemaObject{
 				All: &GrantOnSchemaObjectIn{
 					PluralObjectType: PluralObjectTypeTables,
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantOnSchemaObjectIn", "InDatabase", "InSchema"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("grantPrivilegesToDatabaseRoleOptions.On.SchemaObject.All", "InDatabase", "InSchema"))
 	})
 
 	t.Run("validation: grant on schema object - future", func(t *testing.T) {
 		opts := defaultGrantsForSchemaObject()
-		opts.on = &DatabaseRoleGrantOn{
+		opts.On = &DatabaseRoleGrantOn{
 			SchemaObject: &GrantOnSchemaObject{
 				Future: &GrantOnSchemaObjectIn{
 					PluralObjectType: PluralObjectTypeTables,
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantOnSchemaObjectIn", "InDatabase", "InSchema"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("grantPrivilegesToDatabaseRoleOptions.On.SchemaObject.Future", "InDatabase", "InSchema"))
 	})
 
 	t.Run("on database", func(t *testing.T) {
@@ -594,7 +594,7 @@ func TestGrants_GrantPrivilegesToDatabaseRole(t *testing.T) {
 
 	t.Run("on all schemas in database", func(t *testing.T) {
 		opts := defaultGrantsForSchema()
-		opts.on.Schema = &GrantOnSchema{
+		opts.On.Schema = &GrantOnSchema{
 			AllSchemasInDatabase: Pointer(dbId),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT CREATE ALERT ON ALL SCHEMAS IN DATABASE %s TO DATABASE ROLE %s`, dbId.FullyQualifiedName(), databaseRoleId.FullyQualifiedName())
@@ -602,7 +602,7 @@ func TestGrants_GrantPrivilegesToDatabaseRole(t *testing.T) {
 
 	t.Run("on all future schemas in database", func(t *testing.T) {
 		opts := defaultGrantsForSchema()
-		opts.on.Schema = &GrantOnSchema{
+		opts.On.Schema = &GrantOnSchema{
 			FutureSchemasInDatabase: Pointer(dbId),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT CREATE ALERT ON FUTURE SCHEMAS IN DATABASE %s TO DATABASE ROLE %s`, dbId.FullyQualifiedName(), databaseRoleId.FullyQualifiedName())
@@ -615,7 +615,7 @@ func TestGrants_GrantPrivilegesToDatabaseRole(t *testing.T) {
 
 	t.Run("on future schema object in database", func(t *testing.T) {
 		opts := defaultGrantsForSchemaObject()
-		opts.on.SchemaObject = &GrantOnSchemaObject{
+		opts.On.SchemaObject = &GrantOnSchemaObject{
 			Future: &GrantOnSchemaObjectIn{
 				PluralObjectType: PluralObjectTypeTables,
 				InDatabase:       Pointer(dbId),
@@ -626,7 +626,7 @@ func TestGrants_GrantPrivilegesToDatabaseRole(t *testing.T) {
 
 	t.Run("on future schema object in schema", func(t *testing.T) {
 		opts := defaultGrantsForSchemaObject()
-		opts.on.SchemaObject = &GrantOnSchemaObject{
+		opts.On.SchemaObject = &GrantOnSchemaObject{
 			Future: &GrantOnSchemaObjectIn{
 				PluralObjectType: PluralObjectTypeTables,
 				InSchema:         Pointer(schemaId),
@@ -637,7 +637,7 @@ func TestGrants_GrantPrivilegesToDatabaseRole(t *testing.T) {
 
 	t.Run("grant all privileges", func(t *testing.T) {
 		opts := defaultGrantsForSchemaObject()
-		opts.privileges = &DatabaseRoleGrantPrivileges{
+		opts.Privileges = &DatabaseRoleGrantPrivileges{
 			AllPrivileges: Bool(true),
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT ALL PRIVILEGES ON TABLE %s TO DATABASE ROLE %s`, tableId.FullyQualifiedName(), databaseRoleId.FullyQualifiedName())
@@ -650,38 +650,38 @@ func TestGrants_RevokePrivilegesFromDatabaseRoleRole(t *testing.T) {
 	schemaId := randomDatabaseObjectIdentifierInDatabase(dbId)
 	tableId := randomSchemaObjectIdentifierInSchema(schemaId)
 
-	defaultGrantsForDb := func() *RevokePrivilegesFromDatabaseRoleOptions {
-		return &RevokePrivilegesFromDatabaseRoleOptions{
-			privileges: &DatabaseRoleGrantPrivileges{
+	defaultGrantsForDb := func() *revokePrivilegesFromDatabaseRoleOptions {
+		return &revokePrivilegesFromDatabaseRoleOptions{
+			Privileges: &DatabaseRoleGrantPrivileges{
 				DatabasePrivileges: []AccountObjectPrivilege{AccountObjectPrivilegeCreateSchema},
 			},
-			on: &DatabaseRoleGrantOn{
+			On: &DatabaseRoleGrantOn{
 				Database: &dbId,
 			},
-			databaseRole: databaseRoleId,
+			DatabaseRole: databaseRoleId,
 		}
 	}
 
-	defaultGrantsForSchema := func() *RevokePrivilegesFromDatabaseRoleOptions {
-		return &RevokePrivilegesFromDatabaseRoleOptions{
-			privileges: &DatabaseRoleGrantPrivileges{
+	defaultGrantsForSchema := func() *revokePrivilegesFromDatabaseRoleOptions {
+		return &revokePrivilegesFromDatabaseRoleOptions{
+			Privileges: &DatabaseRoleGrantPrivileges{
 				SchemaPrivileges: []SchemaPrivilege{SchemaPrivilegeCreateAlert, SchemaPrivilegeAddSearchOptimization},
 			},
-			on: &DatabaseRoleGrantOn{
+			On: &DatabaseRoleGrantOn{
 				Schema: &GrantOnSchema{
 					Schema: Pointer(schemaId),
 				},
 			},
-			databaseRole: databaseRoleId,
+			DatabaseRole: databaseRoleId,
 		}
 	}
 
-	defaultGrantsForSchemaObject := func() *RevokePrivilegesFromDatabaseRoleOptions {
-		return &RevokePrivilegesFromDatabaseRoleOptions{
-			privileges: &DatabaseRoleGrantPrivileges{
+	defaultGrantsForSchemaObject := func() *revokePrivilegesFromDatabaseRoleOptions {
+		return &revokePrivilegesFromDatabaseRoleOptions{
+			Privileges: &DatabaseRoleGrantPrivileges{
 				SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect, SchemaObjectPrivilegeUpdate},
 			},
-			on: &DatabaseRoleGrantOn{
+			On: &DatabaseRoleGrantOn{
 				SchemaObject: &GrantOnSchemaObject{
 					SchemaObject: &Object{
 						ObjectType: ObjectTypeTable,
@@ -689,13 +689,13 @@ func TestGrants_RevokePrivilegesFromDatabaseRoleRole(t *testing.T) {
 					},
 				},
 			},
-			databaseRole: databaseRoleId,
+			DatabaseRole: databaseRoleId,
 		}
 	}
 
 	t.Run("validation: privilege with disallowed characters", func(t *testing.T) {
 		opts := defaultGrantsForDb()
-		opts.privileges = &DatabaseRoleGrantPrivileges{
+		opts.Privileges = &DatabaseRoleGrantPrivileges{
 			DatabasePrivileges: []AccountObjectPrivilege{"CREATE SCHEMA--"},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("invalid privilege: %s contains disallowed characters; it must follow this regex: %s", "CREATE SCHEMA--", allowedUnquotedCharactersRegex.String()))
@@ -703,82 +703,82 @@ func TestGrants_RevokePrivilegesFromDatabaseRoleRole(t *testing.T) {
 
 	t.Run("validation: nil privileges set", func(t *testing.T) {
 		opts := defaultGrantsForDb()
-		opts.privileges = nil
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("RevokePrivilegesFromDatabaseRoleOptions", "privileges"))
+		opts.Privileges = nil
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("revokePrivilegesFromDatabaseRoleOptions", "Privileges"))
 	})
 
 	t.Run("validation: no privileges set", func(t *testing.T) {
 		opts := defaultGrantsForDb()
-		opts.privileges = &DatabaseRoleGrantPrivileges{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("DatabaseRoleGrantPrivileges", "DatabasePrivileges", "SchemaPrivileges", "SchemaObjectPrivileges", "AllPrivileges"))
+		opts.Privileges = &DatabaseRoleGrantPrivileges{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("revokePrivilegesFromDatabaseRoleOptions.Privileges", "DatabasePrivileges", "SchemaPrivileges", "SchemaObjectPrivileges", "AllPrivileges"))
 	})
 
 	t.Run("validation: too many privileges set", func(t *testing.T) {
 		opts := defaultGrantsForDb()
-		opts.privileges = &DatabaseRoleGrantPrivileges{
+		opts.Privileges = &DatabaseRoleGrantPrivileges{
 			DatabasePrivileges: []AccountObjectPrivilege{AccountObjectPrivilegeCreateSchema},
 			SchemaPrivileges:   []SchemaPrivilege{SchemaPrivilegeCreateAlert},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("DatabaseRoleGrantPrivileges", "DatabasePrivileges", "SchemaPrivileges", "SchemaObjectPrivileges", "AllPrivileges"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("revokePrivilegesFromDatabaseRoleOptions.Privileges", "DatabasePrivileges", "SchemaPrivileges", "SchemaObjectPrivileges", "AllPrivileges"))
 	})
 
 	t.Run("validation: nil on set", func(t *testing.T) {
 		opts := defaultGrantsForDb()
-		opts.on = nil
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("RevokePrivilegesFromDatabaseRoleOptions", "on"))
+		opts.On = nil
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("revokePrivilegesFromDatabaseRoleOptions", "On"))
 	})
 
 	t.Run("validation: no on set", func(t *testing.T) {
 		opts := defaultGrantsForDb()
-		opts.on = &DatabaseRoleGrantOn{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("DatabaseRoleGrantOn", "Database", "Schema", "SchemaObject"))
+		opts.On = &DatabaseRoleGrantOn{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("revokePrivilegesFromDatabaseRoleOptions.On", "Database", "Schema", "SchemaObject"))
 	})
 
 	t.Run("validation: too many ons set", func(t *testing.T) {
 		opts := defaultGrantsForDb()
-		opts.on = &DatabaseRoleGrantOn{
+		opts.On = &DatabaseRoleGrantOn{
 			Database: &dbId,
 			Schema: &GrantOnSchema{
 				Schema: Pointer(schemaId),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("DatabaseRoleGrantOn", "Database", "Schema", "SchemaObject"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("revokePrivilegesFromDatabaseRoleOptions.On", "Database", "Schema", "SchemaObject"))
 	})
 
 	t.Run("validation: grant on schema", func(t *testing.T) {
 		opts := defaultGrantsForSchema()
-		opts.on.Schema = &GrantOnSchema{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantOnSchema", "Schema", "AllSchemasInDatabase", "FutureSchemasInDatabase"))
+		opts.On.Schema = &GrantOnSchema{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("revokePrivilegesFromDatabaseRoleOptions.On.Schema", "Schema", "AllSchemasInDatabase", "FutureSchemasInDatabase"))
 	})
 
 	t.Run("validation: grant on schema object", func(t *testing.T) {
 		opts := defaultGrantsForSchemaObject()
-		opts.on.SchemaObject = &GrantOnSchemaObject{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantOnSchemaObject", "SchemaObject", "All", "Future"))
+		opts.On.SchemaObject = &GrantOnSchemaObject{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("revokePrivilegesFromDatabaseRoleOptions.On.SchemaObject", "SchemaObject", "All", "Future"))
 	})
 
 	t.Run("validation: grant on schema object - all", func(t *testing.T) {
 		opts := defaultGrantsForSchemaObject()
-		opts.on = &DatabaseRoleGrantOn{
+		opts.On = &DatabaseRoleGrantOn{
 			SchemaObject: &GrantOnSchemaObject{
 				All: &GrantOnSchemaObjectIn{
 					PluralObjectType: PluralObjectTypeTables,
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantOnSchemaObjectIn", "InDatabase", "InSchema"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("revokePrivilegesFromDatabaseRoleOptions.On.SchemaObject.All", "InDatabase", "InSchema"))
 	})
 
 	t.Run("validation: grant on schema object - future", func(t *testing.T) {
 		opts := defaultGrantsForSchemaObject()
-		opts.on = &DatabaseRoleGrantOn{
+		opts.On = &DatabaseRoleGrantOn{
 			SchemaObject: &GrantOnSchemaObject{
 				Future: &GrantOnSchemaObjectIn{
 					PluralObjectType: PluralObjectTypeTables,
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantOnSchemaObjectIn", "InDatabase", "InSchema"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("revokePrivilegesFromDatabaseRoleOptions.On.SchemaObject.Future", "InDatabase", "InSchema"))
 	})
 
 	t.Run("on database", func(t *testing.T) {
@@ -793,7 +793,7 @@ func TestGrants_RevokePrivilegesFromDatabaseRoleRole(t *testing.T) {
 
 	t.Run("on all schemas in database + restrict", func(t *testing.T) {
 		opts := defaultGrantsForSchema()
-		opts.on.Schema = &GrantOnSchema{
+		opts.On.Schema = &GrantOnSchema{
 			AllSchemasInDatabase: Pointer(dbId),
 		}
 		opts.Restrict = Bool(true)
@@ -802,7 +802,7 @@ func TestGrants_RevokePrivilegesFromDatabaseRoleRole(t *testing.T) {
 
 	t.Run("on all future schemas in database + cascade", func(t *testing.T) {
 		opts := defaultGrantsForSchema()
-		opts.on.Schema = &GrantOnSchema{
+		opts.On.Schema = &GrantOnSchema{
 			FutureSchemasInDatabase: Pointer(dbId),
 		}
 		opts.Cascade = Bool(true)
@@ -816,7 +816,7 @@ func TestGrants_RevokePrivilegesFromDatabaseRoleRole(t *testing.T) {
 
 	t.Run("on future schema object in database", func(t *testing.T) {
 		opts := defaultGrantsForSchemaObject()
-		opts.on.SchemaObject = &GrantOnSchemaObject{
+		opts.On.SchemaObject = &GrantOnSchemaObject{
 			Future: &GrantOnSchemaObjectIn{
 				PluralObjectType: PluralObjectTypeTables,
 				InDatabase:       Pointer(dbId),
@@ -827,7 +827,7 @@ func TestGrants_RevokePrivilegesFromDatabaseRoleRole(t *testing.T) {
 
 	t.Run("on future schema object in schema", func(t *testing.T) {
 		opts := defaultGrantsForSchemaObject()
-		opts.on.SchemaObject = &GrantOnSchemaObject{
+		opts.On.SchemaObject = &GrantOnSchemaObject{
 			Future: &GrantOnSchemaObjectIn{
 				PluralObjectType: PluralObjectTypeTables,
 				InSchema:         Pointer(schemaId),
@@ -840,76 +840,76 @@ func TestGrants_RevokePrivilegesFromDatabaseRoleRole(t *testing.T) {
 func TestGrantPrivilegeToShare(t *testing.T) {
 	id := randomAccountObjectIdentifier()
 	t.Run("validation: privilege with disallowed characters", func(t *testing.T) {
-		opts := &grantPrivilegeToShareOptions{
-			privileges: []ObjectPrivilege{"USAGE;"},
+		opts := &GrantPrivilegeToShareOptions{
+			Privileges: []ObjectPrivilege{"USAGE;"},
 			On: &ShareGrantOn{
 				Database: randomAccountObjectIdentifier(),
 			},
-			to: id,
+			To: id,
 		}
 		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("invalid privilege: %s contains disallowed characters; it must follow this regex: %s", "USAGE;", allowedUnquotedCharactersRegex.String()))
 	})
 
 	t.Run("on database", func(t *testing.T) {
 		otherID := randomAccountObjectIdentifier()
-		opts := &grantPrivilegeToShareOptions{
-			privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
+		opts := &GrantPrivilegeToShareOptions{
+			Privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
 			On: &ShareGrantOn{
 				Database: otherID,
 			},
-			to: id,
+			To: id,
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, "GRANT USAGE ON DATABASE %s TO SHARE %s", otherID.FullyQualifiedName(), id.FullyQualifiedName())
 	})
 
 	t.Run("on schema", func(t *testing.T) {
 		otherID := randomDatabaseObjectIdentifier()
-		opts := &grantPrivilegeToShareOptions{
-			privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
+		opts := &GrantPrivilegeToShareOptions{
+			Privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
 			On: &ShareGrantOn{
 				Schema: otherID,
 			},
-			to: id,
+			To: id,
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, "GRANT USAGE ON SCHEMA %s TO SHARE %s", otherID.FullyQualifiedName(), id.FullyQualifiedName())
 	})
 
 	t.Run("on table", func(t *testing.T) {
 		otherID := randomSchemaObjectIdentifier()
-		opts := &grantPrivilegeToShareOptions{
-			privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
+		opts := &GrantPrivilegeToShareOptions{
+			Privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
 			On: &ShareGrantOn{
 				Table: &OnTable{
 					Name: otherID,
 				},
 			},
-			to: id,
+			To: id,
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, "GRANT USAGE ON TABLE %s TO SHARE %s", otherID.FullyQualifiedName(), id.FullyQualifiedName())
 	})
 
 	t.Run("on all tables", func(t *testing.T) {
 		otherID := randomDatabaseObjectIdentifier()
-		opts := &grantPrivilegeToShareOptions{
-			privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
+		opts := &GrantPrivilegeToShareOptions{
+			Privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
 			On: &ShareGrantOn{
 				Table: &OnTable{
 					AllInSchema: otherID,
 				},
 			},
-			to: id,
+			To: id,
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, "GRANT USAGE ON ALL TABLES IN SCHEMA %s TO SHARE %s", otherID.FullyQualifiedName(), id.FullyQualifiedName())
 	})
 
 	t.Run("on view", func(t *testing.T) {
 		otherID := randomSchemaObjectIdentifier()
-		opts := &grantPrivilegeToShareOptions{
-			privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
+		opts := &GrantPrivilegeToShareOptions{
+			Privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
 			On: &ShareGrantOn{
 				View: otherID,
 			},
-			to: id,
+			To: id,
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, "GRANT USAGE ON VIEW %s TO SHARE %s", otherID.FullyQualifiedName(), id.FullyQualifiedName())
 	})
@@ -918,88 +918,88 @@ func TestGrantPrivilegeToShare(t *testing.T) {
 func TestRevokePrivilegeFromShare(t *testing.T) {
 	id := randomAccountObjectIdentifier()
 	t.Run("validation: privilege with disallowed characters", func(t *testing.T) {
-		opts := &revokePrivilegeFromShareOptions{
-			privileges: []ObjectPrivilege{"USAGE;"},
+		opts := &RevokePrivilegeFromShareOptions{
+			Privileges: []ObjectPrivilege{"USAGE;"},
 			On: &ShareGrantOn{
 				Database: randomAccountObjectIdentifier(),
 			},
-			from: id,
+			From: id,
 		}
 		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("invalid privilege: %s contains disallowed characters; it must follow this regex: %s", "USAGE;", allowedUnquotedCharactersRegex.String()))
 	})
 
 	t.Run("on database", func(t *testing.T) {
 		otherID := randomAccountObjectIdentifier()
-		opts := &revokePrivilegeFromShareOptions{
-			privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
+		opts := &RevokePrivilegeFromShareOptions{
+			Privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
 			On: &ShareGrantOn{
 				Database: otherID,
 			},
-			from: id,
+			From: id,
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, "REVOKE USAGE ON DATABASE %s FROM SHARE %s", otherID.FullyQualifiedName(), id.FullyQualifiedName())
 	})
 
 	t.Run("on schema", func(t *testing.T) {
 		otherID := randomDatabaseObjectIdentifier()
-		opts := &revokePrivilegeFromShareOptions{
-			privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
+		opts := &RevokePrivilegeFromShareOptions{
+			Privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
 			On: &ShareGrantOn{
 				Schema: otherID,
 			},
-			from: id,
+			From: id,
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, "REVOKE USAGE ON SCHEMA %s FROM SHARE %s", otherID.FullyQualifiedName(), id.FullyQualifiedName())
 	})
 
 	t.Run("on table", func(t *testing.T) {
 		otherID := randomSchemaObjectIdentifier()
-		opts := &revokePrivilegeFromShareOptions{
-			privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
+		opts := &RevokePrivilegeFromShareOptions{
+			Privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
 			On: &ShareGrantOn{
 				Table: &OnTable{
 					Name: otherID,
 				},
 			},
-			from: id,
+			From: id,
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, "REVOKE USAGE ON TABLE %s FROM SHARE %s", otherID.FullyQualifiedName(), id.FullyQualifiedName())
 	})
 
 	t.Run("on all tables", func(t *testing.T) {
 		otherID := randomDatabaseObjectIdentifier()
-		opts := &revokePrivilegeFromShareOptions{
-			privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
+		opts := &RevokePrivilegeFromShareOptions{
+			Privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
 			On: &ShareGrantOn{
 				Table: &OnTable{
 					AllInSchema: otherID,
 				},
 			},
-			from: id,
+			From: id,
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, "REVOKE USAGE ON ALL TABLES IN SCHEMA %s FROM SHARE %s", otherID.FullyQualifiedName(), id.FullyQualifiedName())
 	})
 
 	t.Run("on view", func(t *testing.T) {
 		otherID := randomSchemaObjectIdentifier()
-		opts := &revokePrivilegeFromShareOptions{
-			privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
+		opts := &RevokePrivilegeFromShareOptions{
+			Privileges: []ObjectPrivilege{ObjectPrivilegeUsage},
 			On: &ShareGrantOn{
 				View: otherID,
 			},
-			from: id,
+			From: id,
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, "REVOKE USAGE ON VIEW %s FROM SHARE %s", otherID.FullyQualifiedName(), id.FullyQualifiedName())
 	})
 
 	t.Run("on tag", func(t *testing.T) {
 		tagId := randomSchemaObjectIdentifier()
-		opts := &revokePrivilegeFromShareOptions{
-			privileges: []ObjectPrivilege{ObjectPrivilegeRead},
+		opts := &RevokePrivilegeFromShareOptions{
+			Privileges: []ObjectPrivilege{ObjectPrivilegeRead},
 			On: &ShareGrantOn{
 				Tag: tagId,
 			},
-			from: id,
+			From: id,
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, "REVOKE READ ON TAG %s FROM SHARE %s", tagId.FullyQualifiedName(), id.FullyQualifiedName())
 	})
@@ -1012,8 +1012,8 @@ func TestGrants_GrantOwnership(t *testing.T) {
 	databaseRoleId := randomDatabaseObjectIdentifierInDatabase(dbId)
 	tableId := randomSchemaObjectIdentifierInSchema(schemaId)
 
-	defaultOpts := func() *GrantOwnershipOptions {
-		return &GrantOwnershipOptions{
+	defaultOpts := func() *grantOwnershipOptions {
+		return &grantOwnershipOptions{
 			On: OwnershipGrantOn{
 				Object: &Object{
 					ObjectType: ObjectTypeTable,
@@ -1029,7 +1029,7 @@ func TestGrants_GrantOwnership(t *testing.T) {
 	t.Run("validation: grant on empty", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.On = OwnershipGrantOn{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("OwnershipGrantOn", "Object", "AllIn", "Future"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("grantOwnershipOptions.On", "Object", "All", "Future"))
 	})
 
 	t.Run("validation: grant on too many", func(t *testing.T) {
@@ -1044,7 +1044,7 @@ func TestGrants_GrantOwnership(t *testing.T) {
 				InDatabase:       Pointer(dbId),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("OwnershipGrantOn", "Object", "AllIn", "Future"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("grantOwnershipOptions.On", "Object", "All", "Future"))
 	})
 
 	t.Run("validation: grant on schema object - all", func(t *testing.T) {
@@ -1054,7 +1054,7 @@ func TestGrants_GrantOwnership(t *testing.T) {
 				PluralObjectType: PluralObjectTypeTables,
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantOnSchemaObjectIn", "InDatabase", "InSchema"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("grantOwnershipOptions.On.All", "InDatabase", "InSchema"))
 	})
 
 	t.Run("validation: grant on schema object - future", func(t *testing.T) {
@@ -1064,13 +1064,13 @@ func TestGrants_GrantOwnership(t *testing.T) {
 				PluralObjectType: PluralObjectTypeTables,
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantOnSchemaObjectIn", "InDatabase", "InSchema"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("grantOwnershipOptions.On.Future", "InDatabase", "InSchema"))
 	})
 
 	t.Run("validation: grant to empty", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.To = OwnershipGrantTo{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("OwnershipGrantTo", "databaseRoleName", "accountRoleName"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("grantOwnershipOptions.To", "DatabaseRoleName", "AccountRoleName"))
 	})
 
 	t.Run("validation: grant to role and database role", func(t *testing.T) {
@@ -1079,7 +1079,7 @@ func TestGrants_GrantOwnership(t *testing.T) {
 			DatabaseRoleName: Pointer(databaseRoleId),
 			AccountRoleName:  Pointer(roleId),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("OwnershipGrantTo", "databaseRoleName", "accountRoleName"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("grantOwnershipOptions.To", "DatabaseRoleName", "AccountRoleName"))
 	})
 
 	t.Run("on schema object to role", func(t *testing.T) {
@@ -1166,13 +1166,13 @@ func TestGrants_RevokeOwnership(t *testing.T) {
 	t.Run("validation: revoke on empty (future not set)", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.On = RevokeOwnershipGrantOn{}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("RevokeOwnershipGrantOn", "Future"))
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("RevokeOwnershipOptions.On", "Future"))
 	})
 
 	t.Run("validation: revoke from empty", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.From = OwnershipGrantTo{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("OwnershipGrantTo", "databaseRoleName", "accountRoleName"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("RevokeOwnershipOptions.From", "DatabaseRoleName", "AccountRoleName"))
 	})
 
 	t.Run("validation: revoke from role and database role", func(t *testing.T) {
@@ -1181,7 +1181,7 @@ func TestGrants_RevokeOwnership(t *testing.T) {
 			DatabaseRoleName: Pointer(databaseRoleId),
 			AccountRoleName:  Pointer(roleId),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("OwnershipGrantTo", "databaseRoleName", "accountRoleName"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("RevokeOwnershipOptions.From", "DatabaseRoleName", "AccountRoleName"))
 	})
 
 	t.Run("validation: restrict and cascade", func(t *testing.T) {
@@ -1224,12 +1224,12 @@ func TestGrants_RevokeOwnership(t *testing.T) {
 
 func TestGrantShow(t *testing.T) {
 	t.Run("no options", func(t *testing.T) {
-		opts := &ShowGrantOptions{}
+		opts := &showGrantsOptions{}
 		assertOptsValidAndSqlEqualsf(t, opts, "SHOW GRANTS")
 	})
 
 	t.Run("on account", func(t *testing.T) {
-		opts := &ShowGrantOptions{
+		opts := &showGrantsOptions{
 			On: &ShowGrantsOn{
 				Account: Bool(true),
 			},
@@ -1239,7 +1239,7 @@ func TestGrantShow(t *testing.T) {
 
 	t.Run("on database", func(t *testing.T) {
 		dbID := randomAccountObjectIdentifier()
-		opts := &ShowGrantOptions{
+		opts := &showGrantsOptions{
 			On: &ShowGrantsOn{
 				Object: &Object{
 					ObjectType: ObjectTypeDatabase,
@@ -1252,7 +1252,7 @@ func TestGrantShow(t *testing.T) {
 
 	t.Run("to role", func(t *testing.T) {
 		roleID := randomAccountObjectIdentifier()
-		opts := &ShowGrantOptions{
+		opts := &showGrantsOptions{
 			To: &ShowGrantsTo{
 				Role: roleID,
 			},
@@ -1262,7 +1262,7 @@ func TestGrantShow(t *testing.T) {
 
 	t.Run("to user", func(t *testing.T) {
 		userID := randomAccountObjectIdentifier()
-		opts := &ShowGrantOptions{
+		opts := &showGrantsOptions{
 			To: &ShowGrantsTo{
 				User: userID,
 			},
@@ -1272,7 +1272,7 @@ func TestGrantShow(t *testing.T) {
 
 	t.Run("to share", func(t *testing.T) {
 		shareID := randomAccountObjectIdentifier()
-		opts := &ShowGrantOptions{
+		opts := &showGrantsOptions{
 			To: &ShowGrantsTo{
 				Share: &ShowGrantsToShare{
 					Name: shareID,
@@ -1285,7 +1285,7 @@ func TestGrantShow(t *testing.T) {
 	t.Run("to share in application package", func(t *testing.T) {
 		shareID := randomAccountObjectIdentifier()
 		packageId := randomAccountObjectIdentifier()
-		opts := &ShowGrantOptions{
+		opts := &showGrantsOptions{
 			To: &ShowGrantsTo{
 				Share: &ShowGrantsToShare{
 					Name:                 shareID,
@@ -1298,7 +1298,7 @@ func TestGrantShow(t *testing.T) {
 
 	t.Run("of role", func(t *testing.T) {
 		roleID := randomAccountObjectIdentifier()
-		opts := &ShowGrantOptions{
+		opts := &showGrantsOptions{
 			Of: &ShowGrantsOf{
 				Role: roleID,
 			},
@@ -1308,7 +1308,7 @@ func TestGrantShow(t *testing.T) {
 
 	t.Run("of database role", func(t *testing.T) {
 		roleID := randomDatabaseObjectIdentifier()
-		opts := &ShowGrantOptions{
+		opts := &showGrantsOptions{
 			Of: &ShowGrantsOf{
 				DatabaseRole: roleID,
 			},
@@ -1318,7 +1318,7 @@ func TestGrantShow(t *testing.T) {
 
 	t.Run("of share", func(t *testing.T) {
 		shareID := randomAccountObjectIdentifier()
-		opts := &ShowGrantOptions{
+		opts := &showGrantsOptions{
 			Of: &ShowGrantsOf{
 				Share: shareID,
 			},
@@ -1347,24 +1347,47 @@ func TestNormalizeShareGranteeName(t *testing.T) {
 	}
 }
 
-// TestStructToSQL_MatchesGrantsShow covers the property StructToSQL is relied on for as a cache
-// key: it must render exactly what Grants.Show would issue for the same opts.
-func TestStructToSQL_MatchesGrantsShow(t *testing.T) {
-	opts := &ShowGrantOptions{
-		On: &ShowGrantsOn{
-			Object: &Object{
-				ObjectType: ObjectTypeDatabase,
-				Name:       randomAccountObjectIdentifier(),
+// TestShowGrantsRequest_SQLKey covers the property the SHOW GRANTS cache relies on: the cache key
+// (ShowGrantsRequest.SQLKey) must render exactly the statement Grants.Show executes, and distinct
+// queries must not collide.
+func TestShowGrantsRequest_SQLKey(t *testing.T) {
+	dbId := randomAccountObjectIdentifier()
+
+	t.Run("key equals the executed SHOW GRANTS statement", func(t *testing.T) {
+		req := &ShowGrantsRequest{
+			On: &ShowGrantsOnRequest{
+				Object: &Object{ObjectType: ObjectTypeDatabase, Name: dbId},
 			},
-		},
-	}
+		}
 
-	expected, err := structToSQL(opts)
-	require.NoError(t, err)
+		key, err := req.SQLKey()
+		require.NoError(t, err)
 
-	actual, err := StructToSQL(opts)
-	require.NoError(t, err)
-	assert.Equal(t, expected, actual)
+		executed, err := structToSQL(req.toOpts())
+		require.NoError(t, err)
+
+		assert.Equal(t, executed, key)
+		assert.Contains(t, key, "SHOW GRANTS ON DATABASE")
+	})
+
+	t.Run("distinct queries produce distinct keys (no collisions)", func(t *testing.T) {
+		keyFor := func(req *ShowGrantsRequest) string {
+			key, err := req.SQLKey()
+			require.NoError(t, err)
+			return key
+		}
+
+		onDatabase := keyFor(&ShowGrantsRequest{On: &ShowGrantsOnRequest{Object: &Object{ObjectType: ObjectTypeDatabase, Name: dbId}}})
+		inDatabase := keyFor(&ShowGrantsRequest{In: &ShowGrantsInRequest{Database: &dbId}})
+		inherited := keyFor(&ShowGrantsRequest{Inherited: Bool(true), On: &ShowGrantsOnRequest{Object: &Object{ObjectType: ObjectTypeDatabase, Name: dbId}}})
+		future := keyFor(&ShowGrantsRequest{Future: Bool(true), On: &ShowGrantsOnRequest{Object: &Object{ObjectType: ObjectTypeDatabase, Name: dbId}}})
+
+		// ON vs IN, plain vs INHERITED, and plain vs FUTURE must all differ.
+		assert.NotEqual(t, onDatabase, inDatabase)
+		assert.NotEqual(t, onDatabase, inherited)
+		assert.NotEqual(t, onDatabase, future)
+		assert.NotEmpty(t, inDatabase)
+	})
 }
 
 func TestGrantInheritedPrivilegesToAccountRole(t *testing.T) {
@@ -1372,83 +1395,83 @@ func TestGrantInheritedPrivilegesToAccountRole(t *testing.T) {
 	schemaId := randomDatabaseObjectIdentifierInDatabase(dbId)
 	roleId := randomAccountObjectIdentifier()
 
-	defaultOpts := func() *grantInheritedPrivilegesToAccountRoleOptions {
-		return &grantInheritedPrivilegesToAccountRoleOptions{
-			privileges: InheritedAccountRoleGrantPrivileges{
+	defaultOpts := func() *GrantInheritedPrivilegesToAccountRoleOptions {
+		return &GrantInheritedPrivilegesToAccountRoleOptions{
+			Privileges: InheritedAccountRoleGrantPrivileges{
 				SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect},
 			},
-			onAll:       PluralObjectTypeTables,
-			in:          InheritedAccountRoleGrantIn{Database: new(dbId)},
-			accountRole: roleId,
+			OnAll:       PluralObjectTypeTables,
+			In:          InheritedAccountRoleGrantIn{Database: new(dbId)},
+			AccountRole: roleId,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *grantInheritedPrivilegesToAccountRoleOptions
+		var opts *GrantInheritedPrivilegesToAccountRoleOptions
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
-	t.Run("validation: at least one of the fields [opts.privileges.AllPrivileges opts.privileges.AccountObjectPrivileges opts.privileges.SchemaPrivileges opts.privileges.SchemaObjectPrivileges] should be present", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Privileges.AllPrivileges opts.Privileges.AccountObjectPrivileges opts.Privileges.SchemaPrivileges opts.Privileges.SchemaObjectPrivileges] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.privileges = InheritedAccountRoleGrantPrivileges{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedAccountRoleGrantPrivileges", "AllPrivileges", "AccountObjectPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
+		opts.Privileges = InheritedAccountRoleGrantPrivileges{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantInheritedPrivilegesToAccountRoleOptions.Privileges", "AllPrivileges", "AccountObjectPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.privileges.AllPrivileges opts.privileges.AccountObjectPrivileges opts.privileges.SchemaPrivileges opts.privileges.SchemaObjectPrivileges] should be present - more present", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Privileges.AllPrivileges opts.Privileges.AccountObjectPrivileges opts.Privileges.SchemaPrivileges opts.Privileges.SchemaObjectPrivileges] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.privileges = InheritedAccountRoleGrantPrivileges{
+		opts.Privileges = InheritedAccountRoleGrantPrivileges{
 			AccountObjectPrivileges: []AccountObjectPrivilege{AccountObjectPrivilegeOperate},
 			SchemaObjectPrivileges:  []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedAccountRoleGrantPrivileges", "AllPrivileges", "AccountObjectPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantInheritedPrivilegesToAccountRoleOptions.Privileges", "AllPrivileges", "AccountObjectPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
 	})
 
-	t.Run("validation: [opts.onAll] should be set", func(t *testing.T) {
+	t.Run("validation: [opts.OnAll] should be set", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.onAll = ""
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("grantInheritedPrivilegesToAccountRoleOptions", "onAll"))
+		opts.OnAll = ""
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GrantInheritedPrivilegesToAccountRoleOptions", "OnAll"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.in.Account opts.in.Database opts.in.Schema] should be present", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.In.Account opts.In.Database opts.In.Schema] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedAccountRoleGrantIn{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedAccountRoleGrantIn", "Account", "Database", "Schema"))
+		opts.In = InheritedAccountRoleGrantIn{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantInheritedPrivilegesToAccountRoleOptions.In", "Account", "Database", "Schema"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.in.Account opts.in.Database opts.in.Schema] should be present - more present", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.In.Account opts.In.Database opts.In.Schema] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedAccountRoleGrantIn{
+		opts.In = InheritedAccountRoleGrantIn{
 			Account:  new(true),
 			Database: new(dbId),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedAccountRoleGrantIn", "Account", "Database", "Schema"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantInheritedPrivilegesToAccountRoleOptions.In", "Account", "Database", "Schema"))
 	})
 
-	t.Run("validation: valid identifier for [opts.in.Database]", func(t *testing.T) {
+	t.Run("validation: valid identifier for [opts.In.Database]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedAccountRoleGrantIn{
+		opts.In = InheritedAccountRoleGrantIn{
 			Database: new(emptyAccountObjectIdentifier),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: valid identifier for [opts.in.Schema]", func(t *testing.T) {
+	t.Run("validation: valid identifier for [opts.In.Schema]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedAccountRoleGrantIn{
+		opts.In = InheritedAccountRoleGrantIn{
 			Schema: new(emptyDatabaseObjectIdentifier),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: valid identifier for [opts.accountRole]", func(t *testing.T) {
+	t.Run("validation: valid identifier for [opts.AccountRole]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.accountRole = emptyAccountObjectIdentifier
+		opts.AccountRole = emptyAccountObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("on all tables in account", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedAccountRoleGrantIn{Account: new(true)}
+		opts.In = InheritedAccountRoleGrantIn{Account: new(true)}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT INHERITED SELECT ON ALL TABLES IN ACCOUNT TO ROLE %s`, roleId.FullyQualifiedName())
 	})
 
@@ -1459,13 +1482,13 @@ func TestGrantInheritedPrivilegesToAccountRole(t *testing.T) {
 
 	t.Run("on all tables in schema", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedAccountRoleGrantIn{Schema: new(schemaId)}
+		opts.In = InheritedAccountRoleGrantIn{Schema: new(schemaId)}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT INHERITED SELECT ON ALL TABLES IN SCHEMA %s TO ROLE %s`, schemaId.FullyQualifiedName(), roleId.FullyQualifiedName())
 	})
 
 	t.Run("multiple privileges", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.privileges = InheritedAccountRoleGrantPrivileges{
+		opts.Privileges = InheritedAccountRoleGrantPrivileges{
 			SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect, SchemaObjectPrivilegeInsert},
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT INHERITED SELECT, INSERT ON ALL TABLES IN DATABASE %s TO ROLE %s`, dbId.FullyQualifiedName(), roleId.FullyQualifiedNameEscaped())
@@ -1473,7 +1496,7 @@ func TestGrantInheritedPrivilegesToAccountRole(t *testing.T) {
 
 	t.Run("all privileges", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.privileges = InheritedAccountRoleGrantPrivileges{AllPrivileges: new(true)}
+		opts.Privileges = InheritedAccountRoleGrantPrivileges{AllPrivileges: new(true)}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT INHERITED ALL PRIVILEGES ON ALL TABLES IN DATABASE %s TO ROLE %s`, dbId.FullyQualifiedName(), roleId.FullyQualifiedName())
 	})
 }
@@ -1483,83 +1506,83 @@ func TestRevokeInheritedPrivilegesFromAccountRole(t *testing.T) {
 	schemaId := randomDatabaseObjectIdentifierInDatabase(dbId)
 	roleId := randomAccountObjectIdentifier()
 
-	defaultOpts := func() *revokeInheritedPrivilegesFromAccountRoleOptions {
-		return &revokeInheritedPrivilegesFromAccountRoleOptions{
-			privileges: InheritedAccountRoleGrantPrivileges{
+	defaultOpts := func() *RevokeInheritedPrivilegesFromAccountRoleOptions {
+		return &RevokeInheritedPrivilegesFromAccountRoleOptions{
+			Privileges: InheritedAccountRoleGrantPrivileges{
 				SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect},
 			},
-			onAll:       PluralObjectTypeTables,
-			in:          InheritedAccountRoleGrantIn{Database: new(dbId)},
-			accountRole: roleId,
+			OnAll:       PluralObjectTypeTables,
+			In:          InheritedAccountRoleGrantIn{Database: new(dbId)},
+			AccountRole: roleId,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *revokeInheritedPrivilegesFromAccountRoleOptions
+		var opts *RevokeInheritedPrivilegesFromAccountRoleOptions
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
-	t.Run("validation: at least one of the fields [opts.privileges.AllPrivileges opts.privileges.AccountObjectPrivileges opts.privileges.SchemaPrivileges opts.privileges.SchemaObjectPrivileges] should be present", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Privileges.AllPrivileges opts.Privileges.AccountObjectPrivileges opts.Privileges.SchemaPrivileges opts.Privileges.SchemaObjectPrivileges] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.privileges = InheritedAccountRoleGrantPrivileges{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedAccountRoleGrantPrivileges", "AllPrivileges", "AccountObjectPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
+		opts.Privileges = InheritedAccountRoleGrantPrivileges{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("RevokeInheritedPrivilegesFromAccountRoleOptions.Privileges", "AllPrivileges", "AccountObjectPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.privileges.AllPrivileges opts.privileges.AccountObjectPrivileges opts.privileges.SchemaPrivileges opts.privileges.SchemaObjectPrivileges] should be present - more present", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Privileges.AllPrivileges opts.Privileges.AccountObjectPrivileges opts.Privileges.SchemaPrivileges opts.Privileges.SchemaObjectPrivileges] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.privileges = InheritedAccountRoleGrantPrivileges{
+		opts.Privileges = InheritedAccountRoleGrantPrivileges{
 			AccountObjectPrivileges: []AccountObjectPrivilege{AccountObjectPrivilegeOperate},
 			SchemaObjectPrivileges:  []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedAccountRoleGrantPrivileges", "AllPrivileges", "AccountObjectPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("RevokeInheritedPrivilegesFromAccountRoleOptions.Privileges", "AllPrivileges", "AccountObjectPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
 	})
 
-	t.Run("validation: [opts.onAll] should be set", func(t *testing.T) {
+	t.Run("validation: [opts.OnAll] should be set", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.onAll = ""
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("revokeInheritedPrivilegesFromAccountRoleOptions", "onAll"))
+		opts.OnAll = ""
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("RevokeInheritedPrivilegesFromAccountRoleOptions", "OnAll"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.in.Account opts.in.Database opts.in.Schema] should be present", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.In.Account opts.In.Database opts.In.Schema] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedAccountRoleGrantIn{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedAccountRoleGrantIn", "Account", "Database", "Schema"))
+		opts.In = InheritedAccountRoleGrantIn{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("RevokeInheritedPrivilegesFromAccountRoleOptions.In", "Account", "Database", "Schema"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.in.Account opts.in.Database opts.in.Schema] should be present - more present", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.In.Account opts.In.Database opts.In.Schema] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedAccountRoleGrantIn{
+		opts.In = InheritedAccountRoleGrantIn{
 			Account:  new(true),
 			Database: new(dbId),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedAccountRoleGrantIn", "Account", "Database", "Schema"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("RevokeInheritedPrivilegesFromAccountRoleOptions.In", "Account", "Database", "Schema"))
 	})
 
-	t.Run("validation: valid identifier for [opts.in.Database]", func(t *testing.T) {
+	t.Run("validation: valid identifier for [opts.In.Database]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedAccountRoleGrantIn{
+		opts.In = InheritedAccountRoleGrantIn{
 			Database: new(emptyAccountObjectIdentifier),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: valid identifier for [opts.in.Schema]", func(t *testing.T) {
+	t.Run("validation: valid identifier for [opts.In.Schema]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedAccountRoleGrantIn{
+		opts.In = InheritedAccountRoleGrantIn{
 			Schema: new(emptyDatabaseObjectIdentifier),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: valid identifier for [opts.accountRole]", func(t *testing.T) {
+	t.Run("validation: valid identifier for [opts.AccountRole]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.accountRole = emptyAccountObjectIdentifier
+		opts.AccountRole = emptyAccountObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("on all tables in account", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedAccountRoleGrantIn{Account: new(true)}
+		opts.In = InheritedAccountRoleGrantIn{Account: new(true)}
 		assertOptsValidAndSqlEqualsf(t, opts, `REVOKE INHERITED SELECT ON ALL TABLES IN ACCOUNT FROM ROLE %s`, roleId.FullyQualifiedName())
 	})
 
@@ -1570,13 +1593,13 @@ func TestRevokeInheritedPrivilegesFromAccountRole(t *testing.T) {
 
 	t.Run("on all tables in schema", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedAccountRoleGrantIn{Schema: new(schemaId)}
+		opts.In = InheritedAccountRoleGrantIn{Schema: new(schemaId)}
 		assertOptsValidAndSqlEqualsf(t, opts, `REVOKE INHERITED SELECT ON ALL TABLES IN SCHEMA %s FROM ROLE %s`, schemaId.FullyQualifiedName(), roleId.FullyQualifiedName())
 	})
 
 	t.Run("multiple privileges", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.privileges = InheritedAccountRoleGrantPrivileges{
+		opts.Privileges = InheritedAccountRoleGrantPrivileges{
 			SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect, SchemaObjectPrivilegeInsert},
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `REVOKE INHERITED SELECT, INSERT ON ALL TABLES IN DATABASE %s FROM ROLE %s`, dbId.FullyQualifiedName(), roleId.FullyQualifiedNameEscaped())
@@ -1584,7 +1607,7 @@ func TestRevokeInheritedPrivilegesFromAccountRole(t *testing.T) {
 
 	t.Run("all privileges", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.privileges = InheritedAccountRoleGrantPrivileges{AllPrivileges: new(true)}
+		opts.Privileges = InheritedAccountRoleGrantPrivileges{AllPrivileges: new(true)}
 		assertOptsValidAndSqlEqualsf(t, opts, `REVOKE INHERITED ALL PRIVILEGES ON ALL TABLES IN DATABASE %s FROM ROLE %s`, dbId.FullyQualifiedName(), roleId.FullyQualifiedName())
 	})
 }
@@ -1594,77 +1617,77 @@ func TestGrantInheritedPrivilegesToDatabaseRole(t *testing.T) {
 	schemaId := randomDatabaseObjectIdentifierInDatabase(dbId)
 	databaseRoleId := randomDatabaseObjectIdentifier()
 
-	defaultOpts := func() *grantInheritedPrivilegesToDatabaseRoleOptions {
-		return &grantInheritedPrivilegesToDatabaseRoleOptions{
-			privileges: InheritedDatabaseRoleGrantPrivileges{
+	defaultOpts := func() *GrantInheritedPrivilegesToDatabaseRoleOptions {
+		return &GrantInheritedPrivilegesToDatabaseRoleOptions{
+			Privileges: InheritedDatabaseRoleGrantPrivileges{
 				SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect},
 			},
-			onAll:        PluralObjectTypeTables,
-			in:           InheritedDatabaseRoleGrantIn{Database: new(dbId)},
-			databaseRole: databaseRoleId,
+			OnAll:        PluralObjectTypeTables,
+			In:           InheritedDatabaseRoleGrantIn{Database: new(dbId)},
+			DatabaseRole: databaseRoleId,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *grantInheritedPrivilegesToDatabaseRoleOptions
+		var opts *GrantInheritedPrivilegesToDatabaseRoleOptions
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
-	t.Run("validation: at least one of the fields [opts.privileges.AllPrivileges opts.privileges.SchemaPrivileges opts.privileges.SchemaObjectPrivileges] should be present", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Privileges.AllPrivileges opts.Privileges.SchemaPrivileges opts.Privileges.SchemaObjectPrivileges] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.privileges = InheritedDatabaseRoleGrantPrivileges{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedDatabaseRoleGrantPrivileges", "AllPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
+		opts.Privileges = InheritedDatabaseRoleGrantPrivileges{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantInheritedPrivilegesToDatabaseRoleOptions.Privileges", "AllPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.privileges.AllPrivileges opts.privileges.SchemaPrivileges opts.privileges.SchemaObjectPrivileges] should be present - more present", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Privileges.AllPrivileges opts.Privileges.SchemaPrivileges opts.Privileges.SchemaObjectPrivileges] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.privileges = InheritedDatabaseRoleGrantPrivileges{
+		opts.Privileges = InheritedDatabaseRoleGrantPrivileges{
 			SchemaPrivileges:       []SchemaPrivilege{SchemaPrivilegeCreateTable},
 			SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedDatabaseRoleGrantPrivileges", "AllPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantInheritedPrivilegesToDatabaseRoleOptions.Privileges", "AllPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
 	})
 
-	t.Run("validation: [opts.onAll] should be set", func(t *testing.T) {
+	t.Run("validation: [opts.OnAll] should be set", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.onAll = ""
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("grantInheritedPrivilegesToDatabaseRoleOptions", "onAll"))
+		opts.OnAll = ""
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GrantInheritedPrivilegesToDatabaseRoleOptions", "OnAll"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.in.Database opts.in.Schema] should be present", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.In.Database opts.In.Schema] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedDatabaseRoleGrantIn{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedDatabaseRoleGrantIn", "Database", "Schema"))
+		opts.In = InheritedDatabaseRoleGrantIn{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantInheritedPrivilegesToDatabaseRoleOptions.In", "Database", "Schema"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.in.Database opts.in.Schema] should be present - more present", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.In.Database opts.In.Schema] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedDatabaseRoleGrantIn{
+		opts.In = InheritedDatabaseRoleGrantIn{
 			Database: new(dbId),
 			Schema:   new(schemaId),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedDatabaseRoleGrantIn", "Database", "Schema"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantInheritedPrivilegesToDatabaseRoleOptions.In", "Database", "Schema"))
 	})
 
-	t.Run("validation: valid identifier for [opts.in.Database]", func(t *testing.T) {
+	t.Run("validation: valid identifier for [opts.In.Database]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedDatabaseRoleGrantIn{
+		opts.In = InheritedDatabaseRoleGrantIn{
 			Database: new(emptyAccountObjectIdentifier),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: valid identifier for [opts.in.Schema]", func(t *testing.T) {
+	t.Run("validation: valid identifier for [opts.In.Schema]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedDatabaseRoleGrantIn{
+		opts.In = InheritedDatabaseRoleGrantIn{
 			Schema: new(emptyDatabaseObjectIdentifier),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: valid identifier for [opts.databaseRole]", func(t *testing.T) {
+	t.Run("validation: valid identifier for [opts.DatabaseRole]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.databaseRole = emptyDatabaseObjectIdentifier
+		opts.DatabaseRole = emptyDatabaseObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
@@ -1675,13 +1698,13 @@ func TestGrantInheritedPrivilegesToDatabaseRole(t *testing.T) {
 
 	t.Run("on all tables in schema", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedDatabaseRoleGrantIn{Schema: new(schemaId)}
+		opts.In = InheritedDatabaseRoleGrantIn{Schema: new(schemaId)}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT INHERITED SELECT ON ALL TABLES IN SCHEMA %s TO DATABASE ROLE %s`, schemaId.FullyQualifiedName(), databaseRoleId.FullyQualifiedName())
 	})
 
 	t.Run("multiple privileges", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.privileges = InheritedDatabaseRoleGrantPrivileges{
+		opts.Privileges = InheritedDatabaseRoleGrantPrivileges{
 			SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect, SchemaObjectPrivilegeInsert},
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT INHERITED SELECT, INSERT ON ALL TABLES IN DATABASE %s TO DATABASE ROLE %s`, dbId.FullyQualifiedName(), databaseRoleId.FullyQualifiedNameEscaped())
@@ -1689,7 +1712,7 @@ func TestGrantInheritedPrivilegesToDatabaseRole(t *testing.T) {
 
 	t.Run("all privileges", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.privileges = InheritedDatabaseRoleGrantPrivileges{AllPrivileges: new(true)}
+		opts.Privileges = InheritedDatabaseRoleGrantPrivileges{AllPrivileges: new(true)}
 		assertOptsValidAndSqlEqualsf(t, opts, `GRANT INHERITED ALL PRIVILEGES ON ALL TABLES IN DATABASE %s TO DATABASE ROLE %s`, dbId.FullyQualifiedName(), databaseRoleId.FullyQualifiedName())
 	})
 }
@@ -1699,77 +1722,77 @@ func TestRevokeInheritedPrivilegesFromDatabaseRole(t *testing.T) {
 	schemaId := randomDatabaseObjectIdentifierInDatabase(dbId)
 	databaseRoleId := randomDatabaseObjectIdentifier()
 
-	defaultOpts := func() *revokeInheritedPrivilegesFromDatabaseRoleOptions {
-		return &revokeInheritedPrivilegesFromDatabaseRoleOptions{
-			privileges: InheritedDatabaseRoleGrantPrivileges{
+	defaultOpts := func() *RevokeInheritedPrivilegesFromDatabaseRoleOptions {
+		return &RevokeInheritedPrivilegesFromDatabaseRoleOptions{
+			Privileges: InheritedDatabaseRoleGrantPrivileges{
 				SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect},
 			},
-			onAll:        PluralObjectTypeTables,
-			in:           InheritedDatabaseRoleGrantIn{Database: new(dbId)},
-			databaseRole: databaseRoleId,
+			OnAll:        PluralObjectTypeTables,
+			In:           InheritedDatabaseRoleGrantIn{Database: new(dbId)},
+			DatabaseRole: databaseRoleId,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *revokeInheritedPrivilegesFromDatabaseRoleOptions
+		var opts *RevokeInheritedPrivilegesFromDatabaseRoleOptions
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
-	t.Run("validation: at least one of the fields [opts.privileges.AllPrivileges opts.privileges.SchemaPrivileges opts.privileges.SchemaObjectPrivileges] should be present", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Privileges.AllPrivileges opts.Privileges.SchemaPrivileges opts.Privileges.SchemaObjectPrivileges] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.privileges = InheritedDatabaseRoleGrantPrivileges{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedDatabaseRoleGrantPrivileges", "AllPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
+		opts.Privileges = InheritedDatabaseRoleGrantPrivileges{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("RevokeInheritedPrivilegesFromDatabaseRoleOptions.Privileges", "AllPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.privileges.AllPrivileges opts.privileges.SchemaPrivileges opts.privileges.SchemaObjectPrivileges] should be present - more present", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Privileges.AllPrivileges opts.Privileges.SchemaPrivileges opts.Privileges.SchemaObjectPrivileges] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.privileges = InheritedDatabaseRoleGrantPrivileges{
+		opts.Privileges = InheritedDatabaseRoleGrantPrivileges{
 			SchemaPrivileges:       []SchemaPrivilege{SchemaPrivilegeCreateTable},
 			SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedDatabaseRoleGrantPrivileges", "AllPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("RevokeInheritedPrivilegesFromDatabaseRoleOptions.Privileges", "AllPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
 	})
 
-	t.Run("validation: [opts.onAll] should be set", func(t *testing.T) {
+	t.Run("validation: [opts.OnAll] should be set", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.onAll = ""
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("revokeInheritedPrivilegesFromDatabaseRoleOptions", "onAll"))
+		opts.OnAll = ""
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("RevokeInheritedPrivilegesFromDatabaseRoleOptions", "OnAll"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.in.Database opts.in.Schema] should be present", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.In.Database opts.In.Schema] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedDatabaseRoleGrantIn{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedDatabaseRoleGrantIn", "Database", "Schema"))
+		opts.In = InheritedDatabaseRoleGrantIn{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("RevokeInheritedPrivilegesFromDatabaseRoleOptions.In", "Database", "Schema"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.in.Database opts.in.Schema] should be present - more present", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.In.Database opts.In.Schema] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedDatabaseRoleGrantIn{
+		opts.In = InheritedDatabaseRoleGrantIn{
 			Database: new(dbId),
 			Schema:   new(schemaId),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedDatabaseRoleGrantIn", "Database", "Schema"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("RevokeInheritedPrivilegesFromDatabaseRoleOptions.In", "Database", "Schema"))
 	})
 
-	t.Run("validation: valid identifier for [opts.in.Database]", func(t *testing.T) {
+	t.Run("validation: valid identifier for [opts.In.Database]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedDatabaseRoleGrantIn{
+		opts.In = InheritedDatabaseRoleGrantIn{
 			Database: new(emptyAccountObjectIdentifier),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: valid identifier for [opts.in.Schema]", func(t *testing.T) {
+	t.Run("validation: valid identifier for [opts.In.Schema]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedDatabaseRoleGrantIn{
+		opts.In = InheritedDatabaseRoleGrantIn{
 			Schema: new(emptyDatabaseObjectIdentifier),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: valid identifier for [opts.databaseRole]", func(t *testing.T) {
+	t.Run("validation: valid identifier for [opts.DatabaseRole]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.databaseRole = emptyDatabaseObjectIdentifier
+		opts.DatabaseRole = emptyDatabaseObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
@@ -1780,13 +1803,13 @@ func TestRevokeInheritedPrivilegesFromDatabaseRole(t *testing.T) {
 
 	t.Run("on all tables in schema", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.in = InheritedDatabaseRoleGrantIn{Schema: new(schemaId)}
+		opts.In = InheritedDatabaseRoleGrantIn{Schema: new(schemaId)}
 		assertOptsValidAndSqlEqualsf(t, opts, `REVOKE INHERITED SELECT ON ALL TABLES IN SCHEMA %s FROM DATABASE ROLE %s`, schemaId.FullyQualifiedName(), databaseRoleId.FullyQualifiedName())
 	})
 
 	t.Run("multiple privileges", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.privileges = InheritedDatabaseRoleGrantPrivileges{
+		opts.Privileges = InheritedDatabaseRoleGrantPrivileges{
 			SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect, SchemaObjectPrivilegeInsert},
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, `REVOKE INHERITED SELECT, INSERT ON ALL TABLES IN DATABASE %s FROM DATABASE ROLE %s`, dbId.FullyQualifiedName(), databaseRoleId.FullyQualifiedNameEscaped())
@@ -1794,7 +1817,7 @@ func TestRevokeInheritedPrivilegesFromDatabaseRole(t *testing.T) {
 
 	t.Run("all privileges", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.privileges = InheritedDatabaseRoleGrantPrivileges{AllPrivileges: new(true)}
+		opts.Privileges = InheritedDatabaseRoleGrantPrivileges{AllPrivileges: new(true)}
 		assertOptsValidAndSqlEqualsf(t, opts, `REVOKE INHERITED ALL PRIVILEGES ON ALL TABLES IN DATABASE %s FROM DATABASE ROLE %s`, dbId.FullyQualifiedName(), databaseRoleId.FullyQualifiedName())
 	})
 }
@@ -1817,7 +1840,8 @@ func TestObjectTypeFromShowGrants(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%q", tt.raw), func(t *testing.T) {
-			assert.Equal(t, tt.want, ObjectTypeFromShowGrants(tt.raw))
+			actual, _ := ObjectTypeFromShowGrants(tt.raw)
+			assert.Equal(t, tt.want, actual)
 		})
 	}
 }

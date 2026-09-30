@@ -495,10 +495,8 @@ func UpdateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 				client,
 				d,
 				id,
-				&sdk.DatabaseRoleGrantPrivileges{
-					AllPrivileges: sdk.Bool(true),
-				},
-				new(sdk.RevokePrivilegesFromDatabaseRoleOptions),
+				sdk.NewDatabaseRoleGrantPrivilegesRequest().WithAllPrivileges(true),
+				sdk.NewRevokePrivilegesFromDatabaseRoleRequest(id.DatabaseRoleName),
 				false,
 			)
 			if err != nil {
@@ -560,9 +558,7 @@ func UpdateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 				)
 
 				if !id.WithGrantOption {
-					if err = revokeDatabaseRolePrivileges(ctx, client, d, id, privilegesToGrant, &sdk.RevokePrivilegesFromDatabaseRoleOptions{
-						GrantOptionFor: sdk.Bool(true),
-					}, false); err != nil {
+					if err = revokeDatabaseRolePrivileges(ctx, client, d, id, privilegesToGrant, sdk.NewRevokePrivilegesFromDatabaseRoleRequest(id.DatabaseRoleName).WithGrantOptionFor(true), false); err != nil {
 						return diag.Diagnostics{
 							diag.Diagnostic{
 								Severity: diag.Error,
@@ -598,7 +594,7 @@ func UpdateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 						onSchema,
 						onSchemaObject,
 					),
-					new(sdk.RevokePrivilegesFromDatabaseRoleOptions),
+					sdk.NewRevokePrivilegesFromDatabaseRoleRequest(id.DatabaseRoleName),
 					false,
 				)
 				if err != nil {
@@ -626,9 +622,7 @@ func UpdateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 				client,
 				d,
 				id,
-				&sdk.DatabaseRoleGrantPrivileges{
-					AllPrivileges: sdk.Bool(true),
-				},
+				sdk.NewDatabaseRoleGrantPrivilegesRequest().WithAllPrivileges(true),
 				false,
 			)
 			if err != nil {
@@ -697,7 +691,7 @@ func DeleteGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 	// leaves the resource impossible to destroy or replace. Update already derives them from the id.
 	privileges := getDatabaseRolePrivilegesFromId(id)
 	safely := providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy)
-	err = revokeDatabaseRolePrivileges(ctx, client, d, id, privileges, &sdk.RevokePrivilegesFromDatabaseRoleOptions{}, safely)
+	err = revokeDatabaseRolePrivileges(ctx, client, d, id, privileges, sdk.NewRevokePrivilegesFromDatabaseRoleRequest(id.DatabaseRoleName), safely)
 	if err != nil {
 		return diag.Diagnostics{
 			diag.Diagnostic{
@@ -827,7 +821,7 @@ func ReadGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.ResourceDa
 // granted. The second return value lists the object types Snowflake reported for grants that matched on
 // everything except the object type; it is only used to explain a mismatch to the user (see
 // objectTypeMismatchDiagnostic) and is empty when the grant matched.
-func computeDatabaseRolePrivileges(id GrantPrivilegesToDatabaseRoleId, grants []sdk.Grant, grantedOn *sdk.ObjectType, opts *sdk.ShowGrantOptions) (privileges []string, mismatchedObjectTypes []sdk.ObjectType) {
+func computeDatabaseRolePrivileges(id GrantPrivilegesToDatabaseRoleId, grants []sdk.Grant, grantedOn *sdk.ObjectType, opts *sdk.ShowGrantsRequest) (privileges []string, mismatchedObjectTypes []sdk.ObjectType) {
 	if id.Kind.IsInherited() {
 		return computeInheritedPrivileges(id.Data, id.DatabaseRoleName.Name(), sdk.ObjectTypeDatabaseRole, id.Privileges, grants, false), nil
 	}
@@ -887,45 +881,37 @@ func objectTypeMismatchDiagnostic(id GrantPrivilegesToDatabaseRoleId, configured
 	}
 }
 
-func prepareShowGrantsRequest(id GrantPrivilegesToDatabaseRoleId) (*sdk.ShowGrantOptions, *sdk.ObjectType) {
-	opts := new(sdk.ShowGrantOptions)
+func prepareShowGrantsRequest(id GrantPrivilegesToDatabaseRoleId) (*sdk.ShowGrantsRequest, *sdk.ObjectType) {
+	opts := sdk.NewShowGrantsRequest()
 	var grantedOn sdk.ObjectType
 
 	switch id.Kind {
 	case OnSchemaInheritedDatabaseRoleGrantKind, OnSchemaObjectInheritedDatabaseRoleGrantKind:
-		opts.To = &sdk.ShowGrantsTo{
-			DatabaseRole: id.DatabaseRoleName,
-		}
+		opts.WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(id.DatabaseRoleName))
 		return opts, nil
 	case OnDatabaseDatabaseRoleGrantKind:
 		grantedOn = sdk.ObjectTypeDatabase
 		data := id.Data.(*OnDatabaseGrantData)
-		opts.On = &sdk.ShowGrantsOn{
-			Object: &sdk.Object{
-				ObjectType: sdk.ObjectTypeDatabase,
-				Name:       data.DatabaseName,
-			},
-		}
+		opts.WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+			ObjectType: sdk.ObjectTypeDatabase,
+			Name:       data.DatabaseName,
+		}))
 	case OnSchemaDatabaseRoleGrantKind:
 		grantedOn = sdk.ObjectTypeSchema
 		data := id.Data.(*OnSchemaGrantData)
 
 		switch data.Kind {
 		case OnSchemaSchemaGrantKind:
-			opts.On = &sdk.ShowGrantsOn{
-				Object: &sdk.Object{
-					ObjectType: sdk.ObjectTypeSchema,
-					Name:       data.SchemaName,
-				},
-			}
+			opts.WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+				ObjectType: sdk.ObjectTypeSchema,
+				Name:       data.SchemaName,
+			}))
 		case OnAllSchemasInDatabaseSchemaGrantKind:
 			log.Printf("[INFO] Show with on_schema.all_schemas_in_database option is skipped. No changes in privileges in Snowflake will be detected.")
 			return nil, nil
 		case OnFutureSchemasInDatabaseSchemaGrantKind:
-			opts.Future = sdk.Bool(true)
-			opts.In = &sdk.ShowGrantsIn{
-				Database: data.DatabaseName,
-			}
+			opts.WithFuture(true)
+			opts.WithIn(*sdk.NewShowGrantsInRequest().WithDatabase(*data.DatabaseName))
 		}
 	case OnSchemaObjectDatabaseRoleGrantKind:
 		data := id.Data.(*OnSchemaObjectGrantData)
@@ -933,25 +919,19 @@ func prepareShowGrantsRequest(id GrantPrivilegesToDatabaseRoleId) (*sdk.ShowGran
 		switch data.Kind {
 		case OnObjectSchemaObjectGrantKind:
 			grantedOn = data.Object.ObjectType
-			opts.On = &sdk.ShowGrantsOn{
-				Object: data.Object,
-			}
+			opts.WithOn(*sdk.NewShowGrantsOnRequest().WithObject(*data.Object))
 		case OnAllSchemaObjectGrantKind:
 			log.Printf("[INFO] Show with on_schema_object.on_all option is skipped. No changes in privileges in Snowflake will be detected.")
 			return nil, nil
 		case OnFutureSchemaObjectGrantKind:
 			grantedOn = data.OnAllOrFuture.ObjectNamePlural.Singular()
-			opts.Future = sdk.Bool(true)
+			opts.WithFuture(true)
 
 			switch data.OnAllOrFuture.Kind {
 			case InDatabaseBulkOperationGrantKind:
-				opts.In = &sdk.ShowGrantsIn{
-					Database: data.OnAllOrFuture.Database,
-				}
+				opts.WithIn(*sdk.NewShowGrantsInRequest().WithDatabase(*data.OnAllOrFuture.Database))
 			case InSchemaBulkOperationGrantKind:
-				opts.In = &sdk.ShowGrantsIn{
-					Schema: data.OnAllOrFuture.Schema,
-				}
+				opts.WithIn(*sdk.NewShowGrantsInRequest().WithSchema(*data.OnAllOrFuture.Schema))
 			}
 		}
 	}
@@ -959,7 +939,7 @@ func prepareShowGrantsRequest(id GrantPrivilegesToDatabaseRoleId) (*sdk.ShowGran
 	return opts, &grantedOn
 }
 
-func getDatabaseRolePrivilegesFromSchema(d *schema.ResourceData) *sdk.DatabaseRoleGrantPrivileges {
+func getDatabaseRolePrivilegesFromSchema(d *schema.ResourceData) *sdk.DatabaseRoleGrantPrivilegesRequest {
 	_, onDatabaseOk := d.GetOk("on_database")
 	_, onSchemaOk := d.GetOk("on_schema")
 	_, onSchemaObjectOk := d.GetOk("on_schema_object")
@@ -975,7 +955,7 @@ func getDatabaseRolePrivilegesFromSchema(d *schema.ResourceData) *sdk.DatabaseRo
 
 // getDatabaseRolePrivilegesFromId builds the revoke payload from the parsed id. Unlike
 // getDatabaseRolePrivilegesFromSchema it does not depend on the state, which Read may have emptied.
-func getDatabaseRolePrivilegesFromId(id GrantPrivilegesToDatabaseRoleId) *sdk.DatabaseRoleGrantPrivileges {
+func getDatabaseRolePrivilegesFromId(id GrantPrivilegesToDatabaseRoleId) *sdk.DatabaseRoleGrantPrivilegesRequest {
 	plainKind := id.Kind.Plain()
 	return getDatabaseRolePrivileges(
 		id.AllPrivileges,
@@ -986,12 +966,11 @@ func getDatabaseRolePrivilegesFromId(id GrantPrivilegesToDatabaseRoleId) *sdk.Da
 	)
 }
 
-func getDatabaseRolePrivileges(allPrivileges bool, privileges []string, onDatabase bool, onSchema bool, onSchemaObject bool) *sdk.DatabaseRoleGrantPrivileges {
-	databaseRoleGrantPrivileges := new(sdk.DatabaseRoleGrantPrivileges)
+func getDatabaseRolePrivileges(allPrivileges bool, privileges []string, onDatabase bool, onSchema bool, onSchemaObject bool) *sdk.DatabaseRoleGrantPrivilegesRequest {
+	databaseRoleGrantPrivileges := sdk.NewDatabaseRoleGrantPrivilegesRequest()
 
 	if allPrivileges {
-		databaseRoleGrantPrivileges.AllPrivileges = sdk.Bool(true)
-		return databaseRoleGrantPrivileges
+		return databaseRoleGrantPrivileges.WithAllPrivileges(true)
 	}
 
 	switch {
@@ -1000,29 +979,29 @@ func getDatabaseRolePrivileges(allPrivileges bool, privileges []string, onDataba
 		for i, privilege := range privileges {
 			databasePrivileges[i] = sdk.AccountObjectPrivilege(privilege)
 		}
-		databaseRoleGrantPrivileges.DatabasePrivileges = databasePrivileges
+		databaseRoleGrantPrivileges.WithDatabasePrivileges(databasePrivileges)
 	case onSchema:
 		schemaPrivileges := make([]sdk.SchemaPrivilege, len(privileges))
 		for i, privilege := range privileges {
 			schemaPrivileges[i] = sdk.SchemaPrivilege(privilege)
 		}
-		databaseRoleGrantPrivileges.SchemaPrivileges = schemaPrivileges
+		databaseRoleGrantPrivileges.WithSchemaPrivileges(schemaPrivileges)
 	case onSchemaObject:
 		schemaObjectPrivileges := make([]sdk.SchemaObjectPrivilege, len(privileges))
 		for i, privilege := range privileges {
 			schemaObjectPrivileges[i] = sdk.SchemaObjectPrivilege(privilege)
 		}
-		databaseRoleGrantPrivileges.SchemaObjectPrivileges = schemaObjectPrivileges
+		databaseRoleGrantPrivileges.WithSchemaObjectPrivileges(schemaObjectPrivileges)
 	}
 
 	return databaseRoleGrantPrivileges
 }
 
-func getDatabaseRoleGrantOn(d *schema.ResourceData) (*sdk.DatabaseRoleGrantOn, error) {
+func getDatabaseRoleGrantOn(d *schema.ResourceData) (*sdk.DatabaseRoleGrantOnRequest, error) {
 	onDatabase, onDatabaseOk := d.GetOk("on_database")
 	onSchemaBlock, onSchemaOk := d.GetOk("on_schema")
 	onSchemaObjectBlock, onSchemaObjectOk := d.GetOk("on_schema_object")
-	on := new(sdk.DatabaseRoleGrantOn)
+	on := sdk.NewDatabaseRoleGrantOnRequest()
 
 	switch {
 	case onDatabaseOk:
@@ -1030,11 +1009,11 @@ func getDatabaseRoleGrantOn(d *schema.ResourceData) (*sdk.DatabaseRoleGrantOn, e
 		if err != nil {
 			return nil, err
 		}
-		on.Database = sdk.Pointer(databaseId)
+		on.WithDatabase(databaseId)
 	case onSchemaOk:
 		onSchema := onSchemaBlock.([]any)[0].(map[string]any)
 
-		grantOnSchema := new(sdk.GrantOnSchema)
+		grantOnSchema := sdk.NewGrantOnSchemaRequest()
 
 		schemaName := onSchema["schema_name"].(string)
 		schemaNameOk := len(schemaName) > 0
@@ -1051,26 +1030,26 @@ func getDatabaseRoleGrantOn(d *schema.ResourceData) (*sdk.DatabaseRoleGrantOn, e
 			if err != nil {
 				return nil, err
 			}
-			grantOnSchema.Schema = sdk.Pointer(schemaId)
+			grantOnSchema.WithSchema(schemaId)
 		case allSchemasInDatabaseOk:
 			databaseId, err := sdk.ParseAccountObjectIdentifier(allSchemasInDatabase)
 			if err != nil {
 				return nil, err
 			}
-			grantOnSchema.AllSchemasInDatabase = sdk.Pointer(databaseId)
+			grantOnSchema.WithAllSchemasInDatabase(databaseId)
 		case futureSchemasInDatabaseOk:
 			databaseId, err := sdk.ParseAccountObjectIdentifier(futureSchemasInDatabase)
 			if err != nil {
 				return nil, err
 			}
-			grantOnSchema.FutureSchemasInDatabase = sdk.Pointer(databaseId)
+			grantOnSchema.WithFutureSchemasInDatabase(databaseId)
 		}
 
-		on.Schema = grantOnSchema
+		on.WithSchema(*grantOnSchema)
 	case onSchemaObjectOk:
 		onSchemaObject := onSchemaObjectBlock.([]any)[0].(map[string]any)
 
-		grantOnSchemaObject := new(sdk.GrantOnSchemaObject)
+		grantOnSchemaObject := sdk.NewGrantOnSchemaObjectRequest()
 
 		objectType := onSchemaObject["object_type"].(string)
 		objectTypeOk := len(objectType) > 0
@@ -1103,25 +1082,25 @@ func getDatabaseRoleGrantOn(d *schema.ResourceData) (*sdk.DatabaseRoleGrantOn, e
 					return nil, err
 				}
 			}
-			grantOnSchemaObject.SchemaObject = &sdk.Object{
+			grantOnSchemaObject.WithSchemaObject(sdk.Object{
 				ObjectType: objectType,
 				Name:       id,
-			}
+			})
 		case allOk:
 			grantOnSchemaObjectIn, err := getGrantOnSchemaObjectIn(all[0].(map[string]any))
 			if err != nil {
 				return nil, err
 			}
-			grantOnSchemaObject.All = grantOnSchemaObjectIn
+			grantOnSchemaObject.WithAll(*grantOnSchemaObjectIn)
 		case futureOk:
 			grantOnSchemaObjectIn, err := getGrantOnSchemaObjectIn(future[0].(map[string]any))
 			if err != nil {
 				return nil, err
 			}
-			grantOnSchemaObject.Future = grantOnSchemaObjectIn
+			grantOnSchemaObject.WithFuture(*grantOnSchemaObjectIn)
 		}
 
-		on.SchemaObject = grantOnSchemaObject
+		on.WithSchemaObject(*grantOnSchemaObject)
 	}
 
 	return on, nil
@@ -1129,55 +1108,63 @@ func getDatabaseRoleGrantOn(d *schema.ResourceData) (*sdk.DatabaseRoleGrantOn, e
 
 // grantDatabaseRolePrivileges grants the given privileges, dispatching to the inherited-grant SQL
 // (GRANT INHERITED ...) when the grant kind is inherited, and to the regular GRANT otherwise.
-func grantDatabaseRolePrivileges(ctx context.Context, client *sdk.Client, d *schema.ResourceData, id GrantPrivilegesToDatabaseRoleId, privileges *sdk.DatabaseRoleGrantPrivileges, withGrantOption bool) error {
+func grantDatabaseRolePrivileges(ctx context.Context, client *sdk.Client, d *schema.ResourceData, id GrantPrivilegesToDatabaseRoleId, privileges *sdk.DatabaseRoleGrantPrivilegesRequest, withGrantOption bool) error {
 	if id.Kind.IsInherited() {
 		onAll, in := inheritedDatabaseRoleGrantParams(id)
-		return client.Grants.GrantInheritedPrivilegesToDatabaseRole(ctx, privileges.ToInheritedDatabaseRoleGrantPrivileges(), onAll, in, id.DatabaseRoleName)
+		return client.Grants.GrantInheritedPrivilegesToDatabaseRole(ctx, sdk.NewGrantInheritedPrivilegesToDatabaseRoleRequest(onAll, in, id.DatabaseRoleName).
+			WithPrivileges(privileges.ToInheritedDatabaseRoleGrantPrivileges()))
 	}
 
 	grantOn, err := getDatabaseRoleGrantOn(d)
 	if err != nil {
 		return err
 	}
-	return client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, grantOn, id.DatabaseRoleName, &sdk.GrantPrivilegesToDatabaseRoleOptions{
-		WithGrantOption: new(withGrantOption),
-	})
+	return client.Grants.GrantPrivilegesToDatabaseRole(ctx, sdk.NewGrantPrivilegesToDatabaseRoleRequest(id.DatabaseRoleName).
+		WithPrivileges(*privileges).
+		WithOn(*grantOn).
+		WithWithGrantOption(withGrantOption))
 }
 
 // revokeDatabaseRolePrivileges revokes the given privileges, dispatching to the inherited-grant SQL
 // (REVOKE INHERITED ...) when the grant kind is inherited, and to the regular REVOKE otherwise.
-func revokeDatabaseRolePrivileges(ctx context.Context, client *sdk.Client, d *schema.ResourceData, id GrantPrivilegesToDatabaseRoleId, privileges *sdk.DatabaseRoleGrantPrivileges, opts *sdk.RevokePrivilegesFromDatabaseRoleOptions, safely bool) error {
+func revokeDatabaseRolePrivileges(ctx context.Context, client *sdk.Client, d *schema.ResourceData, id GrantPrivilegesToDatabaseRoleId, privileges *sdk.DatabaseRoleGrantPrivilegesRequest, request *sdk.RevokePrivilegesFromDatabaseRoleRequest, safely bool) error {
 	if id.Kind.IsInherited() {
-		if opts != nil && opts.GrantOptionFor != nil && *opts.GrantOptionFor {
+		if request != nil && request.GrantOptionFor != nil && *request.GrantOptionFor {
 			return nil
 		}
 		onAll, in := inheritedDatabaseRoleGrantParams(id)
+		inheritedRequest := sdk.NewRevokeInheritedPrivilegesFromDatabaseRoleRequest(onAll, in, id.DatabaseRoleName).
+			WithPrivileges(privileges.ToInheritedDatabaseRoleGrantPrivileges())
 		if safely {
-			return client.Grants.RevokeInheritedPrivilegesFromDatabaseRoleSafely(ctx, privileges.ToInheritedDatabaseRoleGrantPrivileges(), onAll, in, id.DatabaseRoleName)
+			return client.Grants.RevokeInheritedPrivilegesFromDatabaseRoleSafely(ctx, inheritedRequest)
 		}
-		return client.Grants.RevokeInheritedPrivilegesFromDatabaseRole(ctx, privileges.ToInheritedDatabaseRoleGrantPrivileges(), onAll, in, id.DatabaseRoleName)
+		return client.Grants.RevokeInheritedPrivilegesFromDatabaseRole(ctx, inheritedRequest)
 	}
 
 	grantOn, err := getDatabaseRoleGrantOn(d)
 	if err != nil {
 		return err
 	}
-	if safely {
-		return client.Grants.RevokePrivilegesFromDatabaseRoleSafely(ctx, privileges, grantOn, id.DatabaseRoleName, opts)
+	if request == nil {
+		request = sdk.NewRevokePrivilegesFromDatabaseRoleRequest(id.DatabaseRoleName)
 	}
-	return client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privileges, grantOn, id.DatabaseRoleName, opts)
+	request.WithPrivileges(*privileges).WithOn(*grantOn)
+	if safely {
+		return client.Grants.RevokePrivilegesFromDatabaseRoleSafely(ctx, request)
+	}
+	return client.Grants.RevokePrivilegesFromDatabaseRole(ctx, request)
 }
 
 // inheritedDatabaseRoleGrantParams derives the `ON ALL <object_type_plural> IN <container>` parameters
 // for the inherited-grant SDK methods from the identifier data stored on the grant id.
-func inheritedDatabaseRoleGrantParams(id GrantPrivilegesToDatabaseRoleId) (sdk.PluralObjectType, sdk.InheritedDatabaseRoleGrantIn) {
+func inheritedDatabaseRoleGrantParams(id GrantPrivilegesToDatabaseRoleId) (sdk.PluralObjectType, sdk.InheritedDatabaseRoleGrantInRequest) {
 	switch data := id.Data.(type) {
 	case *OnSchemaInheritedGrantData:
 		return sdk.PluralObjectTypeSchemas, data.Kind.toInheritedDatabaseRoleGrantIn(data.DatabaseName, nil)
 	case *OnSchemaObjectInheritedGrantData:
 		return data.ObjectNamePlural, data.Kind.toInheritedDatabaseRoleGrantIn(data.DatabaseName, data.SchemaName)
 	default:
-		return "", sdk.InheritedDatabaseRoleGrantIn{}
+		return "", *sdk.NewInheritedDatabaseRoleGrantInRequest()
 	}
 }
 

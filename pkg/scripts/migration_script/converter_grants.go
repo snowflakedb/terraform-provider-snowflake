@@ -25,8 +25,8 @@ type GrantCsvRow struct {
 func (row GrantCsvRow) convert() (*sdk.Grant, error) {
 	grantedTo := sdk.ObjectType(strings.ReplaceAll(row.GrantedTo, "_", " "))
 	grantTo := sdk.ObjectType(strings.ReplaceAll(row.GrantTo, "_", " "))
-	grantedOn := sdk.ObjectTypeFromShowGrants(row.GrantedOn)
-	grantOn := sdk.ObjectTypeFromShowGrants(row.GrantOn)
+	grantedOn, _ := sdk.ObjectTypeFromShowGrants(row.GrantedOn)
+	grantOn, _ := sdk.ObjectTypeFromShowGrants(row.GrantOn)
 
 	var name sdk.ObjectIdentifier
 	var err error

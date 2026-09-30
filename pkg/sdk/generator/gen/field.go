@@ -331,7 +331,7 @@ func (f *Field) DtoDecl() string {
 	switch {
 	case f.Parent == nil:
 		withoutSuffix, _ := strings.CutSuffix(f.KindNoPtr(), "Options")
-		return fmt.Sprintf("%sRequest", withoutSuffix)
+		return fmt.Sprintf("%sRequest", strings.ToUpper(withoutSuffix[:1])+withoutSuffix[1:])
 	case f.IsStruct():
 		return fmt.Sprintf("%sRequest", f.KindNoPtr())
 	default:

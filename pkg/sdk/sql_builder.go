@@ -195,13 +195,6 @@ func (b *sqlBuilder) getModifier(tag reflect.StructTag, tagName string, modType 
 	return defaultMod
 }
 
-// StructToSQL renders v (any *Options struct using the ddl/sql struct tags) to the exact SQL
-// string the corresponding SDK call would issue. Useful as a cache key: equal strings imply equal
-// queries.
-func StructToSQL(v any) (string, error) {
-	return structToSQL(v)
-}
-
 func structToSQL(v any) (string, error) {
 	clauses, err := builder.parseStruct(v)
 	if err != nil {

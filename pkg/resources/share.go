@@ -131,24 +131,24 @@ func setShareAccounts(ctx context.Context, client *sdk.Client, shareID sdk.Accou
 	// case where the main db doesn't already exist, so it will need to be revoked
 	// before deleting the temp db. Where USAGE hasn't been already granted it is not
 	// an error to revoke it, so it's ok to just do the revoke every time.
-	err = client.Grants.GrantPrivilegeToShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage, sdk.ObjectPrivilegeReferenceUsage}, &sdk.ShareGrantOn{
-		Database: tempDatabaseID,
-	}, shareID)
+	err = client.Grants.GrantPrivilegeToShare(ctx, sdk.NewGrantPrivilegeToShareRequest(shareID).
+		WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage, sdk.ObjectPrivilegeReferenceUsage}).
+		WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(tempDatabaseID)))
 	if err != nil {
 		return fmt.Errorf("error granting privilege to share (%v) err = %w", shareID.Name(), err)
 	}
 	defer func() {
 		// revoke the REFERENCE_USAGE privilege during cleanup
-		err = client.Grants.RevokePrivilegeFromShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeReferenceUsage}, &sdk.ShareGrantOn{
-			Database: tempDatabaseID,
-		}, shareID)
+		err = client.Grants.RevokePrivilegeFromShare(ctx, sdk.NewRevokePrivilegeFromShareRequest(shareID).
+			WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeReferenceUsage}).
+			WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(tempDatabaseID)))
 		if err != nil {
 			log.Printf("[WARN] error revoking privilege from share (%v) err = %v", shareID.Name(), err)
 		}
 		// revoke the maybe automatically granted USAGE privilege during cleanup
-		err = client.Grants.RevokePrivilegeFromShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{
-			Database: tempDatabaseID,
-		}, shareID)
+		err = client.Grants.RevokePrivilegeFromShare(ctx, sdk.NewRevokePrivilegeFromShareRequest(shareID).
+			WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).
+			WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(tempDatabaseID)))
 		if err != nil {
 			log.Printf("[WARN] error revoking privilege from share (%v) err = %v", shareID.Name(), err)
 		}

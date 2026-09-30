@@ -25,12 +25,9 @@ func TestAcc_Experimental_GrantOwnership_SafeDestroy_MissingSchema(t *testing.T)
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
-	grantModel := model.GrantOwnership("test", []sdk.OwnershipGrantOn{{
-		All: &sdk.GrantOnSchemaObjectIn{
-			PluralObjectType: sdk.PluralObjectTypeTables,
-			InSchema:         sdk.Pointer(schema.ID()),
-		},
-	}}).WithAccountRoleName(role.ID().Name())
+	grantModel := model.GrantOwnership("test", []sdk.OwnershipGrantOnRequest{
+		*sdk.NewOwnershipGrantOnRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeTables).WithInSchema(schema.ID())),
+	}).WithAccountRoleName(role.ID().Name())
 
 	disabledProviderModel := providermodel.SnowflakeProvider().
 		WithAllEnabledByDefaultExperimentsDisabled()
@@ -74,12 +71,9 @@ func TestAcc_Experimental_GrantOwnership_SafeDestroy_MissingDatabase(t *testing.
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
-	grantModel := model.GrantOwnership("test", []sdk.OwnershipGrantOn{{
-		All: &sdk.GrantOnSchemaObjectIn{
-			PluralObjectType: sdk.PluralObjectTypeTables,
-			InDatabase:       sdk.Pointer(database.ID()),
-		},
-	}}).WithAccountRoleName(role.ID().Name())
+	grantModel := model.GrantOwnership("test", []sdk.OwnershipGrantOnRequest{
+		*sdk.NewOwnershipGrantOnRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeTables).WithInDatabase(database.ID())),
+	}).WithAccountRoleName(role.ID().Name())
 
 	disabledProviderModel := providermodel.SnowflakeProvider().
 		WithAllEnabledByDefaultExperimentsDisabled()

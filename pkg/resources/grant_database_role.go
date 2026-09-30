@@ -183,11 +183,8 @@ func ReadGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(err)
 	}
 	targetIdentifier := parts[2]
-	grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-		Of: &sdk.ShowGrantsOf{
-			DatabaseRole: databaseRoleIdentifier,
-		},
-	})
+	grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().
+		WithOf(*sdk.NewShowGrantsOfRequest().WithDatabaseRole(databaseRoleIdentifier)))
 	if err != nil {
 		log.Printf("[DEBUG] database role (%s) not found: %v", databaseRoleIdentifier.FullyQualifiedName(), err)
 		d.SetId("")

@@ -108,7 +108,7 @@ func TestInt_ApplicationRoles(t *testing.T) {
 		err := client.ApplicationRoles.Grant(ctx, gr)
 		require.NoError(t, err)
 
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{To: &sdk.ShowGrantsTo{Role: role.ID()}})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(role.ID())))
 		require.NoError(t, err)
 		assertGrant(t, grants, sdk.ObjectPrivilegeUsage, sdk.ObjectTypeApplicationRole, sdk.ObjectTypeRole)
 
@@ -117,7 +117,7 @@ func TestInt_ApplicationRoles(t *testing.T) {
 		err = client.ApplicationRoles.Revoke(ctx, rr)
 		require.NoError(t, err)
 
-		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{To: &sdk.ShowGrantsTo{Role: role.ID()}})
+		grants, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(role.ID())))
 		require.NoError(t, err)
 		require.Empty(t, grants)
 	})
@@ -132,7 +132,7 @@ func TestInt_ApplicationRoles(t *testing.T) {
 		err := client.ApplicationRoles.Grant(ctx, gr)
 		require.NoError(t, err)
 
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{To: &sdk.ShowGrantsTo{Application: application2.ID()}})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithApplication(application2.ID())))
 		require.NoError(t, err)
 		assertGrant(t, grants, sdk.ObjectPrivilegeUsage, sdk.ObjectTypeApplicationRole, sdk.ObjectTypeApplication)
 
@@ -141,7 +141,7 @@ func TestInt_ApplicationRoles(t *testing.T) {
 		err = client.ApplicationRoles.Revoke(ctx, rr)
 		require.NoError(t, err)
 
-		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{To: &sdk.ShowGrantsTo{Application: application2.ID()}})
+		grants, err = client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithApplication(application2.ID())))
 		require.NoError(t, err)
 		require.Empty(t, grants)
 	})
@@ -151,10 +151,8 @@ func TestInt_ApplicationRoles(t *testing.T) {
 		id := sdk.NewDatabaseObjectIdentifier(application.Name, name)
 		ctx := context.Background()
 
-		opts := new(sdk.ShowGrantOptions)
-		opts.To = &sdk.ShowGrantsTo{
-			ApplicationRole: id,
-		}
+		opts := sdk.NewShowGrantsRequest()
+		opts.WithTo(*sdk.NewShowGrantsToRequest().WithApplicationRole(id))
 		grants, err := client.Grants.Show(ctx, opts)
 		require.NoError(t, err)
 		assertGrant(t, grants, sdk.ObjectPrivilegeUsage, sdk.ObjectTypeApplication, sdk.ObjectTypeApplicationRole)
@@ -165,10 +163,8 @@ func TestInt_ApplicationRoles(t *testing.T) {
 		id := sdk.NewDatabaseObjectIdentifier(application.Name, name)
 		ctx := context.Background()
 
-		opts := new(sdk.ShowGrantOptions)
-		opts.Of = &sdk.ShowGrantsOf{
-			ApplicationRole: id,
-		}
+		opts := sdk.NewShowGrantsRequest()
+		opts.WithOf(*sdk.NewShowGrantsOfRequest().WithApplicationRole(id))
 		grants, err := client.Grants.Show(ctx, opts)
 		require.NoError(t, err)
 

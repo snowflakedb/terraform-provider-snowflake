@@ -54,24 +54,12 @@ func TestInt_GrantPrivileges_OnFutureAndAll_NewObjectTypes(t *testing.T) {
 			role, roleCleanup := testClientHelper().Role.CreateRole(t)
 			t.Cleanup(roleCleanup)
 
-			privileges := &sdk.AccountRoleGrantPrivileges{
-				SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{tc.privilege},
-			}
-			on := &sdk.AccountRoleGrantOn{
-				SchemaObject: &sdk.GrantOnSchemaObject{
-					Future: &sdk.GrantOnSchemaObjectIn{
-						PluralObjectType: tc.objectTypePlural,
-						InDatabase:       sdk.Pointer(database.ID()),
-					},
-				},
-			}
-			err := client.Grants.GrantPrivilegesToAccountRole(ctx, privileges, on, role.ID(), nil)
+			privileges := sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{tc.privilege})
+			on := sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(tc.objectTypePlural).WithInDatabase(database.ID())))
+			err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(role.ID()).WithPrivileges(*privileges).WithOn(*on))
 			require.NoError(t, err)
 
-			grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-				Future: sdk.Bool(true),
-				To:     &sdk.ShowGrantsTo{Role: role.ID()},
-			})
+			grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithFuture(true).WithTo(*sdk.NewShowGrantsToRequest().WithRole(role.ID())))
 			require.NoError(t, err)
 			require.Len(t, grants, 1)
 			assert.Equal(t, tc.privilege.String(), grants[0].Privilege)
@@ -87,27 +75,10 @@ func TestInt_GrantPrivileges_OnFutureAndAll_NewObjectTypes(t *testing.T) {
 			databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRoleInDatabase(t, database.ID())
 			t.Cleanup(databaseRoleCleanup)
 
-			err := client.Grants.GrantPrivilegesToDatabaseRole(
-				ctx,
-				&sdk.DatabaseRoleGrantPrivileges{
-					SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{tc.privilege},
-				},
-				&sdk.DatabaseRoleGrantOn{
-					SchemaObject: &sdk.GrantOnSchemaObject{
-						Future: &sdk.GrantOnSchemaObjectIn{
-							PluralObjectType: tc.objectTypePlural,
-							InDatabase:       sdk.Pointer(database.ID()),
-						},
-					},
-				},
-				databaseRole.ID(), nil,
-			)
+			err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, sdk.NewGrantPrivilegesToDatabaseRoleRequest(databaseRole.ID()).WithPrivileges(*sdk.NewDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{tc.privilege})).WithOn(*sdk.NewDatabaseRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(tc.objectTypePlural).WithInDatabase(database.ID())))))
 			require.NoError(t, err)
 
-			grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-				Future: sdk.Bool(true),
-				To:     &sdk.ShowGrantsTo{DatabaseRole: databaseRole.ID()},
-			})
+			grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithFuture(true).WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRole.ID())))
 			require.NoError(t, err)
 			require.Len(t, grants, 1)
 			assert.Equal(t, tc.privilege.String(), grants[0].Privilege)
@@ -123,23 +94,10 @@ func TestInt_GrantPrivileges_OnFutureAndAll_NewObjectTypes(t *testing.T) {
 			t.Cleanup(roleCleanup)
 			roleId := role.ID()
 
-			err := client.Grants.GrantOwnership(
-				ctx,
-				sdk.OwnershipGrantOn{
-					Future: &sdk.GrantOnSchemaObjectIn{
-						PluralObjectType: tc.objectTypePlural,
-						InDatabase:       sdk.Pointer(database.ID()),
-					},
-				},
-				sdk.OwnershipGrantTo{AccountRoleName: &roleId},
-				nil,
-			)
+			err := client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(*sdk.NewOwnershipGrantOnRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(tc.objectTypePlural).WithInDatabase(database.ID())), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(roleId)))
 			require.NoError(t, err)
 
-			grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-				Future: sdk.Bool(true),
-				To:     &sdk.ShowGrantsTo{Role: roleId},
-			})
+			grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithFuture(true).WithTo(*sdk.NewShowGrantsToRequest().WithRole(roleId)))
 			require.NoError(t, err)
 			require.Len(t, grants, 1)
 			assert.Equal(t, sdk.SchemaObjectOwnership.String(), grants[0].Privilege)
@@ -157,29 +115,13 @@ func TestInt_GrantPrivileges_OnFutureAndAll_NewObjectTypes(t *testing.T) {
 			role, roleCleanup := testClientHelper().Role.CreateRole(t)
 			t.Cleanup(roleCleanup)
 
-			err := client.Grants.GrantPrivilegesToAccountRole(
-				ctx,
-				&sdk.AccountRoleGrantPrivileges{
-					SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{tc.privilege},
-				},
-				&sdk.AccountRoleGrantOn{
-					SchemaObject: &sdk.GrantOnSchemaObject{
-						All: &sdk.GrantOnSchemaObjectIn{
-							PluralObjectType: tc.objectTypePlural,
-							InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-						},
-					},
-				},
-				role.ID(), nil,
-			)
+			err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(role.ID()).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{tc.privilege})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(tc.objectTypePlural).WithInSchema(testClientHelper().Ids.SchemaId())))))
 			require.NoError(t, err)
 
-			grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-				On: &sdk.ShowGrantsOn{Object: &sdk.Object{
-					ObjectType: tc.expectedGrantOn,
-					Name:       objectId,
-				}},
-			})
+			grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+				ObjectType: tc.expectedGrantOn,
+				Name:       objectId,
+			})))
 			require.NoError(t, err)
 			found := false
 			for _, g := range grants {
@@ -199,29 +141,13 @@ func TestInt_GrantPrivileges_OnFutureAndAll_NewObjectTypes(t *testing.T) {
 			databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
 			t.Cleanup(databaseRoleCleanup)
 
-			err := client.Grants.GrantPrivilegesToDatabaseRole(
-				ctx,
-				&sdk.DatabaseRoleGrantPrivileges{
-					SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{tc.privilege},
-				},
-				&sdk.DatabaseRoleGrantOn{
-					SchemaObject: &sdk.GrantOnSchemaObject{
-						All: &sdk.GrantOnSchemaObjectIn{
-							PluralObjectType: tc.objectTypePlural,
-							InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-						},
-					},
-				},
-				databaseRole.ID(), nil,
-			)
+			err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, sdk.NewGrantPrivilegesToDatabaseRoleRequest(databaseRole.ID()).WithPrivileges(*sdk.NewDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{tc.privilege})).WithOn(*sdk.NewDatabaseRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(tc.objectTypePlural).WithInSchema(testClientHelper().Ids.SchemaId())))))
 			require.NoError(t, err)
 
-			grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-				On: &sdk.ShowGrantsOn{Object: &sdk.Object{
-					ObjectType: tc.expectedGrantOn,
-					Name:       objectId,
-				}},
-			})
+			grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+				ObjectType: tc.expectedGrantOn,
+				Name:       objectId,
+			})))
 			require.NoError(t, err)
 			found := false
 			for _, g := range grants {
@@ -242,25 +168,13 @@ func TestInt_GrantPrivileges_OnFutureAndAll_NewObjectTypes(t *testing.T) {
 			t.Cleanup(roleCleanup)
 			roleId := role.ID()
 
-			err := client.Grants.GrantOwnership(
-				ctx,
-				sdk.OwnershipGrantOn{
-					All: &sdk.GrantOnSchemaObjectIn{
-						PluralObjectType: tc.objectTypePlural,
-						InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-					},
-				},
-				sdk.OwnershipGrantTo{AccountRoleName: &roleId},
-				nil,
-			)
+			err := client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(*sdk.NewOwnershipGrantOnRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(tc.objectTypePlural).WithInSchema(testClientHelper().Ids.SchemaId())), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(roleId)))
 			require.NoError(t, err)
 
-			grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-				On: &sdk.ShowGrantsOn{Object: &sdk.Object{
-					ObjectType: tc.expectedGrantOn,
-					Name:       objectId,
-				}},
-			})
+			grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+				ObjectType: tc.expectedGrantOn,
+				Name:       objectId,
+			})))
 			require.NoError(t, err)
 			found := false
 			for _, g := range grants {
@@ -351,21 +265,7 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 			role, roleCleanup := testClientHelper().Role.CreateRole(t)
 			t.Cleanup(roleCleanup)
 
-			err := client.Grants.GrantPrivilegesToAccountRole(
-				ctx,
-				&sdk.AccountRoleGrantPrivileges{
-					SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{tc.privilege},
-				},
-				&sdk.AccountRoleGrantOn{
-					SchemaObject: &sdk.GrantOnSchemaObject{
-						Future: &sdk.GrantOnSchemaObjectIn{
-							PluralObjectType: tc.objectTypePlural,
-							InDatabase:       sdk.Pointer(database.ID()),
-						},
-					},
-				},
-				role.ID(), nil,
-			)
+			err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(role.ID()).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{tc.privilege})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(tc.objectTypePlural).WithInDatabase(database.ID())))))
 			require.ErrorContains(t, err, tc.expectedFutureError)
 		})
 
@@ -376,21 +276,7 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 			databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRoleInDatabase(t, database.ID())
 			t.Cleanup(databaseRoleCleanup)
 
-			err := client.Grants.GrantPrivilegesToDatabaseRole(
-				ctx,
-				&sdk.DatabaseRoleGrantPrivileges{
-					SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{tc.privilege},
-				},
-				&sdk.DatabaseRoleGrantOn{
-					SchemaObject: &sdk.GrantOnSchemaObject{
-						Future: &sdk.GrantOnSchemaObjectIn{
-							PluralObjectType: tc.objectTypePlural,
-							InDatabase:       sdk.Pointer(database.ID()),
-						},
-					},
-				},
-				databaseRole.ID(), nil,
-			)
+			err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, sdk.NewGrantPrivilegesToDatabaseRoleRequest(databaseRole.ID()).WithPrivileges(*sdk.NewDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{tc.privilege})).WithOn(*sdk.NewDatabaseRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(tc.objectTypePlural).WithInDatabase(database.ID())))))
 			require.ErrorContains(t, err, tc.expectedFutureError)
 		})
 
@@ -401,21 +287,7 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 			role, roleCleanup := testClientHelper().Role.CreateRole(t)
 			t.Cleanup(roleCleanup)
 
-			err := client.Grants.GrantPrivilegesToAccountRole(
-				ctx,
-				&sdk.AccountRoleGrantPrivileges{
-					SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{tc.privilege},
-				},
-				&sdk.AccountRoleGrantOn{
-					SchemaObject: &sdk.GrantOnSchemaObject{
-						All: &sdk.GrantOnSchemaObjectIn{
-							PluralObjectType: tc.objectTypePlural,
-							InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-						},
-					},
-				},
-				role.ID(), nil,
-			)
+			err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(role.ID()).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{tc.privilege})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(tc.objectTypePlural).WithInSchema(testClientHelper().Ids.SchemaId())))))
 
 			if tc.expectedAllError == "" {
 				require.NoError(t, err)
@@ -431,21 +303,7 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 			databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
 			t.Cleanup(databaseRoleCleanup)
 
-			err := client.Grants.GrantPrivilegesToDatabaseRole(
-				ctx,
-				&sdk.DatabaseRoleGrantPrivileges{
-					SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{tc.privilege},
-				},
-				&sdk.DatabaseRoleGrantOn{
-					SchemaObject: &sdk.GrantOnSchemaObject{
-						All: &sdk.GrantOnSchemaObjectIn{
-							PluralObjectType: tc.objectTypePlural,
-							InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-						},
-					},
-				},
-				databaseRole.ID(), nil,
-			)
+			err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, sdk.NewGrantPrivilegesToDatabaseRoleRequest(databaseRole.ID()).WithPrivileges(*sdk.NewDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{tc.privilege})).WithOn(*sdk.NewDatabaseRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(tc.objectTypePlural).WithInSchema(testClientHelper().Ids.SchemaId())))))
 
 			if tc.expectedAllError == "" {
 				require.NoError(t, err)
@@ -462,17 +320,7 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 			t.Cleanup(roleCleanup)
 			roleId := role.ID()
 
-			err := client.Grants.GrantOwnership(
-				ctx,
-				sdk.OwnershipGrantOn{
-					Future: &sdk.GrantOnSchemaObjectIn{
-						PluralObjectType: tc.objectTypePlural,
-						InDatabase:       sdk.Pointer(database.ID()),
-					},
-				},
-				sdk.OwnershipGrantTo{AccountRoleName: &roleId},
-				nil,
-			)
+			err := client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(*sdk.NewOwnershipGrantOnRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(tc.objectTypePlural).WithInDatabase(database.ID())), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(roleId)))
 			require.ErrorContains(t, err, tc.expectedFutureError)
 		})
 
@@ -484,17 +332,7 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 			t.Cleanup(roleCleanup)
 			roleId := role.ID()
 
-			err := client.Grants.GrantOwnership(
-				ctx,
-				sdk.OwnershipGrantOn{
-					All: &sdk.GrantOnSchemaObjectIn{
-						PluralObjectType: tc.objectTypePlural,
-						InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-					},
-				},
-				sdk.OwnershipGrantTo{AccountRoleName: &roleId},
-				nil,
-			)
+			err := client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(*sdk.NewOwnershipGrantOnRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(tc.objectTypePlural).WithInSchema(testClientHelper().Ids.SchemaId())), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(roleId)))
 
 			if tc.expectedAllError == "" {
 				require.NoError(t, err)

@@ -653,9 +653,9 @@ func TestAcc_Grants_InheritedIn_CompleteUseCase_Account(t *testing.T) {
 	testClient().Grant.GrantInheritedPrivilegesToAccountRole(
 		t,
 		role.ID(),
-		sdk.InheritedAccountRoleGrantPrivileges{AccountObjectPrivileges: []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage}},
+		*sdk.NewInheritedAccountRoleGrantPrivilegesRequest().WithAccountObjectPrivileges([]sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage}),
 		sdk.PluralObjectTypeWarehouses,
-		sdk.InheritedAccountRoleGrantIn{Account: new(true)},
+		*sdk.NewInheritedAccountRoleGrantInRequest().WithAccount(true),
 	)
 
 	grantsModel := datasourcemodel.InheritedGrantsInAccount("test")
@@ -683,9 +683,9 @@ func TestAcc_Grants_InheritedIn_CompleteUseCase_Database(t *testing.T) {
 	testClient().Grant.GrantInheritedPrivilegesToAccountRole(
 		t,
 		role.ID(),
-		sdk.InheritedAccountRoleGrantPrivileges{SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect}},
+		*sdk.NewInheritedAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect}),
 		sdk.PluralObjectTypeTables,
-		sdk.InheritedAccountRoleGrantIn{Database: &databaseId},
+		*sdk.NewInheritedAccountRoleGrantInRequest().WithDatabase(databaseId),
 	)
 
 	grantsModel := datasourcemodel.InheritedGrantsInDatabase("test", databaseId)
@@ -713,9 +713,9 @@ func TestAcc_Grants_InheritedIn_CompleteUseCase_Schema(t *testing.T) {
 	testClient().Grant.GrantInheritedPrivilegesToAccountRole(
 		t,
 		role.ID(),
-		sdk.InheritedAccountRoleGrantPrivileges{SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect}},
+		*sdk.NewInheritedAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect}),
 		sdk.PluralObjectTypeTables,
-		sdk.InheritedAccountRoleGrantIn{Schema: &schemaId},
+		*sdk.NewInheritedAccountRoleGrantInRequest().WithSchema(schemaId),
 	)
 
 	grantsModel := datasourcemodel.InheritedGrantsInSchema("test", schemaId)

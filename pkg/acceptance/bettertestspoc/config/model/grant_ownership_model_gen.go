@@ -28,7 +28,7 @@ type GrantOwnershipModel struct {
 
 func GrantOwnership(
 	resourceName string,
-	on []sdk.OwnershipGrantOn,
+	on []sdk.OwnershipGrantOnRequest,
 ) *GrantOwnershipModel {
 	g := &GrantOwnershipModel{ResourceModelMeta: config.Meta(resourceName, resources.GrantOwnership)}
 	g.WithOn(on)
@@ -36,7 +36,7 @@ func GrantOwnership(
 }
 
 func GrantOwnershipWithDefaultMeta(
-	on []sdk.OwnershipGrantOn,
+	on []sdk.OwnershipGrantOnRequest,
 ) *GrantOwnershipModel {
 	g := &GrantOwnershipModel{ResourceModelMeta: config.DefaultMeta(resources.GrantOwnership)}
 	g.WithOn(on)

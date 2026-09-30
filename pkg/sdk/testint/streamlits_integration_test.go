@@ -108,50 +108,26 @@ func TestInt_Streamlits(t *testing.T) {
 
 		assertStreamlit(t, id, comment, "")
 
-		privileges := &sdk.AccountRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeUsage},
-		}
-		on := &sdk.AccountRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				SchemaObject: &sdk.Object{
-					ObjectType: sdk.ObjectTypeStreamlit,
-					Name:       id,
-				},
-			},
-		}
-		err = client.Grants.GrantPrivilegesToAccountRole(ctx, privileges, on, role.ID(), nil)
+		privileges := sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeUsage})
+		on := sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithSchemaObject(sdk.Object{
+			ObjectType: sdk.ObjectTypeStreamlit,
+			Name:       id,
+		}))
+		err = client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(role.ID()).WithPrivileges(*privileges).WithOn(*on))
 		require.NoError(t, err)
 
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				Role: role.ID(),
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(role.ID())))
 		require.NoError(t, err)
 		assert.Len(t, grants, 1)
 		assert.Equal(t, sdk.SchemaObjectPrivilegeUsage.String(), grants[0].Privilege)
 		assert.Equal(t, id.FullyQualifiedName(), grants[0].Name.FullyQualifiedName())
 
-		on = &sdk.AccountRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				Future: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypeStreamlits,
-					InDatabase:       sdk.Pointer(testClientHelper().Ids.DatabaseId()),
-				},
-			},
-		}
-		err = client.Grants.GrantPrivilegesToAccountRole(ctx, privileges, on, role.ID(), nil)
+		on = sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeStreamlits).WithInDatabase(testClientHelper().Ids.DatabaseId())))
+		err = client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(role.ID()).WithPrivileges(*privileges).WithOn(*on))
 		require.NoError(t, err)
 
-		on = &sdk.AccountRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				All: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypeStreamlits,
-					InDatabase:       sdk.Pointer(testClientHelper().Ids.DatabaseId()),
-				},
-			},
-		}
-		err = client.Grants.GrantPrivilegesToAccountRole(ctx, privileges, on, role.ID(), nil)
+		on = sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeStreamlits).WithInDatabase(testClientHelper().Ids.DatabaseId())))
+		err = client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(role.ID()).WithPrivileges(*privileges).WithOn(*on))
 		require.NoError(t, err)
 	})
 
@@ -174,49 +150,25 @@ func TestInt_Streamlits(t *testing.T) {
 
 		assertStreamlit(t, id, comment, "")
 
-		privileges := &sdk.DatabaseRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeUsage},
-		}
-		on := &sdk.DatabaseRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				SchemaObject: &sdk.Object{
-					ObjectType: sdk.ObjectTypeStreamlit,
-					Name:       id,
-				},
-			},
-		}
-		err = client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRoleId, nil)
+		privileges := sdk.NewDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeUsage})
+		on := sdk.NewDatabaseRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithSchemaObject(sdk.Object{
+			ObjectType: sdk.ObjectTypeStreamlit,
+			Name:       id,
+		}))
+		err = client.Grants.GrantPrivilegesToDatabaseRole(ctx, sdk.NewGrantPrivilegesToDatabaseRoleRequest(databaseRoleId).WithPrivileges(*privileges).WithOn(*on))
 		require.NoError(t, err)
 
-		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			To: &sdk.ShowGrantsTo{
-				DatabaseRole: databaseRoleId,
-			},
-		})
+		grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithDatabaseRole(databaseRoleId)))
 		require.NoError(t, err)
 		// Expecting two grants because database role has usage on database by default
 		require.Len(t, grants, 2)
 
-		on = &sdk.DatabaseRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				Future: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypeStreamlits,
-					InDatabase:       sdk.Pointer(testClientHelper().Ids.DatabaseId()),
-				},
-			},
-		}
-		err = client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRoleId, nil)
+		on = sdk.NewDatabaseRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeStreamlits).WithInDatabase(testClientHelper().Ids.DatabaseId())))
+		err = client.Grants.GrantPrivilegesToDatabaseRole(ctx, sdk.NewGrantPrivilegesToDatabaseRoleRequest(databaseRoleId).WithPrivileges(*privileges).WithOn(*on))
 		require.NoError(t, err)
 
-		on = &sdk.DatabaseRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				All: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypeStreamlits,
-					InDatabase:       sdk.Pointer(testClientHelper().Ids.DatabaseId()),
-				},
-			},
-		}
-		err = client.Grants.GrantPrivilegesToDatabaseRole(ctx, privileges, on, databaseRoleId, nil)
+		on = sdk.NewDatabaseRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeStreamlits).WithInDatabase(testClientHelper().Ids.DatabaseId())))
+		err = client.Grants.GrantPrivilegesToDatabaseRole(ctx, sdk.NewGrantPrivilegesToDatabaseRoleRequest(databaseRoleId).WithPrivileges(*privileges).WithOn(*on))
 		require.NoError(t, err)
 	})
 

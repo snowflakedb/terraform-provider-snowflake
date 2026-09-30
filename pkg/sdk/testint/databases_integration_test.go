@@ -180,14 +180,10 @@ func TestInt_DatabasesCreateShared(t *testing.T) {
 
 	databaseId := sharedDatabase.ID()
 
-	err := secondaryClient.Grants.GrantPrivilegeToShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{
-		Database: sharedDatabase.ID(),
-	}, shareTest.ID())
+	err := secondaryClient.Grants.GrantPrivilegeToShare(ctx, sdk.NewGrantPrivilegeToShareRequest(shareTest.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(sharedDatabase.ID())))
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		err := secondaryClient.Grants.RevokePrivilegeFromShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{
-			Database: sharedDatabase.ID(),
-		}, shareTest.ID())
+		err := secondaryClient.Grants.RevokePrivilegeFromShare(ctx, sdk.NewRevokePrivilegeFromShareRequest(shareTest.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(sharedDatabase.ID())))
 		require.NoError(t, err)
 	})
 

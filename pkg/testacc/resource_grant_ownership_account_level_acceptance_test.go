@@ -58,14 +58,10 @@ func TestAcc_GrantOwnership_OnTask_Discussion2877(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_task.test", "name", taskId.Name()),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|TASK|%s", accountRoleId.FullyQualifiedName(), taskId.FullyQualifiedName())),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						On: &sdk.ShowGrantsOn{
-							Object: &sdk.Object{
-								ObjectType: sdk.ObjectTypeTask,
-								Name:       taskId,
-							},
-						},
-					}, sdk.ObjectTypeTask, accountRoleId.Name(), taskId.FullyQualifiedName()),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+						ObjectType: sdk.ObjectTypeTask,
+						Name:       taskId,
+					})), sdk.ObjectTypeTask, accountRoleId.Name(), taskId.FullyQualifiedName()),
 				),
 			},
 			{
@@ -76,14 +72,10 @@ func TestAcc_GrantOwnership_OnTask_Discussion2877(t *testing.T) {
 				Config: accconfig.FromModels(t, accountRoleModel, parentTaskModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_task.test", "name", taskId.Name()),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						On: &sdk.ShowGrantsOn{
-							Object: &sdk.Object{
-								ObjectType: sdk.ObjectTypeTask,
-								Name:       taskId,
-							},
-						},
-					}, sdk.ObjectTypeTask, testClient().Context.CurrentRole(t).Name(), taskId.FullyQualifiedName()),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+						ObjectType: sdk.ObjectTypeTask,
+						Name:       taskId,
+					})), sdk.ObjectTypeTask, testClient().Context.CurrentRole(t).Name(), taskId.FullyQualifiedName()),
 				),
 			},
 			{
@@ -92,22 +84,14 @@ func TestAcc_GrantOwnership_OnTask_Discussion2877(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_task.test", "name", taskId.Name()),
 					resource.TestCheckResourceAttr("snowflake_task.child", "name", childId.Name()),
 					resource.TestCheckResourceAttr("snowflake_task.child", "after.0", taskId.FullyQualifiedName()),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						On: &sdk.ShowGrantsOn{
-							Object: &sdk.Object{
-								ObjectType: sdk.ObjectTypeTask,
-								Name:       taskId,
-							},
-						},
-					}, sdk.ObjectTypeTask, accountRoleId.Name(), taskId.FullyQualifiedName()),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						On: &sdk.ShowGrantsOn{
-							Object: &sdk.Object{
-								ObjectType: sdk.ObjectTypeTask,
-								Name:       childId,
-							},
-						},
-					}, sdk.ObjectTypeTask, accountRoleId.Name(), childId.FullyQualifiedName()),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+						ObjectType: sdk.ObjectTypeTask,
+						Name:       taskId,
+					})), sdk.ObjectTypeTask, accountRoleId.Name(), taskId.FullyQualifiedName()),
+					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+						ObjectType: sdk.ObjectTypeTask,
+						Name:       childId,
+					})), sdk.ObjectTypeTask, accountRoleId.Name(), childId.FullyQualifiedName()),
 				),
 			},
 		},

@@ -95,20 +95,27 @@ const (
 	InSchemaInheritedContainerKind   InheritedContainerKind = "InSchema"
 )
 
-func (kind InheritedContainerKind) toInheritedAccountRoleGrantIn(database *sdk.AccountObjectIdentifier, schema *sdk.DatabaseObjectIdentifier) sdk.InheritedAccountRoleGrantIn {
+func (kind InheritedContainerKind) toInheritedAccountRoleGrantIn(database *sdk.AccountObjectIdentifier, schema *sdk.DatabaseObjectIdentifier) sdk.InheritedAccountRoleGrantInRequest {
 	switch kind {
 	case InDatabaseInheritedContainerKind:
-		return sdk.InheritedAccountRoleGrantIn{Database: database}
+		return *sdk.NewInheritedAccountRoleGrantInRequest().WithDatabase(*database)
 	case InSchemaInheritedContainerKind:
-		return sdk.InheritedAccountRoleGrantIn{Schema: schema}
+		return *sdk.NewInheritedAccountRoleGrantInRequest().WithSchema(*schema)
 	default:
-		return sdk.InheritedAccountRoleGrantIn{Account: new(true)}
+		return *sdk.NewInheritedAccountRoleGrantInRequest().WithAccount(true)
 	}
 }
 
-func (kind InheritedContainerKind) toInheritedDatabaseRoleGrantIn(database *sdk.AccountObjectIdentifier, schema *sdk.DatabaseObjectIdentifier) sdk.InheritedDatabaseRoleGrantIn {
+func (kind InheritedContainerKind) toInheritedDatabaseRoleGrantIn(database *sdk.AccountObjectIdentifier, schema *sdk.DatabaseObjectIdentifier) sdk.InheritedDatabaseRoleGrantInRequest {
 	grantIn := kind.toInheritedAccountRoleGrantIn(database, schema)
-	return sdk.InheritedDatabaseRoleGrantIn{Database: grantIn.Database, Schema: grantIn.Schema}
+	req := sdk.NewInheritedDatabaseRoleGrantInRequest()
+	if grantIn.Database != nil {
+		req.WithDatabase(*grantIn.Database)
+	}
+	if grantIn.Schema != nil {
+		req.WithSchema(*grantIn.Schema)
+	}
+	return *req
 }
 
 // OnAccountObjectInheritedGrantData holds identifier data for an inherited grant on all
@@ -156,7 +163,7 @@ func (d *OnSchemaObjectInheritedGrantData) String() string {
 	return helpers.EncodeResourceIdentifier(parts...)
 }
 
-func getBulkOperationGrantData(in *sdk.GrantOnSchemaObjectIn) *BulkOperationGrantData {
+func getBulkOperationGrantData(in *sdk.GrantOnSchemaObjectInRequest) *BulkOperationGrantData {
 	bulkOperationGrantData := &BulkOperationGrantData{
 		ObjectNamePlural: in.PluralObjectType,
 	}
@@ -174,21 +181,19 @@ func getBulkOperationGrantData(in *sdk.GrantOnSchemaObjectIn) *BulkOperationGran
 	return bulkOperationGrantData
 }
 
-func getGrantOnSchemaObjectIn(allOrFuture map[string]any) (*sdk.GrantOnSchemaObjectIn, error) {
+func getGrantOnSchemaObjectIn(allOrFuture map[string]any) (*sdk.GrantOnSchemaObjectInRequest, error) {
 	pluralObjectType, err := sdk.ToPluralObjectType(allOrFuture["object_type_plural"].(string))
 	if err != nil {
 		return nil, err
 	}
-	grantOnSchemaObjectIn := &sdk.GrantOnSchemaObjectIn{
-		PluralObjectType: pluralObjectType,
-	}
+	grantOnSchemaObjectIn := sdk.NewGrantOnSchemaObjectInRequest(pluralObjectType)
 
 	if inDatabase, ok := allOrFuture["in_database"].(string); ok && len(inDatabase) > 0 {
 		databaseId, err := sdk.ParseAccountObjectIdentifier(inDatabase)
 		if err != nil {
 			return nil, err
 		}
-		grantOnSchemaObjectIn.InDatabase = sdk.Pointer(databaseId)
+		grantOnSchemaObjectIn.WithInDatabase(databaseId)
 	}
 
 	if inSchema, ok := allOrFuture["in_schema"].(string); ok && len(inSchema) > 0 {
@@ -196,7 +201,7 @@ func getGrantOnSchemaObjectIn(allOrFuture map[string]any) (*sdk.GrantOnSchemaObj
 		if err != nil {
 			return nil, err
 		}
-		grantOnSchemaObjectIn.InSchema = sdk.Pointer(schemaId)
+		grantOnSchemaObjectIn.WithInSchema(schemaId)
 	}
 
 	return grantOnSchemaObjectIn, nil

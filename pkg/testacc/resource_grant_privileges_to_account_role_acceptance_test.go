@@ -1409,9 +1409,9 @@ func TestAcc_GrantPrivilegesToAccountRole_BasicUseCase_OnAccountObject_Inherited
 					testClient().Grant.RevokeInheritedPrivilegesFromAccountRole(
 						t,
 						roleId,
-						sdk.InheritedAccountRoleGrantPrivileges{AccountObjectPrivileges: []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage}},
+						*sdk.NewInheritedAccountRoleGrantPrivilegesRequest().WithAccountObjectPrivileges([]sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage}),
 						sdk.PluralObjectTypeWarehouses,
-						sdk.InheritedAccountRoleGrantIn{Account: new(true)},
+						*sdk.NewInheritedAccountRoleGrantInRequest().WithAccount(true),
 					)
 				},
 				Config: accconfig.FromModels(t, resourceModel),
@@ -3200,9 +3200,9 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_OnAccountObject_I
 	testClient().Grant.GrantInheritedPrivilegesToAccountRole(
 		t,
 		roleId,
-		sdk.InheritedAccountRoleGrantPrivileges{AccountObjectPrivileges: []sdk.AccountObjectPrivilege{externalPrivilege}},
+		*sdk.NewInheritedAccountRoleGrantPrivilegesRequest().WithAccountObjectPrivileges([]sdk.AccountObjectPrivilege{externalPrivilege}),
 		sdk.PluralObjectTypeWarehouses,
-		sdk.InheritedAccountRoleGrantIn{Account: new(true)},
+		*sdk.NewInheritedAccountRoleGrantInRequest().WithAccount(true),
 	)
 
 	resourceModel := model.GrantPrivilegesToAccountRole("test", roleId.Name()).

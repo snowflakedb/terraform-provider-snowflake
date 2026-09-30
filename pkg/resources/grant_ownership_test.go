@@ -156,7 +156,7 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 	testCases := []struct {
 		Name     string
 		On       map[string]any
-		Expected sdk.OwnershipGrantOn
+		Expected sdk.OwnershipGrantOnRequest
 		Error    string
 	}{
 		{
@@ -165,12 +165,10 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 				"object_type": "DATABASE",
 				"object_name": "test_database",
 			},
-			Expected: sdk.OwnershipGrantOn{
-				Object: &sdk.Object{
-					ObjectType: sdk.ObjectTypeDatabase,
-					Name:       sdk.NewAccountObjectIdentifier("test_database"),
-				},
-			},
+			Expected: *sdk.NewOwnershipGrantOnRequest().WithObject(sdk.Object{
+				ObjectType: sdk.ObjectTypeDatabase,
+				Name:       sdk.NewAccountObjectIdentifier("test_database"),
+			}),
 		},
 		{
 			Name: "schema object type",
@@ -178,12 +176,10 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 				"object_type": "SCHEMA",
 				"object_name": "test_database.test_schema",
 			},
-			Expected: sdk.OwnershipGrantOn{
-				Object: &sdk.Object{
-					ObjectType: sdk.ObjectTypeSchema,
-					Name:       sdk.NewDatabaseObjectIdentifier("test_database", "test_schema"),
-				},
-			},
+			Expected: *sdk.NewOwnershipGrantOnRequest().WithObject(sdk.Object{
+				ObjectType: sdk.ObjectTypeSchema,
+				Name:       sdk.NewDatabaseObjectIdentifier("test_database", "test_schema"),
+			}),
 		},
 		{
 			Name: "table object type",
@@ -191,12 +187,10 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 				"object_type": "TABLE",
 				"object_name": "test_database.test_schema.test_table",
 			},
-			Expected: sdk.OwnershipGrantOn{
-				Object: &sdk.Object{
-					ObjectType: sdk.ObjectTypeTable,
-					Name:       sdk.NewSchemaObjectIdentifier("test_database", "test_schema", "test_table"),
-				},
-			},
+			Expected: *sdk.NewOwnershipGrantOnRequest().WithObject(sdk.Object{
+				ObjectType: sdk.ObjectTypeTable,
+				Name:       sdk.NewSchemaObjectIdentifier("test_database", "test_schema", "test_table"),
+			}),
 		},
 		{
 			Name: "dbt project object type",
@@ -204,12 +198,10 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 				"object_type": "DBT PROJECT",
 				"object_name": "test_database.test_schema.test_dbt_project",
 			},
-			Expected: sdk.OwnershipGrantOn{
-				Object: &sdk.Object{
-					ObjectType: sdk.ObjectTypeDbtProject,
-					Name:       sdk.NewSchemaObjectIdentifier("test_database", "test_schema", "test_dbt_project"),
-				},
-			},
+			Expected: *sdk.NewOwnershipGrantOnRequest().WithObject(sdk.Object{
+				ObjectType: sdk.ObjectTypeDbtProject,
+				Name:       sdk.NewSchemaObjectIdentifier("test_database", "test_schema", "test_dbt_project"),
+			}),
 		},
 		{
 			Name: "on all tables in database",
@@ -221,12 +213,7 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 					},
 				},
 			},
-			Expected: sdk.OwnershipGrantOn{
-				All: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypeTables,
-					InDatabase:       sdk.Pointer(sdk.NewAccountObjectIdentifier("test_database")),
-				},
-			},
+			Expected: *sdk.NewOwnershipGrantOnRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeTables).WithInDatabase(sdk.NewAccountObjectIdentifier("test_database"))),
 		},
 		{
 			Name: "on all tables in schema",
@@ -238,12 +225,7 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 					},
 				},
 			},
-			Expected: sdk.OwnershipGrantOn{
-				All: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypeTables,
-					InSchema:         sdk.Pointer(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")),
-				},
-			},
+			Expected: *sdk.NewOwnershipGrantOnRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeTables).WithInSchema(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema"))),
 		},
 		{
 			Name: "on future tables in database",
@@ -255,12 +237,7 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 					},
 				},
 			},
-			Expected: sdk.OwnershipGrantOn{
-				Future: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypeTables,
-					InDatabase:       sdk.Pointer(sdk.NewAccountObjectIdentifier("test_database")),
-				},
-			},
+			Expected: *sdk.NewOwnershipGrantOnRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeTables).WithInDatabase(sdk.NewAccountObjectIdentifier("test_database"))),
 		},
 		{
 			Name: "on future tables in schema",
@@ -272,12 +249,7 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 					},
 				},
 			},
-			Expected: sdk.OwnershipGrantOn{
-				Future: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypeTables,
-					InSchema:         sdk.Pointer(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")),
-				},
-			},
+			Expected: *sdk.NewOwnershipGrantOnRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeTables).WithInSchema(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema"))),
 		},
 		{
 			Name: "unknown account object type - postgres instance",
@@ -285,12 +257,10 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 				"object_type": "POSTGRES INSTANCE",
 				"object_name": "pg1",
 			},
-			Expected: sdk.OwnershipGrantOn{
-				Object: &sdk.Object{
-					ObjectType: sdk.ObjectTypePostgresInstance,
-					Name:       sdk.NewAccountObjectIdentifier("pg1"),
-				},
-			},
+			Expected: *sdk.NewOwnershipGrantOnRequest().WithObject(sdk.Object{
+				ObjectType: sdk.ObjectTypePostgresInstance,
+				Name:       sdk.NewAccountObjectIdentifier("pg1"),
+			}),
 		},
 		{
 			Name: "database object type in lowercase",
@@ -298,12 +268,10 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 				"object_type": "database",
 				"object_name": "test_database",
 			},
-			Expected: sdk.OwnershipGrantOn{
-				Object: &sdk.Object{
-					ObjectType: sdk.ObjectTypeDatabase,
-					Name:       sdk.NewAccountObjectIdentifier("test_database"),
-				},
-			},
+			Expected: *sdk.NewOwnershipGrantOnRequest().WithObject(sdk.Object{
+				ObjectType: sdk.ObjectTypeDatabase,
+				Name:       sdk.NewAccountObjectIdentifier("test_database"),
+			}),
 		},
 		{
 			Name: "grant all in database plural object type in lowercase",
@@ -315,12 +283,7 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 					},
 				},
 			},
-			Expected: sdk.OwnershipGrantOn{
-				Future: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypeTables,
-					InSchema:         sdk.Pointer(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")),
-				},
-			},
+			Expected: *sdk.NewOwnershipGrantOnRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeTables).WithInSchema(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema"))),
 		},
 		{
 			Name: "validation - invalid schema object type",
@@ -351,10 +314,10 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 
 func TestPrepareShowGrantsRequestForGrantOwnership(t *testing.T) {
 	testCases := []struct {
-		Name                   string
-		Identifier             GrantOwnershipId
-		ExpectedShowGrantsOpts *sdk.ShowGrantOptions
-		ExpectedGrantedOn      []sdk.ObjectType
+		Name              string
+		Identifier        GrantOwnershipId
+		Expected          *sdk.ShowGrantsRequest
+		ExpectedGrantedOn []sdk.ObjectType
 	}{
 		{
 			Name: "show for object - database",
@@ -365,14 +328,10 @@ func TestPrepareShowGrantsRequestForGrantOwnership(t *testing.T) {
 					ObjectName: sdk.NewAccountObjectIdentifier("test_database"),
 				},
 			},
-			ExpectedShowGrantsOpts: &sdk.ShowGrantOptions{
-				On: &sdk.ShowGrantsOn{
-					Object: &sdk.Object{
-						ObjectType: sdk.ObjectTypeDatabase,
-						Name:       sdk.NewAccountObjectIdentifier("test_database"),
-					},
-				},
-			},
+			Expected: sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+				ObjectType: sdk.ObjectTypeDatabase,
+				Name:       sdk.NewAccountObjectIdentifier("test_database"),
+			})),
 			ExpectedGrantedOn: []sdk.ObjectType{sdk.ObjectTypeDatabase},
 		},
 		{
@@ -384,14 +343,10 @@ func TestPrepareShowGrantsRequestForGrantOwnership(t *testing.T) {
 					ObjectName: sdk.NewDatabaseObjectIdentifier("test_database", "test_schema"),
 				},
 			},
-			ExpectedShowGrantsOpts: &sdk.ShowGrantOptions{
-				On: &sdk.ShowGrantsOn{
-					Object: &sdk.Object{
-						ObjectType: sdk.ObjectTypeSchema,
-						Name:       sdk.NewDatabaseObjectIdentifier("test_database", "test_schema"),
-					},
-				},
-			},
+			Expected: sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+				ObjectType: sdk.ObjectTypeSchema,
+				Name:       sdk.NewDatabaseObjectIdentifier("test_database", "test_schema"),
+			})),
 			ExpectedGrantedOn: []sdk.ObjectType{sdk.ObjectTypeSchema},
 		},
 		{
@@ -403,14 +358,10 @@ func TestPrepareShowGrantsRequestForGrantOwnership(t *testing.T) {
 					ObjectName: sdk.NewDatabaseObjectIdentifier("test_database", "test_database_role"),
 				},
 			},
-			ExpectedShowGrantsOpts: &sdk.ShowGrantOptions{
-				On: &sdk.ShowGrantsOn{
-					Object: &sdk.Object{
-						ObjectType: sdk.ObjectTypeDatabaseRole,
-						Name:       sdk.NewDatabaseObjectIdentifier("test_database", "test_database_role"),
-					},
-				},
-			},
+			Expected: sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+				ObjectType: sdk.ObjectTypeDatabaseRole,
+				Name:       sdk.NewDatabaseObjectIdentifier("test_database", "test_database_role"),
+			})),
 			// Before BCR-2371 (2026_06 bundle) SHOW GRANTS ON DATABASE ROLE reports granted_on = ROLE, after it reports DATABASE_ROLE; both must match.
 			ExpectedGrantedOn: []sdk.ObjectType{sdk.ObjectTypeRole, sdk.ObjectTypeDatabaseRole},
 		},
@@ -424,8 +375,8 @@ func TestPrepareShowGrantsRequestForGrantOwnership(t *testing.T) {
 					Database:         sdk.Pointer(sdk.NewAccountObjectIdentifier("test_database")),
 				},
 			},
-			ExpectedShowGrantsOpts: nil,
-			ExpectedGrantedOn:      nil,
+			Expected:          nil,
+			ExpectedGrantedOn: nil,
 		},
 		{
 			Name: "show for all in schema",
@@ -437,8 +388,8 @@ func TestPrepareShowGrantsRequestForGrantOwnership(t *testing.T) {
 					Schema:           sdk.Pointer(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")),
 				},
 			},
-			ExpectedShowGrantsOpts: nil,
-			ExpectedGrantedOn:      nil,
+			Expected:          nil,
+			ExpectedGrantedOn: nil,
 		},
 		{
 			Name: "show for future in database",
@@ -450,12 +401,7 @@ func TestPrepareShowGrantsRequestForGrantOwnership(t *testing.T) {
 					Database:         sdk.Pointer(sdk.NewAccountObjectIdentifier("test_database")),
 				},
 			},
-			ExpectedShowGrantsOpts: &sdk.ShowGrantOptions{
-				Future: sdk.Bool(true),
-				In: &sdk.ShowGrantsIn{
-					Database: sdk.Pointer(sdk.NewAccountObjectIdentifier("test_database")),
-				},
-			},
+			Expected:          sdk.NewShowGrantsRequest().WithFuture(true).WithIn(*sdk.NewShowGrantsInRequest().WithDatabase(sdk.NewAccountObjectIdentifier("test_database"))),
 			ExpectedGrantedOn: []sdk.ObjectType{sdk.ObjectTypeTable},
 		},
 		{
@@ -468,12 +414,7 @@ func TestPrepareShowGrantsRequestForGrantOwnership(t *testing.T) {
 					Schema:           sdk.Pointer(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")),
 				},
 			},
-			ExpectedShowGrantsOpts: &sdk.ShowGrantOptions{
-				Future: sdk.Bool(true),
-				In: &sdk.ShowGrantsIn{
-					Schema: sdk.Pointer(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")),
-				},
-			},
+			Expected:          sdk.NewShowGrantsRequest().WithFuture(true).WithIn(*sdk.NewShowGrantsInRequest().WithSchema(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema"))),
 			ExpectedGrantedOn: []sdk.ObjectType{sdk.ObjectTypeTable},
 		},
 	}
@@ -481,11 +422,11 @@ func TestPrepareShowGrantsRequestForGrantOwnership(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(tt.Name, func(t *testing.T) {
 			opts, grantedOn := prepareShowGrantsRequestForGrantOwnership(&tt.Identifier)
-			if tt.ExpectedShowGrantsOpts == nil {
+			if tt.Expected == nil {
 				assert.Nil(t, opts)
 			} else {
 				assert.NotNil(t, opts)
-				assert.Equal(t, *tt.ExpectedShowGrantsOpts, *opts)
+				assert.Equal(t, *tt.Expected, *opts)
 			}
 			assert.Equal(t, tt.ExpectedGrantedOn, grantedOn)
 		})
@@ -496,36 +437,28 @@ func TestValidAccountRoleNameGetOwnershipGrantTo(t *testing.T) {
 	testCases := []struct {
 		Name        string
 		AccountRole *string
-		Expected    sdk.OwnershipGrantTo
+		Expected    sdk.OwnershipGrantToRequest
 		Error       string
 	}{
 		{
 			Name:        "account role name",
 			AccountRole: sdk.String("account_role_name"),
-			Expected: sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(sdk.NewAccountObjectIdentifier("account_role_name")),
-			},
+			Expected:    *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(sdk.NewAccountObjectIdentifier("account_role_name")),
 		},
 		{
 			Name:        "account role name - quoted",
 			AccountRole: sdk.String("\"account_role_name\""),
-			Expected: sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(sdk.NewAccountObjectIdentifier("account_role_name")),
-			},
+			Expected:    *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(sdk.NewAccountObjectIdentifier("account_role_name")),
 		},
 		{
 			Name:        "account role name - with dots",
 			AccountRole: sdk.String("account.role.with.dots"),
-			Expected: sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(sdk.NewAccountObjectIdentifier("account.role.with.dots")),
-			},
+			Expected:    *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(sdk.NewAccountObjectIdentifier("account.role.with.dots")),
 		},
 		{
 			Name:        "account role name - with dots quoted",
 			AccountRole: sdk.String("\"account.role.with.dots\""),
-			Expected: sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(sdk.NewAccountObjectIdentifier("account.role.with.dots")),
-			},
+			Expected:    *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(sdk.NewAccountObjectIdentifier("account.role.with.dots")),
 		},
 	}
 
@@ -548,21 +481,17 @@ func TestValidDatabaseRoleNameGetOwnershipGrantTo(t *testing.T) {
 	testCases := []struct {
 		Name         string
 		DatabaseRole *string
-		Expected     sdk.OwnershipGrantTo
+		Expected     sdk.OwnershipGrantToRequest
 	}{
 		{
 			Name:         "database role name",
 			DatabaseRole: sdk.String("test_database.database_role_name"),
-			Expected: sdk.OwnershipGrantTo{
-				DatabaseRoleName: sdk.Pointer(sdk.NewDatabaseObjectIdentifier("test_database", "database_role_name")),
-			},
+			Expected:     *sdk.NewOwnershipGrantToRequest().WithDatabaseRoleName(sdk.NewDatabaseObjectIdentifier("test_database", "database_role_name")),
 		},
 		{
 			Name:         "database role name - quoted",
 			DatabaseRole: sdk.String("\"test_database\".\"database_role_name\""),
-			Expected: sdk.OwnershipGrantTo{
-				DatabaseRoleName: sdk.Pointer(sdk.NewDatabaseObjectIdentifier("test_database", "database_role_name")),
-			},
+			Expected:     *sdk.NewOwnershipGrantToRequest().WithDatabaseRoleName(sdk.NewDatabaseObjectIdentifier("test_database", "database_role_name")),
 		},
 	}
 
@@ -591,44 +520,35 @@ func TestGetOwnershipGrantOpts(t *testing.T) {
 	testCases := []struct {
 		Name       string
 		Identifier GrantOwnershipId
-		Expected   *sdk.GrantOwnershipOptions
+		Expected   *sdk.OwnershipCurrentGrantsRequest
 	}{
 		{
 			Name: "outbound privileges copy",
 			Identifier: GrantOwnershipId{
 				OutboundPrivilegesBehavior: sdk.Pointer(CopyOutboundPrivilegesBehavior),
 			},
-			Expected: &sdk.GrantOwnershipOptions{
-				CurrentGrants: &sdk.OwnershipCurrentGrants{
-					OutboundPrivileges: sdk.Copy,
-				},
-			},
+			Expected: sdk.NewOwnershipCurrentGrantsRequest(sdk.Copy),
 		},
 		{
 			Name: "outbound privileges revoke",
 			Identifier: GrantOwnershipId{
 				OutboundPrivilegesBehavior: sdk.Pointer(RevokeOutboundPrivilegesBehavior),
 			},
-			Expected: &sdk.GrantOwnershipOptions{
-				CurrentGrants: &sdk.OwnershipCurrentGrants{
-					OutboundPrivileges: sdk.Revoke,
-				},
-			},
+			Expected: sdk.NewOwnershipCurrentGrantsRequest(sdk.Revoke),
 		},
 		{
 			Name: "no outbound privileges option",
 			Identifier: GrantOwnershipId{
 				OutboundPrivilegesBehavior: nil,
 			},
-			Expected: &sdk.GrantOwnershipOptions{},
+			Expected: nil,
 		},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.Name, func(t *testing.T) {
-			opts := getOwnershipGrantOpts(&tt.Identifier)
-			assert.NotNil(t, opts)
-			assert.Equal(t, *tt.Expected, *opts)
+			currentGrants := getOwnershipCurrentGrants(&tt.Identifier)
+			assert.Equal(t, tt.Expected, currentGrants)
 		})
 	}
 }

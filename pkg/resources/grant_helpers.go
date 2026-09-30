@@ -19,12 +19,13 @@ func toPrivileges(privileges []string) ([]string, error) {
 	return collections.MapErr(privileges, sdk.ToPrivilege)
 }
 
-// showGrantsCachedFor caches client.Grants.Show(opts) under experiment, keyed by sdk.StructToSQL(opts).
-func showGrantsCachedFor(ctx context.Context, providerCtx *provider.Context, experiment experimentalfeatures.ExperimentalFeature, opts *sdk.ShowGrantOptions) ([]sdk.Grant, error) {
+// showGrantsCachedFor caches client.Grants.Show(opts) under experiment, keyed by opts.SQLKey()
+// (the exact SHOW GRANTS statement Show executes), so identical keys imply identical queries.
+func showGrantsCachedFor(ctx context.Context, providerCtx *provider.Context, experiment experimentalfeatures.ExperimentalFeature, opts *sdk.ShowGrantsRequest) ([]sdk.Grant, error) {
 	if !providerCtx.Experiments.IsEnabled(experiment) {
 		return providerCtx.Client.Grants.Show(ctx, opts)
 	}
-	key, err := sdk.StructToSQL(opts)
+	key, err := opts.SQLKey()
 	if err != nil {
 		log.Printf("[WARN] failed to render SHOW GRANTS cache key, falling back to uncached SHOW: %s", err)
 		return providerCtx.Client.Grants.Show(ctx, opts)
@@ -34,15 +35,15 @@ func showGrantsCachedFor(ctx context.Context, providerCtx *provider.Context, exp
 	})
 }
 
-func showGrantsCached(ctx context.Context, providerCtx *provider.Context, opts *sdk.ShowGrantOptions) ([]sdk.Grant, error) {
+func showGrantsCached(ctx context.Context, providerCtx *provider.Context, opts *sdk.ShowGrantsRequest) ([]sdk.Grant, error) {
 	return showGrantsCachedFor(ctx, providerCtx, experimentalfeatures.GrantsShowCaching, opts)
 }
 
-func invalidateGrantsShowCacheFor(providerCtx *provider.Context, experiment experimentalfeatures.ExperimentalFeature, opts *sdk.ShowGrantOptions) {
+func invalidateGrantsShowCacheFor(providerCtx *provider.Context, experiment experimentalfeatures.ExperimentalFeature, opts *sdk.ShowGrantsRequest) {
 	if opts == nil || !providerCtx.Experiments.IsEnabled(experiment) {
 		return
 	}
-	key, err := sdk.StructToSQL(opts)
+	key, err := opts.SQLKey()
 	if err != nil {
 		log.Printf("[WARN] failed to render SHOW GRANTS cache key for invalidation: %s", err)
 		return
@@ -50,7 +51,7 @@ func invalidateGrantsShowCacheFor(providerCtx *provider.Context, experiment expe
 	providerCtx.GrantShowCache.Invalidate(key)
 }
 
-func invalidateGrantsShowCache(providerCtx *provider.Context, opts *sdk.ShowGrantOptions) {
+func invalidateGrantsShowCache(providerCtx *provider.Context, opts *sdk.ShowGrantsRequest) {
 	invalidateGrantsShowCacheFor(providerCtx, experimentalfeatures.GrantsShowCaching, opts)
 }
 

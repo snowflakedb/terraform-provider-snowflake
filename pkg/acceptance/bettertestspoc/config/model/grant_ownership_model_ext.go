@@ -63,7 +63,7 @@ func (g *GrantOwnershipModel) WithOnFutureInSchema(pluralObjectType sdk.PluralOb
 }
 
 // WithOn implements the required constructor method for the generated code.
-func (g *GrantOwnershipModel) WithOn(on []sdk.OwnershipGrantOn) *GrantOwnershipModel {
+func (g *GrantOwnershipModel) WithOn(on []sdk.OwnershipGrantOnRequest) *GrantOwnershipModel {
 	if len(on) != 1 {
 		log.Panicf("expected exactly one on block, got %d", len(on))
 	}
@@ -88,7 +88,7 @@ func (g *GrantOwnershipModel) WithOn(on []sdk.OwnershipGrantOn) *GrantOwnershipM
 	}
 }
 
-func buildBulkOperationVariable(in *sdk.GrantOnSchemaObjectIn) tfconfig.Variable {
+func buildBulkOperationVariable(in *sdk.GrantOnSchemaObjectInRequest) tfconfig.Variable {
 	fields := map[string]tfconfig.Variable{
 		"object_type_plural": tfconfig.StringVariable(in.PluralObjectType.String()),
 	}

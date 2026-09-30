@@ -182,11 +182,8 @@ func ReadContextGrantApplicationRole(ctx context.Context, d *schema.ResourceData
 		}
 	}
 	// then check if application role exists
-	grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-		Of: &sdk.ShowGrantsOf{
-			ApplicationRole: applicationRoleIdentifier,
-		},
-	})
+	grants, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().
+		WithOf(*sdk.NewShowGrantsOfRequest().WithApplicationRole(applicationRoleIdentifier)))
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 			d.SetId("")

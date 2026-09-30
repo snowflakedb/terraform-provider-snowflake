@@ -23,29 +23,23 @@ func TestInt_SafeRevokePrivilegesFromAccountRole(t *testing.T) {
 
 	ctx := context.Background()
 
-	tablePrivileges := &sdk.AccountRoleGrantPrivileges{
-		SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
-	}
-	tableOn := func(id sdk.SchemaObjectIdentifier) *sdk.AccountRoleGrantOn {
-		return &sdk.AccountRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				SchemaObject: &sdk.Object{
-					ObjectType: sdk.ObjectTypeTable,
-					Name:       id,
-				},
-			},
-		}
+	tablePrivileges := sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect})
+	tableOn := func(id sdk.SchemaObjectIdentifier) *sdk.AccountRoleGrantOnRequest {
+		return sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithSchemaObject(sdk.Object{
+			ObjectType: sdk.ObjectTypeTable,
+			Name:       id,
+		}))
 	}
 
-	revoke := func(privileges *sdk.AccountRoleGrantPrivileges, on *sdk.AccountRoleGrantOn, r sdk.AccountObjectIdentifier) error {
-		return client.Grants.RevokePrivilegesFromAccountRoleSafely(ctx, privileges, on, r, nil)
+	revoke := func(privileges *sdk.AccountRoleGrantPrivilegesRequest, on *sdk.AccountRoleGrantOnRequest, r sdk.AccountObjectIdentifier) error {
+		return client.Grants.RevokePrivilegesFromAccountRoleSafely(ctx, sdk.NewRevokePrivilegesFromAccountRoleRequest(r).WithPrivileges(*privileges).WithOn(*on))
 	}
 
 	t.Run("privilege never granted", func(t *testing.T) {
 		// Snowflake returns success (0 rows affected) when revoking a privilege that was never granted.
 		// This validates that ErrObjectNotExistOrAuthorized is only produced for missing objects/roles,
 		// not for already-absent grants.
-		err := testClient(t).Grants.RevokePrivilegesFromAccountRole(ctx, tablePrivileges, tableOn(table.ID()), role.ID(), nil)
+		err := testClient(t).Grants.RevokePrivilegesFromAccountRole(ctx, sdk.NewRevokePrivilegesFromAccountRoleRequest(role.ID()).WithPrivileges(*tablePrivileges).WithOn(*tableOn(table.ID())))
 		assert.NoError(t, err)
 	})
 
@@ -63,7 +57,7 @@ func TestInt_SafeRevokePrivilegesFromAccountRole(t *testing.T) {
 
 		// The raw revoke should fail with an authorization error because the limited role
 		// cannot see the table (ErrObjectNotExistOrAuthorized).
-		rawErr := testClient(t).Grants.RevokePrivilegesFromAccountRole(ctx, tablePrivileges, tableOn(table.ID()), role.ID(), nil)
+		rawErr := testClient(t).Grants.RevokePrivilegesFromAccountRole(ctx, sdk.NewRevokePrivilegesFromAccountRoleRequest(role.ID()).WithPrivileges(*tablePrivileges).WithOn(*tableOn(table.ID())))
 		assert.ErrorIs(t, rawErr, sdk.ErrObjectNotExistOrAuthorized)
 
 		// RevokePrivilegesFromAccountRoleSafely treats this the same as a missing object and returns nil.
@@ -112,18 +106,12 @@ func TestInt_SafeRevokeOnNonExistingSchemaObject(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.ObjectType.String(), func(t *testing.T) {
-			privileges := &sdk.AccountRoleGrantPrivileges{
-				SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
-			}
-			on := &sdk.AccountRoleGrantOn{
-				SchemaObject: &sdk.GrantOnSchemaObject{
-					SchemaObject: &sdk.Object{
-						ObjectType: tt.ObjectType,
-						Name:       NonExistingSchemaObjectIdentifierWithNonExistingDatabaseAndSchema,
-					},
-				},
-			}
-			err := client.Grants.RevokePrivilegesFromAccountRoleSafely(ctx, privileges, on, role.ID(), nil)
+			privileges := sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect})
+			on := sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithSchemaObject(sdk.Object{
+				ObjectType: tt.ObjectType,
+				Name:       NonExistingSchemaObjectIdentifierWithNonExistingDatabaseAndSchema,
+			}))
+			err := client.Grants.RevokePrivilegesFromAccountRoleSafely(ctx, sdk.NewRevokePrivilegesFromAccountRoleRequest(role.ID()).WithPrivileges(*privileges).WithOn(*on))
 			assert.NoError(t, err)
 		})
 	}
@@ -140,25 +128,23 @@ func TestInt_SafeRevokeOnNonExistingAccountObject(t *testing.T) {
 
 	testCases := []struct {
 		ObjectType sdk.ObjectType
-		On         *sdk.AccountRoleGrantOn
+		On         *sdk.AccountRoleGrantOnRequest
 	}{
-		{ObjectType: sdk.ObjectTypeDatabase, On: &sdk.AccountRoleGrantOn{AccountObject: &sdk.GrantOnAccountObject{Object: &sdk.Object{ObjectType: sdk.ObjectTypeDatabase, Name: nonExistingId}}}},
-		{ObjectType: sdk.ObjectTypeWarehouse, On: &sdk.AccountRoleGrantOn{AccountObject: &sdk.GrantOnAccountObject{Object: &sdk.Object{ObjectType: sdk.ObjectTypeWarehouse, Name: nonExistingId}}}},
-		{ObjectType: sdk.ObjectTypeComputePool, On: &sdk.AccountRoleGrantOn{AccountObject: &sdk.GrantOnAccountObject{Object: &sdk.Object{ObjectType: sdk.ObjectTypeComputePool, Name: nonExistingId}}}},
-		{ObjectType: sdk.ObjectTypeExternalVolume, On: &sdk.AccountRoleGrantOn{AccountObject: &sdk.GrantOnAccountObject{Object: &sdk.Object{ObjectType: sdk.ObjectTypeExternalVolume, Name: nonExistingId}}}},
-		{ObjectType: sdk.ObjectTypeUser, On: &sdk.AccountRoleGrantOn{AccountObject: &sdk.GrantOnAccountObject{Object: &sdk.Object{ObjectType: sdk.ObjectTypeUser, Name: nonExistingId}}}},
-		{ObjectType: sdk.ObjectTypeResourceMonitor, On: &sdk.AccountRoleGrantOn{AccountObject: &sdk.GrantOnAccountObject{Object: &sdk.Object{ObjectType: sdk.ObjectTypeResourceMonitor, Name: nonExistingId}}}},
-		{ObjectType: sdk.ObjectTypeIntegration, On: &sdk.AccountRoleGrantOn{AccountObject: &sdk.GrantOnAccountObject{Object: &sdk.Object{ObjectType: sdk.ObjectTypeIntegration, Name: nonExistingId}}}},
-		{ObjectType: sdk.ObjectTypeFailoverGroup, On: &sdk.AccountRoleGrantOn{AccountObject: &sdk.GrantOnAccountObject{Object: &sdk.Object{ObjectType: sdk.ObjectTypeFailoverGroup, Name: nonExistingId}}}},
-		{ObjectType: sdk.ObjectTypeReplicationGroup, On: &sdk.AccountRoleGrantOn{AccountObject: &sdk.GrantOnAccountObject{Object: &sdk.Object{ObjectType: sdk.ObjectTypeReplicationGroup, Name: nonExistingId}}}},
+		{ObjectType: sdk.ObjectTypeDatabase, On: sdk.NewAccountRoleGrantOnRequest().WithAccountObject(*sdk.NewGrantOnAccountObjectRequest().WithObject(sdk.Object{ObjectType: sdk.ObjectTypeDatabase, Name: nonExistingId}))},
+		{ObjectType: sdk.ObjectTypeWarehouse, On: sdk.NewAccountRoleGrantOnRequest().WithAccountObject(*sdk.NewGrantOnAccountObjectRequest().WithObject(sdk.Object{ObjectType: sdk.ObjectTypeWarehouse, Name: nonExistingId}))},
+		{ObjectType: sdk.ObjectTypeComputePool, On: sdk.NewAccountRoleGrantOnRequest().WithAccountObject(*sdk.NewGrantOnAccountObjectRequest().WithObject(sdk.Object{ObjectType: sdk.ObjectTypeComputePool, Name: nonExistingId}))},
+		{ObjectType: sdk.ObjectTypeExternalVolume, On: sdk.NewAccountRoleGrantOnRequest().WithAccountObject(*sdk.NewGrantOnAccountObjectRequest().WithObject(sdk.Object{ObjectType: sdk.ObjectTypeExternalVolume, Name: nonExistingId}))},
+		{ObjectType: sdk.ObjectTypeUser, On: sdk.NewAccountRoleGrantOnRequest().WithAccountObject(*sdk.NewGrantOnAccountObjectRequest().WithObject(sdk.Object{ObjectType: sdk.ObjectTypeUser, Name: nonExistingId}))},
+		{ObjectType: sdk.ObjectTypeResourceMonitor, On: sdk.NewAccountRoleGrantOnRequest().WithAccountObject(*sdk.NewGrantOnAccountObjectRequest().WithObject(sdk.Object{ObjectType: sdk.ObjectTypeResourceMonitor, Name: nonExistingId}))},
+		{ObjectType: sdk.ObjectTypeIntegration, On: sdk.NewAccountRoleGrantOnRequest().WithAccountObject(*sdk.NewGrantOnAccountObjectRequest().WithObject(sdk.Object{ObjectType: sdk.ObjectTypeIntegration, Name: nonExistingId}))},
+		{ObjectType: sdk.ObjectTypeFailoverGroup, On: sdk.NewAccountRoleGrantOnRequest().WithAccountObject(*sdk.NewGrantOnAccountObjectRequest().WithObject(sdk.Object{ObjectType: sdk.ObjectTypeFailoverGroup, Name: nonExistingId}))},
+		{ObjectType: sdk.ObjectTypeReplicationGroup, On: sdk.NewAccountRoleGrantOnRequest().WithAccountObject(*sdk.NewGrantOnAccountObjectRequest().WithObject(sdk.Object{ObjectType: sdk.ObjectTypeReplicationGroup, Name: nonExistingId}))},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.ObjectType.String(), func(t *testing.T) {
-			privileges := &sdk.AccountRoleGrantPrivileges{
-				AccountObjectPrivileges: []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage},
-			}
-			err := client.Grants.RevokePrivilegesFromAccountRoleSafely(ctx, privileges, tt.On, role.ID(), nil)
+			privileges := sdk.NewAccountRoleGrantPrivilegesRequest().WithAccountObjectPrivileges([]sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage})
+			err := client.Grants.RevokePrivilegesFromAccountRoleSafely(ctx, sdk.NewRevokePrivilegesFromAccountRoleRequest(role.ID()).WithPrivileges(*privileges).WithOn(*tt.On))
 			assert.NoError(t, err)
 		})
 	}
@@ -174,39 +160,39 @@ func TestInt_SafeRevokeOnFutureGrantsInNonExistingObjectInHierarchy(t *testing.T
 
 	testCases := []struct {
 		Name       string
-		Privileges *sdk.AccountRoleGrantPrivileges
-		On         *sdk.AccountRoleGrantOn
+		Privileges *sdk.AccountRoleGrantPrivilegesRequest
+		On         *sdk.AccountRoleGrantOnRequest
 	}{
 		{
 			Name:       "future tables in non-existing schema",
-			Privileges: &sdk.AccountRoleGrantPrivileges{SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect}},
-			On:         &sdk.AccountRoleGrantOn{SchemaObject: &sdk.GrantOnSchemaObject{Future: &sdk.GrantOnSchemaObjectIn{PluralObjectType: sdk.PluralObjectTypeTables, InSchema: sdk.Pointer(NonExistingDatabaseObjectIdentifier)}}},
+			Privileges: sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect}),
+			On:         sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeTables).WithInSchema(NonExistingDatabaseObjectIdentifier))),
 		},
 		{
 			Name:       "future tables in non-existing database",
-			Privileges: &sdk.AccountRoleGrantPrivileges{SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect}},
-			On:         &sdk.AccountRoleGrantOn{SchemaObject: &sdk.GrantOnSchemaObject{Future: &sdk.GrantOnSchemaObjectIn{PluralObjectType: sdk.PluralObjectTypeTables, InDatabase: sdk.Pointer(NonExistingAccountObjectIdentifier)}}},
+			Privileges: sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect}),
+			On:         sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithFuture(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeTables).WithInDatabase(NonExistingAccountObjectIdentifier))),
 		},
 		{
 			Name:       "future schemas in non-existing database",
-			Privileges: &sdk.AccountRoleGrantPrivileges{SchemaPrivileges: []sdk.SchemaPrivilege{sdk.SchemaPrivilegeUsage}},
-			On:         &sdk.AccountRoleGrantOn{Schema: &sdk.GrantOnSchema{FutureSchemasInDatabase: sdk.Pointer(NonExistingAccountObjectIdentifier)}},
+			Privileges: sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaPrivileges([]sdk.SchemaPrivilege{sdk.SchemaPrivilegeUsage}),
+			On:         sdk.NewAccountRoleGrantOnRequest().WithSchema(*sdk.NewGrantOnSchemaRequest().WithFutureSchemasInDatabase(NonExistingAccountObjectIdentifier)),
 		},
 		{
 			Name:       "all tables in non-existing schema",
-			Privileges: &sdk.AccountRoleGrantPrivileges{SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect}},
-			On:         &sdk.AccountRoleGrantOn{SchemaObject: &sdk.GrantOnSchemaObject{All: &sdk.GrantOnSchemaObjectIn{PluralObjectType: sdk.PluralObjectTypeTables, InSchema: sdk.Pointer(NonExistingDatabaseObjectIdentifier)}}},
+			Privileges: sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect}),
+			On:         sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypeTables).WithInSchema(NonExistingDatabaseObjectIdentifier))),
 		},
 		{
 			Name:       "all schemas in non-existing database",
-			Privileges: &sdk.AccountRoleGrantPrivileges{SchemaPrivileges: []sdk.SchemaPrivilege{sdk.SchemaPrivilegeUsage}},
-			On:         &sdk.AccountRoleGrantOn{Schema: &sdk.GrantOnSchema{AllSchemasInDatabase: sdk.Pointer(NonExistingAccountObjectIdentifier)}},
+			Privileges: sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaPrivileges([]sdk.SchemaPrivilege{sdk.SchemaPrivilegeUsage}),
+			On:         sdk.NewAccountRoleGrantOnRequest().WithSchema(*sdk.NewGrantOnSchemaRequest().WithAllSchemasInDatabase(NonExistingAccountObjectIdentifier)),
 		},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.Name, func(t *testing.T) {
-			err := client.Grants.RevokePrivilegesFromAccountRoleSafely(ctx, tt.Privileges, tt.On, role.ID(), nil)
+			err := client.Grants.RevokePrivilegesFromAccountRoleSafely(ctx, sdk.NewRevokePrivilegesFromAccountRoleRequest(role.ID()).WithPrivileges(*tt.Privileges).WithOn(*tt.On))
 			assert.NoError(t, err)
 		})
 	}
@@ -235,22 +221,7 @@ func TestInt_SafeRevokeOnAllPipesWithMissingRole(t *testing.T) {
 	ctx := context.Background()
 
 	// Grant MONITOR on all pipes in schema to the role.
-	err := client.Grants.GrantPrivilegesToAccountRole(
-		ctx,
-		&sdk.AccountRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor},
-		},
-		&sdk.AccountRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				All: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypePipes,
-					InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-				},
-			},
-		},
-		role.ID(),
-		&sdk.GrantPrivilegesToAccountRoleOptions{},
-	)
+	err := client.Grants.GrantPrivilegesToAccountRole(ctx, sdk.NewGrantPrivilegesToAccountRoleRequest(role.ID()).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypePipes).WithInSchema(testClientHelper().Ids.SchemaId())))))
 	require.NoError(t, err)
 
 	// Drop the role — pipes still exist, so Pipes.Show succeeds,
@@ -259,22 +230,7 @@ func TestInt_SafeRevokeOnAllPipesWithMissingRole(t *testing.T) {
 
 	// RevokePrivilegesFromAccountRoleSafely must suppress the per-pipe errors individually,
 	// rather than swallowing a joined error that may also contain unexpected errors.
-	err = client.Grants.RevokePrivilegesFromAccountRoleSafely(
-		ctx,
-		&sdk.AccountRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor},
-		},
-		&sdk.AccountRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				All: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypePipes,
-					InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-				},
-			},
-		},
-		role.ID(),
-		nil,
-	)
+	err = client.Grants.RevokePrivilegesFromAccountRoleSafely(ctx, sdk.NewRevokePrivilegesFromAccountRoleRequest(role.ID()).WithPrivileges(*sdk.NewAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor})).WithOn(*sdk.NewAccountRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypePipes).WithInSchema(testClientHelper().Ids.SchemaId())))))
 	assert.NoError(t, err)
 }
 
@@ -314,14 +270,10 @@ func TestInt_ShowGrantsOnNonExistingSchemaObject(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.ObjectType.String(), func(t *testing.T) {
-			_, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-				On: &sdk.ShowGrantsOn{
-					Object: &sdk.Object{
-						ObjectType: tt.ObjectType,
-						Name:       NonExistingSchemaObjectIdentifierWithNonExistingDatabaseAndSchema,
-					},
-				},
-			})
+			_, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+				ObjectType: tt.ObjectType,
+				Name:       NonExistingSchemaObjectIdentifierWithNonExistingDatabaseAndSchema,
+			})))
 			assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 		})
 	}
@@ -349,11 +301,7 @@ func TestInt_ShowGrantsOnNonExistingAccountObject(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.ObjectType.String(), func(t *testing.T) {
-			_, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-				On: &sdk.ShowGrantsOn{
-					Object: tt.Object,
-				},
-			})
+			_, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(*tt.Object)))
 			assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 		})
 	}
@@ -363,11 +311,7 @@ func TestInt_ShowGrantsToNonExistingRole(t *testing.T) {
 	client := testClient(t)
 	ctx := context.Background()
 
-	_, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-		To: &sdk.ShowGrantsTo{
-			Role: NonExistingAccountObjectIdentifier,
-		},
-	})
+	_, err := client.Grants.Show(ctx, sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(NonExistingAccountObjectIdentifier)))
 	assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 }
 
@@ -377,15 +321,15 @@ func TestInt_ShowFutureAndInheritedGrantsInNonExistingContainer(t *testing.T) {
 
 	containers := []struct {
 		Name string
-		In   *sdk.ShowGrantsIn
+		In   *sdk.ShowGrantsInRequest
 	}{
 		{
 			Name: "in non-existing schema",
-			In:   &sdk.ShowGrantsIn{Schema: new(NonExistingDatabaseObjectIdentifier)},
+			In:   sdk.NewShowGrantsInRequest().WithSchema(NonExistingDatabaseObjectIdentifier),
 		},
 		{
 			Name: "in non-existing database",
-			In:   &sdk.ShowGrantsIn{Database: new(NonExistingAccountObjectIdentifier)},
+			In:   sdk.NewShowGrantsInRequest().WithDatabase(NonExistingAccountObjectIdentifier),
 		},
 	}
 
@@ -401,11 +345,14 @@ func TestInt_ShowFutureAndInheritedGrantsInNonExistingContainer(t *testing.T) {
 	for _, grantType := range grantTypes {
 		for _, container := range containers {
 			t.Run(grantType.Name+" "+container.Name, func(t *testing.T) {
-				_, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-					Future:    grantType.Future,
-					Inherited: grantType.Inherited,
-					In:        container.In,
-				})
+				req := sdk.NewShowGrantsRequest().WithIn(*container.In)
+				if grantType.Future != nil {
+					req.WithFuture(*grantType.Future)
+				}
+				if grantType.Inherited != nil {
+					req.WithInherited(*grantType.Inherited)
+				}
+				_, err := client.Grants.Show(ctx, req)
 				assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 			})
 		}
@@ -425,25 +372,17 @@ func TestInt_SafeRevokePrivilegeFromShare(t *testing.T) {
 
 	t.Run("privilege never granted", func(t *testing.T) {
 		// Snowflake returns success (0 rows affected) when revoking a privilege that was never granted.
-		err := client.Grants.RevokePrivilegeFromShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, &sdk.ShareGrantOn{
-			Table: &sdk.OnTable{
-				AllInSchema: testClientHelper().Ids.SchemaId(),
-			},
-		}, share.ID())
+		err := client.Grants.RevokePrivilegeFromShare(ctx, sdk.NewRevokePrivilegeFromShareRequest(share.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}).WithOn(*sdk.NewShareGrantOnRequest().WithTable(*sdk.NewOnTableRequest().WithAllInSchema(testClientHelper().Ids.SchemaId()))))
 		require.NoError(t, err)
 	})
 
 	t.Run("non-existing share", func(t *testing.T) {
-		err := client.Grants.RevokePrivilegeFromShareSafely(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{
-			Database: testClientHelper().Ids.DatabaseId(),
-		}, NonExistingAccountObjectIdentifier)
+		err := client.Grants.RevokePrivilegeFromShareSafely(ctx, sdk.NewRevokePrivilegeFromShareRequest(NonExistingAccountObjectIdentifier).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(testClientHelper().Ids.DatabaseId())))
 		require.NoError(t, err)
 	})
 
 	t.Run("non-existing database", func(t *testing.T) {
-		err := client.Grants.RevokePrivilegeFromShareSafely(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{
-			Database: NonExistingAccountObjectIdentifier,
-		}, share.ID())
+		err := client.Grants.RevokePrivilegeFromShareSafely(ctx, sdk.NewRevokePrivilegeFromShareRequest(share.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(NonExistingAccountObjectIdentifier)))
 		require.NoError(t, err)
 	})
 }
@@ -462,25 +401,25 @@ func TestInt_SafeRevokeFromShareOnNonExistingSchemaLevelObjects(t *testing.T) {
 	testCases := []struct {
 		Name       string
 		Privileges []sdk.ObjectPrivilege
-		On         *sdk.ShareGrantOn
+		On         *sdk.ShareGrantOnRequest
 	}{
-		{Name: "non-existing schema", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, On: &sdk.ShareGrantOn{Schema: NonExistingDatabaseObjectIdentifier}},
-		{Name: "non-existing schema in non-existing database", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, On: &sdk.ShareGrantOn{Schema: NonExistingDatabaseObjectIdentifierWithNonExistingDatabase}},
-		{Name: "non-existing table", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, On: &sdk.ShareGrantOn{Table: &sdk.OnTable{Name: NonExistingSchemaObjectIdentifier}}},
-		{Name: "non-existing table in non-existing database and schema", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, On: &sdk.ShareGrantOn{Table: &sdk.OnTable{Name: NonExistingSchemaObjectIdentifierWithNonExistingDatabaseAndSchema}}},
-		{Name: "all tables in non-existing schema", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, On: &sdk.ShareGrantOn{Table: &sdk.OnTable{AllInSchema: NonExistingDatabaseObjectIdentifier}}},
-		{Name: "all tables in non-existing schema in non-existing database", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, On: &sdk.ShareGrantOn{Table: &sdk.OnTable{AllInSchema: NonExistingDatabaseObjectIdentifierWithNonExistingDatabase}}},
-		{Name: "non-existing view", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, On: &sdk.ShareGrantOn{View: NonExistingSchemaObjectIdentifier}},
-		{Name: "non-existing view in non-existing database and schema", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, On: &sdk.ShareGrantOn{View: NonExistingSchemaObjectIdentifierWithNonExistingDatabaseAndSchema}},
-		{Name: "non-existing tag", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeRead}, On: &sdk.ShareGrantOn{Tag: NonExistingSchemaObjectIdentifier}},
-		{Name: "non-existing tag in non-existing database and schema", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeRead}, On: &sdk.ShareGrantOn{Tag: NonExistingSchemaObjectIdentifierWithNonExistingDatabaseAndSchema}},
-		{Name: "non-existing function", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, On: &sdk.ShareGrantOn{Function: NonExistingSchemaObjectIdentifierWithArguments}},
-		{Name: "non-existing function in non-existing database and schema", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, On: &sdk.ShareGrantOn{Function: NonExistingSchemaObjectIdentifierWithArgumentsWithNonExistingDatabaseAndSchema}},
+		{Name: "non-existing schema", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, On: sdk.NewShareGrantOnRequest().WithSchema(NonExistingDatabaseObjectIdentifier)},
+		{Name: "non-existing schema in non-existing database", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, On: sdk.NewShareGrantOnRequest().WithSchema(NonExistingDatabaseObjectIdentifierWithNonExistingDatabase)},
+		{Name: "non-existing table", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, On: sdk.NewShareGrantOnRequest().WithTable(*sdk.NewOnTableRequest().WithName(NonExistingSchemaObjectIdentifier))},
+		{Name: "non-existing table in non-existing database and schema", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, On: sdk.NewShareGrantOnRequest().WithTable(*sdk.NewOnTableRequest().WithName(NonExistingSchemaObjectIdentifierWithNonExistingDatabaseAndSchema))},
+		{Name: "all tables in non-existing schema", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, On: sdk.NewShareGrantOnRequest().WithTable(*sdk.NewOnTableRequest().WithAllInSchema(NonExistingDatabaseObjectIdentifier))},
+		{Name: "all tables in non-existing schema in non-existing database", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, On: sdk.NewShareGrantOnRequest().WithTable(*sdk.NewOnTableRequest().WithAllInSchema(NonExistingDatabaseObjectIdentifierWithNonExistingDatabase))},
+		{Name: "non-existing view", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, On: sdk.NewShareGrantOnRequest().WithView(NonExistingSchemaObjectIdentifier)},
+		{Name: "non-existing view in non-existing database and schema", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, On: sdk.NewShareGrantOnRequest().WithView(NonExistingSchemaObjectIdentifierWithNonExistingDatabaseAndSchema)},
+		{Name: "non-existing tag", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeRead}, On: sdk.NewShareGrantOnRequest().WithTag(NonExistingSchemaObjectIdentifier)},
+		{Name: "non-existing tag in non-existing database and schema", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeRead}, On: sdk.NewShareGrantOnRequest().WithTag(NonExistingSchemaObjectIdentifierWithNonExistingDatabaseAndSchema)},
+		{Name: "non-existing function", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, On: sdk.NewShareGrantOnRequest().WithFunction(NonExistingSchemaObjectIdentifierWithArguments)},
+		{Name: "non-existing function in non-existing database and schema", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, On: sdk.NewShareGrantOnRequest().WithFunction(NonExistingSchemaObjectIdentifierWithArgumentsWithNonExistingDatabaseAndSchema)},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.Name, func(t *testing.T) {
-			err := client.Grants.RevokePrivilegeFromShareSafely(ctx, tt.Privileges, tt.On, share.ID())
+			err := client.Grants.RevokePrivilegeFromShareSafely(ctx, sdk.NewRevokePrivilegeFromShareRequest(share.ID()).WithPrivileges(tt.Privileges).WithOn(*tt.On))
 			assert.NoError(t, err)
 		})
 	}
@@ -602,23 +541,17 @@ func TestInt_SafeRevokePrivilegesFromDatabaseRole(t *testing.T) {
 
 	ctx := context.Background()
 
-	tablePrivileges := &sdk.DatabaseRoleGrantPrivileges{
-		SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
-	}
-	tableOn := func(id sdk.SchemaObjectIdentifier) *sdk.DatabaseRoleGrantOn {
-		return &sdk.DatabaseRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				SchemaObject: &sdk.Object{
-					ObjectType: sdk.ObjectTypeTable,
-					Name:       id,
-				},
-			},
-		}
+	tablePrivileges := sdk.NewDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect})
+	tableOn := func(id sdk.SchemaObjectIdentifier) *sdk.DatabaseRoleGrantOnRequest {
+		return sdk.NewDatabaseRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithSchemaObject(sdk.Object{
+			ObjectType: sdk.ObjectTypeTable,
+			Name:       id,
+		}))
 	}
 
 	testCases := []struct {
 		Name string
-		On   *sdk.DatabaseRoleGrantOn
+		On   *sdk.DatabaseRoleGrantOnRequest
 		Role sdk.DatabaseObjectIdentifier
 	}{
 		{Name: "missing database role", On: tableOn(table.ID()), Role: NonExistingDatabaseObjectIdentifier},
@@ -629,7 +562,7 @@ func TestInt_SafeRevokePrivilegesFromDatabaseRole(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.Name, func(t *testing.T) {
-			err := client.Grants.RevokePrivilegesFromDatabaseRoleSafely(ctx, tablePrivileges, tt.On, tt.Role, nil)
+			err := client.Grants.RevokePrivilegesFromDatabaseRoleSafely(ctx, sdk.NewRevokePrivilegesFromDatabaseRoleRequest(tt.Role).WithPrivileges(*tablePrivileges).WithOn(*tt.On))
 			assert.NoError(t, err)
 		})
 	}
@@ -658,22 +591,7 @@ func TestInt_SafeRevokePrivilegesFromDatabaseRole_AllPipesWithMissingRole(t *tes
 	ctx := context.Background()
 
 	// Grant MONITOR on all pipes in schema to the database role.
-	err := client.Grants.GrantPrivilegesToDatabaseRole(
-		ctx,
-		&sdk.DatabaseRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor},
-		},
-		&sdk.DatabaseRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				All: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypePipes,
-					InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-				},
-			},
-		},
-		dbRole.ID(),
-		&sdk.GrantPrivilegesToDatabaseRoleOptions{},
-	)
+	err := client.Grants.GrantPrivilegesToDatabaseRole(ctx, sdk.NewGrantPrivilegesToDatabaseRoleRequest(dbRole.ID()).WithPrivileges(*sdk.NewDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor})).WithOn(*sdk.NewDatabaseRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypePipes).WithInSchema(testClientHelper().Ids.SchemaId())))))
 	require.NoError(t, err)
 
 	// Drop the database role — pipes still exist, so Pipes.Show succeeds,
@@ -681,22 +599,7 @@ func TestInt_SafeRevokePrivilegesFromDatabaseRole_AllPipesWithMissingRole(t *tes
 	dbRoleCleanup()
 
 	// RevokePrivilegesFromDatabaseRoleSafely must suppress the per-pipe errors individually.
-	err = client.Grants.RevokePrivilegesFromDatabaseRoleSafely(
-		ctx,
-		&sdk.DatabaseRoleGrantPrivileges{
-			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor},
-		},
-		&sdk.DatabaseRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				All: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: sdk.PluralObjectTypePipes,
-					InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
-				},
-			},
-		},
-		dbRole.ID(),
-		nil,
-	)
+	err = client.Grants.RevokePrivilegesFromDatabaseRoleSafely(ctx, sdk.NewRevokePrivilegesFromDatabaseRoleRequest(dbRole.ID()).WithPrivileges(*sdk.NewDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor})).WithOn(*sdk.NewDatabaseRoleGrantOnRequest().WithSchemaObject(*sdk.NewGrantOnSchemaObjectRequest().WithAll(*sdk.NewGrantOnSchemaObjectInRequest(sdk.PluralObjectTypePipes).WithInSchema(testClientHelper().Ids.SchemaId())))))
 	assert.NoError(t, err)
 }
 
@@ -710,24 +613,22 @@ func TestInt_SafeRevokeInheritedPrivilegesFromAccountRole(t *testing.T) {
 
 	databaseId := testClientHelper().Ids.DatabaseId()
 
-	privileges := sdk.InheritedAccountRoleGrantPrivileges{
-		SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
-	}
+	privileges := sdk.NewInheritedAccountRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect})
 
 	testCases := []struct {
 		Name string
-		In   sdk.InheritedAccountRoleGrantIn
+		In   sdk.InheritedAccountRoleGrantInRequest
 		Role sdk.AccountObjectIdentifier
 	}{
-		{Name: "missing account role", In: sdk.InheritedAccountRoleGrantIn{Database: new(databaseId)}, Role: NonExistingAccountObjectIdentifier},
-		{Name: "missing database", In: sdk.InheritedAccountRoleGrantIn{Database: new(NonExistingAccountObjectIdentifier)}, Role: role.ID()},
-		{Name: "missing schema", In: sdk.InheritedAccountRoleGrantIn{Schema: new(NonExistingDatabaseObjectIdentifier)}, Role: role.ID()},
-		{Name: "missing schema in missing database", In: sdk.InheritedAccountRoleGrantIn{Schema: new(NonExistingDatabaseObjectIdentifierWithNonExistingDatabase)}, Role: role.ID()},
+		{Name: "missing account role", In: *sdk.NewInheritedAccountRoleGrantInRequest().WithDatabase(databaseId), Role: NonExistingAccountObjectIdentifier},
+		{Name: "missing database", In: *sdk.NewInheritedAccountRoleGrantInRequest().WithDatabase(NonExistingAccountObjectIdentifier), Role: role.ID()},
+		{Name: "missing schema", In: *sdk.NewInheritedAccountRoleGrantInRequest().WithSchema(NonExistingDatabaseObjectIdentifier), Role: role.ID()},
+		{Name: "missing schema in missing database", In: *sdk.NewInheritedAccountRoleGrantInRequest().WithSchema(NonExistingDatabaseObjectIdentifierWithNonExistingDatabase), Role: role.ID()},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.Name, func(t *testing.T) {
-			err := client.Grants.RevokeInheritedPrivilegesFromAccountRoleSafely(ctx, privileges, sdk.PluralObjectTypeTables, tt.In, tt.Role)
+			err := client.Grants.RevokeInheritedPrivilegesFromAccountRoleSafely(ctx, sdk.NewRevokeInheritedPrivilegesFromAccountRoleRequest(sdk.PluralObjectTypeTables, tt.In, tt.Role).WithPrivileges(*privileges))
 			assert.NoError(t, err)
 		})
 	}
@@ -743,24 +644,22 @@ func TestInt_SafeRevokeInheritedPrivilegesFromDatabaseRole(t *testing.T) {
 
 	databaseId := testClientHelper().Ids.DatabaseId()
 
-	privileges := sdk.InheritedDatabaseRoleGrantPrivileges{
-		SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
-	}
+	privileges := sdk.NewInheritedDatabaseRoleGrantPrivilegesRequest().WithSchemaObjectPrivileges([]sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect})
 
 	testCases := []struct {
 		Name string
-		In   sdk.InheritedDatabaseRoleGrantIn
+		In   sdk.InheritedDatabaseRoleGrantInRequest
 		Role sdk.DatabaseObjectIdentifier
 	}{
-		{Name: "missing database role", In: sdk.InheritedDatabaseRoleGrantIn{Database: new(databaseId)}, Role: NonExistingDatabaseObjectIdentifier},
-		{Name: "missing database", In: sdk.InheritedDatabaseRoleGrantIn{Database: new(NonExistingAccountObjectIdentifier)}, Role: dbRole.ID()},
-		{Name: "missing schema", In: sdk.InheritedDatabaseRoleGrantIn{Schema: new(NonExistingDatabaseObjectIdentifier)}, Role: dbRole.ID()},
-		{Name: "missing schema in missing database", In: sdk.InheritedDatabaseRoleGrantIn{Schema: new(NonExistingDatabaseObjectIdentifierWithNonExistingDatabase)}, Role: dbRole.ID()},
+		{Name: "missing database role", In: *sdk.NewInheritedDatabaseRoleGrantInRequest().WithDatabase(databaseId), Role: NonExistingDatabaseObjectIdentifier},
+		{Name: "missing database", In: *sdk.NewInheritedDatabaseRoleGrantInRequest().WithDatabase(NonExistingAccountObjectIdentifier), Role: dbRole.ID()},
+		{Name: "missing schema", In: *sdk.NewInheritedDatabaseRoleGrantInRequest().WithSchema(NonExistingDatabaseObjectIdentifier), Role: dbRole.ID()},
+		{Name: "missing schema in missing database", In: *sdk.NewInheritedDatabaseRoleGrantInRequest().WithSchema(NonExistingDatabaseObjectIdentifierWithNonExistingDatabase), Role: dbRole.ID()},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.Name, func(t *testing.T) {
-			err := client.Grants.RevokeInheritedPrivilegesFromDatabaseRoleSafely(ctx, privileges, sdk.PluralObjectTypeTables, tt.In, tt.Role)
+			err := client.Grants.RevokeInheritedPrivilegesFromDatabaseRoleSafely(ctx, sdk.NewRevokeInheritedPrivilegesFromDatabaseRoleRequest(sdk.PluralObjectTypeTables, tt.In, tt.Role).WithPrivileges(*privileges))
 			assert.NoError(t, err)
 		})
 	}
