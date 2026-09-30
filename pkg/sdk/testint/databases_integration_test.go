@@ -997,17 +997,14 @@ func TestInt_DatabasesShowParametersDetails(t *testing.T) {
 	assert.Equal(t, string(sdk.DatabaseParameterDataRetentionTimeInDays), details.DataRetentionTimeInDays.Key)
 	assert.Equal(t, sdk.ParameterTypeDatabase, details.DataRetentionTimeInDays.Level)
 	assert.Equal(t, 1, details.DataRetentionTimeInDays.Default)
-	assert.NotEmpty(t, details.DataRetentionTimeInDays.Description)
 
 	assert.Equal(t, string(sdk.DatabaseParameterLogLevel), details.LogLevel.Key)
 	assert.Equal(t, sdk.ParameterTypeDatabase, details.LogLevel.Level)
 	assert.Equal(t, sdk.LogLevelOff, details.LogLevel.Default)
-	assert.NotEmpty(t, details.LogLevel.Description)
 
 	assert.Equal(t, string(sdk.DatabaseParameterExternalVolume), details.ExternalVolume.Key)
 	assert.Equal(t, sdk.ParameterTypeDatabase, details.ExternalVolume.Level)
 	assert.Equal(t, sdk.AccountObjectIdentifier{}, details.ExternalVolume.Default)
-	assert.NotEmpty(t, details.ExternalVolume.Description)
 }
 
 // TestInt_DatabasesCatalogLinked_WithAdditionalDependencies requires a preconfigured external Iceberg

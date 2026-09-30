@@ -7,11 +7,10 @@ import "fmt"
 // produced by the generated <Object>ParametersDetails accessors. The generic Parameter (string-valued)
 // remains the raw form returned by ShowParameters.
 type TypedParameter[T any] struct {
-	Key         string
-	Value       T
-	Default     T
-	Level       ParameterType
-	Description string
+	Key     string
+	Value   T
+	Default T
+	Level   ParameterType
 }
 
 // newTypedParameter parses a raw string-valued Parameter into a TypedParameter[T] using the supplied
@@ -21,7 +20,7 @@ func newTypedParameter[T any](raw *Parameter, parse func(string) (T, error)) (Ty
 	if raw == nil {
 		return TypedParameter[T]{}, nil
 	}
-	tp := TypedParameter[T]{Key: raw.Key, Level: raw.Level, Description: raw.Description}
+	tp := TypedParameter[T]{Key: raw.Key, Level: raw.Level}
 	if raw.Value != "" {
 		v, err := parse(raw.Value)
 		if err != nil {

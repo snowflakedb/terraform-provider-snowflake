@@ -16,18 +16,16 @@ func TestNewTypedParameter_int(t *testing.T) {
 		{
 			name: "parses value and default",
 			raw: &Parameter{
-				Key:         "DATA_RETENTION_TIME_IN_DAYS",
-				Value:       "7",
-				Default:     "1",
-				Level:       ParameterTypeDatabase,
-				Description: "retention",
+				Key:     "DATA_RETENTION_TIME_IN_DAYS",
+				Value:   "7",
+				Default: "1",
+				Level:   ParameterTypeDatabase,
 			},
 			want: TypedParameter[int]{
-				Key:         "DATA_RETENTION_TIME_IN_DAYS",
-				Value:       7,
-				Default:     1,
-				Level:       ParameterTypeDatabase,
-				Description: "retention",
+				Key:     "DATA_RETENTION_TIME_IN_DAYS",
+				Value:   7,
+				Default: 1,
+				Level:   ParameterTypeDatabase,
 			},
 		},
 		{

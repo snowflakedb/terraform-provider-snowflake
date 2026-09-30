@@ -660,15 +660,12 @@ func TestInt_SchemasShowParametersDetails(t *testing.T) {
 	assert.Equal(t, string(sdk.ObjectParameterDataRetentionTimeInDays), details.DataRetentionTimeInDays.Key)
 	assert.Equal(t, sdk.ParameterTypeSchema, details.DataRetentionTimeInDays.Level)
 	assert.Equal(t, 1, details.DataRetentionTimeInDays.Default)
-	assert.NotEmpty(t, details.DataRetentionTimeInDays.Description)
 
 	assert.Equal(t, string(sdk.ObjectParameterLogLevel), details.LogLevel.Key)
 	assert.Equal(t, sdk.ParameterTypeSchema, details.LogLevel.Level)
 	assert.Equal(t, sdk.LogLevelOff, details.LogLevel.Default)
-	assert.NotEmpty(t, details.LogLevel.Description)
 
 	assert.Equal(t, string(sdk.ObjectParameterExternalVolume), details.ExternalVolume.Key)
 	assert.Equal(t, sdk.ParameterTypeSchema, details.ExternalVolume.Level)
 	assert.Equal(t, sdk.AccountObjectIdentifier{}, details.ExternalVolume.Default)
-	assert.NotEmpty(t, details.ExternalVolume.Description)
 }
