@@ -11,8 +11,6 @@ const (
 	OperationKindShow     OperationKind = "Show"
 	OperationKindShowByID OperationKind = "ShowByID"
 	OperationKindDescribe OperationKind = "Describe"
-	OperationKindGrant    OperationKind = "Grant"
-	OperationKindRevoke   OperationKind = "Revoke"
 )
 
 type DescriptionMappingKind string
@@ -293,14 +291,6 @@ func (i *Interface) DropOperation(doc string, queryStruct *QueryStruct, opts ...
 		opt(op)
 	}
 	return i
-}
-
-func (i *Interface) GrantOperation(doc string, queryStruct *QueryStruct) *Interface {
-	return i.newSimpleOperation(string(OperationKindGrant), doc, queryStruct)
-}
-
-func (i *Interface) RevokeOperation(doc string, queryStruct *QueryStruct) *Interface {
-	return i.newSimpleOperation(string(OperationKindRevoke), doc, queryStruct)
 }
 
 func (i *Interface) appendShowByID(filtering []ShowByIDFilteringKind) *Interface {
