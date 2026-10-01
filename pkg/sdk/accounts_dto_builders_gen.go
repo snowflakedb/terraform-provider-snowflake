@@ -2,6 +2,8 @@
 
 package sdk
 
+import "strconv"
+
 func NewCreateAccountRequest(
 	name AccountObjectIdentifier,
 	adminName string,
@@ -904,6 +906,301 @@ func (s *AccountParametersRequest) WithWeekStart(weekStart int) *AccountParamete
 	return s
 }
 
+func (s *AccountParametersRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "ABORT_DETACHED_QUERY":
+		return assignParsedParameter(value, strconv.ParseBool, &s.AbortDetachedQuery)
+	case "ACTIVE_PYTHON_PROFILER":
+		return assignParsedParameter(value, ToActivePythonProfiler, &s.ActivePythonProfiler)
+	case "ALLOW_BIND_VALUES_ACCESS":
+		return assignParsedParameter(value, strconv.ParseBool, &s.AllowBindValuesAccess)
+	case "ALLOW_CLIENT_MFA_CACHING":
+		return assignParsedParameter(value, strconv.ParseBool, &s.AllowClientMfaCaching)
+	case "ALLOW_ID_TOKEN":
+		return assignParsedParameter(value, strconv.ParseBool, &s.AllowIdToken)
+	case "ALLOWED_SPCS_WORKLOAD_TYPES":
+		return assignParsedParameter(value, identityParse, &s.AllowedSpcsWorkloadTypes)
+	case "AUTOCOMMIT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.Autocommit)
+	case "BASE_LOCATION_PREFIX":
+		return assignParsedParameter(value, identityParse, &s.BaseLocationPrefix)
+	case "BINARY_INPUT_FORMAT":
+		return assignParsedParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
+	case "BINARY_OUTPUT_FORMAT":
+		return assignParsedParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
+	case "CATALOG":
+		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.Catalog)
+	case "CATALOG_SYNC":
+		return assignParsedParameter(value, identityParse, &s.CatalogSync)
+	case "CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientEnableLogInfoStatementParameters)
+	case "CLIENT_ENCRYPTION_KEY_SIZE":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientEncryptionKeySize)
+	case "CLIENT_MEMORY_LIMIT":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientMemoryLimit)
+	case "CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientMetadataRequestUseConnectionCtx)
+	case "CLIENT_METADATA_USE_SESSION_DATABASE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientMetadataUseSessionDatabase)
+	case "CLIENT_PREFETCH_THREADS":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientPrefetchThreads)
+	case "CLIENT_RESULT_CHUNK_SIZE":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientResultChunkSize)
+	case "CLIENT_RESULT_COLUMN_CASE_INSENSITIVE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientResultColumnCaseInsensitive)
+	case "CLIENT_SESSION_KEEP_ALIVE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientSessionKeepAlive)
+	case "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientSessionKeepAliveHeartbeatFrequency)
+	case "CLIENT_TIMESTAMP_TYPE_MAPPING":
+		return assignParsedParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
+	case "CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER":
+		return assignParsedParameter(value, strconv.Atoi, &s.CortexCodeCliDailyEstCreditLimitPerUser)
+	case "CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER":
+		return assignParsedParameter(value, strconv.Atoi, &s.CortexCodeDesktopDailyEstCreditLimitPerUser)
+	case "CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER":
+		return assignParsedParameter(value, strconv.Atoi, &s.CortexCodeSnowsightDailyEstCreditLimitPerUser)
+	case "CORTEX_ENABLED_CROSS_REGION":
+		return assignParsedParameter(value, identityParse, &s.CortexEnabledCrossRegion)
+	case "CORTEX_MODELS_ALLOWLIST":
+		return assignParsedParameter(value, identityParse, &s.CortexModelsAllowlist)
+	case "CSV_TIMESTAMP_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.CsvTimestampFormat)
+	case "DATA_METRIC_SCHEDULE":
+		return assignParsedParameter(value, identityParse, &s.DataMetricSchedule)
+	case "DATA_RETENTION_TIME_IN_DAYS":
+		return assignParsedParameter(value, strconv.Atoi, &s.DataRetentionTimeInDays)
+	case "DATE_INPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.DateInputFormat)
+	case "DATE_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.DateOutputFormat)
+	case "DEFAULT_DBT_VERSION":
+		return assignParsedParameter(value, identityParse, &s.DefaultDbtVersion)
+	case "DEFAULT_DDL_COLLATION":
+		return assignParsedParameter(value, ToStringAllowEmpty, &s.DefaultDdlCollation)
+	case "DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU":
+		return assignParsedParameter(value, identityParse, &s.DefaultNotebookComputePoolCpu)
+	case "DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU":
+		return assignParsedParameter(value, identityParse, &s.DefaultNotebookComputePoolGpu)
+	case "DEFAULT_NULL_ORDERING":
+		return assignParsedParameter(value, ToDefaultNullOrdering, &s.DefaultNullOrdering)
+	case "DEFAULT_STREAMLIT_COMPUTE_POOL":
+		return assignParsedParameter(value, identityParse, &s.DefaultStreamlitComputePool)
+	case "DEFAULT_STREAMLIT_NOTEBOOK_WAREHOUSE":
+		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.DefaultStreamlitNotebookWarehouse)
+	case "DISABLE_UI_DOWNLOAD_BUTTON":
+		return assignParsedParameter(value, strconv.ParseBool, &s.DisableUiDownloadButton)
+	case "DISABLE_USER_PRIVILEGE_GRANTS":
+		return assignParsedParameter(value, strconv.ParseBool, &s.DisableUserPrivilegeGrants)
+	case "DISALLOWED_SPCS_WORKLOAD_TYPES":
+		return assignParsedParameter(value, identityParse, &s.DisallowedSpcsWorkloadTypes)
+	case "ENABLE_AUTOMATIC_SENSITIVE_DATA_CLASSIFICATION_LOG":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableAutomaticSensitiveDataClassificationLog)
+	case "ENABLE_BUDGET_EVENT_LOGGING":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableBudgetEventLogging)
+	case "ENABLE_CONSOLE_OUTPUT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
+	case "ENABLE_CORTEX_ANALYST":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableCortexAnalyst)
+	case "ENABLE_DATA_COMPACTION":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableDataCompaction)
+	case "ENABLE_EGRESS_COST_OPTIMIZER":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableEgressCostOptimizer)
+	case "ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableGetDdlUseDataTypeAlias)
+	case "ENABLE_ICEBERG_MERGE_ON_READ":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableIcebergMergeOnRead)
+	case "ENABLE_IDENTIFIER_FIRST_LOGIN":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableIdentifierFirstLogin)
+	case "ENABLE_INTERNAL_STAGES_PRIVATELINK":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableInternalStagesPrivatelink)
+	case "ENABLE_NOTEBOOK_CREATION_IN_PERSONAL_DB":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableNotebookCreationInPersonalDb)
+	case "ENABLE_PER_ACCOUNT_APP_SERVICE_PRIVATELINK_URL":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnablePerAccountAppServicePrivatelinkUrl)
+	case "ENABLE_PERSONAL_DATABASE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnablePersonalDatabase)
+	case "ENABLE_SPCS_BLOCK_STORAGE_SNOWFLAKE_FULL_ENCRYPTION_ENFORCEMENT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement)
+	case "ENABLE_TAG_PROPAGATION_EVENT_LOGGING":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableTagPropagationEventLogging)
+	case "ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_IMAGE_REPOSITORY":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableTriSecretAndRekeyOptOutForImageRepository)
+	case "ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_SPCS_BLOCK_STORAGE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableTriSecretAndRekeyOptOutForSpcsBlockStorage)
+	case "ENABLE_UNHANDLED_EXCEPTIONS_REPORTING":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableUnhandledExceptionsReporting)
+	case "ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableUnloadPhysicalTypeOptimization)
+	case "ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableUnredactedQuerySyntaxError)
+	case "ENABLE_UNREDACTED_SECURE_OBJECT_ERROR":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableUnredactedSecureObjectError)
+	case "ENFORCE_NETWORK_RULES_FOR_INTERNAL_STAGES":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnforceNetworkRulesForInternalStages)
+	case "ERROR_ON_NONDETERMINISTIC_MERGE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ErrorOnNondeterministicMerge)
+	case "ERROR_ON_NONDETERMINISTIC_UPDATE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ErrorOnNondeterministicUpdate)
+	case "EVENT_TABLE":
+		return assignParsedParameter(value, ParseSchemaObjectIdentifier, &s.EventTable)
+	case "EXTERNAL_OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ExternalOauthAddPrivilegedRolesToBlockedList)
+	case "EXTERNAL_VOLUME":
+		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.ExternalVolume)
+	case "GEOGRAPHY_OUTPUT_FORMAT":
+		return assignParsedParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
+	case "GEOMETRY_OUTPUT_FORMAT":
+		return assignParsedParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
+	case "HYBRID_TABLE_LOCK_TIMEOUT":
+		return assignParsedParameter(value, strconv.Atoi, &s.HybridTableLockTimeout)
+	case "ICEBERG_VERSION_DEFAULT":
+		return assignParsedParameter(value, strconv.Atoi, &s.IcebergVersionDefault)
+	case "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB":
+		return assignParsedParameter(value, identityParse, &s.InitialReplicationSizeLimitInTb)
+	case "JDBC_TREAT_DECIMAL_AS_INT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcTreatDecimalAsInt)
+	case "JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC":
+		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcTreatTimestampNtzAsUtc)
+	case "JDBC_USE_SESSION_TIMEZONE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcUseSessionTimezone)
+	case "JS_TREAT_INTEGER_AS_BIGINT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.JsTreatIntegerAsBigint)
+	case "JSON_INDENT":
+		return assignParsedParameter(value, strconv.Atoi, &s.JsonIndent)
+	case "LISTING_AUTO_FULFILLMENT_REPLICATION_REFRESH_SCHEDULE":
+		return assignParsedParameter(value, identityParse, &s.ListingAutoFulfillmentReplicationRefreshSchedule)
+	case "LOCK_TIMEOUT":
+		return assignParsedParameter(value, strconv.Atoi, &s.LockTimeout)
+	case "LOG_EVENT_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
+	case "LOG_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+	case "MAX_CONCURRENCY_LEVEL":
+		return assignParsedParameter(value, strconv.Atoi, &s.MaxConcurrencyLevel)
+	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":
+		return assignParsedParameter(value, strconv.Atoi, &s.MaxDataExtensionTimeInDays)
+	case "METRIC_LEVEL":
+		return assignParsedParameter(value, ToMetricLevel, &s.MetricLevel)
+	case "MIN_DATA_RETENTION_TIME_IN_DAYS":
+		return assignParsedParameter(value, strconv.Atoi, &s.MinDataRetentionTimeInDays)
+	case "MULTI_STATEMENT_COUNT":
+		return assignParsedParameter(value, strconv.Atoi, &s.MultiStatementCount)
+	case "NETWORK_POLICY":
+		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.NetworkPolicy)
+	case "NOORDER_SEQUENCE_AS_DEFAULT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.NoorderSequenceAsDefault)
+	case "OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST":
+		return assignParsedParameter(value, strconv.ParseBool, &s.OauthAddPrivilegedRolesToBlockedList)
+	case "ODBC_TREAT_DECIMAL_AS_INT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.OdbcTreatDecimalAsInt)
+	case "PERIODIC_DATA_REKEYING":
+		return assignParsedParameter(value, strconv.ParseBool, &s.PeriodicDataRekeying)
+	case "PIPE_EXECUTION_PAUSED":
+		return assignParsedParameter(value, strconv.ParseBool, &s.PipeExecutionPaused)
+	case "PREVENT_LOAD_FROM_INLINE_URL":
+		return assignParsedParameter(value, strconv.ParseBool, &s.PreventLoadFromInlineUrl)
+	case "PREVENT_UNLOAD_TO_INLINE_URL":
+		return assignParsedParameter(value, strconv.ParseBool, &s.PreventUnloadToInlineUrl)
+	case "PREVENT_UNLOAD_TO_INTERNAL_STAGES":
+		return assignParsedParameter(value, strconv.ParseBool, &s.PreventUnloadToInternalStages)
+	case "PYTHON_PROFILER_MODULES":
+		return assignParsedParameter(value, identityParse, &s.PythonProfilerModules)
+	case "PYTHON_PROFILER_TARGET_STAGE":
+		return assignParsedParameter(value, ParseSchemaObjectIdentifier, &s.PythonProfilerTargetStage)
+	case "QUERY_TAG":
+		return assignParsedParameter(value, identityParse, &s.QueryTag)
+	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.QuotedIdentifiersIgnoreCase)
+	case "READ_CONSISTENCY_MODE":
+		return assignParsedParameter(value, identityParse, &s.ReadConsistencyMode)
+	case "REPLACE_INVALID_CHARACTERS":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ReplaceInvalidCharacters)
+	case "REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_CREATION":
+		return assignParsedParameter(value, strconv.ParseBool, &s.RequireStorageIntegrationForStageCreation)
+	case "REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_OPERATION":
+		return assignParsedParameter(value, strconv.ParseBool, &s.RequireStorageIntegrationForStageOperation)
+	case "ROW_TIMESTAMP_DEFAULT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.RowTimestampDefault)
+	case "ROWS_PER_RESULTSET":
+		return assignParsedParameter(value, strconv.Atoi, &s.RowsPerResultset)
+	case "S3_STAGE_VPCE_DNS_NAME":
+		return assignParsedParameter(value, identityParse, &s.S3StageVpceDnsName)
+	case "SEARCH_PATH":
+		return assignParsedParameter(value, identityParse, &s.SearchPath)
+	case "SERVERLESS_TASK_MAX_STATEMENT_SIZE":
+		return assignParsedParameter(value, ToWarehouseSize, &s.ServerlessTaskMaxStatementSize)
+	case "SERVERLESS_TASK_MIN_STATEMENT_SIZE":
+		return assignParsedParameter(value, ToWarehouseSize, &s.ServerlessTaskMinStatementSize)
+	case "SHARE_RESTRICTIONS":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ShareRestrictions)
+	case "SIMULATED_DATA_SHARING_CONSUMER":
+		return assignParsedParameter(value, identityParse, &s.SimulatedDataSharingConsumer)
+	case "SQL_TRACE_QUERY_TEXT":
+		return assignParsedParameter(value, identityParse, &s.SqlTraceQueryText)
+	case "SSO_LOGIN_PAGE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.SsoLoginPage)
+	case "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.StatementQueuedTimeoutInSeconds)
+	case "STATEMENT_TIMEOUT_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.StatementTimeoutInSeconds)
+	case "STORAGE_SERIALIZATION_POLICY":
+		return assignParsedParameter(value, ToStorageSerializationPolicy, &s.StorageSerializationPolicy)
+	case "STRICT_JSON_OUTPUT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.StrictJsonOutput)
+	case "SUSPEND_TASK_AFTER_NUM_FAILURES":
+		return assignParsedParameter(value, strconv.Atoi, &s.SuspendTaskAfterNumFailures)
+	case "TASK_AUTO_RETRY_ATTEMPTS":
+		return assignParsedParameter(value, strconv.Atoi, &s.TaskAutoRetryAttempts)
+	case "TIME_INPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimeInputFormat)
+	case "TIME_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimeOutputFormat)
+	case "TIMESTAMP_DAY_IS_ALWAYS_24H":
+		return assignParsedParameter(value, strconv.ParseBool, &s.TimestampDayIsAlways24H)
+	case "TIMESTAMP_INPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampInputFormat)
+	case "TIMESTAMP_LTZ_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampLtzOutputFormat)
+	case "TIMESTAMP_NTZ_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampNtzOutputFormat)
+	case "TIMESTAMP_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampOutputFormat)
+	case "TIMESTAMP_TYPE_MAPPING":
+		return assignParsedParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
+	case "TIMESTAMP_TZ_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampTzOutputFormat)
+	case "TIMEZONE":
+		return assignParsedParameter(value, identityParse, &s.Timezone)
+	case "TRACE_LEVEL":
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+	case "TRANSACTION_ABORT_ON_ERROR":
+		return assignParsedParameter(value, strconv.ParseBool, &s.TransactionAbortOnError)
+	case "TRANSACTION_DEFAULT_ISOLATION_LEVEL":
+		return assignParsedParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
+	case "TWO_DIGIT_CENTURY_START":
+		return assignParsedParameter(value, strconv.Atoi, &s.TwoDigitCenturyStart)
+	case "UNSUPPORTED_DDL_ACTION":
+		return assignParsedParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
+	case "USE_CACHED_RESULT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.UseCachedResult)
+	case "USE_WORKSPACES_FOR_SQL":
+		return assignParsedParameter(value, identityParse, &s.UseWorkspacesForSql)
+	case "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE":
+		return assignParsedParameter(value, ToWarehouseSize, &s.UserTaskManagedInitialWarehouseSize)
+	case "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.UserTaskMinimumTriggerIntervalInSeconds)
+	case "USER_TASK_TIMEOUT_MS":
+		return assignParsedParameter(value, strconv.Atoi, &s.UserTaskTimeoutMs)
+	case "WEEK_OF_YEAR_POLICY":
+		return assignParsedParameter(value, strconv.Atoi, &s.WeekOfYearPolicy)
+	case "WEEK_START":
+		return assignParsedParameter(value, strconv.Atoi, &s.WeekStart)
+	default:
+		return ErrParameterNotSupported
+	}
+}
+
 func NewAccountLevelParametersRequest() *AccountLevelParametersRequest {
 	s := AccountLevelParametersRequest{}
 	return &s
@@ -1752,6 +2049,302 @@ func (s *AccountParametersUnsetRequest) WithWeekOfYearPolicy(weekOfYearPolicy bo
 func (s *AccountParametersUnsetRequest) WithWeekStart(weekStart bool) *AccountParametersUnsetRequest {
 	s.WeekStart = &weekStart
 	return s
+}
+
+func (s *AccountParametersUnsetRequest) UnsetParameterFromRaw(key string) error {
+	switch key {
+	case "ABORT_DETACHED_QUERY":
+		s.AbortDetachedQuery = Bool(true)
+	case "ACTIVE_PYTHON_PROFILER":
+		s.ActivePythonProfiler = Bool(true)
+	case "ALLOW_BIND_VALUES_ACCESS":
+		s.AllowBindValuesAccess = Bool(true)
+	case "ALLOW_CLIENT_MFA_CACHING":
+		s.AllowClientMfaCaching = Bool(true)
+	case "ALLOW_ID_TOKEN":
+		s.AllowIdToken = Bool(true)
+	case "ALLOWED_SPCS_WORKLOAD_TYPES":
+		s.AllowedSpcsWorkloadTypes = Bool(true)
+	case "AUTOCOMMIT":
+		s.Autocommit = Bool(true)
+	case "BASE_LOCATION_PREFIX":
+		s.BaseLocationPrefix = Bool(true)
+	case "BINARY_INPUT_FORMAT":
+		s.BinaryInputFormat = Bool(true)
+	case "BINARY_OUTPUT_FORMAT":
+		s.BinaryOutputFormat = Bool(true)
+	case "CATALOG":
+		s.Catalog = Bool(true)
+	case "CATALOG_SYNC":
+		s.CatalogSync = Bool(true)
+	case "CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS":
+		s.ClientEnableLogInfoStatementParameters = Bool(true)
+	case "CLIENT_ENCRYPTION_KEY_SIZE":
+		s.ClientEncryptionKeySize = Bool(true)
+	case "CLIENT_MEMORY_LIMIT":
+		s.ClientMemoryLimit = Bool(true)
+	case "CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX":
+		s.ClientMetadataRequestUseConnectionCtx = Bool(true)
+	case "CLIENT_METADATA_USE_SESSION_DATABASE":
+		s.ClientMetadataUseSessionDatabase = Bool(true)
+	case "CLIENT_PREFETCH_THREADS":
+		s.ClientPrefetchThreads = Bool(true)
+	case "CLIENT_RESULT_CHUNK_SIZE":
+		s.ClientResultChunkSize = Bool(true)
+	case "CLIENT_RESULT_COLUMN_CASE_INSENSITIVE":
+		s.ClientResultColumnCaseInsensitive = Bool(true)
+	case "CLIENT_SESSION_KEEP_ALIVE":
+		s.ClientSessionKeepAlive = Bool(true)
+	case "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY":
+		s.ClientSessionKeepAliveHeartbeatFrequency = Bool(true)
+	case "CLIENT_TIMESTAMP_TYPE_MAPPING":
+		s.ClientTimestampTypeMapping = Bool(true)
+	case "CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER":
+		s.CortexCodeCliDailyEstCreditLimitPerUser = Bool(true)
+	case "CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER":
+		s.CortexCodeDesktopDailyEstCreditLimitPerUser = Bool(true)
+	case "CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER":
+		s.CortexCodeSnowsightDailyEstCreditLimitPerUser = Bool(true)
+	case "CORTEX_ENABLED_CROSS_REGION":
+		s.CortexEnabledCrossRegion = Bool(true)
+	case "CORTEX_MODELS_ALLOWLIST":
+		s.CortexModelsAllowlist = Bool(true)
+	case "CSV_TIMESTAMP_FORMAT":
+		s.CsvTimestampFormat = Bool(true)
+	case "DATA_METRIC_SCHEDULE":
+		s.DataMetricSchedule = Bool(true)
+	case "DATA_RETENTION_TIME_IN_DAYS":
+		s.DataRetentionTimeInDays = Bool(true)
+	case "DATE_INPUT_FORMAT":
+		s.DateInputFormat = Bool(true)
+	case "DATE_OUTPUT_FORMAT":
+		s.DateOutputFormat = Bool(true)
+	case "DEFAULT_DBT_VERSION":
+		s.DefaultDbtVersion = Bool(true)
+	case "DEFAULT_DDL_COLLATION":
+		s.DefaultDdlCollation = Bool(true)
+	case "DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU":
+		s.DefaultNotebookComputePoolCpu = Bool(true)
+	case "DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU":
+		s.DefaultNotebookComputePoolGpu = Bool(true)
+	case "DEFAULT_NULL_ORDERING":
+		s.DefaultNullOrdering = Bool(true)
+	case "DEFAULT_STREAMLIT_COMPUTE_POOL":
+		s.DefaultStreamlitComputePool = Bool(true)
+	case "DEFAULT_STREAMLIT_NOTEBOOK_WAREHOUSE":
+		s.DefaultStreamlitNotebookWarehouse = Bool(true)
+	case "DISABLE_UI_DOWNLOAD_BUTTON":
+		s.DisableUiDownloadButton = Bool(true)
+	case "DISABLE_USER_PRIVILEGE_GRANTS":
+		s.DisableUserPrivilegeGrants = Bool(true)
+	case "DISALLOWED_SPCS_WORKLOAD_TYPES":
+		s.DisallowedSpcsWorkloadTypes = Bool(true)
+	case "ENABLE_AUTOMATIC_SENSITIVE_DATA_CLASSIFICATION_LOG":
+		s.EnableAutomaticSensitiveDataClassificationLog = Bool(true)
+	case "ENABLE_BUDGET_EVENT_LOGGING":
+		s.EnableBudgetEventLogging = Bool(true)
+	case "ENABLE_CONSOLE_OUTPUT":
+		s.EnableConsoleOutput = Bool(true)
+	case "ENABLE_CORTEX_ANALYST":
+		s.EnableCortexAnalyst = Bool(true)
+	case "ENABLE_DATA_COMPACTION":
+		s.EnableDataCompaction = Bool(true)
+	case "ENABLE_EGRESS_COST_OPTIMIZER":
+		s.EnableEgressCostOptimizer = Bool(true)
+	case "ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS":
+		s.EnableGetDdlUseDataTypeAlias = Bool(true)
+	case "ENABLE_ICEBERG_MERGE_ON_READ":
+		s.EnableIcebergMergeOnRead = Bool(true)
+	case "ENABLE_IDENTIFIER_FIRST_LOGIN":
+		s.EnableIdentifierFirstLogin = Bool(true)
+	case "ENABLE_INTERNAL_STAGES_PRIVATELINK":
+		s.EnableInternalStagesPrivatelink = Bool(true)
+	case "ENABLE_NOTEBOOK_CREATION_IN_PERSONAL_DB":
+		s.EnableNotebookCreationInPersonalDb = Bool(true)
+	case "ENABLE_PER_ACCOUNT_APP_SERVICE_PRIVATELINK_URL":
+		s.EnablePerAccountAppServicePrivatelinkUrl = Bool(true)
+	case "ENABLE_PERSONAL_DATABASE":
+		s.EnablePersonalDatabase = Bool(true)
+	case "ENABLE_SPCS_BLOCK_STORAGE_SNOWFLAKE_FULL_ENCRYPTION_ENFORCEMENT":
+		s.EnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement = Bool(true)
+	case "ENABLE_TAG_PROPAGATION_EVENT_LOGGING":
+		s.EnableTagPropagationEventLogging = Bool(true)
+	case "ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_IMAGE_REPOSITORY":
+		s.EnableTriSecretAndRekeyOptOutForImageRepository = Bool(true)
+	case "ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_SPCS_BLOCK_STORAGE":
+		s.EnableTriSecretAndRekeyOptOutForSpcsBlockStorage = Bool(true)
+	case "ENABLE_UNHANDLED_EXCEPTIONS_REPORTING":
+		s.EnableUnhandledExceptionsReporting = Bool(true)
+	case "ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION":
+		s.EnableUnloadPhysicalTypeOptimization = Bool(true)
+	case "ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR":
+		s.EnableUnredactedQuerySyntaxError = Bool(true)
+	case "ENABLE_UNREDACTED_SECURE_OBJECT_ERROR":
+		s.EnableUnredactedSecureObjectError = Bool(true)
+	case "ENFORCE_NETWORK_RULES_FOR_INTERNAL_STAGES":
+		s.EnforceNetworkRulesForInternalStages = Bool(true)
+	case "ERROR_ON_NONDETERMINISTIC_MERGE":
+		s.ErrorOnNondeterministicMerge = Bool(true)
+	case "ERROR_ON_NONDETERMINISTIC_UPDATE":
+		s.ErrorOnNondeterministicUpdate = Bool(true)
+	case "EVENT_TABLE":
+		s.EventTable = Bool(true)
+	case "EXTERNAL_OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST":
+		s.ExternalOauthAddPrivilegedRolesToBlockedList = Bool(true)
+	case "EXTERNAL_VOLUME":
+		s.ExternalVolume = Bool(true)
+	case "GEOGRAPHY_OUTPUT_FORMAT":
+		s.GeographyOutputFormat = Bool(true)
+	case "GEOMETRY_OUTPUT_FORMAT":
+		s.GeometryOutputFormat = Bool(true)
+	case "HYBRID_TABLE_LOCK_TIMEOUT":
+		s.HybridTableLockTimeout = Bool(true)
+	case "ICEBERG_VERSION_DEFAULT":
+		s.IcebergVersionDefault = Bool(true)
+	case "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB":
+		s.InitialReplicationSizeLimitInTb = Bool(true)
+	case "JDBC_TREAT_DECIMAL_AS_INT":
+		s.JdbcTreatDecimalAsInt = Bool(true)
+	case "JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC":
+		s.JdbcTreatTimestampNtzAsUtc = Bool(true)
+	case "JDBC_USE_SESSION_TIMEZONE":
+		s.JdbcUseSessionTimezone = Bool(true)
+	case "JS_TREAT_INTEGER_AS_BIGINT":
+		s.JsTreatIntegerAsBigint = Bool(true)
+	case "JSON_INDENT":
+		s.JsonIndent = Bool(true)
+	case "LISTING_AUTO_FULFILLMENT_REPLICATION_REFRESH_SCHEDULE":
+		s.ListingAutoFulfillmentReplicationRefreshSchedule = Bool(true)
+	case "LOCK_TIMEOUT":
+		s.LockTimeout = Bool(true)
+	case "LOG_EVENT_LEVEL":
+		s.LogEventLevel = Bool(true)
+	case "LOG_LEVEL":
+		s.LogLevel = Bool(true)
+	case "MAX_CONCURRENCY_LEVEL":
+		s.MaxConcurrencyLevel = Bool(true)
+	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":
+		s.MaxDataExtensionTimeInDays = Bool(true)
+	case "METRIC_LEVEL":
+		s.MetricLevel = Bool(true)
+	case "MIN_DATA_RETENTION_TIME_IN_DAYS":
+		s.MinDataRetentionTimeInDays = Bool(true)
+	case "MULTI_STATEMENT_COUNT":
+		s.MultiStatementCount = Bool(true)
+	case "NETWORK_POLICY":
+		s.NetworkPolicy = Bool(true)
+	case "NOORDER_SEQUENCE_AS_DEFAULT":
+		s.NoorderSequenceAsDefault = Bool(true)
+	case "OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST":
+		s.OauthAddPrivilegedRolesToBlockedList = Bool(true)
+	case "ODBC_TREAT_DECIMAL_AS_INT":
+		s.OdbcTreatDecimalAsInt = Bool(true)
+	case "PERIODIC_DATA_REKEYING":
+		s.PeriodicDataRekeying = Bool(true)
+	case "PIPE_EXECUTION_PAUSED":
+		s.PipeExecutionPaused = Bool(true)
+	case "PREVENT_LOAD_FROM_INLINE_URL":
+		s.PreventLoadFromInlineUrl = Bool(true)
+	case "PREVENT_UNLOAD_TO_INLINE_URL":
+		s.PreventUnloadToInlineUrl = Bool(true)
+	case "PREVENT_UNLOAD_TO_INTERNAL_STAGES":
+		s.PreventUnloadToInternalStages = Bool(true)
+	case "PYTHON_PROFILER_MODULES":
+		s.PythonProfilerModules = Bool(true)
+	case "PYTHON_PROFILER_TARGET_STAGE":
+		s.PythonProfilerTargetStage = Bool(true)
+	case "QUERY_TAG":
+		s.QueryTag = Bool(true)
+	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
+		s.QuotedIdentifiersIgnoreCase = Bool(true)
+	case "READ_CONSISTENCY_MODE":
+		s.ReadConsistencyMode = Bool(true)
+	case "REPLACE_INVALID_CHARACTERS":
+		s.ReplaceInvalidCharacters = Bool(true)
+	case "REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_CREATION":
+		s.RequireStorageIntegrationForStageCreation = Bool(true)
+	case "REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_OPERATION":
+		s.RequireStorageIntegrationForStageOperation = Bool(true)
+	case "ROW_TIMESTAMP_DEFAULT":
+		s.RowTimestampDefault = Bool(true)
+	case "ROWS_PER_RESULTSET":
+		s.RowsPerResultset = Bool(true)
+	case "S3_STAGE_VPCE_DNS_NAME":
+		s.S3StageVpceDnsName = Bool(true)
+	case "SEARCH_PATH":
+		s.SearchPath = Bool(true)
+	case "SERVERLESS_TASK_MAX_STATEMENT_SIZE":
+		s.ServerlessTaskMaxStatementSize = Bool(true)
+	case "SERVERLESS_TASK_MIN_STATEMENT_SIZE":
+		s.ServerlessTaskMinStatementSize = Bool(true)
+	case "SHARE_RESTRICTIONS":
+		s.ShareRestrictions = Bool(true)
+	case "SIMULATED_DATA_SHARING_CONSUMER":
+		s.SimulatedDataSharingConsumer = Bool(true)
+	case "SQL_TRACE_QUERY_TEXT":
+		s.SqlTraceQueryText = Bool(true)
+	case "SSO_LOGIN_PAGE":
+		s.SsoLoginPage = Bool(true)
+	case "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS":
+		s.StatementQueuedTimeoutInSeconds = Bool(true)
+	case "STATEMENT_TIMEOUT_IN_SECONDS":
+		s.StatementTimeoutInSeconds = Bool(true)
+	case "STORAGE_SERIALIZATION_POLICY":
+		s.StorageSerializationPolicy = Bool(true)
+	case "STRICT_JSON_OUTPUT":
+		s.StrictJsonOutput = Bool(true)
+	case "SUSPEND_TASK_AFTER_NUM_FAILURES":
+		s.SuspendTaskAfterNumFailures = Bool(true)
+	case "TASK_AUTO_RETRY_ATTEMPTS":
+		s.TaskAutoRetryAttempts = Bool(true)
+	case "TIME_INPUT_FORMAT":
+		s.TimeInputFormat = Bool(true)
+	case "TIME_OUTPUT_FORMAT":
+		s.TimeOutputFormat = Bool(true)
+	case "TIMESTAMP_DAY_IS_ALWAYS_24H":
+		s.TimestampDayIsAlways24H = Bool(true)
+	case "TIMESTAMP_INPUT_FORMAT":
+		s.TimestampInputFormat = Bool(true)
+	case "TIMESTAMP_LTZ_OUTPUT_FORMAT":
+		s.TimestampLtzOutputFormat = Bool(true)
+	case "TIMESTAMP_NTZ_OUTPUT_FORMAT":
+		s.TimestampNtzOutputFormat = Bool(true)
+	case "TIMESTAMP_OUTPUT_FORMAT":
+		s.TimestampOutputFormat = Bool(true)
+	case "TIMESTAMP_TYPE_MAPPING":
+		s.TimestampTypeMapping = Bool(true)
+	case "TIMESTAMP_TZ_OUTPUT_FORMAT":
+		s.TimestampTzOutputFormat = Bool(true)
+	case "TIMEZONE":
+		s.Timezone = Bool(true)
+	case "TRACE_LEVEL":
+		s.TraceLevel = Bool(true)
+	case "TRANSACTION_ABORT_ON_ERROR":
+		s.TransactionAbortOnError = Bool(true)
+	case "TRANSACTION_DEFAULT_ISOLATION_LEVEL":
+		s.TransactionDefaultIsolationLevel = Bool(true)
+	case "TWO_DIGIT_CENTURY_START":
+		s.TwoDigitCenturyStart = Bool(true)
+	case "UNSUPPORTED_DDL_ACTION":
+		s.UnsupportedDdlAction = Bool(true)
+	case "USE_CACHED_RESULT":
+		s.UseCachedResult = Bool(true)
+	case "USE_WORKSPACES_FOR_SQL":
+		s.UseWorkspacesForSql = Bool(true)
+	case "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE":
+		s.UserTaskManagedInitialWarehouseSize = Bool(true)
+	case "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS":
+		s.UserTaskMinimumTriggerIntervalInSeconds = Bool(true)
+	case "USER_TASK_TIMEOUT_MS":
+		s.UserTaskTimeoutMs = Bool(true)
+	case "WEEK_OF_YEAR_POLICY":
+		s.WeekOfYearPolicy = Bool(true)
+	case "WEEK_START":
+		s.WeekStart = Bool(true)
+	default:
+		return ErrParameterNotSupported
+	}
+	return nil
 }
 
 func NewAccountLevelParametersUnsetRequest() *AccountLevelParametersUnsetRequest {

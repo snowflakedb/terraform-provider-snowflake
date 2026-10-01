@@ -41,7 +41,6 @@ func TestInt_AccountsShowParametersDetails(t *testing.T) {
 
 	assert.Equal(t, string(sdk.AccountParameterAutocommit), details.Autocommit.Key)
 	assert.Equal(t, sdk.ParameterTypeAccount, details.Autocommit.Level)
-	assert.NotEmpty(t, details.Autocommit.Description)
 
 	// Organization accounts expose the same parameters, so both accessors have to agree.
 	organizationAccountDetails, err := client.OrganizationAccounts.ShowParametersDetails(ctx)

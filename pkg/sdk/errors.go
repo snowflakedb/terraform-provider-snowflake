@@ -41,7 +41,8 @@ var (
 	// or an unrelated error could accidentally match. Treat retries as best-effort.
 	ErrPostgresOperationMustBeComplete = errors.New("must be complete before issuing ALTER")
 
-	// ErrParameterNotSupported signals that a SetParameterFromRaw called on dto builder doesn't support the given parameter key.
+	// ErrParameterNotSupported signals that the given parameter is not natively supported in the SDK.
+	// It is distinct from a parse error, which means the parameter is supported but the value is invalid.
 	ErrParameterNotSupported = NewError("parameter not supported on this object")
 )
 

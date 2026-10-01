@@ -7,12 +7,10 @@ package gen
 //		...additional fields that are not present in the Field
 //	}
 type QueryStruct struct {
-	name         string
-	fields       []*Field
-	validations  []*Validation
-	sharedToOpts bool
-	// Recorded by WithParameters/WithParametersUnset. Presence drives writer generation; the contents
-	// scope the writers, since a parameter struct may also hold unrelated fields (e.g. Comment).
+	name            string
+	fields          []*Field
+	validations     []*Validation
+	sharedToOpts    bool
 	setParameters   []ParameterField
 	unsetParameters []ParameterField
 }

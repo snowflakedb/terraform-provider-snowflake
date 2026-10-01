@@ -14,8 +14,8 @@ const (
 	KindString = "string"
 )
 
-// KindInfo is the single source for converting a kind between its SQL string form and Go, shared by
-// both generated directions: ShowParametersDetails (read) and SetParameterFromRaw (write).
+// KindInfo is the single source for converting a kind between its SQL string form and Go, in both
+// directions.
 type KindInfo struct {
 	GoType      string
 	FieldType   string // differs from GoType only for StringAllowEmpty

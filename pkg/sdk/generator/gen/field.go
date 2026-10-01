@@ -32,8 +32,8 @@ type Field struct {
 	IsShared bool
 	// GenerateSharedToOpts marks that a standalone toOpts() method should be generated for this struct.
 	GenerateSharedToOpts bool
-	// SetParameters and UnsetParameters generate the SetParameterFromRaw/UnsetParameterFromRaw
-	// writers on this struct's Request type, scoped to these parameters.
+	// SetParameters and UnsetParameters are the parameters that can be set and unset through this
+	// struct.
 	SetParameters   []ParameterField
 	UnsetParameters []ParameterField
 }
