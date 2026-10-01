@@ -147,7 +147,8 @@ func (c *accounts) UnsetAllParameters(ctx context.Context) error {
 			WithCortexCodeDesktopDailyEstCreditLimitPerUser(true).
 			WithCortexCodeSnowsightDailyEstCreditLimitPerUser(true).
 			WithCortexEnabledCrossRegion(true).
-			WithCortexModelsAllowlist(true).
+			// UNSET reapplies the Snowflake default ALL, which is no longer accepted (SNOW-3953840).
+			// WithCortexModelsAllowlist(true).
 			WithCsvTimestampFormat(true).
 			WithDataMetricSchedule(true).
 			WithDataRetentionTimeInDays(true).
@@ -165,7 +166,6 @@ func (c *accounts) UnsetAllParameters(ctx context.Context) error {
 			WithDisallowedSpcsWorkloadTypes(true).
 			WithEnableAutomaticSensitiveDataClassificationLog(true).
 			WithEnableBudgetEventLogging(true).
-			WithEnableConsoleOutput(true).
 			WithEnableCortexAnalyst(true).
 			WithEnableDataCompaction(true).
 			WithEnableEgressCostOptimizer(true).
@@ -175,7 +175,6 @@ func (c *accounts) UnsetAllParameters(ctx context.Context) error {
 			WithEnableInternalStagesPrivatelink(true).
 			WithEnableNotebookCreationInPersonalDb(true).
 			WithEnablePerAccountAppServicePrivatelinkUrl(true).
-			WithEnablePersonalDatabase(true).
 			WithEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement(true).
 			WithEnableTagPropagationEventLogging(true).
 			WithEnableTriSecretAndRekeyOptOutForImageRepository(true).
@@ -215,7 +214,6 @@ func (c *accounts) UnsetAllParameters(ctx context.Context) error {
 			WithOdbcTreatDecimalAsInt(true).
 			WithPeriodicDataRekeying(true).
 			WithPipeExecutionPaused(true).
-			WithPreventLoadFromInlineUrl(true).
 			WithPreventUnloadToInlineUrl(true).
 			WithPreventUnloadToInternalStages(true).
 			WithPythonProfilerModules(true).
@@ -232,7 +230,6 @@ func (c *accounts) UnsetAllParameters(ctx context.Context) error {
 			WithSearchPath(true).
 			WithServerlessTaskMaxStatementSize(true).
 			WithServerlessTaskMinStatementSize(true).
-			WithShareRestrictions(true).
 			WithSimulatedDataSharingConsumer(true).
 			WithSqlTraceQueryText(true).
 			WithSsoLoginPage(true).

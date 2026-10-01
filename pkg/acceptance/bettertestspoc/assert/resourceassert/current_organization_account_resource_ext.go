@@ -8,8 +8,10 @@ import (
 func (c *CurrentOrganizationAccountResourceAssert) HasAllDefaultParameters() *CurrentOrganizationAccountResourceAssert {
 	return c.
 		HasAbortDetachedQueryString("false").
+		HasAllowBindValuesAccessString("true").
 		HasAllowClientMfaCachingString("false").
 		HasAllowIdTokenString("false").
+		HasAllowedSpcsWorkloadTypesString("ALL").
 		HasAutocommitString("true").
 		HasBaseLocationPrefixEmpty().
 		HasBinaryInputFormatString(string(sdk.BinaryInputFormatHex)).
@@ -30,18 +32,29 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllDefaultParameters() *Cu
 		HasCortexEnabledCrossRegionString("DISABLED").
 		HasCortexModelsAllowlistString("ALL").
 		HasCsvTimestampFormatEmpty().
+		HasDataMetricScheduleString("60 MINUTES").
 		HasDataRetentionTimeInDaysString("1").
 		HasDateInputFormatString("AUTO").
 		HasDateOutputFormatString("YYYY-MM-DD").
 		HasDefaultDdlCollationEmpty().
+		HasDefaultDbtVersionString("1.9.4").
 		HasDefaultNotebookComputePoolCpuString("SYSTEM_COMPUTE_POOL_CPU").
 		HasDefaultNotebookComputePoolGpuString("SYSTEM_COMPUTE_POOL_GPU").
 		HasDefaultNullOrderingString(string(sdk.DefaultNullOrderingLast)).
-		HasDefaultStreamlitNotebookWarehouseString("REGRESS").
+		HasDefaultStreamlitNotebookWarehouseString(sdk.NewAccountObjectIdentifier("REGRESS").FullyQualifiedName()).
 		HasDisableUiDownloadButtonString("false").
 		HasDisableUserPrivilegeGrantsString("false").
+		HasDisallowedSpcsWorkloadTypesEmpty().
 		HasEnableAutomaticSensitiveDataClassificationLogString("true").
+		HasEnableBudgetEventLoggingString("true").
+		HasEnableCortexAnalystString("false").
+		HasEnableDataCompactionString("true").
 		HasEnableEgressCostOptimizerString("true").
+		HasEnableGetDdlUseDataTypeAliasString("false").
+		HasEnableIcebergMergeOnReadString("true").
+		HasEnableNotebookCreationInPersonalDbString("false").
+		HasEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcementString("false").
+		HasEnableTagPropagationEventLoggingString("false").
 		HasEnableIdentifierFirstLoginString("true").
 		HasEnableTriSecretAndRekeyOptOutForImageRepositoryString("false").
 		HasEnableTriSecretAndRekeyOptOutForSpcsBlockStorageString("false").
@@ -52,12 +65,13 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllDefaultParameters() *Cu
 		HasEnforceNetworkRulesForInternalStagesString("false").
 		HasErrorOnNondeterministicMergeString("true").
 		HasErrorOnNondeterministicUpdateString("false").
-		HasEventTableString("snowflake.telemetry.events").
+		HasEventTableString(sdk.NewSchemaObjectIdentifier("snowflake", "telemetry", "events").FullyQualifiedName()).
 		HasExternalOauthAddPrivilegedRolesToBlockedListString("true").
 		HasExternalVolumeEmpty().
 		HasGeographyOutputFormatString(string(sdk.GeographyOutputFormatGeoJSON)).
 		HasGeometryOutputFormatString(string(sdk.GeometryOutputFormatGeoJSON)).
 		HasHybridTableLockTimeoutString("3600").
+		HasIcebergVersionDefaultString("2").
 		HasInitialReplicationSizeLimitInTbString("10.0").
 		HasJdbcTreatDecimalAsIntString("true").
 		HasJdbcTreatTimestampNtzAsUtcString("false").
@@ -84,14 +98,17 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllDefaultParameters() *Cu
 		HasPythonProfilerTargetStageEmpty().
 		HasQueryTagEmpty().
 		HasQuotedIdentifiersIgnoreCaseString("false").
+		HasReadConsistencyModeString("SESSION").
 		HasReplaceInvalidCharactersString("false").
 		HasRequireStorageIntegrationForStageCreationString("false").
 		HasRequireStorageIntegrationForStageOperationString("false").
+		HasRowTimestampDefaultString("false").
 		HasRowsPerResultsetString("0").
 		HasSearchPathString("$current, $public").
-		HasServerlessTaskMaxStatementSizeString("X2Large").
+		HasServerlessTaskMaxStatementSizeString(string(sdk.WarehouseSizeXXLarge)).
 		HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeXSmall)).
 		HasSsoLoginPageString("false").
+		HasSqlTraceQueryTextString("OFF").
 		HasStatementQueuedTimeoutInSecondsString("0").
 		HasStatementTimeoutInSecondsString("172800").
 		HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyOptimized)).
@@ -112,11 +129,12 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllDefaultParameters() *Cu
 		HasTransactionAbortOnErrorString("false").
 		HasTransactionDefaultIsolationLevelString(string(sdk.TransactionDefaultIsolationLevelReadCommitted)).
 		HasTwoDigitCenturyStartString("1970").
-		HasUnsupportedDdlActionString("ignore").
-		HasUserTaskManagedInitialWarehouseSizeString("Medium").
+		HasUnsupportedDdlActionString(string(sdk.UnsupportedDDLActionIgnore)).
+		HasUserTaskManagedInitialWarehouseSizeString(string(sdk.WarehouseSizeMedium)).
 		HasUserTaskMinimumTriggerIntervalInSecondsString("30").
 		HasUserTaskTimeoutMsString("3600000").
 		HasUseCachedResultString("true").
+		HasUseWorkspacesForSqlEmpty().
 		HasWeekOfYearPolicyString("0").
 		HasWeekStartString("0")
 }
@@ -124,13 +142,15 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllDefaultParameters() *Cu
 func (c *CurrentOrganizationAccountResourceAssert) HasAllParametersEqualToPredefinedValues(warehouseId sdk.AccountObjectIdentifier, eventTableId sdk.SchemaObjectIdentifier, externalVolumeId sdk.AccountObjectIdentifier, networkPolicyId sdk.AccountObjectIdentifier, stageId sdk.SchemaObjectIdentifier) *CurrentOrganizationAccountResourceAssert {
 	return c.
 		HasAbortDetachedQueryString("true").
+		HasAllowBindValuesAccessString("true").
 		HasAllowClientMfaCachingString("true").
 		HasAllowIdTokenString("true").
+		HasAllowedSpcsWorkloadTypesString("ALL").
 		HasAutocommitString("false").
 		HasBaseLocationPrefixString("STORAGE_BASE_URL/").
 		HasBinaryInputFormatString(string(sdk.BinaryInputFormatBase64)).
 		HasBinaryOutputFormatString(string(sdk.BinaryOutputFormatBase64)).
-		HasCatalogString(helpers.TestDatabaseCatalog.Name()).
+		HasCatalogString(helpers.TestDatabaseCatalog.FullyQualifiedName()).
 		HasClientEnableLogInfoStatementParametersString("true").
 		HasClientEncryptionKeySizeString("256").
 		HasClientMemoryLimitString("1540").
@@ -143,21 +163,33 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllParametersEqualToPredef
 		HasClientSessionKeepAliveHeartbeatFrequencyString("3599").
 		HasClientTimestampTypeMappingString(string(sdk.ClientTimestampTypeMappingNtz)).
 		HasCortexEnabledCrossRegionString("ANY_REGION").
-		HasCortexModelsAllowlistString("All").
+		HasCortexModelsAllowlistString("ALL").
 		HasCsvTimestampFormatString("YYYY-MM-DD").
+		HasDataMetricScheduleString("60 MINUTES").
 		HasDataRetentionTimeInDaysString("2").
 		HasDateInputFormatString("YYYY-MM-DD").
 		HasDateOutputFormatString("YYYY-MM-DD").
+		HasDefaultDbtVersionString("1.9.4").
 		HasDefaultDdlCollationString("en-cs").
 		HasDefaultNotebookComputePoolCpuString("CPU_X64_S").
 		HasDefaultNotebookComputePoolGpuString("GPU_NV_S").
 		HasDefaultNullOrderingString(string(sdk.DefaultNullOrderingFirst)).
-		HasDefaultStreamlitNotebookWarehouseString(warehouseId.Name()).
+		HasDefaultStreamlitComputePoolString("SYSTEM_COMPUTE_POOL_CPU").
+		HasDefaultStreamlitNotebookWarehouseString(warehouseId.FullyQualifiedName()).
 		HasDisableUiDownloadButtonString("true").
 		HasDisableUserPrivilegeGrantsString("true").
+		HasDisallowedSpcsWorkloadTypesEmpty().
 		HasEnableAutomaticSensitiveDataClassificationLogString("false").
+		HasEnableBudgetEventLoggingString("true").
+		HasEnableCortexAnalystString("false").
+		HasEnableDataCompactionString("true").
 		HasEnableEgressCostOptimizerString("false").
+		HasEnableGetDdlUseDataTypeAliasString("false").
+		HasEnableIcebergMergeOnReadString("true").
 		HasEnableIdentifierFirstLoginString("false").
+		HasEnableNotebookCreationInPersonalDbString("false").
+		HasEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcementString("false").
+		HasEnableTagPropagationEventLoggingString("false").
 		HasEnableTriSecretAndRekeyOptOutForImageRepositoryString("true").
 		HasEnableTriSecretAndRekeyOptOutForSpcsBlockStorageString("true").
 		HasEnableUnhandledExceptionsReportingString("false").
@@ -169,10 +201,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllParametersEqualToPredef
 		HasErrorOnNondeterministicUpdateString("true").
 		HasEventTableString(eventTableId.FullyQualifiedName()).
 		HasExternalOauthAddPrivilegedRolesToBlockedListString("false").
-		HasExternalVolumeString(externalVolumeId.Name()).
+		HasExternalVolumeString(externalVolumeId.FullyQualifiedName()).
 		HasGeographyOutputFormatString(string(sdk.GeographyOutputFormatWKT)).
 		HasGeometryOutputFormatString(string(sdk.GeometryOutputFormatWKT)).
 		HasHybridTableLockTimeoutString("3599").
+		HasIcebergVersionDefaultString("2").
 		HasInitialReplicationSizeLimitInTbString("9.9").
 		HasJdbcTreatDecimalAsIntString("false").
 		HasJdbcTreatTimestampNtzAsUtcString("true").
@@ -188,7 +221,7 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllParametersEqualToPredef
 		HasMetricLevelString(string(sdk.MetricLevelAll)).
 		HasMinDataRetentionTimeInDaysString("1").
 		HasMultiStatementCountString("0").
-		HasNetworkPolicyString(networkPolicyId.Name()).
+		HasNetworkPolicyString(networkPolicyId.FullyQualifiedName()).
 		HasNoorderSequenceAsDefaultString("false").
 		HasOauthAddPrivilegedRolesToBlockedListString("false").
 		HasOdbcTreatDecimalAsIntString("true").
@@ -199,14 +232,17 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllParametersEqualToPredef
 		HasPythonProfilerTargetStageString(stageId.FullyQualifiedName()).
 		HasQueryTagString("test-query-tag").
 		HasQuotedIdentifiersIgnoreCaseString("true").
+		HasReadConsistencyModeString("SESSION").
 		HasReplaceInvalidCharactersString("true").
 		HasRequireStorageIntegrationForStageCreationString("true").
 		HasRequireStorageIntegrationForStageOperationString("true").
+		HasRowTimestampDefaultString("false").
 		HasRowsPerResultsetString("1000").
 		HasSearchPathString("$current, $public").
 		HasServerlessTaskMaxStatementSizeString(string(sdk.WarehouseSizeXLarge)).
 		HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeSmall)).
 		HasSsoLoginPageString("true").
+		HasSqlTraceQueryTextString("OFF").
 		HasStatementQueuedTimeoutInSecondsString("1").
 		HasStatementTimeoutInSecondsString("10").
 		HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyOptimized)).
@@ -232,6 +268,7 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllParametersEqualToPredef
 		HasUserTaskMinimumTriggerIntervalInSecondsString("10").
 		HasUserTaskTimeoutMsString("10").
 		HasUseCachedResultString("false").
+		HasUseWorkspacesForSqlString("unset").
 		HasWeekOfYearPolicyString("1").
 		HasWeekStartString("1")
 }

@@ -7,8 +7,10 @@ import (
 
 func (c *CurrentOrganizationAccountModel) WithAllParametersSetToPredefinedValues(warehouseId sdk.AccountObjectIdentifier, eventTableId sdk.SchemaObjectIdentifier, externalVolumeId sdk.AccountObjectIdentifier, networkPolicyId sdk.AccountObjectIdentifier, stageId sdk.SchemaObjectIdentifier) *CurrentOrganizationAccountModel {
 	return c.WithAbortDetachedQuery(true).
+		WithAllowBindValuesAccess(true).
 		WithAllowClientMfaCaching(true).
 		WithAllowIdToken(true).
+		WithAllowedSpcsWorkloadTypes("ALL").
 		WithAutocommit(false).
 		WithBaseLocationPrefix("STORAGE_BASE_URL/").
 		WithBinaryInputFormat(string(sdk.BinaryInputFormatBase64)).
@@ -26,21 +28,32 @@ func (c *CurrentOrganizationAccountModel) WithAllParametersSetToPredefinedValues
 		WithClientSessionKeepAliveHeartbeatFrequency(3599).
 		WithClientTimestampTypeMapping(string(sdk.ClientTimestampTypeMappingNtz)).
 		WithCortexEnabledCrossRegion("ANY_REGION").
-		WithCortexModelsAllowlist("All").
 		WithCsvTimestampFormat("YYYY-MM-DD").
+		WithDataMetricSchedule("60 MINUTES").
 		WithDataRetentionTimeInDays(2).
 		WithDateInputFormat("YYYY-MM-DD").
 		WithDateOutputFormat("YYYY-MM-DD").
+		WithDefaultDbtVersion("1.9.4").
 		WithDefaultDdlCollation("en-cs").
 		WithDefaultNotebookComputePoolCpu("CPU_X64_S").
 		WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 		WithDefaultNullOrdering(string(sdk.DefaultNullOrderingFirst)).
+		WithDefaultStreamlitComputePool("SYSTEM_COMPUTE_POOL_CPU").
 		WithDefaultStreamlitNotebookWarehouse(warehouseId.Name()).
 		WithDisableUiDownloadButton(true).
 		WithDisableUserPrivilegeGrants(true).
+		WithDisallowedSpcsWorkloadTypes("").
 		WithEnableAutomaticSensitiveDataClassificationLog(false).
+		WithEnableBudgetEventLogging(true).
+		WithEnableCortexAnalyst(false).
+		WithEnableDataCompaction(true).
 		WithEnableEgressCostOptimizer(false).
+		WithEnableGetDdlUseDataTypeAlias(false).
+		WithEnableIcebergMergeOnRead(true).
 		WithEnableIdentifierFirstLogin(false).
+		WithEnableNotebookCreationInPersonalDb(false).
+		WithEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement(false).
+		WithEnableTagPropagationEventLogging(false).
 		WithEnableTriSecretAndRekeyOptOutForImageRepository(true).
 		WithEnableTriSecretAndRekeyOptOutForSpcsBlockStorage(true).
 		WithEnableUnhandledExceptionsReporting(false).
@@ -56,6 +69,7 @@ func (c *CurrentOrganizationAccountModel) WithAllParametersSetToPredefinedValues
 		WithGeographyOutputFormat(string(sdk.GeographyOutputFormatWKT)).
 		WithGeometryOutputFormat(string(sdk.GeometryOutputFormatWKT)).
 		WithHybridTableLockTimeout(3599).
+		WithIcebergVersionDefault(2).
 		WithInitialReplicationSizeLimitInTb("9.9").
 		WithJdbcTreatDecimalAsInt(false).
 		WithJdbcTreatTimestampNtzAsUtc(true).
@@ -82,14 +96,17 @@ func (c *CurrentOrganizationAccountModel) WithAllParametersSetToPredefinedValues
 		WithPythonProfilerTargetStage(stageId.FullyQualifiedName()).
 		WithQueryTag("test-query-tag").
 		WithQuotedIdentifiersIgnoreCase(true).
+		WithReadConsistencyMode("SESSION").
 		WithReplaceInvalidCharacters(true).
 		WithRequireStorageIntegrationForStageCreation(true).
 		WithRequireStorageIntegrationForStageOperation(true).
+		WithRowTimestampDefault(false).
 		WithRowsPerResultset(1000).
 		WithSearchPath("$current, $public").
 		WithServerlessTaskMaxStatementSize(string(sdk.WarehouseSizeXLarge)).
 		WithServerlessTaskMinStatementSize(string(sdk.WarehouseSizeSmall)).
 		WithSsoLoginPage(true).
+		WithSqlTraceQueryText("OFF").
 		WithStatementQueuedTimeoutInSeconds(1).
 		WithStatementTimeoutInSeconds(10).
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyOptimized)).
@@ -115,6 +132,7 @@ func (c *CurrentOrganizationAccountModel) WithAllParametersSetToPredefinedValues
 		WithUserTaskMinimumTriggerIntervalInSeconds(10).
 		WithUserTaskTimeoutMs(10).
 		WithUseCachedResult(false).
+		WithUseWorkspacesForSql("unset").
 		WithWeekOfYearPolicy(1).
 		WithWeekStart(1)
 }

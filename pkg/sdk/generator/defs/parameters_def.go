@@ -33,9 +33,10 @@ var (
 		Description: "Sets the profiler to use for the session when [profiling Python handler code](https://docs.snowflake.com/en/developer-guide/stored-procedure/python/procedure-python-profiler).",
 	}
 	AllowBindValuesAccess = parameterdefs.ParameterDef{
-		SqlName: "ALLOW_BIND_VALUES_ACCESS",
-		Kind:    g.KindBool,
-		Levels:  onAccount,
+		SqlName:     "ALLOW_BIND_VALUES_ACCESS",
+		Kind:        g.KindBool,
+		Levels:      onAccount,
+		Description: "Used to allow clients to access bind variable values.",
 	}
 	AllowClientMfaCaching = parameterdefs.ParameterDef{
 		SqlName:     "ALLOW_CLIENT_MFA_CACHING",
@@ -50,9 +51,10 @@ var (
 		Description: "Specifies whether a connection token can be saved in the client-side operating system keystore to promote continuous, secure connectivity without users needing to enter login credentials at the start of each connection attempt to Snowflake. For details and the list of supported Snowflake-provided clients, see [Using connection caching to minimize the number of prompts for authentication — optional.](https://docs.snowflake.com/en/user-guide/admin-security-fed-auth-use.html#label-browser-based-sso-connection-caching)",
 	}
 	AllowedSpcsWorkloadTypes = parameterdefs.ParameterDef{
-		SqlName: "ALLOWED_SPCS_WORKLOAD_TYPES",
-		Kind:    g.KindString,
-		Levels:  onAccount,
+		SqlName:     "ALLOWED_SPCS_WORKLOAD_TYPES",
+		Kind:        g.KindString,
+		Levels:      onAccount,
+		Description: "Used to specify the workload types that are allowed in your account to deploy to Snowpark Container Services.",
 	}
 	Autocommit = parameterdefs.ParameterDef{
 		SqlName:     "AUTOCOMMIT",
@@ -91,9 +93,10 @@ var (
 		Description: "Specifies the name of your catalog integration for [Snowflake Open Catalog](https://other-docs.snowflake.com/en/opencatalog/overview). Snowflake syncs tables that use the specified catalog integration with your Snowflake Open Catalog account. For more information, see [Sync a Snowflake-managed table with Snowflake Open Catalog](https://docs.snowflake.com/en/user-guide/tables-iceberg-open-catalog-sync).",
 	}
 	ClientEnableLogInfoStatementParameters = parameterdefs.ParameterDef{
-		SqlName: "CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS",
-		Kind:    g.KindBool,
-		Levels:  onAccount,
+		SqlName:     "CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS",
+		Kind:        g.KindBool,
+		Levels:      onAccount,
+		Description: "Enables users to log the data values bound to [PreparedStatements](https://docs.snowflake.com/en/developer-guide/jdbc/jdbc-api.html#label-jdbc-api-preparedstatement).",
 	}
 	ClientEncryptionKeySize = parameterdefs.ParameterDef{
 		SqlName:     "CLIENT_ENCRYPTION_KEY_SIZE",
@@ -192,9 +195,10 @@ var (
 		Description: "Specifies the format for TIMESTAMP values in CSV files downloaded from Snowsight. If this parameter is not set, [TIMESTAMP_LTZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-ltz-output-format) will be used for TIMESTAMP_LTZ values, [TIMESTAMP_TZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-tz-output-format) will be used for TIMESTAMP_TZ and [TIMESTAMP_NTZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-ntz-output-format) for TIMESTAMP_NTZ values. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output) or [Download your query results](https://docs.snowflake.com/en/user-guide/ui-snowsight-query.html#label-snowsight-download-query-results).",
 	}
 	DataMetricSchedule = parameterdefs.ParameterDef{
-		SqlName: "DATA_METRIC_SCHEDULE",
-		Kind:    g.KindString,
-		Levels:  onAccount,
+		SqlName:     "DATA_METRIC_SCHEDULE",
+		Kind:        g.KindString,
+		Levels:      onAccount,
+		Description: "Specifies the schedule to run the data metric functions associated to the table. All data metric functions on the table or view follow the same schedule.",
 	}
 	DataRetentionTimeInDays = parameterdefs.ParameterDef{
 		SqlName:     "DATA_RETENTION_TIME_IN_DAYS",
@@ -215,9 +219,10 @@ var (
 		Description: "Specifies the display format for the DATE data type. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output).",
 	}
 	DefaultDbtVersion = parameterdefs.ParameterDef{
-		SqlName: "DEFAULT_DBT_VERSION",
-		Kind:    g.KindString,
-		Levels:  onAccount,
+		SqlName:     "DEFAULT_DBT_VERSION",
+		Kind:        g.KindString,
+		Levels:      onAccount,
+		Description: "Used to set the default version for all future dbt project objects created in an account.",
 	}
 	DefaultDdlCollation = parameterdefs.ParameterDef{
 		SqlName:     "DEFAULT_DDL_COLLATION",
@@ -268,9 +273,10 @@ var (
 		Description: "Controls whether users in an account can grant privileges directly to other users. Disabling user privilege grants (that is, setting DISABLE_USER_PRIVILEGE_GRANTS to TRUE) does not affect existing grants to users. Existing grants to users continue to confer privileges to those users. For more information, see [GRANT <privileges> … TO USER](https://docs.snowflake.com/en/sql-reference/sql/grant-privilege-user).",
 	}
 	DisallowedSpcsWorkloadTypes = parameterdefs.ParameterDef{
-		SqlName: "DISALLOWED_SPCS_WORKLOAD_TYPES",
-		Kind:    g.KindString,
-		Levels:  onAccount,
+		SqlName:     "DISALLOWED_SPCS_WORKLOAD_TYPES",
+		Kind:        g.KindString,
+		Levels:      onAccount,
+		Description: "Used to specify the workload types that are disallowed in your account to deploy to Snowpark Container Services.",
 	}
 	EnableAutomaticSensitiveDataClassificationLog = parameterdefs.ParameterDef{
 		SqlName:     "ENABLE_AUTOMATIC_SENSITIVE_DATA_CLASSIFICATION_LOG",
@@ -279,9 +285,10 @@ var (
 		Description: "Controls whether events from [automatic sensitive data classification](https://docs.snowflake.com/en/user-guide/classify-auto) are logged in the user event table.",
 	}
 	EnableBudgetEventLogging = parameterdefs.ParameterDef{
-		SqlName: "ENABLE_BUDGET_EVENT_LOGGING",
-		Kind:    g.KindBool,
-		Levels:  onAccount,
+		SqlName:     "ENABLE_BUDGET_EVENT_LOGGING",
+		Kind:        g.KindBool,
+		Levels:      onAccount,
+		Description: "Controls whether events from budgets are logged to the event table.",
 	}
 	EnableConsoleOutput = parameterdefs.ParameterDef{
 		SqlName:     "ENABLE_CONSOLE_OUTPUT",
@@ -290,14 +297,16 @@ var (
 		Description: "If true, enables stdout/stderr fast path logging for anonymous stored procedures.",
 	}
 	EnableCortexAnalyst = parameterdefs.ParameterDef{
-		SqlName: "ENABLE_CORTEX_ANALYST",
-		Kind:    g.KindBool,
-		Levels:  onAccount,
+		SqlName:     "ENABLE_CORTEX_ANALYST",
+		Kind:        g.KindBool,
+		Levels:      onAccount,
+		Description: "Controls whether Cortex Analyst is enabled for the account.",
 	}
 	EnableDataCompaction = parameterdefs.ParameterDef{
-		SqlName: "ENABLE_DATA_COMPACTION",
-		Kind:    g.KindBool,
-		Levels:  onAccount,
+		SqlName:     "ENABLE_DATA_COMPACTION",
+		Kind:        g.KindBool,
+		Levels:      onAccount,
+		Description: "Specifies whether Snowflake should enable data compaction on Snowflake-managed Apache Iceberg™ tables.",
 	}
 	EnableEgressCostOptimizer = parameterdefs.ParameterDef{
 		SqlName:     "ENABLE_EGRESS_COST_OPTIMIZER",
@@ -306,14 +315,16 @@ var (
 		Description: "Enables or disables the Listing Cross-cloud auto-fulfillment Egress cost optimizer.",
 	}
 	EnableGetDdlUseDataTypeAlias = parameterdefs.ParameterDef{
-		SqlName: "ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS",
-		Kind:    g.KindBool,
-		Levels:  onAccount,
+		SqlName:     "ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS",
+		Kind:        g.KindBool,
+		Levels:      onAccount,
+		Description: "Specifies whether the output returned by the GET_DDL function contains data type synonyms specified in the original DDL statement. Data type synonyms are also called data type aliases.",
 	}
 	EnableIcebergMergeOnRead = parameterdefs.ParameterDef{
-		SqlName: "ENABLE_ICEBERG_MERGE_ON_READ",
-		Kind:    g.KindBool,
-		Levels:  onAccount,
+		SqlName:     "ENABLE_ICEBERG_MERGE_ON_READ",
+		Kind:        g.KindBool,
+		Levels:      onAccount,
+		Description: "Specifies whether to enable merge-on-read behavior for Snowflake-managed Apache Iceberg™ tables.",
 	}
 	EnableIdentifierFirstLogin = parameterdefs.ParameterDef{
 		SqlName:     "ENABLE_IDENTIFIER_FIRST_LOGIN",
@@ -328,9 +339,10 @@ var (
 		Description: "Specifies whether the [SYSTEM$GET_PRIVATELINK_CONFIG](https://docs.snowflake.com/en/sql-reference/functions/system_get_privatelink_config) function returns the private-internal-stages key in the query result. The corresponding value in the query result is used during the configuration process for private connectivity to internal stages.",
 	}
 	EnableNotebookCreationInPersonalDb = parameterdefs.ParameterDef{
-		SqlName: "ENABLE_NOTEBOOK_CREATION_IN_PERSONAL_DB",
-		Kind:    g.KindBool,
-		Levels:  onAccount,
+		SqlName:     "ENABLE_NOTEBOOK_CREATION_IN_PERSONAL_DB",
+		Kind:        g.KindBool,
+		Levels:      onAccount,
+		Description: "Used to enable or disable private notebooks on a Snowflake account.",
 	}
 	EnablePerAccountAppServicePrivatelinkUrl = parameterdefs.ParameterDef{
 		SqlName:     "ENABLE_PER_ACCOUNT_APP_SERVICE_PRIVATELINK_URL",
@@ -344,14 +356,16 @@ var (
 		Levels:  onAccountExt,
 	}
 	EnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement = parameterdefs.ParameterDef{
-		SqlName: "ENABLE_SPCS_BLOCK_STORAGE_SNOWFLAKE_FULL_ENCRYPTION_ENFORCEMENT",
-		Kind:    g.KindBool,
-		Levels:  onAccount,
+		SqlName:     "ENABLE_SPCS_BLOCK_STORAGE_SNOWFLAKE_FULL_ENCRYPTION_ENFORCEMENT",
+		Kind:        g.KindBool,
+		Levels:      onAccount,
+		Description: "Used to enable enforcement of SNOWFLAKE_FULL encryption for Snowpark Container Services block-storage volumes and snapshots.",
 	}
 	EnableTagPropagationEventLogging = parameterdefs.ParameterDef{
-		SqlName: "ENABLE_TAG_PROPAGATION_EVENT_LOGGING",
-		Kind:    g.KindBool,
-		Levels:  onAccount,
+		SqlName:     "ENABLE_TAG_PROPAGATION_EVENT_LOGGING",
+		Kind:        g.KindBool,
+		Levels:      onAccount,
+		Description: "Controls whether Snowflake collects telemetry data for tag propagation.",
 	}
 	EnableTriSecretAndRekeyOptOutForImageRepository = parameterdefs.ParameterDef{
 		SqlName:     "ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_IMAGE_REPOSITORY",
@@ -444,9 +458,10 @@ var (
 		Description: "Number of seconds to wait while trying to acquire row-level locks on a hybrid table, before timing out and aborting the statement.",
 	}
 	IcebergVersionDefault = parameterdefs.ParameterDef{
-		SqlName: "ICEBERG_VERSION_DEFAULT",
-		Kind:    g.KindInt,
-		Levels:  onAccount,
+		SqlName:     "ICEBERG_VERSION_DEFAULT",
+		Kind:        g.KindInt,
+		Levels:      onAccount,
+		Description: "Specifies the Iceberg specification version to conform to when creating new Snowflake-managed Iceberg tables.",
 	}
 	InitialReplicationSizeLimitInTb = parameterdefs.ParameterDef{
 		SqlName:     "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB",
@@ -616,9 +631,10 @@ var (
 		Description: "If true, the case of quoted identifiers is ignored.",
 	}
 	ReadConsistencyMode = parameterdefs.ParameterDef{
-		SqlName: "READ_CONSISTENCY_MODE",
-		Kind:    g.KindString,
-		Levels:  onAccount,
+		SqlName:     "READ_CONSISTENCY_MODE",
+		Kind:        g.KindString,
+		Levels:      onAccount,
+		Description: "Defines the level of consistency guarantees that are required for sessions with near-concurrent changes.",
 	}
 	ReplaceInvalidCharacters = parameterdefs.ParameterDef{
 		SqlName:     "REPLACE_INVALID_CHARACTERS",
@@ -639,9 +655,10 @@ var (
 		Description: "Specifies whether to require using a named external stage that references a storage integration object as cloud credentials when loading data from or unloading data to a private cloud storage location.",
 	}
 	RowTimestampDefault = parameterdefs.ParameterDef{
-		SqlName: "ROW_TIMESTAMP_DEFAULT",
-		Kind:    g.KindBool,
-		Levels:  onAccount,
+		SqlName:     "ROW_TIMESTAMP_DEFAULT",
+		Kind:        g.KindBool,
+		Levels:      onAccount,
+		Description: "Use this parameter to set row timestamps by default for new tables in a container.",
 	}
 	RowsPerResultset = parameterdefs.ParameterDef{
 		SqlName:     "ROWS_PER_RESULTSET",
@@ -685,9 +702,10 @@ var (
 		Description: "Specifies the name of a consumer account to simulate for testing/validating shared data, particularly shared secure views. When this parameter is set in a session, shared views return rows as if executed in the specified consumer account rather than the provider account.",
 	}
 	SqlTraceQueryText = parameterdefs.ParameterDef{
-		SqlName: "SQL_TRACE_QUERY_TEXT",
-		Kind:    g.KindString,
-		Levels:  onAccount,
+		SqlName:     "SQL_TRACE_QUERY_TEXT",
+		Kind:        g.KindString,
+		Levels:      onAccount,
+		Description: "Used to specify whether to capture the SQL text of a traced SQL statement.",
 	}
 	SsoLoginPage = parameterdefs.ParameterDef{
 		SqlName:     "SSO_LOGIN_PAGE",
@@ -828,9 +846,10 @@ var (
 		Description: "Specifies whether to reuse persisted query results, if available, when a matching query is submitted.",
 	}
 	UseWorkspacesForSql = parameterdefs.ParameterDef{
-		SqlName: "USE_WORKSPACES_FOR_SQL",
-		Kind:    g.KindString,
-		Levels:  onAccount,
+		SqlName:     "USE_WORKSPACES_FOR_SQL",
+		Kind:        g.KindString,
+		Levels:      onAccount,
+		Description: "Controls whether the Workspaces editor is the default SQL editing experience for the account. Valid values are `always` and `never`.",
 	}
 	UserTaskManagedInitialWarehouseSize = parameterdefs.ParameterDef{
 		SqlName:     "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE",

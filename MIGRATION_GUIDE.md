@@ -58,6 +58,33 @@ on:
 
 No configuration changes are required. Existing values remain valid.
 
+### *(new feature)* New account parameters in `snowflake_current_account` and `snowflake_current_organization_account`
+
+The [`snowflake_current_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_account) and [`snowflake_current_organization_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_organization_account) resources now expose the following account parameters:
+
+- `allow_bind_values_access`
+- `allowed_spcs_workload_types`
+- `data_metric_schedule`
+- `default_dbt_version`
+- `disallowed_spcs_workload_types`
+- `enable_budget_event_logging`
+- `enable_cortex_analyst`
+- `enable_data_compaction`
+- `enable_get_ddl_use_data_type_alias`
+- `enable_iceberg_merge_on_read`
+- `enable_notebook_creation_in_personal_db`
+- `enable_spcs_block_storage_snowflake_full_encryption_enforcement`
+- `enable_tag_propagation_event_logging`
+- `iceberg_version_default`
+- `read_consistency_mode`
+- `row_timestamp_default`
+- `sql_trace_query_text`
+- `use_workspaces_for_sql`
+
+The resources now derive their parameter fields, descriptions, and types from the shared parameter catalog. Existing parameter validation is preserved, with identifier validation added for `python_profiler_target_stage`. Identifier values are stored in fully qualified quoted form, and enum values use the SDK's canonical casing. Existing case-insensitive and identifier diff suppression prevents configuration-only differences from producing updates.
+
+No action is required; these are non-breaking additions.
+
 ### *(new feature)* New schema parameters in `snowflake_schema` and `snowflake_schemas`
 
 The `parameters` output of the [`snowflake_schema`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/schema) resource and the [`snowflake_schemas`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/schemas) data source now exposes:

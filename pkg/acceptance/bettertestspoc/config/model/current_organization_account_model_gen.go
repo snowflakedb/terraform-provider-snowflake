@@ -11,133 +11,151 @@ import (
 )
 
 type CurrentOrganizationAccountModel struct {
-	Name                                             tfconfig.Variable `json:"name,omitempty"`
-	AbortDetachedQuery                               tfconfig.Variable `json:"abort_detached_query,omitempty"`
-	ActivePythonProfiler                             tfconfig.Variable `json:"active_python_profiler,omitempty"`
-	AllowClientMfaCaching                            tfconfig.Variable `json:"allow_client_mfa_caching,omitempty"`
-	AllowIdToken                                     tfconfig.Variable `json:"allow_id_token,omitempty"`
-	Autocommit                                       tfconfig.Variable `json:"autocommit,omitempty"`
-	BaseLocationPrefix                               tfconfig.Variable `json:"base_location_prefix,omitempty"`
-	BinaryInputFormat                                tfconfig.Variable `json:"binary_input_format,omitempty"`
-	BinaryOutputFormat                               tfconfig.Variable `json:"binary_output_format,omitempty"`
-	Catalog                                          tfconfig.Variable `json:"catalog,omitempty"`
-	CatalogSync                                      tfconfig.Variable `json:"catalog_sync,omitempty"`
-	ClientEnableLogInfoStatementParameters           tfconfig.Variable `json:"client_enable_log_info_statement_parameters,omitempty"`
-	ClientEncryptionKeySize                          tfconfig.Variable `json:"client_encryption_key_size,omitempty"`
-	ClientMemoryLimit                                tfconfig.Variable `json:"client_memory_limit,omitempty"`
-	ClientMetadataRequestUseConnectionCtx            tfconfig.Variable `json:"client_metadata_request_use_connection_ctx,omitempty"`
-	ClientMetadataUseSessionDatabase                 tfconfig.Variable `json:"client_metadata_use_session_database,omitempty"`
-	ClientPrefetchThreads                            tfconfig.Variable `json:"client_prefetch_threads,omitempty"`
-	ClientResultChunkSize                            tfconfig.Variable `json:"client_result_chunk_size,omitempty"`
-	ClientResultColumnCaseInsensitive                tfconfig.Variable `json:"client_result_column_case_insensitive,omitempty"`
-	ClientSessionKeepAlive                           tfconfig.Variable `json:"client_session_keep_alive,omitempty"`
-	ClientSessionKeepAliveHeartbeatFrequency         tfconfig.Variable `json:"client_session_keep_alive_heartbeat_frequency,omitempty"`
-	ClientTimestampTypeMapping                       tfconfig.Variable `json:"client_timestamp_type_mapping,omitempty"`
-	Comment                                          tfconfig.Variable `json:"comment,omitempty"`
-	CortexCodeCliDailyEstCreditLimitPerUser          tfconfig.Variable `json:"cortex_code_cli_daily_est_credit_limit_per_user,omitempty"`
-	CortexCodeDesktopDailyEstCreditLimitPerUser      tfconfig.Variable `json:"cortex_code_desktop_daily_est_credit_limit_per_user,omitempty"`
-	CortexCodeSnowsightDailyEstCreditLimitPerUser    tfconfig.Variable `json:"cortex_code_snowsight_daily_est_credit_limit_per_user,omitempty"`
-	CortexEnabledCrossRegion                         tfconfig.Variable `json:"cortex_enabled_cross_region,omitempty"`
-	CortexModelsAllowlist                            tfconfig.Variable `json:"cortex_models_allowlist,omitempty"`
-	CsvTimestampFormat                               tfconfig.Variable `json:"csv_timestamp_format,omitempty"`
-	DataRetentionTimeInDays                          tfconfig.Variable `json:"data_retention_time_in_days,omitempty"`
-	DateInputFormat                                  tfconfig.Variable `json:"date_input_format,omitempty"`
-	DateOutputFormat                                 tfconfig.Variable `json:"date_output_format,omitempty"`
-	DefaultDdlCollation                              tfconfig.Variable `json:"default_ddl_collation,omitempty"`
-	DefaultNotebookComputePoolCpu                    tfconfig.Variable `json:"default_notebook_compute_pool_cpu,omitempty"`
-	DefaultNotebookComputePoolGpu                    tfconfig.Variable `json:"default_notebook_compute_pool_gpu,omitempty"`
-	DefaultNullOrdering                              tfconfig.Variable `json:"default_null_ordering,omitempty"`
-	DefaultStreamlitComputePool                      tfconfig.Variable `json:"default_streamlit_compute_pool,omitempty"`
-	DefaultStreamlitNotebookWarehouse                tfconfig.Variable `json:"default_streamlit_notebook_warehouse,omitempty"`
-	DisableUiDownloadButton                          tfconfig.Variable `json:"disable_ui_download_button,omitempty"`
-	DisableUserPrivilegeGrants                       tfconfig.Variable `json:"disable_user_privilege_grants,omitempty"`
-	EnableAutomaticSensitiveDataClassificationLog    tfconfig.Variable `json:"enable_automatic_sensitive_data_classification_log,omitempty"`
-	EnableEgressCostOptimizer                        tfconfig.Variable `json:"enable_egress_cost_optimizer,omitempty"`
-	EnableIdentifierFirstLogin                       tfconfig.Variable `json:"enable_identifier_first_login,omitempty"`
-	EnableInternalStagesPrivatelink                  tfconfig.Variable `json:"enable_internal_stages_privatelink,omitempty"`
-	EnablePerAccountAppServicePrivatelinkUrl         tfconfig.Variable `json:"enable_per_account_app_service_privatelink_url,omitempty"`
-	EnableTriSecretAndRekeyOptOutForImageRepository  tfconfig.Variable `json:"enable_tri_secret_and_rekey_opt_out_for_image_repository,omitempty"`
-	EnableTriSecretAndRekeyOptOutForSpcsBlockStorage tfconfig.Variable `json:"enable_tri_secret_and_rekey_opt_out_for_spcs_block_storage,omitempty"`
-	EnableUnhandledExceptionsReporting               tfconfig.Variable `json:"enable_unhandled_exceptions_reporting,omitempty"`
-	EnableUnloadPhysicalTypeOptimization             tfconfig.Variable `json:"enable_unload_physical_type_optimization,omitempty"`
-	EnableUnredactedQuerySyntaxError                 tfconfig.Variable `json:"enable_unredacted_query_syntax_error,omitempty"`
-	EnableUnredactedSecureObjectError                tfconfig.Variable `json:"enable_unredacted_secure_object_error,omitempty"`
-	EnforceNetworkRulesForInternalStages             tfconfig.Variable `json:"enforce_network_rules_for_internal_stages,omitempty"`
-	ErrorOnNondeterministicMerge                     tfconfig.Variable `json:"error_on_nondeterministic_merge,omitempty"`
-	ErrorOnNondeterministicUpdate                    tfconfig.Variable `json:"error_on_nondeterministic_update,omitempty"`
-	EventTable                                       tfconfig.Variable `json:"event_table,omitempty"`
-	ExternalOauthAddPrivilegedRolesToBlockedList     tfconfig.Variable `json:"external_oauth_add_privileged_roles_to_blocked_list,omitempty"`
-	ExternalVolume                                   tfconfig.Variable `json:"external_volume,omitempty"`
-	GeographyOutputFormat                            tfconfig.Variable `json:"geography_output_format,omitempty"`
-	GeometryOutputFormat                             tfconfig.Variable `json:"geometry_output_format,omitempty"`
-	HybridTableLockTimeout                           tfconfig.Variable `json:"hybrid_table_lock_timeout,omitempty"`
-	InitialReplicationSizeLimitInTb                  tfconfig.Variable `json:"initial_replication_size_limit_in_tb,omitempty"`
-	JdbcTreatDecimalAsInt                            tfconfig.Variable `json:"jdbc_treat_decimal_as_int,omitempty"`
-	JdbcTreatTimestampNtzAsUtc                       tfconfig.Variable `json:"jdbc_treat_timestamp_ntz_as_utc,omitempty"`
-	JdbcUseSessionTimezone                           tfconfig.Variable `json:"jdbc_use_session_timezone,omitempty"`
-	JsTreatIntegerAsBigint                           tfconfig.Variable `json:"js_treat_integer_as_bigint,omitempty"`
-	JsonIndent                                       tfconfig.Variable `json:"json_indent,omitempty"`
-	ListingAutoFulfillmentReplicationRefreshSchedule tfconfig.Variable `json:"listing_auto_fulfillment_replication_refresh_schedule,omitempty"`
-	LockTimeout                                      tfconfig.Variable `json:"lock_timeout,omitempty"`
-	LogEventLevel                                    tfconfig.Variable `json:"log_event_level,omitempty"`
-	LogLevel                                         tfconfig.Variable `json:"log_level,omitempty"`
-	MaxConcurrencyLevel                              tfconfig.Variable `json:"max_concurrency_level,omitempty"`
-	MaxDataExtensionTimeInDays                       tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
-	MetricLevel                                      tfconfig.Variable `json:"metric_level,omitempty"`
-	MinDataRetentionTimeInDays                       tfconfig.Variable `json:"min_data_retention_time_in_days,omitempty"`
-	MultiStatementCount                              tfconfig.Variable `json:"multi_statement_count,omitempty"`
-	NetworkPolicy                                    tfconfig.Variable `json:"network_policy,omitempty"`
-	NoorderSequenceAsDefault                         tfconfig.Variable `json:"noorder_sequence_as_default,omitempty"`
-	OauthAddPrivilegedRolesToBlockedList             tfconfig.Variable `json:"oauth_add_privileged_roles_to_blocked_list,omitempty"`
-	OdbcTreatDecimalAsInt                            tfconfig.Variable `json:"odbc_treat_decimal_as_int,omitempty"`
-	PasswordPolicy                                   tfconfig.Variable `json:"password_policy,omitempty"`
-	PeriodicDataRekeying                             tfconfig.Variable `json:"periodic_data_rekeying,omitempty"`
-	PipeExecutionPaused                              tfconfig.Variable `json:"pipe_execution_paused,omitempty"`
-	PreventUnloadToInlineUrl                         tfconfig.Variable `json:"prevent_unload_to_inline_url,omitempty"`
-	PreventUnloadToInternalStages                    tfconfig.Variable `json:"prevent_unload_to_internal_stages,omitempty"`
-	PythonProfilerModules                            tfconfig.Variable `json:"python_profiler_modules,omitempty"`
-	PythonProfilerTargetStage                        tfconfig.Variable `json:"python_profiler_target_stage,omitempty"`
-	QueryTag                                         tfconfig.Variable `json:"query_tag,omitempty"`
-	QuotedIdentifiersIgnoreCase                      tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
-	ReplaceInvalidCharacters                         tfconfig.Variable `json:"replace_invalid_characters,omitempty"`
-	RequireStorageIntegrationForStageCreation        tfconfig.Variable `json:"require_storage_integration_for_stage_creation,omitempty"`
-	RequireStorageIntegrationForStageOperation       tfconfig.Variable `json:"require_storage_integration_for_stage_operation,omitempty"`
-	ResourceMonitor                                  tfconfig.Variable `json:"resource_monitor,omitempty"`
-	RowsPerResultset                                 tfconfig.Variable `json:"rows_per_resultset,omitempty"`
-	S3StageVpceDnsName                               tfconfig.Variable `json:"s3_stage_vpce_dns_name,omitempty"`
-	SearchPath                                       tfconfig.Variable `json:"search_path,omitempty"`
-	ServerlessTaskMaxStatementSize                   tfconfig.Variable `json:"serverless_task_max_statement_size,omitempty"`
-	ServerlessTaskMinStatementSize                   tfconfig.Variable `json:"serverless_task_min_statement_size,omitempty"`
-	SessionPolicy                                    tfconfig.Variable `json:"session_policy,omitempty"`
-	SimulatedDataSharingConsumer                     tfconfig.Variable `json:"simulated_data_sharing_consumer,omitempty"`
-	SsoLoginPage                                     tfconfig.Variable `json:"sso_login_page,omitempty"`
-	StatementQueuedTimeoutInSeconds                  tfconfig.Variable `json:"statement_queued_timeout_in_seconds,omitempty"`
-	StatementTimeoutInSeconds                        tfconfig.Variable `json:"statement_timeout_in_seconds,omitempty"`
-	StorageSerializationPolicy                       tfconfig.Variable `json:"storage_serialization_policy,omitempty"`
-	StrictJsonOutput                                 tfconfig.Variable `json:"strict_json_output,omitempty"`
-	SuspendTaskAfterNumFailures                      tfconfig.Variable `json:"suspend_task_after_num_failures,omitempty"`
-	TaskAutoRetryAttempts                            tfconfig.Variable `json:"task_auto_retry_attempts,omitempty"`
-	TimeInputFormat                                  tfconfig.Variable `json:"time_input_format,omitempty"`
-	TimeOutputFormat                                 tfconfig.Variable `json:"time_output_format,omitempty"`
-	TimestampDayIsAlways24h                          tfconfig.Variable `json:"timestamp_day_is_always_24h,omitempty"`
-	TimestampInputFormat                             tfconfig.Variable `json:"timestamp_input_format,omitempty"`
-	TimestampLtzOutputFormat                         tfconfig.Variable `json:"timestamp_ltz_output_format,omitempty"`
-	TimestampNtzOutputFormat                         tfconfig.Variable `json:"timestamp_ntz_output_format,omitempty"`
-	TimestampOutputFormat                            tfconfig.Variable `json:"timestamp_output_format,omitempty"`
-	TimestampTypeMapping                             tfconfig.Variable `json:"timestamp_type_mapping,omitempty"`
-	TimestampTzOutputFormat                          tfconfig.Variable `json:"timestamp_tz_output_format,omitempty"`
-	Timezone                                         tfconfig.Variable `json:"timezone,omitempty"`
-	TraceLevel                                       tfconfig.Variable `json:"trace_level,omitempty"`
-	TransactionAbortOnError                          tfconfig.Variable `json:"transaction_abort_on_error,omitempty"`
-	TransactionDefaultIsolationLevel                 tfconfig.Variable `json:"transaction_default_isolation_level,omitempty"`
-	TwoDigitCenturyStart                             tfconfig.Variable `json:"two_digit_century_start,omitempty"`
-	UnsupportedDdlAction                             tfconfig.Variable `json:"unsupported_ddl_action,omitempty"`
-	UseCachedResult                                  tfconfig.Variable `json:"use_cached_result,omitempty"`
-	UserTaskManagedInitialWarehouseSize              tfconfig.Variable `json:"user_task_managed_initial_warehouse_size,omitempty"`
-	UserTaskMinimumTriggerIntervalInSeconds          tfconfig.Variable `json:"user_task_minimum_trigger_interval_in_seconds,omitempty"`
-	UserTaskTimeoutMs                                tfconfig.Variable `json:"user_task_timeout_ms,omitempty"`
-	WeekOfYearPolicy                                 tfconfig.Variable `json:"week_of_year_policy,omitempty"`
-	WeekStart                                        tfconfig.Variable `json:"week_start,omitempty"`
+	Name                                                     tfconfig.Variable `json:"name,omitempty"`
+	AbortDetachedQuery                                       tfconfig.Variable `json:"abort_detached_query,omitempty"`
+	ActivePythonProfiler                                     tfconfig.Variable `json:"active_python_profiler,omitempty"`
+	AllowBindValuesAccess                                    tfconfig.Variable `json:"allow_bind_values_access,omitempty"`
+	AllowClientMfaCaching                                    tfconfig.Variable `json:"allow_client_mfa_caching,omitempty"`
+	AllowIdToken                                             tfconfig.Variable `json:"allow_id_token,omitempty"`
+	AllowedSpcsWorkloadTypes                                 tfconfig.Variable `json:"allowed_spcs_workload_types,omitempty"`
+	Autocommit                                               tfconfig.Variable `json:"autocommit,omitempty"`
+	BaseLocationPrefix                                       tfconfig.Variable `json:"base_location_prefix,omitempty"`
+	BinaryInputFormat                                        tfconfig.Variable `json:"binary_input_format,omitempty"`
+	BinaryOutputFormat                                       tfconfig.Variable `json:"binary_output_format,omitempty"`
+	Catalog                                                  tfconfig.Variable `json:"catalog,omitempty"`
+	CatalogSync                                              tfconfig.Variable `json:"catalog_sync,omitempty"`
+	ClientEnableLogInfoStatementParameters                   tfconfig.Variable `json:"client_enable_log_info_statement_parameters,omitempty"`
+	ClientEncryptionKeySize                                  tfconfig.Variable `json:"client_encryption_key_size,omitempty"`
+	ClientMemoryLimit                                        tfconfig.Variable `json:"client_memory_limit,omitempty"`
+	ClientMetadataRequestUseConnectionCtx                    tfconfig.Variable `json:"client_metadata_request_use_connection_ctx,omitempty"`
+	ClientMetadataUseSessionDatabase                         tfconfig.Variable `json:"client_metadata_use_session_database,omitempty"`
+	ClientPrefetchThreads                                    tfconfig.Variable `json:"client_prefetch_threads,omitempty"`
+	ClientResultChunkSize                                    tfconfig.Variable `json:"client_result_chunk_size,omitempty"`
+	ClientResultColumnCaseInsensitive                        tfconfig.Variable `json:"client_result_column_case_insensitive,omitempty"`
+	ClientSessionKeepAlive                                   tfconfig.Variable `json:"client_session_keep_alive,omitempty"`
+	ClientSessionKeepAliveHeartbeatFrequency                 tfconfig.Variable `json:"client_session_keep_alive_heartbeat_frequency,omitempty"`
+	ClientTimestampTypeMapping                               tfconfig.Variable `json:"client_timestamp_type_mapping,omitempty"`
+	Comment                                                  tfconfig.Variable `json:"comment,omitempty"`
+	CortexCodeCliDailyEstCreditLimitPerUser                  tfconfig.Variable `json:"cortex_code_cli_daily_est_credit_limit_per_user,omitempty"`
+	CortexCodeDesktopDailyEstCreditLimitPerUser              tfconfig.Variable `json:"cortex_code_desktop_daily_est_credit_limit_per_user,omitempty"`
+	CortexCodeSnowsightDailyEstCreditLimitPerUser            tfconfig.Variable `json:"cortex_code_snowsight_daily_est_credit_limit_per_user,omitempty"`
+	CortexEnabledCrossRegion                                 tfconfig.Variable `json:"cortex_enabled_cross_region,omitempty"`
+	CortexModelsAllowlist                                    tfconfig.Variable `json:"cortex_models_allowlist,omitempty"`
+	CsvTimestampFormat                                       tfconfig.Variable `json:"csv_timestamp_format,omitempty"`
+	DataMetricSchedule                                       tfconfig.Variable `json:"data_metric_schedule,omitempty"`
+	DataRetentionTimeInDays                                  tfconfig.Variable `json:"data_retention_time_in_days,omitempty"`
+	DateInputFormat                                          tfconfig.Variable `json:"date_input_format,omitempty"`
+	DateOutputFormat                                         tfconfig.Variable `json:"date_output_format,omitempty"`
+	DefaultDbtVersion                                        tfconfig.Variable `json:"default_dbt_version,omitempty"`
+	DefaultDdlCollation                                      tfconfig.Variable `json:"default_ddl_collation,omitempty"`
+	DefaultNotebookComputePoolCpu                            tfconfig.Variable `json:"default_notebook_compute_pool_cpu,omitempty"`
+	DefaultNotebookComputePoolGpu                            tfconfig.Variable `json:"default_notebook_compute_pool_gpu,omitempty"`
+	DefaultNullOrdering                                      tfconfig.Variable `json:"default_null_ordering,omitempty"`
+	DefaultStreamlitComputePool                              tfconfig.Variable `json:"default_streamlit_compute_pool,omitempty"`
+	DefaultStreamlitNotebookWarehouse                        tfconfig.Variable `json:"default_streamlit_notebook_warehouse,omitempty"`
+	DisableUiDownloadButton                                  tfconfig.Variable `json:"disable_ui_download_button,omitempty"`
+	DisableUserPrivilegeGrants                               tfconfig.Variable `json:"disable_user_privilege_grants,omitempty"`
+	DisallowedSpcsWorkloadTypes                              tfconfig.Variable `json:"disallowed_spcs_workload_types,omitempty"`
+	EnableAutomaticSensitiveDataClassificationLog            tfconfig.Variable `json:"enable_automatic_sensitive_data_classification_log,omitempty"`
+	EnableBudgetEventLogging                                 tfconfig.Variable `json:"enable_budget_event_logging,omitempty"`
+	EnableCortexAnalyst                                      tfconfig.Variable `json:"enable_cortex_analyst,omitempty"`
+	EnableDataCompaction                                     tfconfig.Variable `json:"enable_data_compaction,omitempty"`
+	EnableEgressCostOptimizer                                tfconfig.Variable `json:"enable_egress_cost_optimizer,omitempty"`
+	EnableGetDdlUseDataTypeAlias                             tfconfig.Variable `json:"enable_get_ddl_use_data_type_alias,omitempty"`
+	EnableIcebergMergeOnRead                                 tfconfig.Variable `json:"enable_iceberg_merge_on_read,omitempty"`
+	EnableIdentifierFirstLogin                               tfconfig.Variable `json:"enable_identifier_first_login,omitempty"`
+	EnableInternalStagesPrivatelink                          tfconfig.Variable `json:"enable_internal_stages_privatelink,omitempty"`
+	EnableNotebookCreationInPersonalDb                       tfconfig.Variable `json:"enable_notebook_creation_in_personal_db,omitempty"`
+	EnablePerAccountAppServicePrivatelinkUrl                 tfconfig.Variable `json:"enable_per_account_app_service_privatelink_url,omitempty"`
+	EnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement tfconfig.Variable `json:"enable_spcs_block_storage_snowflake_full_encryption_enforcement,omitempty"`
+	EnableTagPropagationEventLogging                         tfconfig.Variable `json:"enable_tag_propagation_event_logging,omitempty"`
+	EnableTriSecretAndRekeyOptOutForImageRepository          tfconfig.Variable `json:"enable_tri_secret_and_rekey_opt_out_for_image_repository,omitempty"`
+	EnableTriSecretAndRekeyOptOutForSpcsBlockStorage         tfconfig.Variable `json:"enable_tri_secret_and_rekey_opt_out_for_spcs_block_storage,omitempty"`
+	EnableUnhandledExceptionsReporting                       tfconfig.Variable `json:"enable_unhandled_exceptions_reporting,omitempty"`
+	EnableUnloadPhysicalTypeOptimization                     tfconfig.Variable `json:"enable_unload_physical_type_optimization,omitempty"`
+	EnableUnredactedQuerySyntaxError                         tfconfig.Variable `json:"enable_unredacted_query_syntax_error,omitempty"`
+	EnableUnredactedSecureObjectError                        tfconfig.Variable `json:"enable_unredacted_secure_object_error,omitempty"`
+	EnforceNetworkRulesForInternalStages                     tfconfig.Variable `json:"enforce_network_rules_for_internal_stages,omitempty"`
+	ErrorOnNondeterministicMerge                             tfconfig.Variable `json:"error_on_nondeterministic_merge,omitempty"`
+	ErrorOnNondeterministicUpdate                            tfconfig.Variable `json:"error_on_nondeterministic_update,omitempty"`
+	EventTable                                               tfconfig.Variable `json:"event_table,omitempty"`
+	ExternalOauthAddPrivilegedRolesToBlockedList             tfconfig.Variable `json:"external_oauth_add_privileged_roles_to_blocked_list,omitempty"`
+	ExternalVolume                                           tfconfig.Variable `json:"external_volume,omitempty"`
+	GeographyOutputFormat                                    tfconfig.Variable `json:"geography_output_format,omitempty"`
+	GeometryOutputFormat                                     tfconfig.Variable `json:"geometry_output_format,omitempty"`
+	HybridTableLockTimeout                                   tfconfig.Variable `json:"hybrid_table_lock_timeout,omitempty"`
+	IcebergVersionDefault                                    tfconfig.Variable `json:"iceberg_version_default,omitempty"`
+	InitialReplicationSizeLimitInTb                          tfconfig.Variable `json:"initial_replication_size_limit_in_tb,omitempty"`
+	JdbcTreatDecimalAsInt                                    tfconfig.Variable `json:"jdbc_treat_decimal_as_int,omitempty"`
+	JdbcTreatTimestampNtzAsUtc                               tfconfig.Variable `json:"jdbc_treat_timestamp_ntz_as_utc,omitempty"`
+	JdbcUseSessionTimezone                                   tfconfig.Variable `json:"jdbc_use_session_timezone,omitempty"`
+	JsTreatIntegerAsBigint                                   tfconfig.Variable `json:"js_treat_integer_as_bigint,omitempty"`
+	JsonIndent                                               tfconfig.Variable `json:"json_indent,omitempty"`
+	ListingAutoFulfillmentReplicationRefreshSchedule         tfconfig.Variable `json:"listing_auto_fulfillment_replication_refresh_schedule,omitempty"`
+	LockTimeout                                              tfconfig.Variable `json:"lock_timeout,omitempty"`
+	LogEventLevel                                            tfconfig.Variable `json:"log_event_level,omitempty"`
+	LogLevel                                                 tfconfig.Variable `json:"log_level,omitempty"`
+	MaxConcurrencyLevel                                      tfconfig.Variable `json:"max_concurrency_level,omitempty"`
+	MaxDataExtensionTimeInDays                               tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
+	MetricLevel                                              tfconfig.Variable `json:"metric_level,omitempty"`
+	MinDataRetentionTimeInDays                               tfconfig.Variable `json:"min_data_retention_time_in_days,omitempty"`
+	MultiStatementCount                                      tfconfig.Variable `json:"multi_statement_count,omitempty"`
+	NetworkPolicy                                            tfconfig.Variable `json:"network_policy,omitempty"`
+	NoorderSequenceAsDefault                                 tfconfig.Variable `json:"noorder_sequence_as_default,omitempty"`
+	OauthAddPrivilegedRolesToBlockedList                     tfconfig.Variable `json:"oauth_add_privileged_roles_to_blocked_list,omitempty"`
+	OdbcTreatDecimalAsInt                                    tfconfig.Variable `json:"odbc_treat_decimal_as_int,omitempty"`
+	PasswordPolicy                                           tfconfig.Variable `json:"password_policy,omitempty"`
+	PeriodicDataRekeying                                     tfconfig.Variable `json:"periodic_data_rekeying,omitempty"`
+	PipeExecutionPaused                                      tfconfig.Variable `json:"pipe_execution_paused,omitempty"`
+	PreventUnloadToInlineUrl                                 tfconfig.Variable `json:"prevent_unload_to_inline_url,omitempty"`
+	PreventUnloadToInternalStages                            tfconfig.Variable `json:"prevent_unload_to_internal_stages,omitempty"`
+	PythonProfilerModules                                    tfconfig.Variable `json:"python_profiler_modules,omitempty"`
+	PythonProfilerTargetStage                                tfconfig.Variable `json:"python_profiler_target_stage,omitempty"`
+	QueryTag                                                 tfconfig.Variable `json:"query_tag,omitempty"`
+	QuotedIdentifiersIgnoreCase                              tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
+	ReadConsistencyMode                                      tfconfig.Variable `json:"read_consistency_mode,omitempty"`
+	ReplaceInvalidCharacters                                 tfconfig.Variable `json:"replace_invalid_characters,omitempty"`
+	RequireStorageIntegrationForStageCreation                tfconfig.Variable `json:"require_storage_integration_for_stage_creation,omitempty"`
+	RequireStorageIntegrationForStageOperation               tfconfig.Variable `json:"require_storage_integration_for_stage_operation,omitempty"`
+	ResourceMonitor                                          tfconfig.Variable `json:"resource_monitor,omitempty"`
+	RowTimestampDefault                                      tfconfig.Variable `json:"row_timestamp_default,omitempty"`
+	RowsPerResultset                                         tfconfig.Variable `json:"rows_per_resultset,omitempty"`
+	S3StageVpceDnsName                                       tfconfig.Variable `json:"s3_stage_vpce_dns_name,omitempty"`
+	SearchPath                                               tfconfig.Variable `json:"search_path,omitempty"`
+	ServerlessTaskMaxStatementSize                           tfconfig.Variable `json:"serverless_task_max_statement_size,omitempty"`
+	ServerlessTaskMinStatementSize                           tfconfig.Variable `json:"serverless_task_min_statement_size,omitempty"`
+	SessionPolicy                                            tfconfig.Variable `json:"session_policy,omitempty"`
+	SimulatedDataSharingConsumer                             tfconfig.Variable `json:"simulated_data_sharing_consumer,omitempty"`
+	SqlTraceQueryText                                        tfconfig.Variable `json:"sql_trace_query_text,omitempty"`
+	SsoLoginPage                                             tfconfig.Variable `json:"sso_login_page,omitempty"`
+	StatementQueuedTimeoutInSeconds                          tfconfig.Variable `json:"statement_queued_timeout_in_seconds,omitempty"`
+	StatementTimeoutInSeconds                                tfconfig.Variable `json:"statement_timeout_in_seconds,omitempty"`
+	StorageSerializationPolicy                               tfconfig.Variable `json:"storage_serialization_policy,omitempty"`
+	StrictJsonOutput                                         tfconfig.Variable `json:"strict_json_output,omitempty"`
+	SuspendTaskAfterNumFailures                              tfconfig.Variable `json:"suspend_task_after_num_failures,omitempty"`
+	TaskAutoRetryAttempts                                    tfconfig.Variable `json:"task_auto_retry_attempts,omitempty"`
+	TimeInputFormat                                          tfconfig.Variable `json:"time_input_format,omitempty"`
+	TimeOutputFormat                                         tfconfig.Variable `json:"time_output_format,omitempty"`
+	TimestampDayIsAlways24h                                  tfconfig.Variable `json:"timestamp_day_is_always_24h,omitempty"`
+	TimestampInputFormat                                     tfconfig.Variable `json:"timestamp_input_format,omitempty"`
+	TimestampLtzOutputFormat                                 tfconfig.Variable `json:"timestamp_ltz_output_format,omitempty"`
+	TimestampNtzOutputFormat                                 tfconfig.Variable `json:"timestamp_ntz_output_format,omitempty"`
+	TimestampOutputFormat                                    tfconfig.Variable `json:"timestamp_output_format,omitempty"`
+	TimestampTypeMapping                                     tfconfig.Variable `json:"timestamp_type_mapping,omitempty"`
+	TimestampTzOutputFormat                                  tfconfig.Variable `json:"timestamp_tz_output_format,omitempty"`
+	Timezone                                                 tfconfig.Variable `json:"timezone,omitempty"`
+	TraceLevel                                               tfconfig.Variable `json:"trace_level,omitempty"`
+	TransactionAbortOnError                                  tfconfig.Variable `json:"transaction_abort_on_error,omitempty"`
+	TransactionDefaultIsolationLevel                         tfconfig.Variable `json:"transaction_default_isolation_level,omitempty"`
+	TwoDigitCenturyStart                                     tfconfig.Variable `json:"two_digit_century_start,omitempty"`
+	UnsupportedDdlAction                                     tfconfig.Variable `json:"unsupported_ddl_action,omitempty"`
+	UseCachedResult                                          tfconfig.Variable `json:"use_cached_result,omitempty"`
+	UseWorkspacesForSql                                      tfconfig.Variable `json:"use_workspaces_for_sql,omitempty"`
+	UserTaskManagedInitialWarehouseSize                      tfconfig.Variable `json:"user_task_managed_initial_warehouse_size,omitempty"`
+	UserTaskMinimumTriggerIntervalInSeconds                  tfconfig.Variable `json:"user_task_minimum_trigger_interval_in_seconds,omitempty"`
+	UserTaskTimeoutMs                                        tfconfig.Variable `json:"user_task_timeout_ms,omitempty"`
+	WeekOfYearPolicy                                         tfconfig.Variable `json:"week_of_year_policy,omitempty"`
+	WeekStart                                                tfconfig.Variable `json:"week_start,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -216,6 +234,11 @@ func (c *CurrentOrganizationAccountModel) WithActivePythonProfiler(activePythonP
 	return c
 }
 
+func (c *CurrentOrganizationAccountModel) WithAllowBindValuesAccess(allowBindValuesAccess bool) *CurrentOrganizationAccountModel {
+	c.AllowBindValuesAccess = tfconfig.BoolVariable(allowBindValuesAccess)
+	return c
+}
+
 func (c *CurrentOrganizationAccountModel) WithAllowClientMfaCaching(allowClientMfaCaching bool) *CurrentOrganizationAccountModel {
 	c.AllowClientMfaCaching = tfconfig.BoolVariable(allowClientMfaCaching)
 	return c
@@ -223,6 +246,11 @@ func (c *CurrentOrganizationAccountModel) WithAllowClientMfaCaching(allowClientM
 
 func (c *CurrentOrganizationAccountModel) WithAllowIdToken(allowIdToken bool) *CurrentOrganizationAccountModel {
 	c.AllowIdToken = tfconfig.BoolVariable(allowIdToken)
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithAllowedSpcsWorkloadTypes(allowedSpcsWorkloadTypes string) *CurrentOrganizationAccountModel {
+	c.AllowedSpcsWorkloadTypes = tfconfig.StringVariable(allowedSpcsWorkloadTypes)
 	return c
 }
 
@@ -346,6 +374,11 @@ func (c *CurrentOrganizationAccountModel) WithCsvTimestampFormat(csvTimestampFor
 	return c
 }
 
+func (c *CurrentOrganizationAccountModel) WithDataMetricSchedule(dataMetricSchedule string) *CurrentOrganizationAccountModel {
+	c.DataMetricSchedule = tfconfig.StringVariable(dataMetricSchedule)
+	return c
+}
+
 func (c *CurrentOrganizationAccountModel) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *CurrentOrganizationAccountModel {
 	c.DataRetentionTimeInDays = tfconfig.IntegerVariable(dataRetentionTimeInDays)
 	return c
@@ -358,6 +391,11 @@ func (c *CurrentOrganizationAccountModel) WithDateInputFormat(dateInputFormat st
 
 func (c *CurrentOrganizationAccountModel) WithDateOutputFormat(dateOutputFormat string) *CurrentOrganizationAccountModel {
 	c.DateOutputFormat = tfconfig.StringVariable(dateOutputFormat)
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithDefaultDbtVersion(defaultDbtVersion string) *CurrentOrganizationAccountModel {
+	c.DefaultDbtVersion = tfconfig.StringVariable(defaultDbtVersion)
 	return c
 }
 
@@ -401,13 +439,43 @@ func (c *CurrentOrganizationAccountModel) WithDisableUserPrivilegeGrants(disable
 	return c
 }
 
+func (c *CurrentOrganizationAccountModel) WithDisallowedSpcsWorkloadTypes(disallowedSpcsWorkloadTypes string) *CurrentOrganizationAccountModel {
+	c.DisallowedSpcsWorkloadTypes = tfconfig.StringVariable(disallowedSpcsWorkloadTypes)
+	return c
+}
+
 func (c *CurrentOrganizationAccountModel) WithEnableAutomaticSensitiveDataClassificationLog(enableAutomaticSensitiveDataClassificationLog bool) *CurrentOrganizationAccountModel {
 	c.EnableAutomaticSensitiveDataClassificationLog = tfconfig.BoolVariable(enableAutomaticSensitiveDataClassificationLog)
 	return c
 }
 
+func (c *CurrentOrganizationAccountModel) WithEnableBudgetEventLogging(enableBudgetEventLogging bool) *CurrentOrganizationAccountModel {
+	c.EnableBudgetEventLogging = tfconfig.BoolVariable(enableBudgetEventLogging)
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithEnableCortexAnalyst(enableCortexAnalyst bool) *CurrentOrganizationAccountModel {
+	c.EnableCortexAnalyst = tfconfig.BoolVariable(enableCortexAnalyst)
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithEnableDataCompaction(enableDataCompaction bool) *CurrentOrganizationAccountModel {
+	c.EnableDataCompaction = tfconfig.BoolVariable(enableDataCompaction)
+	return c
+}
+
 func (c *CurrentOrganizationAccountModel) WithEnableEgressCostOptimizer(enableEgressCostOptimizer bool) *CurrentOrganizationAccountModel {
 	c.EnableEgressCostOptimizer = tfconfig.BoolVariable(enableEgressCostOptimizer)
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithEnableGetDdlUseDataTypeAlias(enableGetDdlUseDataTypeAlias bool) *CurrentOrganizationAccountModel {
+	c.EnableGetDdlUseDataTypeAlias = tfconfig.BoolVariable(enableGetDdlUseDataTypeAlias)
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithEnableIcebergMergeOnRead(enableIcebergMergeOnRead bool) *CurrentOrganizationAccountModel {
+	c.EnableIcebergMergeOnRead = tfconfig.BoolVariable(enableIcebergMergeOnRead)
 	return c
 }
 
@@ -421,8 +489,23 @@ func (c *CurrentOrganizationAccountModel) WithEnableInternalStagesPrivatelink(en
 	return c
 }
 
+func (c *CurrentOrganizationAccountModel) WithEnableNotebookCreationInPersonalDb(enableNotebookCreationInPersonalDb bool) *CurrentOrganizationAccountModel {
+	c.EnableNotebookCreationInPersonalDb = tfconfig.BoolVariable(enableNotebookCreationInPersonalDb)
+	return c
+}
+
 func (c *CurrentOrganizationAccountModel) WithEnablePerAccountAppServicePrivatelinkUrl(enablePerAccountAppServicePrivatelinkUrl bool) *CurrentOrganizationAccountModel {
 	c.EnablePerAccountAppServicePrivatelinkUrl = tfconfig.BoolVariable(enablePerAccountAppServicePrivatelinkUrl)
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement(enableSpcsBlockStorageSnowflakeFullEncryptionEnforcement bool) *CurrentOrganizationAccountModel {
+	c.EnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement = tfconfig.BoolVariable(enableSpcsBlockStorageSnowflakeFullEncryptionEnforcement)
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithEnableTagPropagationEventLogging(enableTagPropagationEventLogging bool) *CurrentOrganizationAccountModel {
+	c.EnableTagPropagationEventLogging = tfconfig.BoolVariable(enableTagPropagationEventLogging)
 	return c
 }
 
@@ -498,6 +581,11 @@ func (c *CurrentOrganizationAccountModel) WithGeometryOutputFormat(geometryOutpu
 
 func (c *CurrentOrganizationAccountModel) WithHybridTableLockTimeout(hybridTableLockTimeout int) *CurrentOrganizationAccountModel {
 	c.HybridTableLockTimeout = tfconfig.IntegerVariable(hybridTableLockTimeout)
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithIcebergVersionDefault(icebergVersionDefault int) *CurrentOrganizationAccountModel {
+	c.IcebergVersionDefault = tfconfig.IntegerVariable(icebergVersionDefault)
 	return c
 }
 
@@ -641,6 +729,11 @@ func (c *CurrentOrganizationAccountModel) WithQuotedIdentifiersIgnoreCase(quoted
 	return c
 }
 
+func (c *CurrentOrganizationAccountModel) WithReadConsistencyMode(readConsistencyMode string) *CurrentOrganizationAccountModel {
+	c.ReadConsistencyMode = tfconfig.StringVariable(readConsistencyMode)
+	return c
+}
+
 func (c *CurrentOrganizationAccountModel) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CurrentOrganizationAccountModel {
 	c.ReplaceInvalidCharacters = tfconfig.BoolVariable(replaceInvalidCharacters)
 	return c
@@ -658,6 +751,11 @@ func (c *CurrentOrganizationAccountModel) WithRequireStorageIntegrationForStageO
 
 func (c *CurrentOrganizationAccountModel) WithResourceMonitor(resourceMonitor string) *CurrentOrganizationAccountModel {
 	c.ResourceMonitor = tfconfig.StringVariable(resourceMonitor)
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithRowTimestampDefault(rowTimestampDefault bool) *CurrentOrganizationAccountModel {
+	c.RowTimestampDefault = tfconfig.BoolVariable(rowTimestampDefault)
 	return c
 }
 
@@ -693,6 +791,11 @@ func (c *CurrentOrganizationAccountModel) WithSessionPolicy(sessionPolicy string
 
 func (c *CurrentOrganizationAccountModel) WithSimulatedDataSharingConsumer(simulatedDataSharingConsumer string) *CurrentOrganizationAccountModel {
 	c.SimulatedDataSharingConsumer = tfconfig.StringVariable(simulatedDataSharingConsumer)
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithSqlTraceQueryText(sqlTraceQueryText string) *CurrentOrganizationAccountModel {
+	c.SqlTraceQueryText = tfconfig.StringVariable(sqlTraceQueryText)
 	return c
 }
 
@@ -811,6 +914,11 @@ func (c *CurrentOrganizationAccountModel) WithUseCachedResult(useCachedResult bo
 	return c
 }
 
+func (c *CurrentOrganizationAccountModel) WithUseWorkspacesForSql(useWorkspacesForSql string) *CurrentOrganizationAccountModel {
+	c.UseWorkspacesForSql = tfconfig.StringVariable(useWorkspacesForSql)
+	return c
+}
+
 func (c *CurrentOrganizationAccountModel) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize string) *CurrentOrganizationAccountModel {
 	c.UserTaskManagedInitialWarehouseSize = tfconfig.StringVariable(userTaskManagedInitialWarehouseSize)
 	return c
@@ -855,6 +963,11 @@ func (c *CurrentOrganizationAccountModel) WithActivePythonProfilerValue(value tf
 	return c
 }
 
+func (c *CurrentOrganizationAccountModel) WithAllowBindValuesAccessValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.AllowBindValuesAccess = value
+	return c
+}
+
 func (c *CurrentOrganizationAccountModel) WithAllowClientMfaCachingValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.AllowClientMfaCaching = value
 	return c
@@ -862,6 +975,11 @@ func (c *CurrentOrganizationAccountModel) WithAllowClientMfaCachingValue(value t
 
 func (c *CurrentOrganizationAccountModel) WithAllowIdTokenValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.AllowIdToken = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithAllowedSpcsWorkloadTypesValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.AllowedSpcsWorkloadTypes = value
 	return c
 }
 
@@ -985,6 +1103,11 @@ func (c *CurrentOrganizationAccountModel) WithCsvTimestampFormatValue(value tfco
 	return c
 }
 
+func (c *CurrentOrganizationAccountModel) WithDataMetricScheduleValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.DataMetricSchedule = value
+	return c
+}
+
 func (c *CurrentOrganizationAccountModel) WithDataRetentionTimeInDaysValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.DataRetentionTimeInDays = value
 	return c
@@ -997,6 +1120,11 @@ func (c *CurrentOrganizationAccountModel) WithDateInputFormatValue(value tfconfi
 
 func (c *CurrentOrganizationAccountModel) WithDateOutputFormatValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.DateOutputFormat = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithDefaultDbtVersionValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.DefaultDbtVersion = value
 	return c
 }
 
@@ -1040,13 +1168,43 @@ func (c *CurrentOrganizationAccountModel) WithDisableUserPrivilegeGrantsValue(va
 	return c
 }
 
+func (c *CurrentOrganizationAccountModel) WithDisallowedSpcsWorkloadTypesValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.DisallowedSpcsWorkloadTypes = value
+	return c
+}
+
 func (c *CurrentOrganizationAccountModel) WithEnableAutomaticSensitiveDataClassificationLogValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.EnableAutomaticSensitiveDataClassificationLog = value
 	return c
 }
 
+func (c *CurrentOrganizationAccountModel) WithEnableBudgetEventLoggingValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.EnableBudgetEventLogging = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithEnableCortexAnalystValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.EnableCortexAnalyst = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithEnableDataCompactionValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.EnableDataCompaction = value
+	return c
+}
+
 func (c *CurrentOrganizationAccountModel) WithEnableEgressCostOptimizerValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.EnableEgressCostOptimizer = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithEnableGetDdlUseDataTypeAliasValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.EnableGetDdlUseDataTypeAlias = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithEnableIcebergMergeOnReadValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.EnableIcebergMergeOnRead = value
 	return c
 }
 
@@ -1060,8 +1218,23 @@ func (c *CurrentOrganizationAccountModel) WithEnableInternalStagesPrivatelinkVal
 	return c
 }
 
+func (c *CurrentOrganizationAccountModel) WithEnableNotebookCreationInPersonalDbValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.EnableNotebookCreationInPersonalDb = value
+	return c
+}
+
 func (c *CurrentOrganizationAccountModel) WithEnablePerAccountAppServicePrivatelinkUrlValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.EnablePerAccountAppServicePrivatelinkUrl = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcementValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.EnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithEnableTagPropagationEventLoggingValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.EnableTagPropagationEventLogging = value
 	return c
 }
 
@@ -1137,6 +1310,11 @@ func (c *CurrentOrganizationAccountModel) WithGeometryOutputFormatValue(value tf
 
 func (c *CurrentOrganizationAccountModel) WithHybridTableLockTimeoutValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.HybridTableLockTimeout = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithIcebergVersionDefaultValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.IcebergVersionDefault = value
 	return c
 }
 
@@ -1280,6 +1458,11 @@ func (c *CurrentOrganizationAccountModel) WithQuotedIdentifiersIgnoreCaseValue(v
 	return c
 }
 
+func (c *CurrentOrganizationAccountModel) WithReadConsistencyModeValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.ReadConsistencyMode = value
+	return c
+}
+
 func (c *CurrentOrganizationAccountModel) WithReplaceInvalidCharactersValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.ReplaceInvalidCharacters = value
 	return c
@@ -1297,6 +1480,11 @@ func (c *CurrentOrganizationAccountModel) WithRequireStorageIntegrationForStageO
 
 func (c *CurrentOrganizationAccountModel) WithResourceMonitorValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.ResourceMonitor = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithRowTimestampDefaultValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.RowTimestampDefault = value
 	return c
 }
 
@@ -1332,6 +1520,11 @@ func (c *CurrentOrganizationAccountModel) WithSessionPolicyValue(value tfconfig.
 
 func (c *CurrentOrganizationAccountModel) WithSimulatedDataSharingConsumerValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.SimulatedDataSharingConsumer = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithSqlTraceQueryTextValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.SqlTraceQueryText = value
 	return c
 }
 
@@ -1447,6 +1640,11 @@ func (c *CurrentOrganizationAccountModel) WithUnsupportedDdlActionValue(value tf
 
 func (c *CurrentOrganizationAccountModel) WithUseCachedResultValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.UseCachedResult = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithUseWorkspacesForSqlValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.UseWorkspacesForSql = value
 	return c
 }
 

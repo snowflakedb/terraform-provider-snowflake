@@ -42,6 +42,11 @@ func (c *CurrentAccountResourceAssert) HasActivePythonProfiler(expected string) 
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasAllowBindValuesAccess(expected bool) *CurrentAccountResourceAssert {
+	c.BoolValueSet("allow_bind_values_access", expected)
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasAllowClientMfaCaching(expected bool) *CurrentAccountResourceAssert {
 	c.BoolValueSet("allow_client_mfa_caching", expected)
 	return c
@@ -49,6 +54,11 @@ func (c *CurrentAccountResourceAssert) HasAllowClientMfaCaching(expected bool) *
 
 func (c *CurrentAccountResourceAssert) HasAllowIdToken(expected bool) *CurrentAccountResourceAssert {
 	c.BoolValueSet("allow_id_token", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasAllowedSpcsWorkloadTypes(expected string) *CurrentAccountResourceAssert {
+	c.StringValueSet("allowed_spcs_workload_types", expected)
 	return c
 }
 
@@ -172,6 +182,11 @@ func (c *CurrentAccountResourceAssert) HasCsvTimestampFormat(expected string) *C
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasDataMetricSchedule(expected string) *CurrentAccountResourceAssert {
+	c.StringValueSet("data_metric_schedule", expected)
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasDataRetentionTimeInDays(expected int) *CurrentAccountResourceAssert {
 	c.IntValueSet("data_retention_time_in_days", expected)
 	return c
@@ -184,6 +199,11 @@ func (c *CurrentAccountResourceAssert) HasDateInputFormat(expected string) *Curr
 
 func (c *CurrentAccountResourceAssert) HasDateOutputFormat(expected string) *CurrentAccountResourceAssert {
 	c.StringValueSet("date_output_format", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasDefaultDbtVersion(expected string) *CurrentAccountResourceAssert {
+	c.StringValueSet("default_dbt_version", expected)
 	return c
 }
 
@@ -227,13 +247,43 @@ func (c *CurrentAccountResourceAssert) HasDisableUserPrivilegeGrants(expected bo
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasDisallowedSpcsWorkloadTypes(expected string) *CurrentAccountResourceAssert {
+	c.StringValueSet("disallowed_spcs_workload_types", expected)
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasEnableAutomaticSensitiveDataClassificationLog(expected bool) *CurrentAccountResourceAssert {
 	c.BoolValueSet("enable_automatic_sensitive_data_classification_log", expected)
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasEnableBudgetEventLogging(expected bool) *CurrentAccountResourceAssert {
+	c.BoolValueSet("enable_budget_event_logging", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableCortexAnalyst(expected bool) *CurrentAccountResourceAssert {
+	c.BoolValueSet("enable_cortex_analyst", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableDataCompaction(expected bool) *CurrentAccountResourceAssert {
+	c.BoolValueSet("enable_data_compaction", expected)
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasEnableEgressCostOptimizer(expected bool) *CurrentAccountResourceAssert {
 	c.BoolValueSet("enable_egress_cost_optimizer", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableGetDdlUseDataTypeAlias(expected bool) *CurrentAccountResourceAssert {
+	c.BoolValueSet("enable_get_ddl_use_data_type_alias", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableIcebergMergeOnRead(expected bool) *CurrentAccountResourceAssert {
+	c.BoolValueSet("enable_iceberg_merge_on_read", expected)
 	return c
 }
 
@@ -247,8 +297,23 @@ func (c *CurrentAccountResourceAssert) HasEnableInternalStagesPrivatelink(expect
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasEnableNotebookCreationInPersonalDb(expected bool) *CurrentAccountResourceAssert {
+	c.BoolValueSet("enable_notebook_creation_in_personal_db", expected)
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasEnablePerAccountAppServicePrivatelinkUrl(expected bool) *CurrentAccountResourceAssert {
 	c.BoolValueSet("enable_per_account_app_service_privatelink_url", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement(expected bool) *CurrentAccountResourceAssert {
+	c.BoolValueSet("enable_spcs_block_storage_snowflake_full_encryption_enforcement", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableTagPropagationEventLogging(expected bool) *CurrentAccountResourceAssert {
+	c.BoolValueSet("enable_tag_propagation_event_logging", expected)
 	return c
 }
 
@@ -329,6 +394,11 @@ func (c *CurrentAccountResourceAssert) HasGeometryOutputFormat(expected string) 
 
 func (c *CurrentAccountResourceAssert) HasHybridTableLockTimeout(expected int) *CurrentAccountResourceAssert {
 	c.IntValueSet("hybrid_table_lock_timeout", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasIcebergVersionDefault(expected int) *CurrentAccountResourceAssert {
+	c.IntValueSet("iceberg_version_default", expected)
 	return c
 }
 
@@ -477,6 +547,11 @@ func (c *CurrentAccountResourceAssert) HasQuotedIdentifiersIgnoreCase(expected b
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasReadConsistencyMode(expected string) *CurrentAccountResourceAssert {
+	c.StringValueSet("read_consistency_mode", expected)
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasReplaceInvalidCharacters(expected bool) *CurrentAccountResourceAssert {
 	c.BoolValueSet("replace_invalid_characters", expected)
 	return c
@@ -494,6 +569,11 @@ func (c *CurrentAccountResourceAssert) HasRequireStorageIntegrationForStageOpera
 
 func (c *CurrentAccountResourceAssert) HasResourceMonitor(expected string) *CurrentAccountResourceAssert {
 	c.StringValueSet("resource_monitor", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasRowTimestampDefault(expected bool) *CurrentAccountResourceAssert {
+	c.BoolValueSet("row_timestamp_default", expected)
 	return c
 }
 
@@ -529,6 +609,11 @@ func (c *CurrentAccountResourceAssert) HasSessionPolicy(expected string) *Curren
 
 func (c *CurrentAccountResourceAssert) HasSimulatedDataSharingConsumer(expected string) *CurrentAccountResourceAssert {
 	c.StringValueSet("simulated_data_sharing_consumer", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasSqlTraceQueryText(expected string) *CurrentAccountResourceAssert {
+	c.StringValueSet("sql_trace_query_text", expected)
 	return c
 }
 
@@ -647,6 +732,11 @@ func (c *CurrentAccountResourceAssert) HasUseCachedResult(expected bool) *Curren
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasUseWorkspacesForSql(expected string) *CurrentAccountResourceAssert {
+	c.StringValueSet("use_workspaces_for_sql", expected)
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasUserTaskManagedInitialWarehouseSize(expected string) *CurrentAccountResourceAssert {
 	c.StringValueSet("user_task_managed_initial_warehouse_size", expected)
 	return c
@@ -686,6 +776,11 @@ func (c *CurrentAccountResourceAssert) HasActivePythonProfilerString(expected st
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasAllowBindValuesAccessString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("allow_bind_values_access", expected)
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasAllowClientMfaCachingString(expected string) *CurrentAccountResourceAssert {
 	c.ValueSet("allow_client_mfa_caching", expected)
 	return c
@@ -693,6 +788,11 @@ func (c *CurrentAccountResourceAssert) HasAllowClientMfaCachingString(expected s
 
 func (c *CurrentAccountResourceAssert) HasAllowIdTokenString(expected string) *CurrentAccountResourceAssert {
 	c.ValueSet("allow_id_token", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasAllowedSpcsWorkloadTypesString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("allowed_spcs_workload_types", expected)
 	return c
 }
 
@@ -816,6 +916,11 @@ func (c *CurrentAccountResourceAssert) HasCsvTimestampFormatString(expected stri
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasDataMetricScheduleString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("data_metric_schedule", expected)
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasDataRetentionTimeInDaysString(expected string) *CurrentAccountResourceAssert {
 	c.ValueSet("data_retention_time_in_days", expected)
 	return c
@@ -828,6 +933,11 @@ func (c *CurrentAccountResourceAssert) HasDateInputFormatString(expected string)
 
 func (c *CurrentAccountResourceAssert) HasDateOutputFormatString(expected string) *CurrentAccountResourceAssert {
 	c.ValueSet("date_output_format", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasDefaultDbtVersionString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("default_dbt_version", expected)
 	return c
 }
 
@@ -871,13 +981,43 @@ func (c *CurrentAccountResourceAssert) HasDisableUserPrivilegeGrantsString(expec
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasDisallowedSpcsWorkloadTypesString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("disallowed_spcs_workload_types", expected)
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasEnableAutomaticSensitiveDataClassificationLogString(expected string) *CurrentAccountResourceAssert {
 	c.ValueSet("enable_automatic_sensitive_data_classification_log", expected)
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasEnableBudgetEventLoggingString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("enable_budget_event_logging", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableCortexAnalystString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("enable_cortex_analyst", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableDataCompactionString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("enable_data_compaction", expected)
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasEnableEgressCostOptimizerString(expected string) *CurrentAccountResourceAssert {
 	c.ValueSet("enable_egress_cost_optimizer", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableGetDdlUseDataTypeAliasString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("enable_get_ddl_use_data_type_alias", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableIcebergMergeOnReadString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("enable_iceberg_merge_on_read", expected)
 	return c
 }
 
@@ -891,8 +1031,23 @@ func (c *CurrentAccountResourceAssert) HasEnableInternalStagesPrivatelinkString(
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasEnableNotebookCreationInPersonalDbString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("enable_notebook_creation_in_personal_db", expected)
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasEnablePerAccountAppServicePrivatelinkUrlString(expected string) *CurrentAccountResourceAssert {
 	c.ValueSet("enable_per_account_app_service_privatelink_url", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcementString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("enable_spcs_block_storage_snowflake_full_encryption_enforcement", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableTagPropagationEventLoggingString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("enable_tag_propagation_event_logging", expected)
 	return c
 }
 
@@ -973,6 +1128,11 @@ func (c *CurrentAccountResourceAssert) HasGeometryOutputFormatString(expected st
 
 func (c *CurrentAccountResourceAssert) HasHybridTableLockTimeoutString(expected string) *CurrentAccountResourceAssert {
 	c.ValueSet("hybrid_table_lock_timeout", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasIcebergVersionDefaultString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("iceberg_version_default", expected)
 	return c
 }
 
@@ -1121,6 +1281,11 @@ func (c *CurrentAccountResourceAssert) HasQuotedIdentifiersIgnoreCaseString(expe
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasReadConsistencyModeString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("read_consistency_mode", expected)
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasReplaceInvalidCharactersString(expected string) *CurrentAccountResourceAssert {
 	c.ValueSet("replace_invalid_characters", expected)
 	return c
@@ -1138,6 +1303,11 @@ func (c *CurrentAccountResourceAssert) HasRequireStorageIntegrationForStageOpera
 
 func (c *CurrentAccountResourceAssert) HasResourceMonitorString(expected string) *CurrentAccountResourceAssert {
 	c.ValueSet("resource_monitor", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasRowTimestampDefaultString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("row_timestamp_default", expected)
 	return c
 }
 
@@ -1173,6 +1343,11 @@ func (c *CurrentAccountResourceAssert) HasSessionPolicyString(expected string) *
 
 func (c *CurrentAccountResourceAssert) HasSimulatedDataSharingConsumerString(expected string) *CurrentAccountResourceAssert {
 	c.ValueSet("simulated_data_sharing_consumer", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasSqlTraceQueryTextString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("sql_trace_query_text", expected)
 	return c
 }
 
@@ -1291,6 +1466,11 @@ func (c *CurrentAccountResourceAssert) HasUseCachedResultString(expected string)
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasUseWorkspacesForSqlString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("use_workspaces_for_sql", expected)
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasUserTaskManagedInitialWarehouseSizeString(expected string) *CurrentAccountResourceAssert {
 	c.ValueSet("user_task_managed_initial_warehouse_size", expected)
 	return c
@@ -1330,6 +1510,11 @@ func (c *CurrentAccountResourceAssert) HasNoActivePythonProfiler() *CurrentAccou
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasNoAllowBindValuesAccess() *CurrentAccountResourceAssert {
+	c.ValueNotSet("allow_bind_values_access")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasNoAllowClientMfaCaching() *CurrentAccountResourceAssert {
 	c.ValueNotSet("allow_client_mfa_caching")
 	return c
@@ -1337,6 +1522,11 @@ func (c *CurrentAccountResourceAssert) HasNoAllowClientMfaCaching() *CurrentAcco
 
 func (c *CurrentAccountResourceAssert) HasNoAllowIdToken() *CurrentAccountResourceAssert {
 	c.ValueNotSet("allow_id_token")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasNoAllowedSpcsWorkloadTypes() *CurrentAccountResourceAssert {
+	c.ValueNotSet("allowed_spcs_workload_types")
 	return c
 }
 
@@ -1460,6 +1650,11 @@ func (c *CurrentAccountResourceAssert) HasNoCsvTimestampFormat() *CurrentAccount
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasNoDataMetricSchedule() *CurrentAccountResourceAssert {
+	c.ValueNotSet("data_metric_schedule")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasNoDataRetentionTimeInDays() *CurrentAccountResourceAssert {
 	c.ValueNotSet("data_retention_time_in_days")
 	return c
@@ -1472,6 +1667,11 @@ func (c *CurrentAccountResourceAssert) HasNoDateInputFormat() *CurrentAccountRes
 
 func (c *CurrentAccountResourceAssert) HasNoDateOutputFormat() *CurrentAccountResourceAssert {
 	c.ValueNotSet("date_output_format")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasNoDefaultDbtVersion() *CurrentAccountResourceAssert {
+	c.ValueNotSet("default_dbt_version")
 	return c
 }
 
@@ -1515,13 +1715,43 @@ func (c *CurrentAccountResourceAssert) HasNoDisableUserPrivilegeGrants() *Curren
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasNoDisallowedSpcsWorkloadTypes() *CurrentAccountResourceAssert {
+	c.ValueNotSet("disallowed_spcs_workload_types")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasNoEnableAutomaticSensitiveDataClassificationLog() *CurrentAccountResourceAssert {
 	c.ValueNotSet("enable_automatic_sensitive_data_classification_log")
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasNoEnableBudgetEventLogging() *CurrentAccountResourceAssert {
+	c.ValueNotSet("enable_budget_event_logging")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasNoEnableCortexAnalyst() *CurrentAccountResourceAssert {
+	c.ValueNotSet("enable_cortex_analyst")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasNoEnableDataCompaction() *CurrentAccountResourceAssert {
+	c.ValueNotSet("enable_data_compaction")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasNoEnableEgressCostOptimizer() *CurrentAccountResourceAssert {
 	c.ValueNotSet("enable_egress_cost_optimizer")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasNoEnableGetDdlUseDataTypeAlias() *CurrentAccountResourceAssert {
+	c.ValueNotSet("enable_get_ddl_use_data_type_alias")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasNoEnableIcebergMergeOnRead() *CurrentAccountResourceAssert {
+	c.ValueNotSet("enable_iceberg_merge_on_read")
 	return c
 }
 
@@ -1535,8 +1765,23 @@ func (c *CurrentAccountResourceAssert) HasNoEnableInternalStagesPrivatelink() *C
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasNoEnableNotebookCreationInPersonalDb() *CurrentAccountResourceAssert {
+	c.ValueNotSet("enable_notebook_creation_in_personal_db")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasNoEnablePerAccountAppServicePrivatelinkUrl() *CurrentAccountResourceAssert {
 	c.ValueNotSet("enable_per_account_app_service_privatelink_url")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasNoEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement() *CurrentAccountResourceAssert {
+	c.ValueNotSet("enable_spcs_block_storage_snowflake_full_encryption_enforcement")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasNoEnableTagPropagationEventLogging() *CurrentAccountResourceAssert {
+	c.ValueNotSet("enable_tag_propagation_event_logging")
 	return c
 }
 
@@ -1617,6 +1862,11 @@ func (c *CurrentAccountResourceAssert) HasNoGeometryOutputFormat() *CurrentAccou
 
 func (c *CurrentAccountResourceAssert) HasNoHybridTableLockTimeout() *CurrentAccountResourceAssert {
 	c.ValueNotSet("hybrid_table_lock_timeout")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasNoIcebergVersionDefault() *CurrentAccountResourceAssert {
+	c.ValueNotSet("iceberg_version_default")
 	return c
 }
 
@@ -1765,6 +2015,11 @@ func (c *CurrentAccountResourceAssert) HasNoQuotedIdentifiersIgnoreCase() *Curre
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasNoReadConsistencyMode() *CurrentAccountResourceAssert {
+	c.ValueNotSet("read_consistency_mode")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasNoReplaceInvalidCharacters() *CurrentAccountResourceAssert {
 	c.ValueNotSet("replace_invalid_characters")
 	return c
@@ -1782,6 +2037,11 @@ func (c *CurrentAccountResourceAssert) HasNoRequireStorageIntegrationForStageOpe
 
 func (c *CurrentAccountResourceAssert) HasNoResourceMonitor() *CurrentAccountResourceAssert {
 	c.ValueNotSet("resource_monitor")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasNoRowTimestampDefault() *CurrentAccountResourceAssert {
+	c.ValueNotSet("row_timestamp_default")
 	return c
 }
 
@@ -1817,6 +2077,11 @@ func (c *CurrentAccountResourceAssert) HasNoSessionPolicy() *CurrentAccountResou
 
 func (c *CurrentAccountResourceAssert) HasNoSimulatedDataSharingConsumer() *CurrentAccountResourceAssert {
 	c.ValueNotSet("simulated_data_sharing_consumer")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasNoSqlTraceQueryText() *CurrentAccountResourceAssert {
+	c.ValueNotSet("sql_trace_query_text")
 	return c
 }
 
@@ -1935,6 +2200,11 @@ func (c *CurrentAccountResourceAssert) HasNoUseCachedResult() *CurrentAccountRes
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasNoUseWorkspacesForSql() *CurrentAccountResourceAssert {
+	c.ValueNotSet("use_workspaces_for_sql")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasNoUserTaskManagedInitialWarehouseSize() *CurrentAccountResourceAssert {
 	c.ValueNotSet("user_task_managed_initial_warehouse_size")
 	return c
@@ -1974,6 +2244,11 @@ func (c *CurrentAccountResourceAssert) HasActivePythonProfilerEmpty() *CurrentAc
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasAllowBindValuesAccessEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("allow_bind_values_access", "")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasAllowClientMfaCachingEmpty() *CurrentAccountResourceAssert {
 	c.ValueSet("allow_client_mfa_caching", "")
 	return c
@@ -1981,6 +2256,11 @@ func (c *CurrentAccountResourceAssert) HasAllowClientMfaCachingEmpty() *CurrentA
 
 func (c *CurrentAccountResourceAssert) HasAllowIdTokenEmpty() *CurrentAccountResourceAssert {
 	c.ValueSet("allow_id_token", "")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasAllowedSpcsWorkloadTypesEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("allowed_spcs_workload_types", "")
 	return c
 }
 
@@ -2104,6 +2384,11 @@ func (c *CurrentAccountResourceAssert) HasCsvTimestampFormatEmpty() *CurrentAcco
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasDataMetricScheduleEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("data_metric_schedule", "")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasDataRetentionTimeInDaysEmpty() *CurrentAccountResourceAssert {
 	c.ValueSet("data_retention_time_in_days", "")
 	return c
@@ -2116,6 +2401,11 @@ func (c *CurrentAccountResourceAssert) HasDateInputFormatEmpty() *CurrentAccount
 
 func (c *CurrentAccountResourceAssert) HasDateOutputFormatEmpty() *CurrentAccountResourceAssert {
 	c.ValueSet("date_output_format", "")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasDefaultDbtVersionEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("default_dbt_version", "")
 	return c
 }
 
@@ -2159,13 +2449,43 @@ func (c *CurrentAccountResourceAssert) HasDisableUserPrivilegeGrantsEmpty() *Cur
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasDisallowedSpcsWorkloadTypesEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("disallowed_spcs_workload_types", "")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasEnableAutomaticSensitiveDataClassificationLogEmpty() *CurrentAccountResourceAssert {
 	c.ValueSet("enable_automatic_sensitive_data_classification_log", "")
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasEnableBudgetEventLoggingEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("enable_budget_event_logging", "")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableCortexAnalystEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("enable_cortex_analyst", "")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableDataCompactionEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("enable_data_compaction", "")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasEnableEgressCostOptimizerEmpty() *CurrentAccountResourceAssert {
 	c.ValueSet("enable_egress_cost_optimizer", "")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableGetDdlUseDataTypeAliasEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("enable_get_ddl_use_data_type_alias", "")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableIcebergMergeOnReadEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("enable_iceberg_merge_on_read", "")
 	return c
 }
 
@@ -2179,8 +2499,23 @@ func (c *CurrentAccountResourceAssert) HasEnableInternalStagesPrivatelinkEmpty()
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasEnableNotebookCreationInPersonalDbEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("enable_notebook_creation_in_personal_db", "")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasEnablePerAccountAppServicePrivatelinkUrlEmpty() *CurrentAccountResourceAssert {
 	c.ValueSet("enable_per_account_app_service_privatelink_url", "")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcementEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("enable_spcs_block_storage_snowflake_full_encryption_enforcement", "")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableTagPropagationEventLoggingEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("enable_tag_propagation_event_logging", "")
 	return c
 }
 
@@ -2261,6 +2596,11 @@ func (c *CurrentAccountResourceAssert) HasGeometryOutputFormatEmpty() *CurrentAc
 
 func (c *CurrentAccountResourceAssert) HasHybridTableLockTimeoutEmpty() *CurrentAccountResourceAssert {
 	c.ValueSet("hybrid_table_lock_timeout", "")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasIcebergVersionDefaultEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("iceberg_version_default", "")
 	return c
 }
 
@@ -2409,6 +2749,11 @@ func (c *CurrentAccountResourceAssert) HasQuotedIdentifiersIgnoreCaseEmpty() *Cu
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasReadConsistencyModeEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("read_consistency_mode", "")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasReplaceInvalidCharactersEmpty() *CurrentAccountResourceAssert {
 	c.ValueSet("replace_invalid_characters", "")
 	return c
@@ -2426,6 +2771,11 @@ func (c *CurrentAccountResourceAssert) HasRequireStorageIntegrationForStageOpera
 
 func (c *CurrentAccountResourceAssert) HasResourceMonitorEmpty() *CurrentAccountResourceAssert {
 	c.ValueSet("resource_monitor", "")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasRowTimestampDefaultEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("row_timestamp_default", "")
 	return c
 }
 
@@ -2461,6 +2811,11 @@ func (c *CurrentAccountResourceAssert) HasSessionPolicyEmpty() *CurrentAccountRe
 
 func (c *CurrentAccountResourceAssert) HasSimulatedDataSharingConsumerEmpty() *CurrentAccountResourceAssert {
 	c.ValueSet("simulated_data_sharing_consumer", "")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasSqlTraceQueryTextEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("sql_trace_query_text", "")
 	return c
 }
 
@@ -2579,6 +2934,11 @@ func (c *CurrentAccountResourceAssert) HasUseCachedResultEmpty() *CurrentAccount
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasUseWorkspacesForSqlEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("use_workspaces_for_sql", "")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasUserTaskManagedInitialWarehouseSizeEmpty() *CurrentAccountResourceAssert {
 	c.ValueSet("user_task_managed_initial_warehouse_size", "")
 	return c
@@ -2618,6 +2978,11 @@ func (c *CurrentAccountResourceAssert) HasActivePythonProfilerNotEmpty() *Curren
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasAllowBindValuesAccessNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("allow_bind_values_access")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasAllowClientMfaCachingNotEmpty() *CurrentAccountResourceAssert {
 	c.ValuePresent("allow_client_mfa_caching")
 	return c
@@ -2625,6 +2990,11 @@ func (c *CurrentAccountResourceAssert) HasAllowClientMfaCachingNotEmpty() *Curre
 
 func (c *CurrentAccountResourceAssert) HasAllowIdTokenNotEmpty() *CurrentAccountResourceAssert {
 	c.ValuePresent("allow_id_token")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasAllowedSpcsWorkloadTypesNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("allowed_spcs_workload_types")
 	return c
 }
 
@@ -2748,6 +3118,11 @@ func (c *CurrentAccountResourceAssert) HasCsvTimestampFormatNotEmpty() *CurrentA
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasDataMetricScheduleNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("data_metric_schedule")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasDataRetentionTimeInDaysNotEmpty() *CurrentAccountResourceAssert {
 	c.ValuePresent("data_retention_time_in_days")
 	return c
@@ -2760,6 +3135,11 @@ func (c *CurrentAccountResourceAssert) HasDateInputFormatNotEmpty() *CurrentAcco
 
 func (c *CurrentAccountResourceAssert) HasDateOutputFormatNotEmpty() *CurrentAccountResourceAssert {
 	c.ValuePresent("date_output_format")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasDefaultDbtVersionNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("default_dbt_version")
 	return c
 }
 
@@ -2803,13 +3183,43 @@ func (c *CurrentAccountResourceAssert) HasDisableUserPrivilegeGrantsNotEmpty() *
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasDisallowedSpcsWorkloadTypesNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("disallowed_spcs_workload_types")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasEnableAutomaticSensitiveDataClassificationLogNotEmpty() *CurrentAccountResourceAssert {
 	c.ValuePresent("enable_automatic_sensitive_data_classification_log")
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasEnableBudgetEventLoggingNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("enable_budget_event_logging")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableCortexAnalystNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("enable_cortex_analyst")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableDataCompactionNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("enable_data_compaction")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasEnableEgressCostOptimizerNotEmpty() *CurrentAccountResourceAssert {
 	c.ValuePresent("enable_egress_cost_optimizer")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableGetDdlUseDataTypeAliasNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("enable_get_ddl_use_data_type_alias")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableIcebergMergeOnReadNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("enable_iceberg_merge_on_read")
 	return c
 }
 
@@ -2823,8 +3233,23 @@ func (c *CurrentAccountResourceAssert) HasEnableInternalStagesPrivatelinkNotEmpt
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasEnableNotebookCreationInPersonalDbNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("enable_notebook_creation_in_personal_db")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasEnablePerAccountAppServicePrivatelinkUrlNotEmpty() *CurrentAccountResourceAssert {
 	c.ValuePresent("enable_per_account_app_service_privatelink_url")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcementNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("enable_spcs_block_storage_snowflake_full_encryption_enforcement")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnableTagPropagationEventLoggingNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("enable_tag_propagation_event_logging")
 	return c
 }
 
@@ -2905,6 +3330,11 @@ func (c *CurrentAccountResourceAssert) HasGeometryOutputFormatNotEmpty() *Curren
 
 func (c *CurrentAccountResourceAssert) HasHybridTableLockTimeoutNotEmpty() *CurrentAccountResourceAssert {
 	c.ValuePresent("hybrid_table_lock_timeout")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasIcebergVersionDefaultNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("iceberg_version_default")
 	return c
 }
 
@@ -3053,6 +3483,11 @@ func (c *CurrentAccountResourceAssert) HasQuotedIdentifiersIgnoreCaseNotEmpty() 
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasReadConsistencyModeNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("read_consistency_mode")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasReplaceInvalidCharactersNotEmpty() *CurrentAccountResourceAssert {
 	c.ValuePresent("replace_invalid_characters")
 	return c
@@ -3070,6 +3505,11 @@ func (c *CurrentAccountResourceAssert) HasRequireStorageIntegrationForStageOpera
 
 func (c *CurrentAccountResourceAssert) HasResourceMonitorNotEmpty() *CurrentAccountResourceAssert {
 	c.ValuePresent("resource_monitor")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasRowTimestampDefaultNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("row_timestamp_default")
 	return c
 }
 
@@ -3105,6 +3545,11 @@ func (c *CurrentAccountResourceAssert) HasSessionPolicyNotEmpty() *CurrentAccoun
 
 func (c *CurrentAccountResourceAssert) HasSimulatedDataSharingConsumerNotEmpty() *CurrentAccountResourceAssert {
 	c.ValuePresent("simulated_data_sharing_consumer")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasSqlTraceQueryTextNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("sql_trace_query_text")
 	return c
 }
 
@@ -3220,6 +3665,11 @@ func (c *CurrentAccountResourceAssert) HasUnsupportedDdlActionNotEmpty() *Curren
 
 func (c *CurrentAccountResourceAssert) HasUseCachedResultNotEmpty() *CurrentAccountResourceAssert {
 	c.ValuePresent("use_cached_result")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasUseWorkspacesForSqlNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("use_workspaces_for_sql")
 	return c
 }
 

@@ -189,13 +189,13 @@ func ReadCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any) d
 		}
 	}
 
-	parameters, err := client.Accounts.ShowParameters(ctx)
+	parameters, err := client.Accounts.ShowParametersDetails(ctx)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err := handleAccountParameterRead(d, parameters); err != nil {
-		return diag.FromErr(err)
+	if diags := handleAccountParameterRead(d, parameters); diags != nil {
+		return diags
 	}
 
 	return nil

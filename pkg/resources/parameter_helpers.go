@@ -2,7 +2,6 @@ package resources
 
 import (
 	"fmt"
-	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
@@ -49,17 +48,71 @@ var primitiveParameterValueTypes = map[string]schema.ValueType{
 	"StringAllowEmpty": schema.TypeString,
 }
 
-var parameterIntAtLeastZero = []parameterdefs.ParameterDef{
-	defs.DataRetentionTimeInDays,
-	defs.MaxDataExtensionTimeInDays,
-	defs.SuspendTaskAfterNumFailures,
-	defs.TaskAutoRetryAttempts,
-	defs.UserTaskTimeoutMs,
+type parameterSchemaModifier func(*schema.Schema)
+
+func withIntAtLeast(minimum int) parameterSchemaModifier {
+	return func(s *schema.Schema) {
+		s.ValidateDiagFunc = validation.ToDiagFunc(validation.IntAtLeast(minimum))
+	}
 }
 
-var validAccountObjectIdentifierParameters = []parameterdefs.ParameterDef{
-	defs.DefaultNotebookComputePoolCpu,
-	defs.DefaultNotebookComputePoolGpu,
+func withFloatValidation() parameterSchemaModifier {
+	return func(s *schema.Schema) {
+		s.ValidateDiagFunc = sdkValidation(sdk.ToFloat64)
+		s.DiffSuppressFunc = NormalizeAndCompare(sdk.ToFloat64)
+	}
+}
+
+func withAccountObjectIdentifierValidation() parameterSchemaModifier {
+	return func(s *schema.Schema) {
+		s.ValidateDiagFunc = IsValidIdentifier[sdk.AccountObjectIdentifier]()
+		s.DiffSuppressFunc = suppressIdentifierQuoting
+	}
+}
+
+var parameterSchemaModifiers = buildParameterSchemaModifiers()
+
+func buildParameterSchemaModifiers() map[string][]parameterSchemaModifier {
+	result := make(map[string][]parameterSchemaModifier)
+	register := func(modifier parameterSchemaModifier, parameters ...parameterdefs.ParameterDef) {
+		for _, parameter := range parameters {
+			result[parameter.SqlName] = append(result[parameter.SqlName], modifier)
+		}
+	}
+
+	register(withIntAtLeast(0),
+		defs.DataRetentionTimeInDays,
+		defs.HybridTableLockTimeout,
+		defs.IcebergVersionDefault,
+		defs.JsonIndent,
+		defs.LockTimeout,
+		defs.MaxDataExtensionTimeInDays,
+		defs.MinDataRetentionTimeInDays,
+		defs.MultiStatementCount,
+		defs.RowsPerResultset,
+		defs.StatementQueuedTimeoutInSeconds,
+		defs.StatementTimeoutInSeconds,
+		defs.SuspendTaskAfterNumFailures,
+		defs.TaskAutoRetryAttempts,
+		defs.UserTaskMinimumTriggerIntervalInSeconds,
+		defs.UserTaskTimeoutMs,
+	)
+	register(withIntAtLeast(1),
+		defs.ClientMemoryLimit,
+		defs.ClientPrefetchThreads,
+	)
+	register(withIntAtLeast(16), defs.ClientResultChunkSize)
+	register(withIntAtLeast(900), defs.ClientSessionKeepAliveHeartbeatFrequency)
+	register(withIntAtLeast(1900), defs.TwoDigitCenturyStart)
+	register(withFloatValidation(), defs.InitialReplicationSizeLimitInTb)
+	register(withAccountObjectIdentifierValidation(),
+		defs.CatalogSync,
+		defs.DefaultNotebookComputePoolCpu,
+		defs.DefaultNotebookComputePoolGpu,
+		defs.DefaultStreamlitComputePool,
+	)
+
+	return result
 }
 
 // parameterSchema derives a resource schema entry from a catalog parameter.
@@ -91,16 +144,8 @@ func parameterSchema(p parameterdefs.ParameterDef) *schema.Schema {
 		s.ValidateDiagFunc = identifierValidator
 		s.DiffSuppressFunc = suppressIdentifierQuoting
 	}
-	if slices.ContainsFunc(parameterIntAtLeastZero, func(intParameter parameterdefs.ParameterDef) bool {
-		return intParameter.SqlName == p.SqlName
-	}) {
-		s.ValidateDiagFunc = validation.ToDiagFunc(validation.IntAtLeast(0))
-	}
-	if slices.ContainsFunc(validAccountObjectIdentifierParameters, func(validIdentifierParameter parameterdefs.ParameterDef) bool {
-		return validIdentifierParameter.SqlName == p.SqlName
-	}) {
-		s.ValidateDiagFunc = IsValidIdentifier[sdk.AccountObjectIdentifier]()
-		s.DiffSuppressFunc = suppressIdentifierQuoting
+	for _, modify := range parameterSchemaModifiers[p.SqlName] {
+		modify(s)
 	}
 
 	return s

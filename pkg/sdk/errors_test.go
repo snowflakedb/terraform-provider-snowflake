@@ -173,6 +173,11 @@ func TestDecodeDriverError(t *testing.T) {
 			want:  ErrPatNotFound,
 		},
 		{
+			name:  "Match ErrPolicyNotAttachedToAccount",
+			input: errors.New("Any policy of kind PACKAGES_POLICY is not attached to ACCOUNT ABC123."),
+			want:  ErrPolicyNotAttachedToAccount,
+		},
+		{
 			name:  "Unmatched error returns original",
 			input: unrecognizedErr,
 			want:  unrecognizedErr,

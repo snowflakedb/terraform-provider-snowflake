@@ -119,6 +119,7 @@ func decodeDriverError(err error) error {
 		"account is empty":                                        ErrAccountIsEmpty,
 		"Grant partially executed":                                ErrGrantPartiallyExecuted,
 		"is not clustered":                                        ErrTableNotClustered,
+		"is not attached to ACCOUNT":                              ErrPolicyNotAttachedToAccount,
 	}
 	for k, v := range m {
 		if strings.Contains(err.Error(), k) {
