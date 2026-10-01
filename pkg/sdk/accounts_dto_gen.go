@@ -128,7 +128,7 @@ type AccountParametersRequest struct {
 	GeometryOutputFormat                                     *GeometryOutputFormat
 	HybridTableLockTimeout                                   *int
 	IcebergVersionDefault                                    *int
-	InitialReplicationSizeLimitInTb                          *string
+	InitialReplicationSizeLimitInTb                          *float64
 	JdbcTreatDecimalAsInt                                    *bool
 	JdbcTreatTimestampNtzAsUtc                               *bool
 	JdbcUseSessionTimezone                                   *bool

@@ -203,6 +203,50 @@ func TestTypedParameterValueComputedIfByValueType(t *testing.T) {
 			stateValue:      map[string]any{"value": true},
 			wantNewComputed: false,
 		},
+		{
+			name: "float matches state",
+			customDiff: resources.FloatTypedParameterValueComputedIf("value", sdk.TypedParameter[float64]{
+				Key:   "VALUE",
+				Value: 9.9,
+				Level: sdk.ParameterTypeAccount,
+			}, sdk.ParameterTypeDatabase),
+			valueType:       schema.TypeString,
+			stateValue:      map[string]any{"value": "9.9"},
+			wantNewComputed: false,
+		},
+		{
+			name: "float differs from state",
+			customDiff: resources.FloatTypedParameterValueComputedIf("value", sdk.TypedParameter[float64]{
+				Key:   "VALUE",
+				Value: 9.9,
+				Level: sdk.ParameterTypeAccount,
+			}, sdk.ParameterTypeDatabase),
+			valueType:       schema.TypeString,
+			stateValue:      map[string]any{"value": "10.0"},
+			wantNewComputed: true,
+		},
+		{
+			name: "float whole number matches scaled state",
+			customDiff: resources.FloatTypedParameterValueComputedIf("value", sdk.TypedParameter[float64]{
+				Key:   "VALUE",
+				Value: 10,
+				Level: sdk.ParameterTypeAccount,
+			}, sdk.ParameterTypeDatabase),
+			valueType:       schema.TypeString,
+			stateValue:      map[string]any{"value": "10.0"},
+			wantNewComputed: false,
+		},
+		{
+			name: "float whole number matches unscaled state",
+			customDiff: resources.FloatTypedParameterValueComputedIf("value", sdk.TypedParameter[float64]{
+				Key:   "VALUE",
+				Value: 10,
+				Level: sdk.ParameterTypeAccount,
+			}, sdk.ParameterTypeDatabase),
+			valueType:       schema.TypeString,
+			stateValue:      map[string]any{"value": "10"},
+			wantNewComputed: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

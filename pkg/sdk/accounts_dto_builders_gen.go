@@ -556,7 +556,7 @@ func (s *AccountParametersRequest) WithIcebergVersionDefault(icebergVersionDefau
 	return s
 }
 
-func (s *AccountParametersRequest) WithInitialReplicationSizeLimitInTb(initialReplicationSizeLimitInTb string) *AccountParametersRequest {
+func (s *AccountParametersRequest) WithInitialReplicationSizeLimitInTb(initialReplicationSizeLimitInTb float64) *AccountParametersRequest {
 	s.InitialReplicationSizeLimitInTb = &initialReplicationSizeLimitInTb
 	return s
 }
@@ -1057,7 +1057,7 @@ func (s *AccountParametersRequest) SetParameterFromRaw(key string, value string)
 	case "ICEBERG_VERSION_DEFAULT":
 		return assignParsedParameter(value, strconv.Atoi, &s.IcebergVersionDefault)
 	case "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB":
-		return assignParsedParameter(value, identityParse, &s.InitialReplicationSizeLimitInTb)
+		return assignParsedParameter(value, ToFloat64, &s.InitialReplicationSizeLimitInTb)
 	case "JDBC_TREAT_DECIMAL_AS_INT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcTreatDecimalAsInt)
 	case "JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC":

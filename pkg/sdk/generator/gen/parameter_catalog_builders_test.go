@@ -12,6 +12,7 @@ func TestParameterCatalogBuilders(t *testing.T) {
 	boolParameter := parameterdefs.ParameterDef{SqlName: "PIPE_EXECUTION_PAUSED", Kind: KindBool}
 	intParameter := parameterdefs.ParameterDef{SqlName: "DATA_RETENTION_TIME_IN_DAYS", Kind: KindInt}
 	textParameter := parameterdefs.ParameterDef{SqlName: "QUERY_TAG", Kind: KindString}
+	floatParameter := parameterdefs.ParameterDef{SqlName: "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB", Kind: KindFloat}
 	emptyParameter := parameterdefs.ParameterDef{
 		SqlName: "DEFAULT_DDL_COLLATION",
 		Kind:    KindOfT[sdkcommons.StringAllowEmpty](),
@@ -31,6 +32,7 @@ func TestParameterCatalogBuilders(t *testing.T) {
 				boolParameter,
 				intParameter,
 				textParameter,
+				floatParameter,
 				emptyParameter,
 				enumParameter,
 				identifierParameter,
@@ -45,6 +47,7 @@ func TestParameterCatalogBuilders(t *testing.T) {
 			{"PipeExecutionPaused", "*bool"},
 			{"DataRetentionTimeInDays", "*int"},
 			{"QueryTag", "*string"},
+			{"InitialReplicationSizeLimitInTb", "*float64"},
 			{"DefaultDdlCollation", "*StringAllowEmpty"},
 			{"LogLevel", "*LogLevel"},
 			{"Catalog", "*AccountObjectIdentifier"},
@@ -101,6 +104,7 @@ func TestParameterCatalogBuilders(t *testing.T) {
 			{KindBool, "strconv.ParseBool"},
 			{KindInt, "strconv.Atoi"},
 			{KindString, "identityParse"},
+			{KindFloat, "ToFloat64"},
 			{"StringAllowEmpty", "ToStringAllowEmpty"},
 			{"AccountObjectIdentifier", "ParseAccountObjectIdentifier"},
 			{"DatabaseObjectIdentifier", "ParseDatabaseObjectIdentifier"},

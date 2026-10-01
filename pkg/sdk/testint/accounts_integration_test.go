@@ -811,7 +811,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 					WithGeographyOutputFormat(sdk.GeographyOutputFormatWKT).
 					WithGeometryOutputFormat(sdk.GeometryOutputFormatWKT).
 					WithHybridTableLockTimeout(3599).
-					WithInitialReplicationSizeLimitInTb("9.9").
+					WithInitialReplicationSizeLimitInTb(9.9).
 					WithJdbcTreatDecimalAsInt(false).
 					WithJdbcTreatTimestampNtzAsUtc(true).
 					WithJdbcUseSessionTimezone(false).

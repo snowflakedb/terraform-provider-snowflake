@@ -12,6 +12,7 @@ const (
 	KindBool   = "bool"
 	KindInt    = "int"
 	KindString = "string"
+	KindFloat  = "float64"
 )
 
 // KindInfo is the single source for converting a kind between its SQL string form and Go, in both
@@ -34,6 +35,8 @@ func InfoForKind(kind string) (KindInfo, error) {
 		return KindInfo{GoType: KindInt, FieldType: KindInt, ReadParser: "strconv.Atoi", WriteParser: "strconv.Atoi"}, nil
 	case KindString:
 		return KindInfo{GoType: KindString, FieldType: KindString, ReadParser: "identityParse", WriteParser: "identityParse"}, nil
+	case KindFloat:
+		return KindInfo{GoType: KindFloat, FieldType: KindFloat, ReadParser: "ToFloat64", WriteParser: "ToFloat64"}, nil
 	case KindOfT[sdkcommons.StringAllowEmpty]():
 		// The wrapper exists so an empty string still renders in SQL; readers get a plain string.
 		return KindInfo{GoType: KindString, FieldType: kind, ReadParser: "identityParse", WriteParser: "ToStringAllowEmpty"}, nil

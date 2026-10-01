@@ -41,9 +41,12 @@ var identifierParameterValidators = map[string]schema.SchemaValidateDiagFunc{
 	"SchemaObjectIdentifier":  IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 }
 
+// KindFloat ("float64") stays a Terraform string. The SDK field is float64 so
+// ALTER renders an unquoted decimal literal, while the attribute keeps scale ("10.0").
 var primitiveParameterValueTypes = map[string]schema.ValueType{
 	"bool":             schema.TypeBool,
 	"int":              schema.TypeInt,
+	"float64":          schema.TypeString,
 	"string":           schema.TypeString,
 	"StringAllowEmpty": schema.TypeString,
 }

@@ -29,7 +29,7 @@ func TestHandleAccountParameterRead(t *testing.T) {
 		AllowBindValuesAccess:             sdk.TypedParameter[bool]{Value: true},
 		EventTable:                        sdk.TypedParameter[sdk.SchemaObjectIdentifier]{Value: sdk.NewSchemaObjectIdentifier("database", "schema", "event_table")},
 		IcebergVersionDefault:             sdk.TypedParameter[int]{Value: 2},
-		InitialReplicationSizeLimitInTb:   sdk.TypedParameter[string]{Value: "9.9"},
+		InitialReplicationSizeLimitInTb:   sdk.TypedParameter[float64]{Value: 9.9},
 		EnableGetDdlUseDataTypeAlias:      sdk.TypedParameter[bool]{Value: true},
 		UseWorkspacesForSql:               sdk.TypedParameter[string]{Value: "unset"},
 		DefaultStreamlitNotebookWarehouse: sdk.TypedParameter[sdk.AccountObjectIdentifier]{Value: sdk.NewAccountObjectIdentifier("warehouse")},

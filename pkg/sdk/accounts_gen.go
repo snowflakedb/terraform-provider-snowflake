@@ -105,7 +105,7 @@ type AccountParametersDetails struct {
 	GeometryOutputFormat                                     TypedParameter[GeometryOutputFormat]
 	HybridTableLockTimeout                                   TypedParameter[int]
 	IcebergVersionDefault                                    TypedParameter[int]
-	InitialReplicationSizeLimitInTb                          TypedParameter[string]
+	InitialReplicationSizeLimitInTb                          TypedParameter[float64]
 	JdbcTreatDecimalAsInt                                    TypedParameter[bool]
 	JdbcTreatTimestampNtzAsUtc                               TypedParameter[bool]
 	JdbcUseSessionTimezone                                   TypedParameter[bool]
@@ -301,7 +301,7 @@ type AccountParameters struct {
 	GeometryOutputFormat                                     *GeometryOutputFormat             `ddl:"parameter,single_quotes" sql:"GEOMETRY_OUTPUT_FORMAT"`
 	HybridTableLockTimeout                                   *int                              `ddl:"parameter" sql:"HYBRID_TABLE_LOCK_TIMEOUT"`
 	IcebergVersionDefault                                    *int                              `ddl:"parameter" sql:"ICEBERG_VERSION_DEFAULT"`
-	InitialReplicationSizeLimitInTb                          *string                           `ddl:"parameter,single_quotes" sql:"INITIAL_REPLICATION_SIZE_LIMIT_IN_TB"`
+	InitialReplicationSizeLimitInTb                          *float64                          `ddl:"parameter" sql:"INITIAL_REPLICATION_SIZE_LIMIT_IN_TB"`
 	JdbcTreatDecimalAsInt                                    *bool                             `ddl:"parameter" sql:"JDBC_TREAT_DECIMAL_AS_INT"`
 	JdbcTreatTimestampNtzAsUtc                               *bool                             `ddl:"parameter" sql:"JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC"`
 	JdbcUseSessionTimezone                                   *bool                             `ddl:"parameter" sql:"JDBC_USE_SESSION_TIMEZONE"`

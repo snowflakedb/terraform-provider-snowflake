@@ -7,9 +7,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
 
-// WithParameters expands catalog parameters into CREATE/ALTER-SET assignment fields. String and enum
-// values are single-quoted — Snowflake accepts quoted and unquoted forms uniformly for all
-// string/enum parameters.
+// WithParameters expands catalog parameters into CREATE/ALTER-SET assignment fields.
 func (v *QueryStruct) WithParameters(params ...parameterdefs.ParameterDef) *QueryStruct {
 	for _, p := range params {
 		v.setParameters = append(v.setParameters, newParameterField(p))
@@ -24,6 +22,8 @@ func (v *QueryStruct) WithParameters(params ...parameterdefs.ParameterDef) *Quer
 			v.OptionalNumberAssignment(p.SqlName, ParameterOptions())
 		case KindString:
 			v.OptionalTextAssignment(p.SqlName, ParameterOptions().SingleQuotes())
+		case KindFloat:
+			v.OptionalAssignment(p.SqlName, KindFloat, ParameterOptions())
 		default:
 			if _, err := ToObjectIdentifierKind(p.Kind); err == nil {
 				v.OptionalIdentifier(sqlToFieldName(p.SqlName, true), p.Kind, IdentifierOptions().SQL(p.SqlName).Equals())

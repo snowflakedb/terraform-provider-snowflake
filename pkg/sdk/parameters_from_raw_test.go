@@ -155,6 +155,27 @@ func TestSetParameterFromRaw(t *testing.T) {
 		require.NoError(t, NewSchemaSetRequest().SetParameterFromRaw("LOG_LEVEL", "INFO"))
 		require.ErrorIs(t, NewSchemaSetRequest().SetParameterFromRaw("COMMENT", "x"), ErrParameterNotSupported)
 	})
+
+	// INITIAL_REPLICATION_SIZE_LIMIT_IN_TB is a decimal number whose SQL grammar requires an
+	// unquoted literal, so it is a KindFloat parameter rather than KindString.
+	t.Run("float parameters render without quotes through the raw path", func(t *testing.T) {
+		setAccountSql := func(t *testing.T, request *AccountParametersRequest) string {
+			t.Helper()
+			sql, err := structToSQL(NewAlterAccountRequest().WithSet(*NewAccountSetRequest().WithParameters(*request)).toOpts())
+			require.NoError(t, err)
+			return sql
+		}
+
+		fromRaw := NewAccountParametersRequest()
+		require.NoError(t, fromRaw.SetParameterFromRaw("INITIAL_REPLICATION_SIZE_LIMIT_IN_TB", "9.9"))
+
+		direct := NewAccountParametersRequest().WithInitialReplicationSizeLimitInTb(9.9)
+
+		sql := setAccountSql(t, fromRaw)
+		require.Equal(t, setAccountSql(t, direct), sql)
+		require.Contains(t, sql, "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB = 9.9")
+		require.NotContains(t, sql, "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB = '9.9'")
+	})
 }
 
 func TestUnsetParameterFromRaw(t *testing.T) {

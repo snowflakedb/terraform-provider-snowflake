@@ -54,6 +54,26 @@ func BoolTypedParameterValueComputedIf(key string, parameter sdk.TypedParameter[
 	return parameterValueComputedIf(key, strconv.FormatBool(parameter.Value), parameter.Level, objectParameterLevel, func(value any) string { return strconv.FormatBool(value.(bool)) })
 }
 
+// formatFloatParameter renders a float parameter with at least one fractional digit
+// so values such as 10 stay "10.0", matching the string Terraform attribute.
+func formatFloatParameter(value float64) string {
+	rendered := strconv.FormatFloat(value, 'f', -1, 64)
+	if !strings.Contains(rendered, ".") {
+		rendered += ".0"
+	}
+	return rendered
+}
+
+func FloatTypedParameterValueComputedIf(key string, parameter sdk.TypedParameter[float64], objectParameterLevel sdk.ParameterType) schema.CustomizeDiffFunc {
+	return parameterValueComputedIf(key, formatFloatParameter(parameter.Value), parameter.Level, objectParameterLevel, func(value any) string {
+		parsed, err := strconv.ParseFloat(value.(string), 64)
+		if err != nil {
+			return value.(string)
+		}
+		return formatFloatParameter(parsed)
+	})
+}
+
 func IdentifierTypedParameterValueComputedIf[T sdk.ObjectIdentifier](key string, parameter sdk.TypedParameter[T], objectParameterLevel sdk.ParameterType) schema.CustomizeDiffFunc {
 	return parameterValueComputedIf(key, parameter.Value.FullyQualifiedName(), parameter.Level, objectParameterLevel, func(value any) string { return value.(string) })
 }

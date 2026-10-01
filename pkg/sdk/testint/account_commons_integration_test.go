@@ -114,7 +114,7 @@ func setAndUnsetAccountParametersTest(
 				WithGeometryOutputFormat(sdk.GeometryOutputFormatWKT).
 				WithHybridTableLockTimeout(3599).
 				WithIcebergVersionDefault(2).
-				WithInitialReplicationSizeLimitInTb("9.9").
+				WithInitialReplicationSizeLimitInTb(9.9).
 				WithJdbcTreatDecimalAsInt(false).
 				WithJdbcTreatTimestampNtzAsUtc(true).
 				WithJdbcUseSessionTimezone(false).

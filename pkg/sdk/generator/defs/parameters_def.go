@@ -465,7 +465,7 @@ var (
 	}
 	InitialReplicationSizeLimitInTb = parameterdefs.ParameterDef{
 		SqlName:     "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB",
-		Kind:        g.KindString,
+		Kind:        g.KindFloat,
 		Levels:      onAccount,
 		Description: "Sets the maximum estimated size limit for the initial replication of a primary database to a secondary database (in TB). Set this parameter on any account that stores a secondary database. This size limit helps prevent accounts from accidentally incurring large database replication charges. To remove the size limit, set the value to 0.0. It is required to pass numbers with scale of at least 1 (e.g. 20.5, 32.25, 33.333, etc.).",
 	}
