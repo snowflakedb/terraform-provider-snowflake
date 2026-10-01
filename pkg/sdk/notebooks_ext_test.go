@@ -15,6 +15,13 @@ func init() {
 	databaseId := NewAccountObjectIdentifier("database-name")
 
 	notebooksTests.Create.
+		withAdditionalValidationCase(
+			"validation_Create_ExternalAccessIntegrations_invalidIdentifier",
+			func(opts *CreateNotebookOptions) {
+				opts.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+			},
+			errInvalidIdentifier("CreateNotebookOptions", "ExternalAccessIntegrations[0]"),
+		).
 		withExpectedSqlf(
 			case_Notebooks_sql_Create_basic,
 			"CREATE NOTEBOOK %s", id.FullyQualifiedName(),
@@ -44,6 +51,15 @@ func init() {
 		)
 
 	notebooksTests.Alter.
+		withAdditionalValidationCase(
+			"validation_Alter_Set_ExternalAccessIntegrations_invalidIdentifier",
+			func(opts *AlterNotebookOptions) {
+				opts.Set = &NotebookSet{
+					ExternalAccessIntegrations: []AccountObjectIdentifier{emptyAccountObjectIdentifier},
+				}
+			},
+			errInvalidIdentifier("AlterNotebookOptions.Set", "ExternalAccessIntegrations[0]"),
+		).
 		withModifyAndExpectedSqlf(
 			case_Notebooks_sql_Alter_Set,
 			func(opts *AlterNotebookOptions) {

@@ -16,7 +16,7 @@ func (opts *CreateShareOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateShareOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -27,7 +27,7 @@ func (opts *AlterShareOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterShareOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Add, opts.Remove, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterShareOptions", "Add", "Remove", "Set", "Unset", "SetTags", "UnsetTags"))
@@ -61,7 +61,7 @@ func (opts *DropShareOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropShareOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -80,7 +80,7 @@ func (opts *DescribeShareOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeShareOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

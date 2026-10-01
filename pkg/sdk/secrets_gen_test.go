@@ -66,7 +66,7 @@ var secretsTests = SecretsTestsContext{
 		withValidationCases(
 			validationCase[*CreateWithOAuthClientCredentialsFlowSecretOptions]{
 				Name:        case_Secrets_validation_CreateWithOAuthClientCredentialsFlow_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateWithOAuthClientCredentialsFlowSecretOptions", "name"),
 				DefaultModify: func(opts *CreateWithOAuthClientCredentialsFlowSecretOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -100,7 +100,7 @@ var secretsTests = SecretsTestsContext{
 		withValidationCases(
 			validationCase[*CreateWithOAuthAuthorizationCodeFlowSecretOptions]{
 				Name:        case_Secrets_validation_CreateWithOAuthAuthorizationCodeFlow_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateWithOAuthAuthorizationCodeFlowSecretOptions", "name"),
 				DefaultModify: func(opts *CreateWithOAuthAuthorizationCodeFlowSecretOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -134,7 +134,7 @@ var secretsTests = SecretsTestsContext{
 		withValidationCases(
 			validationCase[*CreateWithBasicAuthenticationSecretOptions]{
 				Name:        case_Secrets_validation_CreateWithBasicAuthentication_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateWithBasicAuthenticationSecretOptions", "name"),
 				DefaultModify: func(opts *CreateWithBasicAuthenticationSecretOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -168,7 +168,7 @@ var secretsTests = SecretsTestsContext{
 		withValidationCases(
 			validationCase[*CreateWithGenericStringSecretOptions]{
 				Name:        case_Secrets_validation_CreateWithGenericString_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateWithGenericStringSecretOptions", "name"),
 				DefaultModify: func(opts *CreateWithGenericStringSecretOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -267,7 +267,7 @@ var secretsTests = SecretsTestsContext{
 		withValidationCases(
 			validationCase[*DropSecretOptions]{
 				Name:        case_Secrets_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropSecretOptions", "name"),
 				DefaultModify: func(opts *DropSecretOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -315,7 +315,7 @@ var secretsTests = SecretsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeSecretOptions]{
 				Name:        case_Secrets_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeSecretOptions", "name"),
 				DefaultModify: func(opts *DescribeSecretOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

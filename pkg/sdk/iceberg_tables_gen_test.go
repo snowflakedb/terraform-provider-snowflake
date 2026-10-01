@@ -191,7 +191,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 		withValidationCases(
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateIcebergTableOptions", "name"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -319,7 +319,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_ColumnsAndConstraints_Columns_InlineConstraint_FK_References_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.FK", "References"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].InlineConstraint = &TableColumnInlineConstraint{}
@@ -511,7 +511,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_ColumnsAndConstraints_OutOfLineConstraint_FK_References_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].FK", "References"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{}}
 					opts.ColumnsAndConstraints.OutOfLineConstraint[0].FK = &TableOutOfLineFK{}
@@ -615,7 +615,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_RowAccessPolicy_Name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateIcebergTableOptions.RowAccessPolicy", "Name"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.RowAccessPolicy = &IcebergTableRowAccessPolicy{}
 					opts.RowAccessPolicy.Name = emptySchemaObjectIdentifier
@@ -623,7 +623,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateIcebergTableOptions.AggregationPolicy", "AggregationPolicy"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.AggregationPolicy = &IcebergTableAggregationPolicy{}
 					opts.AggregationPolicy.AggregationPolicy = emptySchemaObjectIdentifier
@@ -650,7 +650,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 		withValidationCases(
 			validationCase[*CreateFromIcebergFilesIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_CreateFromIcebergFiles_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateFromIcebergFilesIcebergTableOptions", "name"),
 				DefaultModify: func(opts *CreateFromIcebergFilesIcebergTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -684,7 +684,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 		withValidationCases(
 			validationCase[*CreateFromDeltaLakeIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_CreateFromDeltaLake_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateFromDeltaLakeIcebergTableOptions", "name"),
 				DefaultModify: func(opts *CreateFromDeltaLakeIcebergTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -718,7 +718,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 		withValidationCases(
 			validationCase[*CreateFromIcebergRestIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_CreateFromIcebergRest_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateFromIcebergRestIcebergTableOptions", "name"),
 				DefaultModify: func(opts *CreateFromIcebergRestIcebergTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -752,7 +752,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 		withValidationCases(
 			validationCase[*CreateFromAwsGlueIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_CreateFromAwsGlue_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateFromAwsGlueIcebergTableOptions", "name"),
 				DefaultModify: func(opts *CreateFromAwsGlueIcebergTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -786,7 +786,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 		withValidationCases(
 			validationCase[*AlterIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions", "name"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -940,7 +940,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*AlterIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Alter_AddColumnAction_InlineConstraint_FK_References_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "References"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
 					opts.AddColumnAction = &IcebergTableAddColumnAction{}
 					opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
@@ -1102,7 +1102,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*AlterIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.AddRowAccessPolicy", "RowAccessPolicy"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
 					opts.AddRowAccessPolicy = &ViewAddRowAccessPolicy{}
 					opts.AddRowAccessPolicy.RowAccessPolicy = emptySchemaObjectIdentifier
@@ -1118,7 +1118,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*AlterIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.DropRowAccessPolicy", "RowAccessPolicy"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
 					opts.DropRowAccessPolicy = &ViewDropRowAccessPolicy{}
 					opts.DropRowAccessPolicy.RowAccessPolicy = emptySchemaObjectIdentifier
@@ -1126,7 +1126,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*AlterIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Alter_DropAndAddRowAccessPolicy_Drop_RowAccessPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.DropAndAddRowAccessPolicy.Drop", "RowAccessPolicy"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
 					opts.DropAndAddRowAccessPolicy = &IcebergTableDropAndAddRowAccessPolicy{}
 					opts.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy = emptySchemaObjectIdentifier
@@ -1134,7 +1134,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*AlterIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.DropAndAddRowAccessPolicy.Add", "RowAccessPolicy"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
 					opts.DropAndAddRowAccessPolicy = &IcebergTableDropAndAddRowAccessPolicy{}
 					opts.DropAndAddRowAccessPolicy.Add.RowAccessPolicy = emptySchemaObjectIdentifier
@@ -1150,7 +1150,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*AlterIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Alter_SetAggregationPolicy_AggregationPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.SetAggregationPolicy", "AggregationPolicy"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
 					opts.SetAggregationPolicy = &ViewSetAggregationPolicy{}
 					opts.SetAggregationPolicy.AggregationPolicy = emptySchemaObjectIdentifier
@@ -1158,7 +1158,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 			},
 			validationCase[*AlterIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Alter_SetJoinPolicy_JoinPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.SetJoinPolicy", "JoinPolicy"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
 					opts.SetJoinPolicy = &TableSetJoinPolicy{}
 					opts.SetJoinPolicy.JoinPolicy = emptySchemaObjectIdentifier
@@ -1297,7 +1297,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 		withValidationCases(
 			validationCase[*DropIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropIcebergTableOptions", "name"),
 				DefaultModify: func(opts *DropIcebergTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -1359,7 +1359,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeIcebergTableOptions", "name"),
 				DefaultModify: func(opts *DescribeIcebergTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

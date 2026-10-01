@@ -16,7 +16,7 @@ func (opts *CreateCatalogIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateCatalogIntegrationOptions", "name"))
 	}
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateCatalogIntegrationOptions", "IfNotExists", "OrReplace"))
@@ -38,7 +38,7 @@ func (opts *AlterCatalogIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterCatalogIntegrationOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterCatalogIntegrationOptions", "Set", "SetTags", "UnsetTags"))
@@ -60,7 +60,7 @@ func (opts *DropCatalogIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropCatalogIntegrationOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -79,7 +79,7 @@ func (opts *DescribeCatalogIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeCatalogIntegrationOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

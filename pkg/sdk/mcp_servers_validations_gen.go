@@ -15,7 +15,7 @@ func (opts *CreateMcpServerOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateMcpServerOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateMcpServerOptions", "OrReplace", "IfNotExists"))
@@ -32,7 +32,7 @@ func (opts *DropMcpServerOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropMcpServerOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -51,7 +51,7 @@ func (opts *DescribeMcpServerOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeMcpServerOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

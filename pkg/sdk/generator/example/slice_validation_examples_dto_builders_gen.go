@@ -30,6 +30,11 @@ func (s *CreateSliceValidationExampleRequest) WithItems(items []NestedListItemRe
 	return s
 }
 
+func (s *CreateSliceValidationExampleRequest) WithColumns(columns []SliceValidationColumnRequest) *CreateSliceValidationExampleRequest {
+	s.Columns = columns
+	return s
+}
+
 func NewDualCheckItemRequest() *DualCheckItemRequest {
 	s := DualCheckItemRequest{}
 	return &s
@@ -143,4 +148,22 @@ func (s *LeafItemRequest) WithName(name string) *LeafItemRequest {
 func (s *LeafItemRequest) WithAlias(alias string) *LeafItemRequest {
 	s.Alias = &alias
 	return s
+}
+
+func NewSliceValidationColumnRequest() *SliceValidationColumnRequest {
+	s := SliceValidationColumnRequest{}
+	return &s
+}
+
+func (s *SliceValidationColumnRequest) WithMaskingPolicy(maskingPolicy SliceValidationColumnMaskingPolicyRequest) *SliceValidationColumnRequest {
+	s.MaskingPolicy = &maskingPolicy
+	return s
+}
+
+func NewSliceValidationColumnMaskingPolicyRequest(
+	maskingPolicy SchemaObjectIdentifier,
+) *SliceValidationColumnMaskingPolicyRequest {
+	s := SliceValidationColumnMaskingPolicyRequest{}
+	s.MaskingPolicy = maskingPolicy
+	return &s
 }

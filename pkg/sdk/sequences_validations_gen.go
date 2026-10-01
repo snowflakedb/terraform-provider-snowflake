@@ -16,7 +16,7 @@ func (opts *CreateSequenceOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateSequenceOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateSequenceOptions", "OrReplace", "IfNotExists"))
@@ -30,10 +30,10 @@ func (opts *AlterSequenceOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterSequenceOptions", "name"))
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterSequenceOptions", "RenameTo"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.SetIncrement, opts.Set, opts.UnsetComment) {
 		errs = append(errs, errExactlyOneOf("AlterSequenceOptions", "RenameTo", "SetIncrement", "Set", "UnsetComment"))
@@ -55,7 +55,7 @@ func (opts *DescribeSequenceOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeSequenceOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -66,7 +66,7 @@ func (opts *DropSequenceOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropSequenceOptions", "name"))
 	}
 	if valueSet(opts.Constraint) {
 		if !exactlyOneValueSet(opts.Constraint.Cascade, opts.Constraint.Restrict) {

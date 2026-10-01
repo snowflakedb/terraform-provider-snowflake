@@ -175,7 +175,7 @@ var fileFormatsTests = FileFormatsTestsContext{
 			},
 			validationCase[*CreateCsvFileFormatOptions]{
 				Name:        case_FileFormats_validation_CreateCsv_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateCsvFileFormatOptions", "name"),
 				DefaultModify: func(opts *CreateCsvFileFormatOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -361,7 +361,7 @@ var fileFormatsTests = FileFormatsTestsContext{
 			},
 			validationCase[*CreateJsonFileFormatOptions]{
 				Name:        case_FileFormats_validation_CreateJson_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateJsonFileFormatOptions", "name"),
 				DefaultModify: func(opts *CreateJsonFileFormatOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -449,7 +449,7 @@ var fileFormatsTests = FileFormatsTestsContext{
 		withValidationCases(
 			validationCase[*CreateAvroFileFormatOptions]{
 				Name:        case_FileFormats_validation_CreateAvro_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAvroFileFormatOptions", "name"),
 				DefaultModify: func(opts *CreateAvroFileFormatOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -483,7 +483,7 @@ var fileFormatsTests = FileFormatsTestsContext{
 		withValidationCases(
 			validationCase[*CreateOrcFileFormatOptions]{
 				Name:        case_FileFormats_validation_CreateOrc_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOrcFileFormatOptions", "name"),
 				DefaultModify: func(opts *CreateOrcFileFormatOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -521,7 +521,7 @@ var fileFormatsTests = FileFormatsTestsContext{
 			},
 			validationCase[*CreateParquetFileFormatOptions]{
 				Name:        case_FileFormats_validation_CreateParquet_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateParquetFileFormatOptions", "name"),
 				DefaultModify: func(opts *CreateParquetFileFormatOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -563,7 +563,7 @@ var fileFormatsTests = FileFormatsTestsContext{
 			},
 			validationCase[*CreateXmlFileFormatOptions]{
 				Name:        case_FileFormats_validation_CreateXml_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateXmlFileFormatOptions", "name"),
 				DefaultModify: func(opts *CreateXmlFileFormatOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -597,7 +597,7 @@ var fileFormatsTests = FileFormatsTestsContext{
 		withValidationCases(
 			validationCase[*AlterCsvFileFormatOptions]{
 				Name:        case_FileFormats_validation_AlterCsv_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterCsvFileFormatOptions", "name"),
 				DefaultModify: func(opts *AlterCsvFileFormatOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -807,7 +807,7 @@ var fileFormatsTests = FileFormatsTestsContext{
 		withValidationCases(
 			validationCase[*AlterJsonFileFormatOptions]{
 				Name:        case_FileFormats_validation_AlterJson_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterJsonFileFormatOptions", "name"),
 				DefaultModify: func(opts *AlterJsonFileFormatOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -917,7 +917,7 @@ var fileFormatsTests = FileFormatsTestsContext{
 		withValidationCases(
 			validationCase[*AlterAvroFileFormatOptions]{
 				Name:        case_FileFormats_validation_AlterAvro_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterAvroFileFormatOptions", "name"),
 				DefaultModify: func(opts *AlterAvroFileFormatOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -958,7 +958,7 @@ var fileFormatsTests = FileFormatsTestsContext{
 		withValidationCases(
 			validationCase[*AlterOrcFileFormatOptions]{
 				Name:        case_FileFormats_validation_AlterOrc_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOrcFileFormatOptions", "name"),
 				DefaultModify: func(opts *AlterOrcFileFormatOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -999,7 +999,7 @@ var fileFormatsTests = FileFormatsTestsContext{
 		withValidationCases(
 			validationCase[*AlterParquetFileFormatOptions]{
 				Name:        case_FileFormats_validation_AlterParquet_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterParquetFileFormatOptions", "name"),
 				DefaultModify: func(opts *AlterParquetFileFormatOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -1044,7 +1044,7 @@ var fileFormatsTests = FileFormatsTestsContext{
 		withValidationCases(
 			validationCase[*AlterXmlFileFormatOptions]{
 				Name:        case_FileFormats_validation_AlterXml_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterXmlFileFormatOptions", "name"),
 				DefaultModify: func(opts *AlterXmlFileFormatOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -1094,7 +1094,7 @@ var fileFormatsTests = FileFormatsTestsContext{
 		withValidationCases(
 			validationCase[*DropFileFormatOptions]{
 				Name:        case_FileFormats_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropFileFormatOptions", "name"),
 				DefaultModify: func(opts *DropFileFormatOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -1142,7 +1142,7 @@ var fileFormatsTests = FileFormatsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeFileFormatOptions]{
 				Name:        case_FileFormats_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeFileFormatOptions", "name"),
 				DefaultModify: func(opts *DescribeFileFormatOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

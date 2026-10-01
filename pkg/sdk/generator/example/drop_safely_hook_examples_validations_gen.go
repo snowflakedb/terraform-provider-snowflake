@@ -10,7 +10,7 @@ func (opts *DropDropSafelyHookExampleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropDropSafelyHookExampleOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

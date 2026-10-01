@@ -18,10 +18,10 @@ func (opts *CreateOpenflowConnectorOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOpenflowConnectorOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.InRuntime) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOpenflowConnectorOptions", "InRuntime"))
 	}
 	if everyValueSet(opts.FromDefinition, opts.From) {
 		errs = append(errs, errOneOf("CreateOpenflowConnectorOptions", "FromDefinition", "From"))
@@ -35,10 +35,10 @@ func (opts *AlterOpenflowConnectorOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterOpenflowConnectorOptions", "name"))
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterOpenflowConnectorOptions", "RenameTo"))
 	}
 	if !exactlyOneValueSet(opts.Start, opts.Stop, opts.Terminate, opts.TerminateForce, opts.Abort, opts.RenameTo, opts.AddVersion, opts.AddLiveVersion, opts.Commit, opts.Push, opts.Pull, opts.Set, opts.Unset) {
 		errs = append(errs, errExactlyOneOf("AlterOpenflowConnectorOptions", "Start", "Stop", "Terminate", "TerminateForce", "Abort", "RenameTo", "AddVersion", "AddLiveVersion", "Commit", "Push", "Pull", "Set", "Unset"))
@@ -90,7 +90,7 @@ func (opts *DropOpenflowConnectorOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropOpenflowConnectorOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -109,7 +109,7 @@ func (opts *DescribeOpenflowConnectorOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeOpenflowConnectorOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -120,7 +120,7 @@ func (opts *ExecuteOpenflowConnectorOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("ExecuteOpenflowConnectorOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -131,7 +131,7 @@ func (opts *ShowVersionsOpenflowConnectorOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("ShowVersionsOpenflowConnectorOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

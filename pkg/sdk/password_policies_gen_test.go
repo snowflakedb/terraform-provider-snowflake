@@ -55,7 +55,7 @@ var passwordPoliciesTests = PasswordPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*CreatePasswordPolicyOptions]{
 				Name:        case_PasswordPolicies_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreatePasswordPolicyOptions", "name"),
 				DefaultModify: func(opts *CreatePasswordPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -89,7 +89,7 @@ var passwordPoliciesTests = PasswordPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*AlterPasswordPolicyOptions]{
 				Name:        case_PasswordPolicies_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterPasswordPolicyOptions", "name"),
 				DefaultModify: func(opts *AlterPasswordPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -172,7 +172,7 @@ var passwordPoliciesTests = PasswordPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*DropPasswordPolicyOptions]{
 				Name:        case_PasswordPolicies_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropPasswordPolicyOptions", "name"),
 				DefaultModify: func(opts *DropPasswordPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -229,7 +229,7 @@ var passwordPoliciesTests = PasswordPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*DescribePasswordPolicyOptions]{
 				Name:        case_PasswordPolicies_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribePasswordPolicyOptions", "name"),
 				DefaultModify: func(opts *DescribePasswordPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

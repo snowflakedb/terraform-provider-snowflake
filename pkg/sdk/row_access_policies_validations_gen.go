@@ -16,7 +16,7 @@ func (opts *CreateRowAccessPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateRowAccessPolicyOptions", "name"))
 	}
 	if !valueSet(opts.args) {
 		errs = append(errs, errNotSet("CreateRowAccessPolicyOptions", "args"))
@@ -36,7 +36,7 @@ func (opts *AlterRowAccessPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterRowAccessPolicyOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.SetBody, opts.SetTags, opts.UnsetTags, opts.SetComment, opts.UnsetComment) {
 		errs = append(errs, errExactlyOneOf("AlterRowAccessPolicyOptions", "RenameTo", "SetBody", "SetTags", "UnsetTags", "SetComment", "UnsetComment"))
@@ -50,7 +50,7 @@ func (opts *DropRowAccessPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropRowAccessPolicyOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -69,7 +69,7 @@ func (opts *DescribeRowAccessPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeRowAccessPolicyOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

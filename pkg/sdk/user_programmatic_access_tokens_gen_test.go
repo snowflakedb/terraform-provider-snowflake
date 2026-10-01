@@ -49,14 +49,14 @@ var userProgrammaticAccessTokensTests = UserProgrammaticAccessTokensTestsContext
 		withValidationCases(
 			validationCase[*AddUserProgrammaticAccessTokenOptions]{
 				Name:        case_UserProgrammaticAccessTokens_validation_Add_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AddUserProgrammaticAccessTokenOptions", "name"),
 				DefaultModify: func(opts *AddUserProgrammaticAccessTokenOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*AddUserProgrammaticAccessTokenOptions]{
 				Name:        case_UserProgrammaticAccessTokens_validation_Add_RoleRestriction_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AddUserProgrammaticAccessTokenOptions", "RoleRestriction"),
 				DefaultModify: func(opts *AddUserProgrammaticAccessTokenOptions) {
 					opts.RoleRestriction = new(emptyAccountObjectIdentifier)
 				},
@@ -79,7 +79,7 @@ var userProgrammaticAccessTokensTests = UserProgrammaticAccessTokensTestsContext
 		withValidationCases(
 			validationCase[*ModifyUserProgrammaticAccessTokenOptions]{
 				Name:        case_UserProgrammaticAccessTokens_validation_Modify_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("ModifyUserProgrammaticAccessTokenOptions", "name"),
 				DefaultModify: func(opts *ModifyUserProgrammaticAccessTokenOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -119,7 +119,7 @@ var userProgrammaticAccessTokensTests = UserProgrammaticAccessTokensTestsContext
 		withValidationCases(
 			validationCase[*RotateUserProgrammaticAccessTokenOptions]{
 				Name:        case_UserProgrammaticAccessTokens_validation_Rotate_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("RotateUserProgrammaticAccessTokenOptions", "name"),
 				DefaultModify: func(opts *RotateUserProgrammaticAccessTokenOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -142,7 +142,7 @@ var userProgrammaticAccessTokensTests = UserProgrammaticAccessTokensTestsContext
 		withValidationCases(
 			validationCase[*RemoveUserProgrammaticAccessTokenOptions]{
 				Name:        case_UserProgrammaticAccessTokens_validation_Remove_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("RemoveUserProgrammaticAccessTokenOptions", "name"),
 				DefaultModify: func(opts *RemoveUserProgrammaticAccessTokenOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

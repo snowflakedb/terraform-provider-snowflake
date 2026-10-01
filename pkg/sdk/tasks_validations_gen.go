@@ -20,13 +20,13 @@ func (opts *CreateTaskOptions) validate() error {
 	var errs []error
 	errs = append(errs, opts.additionalValidations())
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateTaskOptions", "name"))
 	}
 	if opts.ErrorIntegration != nil && !ValidObjectIdentifier(opts.ErrorIntegration) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateTaskOptions", "ErrorIntegration"))
 	}
 	if opts.ExecuteAsUser != nil && !ValidObjectIdentifier(opts.ExecuteAsUser) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateTaskOptions", "ExecuteAsUser"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateTaskOptions", "OrReplace", "IfNotExists"))
@@ -49,13 +49,13 @@ func (opts *CreateOrAlterTaskOptions) validate() error {
 	var errs []error
 	errs = append(errs, opts.additionalValidations())
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOrAlterTaskOptions", "name"))
 	}
 	if opts.ErrorIntegration != nil && !ValidObjectIdentifier(opts.ErrorIntegration) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOrAlterTaskOptions", "ErrorIntegration"))
 	}
 	if opts.ExecuteAsUser != nil && !ValidObjectIdentifier(opts.ExecuteAsUser) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOrAlterTaskOptions", "ExecuteAsUser"))
 	}
 	if opts.Config != nil && containsDoubleDollarQuotes(*opts.Config) {
 		errs = append(errs, errDoubleDollarQuotesNotAllowed("CreateOrAlterTaskOptions", "Config"))
@@ -74,10 +74,10 @@ func (opts *CloneTaskOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CloneTaskOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.sourceTask) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CloneTaskOptions", "sourceTask"))
 	}
 	return JoinErrors(errs...)
 }
@@ -88,10 +88,10 @@ func (opts *AlterTaskOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterTaskOptions", "name"))
 	}
 	if opts.SetExecuteAsUser != nil && !ValidObjectIdentifier(opts.SetExecuteAsUser) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterTaskOptions", "SetExecuteAsUser"))
 	}
 	if !exactlyOneValueSet(opts.Resume, opts.Suspend, opts.RemoveAfter, opts.AddAfter, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.SetFinalize, opts.UnsetFinalize, opts.SetExecuteAsUser, opts.UnsetExecuteAsUser, opts.ModifyAs, opts.ModifyWhen, opts.RemoveWhen) {
 		errs = append(errs, errExactlyOneOf("AlterTaskOptions", "Resume", "Suspend", "RemoveAfter", "AddAfter", "Set", "Unset", "SetTags", "UnsetTags", "SetFinalize", "UnsetFinalize", "SetExecuteAsUser", "UnsetExecuteAsUser", "ModifyAs", "ModifyWhen", "RemoveWhen"))
@@ -105,7 +105,7 @@ func (opts *AlterTaskOptions) validate() error {
 			errs = append(errs, errOneOf("AlterTaskOptions.Set", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
 		}
 		if opts.Set.ErrorIntegration != nil && !ValidObjectIdentifier(opts.Set.ErrorIntegration) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterTaskOptions.Set", "ErrorIntegration"))
 		}
 		if opts.Set.Config != nil && containsDoubleDollarQuotes(*opts.Set.Config) {
 			errs = append(errs, errDoubleDollarQuotesNotAllowed("AlterTaskOptions.Set", "Config"))
@@ -126,7 +126,7 @@ func (opts *DropTaskOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropTaskOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -145,7 +145,7 @@ func (opts *DescribeTaskOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeTaskOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -156,7 +156,7 @@ func (opts *ExecuteTaskOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("ExecuteTaskOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

@@ -16,10 +16,10 @@ func (opts *CreateApplicationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateApplicationOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.PackageName) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateApplicationOptions", "PackageName"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Version) {
@@ -36,7 +36,7 @@ func (opts *DropApplicationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropApplicationOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -47,7 +47,7 @@ func (opts *AlterApplicationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterApplicationOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.Upgrade, opts.UpgradeVersion, opts.UnsetReferences, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterApplicationOptions", "Set", "Unset", "Upgrade", "UpgradeVersion", "UnsetReferences", "SetTags", "UnsetTags"))
@@ -75,7 +75,7 @@ func (opts *DescribeApplicationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeApplicationOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

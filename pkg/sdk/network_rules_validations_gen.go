@@ -16,7 +16,7 @@ func (opts *CreateNetworkRuleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateNetworkRuleOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -27,7 +27,7 @@ func (opts *AlterNetworkRuleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterNetworkRuleOptions", "name"))
 	}
 	if !anyValueSet(opts.Set, opts.Unset) {
 		errs = append(errs, errAtLeastOneOf("AlterNetworkRuleOptions", "Set", "Unset"))
@@ -51,7 +51,7 @@ func (opts *DropNetworkRuleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropNetworkRuleOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -70,7 +70,7 @@ func (opts *DescribeNetworkRuleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeNetworkRuleOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

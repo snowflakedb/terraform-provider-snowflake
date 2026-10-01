@@ -73,7 +73,7 @@ var sessionPoliciesTests = SessionPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*CreateSessionPolicyOptions]{
 				Name:        case_SessionPolicies_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSessionPolicyOptions", "name"),
 				DefaultModify: func(opts *CreateSessionPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -151,7 +151,7 @@ var sessionPoliciesTests = SessionPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*AlterSessionPolicyOptions]{
 				Name:        case_SessionPolicies_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterSessionPolicyOptions", "name"),
 				DefaultModify: func(opts *AlterSessionPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -276,7 +276,7 @@ var sessionPoliciesTests = SessionPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*DropSessionPolicyOptions]{
 				Name:        case_SessionPolicies_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropSessionPolicyOptions", "name"),
 				DefaultModify: func(opts *DropSessionPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -333,7 +333,7 @@ var sessionPoliciesTests = SessionPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeSessionPolicyOptions]{
 				Name:        case_SessionPolicies_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeSessionPolicyOptions", "name"),
 				DefaultModify: func(opts *DescribeSessionPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

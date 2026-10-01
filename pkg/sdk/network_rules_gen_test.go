@@ -56,7 +56,7 @@ var networkRulesTests = NetworkRulesTestsContext{
 		withValidationCases(
 			validationCase[*CreateNetworkRuleOptions]{
 				Name:        case_NetworkRules_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateNetworkRuleOptions", "name"),
 				DefaultModify: func(opts *CreateNetworkRuleOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -82,7 +82,7 @@ var networkRulesTests = NetworkRulesTestsContext{
 		withValidationCases(
 			validationCase[*AlterNetworkRuleOptions]{
 				Name:        case_NetworkRules_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterNetworkRuleOptions", "name"),
 				DefaultModify: func(opts *AlterNetworkRuleOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -134,7 +134,7 @@ var networkRulesTests = NetworkRulesTestsContext{
 		withValidationCases(
 			validationCase[*DropNetworkRuleOptions]{
 				Name:        case_NetworkRules_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropNetworkRuleOptions", "name"),
 				DefaultModify: func(opts *DropNetworkRuleOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -188,7 +188,7 @@ var networkRulesTests = NetworkRulesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeNetworkRuleOptions]{
 				Name:        case_NetworkRules_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeNetworkRuleOptions", "name"),
 				DefaultModify: func(opts *DescribeNetworkRuleOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

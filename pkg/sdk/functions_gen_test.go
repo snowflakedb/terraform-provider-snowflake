@@ -140,7 +140,7 @@ var functionsTests = FunctionsTestsContext{
 		withValidationCases(
 			validationCase[*CreateForJavaFunctionOptions]{
 				Name:        case_Functions_validation_CreateForJava_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateForJavaFunctionOptions", "name"),
 				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -269,7 +269,7 @@ var functionsTests = FunctionsTestsContext{
 			},
 			validationCase[*CreateForJavascriptFunctionOptions]{
 				Name:        case_Functions_validation_CreateForJavascript_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateForJavascriptFunctionOptions", "name"),
 				DefaultModify: func(opts *CreateForJavascriptFunctionOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -384,7 +384,7 @@ var functionsTests = FunctionsTestsContext{
 		withValidationCases(
 			validationCase[*CreateForPythonFunctionOptions]{
 				Name:        case_Functions_validation_CreateForPython_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateForPythonFunctionOptions", "name"),
 				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -513,7 +513,7 @@ var functionsTests = FunctionsTestsContext{
 		withValidationCases(
 			validationCase[*CreateForScalaFunctionOptions]{
 				Name:        case_Functions_validation_CreateForScala_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateForScalaFunctionOptions", "name"),
 				DefaultModify: func(opts *CreateForScalaFunctionOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -598,7 +598,7 @@ var functionsTests = FunctionsTestsContext{
 			},
 			validationCase[*CreateForSQLFunctionOptions]{
 				Name:        case_Functions_validation_CreateForSQL_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateForSQLFunctionOptions", "name"),
 				DefaultModify: func(opts *CreateForSQLFunctionOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -713,14 +713,14 @@ var functionsTests = FunctionsTestsContext{
 		withValidationCases(
 			validationCase[*AlterFunctionOptions]{
 				Name:        case_Functions_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFunctionOptions", "name"),
 				DefaultModify: func(opts *AlterFunctionOptions) {
 					opts.name = emptySchemaObjectIdentifierWithArguments
 				},
 			},
 			validationCase[*AlterFunctionOptions]{
 				Name:        case_Functions_validation_Alter_RenameTo_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFunctionOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterFunctionOptions) {
 					opts.RenameTo = new(emptySchemaObjectIdentifier)
 				},
@@ -810,7 +810,7 @@ var functionsTests = FunctionsTestsContext{
 		withValidationCases(
 			validationCase[*DropFunctionOptions]{
 				Name:        case_Functions_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropFunctionOptions", "name"),
 				DefaultModify: func(opts *DropFunctionOptions) {
 					opts.name = emptySchemaObjectIdentifierWithArguments
 				},
@@ -858,7 +858,7 @@ var functionsTests = FunctionsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeFunctionOptions]{
 				Name:        case_Functions_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeFunctionOptions", "name"),
 				DefaultModify: func(opts *DescribeFunctionOptions) {
 					opts.name = emptySchemaObjectIdentifierWithArguments
 				},

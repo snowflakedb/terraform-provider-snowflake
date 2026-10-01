@@ -18,7 +18,7 @@ func (opts *CreateWarehouseOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateWarehouseOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateWarehouseOptions", "OrReplace", "IfNotExists"))
@@ -33,7 +33,7 @@ func (opts *CreateAdaptiveWarehouseOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateAdaptiveWarehouseOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateAdaptiveWarehouseOptions", "OrReplace", "IfNotExists"))
@@ -48,7 +48,7 @@ func (opts *CreateInteractiveWarehouseOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateInteractiveWarehouseOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateInteractiveWarehouseOptions", "OrReplace", "IfNotExists"))
@@ -63,7 +63,7 @@ func (opts *AlterWarehouseOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterWarehouseOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Suspend, opts.Resume, opts.AbortAllQueries, opts.RenameTo, opts.Set, opts.Unset, opts.AddTables, opts.DropTables, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterWarehouseOptions", "Suspend", "Resume", "AbortAllQueries", "RenameTo", "Set", "Unset", "AddTables", "DropTables", "SetTags", "UnsetTags"))
@@ -89,7 +89,7 @@ func (opts *DropWarehouseOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropWarehouseOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -108,7 +108,7 @@ func (opts *DescribeWarehouseOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeWarehouseOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

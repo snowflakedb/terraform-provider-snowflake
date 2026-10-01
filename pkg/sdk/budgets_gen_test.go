@@ -59,7 +59,7 @@ var budgetsTests = BudgetsTestsContext{
 		withValidationCases(
 			validationCase[*CreateBudgetOptions]{
 				Name:        case_Budgets_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateBudgetOptions", "name"),
 				DefaultModify: func(opts *CreateBudgetOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -93,7 +93,7 @@ var budgetsTests = BudgetsTestsContext{
 		withValidationCases(
 			validationCase[*DropBudgetOptions]{
 				Name:        case_Budgets_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropBudgetOptions", "name"),
 				DefaultModify: func(opts *DropBudgetOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -119,7 +119,7 @@ var budgetsTests = BudgetsTestsContext{
 		withValidationCases(
 			validationCase[*SetSpendingLimitBudgetOptions]{
 				Name:        case_Budgets_validation_SetSpendingLimit_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("SetSpendingLimitBudgetOptions", "name"),
 				DefaultModify: func(opts *SetSpendingLimitBudgetOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -142,7 +142,7 @@ var budgetsTests = BudgetsTestsContext{
 		withValidationCases(
 			validationCase[*GetSpendingLimitBudgetOptions]{
 				Name:        case_Budgets_validation_GetSpendingLimit_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("GetSpendingLimitBudgetOptions", "name"),
 				DefaultModify: func(opts *GetSpendingLimitBudgetOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -165,7 +165,7 @@ var budgetsTests = BudgetsTestsContext{
 		withValidationCases(
 			validationCase[*SetEmailNotificationsBudgetOptions]{
 				Name:        case_Budgets_validation_SetEmailNotifications_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("SetEmailNotificationsBudgetOptions", "name"),
 				DefaultModify: func(opts *SetEmailNotificationsBudgetOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -188,7 +188,7 @@ var budgetsTests = BudgetsTestsContext{
 		withValidationCases(
 			validationCase[*GetNotificationIntegrationsBudgetOptions]{
 				Name:        case_Budgets_validation_GetNotificationIntegrations_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("GetNotificationIntegrationsBudgetOptions", "name"),
 				DefaultModify: func(opts *GetNotificationIntegrationsBudgetOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -211,7 +211,7 @@ var budgetsTests = BudgetsTestsContext{
 		withValidationCases(
 			validationCase[*GetNotificationEmailBudgetOptions]{
 				Name:        case_Budgets_validation_GetNotificationEmail_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("GetNotificationEmailBudgetOptions", "name"),
 				DefaultModify: func(opts *GetNotificationEmailBudgetOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -234,7 +234,7 @@ var budgetsTests = BudgetsTestsContext{
 		withValidationCases(
 			validationCase[*GetNotificationIntegrationNameBudgetOptions]{
 				Name:        case_Budgets_validation_GetNotificationIntegrationName_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("GetNotificationIntegrationNameBudgetOptions", "name"),
 				DefaultModify: func(opts *GetNotificationIntegrationNameBudgetOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -257,7 +257,7 @@ var budgetsTests = BudgetsTestsContext{
 		withValidationCases(
 			validationCase[*SetCycleStartActionBudgetOptions]{
 				Name:        case_Budgets_validation_SetCycleStartAction_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("SetCycleStartActionBudgetOptions", "name"),
 				DefaultModify: func(opts *SetCycleStartActionBudgetOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -280,7 +280,7 @@ var budgetsTests = BudgetsTestsContext{
 		withValidationCases(
 			validationCase[*GetCycleStartActionBudgetOptions]{
 				Name:        case_Budgets_validation_GetCycleStartAction_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("GetCycleStartActionBudgetOptions", "name"),
 				DefaultModify: func(opts *GetCycleStartActionBudgetOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

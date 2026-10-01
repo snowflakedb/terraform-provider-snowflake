@@ -26,7 +26,7 @@ func (opts *CreateTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateTableOptions", "name"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.ColumnsAndConstraints) {
@@ -44,7 +44,7 @@ func (opts *CreateTableOptions) validate() error {
 				}
 				if valueSet(column.MaskingPolicy) {
 					if !ValidObjectIdentifier(column.MaskingPolicy.Name) {
-						errs = append(errs, ErrInvalidObjectIdentifier)
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].MaskingPolicy", columnIdx), "Name"))
 					}
 				}
 			}
@@ -89,7 +89,7 @@ func (opts *CreateAsSelectTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateAsSelectTableOptions", "name"))
 	}
 	if !valueSet(opts.Columns) {
 		errs = append(errs, errNotSet("CreateAsSelectTableOptions", "Columns"))
@@ -106,7 +106,7 @@ func (opts *CreateUsingTemplateTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateUsingTemplateTableOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -117,10 +117,10 @@ func (opts *CreateLikeTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateLikeTableOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.SourceTable) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateLikeTableOptions", "SourceTable"))
 	}
 	return JoinErrors(errs...)
 }
@@ -131,10 +131,10 @@ func (opts *CreateCloneTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateCloneTableOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.SourceTable) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateCloneTableOptions", "SourceTable"))
 	}
 	return JoinErrors(errs...)
 }
@@ -145,13 +145,13 @@ func (opts *AlterTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterTableOptions", "name"))
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterTableOptions", "RenameTo"))
 	}
 	if opts.SwapWith != nil && !ValidObjectIdentifier(opts.SwapWith) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterTableOptions", "SwapWith"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.SwapWith, opts.ClusteringAction, opts.ColumnAction, opts.ConstraintAction, opts.ExternalTableAction, opts.SearchOptimizationAction, opts.Set, opts.SetTags, opts.UnsetTags, opts.Unset, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.AddStorageLifecyclePolicy, opts.DropStorageLifecyclePolicy) {
 		errs = append(errs, errExactlyOneOf("AlterTableOptions", "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
@@ -179,7 +179,7 @@ func (opts *AlterTableOptions) validate() error {
 			}
 			if valueSet(opts.ColumnAction.Add.MaskingPolicy) {
 				if !ValidObjectIdentifier(opts.ColumnAction.Add.MaskingPolicy.Name) {
-					errs = append(errs, ErrInvalidObjectIdentifier)
+					errs = append(errs, errInvalidIdentifier("AlterTableOptions.ColumnAction.Add.MaskingPolicy", "Name"))
 				}
 			}
 		}
@@ -262,7 +262,7 @@ func (opts *AlterTableOptions) validate() error {
 	}
 	if valueSet(opts.AddStorageLifecyclePolicy) {
 		if !ValidObjectIdentifier(opts.AddStorageLifecyclePolicy.StorageLifecyclePolicy) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterTableOptions.AddStorageLifecyclePolicy", "StorageLifecyclePolicy"))
 		}
 		if !valueSet(opts.AddStorageLifecyclePolicy.On) {
 			errs = append(errs, errNotSet("AlterTableOptions.AddStorageLifecyclePolicy", "On"))
@@ -277,7 +277,7 @@ func (opts *DropTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropTableOptions", "name"))
 	}
 	if everyValueSet(opts.Cascade, opts.Restrict) {
 		errs = append(errs, errOneOf("DropTableOptions", "Cascade", "Restrict"))
@@ -300,7 +300,7 @@ func (opts *DescribeColumnsTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeColumnsTableOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -311,7 +311,7 @@ func (opts *DescribeStageTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeStageTableOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -322,7 +322,7 @@ func (opts *DescribeSearchOptimizationTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeSearchOptimizationTableOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -333,7 +333,7 @@ func (opts *SelectTableConstraintsTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.Database) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("SelectTableConstraintsTableOptions", "Database"))
 	}
 	return JoinErrors(errs...)
 }
@@ -344,7 +344,7 @@ func (opts *SelectCheckConstraintsTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.Database) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("SelectCheckConstraintsTableOptions", "Database"))
 	}
 	return JoinErrors(errs...)
 }

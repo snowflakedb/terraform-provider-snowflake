@@ -15,7 +15,7 @@ func (opts *CreateApplicationPackageOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateApplicationPackageOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -26,7 +26,7 @@ func (opts *AlterApplicationPackageOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterApplicationPackageOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.ModifyReleaseDirective, opts.SetDefaultReleaseDirective, opts.SetReleaseDirective, opts.UnsetReleaseDirective, opts.AddVersion, opts.DropVersion, opts.AddPatchForVersion, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterApplicationPackageOptions", "Set", "Unset", "ModifyReleaseDirective", "SetDefaultReleaseDirective", "SetReleaseDirective", "UnsetReleaseDirective", "AddVersion", "DropVersion", "AddPatchForVersion", "SetTags", "UnsetTags"))
@@ -45,7 +45,7 @@ func (opts *DropApplicationPackageOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropApplicationPackageOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

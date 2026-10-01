@@ -56,14 +56,14 @@ var streamlitsTests = StreamlitsTestsContext{
 		withValidationCases(
 			validationCase[*CreateStreamlitOptions]{
 				Name:        case_Streamlits_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateStreamlitOptions", "name"),
 				DefaultModify: func(opts *CreateStreamlitOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CreateStreamlitOptions]{
 				Name:        case_Streamlits_validation_Create_QueryWarehouse_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateStreamlitOptions", "QueryWarehouse"),
 				DefaultModify: func(opts *CreateStreamlitOptions) {
 					opts.QueryWarehouse = new(emptyAccountObjectIdentifier)
 				},
@@ -97,14 +97,14 @@ var streamlitsTests = StreamlitsTestsContext{
 		withValidationCases(
 			validationCase[*AlterStreamlitOptions]{
 				Name:        case_Streamlits_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterStreamlitOptions", "name"),
 				DefaultModify: func(opts *AlterStreamlitOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*AlterStreamlitOptions]{
 				Name:        case_Streamlits_validation_Alter_RenameTo_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterStreamlitOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterStreamlitOptions) {
 					opts.RenameTo = new(emptySchemaObjectIdentifier)
 				},
@@ -128,7 +128,7 @@ var streamlitsTests = StreamlitsTestsContext{
 			},
 			validationCase[*AlterStreamlitOptions]{
 				Name:        case_Streamlits_validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterStreamlitOptions.Set", "QueryWarehouse"),
 				DefaultModify: func(opts *AlterStreamlitOptions) {
 					opts.Set = &StreamlitSet{}
 					opts.Set.QueryWarehouse = new(emptyAccountObjectIdentifier)
@@ -181,7 +181,7 @@ var streamlitsTests = StreamlitsTestsContext{
 		withValidationCases(
 			validationCase[*DropStreamlitOptions]{
 				Name:        case_Streamlits_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropStreamlitOptions", "name"),
 				DefaultModify: func(opts *DropStreamlitOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -232,7 +232,7 @@ var streamlitsTests = StreamlitsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeStreamlitOptions]{
 				Name:        case_Streamlits_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeStreamlitOptions", "name"),
 				DefaultModify: func(opts *DescribeStreamlitOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

@@ -71,7 +71,7 @@ var cortexSearchServicesTests = CortexSearchServicesTestsContext{
 		withValidationCases(
 			validationCase[*CreateCortexSearchServiceOptions]{
 				Name:        case_CortexSearchServices_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateCortexSearchServiceOptions", "name"),
 				DefaultModify: func(opts *CreateCortexSearchServiceOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -119,7 +119,7 @@ var cortexSearchServicesTests = CortexSearchServicesTestsContext{
 		withValidationCases(
 			validationCase[*AlterCortexSearchServiceOptions]{
 				Name:        case_CortexSearchServices_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterCortexSearchServiceOptions", "name"),
 				DefaultModify: func(opts *AlterCortexSearchServiceOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -261,7 +261,7 @@ var cortexSearchServicesTests = CortexSearchServicesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeCortexSearchServiceOptions]{
 				Name:        case_CortexSearchServices_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeCortexSearchServiceOptions", "name"),
 				DefaultModify: func(opts *DescribeCortexSearchServiceOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -284,7 +284,7 @@ var cortexSearchServicesTests = CortexSearchServicesTestsContext{
 		withValidationCases(
 			validationCase[*DropCortexSearchServiceOptions]{
 				Name:        case_CortexSearchServices_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropCortexSearchServiceOptions", "name"),
 				DefaultModify: func(opts *DropCortexSearchServiceOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

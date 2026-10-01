@@ -64,7 +64,7 @@ var notificationIntegrationsTests = NotificationIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*CreateNotificationIntegrationOptions]{
 				Name:        case_NotificationIntegrations_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateNotificationIntegrationOptions", "name"),
 				DefaultModify: func(opts *CreateNotificationIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -153,7 +153,7 @@ var notificationIntegrationsTests = NotificationIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*AlterNotificationIntegrationOptions]{
 				Name:        case_NotificationIntegrations_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterNotificationIntegrationOptions", "name"),
 				DefaultModify: func(opts *AlterNotificationIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -277,7 +277,7 @@ var notificationIntegrationsTests = NotificationIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*DropNotificationIntegrationOptions]{
 				Name:        case_NotificationIntegrations_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropNotificationIntegrationOptions", "name"),
 				DefaultModify: func(opts *DropNotificationIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -322,7 +322,7 @@ var notificationIntegrationsTests = NotificationIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeNotificationIntegrationOptions]{
 				Name:        case_NotificationIntegrations_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeNotificationIntegrationOptions", "name"),
 				DefaultModify: func(opts *DescribeNotificationIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

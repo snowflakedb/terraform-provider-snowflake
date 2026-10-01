@@ -166,7 +166,7 @@ var tablesTests = TablesTestsContext{
 		withValidationCases(
 			validationCase[*CreateTableOptions]{
 				Name:        case_Tables_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateTableOptions", "name"),
 				DefaultModify: func(opts *CreateTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -204,7 +204,7 @@ var tablesTests = TablesTestsContext{
 			},
 			validationCase[*CreateTableOptions]{
 				Name:        case_Tables_validation_Create_ColumnsAndConstraints_Columns_MaskingPolicy_Name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateTableOptions.ColumnsAndConstraints.Columns[0].MaskingPolicy", "Name"),
 				DefaultModify: func(opts *CreateTableOptions) {
 					opts.ColumnsAndConstraints.Columns = []TableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].MaskingPolicy = &ColumnMaskingPolicy{}
@@ -391,7 +391,7 @@ var tablesTests = TablesTestsContext{
 		withValidationCases(
 			validationCase[*CreateAsSelectTableOptions]{
 				Name:        case_Tables_validation_CreateAsSelect_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAsSelectTableOptions", "name"),
 				DefaultModify: func(opts *CreateAsSelectTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -431,7 +431,7 @@ var tablesTests = TablesTestsContext{
 		withValidationCases(
 			validationCase[*CreateUsingTemplateTableOptions]{
 				Name:        case_Tables_validation_CreateUsingTemplate_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateUsingTemplateTableOptions", "name"),
 				DefaultModify: func(opts *CreateUsingTemplateTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -457,14 +457,14 @@ var tablesTests = TablesTestsContext{
 		withValidationCases(
 			validationCase[*CreateLikeTableOptions]{
 				Name:        case_Tables_validation_CreateLike_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateLikeTableOptions", "name"),
 				DefaultModify: func(opts *CreateLikeTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CreateLikeTableOptions]{
 				Name:        case_Tables_validation_CreateLike_SourceTable_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateLikeTableOptions", "SourceTable"),
 				DefaultModify: func(opts *CreateLikeTableOptions) {
 					opts.SourceTable = emptySchemaObjectIdentifier
 				},
@@ -490,14 +490,14 @@ var tablesTests = TablesTestsContext{
 		withValidationCases(
 			validationCase[*CreateCloneTableOptions]{
 				Name:        case_Tables_validation_CreateClone_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateCloneTableOptions", "name"),
 				DefaultModify: func(opts *CreateCloneTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CreateCloneTableOptions]{
 				Name:        case_Tables_validation_CreateClone_SourceTable_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateCloneTableOptions", "SourceTable"),
 				DefaultModify: func(opts *CreateCloneTableOptions) {
 					opts.SourceTable = emptySchemaObjectIdentifier
 				},
@@ -523,21 +523,21 @@ var tablesTests = TablesTestsContext{
 		withValidationCases(
 			validationCase[*AlterTableOptions]{
 				Name:        case_Tables_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTableOptions", "name"),
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*AlterTableOptions]{
 				Name:        case_Tables_validation_Alter_RenameTo_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTableOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.RenameTo = new(emptySchemaObjectIdentifier)
 				},
 			},
 			validationCase[*AlterTableOptions]{
 				Name:        case_Tables_validation_Alter_SwapWith_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTableOptions", "SwapWith"),
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.SwapWith = new(emptySchemaObjectIdentifier)
 				},
@@ -648,7 +648,7 @@ var tablesTests = TablesTestsContext{
 			},
 			validationCase[*AlterTableOptions]{
 				Name:        case_Tables_validation_Alter_ColumnAction_Add_MaskingPolicy_Name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTableOptions.ColumnAction.Add.MaskingPolicy", "Name"),
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
@@ -907,7 +907,7 @@ var tablesTests = TablesTestsContext{
 			},
 			validationCase[*AlterTableOptions]{
 				Name:        case_Tables_validation_Alter_AddStorageLifecyclePolicy_StorageLifecyclePolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTableOptions.AddStorageLifecyclePolicy", "StorageLifecyclePolicy"),
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.AddStorageLifecyclePolicy = &TableAddStorageLifecyclePolicy{}
 					opts.AddStorageLifecyclePolicy.StorageLifecyclePolicy = emptySchemaObjectIdentifier
@@ -986,7 +986,7 @@ var tablesTests = TablesTestsContext{
 		withValidationCases(
 			validationCase[*DropTableOptions]{
 				Name:        case_Tables_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropTableOptions", "name"),
 				DefaultModify: func(opts *DropTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -1048,7 +1048,7 @@ var tablesTests = TablesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeColumnsTableOptions]{
 				Name:        case_Tables_validation_DescribeColumns_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeColumnsTableOptions", "name"),
 				DefaultModify: func(opts *DescribeColumnsTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -1071,7 +1071,7 @@ var tablesTests = TablesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeStageTableOptions]{
 				Name:        case_Tables_validation_DescribeStage_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeStageTableOptions", "name"),
 				DefaultModify: func(opts *DescribeStageTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -1094,7 +1094,7 @@ var tablesTests = TablesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeSearchOptimizationTableOptions]{
 				Name:        case_Tables_validation_DescribeSearchOptimization_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeSearchOptimizationTableOptions", "name"),
 				DefaultModify: func(opts *DescribeSearchOptimizationTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -1115,7 +1115,7 @@ var tablesTests = TablesTestsContext{
 		withValidationCases(
 			validationCase[*SelectTableConstraintsTableOptions]{
 				Name:        case_Tables_validation_SelectTableConstraints_Database_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("SelectTableConstraintsTableOptions", "Database"),
 				DefaultModify: func(opts *SelectTableConstraintsTableOptions) {
 					opts.Database = emptyAccountObjectIdentifier
 				},
@@ -1136,7 +1136,7 @@ var tablesTests = TablesTestsContext{
 		withValidationCases(
 			validationCase[*SelectCheckConstraintsTableOptions]{
 				Name:        case_Tables_validation_SelectCheckConstraints_Database_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("SelectCheckConstraintsTableOptions", "Database"),
 				DefaultModify: func(opts *SelectCheckConstraintsTableOptions) {
 					opts.Database = emptyAccountObjectIdentifier
 				},

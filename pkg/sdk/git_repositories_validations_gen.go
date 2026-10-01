@@ -18,13 +18,13 @@ func (opts *CreateGitRepositoryOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateGitRepositoryOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.ApiIntegration) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateGitRepositoryOptions", "ApiIntegration"))
 	}
 	if opts.GitCredentials != nil && !ValidObjectIdentifier(opts.GitCredentials) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateGitRepositoryOptions", "GitCredentials"))
 	}
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateGitRepositoryOptions", "IfNotExists", "OrReplace"))
@@ -38,17 +38,17 @@ func (opts *AlterGitRepositoryOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterGitRepositoryOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.Fetch) {
 		errs = append(errs, errExactlyOneOf("AlterGitRepositoryOptions", "Set", "Unset", "SetTags", "UnsetTags", "Fetch"))
 	}
 	if valueSet(opts.Set) {
 		if opts.Set.ApiIntegration != nil && !ValidObjectIdentifier(opts.Set.ApiIntegration) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterGitRepositoryOptions.Set", "ApiIntegration"))
 		}
 		if opts.Set.GitCredentials != nil && !ValidObjectIdentifier(opts.Set.GitCredentials) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterGitRepositoryOptions.Set", "GitCredentials"))
 		}
 	}
 	return JoinErrors(errs...)
@@ -60,7 +60,7 @@ func (opts *DropGitRepositoryOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropGitRepositoryOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -71,7 +71,7 @@ func (opts *DescribeGitRepositoryOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeGitRepositoryOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

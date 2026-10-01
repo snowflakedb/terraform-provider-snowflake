@@ -16,7 +16,7 @@ func (opts *CreateStorageIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateStorageIntegrationOptions", "name"))
 	}
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateStorageIntegrationOptions", "IfNotExists", "OrReplace"))
@@ -33,7 +33,7 @@ func (opts *AlterStorageIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterStorageIntegrationOptions", "name"))
 	}
 	if everyValueSet(opts.IfExists, opts.UnsetTags) {
 		errs = append(errs, errOneOf("AlterStorageIntegrationOptions", "IfExists", "UnsetTags"))
@@ -86,7 +86,7 @@ func (opts *DropStorageIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropStorageIntegrationOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -105,7 +105,7 @@ func (opts *DescribeStorageIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeStorageIntegrationOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

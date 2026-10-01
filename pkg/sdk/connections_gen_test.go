@@ -50,14 +50,14 @@ var connectionsTests = ConnectionsTestsContext{
 		withValidationCases(
 			validationCase[*CreateConnectionOptions]{
 				Name:        case_Connections_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateConnectionOptions", "name"),
 				DefaultModify: func(opts *CreateConnectionOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*CreateConnectionOptions]{
 				Name:        case_Connections_validation_Create_AsReplicaOf_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateConnectionOptions", "AsReplicaOf"),
 				DefaultModify: func(opts *CreateConnectionOptions) {
 					opts.AsReplicaOf = new(emptyExternalObjectIdentifier)
 				},
@@ -153,7 +153,7 @@ var connectionsTests = ConnectionsTestsContext{
 		withValidationCases(
 			validationCase[*DropConnectionOptions]{
 				Name:        case_Connections_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropConnectionOptions", "name"),
 				DefaultModify: func(opts *DropConnectionOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

@@ -17,7 +17,7 @@ func (opts *CreatePostgresInstanceOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreatePostgresInstanceOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -28,10 +28,10 @@ func (opts *ForkPostgresInstanceOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("ForkPostgresInstanceOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.Fork) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("ForkPostgresInstanceOptions", "Fork"))
 	}
 	if everyValueSet(opts.At, opts.Before) {
 		errs = append(errs, errOneOf("ForkPostgresInstanceOptions", "At", "Before"))
@@ -55,7 +55,7 @@ func (opts *AlterPostgresInstanceOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterPostgresInstanceOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.Set, opts.Unset, opts.Suspend, opts.Resume, opts.ResetAccess, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterPostgresInstanceOptions", "RenameTo", "Set", "Unset", "Suspend", "Resume", "ResetAccess", "SetTags", "UnsetTags"))
@@ -84,7 +84,7 @@ func (opts *DropPostgresInstanceOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropPostgresInstanceOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -103,7 +103,7 @@ func (opts *DescribePostgresInstanceOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribePostgresInstanceOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

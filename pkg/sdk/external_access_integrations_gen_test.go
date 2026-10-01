@@ -60,7 +60,7 @@ var externalAccessIntegrationsTests = ExternalAccessIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*CreateExternalAccessIntegrationOptions]{
 				Name:        case_ExternalAccessIntegrations_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateExternalAccessIntegrationOptions", "name"),
 				DefaultModify: func(opts *CreateExternalAccessIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -125,7 +125,7 @@ var externalAccessIntegrationsTests = ExternalAccessIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*AlterExternalAccessIntegrationOptions]{
 				Name:        case_ExternalAccessIntegrations_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterExternalAccessIntegrationOptions", "name"),
 				DefaultModify: func(opts *AlterExternalAccessIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -233,7 +233,7 @@ var externalAccessIntegrationsTests = ExternalAccessIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*DropExternalAccessIntegrationOptions]{
 				Name:        case_ExternalAccessIntegrations_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropExternalAccessIntegrationOptions", "name"),
 				DefaultModify: func(opts *DropExternalAccessIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -278,7 +278,7 @@ var externalAccessIntegrationsTests = ExternalAccessIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeExternalAccessIntegrationOptions]{
 				Name:        case_ExternalAccessIntegrations_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeExternalAccessIntegrationOptions", "name"),
 				DefaultModify: func(opts *DescribeExternalAccessIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

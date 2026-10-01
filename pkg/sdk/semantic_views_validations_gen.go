@@ -18,7 +18,7 @@ func (opts *CreateSemanticViewOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateSemanticViewOptions", "name"))
 	}
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateSemanticViewOptions", "IfNotExists", "OrReplace"))
@@ -53,7 +53,7 @@ func (opts *AlterSemanticViewOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterSemanticViewOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.SetComment, opts.UnsetComment, opts.RenameTo) {
 		errs = append(errs, errExactlyOneOf("AlterSemanticViewOptions", "SetComment", "UnsetComment", "RenameTo"))
@@ -67,7 +67,7 @@ func (opts *DropSemanticViewOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropSemanticViewOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -78,7 +78,7 @@ func (opts *DescribeSemanticViewOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeSemanticViewOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

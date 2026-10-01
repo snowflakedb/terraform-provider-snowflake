@@ -16,7 +16,7 @@ func (opts *CreateMaskingPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateMaskingPolicyOptions", "name"))
 	}
 	if !valueSet(opts.signature) {
 		errs = append(errs, errNotSet("CreateMaskingPolicyOptions", "signature"))
@@ -39,7 +39,7 @@ func (opts *AlterMaskingPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterMaskingPolicyOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.SetBody, opts.SetComment, opts.UnsetBody, opts.UnsetComment, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterMaskingPolicyOptions", "RenameTo", "SetBody", "SetComment", "UnsetBody", "UnsetComment", "SetTags", "UnsetTags"))
@@ -54,7 +54,7 @@ func (opts *DropMaskingPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropMaskingPolicyOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -73,7 +73,7 @@ func (opts *DescribeMaskingPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeMaskingPolicyOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

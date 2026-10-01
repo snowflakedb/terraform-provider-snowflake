@@ -54,7 +54,7 @@ var pipesTests = PipesTestsContext{
 		withValidationCases(
 			validationCase[*CreatePipeOptions]{
 				Name:        case_Pipes_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreatePipeOptions", "name"),
 				DefaultModify: func(opts *CreatePipeOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -88,7 +88,7 @@ var pipesTests = PipesTestsContext{
 		withValidationCases(
 			validationCase[*AlterPipeOptions]{
 				Name:        case_Pipes_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterPipeOptions", "name"),
 				DefaultModify: func(opts *AlterPipeOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -161,7 +161,7 @@ var pipesTests = PipesTestsContext{
 		withValidationCases(
 			validationCase[*DropPipeOptions]{
 				Name:        case_Pipes_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropPipeOptions", "name"),
 				DefaultModify: func(opts *DropPipeOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -209,7 +209,7 @@ var pipesTests = PipesTestsContext{
 		withValidationCases(
 			validationCase[*DescribePipeOptions]{
 				Name:        case_Pipes_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribePipeOptions", "name"),
 				DefaultModify: func(opts *DescribePipeOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

@@ -88,7 +88,7 @@ var apiIntegrationsTests = ApiIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*CreateApiIntegrationOptions]{
 				Name:        case_ApiIntegrations_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateApiIntegrationOptions", "name"),
 				DefaultModify: func(opts *CreateApiIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -203,7 +203,7 @@ var apiIntegrationsTests = ApiIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*AlterApiIntegrationOptions]{
 				Name:        case_ApiIntegrations_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterApiIntegrationOptions", "name"),
 				DefaultModify: func(opts *AlterApiIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -434,7 +434,7 @@ var apiIntegrationsTests = ApiIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*DropApiIntegrationOptions]{
 				Name:        case_ApiIntegrations_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropApiIntegrationOptions", "name"),
 				DefaultModify: func(opts *DropApiIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -479,7 +479,7 @@ var apiIntegrationsTests = ApiIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeApiIntegrationOptions]{
 				Name:        case_ApiIntegrations_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeApiIntegrationOptions", "name"),
 				DefaultModify: func(opts *DescribeApiIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

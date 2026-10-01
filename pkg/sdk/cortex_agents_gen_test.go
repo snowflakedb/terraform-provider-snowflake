@@ -54,7 +54,7 @@ var cortexAgentsTests = CortexAgentsTestsContext{
 		withValidationCases(
 			validationCase[*CreateCortexAgentOptions]{
 				Name:        case_CortexAgents_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateCortexAgentOptions", "name"),
 				DefaultModify: func(opts *CreateCortexAgentOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -95,7 +95,7 @@ var cortexAgentsTests = CortexAgentsTestsContext{
 		withValidationCases(
 			validationCase[*AlterCortexAgentOptions]{
 				Name:        case_CortexAgents_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterCortexAgentOptions", "name"),
 				DefaultModify: func(opts *AlterCortexAgentOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -153,7 +153,7 @@ var cortexAgentsTests = CortexAgentsTestsContext{
 		withValidationCases(
 			validationCase[*DropCortexAgentOptions]{
 				Name:        case_CortexAgents_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropCortexAgentOptions", "name"),
 				DefaultModify: func(opts *DropCortexAgentOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -207,7 +207,7 @@ var cortexAgentsTests = CortexAgentsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeCortexAgentOptions]{
 				Name:        case_CortexAgents_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeCortexAgentOptions", "name"),
 				DefaultModify: func(opts *DescribeCortexAgentOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

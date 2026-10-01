@@ -254,7 +254,7 @@ var proceduresTests = ProceduresTestsContext{
 			},
 			validationCase[*CreateForJavaProcedureOptions]{
 				Name:        case_Procedures_validation_CreateForJava_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateForJavaProcedureOptions", "name"),
 				DefaultModify: func(opts *CreateForJavaProcedureOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -368,7 +368,7 @@ var proceduresTests = ProceduresTestsContext{
 			},
 			validationCase[*CreateForJavaScriptProcedureOptions]{
 				Name:        case_Procedures_validation_CreateForJavaScript_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateForJavaScriptProcedureOptions", "name"),
 				DefaultModify: func(opts *CreateForJavaScriptProcedureOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -452,7 +452,7 @@ var proceduresTests = ProceduresTestsContext{
 			},
 			validationCase[*CreateForPythonProcedureOptions]{
 				Name:        case_Procedures_validation_CreateForPython_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateForPythonProcedureOptions", "name"),
 				DefaultModify: func(opts *CreateForPythonProcedureOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -580,7 +580,7 @@ var proceduresTests = ProceduresTestsContext{
 			},
 			validationCase[*CreateForScalaProcedureOptions]{
 				Name:        case_Procedures_validation_CreateForScala_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateForScalaProcedureOptions", "name"),
 				DefaultModify: func(opts *CreateForScalaProcedureOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -694,7 +694,7 @@ var proceduresTests = ProceduresTestsContext{
 			},
 			validationCase[*CreateForSQLProcedureOptions]{
 				Name:        case_Procedures_validation_CreateForSQL_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateForSQLProcedureOptions", "name"),
 				DefaultModify: func(opts *CreateForSQLProcedureOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -801,14 +801,14 @@ var proceduresTests = ProceduresTestsContext{
 		withValidationCases(
 			validationCase[*AlterProcedureOptions]{
 				Name:        case_Procedures_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterProcedureOptions", "name"),
 				DefaultModify: func(opts *AlterProcedureOptions) {
 					opts.name = emptySchemaObjectIdentifierWithArguments
 				},
 			},
 			validationCase[*AlterProcedureOptions]{
 				Name:        case_Procedures_validation_Alter_RenameTo_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterProcedureOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterProcedureOptions) {
 					opts.RenameTo = new(emptySchemaObjectIdentifier)
 				},
@@ -896,7 +896,7 @@ var proceduresTests = ProceduresTestsContext{
 		withValidationCases(
 			validationCase[*DropProcedureOptions]{
 				Name:        case_Procedures_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropProcedureOptions", "name"),
 				DefaultModify: func(opts *DropProcedureOptions) {
 					opts.name = emptySchemaObjectIdentifierWithArguments
 				},
@@ -944,7 +944,7 @@ var proceduresTests = ProceduresTestsContext{
 		withValidationCases(
 			validationCase[*DescribeProcedureOptions]{
 				Name:        case_Procedures_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeProcedureOptions", "name"),
 				DefaultModify: func(opts *DescribeProcedureOptions) {
 					opts.name = emptySchemaObjectIdentifierWithArguments
 				},
@@ -967,7 +967,7 @@ var proceduresTests = ProceduresTestsContext{
 		withValidationCases(
 			validationCase[*CallProcedureOptions]{
 				Name:        case_Procedures_validation_Call_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CallProcedureOptions", "name"),
 				DefaultModify: func(opts *CallProcedureOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -1011,14 +1011,14 @@ var proceduresTests = ProceduresTestsContext{
 			},
 			validationCase[*CreateAndCallForJavaProcedureOptions]{
 				Name:        case_Procedures_validation_CreateAndCallForJava_Name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAndCallForJavaProcedureOptions", "Name"),
 				DefaultModify: func(opts *CreateAndCallForJavaProcedureOptions) {
 					opts.Name = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*CreateAndCallForJavaProcedureOptions]{
 				Name:        case_Procedures_validation_CreateAndCallForJava_ProcedureName_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAndCallForJavaProcedureOptions", "ProcedureName"),
 				DefaultModify: func(opts *CreateAndCallForJavaProcedureOptions) {
 					opts.ProcedureName = emptyAccountObjectIdentifier
 				},
@@ -1146,14 +1146,14 @@ var proceduresTests = ProceduresTestsContext{
 			},
 			validationCase[*CreateAndCallForScalaProcedureOptions]{
 				Name:        case_Procedures_validation_CreateAndCallForScala_Name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAndCallForScalaProcedureOptions", "Name"),
 				DefaultModify: func(opts *CreateAndCallForScalaProcedureOptions) {
 					opts.Name = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*CreateAndCallForScalaProcedureOptions]{
 				Name:        case_Procedures_validation_CreateAndCallForScala_ProcedureName_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAndCallForScalaProcedureOptions", "ProcedureName"),
 				DefaultModify: func(opts *CreateAndCallForScalaProcedureOptions) {
 					opts.ProcedureName = emptyAccountObjectIdentifier
 				},
@@ -1279,14 +1279,14 @@ var proceduresTests = ProceduresTestsContext{
 			},
 			validationCase[*CreateAndCallForJavaScriptProcedureOptions]{
 				Name:        case_Procedures_validation_CreateAndCallForJavaScript_Name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAndCallForJavaScriptProcedureOptions", "Name"),
 				DefaultModify: func(opts *CreateAndCallForJavaScriptProcedureOptions) {
 					opts.Name = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*CreateAndCallForJavaScriptProcedureOptions]{
 				Name:        case_Procedures_validation_CreateAndCallForJavaScript_ProcedureName_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAndCallForJavaScriptProcedureOptions", "ProcedureName"),
 				DefaultModify: func(opts *CreateAndCallForJavaScriptProcedureOptions) {
 					opts.ProcedureName = emptyAccountObjectIdentifier
 				},
@@ -1358,14 +1358,14 @@ var proceduresTests = ProceduresTestsContext{
 			},
 			validationCase[*CreateAndCallForPythonProcedureOptions]{
 				Name:        case_Procedures_validation_CreateAndCallForPython_Name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAndCallForPythonProcedureOptions", "Name"),
 				DefaultModify: func(opts *CreateAndCallForPythonProcedureOptions) {
 					opts.Name = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*CreateAndCallForPythonProcedureOptions]{
 				Name:        case_Procedures_validation_CreateAndCallForPython_ProcedureName_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAndCallForPythonProcedureOptions", "ProcedureName"),
 				DefaultModify: func(opts *CreateAndCallForPythonProcedureOptions) {
 					opts.ProcedureName = emptyAccountObjectIdentifier
 				},
@@ -1479,14 +1479,14 @@ var proceduresTests = ProceduresTestsContext{
 			},
 			validationCase[*CreateAndCallForSQLProcedureOptions]{
 				Name:        case_Procedures_validation_CreateAndCallForSQL_Name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAndCallForSQLProcedureOptions", "Name"),
 				DefaultModify: func(opts *CreateAndCallForSQLProcedureOptions) {
 					opts.Name = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*CreateAndCallForSQLProcedureOptions]{
 				Name:        case_Procedures_validation_CreateAndCallForSQL_ProcedureName_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAndCallForSQLProcedureOptions", "ProcedureName"),
 				DefaultModify: func(opts *CreateAndCallForSQLProcedureOptions) {
 					opts.ProcedureName = emptyAccountObjectIdentifier
 				},

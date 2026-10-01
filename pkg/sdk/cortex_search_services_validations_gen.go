@@ -16,7 +16,7 @@ func (opts *CreateCortexSearchServiceOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateCortexSearchServiceOptions", "name"))
 	}
 	if !valueSet(opts.On) {
 		errs = append(errs, errNotSet("CreateCortexSearchServiceOptions", "On"))
@@ -36,7 +36,7 @@ func (opts *AlterCortexSearchServiceOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterCortexSearchServiceOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Suspend, opts.Resume, opts.Refresh, opts.Set, opts.SetDefaults, opts.SetPrimaryKey, opts.SetAttributes, opts.UnsetPrimaryKey, opts.UnsetAttributes, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterCortexSearchServiceOptions", "Suspend", "Resume", "Refresh", "Set", "SetDefaults", "SetPrimaryKey", "SetAttributes", "UnsetPrimaryKey", "UnsetAttributes", "SetTags", "UnsetTags"))
@@ -78,7 +78,7 @@ func (opts *DescribeCortexSearchServiceOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeCortexSearchServiceOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -89,7 +89,7 @@ func (opts *DropCortexSearchServiceOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropCortexSearchServiceOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

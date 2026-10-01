@@ -177,7 +177,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_CreateApiAuthenticationWithClientCredentialsFlow_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions", "name"),
 				DefaultModify: func(opts *CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -211,7 +211,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_CreateApiAuthenticationWithAuthorizationCodeGrantFlow_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions", "name"),
 				DefaultModify: func(opts *CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -245,7 +245,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_CreateApiAuthenticationWithJwtBearerFlow_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions", "name"),
 				DefaultModify: func(opts *CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -303,7 +303,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 			},
 			validationCase[*CreateExternalOauthSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_CreateExternalOauth_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateExternalOauthSecurityIntegrationOptions", "name"),
 				DefaultModify: func(opts *CreateExternalOauthSecurityIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -337,7 +337,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*CreateOauthForPartnerApplicationsSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_CreateOauthForPartnerApplications_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOauthForPartnerApplicationsSecurityIntegrationOptions", "name"),
 				DefaultModify: func(opts *CreateOauthForPartnerApplicationsSecurityIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -371,7 +371,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*CreateOauthForCustomClientsSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_CreateOauthForCustomClients_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOauthForCustomClientsSecurityIntegrationOptions", "name"),
 				DefaultModify: func(opts *CreateOauthForCustomClientsSecurityIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -405,7 +405,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*CreateSaml2SecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_CreateSaml2_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSaml2SecurityIntegrationOptions", "name"),
 				DefaultModify: func(opts *CreateSaml2SecurityIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -439,7 +439,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*CreateScimSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_CreateScim_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateScimSecurityIntegrationOptions", "name"),
 				DefaultModify: func(opts *CreateScimSecurityIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -473,7 +473,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithClientCredentialsFlow_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions", "name"),
 				DefaultModify: func(opts *AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -548,7 +548,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions", "name"),
 				DefaultModify: func(opts *AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -624,7 +624,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithJwtBearerFlow_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions", "name"),
 				DefaultModify: func(opts *AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -699,7 +699,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*AlterExternalOauthSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_AlterExternalOauth_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterExternalOauthSecurityIntegrationOptions", "name"),
 				DefaultModify: func(opts *AlterExternalOauthSecurityIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -796,7 +796,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*AlterOauthForPartnerApplicationsSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOauthForPartnerApplicationsSecurityIntegrationOptions", "name"),
 				DefaultModify: func(opts *AlterOauthForPartnerApplicationsSecurityIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -869,7 +869,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*AlterOauthForCustomClientsSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_AlterOauthForCustomClients_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOauthForCustomClientsSecurityIntegrationOptions", "name"),
 				DefaultModify: func(opts *AlterOauthForCustomClientsSecurityIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -951,7 +951,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*AlterSaml2SecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_AlterSaml2_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterSaml2SecurityIntegrationOptions", "name"),
 				DefaultModify: func(opts *AlterSaml2SecurityIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -1039,7 +1039,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*AlterScimSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_AlterScim_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterScimSecurityIntegrationOptions", "name"),
 				DefaultModify: func(opts *AlterScimSecurityIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -1109,7 +1109,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*DropSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropSecurityIntegrationOptions", "name"),
 				DefaultModify: func(opts *DropSecurityIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -1135,7 +1135,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeSecurityIntegrationOptions", "name"),
 				DefaultModify: func(opts *DescribeSecurityIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

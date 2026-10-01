@@ -15,19 +15,19 @@ func (opts *CreateExternalFunctionOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateExternalFunctionOptions", "name"))
 	}
 	if !valueSet(opts.ApiIntegration) {
 		errs = append(errs, errNotSet("CreateExternalFunctionOptions", "ApiIntegration"))
 	}
 	if opts.RequestTranslator != nil && !ValidObjectIdentifier(opts.RequestTranslator) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateExternalFunctionOptions", "RequestTranslator"))
 	}
 	if !valueSet(opts.As) {
 		errs = append(errs, errNotSet("CreateExternalFunctionOptions", "As"))
 	}
 	if opts.ResponseTranslator != nil && !ValidObjectIdentifier(opts.ResponseTranslator) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateExternalFunctionOptions", "ResponseTranslator"))
 	}
 	return JoinErrors(errs...)
 }
@@ -41,7 +41,7 @@ func (opts *AlterExternalFunctionOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterExternalFunctionOptions", "Set", "Unset"))
 	}
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterExternalFunctionOptions", "name"))
 	}
 	if valueSet(opts.Set) {
 		if !exactlyOneValueSet(opts.Set.ApiIntegration, opts.Set.Headers, opts.Set.ContextHeaders, opts.Set.MaxBatchRows, opts.Set.Compression, opts.Set.RequestTranslator, opts.Set.ResponseTranslator) {
@@ -70,7 +70,7 @@ func (opts *DescribeExternalFunctionOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeExternalFunctionOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

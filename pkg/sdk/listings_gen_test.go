@@ -72,7 +72,7 @@ var listingsTests = ListingsTestsContext{
 		withValidationCases(
 			validationCase[*CreateListingOptions]{
 				Name:        case_Listings_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateListingOptions", "name"),
 				DefaultModify: func(opts *CreateListingOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -135,7 +135,7 @@ var listingsTests = ListingsTestsContext{
 		withValidationCases(
 			validationCase[*AlterListingOptions]{
 				Name:        case_Listings_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterListingOptions", "name"),
 				DefaultModify: func(opts *AlterListingOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -216,7 +216,7 @@ var listingsTests = ListingsTestsContext{
 		withValidationCases(
 			validationCase[*DropListingOptions]{
 				Name:        case_Listings_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropListingOptions", "name"),
 				DefaultModify: func(opts *DropListingOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -267,7 +267,7 @@ var listingsTests = ListingsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeListingOptions]{
 				Name:        case_Listings_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeListingOptions", "name"),
 				DefaultModify: func(opts *DescribeListingOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -290,7 +290,7 @@ var listingsTests = ListingsTestsContext{
 		withValidationCases(
 			validationCase[*ShowVersionsListingOptions]{
 				Name:        case_Listings_validation_ShowVersions_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("ShowVersionsListingOptions", "name"),
 				DefaultModify: func(opts *ShowVersionsListingOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

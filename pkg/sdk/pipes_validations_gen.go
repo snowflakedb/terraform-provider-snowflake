@@ -16,7 +16,7 @@ func (opts *CreatePipeOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreatePipeOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreatePipeOptions", "OrReplace", "IfNotExists"))
@@ -31,7 +31,7 @@ func (opts *AlterPipeOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterPipeOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.Refresh) {
 		errs = append(errs, errExactlyOneOf("AlterPipeOptions", "Set", "Unset", "SetTags", "UnsetTags", "Refresh"))
@@ -55,7 +55,7 @@ func (opts *DropPipeOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropPipeOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -75,7 +75,7 @@ func (opts *DescribePipeOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribePipeOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

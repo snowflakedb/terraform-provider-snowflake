@@ -16,13 +16,13 @@ func (opts *CreateOpenflowRuntimeOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOpenflowRuntimeOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.InDeployment) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOpenflowRuntimeOptions", "InDeployment"))
 	}
 	if !ValidObjectIdentifier(opts.ExecuteAsRole) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOpenflowRuntimeOptions", "ExecuteAsRole"))
 	}
 	return JoinErrors(errs...)
 }
@@ -33,10 +33,10 @@ func (opts *AlterOpenflowRuntimeOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterOpenflowRuntimeOptions", "name"))
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterOpenflowRuntimeOptions", "RenameTo"))
 	}
 	if !exactlyOneValueSet(opts.Suspend, opts.Resume, opts.ResumeRecovery, opts.Restart, opts.RestartRecovery, opts.Terminate, opts.TerminateCascade, opts.Upgrade, opts.RenameTo, opts.Set, opts.Unset, opts.AddExternalAccessIntegrations, opts.RemoveExternalAccessIntegrations) {
 		errs = append(errs, errExactlyOneOf("AlterOpenflowRuntimeOptions", "Suspend", "Resume", "ResumeRecovery", "Restart", "RestartRecovery", "Terminate", "TerminateCascade", "Upgrade", "RenameTo", "Set", "Unset", "AddExternalAccessIntegrations", "RemoveExternalAccessIntegrations"))
@@ -60,7 +60,7 @@ func (opts *DropOpenflowRuntimeOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropOpenflowRuntimeOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -79,7 +79,7 @@ func (opts *DescribeOpenflowRuntimeOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeOpenflowRuntimeOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

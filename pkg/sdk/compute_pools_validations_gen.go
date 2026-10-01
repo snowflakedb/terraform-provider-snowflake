@@ -16,7 +16,7 @@ func (opts *CreateComputePoolOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateComputePoolOptions", "name"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
@@ -28,7 +28,7 @@ func (opts *AlterComputePoolOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterComputePoolOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Resume, opts.Suspend, opts.StopAll, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterComputePoolOptions", "Resume", "Suspend", "StopAll", "Set", "Unset", "SetTags", "UnsetTags"))
@@ -53,7 +53,7 @@ func (opts *DropComputePoolOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropComputePoolOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -72,7 +72,7 @@ func (opts *DescribeComputePoolOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeComputePoolOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

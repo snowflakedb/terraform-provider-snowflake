@@ -102,7 +102,7 @@ var servicesTests = ServicesTestsContext{
 		withValidationCases(
 			validationCase[*CreateServiceOptions]{
 				Name:        case_Services_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateServiceOptions", "name"),
 				DefaultModify: func(opts *CreateServiceOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -125,7 +125,7 @@ var servicesTests = ServicesTestsContext{
 			},
 			validationCase[*CreateServiceOptions]{
 				Name:        case_Services_validation_Create_QueryWarehouse_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateServiceOptions", "QueryWarehouse"),
 				DefaultModify: func(opts *CreateServiceOptions) {
 					opts.QueryWarehouse = new(emptyAccountObjectIdentifier)
 				},
@@ -211,7 +211,7 @@ var servicesTests = ServicesTestsContext{
 		withValidationCases(
 			validationCase[*AlterServiceOptions]{
 				Name:        case_Services_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterServiceOptions", "name"),
 				DefaultModify: func(opts *AlterServiceOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -301,7 +301,7 @@ var servicesTests = ServicesTestsContext{
 			},
 			validationCase[*AlterServiceOptions]{
 				Name:        case_Services_validation_Alter_Restore_FromSnapshot_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterServiceOptions.Restore", "FromSnapshot"),
 				DefaultModify: func(opts *AlterServiceOptions) {
 					opts.Restore = &Restore{}
 					opts.Restore.FromSnapshot = emptySchemaObjectIdentifier
@@ -309,7 +309,7 @@ var servicesTests = ServicesTestsContext{
 			},
 			validationCase[*AlterServiceOptions]{
 				Name:        case_Services_validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterServiceOptions.Set", "QueryWarehouse"),
 				DefaultModify: func(opts *AlterServiceOptions) {
 					opts.Set = &ServiceSet{}
 					opts.Set.QueryWarehouse = new(emptyAccountObjectIdentifier)
@@ -388,7 +388,7 @@ var servicesTests = ServicesTestsContext{
 		withValidationCases(
 			validationCase[*DropServiceOptions]{
 				Name:        case_Services_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropServiceOptions", "name"),
 				DefaultModify: func(opts *DropServiceOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -451,7 +451,7 @@ var servicesTests = ServicesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeServiceOptions]{
 				Name:        case_Services_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeServiceOptions", "name"),
 				DefaultModify: func(opts *DescribeServiceOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -474,7 +474,7 @@ var servicesTests = ServicesTestsContext{
 		withValidationCases(
 			validationCase[*ExecuteJobServiceOptions]{
 				Name:        case_Services_validation_ExecuteJob_Name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("ExecuteJobServiceOptions", "Name"),
 				DefaultModify: func(opts *ExecuteJobServiceOptions) {
 					opts.Name = emptySchemaObjectIdentifier
 				},
@@ -497,14 +497,14 @@ var servicesTests = ServicesTestsContext{
 			},
 			validationCase[*ExecuteJobServiceOptions]{
 				Name:        case_Services_validation_ExecuteJob_InComputePool_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("ExecuteJobServiceOptions", "InComputePool"),
 				DefaultModify: func(opts *ExecuteJobServiceOptions) {
 					opts.InComputePool = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*ExecuteJobServiceOptions]{
 				Name:        case_Services_validation_ExecuteJob_QueryWarehouse_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("ExecuteJobServiceOptions", "QueryWarehouse"),
 				DefaultModify: func(opts *ExecuteJobServiceOptions) {
 					opts.QueryWarehouse = new(emptyAccountObjectIdentifier)
 				},

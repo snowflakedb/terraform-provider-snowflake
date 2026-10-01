@@ -81,7 +81,7 @@ var authenticationPoliciesTests = AuthenticationPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*CreateAuthenticationPolicyOptions]{
 				Name:        case_AuthenticationPolicies_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAuthenticationPolicyOptions", "name"),
 				DefaultModify: func(opts *CreateAuthenticationPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -159,7 +159,7 @@ var authenticationPoliciesTests = AuthenticationPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*AlterAuthenticationPolicyOptions]{
 				Name:        case_AuthenticationPolicies_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterAuthenticationPolicyOptions", "name"),
 				DefaultModify: func(opts *AlterAuthenticationPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -183,7 +183,7 @@ var authenticationPoliciesTests = AuthenticationPoliciesTestsContext{
 			},
 			validationCase[*AlterAuthenticationPolicyOptions]{
 				Name:        case_AuthenticationPolicies_validation_Alter_RenameTo_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterAuthenticationPolicyOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterAuthenticationPolicyOptions) {
 					opts.RenameTo = new(emptySchemaObjectIdentifier)
 				},
@@ -291,7 +291,7 @@ var authenticationPoliciesTests = AuthenticationPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*DropAuthenticationPolicyOptions]{
 				Name:        case_AuthenticationPolicies_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropAuthenticationPolicyOptions", "name"),
 				DefaultModify: func(opts *DropAuthenticationPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -348,7 +348,7 @@ var authenticationPoliciesTests = AuthenticationPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeAuthenticationPolicyOptions]{
 				Name:        case_AuthenticationPolicies_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeAuthenticationPolicyOptions", "name"),
 				DefaultModify: func(opts *DescribeAuthenticationPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

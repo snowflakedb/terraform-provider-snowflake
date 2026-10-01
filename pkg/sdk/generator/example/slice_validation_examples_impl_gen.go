@@ -85,5 +85,17 @@ func (r *CreateSliceValidationExampleRequest) toOpts() *CreateSliceValidationExa
 		}
 		opts.Items = items
 	}
+	if r.Columns != nil {
+		columns := make([]SliceValidationColumn, len(r.Columns))
+		for i, v := range r.Columns {
+			columns[i] = SliceValidationColumn{}
+			if v.MaskingPolicy != nil {
+				columns[i].MaskingPolicy = &SliceValidationColumnMaskingPolicy{
+					MaskingPolicy: v.MaskingPolicy.MaskingPolicy,
+				}
+			}
+		}
+		opts.Columns = columns
+	}
 	return opts
 }

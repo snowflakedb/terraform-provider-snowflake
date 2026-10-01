@@ -60,7 +60,7 @@ var computePoolsTests = ComputePoolsTestsContext{
 		withValidationCases(
 			validationCase[*CreateComputePoolOptions]{
 				Name:        case_ComputePools_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateComputePoolOptions", "name"),
 				DefaultModify: func(opts *CreateComputePoolOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -86,7 +86,7 @@ var computePoolsTests = ComputePoolsTestsContext{
 		withValidationCases(
 			validationCase[*AlterComputePoolOptions]{
 				Name:        case_ComputePools_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterComputePoolOptions", "name"),
 				DefaultModify: func(opts *AlterComputePoolOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -171,7 +171,7 @@ var computePoolsTests = ComputePoolsTestsContext{
 		withValidationCases(
 			validationCase[*DropComputePoolOptions]{
 				Name:        case_ComputePools_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropComputePoolOptions", "name"),
 				DefaultModify: func(opts *DropComputePoolOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -222,7 +222,7 @@ var computePoolsTests = ComputePoolsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeComputePoolOptions]{
 				Name:        case_ComputePools_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeComputePoolOptions", "name"),
 				DefaultModify: func(opts *DescribeComputePoolOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

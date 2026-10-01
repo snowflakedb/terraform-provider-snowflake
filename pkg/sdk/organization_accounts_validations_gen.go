@@ -14,7 +14,7 @@ func (opts *CreateOrganizationAccountOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOrganizationAccountOptions", "name"))
 	}
 	if !anyValueSet(opts.AdminPassword, opts.AdminRsaPublicKey) {
 		errs = append(errs, errAtLeastOneOf("CreateOrganizationAccountOptions", "AdminPassword", "AdminRsaPublicKey"))
@@ -28,7 +28,7 @@ func (opts *AlterOrganizationAccountOptions) validate() error {
 	}
 	var errs []error
 	if opts.Name != nil && !ValidObjectIdentifier(opts.Name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterOrganizationAccountOptions", "Name"))
 	}
 	if everyValueSet(opts.Name, opts.Set) {
 		errs = append(errs, errOneOf("AlterOrganizationAccountOptions", "Name", "Set"))

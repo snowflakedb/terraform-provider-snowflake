@@ -64,14 +64,14 @@ var dynamicTablesTests = DynamicTablesTestsContext{
 		withValidationCases(
 			validationCase[*CreateDynamicTableOptions]{
 				Name:        case_DynamicTables_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateDynamicTableOptions", "name"),
 				DefaultModify: func(opts *CreateDynamicTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CreateDynamicTableOptions]{
 				Name:        case_DynamicTables_validation_Create_Warehouse_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateDynamicTableOptions", "Warehouse"),
 				DefaultModify: func(opts *CreateDynamicTableOptions) {
 					opts.Warehouse = emptyAccountObjectIdentifier
 				},
@@ -105,7 +105,7 @@ var dynamicTablesTests = DynamicTablesTestsContext{
 		withValidationCases(
 			validationCase[*AlterDynamicTableOptions]{
 				Name:        case_DynamicTables_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterDynamicTableOptions", "name"),
 				DefaultModify: func(opts *AlterDynamicTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -176,7 +176,7 @@ var dynamicTablesTests = DynamicTablesTestsContext{
 		withValidationCases(
 			validationCase[*DropDynamicTableOptions]{
 				Name:        case_DynamicTables_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropDynamicTableOptions", "name"),
 				DefaultModify: func(opts *DropDynamicTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -230,7 +230,7 @@ var dynamicTablesTests = DynamicTablesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeDynamicTableOptions]{
 				Name:        case_DynamicTables_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeDynamicTableOptions", "name"),
 				DefaultModify: func(opts *DescribeDynamicTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

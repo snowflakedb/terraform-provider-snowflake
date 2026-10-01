@@ -17,7 +17,7 @@ func (opts *CreateRoleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateRoleOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateRoleOptions", "OrReplace", "IfNotExists"))
@@ -31,13 +31,13 @@ func (opts *AlterRoleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterRoleOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.SetComment, opts.SetTags, opts.UnsetComment, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterRoleOptions", "RenameTo", "SetComment", "SetTags", "UnsetComment", "UnsetTags"))
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterRoleOptions", "RenameTo"))
 	}
 	return JoinErrors(errs...)
 }
@@ -48,7 +48,7 @@ func (opts *DropRoleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropRoleOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -61,7 +61,7 @@ func (opts *ShowRoleOptions) validate() error {
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.InClass) {
 		if !ValidObjectIdentifier(opts.InClass.Class) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("ShowRoleOptions.InClass", "Class"))
 		}
 	}
 	return JoinErrors(errs...)
@@ -73,7 +73,7 @@ func (opts *GrantRoleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("GrantRoleOptions", "name"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Grant) {
@@ -90,7 +90,7 @@ func (opts *RevokeRoleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("RevokeRoleOptions", "name"))
 	}
 	if valueSet(opts.Revoke) {
 		if !exactlyOneValueSet(opts.Revoke.Role, opts.Revoke.User) {

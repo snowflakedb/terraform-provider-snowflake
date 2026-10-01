@@ -79,7 +79,7 @@ var externalVolumesTests = ExternalVolumesTestsContext{
 			},
 			validationCase[*CreateExternalVolumeOptions]{
 				Name:        case_ExternalVolumes_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateExternalVolumeOptions", "name"),
 				DefaultModify: func(opts *CreateExternalVolumeOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -143,7 +143,7 @@ var externalVolumesTests = ExternalVolumesTestsContext{
 			},
 			validationCase[*AlterExternalVolumeOptions]{
 				Name:        case_ExternalVolumes_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterExternalVolumeOptions", "name"),
 				DefaultModify: func(opts *AlterExternalVolumeOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -194,7 +194,7 @@ var externalVolumesTests = ExternalVolumesTestsContext{
 		withValidationCases(
 			validationCase[*DropExternalVolumeOptions]{
 				Name:        case_ExternalVolumes_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropExternalVolumeOptions", "name"),
 				DefaultModify: func(opts *DropExternalVolumeOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -220,7 +220,7 @@ var externalVolumesTests = ExternalVolumesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeExternalVolumeOptions]{
 				Name:        case_ExternalVolumes_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeExternalVolumeOptions", "name"),
 				DefaultModify: func(opts *DescribeExternalVolumeOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

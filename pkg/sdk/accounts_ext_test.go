@@ -98,28 +98,28 @@ func init() {
 			func(opts *AlterAccountOptions) {
 				opts.Set = &AccountSet{ConsumptionBillingEntity: new("be-name")}
 			},
-			ErrInvalidObjectIdentifier,
+			errInvalidIdentifier("AlterAccountOptions", "Name"),
 		).
 		withAdditionalValidationCase(
 			"validation_Alter_Unset_ConsumptionBillingEntity_requiresName",
 			func(opts *AlterAccountOptions) {
 				opts.Unset = &AccountUnset{ConsumptionBillingEntity: new(true)}
 			},
-			ErrInvalidObjectIdentifier,
+			errInvalidIdentifier("AlterAccountOptions", "Name"),
 		).
 		withAdditionalValidationCase(
 			"validation_Alter_Drop_requiresName",
 			func(opts *AlterAccountOptions) {
 				opts.Drop = &AccountDrop{OldUrl: new(true)}
 			},
-			ErrInvalidObjectIdentifier,
+			errInvalidIdentifier("AlterAccountOptions", "Name"),
 		).
 		withAdditionalValidationCase(
 			"validation_Alter_RenameTo_requiresName",
 			func(opts *AlterAccountOptions) {
 				opts.RenameTo = &renameTarget
 			},
-			ErrInvalidObjectIdentifier,
+			errInvalidIdentifier("AlterAccountOptions", "Name"),
 		).
 		withAdditionalValidationCase(
 			"validation_Alter_Set_Force_requiresPolicy",

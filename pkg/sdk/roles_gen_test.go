@@ -61,7 +61,7 @@ var rolesTests = RolesTestsContext{
 		withValidationCases(
 			validationCase[*CreateRoleOptions]{
 				Name:        case_Roles_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateRoleOptions", "name"),
 				DefaultModify: func(opts *CreateRoleOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -95,7 +95,7 @@ var rolesTests = RolesTestsContext{
 		withValidationCases(
 			validationCase[*AlterRoleOptions]{
 				Name:        case_Roles_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterRoleOptions", "name"),
 				DefaultModify: func(opts *AlterRoleOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -121,7 +121,7 @@ var rolesTests = RolesTestsContext{
 			},
 			validationCase[*AlterRoleOptions]{
 				Name:        case_Roles_validation_Alter_RenameTo_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterRoleOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterRoleOptions) {
 					opts.RenameTo = new(emptyAccountObjectIdentifier)
 				},
@@ -155,7 +155,7 @@ var rolesTests = RolesTestsContext{
 		withValidationCases(
 			validationCase[*DropRoleOptions]{
 				Name:        case_Roles_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropRoleOptions", "name"),
 				DefaultModify: func(opts *DropRoleOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -179,7 +179,7 @@ var rolesTests = RolesTestsContext{
 		withValidationCases(
 			validationCase[*ShowRoleOptions]{
 				Name:        case_Roles_validation_Show_InClass_Class_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("ShowRoleOptions.InClass", "Class"),
 				DefaultModify: func(opts *ShowRoleOptions) {
 					opts.InClass = &RolesInClass{}
 					opts.InClass.Class = emptySchemaObjectIdentifier
@@ -212,7 +212,7 @@ var rolesTests = RolesTestsContext{
 		withValidationCases(
 			validationCase[*GrantRoleOptions]{
 				Name:        case_Roles_validation_Grant_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("GrantRoleOptions", "name"),
 				DefaultModify: func(opts *GrantRoleOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -251,7 +251,7 @@ var rolesTests = RolesTestsContext{
 		withValidationCases(
 			validationCase[*RevokeRoleOptions]{
 				Name:        case_Roles_validation_Revoke_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("RevokeRoleOptions", "name"),
 				DefaultModify: func(opts *RevokeRoleOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

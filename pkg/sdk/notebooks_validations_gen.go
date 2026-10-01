@@ -16,19 +16,19 @@ func (opts *CreateNotebookOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateNotebookOptions", "name"))
 	}
 	if opts.QueryWarehouse != nil && !ValidObjectIdentifier(opts.QueryWarehouse) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateNotebookOptions", "QueryWarehouse"))
 	}
 	if opts.Warehouse != nil && !ValidObjectIdentifier(opts.Warehouse) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateNotebookOptions", "Warehouse"))
 	}
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateNotebookOptions", "IfNotExists", "OrReplace"))
 	}
 	if opts.ComputePool != nil && !ValidObjectIdentifier(opts.ComputePool) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateNotebookOptions", "ComputePool"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
@@ -40,23 +40,23 @@ func (opts *AlterNotebookOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterNotebookOptions", "name"))
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterNotebookOptions", "RenameTo"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.RenameTo) {
 		errs = append(errs, errExactlyOneOf("AlterNotebookOptions", "Set", "Unset", "SetTags", "UnsetTags", "RenameTo"))
 	}
 	if valueSet(opts.Set) {
 		if opts.Set.QueryWarehouse != nil && !ValidObjectIdentifier(opts.Set.QueryWarehouse) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterNotebookOptions.Set", "QueryWarehouse"))
 		}
 		if opts.Set.Warehouse != nil && !ValidObjectIdentifier(opts.Set.Warehouse) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterNotebookOptions.Set", "Warehouse"))
 		}
 		if opts.Set.ComputePool != nil && !ValidObjectIdentifier(opts.Set.ComputePool) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterNotebookOptions.Set", "ComputePool"))
 		}
 		if !anyValueSet(opts.Set.Comment, opts.Set.QueryWarehouse, opts.Set.IdleAutoShutdownTimeSeconds, opts.Set.Secrets, opts.Set.MainFile, opts.Set.Warehouse, opts.Set.RuntimeName, opts.Set.ComputePool, opts.Set.ExternalAccessIntegrations, opts.Set.RuntimeEnvironmentVersion) {
 			errs = append(errs, errAtLeastOneOf("AlterNotebookOptions.Set", "Comment", "QueryWarehouse", "IdleAutoShutdownTimeSeconds", "Secrets", "MainFile", "Warehouse", "RuntimeName", "ComputePool", "ExternalAccessIntegrations", "RuntimeEnvironmentVersion"))
@@ -77,7 +77,7 @@ func (opts *DropNotebookOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropNotebookOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -88,7 +88,7 @@ func (opts *DescribeNotebookOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeNotebookOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

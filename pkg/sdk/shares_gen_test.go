@@ -64,7 +64,7 @@ var sharesTests = SharesTestsContext{
 		withValidationCases(
 			validationCase[*CreateShareOptions]{
 				Name:        case_Shares_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateShareOptions", "name"),
 				DefaultModify: func(opts *CreateShareOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -90,7 +90,7 @@ var sharesTests = SharesTestsContext{
 		withValidationCases(
 			validationCase[*AlterShareOptions]{
 				Name:        case_Shares_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterShareOptions", "name"),
 				DefaultModify: func(opts *AlterShareOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -180,7 +180,7 @@ var sharesTests = SharesTestsContext{
 		withValidationCases(
 			validationCase[*DropShareOptions]{
 				Name:        case_Shares_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropShareOptions", "name"),
 				DefaultModify: func(opts *DropShareOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -231,7 +231,7 @@ var sharesTests = SharesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeShareOptions]{
 				Name:        case_Shares_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeShareOptions", "name"),
 				DefaultModify: func(opts *DescribeShareOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

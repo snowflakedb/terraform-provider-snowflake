@@ -61,7 +61,7 @@ var storageLifecyclePoliciesTests = StorageLifecyclePoliciesTestsContext{
 		withValidationCases(
 			validationCase[*CreateStorageLifecyclePolicyOptions]{
 				Name:        case_StorageLifecyclePolicies_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateStorageLifecyclePolicyOptions", "name"),
 				DefaultModify: func(opts *CreateStorageLifecyclePolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -109,7 +109,7 @@ var storageLifecyclePoliciesTests = StorageLifecyclePoliciesTestsContext{
 		withValidationCases(
 			validationCase[*AlterStorageLifecyclePolicyOptions]{
 				Name:        case_StorageLifecyclePolicies_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterStorageLifecyclePolicyOptions", "name"),
 				DefaultModify: func(opts *AlterStorageLifecyclePolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -185,7 +185,7 @@ var storageLifecyclePoliciesTests = StorageLifecyclePoliciesTestsContext{
 		withValidationCases(
 			validationCase[*DropStorageLifecyclePolicyOptions]{
 				Name:        case_StorageLifecyclePolicies_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropStorageLifecyclePolicyOptions", "name"),
 				DefaultModify: func(opts *DropStorageLifecyclePolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -233,7 +233,7 @@ var storageLifecyclePoliciesTests = StorageLifecyclePoliciesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeStorageLifecyclePolicyOptions]{
 				Name:        case_StorageLifecyclePolicies_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeStorageLifecyclePolicyOptions", "name"),
 				DefaultModify: func(opts *DescribeStorageLifecyclePolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

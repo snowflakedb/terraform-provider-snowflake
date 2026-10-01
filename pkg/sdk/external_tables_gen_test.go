@@ -111,7 +111,7 @@ var externalTablesTests = ExternalTablesTestsContext{
 		withValidationCases(
 			validationCase[*CreateExternalTableOptions]{
 				Name:        case_ExternalTables_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateExternalTableOptions", "name"),
 				DefaultModify: func(opts *CreateExternalTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -190,7 +190,7 @@ var externalTablesTests = ExternalTablesTestsContext{
 		withValidationCases(
 			validationCase[*CreateWithManualPartitioningExternalTableOptions]{
 				Name:        case_ExternalTables_validation_CreateWithManualPartitioning_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateWithManualPartitioningExternalTableOptions", "name"),
 				DefaultModify: func(opts *CreateWithManualPartitioningExternalTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -269,7 +269,7 @@ var externalTablesTests = ExternalTablesTestsContext{
 		withValidationCases(
 			validationCase[*CreateDeltaLakeExternalTableOptions]{
 				Name:        case_ExternalTables_validation_CreateDeltaLake_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateDeltaLakeExternalTableOptions", "name"),
 				DefaultModify: func(opts *CreateDeltaLakeExternalTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -348,7 +348,7 @@ var externalTablesTests = ExternalTablesTestsContext{
 		withValidationCases(
 			validationCase[*CreateUsingTemplateExternalTableOptions]{
 				Name:        case_ExternalTables_validation_CreateUsingTemplate_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateUsingTemplateExternalTableOptions", "name"),
 				DefaultModify: func(opts *CreateUsingTemplateExternalTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -426,7 +426,7 @@ var externalTablesTests = ExternalTablesTestsContext{
 		withValidationCases(
 			validationCase[*AlterExternalTableOptions]{
 				Name:        case_ExternalTables_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterExternalTableOptions", "name"),
 				DefaultModify: func(opts *AlterExternalTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -479,7 +479,7 @@ var externalTablesTests = ExternalTablesTestsContext{
 		withValidationCases(
 			validationCase[*AlterPartitionsExternalTableOptions]{
 				Name:        case_ExternalTables_validation_AlterPartitions_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterPartitionsExternalTableOptions", "name"),
 				DefaultModify: func(opts *AlterPartitionsExternalTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -509,7 +509,7 @@ var externalTablesTests = ExternalTablesTestsContext{
 		withValidationCases(
 			validationCase[*DropExternalTableOptions]{
 				Name:        case_ExternalTables_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropExternalTableOptions", "name"),
 				DefaultModify: func(opts *DropExternalTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -572,7 +572,7 @@ var externalTablesTests = ExternalTablesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeColumnsExternalTableOptions]{
 				Name:        case_ExternalTables_validation_DescribeColumns_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeColumnsExternalTableOptions", "name"),
 				DefaultModify: func(opts *DescribeColumnsExternalTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -595,7 +595,7 @@ var externalTablesTests = ExternalTablesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeStageExternalTableOptions]{
 				Name:        case_ExternalTables_validation_DescribeStage_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeStageExternalTableOptions", "name"),
 				DefaultModify: func(opts *DescribeStageExternalTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

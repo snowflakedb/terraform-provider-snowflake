@@ -58,7 +58,7 @@ var maskingPoliciesTests = MaskingPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*CreateMaskingPolicyOptions]{
 				Name:        case_MaskingPolicies_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateMaskingPolicyOptions", "name"),
 				DefaultModify: func(opts *CreateMaskingPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -113,7 +113,7 @@ var maskingPoliciesTests = MaskingPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*AlterMaskingPolicyOptions]{
 				Name:        case_MaskingPolicies_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterMaskingPolicyOptions", "name"),
 				DefaultModify: func(opts *AlterMaskingPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -174,7 +174,7 @@ var maskingPoliciesTests = MaskingPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*DropMaskingPolicyOptions]{
 				Name:        case_MaskingPolicies_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropMaskingPolicyOptions", "name"),
 				DefaultModify: func(opts *DropMaskingPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -225,7 +225,7 @@ var maskingPoliciesTests = MaskingPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeMaskingPolicyOptions]{
 				Name:        case_MaskingPolicies_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeMaskingPolicyOptions", "name"),
 				DefaultModify: func(opts *DescribeMaskingPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

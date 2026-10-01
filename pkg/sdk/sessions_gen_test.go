@@ -92,7 +92,7 @@ var sessionsTests = SessionsTestsContext{
 		withValidationCases(
 			validationCase[*UseWarehouseSessionOptions]{
 				Name:        case_Sessions_validation_UseWarehouse_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("UseWarehouseSessionOptions", "name"),
 				DefaultModify: func(opts *UseWarehouseSessionOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -115,7 +115,7 @@ var sessionsTests = SessionsTestsContext{
 		withValidationCases(
 			validationCase[*UseDatabaseSessionOptions]{
 				Name:        case_Sessions_validation_UseDatabase_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("UseDatabaseSessionOptions", "name"),
 				DefaultModify: func(opts *UseDatabaseSessionOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -138,7 +138,7 @@ var sessionsTests = SessionsTestsContext{
 		withValidationCases(
 			validationCase[*UseSchemaSessionOptions]{
 				Name:        case_Sessions_validation_UseSchema_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("UseSchemaSessionOptions", "name"),
 				DefaultModify: func(opts *UseSchemaSessionOptions) {
 					opts.name = emptyDatabaseObjectIdentifier
 				},
@@ -161,7 +161,7 @@ var sessionsTests = SessionsTestsContext{
 		withValidationCases(
 			validationCase[*UseRoleSessionOptions]{
 				Name:        case_Sessions_validation_UseRole_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("UseRoleSessionOptions", "name"),
 				DefaultModify: func(opts *UseRoleSessionOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

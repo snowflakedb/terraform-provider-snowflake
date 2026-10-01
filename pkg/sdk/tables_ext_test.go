@@ -57,14 +57,14 @@ func init() {
 					Tag:        []TagAssociation{{Name: emptySchemaObjectIdentifier, Value: "v"}},
 				}}
 			},
-			errInvalidIdentifier("TagAssociation", "Name"),
+			errInvalidIdentifier("CreateTableOptions.ColumnsAndConstraints.Columns[0].Tag[0]", "Name"),
 		).
 		withAdditionalValidationCase(
 			"validation_Create_RowAccessPolicy_invalidIdentifier",
 			func(opts *CreateTableOptions) {
 				opts.RowAccessPolicy = &TableRowAccessPolicyLegacy{Name: emptySchemaObjectIdentifier, On: []string{"COLUMN_1"}}
 			},
-			errInvalidIdentifier("TableRowAccessPolicy", "Name"),
+			errInvalidIdentifier("CreateTableOptions.RowAccessPolicy", "Name"),
 		).
 		withAdditionalValidationCase(
 			"validation_Create_inlineConstraint_emptyType",

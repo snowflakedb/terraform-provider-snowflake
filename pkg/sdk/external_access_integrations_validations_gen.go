@@ -16,7 +16,7 @@ func (opts *CreateExternalAccessIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateExternalAccessIntegrationOptions", "name"))
 	}
 	if !anyValueSet(opts.AllowedNetworkRules) {
 		errs = append(errs, errAtLeastOneOf("CreateExternalAccessIntegrationOptions", "AllowedNetworkRules"))
@@ -40,7 +40,7 @@ func (opts *AlterExternalAccessIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterExternalAccessIntegrationOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterExternalAccessIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
@@ -75,7 +75,7 @@ func (opts *DropExternalAccessIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropExternalAccessIntegrationOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -94,7 +94,7 @@ func (opts *DescribeExternalAccessIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeExternalAccessIntegrationOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

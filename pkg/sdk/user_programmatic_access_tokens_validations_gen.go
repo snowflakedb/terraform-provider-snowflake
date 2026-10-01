@@ -16,11 +16,11 @@ func (opts *AddUserProgrammaticAccessTokenOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AddUserProgrammaticAccessTokenOptions", "name"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	if opts.RoleRestriction != nil && !ValidObjectIdentifier(opts.RoleRestriction) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AddUserProgrammaticAccessTokenOptions", "RoleRestriction"))
 	}
 	return JoinErrors(errs...)
 }
@@ -31,7 +31,7 @@ func (opts *ModifyUserProgrammaticAccessTokenOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("ModifyUserProgrammaticAccessTokenOptions", "name"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.RenameTo) {
@@ -46,7 +46,7 @@ func (opts *RotateUserProgrammaticAccessTokenOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("RotateUserProgrammaticAccessTokenOptions", "name"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
@@ -58,7 +58,7 @@ func (opts *RemoveUserProgrammaticAccessTokenOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("RemoveUserProgrammaticAccessTokenOptions", "name"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)

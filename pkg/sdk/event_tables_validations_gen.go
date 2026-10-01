@@ -16,7 +16,7 @@ func (opts *CreateEventTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateEventTableOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateEventTableOptions", "OrReplace", "IfNotExists"))
@@ -38,7 +38,7 @@ func (opts *DescribeEventTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeEventTableOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -49,7 +49,7 @@ func (opts *DropEventTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropEventTableOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -60,30 +60,30 @@ func (opts *AlterEventTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterEventTableOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.ClusteringAction, opts.SearchOptimizationAction) {
 		errs = append(errs, errExactlyOneOf("AlterEventTableOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "ClusteringAction", "SearchOptimizationAction"))
 	}
 	if valueSet(opts.AddRowAccessPolicy) {
 		if !ValidObjectIdentifier(opts.AddRowAccessPolicy.RowAccessPolicy) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterEventTableOptions.AddRowAccessPolicy", "RowAccessPolicy"))
 		}
 	}
 	if valueSet(opts.DropRowAccessPolicy) {
 		if !ValidObjectIdentifier(opts.DropRowAccessPolicy.RowAccessPolicy) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterEventTableOptions.DropRowAccessPolicy", "RowAccessPolicy"))
 		}
 	}
 	if valueSet(opts.DropAndAddRowAccessPolicy) {
 		if valueSet(opts.DropAndAddRowAccessPolicy.Drop) {
 			if !ValidObjectIdentifier(opts.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy) {
-				errs = append(errs, ErrInvalidObjectIdentifier)
+				errs = append(errs, errInvalidIdentifier("AlterEventTableOptions.DropAndAddRowAccessPolicy.Drop", "RowAccessPolicy"))
 			}
 		}
 		if valueSet(opts.DropAndAddRowAccessPolicy.Add) {
 			if !ValidObjectIdentifier(opts.DropAndAddRowAccessPolicy.Add.RowAccessPolicy) {
-				errs = append(errs, ErrInvalidObjectIdentifier)
+				errs = append(errs, errInvalidIdentifier("AlterEventTableOptions.DropAndAddRowAccessPolicy.Add", "RowAccessPolicy"))
 			}
 		}
 	}

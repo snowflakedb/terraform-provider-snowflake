@@ -54,7 +54,7 @@ var externalFunctionsTests = ExternalFunctionsTestsContext{
 		withValidationCases(
 			validationCase[*CreateExternalFunctionOptions]{
 				Name:        case_ExternalFunctions_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateExternalFunctionOptions", "name"),
 				DefaultModify: func(opts *CreateExternalFunctionOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -68,7 +68,7 @@ var externalFunctionsTests = ExternalFunctionsTestsContext{
 			},
 			validationCase[*CreateExternalFunctionOptions]{
 				Name:        case_ExternalFunctions_validation_Create_RequestTranslator_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateExternalFunctionOptions", "RequestTranslator"),
 				DefaultModify: func(opts *CreateExternalFunctionOptions) {
 					opts.RequestTranslator = new(emptySchemaObjectIdentifier)
 				},
@@ -82,7 +82,7 @@ var externalFunctionsTests = ExternalFunctionsTestsContext{
 			},
 			validationCase[*CreateExternalFunctionOptions]{
 				Name:        case_ExternalFunctions_validation_Create_ResponseTranslator_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateExternalFunctionOptions", "ResponseTranslator"),
 				DefaultModify: func(opts *CreateExternalFunctionOptions) {
 					opts.ResponseTranslator = new(emptySchemaObjectIdentifier)
 				},
@@ -124,7 +124,7 @@ var externalFunctionsTests = ExternalFunctionsTestsContext{
 			},
 			validationCase[*AlterExternalFunctionOptions]{
 				Name:        case_ExternalFunctions_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterExternalFunctionOptions", "name"),
 				DefaultModify: func(opts *AlterExternalFunctionOptions) {
 					opts.name = emptySchemaObjectIdentifierWithArguments
 				},
@@ -204,7 +204,7 @@ var externalFunctionsTests = ExternalFunctionsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeExternalFunctionOptions]{
 				Name:        case_ExternalFunctions_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeExternalFunctionOptions", "name"),
 				DefaultModify: func(opts *DescribeExternalFunctionOptions) {
 					opts.name = emptySchemaObjectIdentifierWithArguments
 				},

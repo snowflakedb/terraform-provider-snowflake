@@ -73,18 +73,6 @@ func randomSchemaObjectIdentifier() SchemaObjectIdentifier {
 	return SchemaObjectIdentifier{}
 }
 
-func assertOptsInvalidJoinedErrors(t *testing.T, _ validatable, _ ...error) {
-	t.Helper()
-}
-
-func assertOptsValidAndSqlEquals(t *testing.T, _ validatable, _ string) {
-	t.Helper()
-}
-
-func assertOptsValidAndSqlEqualsf(t *testing.T, _ validatable, _ string, _ ...any) {
-	t.Helper()
-}
-
 func ValidObjectIdentifier(objectIdentifier ObjectIdentifier) bool {
 	return sdk.ValidObjectIdentifier(objectIdentifier)
 }
@@ -109,10 +97,11 @@ func JoinErrors(errs ...error) error {
 	return sdk.JoinErrors(errs...)
 }
 
-var (
-	ErrNilOptions              = sdk.ErrNilOptions
-	ErrInvalidObjectIdentifier = sdk.ErrInvalidObjectIdentifier
-)
+var ErrNilOptions = sdk.ErrNilOptions
+
+func errInvalidIdentifier(_ string, _ string) error {
+	return errors.New("")
+}
 
 func errOneOf(_ ...string) error {
 	return errors.New("")

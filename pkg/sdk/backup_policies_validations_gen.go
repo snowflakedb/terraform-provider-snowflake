@@ -16,7 +16,7 @@ func (opts *CreateBackupPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateBackupPolicyOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateBackupPolicyOptions", "OrReplace", "IfNotExists"))
@@ -33,7 +33,7 @@ func (opts *AlterBackupPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterBackupPolicyOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.Set, opts.SetTags, opts.Unset, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterBackupPolicyOptions", "RenameTo", "Set", "SetTags", "Unset", "UnsetTags"))
@@ -57,7 +57,7 @@ func (opts *DropBackupPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropBackupPolicyOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -76,7 +76,7 @@ func (opts *DescribeBackupPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeBackupPolicyOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

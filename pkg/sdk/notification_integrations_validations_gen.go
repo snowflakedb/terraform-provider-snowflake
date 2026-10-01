@@ -16,7 +16,7 @@ func (opts *CreateNotificationIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateNotificationIntegrationOptions", "name"))
 	}
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateNotificationIntegrationOptions", "IfNotExists", "OrReplace"))
@@ -43,7 +43,7 @@ func (opts *AlterNotificationIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterNotificationIntegrationOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.UnsetEmailParams, opts.UnsetWebhookParams, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterNotificationIntegrationOptions", "Set", "UnsetEmailParams", "UnsetWebhookParams", "SetTags", "UnsetTags"))
@@ -85,7 +85,7 @@ func (opts *DropNotificationIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropNotificationIntegrationOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -104,7 +104,7 @@ func (opts *DescribeNotificationIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeNotificationIntegrationOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

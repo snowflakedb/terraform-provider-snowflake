@@ -15,10 +15,10 @@ func (opts *CreateConnectionOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateConnectionOptions", "name"))
 	}
 	if opts.AsReplicaOf != nil && !ValidObjectIdentifier(opts.AsReplicaOf) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateConnectionOptions", "AsReplicaOf"))
 	}
 	return JoinErrors(errs...)
 }
@@ -55,7 +55,7 @@ func (opts *DropConnectionOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropConnectionOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

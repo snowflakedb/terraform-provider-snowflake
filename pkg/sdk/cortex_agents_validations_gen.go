@@ -16,7 +16,7 @@ func (opts *CreateCortexAgentOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateCortexAgentOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateCortexAgentOptions", "OrReplace", "IfNotExists"))
@@ -33,7 +33,7 @@ func (opts *AlterCortexAgentOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterCortexAgentOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.ModifyLiveVersionSet) {
 		errs = append(errs, errExactlyOneOf("AlterCortexAgentOptions", "Set", "ModifyLiveVersionSet"))
@@ -57,7 +57,7 @@ func (opts *DropCortexAgentOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropCortexAgentOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -76,7 +76,7 @@ func (opts *DescribeCortexAgentOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeCortexAgentOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

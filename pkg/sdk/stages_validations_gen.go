@@ -159,13 +159,13 @@ func (opts *AlterStageOptions) validate() error {
 	}
 	var errs []error
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterStageOptions", "RenameTo"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterStageOptions", "RenameTo", "SetTags", "UnsetTags"))
 	}
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterStageOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -176,7 +176,7 @@ func (opts *AlterInternalStageStageOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterInternalStageStageOptions", "name"))
 	}
 	if !anyValueSet(opts.FileFormat, opts.Comment) {
 		errs = append(errs, errAtLeastOneOf("AlterInternalStageStageOptions", "FileFormat", "Comment"))
@@ -196,7 +196,7 @@ func (opts *AlterExternalS3StageStageOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterExternalS3StageStageOptions", "name"))
 	}
 	if !anyValueSet(opts.ExternalStageParams, opts.FileFormat, opts.Comment) {
 		errs = append(errs, errAtLeastOneOf("AlterExternalS3StageStageOptions", "ExternalStageParams", "FileFormat", "Comment"))
@@ -240,7 +240,7 @@ func (opts *AlterExternalGCSStageStageOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterExternalGCSStageStageOptions", "name"))
 	}
 	if !anyValueSet(opts.ExternalStageParams, opts.FileFormat, opts.Comment) {
 		errs = append(errs, errAtLeastOneOf("AlterExternalGCSStageStageOptions", "ExternalStageParams", "FileFormat", "Comment"))
@@ -267,7 +267,7 @@ func (opts *AlterExternalAzureStageStageOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterExternalAzureStageStageOptions", "name"))
 	}
 	if !anyValueSet(opts.ExternalStageParams, opts.FileFormat, opts.Comment) {
 		errs = append(errs, errAtLeastOneOf("AlterExternalAzureStageStageOptions", "ExternalStageParams", "FileFormat", "Comment"))
@@ -300,7 +300,7 @@ func (opts *AlterDirectoryTableStageOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterDirectoryTableStageOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.SetDirectory, opts.Refresh) {
 		errs = append(errs, errExactlyOneOf("AlterDirectoryTableStageOptions", "SetDirectory", "Refresh"))
@@ -314,7 +314,7 @@ func (opts *DropStageOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropStageOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -325,7 +325,7 @@ func (opts *DescribeStageOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeStageOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

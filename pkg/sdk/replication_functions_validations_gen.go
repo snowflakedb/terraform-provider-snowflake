@@ -22,7 +22,7 @@ func (opts *ShowReplicationDatabasesOptions) validate() error {
 	}
 	var errs []error
 	if opts.WithPrimary != nil && !ValidObjectIdentifier(opts.WithPrimary) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("ShowReplicationDatabasesOptions", "WithPrimary"))
 	}
 	return JoinErrors(errs...)
 }

@@ -67,7 +67,7 @@ var accountsTests = AccountsTestsContext{
 		withValidationCases(
 			validationCase[*CreateAccountOptions]{
 				Name:        case_Accounts_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAccountOptions", "name"),
 				DefaultModify: func(opts *CreateAccountOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -121,7 +121,7 @@ var accountsTests = AccountsTestsContext{
 			},
 			validationCase[*AlterAccountOptions]{
 				Name:        case_Accounts_validation_Alter_RenameTo_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterAccountOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterAccountOptions) {
 					opts.RenameTo = new(emptyAccountObjectIdentifier)
 				},
@@ -565,7 +565,7 @@ var accountsTests = AccountsTestsContext{
 		withValidationCases(
 			validationCase[*DropAccountOptions]{
 				Name:        case_Accounts_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropAccountOptions", "name"),
 				DefaultModify: func(opts *DropAccountOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -591,7 +591,7 @@ var accountsTests = AccountsTestsContext{
 		withValidationCases(
 			validationCase[*UndropAccountOptions]{
 				Name:        case_Accounts_validation_Undrop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("UndropAccountOptions", "name"),
 				DefaultModify: func(opts *UndropAccountOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

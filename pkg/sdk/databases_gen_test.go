@@ -126,7 +126,7 @@ var databasesTests = DatabasesTestsContext{
 		withValidationCases(
 			validationCase[*CreateDatabaseOptions]{
 				Name:        case_Databases_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateDatabaseOptions", "name"),
 				DefaultModify: func(opts *CreateDatabaseOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -141,14 +141,14 @@ var databasesTests = DatabasesTestsContext{
 			},
 			validationCase[*CreateDatabaseOptions]{
 				Name:        case_Databases_validation_Create_ExternalVolume_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateDatabaseOptions", "ExternalVolume"),
 				DefaultModify: func(opts *CreateDatabaseOptions) {
 					opts.ExternalVolume = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*CreateDatabaseOptions]{
 				Name:        case_Databases_validation_Create_Catalog_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateDatabaseOptions", "Catalog"),
 				DefaultModify: func(opts *CreateDatabaseOptions) {
 					opts.Catalog = new(emptyAccountObjectIdentifier)
 				},
@@ -174,7 +174,7 @@ var databasesTests = DatabasesTestsContext{
 		withValidationCases(
 			validationCase[*CloneDatabaseOptions]{
 				Name:        case_Databases_validation_Clone_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CloneDatabaseOptions", "name"),
 				DefaultModify: func(opts *CloneDatabaseOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -205,14 +205,14 @@ var databasesTests = DatabasesTestsContext{
 		withValidationCases(
 			validationCase[*CreateSharedDatabaseOptions]{
 				Name:        case_Databases_validation_CreateShared_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSharedDatabaseOptions", "name"),
 				DefaultModify: func(opts *CreateSharedDatabaseOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*CreateSharedDatabaseOptions]{
 				Name:        case_Databases_validation_CreateShared_FromShare_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSharedDatabaseOptions", "FromShare"),
 				DefaultModify: func(opts *CreateSharedDatabaseOptions) {
 					opts.FromShare = emptyExternalObjectIdentifier
 				},
@@ -227,14 +227,14 @@ var databasesTests = DatabasesTestsContext{
 			},
 			validationCase[*CreateSharedDatabaseOptions]{
 				Name:        case_Databases_validation_CreateShared_ExternalVolume_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSharedDatabaseOptions", "ExternalVolume"),
 				DefaultModify: func(opts *CreateSharedDatabaseOptions) {
 					opts.ExternalVolume = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*CreateSharedDatabaseOptions]{
 				Name:        case_Databases_validation_CreateShared_Catalog_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSharedDatabaseOptions", "Catalog"),
 				DefaultModify: func(opts *CreateSharedDatabaseOptions) {
 					opts.Catalog = new(emptyAccountObjectIdentifier)
 				},
@@ -260,14 +260,14 @@ var databasesTests = DatabasesTestsContext{
 		withValidationCases(
 			validationCase[*CreateSecondaryDatabaseOptions]{
 				Name:        case_Databases_validation_CreateSecondary_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSecondaryDatabaseOptions", "name"),
 				DefaultModify: func(opts *CreateSecondaryDatabaseOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*CreateSecondaryDatabaseOptions]{
 				Name:        case_Databases_validation_CreateSecondary_PrimaryDatabase_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSecondaryDatabaseOptions", "PrimaryDatabase"),
 				DefaultModify: func(opts *CreateSecondaryDatabaseOptions) {
 					opts.PrimaryDatabase = emptyExternalObjectIdentifier
 				},
@@ -282,14 +282,14 @@ var databasesTests = DatabasesTestsContext{
 			},
 			validationCase[*CreateSecondaryDatabaseOptions]{
 				Name:        case_Databases_validation_CreateSecondary_ExternalVolume_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSecondaryDatabaseOptions", "ExternalVolume"),
 				DefaultModify: func(opts *CreateSecondaryDatabaseOptions) {
 					opts.ExternalVolume = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*CreateSecondaryDatabaseOptions]{
 				Name:        case_Databases_validation_CreateSecondary_Catalog_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSecondaryDatabaseOptions", "Catalog"),
 				DefaultModify: func(opts *CreateSecondaryDatabaseOptions) {
 					opts.Catalog = new(emptyAccountObjectIdentifier)
 				},
@@ -315,7 +315,7 @@ var databasesTests = DatabasesTestsContext{
 		withValidationCases(
 			validationCase[*CreateFromListingDatabaseOptions]{
 				Name:        case_Databases_validation_CreateFromListing_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateFromListingDatabaseOptions", "name"),
 				DefaultModify: func(opts *CreateFromListingDatabaseOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -341,21 +341,21 @@ var databasesTests = DatabasesTestsContext{
 		withValidationCases(
 			validationCase[*CreateCatalogLinkedDatabaseOptions]{
 				Name:        case_Databases_validation_CreateCatalogLinked_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateCatalogLinkedDatabaseOptions", "name"),
 				DefaultModify: func(opts *CreateCatalogLinkedDatabaseOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*CreateCatalogLinkedDatabaseOptions]{
 				Name:        case_Databases_validation_CreateCatalogLinked_ExternalVolume_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateCatalogLinkedDatabaseOptions", "ExternalVolume"),
 				DefaultModify: func(opts *CreateCatalogLinkedDatabaseOptions) {
 					opts.ExternalVolume = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*CreateCatalogLinkedDatabaseOptions]{
 				Name:        case_Databases_validation_CreateCatalogLinked_LinkedCatalog_Catalog_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateCatalogLinkedDatabaseOptions.LinkedCatalog", "Catalog"),
 				DefaultModify: func(opts *CreateCatalogLinkedDatabaseOptions) {
 					opts.LinkedCatalog.Catalog = emptyAccountObjectIdentifier
 				},
@@ -381,7 +381,7 @@ var databasesTests = DatabasesTestsContext{
 		withValidationCases(
 			validationCase[*AlterDatabaseOptions]{
 				Name:        case_Databases_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterDatabaseOptions", "name"),
 				DefaultModify: func(opts *AlterDatabaseOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -408,21 +408,21 @@ var databasesTests = DatabasesTestsContext{
 			},
 			validationCase[*AlterDatabaseOptions]{
 				Name:        case_Databases_validation_Alter_RenameTo_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterDatabaseOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterDatabaseOptions) {
 					opts.RenameTo = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*AlterDatabaseOptions]{
 				Name:        case_Databases_validation_Alter_SwapWith_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterDatabaseOptions", "SwapWith"),
 				DefaultModify: func(opts *AlterDatabaseOptions) {
 					opts.SwapWith = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*AlterDatabaseOptions]{
 				Name:        case_Databases_validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterDatabaseOptions.Set", "ExternalVolume"),
 				DefaultModify: func(opts *AlterDatabaseOptions) {
 					opts.Set = &DatabaseSet{}
 					opts.Set.ExternalVolume = new(emptyAccountObjectIdentifier)
@@ -430,7 +430,7 @@ var databasesTests = DatabasesTestsContext{
 			},
 			validationCase[*AlterDatabaseOptions]{
 				Name:        case_Databases_validation_Alter_Set_Catalog_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterDatabaseOptions.Set", "Catalog"),
 				DefaultModify: func(opts *AlterDatabaseOptions) {
 					opts.Set = &DatabaseSet{}
 					opts.Set.Catalog = new(emptyAccountObjectIdentifier)
@@ -522,7 +522,7 @@ var databasesTests = DatabasesTestsContext{
 		withValidationCases(
 			validationCase[*AlterReplicationDatabaseOptions]{
 				Name:        case_Databases_validation_AlterReplication_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterReplicationDatabaseOptions", "name"),
 				DefaultModify: func(opts *AlterReplicationDatabaseOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -567,7 +567,7 @@ var databasesTests = DatabasesTestsContext{
 		withValidationCases(
 			validationCase[*AlterFailoverDatabaseOptions]{
 				Name:        case_Databases_validation_AlterFailover_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverDatabaseOptions", "name"),
 				DefaultModify: func(opts *AlterFailoverDatabaseOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -612,7 +612,7 @@ var databasesTests = DatabasesTestsContext{
 		withValidationCases(
 			validationCase[*AlterCatalogLinkedDatabaseOptions]{
 				Name:        case_Databases_validation_AlterCatalogLinked_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterCatalogLinkedDatabaseOptions", "name"),
 				DefaultModify: func(opts *AlterCatalogLinkedDatabaseOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -682,7 +682,7 @@ var databasesTests = DatabasesTestsContext{
 		withValidationCases(
 			validationCase[*DropDatabaseOptions]{
 				Name:        case_Databases_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropDatabaseOptions", "name"),
 				DefaultModify: func(opts *DropDatabaseOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -716,7 +716,7 @@ var databasesTests = DatabasesTestsContext{
 		withValidationCases(
 			validationCase[*UndropDatabaseOptions]{
 				Name:        case_Databases_validation_Undrop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("UndropDatabaseOptions", "name"),
 				DefaultModify: func(opts *UndropDatabaseOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

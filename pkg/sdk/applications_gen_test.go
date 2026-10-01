@@ -59,14 +59,14 @@ var applicationsTests = ApplicationsTestsContext{
 		withValidationCases(
 			validationCase[*CreateApplicationOptions]{
 				Name:        case_Applications_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateApplicationOptions", "name"),
 				DefaultModify: func(opts *CreateApplicationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*CreateApplicationOptions]{
 				Name:        case_Applications_validation_Create_PackageName_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateApplicationOptions", "PackageName"),
 				DefaultModify: func(opts *CreateApplicationOptions) {
 					opts.PackageName = emptyAccountObjectIdentifier
 				},
@@ -110,7 +110,7 @@ var applicationsTests = ApplicationsTestsContext{
 		withValidationCases(
 			validationCase[*DropApplicationOptions]{
 				Name:        case_Applications_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropApplicationOptions", "name"),
 				DefaultModify: func(opts *DropApplicationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -136,7 +136,7 @@ var applicationsTests = ApplicationsTestsContext{
 		withValidationCases(
 			validationCase[*AlterApplicationOptions]{
 				Name:        case_Applications_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterApplicationOptions", "name"),
 				DefaultModify: func(opts *AlterApplicationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -240,7 +240,7 @@ var applicationsTests = ApplicationsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeApplicationOptions]{
 				Name:        case_Applications_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeApplicationOptions", "name"),
 				DefaultModify: func(opts *DescribeApplicationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

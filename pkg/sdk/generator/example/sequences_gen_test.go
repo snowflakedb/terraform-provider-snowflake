@@ -54,7 +54,7 @@ var sequencesTests = SequencesTestsContext{
 		withValidationCases(
 			validationCase[*CreateSequenceOptions]{
 				Name:        case_Sequences_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSequenceOptions", "name"),
 				DefaultModify: func(opts *CreateSequenceOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -88,14 +88,14 @@ var sequencesTests = SequencesTestsContext{
 		withValidationCases(
 			validationCase[*AlterSequenceOptions]{
 				Name:        case_Sequences_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterSequenceOptions", "name"),
 				DefaultModify: func(opts *AlterSequenceOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*AlterSequenceOptions]{
 				Name:        case_Sequences_validation_Alter_RenameTo_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterSequenceOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterSequenceOptions) {
 					opts.RenameTo = new(emptySchemaObjectIdentifier)
 				},
@@ -166,7 +166,7 @@ var sequencesTests = SequencesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeSequenceOptions]{
 				Name:        case_Sequences_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeSequenceOptions", "name"),
 				DefaultModify: func(opts *DescribeSequenceOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -189,7 +189,7 @@ var sequencesTests = SequencesTestsContext{
 		withValidationCases(
 			validationCase[*DropSequenceOptions]{
 				Name:        case_Sequences_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropSequenceOptions", "name"),
 				DefaultModify: func(opts *DropSequenceOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

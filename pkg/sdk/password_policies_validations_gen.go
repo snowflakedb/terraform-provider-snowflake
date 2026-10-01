@@ -16,7 +16,7 @@ func (opts *CreatePasswordPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreatePasswordPolicyOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreatePasswordPolicyOptions", "OrReplace", "IfNotExists"))
@@ -30,7 +30,7 @@ func (opts *AlterPasswordPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterPasswordPolicyOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.RenameTo) {
 		errs = append(errs, errExactlyOneOf("AlterPasswordPolicyOptions", "Set", "Unset", "RenameTo"))
@@ -54,7 +54,7 @@ func (opts *DropPasswordPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropPasswordPolicyOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -73,7 +73,7 @@ func (opts *DescribePasswordPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribePasswordPolicyOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

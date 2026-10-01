@@ -1,14 +1,16 @@
 package sdk
 
+import "fmt"
+
 func (opts *CreateNotebookOptions) additionalValidations() error {
 	var errs []error
 	if opts.IdleAutoShutdownTimeSeconds != nil && !validateIntGreaterThan(*opts.IdleAutoShutdownTimeSeconds, 0) {
 		errs = append(errs, errIntValue("CreateNotebookOptions", "IdleAutoShutdownTimeSeconds", IntErrGreater, 0))
 	}
 	if opts.ExternalAccessIntegrations != nil {
-		for _, integration := range opts.ExternalAccessIntegrations {
+		for integrationIdx, integration := range opts.ExternalAccessIntegrations {
 			if !ValidObjectIdentifier(integration) {
-				errs = append(errs, ErrInvalidObjectIdentifier)
+				errs = append(errs, errInvalidIdentifier("CreateNotebookOptions", fmt.Sprintf("ExternalAccessIntegrations[%d]", integrationIdx)))
 			}
 		}
 	}
@@ -21,9 +23,9 @@ func (s *NotebookSet) additionalValidations() error {
 		errs = append(errs, errIntValue("AlterNotebookOptions", "IdleAutoShutdownTimeSeconds", IntErrGreater, 0))
 	}
 	if s.ExternalAccessIntegrations != nil {
-		for _, integration := range s.ExternalAccessIntegrations {
+		for integrationIdx, integration := range s.ExternalAccessIntegrations {
 			if !ValidObjectIdentifier(integration) {
-				errs = append(errs, ErrInvalidObjectIdentifier)
+				errs = append(errs, errInvalidIdentifier("AlterNotebookOptions.Set", fmt.Sprintf("ExternalAccessIntegrations[%d]", integrationIdx)))
 			}
 		}
 	}

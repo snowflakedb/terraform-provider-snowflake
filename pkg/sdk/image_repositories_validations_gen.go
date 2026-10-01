@@ -15,7 +15,7 @@ func (opts *CreateImageRepositoryOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateImageRepositoryOptions", "name"))
 	}
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateImageRepositoryOptions", "IfNotExists", "OrReplace"))
@@ -34,7 +34,7 @@ func (opts *AlterImageRepositoryOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterImageRepositoryOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterImageRepositoryOptions", "Set", "SetTags", "UnsetTags"))
@@ -48,7 +48,7 @@ func (opts *DropImageRepositoryOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropImageRepositoryOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

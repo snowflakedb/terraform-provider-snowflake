@@ -55,7 +55,7 @@ var replicationFunctionsTests = ReplicationFunctionsTestsContext{
 		withValidationCases(
 			validationCase[*ShowReplicationDatabasesOptions]{
 				Name:        case_ReplicationFunctions_validation_ShowReplicationDatabases_WithPrimary_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("ShowReplicationDatabasesOptions", "WithPrimary"),
 				DefaultModify: func(opts *ShowReplicationDatabasesOptions) {
 					opts.WithPrimary = new(emptyExternalObjectIdentifier)
 				},

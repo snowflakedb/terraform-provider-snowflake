@@ -44,7 +44,7 @@ var mcpServersTests = McpServersTestsContext{
 		withValidationCases(
 			validationCase[*CreateMcpServerOptions]{
 				Name:        case_McpServers_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateMcpServerOptions", "name"),
 				DefaultModify: func(opts *CreateMcpServerOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -85,7 +85,7 @@ var mcpServersTests = McpServersTestsContext{
 		withValidationCases(
 			validationCase[*DropMcpServerOptions]{
 				Name:        case_McpServers_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropMcpServerOptions", "name"),
 				DefaultModify: func(opts *DropMcpServerOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -133,7 +133,7 @@ var mcpServersTests = McpServersTestsContext{
 		withValidationCases(
 			validationCase[*DescribeMcpServerOptions]{
 				Name:        case_McpServers_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeMcpServerOptions", "name"),
 				DefaultModify: func(opts *DescribeMcpServerOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

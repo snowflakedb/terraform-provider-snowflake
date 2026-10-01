@@ -155,7 +155,8 @@ func (f *Field) SliceIndexVar() string {
 }
 
 // NeedsSliceIndexVar reports whether the validate() loop must bind SliceIndexVar.
-// False for ValidIdentifier-only subtrees so the index is not an unused variable.
+// True when a path-bearing error in the subtree uses the index (including ValidIdentifier /
+// ValidIdentifierIfSet via errInvalidIdentifier). False for ValidateValue-only subtrees.
 func (f *Field) NeedsSliceIndexVar() bool {
 	for _, v := range f.Validations {
 		if v.hasIndexedErrorPath() {

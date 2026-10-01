@@ -14,7 +14,7 @@ func (opts *CreateManagedAccountOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateManagedAccountOptions", "name"))
 	}
 	if valueSet(opts.CreateManagedAccountParams) {
 		if !valueSet(opts.CreateManagedAccountParams.AdminName) {
@@ -33,7 +33,7 @@ func (opts *DropManagedAccountOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropManagedAccountOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

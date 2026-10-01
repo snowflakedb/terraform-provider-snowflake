@@ -63,7 +63,7 @@ var catalogIntegrationsTests = CatalogIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*CreateCatalogIntegrationOptions]{
 				Name:        case_CatalogIntegrations_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateCatalogIntegrationOptions", "name"),
 				DefaultModify: func(opts *CreateCatalogIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -134,7 +134,7 @@ var catalogIntegrationsTests = CatalogIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*AlterCatalogIntegrationOptions]{
 				Name:        case_CatalogIntegrations_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterCatalogIntegrationOptions", "name"),
 				DefaultModify: func(opts *AlterCatalogIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -196,7 +196,7 @@ var catalogIntegrationsTests = CatalogIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*DropCatalogIntegrationOptions]{
 				Name:        case_CatalogIntegrations_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropCatalogIntegrationOptions", "name"),
 				DefaultModify: func(opts *DropCatalogIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -241,7 +241,7 @@ var catalogIntegrationsTests = CatalogIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeCatalogIntegrationOptions]{
 				Name:        case_CatalogIntegrations_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeCatalogIntegrationOptions", "name"),
 				DefaultModify: func(opts *DescribeCatalogIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

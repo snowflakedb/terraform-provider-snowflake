@@ -16,10 +16,10 @@ func (opts *CreateStreamlitOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateStreamlitOptions", "name"))
 	}
 	if opts.QueryWarehouse != nil && !ValidObjectIdentifier(opts.QueryWarehouse) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateStreamlitOptions", "QueryWarehouse"))
 	}
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateStreamlitOptions", "IfNotExists", "OrReplace"))
@@ -33,17 +33,17 @@ func (opts *AlterStreamlitOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterStreamlitOptions", "name"))
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterStreamlitOptions", "RenameTo"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.Set, opts.Unset) {
 		errs = append(errs, errExactlyOneOf("AlterStreamlitOptions", "RenameTo", "Set", "Unset"))
 	}
 	if valueSet(opts.Set) {
 		if opts.Set.QueryWarehouse != nil && !ValidObjectIdentifier(opts.Set.QueryWarehouse) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterStreamlitOptions.Set", "QueryWarehouse"))
 		}
 		if !anyValueSet(opts.Set.RootLocation, opts.Set.MainFile, opts.Set.QueryWarehouse, opts.Set.ExternalAccessIntegrations, opts.Set.Comment, opts.Set.Title) {
 			errs = append(errs, errAtLeastOneOf("AlterStreamlitOptions.Set", "RootLocation", "MainFile", "QueryWarehouse", "ExternalAccessIntegrations", "Comment", "Title"))
@@ -63,7 +63,7 @@ func (opts *DropStreamlitOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropStreamlitOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -83,7 +83,7 @@ func (opts *DescribeStreamlitOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeStreamlitOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

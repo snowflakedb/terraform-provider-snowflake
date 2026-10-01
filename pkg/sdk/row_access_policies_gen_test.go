@@ -56,7 +56,7 @@ var rowAccessPoliciesTests = RowAccessPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*CreateRowAccessPolicyOptions]{
 				Name:        case_RowAccessPolicies_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateRowAccessPolicyOptions", "name"),
 				DefaultModify: func(opts *CreateRowAccessPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -104,7 +104,7 @@ var rowAccessPoliciesTests = RowAccessPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*AlterRowAccessPolicyOptions]{
 				Name:        case_RowAccessPolicies_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterRowAccessPolicyOptions", "name"),
 				DefaultModify: func(opts *AlterRowAccessPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -161,7 +161,7 @@ var rowAccessPoliciesTests = RowAccessPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*DropRowAccessPolicyOptions]{
 				Name:        case_RowAccessPolicies_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropRowAccessPolicyOptions", "name"),
 				DefaultModify: func(opts *DropRowAccessPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -212,7 +212,7 @@ var rowAccessPoliciesTests = RowAccessPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeRowAccessPolicyOptions]{
 				Name:        case_RowAccessPolicies_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeRowAccessPolicyOptions", "name"),
 				DefaultModify: func(opts *DescribeRowAccessPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

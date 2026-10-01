@@ -71,7 +71,7 @@ var databaseRolesTests = DatabaseRolesTestsContext{
 		withValidationCases(
 			validationCase[*CreateDatabaseRoleOptions]{
 				Name:        case_DatabaseRoles_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateDatabaseRoleOptions", "name"),
 				DefaultModify: func(opts *CreateDatabaseRoleOptions) {
 					opts.name = emptyDatabaseObjectIdentifier
 				},
@@ -105,7 +105,7 @@ var databaseRolesTests = DatabaseRolesTestsContext{
 		withValidationCases(
 			validationCase[*AlterDatabaseRoleOptions]{
 				Name:        case_DatabaseRoles_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterDatabaseRoleOptions", "name"),
 				DefaultModify: func(opts *AlterDatabaseRoleOptions) {
 					opts.name = emptyDatabaseObjectIdentifier
 				},
@@ -131,7 +131,7 @@ var databaseRolesTests = DatabaseRolesTestsContext{
 			},
 			validationCase[*AlterDatabaseRoleOptions]{
 				Name:        case_DatabaseRoles_validation_Alter_RenameTo_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterDatabaseRoleOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterDatabaseRoleOptions) {
 					opts.RenameTo = new(emptyDatabaseObjectIdentifier)
 				},
@@ -181,7 +181,7 @@ var databaseRolesTests = DatabaseRolesTestsContext{
 		withValidationCases(
 			validationCase[*DropDatabaseRoleOptions]{
 				Name:        case_DatabaseRoles_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropDatabaseRoleOptions", "name"),
 				DefaultModify: func(opts *DropDatabaseRoleOptions) {
 					opts.name = emptyDatabaseObjectIdentifier
 				},
@@ -205,7 +205,7 @@ var databaseRolesTests = DatabaseRolesTestsContext{
 		withValidationCases(
 			validationCase[*ShowDatabaseRoleOptions]{
 				Name:        case_DatabaseRoles_validation_Show_Database_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("ShowDatabaseRoleOptions", "Database"),
 				DefaultModify: func(opts *ShowDatabaseRoleOptions) {
 					opts.Database = emptyAccountObjectIdentifier
 				},
@@ -237,7 +237,7 @@ var databaseRolesTests = DatabaseRolesTestsContext{
 		withValidationCases(
 			validationCase[*GrantDatabaseRoleOptions]{
 				Name:        case_DatabaseRoles_validation_Grant_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("GrantDatabaseRoleOptions", "name"),
 				DefaultModify: func(opts *GrantDatabaseRoleOptions) {
 					opts.name = emptyDatabaseObjectIdentifier
 				},
@@ -276,7 +276,7 @@ var databaseRolesTests = DatabaseRolesTestsContext{
 		withValidationCases(
 			validationCase[*RevokeDatabaseRoleOptions]{
 				Name:        case_DatabaseRoles_validation_Revoke_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("RevokeDatabaseRoleOptions", "name"),
 				DefaultModify: func(opts *RevokeDatabaseRoleOptions) {
 					opts.name = emptyDatabaseObjectIdentifier
 				},
@@ -315,14 +315,14 @@ var databaseRolesTests = DatabaseRolesTestsContext{
 		withValidationCases(
 			validationCase[*GrantToShareDatabaseRoleOptions]{
 				Name:        case_DatabaseRoles_validation_GrantToShare_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("GrantToShareDatabaseRoleOptions", "name"),
 				DefaultModify: func(opts *GrantToShareDatabaseRoleOptions) {
 					opts.name = emptyDatabaseObjectIdentifier
 				},
 			},
 			validationCase[*GrantToShareDatabaseRoleOptions]{
 				Name:        case_DatabaseRoles_validation_GrantToShare_Share_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("GrantToShareDatabaseRoleOptions", "Share"),
 				DefaultModify: func(opts *GrantToShareDatabaseRoleOptions) {
 					opts.Share = emptyAccountObjectIdentifier
 				},
@@ -345,14 +345,14 @@ var databaseRolesTests = DatabaseRolesTestsContext{
 		withValidationCases(
 			validationCase[*RevokeFromShareDatabaseRoleOptions]{
 				Name:        case_DatabaseRoles_validation_RevokeFromShare_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("RevokeFromShareDatabaseRoleOptions", "name"),
 				DefaultModify: func(opts *RevokeFromShareDatabaseRoleOptions) {
 					opts.name = emptyDatabaseObjectIdentifier
 				},
 			},
 			validationCase[*RevokeFromShareDatabaseRoleOptions]{
 				Name:        case_DatabaseRoles_validation_RevokeFromShare_Share_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("RevokeFromShareDatabaseRoleOptions", "Share"),
 				DefaultModify: func(opts *RevokeFromShareDatabaseRoleOptions) {
 					opts.Share = emptyAccountObjectIdentifier
 				},

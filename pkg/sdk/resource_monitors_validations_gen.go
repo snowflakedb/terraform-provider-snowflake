@@ -15,7 +15,7 @@ func (opts *CreateResourceMonitorOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateResourceMonitorOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateResourceMonitorOptions", "OrReplace", "IfNotExists"))
@@ -30,7 +30,7 @@ func (opts *AlterResourceMonitorOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterResourceMonitorOptions", "name"))
 	}
 	if !anyValueSet(opts.Set, opts.Unset, opts.Triggers) {
 		errs = append(errs, errAtLeastOneOf("AlterResourceMonitorOptions", "Set", "Unset", "Triggers"))
@@ -50,7 +50,7 @@ func (opts *DropResourceMonitorOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropResourceMonitorOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

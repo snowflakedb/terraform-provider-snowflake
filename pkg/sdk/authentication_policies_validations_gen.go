@@ -16,7 +16,7 @@ func (opts *CreateAuthenticationPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateAuthenticationPolicyOptions", "name"))
 	}
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateAuthenticationPolicyOptions", "IfNotExists", "OrReplace"))
@@ -50,13 +50,13 @@ func (opts *AlterAuthenticationPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterAuthenticationPolicyOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.RenameTo) {
 		errs = append(errs, errExactlyOneOf("AlterAuthenticationPolicyOptions", "Set", "Unset", "RenameTo"))
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterAuthenticationPolicyOptions", "RenameTo"))
 	}
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.AuthenticationMethods, opts.Set.MfaEnrollment, opts.Set.ClientTypes, opts.Set.ClientPolicy, opts.Set.SecurityIntegrations, opts.Set.Comment, opts.Set.MfaPolicy, opts.Set.PatPolicy, opts.Set.WorkloadIdentityPolicy) {
@@ -97,7 +97,7 @@ func (opts *DropAuthenticationPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropAuthenticationPolicyOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -116,7 +116,7 @@ func (opts *DescribeAuthenticationPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeAuthenticationPolicyOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

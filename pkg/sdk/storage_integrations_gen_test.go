@@ -61,7 +61,7 @@ var storageIntegrationsTests = StorageIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*CreateStorageIntegrationOptions]{
 				Name:        case_StorageIntegrations_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateStorageIntegrationOptions", "name"),
 				DefaultModify: func(opts *CreateStorageIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -112,7 +112,7 @@ var storageIntegrationsTests = StorageIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*AlterStorageIntegrationOptions]{
 				Name:        case_StorageIntegrations_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterStorageIntegrationOptions", "name"),
 				DefaultModify: func(opts *AlterStorageIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -250,7 +250,7 @@ var storageIntegrationsTests = StorageIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*DropStorageIntegrationOptions]{
 				Name:        case_StorageIntegrations_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropStorageIntegrationOptions", "name"),
 				DefaultModify: func(opts *DropStorageIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -295,7 +295,7 @@ var storageIntegrationsTests = StorageIntegrationsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeStorageIntegrationOptions]{
 				Name:        case_StorageIntegrations_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeStorageIntegrationOptions", "name"),
 				DefaultModify: func(opts *DescribeStorageIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

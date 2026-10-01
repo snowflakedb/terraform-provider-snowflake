@@ -558,7 +558,7 @@ func TestDatabasesDescribe(t *testing.T) {
 	t.Run("validation: invalid name", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("describeDatabaseOptions", "name"))
 	})
 
 	t.Run("complete", func(t *testing.T) {

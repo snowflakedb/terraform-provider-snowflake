@@ -59,7 +59,7 @@ var alertsTests = AlertsTestsContext{
 		withValidationCases(
 			validationCase[*CreateAlertOptions]{
 				Name:        case_Alerts_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAlertOptions", "name"),
 				DefaultModify: func(opts *CreateAlertOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -93,7 +93,7 @@ var alertsTests = AlertsTestsContext{
 		withValidationCases(
 			validationCase[*AlterAlertOptions]{
 				Name:        case_Alerts_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterAlertOptions", "name"),
 				DefaultModify: func(opts *AlterAlertOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -142,7 +142,7 @@ var alertsTests = AlertsTestsContext{
 		withValidationCases(
 			validationCase[*DropAlertOptions]{
 				Name:        case_Alerts_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropAlertOptions", "name"),
 				DefaultModify: func(opts *DropAlertOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -196,7 +196,7 @@ var alertsTests = AlertsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeAlertOptions]{
 				Name:        case_Alerts_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeAlertOptions", "name"),
 				DefaultModify: func(opts *DescribeAlertOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

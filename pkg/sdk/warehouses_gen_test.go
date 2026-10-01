@@ -79,7 +79,7 @@ var warehousesTests = WarehousesTestsContext{
 		withValidationCases(
 			validationCase[*CreateWarehouseOptions]{
 				Name:        case_Warehouses_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateWarehouseOptions", "name"),
 				DefaultModify: func(opts *CreateWarehouseOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -113,7 +113,7 @@ var warehousesTests = WarehousesTestsContext{
 		withValidationCases(
 			validationCase[*CreateAdaptiveWarehouseOptions]{
 				Name:        case_Warehouses_validation_CreateAdaptive_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAdaptiveWarehouseOptions", "name"),
 				DefaultModify: func(opts *CreateAdaptiveWarehouseOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -147,7 +147,7 @@ var warehousesTests = WarehousesTestsContext{
 		withValidationCases(
 			validationCase[*CreateInteractiveWarehouseOptions]{
 				Name:        case_Warehouses_validation_CreateInteractive_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateInteractiveWarehouseOptions", "name"),
 				DefaultModify: func(opts *CreateInteractiveWarehouseOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -181,7 +181,7 @@ var warehousesTests = WarehousesTestsContext{
 		withValidationCases(
 			validationCase[*AlterWarehouseOptions]{
 				Name:        case_Warehouses_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterWarehouseOptions", "name"),
 				DefaultModify: func(opts *AlterWarehouseOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -307,7 +307,7 @@ var warehousesTests = WarehousesTestsContext{
 		withValidationCases(
 			validationCase[*DropWarehouseOptions]{
 				Name:        case_Warehouses_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropWarehouseOptions", "name"),
 				DefaultModify: func(opts *DropWarehouseOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -358,7 +358,7 @@ var warehousesTests = WarehousesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeWarehouseOptions]{
 				Name:        case_Warehouses_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeWarehouseOptions", "name"),
 				DefaultModify: func(opts *DescribeWarehouseOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

@@ -14,7 +14,7 @@ func (opts *GrantApplicationRoleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("GrantApplicationRoleOptions", "name"))
 	}
 	if valueSet(opts.To) {
 		if !exactlyOneValueSet(opts.To.RoleName, opts.To.ApplicationRoleName, opts.To.ApplicationName) {
@@ -30,7 +30,7 @@ func (opts *RevokeApplicationRoleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("RevokeApplicationRoleOptions", "name"))
 	}
 	if valueSet(opts.From) {
 		if !exactlyOneValueSet(opts.From.RoleName, opts.From.ApplicationRoleName, opts.From.ApplicationName) {
@@ -46,7 +46,7 @@ func (opts *ShowApplicationRoleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.ApplicationName) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("ShowApplicationRoleOptions", "ApplicationName"))
 	}
 	return JoinErrors(errs...)
 }

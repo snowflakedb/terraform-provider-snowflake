@@ -73,7 +73,7 @@ var schemasTests = SchemasTestsContext{
 		withValidationCases(
 			validationCase[*CreateSchemaOptions]{
 				Name:        case_Schemas_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSchemaOptions", "name"),
 				DefaultModify: func(opts *CreateSchemaOptions) {
 					opts.name = emptyDatabaseObjectIdentifier
 				},
@@ -88,14 +88,14 @@ var schemasTests = SchemasTestsContext{
 			},
 			validationCase[*CreateSchemaOptions]{
 				Name:        case_Schemas_validation_Create_ExternalVolume_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSchemaOptions", "ExternalVolume"),
 				DefaultModify: func(opts *CreateSchemaOptions) {
 					opts.ExternalVolume = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*CreateSchemaOptions]{
 				Name:        case_Schemas_validation_Create_Catalog_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSchemaOptions", "Catalog"),
 				DefaultModify: func(opts *CreateSchemaOptions) {
 					opts.Catalog = new(emptyAccountObjectIdentifier)
 				},
@@ -121,7 +121,7 @@ var schemasTests = SchemasTestsContext{
 		withValidationCases(
 			validationCase[*CloneSchemaOptions]{
 				Name:        case_Schemas_validation_Clone_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CloneSchemaOptions", "name"),
 				DefaultModify: func(opts *CloneSchemaOptions) {
 					opts.name = emptyDatabaseObjectIdentifier
 				},
@@ -152,7 +152,7 @@ var schemasTests = SchemasTestsContext{
 		withValidationCases(
 			validationCase[*AlterSchemaOptions]{
 				Name:        case_Schemas_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterSchemaOptions", "name"),
 				DefaultModify: func(opts *AlterSchemaOptions) {
 					opts.name = emptyDatabaseObjectIdentifier
 				},
@@ -181,21 +181,21 @@ var schemasTests = SchemasTestsContext{
 			},
 			validationCase[*AlterSchemaOptions]{
 				Name:        case_Schemas_validation_Alter_RenameTo_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterSchemaOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterSchemaOptions) {
 					opts.RenameTo = new(emptyDatabaseObjectIdentifier)
 				},
 			},
 			validationCase[*AlterSchemaOptions]{
 				Name:        case_Schemas_validation_Alter_SwapWith_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterSchemaOptions", "SwapWith"),
 				DefaultModify: func(opts *AlterSchemaOptions) {
 					opts.SwapWith = new(emptyDatabaseObjectIdentifier)
 				},
 			},
 			validationCase[*AlterSchemaOptions]{
 				Name:        case_Schemas_validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterSchemaOptions.Set", "ExternalVolume"),
 				DefaultModify: func(opts *AlterSchemaOptions) {
 					opts.Set = &SchemaSet{}
 					opts.Set.ExternalVolume = new(emptyAccountObjectIdentifier)
@@ -203,7 +203,7 @@ var schemasTests = SchemasTestsContext{
 			},
 			validationCase[*AlterSchemaOptions]{
 				Name:        case_Schemas_validation_Alter_Set_Catalog_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterSchemaOptions.Set", "Catalog"),
 				DefaultModify: func(opts *AlterSchemaOptions) {
 					opts.Set = &SchemaSet{}
 					opts.Set.Catalog = new(emptyAccountObjectIdentifier)
@@ -303,7 +303,7 @@ var schemasTests = SchemasTestsContext{
 		withValidationCases(
 			validationCase[*DropSchemaOptions]{
 				Name:        case_Schemas_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropSchemaOptions", "name"),
 				DefaultModify: func(opts *DropSchemaOptions) {
 					opts.name = emptyDatabaseObjectIdentifier
 				},
@@ -337,7 +337,7 @@ var schemasTests = SchemasTestsContext{
 		withValidationCases(
 			validationCase[*UndropSchemaOptions]{
 				Name:        case_Schemas_validation_Undrop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("UndropSchemaOptions", "name"),
 				DefaultModify: func(opts *UndropSchemaOptions) {
 					opts.name = emptyDatabaseObjectIdentifier
 				},
@@ -388,7 +388,7 @@ var schemasTests = SchemasTestsContext{
 		withValidationCases(
 			validationCase[*DescribeSchemaOptions]{
 				Name:        case_Schemas_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeSchemaOptions", "name"),
 				DefaultModify: func(opts *DescribeSchemaOptions) {
 					opts.name = emptyDatabaseObjectIdentifier
 				},

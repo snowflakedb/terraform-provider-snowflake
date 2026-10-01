@@ -91,21 +91,21 @@ var tasksTests = TasksTestsContext{
 		withValidationCases(
 			validationCase[*CreateTaskOptions]{
 				Name:        case_Tasks_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateTaskOptions", "name"),
 				DefaultModify: func(opts *CreateTaskOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CreateTaskOptions]{
 				Name:        case_Tasks_validation_Create_ErrorIntegration_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateTaskOptions", "ErrorIntegration"),
 				DefaultModify: func(opts *CreateTaskOptions) {
 					opts.ErrorIntegration = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*CreateTaskOptions]{
 				Name:        case_Tasks_validation_Create_ExecuteAsUser_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateTaskOptions", "ExecuteAsUser"),
 				DefaultModify: func(opts *CreateTaskOptions) {
 					opts.ExecuteAsUser = new(emptyAccountObjectIdentifier)
 				},
@@ -159,21 +159,21 @@ var tasksTests = TasksTestsContext{
 		withValidationCases(
 			validationCase[*CreateOrAlterTaskOptions]{
 				Name:        case_Tasks_validation_CreateOrAlter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOrAlterTaskOptions", "name"),
 				DefaultModify: func(opts *CreateOrAlterTaskOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CreateOrAlterTaskOptions]{
 				Name:        case_Tasks_validation_CreateOrAlter_ErrorIntegration_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOrAlterTaskOptions", "ErrorIntegration"),
 				DefaultModify: func(opts *CreateOrAlterTaskOptions) {
 					opts.ErrorIntegration = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*CreateOrAlterTaskOptions]{
 				Name:        case_Tasks_validation_CreateOrAlter_ExecuteAsUser_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOrAlterTaskOptions", "ExecuteAsUser"),
 				DefaultModify: func(opts *CreateOrAlterTaskOptions) {
 					opts.ExecuteAsUser = new(emptyAccountObjectIdentifier)
 				},
@@ -219,14 +219,14 @@ var tasksTests = TasksTestsContext{
 		withValidationCases(
 			validationCase[*CloneTaskOptions]{
 				Name:        case_Tasks_validation_Clone_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CloneTaskOptions", "name"),
 				DefaultModify: func(opts *CloneTaskOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CloneTaskOptions]{
 				Name:        case_Tasks_validation_Clone_sourceTask_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CloneTaskOptions", "sourceTask"),
 				DefaultModify: func(opts *CloneTaskOptions) {
 					opts.sourceTask = emptySchemaObjectIdentifier
 				},
@@ -249,14 +249,14 @@ var tasksTests = TasksTestsContext{
 		withValidationCases(
 			validationCase[*AlterTaskOptions]{
 				Name:        case_Tasks_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTaskOptions", "name"),
 				DefaultModify: func(opts *AlterTaskOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*AlterTaskOptions]{
 				Name:        case_Tasks_validation_Alter_SetExecuteAsUser_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTaskOptions", "SetExecuteAsUser"),
 				DefaultModify: func(opts *AlterTaskOptions) {
 					opts.SetExecuteAsUser = new(emptyAccountObjectIdentifier)
 				},
@@ -318,7 +318,7 @@ var tasksTests = TasksTestsContext{
 			},
 			validationCase[*AlterTaskOptions]{
 				Name:        case_Tasks_validation_Alter_Set_ErrorIntegration_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTaskOptions.Set", "ErrorIntegration"),
 				DefaultModify: func(opts *AlterTaskOptions) {
 					opts.Set = &TaskSet{}
 					opts.Set.ErrorIntegration = new(emptyAccountObjectIdentifier)
@@ -413,7 +413,7 @@ var tasksTests = TasksTestsContext{
 		withValidationCases(
 			validationCase[*DropTaskOptions]{
 				Name:        case_Tasks_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropTaskOptions", "name"),
 				DefaultModify: func(opts *DropTaskOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -467,7 +467,7 @@ var tasksTests = TasksTestsContext{
 		withValidationCases(
 			validationCase[*DescribeTaskOptions]{
 				Name:        case_Tasks_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeTaskOptions", "name"),
 				DefaultModify: func(opts *DescribeTaskOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -490,7 +490,7 @@ var tasksTests = TasksTestsContext{
 		withValidationCases(
 			validationCase[*ExecuteTaskOptions]{
 				Name:        case_Tasks_validation_Execute_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("ExecuteTaskOptions", "name"),
 				DefaultModify: func(opts *ExecuteTaskOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

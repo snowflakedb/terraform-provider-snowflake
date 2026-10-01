@@ -24,16 +24,16 @@ func (opts *CreateDatabaseOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateDatabaseOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateDatabaseOptions", "OrReplace", "IfNotExists"))
 	}
 	if opts.ExternalVolume != nil && !ValidObjectIdentifier(opts.ExternalVolume) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateDatabaseOptions", "ExternalVolume"))
 	}
 	if opts.Catalog != nil && !ValidObjectIdentifier(opts.Catalog) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateDatabaseOptions", "Catalog"))
 	}
 	return JoinErrors(errs...)
 }
@@ -44,7 +44,7 @@ func (opts *CloneDatabaseOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CloneDatabaseOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CloneDatabaseOptions", "OrReplace", "IfNotExists"))
@@ -59,19 +59,19 @@ func (opts *CreateSharedDatabaseOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateSharedDatabaseOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.FromShare) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateSharedDatabaseOptions", "FromShare"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateSharedDatabaseOptions", "OrReplace", "IfNotExists"))
 	}
 	if opts.ExternalVolume != nil && !ValidObjectIdentifier(opts.ExternalVolume) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateSharedDatabaseOptions", "ExternalVolume"))
 	}
 	if opts.Catalog != nil && !ValidObjectIdentifier(opts.Catalog) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateSharedDatabaseOptions", "Catalog"))
 	}
 	return JoinErrors(errs...)
 }
@@ -82,19 +82,19 @@ func (opts *CreateSecondaryDatabaseOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateSecondaryDatabaseOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.PrimaryDatabase) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateSecondaryDatabaseOptions", "PrimaryDatabase"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateSecondaryDatabaseOptions", "OrReplace", "IfNotExists"))
 	}
 	if opts.ExternalVolume != nil && !ValidObjectIdentifier(opts.ExternalVolume) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateSecondaryDatabaseOptions", "ExternalVolume"))
 	}
 	if opts.Catalog != nil && !ValidObjectIdentifier(opts.Catalog) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateSecondaryDatabaseOptions", "Catalog"))
 	}
 	return JoinErrors(errs...)
 }
@@ -105,7 +105,7 @@ func (opts *CreateFromListingDatabaseOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateFromListingDatabaseOptions", "name"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
@@ -117,14 +117,14 @@ func (opts *CreateCatalogLinkedDatabaseOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateCatalogLinkedDatabaseOptions", "name"))
 	}
 	if opts.ExternalVolume != nil && !ValidObjectIdentifier(opts.ExternalVolume) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateCatalogLinkedDatabaseOptions", "ExternalVolume"))
 	}
 	if valueSet(opts.LinkedCatalog) {
 		if !ValidObjectIdentifier(opts.LinkedCatalog.Catalog) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("CreateCatalogLinkedDatabaseOptions.LinkedCatalog", "Catalog"))
 		}
 	}
 	return JoinErrors(errs...)
@@ -136,23 +136,23 @@ func (opts *AlterDatabaseOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterDatabaseOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.Set, opts.Unset, opts.SwapWith, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterDatabaseOptions", "RenameTo", "Set", "Unset", "SwapWith", "SetTags", "UnsetTags"))
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterDatabaseOptions", "RenameTo"))
 	}
 	if opts.SwapWith != nil && !ValidObjectIdentifier(opts.SwapWith) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterDatabaseOptions", "SwapWith"))
 	}
 	if valueSet(opts.Set) {
 		if opts.Set.ExternalVolume != nil && !ValidObjectIdentifier(opts.Set.ExternalVolume) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterDatabaseOptions.Set", "ExternalVolume"))
 		}
 		if opts.Set.Catalog != nil && !ValidObjectIdentifier(opts.Set.Catalog) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterDatabaseOptions.Set", "Catalog"))
 		}
 		if !anyValueSet(opts.Set.Catalog, opts.Set.DataRetentionTimeInDays, opts.Set.DefaultDdlCollation, opts.Set.DefaultNotebookComputePoolCpu, opts.Set.DefaultNotebookComputePoolGpu, opts.Set.EnableConsoleOutput, opts.Set.ExternalVolume, opts.Set.LogEventLevel, opts.Set.LogLevel, opts.Set.MaxDataExtensionTimeInDays, opts.Set.QuotedIdentifiersIgnoreCase, opts.Set.ReplaceInvalidCharacters, opts.Set.StorageSerializationPolicy, opts.Set.SuspendTaskAfterNumFailures, opts.Set.TaskAutoRetryAttempts, opts.Set.TraceLevel, opts.Set.UserTaskManagedInitialWarehouseSize, opts.Set.UserTaskMinimumTriggerIntervalInSeconds, opts.Set.UserTaskTimeoutMs, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterDatabaseOptions.Set", "Catalog", "DataRetentionTimeInDays", "DefaultDdlCollation", "DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu", "EnableConsoleOutput", "ExternalVolume", "LogEventLevel", "LogLevel", "MaxDataExtensionTimeInDays", "QuotedIdentifiersIgnoreCase", "ReplaceInvalidCharacters", "StorageSerializationPolicy", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "TraceLevel", "UserTaskManagedInitialWarehouseSize", "UserTaskMinimumTriggerIntervalInSeconds", "UserTaskTimeoutMs", "Comment"))
@@ -172,7 +172,7 @@ func (opts *AlterReplicationDatabaseOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterReplicationDatabaseOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.EnableReplication, opts.DisableReplication, opts.Refresh) {
 		errs = append(errs, errExactlyOneOf("AlterReplicationDatabaseOptions", "EnableReplication", "DisableReplication", "Refresh"))
@@ -186,7 +186,7 @@ func (opts *AlterFailoverDatabaseOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterFailoverDatabaseOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.EnableFailover, opts.DisableFailover, opts.Primary) {
 		errs = append(errs, errExactlyOneOf("AlterFailoverDatabaseOptions", "EnableFailover", "DisableFailover", "Primary"))
@@ -200,7 +200,7 @@ func (opts *AlterCatalogLinkedDatabaseOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterCatalogLinkedDatabaseOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.AddToAllowedNamespaces, opts.RemoveFromAllowedNamespaces, opts.UnsetAllowedNamespaces, opts.AddToBlockedNamespaces, opts.RemoveFromBlockedNamespaces, opts.UnsetBlockedNamespaces, opts.Set) {
 		errs = append(errs, errExactlyOneOf("AlterCatalogLinkedDatabaseOptions", "AddToAllowedNamespaces", "RemoveFromAllowedNamespaces", "UnsetAllowedNamespaces", "AddToBlockedNamespaces", "RemoveFromBlockedNamespaces", "UnsetBlockedNamespaces", "Set"))
@@ -219,7 +219,7 @@ func (opts *DropDatabaseOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropDatabaseOptions", "name"))
 	}
 	if everyValueSet(opts.Cascade, opts.Restrict) {
 		errs = append(errs, errOneOf("DropDatabaseOptions", "Cascade", "Restrict"))
@@ -233,7 +233,7 @@ func (opts *UndropDatabaseOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("UndropDatabaseOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

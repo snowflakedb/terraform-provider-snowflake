@@ -10,6 +10,7 @@ type CreateSliceValidationExampleRequest struct {
 	PlainItems   []PlainItemRequest
 	CheckedItems []CheckedItemRequest
 	Items        []NestedListItemRequest
+	Columns      []SliceValidationColumnRequest
 }
 
 type DualCheckItemRequest struct {
@@ -49,4 +50,12 @@ type SubItemRequest struct {
 type LeafItemRequest struct {
 	Name  *string
 	Alias *string
+}
+
+type SliceValidationColumnRequest struct {
+	MaskingPolicy *SliceValidationColumnMaskingPolicyRequest
+}
+
+type SliceValidationColumnMaskingPolicyRequest struct {
+	MaskingPolicy SchemaObjectIdentifier // required
 }

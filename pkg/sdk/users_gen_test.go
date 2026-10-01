@@ -82,7 +82,7 @@ var usersTests = UsersTestsContext{
 		withValidationCases(
 			validationCase[*CreateUserOptions]{
 				Name:        case_Users_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateUserOptions", "name"),
 				DefaultModify: func(opts *CreateUserOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -158,7 +158,7 @@ var usersTests = UsersTestsContext{
 		withValidationCases(
 			validationCase[*AlterUserOptions]{
 				Name:        case_Users_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterUserOptions", "name"),
 				DefaultModify: func(opts *AlterUserOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -343,7 +343,7 @@ var usersTests = UsersTestsContext{
 		withValidationCases(
 			validationCase[*DropUserOptions]{
 				Name:        case_Users_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropUserOptions", "name"),
 				DefaultModify: func(opts *DropUserOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -394,7 +394,7 @@ var usersTests = UsersTestsContext{
 		withValidationCases(
 			validationCase[*DescribeUserOptions]{
 				Name:        case_Users_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeUserOptions", "name"),
 				DefaultModify: func(opts *DescribeUserOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -415,7 +415,7 @@ var usersTests = UsersTestsContext{
 		withValidationCases(
 			validationCase[*ShowUserWorkloadIdentityAuthenticationMethodOptionsUserOptions]{
 				Name:        case_Users_validation_ShowUserWorkloadIdentityAuthenticationMethodOptions_ForUser_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("ShowUserWorkloadIdentityAuthenticationMethodOptionsUserOptions", "ForUser"),
 				DefaultModify: func(opts *ShowUserWorkloadIdentityAuthenticationMethodOptionsUserOptions) {
 					opts.ForUser = emptyAccountObjectIdentifier
 				},

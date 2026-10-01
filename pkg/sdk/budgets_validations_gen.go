@@ -21,7 +21,7 @@ func (opts *CreateBudgetOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateBudgetOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateBudgetOptions", "OrReplace", "IfNotExists"))
@@ -35,7 +35,7 @@ func (opts *DropBudgetOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropBudgetOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -46,7 +46,7 @@ func (opts *SetSpendingLimitBudgetOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("SetSpendingLimitBudgetOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -57,7 +57,7 @@ func (opts *GetSpendingLimitBudgetOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("GetSpendingLimitBudgetOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -68,7 +68,7 @@ func (opts *SetEmailNotificationsBudgetOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("SetEmailNotificationsBudgetOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -79,7 +79,7 @@ func (opts *GetNotificationIntegrationsBudgetOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("GetNotificationIntegrationsBudgetOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -90,7 +90,7 @@ func (opts *GetNotificationEmailBudgetOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("GetNotificationEmailBudgetOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -101,7 +101,7 @@ func (opts *GetNotificationIntegrationNameBudgetOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("GetNotificationIntegrationNameBudgetOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -112,7 +112,7 @@ func (opts *SetCycleStartActionBudgetOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("SetCycleStartActionBudgetOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -123,7 +123,7 @@ func (opts *GetCycleStartActionBudgetOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("GetCycleStartActionBudgetOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

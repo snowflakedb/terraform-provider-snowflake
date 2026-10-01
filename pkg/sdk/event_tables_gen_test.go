@@ -64,7 +64,7 @@ var eventTablesTests = EventTablesTestsContext{
 		withValidationCases(
 			validationCase[*CreateEventTableOptions]{
 				Name:        case_EventTables_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateEventTableOptions", "name"),
 				DefaultModify: func(opts *CreateEventTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -126,7 +126,7 @@ var eventTablesTests = EventTablesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeEventTableOptions]{
 				Name:        case_EventTables_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeEventTableOptions", "name"),
 				DefaultModify: func(opts *DescribeEventTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -149,7 +149,7 @@ var eventTablesTests = EventTablesTestsContext{
 		withValidationCases(
 			validationCase[*DropEventTableOptions]{
 				Name:        case_EventTables_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropEventTableOptions", "name"),
 				DefaultModify: func(opts *DropEventTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -175,7 +175,7 @@ var eventTablesTests = EventTablesTestsContext{
 		withValidationCases(
 			validationCase[*AlterEventTableOptions]{
 				Name:        case_EventTables_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterEventTableOptions", "name"),
 				DefaultModify: func(opts *AlterEventTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -207,7 +207,7 @@ var eventTablesTests = EventTablesTestsContext{
 			},
 			validationCase[*AlterEventTableOptions]{
 				Name:        case_EventTables_validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterEventTableOptions.AddRowAccessPolicy", "RowAccessPolicy"),
 				DefaultModify: func(opts *AlterEventTableOptions) {
 					opts.AddRowAccessPolicy = &EventTableAddRowAccessPolicy{}
 					opts.AddRowAccessPolicy.RowAccessPolicy = emptySchemaObjectIdentifier
@@ -215,7 +215,7 @@ var eventTablesTests = EventTablesTestsContext{
 			},
 			validationCase[*AlterEventTableOptions]{
 				Name:        case_EventTables_validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterEventTableOptions.DropRowAccessPolicy", "RowAccessPolicy"),
 				DefaultModify: func(opts *AlterEventTableOptions) {
 					opts.DropRowAccessPolicy = &EventTableDropRowAccessPolicy{}
 					opts.DropRowAccessPolicy.RowAccessPolicy = emptySchemaObjectIdentifier
@@ -223,7 +223,7 @@ var eventTablesTests = EventTablesTestsContext{
 			},
 			validationCase[*AlterEventTableOptions]{
 				Name:        case_EventTables_validation_Alter_DropAndAddRowAccessPolicy_Drop_RowAccessPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterEventTableOptions.DropAndAddRowAccessPolicy.Drop", "RowAccessPolicy"),
 				DefaultModify: func(opts *AlterEventTableOptions) {
 					opts.DropAndAddRowAccessPolicy = &EventTableDropAndAddRowAccessPolicy{}
 					opts.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy = emptySchemaObjectIdentifier
@@ -231,7 +231,7 @@ var eventTablesTests = EventTablesTestsContext{
 			},
 			validationCase[*AlterEventTableOptions]{
 				Name:        case_EventTables_validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterEventTableOptions.DropAndAddRowAccessPolicy.Add", "RowAccessPolicy"),
 				DefaultModify: func(opts *AlterEventTableOptions) {
 					opts.DropAndAddRowAccessPolicy = &EventTableDropAndAddRowAccessPolicy{}
 					opts.DropAndAddRowAccessPolicy.Add.RowAccessPolicy = emptySchemaObjectIdentifier

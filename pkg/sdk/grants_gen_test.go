@@ -345,7 +345,7 @@ var grantsTests = GrantsTestsContext{
 			},
 			validationCase[*revokePrivilegesFromAccountRoleOptions]{
 				Name:        case_Grants_validation_revokePrivilegesFromAccountRole_AccountRole_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("revokePrivilegesFromAccountRoleOptions", "AccountRole"),
 				DefaultModify: func(opts *revokePrivilegesFromAccountRoleOptions) {
 					opts.AccountRole = emptyAccountObjectIdentifier
 				},
@@ -655,7 +655,7 @@ var grantsTests = GrantsTestsContext{
 			},
 			validationCase[*revokePrivilegesFromDatabaseRoleOptions]{
 				Name:        case_Grants_validation_revokePrivilegesFromDatabaseRole_DatabaseRole_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("revokePrivilegesFromDatabaseRoleOptions", "DatabaseRole"),
 				DefaultModify: func(opts *revokePrivilegesFromDatabaseRoleOptions) {
 					opts.DatabaseRole = emptyDatabaseObjectIdentifier
 				},
@@ -884,7 +884,7 @@ var grantsTests = GrantsTestsContext{
 			},
 			validationCase[*GrantInheritedPrivilegesToAccountRoleOptions]{
 				Name:        case_Grants_validation_GrantInheritedPrivilegesToAccountRole_AccountRole_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("GrantInheritedPrivilegesToAccountRoleOptions", "AccountRole"),
 				DefaultModify: func(opts *GrantInheritedPrivilegesToAccountRoleOptions) {
 					opts.AccountRole = emptyAccountObjectIdentifier
 				},
@@ -922,14 +922,14 @@ var grantsTests = GrantsTestsContext{
 			},
 			validationCase[*GrantInheritedPrivilegesToAccountRoleOptions]{
 				Name:        case_Grants_validation_GrantInheritedPrivilegesToAccountRole_In_Database_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("GrantInheritedPrivilegesToAccountRoleOptions.In", "Database"),
 				DefaultModify: func(opts *GrantInheritedPrivilegesToAccountRoleOptions) {
 					opts.In.Database = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*GrantInheritedPrivilegesToAccountRoleOptions]{
 				Name:        case_Grants_validation_GrantInheritedPrivilegesToAccountRole_In_Schema_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("GrantInheritedPrivilegesToAccountRoleOptions.In", "Schema"),
 				DefaultModify: func(opts *GrantInheritedPrivilegesToAccountRoleOptions) {
 					opts.In.Schema = new(emptyDatabaseObjectIdentifier)
 				},
@@ -957,7 +957,7 @@ var grantsTests = GrantsTestsContext{
 			},
 			validationCase[*RevokeInheritedPrivilegesFromAccountRoleOptions]{
 				Name:        case_Grants_validation_RevokeInheritedPrivilegesFromAccountRole_AccountRole_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("RevokeInheritedPrivilegesFromAccountRoleOptions", "AccountRole"),
 				DefaultModify: func(opts *RevokeInheritedPrivilegesFromAccountRoleOptions) {
 					opts.AccountRole = emptyAccountObjectIdentifier
 				},
@@ -995,14 +995,14 @@ var grantsTests = GrantsTestsContext{
 			},
 			validationCase[*RevokeInheritedPrivilegesFromAccountRoleOptions]{
 				Name:        case_Grants_validation_RevokeInheritedPrivilegesFromAccountRole_In_Database_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("RevokeInheritedPrivilegesFromAccountRoleOptions.In", "Database"),
 				DefaultModify: func(opts *RevokeInheritedPrivilegesFromAccountRoleOptions) {
 					opts.In.Database = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*RevokeInheritedPrivilegesFromAccountRoleOptions]{
 				Name:        case_Grants_validation_RevokeInheritedPrivilegesFromAccountRole_In_Schema_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("RevokeInheritedPrivilegesFromAccountRoleOptions.In", "Schema"),
 				DefaultModify: func(opts *RevokeInheritedPrivilegesFromAccountRoleOptions) {
 					opts.In.Schema = new(emptyDatabaseObjectIdentifier)
 				},
@@ -1030,7 +1030,7 @@ var grantsTests = GrantsTestsContext{
 			},
 			validationCase[*GrantInheritedPrivilegesToDatabaseRoleOptions]{
 				Name:        case_Grants_validation_GrantInheritedPrivilegesToDatabaseRole_DatabaseRole_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("GrantInheritedPrivilegesToDatabaseRoleOptions", "DatabaseRole"),
 				DefaultModify: func(opts *GrantInheritedPrivilegesToDatabaseRoleOptions) {
 					opts.DatabaseRole = emptyDatabaseObjectIdentifier
 				},
@@ -1066,14 +1066,14 @@ var grantsTests = GrantsTestsContext{
 			},
 			validationCase[*GrantInheritedPrivilegesToDatabaseRoleOptions]{
 				Name:        case_Grants_validation_GrantInheritedPrivilegesToDatabaseRole_In_Database_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("GrantInheritedPrivilegesToDatabaseRoleOptions.In", "Database"),
 				DefaultModify: func(opts *GrantInheritedPrivilegesToDatabaseRoleOptions) {
 					opts.In.Database = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*GrantInheritedPrivilegesToDatabaseRoleOptions]{
 				Name:        case_Grants_validation_GrantInheritedPrivilegesToDatabaseRole_In_Schema_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("GrantInheritedPrivilegesToDatabaseRoleOptions.In", "Schema"),
 				DefaultModify: func(opts *GrantInheritedPrivilegesToDatabaseRoleOptions) {
 					opts.In.Schema = new(emptyDatabaseObjectIdentifier)
 				},
@@ -1101,7 +1101,7 @@ var grantsTests = GrantsTestsContext{
 			},
 			validationCase[*RevokeInheritedPrivilegesFromDatabaseRoleOptions]{
 				Name:        case_Grants_validation_RevokeInheritedPrivilegesFromDatabaseRole_DatabaseRole_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("RevokeInheritedPrivilegesFromDatabaseRoleOptions", "DatabaseRole"),
 				DefaultModify: func(opts *RevokeInheritedPrivilegesFromDatabaseRoleOptions) {
 					opts.DatabaseRole = emptyDatabaseObjectIdentifier
 				},
@@ -1137,14 +1137,14 @@ var grantsTests = GrantsTestsContext{
 			},
 			validationCase[*RevokeInheritedPrivilegesFromDatabaseRoleOptions]{
 				Name:        case_Grants_validation_RevokeInheritedPrivilegesFromDatabaseRole_In_Database_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("RevokeInheritedPrivilegesFromDatabaseRoleOptions.In", "Database"),
 				DefaultModify: func(opts *RevokeInheritedPrivilegesFromDatabaseRoleOptions) {
 					opts.In.Database = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*RevokeInheritedPrivilegesFromDatabaseRoleOptions]{
 				Name:        case_Grants_validation_RevokeInheritedPrivilegesFromDatabaseRole_In_Schema_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("RevokeInheritedPrivilegesFromDatabaseRoleOptions.In", "Schema"),
 				DefaultModify: func(opts *RevokeInheritedPrivilegesFromDatabaseRoleOptions) {
 					opts.In.Schema = new(emptyDatabaseObjectIdentifier)
 				},
@@ -1165,7 +1165,7 @@ var grantsTests = GrantsTestsContext{
 		withValidationCases(
 			validationCase[*GrantPrivilegeToShareOptions]{
 				Name:        case_Grants_validation_GrantPrivilegeToShare_To_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("GrantPrivilegeToShareOptions", "To"),
 				DefaultModify: func(opts *GrantPrivilegeToShareOptions) {
 					opts.To = emptyAccountObjectIdentifier
 				},
@@ -1242,7 +1242,7 @@ var grantsTests = GrantsTestsContext{
 		withValidationCases(
 			validationCase[*RevokePrivilegeFromShareOptions]{
 				Name:        case_Grants_validation_RevokePrivilegeFromShare_From_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("RevokePrivilegeFromShareOptions", "From"),
 				DefaultModify: func(opts *RevokePrivilegeFromShareOptions) {
 					opts.From = emptyAccountObjectIdentifier
 				},

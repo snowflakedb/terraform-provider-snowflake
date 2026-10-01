@@ -63,21 +63,21 @@ var notebooksTests = NotebooksTestsContext{
 		withValidationCases(
 			validationCase[*CreateNotebookOptions]{
 				Name:        case_Notebooks_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateNotebookOptions", "name"),
 				DefaultModify: func(opts *CreateNotebookOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CreateNotebookOptions]{
 				Name:        case_Notebooks_validation_Create_QueryWarehouse_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateNotebookOptions", "QueryWarehouse"),
 				DefaultModify: func(opts *CreateNotebookOptions) {
 					opts.QueryWarehouse = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*CreateNotebookOptions]{
 				Name:        case_Notebooks_validation_Create_Warehouse_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateNotebookOptions", "Warehouse"),
 				DefaultModify: func(opts *CreateNotebookOptions) {
 					opts.Warehouse = new(emptyAccountObjectIdentifier)
 				},
@@ -92,7 +92,7 @@ var notebooksTests = NotebooksTestsContext{
 			},
 			validationCase[*CreateNotebookOptions]{
 				Name:        case_Notebooks_validation_Create_ComputePool_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateNotebookOptions", "ComputePool"),
 				DefaultModify: func(opts *CreateNotebookOptions) {
 					opts.ComputePool = new(emptyAccountObjectIdentifier)
 				},
@@ -118,14 +118,14 @@ var notebooksTests = NotebooksTestsContext{
 		withValidationCases(
 			validationCase[*AlterNotebookOptions]{
 				Name:        case_Notebooks_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterNotebookOptions", "name"),
 				DefaultModify: func(opts *AlterNotebookOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*AlterNotebookOptions]{
 				Name:        case_Notebooks_validation_Alter_RenameTo_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterNotebookOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterNotebookOptions) {
 					opts.RenameTo = new(emptySchemaObjectIdentifier)
 				},
@@ -151,7 +151,7 @@ var notebooksTests = NotebooksTestsContext{
 			},
 			validationCase[*AlterNotebookOptions]{
 				Name:        case_Notebooks_validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterNotebookOptions.Set", "QueryWarehouse"),
 				DefaultModify: func(opts *AlterNotebookOptions) {
 					opts.Set = &NotebookSet{}
 					opts.Set.QueryWarehouse = new(emptyAccountObjectIdentifier)
@@ -159,7 +159,7 @@ var notebooksTests = NotebooksTestsContext{
 			},
 			validationCase[*AlterNotebookOptions]{
 				Name:        case_Notebooks_validation_Alter_Set_Warehouse_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterNotebookOptions.Set", "Warehouse"),
 				DefaultModify: func(opts *AlterNotebookOptions) {
 					opts.Set = &NotebookSet{}
 					opts.Set.Warehouse = new(emptyAccountObjectIdentifier)
@@ -167,7 +167,7 @@ var notebooksTests = NotebooksTestsContext{
 			},
 			validationCase[*AlterNotebookOptions]{
 				Name:        case_Notebooks_validation_Alter_Set_ComputePool_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterNotebookOptions.Set", "ComputePool"),
 				DefaultModify: func(opts *AlterNotebookOptions) {
 					opts.Set = &NotebookSet{}
 					opts.Set.ComputePool = new(emptyAccountObjectIdentifier)
@@ -234,7 +234,7 @@ var notebooksTests = NotebooksTestsContext{
 		withValidationCases(
 			validationCase[*DropNotebookOptions]{
 				Name:        case_Notebooks_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropNotebookOptions", "name"),
 				DefaultModify: func(opts *DropNotebookOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -260,7 +260,7 @@ var notebooksTests = NotebooksTestsContext{
 		withValidationCases(
 			validationCase[*DescribeNotebookOptions]{
 				Name:        case_Notebooks_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeNotebookOptions", "name"),
 				DefaultModify: func(opts *DescribeNotebookOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

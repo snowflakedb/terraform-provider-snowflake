@@ -75,7 +75,7 @@ var postgresInstancesTests = PostgresInstancesTestsContext{
 		withValidationCases(
 			validationCase[*CreatePostgresInstanceOptions]{
 				Name:        case_PostgresInstances_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreatePostgresInstanceOptions", "name"),
 				DefaultModify: func(opts *CreatePostgresInstanceOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -101,14 +101,14 @@ var postgresInstancesTests = PostgresInstancesTestsContext{
 		withValidationCases(
 			validationCase[*ForkPostgresInstanceOptions]{
 				Name:        case_PostgresInstances_validation_Fork_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("ForkPostgresInstanceOptions", "name"),
 				DefaultModify: func(opts *ForkPostgresInstanceOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*ForkPostgresInstanceOptions]{
 				Name:        case_PostgresInstances_validation_Fork_Fork_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("ForkPostgresInstanceOptions", "Fork"),
 				DefaultModify: func(opts *ForkPostgresInstanceOptions) {
 					opts.Fork = emptyAccountObjectIdentifier
 				},
@@ -175,7 +175,7 @@ var postgresInstancesTests = PostgresInstancesTestsContext{
 		withValidationCases(
 			validationCase[*AlterPostgresInstanceOptions]{
 				Name:        case_PostgresInstances_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterPostgresInstanceOptions", "name"),
 				DefaultModify: func(opts *AlterPostgresInstanceOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -289,7 +289,7 @@ var postgresInstancesTests = PostgresInstancesTestsContext{
 		withValidationCases(
 			validationCase[*DropPostgresInstanceOptions]{
 				Name:        case_PostgresInstances_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropPostgresInstanceOptions", "name"),
 				DefaultModify: func(opts *DropPostgresInstanceOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -340,7 +340,7 @@ var postgresInstancesTests = PostgresInstancesTestsContext{
 		withValidationCases(
 			validationCase[*DescribePostgresInstanceOptions]{
 				Name:        case_PostgresInstances_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribePostgresInstanceOptions", "name"),
 				DefaultModify: func(opts *DescribePostgresInstanceOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

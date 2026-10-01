@@ -19,6 +19,7 @@ type CreateSliceValidationExampleOptions struct {
 	PlainItems             []PlainItem             `ddl:"keyword" sql:"PLAIN_ITEMS"`
 	CheckedItems           []CheckedItem           `ddl:"keyword" sql:"CHECKED_ITEMS"`
 	Items                  []NestedListItem        `ddl:"keyword" sql:"ITEMS"`
+	Columns                []SliceValidationColumn `ddl:"keyword" sql:"COLUMNS"`
 }
 
 type DualCheckItem struct {
@@ -58,4 +59,12 @@ type SubItem struct {
 type LeafItem struct {
 	Name  *string `ddl:"keyword"`
 	Alias *string `ddl:"keyword"`
+}
+
+type SliceValidationColumn struct {
+	MaskingPolicy *SliceValidationColumnMaskingPolicy `ddl:"keyword"`
+}
+
+type SliceValidationColumnMaskingPolicy struct {
+	MaskingPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"MASKING POLICY"`
 }

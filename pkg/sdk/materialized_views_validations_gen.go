@@ -16,14 +16,14 @@ func (opts *CreateMaterializedViewOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateMaterializedViewOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateMaterializedViewOptions", "OrReplace", "IfNotExists"))
 	}
 	if valueSet(opts.RowAccessPolicy) {
 		if !ValidObjectIdentifier(opts.RowAccessPolicy.RowAccessPolicy) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("CreateMaterializedViewOptions.RowAccessPolicy", "RowAccessPolicy"))
 		}
 		if !valueSet(opts.RowAccessPolicy.On) {
 			errs = append(errs, errNotSet("CreateMaterializedViewOptions.RowAccessPolicy", "On"))
@@ -43,7 +43,7 @@ func (opts *AlterMaterializedViewOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterMaterializedViewOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.ClusterBy, opts.DropClusteringKey, opts.SuspendRecluster, opts.ResumeRecluster, opts.Suspend, opts.Resume, opts.Set, opts.Unset) {
 		errs = append(errs, errExactlyOneOf("AlterMaterializedViewOptions", "RenameTo", "ClusterBy", "DropClusteringKey", "SuspendRecluster", "ResumeRecluster", "Suspend", "Resume", "Set", "Unset"))
@@ -72,7 +72,7 @@ func (opts *DropMaterializedViewOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropMaterializedViewOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -91,7 +91,7 @@ func (opts *DescribeMaterializedViewOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeMaterializedViewOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

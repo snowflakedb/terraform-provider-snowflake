@@ -51,7 +51,7 @@ var resourceMonitorsTests = ResourceMonitorsTestsContext{
 		withValidationCases(
 			validationCase[*CreateResourceMonitorOptions]{
 				Name:        case_ResourceMonitors_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateResourceMonitorOptions", "name"),
 				DefaultModify: func(opts *CreateResourceMonitorOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -85,7 +85,7 @@ var resourceMonitorsTests = ResourceMonitorsTestsContext{
 		withValidationCases(
 			validationCase[*AlterResourceMonitorOptions]{
 				Name:        case_ResourceMonitors_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterResourceMonitorOptions", "name"),
 				DefaultModify: func(opts *AlterResourceMonitorOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -132,7 +132,7 @@ var resourceMonitorsTests = ResourceMonitorsTestsContext{
 		withValidationCases(
 			validationCase[*DropResourceMonitorOptions]{
 				Name:        case_ResourceMonitors_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropResourceMonitorOptions", "name"),
 				DefaultModify: func(opts *DropResourceMonitorOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

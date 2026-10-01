@@ -22,7 +22,7 @@ func (opts *CreateIcebergTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateIcebergTableOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateIcebergTableOptions", "OrReplace", "IfNotExists"))
@@ -62,7 +62,7 @@ func (opts *CreateIcebergTableOptions) validate() error {
 					}
 					if valueSet(column.InlineConstraint.FK) {
 						if !ValidObjectIdentifier(column.InlineConstraint.FK.References) {
-							errs = append(errs, ErrInvalidObjectIdentifier)
+							errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.FK", columnIdx), "References"))
 						}
 						if everyValueSet(column.InlineConstraint.FK.Enforced, column.InlineConstraint.FK.NotEnforced) {
 							errs = append(errs, errOneOf(fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.FK", columnIdx), "Enforced", "NotEnforced"))
@@ -121,7 +121,7 @@ func (opts *CreateIcebergTableOptions) validate() error {
 				}
 				if valueSet(outOfLineConstraint.FK) {
 					if !ValidObjectIdentifier(outOfLineConstraint.FK.References) {
-						errs = append(errs, ErrInvalidObjectIdentifier)
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].FK", outOfLineConstraintIdx), "References"))
 					}
 					if everyValueSet(outOfLineConstraint.FK.Enforced, outOfLineConstraint.FK.NotEnforced) {
 						errs = append(errs, errOneOf(fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].FK", outOfLineConstraintIdx), "Enforced", "NotEnforced"))
@@ -159,12 +159,12 @@ func (opts *CreateIcebergTableOptions) validate() error {
 	}
 	if valueSet(opts.RowAccessPolicy) {
 		if !ValidObjectIdentifier(opts.RowAccessPolicy.Name) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("CreateIcebergTableOptions.RowAccessPolicy", "Name"))
 		}
 	}
 	if valueSet(opts.AggregationPolicy) {
 		if !ValidObjectIdentifier(opts.AggregationPolicy.AggregationPolicy) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("CreateIcebergTableOptions.AggregationPolicy", "AggregationPolicy"))
 		}
 	}
 	return JoinErrors(errs...)
@@ -176,7 +176,7 @@ func (opts *CreateFromIcebergFilesIcebergTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateFromIcebergFilesIcebergTableOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateFromIcebergFilesIcebergTableOptions", "OrReplace", "IfNotExists"))
@@ -190,7 +190,7 @@ func (opts *CreateFromDeltaLakeIcebergTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateFromDeltaLakeIcebergTableOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateFromDeltaLakeIcebergTableOptions", "OrReplace", "IfNotExists"))
@@ -204,7 +204,7 @@ func (opts *CreateFromIcebergRestIcebergTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateFromIcebergRestIcebergTableOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateFromIcebergRestIcebergTableOptions", "OrReplace", "IfNotExists"))
@@ -218,7 +218,7 @@ func (opts *CreateFromAwsGlueIcebergTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateFromAwsGlueIcebergTableOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateFromAwsGlueIcebergTableOptions", "OrReplace", "IfNotExists"))
@@ -232,7 +232,7 @@ func (opts *AlterIcebergTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterIcebergTableOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.AddColumnAction, opts.DropColumnAction, opts.RenameColumnAction, opts.AlterColumnAction, opts.SetMaskingPolicyOnColumn, opts.UnsetMaskingPolicyOnColumn, opts.SetProjectionPolicyOnColumn, opts.UnsetProjectionPolicyOnColumn, opts.SetTagsOnColumn, opts.UnsetTagsOnColumn, opts.ClusteringAction, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.SetAggregationPolicy, opts.UnsetAggregationPolicy, opts.SetJoinPolicy, opts.UnsetJoinPolicy, opts.SearchOptimizationAction) {
 		errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions", "AddColumnAction", "DropColumnAction", "RenameColumnAction", "AlterColumnAction", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn", "ClusteringAction", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy", "SearchOptimizationAction"))
@@ -267,7 +267,7 @@ func (opts *AlterIcebergTableOptions) validate() error {
 			}
 			if valueSet(opts.AddColumnAction.InlineConstraint.FK) {
 				if !ValidObjectIdentifier(opts.AddColumnAction.InlineConstraint.FK.References) {
-					errs = append(errs, ErrInvalidObjectIdentifier)
+					errs = append(errs, errInvalidIdentifier("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "References"))
 				}
 				if everyValueSet(opts.AddColumnAction.InlineConstraint.FK.Enforced, opts.AddColumnAction.InlineConstraint.FK.NotEnforced) {
 					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Enforced", "NotEnforced"))
@@ -319,7 +319,7 @@ func (opts *AlterIcebergTableOptions) validate() error {
 	}
 	if valueSet(opts.AddRowAccessPolicy) {
 		if !ValidObjectIdentifier(opts.AddRowAccessPolicy.RowAccessPolicy) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterIcebergTableOptions.AddRowAccessPolicy", "RowAccessPolicy"))
 		}
 		if !valueSet(opts.AddRowAccessPolicy.On) {
 			errs = append(errs, errNotSet("AlterIcebergTableOptions.AddRowAccessPolicy", "On"))
@@ -327,18 +327,18 @@ func (opts *AlterIcebergTableOptions) validate() error {
 	}
 	if valueSet(opts.DropRowAccessPolicy) {
 		if !ValidObjectIdentifier(opts.DropRowAccessPolicy.RowAccessPolicy) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterIcebergTableOptions.DropRowAccessPolicy", "RowAccessPolicy"))
 		}
 	}
 	if valueSet(opts.DropAndAddRowAccessPolicy) {
 		if valueSet(opts.DropAndAddRowAccessPolicy.Drop) {
 			if !ValidObjectIdentifier(opts.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy) {
-				errs = append(errs, ErrInvalidObjectIdentifier)
+				errs = append(errs, errInvalidIdentifier("AlterIcebergTableOptions.DropAndAddRowAccessPolicy.Drop", "RowAccessPolicy"))
 			}
 		}
 		if valueSet(opts.DropAndAddRowAccessPolicy.Add) {
 			if !ValidObjectIdentifier(opts.DropAndAddRowAccessPolicy.Add.RowAccessPolicy) {
-				errs = append(errs, ErrInvalidObjectIdentifier)
+				errs = append(errs, errInvalidIdentifier("AlterIcebergTableOptions.DropAndAddRowAccessPolicy.Add", "RowAccessPolicy"))
 			}
 			if !valueSet(opts.DropAndAddRowAccessPolicy.Add.On) {
 				errs = append(errs, errNotSet("AlterIcebergTableOptions.DropAndAddRowAccessPolicy.Add", "On"))
@@ -347,12 +347,12 @@ func (opts *AlterIcebergTableOptions) validate() error {
 	}
 	if valueSet(opts.SetAggregationPolicy) {
 		if !ValidObjectIdentifier(opts.SetAggregationPolicy.AggregationPolicy) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterIcebergTableOptions.SetAggregationPolicy", "AggregationPolicy"))
 		}
 	}
 	if valueSet(opts.SetJoinPolicy) {
 		if !ValidObjectIdentifier(opts.SetJoinPolicy.JoinPolicy) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterIcebergTableOptions.SetJoinPolicy", "JoinPolicy"))
 		}
 	}
 	if valueSet(opts.SearchOptimizationAction) {
@@ -378,7 +378,7 @@ func (opts *DropIcebergTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropIcebergTableOptions", "name"))
 	}
 	if everyValueSet(opts.Cascade, opts.Restrict) {
 		errs = append(errs, errOneOf("DropIcebergTableOptions", "Cascade", "Restrict"))
@@ -400,7 +400,7 @@ func (opts *DescribeIcebergTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeIcebergTableOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

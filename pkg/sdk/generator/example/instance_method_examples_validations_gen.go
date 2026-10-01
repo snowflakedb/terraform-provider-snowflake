@@ -13,11 +13,11 @@ func (opts *AddNotificationIntegrationInstanceMethodExampleOptions) validate() e
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AddNotificationIntegrationInstanceMethodExampleOptions", "name"))
 	}
 	if valueSet(opts.args) {
 		if !ValidObjectIdentifier(opts.args.IntegrationName) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AddNotificationIntegrationInstanceMethodExampleOptions.args", "IntegrationName"))
 		}
 	}
 	return JoinErrors(errs...)
@@ -29,7 +29,7 @@ func (opts *GetSpendingLimitInstanceMethodExampleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("GetSpendingLimitInstanceMethodExampleOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

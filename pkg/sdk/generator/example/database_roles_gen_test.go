@@ -41,7 +41,7 @@ var databaseRolesTests = DatabaseRolesTestsContext{
 		withValidationCases(
 			validationCase[*CreateDatabaseRoleOptions]{
 				Name:        case_DatabaseRoles_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateDatabaseRoleOptions", "name"),
 				DefaultModify: func(opts *CreateDatabaseRoleOptions) {
 					opts.name = emptyDatabaseObjectIdentifier
 				},
@@ -75,7 +75,7 @@ var databaseRolesTests = DatabaseRolesTestsContext{
 		withValidationCases(
 			validationCase[*AlterDatabaseRoleOptions]{
 				Name:        case_DatabaseRoles_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterDatabaseRoleOptions", "name"),
 				DefaultModify: func(opts *AlterDatabaseRoleOptions) {
 					opts.name = emptyDatabaseObjectIdentifier
 				},
@@ -99,7 +99,7 @@ var databaseRolesTests = DatabaseRolesTestsContext{
 			},
 			validationCase[*AlterDatabaseRoleOptions]{
 				Name:        case_DatabaseRoles_validation_Alter_Rename_Name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterDatabaseRoleOptions.Rename", "Name"),
 				DefaultModify: func(opts *AlterDatabaseRoleOptions) {
 					opts.Rename = &DatabaseRoleRename{}
 					opts.Rename.Name = emptyDatabaseObjectIdentifier

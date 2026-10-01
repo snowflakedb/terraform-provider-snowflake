@@ -297,18 +297,10 @@ func Test_Field_NeedsSliceIndexVar(t *testing.T) {
 		expected bool
 	}{
 		{
-			name: "slice with only ValidIdentifier in subtree — unused index would not compile",
-			root: &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
-				{Name: "Columns", Kind: "[]Column", Fields: []gen.Field{
-					{Name: "MaskingPolicy", Kind: "*MaskingPolicy", Validations: []*gen.Validation{
-						gen.NewValidation(gen.ValidIdentifier, "Name"),
-					}, Fields: []gen.Field{
-						{Name: "Name", Kind: "SchemaObjectIdentifier"},
-					}},
-				}},
-			}},
+			name:     "slice with only ValidIdentifier in subtree — index is referenced in errInvalidIdentifier",
+			root:     identifierUnderSliceTree(),
 			target:   func(root *gen.Field) *gen.Field { return &root.Fields[0] },
-			expected: false,
+			expected: true,
 		},
 		{
 			name: "slice with its own ExactlyOneValueSet",
@@ -361,6 +353,7 @@ func Test_Validation_ReturnedError_usesPathWithRootExpr(t *testing.T) {
 		}},
 	}})
 	nested := buildTree(threeLevelSliceTree())
+	identifierSlice := buildTree(identifierUnderSliceTree())
 
 	v := gen.NewValidation(gen.ExactlyOneValueSet, "ArgDataTypeOld", "ArgDataType")
 	require.Equal(t, `errExactlyOneOf("RootOptions.Set", "A","B")`,
@@ -369,8 +362,24 @@ func Test_Validation_ReturnedError_usesPathWithRootExpr(t *testing.T) {
 		v.ReturnedError(&slice.Fields[0]))
 	require.Equal(t, `errExactlyOneOf(fmt.Sprintf("RootOptions.Items[%d].SubItems[%d].LeafItems[%d]", itemIdx, subItemIdx, leafItemIdx), "Name","Alias")`,
 		gen.NewValidation(gen.ExactlyOneValueSet, "Name", "Alias").ReturnedError(&nested.Fields[0].Fields[0].Fields[0]))
-	require.Equal(t, "ErrInvalidObjectIdentifier",
+	require.Equal(t, `errInvalidIdentifier("RootOptions", "name")`,
 		gen.NewValidation(gen.ValidIdentifier, "name").ReturnedError(noSlice))
+	require.Equal(t, `errInvalidIdentifier("RootOptions", "name")`,
+		gen.NewValidation(gen.ValidIdentifierIfSet, "name").ReturnedError(noSlice))
+	require.Equal(t, `errInvalidIdentifier(fmt.Sprintf("RootOptions.Columns[%d].MaskingPolicy", columnIdx), "MaskingPolicy")`,
+		gen.NewValidation(gen.ValidIdentifier, "MaskingPolicy").ReturnedError(&identifierSlice.Fields[0].Fields[0]))
+}
+
+func identifierUnderSliceTree() *gen.Field {
+	return &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+		{Name: "Columns", Kind: "[]Column", Fields: []gen.Field{
+			{Name: "MaskingPolicy", Kind: "*MaskingPolicy", Validations: []*gen.Validation{
+				gen.NewValidation(gen.ValidIdentifier, "MaskingPolicy"),
+			}, Fields: []gen.Field{
+				{Name: "MaskingPolicy", Kind: "SchemaObjectIdentifier"},
+			}},
+		}},
+	}}
 }
 
 func threeLevelSliceTree() *gen.Field {
@@ -725,6 +734,9 @@ func Test_Validation_TestExpectedError(t *testing.T) {
 
 	nestedTree := buildTree(threeLevelSliceTree())
 	leafItems := &nestedTree.Fields[0].Fields[0].Fields[0]
+	identifierRoot := buildTree(&gen.Field{Name: "RootOptions", Kind: "RootOptions"})
+	identifierSlice := buildTree(identifierUnderSliceTree())
+	maskingPolicy := &identifierSlice.Fields[0].Fields[0]
 
 	tests := []struct {
 		name         string
@@ -742,11 +754,25 @@ func Test_Validation_TestExpectedError(t *testing.T) {
 			expectedOk: false,
 		},
 		{
-			name:        "ValidIdentifier — generic sentinel, no path",
+			name:        "ValidIdentifier — root name uses quoted PathWithRootForTest",
 			validation:  gen.NewValidation(gen.ValidIdentifier, "name"),
-			field:       &gen.Field{Name: "opts", Kind: "CreateFooOptions"},
+			field:       identifierRoot,
 			expectedOk:  true,
-			expectedErr: "ErrInvalidObjectIdentifier",
+			expectedErr: `errInvalidIdentifier("RootOptions", "name")`,
+		},
+		{
+			name:        "ValidIdentifierIfSet — same helper as ValidIdentifier",
+			validation:  gen.NewValidation(gen.ValidIdentifierIfSet, "name"),
+			field:       identifierRoot,
+			expectedOk:  true,
+			expectedErr: `errInvalidIdentifier("RootOptions", "name")`,
+		},
+		{
+			name:        "ValidIdentifier under a slice — default all [0]",
+			validation:  gen.NewValidation(gen.ValidIdentifier, "MaskingPolicy"),
+			field:       maskingPolicy,
+			expectedOk:  true,
+			expectedErr: `errInvalidIdentifier("RootOptions.Columns[0].MaskingPolicy", "MaskingPolicy")`,
 		},
 		{
 			name:        "ExactlyOneValueSet on a slice — default all [0]",

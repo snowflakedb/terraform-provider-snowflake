@@ -19,7 +19,7 @@ func (opts *CreateFailoverGroupOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateFailoverGroupOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -30,10 +30,10 @@ func (opts *CreateSecondaryReplicationGroupFailoverGroupOptions) validate() erro
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateSecondaryReplicationGroupFailoverGroupOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.PrimaryFailoverGroup) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateSecondaryReplicationGroupFailoverGroupOptions", "PrimaryFailoverGroup"))
 	}
 	return JoinErrors(errs...)
 }
@@ -44,7 +44,7 @@ func (opts *AlterSourceFailoverGroupOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterSourceFailoverGroupOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.Set, opts.Unset, opts.Add, opts.Move, opts.Remove) {
 		errs = append(errs, errExactlyOneOf("AlterSourceFailoverGroupOptions", "RenameTo", "Set", "Unset", "Add", "Move", "Remove"))
@@ -66,7 +66,7 @@ func (opts *AlterTargetFailoverGroupOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterTargetFailoverGroupOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Refresh, opts.Primary, opts.Suspend, opts.Resume) {
 		errs = append(errs, errExactlyOneOf("AlterTargetFailoverGroupOptions", "Refresh", "Primary", "Suspend", "Resume"))
@@ -80,7 +80,7 @@ func (opts *DropFailoverGroupOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropFailoverGroupOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

@@ -41,7 +41,7 @@ var applicationRolesTests = ApplicationRolesTestsContext{
 		withValidationCases(
 			validationCase[*GrantApplicationRoleOptions]{
 				Name:        case_ApplicationRoles_validation_Grant_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("GrantApplicationRoleOptions", "name"),
 				DefaultModify: func(opts *GrantApplicationRoleOptions) {
 					opts.name = emptyDatabaseObjectIdentifier
 				},
@@ -81,7 +81,7 @@ var applicationRolesTests = ApplicationRolesTestsContext{
 		withValidationCases(
 			validationCase[*RevokeApplicationRoleOptions]{
 				Name:        case_ApplicationRoles_validation_Revoke_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("RevokeApplicationRoleOptions", "name"),
 				DefaultModify: func(opts *RevokeApplicationRoleOptions) {
 					opts.name = emptyDatabaseObjectIdentifier
 				},
@@ -119,7 +119,7 @@ var applicationRolesTests = ApplicationRolesTestsContext{
 		withValidationCases(
 			validationCase[*ShowApplicationRoleOptions]{
 				Name:        case_ApplicationRoles_validation_Show_ApplicationName_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("ShowApplicationRoleOptions", "ApplicationName"),
 				DefaultModify: func(opts *ShowApplicationRoleOptions) {
 					opts.ApplicationName = emptyAccountObjectIdentifier
 				},

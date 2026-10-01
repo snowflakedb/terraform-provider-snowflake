@@ -9,7 +9,7 @@ import (
 // Slice-validation case matrix. Nested QueryStructs that themselves have struct children
 // are function wrappers — sharing them as a var panics (`Field already has a parent`).
 // SliceElemVar is CutSuffix(name, "s"); list field names must stay distinct
-// (Items / SubItems / LeafItems → itemIdx, subItemIdx, leafItemIdx).
+// (Items / SubItems / LeafItems / Columns → itemIdx, subItemIdx, leafItemIdx, columnIdx).
 
 // Case 1: slice with two WithValidations (previously emitted invalid `} for` Go).
 func sliceValidationDualCheck() *g.QueryStruct {
@@ -71,6 +71,19 @@ func sliceValidationItem() *g.QueryStruct {
 		ListQueryStructField("SubItems", sliceValidationSubItem(), g.KeywordOptions().SQL("SUB_ITEMS"))
 }
 
+// Case 5: ValidIdentifier on a nested struct under a slice (views Columns.MaskingPolicy).
+// Proves indexed errInvalidIdentifier: Columns[%d].MaskingPolicy.
+func sliceValidationColumnMaskingPolicy() *g.QueryStruct {
+	return g.NewQueryStruct("SliceValidationColumnMaskingPolicy").
+		Identifier("MaskingPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("MASKING POLICY").Required()).
+		WithValidation(g.ValidIdentifier, "MaskingPolicy")
+}
+
+func sliceValidationColumn() *g.QueryStruct {
+	return g.NewQueryStruct("SliceValidationColumn").
+		OptionalQueryStructField("MaskingPolicy", sliceValidationColumnMaskingPolicy(), g.KeywordOptions())
+}
+
 var SliceValidationExample = g.NewInterface(
 	"SliceValidationExamples",
 	"SliceValidationExample",
@@ -85,5 +98,6 @@ var SliceValidationExample = g.NewInterface(
 		ListQueryStructField("PlainItems", sliceValidationPlainItem(), g.KeywordOptions().SQL("PLAIN_ITEMS")).
 		ListQueryStructField("CheckedItems", sliceValidationCheckedItem(), g.KeywordOptions().SQL("CHECKED_ITEMS")).
 		ListQueryStructField("Items", sliceValidationItem(), g.KeywordOptions().SQL("ITEMS")).
+		ListQueryStructField("Columns", sliceValidationColumn(), g.KeywordOptions().SQL("COLUMNS")).
 		WithValidation(g.ValidIdentifier, "name"),
 )

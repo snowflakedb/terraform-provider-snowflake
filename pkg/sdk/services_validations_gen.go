@@ -17,13 +17,13 @@ func (opts *CreateServiceOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateServiceOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.FromSpecification, opts.FromSpecificationTemplate) {
 		errs = append(errs, errExactlyOneOf("CreateServiceOptions", "FromSpecification", "FromSpecificationTemplate"))
 	}
 	if opts.QueryWarehouse != nil && !ValidObjectIdentifier(opts.QueryWarehouse) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateServiceOptions", "QueryWarehouse"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.FromSpecification) {
@@ -57,7 +57,7 @@ func (opts *AlterServiceOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterServiceOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Resume, opts.Suspend, opts.FromSpecification, opts.FromSpecificationTemplate, opts.Restore, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterServiceOptions", "Resume", "Suspend", "FromSpecification", "FromSpecificationTemplate", "Restore", "Set", "Unset", "SetTags", "UnsetTags"))
@@ -86,12 +86,12 @@ func (opts *AlterServiceOptions) validate() error {
 	}
 	if valueSet(opts.Restore) {
 		if !ValidObjectIdentifier(opts.Restore.FromSnapshot) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterServiceOptions.Restore", "FromSnapshot"))
 		}
 	}
 	if valueSet(opts.Set) {
 		if opts.Set.QueryWarehouse != nil && !ValidObjectIdentifier(opts.Set.QueryWarehouse) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterServiceOptions.Set", "QueryWarehouse"))
 		}
 		if !anyValueSet(opts.Set.MinInstances, opts.Set.MaxInstances, opts.Set.AutoSuspendSecs, opts.Set.MinReadyInstances, opts.Set.QueryWarehouse, opts.Set.AutoResume, opts.Set.ExternalAccessIntegrations, opts.Set.Comment, opts.Set.ServiceCallerTokenValiditySecs) {
 			errs = append(errs, errAtLeastOneOf("AlterServiceOptions.Set", "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment", "ServiceCallerTokenValiditySecs"))
@@ -112,7 +112,7 @@ func (opts *DropServiceOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropServiceOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -134,7 +134,7 @@ func (opts *DescribeServiceOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeServiceOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -145,16 +145,16 @@ func (opts *ExecuteJobServiceOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.Name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("ExecuteJobServiceOptions", "Name"))
 	}
 	if !exactlyOneValueSet(opts.JobServiceFromSpecification, opts.JobServiceFromSpecificationTemplate) {
 		errs = append(errs, errExactlyOneOf("ExecuteJobServiceOptions", "JobServiceFromSpecification", "JobServiceFromSpecificationTemplate"))
 	}
 	if !ValidObjectIdentifier(opts.InComputePool) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("ExecuteJobServiceOptions", "InComputePool"))
 	}
 	if opts.QueryWarehouse != nil && !ValidObjectIdentifier(opts.QueryWarehouse) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("ExecuteJobServiceOptions", "QueryWarehouse"))
 	}
 	if valueSet(opts.JobServiceFromSpecification) {
 		if !exactlyOneValueSet(opts.JobServiceFromSpecification.SpecificationFile, opts.JobServiceFromSpecification.Specification) {

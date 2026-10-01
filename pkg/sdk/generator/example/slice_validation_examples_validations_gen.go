@@ -12,7 +12,7 @@ func (opts *CreateSliceValidationExampleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateSliceValidationExampleOptions", "name"))
 	}
 	if valueSet(opts.DualChecks) {
 		for dualCheckIdx, dualCheck := range opts.DualChecks {
@@ -56,6 +56,15 @@ func (opts *CreateSliceValidationExampleOptions) validate() error {
 							}
 						}
 					}
+				}
+			}
+		}
+	}
+	if valueSet(opts.Columns) {
+		for columnIdx, column := range opts.Columns {
+			if valueSet(column.MaskingPolicy) {
+				if !ValidObjectIdentifier(column.MaskingPolicy.MaskingPolicy) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateSliceValidationExampleOptions.Columns[%d].MaskingPolicy", columnIdx), "MaskingPolicy"))
 				}
 			}
 		}

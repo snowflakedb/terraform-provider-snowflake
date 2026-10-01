@@ -16,7 +16,7 @@ func (opts *CreateApiIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateApiIntegrationOptions", "name"))
 	}
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateApiIntegrationOptions", "IfNotExists", "OrReplace"))
@@ -53,7 +53,7 @@ func (opts *AlterApiIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterApiIntegrationOptions", "name"))
 	}
 	if everyValueSet(opts.IfExists, opts.SetTags) {
 		errs = append(errs, errOneOf("AlterApiIntegrationOptions", "IfExists", "SetTags"))
@@ -139,7 +139,7 @@ func (opts *DropApiIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropApiIntegrationOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -158,7 +158,7 @@ func (opts *DescribeApiIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeApiIntegrationOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

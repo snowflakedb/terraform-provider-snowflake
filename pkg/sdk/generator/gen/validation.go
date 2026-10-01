@@ -162,7 +162,7 @@ func (v *Validation) Condition(field *Field) string {
 
 func (v *Validation) hasIndexedErrorPath() bool {
 	switch v.Type {
-	case ValidIdentifier, ValidIdentifierIfSet, ValidateValue, AdditionalValidations:
+	case ValidateValue, AdditionalValidations:
 		return false
 	default:
 		return true
@@ -177,16 +177,11 @@ func (v *Validation) TestExpectedError(field *Field, failingSlice *Field, failin
 	if v.Type == ValidateValue {
 		return "", false
 	}
-	if v.Type == ValidIdentifier || v.Type == ValidIdentifierIfSet {
-		return "ErrInvalidObjectIdentifier", true
-	}
 	return v.errorWithPathExpr(fmt.Sprintf("%q", field.PathWithRootForTest(failingSlice, failingIndex))), true
 }
 
 func (v *Validation) ReturnedError(field *Field) string {
 	switch v.Type {
-	case ValidIdentifier, ValidIdentifierIfSet:
-		return "ErrInvalidObjectIdentifier"
 	case ValidateValue:
 		return "err"
 	case AdditionalValidations:
@@ -199,6 +194,9 @@ func (v *Validation) ReturnedError(field *Field) string {
 
 func (v *Validation) errorWithPathExpr(pathExpr string) string {
 	switch v.Type {
+	case ValidIdentifier, ValidIdentifierIfSet:
+		// One identifier field, not a params list — do not join FieldNames.
+		return fmt.Sprintf(`errInvalidIdentifier(%s, %q)`, pathExpr, v.FieldNames[0])
 	case ConflictingFields:
 		return fmt.Sprintf(`errOneOf(%s, %s)`, pathExpr, strings.Join(v.paramsQuoted(), ","))
 	case MoreThanOneValueSet:

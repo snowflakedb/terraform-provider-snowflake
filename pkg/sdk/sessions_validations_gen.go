@@ -38,7 +38,7 @@ func (opts *UseWarehouseSessionOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("UseWarehouseSessionOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -49,7 +49,7 @@ func (opts *UseDatabaseSessionOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("UseDatabaseSessionOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -60,7 +60,7 @@ func (opts *UseSchemaSessionOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("UseSchemaSessionOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -71,7 +71,7 @@ func (opts *UseRoleSessionOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("UseRoleSessionOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

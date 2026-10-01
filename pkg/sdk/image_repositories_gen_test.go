@@ -52,7 +52,7 @@ var imageRepositoriesTests = ImageRepositoriesTestsContext{
 		withValidationCases(
 			validationCase[*CreateImageRepositoryOptions]{
 				Name:        case_ImageRepositories_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateImageRepositoryOptions", "name"),
 				DefaultModify: func(opts *CreateImageRepositoryOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -94,7 +94,7 @@ var imageRepositoriesTests = ImageRepositoriesTestsContext{
 		withValidationCases(
 			validationCase[*AlterImageRepositoryOptions]{
 				Name:        case_ImageRepositories_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterImageRepositoryOptions", "name"),
 				DefaultModify: func(opts *AlterImageRepositoryOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -135,7 +135,7 @@ var imageRepositoriesTests = ImageRepositoriesTestsContext{
 		withValidationCases(
 			validationCase[*DropImageRepositoryOptions]{
 				Name:        case_ImageRepositories_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropImageRepositoryOptions", "name"),
 				DefaultModify: func(opts *DropImageRepositoryOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

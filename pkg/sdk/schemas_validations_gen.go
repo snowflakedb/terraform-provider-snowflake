@@ -18,16 +18,16 @@ func (opts *CreateSchemaOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateSchemaOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateSchemaOptions", "OrReplace", "IfNotExists"))
 	}
 	if opts.ExternalVolume != nil && !ValidObjectIdentifier(opts.ExternalVolume) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateSchemaOptions", "ExternalVolume"))
 	}
 	if opts.Catalog != nil && !ValidObjectIdentifier(opts.Catalog) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateSchemaOptions", "Catalog"))
 	}
 	return JoinErrors(errs...)
 }
@@ -38,7 +38,7 @@ func (opts *CloneSchemaOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CloneSchemaOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CloneSchemaOptions", "OrReplace", "IfNotExists"))
@@ -53,23 +53,23 @@ func (opts *AlterSchemaOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterSchemaOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.SwapWith, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.EnableManagedAccess, opts.DisableManagedAccess) {
 		errs = append(errs, errExactlyOneOf("AlterSchemaOptions", "RenameTo", "SwapWith", "Set", "Unset", "SetTags", "UnsetTags", "EnableManagedAccess", "DisableManagedAccess"))
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterSchemaOptions", "RenameTo"))
 	}
 	if opts.SwapWith != nil && !ValidObjectIdentifier(opts.SwapWith) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterSchemaOptions", "SwapWith"))
 	}
 	if valueSet(opts.Set) {
 		if opts.Set.ExternalVolume != nil && !ValidObjectIdentifier(opts.Set.ExternalVolume) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterSchemaOptions.Set", "ExternalVolume"))
 		}
 		if opts.Set.Catalog != nil && !ValidObjectIdentifier(opts.Set.Catalog) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterSchemaOptions.Set", "Catalog"))
 		}
 		if !anyValueSet(opts.Set.Catalog, opts.Set.DataRetentionTimeInDays, opts.Set.DefaultDdlCollation, opts.Set.DefaultNotebookComputePoolCpu, opts.Set.DefaultNotebookComputePoolGpu, opts.Set.EnableConsoleOutput, opts.Set.ExternalVolume, opts.Set.LogEventLevel, opts.Set.LogLevel, opts.Set.MaxDataExtensionTimeInDays, opts.Set.PipeExecutionPaused, opts.Set.QuotedIdentifiersIgnoreCase, opts.Set.ReplaceInvalidCharacters, opts.Set.StorageSerializationPolicy, opts.Set.SuspendTaskAfterNumFailures, opts.Set.TaskAutoRetryAttempts, opts.Set.TraceLevel, opts.Set.UserTaskManagedInitialWarehouseSize, opts.Set.UserTaskMinimumTriggerIntervalInSeconds, opts.Set.UserTaskTimeoutMs, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterSchemaOptions.Set", "Catalog", "DataRetentionTimeInDays", "DefaultDdlCollation", "DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu", "EnableConsoleOutput", "ExternalVolume", "LogEventLevel", "LogLevel", "MaxDataExtensionTimeInDays", "PipeExecutionPaused", "QuotedIdentifiersIgnoreCase", "ReplaceInvalidCharacters", "StorageSerializationPolicy", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "TraceLevel", "UserTaskManagedInitialWarehouseSize", "UserTaskMinimumTriggerIntervalInSeconds", "UserTaskTimeoutMs", "Comment"))
@@ -89,7 +89,7 @@ func (opts *DropSchemaOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropSchemaOptions", "name"))
 	}
 	if everyValueSet(opts.Cascade, opts.Restrict) {
 		errs = append(errs, errOneOf("DropSchemaOptions", "Cascade", "Restrict"))
@@ -103,7 +103,7 @@ func (opts *UndropSchemaOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("UndropSchemaOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -122,7 +122,7 @@ func (opts *DescribeSchemaOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeSchemaOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

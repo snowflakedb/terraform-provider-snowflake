@@ -20,7 +20,7 @@ func (opts *describeDatabaseOptions) validate() error {
 		return ErrNilOptions
 	}
 	if !ValidObjectIdentifier(opts.name) {
-		return ErrInvalidObjectIdentifier
+		return errInvalidIdentifier("describeDatabaseOptions", "name")
 	}
 	return nil
 }

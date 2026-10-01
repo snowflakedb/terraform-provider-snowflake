@@ -81,7 +81,7 @@ func (opts *revokePrivilegesFromAccountRoleOptions) validate() error {
 		errs = append(errs, errNotSet("revokePrivilegesFromAccountRoleOptions", "On"))
 	}
 	if !ValidObjectIdentifier(opts.AccountRole) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("revokePrivilegesFromAccountRoleOptions", "AccountRole"))
 	}
 	if everyValueSet(opts.Restrict, opts.Cascade) {
 		errs = append(errs, errOneOf("revokePrivilegesFromAccountRoleOptions", "Restrict", "Cascade"))
@@ -183,7 +183,7 @@ func (opts *revokePrivilegesFromDatabaseRoleOptions) validate() error {
 		errs = append(errs, errNotSet("revokePrivilegesFromDatabaseRoleOptions", "On"))
 	}
 	if !ValidObjectIdentifier(opts.DatabaseRole) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("revokePrivilegesFromDatabaseRoleOptions", "DatabaseRole"))
 	}
 	if everyValueSet(opts.Restrict, opts.Cascade) {
 		errs = append(errs, errOneOf("revokePrivilegesFromDatabaseRoleOptions", "Restrict", "Cascade"))
@@ -259,7 +259,7 @@ func (opts *GrantInheritedPrivilegesToAccountRoleOptions) validate() error {
 		errs = append(errs, errNotSet("GrantInheritedPrivilegesToAccountRoleOptions", "OnAll"))
 	}
 	if !ValidObjectIdentifier(opts.AccountRole) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("GrantInheritedPrivilegesToAccountRoleOptions", "AccountRole"))
 	}
 	if valueSet(opts.Privileges) {
 		if !exactlyOneValueSet(opts.Privileges.AllPrivileges, opts.Privileges.AccountObjectPrivileges, opts.Privileges.SchemaPrivileges, opts.Privileges.SchemaObjectPrivileges) {
@@ -272,10 +272,10 @@ func (opts *GrantInheritedPrivilegesToAccountRoleOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("GrantInheritedPrivilegesToAccountRoleOptions.In", "Account", "Database", "Schema"))
 		}
 		if opts.In.Database != nil && !ValidObjectIdentifier(opts.In.Database) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("GrantInheritedPrivilegesToAccountRoleOptions.In", "Database"))
 		}
 		if opts.In.Schema != nil && !ValidObjectIdentifier(opts.In.Schema) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("GrantInheritedPrivilegesToAccountRoleOptions.In", "Schema"))
 		}
 	}
 	return JoinErrors(errs...)
@@ -290,7 +290,7 @@ func (opts *RevokeInheritedPrivilegesFromAccountRoleOptions) validate() error {
 		errs = append(errs, errNotSet("RevokeInheritedPrivilegesFromAccountRoleOptions", "OnAll"))
 	}
 	if !ValidObjectIdentifier(opts.AccountRole) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("RevokeInheritedPrivilegesFromAccountRoleOptions", "AccountRole"))
 	}
 	if valueSet(opts.Privileges) {
 		if !exactlyOneValueSet(opts.Privileges.AllPrivileges, opts.Privileges.AccountObjectPrivileges, opts.Privileges.SchemaPrivileges, opts.Privileges.SchemaObjectPrivileges) {
@@ -303,10 +303,10 @@ func (opts *RevokeInheritedPrivilegesFromAccountRoleOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("RevokeInheritedPrivilegesFromAccountRoleOptions.In", "Account", "Database", "Schema"))
 		}
 		if opts.In.Database != nil && !ValidObjectIdentifier(opts.In.Database) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("RevokeInheritedPrivilegesFromAccountRoleOptions.In", "Database"))
 		}
 		if opts.In.Schema != nil && !ValidObjectIdentifier(opts.In.Schema) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("RevokeInheritedPrivilegesFromAccountRoleOptions.In", "Schema"))
 		}
 	}
 	return JoinErrors(errs...)
@@ -321,7 +321,7 @@ func (opts *GrantInheritedPrivilegesToDatabaseRoleOptions) validate() error {
 		errs = append(errs, errNotSet("GrantInheritedPrivilegesToDatabaseRoleOptions", "OnAll"))
 	}
 	if !ValidObjectIdentifier(opts.DatabaseRole) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("GrantInheritedPrivilegesToDatabaseRoleOptions", "DatabaseRole"))
 	}
 	if valueSet(opts.Privileges) {
 		if !exactlyOneValueSet(opts.Privileges.AllPrivileges, opts.Privileges.SchemaPrivileges, opts.Privileges.SchemaObjectPrivileges) {
@@ -334,10 +334,10 @@ func (opts *GrantInheritedPrivilegesToDatabaseRoleOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("GrantInheritedPrivilegesToDatabaseRoleOptions.In", "Database", "Schema"))
 		}
 		if opts.In.Database != nil && !ValidObjectIdentifier(opts.In.Database) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("GrantInheritedPrivilegesToDatabaseRoleOptions.In", "Database"))
 		}
 		if opts.In.Schema != nil && !ValidObjectIdentifier(opts.In.Schema) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("GrantInheritedPrivilegesToDatabaseRoleOptions.In", "Schema"))
 		}
 	}
 	return JoinErrors(errs...)
@@ -352,7 +352,7 @@ func (opts *RevokeInheritedPrivilegesFromDatabaseRoleOptions) validate() error {
 		errs = append(errs, errNotSet("RevokeInheritedPrivilegesFromDatabaseRoleOptions", "OnAll"))
 	}
 	if !ValidObjectIdentifier(opts.DatabaseRole) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("RevokeInheritedPrivilegesFromDatabaseRoleOptions", "DatabaseRole"))
 	}
 	if valueSet(opts.Privileges) {
 		if !exactlyOneValueSet(opts.Privileges.AllPrivileges, opts.Privileges.SchemaPrivileges, opts.Privileges.SchemaObjectPrivileges) {
@@ -365,10 +365,10 @@ func (opts *RevokeInheritedPrivilegesFromDatabaseRoleOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("RevokeInheritedPrivilegesFromDatabaseRoleOptions.In", "Database", "Schema"))
 		}
 		if opts.In.Database != nil && !ValidObjectIdentifier(opts.In.Database) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("RevokeInheritedPrivilegesFromDatabaseRoleOptions.In", "Database"))
 		}
 		if opts.In.Schema != nil && !ValidObjectIdentifier(opts.In.Schema) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("RevokeInheritedPrivilegesFromDatabaseRoleOptions.In", "Schema"))
 		}
 	}
 	return JoinErrors(errs...)
@@ -380,7 +380,7 @@ func (opts *GrantPrivilegeToShareOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.To) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("GrantPrivilegeToShareOptions", "To"))
 	}
 	if !valueSet(opts.On) {
 		errs = append(errs, errNotSet("GrantPrivilegeToShareOptions", "On"))
@@ -408,7 +408,7 @@ func (opts *RevokePrivilegeFromShareOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.From) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("RevokePrivilegeFromShareOptions", "From"))
 	}
 	if !valueSet(opts.On) {
 		errs = append(errs, errNotSet("RevokePrivilegeFromShareOptions", "On"))

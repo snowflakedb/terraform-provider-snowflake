@@ -92,7 +92,7 @@ var viewsTests = ViewsTestsContext{
 		withValidationCases(
 			validationCase[*CreateViewOptions]{
 				Name:        case_Views_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateViewOptions", "name"),
 				DefaultModify: func(opts *CreateViewOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -107,7 +107,7 @@ var viewsTests = ViewsTestsContext{
 			},
 			validationCase[*CreateViewOptions]{
 				Name:        case_Views_validation_Create_Columns_ProjectionPolicy_ProjectionPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateViewOptions.Columns[0].ProjectionPolicy", "ProjectionPolicy"),
 				DefaultModify: func(opts *CreateViewOptions) {
 					opts.Columns = []ViewColumn{{}}
 					opts.Columns[0].ProjectionPolicy = &ViewColumnProjectionPolicy{}
@@ -116,7 +116,7 @@ var viewsTests = ViewsTestsContext{
 			},
 			validationCase[*CreateViewOptions]{
 				Name:        case_Views_validation_Create_Columns_MaskingPolicy_MaskingPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateViewOptions.Columns[0].MaskingPolicy", "MaskingPolicy"),
 				DefaultModify: func(opts *CreateViewOptions) {
 					opts.Columns = []ViewColumn{{}}
 					opts.Columns[0].MaskingPolicy = &ViewColumnMaskingPolicy{}
@@ -125,7 +125,7 @@ var viewsTests = ViewsTestsContext{
 			},
 			validationCase[*CreateViewOptions]{
 				Name:        case_Views_validation_Create_RowAccessPolicy_RowAccessPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateViewOptions.RowAccessPolicy", "RowAccessPolicy"),
 				DefaultModify: func(opts *CreateViewOptions) {
 					opts.RowAccessPolicy = &ViewRowAccessPolicy{}
 					opts.RowAccessPolicy.RowAccessPolicy = emptySchemaObjectIdentifier
@@ -141,7 +141,7 @@ var viewsTests = ViewsTestsContext{
 			},
 			validationCase[*CreateViewOptions]{
 				Name:        case_Views_validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateViewOptions.AggregationPolicy", "AggregationPolicy"),
 				DefaultModify: func(opts *CreateViewOptions) {
 					opts.AggregationPolicy = &ViewAggregationPolicy{}
 					opts.AggregationPolicy.AggregationPolicy = emptySchemaObjectIdentifier
@@ -168,7 +168,7 @@ var viewsTests = ViewsTestsContext{
 		withValidationCases(
 			validationCase[*AlterViewOptions]{
 				Name:        case_Views_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterViewOptions", "name"),
 				DefaultModify: func(opts *AlterViewOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -230,7 +230,7 @@ var viewsTests = ViewsTestsContext{
 			},
 			validationCase[*AlterViewOptions]{
 				Name:        case_Views_validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterViewOptions.AddRowAccessPolicy", "RowAccessPolicy"),
 				DefaultModify: func(opts *AlterViewOptions) {
 					opts.AddRowAccessPolicy = &ViewAddRowAccessPolicy{}
 					opts.AddRowAccessPolicy.RowAccessPolicy = emptySchemaObjectIdentifier
@@ -246,7 +246,7 @@ var viewsTests = ViewsTestsContext{
 			},
 			validationCase[*AlterViewOptions]{
 				Name:        case_Views_validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterViewOptions.DropRowAccessPolicy", "RowAccessPolicy"),
 				DefaultModify: func(opts *AlterViewOptions) {
 					opts.DropRowAccessPolicy = &ViewDropRowAccessPolicy{}
 					opts.DropRowAccessPolicy.RowAccessPolicy = emptySchemaObjectIdentifier
@@ -254,7 +254,7 @@ var viewsTests = ViewsTestsContext{
 			},
 			validationCase[*AlterViewOptions]{
 				Name:        case_Views_validation_Alter_DropAndAddRowAccessPolicy_Drop_RowAccessPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterViewOptions.DropAndAddRowAccessPolicy.Drop", "RowAccessPolicy"),
 				DefaultModify: func(opts *AlterViewOptions) {
 					opts.DropAndAddRowAccessPolicy = &ViewDropAndAddRowAccessPolicy{}
 					opts.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy = emptySchemaObjectIdentifier
@@ -262,7 +262,7 @@ var viewsTests = ViewsTestsContext{
 			},
 			validationCase[*AlterViewOptions]{
 				Name:        case_Views_validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterViewOptions.DropAndAddRowAccessPolicy.Add", "RowAccessPolicy"),
 				DefaultModify: func(opts *AlterViewOptions) {
 					opts.DropAndAddRowAccessPolicy = &ViewDropAndAddRowAccessPolicy{}
 					opts.DropAndAddRowAccessPolicy.Add.RowAccessPolicy = emptySchemaObjectIdentifier
@@ -278,7 +278,7 @@ var viewsTests = ViewsTestsContext{
 			},
 			validationCase[*AlterViewOptions]{
 				Name:        case_Views_validation_Alter_SetAggregationPolicy_AggregationPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterViewOptions.SetAggregationPolicy", "AggregationPolicy"),
 				DefaultModify: func(opts *AlterViewOptions) {
 					opts.SetAggregationPolicy = &ViewSetAggregationPolicy{}
 					opts.SetAggregationPolicy.AggregationPolicy = emptySchemaObjectIdentifier
@@ -373,7 +373,7 @@ var viewsTests = ViewsTestsContext{
 		withValidationCases(
 			validationCase[*DropViewOptions]{
 				Name:        case_Views_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropViewOptions", "name"),
 				DefaultModify: func(opts *DropViewOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -427,7 +427,7 @@ var viewsTests = ViewsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeViewOptions]{
 				Name:        case_Views_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeViewOptions", "name"),
 				DefaultModify: func(opts *DescribeViewOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

@@ -29,7 +29,7 @@ func (opts *CreateCsvFileFormatOptions) validate() error {
 		errs = append(errs, errOneOf("CreateCsvFileFormatOptions", "SkipHeader", "ParseHeader"))
 	}
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateCsvFileFormatOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateCsvFileFormatOptions", "OrReplace", "IfNotExists"))
@@ -86,7 +86,7 @@ func (opts *CreateJsonFileFormatOptions) validate() error {
 		errs = append(errs, errOneOf("CreateJsonFileFormatOptions", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
 	}
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateJsonFileFormatOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateJsonFileFormatOptions", "OrReplace", "IfNotExists"))
@@ -115,7 +115,7 @@ func (opts *CreateAvroFileFormatOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateAvroFileFormatOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateAvroFileFormatOptions", "OrReplace", "IfNotExists"))
@@ -129,7 +129,7 @@ func (opts *CreateOrcFileFormatOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOrcFileFormatOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateOrcFileFormatOptions", "OrReplace", "IfNotExists"))
@@ -146,7 +146,7 @@ func (opts *CreateParquetFileFormatOptions) validate() error {
 		errs = append(errs, errOneOf("CreateParquetFileFormatOptions", "Compression", "SnappyCompression"))
 	}
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateParquetFileFormatOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateParquetFileFormatOptions", "OrReplace", "IfNotExists"))
@@ -163,7 +163,7 @@ func (opts *CreateXmlFileFormatOptions) validate() error {
 		errs = append(errs, errOneOf("CreateXmlFileFormatOptions", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
 	}
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateXmlFileFormatOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateXmlFileFormatOptions", "OrReplace", "IfNotExists"))
@@ -177,7 +177,7 @@ func (opts *AlterCsvFileFormatOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterCsvFileFormatOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.Set) {
 		errs = append(errs, errExactlyOneOf("AlterCsvFileFormatOptions", "RenameTo", "Set"))
@@ -236,7 +236,7 @@ func (opts *AlterJsonFileFormatOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterJsonFileFormatOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.Set) {
 		errs = append(errs, errExactlyOneOf("AlterJsonFileFormatOptions", "RenameTo", "Set"))
@@ -270,7 +270,7 @@ func (opts *AlterAvroFileFormatOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterAvroFileFormatOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.Set) {
 		errs = append(errs, errExactlyOneOf("AlterAvroFileFormatOptions", "RenameTo", "Set"))
@@ -284,7 +284,7 @@ func (opts *AlterOrcFileFormatOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterOrcFileFormatOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.Set) {
 		errs = append(errs, errExactlyOneOf("AlterOrcFileFormatOptions", "RenameTo", "Set"))
@@ -298,7 +298,7 @@ func (opts *AlterParquetFileFormatOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterParquetFileFormatOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.Set) {
 		errs = append(errs, errExactlyOneOf("AlterParquetFileFormatOptions", "RenameTo", "Set"))
@@ -317,7 +317,7 @@ func (opts *AlterXmlFileFormatOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterXmlFileFormatOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.Set) {
 		errs = append(errs, errExactlyOneOf("AlterXmlFileFormatOptions", "RenameTo", "Set"))
@@ -336,7 +336,7 @@ func (opts *DropFileFormatOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropFileFormatOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -355,7 +355,7 @@ func (opts *DescribeFileFormatOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeFileFormatOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

@@ -67,7 +67,7 @@ var failoverGroupsTests = FailoverGroupsTestsContext{
 		withValidationCases(
 			validationCase[*CreateFailoverGroupOptions]{
 				Name:        case_FailoverGroups_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateFailoverGroupOptions", "name"),
 				DefaultModify: func(opts *CreateFailoverGroupOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -93,14 +93,14 @@ var failoverGroupsTests = FailoverGroupsTestsContext{
 		withValidationCases(
 			validationCase[*CreateSecondaryReplicationGroupFailoverGroupOptions]{
 				Name:        case_FailoverGroups_validation_CreateSecondaryReplicationGroup_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSecondaryReplicationGroupFailoverGroupOptions", "name"),
 				DefaultModify: func(opts *CreateSecondaryReplicationGroupFailoverGroupOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*CreateSecondaryReplicationGroupFailoverGroupOptions]{
 				Name:        case_FailoverGroups_validation_CreateSecondaryReplicationGroup_PrimaryFailoverGroup_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSecondaryReplicationGroupFailoverGroupOptions", "PrimaryFailoverGroup"),
 				DefaultModify: func(opts *CreateSecondaryReplicationGroupFailoverGroupOptions) {
 					opts.PrimaryFailoverGroup = emptyExternalObjectIdentifier
 				},
@@ -126,7 +126,7 @@ var failoverGroupsTests = FailoverGroupsTestsContext{
 		withValidationCases(
 			validationCase[*AlterSourceFailoverGroupOptions]{
 				Name:        case_FailoverGroups_validation_AlterSource_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterSourceFailoverGroupOptions", "name"),
 				DefaultModify: func(opts *AlterSourceFailoverGroupOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -191,7 +191,7 @@ var failoverGroupsTests = FailoverGroupsTestsContext{
 		withValidationCases(
 			validationCase[*AlterTargetFailoverGroupOptions]{
 				Name:        case_FailoverGroups_validation_AlterTarget_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTargetFailoverGroupOptions", "name"),
 				DefaultModify: func(opts *AlterTargetFailoverGroupOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -240,7 +240,7 @@ var failoverGroupsTests = FailoverGroupsTestsContext{
 		withValidationCases(
 			validationCase[*DropFailoverGroupOptions]{
 				Name:        case_FailoverGroups_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropFailoverGroupOptions", "name"),
 				DefaultModify: func(opts *DropFailoverGroupOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

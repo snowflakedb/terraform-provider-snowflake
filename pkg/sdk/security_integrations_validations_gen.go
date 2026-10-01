@@ -30,7 +30,7 @@ func (opts *CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationO
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
@@ -44,7 +44,7 @@ func (opts *CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegra
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
@@ -58,7 +58,7 @@ func (opts *CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) 
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
@@ -81,7 +81,7 @@ func (opts *CreateExternalOauthSecurityIntegrationOptions) validate() error {
 		errs = append(errs, errOneOf("CreateExternalOauthSecurityIntegrationOptions", "ExternalOauthJwsKeysUrl", "ExternalOauthRsaPublicKey2"))
 	}
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateExternalOauthSecurityIntegrationOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateExternalOauthSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
@@ -95,7 +95,7 @@ func (opts *CreateOauthForPartnerApplicationsSecurityIntegrationOptions) validat
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOauthForPartnerApplicationsSecurityIntegrationOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateOauthForPartnerApplicationsSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
@@ -110,7 +110,7 @@ func (opts *CreateOauthForCustomClientsSecurityIntegrationOptions) validate() er
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOauthForCustomClientsSecurityIntegrationOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateOauthForCustomClientsSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
@@ -124,7 +124,7 @@ func (opts *CreateSaml2SecurityIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateSaml2SecurityIntegrationOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateSaml2SecurityIntegrationOptions", "OrReplace", "IfNotExists"))
@@ -138,7 +138,7 @@ func (opts *CreateScimSecurityIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateScimSecurityIntegrationOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateScimSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
@@ -153,7 +153,7 @@ func (opts *AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOp
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
@@ -177,7 +177,7 @@ func (opts *AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrat
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
@@ -201,7 +201,7 @@ func (opts *AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) v
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
@@ -225,7 +225,7 @@ func (opts *AlterExternalOauthSecurityIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterExternalOauthSecurityIntegrationOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterExternalOauthSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
@@ -258,7 +258,7 @@ func (opts *AlterOauthForPartnerApplicationsSecurityIntegrationOptions) validate
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterOauthForPartnerApplicationsSecurityIntegrationOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterOauthForPartnerApplicationsSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
@@ -282,7 +282,7 @@ func (opts *AlterOauthForCustomClientsSecurityIntegrationOptions) validate() err
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterOauthForCustomClientsSecurityIntegrationOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterOauthForCustomClientsSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
@@ -306,7 +306,7 @@ func (opts *AlterSaml2SecurityIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterSaml2SecurityIntegrationOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.RefreshSaml2SnowflakePrivateKey, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterSaml2SecurityIntegrationOptions", "Set", "Unset", "RefreshSaml2SnowflakePrivateKey", "SetTags", "UnsetTags"))
@@ -330,7 +330,7 @@ func (opts *AlterScimSecurityIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterScimSecurityIntegrationOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterScimSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
@@ -354,7 +354,7 @@ func (opts *DropSecurityIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropSecurityIntegrationOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -365,7 +365,7 @@ func (opts *DescribeSecurityIntegrationOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeSecurityIntegrationOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

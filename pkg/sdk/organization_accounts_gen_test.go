@@ -59,7 +59,7 @@ var organizationAccountsTests = OrganizationAccountsTestsContext{
 		withValidationCases(
 			validationCase[*CreateOrganizationAccountOptions]{
 				Name:        case_OrganizationAccounts_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOrganizationAccountOptions", "name"),
 				DefaultModify: func(opts *CreateOrganizationAccountOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -93,7 +93,7 @@ var organizationAccountsTests = OrganizationAccountsTestsContext{
 		withValidationCases(
 			validationCase[*AlterOrganizationAccountOptions]{
 				Name:        case_OrganizationAccounts_validation_Alter_Name_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOrganizationAccountOptions", "Name"),
 				DefaultModify: func(opts *AlterOrganizationAccountOptions) {
 					opts.Name = new(emptyAccountObjectIdentifier)
 				},

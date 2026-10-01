@@ -16,7 +16,7 @@ func (opts *CreateNetworkPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateNetworkPolicyOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -27,13 +27,13 @@ func (opts *AlterNetworkPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterNetworkPolicyOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.RenameTo, opts.Add, opts.Remove) {
 		errs = append(errs, errExactlyOneOf("AlterNetworkPolicyOptions", "Set", "Unset", "RenameTo", "Add", "Remove"))
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterNetworkPolicyOptions", "RenameTo"))
 	}
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.AllowedIpList, opts.Set.BlockedIpList, opts.Set.Comment, opts.Set.AllowedNetworkRuleList, opts.Set.BlockedNetworkRuleList) {
@@ -64,7 +64,7 @@ func (opts *DropNetworkPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropNetworkPolicyOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -83,7 +83,7 @@ func (opts *DescribeNetworkPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeNetworkPolicyOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

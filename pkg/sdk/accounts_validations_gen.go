@@ -16,7 +16,7 @@ func (opts *CreateAccountOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateAccountOptions", "name"))
 	}
 	if !anyValueSet(opts.AdminPassword, opts.AdminRsaPublicKey) {
 		errs = append(errs, errAtLeastOneOf("CreateAccountOptions", "AdminPassword", "AdminRsaPublicKey"))
@@ -34,7 +34,7 @@ func (opts *AlterAccountOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterAccountOptions", "Set", "Unset", "SetTag", "UnsetTag", "Drop", "RenameTo"))
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterAccountOptions", "RenameTo"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Set) {
@@ -96,7 +96,7 @@ func (opts *DropAccountOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropAccountOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -107,7 +107,7 @@ func (opts *UndropAccountOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("UndropAccountOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

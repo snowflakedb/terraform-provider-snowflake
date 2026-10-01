@@ -56,7 +56,7 @@ var applicationPackagesTests = ApplicationPackagesTestsContext{
 		withValidationCases(
 			validationCase[*CreateApplicationPackageOptions]{
 				Name:        case_ApplicationPackages_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateApplicationPackageOptions", "name"),
 				DefaultModify: func(opts *CreateApplicationPackageOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -82,7 +82,7 @@ var applicationPackagesTests = ApplicationPackagesTestsContext{
 		withValidationCases(
 			validationCase[*AlterApplicationPackageOptions]{
 				Name:        case_ApplicationPackages_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterApplicationPackageOptions", "name"),
 				DefaultModify: func(opts *AlterApplicationPackageOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -171,7 +171,7 @@ var applicationPackagesTests = ApplicationPackagesTestsContext{
 		withValidationCases(
 			validationCase[*DropApplicationPackageOptions]{
 				Name:        case_ApplicationPackages_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropApplicationPackageOptions", "name"),
 				DefaultModify: func(opts *DropApplicationPackageOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

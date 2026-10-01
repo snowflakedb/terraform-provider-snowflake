@@ -481,7 +481,7 @@ var stagesTests = StagesTestsContext{
 		withValidationCases(
 			validationCase[*AlterStageOptions]{
 				Name:        case_Stages_validation_Alter_RenameTo_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterStageOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterStageOptions) {
 					opts.RenameTo = new(emptySchemaObjectIdentifier)
 				},
@@ -501,7 +501,7 @@ var stagesTests = StagesTestsContext{
 			},
 			validationCase[*AlterStageOptions]{
 				Name:        case_Stages_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterStageOptions", "name"),
 				DefaultModify: func(opts *AlterStageOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -529,7 +529,7 @@ var stagesTests = StagesTestsContext{
 		withValidationCases(
 			validationCase[*AlterInternalStageStageOptions]{
 				Name:        case_Stages_validation_AlterInternalStage_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterInternalStageStageOptions", "name"),
 				DefaultModify: func(opts *AlterInternalStageStageOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -576,7 +576,7 @@ var stagesTests = StagesTestsContext{
 		withValidationCases(
 			validationCase[*AlterExternalS3StageStageOptions]{
 				Name:        case_Stages_validation_AlterExternalS3Stage_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterExternalS3StageStageOptions", "name"),
 				DefaultModify: func(opts *AlterExternalS3StageStageOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -694,7 +694,7 @@ var stagesTests = StagesTestsContext{
 		withValidationCases(
 			validationCase[*AlterExternalGCSStageStageOptions]{
 				Name:        case_Stages_validation_AlterExternalGCSStage_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterExternalGCSStageStageOptions", "name"),
 				DefaultModify: func(opts *AlterExternalGCSStageStageOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -762,7 +762,7 @@ var stagesTests = StagesTestsContext{
 		withValidationCases(
 			validationCase[*AlterExternalAzureStageStageOptions]{
 				Name:        case_Stages_validation_AlterExternalAzureStage_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterExternalAzureStageStageOptions", "name"),
 				DefaultModify: func(opts *AlterExternalAzureStageStageOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -848,7 +848,7 @@ var stagesTests = StagesTestsContext{
 		withValidationCases(
 			validationCase[*AlterDirectoryTableStageOptions]{
 				Name:        case_Stages_validation_AlterDirectoryTable_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterDirectoryTableStageOptions", "name"),
 				DefaultModify: func(opts *AlterDirectoryTableStageOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -889,7 +889,7 @@ var stagesTests = StagesTestsContext{
 		withValidationCases(
 			validationCase[*DropStageOptions]{
 				Name:        case_Stages_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropStageOptions", "name"),
 				DefaultModify: func(opts *DropStageOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -915,7 +915,7 @@ var stagesTests = StagesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeStageOptions]{
 				Name:        case_Stages_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeStageOptions", "name"),
 				DefaultModify: func(opts *DescribeStageOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

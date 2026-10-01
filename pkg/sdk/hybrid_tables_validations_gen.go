@@ -24,7 +24,7 @@ func (opts *CreateHybridTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateHybridTableOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateHybridTableOptions", "OrReplace", "IfNotExists"))
@@ -38,7 +38,7 @@ func (opts *AlterHybridTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterHybridTableOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.AddColumnAction, opts.ConstraintAction, opts.AlterColumnAction, opts.DropColumnAction, opts.DropIndexAction, opts.ClusteringAction, opts.Set, opts.Unset) {
 		errs = append(errs, errExactlyOneOf("AlterHybridTableOptions", "RenameTo", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set", "Unset"))
@@ -87,7 +87,7 @@ func (opts *DropHybridTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropHybridTableOptions", "name"))
 	}
 	if everyValueSet(opts.Cascade, opts.Restrict) {
 		errs = append(errs, errOneOf("DropHybridTableOptions", "Cascade", "Restrict"))
@@ -109,7 +109,7 @@ func (opts *DescribeHybridTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeHybridTableOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -120,10 +120,10 @@ func (opts *CreateIndexHybridTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateIndexHybridTableOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.TableName) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateIndexHybridTableOptions", "TableName"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateIndexHybridTableOptions", "OrReplace", "IfNotExists"))
@@ -137,7 +137,7 @@ func (opts *DropIndexHybridTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropIndexHybridTableOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -156,7 +156,7 @@ func (opts *ShowPrimaryKeysHybridTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("ShowPrimaryKeysHybridTableOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -167,7 +167,7 @@ func (opts *ShowUniqueKeysHybridTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("ShowUniqueKeysHybridTableOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -178,7 +178,7 @@ func (opts *ShowImportedKeysHybridTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("ShowImportedKeysHybridTableOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

@@ -71,21 +71,21 @@ var openflowRuntimesTests = OpenflowRuntimesTestsContext{
 		withValidationCases(
 			validationCase[*CreateOpenflowRuntimeOptions]{
 				Name:        case_OpenflowRuntimes_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOpenflowRuntimeOptions", "name"),
 				DefaultModify: func(opts *CreateOpenflowRuntimeOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CreateOpenflowRuntimeOptions]{
 				Name:        case_OpenflowRuntimes_validation_Create_InDeployment_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOpenflowRuntimeOptions", "InDeployment"),
 				DefaultModify: func(opts *CreateOpenflowRuntimeOptions) {
 					opts.InDeployment = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*CreateOpenflowRuntimeOptions]{
 				Name:        case_OpenflowRuntimes_validation_Create_ExecuteAsRole_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOpenflowRuntimeOptions", "ExecuteAsRole"),
 				DefaultModify: func(opts *CreateOpenflowRuntimeOptions) {
 					opts.ExecuteAsRole = emptyAccountObjectIdentifier
 				},
@@ -111,14 +111,14 @@ var openflowRuntimesTests = OpenflowRuntimesTestsContext{
 		withValidationCases(
 			validationCase[*AlterOpenflowRuntimeOptions]{
 				Name:        case_OpenflowRuntimes_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOpenflowRuntimeOptions", "name"),
 				DefaultModify: func(opts *AlterOpenflowRuntimeOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*AlterOpenflowRuntimeOptions]{
 				Name:        case_OpenflowRuntimes_validation_Alter_RenameTo_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOpenflowRuntimeOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterOpenflowRuntimeOptions) {
 					opts.RenameTo = new(emptySchemaObjectIdentifier)
 				},
@@ -226,7 +226,7 @@ var openflowRuntimesTests = OpenflowRuntimesTestsContext{
 		withValidationCases(
 			validationCase[*DropOpenflowRuntimeOptions]{
 				Name:        case_OpenflowRuntimes_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropOpenflowRuntimeOptions", "name"),
 				DefaultModify: func(opts *DropOpenflowRuntimeOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -280,7 +280,7 @@ var openflowRuntimesTests = OpenflowRuntimesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeOpenflowRuntimeOptions]{
 				Name:        case_OpenflowRuntimes_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeOpenflowRuntimeOptions", "name"),
 				DefaultModify: func(opts *DescribeOpenflowRuntimeOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

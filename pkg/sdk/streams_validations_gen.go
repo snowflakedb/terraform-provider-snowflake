@@ -20,10 +20,10 @@ func (opts *CreateOnTableStreamOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOnTableStreamOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.TableId) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOnTableStreamOptions", "TableId"))
 	}
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateOnTableStreamOptions", "IfNotExists", "OrReplace"))
@@ -47,10 +47,10 @@ func (opts *CreateOnExternalTableStreamOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOnExternalTableStreamOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.ExternalTableId) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOnExternalTableStreamOptions", "ExternalTableId"))
 	}
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateOnExternalTableStreamOptions", "IfNotExists", "OrReplace"))
@@ -74,10 +74,10 @@ func (opts *CreateOnDirectoryTableStreamOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOnDirectoryTableStreamOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.StageId) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOnDirectoryTableStreamOptions", "StageId"))
 	}
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateOnDirectoryTableStreamOptions", "IfNotExists", "OrReplace"))
@@ -91,10 +91,10 @@ func (opts *CreateOnViewStreamOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOnViewStreamOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.ViewId) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOnViewStreamOptions", "ViewId"))
 	}
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateOnViewStreamOptions", "IfNotExists", "OrReplace"))
@@ -118,7 +118,7 @@ func (opts *CloneStreamOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CloneStreamOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -129,7 +129,7 @@ func (opts *AlterStreamOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterStreamOptions", "name"))
 	}
 	if everyValueSet(opts.IfExists, opts.UnsetTags) {
 		errs = append(errs, errOneOf("AlterStreamOptions", "IfExists", "UnsetTags"))
@@ -146,7 +146,7 @@ func (opts *DropStreamOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropStreamOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -165,7 +165,7 @@ func (opts *DescribeStreamOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeStreamOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

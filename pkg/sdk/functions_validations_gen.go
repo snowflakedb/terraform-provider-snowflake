@@ -22,7 +22,7 @@ func (opts *CreateForJavaFunctionOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateForJavaFunctionOptions", "name"))
 	}
 	if !valueSet(opts.Handler) {
 		errs = append(errs, errNotSet("CreateForJavaFunctionOptions", "Handler"))
@@ -69,7 +69,7 @@ func (opts *CreateForJavascriptFunctionOptions) validate() error {
 		errs = append(errs, errNotSet("CreateForJavascriptFunctionOptions", "FunctionDefinition"))
 	}
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateForJavascriptFunctionOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateForJavascriptFunctionOptions", "OrReplace", "IfNotExists"))
@@ -109,7 +109,7 @@ func (opts *CreateForPythonFunctionOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateForPythonFunctionOptions", "name"))
 	}
 	if !valueSet(opts.RuntimeVersion) {
 		errs = append(errs, errNotSet("CreateForPythonFunctionOptions", "RuntimeVersion"))
@@ -156,7 +156,7 @@ func (opts *CreateForScalaFunctionOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateForScalaFunctionOptions", "name"))
 	}
 	if !valueSet(opts.Handler) {
 		errs = append(errs, errNotSet("CreateForScalaFunctionOptions", "Handler"))
@@ -187,7 +187,7 @@ func (opts *CreateForSQLFunctionOptions) validate() error {
 		errs = append(errs, errNotSet("CreateForSQLFunctionOptions", "FunctionDefinition"))
 	}
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateForSQLFunctionOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateForSQLFunctionOptions", "OrReplace", "IfNotExists"))
@@ -227,10 +227,10 @@ func (opts *AlterFunctionOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterFunctionOptions", "name"))
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterFunctionOptions", "RenameTo"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.Set, opts.Unset, opts.SetSecure, opts.UnsetSecure, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterFunctionOptions", "RenameTo", "Set", "Unset", "SetSecure", "UnsetSecure", "SetTags", "UnsetTags"))
@@ -254,7 +254,7 @@ func (opts *DropFunctionOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropFunctionOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -273,7 +273,7 @@ func (opts *DescribeFunctionOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeFunctionOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

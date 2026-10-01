@@ -101,7 +101,7 @@ var hybridTablesTests = HybridTablesTestsContext{
 		withValidationCases(
 			validationCase[*CreateHybridTableOptions]{
 				Name:        case_HybridTables_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateHybridTableOptions", "name"),
 				DefaultModify: func(opts *CreateHybridTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -135,7 +135,7 @@ var hybridTablesTests = HybridTablesTestsContext{
 		withValidationCases(
 			validationCase[*AlterHybridTableOptions]{
 				Name:        case_HybridTables_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterHybridTableOptions", "name"),
 				DefaultModify: func(opts *AlterHybridTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -313,7 +313,7 @@ var hybridTablesTests = HybridTablesTestsContext{
 		withValidationCases(
 			validationCase[*DropHybridTableOptions]{
 				Name:        case_HybridTables_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropHybridTableOptions", "name"),
 				DefaultModify: func(opts *DropHybridTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -375,7 +375,7 @@ var hybridTablesTests = HybridTablesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeHybridTableOptions]{
 				Name:        case_HybridTables_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeHybridTableOptions", "name"),
 				DefaultModify: func(opts *DescribeHybridTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -398,14 +398,14 @@ var hybridTablesTests = HybridTablesTestsContext{
 		withValidationCases(
 			validationCase[*CreateIndexHybridTableOptions]{
 				Name:        case_HybridTables_validation_CreateIndex_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateIndexHybridTableOptions", "name"),
 				DefaultModify: func(opts *CreateIndexHybridTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CreateIndexHybridTableOptions]{
 				Name:        case_HybridTables_validation_CreateIndex_TableName_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateIndexHybridTableOptions", "TableName"),
 				DefaultModify: func(opts *CreateIndexHybridTableOptions) {
 					opts.TableName = emptySchemaObjectIdentifier
 				},
@@ -439,7 +439,7 @@ var hybridTablesTests = HybridTablesTestsContext{
 		withValidationCases(
 			validationCase[*DropIndexHybridTableOptions]{
 				Name:        case_HybridTables_validation_DropIndex_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropIndexHybridTableOptions", "name"),
 				DefaultModify: func(opts *DropIndexHybridTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -493,7 +493,7 @@ var hybridTablesTests = HybridTablesTestsContext{
 		withValidationCases(
 			validationCase[*ShowPrimaryKeysHybridTableOptions]{
 				Name:        case_HybridTables_validation_ShowPrimaryKeys_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("ShowPrimaryKeysHybridTableOptions", "name"),
 				DefaultModify: func(opts *ShowPrimaryKeysHybridTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -519,7 +519,7 @@ var hybridTablesTests = HybridTablesTestsContext{
 		withValidationCases(
 			validationCase[*ShowUniqueKeysHybridTableOptions]{
 				Name:        case_HybridTables_validation_ShowUniqueKeys_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("ShowUniqueKeysHybridTableOptions", "name"),
 				DefaultModify: func(opts *ShowUniqueKeysHybridTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -545,7 +545,7 @@ var hybridTablesTests = HybridTablesTestsContext{
 		withValidationCases(
 			validationCase[*ShowImportedKeysHybridTableOptions]{
 				Name:        case_HybridTables_validation_ShowImportedKeys_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("ShowImportedKeysHybridTableOptions", "name"),
 				DefaultModify: func(opts *ShowImportedKeysHybridTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

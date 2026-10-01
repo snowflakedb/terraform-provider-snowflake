@@ -93,14 +93,14 @@ var streamsTests = StreamsTestsContext{
 		withValidationCases(
 			validationCase[*CreateOnTableStreamOptions]{
 				Name:        case_Streams_validation_CreateOnTable_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOnTableStreamOptions", "name"),
 				DefaultModify: func(opts *CreateOnTableStreamOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CreateOnTableStreamOptions]{
 				Name:        case_Streams_validation_CreateOnTable_TableId_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOnTableStreamOptions", "TableId"),
 				DefaultModify: func(opts *CreateOnTableStreamOptions) {
 					opts.TableId = emptySchemaObjectIdentifier
 				},
@@ -172,14 +172,14 @@ var streamsTests = StreamsTestsContext{
 		withValidationCases(
 			validationCase[*CreateOnExternalTableStreamOptions]{
 				Name:        case_Streams_validation_CreateOnExternalTable_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOnExternalTableStreamOptions", "name"),
 				DefaultModify: func(opts *CreateOnExternalTableStreamOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CreateOnExternalTableStreamOptions]{
 				Name:        case_Streams_validation_CreateOnExternalTable_ExternalTableId_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOnExternalTableStreamOptions", "ExternalTableId"),
 				DefaultModify: func(opts *CreateOnExternalTableStreamOptions) {
 					opts.ExternalTableId = emptySchemaObjectIdentifier
 				},
@@ -251,14 +251,14 @@ var streamsTests = StreamsTestsContext{
 		withValidationCases(
 			validationCase[*CreateOnDirectoryTableStreamOptions]{
 				Name:        case_Streams_validation_CreateOnDirectoryTable_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOnDirectoryTableStreamOptions", "name"),
 				DefaultModify: func(opts *CreateOnDirectoryTableStreamOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CreateOnDirectoryTableStreamOptions]{
 				Name:        case_Streams_validation_CreateOnDirectoryTable_StageId_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOnDirectoryTableStreamOptions", "StageId"),
 				DefaultModify: func(opts *CreateOnDirectoryTableStreamOptions) {
 					opts.StageId = emptySchemaObjectIdentifier
 				},
@@ -292,14 +292,14 @@ var streamsTests = StreamsTestsContext{
 		withValidationCases(
 			validationCase[*CreateOnViewStreamOptions]{
 				Name:        case_Streams_validation_CreateOnView_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOnViewStreamOptions", "name"),
 				DefaultModify: func(opts *CreateOnViewStreamOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CreateOnViewStreamOptions]{
 				Name:        case_Streams_validation_CreateOnView_ViewId_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOnViewStreamOptions", "ViewId"),
 				DefaultModify: func(opts *CreateOnViewStreamOptions) {
 					opts.ViewId = emptySchemaObjectIdentifier
 				},
@@ -371,7 +371,7 @@ var streamsTests = StreamsTestsContext{
 		withValidationCases(
 			validationCase[*CloneStreamOptions]{
 				Name:        case_Streams_validation_Clone_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CloneStreamOptions", "name"),
 				DefaultModify: func(opts *CloneStreamOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -394,7 +394,7 @@ var streamsTests = StreamsTestsContext{
 		withValidationCases(
 			validationCase[*AlterStreamOptions]{
 				Name:        case_Streams_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterStreamOptions", "name"),
 				DefaultModify: func(opts *AlterStreamOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -447,7 +447,7 @@ var streamsTests = StreamsTestsContext{
 		withValidationCases(
 			validationCase[*DropStreamOptions]{
 				Name:        case_Streams_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropStreamOptions", "name"),
 				DefaultModify: func(opts *DropStreamOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -501,7 +501,7 @@ var streamsTests = StreamsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeStreamOptions]{
 				Name:        case_Streams_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeStreamOptions", "name"),
 				DefaultModify: func(opts *DescribeStreamOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

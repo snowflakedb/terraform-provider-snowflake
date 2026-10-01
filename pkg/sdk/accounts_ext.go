@@ -67,14 +67,14 @@ func (opts *AlterAccountOptions) additionalValidations() error {
 	if valueSet(opts.Set) {
 		if valueSet(opts.Set.ConsumptionBillingEntity) {
 			if !valueSet(opts.Name) || !ValidObjectIdentifier(opts.Name) {
-				errs = append(errs, ErrInvalidObjectIdentifier)
+				errs = append(errs, errInvalidIdentifier("AlterAccountOptions", "Name"))
 			}
 		}
 	}
 	if valueSet(opts.Unset) {
 		if valueSet(opts.Unset.ConsumptionBillingEntity) {
 			if !valueSet(opts.Name) || !ValidObjectIdentifier(opts.Name) {
-				errs = append(errs, ErrInvalidObjectIdentifier)
+				errs = append(errs, errInvalidIdentifier("AlterAccountOptions", "Name"))
 			}
 		}
 	}
@@ -88,7 +88,7 @@ func (opts *AlterAccountOptions) additionalValidations() error {
 	}
 	if valueSet(opts.Drop) || valueSet(opts.RenameTo) {
 		if !valueSet(opts.Name) || !ValidObjectIdentifier(opts.Name) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("AlterAccountOptions", "Name"))
 		}
 	}
 	return errors.Join(errs...)

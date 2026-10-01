@@ -70,7 +70,7 @@ var tagsTests = TagsTestsContext{
 		withValidationCases(
 			validationCase[*CreateTagOptions]{
 				Name:        case_Tags_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateTagOptions", "name"),
 				DefaultModify: func(opts *CreateTagOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -124,14 +124,14 @@ var tagsTests = TagsTestsContext{
 		withValidationCases(
 			validationCase[*AlterTagOptions]{
 				Name:        case_Tags_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTagOptions", "name"),
 				DefaultModify: func(opts *AlterTagOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*AlterTagOptions]{
 				Name:        case_Tags_validation_Alter_RenameTo_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTagOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterTagOptions) {
 					opts.RenameTo = new(emptySchemaObjectIdentifier)
 				},
@@ -260,7 +260,7 @@ var tagsTests = TagsTestsContext{
 		withValidationCases(
 			validationCase[*DropTagOptions]{
 				Name:        case_Tags_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropTagOptions", "name"),
 				DefaultModify: func(opts *DropTagOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -286,7 +286,7 @@ var tagsTests = TagsTestsContext{
 		withValidationCases(
 			validationCase[*UndropTagOptions]{
 				Name:        case_Tags_validation_Undrop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("UndropTagOptions", "name"),
 				DefaultModify: func(opts *UndropTagOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -307,7 +307,7 @@ var tagsTests = TagsTestsContext{
 		withValidationCases(
 			validationCase[*SetTagOptions]{
 				Name:        case_Tags_validation_Set_objectName_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("SetTagOptions", "objectName"),
 				DefaultModify: func(opts *SetTagOptions) {
 					opts.objectName = emptyAccountObjectIdentifier
 				},
@@ -328,7 +328,7 @@ var tagsTests = TagsTestsContext{
 		withValidationCases(
 			validationCase[*UnsetTagOptions]{
 				Name:        case_Tags_validation_Unset_objectName_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("UnsetTagOptions", "objectName"),
 				DefaultModify: func(opts *UnsetTagOptions) {
 					opts.objectName = emptyAccountObjectIdentifier
 				},

@@ -18,7 +18,7 @@ func (opts *CreateTagOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateTagOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateTagOptions", "OrReplace", "IfNotExists"))
@@ -42,10 +42,10 @@ func (opts *AlterTagOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterTagOptions", "name"))
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterTagOptions", "RenameTo"))
 	}
 	if !exactlyOneValueSet(opts.Add, opts.Drop, opts.Set, opts.Unset, opts.RenameTo) {
 		errs = append(errs, errExactlyOneOf("AlterTagOptions", "Add", "Drop", "Set", "Unset", "RenameTo"))
@@ -100,7 +100,7 @@ func (opts *DropTagOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropTagOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -111,7 +111,7 @@ func (opts *UndropTagOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("UndropTagOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -122,7 +122,7 @@ func (opts *SetTagOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.objectName) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("SetTagOptions", "objectName"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
@@ -134,7 +134,7 @@ func (opts *UnsetTagOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.objectName) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("UnsetTagOptions", "objectName"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)

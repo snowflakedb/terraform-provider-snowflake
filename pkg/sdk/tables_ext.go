@@ -33,15 +33,15 @@ func (opts *CreateTableOptions) additionalValidations() error {
 	if len(opts.ColumnsAndConstraints.Columns) == 0 {
 		errs = append(errs, errNotSet("CreateTableOptions", "Columns"))
 	}
-	for _, column := range opts.ColumnsAndConstraints.Columns {
+	for columnIdx, column := range opts.ColumnsAndConstraints.Columns {
 		if column.InlineConstraint != nil {
 			if err := column.InlineConstraint.validate(); err != nil {
 				errs = append(errs, err)
 			}
 		}
-		for _, tag := range column.Tag {
+		for tagIdx, tag := range column.Tag {
 			if !ValidObjectIdentifier(tag.Name) {
-				errs = append(errs, errInvalidIdentifier("TagAssociation", "Name"))
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].Tag[%d]", columnIdx, tagIdx), "Name"))
 			}
 		}
 	}
@@ -52,7 +52,7 @@ func (opts *CreateTableOptions) additionalValidations() error {
 	}
 	if opts.RowAccessPolicy != nil {
 		if !ValidObjectIdentifier(opts.RowAccessPolicy.Name) {
-			errs = append(errs, errInvalidIdentifier("TableRowAccessPolicy", "Name"))
+			errs = append(errs, errInvalidIdentifier("CreateTableOptions.RowAccessPolicy", "Name"))
 		}
 	}
 	return JoinErrors(errs...)

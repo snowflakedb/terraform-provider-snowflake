@@ -16,7 +16,7 @@ func (opts *CreateSessionPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateSessionPolicyOptions", "name"))
 	}
 	if err := opts.AllowedSecondaryRoles.validate(); err != nil {
 		errs = append(errs, err)
@@ -46,7 +46,7 @@ func (opts *AlterSessionPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterSessionPolicyOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.Set, opts.SetTags, opts.UnsetTags, opts.Unset) {
 		errs = append(errs, errExactlyOneOf("AlterSessionPolicyOptions", "RenameTo", "Set", "SetTags", "UnsetTags", "Unset"))
@@ -86,7 +86,7 @@ func (opts *DropSessionPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropSessionPolicyOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -105,7 +105,7 @@ func (opts *DescribeSessionPolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeSessionPolicyOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

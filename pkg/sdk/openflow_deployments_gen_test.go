@@ -65,7 +65,7 @@ var openflowDeploymentsTests = OpenflowDeploymentsTestsContext{
 		withValidationCases(
 			validationCase[*CreateOpenflowDeploymentOptions]{
 				Name:        case_OpenflowDeployments_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOpenflowDeploymentOptions", "name"),
 				DefaultModify: func(opts *CreateOpenflowDeploymentOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -109,14 +109,14 @@ var openflowDeploymentsTests = OpenflowDeploymentsTestsContext{
 		withValidationCases(
 			validationCase[*AlterOpenflowDeploymentOptions]{
 				Name:        case_OpenflowDeployments_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOpenflowDeploymentOptions", "name"),
 				DefaultModify: func(opts *AlterOpenflowDeploymentOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*AlterOpenflowDeploymentOptions]{
 				Name:        case_OpenflowDeployments_validation_Alter_RenameTo_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOpenflowDeploymentOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterOpenflowDeploymentOptions) {
 					opts.RenameTo = new(emptyAccountObjectIdentifier)
 				},
@@ -209,7 +209,7 @@ var openflowDeploymentsTests = OpenflowDeploymentsTestsContext{
 		withValidationCases(
 			validationCase[*DropOpenflowDeploymentOptions]{
 				Name:        case_OpenflowDeployments_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropOpenflowDeploymentOptions", "name"),
 				DefaultModify: func(opts *DropOpenflowDeploymentOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -260,7 +260,7 @@ var openflowDeploymentsTests = OpenflowDeploymentsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeOpenflowDeploymentOptions]{
 				Name:        case_OpenflowDeployments_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeOpenflowDeploymentOptions", "name"),
 				DefaultModify: func(opts *DescribeOpenflowDeploymentOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

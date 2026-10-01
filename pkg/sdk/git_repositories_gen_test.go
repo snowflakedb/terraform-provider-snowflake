@@ -65,21 +65,21 @@ var gitRepositoriesTests = GitRepositoriesTestsContext{
 		withValidationCases(
 			validationCase[*CreateGitRepositoryOptions]{
 				Name:        case_GitRepositories_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateGitRepositoryOptions", "name"),
 				DefaultModify: func(opts *CreateGitRepositoryOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CreateGitRepositoryOptions]{
 				Name:        case_GitRepositories_validation_Create_ApiIntegration_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateGitRepositoryOptions", "ApiIntegration"),
 				DefaultModify: func(opts *CreateGitRepositoryOptions) {
 					opts.ApiIntegration = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*CreateGitRepositoryOptions]{
 				Name:        case_GitRepositories_validation_Create_GitCredentials_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateGitRepositoryOptions", "GitCredentials"),
 				DefaultModify: func(opts *CreateGitRepositoryOptions) {
 					opts.GitCredentials = new(emptySchemaObjectIdentifier)
 				},
@@ -113,7 +113,7 @@ var gitRepositoriesTests = GitRepositoriesTestsContext{
 		withValidationCases(
 			validationCase[*AlterGitRepositoryOptions]{
 				Name:        case_GitRepositories_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterGitRepositoryOptions", "name"),
 				DefaultModify: func(opts *AlterGitRepositoryOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -139,7 +139,7 @@ var gitRepositoriesTests = GitRepositoriesTestsContext{
 			},
 			validationCase[*AlterGitRepositoryOptions]{
 				Name:        case_GitRepositories_validation_Alter_Set_ApiIntegration_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterGitRepositoryOptions.Set", "ApiIntegration"),
 				DefaultModify: func(opts *AlterGitRepositoryOptions) {
 					opts.Set = &GitRepositorySet{}
 					opts.Set.ApiIntegration = new(emptyAccountObjectIdentifier)
@@ -147,7 +147,7 @@ var gitRepositoriesTests = GitRepositoriesTestsContext{
 			},
 			validationCase[*AlterGitRepositoryOptions]{
 				Name:        case_GitRepositories_validation_Alter_Set_GitCredentials_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterGitRepositoryOptions.Set", "GitCredentials"),
 				DefaultModify: func(opts *AlterGitRepositoryOptions) {
 					opts.Set = &GitRepositorySet{}
 					opts.Set.GitCredentials = new(emptySchemaObjectIdentifier)
@@ -182,7 +182,7 @@ var gitRepositoriesTests = GitRepositoriesTestsContext{
 		withValidationCases(
 			validationCase[*DropGitRepositoryOptions]{
 				Name:        case_GitRepositories_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropGitRepositoryOptions", "name"),
 				DefaultModify: func(opts *DropGitRepositoryOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -208,7 +208,7 @@ var gitRepositoriesTests = GitRepositoriesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeGitRepositoryOptions]{
 				Name:        case_GitRepositories_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeGitRepositoryOptions", "name"),
 				DefaultModify: func(opts *DescribeGitRepositoryOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

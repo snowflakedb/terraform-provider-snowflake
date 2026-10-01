@@ -40,7 +40,7 @@ var managedAccountsTests = ManagedAccountsTestsContext{
 		withValidationCases(
 			validationCase[*CreateManagedAccountOptions]{
 				Name:        case_ManagedAccounts_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateManagedAccountOptions", "name"),
 				DefaultModify: func(opts *CreateManagedAccountOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -80,7 +80,7 @@ var managedAccountsTests = ManagedAccountsTestsContext{
 		withValidationCases(
 			validationCase[*DropManagedAccountOptions]{
 				Name:        case_ManagedAccounts_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropManagedAccountOptions", "name"),
 				DefaultModify: func(opts *DropManagedAccountOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

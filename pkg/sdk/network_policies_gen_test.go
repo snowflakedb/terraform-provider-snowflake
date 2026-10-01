@@ -57,7 +57,7 @@ var networkPoliciesTests = NetworkPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*CreateNetworkPolicyOptions]{
 				Name:        case_NetworkPolicies_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateNetworkPolicyOptions", "name"),
 				DefaultModify: func(opts *CreateNetworkPolicyOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -83,7 +83,7 @@ var networkPoliciesTests = NetworkPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*AlterNetworkPolicyOptions]{
 				Name:        case_NetworkPolicies_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterNetworkPolicyOptions", "name"),
 				DefaultModify: func(opts *AlterNetworkPolicyOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -109,7 +109,7 @@ var networkPoliciesTests = NetworkPoliciesTestsContext{
 			},
 			validationCase[*AlterNetworkPolicyOptions]{
 				Name:        case_NetworkPolicies_validation_Alter_RenameTo_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterNetworkPolicyOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterNetworkPolicyOptions) {
 					opts.RenameTo = new(emptyAccountObjectIdentifier)
 				},
@@ -193,7 +193,7 @@ var networkPoliciesTests = NetworkPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*DropNetworkPolicyOptions]{
 				Name:        case_NetworkPolicies_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropNetworkPolicyOptions", "name"),
 				DefaultModify: func(opts *DropNetworkPolicyOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
@@ -238,7 +238,7 @@ var networkPoliciesTests = NetworkPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeNetworkPolicyOptions]{
 				Name:        case_NetworkPolicies_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeNetworkPolicyOptions", "name"),
 				DefaultModify: func(opts *DescribeNetworkPolicyOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

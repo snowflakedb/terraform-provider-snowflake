@@ -64,7 +64,7 @@ var materializedViewsTests = MaterializedViewsTestsContext{
 		withValidationCases(
 			validationCase[*CreateMaterializedViewOptions]{
 				Name:        case_MaterializedViews_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateMaterializedViewOptions", "name"),
 				DefaultModify: func(opts *CreateMaterializedViewOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -79,7 +79,7 @@ var materializedViewsTests = MaterializedViewsTestsContext{
 			},
 			validationCase[*CreateMaterializedViewOptions]{
 				Name:        case_MaterializedViews_validation_Create_RowAccessPolicy_RowAccessPolicy_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateMaterializedViewOptions.RowAccessPolicy", "RowAccessPolicy"),
 				DefaultModify: func(opts *CreateMaterializedViewOptions) {
 					opts.RowAccessPolicy = &MaterializedViewRowAccessPolicy{}
 					opts.RowAccessPolicy.RowAccessPolicy = emptySchemaObjectIdentifier
@@ -122,7 +122,7 @@ var materializedViewsTests = MaterializedViewsTestsContext{
 		withValidationCases(
 			validationCase[*AlterMaterializedViewOptions]{
 				Name:        case_MaterializedViews_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterMaterializedViewOptions", "name"),
 				DefaultModify: func(opts *AlterMaterializedViewOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -235,7 +235,7 @@ var materializedViewsTests = MaterializedViewsTestsContext{
 		withValidationCases(
 			validationCase[*DropMaterializedViewOptions]{
 				Name:        case_MaterializedViews_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropMaterializedViewOptions", "name"),
 				DefaultModify: func(opts *DropMaterializedViewOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -283,7 +283,7 @@ var materializedViewsTests = MaterializedViewsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeMaterializedViewOptions]{
 				Name:        case_MaterializedViews_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeMaterializedViewOptions", "name"),
 				DefaultModify: func(opts *DescribeMaterializedViewOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

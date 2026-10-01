@@ -87,14 +87,14 @@ var openflowConnectorsTests = OpenflowConnectorsTestsContext{
 		withValidationCases(
 			validationCase[*CreateOpenflowConnectorOptions]{
 				Name:        case_OpenflowConnectors_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOpenflowConnectorOptions", "name"),
 				DefaultModify: func(opts *CreateOpenflowConnectorOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CreateOpenflowConnectorOptions]{
 				Name:        case_OpenflowConnectors_validation_Create_InRuntime_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOpenflowConnectorOptions", "InRuntime"),
 				DefaultModify: func(opts *CreateOpenflowConnectorOptions) {
 					opts.InRuntime = emptySchemaObjectIdentifier
 				},
@@ -124,14 +124,14 @@ var openflowConnectorsTests = OpenflowConnectorsTestsContext{
 		withValidationCases(
 			validationCase[*AlterOpenflowConnectorOptions]{
 				Name:        case_OpenflowConnectors_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOpenflowConnectorOptions", "name"),
 				DefaultModify: func(opts *AlterOpenflowConnectorOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*AlterOpenflowConnectorOptions]{
 				Name:        case_OpenflowConnectors_validation_Alter_RenameTo_ValidIdentifierIfSet,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOpenflowConnectorOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterOpenflowConnectorOptions) {
 					opts.RenameTo = new(emptySchemaObjectIdentifier)
 				},
@@ -312,7 +312,7 @@ var openflowConnectorsTests = OpenflowConnectorsTestsContext{
 		withValidationCases(
 			validationCase[*DropOpenflowConnectorOptions]{
 				Name:        case_OpenflowConnectors_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropOpenflowConnectorOptions", "name"),
 				DefaultModify: func(opts *DropOpenflowConnectorOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -366,7 +366,7 @@ var openflowConnectorsTests = OpenflowConnectorsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeOpenflowConnectorOptions]{
 				Name:        case_OpenflowConnectors_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeOpenflowConnectorOptions", "name"),
 				DefaultModify: func(opts *DescribeOpenflowConnectorOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -389,7 +389,7 @@ var openflowConnectorsTests = OpenflowConnectorsTestsContext{
 		withValidationCases(
 			validationCase[*ExecuteOpenflowConnectorOptions]{
 				Name:        case_OpenflowConnectors_validation_Execute_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("ExecuteOpenflowConnectorOptions", "name"),
 				DefaultModify: func(opts *ExecuteOpenflowConnectorOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -412,7 +412,7 @@ var openflowConnectorsTests = OpenflowConnectorsTestsContext{
 		withValidationCases(
 			validationCase[*ShowVersionsOpenflowConnectorOptions]{
 				Name:        case_OpenflowConnectors_validation_ShowVersions_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("ShowVersionsOpenflowConnectorOptions", "name"),
 				DefaultModify: func(opts *ShowVersionsOpenflowConnectorOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

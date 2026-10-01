@@ -16,10 +16,10 @@ func (opts *CreateDynamicTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateDynamicTableOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.Warehouse) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateDynamicTableOptions", "Warehouse"))
 	}
 	if valueSet(opts.TargetLag) {
 		if everyValueSet(opts.TargetLag.MaximumDuration, opts.TargetLag.Downstream) {
@@ -35,7 +35,7 @@ func (opts *AlterDynamicTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterDynamicTableOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Suspend, opts.Resume, opts.Refresh, opts.Set, opts.SetComment, opts.AddStorageLifecyclePolicy, opts.DropStorageLifecyclePolicy) {
 		errs = append(errs, errExactlyOneOf("AlterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "SetComment", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
@@ -58,7 +58,7 @@ func (opts *DropDynamicTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropDynamicTableOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -78,7 +78,7 @@ func (opts *DescribeDynamicTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeDynamicTableOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

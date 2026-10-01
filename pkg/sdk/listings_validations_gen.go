@@ -17,7 +17,7 @@ func (opts *CreateListingOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateListingOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.As, opts.From) {
 		errs = append(errs, errExactlyOneOf("CreateListingOptions", "As", "From"))
@@ -39,7 +39,7 @@ func (opts *AlterListingOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterListingOptions", "name"))
 	}
 	if everyValueSet(opts.IfExists, opts.AddVersion) {
 		errs = append(errs, errOneOf("AlterListingOptions", "IfExists", "AddVersion"))
@@ -61,7 +61,7 @@ func (opts *DropListingOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropListingOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -80,7 +80,7 @@ func (opts *DescribeListingOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeListingOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -91,7 +91,7 @@ func (opts *ShowVersionsListingOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("ShowVersionsListingOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

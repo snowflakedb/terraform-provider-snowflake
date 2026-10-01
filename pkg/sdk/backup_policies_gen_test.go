@@ -57,7 +57,7 @@ var backupPoliciesTests = BackupPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*CreateBackupPolicyOptions]{
 				Name:        case_BackupPolicies_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateBackupPolicyOptions", "name"),
 				DefaultModify: func(opts *CreateBackupPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -99,7 +99,7 @@ var backupPoliciesTests = BackupPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*AlterBackupPolicyOptions]{
 				Name:        case_BackupPolicies_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterBackupPolicyOptions", "name"),
 				DefaultModify: func(opts *AlterBackupPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -172,7 +172,7 @@ var backupPoliciesTests = BackupPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*DropBackupPolicyOptions]{
 				Name:        case_BackupPolicies_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropBackupPolicyOptions", "name"),
 				DefaultModify: func(opts *DropBackupPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -226,7 +226,7 @@ var backupPoliciesTests = BackupPoliciesTestsContext{
 		withValidationCases(
 			validationCase[*DescribeBackupPolicyOptions]{
 				Name:        case_BackupPolicies_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeBackupPolicyOptions", "name"),
 				DefaultModify: func(opts *DescribeBackupPolicyOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},

@@ -16,7 +16,7 @@ func (opts *CreateStorageLifecyclePolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateStorageLifecyclePolicyOptions", "name"))
 	}
 	if !valueSet(opts.args) {
 		errs = append(errs, errNotSet("CreateStorageLifecyclePolicyOptions", "args"))
@@ -36,7 +36,7 @@ func (opts *AlterStorageLifecyclePolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterStorageLifecyclePolicyOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.SetBody, opts.Set, opts.SetTags, opts.Unset, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterStorageLifecyclePolicyOptions", "RenameTo", "SetBody", "Set", "SetTags", "Unset", "UnsetTags"))
@@ -60,7 +60,7 @@ func (opts *DropStorageLifecyclePolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropStorageLifecyclePolicyOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -79,7 +79,7 @@ func (opts *DescribeStorageLifecyclePolicyOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeStorageLifecyclePolicyOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

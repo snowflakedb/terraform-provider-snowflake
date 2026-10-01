@@ -16,7 +16,7 @@ func (opts *CreateOpenflowDeploymentOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateOpenflowDeploymentOptions", "name"))
 	}
 	if valueSet(opts.EventTable) {
 		if !exactlyOneValueSet(opts.EventTable.EventTable, opts.EventTable.None) {
@@ -32,10 +32,10 @@ func (opts *AlterOpenflowDeploymentOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterOpenflowDeploymentOptions", "name"))
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterOpenflowDeploymentOptions", "RenameTo"))
 	}
 	if !exactlyOneValueSet(opts.Upgrade, opts.Terminate, opts.RenameTo, opts.Set, opts.Unset) {
 		errs = append(errs, errExactlyOneOf("AlterOpenflowDeploymentOptions", "Upgrade", "Terminate", "RenameTo", "Set", "Unset"))
@@ -64,7 +64,7 @@ func (opts *DropOpenflowDeploymentOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropOpenflowDeploymentOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -83,7 +83,7 @@ func (opts *DescribeOpenflowDeploymentOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeOpenflowDeploymentOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

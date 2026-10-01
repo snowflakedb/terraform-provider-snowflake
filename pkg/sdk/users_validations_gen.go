@@ -17,7 +17,7 @@ func (opts *CreateUserOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateUserOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateUserOptions", "OrReplace", "IfNotExists"))
@@ -43,7 +43,7 @@ func (opts *AlterUserOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterUserOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.ResetPassword, opts.AbortAllQueries, opts.AddDelegatedAuthorization, opts.RemoveDelegatedAuthorization, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterUserOptions", "RenameTo", "ResetPassword", "AbortAllQueries", "AddDelegatedAuthorization", "RemoveDelegatedAuthorization", "Set", "Unset", "SetTags", "UnsetTags"))
@@ -95,7 +95,7 @@ func (opts *DropUserOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropUserOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -115,7 +115,7 @@ func (opts *DescribeUserOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DescribeUserOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -126,7 +126,7 @@ func (opts *ShowUserWorkloadIdentityAuthenticationMethodOptionsUserOptions) vali
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.ForUser) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("ShowUserWorkloadIdentityAuthenticationMethodOptionsUserOptions", "ForUser"))
 	}
 	return JoinErrors(errs...)
 }

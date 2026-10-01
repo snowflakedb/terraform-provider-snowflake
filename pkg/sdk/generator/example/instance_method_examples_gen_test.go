@@ -33,14 +33,14 @@ var instanceMethodExamplesTests = InstanceMethodExamplesTestsContext{
 		withValidationCases(
 			validationCase[*AddNotificationIntegrationInstanceMethodExampleOptions]{
 				Name:        case_InstanceMethodExamples_validation_AddNotificationIntegration_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AddNotificationIntegrationInstanceMethodExampleOptions", "name"),
 				DefaultModify: func(opts *AddNotificationIntegrationInstanceMethodExampleOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*AddNotificationIntegrationInstanceMethodExampleOptions]{
 				Name:        case_InstanceMethodExamples_validation_AddNotificationIntegration_args_IntegrationName_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AddNotificationIntegrationInstanceMethodExampleOptions.args", "IntegrationName"),
 				DefaultModify: func(opts *AddNotificationIntegrationInstanceMethodExampleOptions) {
 					opts.args.IntegrationName = emptyAccountObjectIdentifier
 				},
@@ -63,7 +63,7 @@ var instanceMethodExamplesTests = InstanceMethodExamplesTestsContext{
 		withValidationCases(
 			validationCase[*GetSpendingLimitInstanceMethodExampleOptions]{
 				Name:        case_InstanceMethodExamples_validation_GetSpendingLimit_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("GetSpendingLimitInstanceMethodExampleOptions", "name"),
 				DefaultModify: func(opts *GetSpendingLimitInstanceMethodExampleOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},

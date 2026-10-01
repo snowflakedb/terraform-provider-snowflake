@@ -19,7 +19,7 @@ func (opts *CreateDatabaseRoleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("CreateDatabaseRoleOptions", "name"))
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateDatabaseRoleOptions", "OrReplace", "IfNotExists"))
@@ -33,13 +33,13 @@ func (opts *AlterDatabaseRoleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterDatabaseRoleOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterDatabaseRoleOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags"))
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("AlterDatabaseRoleOptions", "RenameTo"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Set) {
@@ -61,7 +61,7 @@ func (opts *DropDatabaseRoleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("DropDatabaseRoleOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }
@@ -72,7 +72,7 @@ func (opts *ShowDatabaseRoleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.Database) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("ShowDatabaseRoleOptions", "Database"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
@@ -84,7 +84,7 @@ func (opts *GrantDatabaseRoleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("GrantDatabaseRoleOptions", "name"))
 	}
 	if valueSet(opts.To) {
 		if !exactlyOneValueSet(opts.To.DatabaseRoleName, opts.To.AccountRoleName) {
@@ -100,7 +100,7 @@ func (opts *RevokeDatabaseRoleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("RevokeDatabaseRoleOptions", "name"))
 	}
 	if valueSet(opts.From) {
 		if !exactlyOneValueSet(opts.From.DatabaseRoleName, opts.From.AccountRoleName) {
@@ -116,10 +116,10 @@ func (opts *GrantToShareDatabaseRoleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("GrantToShareDatabaseRoleOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.Share) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("GrantToShareDatabaseRoleOptions", "Share"))
 	}
 	return JoinErrors(errs...)
 }
@@ -130,10 +130,10 @@ func (opts *RevokeFromShareDatabaseRoleOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("RevokeFromShareDatabaseRoleOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.Share) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+		errs = append(errs, errInvalidIdentifier("RevokeFromShareDatabaseRoleOptions", "Share"))
 	}
 	return JoinErrors(errs...)
 }

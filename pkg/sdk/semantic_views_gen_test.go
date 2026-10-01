@@ -60,7 +60,7 @@ var semanticViewsTests = SemanticViewsTestsContext{
 		withValidationCases(
 			validationCase[*CreateSemanticViewOptions]{
 				Name:        case_SemanticViews_validation_Create_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSemanticViewOptions", "name"),
 				DefaultModify: func(opts *CreateSemanticViewOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -159,7 +159,7 @@ var semanticViewsTests = SemanticViewsTestsContext{
 		withValidationCases(
 			validationCase[*AlterSemanticViewOptions]{
 				Name:        case_SemanticViews_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterSemanticViewOptions", "name"),
 				DefaultModify: func(opts *AlterSemanticViewOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -204,7 +204,7 @@ var semanticViewsTests = SemanticViewsTestsContext{
 		withValidationCases(
 			validationCase[*DropSemanticViewOptions]{
 				Name:        case_SemanticViews_validation_Drop_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DropSemanticViewOptions", "name"),
 				DefaultModify: func(opts *DropSemanticViewOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
@@ -230,7 +230,7 @@ var semanticViewsTests = SemanticViewsTestsContext{
 		withValidationCases(
 			validationCase[*DescribeSemanticViewOptions]{
 				Name:        case_SemanticViews_validation_Describe_name_ValidIdentifier,
-				ExpectedErr: ErrInvalidObjectIdentifier,
+				ExpectedErr: errInvalidIdentifier("DescribeSemanticViewOptions", "name"),
 				DefaultModify: func(opts *DescribeSemanticViewOptions) {
 					opts.name = emptySchemaObjectIdentifier
 				},
