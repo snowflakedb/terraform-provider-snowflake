@@ -25,6 +25,7 @@ type ResourceParameterAssertionModel struct {
 }
 
 var dataSourceParametersMapping = map[string]string{
+	"Account":              "Accounts",
 	"Database":             "Databases",
 	"HybridTable":          "HybridTables",
 	"Schema":               "Schemas",

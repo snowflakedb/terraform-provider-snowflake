@@ -28,6 +28,15 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.21.x ➞ v2.22.0
 
+### *(new feature)* Parameters output on `snowflake_accounts` data source
+
+The [`snowflake_accounts`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/accounts) data source now exposes a `parameters` block on each listed account, populated from `SHOW PARAMETERS IN ACCOUNT`.
+
+- `with_parameters` defaults to `true`. The provider runs `SHOW PARAMETERS IN ACCOUNT` once, for the connected account, and attaches that snapshot only to the matching row.
+- Other listed accounts keep an empty `parameters` block because Snowflake cannot show parameters for another organization account. The call is not repeated or skipped for those rows.
+
+No configuration changes are required for existing configs.
+
 ### *(new feature)* New fields in `snowflake_cortex_search_service` resource
 
 We added `primary_key` and `auto_suspend` fields to the `snowflake_cortex_search_service` resource.

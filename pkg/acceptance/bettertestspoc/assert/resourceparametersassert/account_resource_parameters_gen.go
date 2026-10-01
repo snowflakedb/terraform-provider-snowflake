@@ -31,6 +31,21 @@ func ImportedAccountResourceParameters(t *testing.T, id string) *AccountResource
 	return &resourceParameterAssert
 }
 
+func AccountsDatasourceParameters(t *testing.T, name string) *AccountResourceParametersAssert {
+	t.Helper()
+
+	return AccountsDatasourceParametersOnIdx(t, name, 0)
+}
+
+func AccountsDatasourceParametersOnIdx(t *testing.T, name string, idx int) *AccountResourceParametersAssert {
+	t.Helper()
+
+	resourceParameterAssert := AccountResourceParametersAssert{
+		ResourceAssert: assert.NewDatasourceParametersAssert(name, "accounts", idx),
+	}
+	return &resourceParameterAssert
+}
+
 ////////////////////////////
 // Parameter value checks //
 ////////////////////////////

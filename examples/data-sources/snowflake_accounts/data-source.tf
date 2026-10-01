@@ -24,6 +24,14 @@ output "with_history_output" {
   value = data.snowflake_accounts.like.accounts
 }
 
+# with_parameters is turned on by default. It runs SHOW PARAMETERS IN ACCOUNT once, for the connected account,
+# and attaches that snapshot only to the matching row. Other listed accounts stay empty because Snowflake
+# cannot show their parameters; the call is not repeated or skipped for them.
+data "snowflake_accounts" "with_parameters" {
+  like            = "account-name"
+  with_parameters = false
+}
+
 # Ensure the number of accounts is equal to at least one element (with the use of postcondition)
 data "snowflake_accounts" "assert_with_postcondition" {
   like = "account-name"

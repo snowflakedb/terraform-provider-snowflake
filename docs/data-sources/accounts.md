@@ -2,12 +2,12 @@
 page_title: "snowflake_accounts Data Source - terraform-provider-snowflake"
 subcategory: "Stable"
 description: |-
-  Data source used to get details of filtered accounts. Filtering is aligned with the current possibilities for SHOW ACCOUNTS https://docs.snowflake.com/en/sql-reference/sql/show-accounts query. The results of SHOW are encapsulated in one output collection accounts.
+  Data source used to get details of filtered accounts. Filtering is aligned with the current possibilities for SHOW ACCOUNTS https://docs.snowflake.com/en/sql-reference/sql/show-accounts query. The results of SHOW and SHOW PARAMETERS IN ACCOUNT (connected account only) are encapsulated in one output collection accounts.
 ---
 
 # snowflake_accounts (Data Source)
 
-Data source used to get details of filtered accounts. Filtering is aligned with the current possibilities for [SHOW ACCOUNTS](https://docs.snowflake.com/en/sql-reference/sql/show-accounts) query. The results of SHOW are encapsulated in one output collection `accounts`.
+Data source used to get details of filtered accounts. Filtering is aligned with the current possibilities for [SHOW ACCOUNTS](https://docs.snowflake.com/en/sql-reference/sql/show-accounts) query. The results of SHOW and SHOW PARAMETERS IN ACCOUNT (connected account only) are encapsulated in one output collection `accounts`.
 
 ## Example Usage
 
@@ -36,6 +36,14 @@ data "snowflake_accounts" "with_history" {
 
 output "with_history_output" {
   value = data.snowflake_accounts.like.accounts
+}
+
+# with_parameters is turned on by default. It runs SHOW PARAMETERS IN ACCOUNT once, for the connected account,
+# and attaches that snapshot only to the matching row. Other listed accounts stay empty because Snowflake
+# cannot show their parameters; the call is not repeated or skipped for them.
+data "snowflake_accounts" "with_parameters" {
+  like            = "account-name"
+  with_parameters = false
 }
 
 # Ensure the number of accounts is equal to at least one element (with the use of postcondition)
@@ -71,6 +79,7 @@ check "account_check" {
 
 - `like` (String) Filters the output with **case-insensitive** pattern, with support for SQL wildcard characters (`%` and `_`).
 - `with_history` (Boolean) Includes dropped accounts that have not yet been deleted.
+- `with_parameters` (Boolean) (Default: `true`) Runs SHOW PARAMETERS IN ACCOUNT once, for the connected account, and saves the output on that account's row only. Other listed accounts stay empty because Snowflake cannot show parameters for another organization account; the call is not repeated or skipped per row. By default this value is set to true.
 
 ### Read-Only
 
@@ -82,7 +91,1887 @@ check "account_check" {
 
 Read-Only:
 
+- `parameters` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters))
 - `show_output` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--show_output))
+
+<a id="nestedobjatt--accounts--parameters"></a>
+### Nested Schema for `accounts.parameters`
+
+Read-Only:
+
+- `abort_detached_query` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--abort_detached_query))
+- `active_python_profiler` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--active_python_profiler))
+- `allow_bind_values_access` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--allow_bind_values_access))
+- `allow_client_mfa_caching` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--allow_client_mfa_caching))
+- `allow_id_token` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--allow_id_token))
+- `allowed_spcs_workload_types` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--allowed_spcs_workload_types))
+- `autocommit` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--autocommit))
+- `base_location_prefix` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--base_location_prefix))
+- `binary_input_format` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--binary_input_format))
+- `binary_output_format` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--binary_output_format))
+- `catalog` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--catalog))
+- `catalog_sync` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--catalog_sync))
+- `client_enable_log_info_statement_parameters` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--client_enable_log_info_statement_parameters))
+- `client_encryption_key_size` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--client_encryption_key_size))
+- `client_memory_limit` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--client_memory_limit))
+- `client_metadata_request_use_connection_ctx` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--client_metadata_request_use_connection_ctx))
+- `client_metadata_use_session_database` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--client_metadata_use_session_database))
+- `client_prefetch_threads` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--client_prefetch_threads))
+- `client_result_chunk_size` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--client_result_chunk_size))
+- `client_result_column_case_insensitive` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--client_result_column_case_insensitive))
+- `client_session_keep_alive` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--client_session_keep_alive))
+- `client_session_keep_alive_heartbeat_frequency` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--client_session_keep_alive_heartbeat_frequency))
+- `client_timestamp_type_mapping` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--client_timestamp_type_mapping))
+- `cortex_code_cli_daily_est_credit_limit_per_user` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--cortex_code_cli_daily_est_credit_limit_per_user))
+- `cortex_code_desktop_daily_est_credit_limit_per_user` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--cortex_code_desktop_daily_est_credit_limit_per_user))
+- `cortex_code_snowsight_daily_est_credit_limit_per_user` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--cortex_code_snowsight_daily_est_credit_limit_per_user))
+- `cortex_enabled_cross_region` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--cortex_enabled_cross_region))
+- `cortex_models_allowlist` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--cortex_models_allowlist))
+- `csv_timestamp_format` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--csv_timestamp_format))
+- `data_metric_schedule` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--data_metric_schedule))
+- `data_retention_time_in_days` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--data_retention_time_in_days))
+- `date_input_format` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--date_input_format))
+- `date_output_format` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--date_output_format))
+- `default_dbt_version` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--default_dbt_version))
+- `default_ddl_collation` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--default_ddl_collation))
+- `default_notebook_compute_pool_cpu` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--default_notebook_compute_pool_cpu))
+- `default_notebook_compute_pool_gpu` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--default_notebook_compute_pool_gpu))
+- `default_null_ordering` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--default_null_ordering))
+- `default_streamlit_compute_pool` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--default_streamlit_compute_pool))
+- `default_streamlit_notebook_warehouse` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--default_streamlit_notebook_warehouse))
+- `disable_ui_download_button` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--disable_ui_download_button))
+- `disable_user_privilege_grants` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--disable_user_privilege_grants))
+- `disallowed_spcs_workload_types` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--disallowed_spcs_workload_types))
+- `enable_automatic_sensitive_data_classification_log` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_automatic_sensitive_data_classification_log))
+- `enable_budget_event_logging` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_budget_event_logging))
+- `enable_console_output` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_console_output))
+- `enable_cortex_analyst` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_cortex_analyst))
+- `enable_data_compaction` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_data_compaction))
+- `enable_egress_cost_optimizer` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_egress_cost_optimizer))
+- `enable_get_ddl_use_data_type_alias` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_get_ddl_use_data_type_alias))
+- `enable_iceberg_merge_on_read` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_iceberg_merge_on_read))
+- `enable_identifier_first_login` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_identifier_first_login))
+- `enable_internal_stages_privatelink` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_internal_stages_privatelink))
+- `enable_notebook_creation_in_personal_db` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_notebook_creation_in_personal_db))
+- `enable_per_account_app_service_privatelink_url` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_per_account_app_service_privatelink_url))
+- `enable_personal_database` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_personal_database))
+- `enable_spcs_block_storage_snowflake_full_encryption_enforcement` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_spcs_block_storage_snowflake_full_encryption_enforcement))
+- `enable_tag_propagation_event_logging` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_tag_propagation_event_logging))
+- `enable_tri_secret_and_rekey_opt_out_for_image_repository` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_tri_secret_and_rekey_opt_out_for_image_repository))
+- `enable_tri_secret_and_rekey_opt_out_for_spcs_block_storage` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_tri_secret_and_rekey_opt_out_for_spcs_block_storage))
+- `enable_unhandled_exceptions_reporting` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_unhandled_exceptions_reporting))
+- `enable_unload_physical_type_optimization` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_unload_physical_type_optimization))
+- `enable_unredacted_query_syntax_error` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_unredacted_query_syntax_error))
+- `enable_unredacted_secure_object_error` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enable_unredacted_secure_object_error))
+- `enforce_network_rules_for_internal_stages` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--enforce_network_rules_for_internal_stages))
+- `error_on_nondeterministic_merge` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--error_on_nondeterministic_merge))
+- `error_on_nondeterministic_update` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--error_on_nondeterministic_update))
+- `event_table` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--event_table))
+- `external_oauth_add_privileged_roles_to_blocked_list` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--external_oauth_add_privileged_roles_to_blocked_list))
+- `external_volume` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--external_volume))
+- `geography_output_format` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--geography_output_format))
+- `geometry_output_format` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--geometry_output_format))
+- `hybrid_table_lock_timeout` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--hybrid_table_lock_timeout))
+- `iceberg_version_default` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--iceberg_version_default))
+- `initial_replication_size_limit_in_tb` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--initial_replication_size_limit_in_tb))
+- `jdbc_treat_decimal_as_int` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--jdbc_treat_decimal_as_int))
+- `jdbc_treat_timestamp_ntz_as_utc` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--jdbc_treat_timestamp_ntz_as_utc))
+- `jdbc_use_session_timezone` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--jdbc_use_session_timezone))
+- `js_treat_integer_as_bigint` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--js_treat_integer_as_bigint))
+- `json_indent` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--json_indent))
+- `listing_auto_fulfillment_replication_refresh_schedule` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--listing_auto_fulfillment_replication_refresh_schedule))
+- `lock_timeout` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--lock_timeout))
+- `log_event_level` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--log_event_level))
+- `log_level` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--log_level))
+- `max_concurrency_level` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--max_concurrency_level))
+- `max_data_extension_time_in_days` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--max_data_extension_time_in_days))
+- `metric_level` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--metric_level))
+- `min_data_retention_time_in_days` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--min_data_retention_time_in_days))
+- `multi_statement_count` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--multi_statement_count))
+- `network_policy` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--network_policy))
+- `noorder_sequence_as_default` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--noorder_sequence_as_default))
+- `oauth_add_privileged_roles_to_blocked_list` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--oauth_add_privileged_roles_to_blocked_list))
+- `odbc_treat_decimal_as_int` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--odbc_treat_decimal_as_int))
+- `periodic_data_rekeying` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--periodic_data_rekeying))
+- `pipe_execution_paused` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--pipe_execution_paused))
+- `prevent_load_from_inline_url` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--prevent_load_from_inline_url))
+- `prevent_unload_to_inline_url` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--prevent_unload_to_inline_url))
+- `prevent_unload_to_internal_stages` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--prevent_unload_to_internal_stages))
+- `python_profiler_modules` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--python_profiler_modules))
+- `python_profiler_target_stage` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--python_profiler_target_stage))
+- `query_tag` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--query_tag))
+- `quoted_identifiers_ignore_case` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--quoted_identifiers_ignore_case))
+- `read_consistency_mode` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--read_consistency_mode))
+- `replace_invalid_characters` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--replace_invalid_characters))
+- `require_storage_integration_for_stage_creation` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--require_storage_integration_for_stage_creation))
+- `require_storage_integration_for_stage_operation` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--require_storage_integration_for_stage_operation))
+- `row_timestamp_default` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--row_timestamp_default))
+- `rows_per_resultset` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--rows_per_resultset))
+- `s3_stage_vpce_dns_name` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--s3_stage_vpce_dns_name))
+- `search_path` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--search_path))
+- `serverless_task_max_statement_size` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--serverless_task_max_statement_size))
+- `serverless_task_min_statement_size` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--serverless_task_min_statement_size))
+- `share_restrictions` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--share_restrictions))
+- `simulated_data_sharing_consumer` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--simulated_data_sharing_consumer))
+- `sql_trace_query_text` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--sql_trace_query_text))
+- `sso_login_page` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--sso_login_page))
+- `statement_queued_timeout_in_seconds` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--statement_queued_timeout_in_seconds))
+- `statement_timeout_in_seconds` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--statement_timeout_in_seconds))
+- `storage_serialization_policy` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--storage_serialization_policy))
+- `strict_json_output` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--strict_json_output))
+- `suspend_task_after_num_failures` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--suspend_task_after_num_failures))
+- `task_auto_retry_attempts` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--task_auto_retry_attempts))
+- `time_input_format` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--time_input_format))
+- `time_output_format` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--time_output_format))
+- `timestamp_day_is_always_24h` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--timestamp_day_is_always_24h))
+- `timestamp_input_format` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--timestamp_input_format))
+- `timestamp_ltz_output_format` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--timestamp_ltz_output_format))
+- `timestamp_ntz_output_format` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--timestamp_ntz_output_format))
+- `timestamp_output_format` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--timestamp_output_format))
+- `timestamp_type_mapping` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--timestamp_type_mapping))
+- `timestamp_tz_output_format` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--timestamp_tz_output_format))
+- `timezone` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--timezone))
+- `trace_level` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--trace_level))
+- `transaction_abort_on_error` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--transaction_abort_on_error))
+- `transaction_default_isolation_level` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--transaction_default_isolation_level))
+- `two_digit_century_start` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--two_digit_century_start))
+- `unsupported_ddl_action` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--unsupported_ddl_action))
+- `use_cached_result` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--use_cached_result))
+- `use_workspaces_for_sql` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--use_workspaces_for_sql))
+- `user_task_managed_initial_warehouse_size` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--user_task_managed_initial_warehouse_size))
+- `user_task_minimum_trigger_interval_in_seconds` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--user_task_minimum_trigger_interval_in_seconds))
+- `user_task_timeout_ms` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--user_task_timeout_ms))
+- `week_of_year_policy` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--week_of_year_policy))
+- `week_start` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--week_start))
+
+<a id="nestedobjatt--accounts--parameters--abort_detached_query"></a>
+### Nested Schema for `accounts.parameters.abort_detached_query`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--active_python_profiler"></a>
+### Nested Schema for `accounts.parameters.active_python_profiler`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--allow_bind_values_access"></a>
+### Nested Schema for `accounts.parameters.allow_bind_values_access`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--allow_client_mfa_caching"></a>
+### Nested Schema for `accounts.parameters.allow_client_mfa_caching`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--allow_id_token"></a>
+### Nested Schema for `accounts.parameters.allow_id_token`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--allowed_spcs_workload_types"></a>
+### Nested Schema for `accounts.parameters.allowed_spcs_workload_types`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--autocommit"></a>
+### Nested Schema for `accounts.parameters.autocommit`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--base_location_prefix"></a>
+### Nested Schema for `accounts.parameters.base_location_prefix`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--binary_input_format"></a>
+### Nested Schema for `accounts.parameters.binary_input_format`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--binary_output_format"></a>
+### Nested Schema for `accounts.parameters.binary_output_format`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--catalog"></a>
+### Nested Schema for `accounts.parameters.catalog`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--catalog_sync"></a>
+### Nested Schema for `accounts.parameters.catalog_sync`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--client_enable_log_info_statement_parameters"></a>
+### Nested Schema for `accounts.parameters.client_enable_log_info_statement_parameters`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--client_encryption_key_size"></a>
+### Nested Schema for `accounts.parameters.client_encryption_key_size`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--client_memory_limit"></a>
+### Nested Schema for `accounts.parameters.client_memory_limit`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--client_metadata_request_use_connection_ctx"></a>
+### Nested Schema for `accounts.parameters.client_metadata_request_use_connection_ctx`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--client_metadata_use_session_database"></a>
+### Nested Schema for `accounts.parameters.client_metadata_use_session_database`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--client_prefetch_threads"></a>
+### Nested Schema for `accounts.parameters.client_prefetch_threads`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--client_result_chunk_size"></a>
+### Nested Schema for `accounts.parameters.client_result_chunk_size`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--client_result_column_case_insensitive"></a>
+### Nested Schema for `accounts.parameters.client_result_column_case_insensitive`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--client_session_keep_alive"></a>
+### Nested Schema for `accounts.parameters.client_session_keep_alive`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--client_session_keep_alive_heartbeat_frequency"></a>
+### Nested Schema for `accounts.parameters.client_session_keep_alive_heartbeat_frequency`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--client_timestamp_type_mapping"></a>
+### Nested Schema for `accounts.parameters.client_timestamp_type_mapping`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--cortex_code_cli_daily_est_credit_limit_per_user"></a>
+### Nested Schema for `accounts.parameters.cortex_code_cli_daily_est_credit_limit_per_user`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--cortex_code_desktop_daily_est_credit_limit_per_user"></a>
+### Nested Schema for `accounts.parameters.cortex_code_desktop_daily_est_credit_limit_per_user`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--cortex_code_snowsight_daily_est_credit_limit_per_user"></a>
+### Nested Schema for `accounts.parameters.cortex_code_snowsight_daily_est_credit_limit_per_user`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--cortex_enabled_cross_region"></a>
+### Nested Schema for `accounts.parameters.cortex_enabled_cross_region`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--cortex_models_allowlist"></a>
+### Nested Schema for `accounts.parameters.cortex_models_allowlist`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--csv_timestamp_format"></a>
+### Nested Schema for `accounts.parameters.csv_timestamp_format`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--data_metric_schedule"></a>
+### Nested Schema for `accounts.parameters.data_metric_schedule`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--data_retention_time_in_days"></a>
+### Nested Schema for `accounts.parameters.data_retention_time_in_days`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--date_input_format"></a>
+### Nested Schema for `accounts.parameters.date_input_format`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--date_output_format"></a>
+### Nested Schema for `accounts.parameters.date_output_format`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--default_dbt_version"></a>
+### Nested Schema for `accounts.parameters.default_dbt_version`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--default_ddl_collation"></a>
+### Nested Schema for `accounts.parameters.default_ddl_collation`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--default_notebook_compute_pool_cpu"></a>
+### Nested Schema for `accounts.parameters.default_notebook_compute_pool_cpu`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--default_notebook_compute_pool_gpu"></a>
+### Nested Schema for `accounts.parameters.default_notebook_compute_pool_gpu`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--default_null_ordering"></a>
+### Nested Schema for `accounts.parameters.default_null_ordering`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--default_streamlit_compute_pool"></a>
+### Nested Schema for `accounts.parameters.default_streamlit_compute_pool`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--default_streamlit_notebook_warehouse"></a>
+### Nested Schema for `accounts.parameters.default_streamlit_notebook_warehouse`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--disable_ui_download_button"></a>
+### Nested Schema for `accounts.parameters.disable_ui_download_button`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--disable_user_privilege_grants"></a>
+### Nested Schema for `accounts.parameters.disable_user_privilege_grants`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--disallowed_spcs_workload_types"></a>
+### Nested Schema for `accounts.parameters.disallowed_spcs_workload_types`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_automatic_sensitive_data_classification_log"></a>
+### Nested Schema for `accounts.parameters.enable_automatic_sensitive_data_classification_log`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_budget_event_logging"></a>
+### Nested Schema for `accounts.parameters.enable_budget_event_logging`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_console_output"></a>
+### Nested Schema for `accounts.parameters.enable_console_output`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_cortex_analyst"></a>
+### Nested Schema for `accounts.parameters.enable_cortex_analyst`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_data_compaction"></a>
+### Nested Schema for `accounts.parameters.enable_data_compaction`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_egress_cost_optimizer"></a>
+### Nested Schema for `accounts.parameters.enable_egress_cost_optimizer`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_get_ddl_use_data_type_alias"></a>
+### Nested Schema for `accounts.parameters.enable_get_ddl_use_data_type_alias`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_iceberg_merge_on_read"></a>
+### Nested Schema for `accounts.parameters.enable_iceberg_merge_on_read`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_identifier_first_login"></a>
+### Nested Schema for `accounts.parameters.enable_identifier_first_login`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_internal_stages_privatelink"></a>
+### Nested Schema for `accounts.parameters.enable_internal_stages_privatelink`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_notebook_creation_in_personal_db"></a>
+### Nested Schema for `accounts.parameters.enable_notebook_creation_in_personal_db`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_per_account_app_service_privatelink_url"></a>
+### Nested Schema for `accounts.parameters.enable_per_account_app_service_privatelink_url`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_personal_database"></a>
+### Nested Schema for `accounts.parameters.enable_personal_database`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_spcs_block_storage_snowflake_full_encryption_enforcement"></a>
+### Nested Schema for `accounts.parameters.enable_spcs_block_storage_snowflake_full_encryption_enforcement`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_tag_propagation_event_logging"></a>
+### Nested Schema for `accounts.parameters.enable_tag_propagation_event_logging`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_tri_secret_and_rekey_opt_out_for_image_repository"></a>
+### Nested Schema for `accounts.parameters.enable_tri_secret_and_rekey_opt_out_for_image_repository`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_tri_secret_and_rekey_opt_out_for_spcs_block_storage"></a>
+### Nested Schema for `accounts.parameters.enable_tri_secret_and_rekey_opt_out_for_spcs_block_storage`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_unhandled_exceptions_reporting"></a>
+### Nested Schema for `accounts.parameters.enable_unhandled_exceptions_reporting`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_unload_physical_type_optimization"></a>
+### Nested Schema for `accounts.parameters.enable_unload_physical_type_optimization`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_unredacted_query_syntax_error"></a>
+### Nested Schema for `accounts.parameters.enable_unredacted_query_syntax_error`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enable_unredacted_secure_object_error"></a>
+### Nested Schema for `accounts.parameters.enable_unredacted_secure_object_error`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--enforce_network_rules_for_internal_stages"></a>
+### Nested Schema for `accounts.parameters.enforce_network_rules_for_internal_stages`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--error_on_nondeterministic_merge"></a>
+### Nested Schema for `accounts.parameters.error_on_nondeterministic_merge`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--error_on_nondeterministic_update"></a>
+### Nested Schema for `accounts.parameters.error_on_nondeterministic_update`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--event_table"></a>
+### Nested Schema for `accounts.parameters.event_table`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--external_oauth_add_privileged_roles_to_blocked_list"></a>
+### Nested Schema for `accounts.parameters.external_oauth_add_privileged_roles_to_blocked_list`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--external_volume"></a>
+### Nested Schema for `accounts.parameters.external_volume`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--geography_output_format"></a>
+### Nested Schema for `accounts.parameters.geography_output_format`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--geometry_output_format"></a>
+### Nested Schema for `accounts.parameters.geometry_output_format`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--hybrid_table_lock_timeout"></a>
+### Nested Schema for `accounts.parameters.hybrid_table_lock_timeout`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--iceberg_version_default"></a>
+### Nested Schema for `accounts.parameters.iceberg_version_default`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--initial_replication_size_limit_in_tb"></a>
+### Nested Schema for `accounts.parameters.initial_replication_size_limit_in_tb`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--jdbc_treat_decimal_as_int"></a>
+### Nested Schema for `accounts.parameters.jdbc_treat_decimal_as_int`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--jdbc_treat_timestamp_ntz_as_utc"></a>
+### Nested Schema for `accounts.parameters.jdbc_treat_timestamp_ntz_as_utc`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--jdbc_use_session_timezone"></a>
+### Nested Schema for `accounts.parameters.jdbc_use_session_timezone`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--js_treat_integer_as_bigint"></a>
+### Nested Schema for `accounts.parameters.js_treat_integer_as_bigint`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--json_indent"></a>
+### Nested Schema for `accounts.parameters.json_indent`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--listing_auto_fulfillment_replication_refresh_schedule"></a>
+### Nested Schema for `accounts.parameters.listing_auto_fulfillment_replication_refresh_schedule`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--lock_timeout"></a>
+### Nested Schema for `accounts.parameters.lock_timeout`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--log_event_level"></a>
+### Nested Schema for `accounts.parameters.log_event_level`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--log_level"></a>
+### Nested Schema for `accounts.parameters.log_level`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--max_concurrency_level"></a>
+### Nested Schema for `accounts.parameters.max_concurrency_level`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--max_data_extension_time_in_days"></a>
+### Nested Schema for `accounts.parameters.max_data_extension_time_in_days`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--metric_level"></a>
+### Nested Schema for `accounts.parameters.metric_level`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--min_data_retention_time_in_days"></a>
+### Nested Schema for `accounts.parameters.min_data_retention_time_in_days`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--multi_statement_count"></a>
+### Nested Schema for `accounts.parameters.multi_statement_count`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--network_policy"></a>
+### Nested Schema for `accounts.parameters.network_policy`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--noorder_sequence_as_default"></a>
+### Nested Schema for `accounts.parameters.noorder_sequence_as_default`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--oauth_add_privileged_roles_to_blocked_list"></a>
+### Nested Schema for `accounts.parameters.oauth_add_privileged_roles_to_blocked_list`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--odbc_treat_decimal_as_int"></a>
+### Nested Schema for `accounts.parameters.odbc_treat_decimal_as_int`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--periodic_data_rekeying"></a>
+### Nested Schema for `accounts.parameters.periodic_data_rekeying`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--pipe_execution_paused"></a>
+### Nested Schema for `accounts.parameters.pipe_execution_paused`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--prevent_load_from_inline_url"></a>
+### Nested Schema for `accounts.parameters.prevent_load_from_inline_url`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--prevent_unload_to_inline_url"></a>
+### Nested Schema for `accounts.parameters.prevent_unload_to_inline_url`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--prevent_unload_to_internal_stages"></a>
+### Nested Schema for `accounts.parameters.prevent_unload_to_internal_stages`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--python_profiler_modules"></a>
+### Nested Schema for `accounts.parameters.python_profiler_modules`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--python_profiler_target_stage"></a>
+### Nested Schema for `accounts.parameters.python_profiler_target_stage`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--query_tag"></a>
+### Nested Schema for `accounts.parameters.query_tag`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--quoted_identifiers_ignore_case"></a>
+### Nested Schema for `accounts.parameters.quoted_identifiers_ignore_case`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--read_consistency_mode"></a>
+### Nested Schema for `accounts.parameters.read_consistency_mode`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--replace_invalid_characters"></a>
+### Nested Schema for `accounts.parameters.replace_invalid_characters`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--require_storage_integration_for_stage_creation"></a>
+### Nested Schema for `accounts.parameters.require_storage_integration_for_stage_creation`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--require_storage_integration_for_stage_operation"></a>
+### Nested Schema for `accounts.parameters.require_storage_integration_for_stage_operation`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--row_timestamp_default"></a>
+### Nested Schema for `accounts.parameters.row_timestamp_default`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--rows_per_resultset"></a>
+### Nested Schema for `accounts.parameters.rows_per_resultset`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--s3_stage_vpce_dns_name"></a>
+### Nested Schema for `accounts.parameters.s3_stage_vpce_dns_name`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--search_path"></a>
+### Nested Schema for `accounts.parameters.search_path`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--serverless_task_max_statement_size"></a>
+### Nested Schema for `accounts.parameters.serverless_task_max_statement_size`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--serverless_task_min_statement_size"></a>
+### Nested Schema for `accounts.parameters.serverless_task_min_statement_size`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--share_restrictions"></a>
+### Nested Schema for `accounts.parameters.share_restrictions`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--simulated_data_sharing_consumer"></a>
+### Nested Schema for `accounts.parameters.simulated_data_sharing_consumer`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--sql_trace_query_text"></a>
+### Nested Schema for `accounts.parameters.sql_trace_query_text`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--sso_login_page"></a>
+### Nested Schema for `accounts.parameters.sso_login_page`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--statement_queued_timeout_in_seconds"></a>
+### Nested Schema for `accounts.parameters.statement_queued_timeout_in_seconds`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--statement_timeout_in_seconds"></a>
+### Nested Schema for `accounts.parameters.statement_timeout_in_seconds`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--storage_serialization_policy"></a>
+### Nested Schema for `accounts.parameters.storage_serialization_policy`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--strict_json_output"></a>
+### Nested Schema for `accounts.parameters.strict_json_output`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--suspend_task_after_num_failures"></a>
+### Nested Schema for `accounts.parameters.suspend_task_after_num_failures`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--task_auto_retry_attempts"></a>
+### Nested Schema for `accounts.parameters.task_auto_retry_attempts`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--time_input_format"></a>
+### Nested Schema for `accounts.parameters.time_input_format`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--time_output_format"></a>
+### Nested Schema for `accounts.parameters.time_output_format`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--timestamp_day_is_always_24h"></a>
+### Nested Schema for `accounts.parameters.timestamp_day_is_always_24h`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--timestamp_input_format"></a>
+### Nested Schema for `accounts.parameters.timestamp_input_format`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--timestamp_ltz_output_format"></a>
+### Nested Schema for `accounts.parameters.timestamp_ltz_output_format`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--timestamp_ntz_output_format"></a>
+### Nested Schema for `accounts.parameters.timestamp_ntz_output_format`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--timestamp_output_format"></a>
+### Nested Schema for `accounts.parameters.timestamp_output_format`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--timestamp_type_mapping"></a>
+### Nested Schema for `accounts.parameters.timestamp_type_mapping`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--timestamp_tz_output_format"></a>
+### Nested Schema for `accounts.parameters.timestamp_tz_output_format`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--timezone"></a>
+### Nested Schema for `accounts.parameters.timezone`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--trace_level"></a>
+### Nested Schema for `accounts.parameters.trace_level`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--transaction_abort_on_error"></a>
+### Nested Schema for `accounts.parameters.transaction_abort_on_error`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--transaction_default_isolation_level"></a>
+### Nested Schema for `accounts.parameters.transaction_default_isolation_level`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--two_digit_century_start"></a>
+### Nested Schema for `accounts.parameters.two_digit_century_start`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--unsupported_ddl_action"></a>
+### Nested Schema for `accounts.parameters.unsupported_ddl_action`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--use_cached_result"></a>
+### Nested Schema for `accounts.parameters.use_cached_result`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--use_workspaces_for_sql"></a>
+### Nested Schema for `accounts.parameters.use_workspaces_for_sql`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--user_task_managed_initial_warehouse_size"></a>
+### Nested Schema for `accounts.parameters.user_task_managed_initial_warehouse_size`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--user_task_minimum_trigger_interval_in_seconds"></a>
+### Nested Schema for `accounts.parameters.user_task_minimum_trigger_interval_in_seconds`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--user_task_timeout_ms"></a>
+### Nested Schema for `accounts.parameters.user_task_timeout_ms`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--week_of_year_policy"></a>
+### Nested Schema for `accounts.parameters.week_of_year_policy`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--week_start"></a>
+### Nested Schema for `accounts.parameters.week_start`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
 
 <a id="nestedobjatt--accounts--show_output"></a>
 ### Nested Schema for `accounts.show_output`

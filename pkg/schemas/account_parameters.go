@@ -1,61 +1,33 @@
 package schemas
 
 import (
+	"slices"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var (
 	ShowAccountParametersSchema = make(map[string]*schema.Schema)
-	accountParameters           = []sdk.AccountParameter{
-		// TODO [SNOW-2298247]: Only session parameters are present here; add the missing ones while adding them to the accounts data source.
-		// session parameters
-		sdk.AccountParameterAbortDetachedQuery,
-		sdk.AccountParameterAutocommit,
-		sdk.AccountParameterBinaryInputFormat,
-		sdk.AccountParameterBinaryOutputFormat,
-		sdk.AccountParameterClientMetadataRequestUseConnectionCtx,
-		sdk.AccountParameterClientResultColumnCaseInsensitive,
-		sdk.AccountParameterDateInputFormat,
-		sdk.AccountParameterDateOutputFormat,
-		sdk.AccountParameterErrorOnNondeterministicMerge,
-		sdk.AccountParameterErrorOnNondeterministicUpdate,
-		sdk.AccountParameterGeographyOutputFormat,
-		sdk.AccountParameterLockTimeout,
-		sdk.AccountParameterLogLevel,
-		sdk.AccountParameterLogEventLevel,
-		sdk.AccountParameterMultiStatementCount,
-		sdk.AccountParameterQueryTag,
-		sdk.AccountParameterQuotedIdentifiersIgnoreCase,
-		sdk.AccountParameterRowsPerResultset,
-		sdk.AccountParameterS3StageVpceDnsName,
-		sdk.AccountParameterStatementQueuedTimeoutInSeconds,
-		sdk.AccountParameterStatementTimeoutInSeconds,
-		sdk.AccountParameterTimestampDayIsAlways24h,
-		sdk.AccountParameterTimestampInputFormat,
-		sdk.AccountParameterTimestampLtzOutputFormat,
-		sdk.AccountParameterTimestampNtzOutputFormat,
-		sdk.AccountParameterTimestampOutputFormat,
-		sdk.AccountParameterTimestampTypeMapping,
-		sdk.AccountParameterTimestampTzOutputFormat,
-		sdk.AccountParameterTimezone,
-		sdk.AccountParameterTimeInputFormat,
-		sdk.AccountParameterTimeOutputFormat,
-		sdk.AccountParameterTraceLevel,
-		sdk.AccountParameterTransactionAbortOnError,
-		sdk.AccountParameterTransactionDefaultIsolationLevel,
-		sdk.AccountParameterTwoDigitCenturyStart,
-		sdk.AccountParameterUnsupportedDdlAction,
-		sdk.AccountParameterUseCachedResult,
-		sdk.AccountParameterWeekOfYearPolicy,
-		sdk.AccountParameterWeekStart,
-	}
+	accountParameters           = defs.ParameterDefsForLevel(parameterdefs.ParameterLevelAccountExt)
 )
 
 func init() {
-	for _, param := range accountParameters {
-		ShowAccountParametersSchema[strings.ToLower(string(param))] = ParameterListSchema
+	for _, def := range accountParameters {
+		ShowAccountParametersSchema[def.FieldName()] = ParameterListSchema
 	}
+}
+
+func AccountParametersToSchema(parameters []*sdk.Parameter, providerCtx *provider.Context) map[string]any {
+	accountParametersValue := make(map[string]any)
+	for _, parameter := range parameters {
+		if slices.ContainsFunc(accountParameters, func(def parameterdefs.ParameterDef) bool { return def.SqlName == parameter.Key }) {
+			accountParametersValue[strings.ToLower(parameter.Key)] = []map[string]any{ParameterToSchemaReducedOutput(parameter, providerCtx)}
+		}
+	}
+	return accountParametersValue
 }

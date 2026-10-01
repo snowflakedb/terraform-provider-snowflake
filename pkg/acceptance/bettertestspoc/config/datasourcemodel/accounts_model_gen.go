@@ -11,9 +11,10 @@ import (
 )
 
 type AccountsModel struct {
-	Accounts    tfconfig.Variable `json:"accounts,omitempty"`
-	Like        tfconfig.Variable `json:"like,omitempty"`
-	WithHistory tfconfig.Variable `json:"with_history,omitempty"`
+	Accounts       tfconfig.Variable `json:"accounts,omitempty"`
+	Like           tfconfig.Variable `json:"like,omitempty"`
+	WithHistory    tfconfig.Variable `json:"with_history,omitempty"`
+	WithParameters tfconfig.Variable `json:"with_parameters,omitempty"`
 
 	*config.DatasourceModelMeta
 }
@@ -72,6 +73,11 @@ func (a *AccountsModel) WithWithHistory(withHistory bool) *AccountsModel {
 	return a
 }
 
+func (a *AccountsModel) WithWithParameters(withParameters bool) *AccountsModel {
+	a.WithParameters = tfconfig.BoolVariable(withParameters)
+	return a
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -88,5 +94,10 @@ func (a *AccountsModel) WithLikeValue(value tfconfig.Variable) *AccountsModel {
 
 func (a *AccountsModel) WithWithHistoryValue(value tfconfig.Variable) *AccountsModel {
 	a.WithHistory = value
+	return a
+}
+
+func (a *AccountsModel) WithWithParametersValue(value tfconfig.Variable) *AccountsModel {
+	a.WithParameters = value
 	return a
 }

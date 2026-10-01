@@ -19,6 +19,12 @@ var accountsSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Description: "Includes dropped accounts that have not yet been deleted.",
 	},
+	"with_parameters": {
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Default:     true,
+		Description: "Runs SHOW PARAMETERS IN ACCOUNT once, for the connected account, and saves the output on that account's row only. Other listed accounts stay empty because Snowflake cannot show parameters for another organization account; the call is not repeated or skipped per row. By default this value is set to true.",
+	},
 	"like": likeSchema,
 	"accounts": {
 		Type:        schema.TypeList,
@@ -34,7 +40,14 @@ var accountsSchema = map[string]*schema.Schema{
 						Schema: schemas.ShowAccountSchema,
 					},
 				},
-				// TODO [SNOW-2298247]: Add parameters
+				resources.ParametersAttributeName: {
+					Type:        schema.TypeList,
+					Computed:    true,
+					Description: "Holds the output of SHOW PARAMETERS IN ACCOUNT for the connected account.",
+					Elem: &schema.Resource{
+						Schema: schemas.ShowAccountParametersSchema,
+					},
+				},
 			},
 		},
 	},
@@ -44,12 +57,13 @@ func Accounts() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: TrackingReadWrapper(datasources.Accounts, ReadAccounts),
 		Schema:      accountsSchema,
-		Description: "Data source used to get details of filtered accounts. Filtering is aligned with the current possibilities for [SHOW ACCOUNTS](https://docs.snowflake.com/en/sql-reference/sql/show-accounts) query. The results of SHOW are encapsulated in one output collection `accounts`.",
+		Description: "Data source used to get details of filtered accounts. Filtering is aligned with the current possibilities for [SHOW ACCOUNTS](https://docs.snowflake.com/en/sql-reference/sql/show-accounts) query. The results of SHOW and SHOW PARAMETERS IN ACCOUNT (connected account only) are encapsulated in one output collection `accounts`.",
 	}
 }
 
 func ReadAccounts(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 
 	req := sdk.NewShowAccountRequest()
 	if likePattern, ok := d.GetOk("like"); ok {
@@ -65,10 +79,31 @@ func ReadAccounts(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	}
 	d.SetId("accounts")
 
+	var currentAccountParameters []map[string]any
+	var currentAccountId sdk.AccountIdentifier
+	if d.Get("with_parameters").(bool) {
+		sessionDetails, err := client.ContextFunctions.CurrentSessionDetails(ctx)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		currentAccountId = sdk.NewAccountIdentifier(sessionDetails.OrganizationName, sessionDetails.AccountName)
+
+		parameters, err := client.Accounts.ShowParameters(ctx)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		currentAccountParameters = []map[string]any{schemas.AccountParametersToSchema(parameters, providerCtx)}
+	}
+
 	flattenedAccounts := make([]map[string]any, len(accounts))
 	for i, account := range accounts {
+		var accountParameters []map[string]any
+		if d.Get("with_parameters").(bool) && account.AccountID().FullyQualifiedName() == currentAccountId.FullyQualifiedName() {
+			accountParameters = currentAccountParameters
+		}
 		flattenedAccounts[i] = map[string]any{
 			resources.ShowOutputAttributeName: []map[string]any{schemas.AccountToSchema(&account)},
+			resources.ParametersAttributeName: accountParameters,
 		}
 	}
 
