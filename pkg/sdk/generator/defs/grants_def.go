@@ -432,13 +432,4 @@ var grantsDef = g.NewInterface(
 	"",
 	[]*g.MethodParameter{g.NewMethodParameter("request", "*ShowGrantsRequest")},
 	"[]Grant", "error",
-).WithEnums(grantInheritedFromEnumDef).
-	// TODO(next-pr): drop this allow-list once SDK unit tests move to generated + *_ext_test.go
-	WithAllowedGenerationParts(
-		g.PartDefault,
-		g.PartDto,
-		g.PartDtoBuilders,
-		g.PartImpl,
-		g.PartValidations,
-		g.PartEnums,
-	)
+).WithEnums(grantInheritedFromEnumDef)
