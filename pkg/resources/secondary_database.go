@@ -185,11 +185,9 @@ func ReadSecondaryDatabase(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(err)
 	}
 
-	replicationDatabases, err := client.ReplicationFunctions.ShowReplicationDatabases(ctx, &sdk.ShowReplicationDatabasesOptions{
-		Like: &sdk.Like{
-			Pattern: sdk.String(secondaryDatabaseId.Name()),
-		},
-	})
+	replicationDatabases, err := client.ReplicationFunctions.ShowReplicationDatabases(ctx, sdk.NewShowReplicationDatabasesRequest().WithLike(sdk.Like{
+		Pattern: sdk.String(secondaryDatabaseId.Name()),
+	}))
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -79,6 +79,7 @@ func (r pairedStructExampleRow) convert() (*PairedStructExample, error) {
 	mapNullIntToNonNullableField(&result.RetryLimit, r.RetryLimit)
 	mapNullTime(&result.UpdatedAt, r.UpdatedAt)
 	mapStringWithMapping(&result.Primary, r.Primary, ParseExternalObjectIdentifier)
+	mapNullStringWithMapping(&result.OptionalExternalId, r.OptionalExternalId, ParseExternalObjectIdentifier)
 	if ids, err := ParseCommaSeparatedAccountIdentifierArray(r.FailoverAllowedToAccounts); err == nil {
 		result.FailoverAllowedToAccounts = ids
 	}
@@ -126,6 +127,7 @@ func (r pairedStructExampleDetailRow) convert() (*PairedStructExampleDetail, err
 	mapNullIntToNonNullableField(&result.RetryLimit, r.RetryLimit)
 	mapNullTime(&result.UpdatedAt, r.UpdatedAt)
 	mapStringWithMapping(&result.Primary, r.Primary, ParseExternalObjectIdentifier)
+	mapNullStringWithMapping(&result.OptionalExternalId, r.OptionalExternalId, ParseExternalObjectIdentifier)
 	if ids, err := ParseCommaSeparatedAccountIdentifierArray(r.FailoverAllowedToAccounts); err == nil {
 		result.FailoverAllowedToAccounts = ids
 	}

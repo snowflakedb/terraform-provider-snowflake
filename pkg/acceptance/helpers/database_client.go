@@ -193,9 +193,7 @@ func (c *DatabaseClient) WaitForReplicationToTakeEffect(t *testing.T, primaryDat
 	ctx := context.Background()
 	t.Logf("Waiting for replication of primary database %s to take effect", primaryDatabaseId.FullyQualifiedName())
 	require.Eventually(t, func() bool {
-		replicationDatabases, err := c.context.client.ReplicationFunctions.ShowReplicationDatabases(ctx, &sdk.ShowReplicationDatabasesOptions{
-			WithPrimary: &primaryDatabaseId,
-		})
+		replicationDatabases, err := c.context.client.ReplicationFunctions.ShowReplicationDatabases(ctx, sdk.NewShowReplicationDatabasesRequest().WithWithPrimary(primaryDatabaseId))
 		if err != nil {
 			t.Logf("Error showing replication databases, retrying: %v", err)
 			return false
@@ -286,7 +284,7 @@ func (c *DatabaseClient) ShowAllReplicationDatabases(t *testing.T) ([]sdk.Replic
 	t.Helper()
 	ctx := context.Background()
 
-	return c.context.client.ReplicationFunctions.ShowReplicationDatabases(ctx, nil)
+	return c.context.client.ReplicationFunctions.ShowReplicationDatabases(ctx, sdk.NewShowReplicationDatabasesRequest())
 }
 
 func (c *DatabaseClient) Alter(t *testing.T, request *sdk.AlterDatabaseRequest) {

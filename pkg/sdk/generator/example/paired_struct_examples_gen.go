@@ -38,6 +38,7 @@ type pairedStructExampleRow struct {
 	CreatedOn                    time.Time      `db:"created_on"`
 	UpdatedAt                    sql.NullTime   `db:"updated_at"`
 	Primary                      string         `db:"primary"`
+	OptionalExternalId           sql.NullString `db:"optional_external_id"`
 	FailoverAllowedToAccounts    string         `db:"failover_allowed_to_accounts"`
 	Tags                         string         `db:"tags"`
 	AccountId                    string         `db:"account_id"`
@@ -71,6 +72,7 @@ type PairedStructExample struct {
 	CreatedOn                            time.Time
 	UpdatedAt                            *time.Time
 	Primary                              ExternalObjectIdentifier
+	OptionalExternalId                   *ExternalObjectIdentifier
 	FailoverAllowedToAccounts            []AccountIdentifier
 	Tags                                 []string
 	Id                                   AccountObjectIdentifier
@@ -119,6 +121,7 @@ type pairedStructExampleDetailRow struct {
 	CreatedOn                    time.Time      `db:"created_on"`
 	UpdatedAt                    sql.NullTime   `db:"updated_at"`
 	Primary                      string         `db:"primary"`
+	OptionalExternalId           sql.NullString `db:"optional_external_id"`
 	FailoverAllowedToAccounts    string         `db:"failover_allowed_to_accounts"`
 	Tags                         string         `db:"tags"`
 	AccountId                    string         `db:"account_id"`
@@ -152,6 +155,7 @@ type PairedStructExampleDetail struct {
 	CreatedOn                            time.Time
 	UpdatedAt                            *time.Time
 	Primary                              ExternalObjectIdentifier
+	OptionalExternalId                   *ExternalObjectIdentifier
 	FailoverAllowedToAccounts            []AccountIdentifier
 	Tags                                 []string
 	Id                                   AccountObjectIdentifier

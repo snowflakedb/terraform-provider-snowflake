@@ -88,7 +88,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.PolicyReference{}},
 	{ObjectStruct: sdk.PostgresInstance{}, ManualFields: []string{"is_highly_available"}},
 	{ObjectStruct: sdk.Procedure{}, SkipFields: []string{"arguments_old", "return_type_old"}},
-	{ObjectStruct: sdk.ReplicationAccount{}, ManualFields: []string{"comment"}},
+	{ObjectStruct: sdk.ReplicationAccount{}},
 	{ObjectStruct: sdk.ReplicationDatabase{}},
 	{ObjectStruct: sdk.Region{}},
 	{ObjectStruct: sdk.ResourceMonitor{}, SkipFields: []string{"notify_at", "notify_users"}, ManualFields: []string{"suspend_immediately_at"}},

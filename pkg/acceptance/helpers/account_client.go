@@ -50,7 +50,7 @@ func (c *AccountClient) GetAccountIdentifier(t *testing.T) sdk.AccountIdentifier
 	currentAccountLocator, err := c.context.client.ContextFunctions.CurrentAccount(ctx)
 	require.NoError(t, err)
 
-	replicationAccounts, err := c.context.client.ReplicationFunctions.ShowReplicationAccounts(ctx)
+	replicationAccounts, err := c.context.client.ReplicationFunctions.ShowReplicationAccounts(ctx, sdk.NewShowReplicationAccountsRequest())
 	require.NoError(t, err)
 
 	for _, replicationAccount := range replicationAccounts {

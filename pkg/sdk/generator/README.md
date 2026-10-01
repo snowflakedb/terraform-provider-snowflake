@@ -244,6 +244,7 @@ Each method accepts zero or more `PairedFieldOption`s (see below).
 | `StringList(col)` | `string` | `[]string` |
 | `AccountObjectIdentifier(col)` | `string` | `AccountObjectIdentifier` (plain defaults to `"Id"`) |
 | `OptionalAccountObjectIdentifier(col)` | `sql.NullString` | `*AccountObjectIdentifier` |
+| `OptionalExternalObjectIdentifier(col)` | `sql.NullString` | `*ExternalObjectIdentifier` |
 | `DatabaseObjectIdentifier(col)` | `string` | `DatabaseObjectIdentifier` (plain defaults to `"Id"`) |
 | `SchemaObjectIdentifier(col)` | `string` | `SchemaObjectIdentifier` (plain defaults to `"Id"`) |
 | `OptionalSchemaObjectIdentifier(col)` | `sql.NullString` | `*SchemaObjectIdentifier` |

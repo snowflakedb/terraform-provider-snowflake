@@ -65,7 +65,7 @@ func ReplicationDatabaseToSchema(replicationDatabase *sdk.ReplicationDatabase) m
 	replicationDatabaseSchema := make(map[string]any)
 	replicationDatabaseSchema["region_group"] = replicationDatabase.RegionGroup
 	replicationDatabaseSchema["snowflake_region"] = replicationDatabase.SnowflakeRegion
-	replicationDatabaseSchema["created_on"] = replicationDatabase.CreatedOn
+	replicationDatabaseSchema["created_on"] = replicationDatabase.CreatedOn.String()
 	replicationDatabaseSchema["account_name"] = replicationDatabase.AccountName
 	replicationDatabaseSchema["name"] = replicationDatabase.Name
 	replicationDatabaseSchema["comment"] = replicationDatabase.Comment

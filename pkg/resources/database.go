@@ -395,9 +395,7 @@ func ReadDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	}
 
 	currentAccountIdentifier := sdk.NewAccountIdentifier(sessionDetails.OrganizationName, sessionDetails.AccountName)
-	replicationDatabases, err := client.ReplicationFunctions.ShowReplicationDatabases(ctx, &sdk.ShowReplicationDatabasesOptions{
-		WithPrimary: sdk.Pointer(sdk.NewExternalObjectIdentifier(currentAccountIdentifier, id)),
-	})
+	replicationDatabases, err := client.ReplicationFunctions.ShowReplicationDatabases(ctx, sdk.NewShowReplicationDatabasesRequest().WithWithPrimary(sdk.NewExternalObjectIdentifier(currentAccountIdentifier, id)))
 	if err != nil {
 		return diag.FromErr(err)
 	}

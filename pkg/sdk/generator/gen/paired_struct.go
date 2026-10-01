@@ -187,7 +187,7 @@ func (p *PairedStructs) addField(dbColumnName, dbKind, plainKind string, opts []
 }
 
 // Field adds a field with fully explicit db and plain kinds. Use this for custom type pairs
-// that do not fit the convenience methods (e.g. db string → plain ExternalObjectIdentifier).
+// that do not fit the convenience methods.
 func (p *PairedStructs) Field(dbColumnName, dbKind, plainKind string, opts ...PairedFieldOption) *PairedStructs {
 	return p.addField(dbColumnName, dbKind, plainKind, opts)
 }
@@ -335,6 +335,17 @@ func (p *PairedStructs) AccountObjectIdentifier(dbColumnName string, opts ...Pai
 func (p *PairedStructs) OptionalAccountObjectIdentifier(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
 	allOpts := append([]PairedFieldOption{WithPlainFieldName("Id")}, opts...)
 	return p.addField(dbColumnName, "sql.NullString", "*AccountObjectIdentifier", allOpts)
+}
+
+// OptionalExternalObjectIdentifier adds a nullable ExternalObjectIdentifier field. The db kind is
+// sql.NullString and the plain kind is *ExternalObjectIdentifier. The plain field name defaults to
+// "Id", but can be overridden with WithPlainFieldName.
+//
+//	db:    <FieldName> sql.NullString `db:"<dbColumnName>"`
+//	plain: Id *ExternalObjectIdentifier
+func (p *PairedStructs) OptionalExternalObjectIdentifier(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	allOpts := append([]PairedFieldOption{WithPlainFieldName("Id")}, opts...)
+	return p.addField(dbColumnName, "sql.NullString", "*ExternalObjectIdentifier", allOpts)
 }
 
 // DatabaseObjectIdentifier adds a DatabaseObjectIdentifier field. The db kind is string and the plain kind

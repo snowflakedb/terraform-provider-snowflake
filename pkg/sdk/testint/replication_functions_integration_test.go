@@ -14,7 +14,7 @@ import (
 func TestInt_ShowReplicationFunctions(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
-	accounts, err := client.ReplicationFunctions.ShowReplicationAccounts(ctx)
+	accounts, err := client.ReplicationFunctions.ShowReplicationAccounts(ctx, sdk.NewShowReplicationAccountsRequest())
 	if err != nil {
 		t.Skip("replication not enabled in this account")
 	}
@@ -60,8 +60,7 @@ func TestInt_ShowReplicationDatabases(t *testing.T) {
 	}
 
 	t.Run("no options", func(t *testing.T) {
-		opts := &sdk.ShowReplicationDatabasesOptions{}
-		replicationDatabases, err := client.ReplicationFunctions.ShowReplicationDatabases(ctx, opts)
+		replicationDatabases, err := client.ReplicationFunctions.ShowReplicationDatabases(ctx, sdk.NewShowReplicationDatabasesRequest())
 		require.NoError(t, err)
 
 		rdb := getByName(replicationDatabases, db.ID())
@@ -75,19 +74,13 @@ func TestInt_ShowReplicationDatabases(t *testing.T) {
 	})
 
 	t.Run("with like", func(t *testing.T) {
-		opts := &sdk.ShowReplicationDatabasesOptions{
-			Like: &sdk.Like{Pattern: &db.Name},
-		}
-		replicationDatabases, err := client.ReplicationFunctions.ShowReplicationDatabases(ctx, opts)
+		replicationDatabases, err := client.ReplicationFunctions.ShowReplicationDatabases(ctx, sdk.NewShowReplicationDatabasesRequest().WithLike(sdk.Like{Pattern: &db.Name}))
 		require.NoError(t, err)
 
 		require.Len(t, replicationDatabases, 1)
 		require.Equal(t, db.Name, replicationDatabases[0].Name)
 
-		opts = &sdk.ShowReplicationDatabasesOptions{
-			Like: &sdk.Like{Pattern: &db2.Name},
-		}
-		replicationDatabases, err = client.ReplicationFunctions.ShowReplicationDatabases(ctx, opts)
+		replicationDatabases, err = client.ReplicationFunctions.ShowReplicationDatabases(ctx, sdk.NewShowReplicationDatabasesRequest().WithLike(sdk.Like{Pattern: &db2.Name}))
 		require.NoError(t, err)
 
 		require.Len(t, replicationDatabases, 1)
@@ -95,10 +88,7 @@ func TestInt_ShowReplicationDatabases(t *testing.T) {
 	})
 
 	t.Run("with primary", func(t *testing.T) {
-		opts := &sdk.ShowReplicationDatabasesOptions{
-			WithPrimary: &primaryDatabaseId,
-		}
-		replicationDatabases, err := client.ReplicationFunctions.ShowReplicationDatabases(ctx, opts)
+		replicationDatabases, err := client.ReplicationFunctions.ShowReplicationDatabases(ctx, sdk.NewShowReplicationDatabasesRequest().WithWithPrimary(primaryDatabaseId))
 		require.NoError(t, err)
 
 		require.Len(t, replicationDatabases, 2)
@@ -114,23 +104,21 @@ func TestInt_ShowRegions(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 	t.Run("no options", func(t *testing.T) {
-		regions, err := client.ReplicationFunctions.ShowRegions(ctx, nil)
+		regions, err := client.ReplicationFunctions.ShowRegions(ctx, sdk.NewShowRegionsRequest())
 		require.NoError(t, err)
 		assert.NotEmpty(t, regions)
 	})
 
 	t.Run("with options", func(t *testing.T) {
-		regions, err := client.ReplicationFunctions.ShowRegions(ctx, &sdk.ShowRegionsOptions{
-			Like: &sdk.Like{
-				Pattern: sdk.String("AWS_US_WEST_2"),
-			},
-		})
+		regions, err := client.ReplicationFunctions.ShowRegions(ctx, sdk.NewShowRegionsRequest().WithLike(sdk.Like{
+			Pattern: sdk.String("AWS_US_WEST_2"),
+		}))
 		require.NoError(t, err)
-		var region *sdk.Region
+		var region sdk.Region
 		// If there are more than one region, we need to find the PUBLIC region.
 		// Otherwise, we just take the first region because RegionGroup is not returned from Snowflake.
 		if len(regions) > 1 {
-			regionPtr, err := collections.FindFirst(regions, func(region *sdk.Region) bool {
+			regionPtr, err := collections.FindFirst(regions, func(region sdk.Region) bool {
 				return region.RegionGroup == "PUBLIC"
 			})
 			require.NoError(t, err)
@@ -140,7 +128,7 @@ func TestInt_ShowRegions(t *testing.T) {
 			region = regions[0]
 		}
 		assert.Equal(t, "AWS_US_WEST_2", region.SnowflakeRegion)
-		assert.Equal(t, sdk.CloudTypeAWS, region.CloudType)
+		assert.Equal(t, sdk.CloudTypeAws, region.CloudType)
 		assert.Equal(t, "us-west-2", region.Region)
 		assert.Equal(t, "US West (Oregon)", region.DisplayName)
 	})

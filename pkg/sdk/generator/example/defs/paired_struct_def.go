@@ -37,6 +37,8 @@ func pairedStructExampleAllOptions(dbName, plainName string) *g.PairedStructs {
 		OptionalTime("updated_at").
 		// db string, plain ExternalObjectIdentifier — fully explicit custom types
 		Field("primary", "string", "ExternalObjectIdentifier").
+		// db sql.NullString, plain *ExternalObjectIdentifier; plain name overridden (default would be "Id")
+		OptionalExternalObjectIdentifier("optional_external_id", g.WithPlainFieldName("OptionalExternalId")).
 		// db string (raw CSV), plain []AccountIdentifier — custom plain type
 		PlainField("failover_allowed_to_accounts", "[]AccountIdentifier").
 		// db string, plain []string; auto-derived field names

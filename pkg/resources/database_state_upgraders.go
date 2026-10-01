@@ -37,13 +37,13 @@ func v092DatabaseStateUpgrader(ctx context.Context, rawState map[string]any, met
 		enableForAccounts := make([]map[string]any, len(accountLocators))
 
 		if len(accountLocators) > 0 {
-			replicationAccounts, err := client.ReplicationFunctions.ShowReplicationAccounts(ctx)
+			replicationAccounts, err := client.ReplicationFunctions.ShowReplicationAccounts(ctx, sdk.NewShowReplicationAccountsRequest())
 			if err != nil {
 				return nil, err
 			}
 
 			for i, accountLocator := range accountLocators {
-				replicationAccount, err := collections.FindFirst(replicationAccounts, func(account *sdk.ReplicationAccount) bool {
+				replicationAccount, err := collections.FindFirst(replicationAccounts, func(account sdk.ReplicationAccount) bool {
 					return account.AccountLocator == accountLocator
 				})
 				if err != nil {
