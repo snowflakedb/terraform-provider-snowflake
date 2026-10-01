@@ -73,13 +73,4 @@ var replicationFunctionsDef = g.NewInterface(
 		Show().
 		SQL("REGIONS").
 		OptionalLike(),
-).WithEnums(CloudTypeEnumDef).
-	// TODO(next-pr): drop this allow-list once SDK unit tests move to generated + *_ext_test.go
-	WithAllowedGenerationParts(
-		g.PartDefault,
-		g.PartDto,
-		g.PartDtoBuilders,
-		g.PartImpl,
-		g.PartValidations,
-		g.PartEnums,
-	)
+).WithEnums(CloudTypeEnumDef)
