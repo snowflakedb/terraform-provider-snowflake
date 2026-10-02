@@ -127,9 +127,6 @@ func UserProgrammaticAccessToken() *schema.Resource {
 						if errs != nil {
 							return errs
 						}
-					} else if diff.Id() != "" && diff.HasChange("expire_rotated_token_after_hours") {
-						// The field is used only during rotation, so changing it alone must not plan an update that does nothing.
-						return diff.Clear("expire_rotated_token_after_hours")
 					}
 
 					return nil
@@ -337,7 +334,7 @@ func UpdateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 			case v != 0 && remaining <= 0:
 				// Under an hour left: omit the clause so the old secret keeps its natural expiry instead of being revoked now.
 				log.Printf("[DEBUG] less than an hour of token lifetime left; omitting expire_rotated_token_after_hours (%d)", v)
-			case v > remaining:
+			case v != 0 && v > remaining:
 				log.Printf("[DEBUG] expire_rotated_token_after_hours (%d) exceeds the remaining token lifetime (%d hours); using %d", v, remaining, remaining)
 				request.WithExpireRotatedTokenAfterHours(remaining)
 			default:

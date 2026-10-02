@@ -540,12 +540,12 @@ func TestAcc_UserProgrammaticAccessToken_CompleteUseCase_Rotating(t *testing.T) 
 					assertTokenNotRotated,
 				),
 			},
-			// do not rotate (and do not plan an update) when only expire_rotated_token_after_hours is changed
+			// do not rotate when only expire_rotated_token_after_hours is changed
 			{
 				Config: accconfig.FromModels(t, modelWithExpireRotatedTokenAfterHours),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelWithExpireRotatedTokenAfterHours.ResourceReference(), plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(modelWithExpireRotatedTokenAfterHours.ResourceReference(), plancheck.ResourceActionUpdate),
 						planchecks.ExpectComputed(modelWithExpireRotatedTokenAfterHours.ResourceReference(), "token", false),
 						planchecks.ExpectComputed(modelWithExpireRotatedTokenAfterHours.ResourceReference(), "rotated_token_name", false),
 					},
