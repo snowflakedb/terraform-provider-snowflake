@@ -55,6 +55,9 @@ The following types are supported currently in the generator (schema and mapping
     - `sdk.TableColumnIdentifier`
 - `sdk.ObjectIdentifier` interface (nil-guarded; no dereference)
 - slices of string (`[]string`; default TypeList with TypeString `Elem`; `TypeOverrides` to TypeSet)
+- slices of `[]sdk.SchemaObjectIdentifier` (default TypeList of `.FullyQualifiedName()`; `TypeOverrides` to TypeSet)
+- slices of `[]sdk.AccountIdentifier` (default TypeList of `.Name()`; `TypeOverrides` to TypeSet)
+- slices of `[]sdk.AccountObjectIdentifier` (default TypeList of `.Name()`; `TypeOverrides` to TypeSet)
 
 ##### To schema mappings
 
@@ -62,6 +65,7 @@ Given SDK struct field can be mapped to the generated schema depending on its ty
 - no mapping (`Identity`) - used for `string` and other basic types
 - string value mapping (`ToString`) - used e.g. for `time.Time`
 - fully qualified name mapping (`FullyQualifiedName`) - used for all identifiers and `sdk.ObjectIdentifier` interface (nil-guarded when the field is an interface)
+- identifier slice mapping (`MapSlice`) - `collections.Map` of `.FullyQualifiedName()` for `[]sdk.SchemaObjectIdentifier`, `.Name()` for `[]sdk.AccountIdentifier` and `[]sdk.AccountObjectIdentifier`
 - casting (`CastToString` and `CastToInt`) - used for enums with underlying type `string` or `int`
 
 ##### Changing the SDK object's show output
@@ -79,8 +83,8 @@ If you change the show output struct in the SDK:
    - struct DESCRIBE: `{ObjectStruct: sdk.<Singular>Details{}, IsDescribe: true}` → `Describe<Singular>DetailsSchema` in `<singular>_desc_gen.go`
    - property-row list entry: `{ObjectStruct: sdk.<Type>{}, UsedAsListEntry: true}` → `<Type>Schema` in `<type>_gen.go`
    - `SkipFields: []string{"snake_case_key"}` omits that key from the schema map and `ToSchema` (comment: skipped and won't be generated). Use when the field is SDK-internal (keep omitted) or a real SHOW/DESCRIBE property is missing from today’s public schema (skip now, add in a follow-up PR).
-   - `ManualFields: []string{"snake_case_key"}` omits that key the same way (comment: manual addition and mapping is needed) and generates an empty mapper type that must implement `additionalSchemaMapper[T]` in `*_ext.go`. Use when the generator cannot emit the public mapping (nested structs, identifier slices, renames, custom conversion). Callers always use generated `XToSchema`.
-   - `TypeOverrides: map[string]schema.ValueType{"snake_case_key": schema.TypeSet}` changes the generated Terraform type only (mapper unchanged). Native `[]string` defaults to TypeList; override to TypeSet when that is the public schema. Cannot overlap SkipFields or ManualFields.
+   - `ManualFields: []string{"snake_case_key"}` omits that key the same way (comment: manual addition and mapping is needed) and generates an empty mapper type that must implement `additionalSchemaMapper[T]` in `*_ext.go`. Use when the generator cannot emit the public mapping (nested structs, renames, custom conversion). Callers always use generated `XToSchema`.
+   - `TypeOverrides: map[string]schema.ValueType{"snake_case_key": schema.TypeSet}` changes the generated Terraform type only (mapper unchanged). Native `[]string`, `[]sdk.SchemaObjectIdentifier`, `[]sdk.AccountIdentifier`, and `[]sdk.AccountObjectIdentifier` default to TypeList; override to TypeSet when that is the public schema. Cannot overlap SkipFields or ManualFields.
 2. Check if you don't introduce a type that is unsupported (check [supported types](#supported-types)
    and [known limitations](#known-limitations)).
 3. Run generation according to [instructions](#invoking-the-generation).
@@ -93,7 +97,6 @@ If you change the show output struct in the SDK:
   schema will be generated with `schema.TypeInvalid`:
     - other basic types (e.g. `int8`, etc.)
     - slices of basic types other than `[]string` (e.g. `[]int`)
-    - slices of identifiers (`[]sdk.AccountIdentifier`, `[]sdk.SchemaObjectIdentifier`)
     - slices of enums (`[]sdk.IntegrationType`, `[]sdk.PluralObjectType`)
     - structs (`sdk.FileFormatTypeOptions`)
 

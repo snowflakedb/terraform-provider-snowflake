@@ -3,16 +3,13 @@
 package schemas
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type openflowRuntimeToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.OpenflowRuntime] = openflowRuntimeToSchemaMapper{}
-
 // ShowOpenflowRuntimeSchema represents output of SHOW query for the single OpenflowRuntime.
-var ShowOpenflowRuntimeSchema = mergeSchema(map[string]*schema.Schema{
+var ShowOpenflowRuntimeSchema = map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -41,7 +38,11 @@ var ShowOpenflowRuntimeSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// external_access_integrations: manual addition and mapping is needed
+	"external_access_integrations": {
+		Type:     schema.TypeSet,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	"initially_suspended": {
 		Type:     schema.TypeBool,
 		Computed: true,
@@ -78,7 +79,7 @@ var ShowOpenflowRuntimeSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}, openflowRuntimeToSchemaMapper{}.additionalSchema())
+}
 
 var _ = ShowOpenflowRuntimeSchema
 
@@ -93,7 +94,7 @@ func OpenflowRuntimeToSchema(openflowRuntime *sdk.OpenflowRuntime) map[string]an
 	if openflowRuntime.DisplayName != nil {
 		openflowRuntimeSchema["display_name"] = (*openflowRuntime.DisplayName)
 	}
-	// external_access_integrations: manual addition and mapping is needed
+	openflowRuntimeSchema["external_access_integrations"] = collections.Map(openflowRuntime.ExternalAccessIntegrations, sdk.AccountObjectIdentifier.Name)
 	openflowRuntimeSchema["initially_suspended"] = openflowRuntime.InitiallySuspended
 	openflowRuntimeSchema["database_name"] = openflowRuntime.DatabaseName
 	openflowRuntimeSchema["schema_name"] = openflowRuntime.SchemaName
@@ -109,7 +110,6 @@ func OpenflowRuntimeToSchema(openflowRuntime *sdk.OpenflowRuntime) map[string]an
 	}
 	openflowRuntimeSchema["created_on"] = openflowRuntime.CreatedOn.String()
 	openflowRuntimeSchema["updated_on"] = openflowRuntime.UpdatedOn.String()
-	openflowRuntimeToSchemaMapper{}.additionalToSchema(openflowRuntime, openflowRuntimeSchema)
 	return openflowRuntimeSchema
 }
 

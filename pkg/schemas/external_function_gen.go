@@ -45,10 +45,7 @@ var ShowExternalFunctionSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"arguments": {
-		Type:     schema.TypeInvalid,
-		Computed: true,
-	},
+	// arguments is skipped and won't be generated
 	"description": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -100,7 +97,7 @@ func ExternalFunctionToSchema(externalFunction *sdk.ExternalFunction) map[string
 	externalFunctionSchema["min_num_arguments"] = externalFunction.MinNumArguments
 	externalFunctionSchema["max_num_arguments"] = externalFunction.MaxNumArguments
 	externalFunctionSchema["arguments_raw"] = externalFunction.ArgumentsRaw
-	externalFunctionSchema["arguments"] = externalFunction.Arguments
+	// arguments is skipped and won't be generated
 	externalFunctionSchema["description"] = externalFunction.Description
 	externalFunctionSchema["catalog_name"] = externalFunction.CatalogName
 	externalFunctionSchema["is_table_function"] = externalFunction.IsTableFunction

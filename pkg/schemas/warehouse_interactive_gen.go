@@ -3,16 +3,13 @@
 package schemas
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type warehouseInteractiveToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.WarehouseInteractive] = warehouseInteractiveToSchemaMapper{}
-
 // ShowWarehouseInteractiveSchema represents output of SHOW query for the single WarehouseInteractive.
-var ShowWarehouseInteractiveSchema = mergeSchema(map[string]*schema.Schema{
+var ShowWarehouseInteractiveSchema = map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -109,8 +106,12 @@ var ShowWarehouseInteractiveSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// tables: manual addition and mapping is needed
-}, warehouseInteractiveToSchemaMapper{}.additionalSchema())
+	"tables": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
+}
 
 var _ = ShowWarehouseInteractiveSchema
 
@@ -154,8 +155,7 @@ func WarehouseInteractiveToSchema(warehouseInteractive *sdk.WarehouseInteractive
 	warehouseInteractiveSchema["comment"] = warehouseInteractive.Comment
 	warehouseInteractiveSchema["resource_monitor"] = warehouseInteractive.ResourceMonitor.Name()
 	warehouseInteractiveSchema["owner_role_type"] = warehouseInteractive.OwnerRoleType
-	// tables: manual addition and mapping is needed
-	warehouseInteractiveToSchemaMapper{}.additionalToSchema(warehouseInteractive, warehouseInteractiveSchema)
+	warehouseInteractiveSchema["tables"] = collections.Map(warehouseInteractive.Tables, sdk.SchemaObjectIdentifier.FullyQualifiedName)
 	return warehouseInteractiveSchema
 }
 

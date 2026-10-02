@@ -45,18 +45,9 @@ var ShowFailoverGroupSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"object_types": {
-		Type:     schema.TypeInvalid,
-		Computed: true,
-	},
-	"allowed_integration_types": {
-		Type:     schema.TypeInvalid,
-		Computed: true,
-	},
-	"allowed_accounts": {
-		Type:     schema.TypeInvalid,
-		Computed: true,
-	},
+	// object_types is skipped and won't be generated
+	// allowed_integration_types is skipped and won't be generated
+	// allowed_accounts is skipped and won't be generated
 	"organization_name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -96,9 +87,9 @@ func FailoverGroupToSchema(failoverGroup *sdk.FailoverGroup) map[string]any {
 	failoverGroupSchema["comment"] = failoverGroup.Comment
 	failoverGroupSchema["is_primary"] = failoverGroup.IsPrimary
 	failoverGroupSchema["primary"] = failoverGroup.Primary.FullyQualifiedName()
-	failoverGroupSchema["object_types"] = failoverGroup.ObjectTypes
-	failoverGroupSchema["allowed_integration_types"] = failoverGroup.AllowedIntegrationTypes
-	failoverGroupSchema["allowed_accounts"] = failoverGroup.AllowedAccounts
+	// object_types is skipped and won't be generated
+	// allowed_integration_types is skipped and won't be generated
+	// allowed_accounts is skipped and won't be generated
 	failoverGroupSchema["organization_name"] = failoverGroup.OrganizationName
 	failoverGroupSchema["account_locator"] = failoverGroup.AccountLocator
 	failoverGroupSchema["replication_schedule"] = failoverGroup.ReplicationSchedule

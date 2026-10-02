@@ -3,16 +3,13 @@
 package schemas
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type warehouseToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.Warehouse] = warehouseToSchemaMapper{}
-
 // ShowWarehouseSchema represents output of SHOW query for the single Warehouse.
-var ShowWarehouseSchema = mergeSchema(map[string]*schema.Schema{
+var ShowWarehouseSchema = map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -142,8 +139,12 @@ var ShowWarehouseSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeInt,
 		Computed: true,
 	},
-	// tables: manual addition and mapping is needed
-}, warehouseToSchemaMapper{}.additionalSchema())
+	"tables": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
+}
 
 var _ = ShowWarehouseSchema
 
@@ -213,8 +214,7 @@ func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	if warehouse.QueryThroughputMultiplier != nil {
 		warehouseSchema["query_throughput_multiplier"] = (*warehouse.QueryThroughputMultiplier)
 	}
-	// tables: manual addition and mapping is needed
-	warehouseToSchemaMapper{}.additionalToSchema(warehouse, warehouseSchema)
+	warehouseSchema["tables"] = collections.Map(warehouse.Tables, sdk.SchemaObjectIdentifier.FullyQualifiedName)
 	return warehouseSchema
 }
 

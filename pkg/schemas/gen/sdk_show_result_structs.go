@@ -19,8 +19,9 @@ type ShowResultSchemaDef struct {
 	// and the additional-mapping hook is generated.
 	ManualFields []string
 	// TypeOverrides maps snake_case schema keys to a Terraform schema type
-	// (type only; mapper stays the generated one). Native []string defaults to
-	// TypeList; use TypeSet here when the public schema is a set.
+	// (type only; mapper stays the generated one). Native []string,
+	// []SchemaObjectIdentifier, []AccountIdentifier, and []AccountObjectIdentifier
+	// default to TypeList; use TypeSet here when the public schema is a set.
 	TypeOverrides map[string]schema.ValueType
 	// UsedAsListEntry generates NameSchema (no Show/Describe prefix) for a property-row list Elem.
 	UsedAsListEntry bool
@@ -46,19 +47,23 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.AuthenticationPolicy{}, SkipFields: []string{"target_scopes"}}, // TODO [next PRs]: un-skip target_scopes (stale public schema).
 	{ObjectStruct: sdk.CatalogIntegration{}},
 	{ObjectStruct: sdk.ComputePool{}},
-	{ObjectStruct: sdk.Connection{}, ManualFields: []string{"failover_allowed_to_accounts"}},
+	{ObjectStruct: sdk.Connection{}},
 	{ObjectStruct: sdk.CortexAgent{}, ManualFields: []string{"profile"}},
 	{ObjectStruct: sdk.DatabaseRole{}},
 	{ObjectStruct: sdk.Database{}},
 	{ObjectStruct: sdk.DynamicTable{}},
 	{ObjectStruct: sdk.EventTable{}},
 	{ObjectStruct: sdk.ExternalAccessIntegration{}},
-	{ObjectStruct: sdk.ExternalFunction{}},
+	// SkipFields `arguments`: unused TypeInvalid (`[]sdk.DataType`). Un-skip with native DataType slices.
+	{ObjectStruct: sdk.ExternalFunction{}, SkipFields: []string{"arguments"}},
 	{ObjectStruct: sdk.ExternalTable{}},
 	{ObjectStruct: sdk.ExternalVolume{}},
-	{ObjectStruct: sdk.FailoverGroup{}},
+	// SkipFields unused TypeInvalid: `object_types` / `allowed_integration_types` (enum slices),
+	// `allowed_accounts` (`[]AccountIdentifier`). Un-skip with native mapping.
+	{ObjectStruct: sdk.FailoverGroup{}, SkipFields: []string{"object_types", "allowed_integration_types", "allowed_accounts"}},
 	{ObjectStruct: sdk.FileFormat{}},
-	{ObjectStruct: sdk.FileFormatLegacy{}},
+	// SkipFields `options`: unused TypeInvalid (nested `FileFormatTypeOptionsLegacy`). Un-skip with native nested structs.
+	{ObjectStruct: sdk.FileFormatLegacy{}, SkipFields: []string{"options"}},
 	{ObjectStruct: sdk.Function{}, SkipFields: []string{"arguments_old", "return_type_old"}},
 	{ObjectStruct: sdk.GitRepository{}},
 	{ObjectStruct: sdk.Grant{}, SkipFields: []string{"grant_on", "grant_to"}},
@@ -80,7 +85,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.OpenflowConnectorDefinition{}},
 	{ObjectStruct: sdk.OpenflowConnector{}},
 	{ObjectStruct: sdk.OpenflowDeployment{}},
-	{ObjectStruct: sdk.OpenflowRuntime{}, ManualFields: []string{"external_access_integrations"}},
+	{ObjectStruct: sdk.OpenflowRuntime{}, TypeOverrides: map[string]schema.ValueType{"external_access_integrations": schema.TypeSet}},
 	{ObjectStruct: sdk.OrganizationAccount{}},
 	{ObjectStruct: sdk.Parameter{}},
 	{ObjectStruct: sdk.PasswordPolicy{}},
@@ -98,29 +103,29 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.Secret{}, TypeOverrides: map[string]schema.ValueType{"oauth_scopes": schema.TypeSet}},
 	{ObjectStruct: sdk.SecurityIntegration{}},
 	{ObjectStruct: sdk.SemanticView{}},
-	{ObjectStruct: sdk.Service{}, ManualFields: []string{"external_access_integrations"}},
+	{ObjectStruct: sdk.Service{}, TypeOverrides: map[string]schema.ValueType{"external_access_integrations": schema.TypeSet}},
 	{ObjectStruct: sdk.Sequence{}},
 	{ObjectStruct: sdk.SessionPolicy{}, SkipFields: []string{"target_scopes"}}, // TODO [next PRs]: un-skip target_scopes (stale public schema).
 	// ManualFields `name` remapped in ext; SkipFields `owner_account` is stale public schema (add later).
+	// SkipFields `to`: unused TypeInvalid (`[]AccountIdentifier`). Un-skip with native identifier slices.
 	// TODO [next PRs]: un-skip owner_account.
-	{ObjectStruct: sdk.Share{}, SkipFields: []string{"owner_account"}, ManualFields: []string{"name"}},
+	{ObjectStruct: sdk.Share{}, SkipFields: []string{"owner_account", "to"}, ManualFields: []string{"name"}},
 	{ObjectStruct: sdk.Stage{}},
 	{ObjectStruct: sdk.StorageIntegration{}},
 	{ObjectStruct: sdk.StorageLifecyclePolicy{}},
 	{ObjectStruct: sdk.Streamlit{}},
-	{ObjectStruct: sdk.Stream{}, ManualFields: []string{"base_tables"}},
+	{ObjectStruct: sdk.Stream{}},
 	{ObjectStruct: sdk.Table{}},
 	{ObjectStruct: sdk.Tag{}, TypeOverrides: map[string]schema.ValueType{"allowed_values": schema.TypeSet}},
-	{ObjectStruct: sdk.Task{}, ManualFields: []string{"predecessors", "task_relations", "target_completion_interval"}},
+	{ObjectStruct: sdk.Task{}, ManualFields: []string{"task_relations", "target_completion_interval"}, TypeOverrides: map[string]schema.ValueType{"predecessors": schema.TypeSet}},
 	{ObjectStruct: sdk.User{}},
 	{ObjectStruct: sdk.ProgrammaticAccessToken{}},
 	{ObjectStruct: sdk.View{}},
-	// Union of all SHOW WAREHOUSES columns (AllDetails analog). ManualFields `tables` re-added in warehouse_ext.go.
+	// Union of all SHOW WAREHOUSES columns (AllDetails analog).
 	// Keep omitted: actives / pendings / failed / suspended / uuid (Snowflake: internal use, will be removed).
-	// TODO [next PRs]: drop tables from ManualFields once MapToSchemaField maps []SchemaObjectIdentifier.
-	{ObjectStruct: sdk.Warehouse{}, SkipFields: []string{"actives", "pendings", "failed", "suspended", "uuid"}, ManualFields: []string{"tables"}},
+	{ObjectStruct: sdk.Warehouse{}, SkipFields: []string{"actives", "pendings", "failed", "suspended", "uuid"}},
 	{ObjectStruct: sdk.WarehouseAdaptive{}},
-	{ObjectStruct: sdk.WarehouseInteractive{}, ManualFields: []string{"tables"}},
+	{ObjectStruct: sdk.WarehouseInteractive{}},
 	{ObjectStruct: sdk.WarehouseRegular{}},
 	{ObjectStruct: sdk.AlertDetails{}, IsDescribe: true},
 	// Nested DescribePropertyListSchema in ext (today’s public describe_output).
@@ -257,8 +262,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	// SkipFields `id` is the SDK identifier (public schema uses `name`).
 	{ObjectStruct: sdk.OpenflowConnectorDetails{}, IsDescribe: true, SkipFields: []string{"id"}},
 	{ObjectStruct: sdk.OpenflowDeploymentDetails{}, IsDescribe: true},
-	// SkipFields `id` is the SDK identifier (public schema uses `name`); slice is ManualFields.
-	{ObjectStruct: sdk.OpenflowRuntimeDetails{}, IsDescribe: true, SkipFields: []string{"id"}, ManualFields: []string{"external_access_integrations"}},
+	// SkipFields `id` is the SDK identifier (public schema uses `name`).
+	{ObjectStruct: sdk.OpenflowRuntimeDetails{}, IsDescribe: true, SkipFields: []string{"id"}, TypeOverrides: map[string]schema.ValueType{"external_access_integrations": schema.TypeSet}},
 	{ObjectStruct: sdk.PasswordPolicyDetails{}, IsDescribe: true},
 	// SkipFields omits SDK parse helpers (not DESCRIBE columns; keep omitted).
 	{ObjectStruct: sdk.PostgresInstanceDetails{}, IsDescribe: true, SkipFields: []string{"has_any_running_operations", "operation_errors"}},
@@ -290,7 +295,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	}},
 	{ObjectStruct: sdk.SecretDetails{}, IsDescribe: true, TypeOverrides: map[string]schema.ValueType{"oauth_scopes": schema.TypeSet}},
 	{ObjectStruct: sdk.SecurityIntegrationProperty{}, UsedAsListEntry: true},
-	{ObjectStruct: sdk.ServiceDetails{}, IsDescribe: true, ManualFields: []string{"external_access_integrations"}},
+	{ObjectStruct: sdk.ServiceDetails{}, IsDescribe: true, TypeOverrides: map[string]schema.ValueType{"external_access_integrations": schema.TypeSet}},
 	{ObjectStruct: sdk.SessionPolicyDetails{}, IsDescribe: true},
 	// Nested directory_table / file_format / location / privatelink in ext (public key privatelink, not private_link).
 	// Keep omitted: id (SDK identifier), credentials (secret).

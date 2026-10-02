@@ -3,16 +3,13 @@
 package schemas
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type serviceToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.Service] = serviceToSchemaMapper{}
-
 // ShowServiceSchema represents output of SHOW query for the single Service.
-var ShowServiceSchema = mergeSchema(map[string]*schema.Schema{
+var ShowServiceSchema = map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -65,7 +62,11 @@ var ShowServiceSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
-	// external_access_integrations: manual addition and mapping is needed
+	"external_access_integrations": {
+		Type:     schema.TypeSet,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	"created_on": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -122,7 +123,7 @@ var ShowServiceSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}, serviceToSchemaMapper{}.additionalSchema())
+}
 
 var _ = ShowServiceSchema
 
@@ -141,7 +142,7 @@ func ServiceToSchema(service *sdk.Service) map[string]any {
 	serviceSchema["min_instances"] = service.MinInstances
 	serviceSchema["max_instances"] = service.MaxInstances
 	serviceSchema["auto_resume"] = service.AutoResume
-	// external_access_integrations: manual addition and mapping is needed
+	serviceSchema["external_access_integrations"] = collections.Map(service.ExternalAccessIntegrations, sdk.AccountObjectIdentifier.Name)
 	serviceSchema["created_on"] = service.CreatedOn.String()
 	serviceSchema["updated_on"] = service.UpdatedOn.String()
 	if service.ResumedOn != nil {
@@ -168,7 +169,6 @@ func ServiceToSchema(service *sdk.Service) map[string]any {
 	if service.ManagingObjectName != nil {
 		serviceSchema["managing_object_name"] = (*service.ManagingObjectName)
 	}
-	serviceToSchemaMapper{}.additionalToSchema(service, serviceSchema)
 	return serviceSchema
 }
 

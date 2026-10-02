@@ -27,10 +27,7 @@ var ShowShareSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"to": {
-		Type:     schema.TypeInvalid,
-		Computed: true,
-	},
+	// to is skipped and won't be generated
 	"owner": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -50,7 +47,7 @@ func ShareToSchema(share *sdk.Share) map[string]any {
 	// owner_account is skipped and won't be generated
 	// name: manual addition and mapping is needed
 	shareSchema["database_name"] = share.DatabaseName.Name()
-	shareSchema["to"] = share.To
+	// to is skipped and won't be generated
 	shareSchema["owner"] = share.Owner
 	shareSchema["comment"] = share.Comment
 	shareToSchemaMapper{}.additionalToSchema(share, shareSchema)

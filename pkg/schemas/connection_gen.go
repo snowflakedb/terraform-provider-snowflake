@@ -3,16 +3,13 @@
 package schemas
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type connectionToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.Connection] = connectionToSchemaMapper{}
-
 // ShowConnectionSchema represents output of SHOW query for the single Connection.
-var ShowConnectionSchema = mergeSchema(map[string]*schema.Schema{
+var ShowConnectionSchema = map[string]*schema.Schema{
 	"region_group": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -45,7 +42,11 @@ var ShowConnectionSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// failover_allowed_to_accounts: manual addition and mapping is needed
+	"failover_allowed_to_accounts": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	"connection_url": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -58,7 +59,7 @@ var ShowConnectionSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}, connectionToSchemaMapper{}.additionalSchema())
+}
 
 var _ = ShowConnectionSchema
 
@@ -76,11 +77,10 @@ func ConnectionToSchema(connection *sdk.Connection) map[string]any {
 	}
 	connectionSchema["is_primary"] = connection.IsPrimary
 	connectionSchema["primary"] = connection.Primary.FullyQualifiedName()
-	// failover_allowed_to_accounts: manual addition and mapping is needed
+	connectionSchema["failover_allowed_to_accounts"] = collections.Map(connection.FailoverAllowedToAccounts, sdk.AccountIdentifier.Name)
 	connectionSchema["connection_url"] = connection.ConnectionUrl
 	connectionSchema["organization_name"] = connection.OrganizationName
 	connectionSchema["account_locator"] = connection.AccountLocator
-	connectionToSchemaMapper{}.additionalToSchema(connection, connectionSchema)
 	return connectionSchema
 }
 

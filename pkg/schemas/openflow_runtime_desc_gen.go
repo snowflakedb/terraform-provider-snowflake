@@ -3,16 +3,13 @@
 package schemas
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type openflowRuntimeDetailsToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.OpenflowRuntimeDetails] = openflowRuntimeDetailsToSchemaMapper{}
-
 // DescribeOpenflowRuntimeDetailsSchema represents output of DESCRIBE query for the single OpenflowRuntimeDetails.
-var DescribeOpenflowRuntimeDetailsSchema = mergeSchema(map[string]*schema.Schema{
+var DescribeOpenflowRuntimeDetailsSchema = map[string]*schema.Schema{
 	// id is skipped and won't be generated
 	"name": {
 		Type:     schema.TypeString,
@@ -42,7 +39,11 @@ var DescribeOpenflowRuntimeDetailsSchema = mergeSchema(map[string]*schema.Schema
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// external_access_integrations: manual addition and mapping is needed
+	"external_access_integrations": {
+		Type:     schema.TypeSet,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	"initially_suspended": {
 		Type:     schema.TypeBool,
 		Computed: true,
@@ -71,7 +72,7 @@ var DescribeOpenflowRuntimeDetailsSchema = mergeSchema(map[string]*schema.Schema
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}, openflowRuntimeDetailsToSchemaMapper{}.additionalSchema())
+}
 
 var _ = DescribeOpenflowRuntimeDetailsSchema
 
@@ -87,7 +88,7 @@ func OpenflowRuntimeDetailsToSchema(openflowRuntimeDetails *sdk.OpenflowRuntimeD
 	if openflowRuntimeDetails.DisplayName != nil {
 		openflowRuntimeDetailsSchema["display_name"] = (*openflowRuntimeDetails.DisplayName)
 	}
-	// external_access_integrations: manual addition and mapping is needed
+	openflowRuntimeDetailsSchema["external_access_integrations"] = collections.Map(openflowRuntimeDetails.ExternalAccessIntegrations, sdk.AccountObjectIdentifier.Name)
 	openflowRuntimeDetailsSchema["initially_suspended"] = openflowRuntimeDetails.InitiallySuspended
 	if openflowRuntimeDetails.ExecuteAsRole != nil {
 		openflowRuntimeDetailsSchema["execute_as_role"] = (*openflowRuntimeDetails.ExecuteAsRole)
@@ -105,7 +106,6 @@ func OpenflowRuntimeDetailsToSchema(openflowRuntimeDetails *sdk.OpenflowRuntimeD
 	if openflowRuntimeDetails.NodeTypeTier != nil {
 		openflowRuntimeDetailsSchema["node_type_tier"] = (*openflowRuntimeDetails.NodeTypeTier)
 	}
-	openflowRuntimeDetailsToSchemaMapper{}.additionalToSchema(openflowRuntimeDetails, openflowRuntimeDetailsSchema)
 	return openflowRuntimeDetailsSchema
 }
 

@@ -135,6 +135,30 @@ func Test_MapToSchemaField(t *testing.T) {
 			expected: expectedValues{"unexported_string_slice_ptr", schema.TypeList, true, false, genhelpers.Identity},
 		},
 		{
+			field:    genhelpers.Field{Name: "unexportedSchemaObjectIdentifierSlice", ConcreteType: "[]sdk.SchemaObjectIdentifier", UnderlyingType: "slice"},
+			expected: expectedValues{"unexported_schema_object_identifier_slice", schema.TypeList, false, false, mapSchemaObjectIdentifierSlice},
+		},
+		{
+			field:    genhelpers.Field{Name: "unexportedSchemaObjectIdentifierSlicePtr", ConcreteType: "*[]sdk.SchemaObjectIdentifier", UnderlyingType: "*slice"},
+			expected: expectedValues{"unexported_schema_object_identifier_slice_ptr", schema.TypeList, true, false, mapSchemaObjectIdentifierSlice},
+		},
+		{
+			field:    genhelpers.Field{Name: "unexportedAccountIdentifierSlice", ConcreteType: "[]sdk.AccountIdentifier", UnderlyingType: "slice"},
+			expected: expectedValues{"unexported_account_identifier_slice", schema.TypeList, false, false, mapAccountIdentifierSlice},
+		},
+		{
+			field:    genhelpers.Field{Name: "unexportedAccountIdentifierSlicePtr", ConcreteType: "*[]sdk.AccountIdentifier", UnderlyingType: "*slice"},
+			expected: expectedValues{"unexported_account_identifier_slice_ptr", schema.TypeList, true, false, mapAccountIdentifierSlice},
+		},
+		{
+			field:    genhelpers.Field{Name: "unexportedAccountObjectIdentifierSlice", ConcreteType: "[]sdk.AccountObjectIdentifier", UnderlyingType: "slice"},
+			expected: expectedValues{"unexported_account_object_identifier_slice", schema.TypeList, false, false, mapAccountObjectIdentifierSlice},
+		},
+		{
+			field:    genhelpers.Field{Name: "unexportedAccountObjectIdentifierSlicePtr", ConcreteType: "*[]sdk.AccountObjectIdentifier", UnderlyingType: "*slice"},
+			expected: expectedValues{"unexported_account_object_identifier_slice_ptr", schema.TypeList, true, false, mapAccountObjectIdentifierSlice},
+		},
+		{
 			field:    genhelpers.Field{Name: "unexportedIntSlice", ConcreteType: "[]int", UnderlyingType: "slice"},
 			expected: expectedValues{"unexported_int_slice", schema.TypeInvalid, false, false, genhelpers.Identity},
 		},
@@ -157,4 +181,15 @@ func Test_MapToSchemaField(t *testing.T) {
 			assertSchemaFieldMapped(schemaField, tc.field, tc.expected)
 		})
 	}
+}
+
+func Test_MapToSchemaField_identifierSliceMapper(t *testing.T) {
+	schemaField := MapToSchemaField(genhelpers.Field{Name: "BaseTables", ConcreteType: "[]sdk.SchemaObjectIdentifier", UnderlyingType: "slice"})
+	assert.Equal(t, "collections.Map(stream.BaseTables, sdk.SchemaObjectIdentifier.FullyQualifiedName)", genhelpers.RunMapper(schemaField.Mapper, "stream.BaseTables"))
+
+	schemaField = MapToSchemaField(genhelpers.Field{Name: "FailoverAllowedToAccounts", ConcreteType: "[]sdk.AccountIdentifier", UnderlyingType: "slice"})
+	assert.Equal(t, "collections.Map(connection.FailoverAllowedToAccounts, sdk.AccountIdentifier.Name)", genhelpers.RunMapper(schemaField.Mapper, "connection.FailoverAllowedToAccounts"))
+
+	schemaField = MapToSchemaField(genhelpers.Field{Name: "ExternalAccessIntegrations", ConcreteType: "[]sdk.AccountObjectIdentifier", UnderlyingType: "slice"})
+	assert.Equal(t, "collections.Map(service.ExternalAccessIntegrations, sdk.AccountObjectIdentifier.Name)", genhelpers.RunMapper(schemaField.Mapper, "service.ExternalAccessIntegrations"))
 }

@@ -3,16 +3,13 @@
 package schemas
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type serviceDetailsToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.ServiceDetails] = serviceDetailsToSchemaMapper{}
-
 // DescribeServiceDetailsSchema represents output of DESCRIBE query for the single ServiceDetails.
-var DescribeServiceDetailsSchema = mergeSchema(map[string]*schema.Schema{
+var DescribeServiceDetailsSchema = map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -69,7 +66,11 @@ var DescribeServiceDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
-	// external_access_integrations: manual addition and mapping is needed
+	"external_access_integrations": {
+		Type:     schema.TypeSet,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	"created_on": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -126,7 +127,7 @@ var DescribeServiceDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}, serviceDetailsToSchemaMapper{}.additionalSchema())
+}
 
 var _ = DescribeServiceDetailsSchema
 
@@ -146,7 +147,7 @@ func ServiceDetailsToSchema(serviceDetails *sdk.ServiceDetails) map[string]any {
 	serviceDetailsSchema["min_instances"] = serviceDetails.MinInstances
 	serviceDetailsSchema["max_instances"] = serviceDetails.MaxInstances
 	serviceDetailsSchema["auto_resume"] = serviceDetails.AutoResume
-	// external_access_integrations: manual addition and mapping is needed
+	serviceDetailsSchema["external_access_integrations"] = collections.Map(serviceDetails.ExternalAccessIntegrations, sdk.AccountObjectIdentifier.Name)
 	serviceDetailsSchema["created_on"] = serviceDetails.CreatedOn.String()
 	serviceDetailsSchema["updated_on"] = serviceDetails.UpdatedOn.String()
 	if serviceDetails.ResumedOn != nil {
@@ -173,7 +174,6 @@ func ServiceDetailsToSchema(serviceDetails *sdk.ServiceDetails) map[string]any {
 	if serviceDetails.ManagingObjectName != nil {
 		serviceDetailsSchema["managing_object_name"] = (*serviceDetails.ManagingObjectName)
 	}
-	serviceDetailsToSchemaMapper{}.additionalToSchema(serviceDetails, serviceDetailsSchema)
 	return serviceDetailsSchema
 }
 

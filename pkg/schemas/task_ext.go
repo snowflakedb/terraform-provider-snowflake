@@ -8,11 +8,6 @@ import (
 
 func (taskToSchemaMapper) additionalSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"predecessors": {
-			Type:     schema.TypeSet,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-			Computed: true,
-		},
 		"task_relations": {
 			Type:     schema.TypeList,
 			Computed: true,
@@ -58,8 +53,6 @@ func (taskToSchemaMapper) additionalSchema() map[string]*schema.Schema {
 }
 
 func (taskToSchemaMapper) additionalToSchema(src *sdk.Task, dst map[string]any) {
-	// Identifier slice: map each predecessor to FullyQualifiedName.
-	dst["predecessors"] = collections.Map(src.Predecessors, sdk.SchemaObjectIdentifier.FullyQualifiedName)
 	// Nested TaskRelations struct is a single-item list, not the struct itself.
 	finalizer := ""
 	if src.TaskRelations.FinalizerTask != nil {

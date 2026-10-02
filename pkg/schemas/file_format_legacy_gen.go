@@ -33,10 +33,7 @@ var ShowFileFormatLegacySchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"options": {
-		Type:     schema.TypeInvalid,
-		Computed: true,
-	},
+	// options is skipped and won't be generated
 }
 
 var _ = ShowFileFormatLegacySchema
@@ -49,7 +46,7 @@ func FileFormatLegacyToSchema(fileFormatLegacy *sdk.FileFormatLegacy) map[string
 	fileFormatLegacySchema["owner"] = fileFormatLegacy.Owner
 	fileFormatLegacySchema["comment"] = fileFormatLegacy.Comment
 	fileFormatLegacySchema["owner_role_type"] = fileFormatLegacy.OwnerRoleType
-	fileFormatLegacySchema["options"] = fileFormatLegacy.Options
+	// options is skipped and won't be generated
 	return fileFormatLegacySchema
 }
 

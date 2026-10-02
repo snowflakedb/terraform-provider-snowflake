@@ -22,9 +22,15 @@ func (f SchemaField) IsListOrSet() bool {
 	return f.SchemaType == schema.TypeList || f.SchemaType == schema.TypeSet
 }
 
+var (
+	mapSchemaObjectIdentifierSlice  = genhelpers.MapSlice("sdk.SchemaObjectIdentifier", "FullyQualifiedName")
+	mapAccountIdentifierSlice       = genhelpers.MapSlice("sdk.AccountIdentifier", "Name")
+	mapAccountObjectIdentifierSlice = genhelpers.MapSlice("sdk.AccountObjectIdentifier", "Name")
+)
+
 // TODO [SNOW-1501905]: handle other basic type variants
 // TODO [SNOW-1501905]: handle any other interface (error)
-// TODO [SNOW-1501905]: handle remaining slices (identifiers, enums, other numerics)
+// TODO [SNOW-1501905]: handle remaining slices (enums, other numerics)
 // TODO [SNOW-1501905]: handle structs (chosen one or all)
 func MapToSchemaField(field genhelpers.Field) SchemaField {
 	isPointer := field.IsPointer()
@@ -51,6 +57,12 @@ func MapToSchemaField(field genhelpers.Field) SchemaField {
 		return schemaField(name, schema.TypeString, field.Name, isPointer, isInterface, genhelpers.FullyQualifiedName)
 	case "sdk.ObjectIdentifier":
 		return schemaField(name, schema.TypeString, field.Name, isPointer, isInterface, genhelpers.FullyQualifiedName)
+	case "[]sdk.SchemaObjectIdentifier":
+		return schemaField(name, schema.TypeList, field.Name, isPointer, isInterface, mapSchemaObjectIdentifierSlice)
+	case "[]sdk.AccountIdentifier":
+		return schemaField(name, schema.TypeList, field.Name, isPointer, isInterface, mapAccountIdentifierSlice)
+	case "[]sdk.AccountObjectIdentifier":
+		return schemaField(name, schema.TypeList, field.Name, isPointer, isInterface, mapAccountObjectIdentifierSlice)
 	}
 
 	underlyingTypeWithoutPtr, _ := strings.CutPrefix(field.UnderlyingType, "*")

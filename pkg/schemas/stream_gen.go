@@ -3,16 +3,13 @@
 package schemas
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type streamToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.Stream] = streamToSchemaMapper{}
-
 // ShowStreamSchema represents output of SHOW query for the single Stream.
-var ShowStreamSchema = mergeSchema(map[string]*schema.Schema{
+var ShowStreamSchema = map[string]*schema.Schema{
 	"created_on": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -45,7 +42,11 @@ var ShowStreamSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// base_tables: manual addition and mapping is needed
+	"base_tables": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	"type": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -70,7 +71,7 @@ var ShowStreamSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}, streamToSchemaMapper{}.additionalSchema())
+}
 
 var _ = ShowStreamSchema
 
@@ -92,7 +93,7 @@ func StreamToSchema(stream *sdk.Stream) map[string]any {
 	if stream.SourceType != nil {
 		streamSchema["source_type"] = string((*stream.SourceType))
 	}
-	// base_tables: manual addition and mapping is needed
+	streamSchema["base_tables"] = collections.Map(stream.BaseTables, sdk.SchemaObjectIdentifier.FullyQualifiedName)
 	if stream.Type != nil {
 		streamSchema["type"] = (*stream.Type)
 	}
@@ -109,7 +110,6 @@ func StreamToSchema(stream *sdk.Stream) map[string]any {
 	if stream.OwnerRoleType != nil {
 		streamSchema["owner_role_type"] = (*stream.OwnerRoleType)
 	}
-	streamToSchemaMapper{}.additionalToSchema(stream, streamSchema)
 	return streamSchema
 }
 

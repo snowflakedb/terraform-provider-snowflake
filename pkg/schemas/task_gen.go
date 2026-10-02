@@ -3,6 +3,7 @@
 package schemas
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -49,7 +50,11 @@ var ShowTaskSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// predecessors: manual addition and mapping is needed
+	"predecessors": {
+		Type:     schema.TypeSet,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	"state": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -117,7 +122,7 @@ func TaskToSchema(task *sdk.Task) map[string]any {
 		taskSchema["warehouse"] = (*task.Warehouse).Name()
 	}
 	taskSchema["schedule"] = task.Schedule
-	// predecessors: manual addition and mapping is needed
+	taskSchema["predecessors"] = collections.Map(task.Predecessors, sdk.SchemaObjectIdentifier.FullyQualifiedName)
 	taskSchema["state"] = string(task.State)
 	taskSchema["definition"] = task.Definition
 	taskSchema["condition"] = task.Condition
