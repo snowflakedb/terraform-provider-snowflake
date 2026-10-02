@@ -633,6 +633,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_catalog_integration_object_storage":                           resources.CatalogIntegrationObjectStorage(),
 		"snowflake_catalog_integration_open_catalog":                             resources.CatalogIntegrationOpenCatalog(),
 		"snowflake_catalog_integration_iceberg_rest":                             resources.CatalogIntegrationIcebergRest(),
+		"snowflake_catalog_linked_database":                                      resources.CatalogLinkedDatabase(),
 		"snowflake_compute_pool":                                                 resources.ComputePool(),
 		"snowflake_cortex_agent":                                                 resources.CortexAgent(),
 		"snowflake_cortex_search_service":                                        resources.CortexSearchService(),

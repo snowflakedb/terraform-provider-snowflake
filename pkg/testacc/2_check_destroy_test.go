@@ -232,6 +232,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.CatalogIntegrationIcebergRest: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.CatalogIntegrations.ShowByID)
 	},
+	resources.CatalogLinkedDatabase: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Databases.ShowByID)
+	},
 	resources.PrimaryConnection: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Connections.ShowByID)
 	},
