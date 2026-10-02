@@ -330,6 +330,11 @@ func TestAcc_StorageIntegrationAzure_CompleteUseCase(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
+				ImportStateCheck: assertThatImport(
+					t,
+					resourceassert.ImportedStorageIntegrationAzureResource(t, id.Name()).
+						HasUsePrivatelinkEndpointString(r.BooleanDefault),
+				),
 			},
 		},
 	})

@@ -230,14 +230,19 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 			},
 			// IMPORT
 			{
-				ResourceName:            storageIntegrationAwsAllAttributesChanged.ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"storage_aws_external_id"},
+				ResourceName:      storageIntegrationAwsAllAttributesChanged.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				// use_privatelink_endpoint is ignored because IMPORT_BOOLEAN_DEFAULT
+				// (enabled by default) writes "default" while the config has an explicit value.
+				ImportStateVerifyIgnore: []string{
+					"use_privatelink_endpoint",
+					"storage_aws_external_id",
+				},
 				ImportStateCheck: assertThatImport(
 					t,
 					resourceassert.ImportedStorageIntegrationAwsResource(t, id.Name()).
-						HasUsePrivatelinkEndpointString(r.BooleanTrue),
+						HasUsePrivatelinkEndpointString(r.BooleanDefault),
 				),
 			},
 			// CHANGE PROP EXTERNALLY
@@ -396,6 +401,11 @@ func TestAcc_StorageIntegrationAws_CompleteUseCase(t *testing.T) {
 				// configuration has an explicit value.
 				// storage_aws_external_id is not read into state (only handled as an external DESCRIBE change)
 				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint", "storage_aws_external_id"},
+				ImportStateCheck: assertThatImport(
+					t,
+					resourceassert.ImportedStorageIntegrationAwsResource(t, id.Name()).
+						HasUsePrivatelinkEndpointString(r.BooleanDefault),
+				),
 			},
 		},
 	})

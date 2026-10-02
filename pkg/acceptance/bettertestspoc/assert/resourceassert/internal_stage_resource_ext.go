@@ -164,6 +164,46 @@ func (i *InternalStageResourceAssert) HasFileFormatCsvEncoding(expected sdk.CsvE
 	return i
 }
 
+func (i *InternalStageResourceAssert) HasFileFormatCsvParseHeaderString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.csv.0.parse_header", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatCsvTrimSpaceString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.csv.0.trim_space", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatCsvErrorOnColumnCountMismatchString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.csv.0.error_on_column_count_mismatch", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatCsvSkipBlankLinesString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.csv.0.skip_blank_lines", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatCsvReplaceInvalidCharactersString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.csv.0.replace_invalid_characters", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatCsvEmptyFieldAsNullString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.csv.0.empty_field_as_null", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatCsvSkipByteOrderMarkString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.csv.0.skip_byte_order_mark", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatCsvMultiLineString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.csv.0.multi_line", expected)
+	return i
+}
+
 func (i *InternalStageResourceAssert) HasFileFormatJson() *InternalStageResourceAssert {
 	i.ValueSet("file_format.#", "1")
 	i.ValueSet("file_format.0.json.#", "1")
@@ -258,6 +298,46 @@ func (i *InternalStageResourceAssert) HasFileFormatJsonSkipByteOrderMark(expecte
 
 func (i *InternalStageResourceAssert) HasFileFormatJsonReplaceInvalidCharactersString(expected string) *InternalStageResourceAssert {
 	i.ValueSet("file_format.0.json.0.replace_invalid_characters", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonIgnoreUtf8ErrorsString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.json.0.ignore_utf8_errors", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonSkipByteOrderMarkString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.json.0.skip_byte_order_mark", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonTrimSpaceString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.json.0.trim_space", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonMultiLineString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.json.0.multi_line", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonAllowDuplicateString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.json.0.allow_duplicate", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonStripOuterArrayString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.json.0.strip_outer_array", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonStripNullValuesString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.json.0.strip_null_values", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonEnableOctalString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.json.0.enable_octal", expected)
 	return i
 }
 
@@ -461,5 +541,30 @@ func (i *InternalStageResourceAssert) HasFileFormatXmlReplaceInvalidCharactersSt
 
 func (i *InternalStageResourceAssert) HasFileFormatXmlSkipByteOrderMark(expected bool) *InternalStageResourceAssert {
 	i.ValueSet("file_format.0.xml.0.skip_byte_order_mark", strconv.FormatBool(expected))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatXmlIgnoreUtf8ErrorsString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.xml.0.ignore_utf8_errors", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatXmlPreserveSpaceString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.xml.0.preserve_space", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatXmlStripOuterElementString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.xml.0.strip_outer_element", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatXmlDisableAutoConvertString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.xml.0.disable_auto_convert", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatXmlSkipByteOrderMarkString(expected string) *InternalStageResourceAssert {
+	i.ValueSet("file_format.0.xml.0.skip_byte_order_mark", expected)
 	return i
 }

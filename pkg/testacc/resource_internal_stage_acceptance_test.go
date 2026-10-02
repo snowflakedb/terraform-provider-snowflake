@@ -9,16 +9,18 @@ import (
 	"testing"
 	"time"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
-	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -389,6 +391,11 @@ func TestAcc_InternalStage_CompleteUseCase(t *testing.T) {
 				// directory.auto_refresh is ignored because IMPORT_BOOLEAN_DEFAULT
 				// (enabled by default) writes "default" while the config has "false".
 				ImportStateVerifyIgnore: []string{"encryption", "file_format", "directory"},
+				ImportStateCheck: assertThatImport(
+					t,
+					resourceassert.ImportedInternalStageResource(t, resourcehelpers.EncodeResourceIdentifier(id)).
+						HasDirectoryAutoRefreshString(r.BooleanDefault),
+				),
 			},
 		},
 	})
@@ -849,7 +856,35 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 				// E.g., when escape is set to '\\' in SQL, Snowflake returns '\\\\' in the response.
 				// This should be resolved with appropriate team. Alternatively, we can "unescape" such values in SDK.
 				// skip_header is skipped due to "-1" default value.
-				ImportStateVerifyIgnore: []string{"encryption", "directory", "file_format.0.csv.0.escape", "file_format.0.csv.0.field_optionally_enclosed_by", "file_format.0.csv.0.skip_header"},
+				// CSV boolean fields are ignored because IMPORT_BOOLEAN_DEFAULT
+				// (enabled by default) writes "default" while the config has explicit true/false.
+				ImportStateVerifyIgnore: []string{
+					"encryption",
+					"directory",
+					"file_format.0.csv.0.escape",
+					"file_format.0.csv.0.field_optionally_enclosed_by",
+					"file_format.0.csv.0.skip_header",
+					"file_format.0.csv.0.parse_header",
+					"file_format.0.csv.0.trim_space",
+					"file_format.0.csv.0.error_on_column_count_mismatch",
+					"file_format.0.csv.0.skip_blank_lines",
+					"file_format.0.csv.0.replace_invalid_characters",
+					"file_format.0.csv.0.empty_field_as_null",
+					"file_format.0.csv.0.skip_byte_order_mark",
+					"file_format.0.csv.0.multi_line",
+				},
+				ImportStateCheck: assertThatImport(
+					t,
+					resourceassert.ImportedInternalStageResource(t, resourcehelpers.EncodeResourceIdentifier(id)).
+						HasFileFormatCsvParseHeaderString(r.BooleanDefault).
+						HasFileFormatCsvTrimSpaceString(r.BooleanDefault).
+						HasFileFormatCsvErrorOnColumnCountMismatchString(r.BooleanDefault).
+						HasFileFormatCsvSkipBlankLinesString(r.BooleanDefault).
+						HasFileFormatCsvReplaceInvalidCharactersString(r.BooleanDefault).
+						HasFileFormatCsvEmptyFieldAsNullString(r.BooleanDefault).
+						HasFileFormatCsvSkipByteOrderMarkString(r.BooleanDefault).
+						HasFileFormatCsvMultiLineString(r.BooleanDefault),
+				),
 			},
 			// unset
 			{
@@ -1122,11 +1157,38 @@ func TestAcc_InternalStage_FileFormat_AllJsonOptions(t *testing.T) {
 				),
 			},
 			{
-				Config:                  accconfig.FromModels(t, modelCompleteJson),
-				ResourceName:            modelCompleteJson.ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"encryption", "directory", "file_format.0.json.0.ignore_utf8_errors", "file_format.0.json.0.replace_invalid_characters"},
+				Config:            accconfig.FromModels(t, modelCompleteJson),
+				ResourceName:      modelCompleteJson.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				// JSON boolean fields are ignored because IMPORT_BOOLEAN_DEFAULT
+				// (enabled by default) writes "default" while the config has explicit true/false.
+				ImportStateVerifyIgnore: []string{
+					"encryption",
+					"directory",
+					"file_format.0.json.0.ignore_utf8_errors",
+					"file_format.0.json.0.skip_byte_order_mark",
+					"file_format.0.json.0.trim_space",
+					"file_format.0.json.0.multi_line",
+					"file_format.0.json.0.allow_duplicate",
+					"file_format.0.json.0.strip_outer_array",
+					"file_format.0.json.0.strip_null_values",
+					"file_format.0.json.0.replace_invalid_characters",
+					"file_format.0.json.0.enable_octal",
+				},
+				ImportStateCheck: assertThatImport(
+					t,
+					resourceassert.ImportedInternalStageResource(t, resourcehelpers.EncodeResourceIdentifier(id)).
+						HasFileFormatJsonIgnoreUtf8ErrorsString(r.BooleanDefault).
+						HasFileFormatJsonSkipByteOrderMarkString(r.BooleanDefault).
+						HasFileFormatJsonTrimSpaceString(r.BooleanDefault).
+						HasFileFormatJsonMultiLineString(r.BooleanDefault).
+						HasFileFormatJsonAllowDuplicateString(r.BooleanDefault).
+						HasFileFormatJsonStripOuterArrayString(r.BooleanDefault).
+						HasFileFormatJsonStripNullValuesString(r.BooleanDefault).
+						HasFileFormatJsonReplaceInvalidCharactersString(r.BooleanDefault).
+						HasFileFormatJsonEnableOctalString(r.BooleanDefault),
+				),
 			},
 			// unset
 			{
@@ -1298,11 +1360,24 @@ func TestAcc_InternalStage_FileFormat_AllAvroOptions(t *testing.T) {
 				),
 			},
 			{
-				Config:                  accconfig.FromModels(t, modelCompleteAvro),
-				ResourceName:            modelCompleteAvro.ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"encryption", "directory"},
+				Config:            accconfig.FromModels(t, modelCompleteAvro),
+				ResourceName:      modelCompleteAvro.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Avro boolean fields are ignored because IMPORT_BOOLEAN_DEFAULT
+				// (enabled by default) writes "default" while the config has explicit true/false.
+				ImportStateVerifyIgnore: []string{
+					"encryption",
+					"directory",
+					"file_format.0.avro.0.trim_space",
+					"file_format.0.avro.0.replace_invalid_characters",
+				},
+				ImportStateCheck: assertThatImport(
+					t,
+					resourceassert.ImportedInternalStageResource(t, resourcehelpers.EncodeResourceIdentifier(id)).
+						HasFileFormatAvroTrimSpaceString(r.BooleanDefault).
+						HasFileFormatAvroReplaceInvalidCharactersString(r.BooleanDefault),
+				),
 			},
 			// unset
 			{
@@ -1446,11 +1521,24 @@ func TestAcc_InternalStage_FileFormat_AllOrcOptions(t *testing.T) {
 				),
 			},
 			{
-				Config:                  accconfig.FromModels(t, modelCompleteOrc),
-				ResourceName:            modelCompleteOrc.ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"encryption", "directory"},
+				Config:            accconfig.FromModels(t, modelCompleteOrc),
+				ResourceName:      modelCompleteOrc.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				// ORC boolean fields are ignored because IMPORT_BOOLEAN_DEFAULT
+				// (enabled by default) writes "default" while the config has explicit true/false.
+				ImportStateVerifyIgnore: []string{
+					"encryption",
+					"directory",
+					"file_format.0.orc.0.trim_space",
+					"file_format.0.orc.0.replace_invalid_characters",
+				},
+				ImportStateCheck: assertThatImport(
+					t,
+					resourceassert.ImportedInternalStageResource(t, resourcehelpers.EncodeResourceIdentifier(id)).
+						HasFileFormatOrcTrimSpaceString(r.BooleanDefault).
+						HasFileFormatOrcReplaceInvalidCharactersString(r.BooleanDefault),
+				),
 			},
 			// unset
 			{
@@ -1630,11 +1718,30 @@ func TestAcc_InternalStage_FileFormat_AllParquetOptions(t *testing.T) {
 				),
 			},
 			{
-				Config:                  accconfig.FromModels(t, modelCompleteParquet),
-				ResourceName:            modelCompleteParquet.ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"encryption", "directory"},
+				Config:            accconfig.FromModels(t, modelCompleteParquet),
+				ResourceName:      modelCompleteParquet.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Parquet boolean fields are ignored because IMPORT_BOOLEAN_DEFAULT
+				// (enabled by default) writes "default" while the config has explicit true/false.
+				ImportStateVerifyIgnore: []string{
+					"encryption",
+					"directory",
+					"file_format.0.parquet.0.binary_as_text",
+					"file_format.0.parquet.0.use_logical_type",
+					"file_format.0.parquet.0.trim_space",
+					"file_format.0.parquet.0.use_vectorized_scanner",
+					"file_format.0.parquet.0.replace_invalid_characters",
+				},
+				ImportStateCheck: assertThatImport(
+					t,
+					resourceassert.ImportedInternalStageResource(t, resourcehelpers.EncodeResourceIdentifier(id)).
+						HasFileFormatParquetBinaryAsTextString(r.BooleanDefault).
+						HasFileFormatParquetUseLogicalTypeString(r.BooleanDefault).
+						HasFileFormatParquetTrimSpaceString(r.BooleanDefault).
+						HasFileFormatParquetUseVectorizedScannerString(r.BooleanDefault).
+						HasFileFormatParquetReplaceInvalidCharactersString(r.BooleanDefault),
+				),
 			},
 			// unset
 			{
@@ -1798,11 +1905,32 @@ func TestAcc_InternalStage_FileFormat_AllXmlOptions(t *testing.T) {
 				),
 			},
 			{
-				Config:                  accconfig.FromModels(t, modelCompleteXml),
-				ResourceName:            modelCompleteXml.ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"encryption", "directory", "file_format.0.xml.0.ignore_utf8_errors", "file_format.0.xml.0.replace_invalid_characters"},
+				Config:            accconfig.FromModels(t, modelCompleteXml),
+				ResourceName:      modelCompleteXml.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				// XML boolean fields are ignored because IMPORT_BOOLEAN_DEFAULT
+				// (enabled by default) writes "default" while the config has explicit true/false.
+				ImportStateVerifyIgnore: []string{
+					"encryption",
+					"directory",
+					"file_format.0.xml.0.ignore_utf8_errors",
+					"file_format.0.xml.0.preserve_space",
+					"file_format.0.xml.0.strip_outer_element",
+					"file_format.0.xml.0.disable_auto_convert",
+					"file_format.0.xml.0.replace_invalid_characters",
+					"file_format.0.xml.0.skip_byte_order_mark",
+				},
+				ImportStateCheck: assertThatImport(
+					t,
+					resourceassert.ImportedInternalStageResource(t, resourcehelpers.EncodeResourceIdentifier(id)).
+						HasFileFormatXmlIgnoreUtf8ErrorsString(r.BooleanDefault).
+						HasFileFormatXmlPreserveSpaceString(r.BooleanDefault).
+						HasFileFormatXmlStripOuterElementString(r.BooleanDefault).
+						HasFileFormatXmlDisableAutoConvertString(r.BooleanDefault).
+						HasFileFormatXmlReplaceInvalidCharactersString(r.BooleanDefault).
+						HasFileFormatXmlSkipByteOrderMarkString(r.BooleanDefault),
+				),
 			},
 			// unset
 			{
