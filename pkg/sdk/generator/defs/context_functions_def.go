@@ -154,13 +154,4 @@ var contextFunctionsDef = g.NewInterface(
 			g.ListOptions().MustParentheses().Required(),
 		).
 		SQL("AS IS_ROLE_IN_SESSION"),
-).
-	// TODO(next-pr): drop this allow-list once SDK unit tests move to generated + *_ext_test.go
-	WithAllowedGenerationParts(
-		g.PartDefault,
-		g.PartDto,
-		g.PartDtoBuilders,
-		g.PartImpl,
-		g.PartValidations,
-		g.PartEnums,
-	)
+)

@@ -1,11 +1,98 @@
 package sdk
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func init() {
+	roleId := randomAccountObjectIdentifier()
+
+	contextFunctionsTests.CurrentAccount.
+		withExpectedSql(
+			case_ContextFunctions_sql_CurrentAccount_basic,
+			"SELECT CURRENT_ACCOUNT() as CURRENT_ACCOUNT",
+		)
+	contextFunctionsTests.CurrentOrganizationName.
+		withExpectedSql(
+			case_ContextFunctions_sql_CurrentOrganizationName_basic,
+			"SELECT CURRENT_ORGANIZATION_NAME() as CURRENT_ORGANIZATION_NAME",
+		)
+	contextFunctionsTests.CurrentAccountName.
+		withExpectedSql(
+			case_ContextFunctions_sql_CurrentAccountName_basic,
+			"SELECT CURRENT_ACCOUNT_NAME() as CURRENT_ACCOUNT_NAME",
+		)
+	contextFunctionsTests.CurrentRole.
+		withExpectedSql(
+			case_ContextFunctions_sql_CurrentRole_basic,
+			"SELECT CURRENT_ROLE() as CURRENT_ROLE",
+		)
+	contextFunctionsTests.CurrentSecondaryRoles.
+		withExpectedSql(
+			case_ContextFunctions_sql_CurrentSecondaryRoles_basic,
+			"SELECT CURRENT_SECONDARY_ROLES() as CURRENT_ROLES",
+		)
+	contextFunctionsTests.CurrentRegion.
+		withExpectedSql(
+			case_ContextFunctions_sql_CurrentRegion_basic,
+			"SELECT CURRENT_REGION() AS CURRENT_REGION",
+		)
+	contextFunctionsTests.CurrentSession.
+		withExpectedSql(
+			case_ContextFunctions_sql_CurrentSession_basic,
+			"SELECT CURRENT_SESSION() as CURRENT_SESSION",
+		)
+	contextFunctionsTests.CurrentUser.
+		withExpectedSql(
+			case_ContextFunctions_sql_CurrentUser_basic,
+			"SELECT CURRENT_USER() as CURRENT_USER",
+		)
+	contextFunctionsTests.CurrentHost.
+		withExpectedSql(
+			case_ContextFunctions_sql_CurrentHost_basic,
+			"SELECT VALUE:host::VARCHAR AS HOST FROM TABLE(FLATTEN(INPUT => PARSE_JSON(SYSTEM$ALLOWLIST()))) WHERE VALUE:type::VARCHAR = 'SNOWFLAKE_DEPLOYMENT'",
+		)
+	contextFunctionsTests.CurrentSessionDetails.
+		withExpectedSql(
+			case_ContextFunctions_sql_CurrentSessionDetails_basic,
+			"SELECT CURRENT_ACCOUNT() as CURRENT_ACCOUNT, CURRENT_ROLE() as CURRENT_ROLE, CURRENT_REGION() AS CURRENT_REGION, CURRENT_SESSION() as CURRENT_SESSION, CURRENT_USER() as CURRENT_USER, CURRENT_ACCOUNT_NAME() as CURRENT_ACCOUNT_NAME, CURRENT_ORGANIZATION_NAME() as CURRENT_ORGANIZATION_NAME",
+		)
+	contextFunctionsTests.LastQueryId.
+		withExpectedSql(
+			case_ContextFunctions_sql_LastQueryId_basic,
+			"SELECT LAST_QUERY_ID() as LAST_QUERY_ID",
+		)
+	contextFunctionsTests.CurrentDatabase.
+		withExpectedSql(
+			case_ContextFunctions_sql_CurrentDatabase_basic,
+			"SELECT CURRENT_DATABASE() as CURRENT_DATABASE",
+		)
+	contextFunctionsTests.CurrentSchema.
+		withExpectedSql(
+			case_ContextFunctions_sql_CurrentSchema_basic,
+			"SELECT CURRENT_SCHEMA() as CURRENT_SCHEMA",
+		)
+	contextFunctionsTests.CurrentWarehouse.
+		withExpectedSql(
+			case_ContextFunctions_sql_CurrentWarehouse_basic,
+			"SELECT CURRENT_WAREHOUSE() as CURRENT_WAREHOUSE",
+		)
+	contextFunctionsTests.IsRoleInSession.
+		withDefaultOpts(func() *IsRoleInSessionOptions {
+			return &IsRoleInSessionOptions{
+				Arguments: IsRoleInSessionArguments{Role: roleId},
+			}
+		}).
+		withExpectedSqlf(
+			case_ContextFunctions_sql_IsRoleInSession_basic,
+			"SELECT IS_ROLE_IN_SESSION ('%s') AS IS_ROLE_IN_SESSION",
+			strings.ReplaceAll(roleId.FullyQualifiedName(), `"`, `\"`),
+		)
+}
 
 func TestCurrentSessionDetails_AccountURL(t *testing.T) {
 	testCases := []struct {

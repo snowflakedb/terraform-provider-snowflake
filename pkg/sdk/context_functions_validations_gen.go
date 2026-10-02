@@ -139,7 +139,7 @@ func (opts *IsRoleInSessionOptions) validate() error {
 	var errs []error
 	if valueSet(opts.Arguments) {
 		if !ValidObjectIdentifier(opts.Arguments.Role) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
+			errs = append(errs, errInvalidIdentifier("IsRoleInSessionOptions.Arguments", "Role"))
 		}
 	}
 	return JoinErrors(errs...)
