@@ -54,6 +54,7 @@ The following types are supported currently in the generator (schema and mapping
     - `sdk.SchemaObjectIdentifier`
     - `sdk.TableColumnIdentifier`
 - `sdk.ObjectIdentifier` interface (nil-guarded; no dereference)
+- `datatypes.DataType` interface (nil-guarded; `.ToSql()`)
 - slices of string (`[]string`; default TypeList with TypeString `Elem`; `TypeOverrides` to TypeSet)
 - slices of `[]sdk.SchemaObjectIdentifier` (default TypeList of `.FullyQualifiedName()`; `TypeOverrides` to TypeSet)
 - slices of `[]sdk.AccountIdentifier` (default TypeList of `.Name()`; `TypeOverrides` to TypeSet)
@@ -65,6 +66,7 @@ Given SDK struct field can be mapped to the generated schema depending on its ty
 - no mapping (`Identity`) - used for `string` and other basic types
 - string value mapping (`ToString`) - used e.g. for `time.Time`
 - fully qualified name mapping (`FullyQualifiedName`) - used for all identifiers and `sdk.ObjectIdentifier` interface (nil-guarded when the field is an interface)
+- SQL type mapping (`ToSql`) - used for `datatypes.DataType` interface (nil-guarded)
 - identifier slice mapping (`MapSlice`) - `collections.Map` of `.FullyQualifiedName()` for `[]sdk.SchemaObjectIdentifier`, `.Name()` for `[]sdk.AccountIdentifier` and `[]sdk.AccountObjectIdentifier`
 - casting (`CastToString` and `CastToInt`) - used for enums with underlying type `string` or `int`
 

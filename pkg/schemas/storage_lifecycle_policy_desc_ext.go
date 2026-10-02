@@ -23,10 +23,6 @@ func (storageLifecyclePolicyDetailsToSchemaMapper) additionalSchema() map[string
 			},
 			Computed: true,
 		},
-		"return_type": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
 	}
 }
 
@@ -39,6 +35,4 @@ func (storageLifecyclePolicyDetailsToSchemaMapper) additionalToSchema(src *sdk.S
 		}
 	}
 	dst["signature"] = signatureElem
-	// TODO [next PRs]: drop return_type from this ext once the generator maps datatypes.DataType via ToSql().
-	dst["return_type"] = src.ReturnType.ToSql()
 }

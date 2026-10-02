@@ -7,12 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type functionDetailsToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.FunctionDetails] = functionDetailsToSchemaMapper{}
-
 // DescribeFunctionDetailsSchema represents output of DESCRIBE query for the single FunctionDetails.
-var DescribeFunctionDetailsSchema = mergeSchema(map[string]*schema.Schema{
+var DescribeFunctionDetailsSchema = map[string]*schema.Schema{
 	// id is skipped and won't be generated
 	"signature": {
 		Type:     schema.TypeString,
@@ -76,7 +72,10 @@ var DescribeFunctionDetailsSchema = mergeSchema(map[string]*schema.Schema{
 	},
 	// normalized_imports is skipped and won't be generated
 	// normalized_target_path is skipped and won't be generated
-	// return_data_type: manual addition and mapping is needed
+	"return_data_type": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	"return_not_null": {
 		Type:     schema.TypeBool,
 		Computed: true,
@@ -85,7 +84,7 @@ var DescribeFunctionDetailsSchema = mergeSchema(map[string]*schema.Schema{
 	// normalized_external_access_integrations is skipped and won't be generated
 	// normalized_secrets is skipped and won't be generated
 	// normalized_packages is skipped and won't be generated
-}, functionDetailsToSchemaMapper{}.additionalSchema())
+}
 
 var _ = DescribeFunctionDetailsSchema
 
@@ -133,13 +132,14 @@ func FunctionDetailsToSchema(functionDetails *sdk.FunctionDetails) map[string]an
 	}
 	// normalized_imports is skipped and won't be generated
 	// normalized_target_path is skipped and won't be generated
-	// return_data_type: manual addition and mapping is needed
+	if functionDetails.ReturnDataType != nil {
+		functionDetailsSchema["return_data_type"] = functionDetails.ReturnDataType.ToSql()
+	}
 	functionDetailsSchema["return_not_null"] = functionDetails.ReturnNotNull
 	// normalized_arguments is skipped and won't be generated
 	// normalized_external_access_integrations is skipped and won't be generated
 	// normalized_secrets is skipped and won't be generated
 	// normalized_packages is skipped and won't be generated
-	functionDetailsToSchemaMapper{}.additionalToSchema(functionDetails, functionDetailsSchema)
 	return functionDetailsSchema
 }
 

@@ -7,12 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type procedureDetailsToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.ProcedureDetails] = procedureDetailsToSchemaMapper{}
-
 // DescribeProcedureDetailsSchema represents output of DESCRIBE query for the single ProcedureDetails.
-var DescribeProcedureDetailsSchema = mergeSchema(map[string]*schema.Schema{
+var DescribeProcedureDetailsSchema = map[string]*schema.Schema{
 	// id is skipped and won't be generated
 	"signature": {
 		Type:     schema.TypeString,
@@ -76,7 +72,10 @@ var DescribeProcedureDetailsSchema = mergeSchema(map[string]*schema.Schema{
 	},
 	// normalized_imports is skipped and won't be generated
 	// normalized_target_path is skipped and won't be generated
-	// return_data_type: manual addition and mapping is needed
+	"return_data_type": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	"return_not_null": {
 		Type:     schema.TypeBool,
 		Computed: true,
@@ -86,7 +85,7 @@ var DescribeProcedureDetailsSchema = mergeSchema(map[string]*schema.Schema{
 	// normalized_secrets is skipped and won't be generated
 	// normalized_packages is skipped and won't be generated
 	// snowpark_version is skipped and won't be generated
-}, procedureDetailsToSchemaMapper{}.additionalSchema())
+}
 
 var _ = DescribeProcedureDetailsSchema
 
@@ -132,14 +131,15 @@ func ProcedureDetailsToSchema(procedureDetails *sdk.ProcedureDetails) map[string
 	procedureDetailsSchema["execute_as"] = procedureDetails.ExecuteAs
 	// normalized_imports is skipped and won't be generated
 	// normalized_target_path is skipped and won't be generated
-	// return_data_type: manual addition and mapping is needed
+	if procedureDetails.ReturnDataType != nil {
+		procedureDetailsSchema["return_data_type"] = procedureDetails.ReturnDataType.ToSql()
+	}
 	procedureDetailsSchema["return_not_null"] = procedureDetails.ReturnNotNull
 	// normalized_arguments is skipped and won't be generated
 	// normalized_external_access_integrations is skipped and won't be generated
 	// normalized_secrets is skipped and won't be generated
 	// normalized_packages is skipped and won't be generated
 	// snowpark_version is skipped and won't be generated
-	procedureDetailsToSchemaMapper{}.additionalToSchema(procedureDetails, procedureDetailsSchema)
 	return procedureDetailsSchema
 }
 

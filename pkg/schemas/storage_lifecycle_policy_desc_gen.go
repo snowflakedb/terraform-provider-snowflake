@@ -26,7 +26,10 @@ var DescribeStorageLifecyclePolicyDetailsSchema = mergeSchema(map[string]*schema
 		Computed: true,
 	},
 	// signature: manual addition and mapping is needed
-	// return_type: manual addition and mapping is needed
+	"return_type": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	"body": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -49,7 +52,9 @@ func StorageLifecyclePolicyDetailsToSchema(storageLifecyclePolicyDetails *sdk.St
 	storageLifecyclePolicyDetailsSchema["database_name"] = storageLifecyclePolicyDetails.DatabaseName
 	storageLifecyclePolicyDetailsSchema["schema_name"] = storageLifecyclePolicyDetails.SchemaName
 	// signature: manual addition and mapping is needed
-	// return_type: manual addition and mapping is needed
+	if storageLifecyclePolicyDetails.ReturnType != nil {
+		storageLifecyclePolicyDetailsSchema["return_type"] = storageLifecyclePolicyDetails.ReturnType.ToSql()
+	}
 	storageLifecyclePolicyDetailsSchema["body"] = storageLifecyclePolicyDetails.Body
 	if storageLifecyclePolicyDetails.ArchiveForDays != nil {
 		storageLifecyclePolicyDetailsSchema["archive_for_days"] = (*storageLifecyclePolicyDetails.ArchiveForDays)

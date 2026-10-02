@@ -23,17 +23,11 @@ func (maskingPolicyDetailsToSchemaMapper) additionalSchema() map[string]*schema.
 			},
 			Computed: true,
 		},
-		"return_type": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
 	}
 }
 
 func (maskingPolicyDetailsToSchemaMapper) additionalToSchema(src *sdk.MaskingPolicyDetails, dst map[string]any) {
 	dst["signature"] = MaskingPolicyArgumentsToSchema(src.Signature)
-	// TODO [next PRs]: drop return_type from this ext once the generator maps datatypes.DataType via ToSql().
-	dst["return_type"] = src.ReturnType.ToSql()
 }
 
 func MaskingPolicyArgumentsToSchema(args []sdk.TableColumnSignature) []map[string]any {

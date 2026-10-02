@@ -18,7 +18,10 @@ var DescribeMaskingPolicyDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Computed: true,
 	},
 	// signature: manual addition and mapping is needed
-	// return_type: manual addition and mapping is needed
+	"return_type": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	"body": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -31,7 +34,9 @@ func MaskingPolicyDetailsToSchema(maskingPolicyDetails *sdk.MaskingPolicyDetails
 	maskingPolicyDetailsSchema := make(map[string]any)
 	maskingPolicyDetailsSchema["name"] = maskingPolicyDetails.Name
 	// signature: manual addition and mapping is needed
-	// return_type: manual addition and mapping is needed
+	if maskingPolicyDetails.ReturnType != nil {
+		maskingPolicyDetailsSchema["return_type"] = maskingPolicyDetails.ReturnType.ToSql()
+	}
 	maskingPolicyDetailsSchema["body"] = maskingPolicyDetails.Body
 	maskingPolicyDetailsToSchemaMapper{}.additionalToSchema(maskingPolicyDetails, maskingPolicyDetailsSchema)
 	return maskingPolicyDetailsSchema

@@ -127,6 +127,14 @@ func Test_MapToSchemaField(t *testing.T) {
 			expected: expectedValues{"unexported_table_column_identifier_ptr", schema.TypeString, true, false, genhelpers.FullyQualifiedName},
 		},
 		{
+			field:    genhelpers.Field{Name: "unexportedDataType", ConcreteType: "datatypes.DataType", UnderlyingType: "interface"},
+			expected: expectedValues{"unexported_data_type", schema.TypeString, false, true, genhelpers.ToSql},
+		},
+		{
+			field:    genhelpers.Field{Name: "unexportedDataTypePtr", ConcreteType: "*datatypes.DataType", UnderlyingType: "*interface"},
+			expected: expectedValues{"unexported_data_type_ptr", schema.TypeString, true, true, genhelpers.ToSql},
+		},
+		{
 			field:    genhelpers.Field{Name: "unexportedStringSlice", ConcreteType: "[]string", UnderlyingType: "slice"},
 			expected: expectedValues{"unexported_string_slice", schema.TypeList, false, false, genhelpers.Identity},
 		},
@@ -192,4 +200,9 @@ func Test_MapToSchemaField_identifierSliceMapper(t *testing.T) {
 
 	schemaField = MapToSchemaField(genhelpers.Field{Name: "ExternalAccessIntegrations", ConcreteType: "[]sdk.AccountObjectIdentifier", UnderlyingType: "slice"})
 	assert.Equal(t, "collections.Map(service.ExternalAccessIntegrations, sdk.AccountObjectIdentifier.Name)", genhelpers.RunMapper(schemaField.Mapper, "service.ExternalAccessIntegrations"))
+}
+
+func Test_MapToSchemaField_dataTypeMapper(t *testing.T) {
+	schemaField := MapToSchemaField(genhelpers.Field{Name: "ReturnType", ConcreteType: "datatypes.DataType", UnderlyingType: "interface"})
+	assert.Equal(t, "maskingPolicyDetails.ReturnType.ToSql()", genhelpers.RunMapper(schemaField.Mapper, "maskingPolicyDetails.ReturnType"))
 }

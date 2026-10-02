@@ -57,6 +57,8 @@ func MapToSchemaField(field genhelpers.Field) SchemaField {
 		return schemaField(name, schema.TypeString, field.Name, isPointer, isInterface, genhelpers.FullyQualifiedName)
 	case "sdk.ObjectIdentifier":
 		return schemaField(name, schema.TypeString, field.Name, isPointer, isInterface, genhelpers.FullyQualifiedName)
+	case "datatypes.DataType":
+		return schemaField(name, schema.TypeString, field.Name, isPointer, isInterface, genhelpers.ToSql)
 	case "[]sdk.SchemaObjectIdentifier":
 		return schemaField(name, schema.TypeList, field.Name, isPointer, isInterface, mapSchemaObjectIdentifierSlice)
 	case "[]sdk.AccountIdentifier":

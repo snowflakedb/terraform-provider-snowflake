@@ -214,16 +214,16 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	// TODO [next PRs]: un-skip disable_snowflake_data (stale public schema; still a DESCRIBE column).
 	{ObjectStruct: sdk.FileFormatXml{}, IsDescribe: true, SkipFields: []string{"disable_snowflake_data"}},
 	// SkipFields omits SDK-only identifier/normalized fields (not Snowflake DESCRIBE properties; schema is not wired yet).
-	// TODO [next PRs]: drop return_data_type from ManualFields once MapToSchemaField maps datatypes.DataType via ToSql().
 	{ObjectStruct: sdk.FunctionDetails{}, IsDescribe: true, SkipFields: []string{
 		"id", "normalized_imports", "normalized_target_path",
 		"normalized_arguments", "normalized_external_access_integrations", "normalized_secrets", "normalized_packages",
-	}, ManualFields: []string{"return_data_type"}},
+	}},
 	{ObjectStruct: sdk.HybridTableDetails{}, IsDescribe: true},
+	// ManualFields `type`: public mapping is TypeString() (raw DESC fallback when parse fails), not ToSql().
 	{ObjectStruct: sdk.IcebergTableDetails{}, IsDescribe: true, SkipFields: []string{"data_type_raw"}, ManualFields: []string{"type"}},
 	{ObjectStruct: sdk.ListingDetails{}, IsDescribe: true},
-	// TODO [next PRs]: drop return_type from ManualFields once MapToSchemaField maps datatypes.DataType via ToSql(); signature stays ext (slice of structs).
-	{ObjectStruct: sdk.MaskingPolicyDetails{}, IsDescribe: true, ManualFields: []string{"signature", "return_type"}},
+	// ManualFields `signature` stays ext (slice of structs)
+	{ObjectStruct: sdk.MaskingPolicyDetails{}, IsDescribe: true, ManualFields: []string{"signature"}},
 	{ObjectStruct: sdk.MaterializedViewDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.McpServerDetails{}, IsDescribe: true},
 	// TypeString of each property .Value (today’s public describe_output).
@@ -268,12 +268,11 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	// SkipFields omits SDK parse helpers (not DESCRIBE columns; keep omitted).
 	{ObjectStruct: sdk.PostgresInstanceDetails{}, IsDescribe: true, SkipFields: []string{"has_any_running_operations", "operation_errors"}},
 	// SkipFields omits SDK-only identifier/normalized fields (not Snowflake DESCRIBE properties; schema is not wired yet).
-	// TODO [next PRs]: drop return_data_type from ManualFields once MapToSchemaField maps datatypes.DataType via ToSql().
 	{ObjectStruct: sdk.ProcedureDetails{}, IsDescribe: true, SkipFields: []string{
 		"id", "normalized_imports", "normalized_target_path",
 		"normalized_arguments", "normalized_external_access_integrations", "normalized_secrets", "normalized_packages",
 		"snowpark_version",
-	}, ManualFields: []string{"return_data_type"}},
+	}},
 	// ManualFields `signature` stays ext (slice of structs). `return_type` is string (not datatypes.DataType) so it generates natively.
 	{ObjectStruct: sdk.RowAccessPolicyDescription{}, IsDescribe: true, ManualFields: []string{"signature"}},
 	// Nested DescribePropertyListSchema in ext (today’s public describe_output).
@@ -333,8 +332,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.StorageIntegrationGcsDetails{}, IsDescribe: true},
 	// Property-row list entry (same pattern as SecurityIntegrationProperty). Nested DescribeStorageIntegrationDetailsSchema stays the name-keyed consumer.
 	{ObjectStruct: sdk.StorageIntegrationProperty{}, UsedAsListEntry: true},
-	// TODO [next PRs]: drop return_type from ManualFields once MapToSchemaField maps datatypes.DataType via ToSql(); signature stays ext (slice of structs).
-	{ObjectStruct: sdk.StorageLifecyclePolicyDetails{}, IsDescribe: true, ManualFields: []string{"signature", "return_type"}},
+	// ManualFields `signature` stays ext (slice of structs)
+	{ObjectStruct: sdk.StorageLifecyclePolicyDetails{}, IsDescribe: true, ManualFields: []string{"signature"}},
 	// ManualFields `root_location` (ParseRootLocation rewrite) and []string TypeSets.
 	{ObjectStruct: sdk.StreamlitDetail{}, IsDescribe: true, ManualFields: []string{"root_location", "user_packages", "import_urls", "external_access_integrations"}},
 	// ManualFields `check`: SDK is *bool; public describe_output is TypeString.
