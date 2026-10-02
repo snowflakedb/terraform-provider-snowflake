@@ -70,7 +70,7 @@ func (c *UserClient) AlterCurrentUser(t *testing.T, alter func(id sdk.AccountObj
 	ctx := context.Background()
 	id, err := c.context.client.ContextFunctions.CurrentUser(ctx)
 	require.NoError(t, err)
-	err = c.client().Alter(ctx, alter(id))
+	err = c.client().Alter(ctx, alter(id.Value))
 	require.NoError(t, err)
 }
 

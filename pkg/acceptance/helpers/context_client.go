@@ -30,7 +30,7 @@ func (c *ContextClient) CurrentAccount(t *testing.T) string {
 	currentAccount, err := c.client().CurrentAccount(ctx)
 	require.NoError(t, err)
 
-	return currentAccount
+	return currentAccount.Value
 }
 
 func (c *ContextClient) CurrentAccountId(t *testing.T) sdk.AccountIdentifier {
@@ -50,7 +50,7 @@ func (c *ContextClient) CurrentAccountName(t *testing.T) string {
 	currentAccount, err := c.client().CurrentAccountName(ctx)
 	require.NoError(t, err)
 
-	return currentAccount
+	return currentAccount.Value
 }
 
 func (c *ContextClient) CurrentRole(t *testing.T) sdk.AccountObjectIdentifier {
@@ -60,7 +60,7 @@ func (c *ContextClient) CurrentRole(t *testing.T) sdk.AccountObjectIdentifier {
 	currentRole, err := c.client().CurrentRole(ctx)
 	require.NoError(t, err)
 
-	return currentRole
+	return currentRole.Value
 }
 
 func (c *ContextClient) CurrentRegion(t *testing.T) string {
@@ -70,7 +70,7 @@ func (c *ContextClient) CurrentRegion(t *testing.T) string {
 	currentRegion, err := c.client().CurrentRegion(ctx)
 	require.NoError(t, err)
 
-	return currentRegion
+	return currentRegion.Value
 }
 
 func (c *ContextClient) CurrentUser(t *testing.T) sdk.AccountObjectIdentifier {
@@ -80,7 +80,7 @@ func (c *ContextClient) CurrentUser(t *testing.T) sdk.AccountObjectIdentifier {
 	currentUser, err := c.client().CurrentUser(ctx)
 	require.NoError(t, err)
 
-	return currentUser
+	return currentUser.Value
 }
 
 func (c *ContextClient) CurrentAccountIdentifier(t *testing.T) sdk.AccountIdentifier {
@@ -99,17 +99,17 @@ func (c *ContextClient) CurrentOrganizationName(t *testing.T) string {
 	organizationName, err := c.client().CurrentOrganizationName(ctx)
 	require.NoError(t, err)
 
-	return organizationName
+	return organizationName.Value
 }
 
 func (c *ContextClient) IsRoleInSession(t *testing.T, id sdk.AccountObjectIdentifier) bool {
 	t.Helper()
 	ctx := context.Background()
 
-	isInSession, err := c.client().IsRoleInSession(ctx, id)
+	isInSession, err := c.client().IsRoleInSession(ctx, sdk.NewIsRoleInSessionRequest(*sdk.NewIsRoleInSessionArgumentsRequest(id)))
 	require.NoError(t, err)
 
-	return isInSession
+	return isInSession.Value
 }
 
 // ACSURL returns Snowflake Assertion Consumer Service URL.
@@ -133,7 +133,7 @@ func (c *ContextClient) AccountURL(t *testing.T) string {
 	host, err := c.client().CurrentHost(ctx)
 	require.NoError(t, err)
 
-	return host
+	return host.Value
 }
 
 func (c *ContextClient) LastQueryId(t *testing.T) string {
@@ -143,12 +143,12 @@ func (c *ContextClient) LastQueryId(t *testing.T) string {
 	id, err := c.client().LastQueryId(ctx)
 	require.NoError(t, err)
 
-	return id
+	return id.Value
 }
 
 func (c *ContextClient) DefaultConsumptionBillingEntity(t *testing.T) sdk.AccountObjectIdentifier {
 	t.Helper()
 	orgName, err := c.context.client.ContextFunctions.CurrentOrganizationName(context.Background())
 	require.NoError(t, err)
-	return sdk.NewAccountObjectIdentifier(fmt.Sprintf("%s_DefaultBE", orgName))
+	return sdk.NewAccountObjectIdentifier(fmt.Sprintf("%s_DefaultBE", orgName.Value))
 }

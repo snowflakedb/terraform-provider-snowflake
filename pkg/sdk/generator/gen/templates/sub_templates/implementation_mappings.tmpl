@@ -2,10 +2,12 @@
 
 {{ range .Operations }}
     {{- if .OptsField }}
+        {{- if not .NoRequest }}
         func (r *{{ .OptsField.DtoDecl }}) toOpts() *{{ .OptsField.KindNoPtr }} {
             opts := &{{ template "toOptsMapping" .OptsField }}
             return opts
         }
+        {{- end }}
 
         {{ if .ShowMapping }}
             {{ if not .ShowMapping.SkipConvert }}

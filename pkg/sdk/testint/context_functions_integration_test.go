@@ -16,7 +16,7 @@ func TestInt_CurrentAccount(t *testing.T) {
 
 	account, err := client.ContextFunctions.CurrentAccount(ctx)
 	require.NoError(t, err)
-	assert.NotEmpty(t, account)
+	assert.NotEmpty(t, account.Value)
 }
 
 func TestInt_CurrentAccountName(t *testing.T) {
@@ -25,7 +25,7 @@ func TestInt_CurrentAccountName(t *testing.T) {
 
 	accountName, err := client.ContextFunctions.CurrentAccountName(ctx)
 	require.NoError(t, err)
-	assert.NotEmpty(t, accountName)
+	assert.NotEmpty(t, accountName.Value)
 }
 
 func TestInt_CurrentOrganizationName(t *testing.T) {
@@ -34,7 +34,7 @@ func TestInt_CurrentOrganizationName(t *testing.T) {
 
 	organizationName, err := client.ContextFunctions.CurrentOrganizationName(ctx)
 	require.NoError(t, err)
-	assert.NotEmpty(t, organizationName)
+	assert.NotEmpty(t, organizationName.Value)
 }
 
 func TestInt_CurrentRole(t *testing.T) {
@@ -42,7 +42,7 @@ func TestInt_CurrentRole(t *testing.T) {
 	ctx := testContext(t)
 	role, err := client.ContextFunctions.CurrentRole(ctx)
 	require.NoError(t, err)
-	assert.NotEmpty(t, role.Name())
+	assert.NotEmpty(t, role.Value.Name())
 }
 
 func TestInt_CurrentRegion(t *testing.T) {
@@ -50,7 +50,7 @@ func TestInt_CurrentRegion(t *testing.T) {
 	ctx := testContext(t)
 	region, err := client.ContextFunctions.CurrentRegion(ctx)
 	require.NoError(t, err)
-	assert.NotEmpty(t, region)
+	assert.NotEmpty(t, region.Value)
 }
 
 func TestInt_CurrentSession(t *testing.T) {
@@ -58,7 +58,7 @@ func TestInt_CurrentSession(t *testing.T) {
 	ctx := testContext(t)
 	session, err := client.ContextFunctions.CurrentSession(ctx)
 	require.NoError(t, err)
-	assert.NotEmpty(t, session)
+	assert.NotEmpty(t, session.Value)
 }
 
 func TestInt_CurrentUser(t *testing.T) {
@@ -66,7 +66,7 @@ func TestInt_CurrentUser(t *testing.T) {
 	ctx := testContext(t)
 	user, err := client.ContextFunctions.CurrentUser(ctx)
 	require.NoError(t, err)
-	assert.NotEmpty(t, user.Name())
+	assert.NotEmpty(t, user.Value.Name())
 }
 
 func TestInt_CurrentSessionDetails(t *testing.T) {
@@ -92,7 +92,7 @@ func TestInt_CurrentDatabase(t *testing.T) {
 	require.NoError(t, err)
 	db, err := client.ContextFunctions.CurrentDatabase(ctx)
 	require.NoError(t, err)
-	assert.NotEmpty(t, db)
+	assert.NotEmpty(t, db.Value)
 }
 
 func TestInt_CurrentSchema(t *testing.T) {
@@ -108,7 +108,7 @@ func TestInt_CurrentSchema(t *testing.T) {
 	require.NoError(t, err)
 	schema, err := client.ContextFunctions.CurrentSchema(ctx)
 	require.NoError(t, err)
-	assert.NotEmpty(t, schema)
+	assert.NotEmpty(t, schema.Value)
 }
 
 func TestInt_CurrentWarehouse(t *testing.T) {
@@ -122,7 +122,7 @@ func TestInt_CurrentWarehouse(t *testing.T) {
 	require.NoError(t, err)
 	warehouse, err := client.ContextFunctions.CurrentWarehouse(ctx)
 	require.NoError(t, err)
-	assert.NotEmpty(t, warehouse)
+	assert.NotEmpty(t, warehouse.Value)
 }
 
 func TestInt_IsRoleInSession(t *testing.T) {
@@ -130,9 +130,9 @@ func TestInt_IsRoleInSession(t *testing.T) {
 	ctx := testContext(t)
 	currentRole, err := client.ContextFunctions.CurrentRole(ctx)
 	require.NoError(t, err)
-	role, err := client.ContextFunctions.IsRoleInSession(ctx, currentRole)
+	role, err := client.ContextFunctions.IsRoleInSession(ctx, sdk.NewIsRoleInSessionRequest(*sdk.NewIsRoleInSessionArgumentsRequest(currentRole.Value)))
 	require.NoError(t, err)
-	assert.True(t, role)
+	assert.True(t, role.Value)
 }
 
 func TestInt_RolesUse(t *testing.T) {
@@ -143,9 +143,9 @@ func TestInt_RolesUse(t *testing.T) {
 
 	role, cleanup := testClientHelper().Role.CreateRole(t)
 	t.Cleanup(cleanup)
-	require.NotEqual(t, currentRole.Name(), role.Name)
+	require.NotEqual(t, currentRole.Value.Name(), role.Name)
 
-	err = client.Roles.Grant(ctx, sdk.NewGrantRoleRequest(role.ID(), *sdk.NewGrantRoleToRequest().WithRole(currentRole)))
+	err = client.Roles.Grant(ctx, sdk.NewGrantRoleRequest(role.ID(), *sdk.NewGrantRoleToRequest().WithRole(currentRole.Value)))
 	require.NoError(t, err)
 
 	err = client.Sessions.UseRole(ctx, sdk.NewUseRoleSessionRequest(role.ID()))
@@ -154,9 +154,9 @@ func TestInt_RolesUse(t *testing.T) {
 	activeRole, err := client.ContextFunctions.CurrentRole(ctx)
 	require.NoError(t, err)
 
-	assert.Equal(t, activeRole.Name(), role.Name)
+	assert.Equal(t, activeRole.Value.Name(), role.Name)
 
-	err = client.Sessions.UseRole(ctx, sdk.NewUseRoleSessionRequest(currentRole))
+	err = client.Sessions.UseRole(ctx, sdk.NewUseRoleSessionRequest(currentRole.Value))
 	require.NoError(t, err)
 }
 
@@ -168,12 +168,12 @@ func TestInt_RolesUseSecondaryRoles(t *testing.T) {
 
 	role, cleanup := testClientHelper().Role.CreateRole(t)
 	t.Cleanup(cleanup)
-	require.NotEqual(t, currentRole.Name(), role.Name)
+	require.NotEqual(t, currentRole.Value.Name(), role.Name)
 
 	user, err := client.ContextFunctions.CurrentUser(ctx)
 	require.NoError(t, err)
 
-	err = client.Roles.Grant(ctx, sdk.NewGrantRoleRequest(role.ID(), *sdk.NewGrantRoleToRequest().WithUser(user)))
+	err = client.Roles.Grant(ctx, sdk.NewGrantRoleRequest(role.ID(), *sdk.NewGrantRoleToRequest().WithUser(user.Value)))
 	require.NoError(t, err)
 
 	err = client.Sessions.UseRole(ctx, sdk.NewUseRoleSessionRequest(role.ID()))
@@ -190,7 +190,7 @@ func TestInt_RolesUseSecondaryRoles(t *testing.T) {
 		names[i] = v.Name()
 	}
 	assert.Equal(t, sdk.SecondaryRoleOptionAll, r.Value)
-	assert.Contains(t, names, currentRole.Name())
+	assert.Contains(t, names, currentRole.Value.Name())
 
 	err = client.Sessions.UseSecondaryRoles(ctx, sdk.NewUseSecondaryRolesSessionRequest(sdk.SecondaryRoleOptionNone))
 	require.NoError(t, err)
@@ -202,7 +202,7 @@ func TestInt_RolesUseSecondaryRoles(t *testing.T) {
 	assert.Empty(t, secondaryRolesAfter.Roles)
 
 	t.Cleanup(func() {
-		err = client.Sessions.UseRole(ctx, sdk.NewUseRoleSessionRequest(currentRole))
+		err = client.Sessions.UseRole(ctx, sdk.NewUseRoleSessionRequest(currentRole.Value))
 		require.NoError(t, err)
 	})
 }
@@ -212,5 +212,5 @@ func TestInt_LastQueryId(t *testing.T) {
 	ctx := testContext(t)
 	lastQueryId, err := client.ContextFunctions.LastQueryId(ctx)
 	require.NoError(t, err)
-	require.NotEmpty(t, lastQueryId)
+	require.NotEmpty(t, lastQueryId.Value)
 }

@@ -106,7 +106,7 @@ func TestInt_UseWarehouse(t *testing.T) {
 	actual, err := client.ContextFunctions.CurrentWarehouse(ctx)
 	require.NoError(t, err)
 	expected := warehouse.Name
-	assert.Equal(t, expected, actual)
+	assert.Equal(t, expected, actual.Value)
 }
 
 func TestInt_DropCurrentWarehouseClearsCurrentWarehouse(t *testing.T) {
@@ -125,14 +125,14 @@ func TestInt_DropCurrentWarehouseClearsCurrentWarehouse(t *testing.T) {
 	// CREATE WAREHOUSE implicitly switches the session to the newly created warehouse.
 	current, err := client.ContextFunctions.CurrentWarehouse(ctx)
 	require.NoError(t, err)
-	require.Equal(t, id.Name(), current)
+	require.Equal(t, id.Name(), current.Value)
 
 	err = client.Warehouses.Drop(ctx, sdk.NewDropWarehouseRequest(id))
 	require.NoError(t, err)
 
 	current, err = client.ContextFunctions.CurrentWarehouse(ctx)
 	require.NoError(t, err)
-	assert.Empty(t, current)
+	assert.Empty(t, current.Value)
 }
 
 func TestInt_UseDatabase(t *testing.T) {
@@ -151,7 +151,7 @@ func TestInt_UseDatabase(t *testing.T) {
 	actual, err := client.ContextFunctions.CurrentDatabase(ctx)
 	require.NoError(t, err)
 	expected := database.Name
-	assert.Equal(t, expected, actual)
+	assert.Equal(t, expected, actual.Value)
 }
 
 func TestInt_UseSchema(t *testing.T) {
@@ -172,5 +172,5 @@ func TestInt_UseSchema(t *testing.T) {
 	actual, err := client.ContextFunctions.CurrentSchema(ctx)
 	require.NoError(t, err)
 	expected := schema.Name
-	assert.Equal(t, expected, actual)
+	assert.Equal(t, expected, actual.Value)
 }

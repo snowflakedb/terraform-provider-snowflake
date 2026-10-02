@@ -29,7 +29,7 @@ func TestInt_HybridTables(t *testing.T) {
 				HasName(id.Name()).
 				HasDatabaseName(id.DatabaseName()).
 				HasSchemaName(id.SchemaName()).
-				HasOwner(role.Name()).
+				HasOwner(role.Value.Name()).
 				HasComment("").
 				HasOwnerRoleType("ROLE"))
 		})

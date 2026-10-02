@@ -23,6 +23,7 @@ func init() {
 		catalogIntegrationsDef,
 		computePoolsDef,
 		connectionsDef,
+		contextFunctionsDef,
 		cortexAgentsDef,
 		cortexSearchServicesDef,
 		databaseRolesDef,

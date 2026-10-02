@@ -38,8 +38,8 @@ func ReadCurrentRole(ctx context.Context, d *schema.ResourceData, meta any) diag
 		return nil
 	}
 
-	d.SetId(helpers.EncodeSnowflakeID(role))
-	err = d.Set("name", role.Name())
+	d.SetId(helpers.EncodeSnowflakeID(role.Value))
+	err = d.Set("name", role.Value.Name())
 	if err != nil {
 		return diag.FromErr(err)
 	}

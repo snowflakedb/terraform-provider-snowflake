@@ -37,7 +37,7 @@ func (c *AccountClient) UseOrgadmin(t *testing.T) func() {
 	assert.NoError(t, err)
 	assert.NoError(t, c.context.client.Sessions.UseRole(context.Background(), sdk.NewUseRoleSessionRequest(snowflakeroles.Orgadmin)))
 	return func() {
-		assert.NoError(t, c.context.client.Sessions.UseRole(context.Background(), sdk.NewUseRoleSessionRequest(currentRole)))
+		assert.NoError(t, c.context.client.Sessions.UseRole(context.Background(), sdk.NewUseRoleSessionRequest(currentRole.Value)))
 	}
 }
 
@@ -54,7 +54,7 @@ func (c *AccountClient) GetAccountIdentifier(t *testing.T) sdk.AccountIdentifier
 	require.NoError(t, err)
 
 	for _, replicationAccount := range replicationAccounts {
-		if replicationAccount.AccountLocator == currentAccountLocator {
+		if replicationAccount.AccountLocator == currentAccountLocator.Value {
 			return sdk.NewAccountIdentifier(replicationAccount.OrganizationName, replicationAccount.AccountName)
 		}
 	}

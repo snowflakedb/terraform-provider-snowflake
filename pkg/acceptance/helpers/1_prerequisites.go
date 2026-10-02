@@ -62,12 +62,12 @@ func (c *TestClient) EnsureEssentialRolesExist(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("showing grants for role %s: %w", roleGrant.RoleID.Name(), err)
 		}
-		isGranted := hasGranteeName(grants, currentRoleID)
+		isGranted := hasGranteeName(grants, currentRoleID.Value)
 		if roleGrant.ShouldBeGranted && !isGranted {
-			return fmt.Errorf("role %s should be granted to %s, but is not", roleGrant.RoleID.Name(), currentRoleID.Name())
+			return fmt.Errorf("role %s should be granted to %s, but is not", roleGrant.RoleID.Name(), currentRoleID.Value.Name())
 		}
 		if !roleGrant.ShouldBeGranted && isGranted {
-			return fmt.Errorf("role %s should not be granted to %s, but is", roleGrant.RoleID.Name(), currentRoleID.Name())
+			return fmt.Errorf("role %s should not be granted to %s, but is", roleGrant.RoleID.Name(), currentRoleID.Value.Name())
 		}
 	}
 	return nil

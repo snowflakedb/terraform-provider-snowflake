@@ -25,8 +25,8 @@ func (w *sessionCurrentWarehouseCheck) ToTerraformTestCheckFunc(t *testing.T, _ 
 			return err
 		}
 		expected := w.expected()
-		if current != expected {
-			return fmt.Errorf("expected session's current warehouse to be %q, got %q", expected, current)
+		if current.Value != expected {
+			return fmt.Errorf("expected session's current warehouse to be %q, got %q", expected, current.Value)
 		}
 		return nil
 	}

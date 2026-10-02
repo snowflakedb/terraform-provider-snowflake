@@ -157,14 +157,14 @@ func NewClient(cfg *gosnowflake.Config, opts ...func(*FileReaderConfig)) (*Clien
 	if err != nil {
 		return nil, fmt.Errorf("get current account: %w", err)
 	}
-	client.accountLocator = currentAccount
+	client.accountLocator = currentAccount.Value
 
 	sessionID, err := client.ContextFunctions.CurrentSession(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get current session: %w", err)
 	}
-	client.sessionID = sessionID
-	log.Printf("[DEBUG] connection success! Account: %s", currentAccount)
+	client.sessionID = sessionID.Value
+	log.Printf("[DEBUG] connection success! Account: %s", currentAccount.Value)
 
 	return client, nil
 }

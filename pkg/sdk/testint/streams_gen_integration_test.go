@@ -76,7 +76,7 @@ func TestInt_Streams(t *testing.T) {
 
 		req = sdk.NewCreateOnTableStreamRequest(id, tableId).
 			WithOrReplace(true).
-			WithOn(*sdk.NewOnStreamRequest().WithAt(true).WithStatement(*sdk.NewOnStreamStatementRequest().WithStatement(lastQueryId)))
+			WithOn(*sdk.NewOnStreamRequest().WithAt(true).WithStatement(*sdk.NewOnStreamStatementRequest().WithStatement(lastQueryId.Value)))
 		err = client.Streams.CreateOnTable(ctx, req)
 		require.NoError(t, err)
 
@@ -103,7 +103,7 @@ func TestInt_Streams(t *testing.T) {
 
 		req = sdk.NewCreateOnTableStreamRequest(id, tableId).
 			WithOrReplace(true).
-			WithOn(*sdk.NewOnStreamRequest().WithBefore(true).WithStatement(*sdk.NewOnStreamStatementRequest().WithStatement(lastQueryId)))
+			WithOn(*sdk.NewOnStreamRequest().WithBefore(true).WithStatement(*sdk.NewOnStreamStatementRequest().WithStatement(lastQueryId.Value)))
 		err = client.Streams.CreateOnTable(ctx, req)
 		require.NoError(t, err)
 

@@ -577,3 +577,14 @@ func (i *Interface) DescribeOperationWithPairedStructs(describeKind DescriptionM
 func (i *Interface) CustomShowOperationWithPairedStructs(operationName string, showKind ShowMappingKind, doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
 	return i.customShowOperation(operationName, showKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, pairedStructs.addMappingFunc(), helperStructs...)
 }
+
+// CustomShowOperationWithPairedStructsAndOpts is CustomShowOperationWithPairedStructs with functional options.
+// Use it for options such as WithNoRequest.
+func (i *Interface) CustomShowOperationWithPairedStructsAndOpts(operationName string, showKind ShowMappingKind, doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct, opts []CustomOperationOption, helperStructs ...IntoField) *Interface {
+	i.CustomShowOperationWithPairedStructs(operationName, showKind, doc, pairedStructs, queryStruct, helperStructs...)
+	op := i.Operations[len(i.Operations)-1]
+	for _, opt := range opts {
+		opt(op)
+	}
+	return i
+}

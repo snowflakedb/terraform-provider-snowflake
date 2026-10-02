@@ -72,12 +72,19 @@ func preprocessDefinition(definition *Interface) {
 				o.ObjectTypeMethod = NewShowObjectTypeMethod(definition.ShowObjectName, typeName)
 			}
 
-			// TODO [SNOW-2324252]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
-			// fill out DtosToGenerate; it replaces the old GenerateDtos and generateDtoDecls logic
-			dtosToGenerate := make([]*Field, 0)
-			dtosToGenerate, generatedDtos = addDtoToGenerate(o.OptsField, dtosToGenerate, generatedDtos)
-			log.Printf("[DEBUG] Dtos to generate (length: %d): %v", len(dtosToGenerate), dtosToGenerate)
-			o.DtosToGenerate = dtosToGenerate
+			if o.NoRequest {
+				if hasDtoField(o.OptsField) {
+					log.Panicf("operation %s: WithNoRequest is set but the query struct has request fields", o.Name)
+				}
+				o.DtosToGenerate = nil
+			} else {
+				// TODO [SNOW-2324252]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
+				// fill out DtosToGenerate; it replaces the old GenerateDtos and generateDtoDecls logic
+				dtosToGenerate := make([]*Field, 0)
+				dtosToGenerate, generatedDtos = addDtoToGenerate(o.OptsField, dtosToGenerate, generatedDtos)
+				log.Printf("[DEBUG] Dtos to generate (length: %d): %v", len(dtosToGenerate), dtosToGenerate)
+				o.DtosToGenerate = dtosToGenerate
+			}
 		}
 	}
 
@@ -170,6 +177,17 @@ func addStructToGenerate(field *Field, structsToGenerate []*Field, generatedStru
 		}
 	}
 	return structsToGenerate, generatedStructs
+}
+
+// hasDtoField reports whether any field would appear on a request DTO.
+func hasDtoField(field *Field) bool {
+	for i := range field.Fields {
+		child := &field.Fields[i]
+		if child.ShouldBeInDto() || hasDtoField(child) {
+			return true
+		}
+	}
+	return false
 }
 
 func addDtoToGenerate(field *Field, dtosToGenerate []*Field, generatedDtos []string) ([]*Field, []string) {

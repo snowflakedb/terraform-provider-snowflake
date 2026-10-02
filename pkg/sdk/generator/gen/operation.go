@@ -78,6 +78,10 @@ type Operation struct {
 	// RequestAdjust, when true, inserts a request.adjust() call in the generated impl before toOpts() is called.
 	// The adjust() method must be implemented manually on the request type in a _ext.go file.
 	RequestAdjust bool
+	// NoRequest, when true, omits the request DTO, its constructor, and the request parameter.
+	// The generated method takes only ctx and builds the Options value itself.
+	// Valid only when every query-struct field is static SQL.
+	NoRequest bool
 
 	// TODO [SNOW-2324252]: Consider splitting the Operation into definition and generation model
 	// new fields used to move the old template executors logic into simpler template generation based on prepared model
@@ -361,6 +365,11 @@ type CustomOperationOption func(*Operation)
 // The adjust() method must be implemented manually on the request type in a _ext.go file.
 func WithRequestAdjust() CustomOperationOption {
 	return func(op *Operation) { op.RequestAdjust = true }
+}
+
+// WithNoRequest omits the request DTO for a custom show operation whose query struct contains only static SQL.
+func WithNoRequest() CustomOperationOption {
+	return func(op *Operation) { op.NoRequest = true }
 }
 
 func (i *Interface) CustomOperation(kind string, doc string, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {

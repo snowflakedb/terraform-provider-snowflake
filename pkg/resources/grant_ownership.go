@@ -338,7 +338,7 @@ func DeleteGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any)
 		// TODO: Should we always set outbound privileges to COPY in delete operation or set it to the config value?
 		grantOwnershipReq := sdk.NewGrantOwnershipRequest(
 			*grantOn,
-			*sdk.NewOwnershipGrantToRequest().WithAccountRoleName(accountRoleName),
+			*sdk.NewOwnershipGrantToRequest().WithAccountRoleName(accountRoleName.Value),
 		)
 		if currentGrants := getOwnershipCurrentGrants(id); currentGrants != nil {
 			grantOwnershipReq.WithCurrentGrants(*currentGrants)

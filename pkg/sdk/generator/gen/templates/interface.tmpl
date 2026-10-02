@@ -7,9 +7,9 @@ type {{ .Name }} interface {
 		{{- if .ShowMapping }}
 			{{- if .ShowKind}}
 				{{- if eq (show_mapping_deref .ShowKind) "single_value" }}
-					{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ .ShowMapping.To.Name }}, error)
+					{{ .Name }}(ctx context.Context{{ if not .NoRequest }}, request *{{ .OptsField.DtoDecl }}{{ end }}) (*{{ .ShowMapping.To.Name }}, error)
 				{{- else if eq (show_mapping_deref .ShowKind) "slice" }}
-					{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .ShowMapping.To.Name }}, error)
+					{{ .Name }}(ctx context.Context{{ if not .NoRequest }}, request *{{ .OptsField.DtoDecl }}{{ end }}) ([]{{ .ShowMapping.To.Name }}, error)
 				{{- end }}
 			{{- end }}
 		{{- else if eq .Name "ShowByID" }}

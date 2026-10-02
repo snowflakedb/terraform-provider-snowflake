@@ -238,9 +238,9 @@ func (v *warehouses) CreateInteractivePreservingSession(ctx context.Context, req
 		return err
 	}
 
-	if previousWarehouse != "" {
-		if err := v.client.Sessions.UseWarehouse(ctx, NewUseWarehouseSessionRequest(NewAccountObjectIdentifier(previousWarehouse))); err != nil {
-			log.Printf("[WARN] could not restore session warehouse to %s after creating interactive warehouse %s, err=%v", previousWarehouse, request.ID().FullyQualifiedName(), err)
+	if previousWarehouse.Value != "" {
+		if err := v.client.Sessions.UseWarehouse(ctx, NewUseWarehouseSessionRequest(NewAccountObjectIdentifier(previousWarehouse.Value))); err != nil {
+			log.Printf("[WARN] could not restore session warehouse to %s after creating interactive warehouse %s, err=%v", previousWarehouse.Value, request.ID().FullyQualifiedName(), err)
 		}
 		return nil
 	}

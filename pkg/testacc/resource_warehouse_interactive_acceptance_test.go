@@ -485,7 +485,7 @@ func TestAcc_WarehouseInteractive_PreservesSessionWarehouse(t *testing.T) {
 						planchecks.Execute(func() {
 							current, err := sessionClient().ContextFunctions.CurrentWarehouse(context.Background())
 							require.NoError(t, err)
-							previousSessionWarehouse = current
+							previousSessionWarehouse = current.Value
 						}),
 					},
 				},

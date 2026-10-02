@@ -1142,7 +1142,7 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 
 		previousWarehouse, err := client.ContextFunctions.CurrentWarehouse(ctx)
 		require.NoError(t, err)
-		require.NotEmpty(t, previousWarehouse, "expected a warehouse to already be selected in the session")
+		require.NotEmpty(t, previousWarehouse.Value, "expected a warehouse to already be selected in the session")
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err = client.Warehouses.CreateInteractivePreservingSession(ctx, sdk.NewCreateInteractiveWarehouseRequest(id))
@@ -1156,7 +1156,7 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 
 		current, err := client.ContextFunctions.CurrentWarehouse(ctx)
 		require.NoError(t, err)
-		assert.Equal(t, previousWarehouse, current)
+		assert.Equal(t, previousWarehouse.Value, current.Value)
 	})
 
 	t.Run("create interactive preserving session: no warehouse selected before creation stays cleared", func(t *testing.T) {
@@ -1174,7 +1174,7 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 		require.NoError(t, err)
 		current, err := client.ContextFunctions.CurrentWarehouse(ctx)
 		require.NoError(t, err)
-		require.Empty(t, current)
+		require.Empty(t, current.Value)
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err = client.Warehouses.CreateInteractivePreservingSession(ctx, sdk.NewCreateInteractiveWarehouseRequest(id))
@@ -1188,7 +1188,7 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 
 		current, err = client.ContextFunctions.CurrentWarehouse(ctx)
 		require.NoError(t, err)
-		assert.Empty(t, current)
+		assert.Empty(t, current.Value)
 	})
 
 	t.Run("alter interactive: change warehouse type away from interactive", func(t *testing.T) {

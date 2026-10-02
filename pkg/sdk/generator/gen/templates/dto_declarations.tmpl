@@ -2,7 +2,7 @@
 
 var (
 {{- range .Operations }}
-    {{- if .OptsField }}
+    {{- if and .OptsField (not .NoRequest) }}
         _ optionsProvider[{{ .OptsField.KindNoPtr }}] = new({{ .OptsField.DtoDecl }})
     {{- end }}
 {{- end }}
