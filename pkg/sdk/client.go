@@ -51,6 +51,7 @@ type Client struct {
 	FileFormats                  FileFormats
 	FileFormatsLegacy            FileFormatsLegacy
 	Functions                    Functions
+	Gateways                     Gateways
 	GitRepositories              GitRepositories
 	Grants                       Grants
 	HybridTables                 HybridTables
@@ -198,6 +199,7 @@ func (c *Client) initialize() {
 	c.FileFormats = &fileFormats{client: c}
 	c.FileFormatsLegacy = &fileFormatsLegacy{client: c}
 	c.Functions = &functions{client: c}
+	c.Gateways = &gateways{client: c}
 	c.GitRepositories = &gitRepositories{client: c}
 	c.Grants = &grants{client: c}
 	c.HybridTables = &hybridTables{client: c}
