@@ -38,6 +38,7 @@ func init() {
 		failoverGroupsDef,
 		fileFormatsDef,
 		functionsDef,
+		gatewaysDef,
 		gitRepositoriesDef,
 		grantsDef,
 		hybridTablesDef,
