@@ -3,6 +3,7 @@
 package schemas
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -47,7 +48,11 @@ var ShowFailoverGroupSchema = map[string]*schema.Schema{
 	},
 	// object_types is skipped and won't be generated
 	// allowed_integration_types is skipped and won't be generated
-	// allowed_accounts is skipped and won't be generated
+	"allowed_accounts": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	"organization_name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -89,7 +94,7 @@ func FailoverGroupToSchema(failoverGroup *sdk.FailoverGroup) map[string]any {
 	failoverGroupSchema["primary"] = failoverGroup.Primary.FullyQualifiedName()
 	// object_types is skipped and won't be generated
 	// allowed_integration_types is skipped and won't be generated
-	// allowed_accounts is skipped and won't be generated
+	failoverGroupSchema["allowed_accounts"] = collections.Map(failoverGroup.AllowedAccounts, sdk.AccountIdentifier.Name)
 	failoverGroupSchema["organization_name"] = failoverGroup.OrganizationName
 	failoverGroupSchema["account_locator"] = failoverGroup.AccountLocator
 	failoverGroupSchema["replication_schedule"] = failoverGroup.ReplicationSchedule

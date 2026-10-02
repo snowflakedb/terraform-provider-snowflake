@@ -58,9 +58,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.ExternalFunction{}, SkipFields: []string{"arguments"}},
 	{ObjectStruct: sdk.ExternalTable{}},
 	{ObjectStruct: sdk.ExternalVolume{}},
-	// SkipFields unused TypeInvalid: `object_types` / `allowed_integration_types` (enum slices),
-	// `allowed_accounts` (`[]AccountIdentifier`). Un-skip with native mapping.
-	{ObjectStruct: sdk.FailoverGroup{}, SkipFields: []string{"object_types", "allowed_integration_types", "allowed_accounts"}},
+	// SkipFields unused TypeInvalid: `object_types` / `allowed_integration_types` (enum slices).
+	{ObjectStruct: sdk.FailoverGroup{}, SkipFields: []string{"object_types", "allowed_integration_types"}},
 	{ObjectStruct: sdk.FileFormat{}},
 	// SkipFields `options`: unused TypeInvalid (nested `FileFormatTypeOptionsLegacy`). Un-skip with native nested structs.
 	{ObjectStruct: sdk.FileFormatLegacy{}, SkipFields: []string{"options"}},
@@ -107,9 +106,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.Sequence{}},
 	{ObjectStruct: sdk.SessionPolicy{}, SkipFields: []string{"target_scopes"}}, // TODO [next PRs]: un-skip target_scopes (stale public schema).
 	// ManualFields `name` remapped in ext; SkipFields `owner_account` is stale public schema (add later).
-	// SkipFields `to`: unused TypeInvalid (`[]AccountIdentifier`). Un-skip with native identifier slices.
 	// TODO [next PRs]: un-skip owner_account.
-	{ObjectStruct: sdk.Share{}, SkipFields: []string{"owner_account", "to"}, ManualFields: []string{"name"}},
+	{ObjectStruct: sdk.Share{}, SkipFields: []string{"owner_account"}, ManualFields: []string{"name"}},
 	{ObjectStruct: sdk.Stage{}},
 	{ObjectStruct: sdk.StorageIntegration{}},
 	{ObjectStruct: sdk.StorageLifecyclePolicy{}},

@@ -3,6 +3,7 @@
 package schemas
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -27,7 +28,11 @@ var ShowShareSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// to is skipped and won't be generated
+	"to": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	"owner": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -47,7 +52,7 @@ func ShareToSchema(share *sdk.Share) map[string]any {
 	// owner_account is skipped and won't be generated
 	// name: manual addition and mapping is needed
 	shareSchema["database_name"] = share.DatabaseName.Name()
-	// to is skipped and won't be generated
+	shareSchema["to"] = collections.Map(share.To, sdk.AccountIdentifier.Name)
 	shareSchema["owner"] = share.Owner
 	shareSchema["comment"] = share.Comment
 	shareToSchemaMapper{}.additionalToSchema(share, shareSchema)
