@@ -30,10 +30,12 @@ const (
 
 // ParameterDef is one parameter declaration consumed by SDK generator definitions.
 type ParameterDef struct {
-	SqlName     string
-	Kind        string
-	Levels      []ParameterLevel
-	Description string
+	SqlName      string
+	Kind         string
+	Levels       []ParameterLevel
+	Description  string
+	DefaultValue string
+	DefaultLevel string
 }
 
 func (p ParameterDef) FieldName() string {

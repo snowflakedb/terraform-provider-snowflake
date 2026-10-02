@@ -19,6 +19,8 @@ var (
 	onLog                  = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelProject, parameterdefs.ParameterLevelProcedure, parameterdefs.ParameterLevelFunction, parameterdefs.ParameterLevelTable, parameterdefs.ParameterLevelTask, parameterdefs.ParameterLevelService}
 )
 
+const parameterTypeSnowflakeDefault = "sdk.ParameterTypeSnowflakeDefault"
+
 var (
 	AbortDetachedQuery = parameterdefs.ParameterDef{
 		SqlName:     "ABORT_DETACHED_QUERY",
@@ -81,10 +83,12 @@ var (
 		Description: "The format for VARCHAR values returned as output by BINARY-to-VARCHAR conversion functions. For more information, see [Binary input and output](https://docs.snowflake.com/en/sql-reference/binary-input-output).",
 	}
 	Catalog = parameterdefs.ParameterDef{
-		SqlName:     "CATALOG",
-		Kind:        g.KindOfT[sdkcommons.AccountObjectIdentifier](),
-		Levels:      onTable,
-		Description: "The parameter that specifies the default catalog to use for Iceberg tables.",
+		SqlName:      "CATALOG",
+		Kind:         g.KindOfT[sdkcommons.AccountObjectIdentifier](),
+		Levels:       onTable,
+		Description:  "The parameter that specifies the default catalog to use for Iceberg tables.",
+		DefaultValue: "",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	CatalogSync = parameterdefs.ParameterDef{
 		SqlName:     "CATALOG_SYNC",
@@ -201,10 +205,12 @@ var (
 		Description: "Specifies the schedule to run the data metric functions associated to the table. All data metric functions on the table or view follow the same schedule.",
 	}
 	DataRetentionTimeInDays = parameterdefs.ParameterDef{
-		SqlName:     "DATA_RETENTION_TIME_IN_DAYS",
-		Kind:        g.KindInt,
-		Levels:      onTable,
-		Description: "Specifies the number of days for which Time Travel actions (CLONE and UNDROP) can be performed on the database, as well as specifying the default Time Travel retention time for all schemas created in the database. For more details, see [Understanding & Using Time Travel](https://docs.snowflake.com/en/user-guide/data-time-travel).",
+		SqlName:      "DATA_RETENTION_TIME_IN_DAYS",
+		Kind:         g.KindInt,
+		Levels:       onTable,
+		Description:  "Specifies the number of days for which Time Travel actions (CLONE and UNDROP) can be performed on the database, as well as specifying the default Time Travel retention time for all schemas created in the database. For more details, see [Understanding & Using Time Travel](https://docs.snowflake.com/en/user-guide/data-time-travel).",
+		DefaultValue: "1",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	DateInputFormat = parameterdefs.ParameterDef{
 		SqlName:     "DATE_INPUT_FORMAT",
@@ -225,22 +231,28 @@ var (
 		Description: "Used to set the default version for all future dbt project objects created in an account.",
 	}
 	DefaultDdlCollation = parameterdefs.ParameterDef{
-		SqlName:     "DEFAULT_DDL_COLLATION",
-		Kind:        g.KindOfT[sdkcommons.StringAllowEmpty](),
-		Levels:      onTable,
-		Description: "Specifies a default collation specification for all schemas and tables added to the database. It can be overridden on schema or table level. For more information, see [collation specification](https://docs.snowflake.com/en/sql-reference/collation#label-collation-specification).",
+		SqlName:      "DEFAULT_DDL_COLLATION",
+		Kind:         g.KindOfT[sdkcommons.StringAllowEmpty](),
+		Levels:       onTable,
+		Description:  "Specifies a default collation specification for all schemas and tables added to the database. It can be overridden on schema or table level. For more information, see [collation specification](https://docs.snowflake.com/en/sql-reference/collation#label-collation-specification).",
+		DefaultValue: "",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	DefaultNotebookComputePoolCpu = parameterdefs.ParameterDef{
-		SqlName:     "DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU",
-		Kind:        g.KindString,
-		Levels:      onSchema,
-		Description: "Sets the preferred CPU compute pool used for Notebooks on CPU Container Runtime.",
+		SqlName:      "DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU",
+		Kind:         g.KindString,
+		Levels:       onSchema,
+		Description:  "Sets the preferred CPU compute pool used for Notebooks on CPU Container Runtime.",
+		DefaultValue: "SYSTEM_COMPUTE_POOL_CPU",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	DefaultNotebookComputePoolGpu = parameterdefs.ParameterDef{
-		SqlName:     "DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU",
-		Kind:        g.KindString,
-		Levels:      onSchema,
-		Description: "Sets the preferred GPU compute pool used for Notebooks on GPU Container Runtime.",
+		SqlName:      "DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU",
+		Kind:         g.KindString,
+		Levels:       onSchema,
+		Description:  "Sets the preferred GPU compute pool used for Notebooks on GPU Container Runtime.",
+		DefaultValue: "SYSTEM_COMPUTE_POOL_GPU",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	DefaultNullOrdering = parameterdefs.ParameterDef{
 		SqlName:     "DEFAULT_NULL_ORDERING",
@@ -291,10 +303,12 @@ var (
 		Description: "Controls whether events from budgets are logged to the event table.",
 	}
 	EnableConsoleOutput = parameterdefs.ParameterDef{
-		SqlName:     "ENABLE_CONSOLE_OUTPUT",
-		Kind:        g.KindBool,
-		Levels:      []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelTable},
-		Description: "If true, enables stdout/stderr fast path logging for anonymous stored procedures.",
+		SqlName:      "ENABLE_CONSOLE_OUTPUT",
+		Kind:         g.KindBool,
+		Levels:       []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelTable},
+		Description:  "If true, enables stdout/stderr fast path logging for anonymous stored procedures.",
+		DefaultValue: "false",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	EnableCortexAnalyst = parameterdefs.ParameterDef{
 		SqlName:     "ENABLE_CORTEX_ANALYST",
@@ -434,10 +448,12 @@ var (
 		Description: "Determines whether the ACCOUNTADMIN, ORGADMIN, GLOBALORGADMIN, and SECURITYADMIN roles can be used as the primary role when creating a Snowflake session based on the access token from the External OAuth authorization server.",
 	}
 	ExternalVolume = parameterdefs.ParameterDef{
-		SqlName:     "EXTERNAL_VOLUME",
-		Kind:        g.KindOfT[sdkcommons.AccountObjectIdentifier](),
-		Levels:      onTable,
-		Description: "The parameter that specifies the default external volume to use for Iceberg tables.",
+		SqlName:      "EXTERNAL_VOLUME",
+		Kind:         g.KindOfT[sdkcommons.AccountObjectIdentifier](),
+		Levels:       onTable,
+		Description:  "The parameter that specifies the default external volume to use for Iceberg tables.",
+		DefaultValue: "",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	GeographyOutputFormat = parameterdefs.ParameterDef{
 		SqlName:     "GEOGRAPHY_OUTPUT_FORMAT",
@@ -512,16 +528,20 @@ var (
 		Description: "Number of seconds to wait while trying to lock a resource, before timing out and aborting the statement.",
 	}
 	LogEventLevel = parameterdefs.ParameterDef{
-		SqlName:     "LOG_EVENT_LEVEL",
-		Kind:        g.KindOfT[sdkcommons.LogLevel](),
-		Levels:      append(slices.Clone(onLog), parameterdefs.ParameterLevelSession, parameterdefs.ParameterLevelUser),
-		Description: "Specifies the severity level of log events (rows with record type EVENT) that should be ingested and made available in the active event table. Log events at the specified level (and at more severe levels) are ingested.",
+		SqlName:      "LOG_EVENT_LEVEL",
+		Kind:         g.KindOfT[sdkcommons.LogLevel](),
+		Levels:       append(slices.Clone(onLog), parameterdefs.ParameterLevelSession, parameterdefs.ParameterLevelUser),
+		Description:  "Specifies the severity level of log events (rows with record type EVENT) that should be ingested and made available in the active event table. Log events at the specified level (and at more severe levels) are ingested.",
+		DefaultValue: "sdk.LogLevelOff",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	LogLevel = parameterdefs.ParameterDef{
-		SqlName:     "LOG_LEVEL",
-		Kind:        g.KindOfT[sdkcommons.LogLevel](),
-		Levels:      append(slices.Clone(onLog), parameterdefs.ParameterLevelSession, parameterdefs.ParameterLevelUser),
-		Description: "Specifies the severity level of messages that should be ingested and made available in the active event table. Messages at the specified level (and at more severe levels) are ingested.",
+		SqlName:      "LOG_LEVEL",
+		Kind:         g.KindOfT[sdkcommons.LogLevel](),
+		Levels:       append(slices.Clone(onLog), parameterdefs.ParameterLevelSession, parameterdefs.ParameterLevelUser),
+		Description:  "Specifies the severity level of messages that should be ingested and made available in the active event table. Messages at the specified level (and at more severe levels) are ingested.",
+		DefaultValue: "sdk.LogLevelOff",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	MaxConcurrencyLevel = parameterdefs.ParameterDef{
 		SqlName:     "MAX_CONCURRENCY_LEVEL",
@@ -530,10 +550,12 @@ var (
 		Description: "Specifies the concurrency level for SQL statements (that is, queries and DML) executed by a warehouse ([more details](https://docs.snowflake.com/en/sql-reference/parameters#max-concurrency-level)).",
 	}
 	MaxDataExtensionTimeInDays = parameterdefs.ParameterDef{
-		SqlName:     "MAX_DATA_EXTENSION_TIME_IN_DAYS",
-		Kind:        g.KindInt,
-		Levels:      onTable,
-		Description: "Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period for tables in the database to prevent streams on the tables from becoming stale.",
+		SqlName:      "MAX_DATA_EXTENSION_TIME_IN_DAYS",
+		Kind:         g.KindInt,
+		Levels:       onTable,
+		Description:  "Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period for tables in the database to prevent streams on the tables from becoming stale.",
+		DefaultValue: "14",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	MetricLevel = parameterdefs.ParameterDef{
 		SqlName:     "METRIC_LEVEL",
@@ -625,10 +647,12 @@ var (
 		Description: "Optional string that can be used to tag queries and other SQL statements executed within a session. The tags are displayed in the output of the [QUERY_HISTORY, QUERY_HISTORY_BY_*](https://docs.snowflake.com/en/sql-reference/functions/query_history) functions.",
 	}
 	QuotedIdentifiersIgnoreCase = parameterdefs.ParameterDef{
-		SqlName:     "QUOTED_IDENTIFIERS_IGNORE_CASE",
-		Kind:        g.KindBool,
-		Levels:      append(slices.Clone(onTable), parameterdefs.ParameterLevelSession, parameterdefs.ParameterLevelUser),
-		Description: "If true, the case of quoted identifiers is ignored.",
+		SqlName:      "QUOTED_IDENTIFIERS_IGNORE_CASE",
+		Kind:         g.KindBool,
+		Levels:       append(slices.Clone(onTable), parameterdefs.ParameterLevelSession, parameterdefs.ParameterLevelUser),
+		Description:  "If true, the case of quoted identifiers is ignored.",
+		DefaultValue: "false",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	ReadConsistencyMode = parameterdefs.ParameterDef{
 		SqlName:     "READ_CONSISTENCY_MODE",
@@ -637,10 +661,12 @@ var (
 		Description: "Defines the level of consistency guarantees that are required for sessions with near-concurrent changes.",
 	}
 	ReplaceInvalidCharacters = parameterdefs.ParameterDef{
-		SqlName:     "REPLACE_INVALID_CHARACTERS",
-		Kind:        g.KindBool,
-		Levels:      onTable,
-		Description: "Specifies whether to replace invalid UTF-8 characters with the Unicode replacement character in query results for an Iceberg table. You can only set this parameter for tables that use an external Iceberg catalog.",
+		SqlName:      "REPLACE_INVALID_CHARACTERS",
+		Kind:         g.KindBool,
+		Levels:       onTable,
+		Description:  "Specifies whether to replace invalid UTF-8 characters with the Unicode replacement character in query results for an Iceberg table. You can only set this parameter for tables that use an external Iceberg catalog.",
+		DefaultValue: "false",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	RequireStorageIntegrationForStageCreation = parameterdefs.ParameterDef{
 		SqlName:     "REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_CREATION",
@@ -726,10 +752,12 @@ var (
 		Description: "Amount of time, in seconds, after which a running SQL statement (query, DDL, DML, etc.) is canceled by the system.",
 	}
 	StorageSerializationPolicy = parameterdefs.ParameterDef{
-		SqlName:     "STORAGE_SERIALIZATION_POLICY",
-		Kind:        g.KindOfT[sdkcommons.StorageSerializationPolicy](),
-		Levels:      onTable,
-		Description: "The storage serialization policy for Iceberg tables that use Snowflake as the catalog. COMPATIBLE: Snowflake performs encoding and compression of data files that ensures interoperability with third-party compute engines. OPTIMIZED: Snowflake performs encoding and compression of data files that ensures the best table performance within Snowflake.",
+		SqlName:      "STORAGE_SERIALIZATION_POLICY",
+		Kind:         g.KindOfT[sdkcommons.StorageSerializationPolicy](),
+		Levels:       onTable,
+		Description:  "The storage serialization policy for Iceberg tables that use Snowflake as the catalog. COMPATIBLE: Snowflake performs encoding and compression of data files that ensures interoperability with third-party compute engines. OPTIMIZED: Snowflake performs encoding and compression of data files that ensures the best table performance within Snowflake.",
+		DefaultValue: "sdk.StorageSerializationPolicyOptimized",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	StrictJsonOutput = parameterdefs.ParameterDef{
 		SqlName:     "STRICT_JSON_OUTPUT",
@@ -738,16 +766,20 @@ var (
 		Description: "This parameter specifies whether JSON output in a session is compatible with the general standard (as described by [http://json.org](http://json.org)). By design, Snowflake allows JSON input that contains non-standard values; however, these non-standard values might result in Snowflake outputting JSON that is incompatible with other platforms and languages. This parameter, when enabled, ensures that Snowflake outputs valid/compatible JSON.",
 	}
 	SuspendTaskAfterNumFailures = parameterdefs.ParameterDef{
-		SqlName:     "SUSPEND_TASK_AFTER_NUM_FAILURES",
-		Kind:        g.KindInt,
-		Levels:      onTask,
-		Description: "How many times a task must fail in a row before it is automatically suspended. 0 disables auto-suspending.",
+		SqlName:      "SUSPEND_TASK_AFTER_NUM_FAILURES",
+		Kind:         g.KindInt,
+		Levels:       onTask,
+		Description:  "How many times a task must fail in a row before it is automatically suspended. 0 disables auto-suspending.",
+		DefaultValue: "10",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	TaskAutoRetryAttempts = parameterdefs.ParameterDef{
-		SqlName:     "TASK_AUTO_RETRY_ATTEMPTS",
-		Kind:        g.KindInt,
-		Levels:      onTask,
-		Description: "Maximum automatic retries allowed for a user task.",
+		SqlName:      "TASK_AUTO_RETRY_ATTEMPTS",
+		Kind:         g.KindInt,
+		Levels:       onTask,
+		Description:  "Maximum automatic retries allowed for a user task.",
+		DefaultValue: "0",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	TimeInputFormat = parameterdefs.ParameterDef{
 		SqlName:     "TIME_INPUT_FORMAT",
@@ -810,10 +842,12 @@ var (
 		Description: "Specifies the time zone for the session. You can specify a [time zone name](https://data.iana.org/time-zones/tzdb-2021a/zone1970.tab) or a [link name](https://data.iana.org/time-zones/tzdb-2021a/backward) from release 2021a of the [IANA Time Zone Database](https://www.iana.org/time-zones) (e.g. America/Los_Angeles, Europe/London, UTC, Etc/GMT, etc.).",
 	}
 	TraceLevel = parameterdefs.ParameterDef{
-		SqlName:     "TRACE_LEVEL",
-		Kind:        g.KindOfT[sdkcommons.TraceLevel](),
-		Levels:      append(slices.Clone(onFunctionAndProcedure), parameterdefs.ParameterLevelSession, parameterdefs.ParameterLevelUser),
-		Description: "Controls how trace events are ingested into the event table.",
+		SqlName:      "TRACE_LEVEL",
+		Kind:         g.KindOfT[sdkcommons.TraceLevel](),
+		Levels:       append(slices.Clone(onFunctionAndProcedure), parameterdefs.ParameterLevelSession, parameterdefs.ParameterLevelUser),
+		Description:  "Controls how trace events are ingested into the event table.",
+		DefaultValue: "sdk.TraceLevelOff",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	TransactionAbortOnError = parameterdefs.ParameterDef{
 		SqlName:     "TRANSACTION_ABORT_ON_ERROR",
@@ -852,22 +886,28 @@ var (
 		Description: "Controls whether the Workspaces editor is the default SQL editing experience for the account. Valid values are `always` and `never`.",
 	}
 	UserTaskManagedInitialWarehouseSize = parameterdefs.ParameterDef{
-		SqlName:     "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE",
-		Kind:        g.KindOfT[sdkcommons.WarehouseSize](),
-		Levels:      onTask,
-		Description: "The initial size of warehouse to use for managed warehouses in the absence of history.",
+		SqlName:      "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE",
+		Kind:         g.KindOfT[sdkcommons.WarehouseSize](),
+		Levels:       onTask,
+		Description:  "The initial size of warehouse to use for managed warehouses in the absence of history.",
+		DefaultValue: "sdk.WarehouseSizeMedium",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	UserTaskMinimumTriggerIntervalInSeconds = parameterdefs.ParameterDef{
-		SqlName:     "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS",
-		Kind:        g.KindInt,
-		Levels:      onTask,
-		Description: "Minimum amount of time between Triggered Task executions in seconds.",
+		SqlName:      "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS",
+		Kind:         g.KindInt,
+		Levels:       onTask,
+		Description:  "Minimum amount of time between Triggered Task executions in seconds.",
+		DefaultValue: "30",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	UserTaskTimeoutMs = parameterdefs.ParameterDef{
-		SqlName:     "USER_TASK_TIMEOUT_MS",
-		Kind:        g.KindInt,
-		Levels:      onTask,
-		Description: "User task execution timeout in milliseconds.",
+		SqlName:      "USER_TASK_TIMEOUT_MS",
+		Kind:         g.KindInt,
+		Levels:       onTask,
+		Description:  "User task execution timeout in milliseconds.",
+		DefaultValue: "3600000",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	WeekOfYearPolicy = parameterdefs.ParameterDef{
 		SqlName:     "WEEK_OF_YEAR_POLICY",
@@ -1039,4 +1079,17 @@ func ParameterDefsForLevel(level parameterdefs.ParameterLevel) []parameterdefs.P
 	return collections.Filter(AllParameters, func(p parameterdefs.ParameterDef) bool {
 		return slices.Contains(p.Levels, level)
 	})
+}
+
+func AssertionParameterType(kind string) string {
+	switch kind {
+	case g.KindBool, g.KindInt, g.KindString:
+		return kind
+	case g.KindOfT[sdkcommons.StringAllowEmpty]():
+		return g.KindString
+	}
+	if _, err := g.ToObjectIdentifierKind(kind); err == nil {
+		return g.KindString
+	}
+	return "sdk." + kind
 }
