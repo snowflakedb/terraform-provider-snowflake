@@ -663,6 +663,61 @@ func TestAcc_UserProgrammaticAccessToken_CompleteUseCase_Rotating(t *testing.T) 
 	})
 }
 
+func TestAcc_UserProgrammaticAccessToken_RotatingWithExpireRotatedTokenAfterHoursExceedingRemainingLifetime(t *testing.T) {
+	user, userCleanup := testClient().User.CreateUser(t)
+	t.Cleanup(userCleanup)
+
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	modelWithKeeper := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
+		WithDaysToExpiry(1).
+		WithKeeper("key1=value1")
+	modelRotated := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
+		WithDaysToExpiry(1).
+		WithKeeper("key2=value2").
+		WithExpireRotatedTokenAfterHours(168)
+
+	var token string
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckUserProgrammaticAccessTokenDestroy(t),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelWithKeeper),
+				Check: resource.TestCheckResourceAttrWith(modelWithKeeper.ResourceReference(), "token", func(value string) error {
+					token = value
+					return nil
+				}),
+			},
+			// 168 hours exceeds the remaining lifetime of the token (< 24 hours), so the provider must clamp it
+			{
+				Config: accconfig.FromModels(t, modelRotated),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelRotated.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectComputed(modelRotated.ResourceReference(), "token", true),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelRotated.ResourceReference()).
+						HasRotatedTokenNameNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttrWith(modelRotated.ResourceReference(), "token", func(value string) error {
+						if value == "" || value == token {
+							return fmt.Errorf("token was not rotated")
+						}
+						return nil
+					})),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_UserProgrammaticAccessToken_CompleteUseCase_RotatingWithExternalProvider(t *testing.T) {
 	user, userCleanup := testClient().User.CreateUser(t)
 	t.Cleanup(userCleanup)
