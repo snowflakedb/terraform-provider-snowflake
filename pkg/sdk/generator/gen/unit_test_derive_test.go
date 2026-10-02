@@ -303,6 +303,12 @@ func Test_Field_NeedsSliceIndexVar(t *testing.T) {
 			expected: true,
 		},
 		{
+			name:     "identifier-element slice with ValidIdentifier on the slice itself",
+			root:     identifierElementSliceTree(),
+			target:   func(root *gen.Field) *gen.Field { return &root.Fields[0] },
+			expected: true,
+		},
+		{
 			name: "slice with its own ExactlyOneValueSet",
 			root: &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
 				{Name: "Arguments", Kind: "[]Argument", Validations: []*gen.Validation{
@@ -368,6 +374,9 @@ func Test_Validation_ReturnedError_usesPathWithRootExpr(t *testing.T) {
 		gen.NewValidation(gen.ValidIdentifierIfSet, "name").ReturnedError(noSlice))
 	require.Equal(t, `errInvalidIdentifier(fmt.Sprintf("RootOptions.Columns[%d].MaskingPolicy", columnIdx), "MaskingPolicy")`,
 		gen.NewValidation(gen.ValidIdentifier, "MaskingPolicy").ReturnedError(&identifierSlice.Fields[0].Fields[0]))
+	identifierElemSlice := buildTree(identifierElementSliceTree())
+	require.Equal(t, `errInvalidIdentifier(fmt.Sprintf("RootOptions.ExternalAccessIntegrations[%d]", externalAccessIntegrationIdx), "ExternalAccessIntegrations")`,
+		gen.NewValidation(gen.ValidIdentifier, "ExternalAccessIntegrations").ReturnedError(&identifierElemSlice.Fields[0]))
 }
 
 func identifierUnderSliceTree() *gen.Field {
@@ -377,6 +386,26 @@ func identifierUnderSliceTree() *gen.Field {
 				gen.NewValidation(gen.ValidIdentifier, "MaskingPolicy"),
 			}, Fields: []gen.Field{
 				{Name: "MaskingPolicy", Kind: "SchemaObjectIdentifier"},
+			}},
+		}},
+	}}
+}
+
+// identifierElementSliceTree is Gap B: a flat []AccountObjectIdentifier with ValidIdentifier
+// already on the slice field (post-relocate).
+func identifierElementSliceTree() *gen.Field {
+	return &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+		{Name: "ExternalAccessIntegrations", Kind: "[]AccountObjectIdentifier", Validations: []*gen.Validation{
+			gen.NewValidation(gen.ValidIdentifier, "ExternalAccessIntegrations"),
+		}},
+	}}
+}
+
+func identifierElementSliceUnderSetTree() *gen.Field {
+	return &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+		{Name: "Set", Kind: "*Set", Fields: []gen.Field{
+			{Name: "ExternalAccessIntegrations", Kind: "[]AccountObjectIdentifier", Validations: []*gen.Validation{
+				gen.NewValidation(gen.ValidIdentifier, "ExternalAccessIntegrations"),
 			}},
 		}},
 	}}
@@ -661,6 +690,23 @@ func Test_Validation_DeriveModify_usesIndexedPath(t *testing.T) {
 				"opts.OutOfLineConstraint = []OutOfLineConstraint{{}}",
 			},
 		},
+		{
+			name:         "identifier-element slice — assign a one-element slice of empty identifiers",
+			root:         identifierElementSliceTree(),
+			field:        func(root *gen.Field) *gen.Field { return &root.Fields[0] },
+			validation:   gen.NewValidation(gen.ValidIdentifier, "ExternalAccessIntegrations"),
+			expectedLast: "opts.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}",
+		},
+		{
+			name:         "identifier-element slice under a pointer — prime the parent then assign the slice",
+			root:         identifierElementSliceUnderSetTree(),
+			field:        func(root *gen.Field) *gen.Field { return &root.Fields[0].Fields[0] },
+			validation:   gen.NewValidation(gen.ValidIdentifier, "ExternalAccessIntegrations"),
+			expectedLast: "opts.Set.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}",
+			expectedPrime: []string{
+				"opts.Set = &Set{}",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -737,6 +783,8 @@ func Test_Validation_TestExpectedError(t *testing.T) {
 	identifierRoot := buildTree(&gen.Field{Name: "RootOptions", Kind: "RootOptions"})
 	identifierSlice := buildTree(identifierUnderSliceTree())
 	maskingPolicy := &identifierSlice.Fields[0].Fields[0]
+	identifierElemSlice := buildTree(identifierElementSliceTree())
+	eaiSlice := &identifierElemSlice.Fields[0]
 
 	tests := []struct {
 		name         string
@@ -773,6 +821,13 @@ func Test_Validation_TestExpectedError(t *testing.T) {
 			field:       maskingPolicy,
 			expectedOk:  true,
 			expectedErr: `errInvalidIdentifier("RootOptions.Columns[0].MaskingPolicy", "MaskingPolicy")`,
+		},
+		{
+			name:        "ValidIdentifier on an identifier-element slice — default [0]",
+			validation:  gen.NewValidation(gen.ValidIdentifier, "ExternalAccessIntegrations"),
+			field:       eaiSlice,
+			expectedOk:  true,
+			expectedErr: `errInvalidIdentifier("RootOptions.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations")`,
 		},
 		{
 			name:        "ExactlyOneValueSet on a slice — default all [0]",
@@ -903,4 +958,155 @@ func Test_DefaultOptsFieldFor(t *testing.T) {
 			require.Equal(t, tt.expectedValue, gen.DefaultOptsFieldFor(tt.nameField, tt.idVarRef))
 		})
 	}
+}
+
+func Test_Field_IsIdentifierElementSlice(t *testing.T) {
+	tests := []struct {
+		name     string
+		field    *gen.Field
+		expected bool
+	}{
+		{
+			name:     "[]AccountObjectIdentifier with no children",
+			field:    &gen.Field{Name: "ExternalAccessIntegrations", Kind: "[]AccountObjectIdentifier"},
+			expected: true,
+		},
+		{
+			name:     "[]SchemaObjectIdentifier with no children",
+			field:    &gen.Field{Name: "Tables", Kind: "[]SchemaObjectIdentifier"},
+			expected: true,
+		},
+		{
+			name:     "[]string is not an identifier element slice",
+			field:    &gen.Field{Name: "Values", Kind: "[]string"},
+			expected: false,
+		},
+		{
+			name: "[]Column with QueryStruct children is not an identifier element slice",
+			field: &gen.Field{Name: "Columns", Kind: "[]Column", Fields: []gen.Field{
+				{Name: "Name", Kind: "string"},
+			}},
+			expected: false,
+		},
+		{
+			name: "[]AccountObjectIdentifier with children is not treated as a flat identifier list",
+			field: &gen.Field{Name: "Integrations", Kind: "[]AccountObjectIdentifier", Fields: []gen.Field{
+				{Name: "Name", Kind: "string"},
+			}},
+			expected: false,
+		},
+		{
+			name:     "non-slice identifier",
+			field:    &gen.Field{Name: "name", Kind: "AccountObjectIdentifier"},
+			expected: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.expected, tt.field.IsIdentifierElementSlice())
+		})
+	}
+}
+
+func Test_RelocateIdentifierElementSliceValidations(t *testing.T) {
+	t.Run("moves ValidIdentifier from the container onto the identifier-element slice", func(t *testing.T) {
+		root := &gen.Field{Name: "RootOptions", Kind: "RootOptions", Validations: []*gen.Validation{
+			gen.NewValidation(gen.ValidIdentifier, "name"),
+			gen.NewValidation(gen.ValidIdentifier, "ExternalAccessIntegrations"),
+			gen.NewValidation(gen.ConflictingFields, "OrReplace", "IfNotExists"),
+		}, Fields: []gen.Field{
+			{Name: "name", Kind: "SchemaObjectIdentifier"},
+			{Name: "ExternalAccessIntegrations", Kind: "[]AccountObjectIdentifier"},
+			{Name: "OrReplace", Kind: "*bool"},
+			{Name: "IfNotExists", Kind: "*bool"},
+		}}
+		gen.SetParent(root)
+		gen.RelocateIdentifierElementSliceValidations(root)
+
+		require.Equal(t, []*gen.Validation{
+			gen.NewValidation(gen.ValidIdentifier, "name"),
+			gen.NewValidation(gen.ConflictingFields, "OrReplace", "IfNotExists"),
+		}, root.Validations)
+		require.Equal(t, []*gen.Validation{
+			gen.NewValidation(gen.ValidIdentifier, "ExternalAccessIntegrations"),
+		}, root.Fields[1].Validations)
+	})
+
+	t.Run("does not move ValidIdentifier for a struct-element slice", func(t *testing.T) {
+		root := identifierUnderSliceTree()
+		root.Validations = []*gen.Validation{
+			gen.NewValidation(gen.ValidIdentifier, "Columns"),
+		}
+		gen.SetParent(root)
+		gen.RelocateIdentifierElementSliceValidations(root)
+
+		require.Equal(t, []*gen.Validation{
+			gen.NewValidation(gen.ValidIdentifier, "Columns"),
+		}, root.Validations)
+		require.Empty(t, root.Fields[0].Validations)
+	})
+
+	t.Run("does not move ValidIdentifier for a []string list", func(t *testing.T) {
+		root := &gen.Field{Name: "RootOptions", Kind: "RootOptions", Validations: []*gen.Validation{
+			gen.NewValidation(gen.ValidIdentifier, "Values"),
+		}, Fields: []gen.Field{
+			{Name: "Values", Kind: "[]string"},
+		}}
+		gen.SetParent(root)
+		gen.RelocateIdentifierElementSliceValidations(root)
+
+		require.Equal(t, []*gen.Validation{
+			gen.NewValidation(gen.ValidIdentifier, "Values"),
+		}, root.Validations)
+		require.Empty(t, root.Fields[0].Validations)
+	})
+
+	t.Run("recurses into nested containers", func(t *testing.T) {
+		root := &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+			{Name: "Set", Kind: "*Set", Validations: []*gen.Validation{
+				gen.NewValidation(gen.ValidIdentifier, "ExternalAccessIntegrations"),
+			}, Fields: []gen.Field{
+				{Name: "ExternalAccessIntegrations", Kind: "[]AccountObjectIdentifier"},
+			}},
+		}}
+		gen.SetParent(root)
+		gen.RelocateIdentifierElementSliceValidations(root)
+
+		require.Empty(t, root.Fields[0].Validations)
+		require.Equal(t, []*gen.Validation{
+			gen.NewValidation(gen.ValidIdentifier, "ExternalAccessIntegrations"),
+		}, root.Fields[0].Fields[0].Validations)
+	})
+}
+
+func Test_Validation_Condition_identifierElementSlice(t *testing.T) {
+	root := buildTree(identifierElementSliceTree())
+	slice := &root.Fields[0]
+	v := gen.NewValidation(gen.ValidIdentifier, "ExternalAccessIntegrations")
+	require.Equal(t, "!ValidObjectIdentifier(externalAccessIntegration)", v.Condition(slice))
+
+	require.Panics(t, func() {
+		gen.NewValidation(gen.ValidIdentifierIfSet, "ExternalAccessIntegrations").Condition(slice)
+	})
+}
+
+func Test_BuildSingleFieldValidationCase_identifierElementSliceSlug(t *testing.T) {
+	t.Run("does not double the slice name", func(t *testing.T) {
+		root := buildTree(identifierElementSliceTree())
+		slice := &root.Fields[0]
+		v := gen.NewValidation(gen.ValidIdentifier, "ExternalAccessIntegrations")
+		tc := gen.BuildSingleFieldValidationCase(v, slice, "Create", `errInvalidIdentifier("RootOptions.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations")`, true)
+		require.Equal(t, "validation_Create_ExternalAccessIntegrations_ValidIdentifier", tc.Name)
+		require.Equal(t, []string{
+			"opts.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}",
+		}, tc.ModifyLines)
+	})
+
+	t.Run("keeps nested container path without doubling", func(t *testing.T) {
+		root := buildTree(identifierElementSliceUnderSetTree())
+		slice := &root.Fields[0].Fields[0]
+		v := gen.NewValidation(gen.ValidIdentifier, "ExternalAccessIntegrations")
+		tc := gen.BuildSingleFieldValidationCase(v, slice, "Alter", "", true)
+		require.Equal(t, "validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier", tc.Name)
+	})
 }

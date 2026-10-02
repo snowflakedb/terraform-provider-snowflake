@@ -84,6 +84,8 @@ func sliceValidationColumn() *g.QueryStruct {
 		OptionalQueryStructField("MaskingPolicy", sliceValidationColumnMaskingPolicy(), g.KeywordOptions())
 }
 
+// Case 6: ValidIdentifier on a flat identifier-element slice (notebooks EXTERNAL_ACCESS_INTEGRATIONS).
+// Proves per-element !ValidObjectIdentifier(elem) and indexed errInvalidIdentifier on the slice itself.
 var SliceValidationExample = g.NewInterface(
 	"SliceValidationExamples",
 	"SliceValidationExample",
@@ -99,5 +101,7 @@ var SliceValidationExample = g.NewInterface(
 		ListQueryStructField("CheckedItems", sliceValidationCheckedItem(), g.KeywordOptions().SQL("CHECKED_ITEMS")).
 		ListQueryStructField("Items", sliceValidationItem(), g.KeywordOptions().SQL("ITEMS")).
 		ListQueryStructField("Columns", sliceValidationColumn(), g.KeywordOptions().SQL("COLUMNS")).
-		WithValidation(g.ValidIdentifier, "name"),
+		ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.ParameterOptions().Parentheses()).
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ValidIdentifier, "ExternalAccessIntegrations"),
 )

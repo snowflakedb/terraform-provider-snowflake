@@ -19,7 +19,8 @@ func (v *sliceValidationExamples) Create(ctx context.Context, request *CreateSli
 
 func (r *CreateSliceValidationExampleRequest) toOpts() *CreateSliceValidationExampleOptions {
 	opts := &CreateSliceValidationExampleOptions{
-		name: r.name,
+		name:                       r.name,
+		ExternalAccessIntegrations: r.ExternalAccessIntegrations,
 	}
 	if r.DualChecks != nil {
 		dualChecks := make([]DualCheckItem, len(r.DualChecks))

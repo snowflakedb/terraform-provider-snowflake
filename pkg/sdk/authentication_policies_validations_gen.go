@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateAuthenticationPolicyOptions)
 	_ validatable = new(AlterAuthenticationPolicyOptions)
@@ -29,6 +31,13 @@ func (opts *CreateAuthenticationPolicyOptions) validate() error {
 	if valueSet(opts.SecurityIntegrations) {
 		if !exactlyOneValueSet(opts.SecurityIntegrations.All, opts.SecurityIntegrations.SecurityIntegrations) {
 			errs = append(errs, errExactlyOneOf("CreateAuthenticationPolicyOptions.SecurityIntegrations", "All", "SecurityIntegrations"))
+		}
+		if valueSet(opts.SecurityIntegrations.SecurityIntegrations) {
+			for securityIntegrationIdx, securityIntegration := range opts.SecurityIntegrations.SecurityIntegrations {
+				if !ValidObjectIdentifier(securityIntegration) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateAuthenticationPolicyOptions.SecurityIntegrations.SecurityIntegrations[%d]", securityIntegrationIdx), "SecurityIntegrations"))
+				}
+			}
 		}
 	}
 	if valueSet(opts.PatPolicy) {
@@ -70,6 +79,13 @@ func (opts *AlterAuthenticationPolicyOptions) validate() error {
 		if valueSet(opts.Set.SecurityIntegrations) {
 			if !exactlyOneValueSet(opts.Set.SecurityIntegrations.All, opts.Set.SecurityIntegrations.SecurityIntegrations) {
 				errs = append(errs, errExactlyOneOf("AlterAuthenticationPolicyOptions.Set.SecurityIntegrations", "All", "SecurityIntegrations"))
+			}
+			if valueSet(opts.Set.SecurityIntegrations.SecurityIntegrations) {
+				for securityIntegrationIdx, securityIntegration := range opts.Set.SecurityIntegrations.SecurityIntegrations {
+					if !ValidObjectIdentifier(securityIntegration) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterAuthenticationPolicyOptions.Set.SecurityIntegrations.SecurityIntegrations[%d]", securityIntegrationIdx), "SecurityIntegrations"))
+					}
+				}
 			}
 		}
 		if valueSet(opts.Set.PatPolicy) {

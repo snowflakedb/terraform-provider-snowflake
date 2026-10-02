@@ -10,7 +10,8 @@ func allowedApiAuthenticationIntegrations() *g.QueryStruct {
 	return g.NewQueryStruct("ExternalAccessIntegrationAllowedApiAuthenticationIntegrations").
 		OptionalSQLWithCustomFieldName("None", "none").
 		List("Integrations", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.ListOptions().Parentheses()).
-		WithValidation(g.ExactlyOneValueSet, "None", "Integrations")
+		WithValidation(g.ExactlyOneValueSet, "None", "Integrations").
+		WithValidation(g.ValidIdentifier, "Integrations")
 }
 
 func allowedAuthenticationSecrets() *g.QueryStruct {
@@ -18,7 +19,8 @@ func allowedAuthenticationSecrets() *g.QueryStruct {
 		OptionalSQLWithCustomFieldName("All", "all").
 		OptionalSQLWithCustomFieldName("None", "none").
 		List("Secrets", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ListOptions().Parentheses()).
-		WithValidation(g.ExactlyOneValueSet, "All", "None", "Secrets")
+		WithValidation(g.ExactlyOneValueSet, "All", "None", "Secrets").
+		WithValidation(g.ValidIdentifier, "Secrets")
 }
 
 var externalAccessIntegrationDetailsDef = g.PlainStruct("ExternalAccessIntegrationDetails").
@@ -54,7 +56,8 @@ var externalAccessIntegrationsDef = g.NewInterface(
 		BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.AtLeastOneValueSet, "AllowedNetworkRules"),
+		WithValidation(g.AtLeastOneValueSet, "AllowedNetworkRules").
+		WithValidation(g.ValidIdentifier, "AllowedNetworkRules"),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-external-access-integration",
 	g.NewQueryStruct("AlterExternalAccessIntegration").
@@ -79,6 +82,7 @@ var externalAccessIntegrationsDef = g.NewInterface(
 				OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
 				OptionalComment().
 				WithValidation(g.AtLeastOneValueSet, "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Enabled", "Comment").
+				WithValidation(g.ValidIdentifier, "AllowedNetworkRules").
 				WithAdditionalValidations(),
 			g.KeywordOptions().SQL("SET"),
 		).

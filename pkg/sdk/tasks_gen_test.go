@@ -16,6 +16,7 @@ const (
 	case_Tasks_validation_Create_Config_NoDoubleDollarQuotesIfSet                        testCaseName = "validation_Create_Config_NoDoubleDollarQuotesIfSet"
 	case_Tasks_validation_Create_opts_Warehouse_ExactlyOneValueSet_NoneSet               testCaseName = "validation_Create_opts_Warehouse_ExactlyOneValueSet_NoneSet"
 	case_Tasks_validation_Create_opts_Warehouse_ExactlyOneValueSet_MoreThanOneSet        testCaseName = "validation_Create_opts_Warehouse_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tasks_validation_Create_After_ValidIdentifier                                   testCaseName = "validation_Create_After_ValidIdentifier"
 	case_Tasks_sql_Create_basic                                                          testCaseName = "sql_Create_basic"
 	case_Tasks_sql_Create_all                                                            testCaseName = "sql_Create_all"
 	case_Tasks_validation_CreateOrAlter_name_ValidIdentifier                             testCaseName = "validation_CreateOrAlter_name_ValidIdentifier"
@@ -24,6 +25,7 @@ const (
 	case_Tasks_validation_CreateOrAlter_Config_NoDoubleDollarQuotesIfSet                 testCaseName = "validation_CreateOrAlter_Config_NoDoubleDollarQuotesIfSet"
 	case_Tasks_validation_CreateOrAlter_opts_Warehouse_ExactlyOneValueSet_NoneSet        testCaseName = "validation_CreateOrAlter_opts_Warehouse_ExactlyOneValueSet_NoneSet"
 	case_Tasks_validation_CreateOrAlter_opts_Warehouse_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_CreateOrAlter_opts_Warehouse_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tasks_validation_CreateOrAlter_After_ValidIdentifier                            testCaseName = "validation_CreateOrAlter_After_ValidIdentifier"
 	case_Tasks_sql_CreateOrAlter_basic                                                   testCaseName = "sql_CreateOrAlter_basic"
 	case_Tasks_sql_CreateOrAlter_all                                                     testCaseName = "sql_CreateOrAlter_all"
 	case_Tasks_validation_Clone_name_ValidIdentifier                                     testCaseName = "validation_Clone_name_ValidIdentifier"
@@ -33,6 +35,8 @@ const (
 	case_Tasks_validation_Alter_SetExecuteAsUser_ValidIdentifierIfSet                    testCaseName = "validation_Alter_SetExecuteAsUser_ValidIdentifierIfSet"
 	case_Tasks_validation_Alter_opts_ExactlyOneValueSet_NoneSet                          testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_Tasks_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                   testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tasks_validation_Alter_RemoveAfter_ValidIdentifier                              testCaseName = "validation_Alter_RemoveAfter_ValidIdentifier"
+	case_Tasks_validation_Alter_AddAfter_ValidIdentifier                                 testCaseName = "validation_Alter_AddAfter_ValidIdentifier"
 	case_Tasks_validation_Alter_opts_Set_AtLeastOneValueSet                              testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_Tasks_validation_Alter_opts_Set_ConflictingFields                               testCaseName = "validation_Alter_opts_Set_ConflictingFields"
 	case_Tasks_validation_Alter_Set_ErrorIntegration_ValidIdentifierIfSet                testCaseName = "validation_Alter_Set_ErrorIntegration_ValidIdentifierIfSet"
@@ -138,6 +142,13 @@ var tasksTests = TasksTestsContext{
 				Name:        case_Tasks_validation_Create_opts_Warehouse_ExactlyOneValueSet_MoreThanOneSet,
 				ExpectedErr: errExactlyOneOf("CreateTaskOptions.Warehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"),
 			},
+			validationCase[*CreateTaskOptions]{
+				Name:        case_Tasks_validation_Create_After_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateTaskOptions.After[0]", "After"),
+				DefaultModify: func(opts *CreateTaskOptions) {
+					opts.After = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateTaskOptions]{
@@ -197,6 +208,13 @@ var tasksTests = TasksTestsContext{
 			validationCase[*CreateOrAlterTaskOptions]{
 				Name:        case_Tasks_validation_CreateOrAlter_opts_Warehouse_ExactlyOneValueSet_MoreThanOneSet,
 				ExpectedErr: errExactlyOneOf("CreateOrAlterTaskOptions.Warehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"),
+			},
+			validationCase[*CreateOrAlterTaskOptions]{
+				Name:        case_Tasks_validation_CreateOrAlter_After_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOrAlterTaskOptions.After[0]", "After"),
+				DefaultModify: func(opts *CreateOrAlterTaskOptions) {
+					opts.After = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
 			},
 		).
 		withSqlCases(
@@ -288,6 +306,20 @@ var tasksTests = TasksTestsContext{
 				DefaultModify: func(opts *AlterTaskOptions) {
 					opts.Resume = new(true)
 					opts.Suspend = new(true)
+				},
+			},
+			validationCase[*AlterTaskOptions]{
+				Name:        case_Tasks_validation_Alter_RemoveAfter_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTaskOptions.RemoveAfter[0]", "RemoveAfter"),
+				DefaultModify: func(opts *AlterTaskOptions) {
+					opts.RemoveAfter = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
+			validationCase[*AlterTaskOptions]{
+				Name:        case_Tasks_validation_Alter_AddAfter_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTaskOptions.AddAfter[0]", "AddAfter"),
+				DefaultModify: func(opts *AlterTaskOptions) {
+					opts.AddAfter = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
 				},
 			},
 			validationCase[*AlterTaskOptions]{

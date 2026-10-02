@@ -31,6 +31,7 @@ func preprocessDefinition(definition *Interface) {
 			o.OptsField.Name = fmt.Sprintf("%s%sOptions", o.Name, o.ObjectInterface.NameSingular)
 			o.OptsField.Kind = fmt.Sprintf("%s%sOptions", o.Name, o.ObjectInterface.NameSingular)
 			setParent(o.OptsField)
+			relocateIdentifierElementSliceValidations(o.OptsField)
 			resolveInterfaceIdentifierKinds(o.OptsField, definition.IdentifierKind)
 
 			// TODO [SNOW-2324252]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
@@ -111,6 +112,33 @@ func resolveInterfaceIdentifierKinds(field *Field, identifierKind string) {
 	}
 	for idx := range field.Fields {
 		resolveInterfaceIdentifierKinds(&field.Fields[idx], identifierKind)
+	}
+}
+
+// relocateIdentifierElementSliceValidations moves WithValidation(ValidIdentifier, "SliceField")
+// from the container onto the slice field when that child is a flat identifier list. The
+// validations template only opens a per-element loop when the current field is the slice.
+// Mutate through f.Fields[i] — FindChild returns a copy (FindFirst takes the range variable's address).
+func relocateIdentifierElementSliceValidations(f *Field) {
+	remaining := make([]*Validation, 0, len(f.Validations))
+	for _, v := range f.Validations {
+		moved := false
+		if v.Type == ValidIdentifier && len(v.FieldNames) == 1 {
+			for i := range f.Fields {
+				if f.Fields[i].Name == v.FieldNames[0] && f.Fields[i].IsIdentifierElementSlice() {
+					f.Fields[i].Validations = append(f.Fields[i].Validations, v)
+					moved = true
+					break
+				}
+			}
+		}
+		if !moved {
+			remaining = append(remaining, v)
+		}
+	}
+	f.Validations = remaining
+	for i := range f.Fields {
+		relocateIdentifierElementSliceValidations(&f.Fields[i])
 	}
 }
 

@@ -23,8 +23,11 @@ const (
 	case_Shares_validation_Alter_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_Shares_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_Shares_validation_Alter_opts_Add_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Add_AtLeastOneValueSet"
+	case_Shares_validation_Alter_Add_Accounts_ValidIdentifier           testCaseName = "validation_Alter_Add_Accounts_ValidIdentifier"
 	case_Shares_validation_Alter_opts_Remove_AtLeastOneValueSet         testCaseName = "validation_Alter_opts_Remove_AtLeastOneValueSet"
+	case_Shares_validation_Alter_Remove_Accounts_ValidIdentifier        testCaseName = "validation_Alter_Remove_Accounts_ValidIdentifier"
 	case_Shares_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Shares_validation_Alter_Set_Accounts_ValidIdentifier           testCaseName = "validation_Alter_Set_Accounts_ValidIdentifier"
 	case_Shares_validation_Alter_opts_Unset_ExactlyOneValueSet_NoneSet  testCaseName = "validation_Alter_opts_Unset_ExactlyOneValueSet_NoneSet"
 	case_Shares_sql_Alter_Add                                           testCaseName = "sql_Alter_Add"
 	case_Shares_sql_Alter_Remove                                        testCaseName = "sql_Alter_Remove"
@@ -124,11 +127,27 @@ var sharesTests = SharesTestsContext{
 				},
 			},
 			validationCase[*AlterShareOptions]{
+				Name:        case_Shares_validation_Alter_Add_Accounts_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterShareOptions.Add.Accounts[0]", "Accounts"),
+				DefaultModify: func(opts *AlterShareOptions) {
+					opts.Add = &ShareAdd{}
+					opts.Add.Accounts = []AccountIdentifier{emptyAccountIdentifier}
+				},
+			},
+			validationCase[*AlterShareOptions]{
 				Name:        case_Shares_validation_Alter_opts_Remove_AtLeastOneValueSet,
 				ExpectedErr: errAtLeastOneOf("AlterShareOptions.Remove", "Accounts"),
 				DefaultModify: func(opts *AlterShareOptions) {
 					opts.Remove = &ShareRemove{}
 					opts.Remove.Accounts = nil
+				},
+			},
+			validationCase[*AlterShareOptions]{
+				Name:        case_Shares_validation_Alter_Remove_Accounts_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterShareOptions.Remove.Accounts[0]", "Accounts"),
+				DefaultModify: func(opts *AlterShareOptions) {
+					opts.Remove = &ShareRemove{}
+					opts.Remove.Accounts = []AccountIdentifier{emptyAccountIdentifier}
 				},
 			},
 			validationCase[*AlterShareOptions]{
@@ -138,6 +157,14 @@ var sharesTests = SharesTestsContext{
 					opts.Set = &ShareSet{}
 					opts.Set.Accounts = nil
 					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterShareOptions]{
+				Name:        case_Shares_validation_Alter_Set_Accounts_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterShareOptions.Set.Accounts[0]", "Accounts"),
+				DefaultModify: func(opts *AlterShareOptions) {
+					opts.Set = &ShareSet{}
+					opts.Set.Accounts = []AccountIdentifier{emptyAccountIdentifier}
 				},
 			},
 			validationCase[*AlterShareOptions]{

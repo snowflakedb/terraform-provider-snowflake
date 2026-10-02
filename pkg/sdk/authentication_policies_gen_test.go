@@ -29,6 +29,7 @@ const (
 	case_AuthenticationPolicies_validation_Create_opts_MfaPolicy_AtLeastOneValueSet                              testCaseName = "validation_Create_opts_MfaPolicy_AtLeastOneValueSet"
 	case_AuthenticationPolicies_validation_Create_opts_SecurityIntegrations_ExactlyOneValueSet_NoneSet           testCaseName = "validation_Create_opts_SecurityIntegrations_ExactlyOneValueSet_NoneSet"
 	case_AuthenticationPolicies_validation_Create_opts_SecurityIntegrations_ExactlyOneValueSet_MoreThanOneSet    testCaseName = "validation_Create_opts_SecurityIntegrations_ExactlyOneValueSet_MoreThanOneSet"
+	case_AuthenticationPolicies_validation_Create_SecurityIntegrations_SecurityIntegrations_ValidIdentifier      testCaseName = "validation_Create_SecurityIntegrations_SecurityIntegrations_ValidIdentifier"
 	case_AuthenticationPolicies_validation_Create_opts_PatPolicy_AtLeastOneValueSet                              testCaseName = "validation_Create_opts_PatPolicy_AtLeastOneValueSet"
 	case_AuthenticationPolicies_validation_Create_opts_WorkloadIdentityPolicy_AtLeastOneValueSet                 testCaseName = "validation_Create_opts_WorkloadIdentityPolicy_AtLeastOneValueSet"
 	case_AuthenticationPolicies_sql_Create_basic                                                                 testCaseName = "sql_Create_basic"
@@ -41,6 +42,7 @@ const (
 	case_AuthenticationPolicies_validation_Alter_opts_Set_MfaPolicy_AtLeastOneValueSet                           testCaseName = "validation_Alter_opts_Set_MfaPolicy_AtLeastOneValueSet"
 	case_AuthenticationPolicies_validation_Alter_opts_Set_SecurityIntegrations_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_Set_SecurityIntegrations_ExactlyOneValueSet_NoneSet"
 	case_AuthenticationPolicies_validation_Alter_opts_Set_SecurityIntegrations_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_Set_SecurityIntegrations_ExactlyOneValueSet_MoreThanOneSet"
+	case_AuthenticationPolicies_validation_Alter_Set_SecurityIntegrations_SecurityIntegrations_ValidIdentifier   testCaseName = "validation_Alter_Set_SecurityIntegrations_SecurityIntegrations_ValidIdentifier"
 	case_AuthenticationPolicies_validation_Alter_opts_Set_PatPolicy_AtLeastOneValueSet                           testCaseName = "validation_Alter_opts_Set_PatPolicy_AtLeastOneValueSet"
 	case_AuthenticationPolicies_validation_Alter_opts_Set_WorkloadIdentityPolicy_AtLeastOneValueSet              testCaseName = "validation_Alter_opts_Set_WorkloadIdentityPolicy_AtLeastOneValueSet"
 	case_AuthenticationPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet                                   testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
@@ -115,6 +117,14 @@ var authenticationPoliciesTests = AuthenticationPoliciesTestsContext{
 			validationCase[*CreateAuthenticationPolicyOptions]{
 				Name:        case_AuthenticationPolicies_validation_Create_opts_SecurityIntegrations_ExactlyOneValueSet_MoreThanOneSet,
 				ExpectedErr: errExactlyOneOf("CreateAuthenticationPolicyOptions.SecurityIntegrations", "All", "SecurityIntegrations"),
+			},
+			validationCase[*CreateAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Create_SecurityIntegrations_SecurityIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAuthenticationPolicyOptions.SecurityIntegrations.SecurityIntegrations[0]", "SecurityIntegrations"),
+				DefaultModify: func(opts *CreateAuthenticationPolicyOptions) {
+					opts.SecurityIntegrations = &SecurityIntegrationsOption{}
+					opts.SecurityIntegrations.SecurityIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
 			},
 			validationCase[*CreateAuthenticationPolicyOptions]{
 				Name:        case_AuthenticationPolicies_validation_Create_opts_PatPolicy_AtLeastOneValueSet,
@@ -227,6 +237,15 @@ var authenticationPoliciesTests = AuthenticationPoliciesTestsContext{
 			validationCase[*AlterAuthenticationPolicyOptions]{
 				Name:        case_AuthenticationPolicies_validation_Alter_opts_Set_SecurityIntegrations_ExactlyOneValueSet_MoreThanOneSet,
 				ExpectedErr: errExactlyOneOf("AlterAuthenticationPolicyOptions.Set.SecurityIntegrations", "All", "SecurityIntegrations"),
+			},
+			validationCase[*AlterAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Alter_Set_SecurityIntegrations_SecurityIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterAuthenticationPolicyOptions.Set.SecurityIntegrations.SecurityIntegrations[0]", "SecurityIntegrations"),
+				DefaultModify: func(opts *AlterAuthenticationPolicyOptions) {
+					opts.Set = &AuthenticationPolicySet{}
+					opts.Set.SecurityIntegrations = &SecurityIntegrationsOption{}
+					opts.Set.SecurityIntegrations.SecurityIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
 			},
 			validationCase[*AlterAuthenticationPolicyOptions]{
 				Name:        case_AuthenticationPolicies_validation_Alter_opts_Set_PatPolicy_AtLeastOneValueSet,

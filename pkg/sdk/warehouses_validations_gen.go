@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateWarehouseOptions)
 	_ validatable = new(CreateAdaptiveWarehouseOptions)
@@ -54,6 +56,13 @@ func (opts *CreateInteractiveWarehouseOptions) validate() error {
 		errs = append(errs, errOneOf("CreateInteractiveWarehouseOptions", "OrReplace", "IfNotExists"))
 	}
 	errs = append(errs, opts.additionalValidations())
+	if valueSet(opts.Tables) {
+		for tableIdx, table := range opts.Tables {
+			if !ValidObjectIdentifier(table) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateInteractiveWarehouseOptions.Tables[%d]", tableIdx), "Tables"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -78,6 +87,20 @@ func (opts *AlterWarehouseOptions) validate() error {
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.WarehouseType, opts.Unset.WaitForCompletion, opts.Unset.MaxClusterCount, opts.Unset.MinClusterCount, opts.Unset.ScalingPolicy, opts.Unset.AutoSuspend, opts.Unset.AutoResume, opts.Unset.ResourceMonitor, opts.Unset.Comment, opts.Unset.EnableQueryAcceleration, opts.Unset.QueryAccelerationMaxScaleFactor, opts.Unset.ResourceConstraint, opts.Unset.Generation, opts.Unset.MaxConcurrencyLevel, opts.Unset.StatementQueuedTimeoutInSeconds, opts.Unset.StatementTimeoutInSeconds, opts.Unset.QueryThroughputMultiplier, opts.Unset.MaxQueryPerformanceLevel, opts.Unset.FallbackWarehouse) {
 			errs = append(errs, errAtLeastOneOf("AlterWarehouseOptions.Unset", "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel", "FallbackWarehouse"))
+		}
+	}
+	if valueSet(opts.AddTables) {
+		for addTableIdx, addTable := range opts.AddTables {
+			if !ValidObjectIdentifier(addTable) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterWarehouseOptions.AddTables[%d]", addTableIdx), "AddTables"))
+			}
+		}
+	}
+	if valueSet(opts.DropTables) {
+		for dropTableIdx, dropTable := range opts.DropTables {
+			if !ValidObjectIdentifier(dropTable) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterWarehouseOptions.DropTables[%d]", dropTableIdx), "DropTables"))
+			}
 		}
 	}
 	return JoinErrors(errs...)

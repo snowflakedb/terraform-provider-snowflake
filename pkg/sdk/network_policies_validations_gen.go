@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateNetworkPolicyOptions)
 	_ validatable = new(AlterNetworkPolicyOptions)
@@ -17,6 +19,20 @@ func (opts *CreateNetworkPolicyOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreateNetworkPolicyOptions", "name"))
+	}
+	if valueSet(opts.AllowedNetworkRuleList) {
+		for allowedNetworkRuleListIdx, allowedNetworkRuleList := range opts.AllowedNetworkRuleList {
+			if !ValidObjectIdentifier(allowedNetworkRuleList) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateNetworkPolicyOptions.AllowedNetworkRuleList[%d]", allowedNetworkRuleListIdx), "AllowedNetworkRuleList"))
+			}
+		}
+	}
+	if valueSet(opts.BlockedNetworkRuleList) {
+		for blockedNetworkRuleListIdx, blockedNetworkRuleList := range opts.BlockedNetworkRuleList {
+			if !ValidObjectIdentifier(blockedNetworkRuleList) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateNetworkPolicyOptions.BlockedNetworkRuleList[%d]", blockedNetworkRuleListIdx), "BlockedNetworkRuleList"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -39,6 +55,24 @@ func (opts *AlterNetworkPolicyOptions) validate() error {
 		if !anyValueSet(opts.Set.AllowedIpList, opts.Set.BlockedIpList, opts.Set.Comment, opts.Set.AllowedNetworkRuleList, opts.Set.BlockedNetworkRuleList) {
 			errs = append(errs, errAtLeastOneOf("AlterNetworkPolicyOptions.Set", "AllowedIpList", "BlockedIpList", "Comment", "AllowedNetworkRuleList", "BlockedNetworkRuleList"))
 		}
+		if valueSet(opts.Set.AllowedNetworkRuleList) {
+			if valueSet(opts.Set.AllowedNetworkRuleList.AllowedNetworkRuleList) {
+				for allowedNetworkRuleListIdx, allowedNetworkRuleList := range opts.Set.AllowedNetworkRuleList.AllowedNetworkRuleList {
+					if !ValidObjectIdentifier(allowedNetworkRuleList) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterNetworkPolicyOptions.Set.AllowedNetworkRuleList.AllowedNetworkRuleList[%d]", allowedNetworkRuleListIdx), "AllowedNetworkRuleList"))
+					}
+				}
+			}
+		}
+		if valueSet(opts.Set.BlockedNetworkRuleList) {
+			if valueSet(opts.Set.BlockedNetworkRuleList.BlockedNetworkRuleList) {
+				for blockedNetworkRuleListIdx, blockedNetworkRuleList := range opts.Set.BlockedNetworkRuleList.BlockedNetworkRuleList {
+					if !ValidObjectIdentifier(blockedNetworkRuleList) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterNetworkPolicyOptions.Set.BlockedNetworkRuleList.BlockedNetworkRuleList[%d]", blockedNetworkRuleListIdx), "BlockedNetworkRuleList"))
+					}
+				}
+			}
+		}
 	}
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.AllowedIpList, opts.Unset.BlockedIpList, opts.Unset.Comment, opts.Unset.AllowedNetworkRuleList, opts.Unset.BlockedNetworkRuleList) {
@@ -49,10 +83,38 @@ func (opts *AlterNetworkPolicyOptions) validate() error {
 		if !exactlyOneValueSet(opts.Add.AllowedNetworkRuleList, opts.Add.BlockedNetworkRuleList) {
 			errs = append(errs, errExactlyOneOf("AlterNetworkPolicyOptions.Add", "AllowedNetworkRuleList", "BlockedNetworkRuleList"))
 		}
+		if valueSet(opts.Add.AllowedNetworkRuleList) {
+			for allowedNetworkRuleListIdx, allowedNetworkRuleList := range opts.Add.AllowedNetworkRuleList {
+				if !ValidObjectIdentifier(allowedNetworkRuleList) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterNetworkPolicyOptions.Add.AllowedNetworkRuleList[%d]", allowedNetworkRuleListIdx), "AllowedNetworkRuleList"))
+				}
+			}
+		}
+		if valueSet(opts.Add.BlockedNetworkRuleList) {
+			for blockedNetworkRuleListIdx, blockedNetworkRuleList := range opts.Add.BlockedNetworkRuleList {
+				if !ValidObjectIdentifier(blockedNetworkRuleList) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterNetworkPolicyOptions.Add.BlockedNetworkRuleList[%d]", blockedNetworkRuleListIdx), "BlockedNetworkRuleList"))
+				}
+			}
+		}
 	}
 	if valueSet(opts.Remove) {
 		if !exactlyOneValueSet(opts.Remove.AllowedNetworkRuleList, opts.Remove.BlockedNetworkRuleList) {
 			errs = append(errs, errExactlyOneOf("AlterNetworkPolicyOptions.Remove", "AllowedNetworkRuleList", "BlockedNetworkRuleList"))
+		}
+		if valueSet(opts.Remove.AllowedNetworkRuleList) {
+			for allowedNetworkRuleListIdx, allowedNetworkRuleList := range opts.Remove.AllowedNetworkRuleList {
+				if !ValidObjectIdentifier(allowedNetworkRuleList) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterNetworkPolicyOptions.Remove.AllowedNetworkRuleList[%d]", allowedNetworkRuleListIdx), "AllowedNetworkRuleList"))
+				}
+			}
+		}
+		if valueSet(opts.Remove.BlockedNetworkRuleList) {
+			for blockedNetworkRuleListIdx, blockedNetworkRuleList := range opts.Remove.BlockedNetworkRuleList {
+				if !ValidObjectIdentifier(blockedNetworkRuleList) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterNetworkPolicyOptions.Remove.BlockedNetworkRuleList[%d]", blockedNetworkRuleListIdx), "BlockedNetworkRuleList"))
+				}
+			}
 		}
 	}
 	return JoinErrors(errs...)

@@ -207,9 +207,17 @@ func buildSingleFieldValidationCase(v *Validation, f *Field, opName, expectedErr
 	// (e.g. Handler_ValidateValueSet vs RuntimeVersion_ValidateValueSet).
 	fieldName := v.FieldNames[0]
 	var fieldSlug string
-	if f.IsRoot() {
+	switch {
+	case f.IsIdentifierElementSlice():
+		// Validation lives on the slice field itself; do not double the name.
+		if f.IsRoot() {
+			fieldSlug = f.Name
+		} else {
+			fieldSlug = strings.TrimPrefix(f.SlugPath(), "opts_")
+		}
+	case f.IsRoot():
 		fieldSlug = fieldName
-	} else {
+	default:
 		// container.SlugPath() = "opts_A_B_..._Container"; strip the leading "opts_"
 		fieldSlug = strings.TrimPrefix(f.SlugPath(), "opts_") + "_" + fieldName
 	}

@@ -16,86 +16,90 @@ func init() {
 var databasesTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 
 const (
-	case_Databases_validation_Create_name_ValidIdentifier                               testCaseName = "validation_Create_name_ValidIdentifier"
-	case_Databases_validation_Create_opts_ConflictingFields                             testCaseName = "validation_Create_opts_ConflictingFields"
-	case_Databases_validation_Create_ExternalVolume_ValidIdentifierIfSet                testCaseName = "validation_Create_ExternalVolume_ValidIdentifierIfSet"
-	case_Databases_validation_Create_Catalog_ValidIdentifierIfSet                       testCaseName = "validation_Create_Catalog_ValidIdentifierIfSet"
-	case_Databases_sql_Create_basic                                                     testCaseName = "sql_Create_basic"
-	case_Databases_sql_Create_all                                                       testCaseName = "sql_Create_all"
-	case_Databases_validation_Clone_name_ValidIdentifier                                testCaseName = "validation_Clone_name_ValidIdentifier"
-	case_Databases_validation_Clone_opts_ConflictingFields                              testCaseName = "validation_Clone_opts_ConflictingFields"
-	case_Databases_sql_Clone_basic                                                      testCaseName = "sql_Clone_basic"
-	case_Databases_validation_CreateShared_name_ValidIdentifier                         testCaseName = "validation_CreateShared_name_ValidIdentifier"
-	case_Databases_validation_CreateShared_FromShare_ValidIdentifier                    testCaseName = "validation_CreateShared_FromShare_ValidIdentifier"
-	case_Databases_validation_CreateShared_opts_ConflictingFields                       testCaseName = "validation_CreateShared_opts_ConflictingFields"
-	case_Databases_validation_CreateShared_ExternalVolume_ValidIdentifierIfSet          testCaseName = "validation_CreateShared_ExternalVolume_ValidIdentifierIfSet"
-	case_Databases_validation_CreateShared_Catalog_ValidIdentifierIfSet                 testCaseName = "validation_CreateShared_Catalog_ValidIdentifierIfSet"
-	case_Databases_sql_CreateShared_basic                                               testCaseName = "sql_CreateShared_basic"
-	case_Databases_sql_CreateShared_all                                                 testCaseName = "sql_CreateShared_all"
-	case_Databases_validation_CreateSecondary_name_ValidIdentifier                      testCaseName = "validation_CreateSecondary_name_ValidIdentifier"
-	case_Databases_validation_CreateSecondary_PrimaryDatabase_ValidIdentifier           testCaseName = "validation_CreateSecondary_PrimaryDatabase_ValidIdentifier"
-	case_Databases_validation_CreateSecondary_opts_ConflictingFields                    testCaseName = "validation_CreateSecondary_opts_ConflictingFields"
-	case_Databases_validation_CreateSecondary_ExternalVolume_ValidIdentifierIfSet       testCaseName = "validation_CreateSecondary_ExternalVolume_ValidIdentifierIfSet"
-	case_Databases_validation_CreateSecondary_Catalog_ValidIdentifierIfSet              testCaseName = "validation_CreateSecondary_Catalog_ValidIdentifierIfSet"
-	case_Databases_sql_CreateSecondary_basic                                            testCaseName = "sql_CreateSecondary_basic"
-	case_Databases_sql_CreateSecondary_all                                              testCaseName = "sql_CreateSecondary_all"
-	case_Databases_validation_CreateFromListing_name_ValidIdentifier                    testCaseName = "validation_CreateFromListing_name_ValidIdentifier"
-	case_Databases_sql_CreateFromListing_basic                                          testCaseName = "sql_CreateFromListing_basic"
-	case_Databases_sql_CreateFromListing_all                                            testCaseName = "sql_CreateFromListing_all"
-	case_Databases_validation_CreateCatalogLinked_name_ValidIdentifier                  testCaseName = "validation_CreateCatalogLinked_name_ValidIdentifier"
-	case_Databases_validation_CreateCatalogLinked_ExternalVolume_ValidIdentifierIfSet   testCaseName = "validation_CreateCatalogLinked_ExternalVolume_ValidIdentifierIfSet"
-	case_Databases_validation_CreateCatalogLinked_LinkedCatalog_Catalog_ValidIdentifier testCaseName = "validation_CreateCatalogLinked_LinkedCatalog_Catalog_ValidIdentifier"
-	case_Databases_sql_CreateCatalogLinked_basic                                        testCaseName = "sql_CreateCatalogLinked_basic"
-	case_Databases_sql_CreateCatalogLinked_all                                          testCaseName = "sql_CreateCatalogLinked_all"
-	case_Databases_validation_Alter_name_ValidIdentifier                                testCaseName = "validation_Alter_name_ValidIdentifier"
-	case_Databases_validation_Alter_opts_ExactlyOneValueSet_NoneSet                     testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_Databases_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet              testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Databases_validation_Alter_RenameTo_ValidIdentifierIfSet                       testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
-	case_Databases_validation_Alter_SwapWith_ValidIdentifierIfSet                       testCaseName = "validation_Alter_SwapWith_ValidIdentifierIfSet"
-	case_Databases_validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet             testCaseName = "validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet"
-	case_Databases_validation_Alter_Set_Catalog_ValidIdentifierIfSet                    testCaseName = "validation_Alter_Set_Catalog_ValidIdentifierIfSet"
-	case_Databases_validation_Alter_opts_Set_AtLeastOneValueSet                         testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
-	case_Databases_validation_Alter_opts_Unset_AtLeastOneValueSet                       testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
-	case_Databases_sql_Alter_RenameTo                                                   testCaseName = "sql_Alter_RenameTo"
-	case_Databases_sql_Alter_Set                                                        testCaseName = "sql_Alter_Set"
-	case_Databases_sql_Alter_Unset                                                      testCaseName = "sql_Alter_Unset"
-	case_Databases_sql_Alter_SwapWith                                                   testCaseName = "sql_Alter_SwapWith"
-	case_Databases_sql_Alter_SetTags                                                    testCaseName = "sql_Alter_SetTags"
-	case_Databases_sql_Alter_UnsetTags                                                  testCaseName = "sql_Alter_UnsetTags"
-	case_Databases_validation_AlterReplication_name_ValidIdentifier                     testCaseName = "validation_AlterReplication_name_ValidIdentifier"
-	case_Databases_validation_AlterReplication_opts_ExactlyOneValueSet_NoneSet          testCaseName = "validation_AlterReplication_opts_ExactlyOneValueSet_NoneSet"
-	case_Databases_validation_AlterReplication_opts_ExactlyOneValueSet_MoreThanOneSet   testCaseName = "validation_AlterReplication_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Databases_sql_AlterReplication_EnableReplication                               testCaseName = "sql_AlterReplication_EnableReplication"
-	case_Databases_sql_AlterReplication_DisableReplication                              testCaseName = "sql_AlterReplication_DisableReplication"
-	case_Databases_sql_AlterReplication_Refresh                                         testCaseName = "sql_AlterReplication_Refresh"
-	case_Databases_validation_AlterFailover_name_ValidIdentifier                        testCaseName = "validation_AlterFailover_name_ValidIdentifier"
-	case_Databases_validation_AlterFailover_opts_ExactlyOneValueSet_NoneSet             testCaseName = "validation_AlterFailover_opts_ExactlyOneValueSet_NoneSet"
-	case_Databases_validation_AlterFailover_opts_ExactlyOneValueSet_MoreThanOneSet      testCaseName = "validation_AlterFailover_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Databases_sql_AlterFailover_EnableFailover                                     testCaseName = "sql_AlterFailover_EnableFailover"
-	case_Databases_sql_AlterFailover_DisableFailover                                    testCaseName = "sql_AlterFailover_DisableFailover"
-	case_Databases_sql_AlterFailover_Primary                                            testCaseName = "sql_AlterFailover_Primary"
-	case_Databases_validation_AlterCatalogLinked_name_ValidIdentifier                   testCaseName = "validation_AlterCatalogLinked_name_ValidIdentifier"
-	case_Databases_validation_AlterCatalogLinked_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_AlterCatalogLinked_opts_ExactlyOneValueSet_NoneSet"
-	case_Databases_validation_AlterCatalogLinked_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_AlterCatalogLinked_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Databases_validation_AlterCatalogLinked_opts_Set_AtLeastOneValueSet            testCaseName = "validation_AlterCatalogLinked_opts_Set_AtLeastOneValueSet"
-	case_Databases_sql_AlterCatalogLinked_AddToAllowedNamespaces                        testCaseName = "sql_AlterCatalogLinked_AddToAllowedNamespaces"
-	case_Databases_sql_AlterCatalogLinked_RemoveFromAllowedNamespaces                   testCaseName = "sql_AlterCatalogLinked_RemoveFromAllowedNamespaces"
-	case_Databases_sql_AlterCatalogLinked_UnsetAllowedNamespaces                        testCaseName = "sql_AlterCatalogLinked_UnsetAllowedNamespaces"
-	case_Databases_sql_AlterCatalogLinked_AddToBlockedNamespaces                        testCaseName = "sql_AlterCatalogLinked_AddToBlockedNamespaces"
-	case_Databases_sql_AlterCatalogLinked_RemoveFromBlockedNamespaces                   testCaseName = "sql_AlterCatalogLinked_RemoveFromBlockedNamespaces"
-	case_Databases_sql_AlterCatalogLinked_UnsetBlockedNamespaces                        testCaseName = "sql_AlterCatalogLinked_UnsetBlockedNamespaces"
-	case_Databases_sql_AlterCatalogLinked_Set                                           testCaseName = "sql_AlterCatalogLinked_Set"
-	case_Databases_validation_Drop_name_ValidIdentifier                                 testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_Databases_validation_Drop_opts_ConflictingFields                               testCaseName = "validation_Drop_opts_ConflictingFields"
-	case_Databases_sql_Drop_basic                                                       testCaseName = "sql_Drop_basic"
-	case_Databases_sql_Drop_all                                                         testCaseName = "sql_Drop_all"
-	case_Databases_validation_Undrop_name_ValidIdentifier                               testCaseName = "validation_Undrop_name_ValidIdentifier"
-	case_Databases_sql_Undrop_basic                                                     testCaseName = "sql_Undrop_basic"
-	case_Databases_sql_Show_basic                                                       testCaseName = "sql_Show_basic"
-	case_Databases_sql_Show_all                                                         testCaseName = "sql_Show_all"
-	case_Databases_sql_Show_Like                                                        testCaseName = "sql_Show_Like"
-	case_Databases_sql_Show_StartsWith                                                  testCaseName = "sql_Show_StartsWith"
-	case_Databases_sql_Show_Limit                                                       testCaseName = "sql_Show_Limit"
+	case_Databases_validation_Create_name_ValidIdentifier                                    testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Databases_validation_Create_opts_ConflictingFields                                  testCaseName = "validation_Create_opts_ConflictingFields"
+	case_Databases_validation_Create_ExternalVolume_ValidIdentifierIfSet                     testCaseName = "validation_Create_ExternalVolume_ValidIdentifierIfSet"
+	case_Databases_validation_Create_Catalog_ValidIdentifierIfSet                            testCaseName = "validation_Create_Catalog_ValidIdentifierIfSet"
+	case_Databases_sql_Create_basic                                                          testCaseName = "sql_Create_basic"
+	case_Databases_sql_Create_all                                                            testCaseName = "sql_Create_all"
+	case_Databases_validation_Clone_name_ValidIdentifier                                     testCaseName = "validation_Clone_name_ValidIdentifier"
+	case_Databases_validation_Clone_opts_ConflictingFields                                   testCaseName = "validation_Clone_opts_ConflictingFields"
+	case_Databases_sql_Clone_basic                                                           testCaseName = "sql_Clone_basic"
+	case_Databases_validation_CreateShared_name_ValidIdentifier                              testCaseName = "validation_CreateShared_name_ValidIdentifier"
+	case_Databases_validation_CreateShared_FromShare_ValidIdentifier                         testCaseName = "validation_CreateShared_FromShare_ValidIdentifier"
+	case_Databases_validation_CreateShared_opts_ConflictingFields                            testCaseName = "validation_CreateShared_opts_ConflictingFields"
+	case_Databases_validation_CreateShared_ExternalVolume_ValidIdentifierIfSet               testCaseName = "validation_CreateShared_ExternalVolume_ValidIdentifierIfSet"
+	case_Databases_validation_CreateShared_Catalog_ValidIdentifierIfSet                      testCaseName = "validation_CreateShared_Catalog_ValidIdentifierIfSet"
+	case_Databases_sql_CreateShared_basic                                                    testCaseName = "sql_CreateShared_basic"
+	case_Databases_sql_CreateShared_all                                                      testCaseName = "sql_CreateShared_all"
+	case_Databases_validation_CreateSecondary_name_ValidIdentifier                           testCaseName = "validation_CreateSecondary_name_ValidIdentifier"
+	case_Databases_validation_CreateSecondary_PrimaryDatabase_ValidIdentifier                testCaseName = "validation_CreateSecondary_PrimaryDatabase_ValidIdentifier"
+	case_Databases_validation_CreateSecondary_opts_ConflictingFields                         testCaseName = "validation_CreateSecondary_opts_ConflictingFields"
+	case_Databases_validation_CreateSecondary_ExternalVolume_ValidIdentifierIfSet            testCaseName = "validation_CreateSecondary_ExternalVolume_ValidIdentifierIfSet"
+	case_Databases_validation_CreateSecondary_Catalog_ValidIdentifierIfSet                   testCaseName = "validation_CreateSecondary_Catalog_ValidIdentifierIfSet"
+	case_Databases_sql_CreateSecondary_basic                                                 testCaseName = "sql_CreateSecondary_basic"
+	case_Databases_sql_CreateSecondary_all                                                   testCaseName = "sql_CreateSecondary_all"
+	case_Databases_validation_CreateFromListing_name_ValidIdentifier                         testCaseName = "validation_CreateFromListing_name_ValidIdentifier"
+	case_Databases_sql_CreateFromListing_basic                                               testCaseName = "sql_CreateFromListing_basic"
+	case_Databases_sql_CreateFromListing_all                                                 testCaseName = "sql_CreateFromListing_all"
+	case_Databases_validation_CreateCatalogLinked_name_ValidIdentifier                       testCaseName = "validation_CreateCatalogLinked_name_ValidIdentifier"
+	case_Databases_validation_CreateCatalogLinked_ExternalVolume_ValidIdentifierIfSet        testCaseName = "validation_CreateCatalogLinked_ExternalVolume_ValidIdentifierIfSet"
+	case_Databases_validation_CreateCatalogLinked_LinkedCatalog_Catalog_ValidIdentifier      testCaseName = "validation_CreateCatalogLinked_LinkedCatalog_Catalog_ValidIdentifier"
+	case_Databases_sql_CreateCatalogLinked_basic                                             testCaseName = "sql_CreateCatalogLinked_basic"
+	case_Databases_sql_CreateCatalogLinked_all                                               testCaseName = "sql_CreateCatalogLinked_all"
+	case_Databases_validation_Alter_name_ValidIdentifier                                     testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Databases_validation_Alter_opts_ExactlyOneValueSet_NoneSet                          testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Databases_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                   testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Databases_validation_Alter_RenameTo_ValidIdentifierIfSet                            testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_Databases_validation_Alter_SwapWith_ValidIdentifierIfSet                            testCaseName = "validation_Alter_SwapWith_ValidIdentifierIfSet"
+	case_Databases_validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet                  testCaseName = "validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet"
+	case_Databases_validation_Alter_Set_Catalog_ValidIdentifierIfSet                         testCaseName = "validation_Alter_Set_Catalog_ValidIdentifierIfSet"
+	case_Databases_validation_Alter_opts_Set_AtLeastOneValueSet                              testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Databases_validation_Alter_opts_Unset_AtLeastOneValueSet                            testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Databases_sql_Alter_RenameTo                                                        testCaseName = "sql_Alter_RenameTo"
+	case_Databases_sql_Alter_Set                                                             testCaseName = "sql_Alter_Set"
+	case_Databases_sql_Alter_Unset                                                           testCaseName = "sql_Alter_Unset"
+	case_Databases_sql_Alter_SwapWith                                                        testCaseName = "sql_Alter_SwapWith"
+	case_Databases_sql_Alter_SetTags                                                         testCaseName = "sql_Alter_SetTags"
+	case_Databases_sql_Alter_UnsetTags                                                       testCaseName = "sql_Alter_UnsetTags"
+	case_Databases_validation_AlterReplication_name_ValidIdentifier                          testCaseName = "validation_AlterReplication_name_ValidIdentifier"
+	case_Databases_validation_AlterReplication_opts_ExactlyOneValueSet_NoneSet               testCaseName = "validation_AlterReplication_opts_ExactlyOneValueSet_NoneSet"
+	case_Databases_validation_AlterReplication_opts_ExactlyOneValueSet_MoreThanOneSet        testCaseName = "validation_AlterReplication_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Databases_validation_AlterReplication_EnableReplication_ToAccounts_ValidIdentifier  testCaseName = "validation_AlterReplication_EnableReplication_ToAccounts_ValidIdentifier"
+	case_Databases_validation_AlterReplication_DisableReplication_ToAccounts_ValidIdentifier testCaseName = "validation_AlterReplication_DisableReplication_ToAccounts_ValidIdentifier"
+	case_Databases_sql_AlterReplication_EnableReplication                                    testCaseName = "sql_AlterReplication_EnableReplication"
+	case_Databases_sql_AlterReplication_DisableReplication                                   testCaseName = "sql_AlterReplication_DisableReplication"
+	case_Databases_sql_AlterReplication_Refresh                                              testCaseName = "sql_AlterReplication_Refresh"
+	case_Databases_validation_AlterFailover_name_ValidIdentifier                             testCaseName = "validation_AlterFailover_name_ValidIdentifier"
+	case_Databases_validation_AlterFailover_opts_ExactlyOneValueSet_NoneSet                  testCaseName = "validation_AlterFailover_opts_ExactlyOneValueSet_NoneSet"
+	case_Databases_validation_AlterFailover_opts_ExactlyOneValueSet_MoreThanOneSet           testCaseName = "validation_AlterFailover_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Databases_validation_AlterFailover_EnableFailover_ToAccounts_ValidIdentifier        testCaseName = "validation_AlterFailover_EnableFailover_ToAccounts_ValidIdentifier"
+	case_Databases_validation_AlterFailover_DisableFailover_ToAccounts_ValidIdentifier       testCaseName = "validation_AlterFailover_DisableFailover_ToAccounts_ValidIdentifier"
+	case_Databases_sql_AlterFailover_EnableFailover                                          testCaseName = "sql_AlterFailover_EnableFailover"
+	case_Databases_sql_AlterFailover_DisableFailover                                         testCaseName = "sql_AlterFailover_DisableFailover"
+	case_Databases_sql_AlterFailover_Primary                                                 testCaseName = "sql_AlterFailover_Primary"
+	case_Databases_validation_AlterCatalogLinked_name_ValidIdentifier                        testCaseName = "validation_AlterCatalogLinked_name_ValidIdentifier"
+	case_Databases_validation_AlterCatalogLinked_opts_ExactlyOneValueSet_NoneSet             testCaseName = "validation_AlterCatalogLinked_opts_ExactlyOneValueSet_NoneSet"
+	case_Databases_validation_AlterCatalogLinked_opts_ExactlyOneValueSet_MoreThanOneSet      testCaseName = "validation_AlterCatalogLinked_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Databases_validation_AlterCatalogLinked_opts_Set_AtLeastOneValueSet                 testCaseName = "validation_AlterCatalogLinked_opts_Set_AtLeastOneValueSet"
+	case_Databases_sql_AlterCatalogLinked_AddToAllowedNamespaces                             testCaseName = "sql_AlterCatalogLinked_AddToAllowedNamespaces"
+	case_Databases_sql_AlterCatalogLinked_RemoveFromAllowedNamespaces                        testCaseName = "sql_AlterCatalogLinked_RemoveFromAllowedNamespaces"
+	case_Databases_sql_AlterCatalogLinked_UnsetAllowedNamespaces                             testCaseName = "sql_AlterCatalogLinked_UnsetAllowedNamespaces"
+	case_Databases_sql_AlterCatalogLinked_AddToBlockedNamespaces                             testCaseName = "sql_AlterCatalogLinked_AddToBlockedNamespaces"
+	case_Databases_sql_AlterCatalogLinked_RemoveFromBlockedNamespaces                        testCaseName = "sql_AlterCatalogLinked_RemoveFromBlockedNamespaces"
+	case_Databases_sql_AlterCatalogLinked_UnsetBlockedNamespaces                             testCaseName = "sql_AlterCatalogLinked_UnsetBlockedNamespaces"
+	case_Databases_sql_AlterCatalogLinked_Set                                                testCaseName = "sql_AlterCatalogLinked_Set"
+	case_Databases_validation_Drop_name_ValidIdentifier                                      testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Databases_validation_Drop_opts_ConflictingFields                                    testCaseName = "validation_Drop_opts_ConflictingFields"
+	case_Databases_sql_Drop_basic                                                            testCaseName = "sql_Drop_basic"
+	case_Databases_sql_Drop_all                                                              testCaseName = "sql_Drop_all"
+	case_Databases_validation_Undrop_name_ValidIdentifier                                    testCaseName = "validation_Undrop_name_ValidIdentifier"
+	case_Databases_sql_Undrop_basic                                                          testCaseName = "sql_Undrop_basic"
+	case_Databases_sql_Show_basic                                                            testCaseName = "sql_Show_basic"
+	case_Databases_sql_Show_all                                                              testCaseName = "sql_Show_all"
+	case_Databases_sql_Show_Like                                                             testCaseName = "sql_Show_Like"
+	case_Databases_sql_Show_StartsWith                                                       testCaseName = "sql_Show_StartsWith"
+	case_Databases_sql_Show_Limit                                                            testCaseName = "sql_Show_Limit"
 )
 
 type DatabasesTestsContext struct {
@@ -544,6 +548,22 @@ var databasesTests = DatabasesTestsContext{
 					opts.DisableReplication = &DisableReplication{}
 				},
 			},
+			validationCase[*AlterReplicationDatabaseOptions]{
+				Name:        case_Databases_validation_AlterReplication_EnableReplication_ToAccounts_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterReplicationDatabaseOptions.EnableReplication.ToAccounts[0]", "ToAccounts"),
+				DefaultModify: func(opts *AlterReplicationDatabaseOptions) {
+					opts.EnableReplication = &EnableReplication{}
+					opts.EnableReplication.ToAccounts = []AccountIdentifier{emptyAccountIdentifier}
+				},
+			},
+			validationCase[*AlterReplicationDatabaseOptions]{
+				Name:        case_Databases_validation_AlterReplication_DisableReplication_ToAccounts_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterReplicationDatabaseOptions.DisableReplication.ToAccounts[0]", "ToAccounts"),
+				DefaultModify: func(opts *AlterReplicationDatabaseOptions) {
+					opts.DisableReplication = &DisableReplication{}
+					opts.DisableReplication.ToAccounts = []AccountIdentifier{emptyAccountIdentifier}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*AlterReplicationDatabaseOptions]{
@@ -587,6 +607,22 @@ var databasesTests = DatabasesTestsContext{
 				DefaultModify: func(opts *AlterFailoverDatabaseOptions) {
 					opts.EnableFailover = &EnableFailover{}
 					opts.DisableFailover = &DisableFailover{}
+				},
+			},
+			validationCase[*AlterFailoverDatabaseOptions]{
+				Name:        case_Databases_validation_AlterFailover_EnableFailover_ToAccounts_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverDatabaseOptions.EnableFailover.ToAccounts[0]", "ToAccounts"),
+				DefaultModify: func(opts *AlterFailoverDatabaseOptions) {
+					opts.EnableFailover = &EnableFailover{}
+					opts.EnableFailover.ToAccounts = []AccountIdentifier{emptyAccountIdentifier}
+				},
+			},
+			validationCase[*AlterFailoverDatabaseOptions]{
+				Name:        case_Databases_validation_AlterFailover_DisableFailover_ToAccounts_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverDatabaseOptions.DisableFailover.ToAccounts[0]", "ToAccounts"),
+				DefaultModify: func(opts *AlterFailoverDatabaseOptions) {
+					opts.DisableFailover = &DisableFailover{}
+					opts.DisableFailover.ToAccounts = []AccountIdentifier{emptyAccountIdentifier}
 				},
 			},
 		).

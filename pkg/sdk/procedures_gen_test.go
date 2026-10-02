@@ -29,6 +29,7 @@ const (
 	case_Procedures_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet              testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
 	case_Procedures_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid          testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
 	case_Procedures_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid                 testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
+	case_Procedures_validation_CreateForJava_ExternalAccessIntegrations_ValidIdentifier                                testCaseName = "validation_CreateForJava_ExternalAccessIntegrations_ValidIdentifier"
 	case_Procedures_sql_CreateForJava_basic                                                                            testCaseName = "sql_CreateForJava_basic"
 	case_Procedures_sql_CreateForJava_all                                                                              testCaseName = "sql_CreateForJava_all"
 	case_Procedures_validation_CreateForJavaScript_ProcedureDefinition_ValidateValueSet                                testCaseName = "validation_CreateForJavaScript_ProcedureDefinition_ValidateValueSet"
@@ -57,6 +58,7 @@ const (
 	case_Procedures_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet            testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
 	case_Procedures_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid        testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
 	case_Procedures_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid               testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
+	case_Procedures_validation_CreateForPython_ExternalAccessIntegrations_ValidIdentifier                              testCaseName = "validation_CreateForPython_ExternalAccessIntegrations_ValidIdentifier"
 	case_Procedures_sql_CreateForPython_basic                                                                          testCaseName = "sql_CreateForPython_basic"
 	case_Procedures_sql_CreateForPython_all                                                                            testCaseName = "sql_CreateForPython_all"
 	case_Procedures_validation_CreateForScala_RuntimeVersion_ValidateValueSet                                          testCaseName = "validation_CreateForScala_RuntimeVersion_ValidateValueSet"
@@ -75,6 +77,7 @@ const (
 	case_Procedures_validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet             testCaseName = "validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
 	case_Procedures_validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid         testCaseName = "validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
 	case_Procedures_validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid                testCaseName = "validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
+	case_Procedures_validation_CreateForScala_ExternalAccessIntegrations_ValidIdentifier                               testCaseName = "validation_CreateForScala_ExternalAccessIntegrations_ValidIdentifier"
 	case_Procedures_sql_CreateForScala_basic                                                                           testCaseName = "sql_CreateForScala_basic"
 	case_Procedures_sql_CreateForScala_all                                                                             testCaseName = "sql_CreateForScala_all"
 	case_Procedures_validation_CreateForSQL_ProcedureDefinition_ValidateValueSet                                       testCaseName = "validation_CreateForSQL_ProcedureDefinition_ValidateValueSet"
@@ -98,6 +101,7 @@ const (
 	case_Procedures_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                                   testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_Procedures_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                            testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_Procedures_validation_Alter_opts_Set_AtLeastOneValueSet                                                       testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Procedures_validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier                                    testCaseName = "validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier"
 	case_Procedures_validation_Alter_opts_Unset_AtLeastOneValueSet                                                     testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_Procedures_sql_Alter_RenameTo                                                                                 testCaseName = "sql_Alter_RenameTo"
 	case_Procedures_sql_Alter_Set                                                                                      testCaseName = "sql_Alter_Set"
@@ -340,6 +344,13 @@ var proceduresTests = ProceduresTestsContext{
 					opts.Returns.Table.Columns = []ProcedureColumn{{}, {}}
 				},
 			},
+			validationCase[*CreateForJavaProcedureOptions]{
+				Name:        case_Procedures_validation_CreateForJava_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateForJavaProcedureOptions.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *CreateForJavaProcedureOptions) {
+					opts.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateForJavaProcedureOptions]{
@@ -538,6 +549,13 @@ var proceduresTests = ProceduresTestsContext{
 					opts.Returns.Table.Columns = []ProcedureColumn{{}, {}}
 				},
 			},
+			validationCase[*CreateForPythonProcedureOptions]{
+				Name:        case_Procedures_validation_CreateForPython_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateForPythonProcedureOptions.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *CreateForPythonProcedureOptions) {
+					opts.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateForPythonProcedureOptions]{
@@ -664,6 +682,13 @@ var proceduresTests = ProceduresTestsContext{
 				DefaultModify: func(opts *CreateForScalaProcedureOptions) {
 					opts.Returns.Table = &ProcedureReturnsTable{}
 					opts.Returns.Table.Columns = []ProcedureColumn{{}, {}}
+				},
+			},
+			validationCase[*CreateForScalaProcedureOptions]{
+				Name:        case_Procedures_validation_CreateForScala_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateForScalaProcedureOptions.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *CreateForScalaProcedureOptions) {
+					opts.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
 		).
@@ -847,6 +872,14 @@ var proceduresTests = ProceduresTestsContext{
 					opts.Set.LogEventLevel = nil
 					opts.Set.MetricLevel = nil
 					opts.Set.TraceLevel = nil
+				},
+			},
+			validationCase[*AlterProcedureOptions]{
+				Name:        case_Procedures_validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterProcedureOptions.Set.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *AlterProcedureOptions) {
+					opts.Set = &ProcedureSet{}
+					opts.Set.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
 			validationCase[*AlterProcedureOptions]{

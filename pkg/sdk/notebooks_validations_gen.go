@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateNotebookOptions)
 	_ validatable = new(AlterNotebookOptions)
@@ -31,6 +33,13 @@ func (opts *CreateNotebookOptions) validate() error {
 		errs = append(errs, errInvalidIdentifier("CreateNotebookOptions", "ComputePool"))
 	}
 	errs = append(errs, opts.additionalValidations())
+	if valueSet(opts.ExternalAccessIntegrations) {
+		for externalAccessIntegrationIdx, externalAccessIntegration := range opts.ExternalAccessIntegrations {
+			if !ValidObjectIdentifier(externalAccessIntegration) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateNotebookOptions.ExternalAccessIntegrations[%d]", externalAccessIntegrationIdx), "ExternalAccessIntegrations"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -62,6 +71,13 @@ func (opts *AlterNotebookOptions) validate() error {
 			errs = append(errs, errAtLeastOneOf("AlterNotebookOptions.Set", "Comment", "QueryWarehouse", "IdleAutoShutdownTimeSeconds", "Secrets", "MainFile", "Warehouse", "RuntimeName", "ComputePool", "ExternalAccessIntegrations", "RuntimeEnvironmentVersion"))
 		}
 		errs = append(errs, opts.Set.additionalValidations())
+		if valueSet(opts.Set.ExternalAccessIntegrations) {
+			for externalAccessIntegrationIdx, externalAccessIntegration := range opts.Set.ExternalAccessIntegrations {
+				if !ValidObjectIdentifier(externalAccessIntegration) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterNotebookOptions.Set.ExternalAccessIntegrations[%d]", externalAccessIntegrationIdx), "ExternalAccessIntegrations"))
+				}
+			}
+		}
 	}
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.Comment, opts.Unset.QueryWarehouse, opts.Unset.Secrets, opts.Unset.Warehouse, opts.Unset.RuntimeName, opts.Unset.ComputePool, opts.Unset.ExternalAccessIntegrations, opts.Unset.RuntimeEnvironmentVersion) {

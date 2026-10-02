@@ -59,11 +59,14 @@ var (
 	userDomainDef             = g.NewQueryStruct("UserDomain").Text("Domain", g.KeywordOptions().SingleQuotes().Required())
 	emailPatternDef           = g.NewQueryStruct("EmailPattern").Text("Pattern", g.KeywordOptions().SingleQuotes().Required())
 	preAuthorizedRolesListDef = g.NewQueryStruct("PreAuthorizedRolesList").
-					List("PreAuthorizedRolesList", "AccountObjectIdentifier", g.ListOptions().MustParentheses())
+					List("PreAuthorizedRolesList", "AccountObjectIdentifier", g.ListOptions().MustParentheses()).
+					WithValidation(g.ValidIdentifier, "PreAuthorizedRolesList")
 	blockedRolesListDef = g.NewQueryStruct("BlockedRolesList").
-				List("BlockedRolesList", "AccountObjectIdentifier", g.ListOptions().Required().MustParentheses())
+				List("BlockedRolesList", "AccountObjectIdentifier", g.ListOptions().Required().MustParentheses()).
+				WithValidation(g.ValidIdentifier, "BlockedRolesList")
 	allowedRolesListDef = g.NewQueryStruct("AllowedRolesList").
-				List("AllowedRolesList", "AccountObjectIdentifier", g.ListOptions().Required().MustParentheses())
+				List("AllowedRolesList", "AccountObjectIdentifier", g.ListOptions().Required().MustParentheses()).
+				WithValidation(g.ValidIdentifier, "AllowedRolesList")
 	jwsKeysUrlDef       = g.NewQueryStruct("JwsKeysUrl").Text("JwsKeyUrl", g.KeywordOptions().SingleQuotes().Required())
 	audienceListItemDef = g.NewQueryStruct("AudienceListItem").Text("Item", g.KeywordOptions().SingleQuotes().Required())
 	audienceListDef     = g.NewQueryStruct("AudienceList").

@@ -11,10 +11,12 @@ var (
 		Text("IP", g.KeywordOptions().SingleQuotes().Required())
 
 	allowedNetworkRuleList = g.NewQueryStruct("AllowedNetworkRuleList").
-				List("AllowedNetworkRuleList", "SchemaObjectIdentifier", g.ListOptions().MustParentheses())
+				List("AllowedNetworkRuleList", "SchemaObjectIdentifier", g.ListOptions().MustParentheses()).
+				WithValidation(g.ValidIdentifier, "AllowedNetworkRuleList")
 
 	blockedNetworkRuleList = g.NewQueryStruct("BlockedNetworkRuleList").
-				List("BlockedNetworkRuleList", "SchemaObjectIdentifier", g.ListOptions().MustParentheses())
+				List("BlockedNetworkRuleList", "SchemaObjectIdentifier", g.ListOptions().MustParentheses()).
+				WithValidation(g.ValidIdentifier, "BlockedNetworkRuleList")
 
 	allowedIPList = g.NewQueryStruct("AllowedIPList").
 			ListQueryStructField("AllowedIPList", ip, g.ListOptions().MustParentheses())
@@ -25,12 +27,16 @@ var (
 	networkPoliciesAddNetworkRule = g.NewQueryStruct("AddNetworkRule").
 					ListAssignment("ALLOWED_NETWORK_RULE_LIST", "SchemaObjectIdentifier", g.ParameterOptions().Parentheses()).
 					ListAssignment("BLOCKED_NETWORK_RULE_LIST", "SchemaObjectIdentifier", g.ParameterOptions().Parentheses()).
-					WithValidation(g.ExactlyOneValueSet, "AllowedNetworkRuleList", "BlockedNetworkRuleList")
+					WithValidation(g.ExactlyOneValueSet, "AllowedNetworkRuleList", "BlockedNetworkRuleList").
+					WithValidation(g.ValidIdentifier, "AllowedNetworkRuleList").
+					WithValidation(g.ValidIdentifier, "BlockedNetworkRuleList")
 
 	networkPoliciesRemoveNetworkRule = g.NewQueryStruct("RemoveNetworkRule").
 						ListAssignment("ALLOWED_NETWORK_RULE_LIST", "SchemaObjectIdentifier", g.ParameterOptions().Parentheses()).
 						ListAssignment("BLOCKED_NETWORK_RULE_LIST", "SchemaObjectIdentifier", g.ParameterOptions().Parentheses()).
-						WithValidation(g.ExactlyOneValueSet, "AllowedNetworkRuleList", "BlockedNetworkRuleList")
+						WithValidation(g.ExactlyOneValueSet, "AllowedNetworkRuleList", "BlockedNetworkRuleList").
+						WithValidation(g.ValidIdentifier, "AllowedNetworkRuleList").
+						WithValidation(g.ValidIdentifier, "BlockedNetworkRuleList")
 )
 
 // DESCRIBE projections. DESC NETWORK POLICY is one property-list; Describe() still
@@ -59,7 +65,9 @@ var networkPoliciesDef = g.NewInterface(
 			ListQueryStructField("AllowedIpList", ip, g.ParameterOptions().SQL("ALLOWED_IP_LIST").Parentheses()).
 			ListQueryStructField("BlockedIpList", ip, g.ParameterOptions().SQL("BLOCKED_IP_LIST").Parentheses()).
 			OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-			WithValidation(g.ValidIdentifier, "name"),
+			WithValidation(g.ValidIdentifier, "name").
+			WithValidation(g.ValidIdentifier, "AllowedNetworkRuleList").
+			WithValidation(g.ValidIdentifier, "BlockedNetworkRuleList"),
 	).
 	AlterOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-network-policy",

@@ -9,26 +9,28 @@ import (
 var connectionsTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 
 const (
-	case_Connections_validation_Create_name_ValidIdentifier                            testCaseName = "validation_Create_name_ValidIdentifier"
-	case_Connections_validation_Create_AsReplicaOf_ValidIdentifierIfSet                testCaseName = "validation_Create_AsReplicaOf_ValidIdentifierIfSet"
-	case_Connections_sql_Create_basic                                                  testCaseName = "sql_Create_basic"
-	case_Connections_sql_Create_all                                                    testCaseName = "sql_Create_all"
-	case_Connections_validation_Alter_opts_ExactlyOneValueSet_NoneSet                  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_Connections_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet           testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Connections_validation_Alter_opts_EnableConnectionFailover_AtLeastOneValueSet testCaseName = "validation_Alter_opts_EnableConnectionFailover_AtLeastOneValueSet"
-	case_Connections_validation_Alter_opts_Set_AtLeastOneValueSet                      testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
-	case_Connections_validation_Alter_opts_Unset_AtLeastOneValueSet                    testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
-	case_Connections_sql_Alter_EnableConnectionFailover                                testCaseName = "sql_Alter_EnableConnectionFailover"
-	case_Connections_sql_Alter_DisableConnectionFailover                               testCaseName = "sql_Alter_DisableConnectionFailover"
-	case_Connections_sql_Alter_Primary                                                 testCaseName = "sql_Alter_Primary"
-	case_Connections_sql_Alter_Set                                                     testCaseName = "sql_Alter_Set"
-	case_Connections_sql_Alter_Unset                                                   testCaseName = "sql_Alter_Unset"
-	case_Connections_validation_Drop_name_ValidIdentifier                              testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_Connections_sql_Drop_basic                                                    testCaseName = "sql_Drop_basic"
-	case_Connections_sql_Drop_all                                                      testCaseName = "sql_Drop_all"
-	case_Connections_sql_Show_basic                                                    testCaseName = "sql_Show_basic"
-	case_Connections_sql_Show_all                                                      testCaseName = "sql_Show_all"
-	case_Connections_sql_Show_Like                                                     testCaseName = "sql_Show_Like"
+	case_Connections_validation_Create_name_ValidIdentifier                                         testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Connections_validation_Create_AsReplicaOf_ValidIdentifierIfSet                             testCaseName = "validation_Create_AsReplicaOf_ValidIdentifierIfSet"
+	case_Connections_sql_Create_basic                                                               testCaseName = "sql_Create_basic"
+	case_Connections_sql_Create_all                                                                 testCaseName = "sql_Create_all"
+	case_Connections_validation_Alter_opts_ExactlyOneValueSet_NoneSet                               testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Connections_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Connections_validation_Alter_opts_EnableConnectionFailover_AtLeastOneValueSet              testCaseName = "validation_Alter_opts_EnableConnectionFailover_AtLeastOneValueSet"
+	case_Connections_validation_Alter_EnableConnectionFailover_ToAccounts_ValidIdentifier           testCaseName = "validation_Alter_EnableConnectionFailover_ToAccounts_ValidIdentifier"
+	case_Connections_validation_Alter_DisableConnectionFailover_ToAccounts_Accounts_ValidIdentifier testCaseName = "validation_Alter_DisableConnectionFailover_ToAccounts_Accounts_ValidIdentifier"
+	case_Connections_validation_Alter_opts_Set_AtLeastOneValueSet                                   testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Connections_validation_Alter_opts_Unset_AtLeastOneValueSet                                 testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Connections_sql_Alter_EnableConnectionFailover                                             testCaseName = "sql_Alter_EnableConnectionFailover"
+	case_Connections_sql_Alter_DisableConnectionFailover                                            testCaseName = "sql_Alter_DisableConnectionFailover"
+	case_Connections_sql_Alter_Primary                                                              testCaseName = "sql_Alter_Primary"
+	case_Connections_sql_Alter_Set                                                                  testCaseName = "sql_Alter_Set"
+	case_Connections_sql_Alter_Unset                                                                testCaseName = "sql_Alter_Unset"
+	case_Connections_validation_Drop_name_ValidIdentifier                                           testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Connections_sql_Drop_basic                                                                 testCaseName = "sql_Drop_basic"
+	case_Connections_sql_Drop_all                                                                   testCaseName = "sql_Drop_all"
+	case_Connections_sql_Show_basic                                                                 testCaseName = "sql_Show_basic"
+	case_Connections_sql_Show_all                                                                   testCaseName = "sql_Show_all"
+	case_Connections_sql_Show_Like                                                                  testCaseName = "sql_Show_Like"
 )
 
 type ConnectionsTestsContext struct {
@@ -106,6 +108,23 @@ var connectionsTests = ConnectionsTestsContext{
 				DefaultModify: func(opts *AlterConnectionOptions) {
 					opts.EnableConnectionFailover = &EnableConnectionFailover{}
 					opts.EnableConnectionFailover.ToAccounts = nil
+				},
+			},
+			validationCase[*AlterConnectionOptions]{
+				Name:        case_Connections_validation_Alter_EnableConnectionFailover_ToAccounts_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterConnectionOptions.EnableConnectionFailover.ToAccounts[0]", "ToAccounts"),
+				DefaultModify: func(opts *AlterConnectionOptions) {
+					opts.EnableConnectionFailover = &EnableConnectionFailover{}
+					opts.EnableConnectionFailover.ToAccounts = []AccountIdentifier{emptyAccountIdentifier}
+				},
+			},
+			validationCase[*AlterConnectionOptions]{
+				Name:        case_Connections_validation_Alter_DisableConnectionFailover_ToAccounts_Accounts_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterConnectionOptions.DisableConnectionFailover.ToAccounts.Accounts[0]", "Accounts"),
+				DefaultModify: func(opts *AlterConnectionOptions) {
+					opts.DisableConnectionFailover = &DisableConnectionFailover{}
+					opts.DisableConnectionFailover.ToAccounts = &ToAccounts{}
+					opts.DisableConnectionFailover.ToAccounts.Accounts = []AccountIdentifier{emptyAccountIdentifier}
 				},
 			},
 			validationCase[*AlterConnectionOptions]{

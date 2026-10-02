@@ -35,6 +35,11 @@ func (s *CreateSliceValidationExampleRequest) WithColumns(columns []SliceValidat
 	return s
 }
 
+func (s *CreateSliceValidationExampleRequest) WithExternalAccessIntegrations(externalAccessIntegrations []AccountObjectIdentifier) *CreateSliceValidationExampleRequest {
+	s.ExternalAccessIntegrations = externalAccessIntegrations
+	return s
+}
+
 func NewDualCheckItemRequest() *DualCheckItemRequest {
 	s := DualCheckItemRequest{}
 	return &s

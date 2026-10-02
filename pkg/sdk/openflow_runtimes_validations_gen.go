@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateOpenflowRuntimeOptions)
 	_ validatable = new(AlterOpenflowRuntimeOptions)
@@ -24,6 +26,15 @@ func (opts *CreateOpenflowRuntimeOptions) validate() error {
 	if !ValidObjectIdentifier(opts.ExecuteAsRole) {
 		errs = append(errs, errInvalidIdentifier("CreateOpenflowRuntimeOptions", "ExecuteAsRole"))
 	}
+	if valueSet(opts.ExternalAccessIntegrations) {
+		if valueSet(opts.ExternalAccessIntegrations.ExternalAccessIntegrations) {
+			for externalAccessIntegrationIdx, externalAccessIntegration := range opts.ExternalAccessIntegrations.ExternalAccessIntegrations {
+				if !ValidObjectIdentifier(externalAccessIntegration) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateOpenflowRuntimeOptions.ExternalAccessIntegrations.ExternalAccessIntegrations[%d]", externalAccessIntegrationIdx), "ExternalAccessIntegrations"))
+				}
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -45,10 +56,37 @@ func (opts *AlterOpenflowRuntimeOptions) validate() error {
 		if !anyValueSet(opts.Set.MinNodes, opts.Set.MaxNodes, opts.Set.ExecuteAsRole, opts.Set.ExternalAccessIntegrations, opts.Set.DisplayName, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterOpenflowRuntimeOptions.Set", "MinNodes", "MaxNodes", "ExecuteAsRole", "ExternalAccessIntegrations", "DisplayName", "Comment"))
 		}
+		if valueSet(opts.Set.ExternalAccessIntegrations) {
+			if valueSet(opts.Set.ExternalAccessIntegrations.ExternalAccessIntegrations) {
+				for externalAccessIntegrationIdx, externalAccessIntegration := range opts.Set.ExternalAccessIntegrations.ExternalAccessIntegrations {
+					if !ValidObjectIdentifier(externalAccessIntegration) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterOpenflowRuntimeOptions.Set.ExternalAccessIntegrations.ExternalAccessIntegrations[%d]", externalAccessIntegrationIdx), "ExternalAccessIntegrations"))
+					}
+				}
+			}
+		}
 	}
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.ExternalAccessIntegrations, opts.Unset.DisplayName, opts.Unset.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterOpenflowRuntimeOptions.Unset", "ExternalAccessIntegrations", "DisplayName", "Comment"))
+		}
+	}
+	if valueSet(opts.AddExternalAccessIntegrations) {
+		if valueSet(opts.AddExternalAccessIntegrations.ExternalAccessIntegrations) {
+			for externalAccessIntegrationIdx, externalAccessIntegration := range opts.AddExternalAccessIntegrations.ExternalAccessIntegrations {
+				if !ValidObjectIdentifier(externalAccessIntegration) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterOpenflowRuntimeOptions.AddExternalAccessIntegrations.ExternalAccessIntegrations[%d]", externalAccessIntegrationIdx), "ExternalAccessIntegrations"))
+				}
+			}
+		}
+	}
+	if valueSet(opts.RemoveExternalAccessIntegrations) {
+		if valueSet(opts.RemoveExternalAccessIntegrations.ExternalAccessIntegrations) {
+			for externalAccessIntegrationIdx, externalAccessIntegration := range opts.RemoveExternalAccessIntegrations.ExternalAccessIntegrations {
+				if !ValidObjectIdentifier(externalAccessIntegration) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterOpenflowRuntimeOptions.RemoveExternalAccessIntegrations.ExternalAccessIntegrations[%d]", externalAccessIntegrationIdx), "ExternalAccessIntegrations"))
+				}
+			}
 		}
 	}
 	return JoinErrors(errs...)

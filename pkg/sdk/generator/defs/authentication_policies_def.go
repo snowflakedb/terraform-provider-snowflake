@@ -64,7 +64,8 @@ var (
 	SecurityIntegrationsOptionDef  = g.NewQueryStruct("SecurityIntegrationsOption").
 					OptionalSQLWithCustomFieldName("All", "('ALL')").
 					UnnamedList("SecurityIntegrations", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.KeywordOptions().Parentheses()).
-					WithValidation(g.ExactlyOneValueSet, "All", "SecurityIntegrations")
+					WithValidation(g.ExactlyOneValueSet, "All", "SecurityIntegrations").
+					WithValidation(g.ValidIdentifier, "SecurityIntegrations")
 	AuthenticationPolicyMfaPolicyDef = g.NewQueryStruct("AuthenticationPolicyMfaPolicy").
 						OptionalEnum("EnforceMfaOnExternalAuthentication", EnforceMfaOnExternalAuthenticationOptionEnumDef, g.ParameterOptions().SQL("ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION")).
 						ListAssignment("ALLOWED_METHODS", "AuthenticationPolicyMfaPolicyListItem", g.ParameterOptions().Parentheses()).

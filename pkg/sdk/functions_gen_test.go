@@ -27,6 +27,7 @@ const (
 	case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet           testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
 	case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid       testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
 	case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid              testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
+	case_Functions_validation_CreateForJava_ExternalAccessIntegrations_ValidIdentifier                             testCaseName = "validation_CreateForJava_ExternalAccessIntegrations_ValidIdentifier"
 	case_Functions_sql_CreateForJava_basic                                                                         testCaseName = "sql_CreateForJava_basic"
 	case_Functions_sql_CreateForJava_all                                                                           testCaseName = "sql_CreateForJava_all"
 	case_Functions_validation_CreateForJavascript_FunctionDefinition_ValidateValueSet                              testCaseName = "validation_CreateForJavascript_FunctionDefinition_ValidateValueSet"
@@ -62,6 +63,7 @@ const (
 	case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet         testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
 	case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid     testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
 	case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid            testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
+	case_Functions_validation_CreateForPython_ExternalAccessIntegrations_ValidIdentifier                           testCaseName = "validation_CreateForPython_ExternalAccessIntegrations_ValidIdentifier"
 	case_Functions_sql_CreateForPython_basic                                                                       testCaseName = "sql_CreateForPython_basic"
 	case_Functions_sql_CreateForPython_all                                                                         testCaseName = "sql_CreateForPython_all"
 	case_Functions_validation_CreateForScala_name_ValidIdentifier                                                  testCaseName = "validation_CreateForScala_name_ValidIdentifier"
@@ -73,6 +75,7 @@ const (
 	case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                      testCaseName = "validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
 	case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                  testCaseName = "validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
 	case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_BothInvalid                         testCaseName = "validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_BothInvalid"
+	case_Functions_validation_CreateForScala_ExternalAccessIntegrations_ValidIdentifier                            testCaseName = "validation_CreateForScala_ExternalAccessIntegrations_ValidIdentifier"
 	case_Functions_sql_CreateForScala_basic                                                                        testCaseName = "sql_CreateForScala_basic"
 	case_Functions_sql_CreateForScala_all                                                                          testCaseName = "sql_CreateForScala_all"
 	case_Functions_validation_CreateForSQL_FunctionDefinition_ValidateValueSet                                     testCaseName = "validation_CreateForSQL_FunctionDefinition_ValidateValueSet"
@@ -97,6 +100,7 @@ const (
 	case_Functions_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                                testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_Functions_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_Functions_validation_Alter_opts_Set_AtLeastOneValueSet                                                    testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Functions_validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier                                 testCaseName = "validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier"
 	case_Functions_validation_Alter_opts_Unset_AtLeastOneValueSet                                                  testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_Functions_sql_Alter_RenameTo                                                                              testCaseName = "sql_Alter_RenameTo"
 	case_Functions_sql_Alter_Set                                                                                   testCaseName = "sql_Alter_Set"
@@ -239,6 +243,13 @@ var functionsTests = FunctionsTestsContext{
 				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
 					opts.Returns.Table = &FunctionReturnsTable{}
 					opts.Returns.Table.Columns = []FunctionColumn{{}, {}}
+				},
+			},
+			validationCase[*CreateForJavaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJava_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateForJavaFunctionOptions.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
+					opts.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
 		).
@@ -492,6 +503,13 @@ var functionsTests = FunctionsTestsContext{
 					opts.Returns.Table.Columns = []FunctionColumn{{}, {}}
 				},
 			},
+			validationCase[*CreateForPythonFunctionOptions]{
+				Name:        case_Functions_validation_CreateForPython_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateForPythonFunctionOptions.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
+					opts.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateForPythonFunctionOptions]{
@@ -568,6 +586,13 @@ var functionsTests = FunctionsTestsContext{
 				},
 				DefaultModify: func(opts *CreateForScalaFunctionOptions) {
 					opts.Arguments = []FunctionArgument{{}, {}}
+				},
+			},
+			validationCase[*CreateForScalaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForScala_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateForScalaFunctionOptions.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *CreateForScalaFunctionOptions) {
+					opts.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
 		).
@@ -759,6 +784,14 @@ var functionsTests = FunctionsTestsContext{
 					opts.Set.LogEventLevel = nil
 					opts.Set.MetricLevel = nil
 					opts.Set.TraceLevel = nil
+				},
+			},
+			validationCase[*AlterFunctionOptions]{
+				Name:        case_Functions_validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFunctionOptions.Set.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *AlterFunctionOptions) {
+					opts.Set = &FunctionSet{}
+					opts.Set.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
 			validationCase[*AlterFunctionOptions]{

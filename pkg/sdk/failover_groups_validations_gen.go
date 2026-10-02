@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateFailoverGroupOptions)
 	_ validatable = new(CreateSecondaryReplicationGroupFailoverGroupOptions)
@@ -20,6 +22,27 @@ func (opts *CreateFailoverGroupOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreateFailoverGroupOptions", "name"))
+	}
+	if valueSet(opts.AllowedDatabases) {
+		for allowedDatabaseIdx, allowedDatabase := range opts.AllowedDatabases {
+			if !ValidObjectIdentifier(allowedDatabase) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateFailoverGroupOptions.AllowedDatabases[%d]", allowedDatabaseIdx), "AllowedDatabases"))
+			}
+		}
+	}
+	if valueSet(opts.AllowedShares) {
+		for allowedShareIdx, allowedShare := range opts.AllowedShares {
+			if !ValidObjectIdentifier(allowedShare) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateFailoverGroupOptions.AllowedShares[%d]", allowedShareIdx), "AllowedShares"))
+			}
+		}
+	}
+	if valueSet(opts.AllowedAccounts) {
+		for allowedAccountIdx, allowedAccount := range opts.AllowedAccounts {
+			if !ValidObjectIdentifier(allowedAccount) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateFailoverGroupOptions.AllowedAccounts[%d]", allowedAccountIdx), "AllowedAccounts"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -55,6 +78,71 @@ func (opts *AlterSourceFailoverGroupOptions) validate() error {
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.ReplicationSchedule) {
 			errs = append(errs, errAtLeastOneOf("AlterSourceFailoverGroupOptions.Unset", "ReplicationSchedule"))
+		}
+	}
+	if valueSet(opts.Add) {
+		if valueSet(opts.Add.AllowedDatabases) {
+			for allowedDatabaseIdx, allowedDatabase := range opts.Add.AllowedDatabases {
+				if !ValidObjectIdentifier(allowedDatabase) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSourceFailoverGroupOptions.Add.AllowedDatabases[%d]", allowedDatabaseIdx), "AllowedDatabases"))
+				}
+			}
+		}
+		if valueSet(opts.Add.AllowedShares) {
+			for allowedShareIdx, allowedShare := range opts.Add.AllowedShares {
+				if !ValidObjectIdentifier(allowedShare) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSourceFailoverGroupOptions.Add.AllowedShares[%d]", allowedShareIdx), "AllowedShares"))
+				}
+			}
+		}
+		if valueSet(opts.Add.AllowedAccounts) {
+			for allowedAccountIdx, allowedAccount := range opts.Add.AllowedAccounts {
+				if !ValidObjectIdentifier(allowedAccount) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSourceFailoverGroupOptions.Add.AllowedAccounts[%d]", allowedAccountIdx), "AllowedAccounts"))
+				}
+			}
+		}
+	}
+	if valueSet(opts.Move) {
+		if !ValidObjectIdentifier(opts.Move.To) {
+			errs = append(errs, errInvalidIdentifier("AlterSourceFailoverGroupOptions.Move", "To"))
+		}
+		if valueSet(opts.Move.Databases) {
+			for databaseIdx, database := range opts.Move.Databases {
+				if !ValidObjectIdentifier(database) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSourceFailoverGroupOptions.Move.Databases[%d]", databaseIdx), "Databases"))
+				}
+			}
+		}
+		if valueSet(opts.Move.Shares) {
+			for shareIdx, share := range opts.Move.Shares {
+				if !ValidObjectIdentifier(share) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSourceFailoverGroupOptions.Move.Shares[%d]", shareIdx), "Shares"))
+				}
+			}
+		}
+	}
+	if valueSet(opts.Remove) {
+		if valueSet(opts.Remove.AllowedDatabases) {
+			for allowedDatabaseIdx, allowedDatabase := range opts.Remove.AllowedDatabases {
+				if !ValidObjectIdentifier(allowedDatabase) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSourceFailoverGroupOptions.Remove.AllowedDatabases[%d]", allowedDatabaseIdx), "AllowedDatabases"))
+				}
+			}
+		}
+		if valueSet(opts.Remove.AllowedShares) {
+			for allowedShareIdx, allowedShare := range opts.Remove.AllowedShares {
+				if !ValidObjectIdentifier(allowedShare) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSourceFailoverGroupOptions.Remove.AllowedShares[%d]", allowedShareIdx), "AllowedShares"))
+				}
+			}
+		}
+		if valueSet(opts.Remove.AllowedAccounts) {
+			for allowedAccountIdx, allowedAccount := range opts.Remove.AllowedAccounts {
+				if !ValidObjectIdentifier(allowedAccount) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSourceFailoverGroupOptions.Remove.AllowedAccounts[%d]", allowedAccountIdx), "AllowedAccounts"))
+				}
+			}
 		}
 	}
 	return JoinErrors(errs...)

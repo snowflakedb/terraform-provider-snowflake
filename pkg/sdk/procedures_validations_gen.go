@@ -66,6 +66,13 @@ func (opts *CreateForJavaProcedureOptions) validate() error {
 			}
 		}
 	}
+	if valueSet(opts.ExternalAccessIntegrations) {
+		for externalAccessIntegrationIdx, externalAccessIntegration := range opts.ExternalAccessIntegrations {
+			if !ValidObjectIdentifier(externalAccessIntegration) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateForJavaProcedureOptions.ExternalAccessIntegrations[%d]", externalAccessIntegrationIdx), "ExternalAccessIntegrations"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -136,6 +143,13 @@ func (opts *CreateForPythonProcedureOptions) validate() error {
 			}
 		}
 	}
+	if valueSet(opts.ExternalAccessIntegrations) {
+		for externalAccessIntegrationIdx, externalAccessIntegration := range opts.ExternalAccessIntegrations {
+			if !ValidObjectIdentifier(externalAccessIntegration) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateForPythonProcedureOptions.ExternalAccessIntegrations[%d]", externalAccessIntegrationIdx), "ExternalAccessIntegrations"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -180,6 +194,13 @@ func (opts *CreateForScalaProcedureOptions) validate() error {
 						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForScalaProcedureOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataTypeOld", "ColumnDataType"))
 					}
 				}
+			}
+		}
+	}
+	if valueSet(opts.ExternalAccessIntegrations) {
+		for externalAccessIntegrationIdx, externalAccessIntegration := range opts.ExternalAccessIntegrations {
+			if !ValidObjectIdentifier(externalAccessIntegration) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateForScalaProcedureOptions.ExternalAccessIntegrations[%d]", externalAccessIntegrationIdx), "ExternalAccessIntegrations"))
 			}
 		}
 	}
@@ -243,6 +264,13 @@ func (opts *AlterProcedureOptions) validate() error {
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.Comment, opts.Set.ExternalAccessIntegrations, opts.Set.SecretsList, opts.Set.AutoEventLogging, opts.Set.EnableConsoleOutput, opts.Set.LogLevel, opts.Set.LogEventLevel, opts.Set.MetricLevel, opts.Set.TraceLevel) {
 			errs = append(errs, errAtLeastOneOf("AlterProcedureOptions.Set", "Comment", "ExternalAccessIntegrations", "SecretsList", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"))
+		}
+		if valueSet(opts.Set.ExternalAccessIntegrations) {
+			for externalAccessIntegrationIdx, externalAccessIntegration := range opts.Set.ExternalAccessIntegrations {
+				if !ValidObjectIdentifier(externalAccessIntegration) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterProcedureOptions.Set.ExternalAccessIntegrations[%d]", externalAccessIntegrationIdx), "ExternalAccessIntegrations"))
+				}
+			}
 		}
 	}
 	if valueSet(opts.Unset) {

@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateServiceOptions)
 	_ validatable = new(AlterServiceOptions)
@@ -46,6 +48,15 @@ func (opts *CreateServiceOptions) validate() error {
 		}
 		if opts.FromSpecificationTemplate.SpecificationTemplate != nil && containsDoubleDollarQuotes(*opts.FromSpecificationTemplate.SpecificationTemplate) {
 			errs = append(errs, errDoubleDollarQuotesNotAllowed("CreateServiceOptions.FromSpecificationTemplate", "SpecificationTemplate"))
+		}
+	}
+	if valueSet(opts.ExternalAccessIntegrations) {
+		if valueSet(opts.ExternalAccessIntegrations.ExternalAccessIntegrations) {
+			for externalAccessIntegrationIdx, externalAccessIntegration := range opts.ExternalAccessIntegrations.ExternalAccessIntegrations {
+				if !ValidObjectIdentifier(externalAccessIntegration) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateServiceOptions.ExternalAccessIntegrations.ExternalAccessIntegrations[%d]", externalAccessIntegrationIdx), "ExternalAccessIntegrations"))
+				}
+			}
 		}
 	}
 	return JoinErrors(errs...)
@@ -97,6 +108,15 @@ func (opts *AlterServiceOptions) validate() error {
 			errs = append(errs, errAtLeastOneOf("AlterServiceOptions.Set", "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment", "ServiceCallerTokenValiditySecs"))
 		}
 		errs = append(errs, opts.Set.additionalValidations())
+		if valueSet(opts.Set.ExternalAccessIntegrations) {
+			if valueSet(opts.Set.ExternalAccessIntegrations.ExternalAccessIntegrations) {
+				for externalAccessIntegrationIdx, externalAccessIntegration := range opts.Set.ExternalAccessIntegrations.ExternalAccessIntegrations {
+					if !ValidObjectIdentifier(externalAccessIntegration) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterServiceOptions.Set.ExternalAccessIntegrations.ExternalAccessIntegrations[%d]", externalAccessIntegrationIdx), "ExternalAccessIntegrations"))
+					}
+				}
+			}
+		}
 	}
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.MinInstances, opts.Unset.AutoSuspendSecs, opts.Unset.MaxInstances, opts.Unset.MinReadyInstances, opts.Unset.QueryWarehouse, opts.Unset.AutoResume, opts.Unset.ExternalAccessIntegrations, opts.Unset.Comment, opts.Unset.ServiceCallerTokenValiditySecs) {
@@ -155,6 +175,15 @@ func (opts *ExecuteJobServiceOptions) validate() error {
 	}
 	if opts.QueryWarehouse != nil && !ValidObjectIdentifier(opts.QueryWarehouse) {
 		errs = append(errs, errInvalidIdentifier("ExecuteJobServiceOptions", "QueryWarehouse"))
+	}
+	if valueSet(opts.ExternalAccessIntegrations) {
+		if valueSet(opts.ExternalAccessIntegrations.ExternalAccessIntegrations) {
+			for externalAccessIntegrationIdx, externalAccessIntegration := range opts.ExternalAccessIntegrations.ExternalAccessIntegrations {
+				if !ValidObjectIdentifier(externalAccessIntegration) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("ExecuteJobServiceOptions.ExternalAccessIntegrations.ExternalAccessIntegrations[%d]", externalAccessIntegrationIdx), "ExternalAccessIntegrations"))
+				}
+			}
+		}
 	}
 	if valueSet(opts.JobServiceFromSpecification) {
 		if !exactlyOneValueSet(opts.JobServiceFromSpecification.SpecificationFile, opts.JobServiceFromSpecification.Specification) {

@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateApiIntegrationOptions)
 	_ validatable = new(AlterApiIntegrationOptions)
@@ -35,12 +37,33 @@ func (opts *CreateApiIntegrationOptions) validate() error {
 			if !exactlyOneValueSet(opts.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets.AllSecrets, opts.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets.NoSecrets, opts.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets.AllowedList) {
 				errs = append(errs, errExactlyOneOf("CreateApiIntegrationOptions.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets", "AllSecrets", "NoSecrets", "AllowedList"))
 			}
+			if valueSet(opts.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets.AllowedList) {
+				for allowedListIdx, allowedList := range opts.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets.AllowedList {
+					if !ValidObjectIdentifier(allowedList) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateApiIntegrationOptions.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets.AllowedList[%d]", allowedListIdx), "AllowedList"))
+					}
+				}
+			}
 		}
 	}
 	if valueSet(opts.GitHttpsApiPrivateLinkProviderParams) {
 		if valueSet(opts.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets) {
 			if !exactlyOneValueSet(opts.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets.AllSecrets, opts.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets.NoSecrets, opts.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets.AllowedList) {
 				errs = append(errs, errExactlyOneOf("CreateApiIntegrationOptions.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets", "AllSecrets", "NoSecrets", "AllowedList"))
+			}
+			if valueSet(opts.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets.AllowedList) {
+				for allowedListIdx, allowedList := range opts.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets.AllowedList {
+					if !ValidObjectIdentifier(allowedList) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateApiIntegrationOptions.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets.AllowedList[%d]", allowedListIdx), "AllowedList"))
+					}
+				}
+			}
+		}
+		if valueSet(opts.GitHttpsApiPrivateLinkProviderParams.TlsTrustedCertificates) {
+			for tlsTrustedCertificateIdx, tlsTrustedCertificate := range opts.GitHttpsApiPrivateLinkProviderParams.TlsTrustedCertificates {
+				if !ValidObjectIdentifier(tlsTrustedCertificate) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateApiIntegrationOptions.GitHttpsApiPrivateLinkProviderParams.TlsTrustedCertificates[%d]", tlsTrustedCertificateIdx), "TlsTrustedCertificates"))
+				}
 			}
 		}
 	}
@@ -89,6 +112,13 @@ func (opts *AlterApiIntegrationOptions) validate() error {
 				if !exactlyOneValueSet(opts.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets.AllSecrets, opts.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets.NoSecrets, opts.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets.AllowedList) {
 					errs = append(errs, errExactlyOneOf("AlterApiIntegrationOptions.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets", "AllSecrets", "NoSecrets", "AllowedList"))
 				}
+				if valueSet(opts.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets.AllowedList) {
+					for allowedListIdx, allowedList := range opts.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets.AllowedList {
+						if !ValidObjectIdentifier(allowedList) {
+							errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterApiIntegrationOptions.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets.AllowedList[%d]", allowedListIdx), "AllowedList"))
+						}
+					}
+				}
 			}
 		}
 		if valueSet(opts.Set.GitHttpsApiPrivateLinkParams) {
@@ -98,6 +128,20 @@ func (opts *AlterApiIntegrationOptions) validate() error {
 			if valueSet(opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets) {
 				if !exactlyOneValueSet(opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets.AllSecrets, opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets.NoSecrets, opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets.AllowedList) {
 					errs = append(errs, errExactlyOneOf("AlterApiIntegrationOptions.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets", "AllSecrets", "NoSecrets", "AllowedList"))
+				}
+				if valueSet(opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets.AllowedList) {
+					for allowedListIdx, allowedList := range opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets.AllowedList {
+						if !ValidObjectIdentifier(allowedList) {
+							errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterApiIntegrationOptions.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets.AllowedList[%d]", allowedListIdx), "AllowedList"))
+						}
+					}
+				}
+			}
+			if valueSet(opts.Set.GitHttpsApiPrivateLinkParams.TlsTrustedCertificates) {
+				for tlsTrustedCertificateIdx, tlsTrustedCertificate := range opts.Set.GitHttpsApiPrivateLinkParams.TlsTrustedCertificates {
+					if !ValidObjectIdentifier(tlsTrustedCertificate) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterApiIntegrationOptions.Set.GitHttpsApiPrivateLinkParams.TlsTrustedCertificates[%d]", tlsTrustedCertificateIdx), "TlsTrustedCertificates"))
+					}
 				}
 			}
 		}

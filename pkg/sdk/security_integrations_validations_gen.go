@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions)
 	_ validatable = new(CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions)
@@ -86,6 +88,24 @@ func (opts *CreateExternalOauthSecurityIntegrationOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateExternalOauthSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
 	}
+	if valueSet(opts.ExternalOauthBlockedRolesList) {
+		if valueSet(opts.ExternalOauthBlockedRolesList.BlockedRolesList) {
+			for blockedRolesListIdx, blockedRolesList := range opts.ExternalOauthBlockedRolesList.BlockedRolesList {
+				if !ValidObjectIdentifier(blockedRolesList) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateExternalOauthSecurityIntegrationOptions.ExternalOauthBlockedRolesList.BlockedRolesList[%d]", blockedRolesListIdx), "BlockedRolesList"))
+				}
+			}
+		}
+	}
+	if valueSet(opts.ExternalOauthAllowedRolesList) {
+		if valueSet(opts.ExternalOauthAllowedRolesList.AllowedRolesList) {
+			for allowedRolesListIdx, allowedRolesList := range opts.ExternalOauthAllowedRolesList.AllowedRolesList {
+				if !ValidObjectIdentifier(allowedRolesList) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateExternalOauthSecurityIntegrationOptions.ExternalOauthAllowedRolesList.AllowedRolesList[%d]", allowedRolesListIdx), "AllowedRolesList"))
+				}
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -101,6 +121,24 @@ func (opts *CreateOauthForPartnerApplicationsSecurityIntegrationOptions) validat
 		errs = append(errs, errOneOf("CreateOauthForPartnerApplicationsSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
 	}
 	errs = append(errs, opts.additionalValidations())
+	if valueSet(opts.AllowedRolesList) {
+		if valueSet(opts.AllowedRolesList.AllowedRolesList) {
+			for allowedRolesListIdx, allowedRolesList := range opts.AllowedRolesList.AllowedRolesList {
+				if !ValidObjectIdentifier(allowedRolesList) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateOauthForPartnerApplicationsSecurityIntegrationOptions.AllowedRolesList.AllowedRolesList[%d]", allowedRolesListIdx), "AllowedRolesList"))
+				}
+			}
+		}
+	}
+	if valueSet(opts.BlockedRolesList) {
+		if valueSet(opts.BlockedRolesList.BlockedRolesList) {
+			for blockedRolesListIdx, blockedRolesList := range opts.BlockedRolesList.BlockedRolesList {
+				if !ValidObjectIdentifier(blockedRolesList) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateOauthForPartnerApplicationsSecurityIntegrationOptions.BlockedRolesList.BlockedRolesList[%d]", blockedRolesListIdx), "BlockedRolesList"))
+				}
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -114,6 +152,33 @@ func (opts *CreateOauthForCustomClientsSecurityIntegrationOptions) validate() er
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateOauthForCustomClientsSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
+	}
+	if valueSet(opts.PreAuthorizedRolesList) {
+		if valueSet(opts.PreAuthorizedRolesList.PreAuthorizedRolesList) {
+			for preAuthorizedRolesListIdx, preAuthorizedRolesList := range opts.PreAuthorizedRolesList.PreAuthorizedRolesList {
+				if !ValidObjectIdentifier(preAuthorizedRolesList) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateOauthForCustomClientsSecurityIntegrationOptions.PreAuthorizedRolesList.PreAuthorizedRolesList[%d]", preAuthorizedRolesListIdx), "PreAuthorizedRolesList"))
+				}
+			}
+		}
+	}
+	if valueSet(opts.AllowedRolesList) {
+		if valueSet(opts.AllowedRolesList.AllowedRolesList) {
+			for allowedRolesListIdx, allowedRolesList := range opts.AllowedRolesList.AllowedRolesList {
+				if !ValidObjectIdentifier(allowedRolesList) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateOauthForCustomClientsSecurityIntegrationOptions.AllowedRolesList.AllowedRolesList[%d]", allowedRolesListIdx), "AllowedRolesList"))
+				}
+			}
+		}
+	}
+	if valueSet(opts.BlockedRolesList) {
+		if valueSet(opts.BlockedRolesList.BlockedRolesList) {
+			for blockedRolesListIdx, blockedRolesList := range opts.BlockedRolesList.BlockedRolesList {
+				if !ValidObjectIdentifier(blockedRolesList) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateOauthForCustomClientsSecurityIntegrationOptions.BlockedRolesList.BlockedRolesList[%d]", blockedRolesListIdx), "BlockedRolesList"))
+				}
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -243,6 +308,24 @@ func (opts *AlterExternalOauthSecurityIntegrationOptions) validate() error {
 		if !anyValueSet(opts.Set.Enabled, opts.Set.ExternalOauthType, opts.Set.ExternalOauthIssuer, opts.Set.ExternalOauthTokenUserMappingClaim, opts.Set.ExternalOauthSnowflakeUserMappingAttribute, opts.Set.ExternalOauthJwsKeysUrl, opts.Set.ExternalOauthBlockedRolesList, opts.Set.ExternalOauthAllowedRolesList, opts.Set.ExternalOauthRsaPublicKey, opts.Set.ExternalOauthRsaPublicKey2, opts.Set.ExternalOauthAudienceList, opts.Set.ExternalOauthAnyRoleMode, opts.Set.ExternalOauthScopeDelimiter, opts.Set.ExternalOauthScopeMappingAttribute, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterExternalOauthSecurityIntegrationOptions.Set", "Enabled", "ExternalOauthType", "ExternalOauthIssuer", "ExternalOauthTokenUserMappingClaim", "ExternalOauthSnowflakeUserMappingAttribute", "ExternalOauthJwsKeysUrl", "ExternalOauthBlockedRolesList", "ExternalOauthAllowedRolesList", "ExternalOauthRsaPublicKey", "ExternalOauthRsaPublicKey2", "ExternalOauthAudienceList", "ExternalOauthAnyRoleMode", "ExternalOauthScopeDelimiter", "ExternalOauthScopeMappingAttribute", "Comment"))
 		}
+		if valueSet(opts.Set.ExternalOauthBlockedRolesList) {
+			if valueSet(opts.Set.ExternalOauthBlockedRolesList.BlockedRolesList) {
+				for blockedRolesListIdx, blockedRolesList := range opts.Set.ExternalOauthBlockedRolesList.BlockedRolesList {
+					if !ValidObjectIdentifier(blockedRolesList) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterExternalOauthSecurityIntegrationOptions.Set.ExternalOauthBlockedRolesList.BlockedRolesList[%d]", blockedRolesListIdx), "BlockedRolesList"))
+					}
+				}
+			}
+		}
+		if valueSet(opts.Set.ExternalOauthAllowedRolesList) {
+			if valueSet(opts.Set.ExternalOauthAllowedRolesList.AllowedRolesList) {
+				for allowedRolesListIdx, allowedRolesList := range opts.Set.ExternalOauthAllowedRolesList.AllowedRolesList {
+					if !ValidObjectIdentifier(allowedRolesList) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterExternalOauthSecurityIntegrationOptions.Set.ExternalOauthAllowedRolesList.AllowedRolesList[%d]", allowedRolesListIdx), "AllowedRolesList"))
+					}
+				}
+			}
+		}
 	}
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.Enabled, opts.Unset.ExternalOauthAudienceList) {
@@ -267,6 +350,24 @@ func (opts *AlterOauthForPartnerApplicationsSecurityIntegrationOptions) validate
 		if !anyValueSet(opts.Set.Enabled, opts.Set.OauthIssueRefreshTokens, opts.Set.OauthRedirectUri, opts.Set.OauthRefreshTokenValidity, opts.Set.OauthUseSecondaryRoles, opts.Set.AllowedRolesList, opts.Set.BlockedRolesList, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterOauthForPartnerApplicationsSecurityIntegrationOptions.Set", "Enabled", "OauthIssueRefreshTokens", "OauthRedirectUri", "OauthRefreshTokenValidity", "OauthUseSecondaryRoles", "AllowedRolesList", "BlockedRolesList", "Comment"))
 		}
+		if valueSet(opts.Set.AllowedRolesList) {
+			if valueSet(opts.Set.AllowedRolesList.AllowedRolesList) {
+				for allowedRolesListIdx, allowedRolesList := range opts.Set.AllowedRolesList.AllowedRolesList {
+					if !ValidObjectIdentifier(allowedRolesList) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterOauthForPartnerApplicationsSecurityIntegrationOptions.Set.AllowedRolesList.AllowedRolesList[%d]", allowedRolesListIdx), "AllowedRolesList"))
+					}
+				}
+			}
+		}
+		if valueSet(opts.Set.BlockedRolesList) {
+			if valueSet(opts.Set.BlockedRolesList.BlockedRolesList) {
+				for blockedRolesListIdx, blockedRolesList := range opts.Set.BlockedRolesList.BlockedRolesList {
+					if !ValidObjectIdentifier(blockedRolesList) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterOauthForPartnerApplicationsSecurityIntegrationOptions.Set.BlockedRolesList.BlockedRolesList[%d]", blockedRolesListIdx), "BlockedRolesList"))
+					}
+				}
+			}
+		}
 	}
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.Enabled, opts.Unset.OauthUseSecondaryRoles) {
@@ -290,6 +391,33 @@ func (opts *AlterOauthForCustomClientsSecurityIntegrationOptions) validate() err
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.Enabled, opts.Set.OauthRedirectUri, opts.Set.OauthAllowNonTlsRedirectUri, opts.Set.OauthEnforcePkce, opts.Set.PreAuthorizedRolesList, opts.Set.AllowedRolesList, opts.Set.BlockedRolesList, opts.Set.OauthIssueRefreshTokens, opts.Set.OauthRefreshTokenValidity, opts.Set.OauthUseSecondaryRoles, opts.Set.NetworkPolicy, opts.Set.OauthClientRsaPublicKey, opts.Set.OauthClientRsaPublicKey2, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterOauthForCustomClientsSecurityIntegrationOptions.Set", "Enabled", "OauthRedirectUri", "OauthAllowNonTlsRedirectUri", "OauthEnforcePkce", "PreAuthorizedRolesList", "AllowedRolesList", "BlockedRolesList", "OauthIssueRefreshTokens", "OauthRefreshTokenValidity", "OauthUseSecondaryRoles", "NetworkPolicy", "OauthClientRsaPublicKey", "OauthClientRsaPublicKey2", "Comment"))
+		}
+		if valueSet(opts.Set.PreAuthorizedRolesList) {
+			if valueSet(opts.Set.PreAuthorizedRolesList.PreAuthorizedRolesList) {
+				for preAuthorizedRolesListIdx, preAuthorizedRolesList := range opts.Set.PreAuthorizedRolesList.PreAuthorizedRolesList {
+					if !ValidObjectIdentifier(preAuthorizedRolesList) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterOauthForCustomClientsSecurityIntegrationOptions.Set.PreAuthorizedRolesList.PreAuthorizedRolesList[%d]", preAuthorizedRolesListIdx), "PreAuthorizedRolesList"))
+					}
+				}
+			}
+		}
+		if valueSet(opts.Set.AllowedRolesList) {
+			if valueSet(opts.Set.AllowedRolesList.AllowedRolesList) {
+				for allowedRolesListIdx, allowedRolesList := range opts.Set.AllowedRolesList.AllowedRolesList {
+					if !ValidObjectIdentifier(allowedRolesList) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterOauthForCustomClientsSecurityIntegrationOptions.Set.AllowedRolesList.AllowedRolesList[%d]", allowedRolesListIdx), "AllowedRolesList"))
+					}
+				}
+			}
+		}
+		if valueSet(opts.Set.BlockedRolesList) {
+			if valueSet(opts.Set.BlockedRolesList.BlockedRolesList) {
+				for blockedRolesListIdx, blockedRolesList := range opts.Set.BlockedRolesList.BlockedRolesList {
+					if !ValidObjectIdentifier(blockedRolesList) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterOauthForCustomClientsSecurityIntegrationOptions.Set.BlockedRolesList.BlockedRolesList[%d]", blockedRolesListIdx), "BlockedRolesList"))
+					}
+				}
+			}
 		}
 	}
 	if valueSet(opts.Unset) {

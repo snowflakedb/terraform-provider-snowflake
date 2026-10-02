@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
 // Field defines properties of a single field or struct (by defining Fields)
@@ -138,6 +139,13 @@ func (f *Field) IsPointer() bool {
 
 func (f *Field) IsSlice() bool {
 	return strings.HasPrefix(f.Kind, "[]")
+}
+
+// IsIdentifierElementSlice reports whether f is a flat list of identifier values
+// ([]AccountObjectIdentifier, …) with no QueryStruct children. Do not infer this from
+// []T in general — []string / []Column / enums are not identifier element slices.
+func (f *Field) IsIdentifierElementSlice() bool {
+	return f.IsSlice() && !f.HasAnyFields() && genhelpers.IsIdentifierType(f.KindNoPtr())
 }
 
 // SliceElemVar returns a loop variable name derived from the field name.

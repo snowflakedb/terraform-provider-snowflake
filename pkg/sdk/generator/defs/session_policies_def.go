@@ -15,7 +15,8 @@ var sessionPolicySecondaryRoles = g.NewQueryStruct("SessionPolicySecondaryRoles"
 	OptionalSQLWithCustomFieldName("All", "('ALL')").
 	OptionalSQLWithCustomFieldName("None", "()").
 	List("Roles", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.ListOptions().Parentheses()).
-	WithValidation(g.ExactlyOneValueSet, "All", "None", "Roles")
+	WithValidation(g.ExactlyOneValueSet, "All", "None", "Roles").
+	WithValidation(g.ValidIdentifier, "Roles")
 
 var sessionPoliciesDef = g.NewInterface(
 	"SessionPolicies",

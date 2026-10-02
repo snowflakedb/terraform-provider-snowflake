@@ -9,38 +9,40 @@ import (
 var notebooksTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
 const (
-	case_Notebooks_validation_Create_name_ValidIdentifier                   testCaseName = "validation_Create_name_ValidIdentifier"
-	case_Notebooks_validation_Create_QueryWarehouse_ValidIdentifierIfSet    testCaseName = "validation_Create_QueryWarehouse_ValidIdentifierIfSet"
-	case_Notebooks_validation_Create_Warehouse_ValidIdentifierIfSet         testCaseName = "validation_Create_Warehouse_ValidIdentifierIfSet"
-	case_Notebooks_validation_Create_opts_ConflictingFields                 testCaseName = "validation_Create_opts_ConflictingFields"
-	case_Notebooks_validation_Create_ComputePool_ValidIdentifierIfSet       testCaseName = "validation_Create_ComputePool_ValidIdentifierIfSet"
-	case_Notebooks_sql_Create_basic                                         testCaseName = "sql_Create_basic"
-	case_Notebooks_sql_Create_all                                           testCaseName = "sql_Create_all"
-	case_Notebooks_validation_Alter_name_ValidIdentifier                    testCaseName = "validation_Alter_name_ValidIdentifier"
-	case_Notebooks_validation_Alter_RenameTo_ValidIdentifierIfSet           testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
-	case_Notebooks_validation_Alter_opts_ExactlyOneValueSet_NoneSet         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_Notebooks_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Notebooks_validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet testCaseName = "validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet"
-	case_Notebooks_validation_Alter_Set_Warehouse_ValidIdentifierIfSet      testCaseName = "validation_Alter_Set_Warehouse_ValidIdentifierIfSet"
-	case_Notebooks_validation_Alter_Set_ComputePool_ValidIdentifierIfSet    testCaseName = "validation_Alter_Set_ComputePool_ValidIdentifierIfSet"
-	case_Notebooks_validation_Alter_opts_Set_AtLeastOneValueSet             testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
-	case_Notebooks_validation_Alter_opts_Unset_AtLeastOneValueSet           testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
-	case_Notebooks_sql_Alter_Set                                            testCaseName = "sql_Alter_Set"
-	case_Notebooks_sql_Alter_Unset                                          testCaseName = "sql_Alter_Unset"
-	case_Notebooks_sql_Alter_SetTags                                        testCaseName = "sql_Alter_SetTags"
-	case_Notebooks_sql_Alter_UnsetTags                                      testCaseName = "sql_Alter_UnsetTags"
-	case_Notebooks_sql_Alter_RenameTo                                       testCaseName = "sql_Alter_RenameTo"
-	case_Notebooks_validation_Drop_name_ValidIdentifier                     testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_Notebooks_sql_Drop_basic                                           testCaseName = "sql_Drop_basic"
-	case_Notebooks_sql_Drop_all                                             testCaseName = "sql_Drop_all"
-	case_Notebooks_validation_Describe_name_ValidIdentifier                 testCaseName = "validation_Describe_name_ValidIdentifier"
-	case_Notebooks_sql_Describe_basic                                       testCaseName = "sql_Describe_basic"
-	case_Notebooks_sql_Show_basic                                           testCaseName = "sql_Show_basic"
-	case_Notebooks_sql_Show_all                                             testCaseName = "sql_Show_all"
-	case_Notebooks_sql_Show_Like                                            testCaseName = "sql_Show_Like"
-	case_Notebooks_sql_Show_In                                              testCaseName = "sql_Show_In"
-	case_Notebooks_sql_Show_Limit                                           testCaseName = "sql_Show_Limit"
-	case_Notebooks_sql_Show_StartsWith                                      testCaseName = "sql_Show_StartsWith"
+	case_Notebooks_validation_Create_name_ValidIdentifier                          testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Notebooks_validation_Create_QueryWarehouse_ValidIdentifierIfSet           testCaseName = "validation_Create_QueryWarehouse_ValidIdentifierIfSet"
+	case_Notebooks_validation_Create_Warehouse_ValidIdentifierIfSet                testCaseName = "validation_Create_Warehouse_ValidIdentifierIfSet"
+	case_Notebooks_validation_Create_opts_ConflictingFields                        testCaseName = "validation_Create_opts_ConflictingFields"
+	case_Notebooks_validation_Create_ComputePool_ValidIdentifierIfSet              testCaseName = "validation_Create_ComputePool_ValidIdentifierIfSet"
+	case_Notebooks_validation_Create_ExternalAccessIntegrations_ValidIdentifier    testCaseName = "validation_Create_ExternalAccessIntegrations_ValidIdentifier"
+	case_Notebooks_sql_Create_basic                                                testCaseName = "sql_Create_basic"
+	case_Notebooks_sql_Create_all                                                  testCaseName = "sql_Create_all"
+	case_Notebooks_validation_Alter_name_ValidIdentifier                           testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Notebooks_validation_Alter_RenameTo_ValidIdentifierIfSet                  testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_Notebooks_validation_Alter_opts_ExactlyOneValueSet_NoneSet                testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Notebooks_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Notebooks_validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet        testCaseName = "validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet"
+	case_Notebooks_validation_Alter_Set_Warehouse_ValidIdentifierIfSet             testCaseName = "validation_Alter_Set_Warehouse_ValidIdentifierIfSet"
+	case_Notebooks_validation_Alter_Set_ComputePool_ValidIdentifierIfSet           testCaseName = "validation_Alter_Set_ComputePool_ValidIdentifierIfSet"
+	case_Notebooks_validation_Alter_opts_Set_AtLeastOneValueSet                    testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Notebooks_validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier testCaseName = "validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier"
+	case_Notebooks_validation_Alter_opts_Unset_AtLeastOneValueSet                  testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Notebooks_sql_Alter_Set                                                   testCaseName = "sql_Alter_Set"
+	case_Notebooks_sql_Alter_Unset                                                 testCaseName = "sql_Alter_Unset"
+	case_Notebooks_sql_Alter_SetTags                                               testCaseName = "sql_Alter_SetTags"
+	case_Notebooks_sql_Alter_UnsetTags                                             testCaseName = "sql_Alter_UnsetTags"
+	case_Notebooks_sql_Alter_RenameTo                                              testCaseName = "sql_Alter_RenameTo"
+	case_Notebooks_validation_Drop_name_ValidIdentifier                            testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Notebooks_sql_Drop_basic                                                  testCaseName = "sql_Drop_basic"
+	case_Notebooks_sql_Drop_all                                                    testCaseName = "sql_Drop_all"
+	case_Notebooks_validation_Describe_name_ValidIdentifier                        testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_Notebooks_sql_Describe_basic                                              testCaseName = "sql_Describe_basic"
+	case_Notebooks_sql_Show_basic                                                  testCaseName = "sql_Show_basic"
+	case_Notebooks_sql_Show_all                                                    testCaseName = "sql_Show_all"
+	case_Notebooks_sql_Show_Like                                                   testCaseName = "sql_Show_Like"
+	case_Notebooks_sql_Show_In                                                     testCaseName = "sql_Show_In"
+	case_Notebooks_sql_Show_Limit                                                  testCaseName = "sql_Show_Limit"
+	case_Notebooks_sql_Show_StartsWith                                             testCaseName = "sql_Show_StartsWith"
 )
 
 type NotebooksTestsContext struct {
@@ -95,6 +97,13 @@ var notebooksTests = NotebooksTestsContext{
 				ExpectedErr: errInvalidIdentifier("CreateNotebookOptions", "ComputePool"),
 				DefaultModify: func(opts *CreateNotebookOptions) {
 					opts.ComputePool = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*CreateNotebookOptions]{
+				Name:        case_Notebooks_validation_Create_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateNotebookOptions.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *CreateNotebookOptions) {
+					opts.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
 		).
@@ -188,6 +197,14 @@ var notebooksTests = NotebooksTestsContext{
 					opts.Set.ComputePool = nil
 					opts.Set.ExternalAccessIntegrations = nil
 					opts.Set.RuntimeEnvironmentVersion = nil
+				},
+			},
+			validationCase[*AlterNotebookOptions]{
+				Name:        case_Notebooks_validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterNotebookOptions.Set.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *AlterNotebookOptions) {
+					opts.Set = &NotebookSet{}
+					opts.Set.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
 			validationCase[*AlterNotebookOptions]{

@@ -69,5 +69,12 @@ func (opts *CreateSliceValidationExampleOptions) validate() error {
 			}
 		}
 	}
+	if valueSet(opts.ExternalAccessIntegrations) {
+		for externalAccessIntegrationIdx, externalAccessIntegration := range opts.ExternalAccessIntegrations {
+			if !ValidObjectIdentifier(externalAccessIntegration) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateSliceValidationExampleOptions.ExternalAccessIntegrations[%d]", externalAccessIntegrationIdx), "ExternalAccessIntegrations"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }

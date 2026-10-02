@@ -29,8 +29,11 @@ const (
 	case_ApiIntegrations_validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet                                                                   testCaseName = "validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_ApiIntegrations_validation_Create_opts_GitHttpsApiTokenBasedProviderParams_AllowedAuthenticationSecrets_ExactlyOneValueSet_NoneSet         testCaseName = "validation_Create_opts_GitHttpsApiTokenBasedProviderParams_AllowedAuthenticationSecrets_ExactlyOneValueSet_NoneSet"
 	case_ApiIntegrations_validation_Create_opts_GitHttpsApiTokenBasedProviderParams_AllowedAuthenticationSecrets_ExactlyOneValueSet_MoreThanOneSet  testCaseName = "validation_Create_opts_GitHttpsApiTokenBasedProviderParams_AllowedAuthenticationSecrets_ExactlyOneValueSet_MoreThanOneSet"
+	case_ApiIntegrations_validation_Create_GitHttpsApiTokenBasedProviderParams_AllowedAuthenticationSecrets_AllowedList_ValidIdentifier             testCaseName = "validation_Create_GitHttpsApiTokenBasedProviderParams_AllowedAuthenticationSecrets_AllowedList_ValidIdentifier"
 	case_ApiIntegrations_validation_Create_opts_GitHttpsApiPrivateLinkProviderParams_AllowedAuthenticationSecrets_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Create_opts_GitHttpsApiPrivateLinkProviderParams_AllowedAuthenticationSecrets_ExactlyOneValueSet_NoneSet"
 	case_ApiIntegrations_validation_Create_opts_GitHttpsApiPrivateLinkProviderParams_AllowedAuthenticationSecrets_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Create_opts_GitHttpsApiPrivateLinkProviderParams_AllowedAuthenticationSecrets_ExactlyOneValueSet_MoreThanOneSet"
+	case_ApiIntegrations_validation_Create_GitHttpsApiPrivateLinkProviderParams_AllowedAuthenticationSecrets_AllowedList_ValidIdentifier            testCaseName = "validation_Create_GitHttpsApiPrivateLinkProviderParams_AllowedAuthenticationSecrets_AllowedList_ValidIdentifier"
+	case_ApiIntegrations_validation_Create_GitHttpsApiPrivateLinkProviderParams_TlsTrustedCertificates_ValidIdentifier                              testCaseName = "validation_Create_GitHttpsApiPrivateLinkProviderParams_TlsTrustedCertificates_ValidIdentifier"
 	case_ApiIntegrations_sql_Create_basic                                                                                                           testCaseName = "sql_Create_basic"
 	case_ApiIntegrations_sql_Create_all                                                                                                             testCaseName = "sql_Create_all"
 	case_ApiIntegrations_validation_Alter_name_ValidIdentifier                                                                                      testCaseName = "validation_Alter_name_ValidIdentifier"
@@ -45,9 +48,12 @@ const (
 	case_ApiIntegrations_validation_Alter_opts_Set_GitHttpsApiTokenBasedParams_AtLeastOneValueSet                                                   testCaseName = "validation_Alter_opts_Set_GitHttpsApiTokenBasedParams_AtLeastOneValueSet"
 	case_ApiIntegrations_validation_Alter_opts_Set_GitHttpsApiTokenBasedParams_AllowedAuthenticationSecrets_ExactlyOneValueSet_NoneSet              testCaseName = "validation_Alter_opts_Set_GitHttpsApiTokenBasedParams_AllowedAuthenticationSecrets_ExactlyOneValueSet_NoneSet"
 	case_ApiIntegrations_validation_Alter_opts_Set_GitHttpsApiTokenBasedParams_AllowedAuthenticationSecrets_ExactlyOneValueSet_MoreThanOneSet       testCaseName = "validation_Alter_opts_Set_GitHttpsApiTokenBasedParams_AllowedAuthenticationSecrets_ExactlyOneValueSet_MoreThanOneSet"
+	case_ApiIntegrations_validation_Alter_Set_GitHttpsApiTokenBasedParams_AllowedAuthenticationSecrets_AllowedList_ValidIdentifier                  testCaseName = "validation_Alter_Set_GitHttpsApiTokenBasedParams_AllowedAuthenticationSecrets_AllowedList_ValidIdentifier"
 	case_ApiIntegrations_validation_Alter_opts_Set_GitHttpsApiPrivateLinkParams_AtLeastOneValueSet                                                  testCaseName = "validation_Alter_opts_Set_GitHttpsApiPrivateLinkParams_AtLeastOneValueSet"
 	case_ApiIntegrations_validation_Alter_opts_Set_GitHttpsApiPrivateLinkParams_AllowedAuthenticationSecrets_ExactlyOneValueSet_NoneSet             testCaseName = "validation_Alter_opts_Set_GitHttpsApiPrivateLinkParams_AllowedAuthenticationSecrets_ExactlyOneValueSet_NoneSet"
 	case_ApiIntegrations_validation_Alter_opts_Set_GitHttpsApiPrivateLinkParams_AllowedAuthenticationSecrets_ExactlyOneValueSet_MoreThanOneSet      testCaseName = "validation_Alter_opts_Set_GitHttpsApiPrivateLinkParams_AllowedAuthenticationSecrets_ExactlyOneValueSet_MoreThanOneSet"
+	case_ApiIntegrations_validation_Alter_Set_GitHttpsApiPrivateLinkParams_AllowedAuthenticationSecrets_AllowedList_ValidIdentifier                 testCaseName = "validation_Alter_Set_GitHttpsApiPrivateLinkParams_AllowedAuthenticationSecrets_AllowedList_ValidIdentifier"
+	case_ApiIntegrations_validation_Alter_Set_GitHttpsApiPrivateLinkParams_TlsTrustedCertificates_ValidIdentifier                                   testCaseName = "validation_Alter_Set_GitHttpsApiPrivateLinkParams_TlsTrustedCertificates_ValidIdentifier"
 	case_ApiIntegrations_validation_Alter_opts_Unset_MoreThanOneValueSet_MoreThanOneSet                                                             testCaseName = "validation_Alter_opts_Unset_MoreThanOneValueSet_MoreThanOneSet"
 	case_ApiIntegrations_validation_Alter_opts_Unset_AtLeastOneValueSet                                                                             testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_ApiIntegrations_validation_Alter_opts_Unset_AwsParams_AtLeastOneValueSet                                                                   testCaseName = "validation_Alter_opts_Unset_AwsParams_AtLeastOneValueSet"
@@ -162,6 +168,15 @@ var apiIntegrationsTests = ApiIntegrationsTestsContext{
 				},
 			},
 			validationCase[*CreateApiIntegrationOptions]{
+				Name:        case_ApiIntegrations_validation_Create_GitHttpsApiTokenBasedProviderParams_AllowedAuthenticationSecrets_AllowedList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateApiIntegrationOptions.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets.AllowedList[0]", "AllowedList"),
+				DefaultModify: func(opts *CreateApiIntegrationOptions) {
+					opts.GitHttpsApiTokenBasedProviderParams = &GitHttpsApiTokenBasedParams{}
+					opts.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets = &ApiIntegrationAllowedAuthenticationSecrets{}
+					opts.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets.AllowedList = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
+			validationCase[*CreateApiIntegrationOptions]{
 				Name:        case_ApiIntegrations_validation_Create_opts_GitHttpsApiPrivateLinkProviderParams_AllowedAuthenticationSecrets_ExactlyOneValueSet_NoneSet,
 				ExpectedErr: errExactlyOneOf("CreateApiIntegrationOptions.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets", "AllSecrets", "NoSecrets", "AllowedList"),
 				DefaultModify: func(opts *CreateApiIntegrationOptions) {
@@ -180,6 +195,23 @@ var apiIntegrationsTests = ApiIntegrationsTestsContext{
 					opts.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets = &ApiIntegrationAllowedAuthenticationSecrets{}
 					opts.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets.AllSecrets = new(true)
 					opts.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets.NoSecrets = new(true)
+				},
+			},
+			validationCase[*CreateApiIntegrationOptions]{
+				Name:        case_ApiIntegrations_validation_Create_GitHttpsApiPrivateLinkProviderParams_AllowedAuthenticationSecrets_AllowedList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateApiIntegrationOptions.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets.AllowedList[0]", "AllowedList"),
+				DefaultModify: func(opts *CreateApiIntegrationOptions) {
+					opts.GitHttpsApiPrivateLinkProviderParams = &GitHttpsApiPrivateLinkParams{}
+					opts.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets = &ApiIntegrationAllowedAuthenticationSecrets{}
+					opts.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets.AllowedList = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
+			validationCase[*CreateApiIntegrationOptions]{
+				Name:        case_ApiIntegrations_validation_Create_GitHttpsApiPrivateLinkProviderParams_TlsTrustedCertificates_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateApiIntegrationOptions.GitHttpsApiPrivateLinkProviderParams.TlsTrustedCertificates[0]", "TlsTrustedCertificates"),
+				DefaultModify: func(opts *CreateApiIntegrationOptions) {
+					opts.GitHttpsApiPrivateLinkProviderParams = &GitHttpsApiPrivateLinkParams{}
+					opts.GitHttpsApiPrivateLinkProviderParams.TlsTrustedCertificates = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
 				},
 			},
 		).
@@ -314,6 +346,16 @@ var apiIntegrationsTests = ApiIntegrationsTestsContext{
 				},
 			},
 			validationCase[*AlterApiIntegrationOptions]{
+				Name:        case_ApiIntegrations_validation_Alter_Set_GitHttpsApiTokenBasedParams_AllowedAuthenticationSecrets_AllowedList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterApiIntegrationOptions.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets.AllowedList[0]", "AllowedList"),
+				DefaultModify: func(opts *AlterApiIntegrationOptions) {
+					opts.Set = &ApiIntegrationSet{}
+					opts.Set.GitHttpsApiTokenBasedParams = &SetGitHttpsApiTokenBasedParams{}
+					opts.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets = &ApiIntegrationAllowedAuthenticationSecrets{}
+					opts.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets.AllowedList = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
+			validationCase[*AlterApiIntegrationOptions]{
 				Name:        case_ApiIntegrations_validation_Alter_opts_Set_GitHttpsApiPrivateLinkParams_AtLeastOneValueSet,
 				ExpectedErr: errAtLeastOneOf("AlterApiIntegrationOptions.Set.GitHttpsApiPrivateLinkParams", "AllowedAuthenticationSecrets", "UsePrivatelinkEndpoint", "TlsTrustedCertificates"),
 				DefaultModify: func(opts *AlterApiIntegrationOptions) {
@@ -345,6 +387,25 @@ var apiIntegrationsTests = ApiIntegrationsTestsContext{
 					opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets = &ApiIntegrationAllowedAuthenticationSecrets{}
 					opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets.AllSecrets = new(true)
 					opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets.NoSecrets = new(true)
+				},
+			},
+			validationCase[*AlterApiIntegrationOptions]{
+				Name:        case_ApiIntegrations_validation_Alter_Set_GitHttpsApiPrivateLinkParams_AllowedAuthenticationSecrets_AllowedList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterApiIntegrationOptions.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets.AllowedList[0]", "AllowedList"),
+				DefaultModify: func(opts *AlterApiIntegrationOptions) {
+					opts.Set = &ApiIntegrationSet{}
+					opts.Set.GitHttpsApiPrivateLinkParams = &SetGitHttpsApiPrivateLinkParams{}
+					opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets = &ApiIntegrationAllowedAuthenticationSecrets{}
+					opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets.AllowedList = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
+			validationCase[*AlterApiIntegrationOptions]{
+				Name:        case_ApiIntegrations_validation_Alter_Set_GitHttpsApiPrivateLinkParams_TlsTrustedCertificates_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterApiIntegrationOptions.Set.GitHttpsApiPrivateLinkParams.TlsTrustedCertificates[0]", "TlsTrustedCertificates"),
+				DefaultModify: func(opts *AlterApiIntegrationOptions) {
+					opts.Set = &ApiIntegrationSet{}
+					opts.Set.GitHttpsApiPrivateLinkParams = &SetGitHttpsApiPrivateLinkParams{}
+					opts.Set.GitHttpsApiPrivateLinkParams.TlsTrustedCertificates = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
 				},
 			},
 			validationCase[*AlterApiIntegrationOptions]{

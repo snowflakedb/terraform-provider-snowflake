@@ -155,6 +155,7 @@ var proceduresDef = g.NewInterface(
 		WithValidation(g.ValidateValueSet, "Packages").
 		WithValidation(g.ValidateValueSet, "Handler").
 		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ValidIdentifier, "ExternalAccessIntegrations").
 		WithAdditionalValidations(),
 ).CustomOperation(
 	"CreateForJavaScript",
@@ -227,7 +228,8 @@ var proceduresDef = g.NewInterface(
 		WithValidation(g.ValidateValueSet, "RuntimeVersion").
 		WithValidation(g.ValidateValueSet, "Packages").
 		WithValidation(g.ValidateValueSet, "Handler").
-		WithValidation(g.ValidIdentifier, "name"),
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ValidIdentifier, "ExternalAccessIntegrations"),
 ).CustomOperation(
 	"CreateForScala",
 	"https://docs.snowflake.com/en/sql-reference/sql/create-procedure#scala-handler",
@@ -273,6 +275,7 @@ var proceduresDef = g.NewInterface(
 		WithValidation(g.ValidateValueSet, "Packages").
 		WithValidation(g.ValidateValueSet, "Handler").
 		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ValidIdentifier, "ExternalAccessIntegrations").
 		WithAdditionalValidations(),
 ).CustomOperation(
 	"CreateForSQL",
@@ -322,6 +325,7 @@ var proceduresDef = g.NewInterface(
 				OptionalAssignment("LOG_EVENT_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
 				OptionalAssignment("METRIC_LEVEL", g.KindOfTPointer[sdkcommons.MetricLevel](), g.ParameterOptions().SingleQuotes()).
 				OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
+				WithValidation(g.ValidIdentifier, "ExternalAccessIntegrations").
 				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "SecretsList", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"),
 			g.ListOptions().SQL("SET"),
 		).

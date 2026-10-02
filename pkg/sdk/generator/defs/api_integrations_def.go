@@ -214,7 +214,8 @@ var apiIntegrationAllowedAuthSecretsDef = g.NewQueryStruct("ApiIntegrationAllowe
 	OptionalSQLWithCustomFieldName("AllSecrets", "ALL").
 	OptionalSQLWithCustomFieldName("NoSecrets", "NONE").
 	List("AllowedList", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ListOptions().Parentheses()).
-	WithValidation(g.ExactlyOneValueSet, "AllSecrets", "NoSecrets", "AllowedList")
+	WithValidation(g.ExactlyOneValueSet, "AllSecrets", "NoSecrets", "AllowedList").
+	WithValidation(g.ValidIdentifier, "AllowedList")
 
 var apiIntegrationOauthAllowedScopeItemDef = g.NewQueryStruct("ApiIntegrationOauthAllowedScopeItem").
 	Enum("Scope", ApiIntegrationOauthAllowedScopeEnum, g.KeywordOptions().SingleQuotes().Required())
@@ -339,7 +340,8 @@ var apiIntegrationsDef = g.NewInterface(
 						g.KeywordOptions().SQL("ALLOWED_AUTHENTICATION_SECRETS ="),
 					).
 					BooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions().Required()).
-					ListAssignment("TLS_TRUSTED_CERTIFICATES", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().Parentheses()),
+					ListAssignment("TLS_TRUSTED_CERTIFICATES", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().Parentheses()).
+					WithValidation(g.ValidIdentifier, "TlsTrustedCertificates"),
 				g.KeywordOptions(),
 			).
 			OptionalQueryStructField(
@@ -447,7 +449,8 @@ var apiIntegrationsDef = g.NewInterface(
 							).
 							OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()).
 							ListAssignment("TLS_TRUSTED_CERTIFICATES", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().Parentheses()).
-							WithValidation(g.AtLeastOneValueSet, "AllowedAuthenticationSecrets", "UsePrivatelinkEndpoint", "TlsTrustedCertificates"),
+							WithValidation(g.AtLeastOneValueSet, "AllowedAuthenticationSecrets", "UsePrivatelinkEndpoint", "TlsTrustedCertificates").
+							WithValidation(g.ValidIdentifier, "TlsTrustedCertificates"),
 						g.KeywordOptions(),
 					).
 					OptionalQueryStructField(

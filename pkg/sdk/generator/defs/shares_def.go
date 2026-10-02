@@ -27,20 +27,23 @@ func shareAdd() *g.QueryStruct {
 	return g.NewQueryStruct("ShareAdd").
 		ListAssignment("ACCOUNTS", "AccountIdentifier", g.ParameterOptions().Required()).
 		OptionalBooleanAssignment("SHARE_RESTRICTIONS", g.ParameterOptions()).
-		WithValidation(g.AtLeastOneValueSet, "Accounts")
+		WithValidation(g.AtLeastOneValueSet, "Accounts").
+		WithValidation(g.ValidIdentifier, "Accounts")
 }
 
 func shareRemove() *g.QueryStruct {
 	return g.NewQueryStruct("ShareRemove").
 		ListAssignment("ACCOUNTS", "AccountIdentifier", g.ParameterOptions().Required()).
-		WithValidation(g.AtLeastOneValueSet, "Accounts")
+		WithValidation(g.AtLeastOneValueSet, "Accounts").
+		WithValidation(g.ValidIdentifier, "Accounts")
 }
 
 func shareSet() *g.QueryStruct {
 	return g.NewQueryStruct("ShareSet").
 		ListAssignment("ACCOUNTS", "AccountIdentifier", g.ParameterOptions()).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-		WithValidation(g.AtLeastOneValueSet, "Accounts", "Comment")
+		WithValidation(g.AtLeastOneValueSet, "Accounts", "Comment").
+		WithValidation(g.ValidIdentifier, "Accounts")
 }
 
 func shareUnset() *g.QueryStruct {

@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateTaskOptions)
 	_ validatable = new(CreateOrAlterTaskOptions)
@@ -39,6 +41,13 @@ func (opts *CreateTaskOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("CreateTaskOptions.Warehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
 		}
 	}
+	if valueSet(opts.After) {
+		for afterIdx, after := range opts.After {
+			if !ValidObjectIdentifier(after) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateTaskOptions.After[%d]", afterIdx), "After"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -63,6 +72,13 @@ func (opts *CreateOrAlterTaskOptions) validate() error {
 	if valueSet(opts.Warehouse) {
 		if !exactlyOneValueSet(opts.Warehouse.Warehouse, opts.Warehouse.UserTaskManagedInitialWarehouseSize) {
 			errs = append(errs, errExactlyOneOf("CreateOrAlterTaskOptions.Warehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
+		}
+	}
+	if valueSet(opts.After) {
+		for afterIdx, after := range opts.After {
+			if !ValidObjectIdentifier(after) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateOrAlterTaskOptions.After[%d]", afterIdx), "After"))
+			}
 		}
 	}
 	return JoinErrors(errs...)
@@ -95,6 +111,20 @@ func (opts *AlterTaskOptions) validate() error {
 	}
 	if !exactlyOneValueSet(opts.Resume, opts.Suspend, opts.RemoveAfter, opts.AddAfter, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.SetFinalize, opts.UnsetFinalize, opts.SetExecuteAsUser, opts.UnsetExecuteAsUser, opts.ModifyAs, opts.ModifyWhen, opts.RemoveWhen) {
 		errs = append(errs, errExactlyOneOf("AlterTaskOptions", "Resume", "Suspend", "RemoveAfter", "AddAfter", "Set", "Unset", "SetTags", "UnsetTags", "SetFinalize", "UnsetFinalize", "SetExecuteAsUser", "UnsetExecuteAsUser", "ModifyAs", "ModifyWhen", "RemoveWhen"))
+	}
+	if valueSet(opts.RemoveAfter) {
+		for removeAfterIdx, removeAfter := range opts.RemoveAfter {
+			if !ValidObjectIdentifier(removeAfter) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterTaskOptions.RemoveAfter[%d]", removeAfterIdx), "RemoveAfter"))
+			}
+		}
+	}
+	if valueSet(opts.AddAfter) {
+		for addAfterIdx, addAfter := range opts.AddAfter {
+			if !ValidObjectIdentifier(addAfter) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterTaskOptions.AddAfter[%d]", addAfterIdx), "AddAfter"))
+			}
+		}
 	}
 	if valueSet(opts.Set) {
 		errs = append(errs, opts.Set.additionalValidations())

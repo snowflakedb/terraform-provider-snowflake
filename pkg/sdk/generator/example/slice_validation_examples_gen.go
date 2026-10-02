@@ -12,14 +12,15 @@ type SliceValidationExamples interface {
 
 // CreateSliceValidationExampleOptions is based on https://example.com.
 type CreateSliceValidationExampleOptions struct {
-	create                 bool                    `ddl:"static" sql:"CREATE"`
-	sliceValidationExample bool                    `ddl:"static" sql:"SLICE VALIDATION EXAMPLE"`
-	name                   AccountObjectIdentifier `ddl:"identifier"`
-	DualChecks             []DualCheckItem         `ddl:"keyword" sql:"DUAL_CHECKS"`
-	PlainItems             []PlainItem             `ddl:"keyword" sql:"PLAIN_ITEMS"`
-	CheckedItems           []CheckedItem           `ddl:"keyword" sql:"CHECKED_ITEMS"`
-	Items                  []NestedListItem        `ddl:"keyword" sql:"ITEMS"`
-	Columns                []SliceValidationColumn `ddl:"keyword" sql:"COLUMNS"`
+	create                     bool                      `ddl:"static" sql:"CREATE"`
+	sliceValidationExample     bool                      `ddl:"static" sql:"SLICE VALIDATION EXAMPLE"`
+	name                       AccountObjectIdentifier   `ddl:"identifier"`
+	DualChecks                 []DualCheckItem           `ddl:"keyword" sql:"DUAL_CHECKS"`
+	PlainItems                 []PlainItem               `ddl:"keyword" sql:"PLAIN_ITEMS"`
+	CheckedItems               []CheckedItem             `ddl:"keyword" sql:"CHECKED_ITEMS"`
+	Items                      []NestedListItem          `ddl:"keyword" sql:"ITEMS"`
+	Columns                    []SliceValidationColumn   `ddl:"keyword" sql:"COLUMNS"`
+	ExternalAccessIntegrations []AccountObjectIdentifier `ddl:"parameter,parentheses" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
 }
 
 type DualCheckItem struct {

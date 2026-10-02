@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateConnectionOptions)
 	_ validatable = new(AlterConnectionOptions)
@@ -34,6 +36,24 @@ func (opts *AlterConnectionOptions) validate() error {
 	if valueSet(opts.EnableConnectionFailover) {
 		if !anyValueSet(opts.EnableConnectionFailover.ToAccounts) {
 			errs = append(errs, errAtLeastOneOf("AlterConnectionOptions.EnableConnectionFailover", "ToAccounts"))
+		}
+		if valueSet(opts.EnableConnectionFailover.ToAccounts) {
+			for toAccountIdx, toAccount := range opts.EnableConnectionFailover.ToAccounts {
+				if !ValidObjectIdentifier(toAccount) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterConnectionOptions.EnableConnectionFailover.ToAccounts[%d]", toAccountIdx), "ToAccounts"))
+				}
+			}
+		}
+	}
+	if valueSet(opts.DisableConnectionFailover) {
+		if valueSet(opts.DisableConnectionFailover.ToAccounts) {
+			if valueSet(opts.DisableConnectionFailover.ToAccounts.Accounts) {
+				for accountIdx, account := range opts.DisableConnectionFailover.ToAccounts.Accounts {
+					if !ValidObjectIdentifier(account) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterConnectionOptions.DisableConnectionFailover.ToAccounts.Accounts[%d]", accountIdx), "Accounts"))
+					}
+				}
+			}
 		}
 	}
 	if valueSet(opts.Set) {

@@ -288,6 +288,7 @@ var warehousesDef = g.NewInterface(
 		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
+		WithValidation(g.ValidIdentifier, "Tables").
 		WithAdditionalValidations(),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-warehouse",
@@ -309,6 +310,8 @@ var warehousesDef = g.NewInterface(
 		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "Suspend", "Resume", "AbortAllQueries", "RenameTo", "Set", "Unset", "AddTables", "DropTables", "SetTags", "UnsetTags").
+		WithValidation(g.ValidIdentifier, "AddTables").
+		WithValidation(g.ValidIdentifier, "DropTables").
 		WithAdditionalValidations(),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-warehouse",

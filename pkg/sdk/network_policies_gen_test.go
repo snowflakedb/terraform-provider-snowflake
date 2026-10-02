@@ -9,32 +9,40 @@ import (
 var networkPoliciesTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 
 const (
-	case_NetworkPolicies_validation_Create_name_ValidIdentifier                         testCaseName = "validation_Create_name_ValidIdentifier"
-	case_NetworkPolicies_sql_Create_basic                                               testCaseName = "sql_Create_basic"
-	case_NetworkPolicies_sql_Create_all                                                 testCaseName = "sql_Create_all"
-	case_NetworkPolicies_validation_Alter_name_ValidIdentifier                          testCaseName = "validation_Alter_name_ValidIdentifier"
-	case_NetworkPolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet               testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_NetworkPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_NetworkPolicies_validation_Alter_RenameTo_ValidIdentifierIfSet                 testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
-	case_NetworkPolicies_validation_Alter_opts_Set_AtLeastOneValueSet                   testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
-	case_NetworkPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet                 testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
-	case_NetworkPolicies_validation_Alter_opts_Add_ExactlyOneValueSet_NoneSet           testCaseName = "validation_Alter_opts_Add_ExactlyOneValueSet_NoneSet"
-	case_NetworkPolicies_validation_Alter_opts_Add_ExactlyOneValueSet_MoreThanOneSet    testCaseName = "validation_Alter_opts_Add_ExactlyOneValueSet_MoreThanOneSet"
-	case_NetworkPolicies_validation_Alter_opts_Remove_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_Remove_ExactlyOneValueSet_NoneSet"
-	case_NetworkPolicies_validation_Alter_opts_Remove_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_Remove_ExactlyOneValueSet_MoreThanOneSet"
-	case_NetworkPolicies_sql_Alter_Set                                                  testCaseName = "sql_Alter_Set"
-	case_NetworkPolicies_sql_Alter_Unset                                                testCaseName = "sql_Alter_Unset"
-	case_NetworkPolicies_sql_Alter_RenameTo                                             testCaseName = "sql_Alter_RenameTo"
-	case_NetworkPolicies_sql_Alter_Add                                                  testCaseName = "sql_Alter_Add"
-	case_NetworkPolicies_sql_Alter_Remove                                               testCaseName = "sql_Alter_Remove"
-	case_NetworkPolicies_validation_Drop_name_ValidIdentifier                           testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_NetworkPolicies_sql_Drop_basic                                                 testCaseName = "sql_Drop_basic"
-	case_NetworkPolicies_sql_Drop_all                                                   testCaseName = "sql_Drop_all"
-	case_NetworkPolicies_sql_Show_basic                                                 testCaseName = "sql_Show_basic"
-	case_NetworkPolicies_sql_Show_all                                                   testCaseName = "sql_Show_all"
-	case_NetworkPolicies_sql_Show_Like                                                  testCaseName = "sql_Show_Like"
-	case_NetworkPolicies_validation_Describe_name_ValidIdentifier                       testCaseName = "validation_Describe_name_ValidIdentifier"
-	case_NetworkPolicies_sql_Describe_basic                                             testCaseName = "sql_Describe_basic"
+	case_NetworkPolicies_validation_Create_name_ValidIdentifier                                             testCaseName = "validation_Create_name_ValidIdentifier"
+	case_NetworkPolicies_validation_Create_AllowedNetworkRuleList_ValidIdentifier                           testCaseName = "validation_Create_AllowedNetworkRuleList_ValidIdentifier"
+	case_NetworkPolicies_validation_Create_BlockedNetworkRuleList_ValidIdentifier                           testCaseName = "validation_Create_BlockedNetworkRuleList_ValidIdentifier"
+	case_NetworkPolicies_sql_Create_basic                                                                   testCaseName = "sql_Create_basic"
+	case_NetworkPolicies_sql_Create_all                                                                     testCaseName = "sql_Create_all"
+	case_NetworkPolicies_validation_Alter_name_ValidIdentifier                                              testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_NetworkPolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                   testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_NetworkPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                            testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_NetworkPolicies_validation_Alter_RenameTo_ValidIdentifierIfSet                                     testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_NetworkPolicies_validation_Alter_opts_Set_AtLeastOneValueSet                                       testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_NetworkPolicies_validation_Alter_Set_AllowedNetworkRuleList_AllowedNetworkRuleList_ValidIdentifier testCaseName = "validation_Alter_Set_AllowedNetworkRuleList_AllowedNetworkRuleList_ValidIdentifier"
+	case_NetworkPolicies_validation_Alter_Set_BlockedNetworkRuleList_BlockedNetworkRuleList_ValidIdentifier testCaseName = "validation_Alter_Set_BlockedNetworkRuleList_BlockedNetworkRuleList_ValidIdentifier"
+	case_NetworkPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet                                     testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_NetworkPolicies_validation_Alter_opts_Add_ExactlyOneValueSet_NoneSet                               testCaseName = "validation_Alter_opts_Add_ExactlyOneValueSet_NoneSet"
+	case_NetworkPolicies_validation_Alter_opts_Add_ExactlyOneValueSet_MoreThanOneSet                        testCaseName = "validation_Alter_opts_Add_ExactlyOneValueSet_MoreThanOneSet"
+	case_NetworkPolicies_validation_Alter_Add_AllowedNetworkRuleList_ValidIdentifier                        testCaseName = "validation_Alter_Add_AllowedNetworkRuleList_ValidIdentifier"
+	case_NetworkPolicies_validation_Alter_Add_BlockedNetworkRuleList_ValidIdentifier                        testCaseName = "validation_Alter_Add_BlockedNetworkRuleList_ValidIdentifier"
+	case_NetworkPolicies_validation_Alter_opts_Remove_ExactlyOneValueSet_NoneSet                            testCaseName = "validation_Alter_opts_Remove_ExactlyOneValueSet_NoneSet"
+	case_NetworkPolicies_validation_Alter_opts_Remove_ExactlyOneValueSet_MoreThanOneSet                     testCaseName = "validation_Alter_opts_Remove_ExactlyOneValueSet_MoreThanOneSet"
+	case_NetworkPolicies_validation_Alter_Remove_AllowedNetworkRuleList_ValidIdentifier                     testCaseName = "validation_Alter_Remove_AllowedNetworkRuleList_ValidIdentifier"
+	case_NetworkPolicies_validation_Alter_Remove_BlockedNetworkRuleList_ValidIdentifier                     testCaseName = "validation_Alter_Remove_BlockedNetworkRuleList_ValidIdentifier"
+	case_NetworkPolicies_sql_Alter_Set                                                                      testCaseName = "sql_Alter_Set"
+	case_NetworkPolicies_sql_Alter_Unset                                                                    testCaseName = "sql_Alter_Unset"
+	case_NetworkPolicies_sql_Alter_RenameTo                                                                 testCaseName = "sql_Alter_RenameTo"
+	case_NetworkPolicies_sql_Alter_Add                                                                      testCaseName = "sql_Alter_Add"
+	case_NetworkPolicies_sql_Alter_Remove                                                                   testCaseName = "sql_Alter_Remove"
+	case_NetworkPolicies_validation_Drop_name_ValidIdentifier                                               testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_NetworkPolicies_sql_Drop_basic                                                                     testCaseName = "sql_Drop_basic"
+	case_NetworkPolicies_sql_Drop_all                                                                       testCaseName = "sql_Drop_all"
+	case_NetworkPolicies_sql_Show_basic                                                                     testCaseName = "sql_Show_basic"
+	case_NetworkPolicies_sql_Show_all                                                                       testCaseName = "sql_Show_all"
+	case_NetworkPolicies_sql_Show_Like                                                                      testCaseName = "sql_Show_Like"
+	case_NetworkPolicies_validation_Describe_name_ValidIdentifier                                           testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_NetworkPolicies_sql_Describe_basic                                                                 testCaseName = "sql_Describe_basic"
 )
 
 type NetworkPoliciesTestsContext struct {
@@ -60,6 +68,20 @@ var networkPoliciesTests = NetworkPoliciesTestsContext{
 				ExpectedErr: errInvalidIdentifier("CreateNetworkPolicyOptions", "name"),
 				DefaultModify: func(opts *CreateNetworkPolicyOptions) {
 					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Create_AllowedNetworkRuleList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateNetworkPolicyOptions.AllowedNetworkRuleList[0]", "AllowedNetworkRuleList"),
+				DefaultModify: func(opts *CreateNetworkPolicyOptions) {
+					opts.AllowedNetworkRuleList = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
+			validationCase[*CreateNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Create_BlockedNetworkRuleList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateNetworkPolicyOptions.BlockedNetworkRuleList[0]", "BlockedNetworkRuleList"),
+				DefaultModify: func(opts *CreateNetworkPolicyOptions) {
+					opts.BlockedNetworkRuleList = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
 				},
 			},
 		).
@@ -127,6 +149,24 @@ var networkPoliciesTests = NetworkPoliciesTestsContext{
 				},
 			},
 			validationCase[*AlterNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Alter_Set_AllowedNetworkRuleList_AllowedNetworkRuleList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterNetworkPolicyOptions.Set.AllowedNetworkRuleList.AllowedNetworkRuleList[0]", "AllowedNetworkRuleList"),
+				DefaultModify: func(opts *AlterNetworkPolicyOptions) {
+					opts.Set = &NetworkPolicySet{}
+					opts.Set.AllowedNetworkRuleList = &AllowedNetworkRuleList{}
+					opts.Set.AllowedNetworkRuleList.AllowedNetworkRuleList = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
+			validationCase[*AlterNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Alter_Set_BlockedNetworkRuleList_BlockedNetworkRuleList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterNetworkPolicyOptions.Set.BlockedNetworkRuleList.BlockedNetworkRuleList[0]", "BlockedNetworkRuleList"),
+				DefaultModify: func(opts *AlterNetworkPolicyOptions) {
+					opts.Set = &NetworkPolicySet{}
+					opts.Set.BlockedNetworkRuleList = &BlockedNetworkRuleList{}
+					opts.Set.BlockedNetworkRuleList.BlockedNetworkRuleList = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
+			validationCase[*AlterNetworkPolicyOptions]{
 				Name:        case_NetworkPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet,
 				ExpectedErr: errAtLeastOneOf("AlterNetworkPolicyOptions.Unset", "AllowedIpList", "BlockedIpList", "Comment", "AllowedNetworkRuleList", "BlockedNetworkRuleList"),
 				DefaultModify: func(opts *AlterNetworkPolicyOptions) {
@@ -152,6 +192,22 @@ var networkPoliciesTests = NetworkPoliciesTestsContext{
 				ExpectedErr: errExactlyOneOf("AlterNetworkPolicyOptions.Add", "AllowedNetworkRuleList", "BlockedNetworkRuleList"),
 			},
 			validationCase[*AlterNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Alter_Add_AllowedNetworkRuleList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterNetworkPolicyOptions.Add.AllowedNetworkRuleList[0]", "AllowedNetworkRuleList"),
+				DefaultModify: func(opts *AlterNetworkPolicyOptions) {
+					opts.Add = &AddNetworkRule{}
+					opts.Add.AllowedNetworkRuleList = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
+			validationCase[*AlterNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Alter_Add_BlockedNetworkRuleList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterNetworkPolicyOptions.Add.BlockedNetworkRuleList[0]", "BlockedNetworkRuleList"),
+				DefaultModify: func(opts *AlterNetworkPolicyOptions) {
+					opts.Add = &AddNetworkRule{}
+					opts.Add.BlockedNetworkRuleList = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
+			validationCase[*AlterNetworkPolicyOptions]{
 				Name:        case_NetworkPolicies_validation_Alter_opts_Remove_ExactlyOneValueSet_NoneSet,
 				ExpectedErr: errExactlyOneOf("AlterNetworkPolicyOptions.Remove", "AllowedNetworkRuleList", "BlockedNetworkRuleList"),
 				DefaultModify: func(opts *AlterNetworkPolicyOptions) {
@@ -163,6 +219,22 @@ var networkPoliciesTests = NetworkPoliciesTestsContext{
 			validationCase[*AlterNetworkPolicyOptions]{
 				Name:        case_NetworkPolicies_validation_Alter_opts_Remove_ExactlyOneValueSet_MoreThanOneSet,
 				ExpectedErr: errExactlyOneOf("AlterNetworkPolicyOptions.Remove", "AllowedNetworkRuleList", "BlockedNetworkRuleList"),
+			},
+			validationCase[*AlterNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Alter_Remove_AllowedNetworkRuleList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterNetworkPolicyOptions.Remove.AllowedNetworkRuleList[0]", "AllowedNetworkRuleList"),
+				DefaultModify: func(opts *AlterNetworkPolicyOptions) {
+					opts.Remove = &RemoveNetworkRule{}
+					opts.Remove.AllowedNetworkRuleList = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
+			validationCase[*AlterNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Alter_Remove_BlockedNetworkRuleList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterNetworkPolicyOptions.Remove.BlockedNetworkRuleList[0]", "BlockedNetworkRuleList"),
+				DefaultModify: func(opts *AlterNetworkPolicyOptions) {
+					opts.Remove = &RemoveNetworkRule{}
+					opts.Remove.BlockedNetworkRuleList = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
 			},
 		).
 		withSqlCases(

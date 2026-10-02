@@ -125,8 +125,14 @@ func (v *Validation) Condition(field *Field) string {
 
 	switch v.Type {
 	case ValidIdentifier:
+		if field.IsIdentifierElementSlice() {
+			return fmt.Sprintf("!ValidObjectIdentifier(%s)", field.SliceElemVar())
+		}
 		return fmt.Sprintf("!ValidObjectIdentifier(%s)", strings.Join(fieldNamesProvider(field), ","))
 	case ValidIdentifierIfSet:
+		if field.IsIdentifierElementSlice() {
+			log.Panicf("ValidIdentifierIfSet is not supported on identifier-element slices; use ValidIdentifier")
+		}
 		return fmt.Sprintf("%s != nil && !ValidObjectIdentifier(%s)", strings.Join(fieldNamesProvider(field), ","), strings.Join(fieldNamesProvider(field), ","))
 	case ConflictingFields:
 		return fmt.Sprintf("everyValueSet(%s)", strings.Join(fieldNamesProvider(field), ","))
@@ -231,6 +237,9 @@ func (v *Validation) DeriveModify(f *Field) ([]string, bool) {
 
 	switch v.Type {
 	case ValidIdentifier:
+		if f.IsIdentifierElementSlice() {
+			return append(prime, fmt.Sprintf("opts%s = []%s{%s}", f.IndexedPath(), f.KindNoPtr(), emptyIdentifierVar(f.KindNoPtr()))), true
+		}
 		return append(prime, fmt.Sprintf("opts%s.%s = %s", f.IndexedElemPath(), targetFieldName, emptyIdentifierVar(target.KindNoPtr()))), true
 
 	case ValidIdentifierIfSet:

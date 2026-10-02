@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateDatabaseOptions)
 	_ validatable = new(CloneDatabaseOptions)
@@ -177,6 +179,24 @@ func (opts *AlterReplicationDatabaseOptions) validate() error {
 	if !exactlyOneValueSet(opts.EnableReplication, opts.DisableReplication, opts.Refresh) {
 		errs = append(errs, errExactlyOneOf("AlterReplicationDatabaseOptions", "EnableReplication", "DisableReplication", "Refresh"))
 	}
+	if valueSet(opts.EnableReplication) {
+		if valueSet(opts.EnableReplication.ToAccounts) {
+			for toAccountIdx, toAccount := range opts.EnableReplication.ToAccounts {
+				if !ValidObjectIdentifier(toAccount) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterReplicationDatabaseOptions.EnableReplication.ToAccounts[%d]", toAccountIdx), "ToAccounts"))
+				}
+			}
+		}
+	}
+	if valueSet(opts.DisableReplication) {
+		if valueSet(opts.DisableReplication.ToAccounts) {
+			for toAccountIdx, toAccount := range opts.DisableReplication.ToAccounts {
+				if !ValidObjectIdentifier(toAccount) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterReplicationDatabaseOptions.DisableReplication.ToAccounts[%d]", toAccountIdx), "ToAccounts"))
+				}
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -190,6 +210,24 @@ func (opts *AlterFailoverDatabaseOptions) validate() error {
 	}
 	if !exactlyOneValueSet(opts.EnableFailover, opts.DisableFailover, opts.Primary) {
 		errs = append(errs, errExactlyOneOf("AlterFailoverDatabaseOptions", "EnableFailover", "DisableFailover", "Primary"))
+	}
+	if valueSet(opts.EnableFailover) {
+		if valueSet(opts.EnableFailover.ToAccounts) {
+			for toAccountIdx, toAccount := range opts.EnableFailover.ToAccounts {
+				if !ValidObjectIdentifier(toAccount) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterFailoverDatabaseOptions.EnableFailover.ToAccounts[%d]", toAccountIdx), "ToAccounts"))
+				}
+			}
+		}
+	}
+	if valueSet(opts.DisableFailover) {
+		if valueSet(opts.DisableFailover.ToAccounts) {
+			for toAccountIdx, toAccount := range opts.DisableFailover.ToAccounts {
+				if !ValidObjectIdentifier(toAccount) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterFailoverDatabaseOptions.DisableFailover.ToAccounts[%d]", toAccountIdx), "ToAccounts"))
+				}
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }

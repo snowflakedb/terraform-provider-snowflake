@@ -14,41 +14,45 @@ func init() {
 var openflowRuntimesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
 const (
-	case_OpenflowRuntimes_validation_Create_name_ValidIdentifier                  testCaseName = "validation_Create_name_ValidIdentifier"
-	case_OpenflowRuntimes_validation_Create_InDeployment_ValidIdentifier          testCaseName = "validation_Create_InDeployment_ValidIdentifier"
-	case_OpenflowRuntimes_validation_Create_ExecuteAsRole_ValidIdentifier         testCaseName = "validation_Create_ExecuteAsRole_ValidIdentifier"
-	case_OpenflowRuntimes_sql_Create_basic                                        testCaseName = "sql_Create_basic"
-	case_OpenflowRuntimes_sql_Create_all                                          testCaseName = "sql_Create_all"
-	case_OpenflowRuntimes_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
-	case_OpenflowRuntimes_validation_Alter_RenameTo_ValidIdentifierIfSet          testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
-	case_OpenflowRuntimes_validation_Alter_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_OpenflowRuntimes_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_OpenflowRuntimes_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
-	case_OpenflowRuntimes_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
-	case_OpenflowRuntimes_sql_Alter_Suspend                                       testCaseName = "sql_Alter_Suspend"
-	case_OpenflowRuntimes_sql_Alter_Resume                                        testCaseName = "sql_Alter_Resume"
-	case_OpenflowRuntimes_sql_Alter_ResumeRecovery                                testCaseName = "sql_Alter_ResumeRecovery"
-	case_OpenflowRuntimes_sql_Alter_Restart                                       testCaseName = "sql_Alter_Restart"
-	case_OpenflowRuntimes_sql_Alter_RestartRecovery                               testCaseName = "sql_Alter_RestartRecovery"
-	case_OpenflowRuntimes_sql_Alter_Terminate                                     testCaseName = "sql_Alter_Terminate"
-	case_OpenflowRuntimes_sql_Alter_TerminateCascade                              testCaseName = "sql_Alter_TerminateCascade"
-	case_OpenflowRuntimes_sql_Alter_Upgrade                                       testCaseName = "sql_Alter_Upgrade"
-	case_OpenflowRuntimes_sql_Alter_RenameTo                                      testCaseName = "sql_Alter_RenameTo"
-	case_OpenflowRuntimes_sql_Alter_Set                                           testCaseName = "sql_Alter_Set"
-	case_OpenflowRuntimes_sql_Alter_Unset                                         testCaseName = "sql_Alter_Unset"
-	case_OpenflowRuntimes_sql_Alter_AddExternalAccessIntegrations                 testCaseName = "sql_Alter_AddExternalAccessIntegrations"
-	case_OpenflowRuntimes_sql_Alter_RemoveExternalAccessIntegrations              testCaseName = "sql_Alter_RemoveExternalAccessIntegrations"
-	case_OpenflowRuntimes_validation_Drop_name_ValidIdentifier                    testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_OpenflowRuntimes_sql_Drop_basic                                          testCaseName = "sql_Drop_basic"
-	case_OpenflowRuntimes_sql_Drop_all                                            testCaseName = "sql_Drop_all"
-	case_OpenflowRuntimes_sql_Show_basic                                          testCaseName = "sql_Show_basic"
-	case_OpenflowRuntimes_sql_Show_all                                            testCaseName = "sql_Show_all"
-	case_OpenflowRuntimes_sql_Show_Like                                           testCaseName = "sql_Show_Like"
-	case_OpenflowRuntimes_sql_Show_In                                             testCaseName = "sql_Show_In"
-	case_OpenflowRuntimes_sql_Show_StartsWith                                     testCaseName = "sql_Show_StartsWith"
-	case_OpenflowRuntimes_sql_Show_Limit                                          testCaseName = "sql_Show_Limit"
-	case_OpenflowRuntimes_validation_Describe_name_ValidIdentifier                testCaseName = "validation_Describe_name_ValidIdentifier"
-	case_OpenflowRuntimes_sql_Describe_basic                                      testCaseName = "sql_Describe_basic"
+	case_OpenflowRuntimes_validation_Create_name_ValidIdentifier                                                       testCaseName = "validation_Create_name_ValidIdentifier"
+	case_OpenflowRuntimes_validation_Create_InDeployment_ValidIdentifier                                               testCaseName = "validation_Create_InDeployment_ValidIdentifier"
+	case_OpenflowRuntimes_validation_Create_ExecuteAsRole_ValidIdentifier                                              testCaseName = "validation_Create_ExecuteAsRole_ValidIdentifier"
+	case_OpenflowRuntimes_validation_Create_ExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier      testCaseName = "validation_Create_ExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier"
+	case_OpenflowRuntimes_sql_Create_basic                                                                             testCaseName = "sql_Create_basic"
+	case_OpenflowRuntimes_sql_Create_all                                                                               testCaseName = "sql_Create_all"
+	case_OpenflowRuntimes_validation_Alter_name_ValidIdentifier                                                        testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_OpenflowRuntimes_validation_Alter_RenameTo_ValidIdentifierIfSet                                               testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_OpenflowRuntimes_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                             testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_OpenflowRuntimes_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                      testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_OpenflowRuntimes_validation_Alter_opts_Set_AtLeastOneValueSet                                                 testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_OpenflowRuntimes_validation_Alter_Set_ExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier   testCaseName = "validation_Alter_Set_ExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier"
+	case_OpenflowRuntimes_validation_Alter_opts_Unset_AtLeastOneValueSet                                               testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_OpenflowRuntimes_validation_Alter_AddExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier    testCaseName = "validation_Alter_AddExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier"
+	case_OpenflowRuntimes_validation_Alter_RemoveExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier testCaseName = "validation_Alter_RemoveExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier"
+	case_OpenflowRuntimes_sql_Alter_Suspend                                                                            testCaseName = "sql_Alter_Suspend"
+	case_OpenflowRuntimes_sql_Alter_Resume                                                                             testCaseName = "sql_Alter_Resume"
+	case_OpenflowRuntimes_sql_Alter_ResumeRecovery                                                                     testCaseName = "sql_Alter_ResumeRecovery"
+	case_OpenflowRuntimes_sql_Alter_Restart                                                                            testCaseName = "sql_Alter_Restart"
+	case_OpenflowRuntimes_sql_Alter_RestartRecovery                                                                    testCaseName = "sql_Alter_RestartRecovery"
+	case_OpenflowRuntimes_sql_Alter_Terminate                                                                          testCaseName = "sql_Alter_Terminate"
+	case_OpenflowRuntimes_sql_Alter_TerminateCascade                                                                   testCaseName = "sql_Alter_TerminateCascade"
+	case_OpenflowRuntimes_sql_Alter_Upgrade                                                                            testCaseName = "sql_Alter_Upgrade"
+	case_OpenflowRuntimes_sql_Alter_RenameTo                                                                           testCaseName = "sql_Alter_RenameTo"
+	case_OpenflowRuntimes_sql_Alter_Set                                                                                testCaseName = "sql_Alter_Set"
+	case_OpenflowRuntimes_sql_Alter_Unset                                                                              testCaseName = "sql_Alter_Unset"
+	case_OpenflowRuntimes_sql_Alter_AddExternalAccessIntegrations                                                      testCaseName = "sql_Alter_AddExternalAccessIntegrations"
+	case_OpenflowRuntimes_sql_Alter_RemoveExternalAccessIntegrations                                                   testCaseName = "sql_Alter_RemoveExternalAccessIntegrations"
+	case_OpenflowRuntimes_validation_Drop_name_ValidIdentifier                                                         testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_OpenflowRuntimes_sql_Drop_basic                                                                               testCaseName = "sql_Drop_basic"
+	case_OpenflowRuntimes_sql_Drop_all                                                                                 testCaseName = "sql_Drop_all"
+	case_OpenflowRuntimes_sql_Show_basic                                                                               testCaseName = "sql_Show_basic"
+	case_OpenflowRuntimes_sql_Show_all                                                                                 testCaseName = "sql_Show_all"
+	case_OpenflowRuntimes_sql_Show_Like                                                                                testCaseName = "sql_Show_Like"
+	case_OpenflowRuntimes_sql_Show_In                                                                                  testCaseName = "sql_Show_In"
+	case_OpenflowRuntimes_sql_Show_StartsWith                                                                          testCaseName = "sql_Show_StartsWith"
+	case_OpenflowRuntimes_sql_Show_Limit                                                                               testCaseName = "sql_Show_Limit"
+	case_OpenflowRuntimes_validation_Describe_name_ValidIdentifier                                                     testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_OpenflowRuntimes_sql_Describe_basic                                                                           testCaseName = "sql_Describe_basic"
 )
 
 type OpenflowRuntimesTestsContext struct {
@@ -88,6 +92,14 @@ var openflowRuntimesTests = OpenflowRuntimesTestsContext{
 				ExpectedErr: errInvalidIdentifier("CreateOpenflowRuntimeOptions", "ExecuteAsRole"),
 				DefaultModify: func(opts *CreateOpenflowRuntimeOptions) {
 					opts.ExecuteAsRole = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateOpenflowRuntimeOptions]{
+				Name:        case_OpenflowRuntimes_validation_Create_ExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOpenflowRuntimeOptions.ExternalAccessIntegrations.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *CreateOpenflowRuntimeOptions) {
+					opts.ExternalAccessIntegrations = &OpenflowRuntimeExternalAccessIntegrations{}
+					opts.ExternalAccessIntegrations.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
 		).
@@ -164,6 +176,15 @@ var openflowRuntimesTests = OpenflowRuntimesTestsContext{
 				},
 			},
 			validationCase[*AlterOpenflowRuntimeOptions]{
+				Name:        case_OpenflowRuntimes_validation_Alter_Set_ExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOpenflowRuntimeOptions.Set.ExternalAccessIntegrations.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *AlterOpenflowRuntimeOptions) {
+					opts.Set = &OpenflowRuntimeSet{}
+					opts.Set.ExternalAccessIntegrations = &OpenflowRuntimeExternalAccessIntegrations{}
+					opts.Set.ExternalAccessIntegrations.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*AlterOpenflowRuntimeOptions]{
 				Name:        case_OpenflowRuntimes_validation_Alter_opts_Unset_AtLeastOneValueSet,
 				ExpectedErr: errAtLeastOneOf("AlterOpenflowRuntimeOptions.Unset", "ExternalAccessIntegrations", "DisplayName", "Comment"),
 				DefaultModify: func(opts *AlterOpenflowRuntimeOptions) {
@@ -171,6 +192,22 @@ var openflowRuntimesTests = OpenflowRuntimesTestsContext{
 					opts.Unset.ExternalAccessIntegrations = nil
 					opts.Unset.DisplayName = nil
 					opts.Unset.Comment = nil
+				},
+			},
+			validationCase[*AlterOpenflowRuntimeOptions]{
+				Name:        case_OpenflowRuntimes_validation_Alter_AddExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOpenflowRuntimeOptions.AddExternalAccessIntegrations.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *AlterOpenflowRuntimeOptions) {
+					opts.AddExternalAccessIntegrations = &OpenflowRuntimeExternalAccessIntegrations{}
+					opts.AddExternalAccessIntegrations.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*AlterOpenflowRuntimeOptions]{
+				Name:        case_OpenflowRuntimes_validation_Alter_RemoveExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOpenflowRuntimeOptions.RemoveExternalAccessIntegrations.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *AlterOpenflowRuntimeOptions) {
+					opts.RemoveExternalAccessIntegrations = &OpenflowRuntimeExternalAccessIntegrations{}
+					opts.RemoveExternalAccessIntegrations.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
 		).

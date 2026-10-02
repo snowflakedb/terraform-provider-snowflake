@@ -156,7 +156,7 @@ make generate-sdk-examples SF_TF_GENERATOR_ARGS='--help'
 - The generator was added after parts of the SDK were implemented manually. Some objects don't have the generator definitions which make it harder to keep the up-to-date. All of them should be gradually migrated to the definition-based generation implementation.
 - The implementation of nested fields causes problems when reusing nested definitions (the same `[]Fields` slice is reused causing parent redefinition and incorrect mapping; the root cause being the lack of separation between the definition and model structs). It's currently validated programmatically and the panic is raised (`Field <field> already has a parent`). When it happens, create a function wrapper instead of directly creating a `var` with a definition.
 - Nested slice validations:
-  - DSL gap: per-element checks on flat identifier / `[]TagAssociation` lists (`List` / `ListAssignment` / `OptionalTags()`). Still `additionalValidations()`. Not a template bug.
+  - DSL gap: per-element checks on `[]TagAssociation` lists (`OptionalTags()`). Still `additionalValidations()`. Not a template bug.
 
 ##### Remaining TODOs
 
@@ -341,4 +341,3 @@ See [functions_def.go](defs/functions_def.go) (originator) and [notebooks_def.go
   - there should be no need to define custom types every time
   - more clear definition of lists that can be empty vs cannot be empty
 - generate field-subset `AsXxx` projections from PlainStructs. Methods like `Warehouse.AsRegular`, `StageDetails.AsAws`, and `ApiIntegrationGitHttpsApiDetails.AsToken` are mechanical: nil-guard + copy the intersecting fields. Property-list parsers (`AsScim`, `AsNetworkPolicyDescribe`, and similar name-keyed row switches) are a different shape and are not in scope for that generator.
-- include the slice index in generated validation errors, so a failing list element is identifiable (see Known issues above)

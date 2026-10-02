@@ -28,6 +28,7 @@ const (
 	case_Warehouses_sql_CreateAdaptive_all                                  testCaseName = "sql_CreateAdaptive_all"
 	case_Warehouses_validation_CreateInteractive_name_ValidIdentifier       testCaseName = "validation_CreateInteractive_name_ValidIdentifier"
 	case_Warehouses_validation_CreateInteractive_opts_ConflictingFields     testCaseName = "validation_CreateInteractive_opts_ConflictingFields"
+	case_Warehouses_validation_CreateInteractive_Tables_ValidIdentifier     testCaseName = "validation_CreateInteractive_Tables_ValidIdentifier"
 	case_Warehouses_sql_CreateInteractive_basic                             testCaseName = "sql_CreateInteractive_basic"
 	case_Warehouses_sql_CreateInteractive_all                               testCaseName = "sql_CreateInteractive_all"
 	case_Warehouses_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
@@ -35,6 +36,8 @@ const (
 	case_Warehouses_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_Warehouses_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_Warehouses_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Warehouses_validation_Alter_AddTables_ValidIdentifier              testCaseName = "validation_Alter_AddTables_ValidIdentifier"
+	case_Warehouses_validation_Alter_DropTables_ValidIdentifier             testCaseName = "validation_Alter_DropTables_ValidIdentifier"
 	case_Warehouses_sql_Alter_Suspend                                       testCaseName = "sql_Alter_Suspend"
 	case_Warehouses_sql_Alter_Resume                                        testCaseName = "sql_Alter_Resume"
 	case_Warehouses_sql_Alter_AbortAllQueries                               testCaseName = "sql_Alter_AbortAllQueries"
@@ -160,6 +163,13 @@ var warehousesTests = WarehousesTestsContext{
 					opts.IfNotExists = new(true)
 				},
 			},
+			validationCase[*CreateInteractiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_CreateInteractive_Tables_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateInteractiveWarehouseOptions.Tables[0]", "Tables"),
+				DefaultModify: func(opts *CreateInteractiveWarehouseOptions) {
+					opts.Tables = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateInteractiveWarehouseOptions]{
@@ -261,6 +271,20 @@ var warehousesTests = WarehousesTestsContext{
 					opts.Unset.QueryThroughputMultiplier = nil
 					opts.Unset.MaxQueryPerformanceLevel = nil
 					opts.Unset.FallbackWarehouse = nil
+				},
+			},
+			validationCase[*AlterWarehouseOptions]{
+				Name:        case_Warehouses_validation_Alter_AddTables_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterWarehouseOptions.AddTables[0]", "AddTables"),
+				DefaultModify: func(opts *AlterWarehouseOptions) {
+					opts.AddTables = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
+			validationCase[*AlterWarehouseOptions]{
+				Name:        case_Warehouses_validation_Alter_DropTables_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterWarehouseOptions.DropTables[0]", "DropTables"),
+				DefaultModify: func(opts *AlterWarehouseOptions) {
+					opts.DropTables = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
 				},
 			},
 		).

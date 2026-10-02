@@ -23,7 +23,10 @@ var failoverGroupsDef = g.NewInterface(
 		ListAssignment("ALLOWED_ACCOUNTS", "AccountIdentifier", g.ParameterOptions().Required()).
 		OptionalSQL("IGNORE EDITION CHECK").
 		OptionalTextAssignment("REPLICATION_SCHEDULE", g.ParameterOptions().SingleQuotes()).
-		WithValidation(g.ValidIdentifier, "name"),
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ValidIdentifier, "AllowedDatabases").
+		WithValidation(g.ValidIdentifier, "AllowedShares").
+		WithValidation(g.ValidIdentifier, "AllowedAccounts"),
 ).CustomOperation(
 	"CreateSecondaryReplicationGroup",
 	"https://docs.snowflake.com/en/sql-reference/sql/create-failover-group",
@@ -62,20 +65,29 @@ var failoverGroupsDef = g.NewInterface(
 				ListAssignmentWithFieldName("TO ALLOWED_DATABASES", "AccountObjectIdentifier", g.ParameterOptions().Reverse(), "AllowedDatabases").
 				ListAssignmentWithFieldName("TO ALLOWED_SHARES", "AccountObjectIdentifier", g.ParameterOptions().Reverse(), "AllowedShares").
 				ListAssignmentWithFieldName("TO ALLOWED_ACCOUNTS", "AccountIdentifier", g.ParameterOptions().Reverse(), "AllowedAccounts").
-				OptionalSQL("IGNORE_EDITION_CHECK"),
+				OptionalSQL("IGNORE_EDITION_CHECK").
+				WithValidation(g.ValidIdentifier, "AllowedDatabases").
+				WithValidation(g.ValidIdentifier, "AllowedShares").
+				WithValidation(g.ValidIdentifier, "AllowedAccounts"),
 			g.KeywordOptions().SQL("ADD")).
 		OptionalQueryStructField("Move",
 			g.NewQueryStruct("FailoverGroupMove").
 				ListAssignment("DATABASES", "AccountObjectIdentifier", g.ParameterOptions().NoEquals()).
 				ListAssignment("SHARES", "AccountObjectIdentifier", g.ParameterOptions().NoEquals()).
 				Identifier("To", g.KindOfT[sdkcommons.AccountObjectIdentifier](),
-					g.IdentifierOptions().SQL("TO FAILOVER GROUP").Required()),
+					g.IdentifierOptions().SQL("TO FAILOVER GROUP").Required()).
+				WithValidation(g.ValidIdentifier, "Databases").
+				WithValidation(g.ValidIdentifier, "Shares").
+				WithValidation(g.ValidIdentifier, "To"),
 			g.KeywordOptions().SQL("MOVE")).
 		OptionalQueryStructField("Remove",
 			g.NewQueryStruct("FailoverGroupRemove").
 				ListAssignmentWithFieldName("FROM ALLOWED_DATABASES", "AccountObjectIdentifier", g.ParameterOptions().Reverse(), "AllowedDatabases").
 				ListAssignmentWithFieldName("FROM ALLOWED_SHARES", "AccountObjectIdentifier", g.ParameterOptions().Reverse(), "AllowedShares").
-				ListAssignmentWithFieldName("FROM ALLOWED_ACCOUNTS", "AccountIdentifier", g.ParameterOptions().Reverse(), "AllowedAccounts"),
+				ListAssignmentWithFieldName("FROM ALLOWED_ACCOUNTS", "AccountIdentifier", g.ParameterOptions().Reverse(), "AllowedAccounts").
+				WithValidation(g.ValidIdentifier, "AllowedDatabases").
+				WithValidation(g.ValidIdentifier, "AllowedShares").
+				WithValidation(g.ValidIdentifier, "AllowedAccounts"),
 			g.KeywordOptions().SQL("REMOVE")).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "RenameTo", "Set", "Unset", "Add", "Move", "Remove"),

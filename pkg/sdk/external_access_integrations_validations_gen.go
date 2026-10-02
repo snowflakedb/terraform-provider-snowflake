@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateExternalAccessIntegrationOptions)
 	_ validatable = new(AlterExternalAccessIntegrationOptions)
@@ -21,14 +23,35 @@ func (opts *CreateExternalAccessIntegrationOptions) validate() error {
 	if !anyValueSet(opts.AllowedNetworkRules) {
 		errs = append(errs, errAtLeastOneOf("CreateExternalAccessIntegrationOptions", "AllowedNetworkRules"))
 	}
+	if valueSet(opts.AllowedNetworkRules) {
+		for allowedNetworkRuleIdx, allowedNetworkRule := range opts.AllowedNetworkRules {
+			if !ValidObjectIdentifier(allowedNetworkRule) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateExternalAccessIntegrationOptions.AllowedNetworkRules[%d]", allowedNetworkRuleIdx), "AllowedNetworkRules"))
+			}
+		}
+	}
 	if valueSet(opts.AllowedApiAuthenticationIntegrations) {
 		if !exactlyOneValueSet(opts.AllowedApiAuthenticationIntegrations.None, opts.AllowedApiAuthenticationIntegrations.Integrations) {
 			errs = append(errs, errExactlyOneOf("CreateExternalAccessIntegrationOptions.AllowedApiAuthenticationIntegrations", "None", "Integrations"))
+		}
+		if valueSet(opts.AllowedApiAuthenticationIntegrations.Integrations) {
+			for integrationIdx, integration := range opts.AllowedApiAuthenticationIntegrations.Integrations {
+				if !ValidObjectIdentifier(integration) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateExternalAccessIntegrationOptions.AllowedApiAuthenticationIntegrations.Integrations[%d]", integrationIdx), "Integrations"))
+				}
+			}
 		}
 	}
 	if valueSet(opts.AllowedAuthenticationSecrets) {
 		if !exactlyOneValueSet(opts.AllowedAuthenticationSecrets.All, opts.AllowedAuthenticationSecrets.None, opts.AllowedAuthenticationSecrets.Secrets) {
 			errs = append(errs, errExactlyOneOf("CreateExternalAccessIntegrationOptions.AllowedAuthenticationSecrets", "All", "None", "Secrets"))
+		}
+		if valueSet(opts.AllowedAuthenticationSecrets.Secrets) {
+			for secretIdx, secret := range opts.AllowedAuthenticationSecrets.Secrets {
+				if !ValidObjectIdentifier(secret) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateExternalAccessIntegrationOptions.AllowedAuthenticationSecrets.Secrets[%d]", secretIdx), "Secrets"))
+				}
+			}
 		}
 	}
 	return JoinErrors(errs...)
@@ -50,14 +73,35 @@ func (opts *AlterExternalAccessIntegrationOptions) validate() error {
 			errs = append(errs, errAtLeastOneOf("AlterExternalAccessIntegrationOptions.Set", "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Enabled", "Comment"))
 		}
 		errs = append(errs, opts.Set.additionalValidations())
+		if valueSet(opts.Set.AllowedNetworkRules) {
+			for allowedNetworkRuleIdx, allowedNetworkRule := range opts.Set.AllowedNetworkRules {
+				if !ValidObjectIdentifier(allowedNetworkRule) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterExternalAccessIntegrationOptions.Set.AllowedNetworkRules[%d]", allowedNetworkRuleIdx), "AllowedNetworkRules"))
+				}
+			}
+		}
 		if valueSet(opts.Set.AllowedApiAuthenticationIntegrations) {
 			if !exactlyOneValueSet(opts.Set.AllowedApiAuthenticationIntegrations.None, opts.Set.AllowedApiAuthenticationIntegrations.Integrations) {
 				errs = append(errs, errExactlyOneOf("AlterExternalAccessIntegrationOptions.Set.AllowedApiAuthenticationIntegrations", "None", "Integrations"))
+			}
+			if valueSet(opts.Set.AllowedApiAuthenticationIntegrations.Integrations) {
+				for integrationIdx, integration := range opts.Set.AllowedApiAuthenticationIntegrations.Integrations {
+					if !ValidObjectIdentifier(integration) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterExternalAccessIntegrationOptions.Set.AllowedApiAuthenticationIntegrations.Integrations[%d]", integrationIdx), "Integrations"))
+					}
+				}
 			}
 		}
 		if valueSet(opts.Set.AllowedAuthenticationSecrets) {
 			if !exactlyOneValueSet(opts.Set.AllowedAuthenticationSecrets.All, opts.Set.AllowedAuthenticationSecrets.None, opts.Set.AllowedAuthenticationSecrets.Secrets) {
 				errs = append(errs, errExactlyOneOf("AlterExternalAccessIntegrationOptions.Set.AllowedAuthenticationSecrets", "All", "None", "Secrets"))
+			}
+			if valueSet(opts.Set.AllowedAuthenticationSecrets.Secrets) {
+				for secretIdx, secret := range opts.Set.AllowedAuthenticationSecrets.Secrets {
+					if !ValidObjectIdentifier(secret) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterExternalAccessIntegrationOptions.Set.AllowedAuthenticationSecrets.Secrets[%d]", secretIdx), "Secrets"))
+					}
+				}
 			}
 		}
 	}

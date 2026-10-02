@@ -36,7 +36,8 @@ var connectionsDef = g.NewInterface(
 			"EnableConnectionFailover",
 			g.NewQueryStruct("EnableConnectionFailover").
 				List("ToAccounts", "AccountIdentifier", g.ListOptions().NoParentheses().Required()).
-				WithValidation(g.AtLeastOneValueSet, "ToAccounts"),
+				WithValidation(g.AtLeastOneValueSet, "ToAccounts").
+				WithValidation(g.ValidIdentifier, "ToAccounts"),
 			g.KeywordOptions().SQL("ENABLE FAILOVER TO ACCOUNTS"),
 		).
 		OptionalQueryStructField(
@@ -45,7 +46,8 @@ var connectionsDef = g.NewInterface(
 				OptionalQueryStructField(
 					"ToAccounts",
 					g.NewQueryStruct("ToAccounts").
-						List("Accounts", "AccountIdentifier", g.ListOptions().NoParentheses().Required()),
+						List("Accounts", "AccountIdentifier", g.ListOptions().NoParentheses().Required()).
+						WithValidation(g.ValidIdentifier, "Accounts"),
 					g.KeywordOptions().SQL("TO ACCOUNTS"),
 				),
 			g.KeywordOptions().SQL("DISABLE FAILOVER"),

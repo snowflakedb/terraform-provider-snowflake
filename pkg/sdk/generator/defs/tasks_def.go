@@ -76,7 +76,8 @@ var tasksDef = g.NewInterface(
 			WithValidation(g.ValidIdentifierIfSet, "ErrorIntegration").
 			WithValidation(g.ValidIdentifierIfSet, "ExecuteAsUser").
 			WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
-			WithValidation(g.NoDoubleDollarQuotesIfSet, "Config"),
+			WithValidation(g.NoDoubleDollarQuotesIfSet, "Config").
+			WithValidation(g.ValidIdentifier, "After"),
 	).
 	CustomOperation(
 		"CreateOrAlter",
@@ -105,7 +106,8 @@ var tasksDef = g.NewInterface(
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ValidIdentifierIfSet, "ErrorIntegration").
 			WithValidation(g.ValidIdentifierIfSet, "ExecuteAsUser").
-			WithValidation(g.NoDoubleDollarQuotesIfSet, "Config"),
+			WithValidation(g.NoDoubleDollarQuotesIfSet, "Config").
+			WithValidation(g.ValidIdentifier, "After"),
 	).
 	CustomOperation(
 		"Clone",
@@ -190,7 +192,9 @@ var tasksDef = g.NewInterface(
 			OptionalSQL("REMOVE WHEN").
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ValidIdentifierIfSet, "SetExecuteAsUser").
-			WithValidation(g.ExactlyOneValueSet, "Resume", "Suspend", "RemoveAfter", "AddAfter", "Set", "Unset", "SetTags", "UnsetTags", "SetFinalize", "UnsetFinalize", "SetExecuteAsUser", "UnsetExecuteAsUser", "ModifyAs", "ModifyWhen", "RemoveWhen"),
+			WithValidation(g.ExactlyOneValueSet, "Resume", "Suspend", "RemoveAfter", "AddAfter", "Set", "Unset", "SetTags", "UnsetTags", "SetFinalize", "UnsetFinalize", "SetExecuteAsUser", "UnsetExecuteAsUser", "ModifyAs", "ModifyWhen", "RemoveWhen").
+			WithValidation(g.ValidIdentifier, "RemoveAfter").
+			WithValidation(g.ValidIdentifier, "AddAfter"),
 	).
 	DropOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/drop-task",

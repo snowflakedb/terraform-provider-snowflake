@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateStreamlitOptions)
 	_ validatable = new(AlterStreamlitOptions)
@@ -23,6 +25,13 @@ func (opts *CreateStreamlitOptions) validate() error {
 	}
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateStreamlitOptions", "IfNotExists", "OrReplace"))
+	}
+	if valueSet(opts.ExternalAccessIntegrations) {
+		for externalAccessIntegrationIdx, externalAccessIntegration := range opts.ExternalAccessIntegrations {
+			if !ValidObjectIdentifier(externalAccessIntegration) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateStreamlitOptions.ExternalAccessIntegrations[%d]", externalAccessIntegrationIdx), "ExternalAccessIntegrations"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -47,6 +56,13 @@ func (opts *AlterStreamlitOptions) validate() error {
 		}
 		if !anyValueSet(opts.Set.RootLocation, opts.Set.MainFile, opts.Set.QueryWarehouse, opts.Set.ExternalAccessIntegrations, opts.Set.Comment, opts.Set.Title) {
 			errs = append(errs, errAtLeastOneOf("AlterStreamlitOptions.Set", "RootLocation", "MainFile", "QueryWarehouse", "ExternalAccessIntegrations", "Comment", "Title"))
+		}
+		if valueSet(opts.Set.ExternalAccessIntegrations) {
+			for externalAccessIntegrationIdx, externalAccessIntegration := range opts.Set.ExternalAccessIntegrations {
+				if !ValidObjectIdentifier(externalAccessIntegration) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterStreamlitOptions.Set.ExternalAccessIntegrations[%d]", externalAccessIntegrationIdx), "ExternalAccessIntegrations"))
+				}
+			}
 		}
 	}
 	if valueSet(opts.Unset) {

@@ -135,6 +135,7 @@ var functionsDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidateValueSet, "Handler").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
+		WithValidation(g.ValidIdentifier, "ExternalAccessIntegrations").
 		WithAdditionalValidations(),
 ).CustomOperation(
 	"CreateForJavascript",
@@ -222,6 +223,7 @@ var functionsDef = g.NewInterface(
 		WithValidation(g.ValidateValueSet, "RuntimeVersion").
 		WithValidation(g.ValidateValueSet, "Handler").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
+		WithValidation(g.ValidIdentifier, "ExternalAccessIntegrations").
 		WithAdditionalValidations(),
 ).CustomOperation(
 	"CreateForScala",
@@ -272,6 +274,7 @@ var functionsDef = g.NewInterface(
 		WithValidation(g.ValidateValueSet, "Handler").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
 		WithValidation(g.ExactlyOneValueSet, "ResultDataTypeOld", "ResultDataType").
+		WithValidation(g.ValidIdentifier, "ExternalAccessIntegrations").
 		WithAdditionalValidations(),
 ).CustomOperation(
 	"CreateForSQL",
@@ -326,6 +329,7 @@ var functionsDef = g.NewInterface(
 				OptionalAssignment("LOG_EVENT_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
 				OptionalAssignment("METRIC_LEVEL", g.KindOfTPointer[sdkcommons.MetricLevel](), g.ParameterOptions().SingleQuotes()).
 				OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
+				WithValidation(g.ValidIdentifier, "ExternalAccessIntegrations").
 				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "SecretsList", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"),
 			g.ListOptions().SQL("SET"),
 		).

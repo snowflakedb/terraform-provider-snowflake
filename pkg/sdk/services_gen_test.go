@@ -25,6 +25,7 @@ const (
 	case_Services_validation_Create_opts_FromSpecificationTemplate_ExactlyOneValueSet_MoreThanOneSet                                                               testCaseName = "validation_Create_opts_FromSpecificationTemplate_ExactlyOneValueSet_MoreThanOneSet"
 	case_Services_validation_Create_opts_FromSpecificationTemplate_ConflictingFields                                                                               testCaseName = "validation_Create_opts_FromSpecificationTemplate_ConflictingFields"
 	case_Services_validation_Create_FromSpecificationTemplate_SpecificationTemplate_NoDoubleDollarQuotesIfSet                                                      testCaseName = "validation_Create_FromSpecificationTemplate_SpecificationTemplate_NoDoubleDollarQuotesIfSet"
+	case_Services_validation_Create_ExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier                                                          testCaseName = "validation_Create_ExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier"
 	case_Services_sql_Create_basic                                                                                                                                 testCaseName = "sql_Create_basic"
 	case_Services_sql_Create_all                                                                                                                                   testCaseName = "sql_Create_all"
 	case_Services_validation_Alter_name_ValidIdentifier                                                                                                            testCaseName = "validation_Alter_name_ValidIdentifier"
@@ -41,6 +42,7 @@ const (
 	case_Services_validation_Alter_Restore_FromSnapshot_ValidIdentifier                                                                                            testCaseName = "validation_Alter_Restore_FromSnapshot_ValidIdentifier"
 	case_Services_validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet                                                                                         testCaseName = "validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet"
 	case_Services_validation_Alter_opts_Set_AtLeastOneValueSet                                                                                                     testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Services_validation_Alter_Set_ExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier                                                       testCaseName = "validation_Alter_Set_ExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier"
 	case_Services_validation_Alter_opts_Unset_AtLeastOneValueSet                                                                                                   testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_Services_sql_Alter_Resume                                                                                                                                 testCaseName = "sql_Alter_Resume"
 	case_Services_sql_Alter_Suspend                                                                                                                                testCaseName = "sql_Alter_Suspend"
@@ -68,6 +70,7 @@ const (
 	case_Services_validation_ExecuteJob_opts_ExactlyOneValueSet_MoreThanOneSet                                                                                     testCaseName = "validation_ExecuteJob_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_Services_validation_ExecuteJob_InComputePool_ValidIdentifier                                                                                              testCaseName = "validation_ExecuteJob_InComputePool_ValidIdentifier"
 	case_Services_validation_ExecuteJob_QueryWarehouse_ValidIdentifierIfSet                                                                                        testCaseName = "validation_ExecuteJob_QueryWarehouse_ValidIdentifierIfSet"
+	case_Services_validation_ExecuteJob_ExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier                                                      testCaseName = "validation_ExecuteJob_ExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier"
 	case_Services_validation_ExecuteJob_opts_JobServiceFromSpecification_ExactlyOneValueSet_SpecificationFile_Specification_NoneSet                                testCaseName = "validation_ExecuteJob_opts_JobServiceFromSpecification_ExactlyOneValueSet_SpecificationFile_Specification_NoneSet"
 	case_Services_validation_ExecuteJob_opts_JobServiceFromSpecification_ExactlyOneValueSet_SpecificationFile_Specification_MoreThanOneSet                         testCaseName = "validation_ExecuteJob_opts_JobServiceFromSpecification_ExactlyOneValueSet_SpecificationFile_Specification_MoreThanOneSet"
 	case_Services_validation_ExecuteJob_opts_JobServiceFromSpecification_ExactlyOneValueSet_Location_Specification_NoneSet                                         testCaseName = "validation_ExecuteJob_opts_JobServiceFromSpecification_ExactlyOneValueSet_Location_Specification_NoneSet"
@@ -188,6 +191,14 @@ var servicesTests = ServicesTestsContext{
 				DefaultModify: func(opts *CreateServiceOptions) {
 					opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{}
 					opts.FromSpecificationTemplate.SpecificationTemplate = String("$$")
+				},
+			},
+			validationCase[*CreateServiceOptions]{
+				Name:        case_Services_validation_Create_ExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateServiceOptions.ExternalAccessIntegrations.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *CreateServiceOptions) {
+					opts.ExternalAccessIntegrations = &ServiceExternalAccessIntegrations{}
+					opts.ExternalAccessIntegrations.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
 		).
@@ -329,6 +340,15 @@ var servicesTests = ServicesTestsContext{
 					opts.Set.ExternalAccessIntegrations = nil
 					opts.Set.Comment = nil
 					opts.Set.ServiceCallerTokenValiditySecs = nil
+				},
+			},
+			validationCase[*AlterServiceOptions]{
+				Name:        case_Services_validation_Alter_Set_ExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterServiceOptions.Set.ExternalAccessIntegrations.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *AlterServiceOptions) {
+					opts.Set = &ServiceSet{}
+					opts.Set.ExternalAccessIntegrations = &ServiceExternalAccessIntegrations{}
+					opts.Set.ExternalAccessIntegrations.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
 			validationCase[*AlterServiceOptions]{
@@ -507,6 +527,14 @@ var servicesTests = ServicesTestsContext{
 				ExpectedErr: errInvalidIdentifier("ExecuteJobServiceOptions", "QueryWarehouse"),
 				DefaultModify: func(opts *ExecuteJobServiceOptions) {
 					opts.QueryWarehouse = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*ExecuteJobServiceOptions]{
+				Name:        case_Services_validation_ExecuteJob_ExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("ExecuteJobServiceOptions.ExternalAccessIntegrations.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *ExecuteJobServiceOptions) {
+					opts.ExternalAccessIntegrations = &ServiceExternalAccessIntegrations{}
+					opts.ExternalAccessIntegrations.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
 			validationCase[*ExecuteJobServiceOptions]{

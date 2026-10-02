@@ -7,7 +7,8 @@ import (
 )
 
 var serviceExternalAccessIntegrationsDef = g.NewQueryStruct("ServiceExternalAccessIntegrations").
-	List("ExternalAccessIntegrations", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.ListOptions().Required().MustParentheses())
+	List("ExternalAccessIntegrations", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.ListOptions().Required().MustParentheses()).
+	WithValidation(g.ValidIdentifier, "ExternalAccessIntegrations")
 
 var listItemDef = g.NewQueryStruct("ListItem").
 	Text("Key", g.KeywordOptions().Required().DoubleQuotes()).

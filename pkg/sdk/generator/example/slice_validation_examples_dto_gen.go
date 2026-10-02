@@ -5,12 +5,13 @@ package example
 var _ optionsProvider[CreateSliceValidationExampleOptions] = new(CreateSliceValidationExampleRequest)
 
 type CreateSliceValidationExampleRequest struct {
-	name         AccountObjectIdentifier // required
-	DualChecks   []DualCheckItemRequest
-	PlainItems   []PlainItemRequest
-	CheckedItems []CheckedItemRequest
-	Items        []NestedListItemRequest
-	Columns      []SliceValidationColumnRequest
+	name                       AccountObjectIdentifier // required
+	DualChecks                 []DualCheckItemRequest
+	PlainItems                 []PlainItemRequest
+	CheckedItems               []CheckedItemRequest
+	Items                      []NestedListItemRequest
+	Columns                    []SliceValidationColumnRequest
+	ExternalAccessIntegrations []AccountObjectIdentifier
 }
 
 type DualCheckItemRequest struct {

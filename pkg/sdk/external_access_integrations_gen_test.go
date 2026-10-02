@@ -11,20 +11,26 @@ var externalAccessIntegrationsTestIdAccountObjectIdentifier = randomAccountObjec
 const (
 	case_ExternalAccessIntegrations_validation_Create_name_ValidIdentifier                                                           testCaseName = "validation_Create_name_ValidIdentifier"
 	case_ExternalAccessIntegrations_validation_Create_opts_AtLeastOneValueSet                                                        testCaseName = "validation_Create_opts_AtLeastOneValueSet"
+	case_ExternalAccessIntegrations_validation_Create_AllowedNetworkRules_ValidIdentifier                                            testCaseName = "validation_Create_AllowedNetworkRules_ValidIdentifier"
 	case_ExternalAccessIntegrations_validation_Create_opts_AllowedApiAuthenticationIntegrations_ExactlyOneValueSet_NoneSet           testCaseName = "validation_Create_opts_AllowedApiAuthenticationIntegrations_ExactlyOneValueSet_NoneSet"
 	case_ExternalAccessIntegrations_validation_Create_opts_AllowedApiAuthenticationIntegrations_ExactlyOneValueSet_MoreThanOneSet    testCaseName = "validation_Create_opts_AllowedApiAuthenticationIntegrations_ExactlyOneValueSet_MoreThanOneSet"
+	case_ExternalAccessIntegrations_validation_Create_AllowedApiAuthenticationIntegrations_Integrations_ValidIdentifier              testCaseName = "validation_Create_AllowedApiAuthenticationIntegrations_Integrations_ValidIdentifier"
 	case_ExternalAccessIntegrations_validation_Create_opts_AllowedAuthenticationSecrets_ExactlyOneValueSet_NoneSet                   testCaseName = "validation_Create_opts_AllowedAuthenticationSecrets_ExactlyOneValueSet_NoneSet"
 	case_ExternalAccessIntegrations_validation_Create_opts_AllowedAuthenticationSecrets_ExactlyOneValueSet_MoreThanOneSet            testCaseName = "validation_Create_opts_AllowedAuthenticationSecrets_ExactlyOneValueSet_MoreThanOneSet"
+	case_ExternalAccessIntegrations_validation_Create_AllowedAuthenticationSecrets_Secrets_ValidIdentifier                           testCaseName = "validation_Create_AllowedAuthenticationSecrets_Secrets_ValidIdentifier"
 	case_ExternalAccessIntegrations_sql_Create_basic                                                                                 testCaseName = "sql_Create_basic"
 	case_ExternalAccessIntegrations_sql_Create_all                                                                                   testCaseName = "sql_Create_all"
 	case_ExternalAccessIntegrations_validation_Alter_name_ValidIdentifier                                                            testCaseName = "validation_Alter_name_ValidIdentifier"
 	case_ExternalAccessIntegrations_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                                 testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_ExternalAccessIntegrations_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                          testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_ExternalAccessIntegrations_validation_Alter_opts_Set_AtLeastOneValueSet                                                     testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_ExternalAccessIntegrations_validation_Alter_Set_AllowedNetworkRules_ValidIdentifier                                         testCaseName = "validation_Alter_Set_AllowedNetworkRules_ValidIdentifier"
 	case_ExternalAccessIntegrations_validation_Alter_opts_Set_AllowedApiAuthenticationIntegrations_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_Set_AllowedApiAuthenticationIntegrations_ExactlyOneValueSet_NoneSet"
 	case_ExternalAccessIntegrations_validation_Alter_opts_Set_AllowedApiAuthenticationIntegrations_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_Set_AllowedApiAuthenticationIntegrations_ExactlyOneValueSet_MoreThanOneSet"
+	case_ExternalAccessIntegrations_validation_Alter_Set_AllowedApiAuthenticationIntegrations_Integrations_ValidIdentifier           testCaseName = "validation_Alter_Set_AllowedApiAuthenticationIntegrations_Integrations_ValidIdentifier"
 	case_ExternalAccessIntegrations_validation_Alter_opts_Set_AllowedAuthenticationSecrets_ExactlyOneValueSet_NoneSet                testCaseName = "validation_Alter_opts_Set_AllowedAuthenticationSecrets_ExactlyOneValueSet_NoneSet"
 	case_ExternalAccessIntegrations_validation_Alter_opts_Set_AllowedAuthenticationSecrets_ExactlyOneValueSet_MoreThanOneSet         testCaseName = "validation_Alter_opts_Set_AllowedAuthenticationSecrets_ExactlyOneValueSet_MoreThanOneSet"
+	case_ExternalAccessIntegrations_validation_Alter_Set_AllowedAuthenticationSecrets_Secrets_ValidIdentifier                        testCaseName = "validation_Alter_Set_AllowedAuthenticationSecrets_Secrets_ValidIdentifier"
 	case_ExternalAccessIntegrations_validation_Alter_opts_Unset_AtLeastOneValueSet                                                   testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_ExternalAccessIntegrations_sql_Alter_Set                                                                                    testCaseName = "sql_Alter_Set"
 	case_ExternalAccessIntegrations_sql_Alter_Unset                                                                                  testCaseName = "sql_Alter_Unset"
@@ -73,6 +79,13 @@ var externalAccessIntegrationsTests = ExternalAccessIntegrationsTestsContext{
 				},
 			},
 			validationCase[*CreateExternalAccessIntegrationOptions]{
+				Name:        case_ExternalAccessIntegrations_validation_Create_AllowedNetworkRules_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateExternalAccessIntegrationOptions.AllowedNetworkRules[0]", "AllowedNetworkRules"),
+				DefaultModify: func(opts *CreateExternalAccessIntegrationOptions) {
+					opts.AllowedNetworkRules = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
+			validationCase[*CreateExternalAccessIntegrationOptions]{
 				Name:        case_ExternalAccessIntegrations_validation_Create_opts_AllowedApiAuthenticationIntegrations_ExactlyOneValueSet_NoneSet,
 				ExpectedErr: errExactlyOneOf("CreateExternalAccessIntegrationOptions.AllowedApiAuthenticationIntegrations", "None", "Integrations"),
 				DefaultModify: func(opts *CreateExternalAccessIntegrationOptions) {
@@ -84,6 +97,14 @@ var externalAccessIntegrationsTests = ExternalAccessIntegrationsTestsContext{
 			validationCase[*CreateExternalAccessIntegrationOptions]{
 				Name:        case_ExternalAccessIntegrations_validation_Create_opts_AllowedApiAuthenticationIntegrations_ExactlyOneValueSet_MoreThanOneSet,
 				ExpectedErr: errExactlyOneOf("CreateExternalAccessIntegrationOptions.AllowedApiAuthenticationIntegrations", "None", "Integrations"),
+			},
+			validationCase[*CreateExternalAccessIntegrationOptions]{
+				Name:        case_ExternalAccessIntegrations_validation_Create_AllowedApiAuthenticationIntegrations_Integrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateExternalAccessIntegrationOptions.AllowedApiAuthenticationIntegrations.Integrations[0]", "Integrations"),
+				DefaultModify: func(opts *CreateExternalAccessIntegrationOptions) {
+					opts.AllowedApiAuthenticationIntegrations = &ExternalAccessIntegrationAllowedApiAuthenticationIntegrations{}
+					opts.AllowedApiAuthenticationIntegrations.Integrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
 			},
 			validationCase[*CreateExternalAccessIntegrationOptions]{
 				Name:        case_ExternalAccessIntegrations_validation_Create_opts_AllowedAuthenticationSecrets_ExactlyOneValueSet_NoneSet,
@@ -102,6 +123,14 @@ var externalAccessIntegrationsTests = ExternalAccessIntegrationsTestsContext{
 					opts.AllowedAuthenticationSecrets = &ExternalAccessIntegrationAllowedAuthenticationSecrets{}
 					opts.AllowedAuthenticationSecrets.All = new(true)
 					opts.AllowedAuthenticationSecrets.None = new(true)
+				},
+			},
+			validationCase[*CreateExternalAccessIntegrationOptions]{
+				Name:        case_ExternalAccessIntegrations_validation_Create_AllowedAuthenticationSecrets_Secrets_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateExternalAccessIntegrationOptions.AllowedAuthenticationSecrets.Secrets[0]", "Secrets"),
+				DefaultModify: func(opts *CreateExternalAccessIntegrationOptions) {
+					opts.AllowedAuthenticationSecrets = &ExternalAccessIntegrationAllowedAuthenticationSecrets{}
+					opts.AllowedAuthenticationSecrets.Secrets = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
 				},
 			},
 		).
@@ -161,6 +190,14 @@ var externalAccessIntegrationsTests = ExternalAccessIntegrationsTestsContext{
 				},
 			},
 			validationCase[*AlterExternalAccessIntegrationOptions]{
+				Name:        case_ExternalAccessIntegrations_validation_Alter_Set_AllowedNetworkRules_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterExternalAccessIntegrationOptions.Set.AllowedNetworkRules[0]", "AllowedNetworkRules"),
+				DefaultModify: func(opts *AlterExternalAccessIntegrationOptions) {
+					opts.Set = &ExternalAccessIntegrationSet{}
+					opts.Set.AllowedNetworkRules = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
+			validationCase[*AlterExternalAccessIntegrationOptions]{
 				Name:        case_ExternalAccessIntegrations_validation_Alter_opts_Set_AllowedApiAuthenticationIntegrations_ExactlyOneValueSet_NoneSet,
 				ExpectedErr: errExactlyOneOf("AlterExternalAccessIntegrationOptions.Set.AllowedApiAuthenticationIntegrations", "None", "Integrations"),
 				DefaultModify: func(opts *AlterExternalAccessIntegrationOptions) {
@@ -173,6 +210,15 @@ var externalAccessIntegrationsTests = ExternalAccessIntegrationsTestsContext{
 			validationCase[*AlterExternalAccessIntegrationOptions]{
 				Name:        case_ExternalAccessIntegrations_validation_Alter_opts_Set_AllowedApiAuthenticationIntegrations_ExactlyOneValueSet_MoreThanOneSet,
 				ExpectedErr: errExactlyOneOf("AlterExternalAccessIntegrationOptions.Set.AllowedApiAuthenticationIntegrations", "None", "Integrations"),
+			},
+			validationCase[*AlterExternalAccessIntegrationOptions]{
+				Name:        case_ExternalAccessIntegrations_validation_Alter_Set_AllowedApiAuthenticationIntegrations_Integrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterExternalAccessIntegrationOptions.Set.AllowedApiAuthenticationIntegrations.Integrations[0]", "Integrations"),
+				DefaultModify: func(opts *AlterExternalAccessIntegrationOptions) {
+					opts.Set = &ExternalAccessIntegrationSet{}
+					opts.Set.AllowedApiAuthenticationIntegrations = &ExternalAccessIntegrationAllowedApiAuthenticationIntegrations{}
+					opts.Set.AllowedApiAuthenticationIntegrations.Integrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
 			},
 			validationCase[*AlterExternalAccessIntegrationOptions]{
 				Name:        case_ExternalAccessIntegrations_validation_Alter_opts_Set_AllowedAuthenticationSecrets_ExactlyOneValueSet_NoneSet,
@@ -193,6 +239,15 @@ var externalAccessIntegrationsTests = ExternalAccessIntegrationsTestsContext{
 					opts.Set.AllowedAuthenticationSecrets = &ExternalAccessIntegrationAllowedAuthenticationSecrets{}
 					opts.Set.AllowedAuthenticationSecrets.All = new(true)
 					opts.Set.AllowedAuthenticationSecrets.None = new(true)
+				},
+			},
+			validationCase[*AlterExternalAccessIntegrationOptions]{
+				Name:        case_ExternalAccessIntegrations_validation_Alter_Set_AllowedAuthenticationSecrets_Secrets_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterExternalAccessIntegrationOptions.Set.AllowedAuthenticationSecrets.Secrets[0]", "Secrets"),
+				DefaultModify: func(opts *AlterExternalAccessIntegrationOptions) {
+					opts.Set = &ExternalAccessIntegrationSet{}
+					opts.Set.AllowedAuthenticationSecrets = &ExternalAccessIntegrationAllowedAuthenticationSecrets{}
+					opts.Set.AllowedAuthenticationSecrets.Secrets = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
 				},
 			},
 			validationCase[*AlterExternalAccessIntegrationOptions]{

@@ -31,7 +31,8 @@ var OpenflowRuntimeStatusEnumDef = g.NewEnum(
 	WithAliases("ACTIVATE_FAILED", "RESUME_FAILED")
 
 var openflowRuntimesExternalAccessIntegrationsDef = g.NewQueryStruct("OpenflowRuntimeExternalAccessIntegrations").
-	List("ExternalAccessIntegrations", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.ListOptions().Required().MustParentheses())
+	List("ExternalAccessIntegrations", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.ListOptions().Required().MustParentheses()).
+	WithValidation(g.ValidIdentifier, "ExternalAccessIntegrations")
 
 // openflowRuntimeUpgradeDef models `UPGRADE [ RECOVERY ] [ FORCE ]`. RECOVERY and FORCE are independent
 // optional modifiers rather than alternatives: Snowflake accepts UPGRADE, UPGRADE RECOVERY, UPGRADE FORCE

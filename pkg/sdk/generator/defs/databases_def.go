@@ -221,11 +221,13 @@ var databasesDef = g.NewInterface(
 		OptionalQueryStructField("EnableReplication",
 			g.NewQueryStruct("EnableReplication").
 				WithField(g.NewField("ToAccounts", g.KindOfSlice("AccountIdentifier"), g.Tags().Keyword().NoParentheses().SQL("TO ACCOUNTS"), nil)).
-				OptionalSQL("IGNORE EDITION CHECK"),
+				OptionalSQL("IGNORE EDITION CHECK").
+				WithValidation(g.ValidIdentifier, "ToAccounts"),
 			g.KeywordOptions().SQL("ENABLE REPLICATION")).
 		OptionalQueryStructField("DisableReplication",
 			g.NewQueryStruct("DisableReplication").
-				WithField(g.NewField("ToAccounts", g.KindOfSlice("AccountIdentifier"), g.Tags().Keyword().NoParentheses().SQL("TO ACCOUNTS"), nil)),
+				WithField(g.NewField("ToAccounts", g.KindOfSlice("AccountIdentifier"), g.Tags().Keyword().NoParentheses().SQL("TO ACCOUNTS"), nil)).
+				WithValidation(g.ValidIdentifier, "ToAccounts"),
 			g.KeywordOptions().SQL("DISABLE REPLICATION")).
 		OptionalSQL("REFRESH").
 		WithValidation(g.ValidIdentifier, "name").
@@ -239,11 +241,13 @@ var databasesDef = g.NewInterface(
 		Name().
 		OptionalQueryStructField("EnableFailover",
 			g.NewQueryStruct("EnableFailover").
-				WithField(g.NewField("ToAccounts", g.KindOfSlice("AccountIdentifier"), g.Tags().Keyword().NoParentheses().SQL("TO ACCOUNTS"), nil)),
+				WithField(g.NewField("ToAccounts", g.KindOfSlice("AccountIdentifier"), g.Tags().Keyword().NoParentheses().SQL("TO ACCOUNTS"), nil)).
+				WithValidation(g.ValidIdentifier, "ToAccounts"),
 			g.KeywordOptions().SQL("ENABLE FAILOVER")).
 		OptionalQueryStructField("DisableFailover",
 			g.NewQueryStruct("DisableFailover").
-				WithField(g.NewField("ToAccounts", g.KindOfSlice("AccountIdentifier"), g.Tags().Keyword().NoParentheses().SQL("TO ACCOUNTS"), nil)),
+				WithField(g.NewField("ToAccounts", g.KindOfSlice("AccountIdentifier"), g.Tags().Keyword().NoParentheses().SQL("TO ACCOUNTS"), nil)).
+				WithValidation(g.ValidIdentifier, "ToAccounts"),
 			g.KeywordOptions().SQL("DISABLE FAILOVER")).
 		OptionalSQL("PRIMARY").
 		WithValidation(g.ValidIdentifier, "name").

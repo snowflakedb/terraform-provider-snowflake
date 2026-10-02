@@ -14,6 +14,7 @@ var streamlitSet = g.NewQueryStruct("StreamlitSet").
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("TITLE", g.ParameterOptions().SingleQuotes()).
 	WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
+	WithValidation(g.ValidIdentifier, "ExternalAccessIntegrations").
 	WithValidation(g.AtLeastOneValueSet, "RootLocation", "MainFile", "QueryWarehouse", "ExternalAccessIntegrations", "Comment", "Title")
 
 var streamlitUnset = g.NewQueryStruct("StreamlitUnset").
@@ -43,7 +44,8 @@ var streamlitsDef = g.NewInterface(
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
-		WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace"),
+		WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace").
+		WithValidation(g.ValidIdentifier, "ExternalAccessIntegrations"),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-streamlit",
 	g.NewQueryStruct("AlterStreamlit").

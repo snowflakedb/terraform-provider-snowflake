@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateShareOptions)
 	_ validatable = new(AlterShareOptions)
@@ -36,15 +38,36 @@ func (opts *AlterShareOptions) validate() error {
 		if !anyValueSet(opts.Add.Accounts) {
 			errs = append(errs, errAtLeastOneOf("AlterShareOptions.Add", "Accounts"))
 		}
+		if valueSet(opts.Add.Accounts) {
+			for accountIdx, account := range opts.Add.Accounts {
+				if !ValidObjectIdentifier(account) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterShareOptions.Add.Accounts[%d]", accountIdx), "Accounts"))
+				}
+			}
+		}
 	}
 	if valueSet(opts.Remove) {
 		if !anyValueSet(opts.Remove.Accounts) {
 			errs = append(errs, errAtLeastOneOf("AlterShareOptions.Remove", "Accounts"))
 		}
+		if valueSet(opts.Remove.Accounts) {
+			for accountIdx, account := range opts.Remove.Accounts {
+				if !ValidObjectIdentifier(account) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterShareOptions.Remove.Accounts[%d]", accountIdx), "Accounts"))
+				}
+			}
+		}
 	}
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.Accounts, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterShareOptions.Set", "Accounts", "Comment"))
+		}
+		if valueSet(opts.Set.Accounts) {
+			for accountIdx, account := range opts.Set.Accounts {
+				if !ValidObjectIdentifier(account) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterShareOptions.Set.Accounts[%d]", accountIdx), "Accounts"))
+				}
+			}
 		}
 	}
 	if valueSet(opts.Unset) {

@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateSessionPolicyOptions)
 	_ validatable = new(AlterSessionPolicyOptions)
@@ -31,10 +33,24 @@ func (opts *CreateSessionPolicyOptions) validate() error {
 		if !exactlyOneValueSet(opts.AllowedSecondaryRoles.All, opts.AllowedSecondaryRoles.None, opts.AllowedSecondaryRoles.Roles) {
 			errs = append(errs, errExactlyOneOf("CreateSessionPolicyOptions.AllowedSecondaryRoles", "All", "None", "Roles"))
 		}
+		if valueSet(opts.AllowedSecondaryRoles.Roles) {
+			for roleIdx, role := range opts.AllowedSecondaryRoles.Roles {
+				if !ValidObjectIdentifier(role) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateSessionPolicyOptions.AllowedSecondaryRoles.Roles[%d]", roleIdx), "Roles"))
+				}
+			}
+		}
 	}
 	if valueSet(opts.BlockedSecondaryRoles) {
 		if !exactlyOneValueSet(opts.BlockedSecondaryRoles.All, opts.BlockedSecondaryRoles.None, opts.BlockedSecondaryRoles.Roles) {
 			errs = append(errs, errExactlyOneOf("CreateSessionPolicyOptions.BlockedSecondaryRoles", "All", "None", "Roles"))
+		}
+		if valueSet(opts.BlockedSecondaryRoles.Roles) {
+			for roleIdx, role := range opts.BlockedSecondaryRoles.Roles {
+				if !ValidObjectIdentifier(role) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateSessionPolicyOptions.BlockedSecondaryRoles.Roles[%d]", roleIdx), "Roles"))
+				}
+			}
 		}
 	}
 	return JoinErrors(errs...)
@@ -65,10 +81,24 @@ func (opts *AlterSessionPolicyOptions) validate() error {
 			if !exactlyOneValueSet(opts.Set.AllowedSecondaryRoles.All, opts.Set.AllowedSecondaryRoles.None, opts.Set.AllowedSecondaryRoles.Roles) {
 				errs = append(errs, errExactlyOneOf("AlterSessionPolicyOptions.Set.AllowedSecondaryRoles", "All", "None", "Roles"))
 			}
+			if valueSet(opts.Set.AllowedSecondaryRoles.Roles) {
+				for roleIdx, role := range opts.Set.AllowedSecondaryRoles.Roles {
+					if !ValidObjectIdentifier(role) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSessionPolicyOptions.Set.AllowedSecondaryRoles.Roles[%d]", roleIdx), "Roles"))
+					}
+				}
+			}
 		}
 		if valueSet(opts.Set.BlockedSecondaryRoles) {
 			if !exactlyOneValueSet(opts.Set.BlockedSecondaryRoles.All, opts.Set.BlockedSecondaryRoles.None, opts.Set.BlockedSecondaryRoles.Roles) {
 				errs = append(errs, errExactlyOneOf("AlterSessionPolicyOptions.Set.BlockedSecondaryRoles", "All", "None", "Roles"))
+			}
+			if valueSet(opts.Set.BlockedSecondaryRoles.Roles) {
+				for roleIdx, role := range opts.Set.BlockedSecondaryRoles.Roles {
+					if !ValidObjectIdentifier(role) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSessionPolicyOptions.Set.BlockedSecondaryRoles.Roles[%d]", roleIdx), "Roles"))
+					}
+				}
 			}
 		}
 	}

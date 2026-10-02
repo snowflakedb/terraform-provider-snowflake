@@ -39,14 +39,21 @@ const (
 	case_SecurityIntegrations_validation_CreateExternalOauth_opts_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey2             testCaseName = "validation_CreateExternalOauth_opts_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey2"
 	case_SecurityIntegrations_validation_CreateExternalOauth_name_ValidIdentifier                                                                  testCaseName = "validation_CreateExternalOauth_name_ValidIdentifier"
 	case_SecurityIntegrations_validation_CreateExternalOauth_opts_ConflictingFields_OrReplace_IfNotExists                                          testCaseName = "validation_CreateExternalOauth_opts_ConflictingFields_OrReplace_IfNotExists"
+	case_SecurityIntegrations_validation_CreateExternalOauth_ExternalOauthBlockedRolesList_BlockedRolesList_ValidIdentifier                        testCaseName = "validation_CreateExternalOauth_ExternalOauthBlockedRolesList_BlockedRolesList_ValidIdentifier"
+	case_SecurityIntegrations_validation_CreateExternalOauth_ExternalOauthAllowedRolesList_AllowedRolesList_ValidIdentifier                        testCaseName = "validation_CreateExternalOauth_ExternalOauthAllowedRolesList_AllowedRolesList_ValidIdentifier"
 	case_SecurityIntegrations_sql_CreateExternalOauth_basic                                                                                        testCaseName = "sql_CreateExternalOauth_basic"
 	case_SecurityIntegrations_sql_CreateExternalOauth_all                                                                                          testCaseName = "sql_CreateExternalOauth_all"
 	case_SecurityIntegrations_validation_CreateOauthForPartnerApplications_name_ValidIdentifier                                                    testCaseName = "validation_CreateOauthForPartnerApplications_name_ValidIdentifier"
 	case_SecurityIntegrations_validation_CreateOauthForPartnerApplications_opts_ConflictingFields                                                  testCaseName = "validation_CreateOauthForPartnerApplications_opts_ConflictingFields"
+	case_SecurityIntegrations_validation_CreateOauthForPartnerApplications_AllowedRolesList_AllowedRolesList_ValidIdentifier                       testCaseName = "validation_CreateOauthForPartnerApplications_AllowedRolesList_AllowedRolesList_ValidIdentifier"
+	case_SecurityIntegrations_validation_CreateOauthForPartnerApplications_BlockedRolesList_BlockedRolesList_ValidIdentifier                       testCaseName = "validation_CreateOauthForPartnerApplications_BlockedRolesList_BlockedRolesList_ValidIdentifier"
 	case_SecurityIntegrations_sql_CreateOauthForPartnerApplications_basic                                                                          testCaseName = "sql_CreateOauthForPartnerApplications_basic"
 	case_SecurityIntegrations_sql_CreateOauthForPartnerApplications_all                                                                            testCaseName = "sql_CreateOauthForPartnerApplications_all"
 	case_SecurityIntegrations_validation_CreateOauthForCustomClients_name_ValidIdentifier                                                          testCaseName = "validation_CreateOauthForCustomClients_name_ValidIdentifier"
 	case_SecurityIntegrations_validation_CreateOauthForCustomClients_opts_ConflictingFields                                                        testCaseName = "validation_CreateOauthForCustomClients_opts_ConflictingFields"
+	case_SecurityIntegrations_validation_CreateOauthForCustomClients_PreAuthorizedRolesList_PreAuthorizedRolesList_ValidIdentifier                 testCaseName = "validation_CreateOauthForCustomClients_PreAuthorizedRolesList_PreAuthorizedRolesList_ValidIdentifier"
+	case_SecurityIntegrations_validation_CreateOauthForCustomClients_AllowedRolesList_AllowedRolesList_ValidIdentifier                             testCaseName = "validation_CreateOauthForCustomClients_AllowedRolesList_AllowedRolesList_ValidIdentifier"
+	case_SecurityIntegrations_validation_CreateOauthForCustomClients_BlockedRolesList_BlockedRolesList_ValidIdentifier                             testCaseName = "validation_CreateOauthForCustomClients_BlockedRolesList_BlockedRolesList_ValidIdentifier"
 	case_SecurityIntegrations_sql_CreateOauthForCustomClients_basic                                                                                testCaseName = "sql_CreateOauthForCustomClients_basic"
 	case_SecurityIntegrations_sql_CreateOauthForCustomClients_all                                                                                  testCaseName = "sql_CreateOauthForCustomClients_all"
 	case_SecurityIntegrations_validation_CreateSaml2_name_ValidIdentifier                                                                          testCaseName = "validation_CreateSaml2_name_ValidIdentifier"
@@ -91,6 +98,8 @@ const (
 	case_SecurityIntegrations_validation_AlterExternalOauth_opts_Set_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey           testCaseName = "validation_AlterExternalOauth_opts_Set_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey"
 	case_SecurityIntegrations_validation_AlterExternalOauth_opts_Set_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey2          testCaseName = "validation_AlterExternalOauth_opts_Set_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey2"
 	case_SecurityIntegrations_validation_AlterExternalOauth_opts_Set_AtLeastOneValueSet                                                            testCaseName = "validation_AlterExternalOauth_opts_Set_AtLeastOneValueSet"
+	case_SecurityIntegrations_validation_AlterExternalOauth_Set_ExternalOauthBlockedRolesList_BlockedRolesList_ValidIdentifier                     testCaseName = "validation_AlterExternalOauth_Set_ExternalOauthBlockedRolesList_BlockedRolesList_ValidIdentifier"
+	case_SecurityIntegrations_validation_AlterExternalOauth_Set_ExternalOauthAllowedRolesList_AllowedRolesList_ValidIdentifier                     testCaseName = "validation_AlterExternalOauth_Set_ExternalOauthAllowedRolesList_AllowedRolesList_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterExternalOauth_opts_Unset_AtLeastOneValueSet                                                          testCaseName = "validation_AlterExternalOauth_opts_Unset_AtLeastOneValueSet"
 	case_SecurityIntegrations_sql_AlterExternalOauth_Set                                                                                           testCaseName = "sql_AlterExternalOauth_Set"
 	case_SecurityIntegrations_sql_AlterExternalOauth_Unset                                                                                         testCaseName = "sql_AlterExternalOauth_Unset"
@@ -100,6 +109,8 @@ const (
 	case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_opts_ExactlyOneValueSet_NoneSet                                          testCaseName = "validation_AlterOauthForPartnerApplications_opts_ExactlyOneValueSet_NoneSet"
 	case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_opts_ExactlyOneValueSet_MoreThanOneSet                                   testCaseName = "validation_AlterOauthForPartnerApplications_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_opts_Set_AtLeastOneValueSet                                              testCaseName = "validation_AlterOauthForPartnerApplications_opts_Set_AtLeastOneValueSet"
+	case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_Set_AllowedRolesList_AllowedRolesList_ValidIdentifier                    testCaseName = "validation_AlterOauthForPartnerApplications_Set_AllowedRolesList_AllowedRolesList_ValidIdentifier"
+	case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_Set_BlockedRolesList_BlockedRolesList_ValidIdentifier                    testCaseName = "validation_AlterOauthForPartnerApplications_Set_BlockedRolesList_BlockedRolesList_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_opts_Unset_AtLeastOneValueSet                                            testCaseName = "validation_AlterOauthForPartnerApplications_opts_Unset_AtLeastOneValueSet"
 	case_SecurityIntegrations_sql_AlterOauthForPartnerApplications_Set                                                                             testCaseName = "sql_AlterOauthForPartnerApplications_Set"
 	case_SecurityIntegrations_sql_AlterOauthForPartnerApplications_Unset                                                                           testCaseName = "sql_AlterOauthForPartnerApplications_Unset"
@@ -109,6 +120,9 @@ const (
 	case_SecurityIntegrations_validation_AlterOauthForCustomClients_opts_ExactlyOneValueSet_NoneSet                                                testCaseName = "validation_AlterOauthForCustomClients_opts_ExactlyOneValueSet_NoneSet"
 	case_SecurityIntegrations_validation_AlterOauthForCustomClients_opts_ExactlyOneValueSet_MoreThanOneSet                                         testCaseName = "validation_AlterOauthForCustomClients_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_SecurityIntegrations_validation_AlterOauthForCustomClients_opts_Set_AtLeastOneValueSet                                                    testCaseName = "validation_AlterOauthForCustomClients_opts_Set_AtLeastOneValueSet"
+	case_SecurityIntegrations_validation_AlterOauthForCustomClients_Set_PreAuthorizedRolesList_PreAuthorizedRolesList_ValidIdentifier              testCaseName = "validation_AlterOauthForCustomClients_Set_PreAuthorizedRolesList_PreAuthorizedRolesList_ValidIdentifier"
+	case_SecurityIntegrations_validation_AlterOauthForCustomClients_Set_AllowedRolesList_AllowedRolesList_ValidIdentifier                          testCaseName = "validation_AlterOauthForCustomClients_Set_AllowedRolesList_AllowedRolesList_ValidIdentifier"
+	case_SecurityIntegrations_validation_AlterOauthForCustomClients_Set_BlockedRolesList_BlockedRolesList_ValidIdentifier                          testCaseName = "validation_AlterOauthForCustomClients_Set_BlockedRolesList_BlockedRolesList_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterOauthForCustomClients_opts_Unset_AtLeastOneValueSet                                                  testCaseName = "validation_AlterOauthForCustomClients_opts_Unset_AtLeastOneValueSet"
 	case_SecurityIntegrations_sql_AlterOauthForCustomClients_Set                                                                                   testCaseName = "sql_AlterOauthForCustomClients_Set"
 	case_SecurityIntegrations_sql_AlterOauthForCustomClients_Unset                                                                                 testCaseName = "sql_AlterOauthForCustomClients_Unset"
@@ -316,6 +330,22 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 					opts.IfNotExists = new(true)
 				},
 			},
+			validationCase[*CreateExternalOauthSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateExternalOauth_ExternalOauthBlockedRolesList_BlockedRolesList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateExternalOauthSecurityIntegrationOptions.ExternalOauthBlockedRolesList.BlockedRolesList[0]", "BlockedRolesList"),
+				DefaultModify: func(opts *CreateExternalOauthSecurityIntegrationOptions) {
+					opts.ExternalOauthBlockedRolesList = &BlockedRolesList{}
+					opts.ExternalOauthBlockedRolesList.BlockedRolesList = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*CreateExternalOauthSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateExternalOauth_ExternalOauthAllowedRolesList_AllowedRolesList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateExternalOauthSecurityIntegrationOptions.ExternalOauthAllowedRolesList.AllowedRolesList[0]", "AllowedRolesList"),
+				DefaultModify: func(opts *CreateExternalOauthSecurityIntegrationOptions) {
+					opts.ExternalOauthAllowedRolesList = &AllowedRolesList{}
+					opts.ExternalOauthAllowedRolesList.AllowedRolesList = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateExternalOauthSecurityIntegrationOptions]{
@@ -350,6 +380,22 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 					opts.IfNotExists = new(true)
 				},
 			},
+			validationCase[*CreateOauthForPartnerApplicationsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateOauthForPartnerApplications_AllowedRolesList_AllowedRolesList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOauthForPartnerApplicationsSecurityIntegrationOptions.AllowedRolesList.AllowedRolesList[0]", "AllowedRolesList"),
+				DefaultModify: func(opts *CreateOauthForPartnerApplicationsSecurityIntegrationOptions) {
+					opts.AllowedRolesList = &AllowedRolesList{}
+					opts.AllowedRolesList.AllowedRolesList = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*CreateOauthForPartnerApplicationsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateOauthForPartnerApplications_BlockedRolesList_BlockedRolesList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOauthForPartnerApplicationsSecurityIntegrationOptions.BlockedRolesList.BlockedRolesList[0]", "BlockedRolesList"),
+				DefaultModify: func(opts *CreateOauthForPartnerApplicationsSecurityIntegrationOptions) {
+					opts.BlockedRolesList = &BlockedRolesList{}
+					opts.BlockedRolesList.BlockedRolesList = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateOauthForPartnerApplicationsSecurityIntegrationOptions]{
@@ -382,6 +428,30 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 				DefaultModify: func(opts *CreateOauthForCustomClientsSecurityIntegrationOptions) {
 					opts.OrReplace = new(true)
 					opts.IfNotExists = new(true)
+				},
+			},
+			validationCase[*CreateOauthForCustomClientsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateOauthForCustomClients_PreAuthorizedRolesList_PreAuthorizedRolesList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOauthForCustomClientsSecurityIntegrationOptions.PreAuthorizedRolesList.PreAuthorizedRolesList[0]", "PreAuthorizedRolesList"),
+				DefaultModify: func(opts *CreateOauthForCustomClientsSecurityIntegrationOptions) {
+					opts.PreAuthorizedRolesList = &PreAuthorizedRolesList{}
+					opts.PreAuthorizedRolesList.PreAuthorizedRolesList = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*CreateOauthForCustomClientsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateOauthForCustomClients_AllowedRolesList_AllowedRolesList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOauthForCustomClientsSecurityIntegrationOptions.AllowedRolesList.AllowedRolesList[0]", "AllowedRolesList"),
+				DefaultModify: func(opts *CreateOauthForCustomClientsSecurityIntegrationOptions) {
+					opts.AllowedRolesList = &AllowedRolesList{}
+					opts.AllowedRolesList.AllowedRolesList = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*CreateOauthForCustomClientsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateOauthForCustomClients_BlockedRolesList_BlockedRolesList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOauthForCustomClientsSecurityIntegrationOptions.BlockedRolesList.BlockedRolesList[0]", "BlockedRolesList"),
+				DefaultModify: func(opts *CreateOauthForCustomClientsSecurityIntegrationOptions) {
+					opts.BlockedRolesList = &BlockedRolesList{}
+					opts.BlockedRolesList.BlockedRolesList = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
 		).
@@ -762,6 +832,24 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 				},
 			},
 			validationCase[*AlterExternalOauthSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterExternalOauth_Set_ExternalOauthBlockedRolesList_BlockedRolesList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterExternalOauthSecurityIntegrationOptions.Set.ExternalOauthBlockedRolesList.BlockedRolesList[0]", "BlockedRolesList"),
+				DefaultModify: func(opts *AlterExternalOauthSecurityIntegrationOptions) {
+					opts.Set = &ExternalOauthIntegrationSet{}
+					opts.Set.ExternalOauthBlockedRolesList = &BlockedRolesList{}
+					opts.Set.ExternalOauthBlockedRolesList.BlockedRolesList = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*AlterExternalOauthSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterExternalOauth_Set_ExternalOauthAllowedRolesList_AllowedRolesList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterExternalOauthSecurityIntegrationOptions.Set.ExternalOauthAllowedRolesList.AllowedRolesList[0]", "AllowedRolesList"),
+				DefaultModify: func(opts *AlterExternalOauthSecurityIntegrationOptions) {
+					opts.Set = &ExternalOauthIntegrationSet{}
+					opts.Set.ExternalOauthAllowedRolesList = &AllowedRolesList{}
+					opts.Set.ExternalOauthAllowedRolesList.AllowedRolesList = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*AlterExternalOauthSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_AlterExternalOauth_opts_Unset_AtLeastOneValueSet,
 				ExpectedErr: errAtLeastOneOf("AlterExternalOauthSecurityIntegrationOptions.Unset", "Enabled", "ExternalOauthAudienceList"),
 				DefaultModify: func(opts *AlterExternalOauthSecurityIntegrationOptions) {
@@ -832,6 +920,24 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 					opts.Set.AllowedRolesList = nil
 					opts.Set.BlockedRolesList = nil
 					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterOauthForPartnerApplicationsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_Set_AllowedRolesList_AllowedRolesList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOauthForPartnerApplicationsSecurityIntegrationOptions.Set.AllowedRolesList.AllowedRolesList[0]", "AllowedRolesList"),
+				DefaultModify: func(opts *AlterOauthForPartnerApplicationsSecurityIntegrationOptions) {
+					opts.Set = &OauthForPartnerApplicationsIntegrationSet{}
+					opts.Set.AllowedRolesList = &AllowedRolesList{}
+					opts.Set.AllowedRolesList.AllowedRolesList = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*AlterOauthForPartnerApplicationsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_Set_BlockedRolesList_BlockedRolesList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOauthForPartnerApplicationsSecurityIntegrationOptions.Set.BlockedRolesList.BlockedRolesList[0]", "BlockedRolesList"),
+				DefaultModify: func(opts *AlterOauthForPartnerApplicationsSecurityIntegrationOptions) {
+					opts.Set = &OauthForPartnerApplicationsIntegrationSet{}
+					opts.Set.BlockedRolesList = &BlockedRolesList{}
+					opts.Set.BlockedRolesList.BlockedRolesList = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
 			validationCase[*AlterOauthForPartnerApplicationsSecurityIntegrationOptions]{
@@ -911,6 +1017,33 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 					opts.Set.OauthClientRsaPublicKey = nil
 					opts.Set.OauthClientRsaPublicKey2 = nil
 					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterOauthForCustomClientsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterOauthForCustomClients_Set_PreAuthorizedRolesList_PreAuthorizedRolesList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOauthForCustomClientsSecurityIntegrationOptions.Set.PreAuthorizedRolesList.PreAuthorizedRolesList[0]", "PreAuthorizedRolesList"),
+				DefaultModify: func(opts *AlterOauthForCustomClientsSecurityIntegrationOptions) {
+					opts.Set = &OauthForCustomClientsIntegrationSet{}
+					opts.Set.PreAuthorizedRolesList = &PreAuthorizedRolesList{}
+					opts.Set.PreAuthorizedRolesList.PreAuthorizedRolesList = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*AlterOauthForCustomClientsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterOauthForCustomClients_Set_AllowedRolesList_AllowedRolesList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOauthForCustomClientsSecurityIntegrationOptions.Set.AllowedRolesList.AllowedRolesList[0]", "AllowedRolesList"),
+				DefaultModify: func(opts *AlterOauthForCustomClientsSecurityIntegrationOptions) {
+					opts.Set = &OauthForCustomClientsIntegrationSet{}
+					opts.Set.AllowedRolesList = &AllowedRolesList{}
+					opts.Set.AllowedRolesList.AllowedRolesList = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*AlterOauthForCustomClientsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterOauthForCustomClients_Set_BlockedRolesList_BlockedRolesList_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOauthForCustomClientsSecurityIntegrationOptions.Set.BlockedRolesList.BlockedRolesList[0]", "BlockedRolesList"),
+				DefaultModify: func(opts *AlterOauthForCustomClientsSecurityIntegrationOptions) {
+					opts.Set = &OauthForCustomClientsIntegrationSet{}
+					opts.Set.BlockedRolesList = &BlockedRolesList{}
+					opts.Set.BlockedRolesList.BlockedRolesList = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
 			validationCase[*AlterOauthForCustomClientsSecurityIntegrationOptions]{

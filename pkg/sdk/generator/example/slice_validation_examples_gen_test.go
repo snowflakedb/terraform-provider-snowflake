@@ -29,6 +29,7 @@ const (
 	case_SliceValidationExamples_validation_Create_opts_Items_SubItems_LeafItems_ExactlyOneValueSet_OneValidOneInvalid testCaseName = "validation_Create_opts_Items_SubItems_LeafItems_ExactlyOneValueSet_OneValidOneInvalid"
 	case_SliceValidationExamples_validation_Create_opts_Items_SubItems_LeafItems_ExactlyOneValueSet_BothInvalid        testCaseName = "validation_Create_opts_Items_SubItems_LeafItems_ExactlyOneValueSet_BothInvalid"
 	case_SliceValidationExamples_validation_Create_Columns_MaskingPolicy_MaskingPolicy_ValidIdentifier                 testCaseName = "validation_Create_Columns_MaskingPolicy_MaskingPolicy_ValidIdentifier"
+	case_SliceValidationExamples_validation_Create_ExternalAccessIntegrations_ValidIdentifier                          testCaseName = "validation_Create_ExternalAccessIntegrations_ValidIdentifier"
 	case_SliceValidationExamples_sql_Create_basic                                                                      testCaseName = "sql_Create_basic"
 	case_SliceValidationExamples_sql_Create_all                                                                        testCaseName = "sql_Create_all"
 )
@@ -203,6 +204,13 @@ var sliceValidationExamplesTests = SliceValidationExamplesTestsContext{
 					opts.Columns = []SliceValidationColumn{{}}
 					opts.Columns[0].MaskingPolicy = &SliceValidationColumnMaskingPolicy{}
 					opts.Columns[0].MaskingPolicy.MaskingPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateSliceValidationExampleOptions]{
+				Name:        case_SliceValidationExamples_validation_Create_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSliceValidationExampleOptions.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *CreateSliceValidationExampleOptions) {
+					opts.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
 		).

@@ -9,31 +9,33 @@ import (
 var streamlitsTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
 const (
-	case_Streamlits_validation_Create_name_ValidIdentifier                   testCaseName = "validation_Create_name_ValidIdentifier"
-	case_Streamlits_validation_Create_QueryWarehouse_ValidIdentifierIfSet    testCaseName = "validation_Create_QueryWarehouse_ValidIdentifierIfSet"
-	case_Streamlits_validation_Create_opts_ConflictingFields                 testCaseName = "validation_Create_opts_ConflictingFields"
-	case_Streamlits_sql_Create_basic                                         testCaseName = "sql_Create_basic"
-	case_Streamlits_sql_Create_all                                           testCaseName = "sql_Create_all"
-	case_Streamlits_validation_Alter_name_ValidIdentifier                    testCaseName = "validation_Alter_name_ValidIdentifier"
-	case_Streamlits_validation_Alter_RenameTo_ValidIdentifierIfSet           testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
-	case_Streamlits_validation_Alter_opts_ExactlyOneValueSet_NoneSet         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_Streamlits_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Streamlits_validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet testCaseName = "validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet"
-	case_Streamlits_validation_Alter_opts_Set_AtLeastOneValueSet             testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
-	case_Streamlits_validation_Alter_opts_Unset_AtLeastOneValueSet           testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
-	case_Streamlits_sql_Alter_RenameTo                                       testCaseName = "sql_Alter_RenameTo"
-	case_Streamlits_sql_Alter_Set                                            testCaseName = "sql_Alter_Set"
-	case_Streamlits_sql_Alter_Unset                                          testCaseName = "sql_Alter_Unset"
-	case_Streamlits_validation_Drop_name_ValidIdentifier                     testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_Streamlits_sql_Drop_basic                                           testCaseName = "sql_Drop_basic"
-	case_Streamlits_sql_Drop_all                                             testCaseName = "sql_Drop_all"
-	case_Streamlits_sql_Show_basic                                           testCaseName = "sql_Show_basic"
-	case_Streamlits_sql_Show_all                                             testCaseName = "sql_Show_all"
-	case_Streamlits_sql_Show_Like                                            testCaseName = "sql_Show_Like"
-	case_Streamlits_sql_Show_In                                              testCaseName = "sql_Show_In"
-	case_Streamlits_sql_Show_Limit                                           testCaseName = "sql_Show_Limit"
-	case_Streamlits_validation_Describe_name_ValidIdentifier                 testCaseName = "validation_Describe_name_ValidIdentifier"
-	case_Streamlits_sql_Describe_basic                                       testCaseName = "sql_Describe_basic"
+	case_Streamlits_validation_Create_name_ValidIdentifier                          testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Streamlits_validation_Create_QueryWarehouse_ValidIdentifierIfSet           testCaseName = "validation_Create_QueryWarehouse_ValidIdentifierIfSet"
+	case_Streamlits_validation_Create_opts_ConflictingFields                        testCaseName = "validation_Create_opts_ConflictingFields"
+	case_Streamlits_validation_Create_ExternalAccessIntegrations_ValidIdentifier    testCaseName = "validation_Create_ExternalAccessIntegrations_ValidIdentifier"
+	case_Streamlits_sql_Create_basic                                                testCaseName = "sql_Create_basic"
+	case_Streamlits_sql_Create_all                                                  testCaseName = "sql_Create_all"
+	case_Streamlits_validation_Alter_name_ValidIdentifier                           testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Streamlits_validation_Alter_RenameTo_ValidIdentifierIfSet                  testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_Streamlits_validation_Alter_opts_ExactlyOneValueSet_NoneSet                testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Streamlits_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Streamlits_validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet        testCaseName = "validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet"
+	case_Streamlits_validation_Alter_opts_Set_AtLeastOneValueSet                    testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Streamlits_validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier testCaseName = "validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier"
+	case_Streamlits_validation_Alter_opts_Unset_AtLeastOneValueSet                  testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Streamlits_sql_Alter_RenameTo                                              testCaseName = "sql_Alter_RenameTo"
+	case_Streamlits_sql_Alter_Set                                                   testCaseName = "sql_Alter_Set"
+	case_Streamlits_sql_Alter_Unset                                                 testCaseName = "sql_Alter_Unset"
+	case_Streamlits_validation_Drop_name_ValidIdentifier                            testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Streamlits_sql_Drop_basic                                                  testCaseName = "sql_Drop_basic"
+	case_Streamlits_sql_Drop_all                                                    testCaseName = "sql_Drop_all"
+	case_Streamlits_sql_Show_basic                                                  testCaseName = "sql_Show_basic"
+	case_Streamlits_sql_Show_all                                                    testCaseName = "sql_Show_all"
+	case_Streamlits_sql_Show_Like                                                   testCaseName = "sql_Show_Like"
+	case_Streamlits_sql_Show_In                                                     testCaseName = "sql_Show_In"
+	case_Streamlits_sql_Show_Limit                                                  testCaseName = "sql_Show_Limit"
+	case_Streamlits_validation_Describe_name_ValidIdentifier                        testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_Streamlits_sql_Describe_basic                                              testCaseName = "sql_Describe_basic"
 )
 
 type StreamlitsTestsContext struct {
@@ -74,6 +76,13 @@ var streamlitsTests = StreamlitsTestsContext{
 				DefaultModify: func(opts *CreateStreamlitOptions) {
 					opts.IfNotExists = new(true)
 					opts.OrReplace = new(true)
+				},
+			},
+			validationCase[*CreateStreamlitOptions]{
+				Name:        case_Streamlits_validation_Create_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateStreamlitOptions.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *CreateStreamlitOptions) {
+					opts.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
 		).
@@ -145,6 +154,14 @@ var streamlitsTests = StreamlitsTestsContext{
 					opts.Set.ExternalAccessIntegrations = nil
 					opts.Set.Comment = nil
 					opts.Set.Title = nil
+				},
+			},
+			validationCase[*AlterStreamlitOptions]{
+				Name:        case_Streamlits_validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterStreamlitOptions.Set.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *AlterStreamlitOptions) {
+					opts.Set = &StreamlitSet{}
+					opts.Set.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
 			validationCase[*AlterStreamlitOptions]{
