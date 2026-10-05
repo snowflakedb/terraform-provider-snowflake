@@ -41,11 +41,12 @@ func setUpProvider() error {
 }
 
 var (
-	functionsAndProceduresProviderFactory = providerFactoryUsingCache("FunctionsAndProcedures")
-	viewsProviderFactory                  = providerFactoryUsingCache("Views")
-	tagsProviderFactory                   = providerFactoryUsingCache("Tags")
-	tagsWithExperimentFlagProviderFactory = providerFactoryUsingCache("TagsWithExperimentFlag")
-	servicesProviderFactory               = providerFactoryUsingCache("Services")
+	functionsAndProceduresProviderFactory      = providerFactoryUsingCache("FunctionsAndProcedures")
+	viewsProviderFactory                       = providerFactoryUsingCache("Views")
+	tagsProviderFactory                        = providerFactoryUsingCache("Tags")
+	tagsWithExperimentFlagProviderFactory      = providerFactoryUsingCache("TagsWithExperimentFlag")
+	tagsWithSafeDestroyDisabledProviderFactory = providerFactoryUsingCache("TagsWithSafeDestroyDisabled")
+	servicesProviderFactory                    = providerFactoryUsingCache("Services")
 	// warehouseRequiredProviderFactory should be used whenever tests require a warehouse but do not modify the current
 	// session by, e.g., creating new warehouses.
 	warehouseRequiredProviderFactory = providerFactoryUsingCache("WarehouseRequired")

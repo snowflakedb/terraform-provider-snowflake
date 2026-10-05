@@ -19,6 +19,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -542,6 +543,19 @@ func TestAcc_TagAssociationAccountIssues1910(t *testing.T) {
 }
 
 func TestAcc_TagAssociationIssue1926(t *testing.T) {
+	testAccTagAssociationIssue1926(t, tagsWithSafeDestroyDisabledProviderFactory, providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesDisabled(experimentalfeatures.TagAssociationSafeDestroy),
+	)
+}
+
+// Same scenario as TestAcc_TagAssociationIssue1926 with TAG_ASSOCIATION_SAFE_DESTROY left at its default (enabled).
+func TestAcc_TagAssociationIssue1926_withSafeDestroy(t *testing.T) {
+	testAccTagAssociationIssue1926(t, tagsProviderFactory, nil)
+}
+
+func testAccTagAssociationIssue1926(t *testing.T, factories ProviderFactory, providerModel *providermodel.SnowflakeModel) {
+	t.Helper()
+
 	tagId := testClient().Ids.RandomSchemaObjectIdentifier()
 	tableId1 := testClient().Ids.RandomSchemaObjectIdentifier()
 	tableId2 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix("table.test")
@@ -558,6 +572,13 @@ func TestAcc_TagAssociationIssue1926(t *testing.T) {
 		}
 	}
 
+	fromModels := func(models ...any) string {
+		if providerModel != nil {
+			return accconfig.FromModels(t, append([]any{providerModel}, models...)...)
+		}
+		return accconfig.FromModels(t, models...)
+	}
+
 	tagModel := model.TagBase("test", tagId)
 	tableModel1 := model.TableWithId("test", tableId1, columns(columnId1))
 	tableModel2 := model.TableWithId("test", tableId2, columns(columnId2))
@@ -570,14 +591,14 @@ func TestAcc_TagAssociationIssue1926(t *testing.T) {
 		WithDependsOn(tagModel.ResourceReference(), tableModel3.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: tagsProviderFactory,
+		ProtoV6ProviderFactories: factories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				Config: accconfig.FromModels(t, tagModel, tableModel1, tagAssociationModel1),
+				Config: fromModels(tagModel, tableModel1, tagAssociationModel1),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(tagAssociationModel1.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), "TAG_VALUE", string(sdk.ObjectTypeColumn))),
 					resource.TestCheckResourceAttr(tagAssociationModel1.ResourceReference(), "object_type", string(sdk.ObjectTypeColumn)),
@@ -588,7 +609,7 @@ func TestAcc_TagAssociationIssue1926(t *testing.T) {
 				),
 			},
 			{
-				Config: accconfig.FromModels(t, tagModel, tableModel2, tagAssociationModel2),
+				Config: fromModels(tagModel, tableModel2, tagAssociationModel2),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(tagAssociationModel2.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), "TAG_VALUE", string(sdk.ObjectTypeColumn))),
 					resource.TestCheckResourceAttr(tagAssociationModel2.ResourceReference(), "object_type", string(sdk.ObjectTypeColumn)),
@@ -599,7 +620,7 @@ func TestAcc_TagAssociationIssue1926(t *testing.T) {
 				),
 			},
 			{
-				Config: accconfig.FromModels(t, tagModel, tableModel3, tagAssociationModel3),
+				Config: fromModels(tagModel, tableModel3, tagAssociationModel3),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(tagAssociationModel3.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), "TAG_VALUE", string(sdk.ObjectTypeColumn))),
 					resource.TestCheckResourceAttr(tagAssociationModel3.ResourceReference(), "object_type", string(sdk.ObjectTypeColumn)),

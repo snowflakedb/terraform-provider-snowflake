@@ -269,23 +269,7 @@ func UpdateContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 
 		safeDestroy := providerCtx.Experiments.IsEnabled(experimentalfeatures.TagAssociationSafeDestroy)
 		for _, id := range removedIds {
-			request := sdk.NewUnsetTagRequest(objectType, id).WithUnsetTags([]sdk.ObjectIdentifier{tagId}).WithIfExists(true)
-			if safeDestroy {
-				if err := client.Tags.UnsetSafely(ctx, request); err != nil {
-					return diag.FromErr(err)
-				}
-				continue
-			}
-			if objectType == sdk.ObjectTypeColumn {
-				skip, err := skipColumnIfDoesNotExist(ctx, client, id)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				if skip {
-					continue
-				}
-			}
-			if err := client.Tags.Unset(ctx, request); err != nil {
+			if err := unsetTagAssociation(ctx, client, objectType, id, tagId, safeDestroy); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -318,23 +302,7 @@ func DeleteContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 	}
 	safeDestroy := providerCtx.Experiments.IsEnabled(experimentalfeatures.TagAssociationSafeDestroy)
 	for _, id := range ids {
-		request := sdk.NewUnsetTagRequest(objectType, id).WithUnsetTags([]sdk.ObjectIdentifier{tagId}).WithIfExists(true)
-		if safeDestroy {
-			if err := client.Tags.UnsetSafely(ctx, request); err != nil {
-				return diag.FromErr(err)
-			}
-			continue
-		}
-		if objectType == sdk.ObjectTypeColumn {
-			skip, err := skipColumnIfDoesNotExist(ctx, client, id)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			if skip {
-				continue
-			}
-		}
-		if err := client.Tags.Unset(ctx, request); err != nil {
+		if err := unsetTagAssociation(ctx, client, objectType, id, tagId, safeDestroy); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -342,7 +310,35 @@ func DeleteContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 	return nil
 }
 
-// we need to skip the column manually, because ALTER COLUMN lacks IF EXISTS
+// For COLUMN, skipColumnIfDoesNotExist runs before Unset/UnsetSafely; see that helper.
+func unsetTagAssociation(ctx context.Context, client *sdk.Client, objectType sdk.ObjectType, id sdk.ObjectIdentifier, tagId sdk.SchemaObjectIdentifier, safeDestroy bool) error {
+	if objectType == sdk.ObjectTypeColumn {
+		skip, err := skipColumnIfDoesNotExist(ctx, client, id)
+		if err == nil && skip {
+			return nil
+		}
+		if err != nil && !safeDestroy {
+			return err
+		}
+	}
+	request := sdk.NewUnsetTagRequest(objectType, id).WithUnsetTags([]sdk.ObjectIdentifier{tagId}).WithIfExists(true)
+	if safeDestroy {
+		return client.Tags.UnsetSafely(ctx, request)
+	}
+	return client.Tags.Unset(ctx, request)
+}
+
+// skipColumnIfDoesNotExist is needed because ALTER COLUMN lacks IF EXISTS.
+// UnsetSafely cannot cover this: a missing column on an existing table returns
+// invalid identifier, which is indistinguishable from a quoting bug, so we
+// DESCRIBE the table instead of swallowing that error.
+//
+// Keep this check in front of UnsetSafely for COLUMN while TAG_ASSOCIATION_SAFE_DESTROY
+// can still be opted out (opt-out still calls Unset). When the experiment is
+// promoted, fold this into tags.UnsetSafely (not generic SafeUnsetTag) and delete
+// this helper; also add a TestInt_SafeUnsetTagFromColumn case for "column missing,
+// table still there" (the current non-existing column case uses a fully missing path).
+// TODO [SNOW-4225193]: apply with the experiment removal
 func skipColumnIfDoesNotExist(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) (bool, error) {
 	columnId, ok := id.(sdk.TableColumnIdentifier)
 	if !ok {
