@@ -535,10 +535,10 @@ func TestInt_Tasks(t *testing.T) {
 		)
 		t.Cleanup(taskCleanup)
 
-		returnedTagValue, err := client.SystemFunctions.GetTag(ctx, tag.ID(), task.ID(), sdk.ObjectTypeTask)
+		returnedTagValue, err := client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(tag.ID(), task.ID(), sdk.ObjectTypeTask)))
 		require.NoError(t, err)
 
-		assert.Equal(t, sdk.Pointer("v1"), returnedTagValue)
+		assert.Equal(t, sdk.Pointer("v1"), returnedTagValue.Tag)
 	})
 
 	t.Run("create task: with serverless task parameters", func(t *testing.T) {

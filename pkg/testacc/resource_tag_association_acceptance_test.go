@@ -496,15 +496,15 @@ func testAccCheckTableColumnTagAssociation(tagID sdk.SchemaObjectIdentifier, obj
 	return func(s *terraform.State) error {
 		client := TestAccProvider.Meta().(*provider.Context).Client
 		ctx := context.Background()
-		tv, err := client.SystemFunctions.GetTag(ctx, tagID, objectID, sdk.ObjectTypeColumn)
+		tv, err := client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(tagID, objectID, sdk.ObjectTypeColumn)))
 		if err != nil {
 			return err
 		}
-		if tv == nil {
+		if tv.Tag == nil {
 			return fmt.Errorf("expected tag value %s, got nil", tagValue)
 		}
-		if tagValue != *tv {
-			return fmt.Errorf("expected tag value %s, got %s", tagValue, *tv)
+		if tagValue != *tv.Tag {
+			return fmt.Errorf("expected tag value %s, got %s", tagValue, *tv.Tag)
 		}
 		return nil
 	}

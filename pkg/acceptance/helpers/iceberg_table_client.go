@@ -103,7 +103,7 @@ func (c *IcebergTableClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifie
 func (c *IcebergTableClient) GetIcebergTableInformation(t *testing.T, id sdk.SchemaObjectIdentifier) sdk.IcebergTableInformation {
 	t.Helper()
 	ctx := context.Background()
-	info, err := c.context.client.SystemFunctions.GetIcebergTableInformation(ctx, id)
+	info, err := c.context.client.SystemFunctions.GetIcebergTableInformation(ctx, sdk.NewGetIcebergTableInformationRequest(*sdk.NewGetIcebergTableInformationArgumentsRequest(id)))
 	require.NoError(t, err)
 	require.NotNil(t, info)
 	return *info

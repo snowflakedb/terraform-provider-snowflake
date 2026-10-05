@@ -27,30 +27,30 @@ func (c *BcrBundlesClient) ShowActiveBundles(t *testing.T) []sdk.BehaviorChangeB
 	t.Helper()
 	ctx := context.Background()
 
-	bundles, err := c.client().ShowActiveBehaviorChangeBundles(ctx)
+	active, err := c.client().ShowActiveBehaviorChangeBundles(ctx)
 	require.NoError(t, err)
 
-	return bundles
+	return active.Bundles
 }
 
 func (c *BcrBundlesClient) BehaviorChangeBundleStatus(t *testing.T, bundle string) sdk.BehaviorChangeBundleStatus {
 	t.Helper()
 	ctx := context.Background()
 
-	status, err := c.client().BehaviorChangeBundleStatus(ctx, bundle)
+	status, err := c.client().BehaviorChangeBundleStatus(ctx, sdk.NewBehaviorChangeBundleStatusRequest(*sdk.NewBehaviorChangeBundleArgumentsRequest(bundle)))
 	require.NoError(t, err)
 
-	return status
+	return status.Status
 }
 
 func (c *BcrBundlesClient) GetBcrInfo(t *testing.T, name string) sdk.BehaviorChangeBundleInfo {
 	t.Helper()
 	ctx := context.Background()
 
-	bundles, err := c.client().ShowActiveBehaviorChangeBundles(ctx)
+	active, err := c.client().ShowActiveBehaviorChangeBundles(ctx)
 	require.NoError(t, err)
 
-	info, err := collections.FindFirst(bundles, func(bundle sdk.BehaviorChangeBundleInfo) bool {
+	info, err := collections.FindFirst(active.Bundles, func(bundle sdk.BehaviorChangeBundleInfo) bool {
 		return bundle.Name == name
 	})
 	require.NoError(t, err)

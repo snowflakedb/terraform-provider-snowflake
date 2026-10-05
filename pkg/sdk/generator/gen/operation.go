@@ -361,7 +361,8 @@ func (i *Interface) describeOperation(describeKind DescriptionMappingKind, doc s
 // CustomOperationOption is a functional option for configuring CustomOperation behavior.
 type CustomOperationOption func(*Operation)
 
-// WithRequestAdjust enables a request.adjust() call in the generated impl before toOpts() and validateAndExec.
+// WithRequestAdjust enables a request.adjust() call in the generated impl before toOpts().
+// It is skipped when WithNoRequest is set.
 // The adjust() method must be implemented manually on the request type in a _ext.go file.
 func WithRequestAdjust() CustomOperationOption {
 	return func(op *Operation) { op.RequestAdjust = true }

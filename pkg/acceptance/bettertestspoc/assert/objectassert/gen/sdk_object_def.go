@@ -650,13 +650,14 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct:         sdk.CatalogLinkedDatabaseConfig{},
 		IsDataSourceOutput:   true,
 		NoIdentifiableObject: true,
+		SkipFields:           []string{"raw"},
 	},
 	{
 		IdType:               "sdk.AccountObjectIdentifier",
 		ObjectStruct:         sdk.CatalogLinkStatus{},
 		IsDataSourceOutput:   true,
 		NoIdentifiableObject: true,
-		SkipFields:           []string{"FailureDetails"},
+		SkipFields:           []string{"FailureDetails", "raw"},
 	},
 }
 

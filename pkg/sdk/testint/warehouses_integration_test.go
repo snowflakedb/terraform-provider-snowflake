@@ -203,12 +203,12 @@ func TestInt_Warehouses(t *testing.T) {
 			HasNoMaxQueryPerformanceLevel().
 			HasNoQueryThroughputMultiplier())
 
-		tag1Value, err := client.SystemFunctions.GetTag(ctx, tag.ID(), warehouse.ID(), sdk.ObjectTypeWarehouse)
+		tag1Value, err := client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(tag.ID(), warehouse.ID(), sdk.ObjectTypeWarehouse)))
 		require.NoError(t, err)
-		assert.Equal(t, sdk.Pointer("v1"), tag1Value)
-		tag2Value, err := client.SystemFunctions.GetTag(ctx, tag2.ID(), warehouse.ID(), sdk.ObjectTypeWarehouse)
+		assert.Equal(t, sdk.Pointer("v1"), tag1Value.Tag)
+		tag2Value, err := client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(tag2.ID(), warehouse.ID(), sdk.ObjectTypeWarehouse)))
 		require.NoError(t, err)
-		assert.Equal(t, sdk.Pointer("v2"), tag2Value)
+		assert.Equal(t, sdk.Pointer("v2"), tag2Value.Tag)
 	})
 
 	t.Run("create: no options", func(t *testing.T) {

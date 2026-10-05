@@ -23,17 +23,17 @@ func TestInt_BcrBundles_AccountLevel(t *testing.T) {
 	require.GreaterOrEqual(t, len(bundles), 2)
 
 	t.Run("show active bundles", func(t *testing.T) {
-		bundles, err := client.SystemFunctions.ShowActiveBehaviorChangeBundles(ctx)
+		active, err := client.SystemFunctions.ShowActiveBehaviorChangeBundles(ctx)
 		require.NoError(t, err)
-		require.GreaterOrEqual(t, len(bundles), 2)
-		for _, bundle := range bundles {
+		require.GreaterOrEqual(t, len(active.Bundles), 2)
+		for _, bundle := range active.Bundles {
 			assert.NotEmpty(t, bundle.Name)
 		}
 	})
 
 	t.Run("enable a valid bundle", func(t *testing.T) {
 		bundle := bundles[1]
-		err := client.SystemFunctions.EnableBehaviorChangeBundle(ctx, bundle.Name)
+		err := client.SystemFunctions.EnableBehaviorChangeBundle(ctx, sdk.NewEnableBehaviorChangeBundleRequest(*sdk.NewBehaviorChangeBundleArgumentsRequest(bundle.Name)))
 		require.NoError(t, err)
 		if !bundle.IsDefault {
 			t.Cleanup(secondaryTestClientHelper().BcrBundles.DisableBcrBundleCleanupFunc(t, bundle.Name))
@@ -44,7 +44,7 @@ func TestInt_BcrBundles_AccountLevel(t *testing.T) {
 
 	t.Run("disable a valid bundle", func(t *testing.T) {
 		bundle := bundles[0]
-		err := client.SystemFunctions.DisableBehaviorChangeBundle(ctx, bundle.Name)
+		err := client.SystemFunctions.DisableBehaviorChangeBundle(ctx, sdk.NewDisableBehaviorChangeBundleRequest(*sdk.NewBehaviorChangeBundleArgumentsRequest(bundle.Name)))
 		require.NoError(t, err)
 		if bundle.IsDefault {
 			t.Cleanup(secondaryTestClientHelper().BcrBundles.EnableBcrBundleCleanupFunc(t, bundle.Name))

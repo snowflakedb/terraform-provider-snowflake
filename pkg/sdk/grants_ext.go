@@ -625,13 +625,13 @@ func (v *grants) grantOwnershipOnPipe(ctx context.Context, pipeId SchemaObjectId
 
 	var originalPipeExecutionState *PipeExecutionState
 	if hasOwnershipOnPipe || (canOperateOnPipe && canMonitorPipe) {
-		pipeExecutionState, err := v.client.SystemFunctions.PipeStatus(pipeId)
+		pipeStatus, err := v.client.SystemFunctions.PipeStatus(ctx, NewPipeStatusRequest(*NewPipeStatusArgumentsRequest(pipeId)))
 		if err != nil {
 			return err
 		}
-		originalPipeExecutionState = &pipeExecutionState
+		originalPipeExecutionState = &pipeStatus.ExecutionState
 
-		if pipeExecutionState == RunningPipeExecutionState {
+		if pipeStatus.ExecutionState == PipeExecutionStateRunning {
 			if err := v.client.Pipes.Alter(ctx, NewAlterPipeRequest(pipeId).WithSet(*NewPipeSetRequest().WithPipeExecutionPaused(true))); err != nil {
 				return err
 			}
@@ -649,8 +649,8 @@ func (v *grants) grantOwnershipOnPipe(ctx context.Context, pipeId SchemaObjectId
 	// - GRANT OWNERSHIP command was run with COPY CURRENT GRANTS option.
 	// - The pipe was previously running.
 	// We can safely use the PIPE_FORCE_RESUME system function to resume the pipe after successful ownership transfer.
-	if canOperateOnPipe && request.CurrentGrants != nil && request.CurrentGrants.OutboundPrivileges == Copy && originalPipeExecutionState != nil && *originalPipeExecutionState == RunningPipeExecutionState {
-		if err := v.client.SystemFunctions.PipeForceResume(pipeId, nil); err != nil {
+	if canOperateOnPipe && request.CurrentGrants != nil && request.CurrentGrants.OutboundPrivileges == Copy && originalPipeExecutionState != nil && *originalPipeExecutionState == PipeExecutionStateRunning {
+		if err := v.client.SystemFunctions.PipeForceResume(ctx, NewPipeForceResumeRequest(*NewPipeForceResumeArgumentsRequest(pipeId))); err != nil {
 			return err
 		}
 	} else {

@@ -7,6 +7,9 @@
         {{ if .ShowKind }}
             {{ if eq (show_mapping_deref .ShowKind) "single_value" }}
                 func (v *{{ $impl }}) {{ .Name }}(ctx context.Context{{ if not .NoRequest }}, request *{{ .OptsField.DtoDecl }}{{ end }}) (*{{ .ShowMapping.To.Name }}, error) {
+                    {{- if and .RequestAdjust (not .NoRequest) }}
+                    request.adjust()
+                    {{- end }}
                     {{ if .NoRequest }}opts := &{{ .OptsField.KindNoPtr }}{}{{ else }}opts := request.toOpts(){{ end }}
                     result, err := validateAndQueryOne[{{ .ShowMapping.From.Name }}](v.client, ctx, opts)
                     if err != nil {
@@ -16,6 +19,9 @@
                 }
             {{ else if eq (show_mapping_deref .ShowKind) "slice" }}
                 func (v *{{ $impl }}) {{ .Name }}(ctx context.Context{{ if not .NoRequest }}, request *{{ .OptsField.DtoDecl }}{{ end }}) ([]{{ .ShowMapping.To.Name }}, error) {
+                    {{- if and .RequestAdjust (not .NoRequest) }}
+                    request.adjust()
+                    {{- end }}
                     {{ if .NoRequest }}opts := &{{ .OptsField.KindNoPtr }}{}{{ else }}opts := request.toOpts(){{ end }}
                     dbRows, err := validateAndQuery[{{ .ShowMapping.From.Name }}](v.client, ctx, opts)
                     if err != nil {

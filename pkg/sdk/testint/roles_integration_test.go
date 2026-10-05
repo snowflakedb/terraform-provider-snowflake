@@ -81,13 +81,13 @@ func TestInt_Roles(t *testing.T) {
 		assert.Equal(t, false, role.IsFromOrganizationUserGroup)
 
 		// verify tags
-		tag1Value, err := client.SystemFunctions.GetTag(ctx, tag.ID(), role.ID(), sdk.ObjectTypeRole)
+		tag1Value, err := client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(tag.ID(), role.ID(), sdk.ObjectTypeRole)))
 		require.NoError(t, err)
-		assert.Equal(t, sdk.Pointer("v1"), tag1Value)
+		assert.Equal(t, sdk.Pointer("v1"), tag1Value.Tag)
 
-		tag2Value, err := client.SystemFunctions.GetTag(ctx, tag2.ID(), role.ID(), sdk.ObjectTypeRole)
+		tag2Value, err := client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(tag2.ID(), role.ID(), sdk.ObjectTypeRole)))
 		require.NoError(t, err)
-		assert.Equal(t, sdk.Pointer("v2"), tag2Value)
+		assert.Equal(t, sdk.Pointer("v2"), tag2Value.Tag)
 	})
 
 	t.Run("alter rename to", func(t *testing.T) {

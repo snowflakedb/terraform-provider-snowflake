@@ -147,13 +147,13 @@ func TestInt_DatabasesCreate(t *testing.T) {
 		assertParameterEquals(t, sdk.AccountParameterQuotedIdentifiersIgnoreCase, "true")
 		assertParameterEquals(t, sdk.AccountParameterEnableConsoleOutput, "true")
 
-		tag1Value, err := client.SystemFunctions.GetTag(ctx, tagTest.ID(), database.ID(), sdk.ObjectTypeDatabase)
+		tag1Value, err := client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(tagTest.ID(), database.ID(), sdk.ObjectTypeDatabase)))
 		require.NoError(t, err)
-		assert.Equal(t, sdk.Pointer("v1"), tag1Value)
+		assert.Equal(t, sdk.Pointer("v1"), tag1Value.Tag)
 
-		tag2Value, err := client.SystemFunctions.GetTag(ctx, tag2Test.ID(), database.ID(), sdk.ObjectTypeDatabase)
+		tag2Value, err := client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(tag2Test.ID(), database.ID(), sdk.ObjectTypeDatabase)))
 		require.NoError(t, err)
-		assert.Equal(t, sdk.Pointer("v2"), tag2Value)
+		assert.Equal(t, sdk.Pointer("v2"), tag2Value.Tag)
 	})
 }
 
@@ -260,9 +260,9 @@ func TestInt_DatabasesCreateShared(t *testing.T) {
 	assertParameterEquals(t, sdk.AccountParameterQuotedIdentifiersIgnoreCase, "true")
 	assertParameterEquals(t, sdk.AccountParameterEnableConsoleOutput, "true")
 
-	tag1Value, err := client.SystemFunctions.GetTag(ctx, testTag.ID(), database.ID(), sdk.ObjectTypeDatabase)
+	tag1Value, err := client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(testTag.ID(), database.ID(), sdk.ObjectTypeDatabase)))
 	require.NoError(t, err)
-	assert.Equal(t, sdk.Pointer("v1"), tag1Value)
+	assert.Equal(t, sdk.Pointer("v1"), tag1Value.Tag)
 }
 
 func TestInt_DatabasesCreateSecondary(t *testing.T) {
@@ -1019,7 +1019,7 @@ func TestInt_DatabasesCatalogLinked_WithAdditionalDependencies(t *testing.T) {
 
 	getConfig := func(t *testing.T, id sdk.AccountObjectIdentifier) *sdk.CatalogLinkedDatabaseConfig {
 		t.Helper()
-		config, err := client.SystemFunctions.GetCatalogLinkedDatabaseConfig(ctx, id)
+		config, err := client.SystemFunctions.GetCatalogLinkedDatabaseConfig(ctx, sdk.NewGetCatalogLinkedDatabaseConfigRequest(*sdk.NewGetCatalogLinkedDatabaseConfigArgumentsRequest(id)))
 		require.NoError(t, err)
 		require.NotNil(t, config)
 		return config
@@ -1223,7 +1223,7 @@ func TestInt_DatabasesCatalogLinked_WithAdditionalDependencies(t *testing.T) {
 		// The execution state may not be reported before the first link attempt (the default
 		// SYNC_INTERVAL_SECONDS is 30), so poll a bit longer than that.
 		require.EventuallyWithT(t, func(collect *assert.CollectT) {
-			status, err := client.SystemFunctions.GetCatalogLinkStatus(ctx, database.ID())
+			status, err := client.SystemFunctions.GetCatalogLinkStatus(ctx, sdk.NewGetCatalogLinkStatusRequest(*sdk.NewGetCatalogLinkStatusArgumentsRequest(database.ID())))
 			assert.NoError(collect, err)
 			if assert.NotNil(collect, status) {
 				assert.NotEmpty(collect, status.ExecutionState)
@@ -1232,7 +1232,7 @@ func TestInt_DatabasesCatalogLinked_WithAdditionalDependencies(t *testing.T) {
 
 		// The failure-related fields are state- and timing-dependent (the docs show failureDetails
 		// populated even for a RUNNING link), so only the execution state is asserted.
-		status, err := client.SystemFunctions.GetCatalogLinkStatus(ctx, database.ID())
+		status, err := client.SystemFunctions.GetCatalogLinkStatus(ctx, sdk.NewGetCatalogLinkStatusRequest(*sdk.NewGetCatalogLinkStatusArgumentsRequest(database.ID())))
 		require.NoError(t, err)
 		assertThatObject(t, objectassert.CatalogLinkStatusFromObject(t, status).
 			HasExecutionStateNotEmpty())

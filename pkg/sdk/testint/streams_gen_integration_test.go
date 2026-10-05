@@ -45,9 +45,9 @@ func TestInt_Streams(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Stream.DropFunc(t, id))
 
-		tag1Value, err := client.SystemFunctions.GetTag(ctx, tag.ID(), id, sdk.ObjectTypeStream)
+		tag1Value, err := client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(tag.ID(), id, sdk.ObjectTypeStream)))
 		require.NoError(t, err)
-		assert.Equal(t, sdk.Pointer("v1"), tag1Value)
+		assert.Equal(t, sdk.Pointer("v1"), tag1Value.Tag)
 
 		assertThatObject(
 			t, objectassert.Stream(t, id).

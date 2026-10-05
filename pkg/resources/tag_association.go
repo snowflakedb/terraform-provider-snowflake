@@ -157,12 +157,12 @@ func CreateContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 		if !skipValidate {
 			log.Println("[DEBUG] validating tag creation")
 			if err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *retry.RetryError {
-				tag, err := client.SystemFunctions.GetTag(ctx, tagId, oid, objectType)
+				tag, err := client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(tagId, oid, objectType)))
 				if err != nil {
 					return retry.NonRetryableError(fmt.Errorf("error getting tag: %w", err))
 				}
 				// if length of response is zero, tag association was not found. retry
-				if tag == nil {
+				if tag.Tag == nil {
 					return retry.RetryableError(fmt.Errorf("expected tag association to be created but not yet created"))
 				}
 				return nil
@@ -187,14 +187,14 @@ func ReadContextTagAssociation(ctx context.Context, d *schema.ResourceData, meta
 	safeDestroy := providerCtx.Experiments.IsEnabled(experimentalfeatures.TagAssociationSafeDestroy)
 	var correctObjectIds []string
 	for _, oid := range ids {
-		objectTagValue, err := client.SystemFunctions.GetTag(ctx, tagId, oid, objectType)
+		objectTagValue, err := client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(tagId, oid, objectType)))
 		if safeDestroy && errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 			continue
 		}
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if objectTagValue != nil && *objectTagValue == tagValue {
+		if objectTagValue.Tag != nil && *objectTagValue.Tag == tagValue {
 			correctObjectIds = append(correctObjectIds, oid.FullyQualifiedName())
 		}
 	}

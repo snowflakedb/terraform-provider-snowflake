@@ -98,7 +98,11 @@ func (c *TagClient) GetForObject(t *testing.T, tagId sdk.SchemaObjectIdentifier,
 	ctx := context.Background()
 	client := c.context.client.SystemFunctions
 
-	return client.GetTag(ctx, tagId, objectId, objectType)
+	tag, err := client.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(tagId, objectId, objectType)))
+	if err != nil {
+		return nil, err
+	}
+	return tag.Tag, nil
 }
 
 func (c *TagClient) GetReferencesForObject(t *testing.T, objectId sdk.ObjectIdentifier, objectDomain sdk.TagReferenceObjectDomain) ([]sdk.TagReference, error) {

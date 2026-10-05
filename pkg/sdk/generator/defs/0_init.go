@@ -80,6 +80,7 @@ func init() {
 		storageLifecyclePoliciesDef,
 		streamlitsDef,
 		streamsDef,
+		systemFunctionsDef,
 		tablesDef,
 		tagReferencesDef,
 		tagsDef,

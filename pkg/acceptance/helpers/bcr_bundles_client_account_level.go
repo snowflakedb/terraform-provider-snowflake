@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,7 +16,7 @@ func (c *BcrBundlesClient) EnableBcrBundle(t *testing.T, name string) {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().EnableBehaviorChangeBundle(ctx, name)
+	err := c.client().EnableBehaviorChangeBundle(ctx, sdk.NewEnableBehaviorChangeBundleRequest(*sdk.NewBehaviorChangeBundleArgumentsRequest(name)))
 	require.NoError(t, err)
 
 	bundle := c.GetBcrInfo(t, name)
@@ -30,7 +31,7 @@ func (c *BcrBundlesClient) DisableBcrBundle(t *testing.T, name string) {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().DisableBehaviorChangeBundle(ctx, name)
+	err := c.client().DisableBehaviorChangeBundle(ctx, sdk.NewDisableBehaviorChangeBundleRequest(*sdk.NewBehaviorChangeBundleArgumentsRequest(name)))
 	require.NoError(t, err)
 
 	bundle := c.GetBcrInfo(t, name)
@@ -44,7 +45,7 @@ func (c *BcrBundlesClient) DisableBcrBundleCleanupFunc(t *testing.T, name string
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().DisableBehaviorChangeBundle(ctx, name)
+		err := c.client().DisableBehaviorChangeBundle(ctx, sdk.NewDisableBehaviorChangeBundleRequest(*sdk.NewBehaviorChangeBundleArgumentsRequest(name)))
 		require.NoError(t, err)
 	}
 }
@@ -54,7 +55,7 @@ func (c *BcrBundlesClient) EnableBcrBundleCleanupFunc(t *testing.T, name string)
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().EnableBehaviorChangeBundle(ctx, name)
+		err := c.client().EnableBehaviorChangeBundle(ctx, sdk.NewEnableBehaviorChangeBundleRequest(*sdk.NewBehaviorChangeBundleArgumentsRequest(name)))
 		require.NoError(t, err)
 	}
 }

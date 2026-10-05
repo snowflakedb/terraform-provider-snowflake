@@ -921,9 +921,9 @@ func TestInt_GrantOwnership(t *testing.T) {
 		pipe, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, copyStatement)
 		t.Cleanup(pipeCleanup)
 
-		pipeExecutionState, err := client.SystemFunctions.PipeStatus(pipe.ID())
+		pipeExecutionState, err := client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
 		require.NoError(t, err)
-		require.Equal(t, sdk.RunningPipeExecutionState, pipeExecutionState)
+		require.Equal(t, sdk.PipeExecutionStateRunning, pipeExecutionState.ExecutionState)
 
 		role, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
@@ -937,9 +937,9 @@ func TestInt_GrantOwnership(t *testing.T) {
 		grantOwnershipToRole(t, currentRole, ownershipGrantOnPipe(pipe), nil)
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnPipe(pipe), currentRole)
 
-		pipeExecutionState, err = client.SystemFunctions.PipeStatus(pipe.ID())
+		pipeExecutionState, err = client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
 		require.NoError(t, err)
-		require.Equal(t, sdk.PausedPipeExecutionState, pipeExecutionState)
+		require.Equal(t, sdk.PipeExecutionStatePaused, pipeExecutionState.ExecutionState)
 	})
 
 	t.Run("on cortex - with ownership", func(t *testing.T) {
@@ -1125,9 +1125,9 @@ func TestInt_GrantOwnership(t *testing.T) {
 		err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(false)))
 		require.NoError(t, err)
 
-		pipeExecutionState, err := client.SystemFunctions.PipeStatus(pipe.ID())
+		pipeExecutionState, err := client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
 		require.NoError(t, err)
-		require.Equal(t, sdk.RunningPipeExecutionState, pipeExecutionState)
+		require.Equal(t, sdk.PipeExecutionStateRunning, pipeExecutionState.ExecutionState)
 
 		err = client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(ownershipGrantOnPipe(pipe), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())).WithCurrentGrants(*sdk.NewOwnershipCurrentGrantsRequest(sdk.Revoke)))
 		require.NoError(t, err)
@@ -1135,9 +1135,9 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		usePreviousRole()
 
-		pipeExecutionState, err = client.SystemFunctions.PipeStatus(pipe.ID())
+		pipeExecutionState, err = client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
 		require.NoError(t, err)
-		require.Equal(t, sdk.PausedPipeExecutionState, pipeExecutionState)
+		require.Equal(t, sdk.PipeExecutionStatePaused, pipeExecutionState.ExecutionState)
 	})
 
 	t.Run("on pipe - with operate privilege granted and copy current grants option", func(t *testing.T) {
@@ -1172,9 +1172,9 @@ func TestInt_GrantOwnership(t *testing.T) {
 		err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(false)))
 		require.NoError(t, err)
 
-		pipeExecutionState, err := client.SystemFunctions.PipeStatus(pipe.ID())
+		pipeExecutionState, err := client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
 		require.NoError(t, err)
-		require.Equal(t, sdk.RunningPipeExecutionState, pipeExecutionState)
+		require.Equal(t, sdk.PipeExecutionStateRunning, pipeExecutionState.ExecutionState)
 
 		err = client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(ownershipGrantOnPipe(pipe), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())).WithCurrentGrants(*sdk.NewOwnershipCurrentGrantsRequest(sdk.Copy)))
 		require.NoError(t, err)
@@ -1182,9 +1182,9 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		usePreviousRole()
 
-		pipeExecutionState, err = client.SystemFunctions.PipeStatus(pipe.ID())
+		pipeExecutionState, err = client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
 		require.NoError(t, err)
-		require.Equal(t, sdk.RunningPipeExecutionState, pipeExecutionState)
+		require.Equal(t, sdk.PipeExecutionStateRunning, pipeExecutionState.ExecutionState)
 	})
 
 	t.Run("on pipe - with neither ownership nor operate", func(t *testing.T) {
@@ -1212,9 +1212,9 @@ func TestInt_GrantOwnership(t *testing.T) {
 		err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(false)))
 		require.NoError(t, err)
 
-		pipeExecutionState, err := client.SystemFunctions.PipeStatus(pipe.ID())
+		pipeExecutionState, err := client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
 		require.NoError(t, err)
-		require.Equal(t, sdk.RunningPipeExecutionState, pipeExecutionState)
+		require.Equal(t, sdk.PipeExecutionStateRunning, pipeExecutionState.ExecutionState)
 
 		usePreviousRole()
 
@@ -1247,9 +1247,9 @@ func TestInt_GrantOwnership(t *testing.T) {
 		err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(true)))
 		require.NoError(t, err)
 
-		pipeExecutionState, err := client.SystemFunctions.PipeStatus(pipe.ID())
+		pipeExecutionState, err := client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
 		require.NoError(t, err)
-		require.Equal(t, sdk.PausedPipeExecutionState, pipeExecutionState)
+		require.Equal(t, sdk.PipeExecutionStatePaused, pipeExecutionState.ExecutionState)
 
 		usePreviousRole()
 
@@ -1265,13 +1265,13 @@ func TestInt_GrantOwnership(t *testing.T) {
 		secondPipe, secondPipeCleanup := testClientHelper().Pipe.CreatePipe(t, copyStatement)
 		t.Cleanup(secondPipeCleanup)
 
-		pipeExecutionState, err := client.SystemFunctions.PipeStatus(pipe.ID())
+		pipeExecutionState, err := client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
 		require.NoError(t, err)
-		require.Equal(t, sdk.RunningPipeExecutionState, pipeExecutionState)
+		require.Equal(t, sdk.PipeExecutionStateRunning, pipeExecutionState.ExecutionState)
 
-		secondPipeExecutionState, err := client.SystemFunctions.PipeStatus(secondPipe.ID())
+		secondPipeExecutionState, err := client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(secondPipe.ID())))
 		require.NoError(t, err)
-		require.Equal(t, sdk.RunningPipeExecutionState, secondPipeExecutionState)
+		require.Equal(t, sdk.PipeExecutionStateRunning, secondPipeExecutionState.ExecutionState)
 
 		role, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
@@ -1288,13 +1288,13 @@ func TestInt_GrantOwnership(t *testing.T) {
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnPipe(pipe), currentRole)
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnPipe(secondPipe), currentRole)
 
-		pipeExecutionState, err = client.SystemFunctions.PipeStatus(pipe.ID())
+		pipeExecutionState, err = client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
 		require.NoError(t, err)
-		require.Equal(t, sdk.PausedPipeExecutionState, pipeExecutionState)
+		require.Equal(t, sdk.PipeExecutionStatePaused, pipeExecutionState.ExecutionState)
 
-		secondPipeExecutionState, err = client.SystemFunctions.PipeStatus(secondPipe.ID())
+		secondPipeExecutionState, err = client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(secondPipe.ID())))
 		require.NoError(t, err)
-		require.Equal(t, sdk.PausedPipeExecutionState, secondPipeExecutionState)
+		require.Equal(t, sdk.PipeExecutionStatePaused, secondPipeExecutionState.ExecutionState)
 	})
 
 	t.Run("on task - with ownership", func(t *testing.T) {

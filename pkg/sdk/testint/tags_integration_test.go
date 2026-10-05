@@ -180,9 +180,9 @@ func TestInt_Tags(t *testing.T) {
 		assert.Equal(t, sdk.PolicyKindMaskingPolicy, ref.PolicyKind)
 
 		// assert that setting masking policy does not apply the tag on the masking policy
-		returnedTagValue, err := client.SystemFunctions.GetTag(ctx, id, policyTest.ID(), sdk.ObjectTypeMaskingPolicy)
+		returnedTagValue, err := client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(id, policyTest.ID(), sdk.ObjectTypeMaskingPolicy)))
 		require.NoError(t, err)
-		assert.Nil(t, returnedTagValue)
+		assert.Nil(t, returnedTagValue.Tag)
 
 		unset := sdk.NewTagUnsetRequest().WithMaskingPolicies(*sdk.NewTagUnsetMaskingPoliciesRequest().WithMaskingPolicies(policies))
 		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*unset))
@@ -729,7 +729,7 @@ func TestInt_TagsAssociations(t *testing.T) {
 		require.NoError(t, err)
 
 		// TODO(SNOW-1746420): adjust after this is fixed on Snowflake side
-		_, err = client.SystemFunctions.GetTag(ctx, tag.ID(), id, sdk.ObjectTypeApplication)
+		_, err = client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(tag.ID(), id, sdk.ObjectTypeApplication)))
 		require.ErrorContains(t, err, "391801 (0A000): SQL compilation error: Object tagging not supported for object type APPLICATION")
 
 		err = client.Applications.Alter(ctx, sdk.NewAlterApplicationRequest(id).WithUnsetTags(unsetTags))

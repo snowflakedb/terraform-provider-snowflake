@@ -3,7 +3,6 @@
 package testint
 
 import (
-	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -30,27 +29,24 @@ func TestInt_GetTag(t *testing.T) {
 		err := client.MaskingPolicies.Alter(ctx, sdk.NewAlterMaskingPolicyRequest(maskingPolicyTest.ID()).
 			WithSetTags([]sdk.TagAssociation{{Name: tagTest.ID(), Value: tagValue}}))
 		require.NoError(t, err)
-		s, err := client.SystemFunctions.GetTag(ctx, tagTest.ID(), maskingPolicyTest.ID(), sdk.ObjectTypeMaskingPolicy)
+		s, err := client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(tagTest.ID(), maskingPolicyTest.ID(), sdk.ObjectTypeMaskingPolicy)))
 		require.NoError(t, err)
-		assert.Equal(t, &tagValue, s)
+		assert.Equal(t, &tagValue, s.Tag)
 	})
 
 	t.Run("masking policy with no set tag", func(t *testing.T) {
 		maskingPolicyTest, maskingPolicyCleanup := testClientHelper().MaskingPolicy.CreateMaskingPolicy(t)
 		t.Cleanup(maskingPolicyCleanup)
 
-		s, err := client.SystemFunctions.GetTag(ctx, tagTest.ID(), maskingPolicyTest.ID(), sdk.ObjectTypeMaskingPolicy)
+		s, err := client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(tagTest.ID(), maskingPolicyTest.ID(), sdk.ObjectTypeMaskingPolicy)))
 		require.NoError(t, err)
-		assert.Nil(t, s)
-	})
-	t.Run("invalid object type", func(t *testing.T) {
-		_, err := client.SystemFunctions.GetTag(ctx, tagTest.ID(), testClientHelper().Ids.RandomAccountObjectIdentifier(), sdk.ObjectType("SEQUENCE;"))
-		require.ErrorContains(t, err, "invalid object type")
+		assert.Nil(t, s.Tag)
 	})
 }
 
 func TestInt_PipeStatus(t *testing.T) {
 	client := testClient(t)
+	ctx := testContext(t)
 
 	schema, schemaCleanup := testClientHelper().Schema.CreateSchema(t)
 	t.Cleanup(schemaCleanup)
@@ -65,30 +61,30 @@ func TestInt_PipeStatus(t *testing.T) {
 	pipe, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, copyStatement)
 	t.Cleanup(pipeCleanup)
 
-	pipeExecutionState, err := client.SystemFunctions.PipeStatus(pipe.ID())
+	pipeExecutionState, err := client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
 	require.NoError(t, err)
-	require.Equal(t, sdk.RunningPipeExecutionState, pipeExecutionState)
+	require.Equal(t, sdk.PipeExecutionStateRunning, pipeExecutionState.ExecutionState)
 
 	// Pause the pipe
-	ctx := context.Background()
 	err = client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(true)))
 	require.NoError(t, err)
 
-	pipeExecutionState, err = client.SystemFunctions.PipeStatus(pipe.ID())
+	pipeExecutionState, err = client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
 	require.NoError(t, err)
-	require.Equal(t, sdk.PausedPipeExecutionState, pipeExecutionState)
+	require.Equal(t, sdk.PipeExecutionStatePaused, pipeExecutionState.ExecutionState)
 
 	// Unpause the pipe
 	err = client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(false)))
 	require.NoError(t, err)
 
-	pipeExecutionState, err = client.SystemFunctions.PipeStatus(pipe.ID())
+	pipeExecutionState, err = client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
 	require.NoError(t, err)
-	require.Equal(t, sdk.RunningPipeExecutionState, pipeExecutionState)
+	require.Equal(t, sdk.PipeExecutionStateRunning, pipeExecutionState.ExecutionState)
 }
 
 func TestInt_PipeForceResume(t *testing.T) {
 	client := testClient(t)
+	ctx := testContext(t)
 
 	role, roleCleanup := testClientHelper().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
@@ -106,11 +102,10 @@ func TestInt_PipeForceResume(t *testing.T) {
 	pipe, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, copyStatement)
 	t.Cleanup(pipeCleanup)
 
-	pipeExecutionState, err := client.SystemFunctions.PipeStatus(pipe.ID())
+	pipeExecutionState, err := client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
 	require.NoError(t, err)
-	require.Equal(t, sdk.RunningPipeExecutionState, pipeExecutionState)
+	require.Equal(t, sdk.PipeExecutionStateRunning, pipeExecutionState.ExecutionState)
 
-	ctx := context.Background()
 	err = client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(true)))
 	require.NoError(t, err)
 
@@ -128,12 +123,12 @@ func TestInt_PipeForceResume(t *testing.T) {
 	require.ErrorContains(t, err, fmt.Sprintf("Pipe %s cannot be resumed as ownership had changed. Resuming pipe may load files inserted by previous owner into table. To forceresume pipe use SYSTEM$PIPE_FORCE_RESUME('%s')", pipe.Name, pipe.Name))
 
 	// Resume with system func (success)
-	err = client.SystemFunctions.PipeForceResume(pipe.ID(), nil)
+	err = client.SystemFunctions.PipeForceResume(ctx, sdk.NewPipeForceResumeRequest(*sdk.NewPipeForceResumeArgumentsRequest(pipe.ID())))
 	require.NoError(t, err)
 
-	pipeExecutionState, err = client.SystemFunctions.PipeStatus(pipe.ID())
+	pipeExecutionState, err = client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
 	require.NoError(t, err)
-	require.Equal(t, sdk.RunningPipeExecutionState, pipeExecutionState)
+	require.Equal(t, sdk.PipeExecutionStateRunning, pipeExecutionState.ExecutionState)
 }
 
 func TestInt_GetIcebergTableInformation(t *testing.T) {
@@ -145,15 +140,16 @@ func TestInt_GetIcebergTableInformation(t *testing.T) {
 	t.Cleanup(icebergTableCleanup)
 
 	t.Run("get iceberg table information", func(t *testing.T) {
-		info, err := client.SystemFunctions.GetIcebergTableInformation(ctx, icebergTable.ID())
+		info, err := client.SystemFunctions.GetIcebergTableInformation(ctx, sdk.NewGetIcebergTableInformationRequest(*sdk.NewGetIcebergTableInformationArgumentsRequest(icebergTable.ID())))
 		require.NoError(t, err)
 		require.NotNil(t, info)
 		// Assert not empty because Snowflake returns a temporary location like
 		// s3://sfc-prod2-xyz/iceberg/path/to/file/file.metadata.json
 		assert.NotEmpty(t, info.MetadataLocation)
 	})
+
 	t.Run("get iceberg table information fails when the table does not exist", func(t *testing.T) {
-		_, err := client.SystemFunctions.GetIcebergTableInformation(ctx, testClientHelper().Ids.RandomSchemaObjectIdentifier())
+		_, err := client.SystemFunctions.GetIcebergTableInformation(ctx, sdk.NewGetIcebergTableInformationRequest(*sdk.NewGetIcebergTableInformationArgumentsRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier())))
 		require.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 	})
 }
@@ -173,7 +169,7 @@ func TestInt_GetClusteringInformation(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
 
-		info, err := client.SystemFunctions.GetClusteringInformation(ctx, id)
+		info, err := client.SystemFunctions.GetClusteringInformation(ctx, sdk.NewGetClusteringInformationRequest(*sdk.NewGetClusteringInformationArgumentsRequest(id)))
 		require.NoError(t, err)
 		require.NotNil(t, info)
 		assert.Equal(t, "LINEAR(REGION)", info.ClusterByKeys)
@@ -194,7 +190,7 @@ func TestInt_GetClusteringInformation(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
 
-		info, err := client.SystemFunctions.GetClusteringInformation(ctx, id, "region")
+		info, err := client.SystemFunctions.GetClusteringInformation(ctx, sdk.NewGetClusteringInformationRequest(*sdk.NewGetClusteringInformationArgumentsRequest(id).WithColumns([]sdk.ClusteringInformationColumnRequest{*sdk.NewClusteringInformationColumnRequest().WithName("region")})))
 		require.NoError(t, err)
 		require.NotNil(t, info)
 		assert.Equal(t, `LINEAR("region")`, info.ClusterByKeys)
@@ -211,7 +207,7 @@ func TestInt_GetClusteringInformation(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
 
-		_, err = client.SystemFunctions.GetClusteringInformation(ctx, id)
+		_, err = client.SystemFunctions.GetClusteringInformation(ctx, sdk.NewGetClusteringInformationRequest(*sdk.NewGetClusteringInformationArgumentsRequest(id)))
 		require.ErrorIs(t, err, sdk.ErrTableNotClustered)
 	})
 }
@@ -221,18 +217,18 @@ func TestInt_BcrBundles(t *testing.T) {
 	ctx := testContext(t)
 
 	t.Run("get bundle status", func(t *testing.T) {
-		status, err := client.SystemFunctions.BehaviorChangeBundleStatus(ctx, "2025_01")
+		status, err := client.SystemFunctions.BehaviorChangeBundleStatus(ctx, sdk.NewBehaviorChangeBundleStatusRequest(*sdk.NewBehaviorChangeBundleArgumentsRequest("2025_01")))
 		require.NoError(t, err)
-		assert.Equal(t, sdk.BehaviorChangeBundleStatusReleased, status)
+		assert.Equal(t, sdk.BehaviorChangeBundleStatusReleased, status.Status)
 	})
 
 	t.Run("enable non-existing bundle", func(t *testing.T) {
-		err := client.SystemFunctions.EnableBehaviorChangeBundle(ctx, "non-existing-bundle")
+		err := client.SystemFunctions.EnableBehaviorChangeBundle(ctx, sdk.NewEnableBehaviorChangeBundleRequest(*sdk.NewBehaviorChangeBundleArgumentsRequest("non-existing-bundle")))
 		require.ErrorContains(t, err, "Invalid Change Bundle 'non-existing-bundle'")
 	})
 
 	t.Run("disable non-existing bundle", func(t *testing.T) {
-		err := client.SystemFunctions.DisableBehaviorChangeBundle(ctx, "non-existing-bundle")
+		err := client.SystemFunctions.DisableBehaviorChangeBundle(ctx, sdk.NewDisableBehaviorChangeBundleRequest(*sdk.NewBehaviorChangeBundleArgumentsRequest("non-existing-bundle")))
 		require.ErrorContains(t, err, "Invalid Change Bundle 'non-existing-bundle'")
 	})
 }

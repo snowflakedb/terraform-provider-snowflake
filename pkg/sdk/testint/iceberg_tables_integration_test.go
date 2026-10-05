@@ -674,7 +674,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
 
 		// The clustering key is not returned from SHOW/DESCRIBE, so verify it with SYSTEM$CLUSTERING_INFORMATION.
-		clusteringInfo, err := client.SystemFunctions.GetClusteringInformation(ctx, id)
+		clusteringInfo, err := client.SystemFunctions.GetClusteringInformation(ctx, sdk.NewGetClusteringInformationRequest(*sdk.NewGetClusteringInformationArgumentsRequest(id)))
 		require.NoError(t, err)
 		assert.Equal(t, "LINEAR(ID, REGION)", clusteringInfo.ClusterByKeys)
 	})
@@ -1278,7 +1278,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		require.NoError(t, err)
 
 		// The clustering key is not returned from SHOW/DESCRIBE, so verify it with SYSTEM$CLUSTERING_INFORMATION.
-		info, err := client.SystemFunctions.GetClusteringInformation(ctx, id)
+		info, err := client.SystemFunctions.GetClusteringInformation(ctx, sdk.NewGetClusteringInformationRequest(*sdk.NewGetClusteringInformationArgumentsRequest(id)))
 		require.NoError(t, err)
 		assert.Equal(t, "LINEAR(REGION)", info.ClusterByKeys)
 
@@ -1287,7 +1287,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		require.NoError(t, err)
 
 		// After dropping the clustering key, the table is no longer clustered.
-		_, err = client.SystemFunctions.GetClusteringInformation(ctx, id)
+		_, err = client.SystemFunctions.GetClusteringInformation(ctx, sdk.NewGetClusteringInformationRequest(*sdk.NewGetClusteringInformationArgumentsRequest(id)))
 		require.ErrorIs(t, err, sdk.ErrTableNotClustered)
 	})
 
@@ -1700,10 +1700,10 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		// the tag set on the DESCRIPTION column at ADD COLUMN time
 		descriptionColumnId := sdk.NewTableColumnIdentifier(id.DatabaseName(), id.SchemaName(), id.Name(), "DESCRIPTION")
-		tagValue, err := client.SystemFunctions.GetTag(ctx, tag.ID(), descriptionColumnId, sdk.ObjectTypeColumn)
+		tagValue, err := client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(tag.ID(), descriptionColumnId, sdk.ObjectTypeColumn)))
 		require.NoError(t, err)
-		require.NotNil(t, tagValue)
-		assert.Equal(t, "tag-value", *tagValue)
+		require.NotNil(t, tagValue.Tag)
+		assert.Equal(t, "tag-value", *tagValue.Tag)
 
 		statusIdx := slices.IndexFunc(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "STATUS" })
 		require.NotEqual(t, -1, statusIdx)
