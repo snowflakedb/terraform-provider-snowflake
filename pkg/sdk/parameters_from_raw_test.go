@@ -176,6 +176,13 @@ func TestSetParameterFromRaw(t *testing.T) {
 		require.Contains(t, sql, "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB = 9.9")
 		require.NotContains(t, sql, "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB = '9.9'")
 	})
+
+	t.Run("accepts an empty string for a StringAllowEmpty parameter", func(t *testing.T) {
+		request := NewAccountParametersRequest()
+		require.NoError(t, request.SetParameterFromRaw("DEFAULT_DDL_COLLATION", ""))
+		require.NotNil(t, request.DefaultDdlCollation)
+		require.Equal(t, "", request.DefaultDdlCollation.Value)
+	})
 }
 
 func TestUnsetParameterFromRaw(t *testing.T) {

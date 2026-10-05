@@ -36,6 +36,9 @@ func TestAcc_AccountParameter_BasicUseCase(t *testing.T) {
 		{sdk.AccountParameterDefaultStreamlitComputePool, "SYSTEM_COMPUTE_POOL_GPU", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterDisallowedSpcsWorkloadTypes, "", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterEnableBudgetEventLogging, "true", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterDisableUiDownloadButton, "true", sdk.ParameterTypeSnowflakeDefault},
+		// A StringAllowEmpty parameter must accept an empty string as a real value.
+		{sdk.AccountParameterDefaultDdlCollation, "", sdk.ParameterTypeSnowflakeDefault},
 		// TOOD(SNOW-3953840): Unskip or remove {sdk.AccountParameterCortexModelsAllowlist, "All", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterCortexCodeCliDailyEstCreditLimitPerUser, "10", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterCortexCodeDesktopDailyEstCreditLimitPerUser, "20", sdk.ParameterTypeSnowflakeDefault},

@@ -99,6 +99,13 @@ When enabled, you can set `account` instead of setting `organization_name` and `
 
 Without this experiment, setting the `account` field in the provider configuration or in a TOML profile results in an error directing you to enable this experiment. A value coming from the `SNOWFLAKE_ACCOUNT` environment variable is ignored with a warning instead, because this experiment will be enabled by default in v3 and the variable will be taken into account from that version on.
 
+#### ACCOUNT_PARAMETER_CATALOG_WRITE_PATH
+Changes how `snowflake_account_parameter` builds the SQL it sends for the `value` field of string-typed and identifier-typed parameters.
+
+String-typed parameter values no longer need to be manually wrapped in single quotes within `value` — quoting is now handled internally. Identifier-typed parameters (e.g. referencing a network policy by name) require no `value` change, but are now sent as a quoted identifier instead of a single-quoted string literal.
+
+This experiment is also the first step toward forward-compatible parameter support (new Snowflake parameters usable without a provider upgrade); for now it only changes how existing parameters are written. See the migration guide for a detailed, before/after view of the configuration changes: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#opt-in-experiment-internal-quoting-for-snowflake_account_parameter.
+
 
 ### Experiments enabled by default
 

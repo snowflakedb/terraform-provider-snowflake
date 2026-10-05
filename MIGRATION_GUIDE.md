@@ -46,6 +46,68 @@ We added `primary_key` and `auto_suspend` fields to the `snowflake_cortex_search
 
 No configuration changes are needed for existing configurations; both fields are optional.
 
+### *(new feature)* New supported parameters in `snowflake_account_parameter`
+
+`snowflake_account_parameter` now supports the following parameters, which were previously rejected by the `key` field's validation:
+
+- `BASE_LOCATION_PREFIX`
+- `CATALOG_SYNC`
+- `DEFAULT_NULL_ORDERING`
+- `DEFAULT_STREAMLIT_NOTEBOOK_WAREHOUSE`
+- `DISABLE_UI_DOWNLOAD_BUTTON` (closes [#4764](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4764))
+- `ENABLE_AUTOMATIC_SENSITIVE_DATA_CLASSIFICATION_LOG`
+- `ENABLE_EGRESS_COST_OPTIMIZER`
+- `ENABLE_UNREDACTED_SECURE_OBJECT_ERROR`
+- `LISTING_AUTO_FULFILLMENT_REPLICATION_REFRESH_SCHEDULE`
+- `SERVERLESS_TASK_MAX_STATEMENT_SIZE`
+- `SERVERLESS_TASK_MIN_STATEMENT_SIZE`
+
+No existing parameters were removed, and no configuration changes are required.
+
+### *(new feature)* Opt-in experiment: internal quoting for `snowflake_account_parameter`
+
+We added the `ACCOUNT_PARAMETER_CATALOG_WRITE_PATH` opt-in experiment (`experimental_features_enabled = ["ACCOUNT_PARAMETER_CATALOG_WRITE_PATH"]`). It changes how `snowflake_account_parameter` handles the `value` field:
+
+- For string-typed parameters, `value` no longer needs to be manually wrapped in single quotes — quoting is now handled internally. For example, setting `PYTHON_PROFILER_MODULES`:
+
+  ```hcl
+  # before (experiment disabled)
+  resource "snowflake_account_parameter" "example" {
+    key   = "PYTHON_PROFILER_MODULES"
+    value = "'module_a,module_b'"
+  }
+  ```
+
+  ```hcl
+  # after (experiment enabled)
+  resource "snowflake_account_parameter" "example" {
+    key   = "PYTHON_PROFILER_MODULES"
+    value = "module_a,module_b"
+  }
+  ```
+
+- For identifier-typed parameters (e.g. a parameter referencing a network policy by name), no HCL change is needed — `value` stays a bare name either way. Only the SQL the provider builds internally changes, from a single-quoted string literal to a double-quoted identifier. For example, setting `NETWORK_POLICY`:
+
+  ```hcl
+  resource "snowflake_account_parameter" "example" {
+    key   = "NETWORK_POLICY"
+    value = "MY_NETWORK_POLICY"
+  }
+  ```
+
+- `INITIAL_REPLICATION_SIZE_LIMIT_IN_TB` is treated as a numeric value and needs no quoting at all, with or without the experiment:
+
+  ```hcl
+  resource "snowflake_account_parameter" "example" {
+    key   = "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB"
+    value = "9.9"
+  }
+  ```
+
+By default (experiment disabled), the resource keeps its current behavior — this is a zero behavior change for existing configurations.
+
+This experiment is also the first step toward forward-compatible parameter support: letting newly-added Snowflake parameters be used without waiting for a provider release. For now, it only changes how already-supported parameters are written.
+
 ### *(enhancement)* Loosened integer parameter validation on database and schema resources
 
 Client-side upper bounds on integer object parameters have been removed. The provider now only rejects values below `0` (`IntAtLeast(0)`) and lets Snowflake enforce account-specific or edition-specific maxima.

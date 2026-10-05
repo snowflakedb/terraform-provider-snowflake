@@ -9,152 +9,24 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// TODO [SNOW-2298249]: Adjust client.Parameters.SetAccountParameter.
-// TODO [SNOW-2298249]: Continue handling parameters not available in current_account.
-// TODO [SNOW-2298249]: Ultimately unify with parameters list in current_account, these two resources should handle the same parameters list.
-var accountParameterSupportedParameters = []sdk.AccountParameter{
-	sdk.AccountParameterAllowClientMfaCaching,
-	sdk.AccountParameterAllowIdToken,
-	sdk.AccountParameterClientEncryptionKeySize,
-	sdk.AccountParameterCortexCodeCliDailyEstCreditLimitPerUser,
-	sdk.AccountParameterCortexCodeDesktopDailyEstCreditLimitPerUser,
-	sdk.AccountParameterCortexCodeSnowsightDailyEstCreditLimitPerUser,
-	sdk.AccountParameterCortexEnabledCrossRegion,
-	sdk.AccountParameterCortexModelsAllowlist,
-	sdk.AccountParameterDefaultStreamlitComputePool,
-	sdk.AccountParameterDisableUserPrivilegeGrants,
-	sdk.AccountParameterEnableIdentifierFirstLogin,
-	sdk.AccountParameterEnableInternalStagesPrivatelink,
-	sdk.AccountParameterEnablePerAccountAppServicePrivatelinkUrl,
-	sdk.AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository,
-	sdk.AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage,
-	sdk.AccountParameterEnableUnhandledExceptionsReporting,
-	sdk.AccountParameterEnforceNetworkRulesForInternalStages,
-	sdk.AccountParameterEventTable,
-	sdk.AccountParameterExternalOauthAddPrivilegedRolesToBlockedList,
-	sdk.AccountParameterInitialReplicationSizeLimitInTb,
-	sdk.AccountParameterMinDataRetentionTimeInDays,
-	sdk.AccountParameterNetworkPolicy,
-	sdk.AccountParameterOauthAddPrivilegedRolesToBlockedList,
-	sdk.AccountParameterPeriodicDataRekeying,
-	sdk.AccountParameterPreventLoadFromInlineURL,
-	sdk.AccountParameterPreventUnloadToInlineUrl,
-	sdk.AccountParameterRequireStorageIntegrationForStageCreation,
-	sdk.AccountParameterRequireStorageIntegrationForStageOperation,
-	sdk.AccountParameterSsoLoginPage,
+var accountParameterSupportedParameters = buildAccountParameterSupportedParameters()
 
-	sdk.AccountParameterAbortDetachedQuery,
-	sdk.AccountParameterActivePythonProfiler,
-	sdk.AccountParameterAutocommit,
-	sdk.AccountParameterBinaryInputFormat,
-	sdk.AccountParameterBinaryOutputFormat,
-	sdk.AccountParameterClientEnableLogInfoStatementParameters,
-	sdk.AccountParameterClientMemoryLimit,
-	sdk.AccountParameterClientMetadataRequestUseConnectionCtx,
-	sdk.AccountParameterClientMetadataUseSessionDatabase,
-	sdk.AccountParameterClientPrefetchThreads,
-	sdk.AccountParameterClientResultChunkSize,
-	sdk.AccountParameterClientSessionKeepAlive,
-	sdk.AccountParameterClientSessionKeepAliveHeartbeatFrequency,
-	sdk.AccountParameterClientTimestampTypeMapping,
-	sdk.AccountParameterEnableUnloadPhysicalTypeOptimization,
-	sdk.AccountParameterClientResultColumnCaseInsensitive,
-	sdk.AccountParameterCsvTimestampFormat,
-	sdk.AccountParameterDateInputFormat,
-	sdk.AccountParameterDateOutputFormat,
-	sdk.AccountParameterErrorOnNondeterministicMerge,
-	sdk.AccountParameterErrorOnNondeterministicUpdate,
-	sdk.AccountParameterGeographyOutputFormat,
-	sdk.AccountParameterGeometryOutputFormat,
-	sdk.AccountParameterHybridTableLockTimeout,
-	sdk.AccountParameterJdbcTreatDecimalAsInt,
-	sdk.AccountParameterJdbcTreatTimestampNtzAsUtc,
-	sdk.AccountParameterJdbcUseSessionTimezone,
-	sdk.AccountParameterJsonIndent,
-	sdk.AccountParameterJsTreatIntegerAsBigint,
-	sdk.AccountParameterLockTimeout,
-	sdk.AccountParameterMultiStatementCount,
-	sdk.AccountParameterNoorderSequenceAsDefault,
-	sdk.AccountParameterOdbcTreatDecimalAsInt,
-	sdk.AccountParameterPythonProfilerModules,
-	sdk.AccountParameterPythonProfilerTargetStage,
-	sdk.AccountParameterQueryTag,
-	sdk.AccountParameterQuotedIdentifiersIgnoreCase,
-	sdk.AccountParameterRowsPerResultset,
-	sdk.AccountParameterS3StageVpceDnsName,
-	sdk.AccountParameterSearchPath,
-	sdk.AccountParameterSimulatedDataSharingConsumer,
-	sdk.AccountParameterStatementTimeoutInSeconds,
-	sdk.AccountParameterStrictJsonOutput,
-	sdk.AccountParameterTimeInputFormat,
-	sdk.AccountParameterTimeOutputFormat,
-	sdk.AccountParameterTimestampDayIsAlways24h,
-	sdk.AccountParameterTimestampInputFormat,
-	sdk.AccountParameterTimestampLtzOutputFormat,
-	sdk.AccountParameterTimestampNtzOutputFormat,
-	sdk.AccountParameterTimestampOutputFormat,
-	sdk.AccountParameterTimestampTypeMapping,
-	sdk.AccountParameterTimestampTzOutputFormat,
-	sdk.AccountParameterTimezone,
-	sdk.AccountParameterTransactionAbortOnError,
-	sdk.AccountParameterTransactionDefaultIsolationLevel,
-	sdk.AccountParameterTwoDigitCenturyStart,
-	sdk.AccountParameterUnsupportedDdlAction,
-	sdk.AccountParameterUseCachedResult,
-	sdk.AccountParameterWeekOfYearPolicy,
-	sdk.AccountParameterWeekStart,
-
-	sdk.AccountParameterCatalog,
-	sdk.AccountParameterDataRetentionTimeInDays,
-	sdk.AccountParameterDefaultDdlCollation,
-	sdk.AccountParameterDefaultNotebookComputePoolCpu,
-	sdk.AccountParameterDefaultNotebookComputePoolGpu,
-	sdk.AccountParameterExternalVolume,
-	sdk.AccountParameterLogLevel,
-	sdk.AccountParameterLogEventLevel,
-	sdk.AccountParameterMaxConcurrencyLevel,
-	sdk.AccountParameterMaxDataExtensionTimeInDays,
-	sdk.AccountParameterPipeExecutionPaused,
-	sdk.AccountParameterPreventUnloadToInternalStages,
-	sdk.AccountParameterReplaceInvalidCharacters,
-	sdk.AccountParameterStatementQueuedTimeoutInSeconds,
-	sdk.AccountParameterStorageSerializationPolicy,
-	sdk.AccountParameterShareRestrictions,
-	sdk.AccountParameterSuspendTaskAfterNumFailures,
-	sdk.AccountParameterTraceLevel,
-	sdk.AccountParameterUserTaskManagedInitialWarehouseSize,
-	sdk.AccountParameterUserTaskTimeoutMs,
-	sdk.AccountParameterTaskAutoRetryAttempts,
-	sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds,
-	sdk.AccountParameterMetricLevel,
-	sdk.AccountParameterEnableConsoleOutput,
-	sdk.AccountParameterEnableUnredactedQuerySyntaxError,
-	sdk.AccountParameterEnablePersonalDatabase,
-
-	sdk.AccountParameterAllowBindValuesAccess,
-	sdk.AccountParameterAllowedSpcsWorkloadTypes,
-	sdk.AccountParameterDataMetricSchedule,
-	sdk.AccountParameterDefaultDbtVersion,
-	sdk.AccountParameterDisallowedSpcsWorkloadTypes,
-	sdk.AccountParameterEnableBudgetEventLogging,
-	sdk.AccountParameterEnableCortexAnalyst,
-	sdk.AccountParameterEnableDataCompaction,
-	sdk.AccountParameterEnableGetDdlUseDataTypeAlias,
-	sdk.AccountParameterEnableIcebergMergeOnRead,
-	sdk.AccountParameterEnableNotebookCreationInPersonalDb,
-	sdk.AccountParameterEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement,
-	sdk.AccountParameterEnableTagPropagationEventLogging,
-	sdk.AccountParameterIcebergVersionDefault,
-	sdk.AccountParameterReadConsistencyMode,
-	sdk.AccountParameterRowTimestampDefault,
-	sdk.AccountParameterSqlTraceQueryText,
-	sdk.AccountParameterUseWorkspacesForSql,
+func buildAccountParameterSupportedParameters() []sdk.AccountParameter {
+	catalogParams := defs.ParameterDefsForLevel(parameterdefs.ParameterLevelAccountExt)
+	params := make([]sdk.AccountParameter, len(catalogParams))
+	for i, p := range catalogParams {
+		params[i] = sdk.AccountParameter(p.SqlName)
+	}
+	return params
 }
 
 func ToAccountParameter(s string) (sdk.AccountParameter, error) {
@@ -200,18 +72,26 @@ func AccountParameter() *schema.Resource {
 
 // CreateAccountParameter implements schema.CreateFunc.
 func CreateAccountParameter(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	key := d.Get("key").(string)
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+	key := strings.ToUpper(d.Get("key").(string))
 	value := d.Get("value").(string)
-	parameter, err := ToAccountParameter(key)
-	if err != nil {
-		return diag.FromErr(err)
+
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.AccountParameterCatalogWritePath) {
+		req := sdk.NewAccountParametersRequest()
+		if err := req.SetParameterFromRaw(key, value); err != nil {
+			return diag.FromErr(err)
+		}
+		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithParameters(*req))); err != nil {
+			return diag.FromErr(err)
+		}
+	} else {
+		if err := client.Parameters.SetAccountParameter(ctx, sdk.AccountParameter(key), value); err != nil {
+			return diag.FromErr(fmt.Errorf("error creating account parameter err = %w", err))
+		}
 	}
-	err = client.Parameters.SetAccountParameter(ctx, parameter, value)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	d.SetId(helpers.EncodeResourceIdentifier(string(parameter)))
+
+	d.SetId(helpers.EncodeResourceIdentifier(key))
 	return ReadAccountParameter(ctx, d, meta)
 }
 
@@ -244,13 +124,22 @@ func UpdateAccountParameter(ctx context.Context, d *schema.ResourceData, meta an
 
 // DeleteAccountParameter implements schema.DeleteFunc.
 func DeleteAccountParameter(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	key := d.Get("key").(string)
-	parameter := sdk.AccountParameter(key)
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+	key := strings.ToUpper(d.Get("key").(string))
 
-	err := client.Parameters.UnsetAccountParameter(ctx, parameter)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("unsetting account parameter: %w", err))
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.AccountParameterCatalogWritePath) {
+		req := sdk.NewAccountParametersUnsetRequest()
+		if err := req.UnsetParameterFromRaw(key); err != nil {
+			return diag.FromErr(err)
+		}
+		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithUnset(*sdk.NewAccountUnsetRequest().WithParameters(*req))); err != nil {
+			return diag.FromErr(fmt.Errorf("unsetting account parameter: %w", err))
+		}
+	} else {
+		if err := client.Parameters.UnsetAccountParameter(ctx, sdk.AccountParameter(key)); err != nil {
+			return diag.FromErr(fmt.Errorf("unsetting account parameter: %w", err))
+		}
 	}
 
 	d.SetId("")

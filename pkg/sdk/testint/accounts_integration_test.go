@@ -51,6 +51,34 @@ func TestInt_AccountsShowParametersDetails(t *testing.T) {
 	assert.Equal(t, details.Timezone, organizationAccountDetails.Timezone)
 }
 
+// Exercises the catalog write path (SetParameterFromRaw/UnsetParameterFromRaw) the account_parameter
+// resource now calls, using JSON_INDENT set to its own default value: this only changes the parameter's
+// reported level (SNOWFLAKE_DEFAULT -> ACCOUNT), never its effective value, so the test is safe to run
+// alongside anything else touching the same account.
+func TestInt_AccountsSetUnsetParameterFromRaw(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	original, err := client.Parameters.ShowAccountParameter(ctx, sdk.AccountParameterJsonIndent)
+	require.NoError(t, err)
+	defaultValue := original.Default
+
+	setReq := sdk.NewAccountParametersRequest()
+	require.NoError(t, setReq.SetParameterFromRaw(string(sdk.AccountParameterJsonIndent), defaultValue))
+	require.NoError(t, client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithParameters(*setReq))))
+
+	t.Cleanup(func() {
+		unsetReq := sdk.NewAccountParametersUnsetRequest()
+		require.NoError(t, unsetReq.UnsetParameterFromRaw(string(sdk.AccountParameterJsonIndent)))
+		require.NoError(t, client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithUnset(*sdk.NewAccountUnsetRequest().WithParameters(*unsetReq))))
+	})
+
+	param, err := client.Parameters.ShowAccountParameter(ctx, sdk.AccountParameterJsonIndent)
+	require.NoError(t, err)
+	assert.Equal(t, defaultValue, param.Value)
+	assert.Equal(t, sdk.ParameterTypeAccount, param.Level)
+}
+
 func TestInt_Account(t *testing.T) {
 	testClientHelper().EnsureValidNonProdAccountIsUsed(t)
 
