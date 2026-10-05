@@ -26,6 +26,7 @@ const (
 	case_Services_validation_Create_opts_FromSpecificationTemplate_ConflictingFields                                                                               testCaseName = "validation_Create_opts_FromSpecificationTemplate_ConflictingFields"
 	case_Services_validation_Create_FromSpecificationTemplate_SpecificationTemplate_NoDoubleDollarQuotesIfSet                                                      testCaseName = "validation_Create_FromSpecificationTemplate_SpecificationTemplate_NoDoubleDollarQuotesIfSet"
 	case_Services_validation_Create_ExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier                                                          testCaseName = "validation_Create_ExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier"
+	case_Services_validation_Create_Tag_ValidIdentifier                                                                                                            testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_Services_sql_Create_basic                                                                                                                                 testCaseName = "sql_Create_basic"
 	case_Services_sql_Create_all                                                                                                                                   testCaseName = "sql_Create_all"
 	case_Services_validation_Alter_name_ValidIdentifier                                                                                                            testCaseName = "validation_Alter_name_ValidIdentifier"
@@ -44,6 +45,7 @@ const (
 	case_Services_validation_Alter_opts_Set_AtLeastOneValueSet                                                                                                     testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_Services_validation_Alter_Set_ExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier                                                       testCaseName = "validation_Alter_Set_ExternalAccessIntegrations_ExternalAccessIntegrations_ValidIdentifier"
 	case_Services_validation_Alter_opts_Unset_AtLeastOneValueSet                                                                                                   testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Services_validation_Alter_SetTags_ValidIdentifier                                                                                                         testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_Services_sql_Alter_Resume                                                                                                                                 testCaseName = "sql_Alter_Resume"
 	case_Services_sql_Alter_Suspend                                                                                                                                testCaseName = "sql_Alter_Suspend"
 	case_Services_sql_Alter_FromSpecification                                                                                                                      testCaseName = "sql_Alter_FromSpecification"
@@ -81,6 +83,7 @@ const (
 	case_Services_validation_ExecuteJob_opts_JobServiceFromSpecificationTemplate_ExactlyOneValueSet_Location_SpecificationTemplate_NoneSet                         testCaseName = "validation_ExecuteJob_opts_JobServiceFromSpecificationTemplate_ExactlyOneValueSet_Location_SpecificationTemplate_NoneSet"
 	case_Services_validation_ExecuteJob_opts_JobServiceFromSpecificationTemplate_ExactlyOneValueSet_Location_SpecificationTemplate_MoreThanOneSet                  testCaseName = "validation_ExecuteJob_opts_JobServiceFromSpecificationTemplate_ExactlyOneValueSet_Location_SpecificationTemplate_MoreThanOneSet"
 	case_Services_validation_ExecuteJob_JobServiceFromSpecificationTemplate_SpecificationTemplate_NoDoubleDollarQuotesIfSet                                        testCaseName = "validation_ExecuteJob_JobServiceFromSpecificationTemplate_SpecificationTemplate_NoDoubleDollarQuotesIfSet"
+	case_Services_validation_ExecuteJob_Tag_ValidIdentifier                                                                                                        testCaseName = "validation_ExecuteJob_Tag_ValidIdentifier"
 	case_Services_sql_ExecuteJob_basic                                                                                                                             testCaseName = "sql_ExecuteJob_basic"
 )
 
@@ -199,6 +202,13 @@ var servicesTests = ServicesTestsContext{
 				DefaultModify: func(opts *CreateServiceOptions) {
 					opts.ExternalAccessIntegrations = &ServiceExternalAccessIntegrations{}
 					opts.ExternalAccessIntegrations.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*CreateServiceOptions]{
+				Name:        case_Services_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateServiceOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateServiceOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).
@@ -365,6 +375,13 @@ var servicesTests = ServicesTestsContext{
 					opts.Unset.ExternalAccessIntegrations = nil
 					opts.Unset.Comment = nil
 					opts.Unset.ServiceCallerTokenValiditySecs = nil
+				},
+			},
+			validationCase[*AlterServiceOptions]{
+				Name:        case_Services_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterServiceOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterServiceOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).
@@ -613,6 +630,13 @@ var servicesTests = ServicesTestsContext{
 				DefaultModify: func(opts *ExecuteJobServiceOptions) {
 					opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{}
 					opts.JobServiceFromSpecificationTemplate.SpecificationTemplate = String("$$")
+				},
+			},
+			validationCase[*ExecuteJobServiceOptions]{
+				Name:        case_Services_validation_ExecuteJob_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("ExecuteJobServiceOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *ExecuteJobServiceOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

@@ -13,6 +13,7 @@ const (
 	case_Schemas_validation_Create_opts_ConflictingFields                 testCaseName = "validation_Create_opts_ConflictingFields"
 	case_Schemas_validation_Create_ExternalVolume_ValidIdentifierIfSet    testCaseName = "validation_Create_ExternalVolume_ValidIdentifierIfSet"
 	case_Schemas_validation_Create_Catalog_ValidIdentifierIfSet           testCaseName = "validation_Create_Catalog_ValidIdentifierIfSet"
+	case_Schemas_validation_Create_Tag_ValidIdentifier                    testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_Schemas_sql_Create_basic                                         testCaseName = "sql_Create_basic"
 	case_Schemas_sql_Create_all                                           testCaseName = "sql_Create_all"
 	case_Schemas_validation_Clone_name_ValidIdentifier                    testCaseName = "validation_Clone_name_ValidIdentifier"
@@ -27,6 +28,7 @@ const (
 	case_Schemas_validation_Alter_Set_Catalog_ValidIdentifierIfSet        testCaseName = "validation_Alter_Set_Catalog_ValidIdentifierIfSet"
 	case_Schemas_validation_Alter_opts_Set_AtLeastOneValueSet             testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_Schemas_validation_Alter_opts_Unset_AtLeastOneValueSet           testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Schemas_validation_Alter_SetTags_ValidIdentifier                 testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_Schemas_sql_Alter_RenameTo                                       testCaseName = "sql_Alter_RenameTo"
 	case_Schemas_sql_Alter_SwapWith                                       testCaseName = "sql_Alter_SwapWith"
 	case_Schemas_sql_Alter_Set                                            testCaseName = "sql_Alter_Set"
@@ -98,6 +100,13 @@ var schemasTests = SchemasTestsContext{
 				ExpectedErr: errInvalidIdentifier("CreateSchemaOptions", "Catalog"),
 				DefaultModify: func(opts *CreateSchemaOptions) {
 					opts.Catalog = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*CreateSchemaOptions]{
+				Name:        case_Schemas_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSchemaOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateSchemaOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).
@@ -263,6 +272,13 @@ var schemasTests = SchemasTestsContext{
 					opts.Unset.UserTaskMinimumTriggerIntervalInSeconds = nil
 					opts.Unset.UserTaskTimeoutMs = nil
 					opts.Unset.Comment = nil
+				},
+			},
+			validationCase[*AlterSchemaOptions]{
+				Name:        case_Schemas_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterSchemaOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterSchemaOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

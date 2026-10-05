@@ -14,6 +14,7 @@ var computePoolsTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 
 const (
 	case_ComputePools_validation_Create_name_ValidIdentifier                  testCaseName = "validation_Create_name_ValidIdentifier"
+	case_ComputePools_validation_Create_Tag_ValidIdentifier                   testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_ComputePools_sql_Create_basic                                        testCaseName = "sql_Create_basic"
 	case_ComputePools_sql_Create_all                                          testCaseName = "sql_Create_all"
 	case_ComputePools_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
@@ -21,6 +22,7 @@ const (
 	case_ComputePools_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_ComputePools_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_ComputePools_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_ComputePools_validation_Alter_SetTags_ValidIdentifier                testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_ComputePools_sql_Alter_Resume                                        testCaseName = "sql_Alter_Resume"
 	case_ComputePools_sql_Alter_Suspend                                       testCaseName = "sql_Alter_Suspend"
 	case_ComputePools_sql_Alter_StopAll                                       testCaseName = "sql_Alter_StopAll"
@@ -63,6 +65,13 @@ var computePoolsTests = ComputePoolsTestsContext{
 				ExpectedErr: errInvalidIdentifier("CreateComputePoolOptions", "name"),
 				DefaultModify: func(opts *CreateComputePoolOptions) {
 					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateComputePoolOptions]{
+				Name:        case_ComputePools_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateComputePoolOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateComputePoolOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).
@@ -134,6 +143,13 @@ var computePoolsTests = ComputePoolsTestsContext{
 					opts.Unset.AutoSuspendSecs = nil
 					opts.Unset.BackupInstanceFamilies = nil
 					opts.Unset.Comment = nil
+				},
+			},
+			validationCase[*AlterComputePoolOptions]{
+				Name:        case_ComputePools_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterComputePoolOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterComputePoolOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

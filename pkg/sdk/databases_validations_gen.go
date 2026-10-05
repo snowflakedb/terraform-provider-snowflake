@@ -37,6 +37,13 @@ func (opts *CreateDatabaseOptions) validate() error {
 	if opts.Catalog != nil && !ValidObjectIdentifier(opts.Catalog) {
 		errs = append(errs, errInvalidIdentifier("CreateDatabaseOptions", "Catalog"))
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateDatabaseOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -74,6 +81,13 @@ func (opts *CreateSharedDatabaseOptions) validate() error {
 	}
 	if opts.Catalog != nil && !ValidObjectIdentifier(opts.Catalog) {
 		errs = append(errs, errInvalidIdentifier("CreateSharedDatabaseOptions", "Catalog"))
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateSharedDatabaseOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -129,6 +143,13 @@ func (opts *CreateCatalogLinkedDatabaseOptions) validate() error {
 			errs = append(errs, errInvalidIdentifier("CreateCatalogLinkedDatabaseOptions.LinkedCatalog", "Catalog"))
 		}
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateCatalogLinkedDatabaseOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -163,6 +184,13 @@ func (opts *AlterDatabaseOptions) validate() error {
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.Catalog, opts.Unset.DataRetentionTimeInDays, opts.Unset.DefaultDdlCollation, opts.Unset.DefaultNotebookComputePoolCpu, opts.Unset.DefaultNotebookComputePoolGpu, opts.Unset.EnableConsoleOutput, opts.Unset.ExternalVolume, opts.Unset.LogEventLevel, opts.Unset.LogLevel, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.QuotedIdentifiersIgnoreCase, opts.Unset.ReplaceInvalidCharacters, opts.Unset.StorageSerializationPolicy, opts.Unset.SuspendTaskAfterNumFailures, opts.Unset.TaskAutoRetryAttempts, opts.Unset.TraceLevel, opts.Unset.UserTaskManagedInitialWarehouseSize, opts.Unset.UserTaskMinimumTriggerIntervalInSeconds, opts.Unset.UserTaskTimeoutMs, opts.Unset.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterDatabaseOptions.Unset", "Catalog", "DataRetentionTimeInDays", "DefaultDdlCollation", "DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu", "EnableConsoleOutput", "ExternalVolume", "LogEventLevel", "LogLevel", "MaxDataExtensionTimeInDays", "QuotedIdentifiersIgnoreCase", "ReplaceInvalidCharacters", "StorageSerializationPolicy", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "TraceLevel", "UserTaskManagedInitialWarehouseSize", "UserTaskMinimumTriggerIntervalInSeconds", "UserTaskTimeoutMs", "Comment"))
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterDatabaseOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
 		}
 	}
 	return JoinErrors(errs...)

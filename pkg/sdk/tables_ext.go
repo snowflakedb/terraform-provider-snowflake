@@ -33,15 +33,10 @@ func (opts *CreateTableOptions) additionalValidations() error {
 	if len(opts.ColumnsAndConstraints.Columns) == 0 {
 		errs = append(errs, errNotSet("CreateTableOptions", "Columns"))
 	}
-	for columnIdx, column := range opts.ColumnsAndConstraints.Columns {
+	for _, column := range opts.ColumnsAndConstraints.Columns {
 		if column.InlineConstraint != nil {
 			if err := column.InlineConstraint.validate(); err != nil {
 				errs = append(errs, err)
-			}
-		}
-		for tagIdx, tag := range column.Tag {
-			if !ValidObjectIdentifier(tag.Name) {
-				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].Tag[%d]", columnIdx, tagIdx), "Name"))
 			}
 		}
 	}

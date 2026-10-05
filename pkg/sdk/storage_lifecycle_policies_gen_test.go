@@ -17,12 +17,14 @@ const (
 	case_StorageLifecyclePolicies_validation_Create_args_ValidateValueSet                 testCaseName = "validation_Create_args_ValidateValueSet"
 	case_StorageLifecyclePolicies_validation_Create_body_ValidateValueSet                 testCaseName = "validation_Create_body_ValidateValueSet"
 	case_StorageLifecyclePolicies_validation_Create_opts_ConflictingFields                testCaseName = "validation_Create_opts_ConflictingFields"
+	case_StorageLifecyclePolicies_validation_Create_Tag_ValidIdentifier                   testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_StorageLifecyclePolicies_sql_Create_basic                                        testCaseName = "sql_Create_basic"
 	case_StorageLifecyclePolicies_sql_Create_all                                          testCaseName = "sql_Create_all"
 	case_StorageLifecyclePolicies_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
 	case_StorageLifecyclePolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_StorageLifecyclePolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_StorageLifecyclePolicies_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_StorageLifecyclePolicies_validation_Alter_SetTags_ValidIdentifier                testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_StorageLifecyclePolicies_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_StorageLifecyclePolicies_sql_Alter_RenameTo                                      testCaseName = "sql_Alter_RenameTo"
 	case_StorageLifecyclePolicies_sql_Alter_SetBody                                       testCaseName = "sql_Alter_SetBody"
@@ -88,6 +90,13 @@ var storageLifecyclePoliciesTests = StorageLifecyclePoliciesTestsContext{
 					opts.IfNotExists = new(true)
 				},
 			},
+			validationCase[*CreateStorageLifecyclePolicyOptions]{
+				Name:        case_StorageLifecyclePolicies_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateStorageLifecyclePolicyOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateStorageLifecyclePolicyOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateStorageLifecyclePolicyOptions]{
@@ -142,6 +151,13 @@ var storageLifecyclePoliciesTests = StorageLifecyclePoliciesTestsContext{
 					opts.Set.ArchiveTier = nil
 					opts.Set.ArchiveForDays = nil
 					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterStorageLifecyclePolicyOptions]{
+				Name:        case_StorageLifecyclePolicies_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterStorageLifecyclePolicyOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterStorageLifecyclePolicyOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 			validationCase[*AlterStorageLifecyclePolicyOptions]{

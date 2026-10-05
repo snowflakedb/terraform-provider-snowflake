@@ -76,5 +76,12 @@ func (opts *CreateSliceValidationExampleOptions) validate() error {
 			}
 		}
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateSliceValidationExampleOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }

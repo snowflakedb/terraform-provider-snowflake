@@ -84,6 +84,13 @@ func (opts *AlterNotebookOptions) validate() error {
 			errs = append(errs, errAtLeastOneOf("AlterNotebookOptions.Unset", "Comment", "QueryWarehouse", "Secrets", "Warehouse", "RuntimeName", "ComputePool", "ExternalAccessIntegrations", "RuntimeEnvironmentVersion"))
 		}
 	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterNotebookOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 

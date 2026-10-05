@@ -103,6 +103,7 @@ const (
 	case_Procedures_validation_Alter_opts_Set_AtLeastOneValueSet                                                       testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_Procedures_validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier                                    testCaseName = "validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier"
 	case_Procedures_validation_Alter_opts_Unset_AtLeastOneValueSet                                                     testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Procedures_validation_Alter_SetTags_ValidIdentifier                                                           testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_Procedures_sql_Alter_RenameTo                                                                                 testCaseName = "sql_Alter_RenameTo"
 	case_Procedures_sql_Alter_Set                                                                                      testCaseName = "sql_Alter_Set"
 	case_Procedures_sql_Alter_Unset                                                                                    testCaseName = "sql_Alter_Unset"
@@ -895,6 +896,13 @@ var proceduresTests = ProceduresTestsContext{
 					opts.Unset.LogEventLevel = nil
 					opts.Unset.MetricLevel = nil
 					opts.Unset.TraceLevel = nil
+				},
+			},
+			validationCase[*AlterProcedureOptions]{
+				Name:        case_Procedures_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterProcedureOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterProcedureOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

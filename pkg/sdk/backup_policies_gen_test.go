@@ -12,12 +12,14 @@ const (
 	case_BackupPolicies_validation_Create_name_ValidIdentifier                  testCaseName = "validation_Create_name_ValidIdentifier"
 	case_BackupPolicies_validation_Create_opts_ConflictingFields                testCaseName = "validation_Create_opts_ConflictingFields"
 	case_BackupPolicies_validation_Create_opts_AtLeastOneValueSet               testCaseName = "validation_Create_opts_AtLeastOneValueSet"
+	case_BackupPolicies_validation_Create_Tag_ValidIdentifier                   testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_BackupPolicies_sql_Create_basic                                        testCaseName = "sql_Create_basic"
 	case_BackupPolicies_sql_Create_all                                          testCaseName = "sql_Create_all"
 	case_BackupPolicies_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
 	case_BackupPolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_BackupPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_BackupPolicies_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_BackupPolicies_validation_Alter_SetTags_ValidIdentifier                testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_BackupPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_BackupPolicies_sql_Alter_RenameTo                                      testCaseName = "sql_Alter_RenameTo"
 	case_BackupPolicies_sql_Alter_Set                                           testCaseName = "sql_Alter_Set"
@@ -78,6 +80,13 @@ var backupPoliciesTests = BackupPoliciesTestsContext{
 					opts.ExpireAfterDays = nil
 				},
 			},
+			validationCase[*CreateBackupPolicyOptions]{
+				Name:        case_BackupPolicies_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateBackupPolicyOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateBackupPolicyOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateBackupPolicyOptions]{
@@ -131,6 +140,13 @@ var backupPoliciesTests = BackupPoliciesTestsContext{
 					opts.Set.Schedule = nil
 					opts.Set.ExpireAfterDays = nil
 					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterBackupPolicyOptions]{
+				Name:        case_BackupPolicies_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterBackupPolicyOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterBackupPolicyOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 			validationCase[*AlterBackupPolicyOptions]{

@@ -29,6 +29,7 @@ const (
 	case_NotificationIntegrations_validation_Alter_Set_SetEmailParams_AllowedRecipients_ValidateValueSet            testCaseName = "validation_Alter_Set_SetEmailParams_AllowedRecipients_ValidateValueSet"
 	case_NotificationIntegrations_validation_Alter_opts_UnsetEmailParams_AtLeastOneValueSet                         testCaseName = "validation_Alter_opts_UnsetEmailParams_AtLeastOneValueSet"
 	case_NotificationIntegrations_validation_Alter_opts_UnsetWebhookParams_AtLeastOneValueSet                       testCaseName = "validation_Alter_opts_UnsetWebhookParams_AtLeastOneValueSet"
+	case_NotificationIntegrations_validation_Alter_SetTags_ValidIdentifier                                          testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_NotificationIntegrations_sql_Alter_Set                                                                     testCaseName = "sql_Alter_Set"
 	case_NotificationIntegrations_sql_Alter_UnsetEmailParams                                                        testCaseName = "sql_Alter_UnsetEmailParams"
 	case_NotificationIntegrations_sql_Alter_UnsetWebhookParams                                                      testCaseName = "sql_Alter_UnsetWebhookParams"
@@ -246,6 +247,13 @@ var notificationIntegrationsTests = NotificationIntegrationsTestsContext{
 					opts.UnsetWebhookParams.WebhookBodyTemplate = nil
 					opts.UnsetWebhookParams.WebhookHeaders = nil
 					opts.UnsetWebhookParams.Comment = nil
+				},
+			},
+			validationCase[*AlterNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterNotificationIntegrationOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterNotificationIntegrationOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

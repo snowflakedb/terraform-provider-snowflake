@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateStorageIntegrationOptions)
 	_ validatable = new(AlterStorageIntegrationOptions)
@@ -74,6 +76,13 @@ func (opts *AlterStorageIntegrationOptions) validate() error {
 		if valueSet(opts.Unset.AzureParams) {
 			if !anyValueSet(opts.Unset.AzureParams.UsePrivatelinkEndpoint) {
 				errs = append(errs, errAtLeastOneOf("AlterStorageIntegrationOptions.Unset.AzureParams", "UsePrivatelinkEndpoint"))
+			}
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterStorageIntegrationOptions.SetTags[%d]", setTagIdx), "Name"))
 			}
 		}
 	}

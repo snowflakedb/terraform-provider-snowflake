@@ -223,6 +223,13 @@ func (opts *AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOp
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
 	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
+	}
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.Enabled, opts.Set.OauthTokenEndpoint, opts.Set.OauthClientAuthMethod, opts.Set.OauthClientId, opts.Set.OauthClientSecret, opts.Set.OauthGrantClientCredentials, opts.Set.OauthAccessTokenValidity, opts.Set.OauthRefreshTokenValidity, opts.Set.OauthAllowedScopes, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions.Set", "Enabled", "OauthTokenEndpoint", "OauthClientAuthMethod", "OauthClientId", "OauthClientSecret", "OauthGrantClientCredentials", "OauthAccessTokenValidity", "OauthRefreshTokenValidity", "OauthAllowedScopes", "Comment"))
@@ -246,6 +253,13 @@ func (opts *AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrat
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
 	}
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.Enabled, opts.Set.OauthAuthorizationEndpoint, opts.Set.OauthTokenEndpoint, opts.Set.OauthClientAuthMethod, opts.Set.OauthClientId, opts.Set.OauthClientSecret, opts.Set.OauthGrantAuthorizationCode, opts.Set.OauthAccessTokenValidity, opts.Set.OauthRefreshTokenValidity, opts.Set.OauthAllowedScopes, opts.Set.Comment) {
@@ -271,6 +285,13 @@ func (opts *AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) v
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
 	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
+	}
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.Enabled, opts.Set.OauthAuthorizationEndpoint, opts.Set.OauthTokenEndpoint, opts.Set.OauthClientAuthMethod, opts.Set.OauthClientId, opts.Set.OauthClientSecret, opts.Set.OauthGrantJwtBearer, opts.Set.OauthAccessTokenValidity, opts.Set.OauthRefreshTokenValidity, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions.Set", "Enabled", "OauthAuthorizationEndpoint", "OauthTokenEndpoint", "OauthClientAuthMethod", "OauthClientId", "OauthClientSecret", "OauthGrantJwtBearer", "OauthAccessTokenValidity", "OauthRefreshTokenValidity", "Comment"))
@@ -294,6 +315,13 @@ func (opts *AlterExternalOauthSecurityIntegrationOptions) validate() error {
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterExternalOauthSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterExternalOauthSecurityIntegrationOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
 	}
 	if valueSet(opts.Set) {
 		if everyValueSet(opts.Set.ExternalOauthBlockedRolesList, opts.Set.ExternalOauthAllowedRolesList) {
@@ -346,6 +374,13 @@ func (opts *AlterOauthForPartnerApplicationsSecurityIntegrationOptions) validate
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterOauthForPartnerApplicationsSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
 	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterOauthForPartnerApplicationsSecurityIntegrationOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
+	}
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.Enabled, opts.Set.OauthIssueRefreshTokens, opts.Set.OauthRedirectUri, opts.Set.OauthRefreshTokenValidity, opts.Set.OauthUseSecondaryRoles, opts.Set.AllowedRolesList, opts.Set.BlockedRolesList, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterOauthForPartnerApplicationsSecurityIntegrationOptions.Set", "Enabled", "OauthIssueRefreshTokens", "OauthRedirectUri", "OauthRefreshTokenValidity", "OauthUseSecondaryRoles", "AllowedRolesList", "BlockedRolesList", "Comment"))
@@ -387,6 +422,13 @@ func (opts *AlterOauthForCustomClientsSecurityIntegrationOptions) validate() err
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterOauthForCustomClientsSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterOauthForCustomClientsSecurityIntegrationOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
 	}
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.Enabled, opts.Set.OauthRedirectUri, opts.Set.OauthAllowNonTlsRedirectUri, opts.Set.OauthEnforcePkce, opts.Set.PreAuthorizedRolesList, opts.Set.AllowedRolesList, opts.Set.BlockedRolesList, opts.Set.OauthIssueRefreshTokens, opts.Set.OauthRefreshTokenValidity, opts.Set.OauthUseSecondaryRoles, opts.Set.NetworkPolicy, opts.Set.OauthClientRsaPublicKey, opts.Set.OauthClientRsaPublicKey2, opts.Set.Comment) {
@@ -439,6 +481,13 @@ func (opts *AlterSaml2SecurityIntegrationOptions) validate() error {
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.RefreshSaml2SnowflakePrivateKey, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterSaml2SecurityIntegrationOptions", "Set", "Unset", "RefreshSaml2SnowflakePrivateKey", "SetTags", "UnsetTags"))
 	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSaml2SecurityIntegrationOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
+	}
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.Enabled, opts.Set.Saml2Issuer, opts.Set.Saml2SsoUrl, opts.Set.Saml2Provider, opts.Set.Saml2X509Cert, opts.Set.AllowedUserDomains, opts.Set.AllowedEmailPatterns, opts.Set.Saml2SpInitiatedLoginPageLabel, opts.Set.Saml2EnableSpInitiated, opts.Set.Saml2SnowflakeX509Cert, opts.Set.Saml2SignRequest, opts.Set.Saml2RequestedNameidFormat, opts.Set.Saml2PostLogoutRedirectUrl, opts.Set.Saml2ForceAuthn, opts.Set.Saml2SnowflakeIssuerUrl, opts.Set.Saml2SnowflakeAcsUrl, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterSaml2SecurityIntegrationOptions.Set", "Enabled", "Saml2Issuer", "Saml2SsoUrl", "Saml2Provider", "Saml2X509Cert", "AllowedUserDomains", "AllowedEmailPatterns", "Saml2SpInitiatedLoginPageLabel", "Saml2EnableSpInitiated", "Saml2SnowflakeX509Cert", "Saml2SignRequest", "Saml2RequestedNameidFormat", "Saml2PostLogoutRedirectUrl", "Saml2ForceAuthn", "Saml2SnowflakeIssuerUrl", "Saml2SnowflakeAcsUrl", "Comment"))
@@ -462,6 +511,13 @@ func (opts *AlterScimSecurityIntegrationOptions) validate() error {
 	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterScimSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterScimSecurityIntegrationOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
 	}
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.Enabled, opts.Set.NetworkPolicy, opts.Set.SyncPassword, opts.Set.Comment) {

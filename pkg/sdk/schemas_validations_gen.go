@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateSchemaOptions)
 	_ validatable = new(CloneSchemaOptions)
@@ -28,6 +30,13 @@ func (opts *CreateSchemaOptions) validate() error {
 	}
 	if opts.Catalog != nil && !ValidObjectIdentifier(opts.Catalog) {
 		errs = append(errs, errInvalidIdentifier("CreateSchemaOptions", "Catalog"))
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateSchemaOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -78,6 +87,13 @@ func (opts *AlterSchemaOptions) validate() error {
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.Catalog, opts.Unset.DataRetentionTimeInDays, opts.Unset.DefaultDdlCollation, opts.Unset.DefaultNotebookComputePoolCpu, opts.Unset.DefaultNotebookComputePoolGpu, opts.Unset.EnableConsoleOutput, opts.Unset.ExternalVolume, opts.Unset.LogEventLevel, opts.Unset.LogLevel, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.PipeExecutionPaused, opts.Unset.QuotedIdentifiersIgnoreCase, opts.Unset.ReplaceInvalidCharacters, opts.Unset.StorageSerializationPolicy, opts.Unset.SuspendTaskAfterNumFailures, opts.Unset.TaskAutoRetryAttempts, opts.Unset.TraceLevel, opts.Unset.UserTaskManagedInitialWarehouseSize, opts.Unset.UserTaskMinimumTriggerIntervalInSeconds, opts.Unset.UserTaskTimeoutMs, opts.Unset.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterSchemaOptions.Unset", "Catalog", "DataRetentionTimeInDays", "DefaultDdlCollation", "DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu", "EnableConsoleOutput", "ExternalVolume", "LogEventLevel", "LogLevel", "MaxDataExtensionTimeInDays", "PipeExecutionPaused", "QuotedIdentifiersIgnoreCase", "ReplaceInvalidCharacters", "StorageSerializationPolicy", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "TraceLevel", "UserTaskManagedInitialWarehouseSize", "UserTaskMinimumTriggerIntervalInSeconds", "UserTaskTimeoutMs", "Comment"))
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSchemaOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
 		}
 	}
 	return JoinErrors(errs...)

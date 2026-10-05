@@ -24,6 +24,7 @@ const (
 	case_Stages_validation_CreateInternal_opts_Encryption_ExactlyOneValueSet_MoreThanOneSet                                             testCaseName = "validation_CreateInternal_opts_Encryption_ExactlyOneValueSet_MoreThanOneSet"
 	case_Stages_validation_CreateInternal_opts_FileFormat_ExactlyOneValueSet_NoneSet                                                    testCaseName = "validation_CreateInternal_opts_FileFormat_ExactlyOneValueSet_NoneSet"
 	case_Stages_validation_CreateInternal_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet                                             testCaseName = "validation_CreateInternal_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet"
+	case_Stages_validation_CreateInternal_Tag_ValidIdentifier                                                                           testCaseName = "validation_CreateInternal_Tag_ValidIdentifier"
 	case_Stages_sql_CreateInternal_basic                                                                                                testCaseName = "sql_CreateInternal_basic"
 	case_Stages_sql_CreateInternal_all                                                                                                  testCaseName = "sql_CreateInternal_all"
 	case_Stages_validation_CreateOnS3_opts_ConflictingFields                                                                            testCaseName = "validation_CreateOnS3_opts_ConflictingFields"
@@ -36,6 +37,7 @@ const (
 	case_Stages_validation_CreateOnS3_opts_ExternalStageParams_Encryption_ExactlyOneValueSet_MoreThanOneSet                             testCaseName = "validation_CreateOnS3_opts_ExternalStageParams_Encryption_ExactlyOneValueSet_MoreThanOneSet"
 	case_Stages_validation_CreateOnS3_opts_FileFormat_ExactlyOneValueSet_NoneSet                                                        testCaseName = "validation_CreateOnS3_opts_FileFormat_ExactlyOneValueSet_NoneSet"
 	case_Stages_validation_CreateOnS3_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet                                                 testCaseName = "validation_CreateOnS3_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet"
+	case_Stages_validation_CreateOnS3_Tag_ValidIdentifier                                                                               testCaseName = "validation_CreateOnS3_Tag_ValidIdentifier"
 	case_Stages_sql_CreateOnS3_basic                                                                                                    testCaseName = "sql_CreateOnS3_basic"
 	case_Stages_sql_CreateOnS3_all                                                                                                      testCaseName = "sql_CreateOnS3_all"
 	case_Stages_validation_CreateOnGCS_opts_ConflictingFields                                                                           testCaseName = "validation_CreateOnGCS_opts_ConflictingFields"
@@ -43,6 +45,7 @@ const (
 	case_Stages_validation_CreateOnGCS_opts_ExternalStageParams_Encryption_ExactlyOneValueSet_MoreThanOneSet                            testCaseName = "validation_CreateOnGCS_opts_ExternalStageParams_Encryption_ExactlyOneValueSet_MoreThanOneSet"
 	case_Stages_validation_CreateOnGCS_opts_FileFormat_ExactlyOneValueSet_NoneSet                                                       testCaseName = "validation_CreateOnGCS_opts_FileFormat_ExactlyOneValueSet_NoneSet"
 	case_Stages_validation_CreateOnGCS_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet                                                testCaseName = "validation_CreateOnGCS_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet"
+	case_Stages_validation_CreateOnGCS_Tag_ValidIdentifier                                                                              testCaseName = "validation_CreateOnGCS_Tag_ValidIdentifier"
 	case_Stages_sql_CreateOnGCS_basic                                                                                                   testCaseName = "sql_CreateOnGCS_basic"
 	case_Stages_sql_CreateOnGCS_all                                                                                                     testCaseName = "sql_CreateOnGCS_all"
 	case_Stages_validation_CreateOnAzure_opts_ConflictingFields                                                                         testCaseName = "validation_CreateOnAzure_opts_ConflictingFields"
@@ -52,17 +55,20 @@ const (
 	case_Stages_validation_CreateOnAzure_opts_ExternalStageParams_Encryption_ExactlyOneValueSet_MoreThanOneSet                          testCaseName = "validation_CreateOnAzure_opts_ExternalStageParams_Encryption_ExactlyOneValueSet_MoreThanOneSet"
 	case_Stages_validation_CreateOnAzure_opts_FileFormat_ExactlyOneValueSet_NoneSet                                                     testCaseName = "validation_CreateOnAzure_opts_FileFormat_ExactlyOneValueSet_NoneSet"
 	case_Stages_validation_CreateOnAzure_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet                                              testCaseName = "validation_CreateOnAzure_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet"
+	case_Stages_validation_CreateOnAzure_Tag_ValidIdentifier                                                                            testCaseName = "validation_CreateOnAzure_Tag_ValidIdentifier"
 	case_Stages_sql_CreateOnAzure_basic                                                                                                 testCaseName = "sql_CreateOnAzure_basic"
 	case_Stages_sql_CreateOnAzure_all                                                                                                   testCaseName = "sql_CreateOnAzure_all"
 	case_Stages_validation_CreateOnS3Compatible_opts_ConflictingFields                                                                  testCaseName = "validation_CreateOnS3Compatible_opts_ConflictingFields"
 	case_Stages_validation_CreateOnS3Compatible_opts_FileFormat_ExactlyOneValueSet_NoneSet                                              testCaseName = "validation_CreateOnS3Compatible_opts_FileFormat_ExactlyOneValueSet_NoneSet"
 	case_Stages_validation_CreateOnS3Compatible_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet                                       testCaseName = "validation_CreateOnS3Compatible_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet"
+	case_Stages_validation_CreateOnS3Compatible_Tag_ValidIdentifier                                                                     testCaseName = "validation_CreateOnS3Compatible_Tag_ValidIdentifier"
 	case_Stages_sql_CreateOnS3Compatible_basic                                                                                          testCaseName = "sql_CreateOnS3Compatible_basic"
 	case_Stages_sql_CreateOnS3Compatible_all                                                                                            testCaseName = "sql_CreateOnS3Compatible_all"
 	case_Stages_validation_Alter_RenameTo_ValidIdentifierIfSet                                                                          testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
 	case_Stages_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                                                        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_Stages_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                                                 testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_Stages_validation_Alter_name_ValidIdentifier                                                                                   testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Stages_validation_Alter_SetTags_ValidIdentifier                                                                                testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_Stages_sql_Alter_RenameTo                                                                                                      testCaseName = "sql_Alter_RenameTo"
 	case_Stages_sql_Alter_SetTags                                                                                                       testCaseName = "sql_Alter_SetTags"
 	case_Stages_sql_Alter_UnsetTags                                                                                                     testCaseName = "sql_Alter_UnsetTags"
@@ -185,6 +191,13 @@ var stagesTests = StagesTestsContext{
 				Name:        case_Stages_validation_CreateInternal_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet,
 				ExpectedErr: errExactlyOneOf("CreateInternalStageOptions.FileFormat", "FormatName", "FileFormatOptions"),
 			},
+			validationCase[*CreateInternalStageOptions]{
+				Name:        case_Stages_validation_CreateInternal_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateInternalStageOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateInternalStageOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateInternalStageOptions]{
@@ -288,6 +301,13 @@ var stagesTests = StagesTestsContext{
 				Name:        case_Stages_validation_CreateOnS3_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet,
 				ExpectedErr: errExactlyOneOf("CreateOnS3StageOptions.FileFormat", "FormatName", "FileFormatOptions"),
 			},
+			validationCase[*CreateOnS3StageOptions]{
+				Name:        case_Stages_validation_CreateOnS3_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOnS3StageOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateOnS3StageOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateOnS3StageOptions]{
@@ -345,6 +365,13 @@ var stagesTests = StagesTestsContext{
 			validationCase[*CreateOnGCSStageOptions]{
 				Name:        case_Stages_validation_CreateOnGCS_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet,
 				ExpectedErr: errExactlyOneOf("CreateOnGCSStageOptions.FileFormat", "FormatName", "FileFormatOptions"),
+			},
+			validationCase[*CreateOnGCSStageOptions]{
+				Name:        case_Stages_validation_CreateOnGCS_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOnGCSStageOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateOnGCSStageOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
 			},
 		).
 		withSqlCases(
@@ -420,6 +447,13 @@ var stagesTests = StagesTestsContext{
 				Name:        case_Stages_validation_CreateOnAzure_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet,
 				ExpectedErr: errExactlyOneOf("CreateOnAzureStageOptions.FileFormat", "FormatName", "FileFormatOptions"),
 			},
+			validationCase[*CreateOnAzureStageOptions]{
+				Name:        case_Stages_validation_CreateOnAzure_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOnAzureStageOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateOnAzureStageOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateOnAzureStageOptions]{
@@ -459,6 +493,13 @@ var stagesTests = StagesTestsContext{
 			validationCase[*CreateOnS3CompatibleStageOptions]{
 				Name:        case_Stages_validation_CreateOnS3Compatible_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet,
 				ExpectedErr: errExactlyOneOf("CreateOnS3CompatibleStageOptions.FileFormat", "FormatName", "FileFormatOptions"),
+			},
+			validationCase[*CreateOnS3CompatibleStageOptions]{
+				Name:        case_Stages_validation_CreateOnS3Compatible_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOnS3CompatibleStageOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateOnS3CompatibleStageOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
 			},
 		).
 		withSqlCases(
@@ -504,6 +545,13 @@ var stagesTests = StagesTestsContext{
 				ExpectedErr: errInvalidIdentifier("AlterStageOptions", "name"),
 				DefaultModify: func(opts *AlterStageOptions) {
 					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterStageOptions]{
+				Name:        case_Stages_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterStageOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterStageOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

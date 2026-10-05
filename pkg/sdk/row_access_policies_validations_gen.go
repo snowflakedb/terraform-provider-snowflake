@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateRowAccessPolicyOptions)
 	_ validatable = new(AlterRowAccessPolicyOptions)
@@ -40,6 +42,13 @@ func (opts *AlterRowAccessPolicyOptions) validate() error {
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.SetBody, opts.SetTags, opts.UnsetTags, opts.SetComment, opts.UnsetComment) {
 		errs = append(errs, errExactlyOneOf("AlterRowAccessPolicyOptions", "RenameTo", "SetBody", "SetTags", "UnsetTags", "SetComment", "UnsetComment"))
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterRowAccessPolicyOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }

@@ -11,8 +11,10 @@ var materializedViewsTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier
 const (
 	case_MaterializedViews_validation_Create_name_ValidIdentifier                            testCaseName = "validation_Create_name_ValidIdentifier"
 	case_MaterializedViews_validation_Create_opts_ConflictingFields                          testCaseName = "validation_Create_opts_ConflictingFields"
+	case_MaterializedViews_validation_Create_ColumnsMaskingPolicies_Tag_ValidIdentifier      testCaseName = "validation_Create_ColumnsMaskingPolicies_Tag_ValidIdentifier"
 	case_MaterializedViews_validation_Create_RowAccessPolicy_RowAccessPolicy_ValidIdentifier testCaseName = "validation_Create_RowAccessPolicy_RowAccessPolicy_ValidIdentifier"
 	case_MaterializedViews_validation_Create_RowAccessPolicy_On_ValidateValueSet             testCaseName = "validation_Create_RowAccessPolicy_On_ValidateValueSet"
+	case_MaterializedViews_validation_Create_Tag_ValidIdentifier                             testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_MaterializedViews_validation_Create_ClusterBy_Expressions_ValidateValueSet          testCaseName = "validation_Create_ClusterBy_Expressions_ValidateValueSet"
 	case_MaterializedViews_sql_Create_basic                                                  testCaseName = "sql_Create_basic"
 	case_MaterializedViews_sql_Create_all                                                    testCaseName = "sql_Create_all"
@@ -78,6 +80,14 @@ var materializedViewsTests = MaterializedViewsTestsContext{
 				},
 			},
 			validationCase[*CreateMaterializedViewOptions]{
+				Name:        case_MaterializedViews_validation_Create_ColumnsMaskingPolicies_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateMaterializedViewOptions.ColumnsMaskingPolicies[0].Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateMaterializedViewOptions) {
+					opts.ColumnsMaskingPolicies = []MaterializedViewColumnMaskingPolicy{{}}
+					opts.ColumnsMaskingPolicies[0].Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
+			validationCase[*CreateMaterializedViewOptions]{
 				Name:        case_MaterializedViews_validation_Create_RowAccessPolicy_RowAccessPolicy_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("CreateMaterializedViewOptions.RowAccessPolicy", "RowAccessPolicy"),
 				DefaultModify: func(opts *CreateMaterializedViewOptions) {
@@ -91,6 +101,13 @@ var materializedViewsTests = MaterializedViewsTestsContext{
 				DefaultModify: func(opts *CreateMaterializedViewOptions) {
 					opts.RowAccessPolicy = &MaterializedViewRowAccessPolicy{}
 					opts.RowAccessPolicy.On = nil
+				},
+			},
+			validationCase[*CreateMaterializedViewOptions]{
+				Name:        case_MaterializedViews_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateMaterializedViewOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateMaterializedViewOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 			validationCase[*CreateMaterializedViewOptions]{

@@ -12,6 +12,7 @@ type CreateSliceValidationExampleRequest struct {
 	Items                      []NestedListItemRequest
 	Columns                    []SliceValidationColumnRequest
 	ExternalAccessIntegrations []AccountObjectIdentifier
+	Tag                        []TagAssociation
 }
 
 type DualCheckItemRequest struct {

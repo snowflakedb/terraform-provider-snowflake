@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateImageRepositoryOptions)
 	_ validatable = new(AlterImageRepositoryOptions)
@@ -25,6 +27,13 @@ func (opts *CreateImageRepositoryOptions) validate() error {
 			errs = append(errs, errNotSet("CreateImageRepositoryOptions.Encryption", "EncryptionType"))
 		}
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateImageRepositoryOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -38,6 +47,13 @@ func (opts *AlterImageRepositoryOptions) validate() error {
 	}
 	if !exactlyOneValueSet(opts.Set, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterImageRepositoryOptions", "Set", "SetTags", "UnsetTags"))
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterImageRepositoryOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }

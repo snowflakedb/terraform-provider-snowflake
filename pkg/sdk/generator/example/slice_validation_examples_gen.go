@@ -21,6 +21,7 @@ type CreateSliceValidationExampleOptions struct {
 	Items                      []NestedListItem          `ddl:"keyword" sql:"ITEMS"`
 	Columns                    []SliceValidationColumn   `ddl:"keyword" sql:"COLUMNS"`
 	ExternalAccessIntegrations []AccountObjectIdentifier `ddl:"parameter,parentheses" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
+	Tag                        []TagAssociation          `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
 type DualCheckItem struct {

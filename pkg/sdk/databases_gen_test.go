@@ -20,6 +20,7 @@ const (
 	case_Databases_validation_Create_opts_ConflictingFields                                  testCaseName = "validation_Create_opts_ConflictingFields"
 	case_Databases_validation_Create_ExternalVolume_ValidIdentifierIfSet                     testCaseName = "validation_Create_ExternalVolume_ValidIdentifierIfSet"
 	case_Databases_validation_Create_Catalog_ValidIdentifierIfSet                            testCaseName = "validation_Create_Catalog_ValidIdentifierIfSet"
+	case_Databases_validation_Create_Tag_ValidIdentifier                                     testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_Databases_sql_Create_basic                                                          testCaseName = "sql_Create_basic"
 	case_Databases_sql_Create_all                                                            testCaseName = "sql_Create_all"
 	case_Databases_validation_Clone_name_ValidIdentifier                                     testCaseName = "validation_Clone_name_ValidIdentifier"
@@ -30,6 +31,7 @@ const (
 	case_Databases_validation_CreateShared_opts_ConflictingFields                            testCaseName = "validation_CreateShared_opts_ConflictingFields"
 	case_Databases_validation_CreateShared_ExternalVolume_ValidIdentifierIfSet               testCaseName = "validation_CreateShared_ExternalVolume_ValidIdentifierIfSet"
 	case_Databases_validation_CreateShared_Catalog_ValidIdentifierIfSet                      testCaseName = "validation_CreateShared_Catalog_ValidIdentifierIfSet"
+	case_Databases_validation_CreateShared_Tag_ValidIdentifier                               testCaseName = "validation_CreateShared_Tag_ValidIdentifier"
 	case_Databases_sql_CreateShared_basic                                                    testCaseName = "sql_CreateShared_basic"
 	case_Databases_sql_CreateShared_all                                                      testCaseName = "sql_CreateShared_all"
 	case_Databases_validation_CreateSecondary_name_ValidIdentifier                           testCaseName = "validation_CreateSecondary_name_ValidIdentifier"
@@ -45,6 +47,7 @@ const (
 	case_Databases_validation_CreateCatalogLinked_name_ValidIdentifier                       testCaseName = "validation_CreateCatalogLinked_name_ValidIdentifier"
 	case_Databases_validation_CreateCatalogLinked_ExternalVolume_ValidIdentifierIfSet        testCaseName = "validation_CreateCatalogLinked_ExternalVolume_ValidIdentifierIfSet"
 	case_Databases_validation_CreateCatalogLinked_LinkedCatalog_Catalog_ValidIdentifier      testCaseName = "validation_CreateCatalogLinked_LinkedCatalog_Catalog_ValidIdentifier"
+	case_Databases_validation_CreateCatalogLinked_Tag_ValidIdentifier                        testCaseName = "validation_CreateCatalogLinked_Tag_ValidIdentifier"
 	case_Databases_sql_CreateCatalogLinked_basic                                             testCaseName = "sql_CreateCatalogLinked_basic"
 	case_Databases_sql_CreateCatalogLinked_all                                               testCaseName = "sql_CreateCatalogLinked_all"
 	case_Databases_validation_Alter_name_ValidIdentifier                                     testCaseName = "validation_Alter_name_ValidIdentifier"
@@ -56,6 +59,7 @@ const (
 	case_Databases_validation_Alter_Set_Catalog_ValidIdentifierIfSet                         testCaseName = "validation_Alter_Set_Catalog_ValidIdentifierIfSet"
 	case_Databases_validation_Alter_opts_Set_AtLeastOneValueSet                              testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_Databases_validation_Alter_opts_Unset_AtLeastOneValueSet                            testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Databases_validation_Alter_SetTags_ValidIdentifier                                  testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_Databases_sql_Alter_RenameTo                                                        testCaseName = "sql_Alter_RenameTo"
 	case_Databases_sql_Alter_Set                                                             testCaseName = "sql_Alter_Set"
 	case_Databases_sql_Alter_Unset                                                           testCaseName = "sql_Alter_Unset"
@@ -157,6 +161,13 @@ var databasesTests = DatabasesTestsContext{
 					opts.Catalog = new(emptyAccountObjectIdentifier)
 				},
 			},
+			validationCase[*CreateDatabaseOptions]{
+				Name:        case_Databases_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateDatabaseOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateDatabaseOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateDatabaseOptions]{
@@ -241,6 +252,13 @@ var databasesTests = DatabasesTestsContext{
 				ExpectedErr: errInvalidIdentifier("CreateSharedDatabaseOptions", "Catalog"),
 				DefaultModify: func(opts *CreateSharedDatabaseOptions) {
 					opts.Catalog = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*CreateSharedDatabaseOptions]{
+				Name:        case_Databases_validation_CreateShared_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSharedDatabaseOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateSharedDatabaseOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).
@@ -362,6 +380,13 @@ var databasesTests = DatabasesTestsContext{
 				ExpectedErr: errInvalidIdentifier("CreateCatalogLinkedDatabaseOptions.LinkedCatalog", "Catalog"),
 				DefaultModify: func(opts *CreateCatalogLinkedDatabaseOptions) {
 					opts.LinkedCatalog.Catalog = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateCatalogLinkedDatabaseOptions]{
+				Name:        case_Databases_validation_CreateCatalogLinked_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateCatalogLinkedDatabaseOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateCatalogLinkedDatabaseOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).
@@ -492,6 +517,13 @@ var databasesTests = DatabasesTestsContext{
 					opts.Unset.UserTaskMinimumTriggerIntervalInSeconds = nil
 					opts.Unset.UserTaskTimeoutMs = nil
 					opts.Unset.Comment = nil
+				},
+			},
+			validationCase[*AlterDatabaseOptions]{
+				Name:        case_Databases_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterDatabaseOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterDatabaseOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

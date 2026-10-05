@@ -86,6 +86,7 @@ func sliceValidationColumn() *g.QueryStruct {
 
 // Case 6: ValidIdentifier on a flat identifier-element slice (notebooks EXTERNAL_ACCESS_INTEGRATIONS).
 // Proves per-element !ValidObjectIdentifier(elem) and indexed errInvalidIdentifier on the slice itself.
+// Case 7: OptionalTags() bakes ValidIdentifier — per-element tag.Name, errInvalidIdentifier(..., "Name").
 var SliceValidationExample = g.NewInterface(
 	"SliceValidationExamples",
 	"SliceValidationExample",
@@ -102,6 +103,7 @@ var SliceValidationExample = g.NewInterface(
 		ListQueryStructField("Items", sliceValidationItem(), g.KeywordOptions().SQL("ITEMS")).
 		ListQueryStructField("Columns", sliceValidationColumn(), g.KeywordOptions().SQL("COLUMNS")).
 		ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.ParameterOptions().Parentheses()).
+		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifier, "ExternalAccessIntegrations"),
 )

@@ -16,11 +16,13 @@ const (
 	case_ImageRepositories_validation_Create_name_ValidIdentifier                       testCaseName = "validation_Create_name_ValidIdentifier"
 	case_ImageRepositories_validation_Create_opts_ConflictingFields                     testCaseName = "validation_Create_opts_ConflictingFields"
 	case_ImageRepositories_validation_Create_Encryption_EncryptionType_ValidateValueSet testCaseName = "validation_Create_Encryption_EncryptionType_ValidateValueSet"
+	case_ImageRepositories_validation_Create_Tag_ValidIdentifier                        testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_ImageRepositories_sql_Create_basic                                             testCaseName = "sql_Create_basic"
 	case_ImageRepositories_sql_Create_all                                               testCaseName = "sql_Create_all"
 	case_ImageRepositories_validation_Alter_name_ValidIdentifier                        testCaseName = "validation_Alter_name_ValidIdentifier"
 	case_ImageRepositories_validation_Alter_opts_ExactlyOneValueSet_NoneSet             testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_ImageRepositories_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet      testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_ImageRepositories_validation_Alter_SetTags_ValidIdentifier                     testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_ImageRepositories_sql_Alter_Set                                                testCaseName = "sql_Alter_Set"
 	case_ImageRepositories_sql_Alter_SetTags                                            testCaseName = "sql_Alter_SetTags"
 	case_ImageRepositories_sql_Alter_UnsetTags                                          testCaseName = "sql_Alter_UnsetTags"
@@ -73,6 +75,13 @@ var imageRepositoriesTests = ImageRepositoriesTestsContext{
 					opts.Encryption.EncryptionType = ""
 				},
 			},
+			validationCase[*CreateImageRepositoryOptions]{
+				Name:        case_ImageRepositories_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateImageRepositoryOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateImageRepositoryOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateImageRepositoryOptions]{
@@ -111,6 +120,13 @@ var imageRepositoriesTests = ImageRepositoriesTestsContext{
 			validationCase[*AlterImageRepositoryOptions]{
 				Name:        case_ImageRepositories_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
 				ExpectedErr: errExactlyOneOf("AlterImageRepositoryOptions", "Set", "SetTags", "UnsetTags"),
+			},
+			validationCase[*AlterImageRepositoryOptions]{
+				Name:        case_ImageRepositories_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterImageRepositoryOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterImageRepositoryOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
 			},
 		).
 		withSqlCases(

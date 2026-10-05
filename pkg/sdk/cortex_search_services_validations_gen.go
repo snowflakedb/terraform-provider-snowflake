@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateCortexSearchServiceOptions)
 	_ validatable = new(AlterCortexSearchServiceOptions)
@@ -59,6 +61,13 @@ func (opts *AlterCortexSearchServiceOptions) validate() error {
 	if valueSet(opts.SetAttributes) {
 		if !valueSet(opts.SetAttributes.Columns) {
 			errs = append(errs, errNotSet("AlterCortexSearchServiceOptions.SetAttributes", "Columns"))
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterCortexSearchServiceOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
 		}
 	}
 	return JoinErrors(errs...)

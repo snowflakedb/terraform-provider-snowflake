@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateCatalogIntegrationOptions)
 	_ validatable = new(AlterCatalogIntegrationOptions)
@@ -49,6 +51,13 @@ func (opts *AlterCatalogIntegrationOptions) validate() error {
 		}
 		if !anyValueSet(opts.Set.SetOAuthRestAuthentication, opts.Set.SetBearerRestAuthentication, opts.Set.Enabled, opts.Set.RefreshIntervalSeconds, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterCatalogIntegrationOptions.Set", "SetOAuthRestAuthentication", "SetBearerRestAuthentication", "Enabled", "RefreshIntervalSeconds", "Comment"))
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterCatalogIntegrationOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
 		}
 	}
 	return JoinErrors(errs...)

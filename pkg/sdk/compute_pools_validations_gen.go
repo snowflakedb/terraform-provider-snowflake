@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateComputePoolOptions)
 	_ validatable = new(AlterComputePoolOptions)
@@ -19,6 +21,13 @@ func (opts *CreateComputePoolOptions) validate() error {
 		errs = append(errs, errInvalidIdentifier("CreateComputePoolOptions", "name"))
 	}
 	errs = append(errs, opts.additionalValidations())
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateComputePoolOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -42,6 +51,13 @@ func (opts *AlterComputePoolOptions) validate() error {
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.AutoResume, opts.Unset.AutoSuspendSecs, opts.Unset.BackupInstanceFamilies, opts.Unset.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterComputePoolOptions.Unset", "AutoResume", "AutoSuspendSecs", "BackupInstanceFamilies", "Comment"))
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterComputePoolOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
 		}
 	}
 	return JoinErrors(errs...)

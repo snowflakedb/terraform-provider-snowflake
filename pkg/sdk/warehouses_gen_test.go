@@ -20,15 +20,18 @@ var warehousesTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 const (
 	case_Warehouses_validation_Create_name_ValidIdentifier                  testCaseName = "validation_Create_name_ValidIdentifier"
 	case_Warehouses_validation_Create_opts_ConflictingFields                testCaseName = "validation_Create_opts_ConflictingFields"
+	case_Warehouses_validation_Create_Tag_ValidIdentifier                   testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_Warehouses_sql_Create_basic                                        testCaseName = "sql_Create_basic"
 	case_Warehouses_sql_Create_all                                          testCaseName = "sql_Create_all"
 	case_Warehouses_validation_CreateAdaptive_name_ValidIdentifier          testCaseName = "validation_CreateAdaptive_name_ValidIdentifier"
 	case_Warehouses_validation_CreateAdaptive_opts_ConflictingFields        testCaseName = "validation_CreateAdaptive_opts_ConflictingFields"
+	case_Warehouses_validation_CreateAdaptive_Tag_ValidIdentifier           testCaseName = "validation_CreateAdaptive_Tag_ValidIdentifier"
 	case_Warehouses_sql_CreateAdaptive_basic                                testCaseName = "sql_CreateAdaptive_basic"
 	case_Warehouses_sql_CreateAdaptive_all                                  testCaseName = "sql_CreateAdaptive_all"
 	case_Warehouses_validation_CreateInteractive_name_ValidIdentifier       testCaseName = "validation_CreateInteractive_name_ValidIdentifier"
 	case_Warehouses_validation_CreateInteractive_opts_ConflictingFields     testCaseName = "validation_CreateInteractive_opts_ConflictingFields"
 	case_Warehouses_validation_CreateInteractive_Tables_ValidIdentifier     testCaseName = "validation_CreateInteractive_Tables_ValidIdentifier"
+	case_Warehouses_validation_CreateInteractive_Tag_ValidIdentifier        testCaseName = "validation_CreateInteractive_Tag_ValidIdentifier"
 	case_Warehouses_sql_CreateInteractive_basic                             testCaseName = "sql_CreateInteractive_basic"
 	case_Warehouses_sql_CreateInteractive_all                               testCaseName = "sql_CreateInteractive_all"
 	case_Warehouses_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
@@ -38,6 +41,7 @@ const (
 	case_Warehouses_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_Warehouses_validation_Alter_AddTables_ValidIdentifier              testCaseName = "validation_Alter_AddTables_ValidIdentifier"
 	case_Warehouses_validation_Alter_DropTables_ValidIdentifier             testCaseName = "validation_Alter_DropTables_ValidIdentifier"
+	case_Warehouses_validation_Alter_SetTags_ValidIdentifier                testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_Warehouses_sql_Alter_Suspend                                       testCaseName = "sql_Alter_Suspend"
 	case_Warehouses_sql_Alter_Resume                                        testCaseName = "sql_Alter_Resume"
 	case_Warehouses_sql_Alter_AbortAllQueries                               testCaseName = "sql_Alter_AbortAllQueries"
@@ -95,6 +99,13 @@ var warehousesTests = WarehousesTestsContext{
 					opts.IfNotExists = new(true)
 				},
 			},
+			validationCase[*CreateWarehouseOptions]{
+				Name:        case_Warehouses_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateWarehouseOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateWarehouseOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateWarehouseOptions]{
@@ -127,6 +138,13 @@ var warehousesTests = WarehousesTestsContext{
 				DefaultModify: func(opts *CreateAdaptiveWarehouseOptions) {
 					opts.OrReplace = new(true)
 					opts.IfNotExists = new(true)
+				},
+			},
+			validationCase[*CreateAdaptiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_CreateAdaptive_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAdaptiveWarehouseOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateAdaptiveWarehouseOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).
@@ -168,6 +186,13 @@ var warehousesTests = WarehousesTestsContext{
 				ExpectedErr: errInvalidIdentifier("CreateInteractiveWarehouseOptions.Tables[0]", "Tables"),
 				DefaultModify: func(opts *CreateInteractiveWarehouseOptions) {
 					opts.Tables = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
+			validationCase[*CreateInteractiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_CreateInteractive_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateInteractiveWarehouseOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateInteractiveWarehouseOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).
@@ -285,6 +310,13 @@ var warehousesTests = WarehousesTestsContext{
 				ExpectedErr: errInvalidIdentifier("AlterWarehouseOptions.DropTables[0]", "DropTables"),
 				DefaultModify: func(opts *AlterWarehouseOptions) {
 					opts.DropTables = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
+			validationCase[*AlterWarehouseOptions]{
+				Name:        case_Warehouses_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterWarehouseOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterWarehouseOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

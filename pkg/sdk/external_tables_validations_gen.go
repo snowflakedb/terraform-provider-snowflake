@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateExternalTableOptions)
 	_ validatable = new(CreateWithManualPartitioningExternalTableOptions)
@@ -43,6 +45,13 @@ func (opts *CreateExternalTableOptions) validate() error {
 		}
 		errs = append(errs, opts.FileFormat.additionalValidations())
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateExternalTableOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -73,6 +82,13 @@ func (opts *CreateWithManualPartitioningExternalTableOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("CreateWithManualPartitioningExternalTableOptions.FileFormat", "Name", "FileFormatType"))
 		}
 		errs = append(errs, opts.FileFormat.additionalValidations())
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateWithManualPartitioningExternalTableOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -105,6 +121,13 @@ func (opts *CreateDeltaLakeExternalTableOptions) validate() error {
 		}
 		errs = append(errs, opts.FileFormat.additionalValidations())
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateDeltaLakeExternalTableOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -136,6 +159,13 @@ func (opts *CreateUsingTemplateExternalTableOptions) validate() error {
 		}
 		errs = append(errs, opts.FileFormat.additionalValidations())
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateUsingTemplateExternalTableOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -149,6 +179,13 @@ func (opts *AlterExternalTableOptions) validate() error {
 	}
 	if !exactlyOneValueSet(opts.Refresh, opts.AddFiles, opts.RemoveFiles, opts.AutoRefresh, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterExternalTableOptions", "Refresh", "AddFiles", "RemoveFiles", "AutoRefresh", "SetTags", "UnsetTags"))
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterExternalTableOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }

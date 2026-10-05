@@ -19,6 +19,7 @@ const (
 	case_MaskingPolicies_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
 	case_MaskingPolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_MaskingPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_MaskingPolicies_validation_Alter_SetTags_ValidIdentifier                testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_MaskingPolicies_sql_Alter_RenameTo                                      testCaseName = "sql_Alter_RenameTo"
 	case_MaskingPolicies_sql_Alter_SetBody                                       testCaseName = "sql_Alter_SetBody"
 	case_MaskingPolicies_sql_Alter_SetComment                                    testCaseName = "sql_Alter_SetComment"
@@ -137,6 +138,13 @@ var maskingPoliciesTests = MaskingPoliciesTestsContext{
 				DefaultModify: func(opts *AlterMaskingPolicyOptions) {
 					opts.RenameTo = new(randomSchemaObjectIdentifier())
 					opts.SetBody = new("foo")
+				},
+			},
+			validationCase[*AlterMaskingPolicyOptions]{
+				Name:        case_MaskingPolicies_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterMaskingPolicyOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterMaskingPolicyOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

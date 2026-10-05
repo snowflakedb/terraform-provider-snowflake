@@ -13,6 +13,7 @@ const (
 	case_Applications_validation_Create_PackageName_ValidIdentifier                          testCaseName = "validation_Create_PackageName_ValidIdentifier"
 	case_Applications_validation_Create_opts_Version_ExactlyOneValueSet_NoneSet              testCaseName = "validation_Create_opts_Version_ExactlyOneValueSet_NoneSet"
 	case_Applications_validation_Create_opts_Version_ExactlyOneValueSet_MoreThanOneSet       testCaseName = "validation_Create_opts_Version_ExactlyOneValueSet_MoreThanOneSet"
+	case_Applications_validation_Create_Tag_ValidIdentifier                                  testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_Applications_sql_Create_basic                                                       testCaseName = "sql_Create_basic"
 	case_Applications_sql_Create_all                                                         testCaseName = "sql_Create_all"
 	case_Applications_validation_Drop_name_ValidIdentifier                                   testCaseName = "validation_Drop_name_ValidIdentifier"
@@ -23,6 +24,7 @@ const (
 	case_Applications_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_Applications_validation_Alter_opts_UpgradeVersion_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_UpgradeVersion_ExactlyOneValueSet_NoneSet"
 	case_Applications_validation_Alter_opts_UpgradeVersion_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_UpgradeVersion_ExactlyOneValueSet_MoreThanOneSet"
+	case_Applications_validation_Alter_SetTags_ValidIdentifier                               testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_Applications_sql_Alter_Set                                                          testCaseName = "sql_Alter_Set"
 	case_Applications_sql_Alter_Unset                                                        testCaseName = "sql_Alter_Unset"
 	case_Applications_sql_Alter_Upgrade                                                      testCaseName = "sql_Alter_Upgrade"
@@ -87,6 +89,13 @@ var applicationsTests = ApplicationsTestsContext{
 					opts.Version = &ApplicationVersion{}
 					opts.Version.VersionDirectory = new("foo")
 					opts.Version.VersionAndPatch = &VersionAndPatch{}
+				},
+			},
+			validationCase[*CreateApplicationOptions]{
+				Name:        case_Applications_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateApplicationOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateApplicationOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).
@@ -178,6 +187,13 @@ var applicationsTests = ApplicationsTestsContext{
 					opts.UpgradeVersion = &ApplicationVersion{}
 					opts.UpgradeVersion.VersionDirectory = new("foo")
 					opts.UpgradeVersion.VersionAndPatch = &VersionAndPatch{}
+				},
+			},
+			validationCase[*AlterApplicationOptions]{
+				Name:        case_Applications_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterApplicationOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterApplicationOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

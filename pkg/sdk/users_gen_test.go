@@ -21,6 +21,7 @@ const (
 	case_Users_validation_Create_opts_ObjectProperties_DefaultSecondaryRoles_ExactlyOneValueSet_MoreThanOneSet    testCaseName = "validation_Create_opts_ObjectProperties_DefaultSecondaryRoles_ExactlyOneValueSet_MoreThanOneSet"
 	case_Users_validation_Create_opts_ObjectProperties_WorkloadIdentity_ExactlyOneValueSet_NoneSet                testCaseName = "validation_Create_opts_ObjectProperties_WorkloadIdentity_ExactlyOneValueSet_NoneSet"
 	case_Users_validation_Create_opts_ObjectProperties_WorkloadIdentity_ExactlyOneValueSet_MoreThanOneSet         testCaseName = "validation_Create_opts_ObjectProperties_WorkloadIdentity_ExactlyOneValueSet_MoreThanOneSet"
+	case_Users_validation_Create_Tag_ValidIdentifier                                                              testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_Users_sql_Create_basic                                                                                   testCaseName = "sql_Create_basic"
 	case_Users_sql_Create_all                                                                                     testCaseName = "sql_Create_all"
 	case_Users_validation_Alter_name_ValidIdentifier                                                              testCaseName = "validation_Alter_name_ValidIdentifier"
@@ -37,6 +38,7 @@ const (
 	case_Users_validation_Alter_opts_Set_ObjectProperties_WorkloadIdentity_ExactlyOneValueSet_MoreThanOneSet      testCaseName = "validation_Alter_opts_Set_ObjectProperties_WorkloadIdentity_ExactlyOneValueSet_MoreThanOneSet"
 	case_Users_validation_Alter_opts_Unset_AtLeastOneValueSet                                                     testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_Users_validation_Alter_opts_Unset_MoreThanOneValueSet_MoreThanOneSet                                     testCaseName = "validation_Alter_opts_Unset_MoreThanOneValueSet_MoreThanOneSet"
+	case_Users_validation_Alter_SetTags_ValidIdentifier                                                           testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_Users_sql_Alter_RenameTo                                                                                 testCaseName = "sql_Alter_RenameTo"
 	case_Users_sql_Alter_ResetPassword                                                                            testCaseName = "sql_Alter_ResetPassword"
 	case_Users_sql_Alter_AbortAllQueries                                                                          testCaseName = "sql_Alter_AbortAllQueries"
@@ -135,6 +137,13 @@ var usersTests = UsersTestsContext{
 					opts.ObjectProperties.WorkloadIdentity = &UserObjectWorkloadIdentityProperties{}
 					opts.ObjectProperties.WorkloadIdentity.AwsType = &UserObjectWorkloadIdentityAws{}
 					opts.ObjectProperties.WorkloadIdentity.AzureType = &UserObjectWorkloadIdentityAzure{}
+				},
+			},
+			validationCase[*CreateUserOptions]{
+				Name:        case_Users_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateUserOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateUserOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).
@@ -300,6 +309,13 @@ var usersTests = UsersTestsContext{
 					opts.Unset = &UserUnset{}
 					opts.Unset.PasswordPolicy = new(true)
 					opts.Unset.SessionPolicy = new(true)
+				},
+			},
+			validationCase[*AlterUserOptions]{
+				Name:        case_Users_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterUserOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterUserOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

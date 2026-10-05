@@ -19,6 +19,7 @@ const (
 	case_DatabaseRoles_validation_Alter_RenameTo_ValidIdentifierIfSet                testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
 	case_DatabaseRoles_validation_Alter_opts_Set_AtLeastOneValueSet                  testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_DatabaseRoles_validation_Alter_opts_Unset_AtLeastOneValueSet                testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_DatabaseRoles_validation_Alter_SetTags_ValidIdentifier                      testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_DatabaseRoles_sql_Alter_RenameTo                                            testCaseName = "sql_Alter_RenameTo"
 	case_DatabaseRoles_sql_Alter_Set                                                 testCaseName = "sql_Alter_Set"
 	case_DatabaseRoles_sql_Alter_Unset                                               testCaseName = "sql_Alter_Unset"
@@ -150,6 +151,13 @@ var databaseRolesTests = DatabaseRolesTestsContext{
 				DefaultModify: func(opts *AlterDatabaseRoleOptions) {
 					opts.Unset = &DatabaseRoleUnset{}
 					opts.Unset.Comment = nil
+				},
+			},
+			validationCase[*AlterDatabaseRoleOptions]{
+				Name:        case_DatabaseRoles_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterDatabaseRoleOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterDatabaseRoleOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

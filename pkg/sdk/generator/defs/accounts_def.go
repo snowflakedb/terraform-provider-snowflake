@@ -202,6 +202,7 @@ var accountsDef = g.NewInterface(
 		OptionalInlineQueryStructField("Drop", accountDrop()).
 		WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "SetTag", "UnsetTag", "Drop", "RenameTo").
 		WithValidation(g.ValidIdentifierIfSet, "RenameTo").
+		WithValidation(g.ValidIdentifier, "SetTag").
 		WithAdditionalValidations(),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-account",

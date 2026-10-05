@@ -17,6 +17,7 @@ const (
 	case_Streams_validation_CreateOnTable_name_ValidIdentifier                                        testCaseName = "validation_CreateOnTable_name_ValidIdentifier"
 	case_Streams_validation_CreateOnTable_TableId_ValidIdentifier                                     testCaseName = "validation_CreateOnTable_TableId_ValidIdentifier"
 	case_Streams_validation_CreateOnTable_opts_ConflictingFields                                      testCaseName = "validation_CreateOnTable_opts_ConflictingFields"
+	case_Streams_validation_CreateOnTable_Tag_ValidIdentifier                                         testCaseName = "validation_CreateOnTable_Tag_ValidIdentifier"
 	case_Streams_validation_CreateOnTable_opts_On_ExactlyOneValueSet_NoneSet                          testCaseName = "validation_CreateOnTable_opts_On_ExactlyOneValueSet_NoneSet"
 	case_Streams_validation_CreateOnTable_opts_On_ExactlyOneValueSet_MoreThanOneSet                   testCaseName = "validation_CreateOnTable_opts_On_ExactlyOneValueSet_MoreThanOneSet"
 	case_Streams_validation_CreateOnTable_opts_On_Statement_ExactlyOneValueSet_NoneSet                testCaseName = "validation_CreateOnTable_opts_On_Statement_ExactlyOneValueSet_NoneSet"
@@ -26,6 +27,7 @@ const (
 	case_Streams_validation_CreateOnExternalTable_name_ValidIdentifier                                testCaseName = "validation_CreateOnExternalTable_name_ValidIdentifier"
 	case_Streams_validation_CreateOnExternalTable_ExternalTableId_ValidIdentifier                     testCaseName = "validation_CreateOnExternalTable_ExternalTableId_ValidIdentifier"
 	case_Streams_validation_CreateOnExternalTable_opts_ConflictingFields                              testCaseName = "validation_CreateOnExternalTable_opts_ConflictingFields"
+	case_Streams_validation_CreateOnExternalTable_Tag_ValidIdentifier                                 testCaseName = "validation_CreateOnExternalTable_Tag_ValidIdentifier"
 	case_Streams_validation_CreateOnExternalTable_opts_On_ExactlyOneValueSet_NoneSet                  testCaseName = "validation_CreateOnExternalTable_opts_On_ExactlyOneValueSet_NoneSet"
 	case_Streams_validation_CreateOnExternalTable_opts_On_ExactlyOneValueSet_MoreThanOneSet           testCaseName = "validation_CreateOnExternalTable_opts_On_ExactlyOneValueSet_MoreThanOneSet"
 	case_Streams_validation_CreateOnExternalTable_opts_On_Statement_ExactlyOneValueSet_NoneSet        testCaseName = "validation_CreateOnExternalTable_opts_On_Statement_ExactlyOneValueSet_NoneSet"
@@ -35,11 +37,13 @@ const (
 	case_Streams_validation_CreateOnDirectoryTable_name_ValidIdentifier                               testCaseName = "validation_CreateOnDirectoryTable_name_ValidIdentifier"
 	case_Streams_validation_CreateOnDirectoryTable_StageId_ValidIdentifier                            testCaseName = "validation_CreateOnDirectoryTable_StageId_ValidIdentifier"
 	case_Streams_validation_CreateOnDirectoryTable_opts_ConflictingFields                             testCaseName = "validation_CreateOnDirectoryTable_opts_ConflictingFields"
+	case_Streams_validation_CreateOnDirectoryTable_Tag_ValidIdentifier                                testCaseName = "validation_CreateOnDirectoryTable_Tag_ValidIdentifier"
 	case_Streams_sql_CreateOnDirectoryTable_basic                                                     testCaseName = "sql_CreateOnDirectoryTable_basic"
 	case_Streams_sql_CreateOnDirectoryTable_all                                                       testCaseName = "sql_CreateOnDirectoryTable_all"
 	case_Streams_validation_CreateOnView_name_ValidIdentifier                                         testCaseName = "validation_CreateOnView_name_ValidIdentifier"
 	case_Streams_validation_CreateOnView_ViewId_ValidIdentifier                                       testCaseName = "validation_CreateOnView_ViewId_ValidIdentifier"
 	case_Streams_validation_CreateOnView_opts_ConflictingFields                                       testCaseName = "validation_CreateOnView_opts_ConflictingFields"
+	case_Streams_validation_CreateOnView_Tag_ValidIdentifier                                          testCaseName = "validation_CreateOnView_Tag_ValidIdentifier"
 	case_Streams_validation_CreateOnView_opts_On_ExactlyOneValueSet_NoneSet                           testCaseName = "validation_CreateOnView_opts_On_ExactlyOneValueSet_NoneSet"
 	case_Streams_validation_CreateOnView_opts_On_ExactlyOneValueSet_MoreThanOneSet                    testCaseName = "validation_CreateOnView_opts_On_ExactlyOneValueSet_MoreThanOneSet"
 	case_Streams_validation_CreateOnView_opts_On_Statement_ExactlyOneValueSet_NoneSet                 testCaseName = "validation_CreateOnView_opts_On_Statement_ExactlyOneValueSet_NoneSet"
@@ -52,6 +56,7 @@ const (
 	case_Streams_validation_Alter_opts_ConflictingFields                                              testCaseName = "validation_Alter_opts_ConflictingFields"
 	case_Streams_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                     testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_Streams_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                              testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Streams_validation_Alter_SetTags_ValidIdentifier                                             testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_Streams_sql_Alter_SetComment                                                                 testCaseName = "sql_Alter_SetComment"
 	case_Streams_sql_Alter_UnsetComment                                                               testCaseName = "sql_Alter_UnsetComment"
 	case_Streams_sql_Alter_SetTags                                                                    testCaseName = "sql_Alter_SetTags"
@@ -111,6 +116,13 @@ var streamsTests = StreamsTestsContext{
 				DefaultModify: func(opts *CreateOnTableStreamOptions) {
 					opts.IfNotExists = new(true)
 					opts.OrReplace = new(true)
+				},
+			},
+			validationCase[*CreateOnTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnTable_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOnTableStreamOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateOnTableStreamOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 			validationCase[*CreateOnTableStreamOptions]{
@@ -193,6 +205,13 @@ var streamsTests = StreamsTestsContext{
 				},
 			},
 			validationCase[*CreateOnExternalTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnExternalTable_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOnExternalTableStreamOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateOnExternalTableStreamOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
+			validationCase[*CreateOnExternalTableStreamOptions]{
 				Name:        case_Streams_validation_CreateOnExternalTable_opts_On_ExactlyOneValueSet_NoneSet,
 				ExpectedErr: errExactlyOneOf("CreateOnExternalTableStreamOptions.On", "At", "Before"),
 				DefaultModify: func(opts *CreateOnExternalTableStreamOptions) {
@@ -271,6 +290,13 @@ var streamsTests = StreamsTestsContext{
 					opts.OrReplace = new(true)
 				},
 			},
+			validationCase[*CreateOnDirectoryTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnDirectoryTable_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOnDirectoryTableStreamOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateOnDirectoryTableStreamOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateOnDirectoryTableStreamOptions]{
@@ -310,6 +336,13 @@ var streamsTests = StreamsTestsContext{
 				DefaultModify: func(opts *CreateOnViewStreamOptions) {
 					opts.IfNotExists = new(true)
 					opts.OrReplace = new(true)
+				},
+			},
+			validationCase[*CreateOnViewStreamOptions]{
+				Name:        case_Streams_validation_CreateOnView_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOnViewStreamOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateOnViewStreamOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 			validationCase[*CreateOnViewStreamOptions]{
@@ -419,6 +452,13 @@ var streamsTests = StreamsTestsContext{
 				DefaultModify: func(opts *AlterStreamOptions) {
 					opts.SetComment = new("foo")
 					opts.UnsetComment = new(true)
+				},
+			},
+			validationCase[*AlterStreamOptions]{
+				Name:        case_Streams_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterStreamOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterStreamOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

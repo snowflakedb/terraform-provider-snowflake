@@ -10,12 +10,14 @@ var applicationPackagesTestIdAccountObjectIdentifier = randomAccountObjectIdenti
 
 const (
 	case_ApplicationPackages_validation_Create_name_ValidIdentifier                  testCaseName = "validation_Create_name_ValidIdentifier"
+	case_ApplicationPackages_validation_Create_Tag_ValidIdentifier                   testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_ApplicationPackages_sql_Create_basic                                        testCaseName = "sql_Create_basic"
 	case_ApplicationPackages_sql_Create_all                                          testCaseName = "sql_Create_all"
 	case_ApplicationPackages_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
 	case_ApplicationPackages_validation_Alter_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_ApplicationPackages_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_ApplicationPackages_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_ApplicationPackages_validation_Alter_SetTags_ValidIdentifier                testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_ApplicationPackages_sql_Alter_Set                                           testCaseName = "sql_Alter_Set"
 	case_ApplicationPackages_sql_Alter_Unset                                         testCaseName = "sql_Alter_Unset"
 	case_ApplicationPackages_sql_Alter_ModifyReleaseDirective                        testCaseName = "sql_Alter_ModifyReleaseDirective"
@@ -59,6 +61,13 @@ var applicationPackagesTests = ApplicationPackagesTestsContext{
 				ExpectedErr: errInvalidIdentifier("CreateApplicationPackageOptions", "name"),
 				DefaultModify: func(opts *CreateApplicationPackageOptions) {
 					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateApplicationPackageOptions]{
+				Name:        case_ApplicationPackages_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateApplicationPackageOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateApplicationPackageOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).
@@ -122,6 +131,13 @@ var applicationPackagesTests = ApplicationPackagesTestsContext{
 					opts.Unset.DefaultDdlCollation = nil
 					opts.Unset.Comment = nil
 					opts.Unset.Distribution = nil
+				},
+			},
+			validationCase[*AlterApplicationPackageOptions]{
+				Name:        case_ApplicationPackages_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterApplicationPackageOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterApplicationPackageOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

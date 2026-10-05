@@ -21,6 +21,7 @@ func (r *CreateSliceValidationExampleRequest) toOpts() *CreateSliceValidationExa
 	opts := &CreateSliceValidationExampleOptions{
 		name:                       r.name,
 		ExternalAccessIntegrations: r.ExternalAccessIntegrations,
+		Tag:                        r.Tag,
 	}
 	if r.DualChecks != nil {
 		dualChecks := make([]DualCheckItem, len(r.DualChecks))

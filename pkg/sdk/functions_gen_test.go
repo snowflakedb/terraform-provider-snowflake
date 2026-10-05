@@ -102,6 +102,7 @@ const (
 	case_Functions_validation_Alter_opts_Set_AtLeastOneValueSet                                                    testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_Functions_validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier                                 testCaseName = "validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier"
 	case_Functions_validation_Alter_opts_Unset_AtLeastOneValueSet                                                  testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Functions_validation_Alter_SetTags_ValidIdentifier                                                        testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_Functions_sql_Alter_RenameTo                                                                              testCaseName = "sql_Alter_RenameTo"
 	case_Functions_sql_Alter_Set                                                                                   testCaseName = "sql_Alter_Set"
 	case_Functions_sql_Alter_Unset                                                                                 testCaseName = "sql_Alter_Unset"
@@ -806,6 +807,13 @@ var functionsTests = FunctionsTestsContext{
 					opts.Unset.LogEventLevel = nil
 					opts.Unset.MetricLevel = nil
 					opts.Unset.TraceLevel = nil
+				},
+			},
+			validationCase[*AlterFunctionOptions]{
+				Name:        case_Functions_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFunctionOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterFunctionOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

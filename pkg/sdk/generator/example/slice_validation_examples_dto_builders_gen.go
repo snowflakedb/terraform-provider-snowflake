@@ -40,6 +40,11 @@ func (s *CreateSliceValidationExampleRequest) WithExternalAccessIntegrations(ext
 	return s
 }
 
+func (s *CreateSliceValidationExampleRequest) WithTag(tag []TagAssociation) *CreateSliceValidationExampleRequest {
+	s.Tag = tag
+	return s
+}
+
 func NewDualCheckItemRequest() *DualCheckItemRequest {
 	s := DualCheckItemRequest{}
 	return &s

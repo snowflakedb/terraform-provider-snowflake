@@ -27,6 +27,7 @@ const (
 	case_StorageIntegrations_validation_Alter_opts_Unset_AtLeastOneValueSet             testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_StorageIntegrations_validation_Alter_opts_Unset_S3Params_AtLeastOneValueSet    testCaseName = "validation_Alter_opts_Unset_S3Params_AtLeastOneValueSet"
 	case_StorageIntegrations_validation_Alter_opts_Unset_AzureParams_AtLeastOneValueSet testCaseName = "validation_Alter_opts_Unset_AzureParams_AtLeastOneValueSet"
+	case_StorageIntegrations_validation_Alter_SetTags_ValidIdentifier                   testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_StorageIntegrations_sql_Alter_Set                                              testCaseName = "sql_Alter_Set"
 	case_StorageIntegrations_sql_Alter_Unset                                            testCaseName = "sql_Alter_Unset"
 	case_StorageIntegrations_sql_Alter_SetTags                                          testCaseName = "sql_Alter_SetTags"
@@ -222,6 +223,13 @@ var storageIntegrationsTests = StorageIntegrationsTestsContext{
 					opts.Unset = &StorageIntegrationUnset{}
 					opts.Unset.AzureParams = &UnsetAzureStorageParams{}
 					opts.Unset.AzureParams.UsePrivatelinkEndpoint = nil
+				},
+			},
+			validationCase[*AlterStorageIntegrationOptions]{
+				Name:        case_StorageIntegrations_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterStorageIntegrationOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterStorageIntegrationOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

@@ -17,6 +17,7 @@ var postgresInstancesTestIdAccountObjectIdentifier = randomAccountObjectIdentifi
 
 const (
 	case_PostgresInstances_validation_Create_name_ValidIdentifier                            testCaseName = "validation_Create_name_ValidIdentifier"
+	case_PostgresInstances_validation_Create_Tag_ValidIdentifier                             testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_PostgresInstances_sql_Create_basic                                                  testCaseName = "sql_Create_basic"
 	case_PostgresInstances_sql_Create_all                                                    testCaseName = "sql_Create_all"
 	case_PostgresInstances_validation_Fork_name_ValidIdentifier                              testCaseName = "validation_Fork_name_ValidIdentifier"
@@ -26,6 +27,7 @@ const (
 	case_PostgresInstances_validation_Fork_opts_At_ExactlyOneValueSet_MoreThanOneSet         testCaseName = "validation_Fork_opts_At_ExactlyOneValueSet_MoreThanOneSet"
 	case_PostgresInstances_validation_Fork_opts_Before_ExactlyOneValueSet_NoneSet            testCaseName = "validation_Fork_opts_Before_ExactlyOneValueSet_NoneSet"
 	case_PostgresInstances_validation_Fork_opts_Before_ExactlyOneValueSet_MoreThanOneSet     testCaseName = "validation_Fork_opts_Before_ExactlyOneValueSet_MoreThanOneSet"
+	case_PostgresInstances_validation_Fork_Tag_ValidIdentifier                               testCaseName = "validation_Fork_Tag_ValidIdentifier"
 	case_PostgresInstances_sql_Fork_basic                                                    testCaseName = "sql_Fork_basic"
 	case_PostgresInstances_validation_Alter_name_ValidIdentifier                             testCaseName = "validation_Alter_name_ValidIdentifier"
 	case_PostgresInstances_validation_Alter_opts_ExactlyOneValueSet_NoneSet                  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
@@ -34,6 +36,7 @@ const (
 	case_PostgresInstances_validation_Alter_opts_Set_Apply_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_Set_Apply_ExactlyOneValueSet_NoneSet"
 	case_PostgresInstances_validation_Alter_opts_Set_Apply_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_Set_Apply_ExactlyOneValueSet_MoreThanOneSet"
 	case_PostgresInstances_validation_Alter_opts_Unset_AtLeastOneValueSet                    testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_PostgresInstances_validation_Alter_SetTags_ValidIdentifier                          testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_PostgresInstances_sql_Alter_RenameTo                                                testCaseName = "sql_Alter_RenameTo"
 	case_PostgresInstances_sql_Alter_Set                                                     testCaseName = "sql_Alter_Set"
 	case_PostgresInstances_sql_Alter_Unset                                                   testCaseName = "sql_Alter_Unset"
@@ -78,6 +81,13 @@ var postgresInstancesTests = PostgresInstancesTestsContext{
 				ExpectedErr: errInvalidIdentifier("CreatePostgresInstanceOptions", "name"),
 				DefaultModify: func(opts *CreatePostgresInstanceOptions) {
 					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreatePostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreatePostgresInstanceOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreatePostgresInstanceOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).
@@ -155,6 +165,13 @@ var postgresInstancesTests = PostgresInstancesTestsContext{
 					opts.Before = &PostgresInstanceForkBefore{}
 					opts.Before.Timestamp = new("foo")
 					opts.Before.Offset = new("foo")
+				},
+			},
+			validationCase[*ForkPostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Fork_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("ForkPostgresInstanceOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *ForkPostgresInstanceOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).
@@ -249,6 +266,13 @@ var postgresInstancesTests = PostgresInstancesTestsContext{
 					opts.Unset.NetworkPolicy = nil
 					opts.Unset.MaintenanceWindowStart = nil
 					opts.Unset.StorageIntegration = nil
+				},
+			},
+			validationCase[*AlterPostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterPostgresInstanceOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterPostgresInstanceOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

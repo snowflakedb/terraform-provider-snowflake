@@ -110,6 +110,13 @@ func (opts *AlterExternalAccessIntegrationOptions) validate() error {
 			errs = append(errs, errAtLeastOneOf("AlterExternalAccessIntegrationOptions.Unset", "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Enabled", "Comment"))
 		}
 	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterExternalAccessIntegrationOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 

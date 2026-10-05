@@ -30,6 +30,7 @@ const (
 	case_OrganizationAccounts_validation_Alter_opts_Unset_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_Unset_ExactlyOneValueSet_NoneSet"
 	case_OrganizationAccounts_validation_Alter_opts_Unset_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_Unset_ExactlyOneValueSet_MoreThanOneSet"
 	case_OrganizationAccounts_validation_Alter_opts_Unset_Parameters_AtLeastOneValueSet     testCaseName = "validation_Alter_opts_Unset_Parameters_AtLeastOneValueSet"
+	case_OrganizationAccounts_validation_Alter_SetTags_ValidIdentifier                      testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_OrganizationAccounts_sql_Alter_Set                                                 testCaseName = "sql_Alter_Set"
 	case_OrganizationAccounts_sql_Alter_Unset                                               testCaseName = "sql_Alter_Unset"
 	case_OrganizationAccounts_sql_Alter_SetTags                                             testCaseName = "sql_Alter_SetTags"
@@ -486,6 +487,13 @@ var organizationAccountsTests = OrganizationAccountsTestsContext{
 					opts.Unset.Parameters.UserTaskTimeoutMs = nil
 					opts.Unset.Parameters.WeekOfYearPolicy = nil
 					opts.Unset.Parameters.WeekStart = nil
+				},
+			},
+			validationCase[*AlterOrganizationAccountOptions]{
+				Name:        case_OrganizationAccounts_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOrganizationAccountOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterOrganizationAccountOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

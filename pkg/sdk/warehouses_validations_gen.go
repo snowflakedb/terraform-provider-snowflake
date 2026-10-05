@@ -26,6 +26,13 @@ func (opts *CreateWarehouseOptions) validate() error {
 		errs = append(errs, errOneOf("CreateWarehouseOptions", "OrReplace", "IfNotExists"))
 	}
 	errs = append(errs, opts.additionalValidations())
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateWarehouseOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -41,6 +48,13 @@ func (opts *CreateAdaptiveWarehouseOptions) validate() error {
 		errs = append(errs, errOneOf("CreateAdaptiveWarehouseOptions", "OrReplace", "IfNotExists"))
 	}
 	errs = append(errs, opts.additionalValidations())
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateAdaptiveWarehouseOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -60,6 +74,13 @@ func (opts *CreateInteractiveWarehouseOptions) validate() error {
 		for tableIdx, table := range opts.Tables {
 			if !ValidObjectIdentifier(table) {
 				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateInteractiveWarehouseOptions.Tables[%d]", tableIdx), "Tables"))
+			}
+		}
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateInteractiveWarehouseOptions.Tag[%d]", tagIdx), "Name"))
 			}
 		}
 	}
@@ -100,6 +121,13 @@ func (opts *AlterWarehouseOptions) validate() error {
 		for dropTableIdx, dropTable := range opts.DropTables {
 			if !ValidObjectIdentifier(dropTable) {
 				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterWarehouseOptions.DropTables[%d]", dropTableIdx), "DropTables"))
+			}
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterWarehouseOptions.SetTags[%d]", setTagIdx), "Name"))
 			}
 		}
 	}

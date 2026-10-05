@@ -42,6 +42,7 @@ const (
 	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Validate_Novalidate                        testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Validate_Novalidate"
 	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Rely_Norely                                testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Rely_Norely"
 	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_CH_ConflictingFields                                            testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_CH_ConflictingFields"
+	case_IcebergTables_validation_Create_ColumnsAndConstraints_Columns_Tag_ValidIdentifier                                                                   testCaseName = "validation_Create_ColumnsAndConstraints_Columns_Tag_ValidIdentifier"
 	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_NoneSet                                           testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_NoneSet"
 	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_MoreThanOneSet                                    testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_MoreThanOneSet"
 	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_OneValidOneInvalid                                testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_OneValidOneInvalid"
@@ -68,22 +69,27 @@ const (
 	case_IcebergTables_validation_Create_opts_PartitionBy_ExactlyOneValueSet_BothInvalid                                                                     testCaseName = "validation_Create_opts_PartitionBy_ExactlyOneValueSet_BothInvalid"
 	case_IcebergTables_validation_Create_RowAccessPolicy_Name_ValidIdentifier                                                                                testCaseName = "validation_Create_RowAccessPolicy_Name_ValidIdentifier"
 	case_IcebergTables_validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier                                                                 testCaseName = "validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier"
+	case_IcebergTables_validation_Create_Tag_ValidIdentifier                                                                                                 testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_IcebergTables_sql_Create_basic                                                                                                                      testCaseName = "sql_Create_basic"
 	case_IcebergTables_sql_Create_all                                                                                                                        testCaseName = "sql_Create_all"
 	case_IcebergTables_validation_CreateFromIcebergFiles_name_ValidIdentifier                                                                                testCaseName = "validation_CreateFromIcebergFiles_name_ValidIdentifier"
 	case_IcebergTables_validation_CreateFromIcebergFiles_opts_ConflictingFields                                                                              testCaseName = "validation_CreateFromIcebergFiles_opts_ConflictingFields"
+	case_IcebergTables_validation_CreateFromIcebergFiles_Tag_ValidIdentifier                                                                                 testCaseName = "validation_CreateFromIcebergFiles_Tag_ValidIdentifier"
 	case_IcebergTables_sql_CreateFromIcebergFiles_basic                                                                                                      testCaseName = "sql_CreateFromIcebergFiles_basic"
 	case_IcebergTables_sql_CreateFromIcebergFiles_all                                                                                                        testCaseName = "sql_CreateFromIcebergFiles_all"
 	case_IcebergTables_validation_CreateFromDeltaLake_name_ValidIdentifier                                                                                   testCaseName = "validation_CreateFromDeltaLake_name_ValidIdentifier"
 	case_IcebergTables_validation_CreateFromDeltaLake_opts_ConflictingFields                                                                                 testCaseName = "validation_CreateFromDeltaLake_opts_ConflictingFields"
+	case_IcebergTables_validation_CreateFromDeltaLake_Tag_ValidIdentifier                                                                                    testCaseName = "validation_CreateFromDeltaLake_Tag_ValidIdentifier"
 	case_IcebergTables_sql_CreateFromDeltaLake_basic                                                                                                         testCaseName = "sql_CreateFromDeltaLake_basic"
 	case_IcebergTables_sql_CreateFromDeltaLake_all                                                                                                           testCaseName = "sql_CreateFromDeltaLake_all"
 	case_IcebergTables_validation_CreateFromIcebergRest_name_ValidIdentifier                                                                                 testCaseName = "validation_CreateFromIcebergRest_name_ValidIdentifier"
 	case_IcebergTables_validation_CreateFromIcebergRest_opts_ConflictingFields                                                                               testCaseName = "validation_CreateFromIcebergRest_opts_ConflictingFields"
+	case_IcebergTables_validation_CreateFromIcebergRest_Tag_ValidIdentifier                                                                                  testCaseName = "validation_CreateFromIcebergRest_Tag_ValidIdentifier"
 	case_IcebergTables_sql_CreateFromIcebergRest_basic                                                                                                       testCaseName = "sql_CreateFromIcebergRest_basic"
 	case_IcebergTables_sql_CreateFromIcebergRest_all                                                                                                         testCaseName = "sql_CreateFromIcebergRest_all"
 	case_IcebergTables_validation_CreateFromAwsGlue_name_ValidIdentifier                                                                                     testCaseName = "validation_CreateFromAwsGlue_name_ValidIdentifier"
 	case_IcebergTables_validation_CreateFromAwsGlue_opts_ConflictingFields                                                                                   testCaseName = "validation_CreateFromAwsGlue_opts_ConflictingFields"
+	case_IcebergTables_validation_CreateFromAwsGlue_Tag_ValidIdentifier                                                                                      testCaseName = "validation_CreateFromAwsGlue_Tag_ValidIdentifier"
 	case_IcebergTables_sql_CreateFromAwsGlue_basic                                                                                                           testCaseName = "sql_CreateFromAwsGlue_basic"
 	case_IcebergTables_sql_CreateFromAwsGlue_all                                                                                                             testCaseName = "sql_CreateFromAwsGlue_all"
 	case_IcebergTables_validation_Alter_name_ValidIdentifier                                                                                                 testCaseName = "validation_Alter_name_ValidIdentifier"
@@ -107,14 +113,17 @@ const (
 	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Validate_Novalidate                                       testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Validate_Novalidate"
 	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Rely_Norely                                               testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Rely_Norely"
 	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_CH_ConflictingFields                                                           testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_CH_ConflictingFields"
+	case_IcebergTables_validation_Alter_AddColumnAction_Tag_ValidIdentifier                                                                                  testCaseName = "validation_Alter_AddColumnAction_Tag_ValidIdentifier"
 	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_NoneSet                                                                    testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_NoneSet"
 	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_MoreThanOneSet                                                             testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_MoreThanOneSet"
 	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_OneValidOneInvalid                                                         testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_OneValidOneInvalid"
 	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_BothInvalid                                                                testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_BothInvalid"
+	case_IcebergTables_validation_Alter_SetTagsOnColumn_SetTags_ValidIdentifier                                                                              testCaseName = "validation_Alter_SetTagsOnColumn_SetTags_ValidIdentifier"
 	case_IcebergTables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet                                                                     testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet"
 	case_IcebergTables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet                                                              testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet"
 	case_IcebergTables_validation_Alter_opts_Set_AtLeastOneValueSet                                                                                          testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_IcebergTables_validation_Alter_opts_Unset_AtLeastOneValueSet                                                                                        testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_IcebergTables_validation_Alter_SetTags_ValidIdentifier                                                                                              testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_IcebergTables_validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier                                                                   testCaseName = "validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier"
 	case_IcebergTables_validation_Alter_AddRowAccessPolicy_On_ValidateValueSet                                                                               testCaseName = "validation_Alter_AddRowAccessPolicy_On_ValidateValueSet"
 	case_IcebergTables_validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier                                                                  testCaseName = "validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier"
@@ -405,6 +414,14 @@ var icebergTablesTests = IcebergTablesTestsContext{
 				},
 			},
 			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_ColumnsAndConstraints_Columns_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_NoneSet,
 				ExpectedErr: errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "UniquePK", "FK", "CH"),
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
@@ -629,6 +646,13 @@ var icebergTablesTests = IcebergTablesTestsContext{
 					opts.AggregationPolicy.AggregationPolicy = emptySchemaObjectIdentifier
 				},
 			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateIcebergTableOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateIcebergTableOptions]{
@@ -661,6 +685,13 @@ var icebergTablesTests = IcebergTablesTestsContext{
 				DefaultModify: func(opts *CreateFromIcebergFilesIcebergTableOptions) {
 					opts.OrReplace = new(true)
 					opts.IfNotExists = new(true)
+				},
+			},
+			validationCase[*CreateFromIcebergFilesIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_CreateFromIcebergFiles_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateFromIcebergFilesIcebergTableOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateFromIcebergFilesIcebergTableOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).
@@ -697,6 +728,13 @@ var icebergTablesTests = IcebergTablesTestsContext{
 					opts.IfNotExists = new(true)
 				},
 			},
+			validationCase[*CreateFromDeltaLakeIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_CreateFromDeltaLake_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateFromDeltaLakeIcebergTableOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateFromDeltaLakeIcebergTableOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateFromDeltaLakeIcebergTableOptions]{
@@ -731,6 +769,13 @@ var icebergTablesTests = IcebergTablesTestsContext{
 					opts.IfNotExists = new(true)
 				},
 			},
+			validationCase[*CreateFromIcebergRestIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_CreateFromIcebergRest_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateFromIcebergRestIcebergTableOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateFromIcebergRestIcebergTableOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateFromIcebergRestIcebergTableOptions]{
@@ -763,6 +808,13 @@ var icebergTablesTests = IcebergTablesTestsContext{
 				DefaultModify: func(opts *CreateFromAwsGlueIcebergTableOptions) {
 					opts.OrReplace = new(true)
 					opts.IfNotExists = new(true)
+				},
+			},
+			validationCase[*CreateFromAwsGlueIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_CreateFromAwsGlue_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateFromAwsGlueIcebergTableOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateFromAwsGlueIcebergTableOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).
@@ -1026,6 +1078,14 @@ var icebergTablesTests = IcebergTablesTestsContext{
 				},
 			},
 			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_AddColumnAction_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.AddColumnAction.Tag[0]", "Name"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_NoneSet,
 				ExpectedErr: errExactlyOneOf("AlterIcebergTableOptions.AlterColumnAction[0]", "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
@@ -1048,6 +1108,14 @@ var icebergTablesTests = IcebergTablesTestsContext{
 				},
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
 					opts.AlterColumnAction = []IcebergTableAlterColumnAction{{}, {}}
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_SetTagsOnColumn_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.SetTagsOnColumn.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.SetTagsOnColumn = &TableSetColumnTags{}
+					opts.SetTagsOnColumn.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 			validationCase[*AlterIcebergTableOptions]{
@@ -1098,6 +1166,13 @@ var icebergTablesTests = IcebergTablesTestsContext{
 					opts.Unset.EnableDataCompaction = nil
 					opts.Unset.EnableIcebergMergeOnRead = nil
 					opts.Unset.Comment = nil
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 			validationCase[*AlterIcebergTableOptions]{

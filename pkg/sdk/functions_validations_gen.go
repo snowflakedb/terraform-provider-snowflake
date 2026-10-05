@@ -273,6 +273,13 @@ func (opts *AlterFunctionOptions) validate() error {
 			errs = append(errs, errAtLeastOneOf("AlterFunctionOptions.Unset", "Comment", "ExternalAccessIntegrations", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"))
 		}
 	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterFunctionOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 

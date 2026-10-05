@@ -11,6 +11,7 @@ var eventTablesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 const (
 	case_EventTables_validation_Create_name_ValidIdentifier                                          testCaseName = "validation_Create_name_ValidIdentifier"
 	case_EventTables_validation_Create_opts_ConflictingFields                                        testCaseName = "validation_Create_opts_ConflictingFields"
+	case_EventTables_validation_Create_Tag_ValidIdentifier                                           testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_EventTables_sql_Create_basic                                                                testCaseName = "sql_Create_basic"
 	case_EventTables_sql_Create_all                                                                  testCaseName = "sql_Create_all"
 	case_EventTables_sql_Show_basic                                                                  testCaseName = "sql_Show_basic"
@@ -31,6 +32,7 @@ const (
 	case_EventTables_validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier            testCaseName = "validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier"
 	case_EventTables_validation_Alter_DropAndAddRowAccessPolicy_Drop_RowAccessPolicy_ValidIdentifier testCaseName = "validation_Alter_DropAndAddRowAccessPolicy_Drop_RowAccessPolicy_ValidIdentifier"
 	case_EventTables_validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier  testCaseName = "validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier"
+	case_EventTables_validation_Alter_SetTags_ValidIdentifier                                        testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_EventTables_sql_Alter_RenameTo                                                              testCaseName = "sql_Alter_RenameTo"
 	case_EventTables_sql_Alter_Set                                                                   testCaseName = "sql_Alter_Set"
 	case_EventTables_sql_Alter_Unset                                                                 testCaseName = "sql_Alter_Unset"
@@ -75,6 +77,13 @@ var eventTablesTests = EventTablesTestsContext{
 				DefaultModify: func(opts *CreateEventTableOptions) {
 					opts.OrReplace = new(true)
 					opts.IfNotExists = new(true)
+				},
+			},
+			validationCase[*CreateEventTableOptions]{
+				Name:        case_EventTables_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateEventTableOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateEventTableOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).
@@ -235,6 +244,13 @@ var eventTablesTests = EventTablesTestsContext{
 				DefaultModify: func(opts *AlterEventTableOptions) {
 					opts.DropAndAddRowAccessPolicy = &EventTableDropAndAddRowAccessPolicy{}
 					opts.DropAndAddRowAccessPolicy.Add.RowAccessPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterEventTableOptions]{
+				Name:        case_EventTables_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterEventTableOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterEventTableOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

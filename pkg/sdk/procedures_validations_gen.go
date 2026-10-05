@@ -278,6 +278,13 @@ func (opts *AlterProcedureOptions) validate() error {
 			errs = append(errs, errAtLeastOneOf("AlterProcedureOptions.Unset", "Comment", "ExternalAccessIntegrations", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"))
 		}
 	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterProcedureOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 

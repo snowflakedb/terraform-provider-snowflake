@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateAccountOptions)
 	_ validatable = new(AlterAccountOptions)
@@ -84,6 +86,13 @@ func (opts *AlterAccountOptions) validate() error {
 		if valueSet(opts.Unset.SessionPolicyUnset) {
 			if everyValueSet(opts.Unset.SessionPolicyUnset.ForAllPersonUsers, opts.Unset.SessionPolicyUnset.ForAllServiceUsers) {
 				errs = append(errs, errOneOf("AlterAccountOptions.Unset.SessionPolicyUnset", "ForAllPersonUsers", "ForAllServiceUsers"))
+			}
+		}
+	}
+	if valueSet(opts.SetTag) {
+		for setTagIdx, setTag := range opts.SetTag {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterAccountOptions.SetTag[%d]", setTagIdx), "Name"))
 			}
 		}
 	}

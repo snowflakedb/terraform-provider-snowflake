@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateApplicationPackageOptions)
 	_ validatable = new(AlterApplicationPackageOptions)
@@ -16,6 +18,13 @@ func (opts *CreateApplicationPackageOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreateApplicationPackageOptions", "name"))
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateApplicationPackageOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -34,6 +43,13 @@ func (opts *AlterApplicationPackageOptions) validate() error {
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.DefaultDdlCollation, opts.Unset.Comment, opts.Unset.Distribution) {
 			errs = append(errs, errAtLeastOneOf("AlterApplicationPackageOptions.Unset", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "DefaultDdlCollation", "Comment", "Distribution"))
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterApplicationPackageOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
 		}
 	}
 	return JoinErrors(errs...)

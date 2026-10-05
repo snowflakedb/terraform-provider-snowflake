@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreatePostgresInstanceOptions)
 	_ validatable = new(ForkPostgresInstanceOptions)
@@ -18,6 +20,13 @@ func (opts *CreatePostgresInstanceOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreatePostgresInstanceOptions", "name"))
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreatePostgresInstanceOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -44,6 +53,13 @@ func (opts *ForkPostgresInstanceOptions) validate() error {
 	if valueSet(opts.Before) {
 		if !exactlyOneValueSet(opts.Before.Timestamp, opts.Before.Offset) {
 			errs = append(errs, errExactlyOneOf("ForkPostgresInstanceOptions.Before", "Timestamp", "Offset"))
+		}
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("ForkPostgresInstanceOptions.Tag[%d]", tagIdx), "Name"))
+			}
 		}
 	}
 	return JoinErrors(errs...)
@@ -73,6 +89,13 @@ func (opts *AlterPostgresInstanceOptions) validate() error {
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.Comment, opts.Unset.PostgresSettings, opts.Unset.NetworkPolicy, opts.Unset.MaintenanceWindowStart, opts.Unset.StorageIntegration) {
 			errs = append(errs, errAtLeastOneOf("AlterPostgresInstanceOptions.Unset", "Comment", "PostgresSettings", "NetworkPolicy", "MaintenanceWindowStart", "StorageIntegration"))
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterPostgresInstanceOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
 		}
 	}
 	return JoinErrors(errs...)

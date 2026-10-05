@@ -43,6 +43,7 @@ const (
 	case_Tags_validation_Undrop_name_ValidIdentifier                                           testCaseName = "validation_Undrop_name_ValidIdentifier"
 	case_Tags_sql_Undrop_basic                                                                 testCaseName = "sql_Undrop_basic"
 	case_Tags_validation_Set_objectName_ValidIdentifier                                        testCaseName = "validation_Set_objectName_ValidIdentifier"
+	case_Tags_validation_Set_SetTags_ValidIdentifier                                           testCaseName = "validation_Set_SetTags_ValidIdentifier"
 	case_Tags_sql_Set_basic                                                                    testCaseName = "sql_Set_basic"
 	case_Tags_validation_Unset_objectName_ValidIdentifier                                      testCaseName = "validation_Unset_objectName_ValidIdentifier"
 	case_Tags_sql_Unset_basic                                                                  testCaseName = "sql_Unset_basic"
@@ -310,6 +311,13 @@ var tagsTests = TagsTestsContext{
 				ExpectedErr: errInvalidIdentifier("SetTagOptions", "objectName"),
 				DefaultModify: func(opts *SetTagOptions) {
 					opts.objectName = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*SetTagOptions]{
+				Name:        case_Tags_validation_Set_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("SetTagOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *SetTagOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

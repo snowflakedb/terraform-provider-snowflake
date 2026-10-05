@@ -123,16 +123,16 @@ func resolveInterfaceIdentifierKinds(field *Field, identifierKind string) {
 }
 
 // relocateIdentifierElementSliceValidations moves WithValidation(ValidIdentifier, "SliceField")
-// from the container onto the slice field when that child is a flat identifier list. The
-// validations template only opens a per-element loop when the current field is the slice.
-// Mutate through f.Fields[i] — FindChild returns a copy (FindFirst takes the range variable's address).
+// from the container onto the slice field when that child is a flat identifier list or a
+// []TagAssociation. The validations template only opens a per-element loop when the current
+// field is the slice. Mutate through f.Fields[i] — FindChild returns a copy.
 func relocateIdentifierElementSliceValidations(f *Field) {
 	remaining := make([]*Validation, 0, len(f.Validations))
 	for _, v := range f.Validations {
 		moved := false
 		if v.Type == ValidIdentifier && len(v.FieldNames) == 1 {
 			for i := range f.Fields {
-				if f.Fields[i].Name == v.FieldNames[0] && f.Fields[i].IsIdentifierElementSlice() {
+				if f.Fields[i].Name == v.FieldNames[0] && f.Fields[i].acceptsRelocatedValidIdentifier() {
 					f.Fields[i].Validations = append(f.Fields[i].Validations, v)
 					moved = true
 					break

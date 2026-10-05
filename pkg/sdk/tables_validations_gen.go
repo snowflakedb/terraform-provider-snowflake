@@ -47,6 +47,13 @@ func (opts *CreateTableOptions) validate() error {
 						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].MaskingPolicy", columnIdx), "Name"))
 					}
 				}
+				if valueSet(column.Tag) {
+					for tagIdx, tag := range column.Tag {
+						if !ValidObjectIdentifier(tag.Name) {
+							errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].Tag[%d]", columnIdx, tagIdx), "Name"))
+						}
+					}
+				}
 			}
 		}
 		if valueSet(opts.ColumnsAndConstraints.OutOfLineConstraint) {
@@ -78,6 +85,13 @@ func (opts *CreateTableOptions) validate() error {
 	if valueSet(opts.StageFileFormat) {
 		if !exactlyOneValueSet(opts.StageFileFormat.FormatName, opts.StageFileFormat.FileFormatType) {
 			errs = append(errs, errExactlyOneOf("CreateTableOptions.StageFileFormat", "FormatName", "FileFormatType"))
+		}
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateTableOptions.Tag[%d]", tagIdx), "Name"))
+			}
 		}
 	}
 	return JoinErrors(errs...)
@@ -182,11 +196,27 @@ func (opts *AlterTableOptions) validate() error {
 					errs = append(errs, errInvalidIdentifier("AlterTableOptions.ColumnAction.Add.MaskingPolicy", "Name"))
 				}
 			}
+			if valueSet(opts.ColumnAction.Add.Tag) {
+				for tagIdx, tag := range opts.ColumnAction.Add.Tag {
+					if !ValidObjectIdentifier(tag.Name) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterTableOptions.ColumnAction.Add.Tag[%d]", tagIdx), "Name"))
+					}
+				}
+			}
 		}
 		if valueSet(opts.ColumnAction.Alter) {
 			for alterIdx, alter := range opts.ColumnAction.Alter {
 				if !exactlyOneValueSet(alter.DropDefault, alter.SetDefault, alter.NotNullConstraint, alter.DataType, alter.Comment, alter.UnsetComment) {
 					errs = append(errs, errExactlyOneOf(fmt.Sprintf("AlterTableOptions.ColumnAction.Alter[%d]", alterIdx), "DropDefault", "SetDefault", "NotNullConstraint", "DataType", "Comment", "UnsetComment"))
+				}
+			}
+		}
+		if valueSet(opts.ColumnAction.SetTags) {
+			if valueSet(opts.ColumnAction.SetTags.SetTags) {
+				for setTagIdx, setTag := range opts.ColumnAction.SetTags.SetTags {
+					if !ValidObjectIdentifier(setTag.Name) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterTableOptions.ColumnAction.SetTags.SetTags[%d]", setTagIdx), "Name"))
+					}
 				}
 			}
 		}
@@ -257,6 +287,13 @@ func (opts *AlterTableOptions) validate() error {
 		if valueSet(opts.Set.StageFileFormat) {
 			if !exactlyOneValueSet(opts.Set.StageFileFormat.FormatName, opts.Set.StageFileFormat.FileFormatType) {
 				errs = append(errs, errExactlyOneOf("AlterTableOptions.Set.StageFileFormat", "FormatName", "FileFormatType"))
+			}
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterTableOptions.SetTags[%d]", setTagIdx), "Name"))
 			}
 		}
 	}

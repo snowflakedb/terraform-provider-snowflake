@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateApplicationOptions)
 	_ validatable = new(DropApplicationOptions)
@@ -25,6 +27,13 @@ func (opts *CreateApplicationOptions) validate() error {
 	if valueSet(opts.Version) {
 		if !exactlyOneValueSet(opts.Version.VersionDirectory, opts.Version.VersionAndPatch) {
 			errs = append(errs, errExactlyOneOf("CreateApplicationOptions.Version", "VersionDirectory", "VersionAndPatch"))
+		}
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateApplicationOptions.Tag[%d]", tagIdx), "Name"))
+			}
 		}
 	}
 	return JoinErrors(errs...)
@@ -56,6 +65,13 @@ func (opts *AlterApplicationOptions) validate() error {
 	if valueSet(opts.UpgradeVersion) {
 		if !exactlyOneValueSet(opts.UpgradeVersion.VersionDirectory, opts.UpgradeVersion.VersionAndPatch) {
 			errs = append(errs, errExactlyOneOf("AlterApplicationOptions.UpgradeVersion", "VersionDirectory", "VersionAndPatch"))
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterApplicationOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
 		}
 	}
 	return JoinErrors(errs...)

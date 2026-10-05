@@ -31,6 +31,9 @@ const (
 	NoDoubleDollarQuotesIfSet
 )
 
+// tagAssociationIdentifierField is TagAssociation.Name, the identifier ValidIdentifier checks.
+const tagAssociationIdentifierField = "Name"
+
 type Validation struct {
 	Type       ValidationType
 	FieldNames []string
@@ -128,10 +131,13 @@ func (v *Validation) Condition(field *Field) string {
 		if field.IsIdentifierElementSlice() {
 			return fmt.Sprintf("!ValidObjectIdentifier(%s)", field.SliceElemVar())
 		}
+		if field.IsTagAssociationSlice() {
+			return fmt.Sprintf("!ValidObjectIdentifier(%s.%s)", field.SliceElemVar(), tagAssociationIdentifierField)
+		}
 		return fmt.Sprintf("!ValidObjectIdentifier(%s)", strings.Join(fieldNamesProvider(field), ","))
 	case ValidIdentifierIfSet:
-		if field.IsIdentifierElementSlice() {
-			log.Panicf("ValidIdentifierIfSet is not supported on identifier-element slices; use ValidIdentifier")
+		if field.IsIdentifierElementSlice() || field.IsTagAssociationSlice() {
+			log.Panicf("ValidIdentifierIfSet is not supported on identifier-element or tag-association slices; use ValidIdentifier")
 		}
 		return fmt.Sprintf("%s != nil && !ValidObjectIdentifier(%s)", strings.Join(fieldNamesProvider(field), ","), strings.Join(fieldNamesProvider(field), ","))
 	case ConflictingFields:
@@ -183,7 +189,7 @@ func (v *Validation) TestExpectedError(field *Field, failingSlice *Field, failin
 	if v.Type == ValidateValue {
 		return "", false
 	}
-	return v.errorWithPathExpr(fmt.Sprintf("%q", field.PathWithRootForTest(failingSlice, failingIndex))), true
+	return v.errorWithPathExpr(field, fmt.Sprintf("%q", field.PathWithRootForTest(failingSlice, failingIndex))), true
 }
 
 func (v *Validation) ReturnedError(field *Field) string {
@@ -194,15 +200,19 @@ func (v *Validation) ReturnedError(field *Field) string {
 		log.Panicf("ReturnedError() must not be called for AdditionalValidations type")
 		panic("unreachable")
 	default:
-		return v.errorWithPathExpr(field.PathWithRootExpr())
+		return v.errorWithPathExpr(field, field.PathWithRootExpr())
 	}
 }
 
-func (v *Validation) errorWithPathExpr(pathExpr string) string {
+func (v *Validation) errorWithPathExpr(field *Field, pathExpr string) string {
 	switch v.Type {
 	case ValidIdentifier, ValidIdentifierIfSet:
 		// One identifier field, not a params list — do not join FieldNames.
-		return fmt.Sprintf(`errInvalidIdentifier(%s, %q)`, pathExpr, v.FieldNames[0])
+		name := v.FieldNames[0]
+		if field.IsTagAssociationSlice() {
+			name = tagAssociationIdentifierField
+		}
+		return fmt.Sprintf(`errInvalidIdentifier(%s, %q)`, pathExpr, name)
 	case ConflictingFields:
 		return fmt.Sprintf(`errOneOf(%s, %s)`, pathExpr, strings.Join(v.paramsQuoted(), ","))
 	case MoreThanOneValueSet:
@@ -239,6 +249,9 @@ func (v *Validation) DeriveModify(f *Field) ([]string, bool) {
 	case ValidIdentifier:
 		if f.IsIdentifierElementSlice() {
 			return append(prime, fmt.Sprintf("opts%s = []%s{%s}", f.IndexedPath(), f.KindNoPtr(), emptyIdentifierVar(f.KindNoPtr()))), true
+		}
+		if f.IsTagAssociationSlice() {
+			return append(prime, fmt.Sprintf("opts%s = []%s{{%s: %s}}", f.IndexedPath(), f.KindNoPtr(), tagAssociationIdentifierField, emptyIdentifierVar("ObjectIdentifier"))), true
 		}
 		return append(prime, fmt.Sprintf("opts%s.%s = %s", f.IndexedElemPath(), targetFieldName, emptyIdentifierVar(target.KindNoPtr()))), true
 

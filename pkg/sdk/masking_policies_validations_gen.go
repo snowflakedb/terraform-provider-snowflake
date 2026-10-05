@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateMaskingPolicyOptions)
 	_ validatable = new(AlterMaskingPolicyOptions)
@@ -45,6 +47,13 @@ func (opts *AlterMaskingPolicyOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterMaskingPolicyOptions", "RenameTo", "SetBody", "SetComment", "UnsetBody", "UnsetComment", "SetTags", "UnsetTags"))
 	}
 	errs = append(errs, opts.additionalValidations())
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterMaskingPolicyOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 

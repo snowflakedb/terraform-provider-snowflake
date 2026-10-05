@@ -35,6 +35,13 @@ func (opts *CreateViewOptions) validate() error {
 					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateViewOptions.Columns[%d].MaskingPolicy", columnIdx), "MaskingPolicy"))
 				}
 			}
+			if valueSet(column.Tag) {
+				for tagIdx, tag := range column.Tag {
+					if !ValidObjectIdentifier(tag.Name) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateViewOptions.Columns[%d].Tag[%d]", columnIdx, tagIdx), "Name"))
+					}
+				}
+			}
 		}
 	}
 	if valueSet(opts.RowAccessPolicy) {
@@ -48,6 +55,13 @@ func (opts *CreateViewOptions) validate() error {
 	if valueSet(opts.AggregationPolicy) {
 		if !ValidObjectIdentifier(opts.AggregationPolicy.AggregationPolicy) {
 			errs = append(errs, errInvalidIdentifier("CreateViewOptions.AggregationPolicy", "AggregationPolicy"))
+		}
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateViewOptions.Tag[%d]", tagIdx), "Name"))
+			}
 		}
 	}
 	return JoinErrors(errs...)
@@ -69,6 +83,13 @@ func (opts *AlterViewOptions) validate() error {
 	}
 	if everyValueSet(opts.IfExists, opts.UnsetSecure) {
 		errs = append(errs, errOneOf("AlterViewOptions", "IfExists", "UnsetSecure"))
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterViewOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
 	}
 	if valueSet(opts.AddRowAccessPolicy) {
 		if !ValidObjectIdentifier(opts.AddRowAccessPolicy.RowAccessPolicy) {
@@ -101,6 +122,15 @@ func (opts *AlterViewOptions) validate() error {
 	if valueSet(opts.SetAggregationPolicy) {
 		if !ValidObjectIdentifier(opts.SetAggregationPolicy.AggregationPolicy) {
 			errs = append(errs, errInvalidIdentifier("AlterViewOptions.SetAggregationPolicy", "AggregationPolicy"))
+		}
+	}
+	if valueSet(opts.SetTagsOnColumn) {
+		if valueSet(opts.SetTagsOnColumn.SetTags) {
+			for setTagIdx, setTag := range opts.SetTagsOnColumn.SetTags {
+				if !ValidObjectIdentifier(setTag.Name) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterViewOptions.SetTagsOnColumn.SetTags[%d]", setTagIdx), "Name"))
+				}
+			}
 		}
 	}
 	return JoinErrors(errs...)

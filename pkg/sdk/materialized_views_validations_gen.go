@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateMaterializedViewOptions)
 	_ validatable = new(AlterMaterializedViewOptions)
@@ -21,12 +23,30 @@ func (opts *CreateMaterializedViewOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateMaterializedViewOptions", "OrReplace", "IfNotExists"))
 	}
+	if valueSet(opts.ColumnsMaskingPolicies) {
+		for columnsMaskingPolicieIdx, columnsMaskingPolicie := range opts.ColumnsMaskingPolicies {
+			if valueSet(columnsMaskingPolicie.Tag) {
+				for tagIdx, tag := range columnsMaskingPolicie.Tag {
+					if !ValidObjectIdentifier(tag.Name) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateMaterializedViewOptions.ColumnsMaskingPolicies[%d].Tag[%d]", columnsMaskingPolicieIdx, tagIdx), "Name"))
+					}
+				}
+			}
+		}
+	}
 	if valueSet(opts.RowAccessPolicy) {
 		if !ValidObjectIdentifier(opts.RowAccessPolicy.RowAccessPolicy) {
 			errs = append(errs, errInvalidIdentifier("CreateMaterializedViewOptions.RowAccessPolicy", "RowAccessPolicy"))
 		}
 		if !valueSet(opts.RowAccessPolicy.On) {
 			errs = append(errs, errNotSet("CreateMaterializedViewOptions.RowAccessPolicy", "On"))
+		}
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateMaterializedViewOptions.Tag[%d]", tagIdx), "Name"))
+			}
 		}
 	}
 	if valueSet(opts.ClusterBy) {

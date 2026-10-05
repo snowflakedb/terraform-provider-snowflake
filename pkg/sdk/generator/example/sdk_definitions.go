@@ -36,9 +36,10 @@ type (
 	SchemaObjectIdentifier   = sdk.SchemaObjectIdentifier
 	TableColumnIdentifier    = sdk.TableColumnIdentifier
 
-	In        = sdk.In
-	Like      = sdk.Like
-	LimitFrom = sdk.LimitFrom
+	In             = sdk.In
+	Like           = sdk.Like
+	LimitFrom      = sdk.LimitFrom
+	TagAssociation = sdk.TagAssociation
 )
 
 type (

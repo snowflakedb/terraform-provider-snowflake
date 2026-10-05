@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateRoleOptions)
 	_ validatable = new(AlterRoleOptions)
@@ -22,6 +24,13 @@ func (opts *CreateRoleOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateRoleOptions", "OrReplace", "IfNotExists"))
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateRoleOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -38,6 +47,13 @@ func (opts *AlterRoleOptions) validate() error {
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
 		errs = append(errs, errInvalidIdentifier("AlterRoleOptions", "RenameTo"))
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterRoleOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }

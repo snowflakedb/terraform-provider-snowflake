@@ -31,6 +31,7 @@ const (
 	case_Accounts_validation_Alter_opts_Unset_LegacyParameters_AtLeastOneValueSet         testCaseName = "validation_Alter_opts_Unset_LegacyParameters_AtLeastOneValueSet"
 	case_Accounts_validation_Alter_opts_Unset_AuthenticationPolicyUnset_ConflictingFields testCaseName = "validation_Alter_opts_Unset_AuthenticationPolicyUnset_ConflictingFields"
 	case_Accounts_validation_Alter_opts_Unset_SessionPolicyUnset_ConflictingFields        testCaseName = "validation_Alter_opts_Unset_SessionPolicyUnset_ConflictingFields"
+	case_Accounts_validation_Alter_SetTag_ValidIdentifier                                 testCaseName = "validation_Alter_SetTag_ValidIdentifier"
 	case_Accounts_sql_Alter_Set                                                           testCaseName = "sql_Alter_Set"
 	case_Accounts_sql_Alter_Unset                                                         testCaseName = "sql_Alter_Unset"
 	case_Accounts_sql_Alter_SetTag                                                        testCaseName = "sql_Alter_SetTag"
@@ -531,6 +532,13 @@ var accountsTests = AccountsTestsContext{
 					opts.Unset.SessionPolicyUnset = &AccountSessionPolicyUnset{}
 					opts.Unset.SessionPolicyUnset.ForAllPersonUsers = new(true)
 					opts.Unset.SessionPolicyUnset.ForAllServiceUsers = new(true)
+				},
+			},
+			validationCase[*AlterAccountOptions]{
+				Name:        case_Accounts_validation_Alter_SetTag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterAccountOptions.SetTag[0]", "Name"),
+				DefaultModify: func(opts *AlterAccountOptions) {
+					opts.SetTag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

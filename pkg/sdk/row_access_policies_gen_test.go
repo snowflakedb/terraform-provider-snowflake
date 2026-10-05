@@ -18,6 +18,7 @@ const (
 	case_RowAccessPolicies_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
 	case_RowAccessPolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_RowAccessPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_RowAccessPolicies_validation_Alter_SetTags_ValidIdentifier                testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_RowAccessPolicies_sql_Alter_RenameTo                                      testCaseName = "sql_Alter_RenameTo"
 	case_RowAccessPolicies_sql_Alter_SetBody                                       testCaseName = "sql_Alter_SetBody"
 	case_RowAccessPolicies_sql_Alter_SetTags                                       testCaseName = "sql_Alter_SetTags"
@@ -127,6 +128,13 @@ var rowAccessPoliciesTests = RowAccessPoliciesTestsContext{
 				DefaultModify: func(opts *AlterRowAccessPolicyOptions) {
 					opts.RenameTo = new(randomSchemaObjectIdentifier())
 					opts.SetBody = new("foo")
+				},
+			},
+			validationCase[*AlterRowAccessPolicyOptions]{
+				Name:        case_RowAccessPolicies_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterRowAccessPolicyOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterRowAccessPolicyOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

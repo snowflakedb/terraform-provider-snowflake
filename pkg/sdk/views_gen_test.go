@@ -17,9 +17,11 @@ const (
 	case_Views_validation_Create_opts_ConflictingFields                                        testCaseName = "validation_Create_opts_ConflictingFields"
 	case_Views_validation_Create_Columns_ProjectionPolicy_ProjectionPolicy_ValidIdentifier     testCaseName = "validation_Create_Columns_ProjectionPolicy_ProjectionPolicy_ValidIdentifier"
 	case_Views_validation_Create_Columns_MaskingPolicy_MaskingPolicy_ValidIdentifier           testCaseName = "validation_Create_Columns_MaskingPolicy_MaskingPolicy_ValidIdentifier"
+	case_Views_validation_Create_Columns_Tag_ValidIdentifier                                   testCaseName = "validation_Create_Columns_Tag_ValidIdentifier"
 	case_Views_validation_Create_RowAccessPolicy_RowAccessPolicy_ValidIdentifier               testCaseName = "validation_Create_RowAccessPolicy_RowAccessPolicy_ValidIdentifier"
 	case_Views_validation_Create_RowAccessPolicy_On_ValidateValueSet                           testCaseName = "validation_Create_RowAccessPolicy_On_ValidateValueSet"
 	case_Views_validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier           testCaseName = "validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier"
+	case_Views_validation_Create_Tag_ValidIdentifier                                           testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_Views_sql_Create_basic                                                                testCaseName = "sql_Create_basic"
 	case_Views_sql_Create_all                                                                  testCaseName = "sql_Create_all"
 	case_Views_validation_Alter_name_ValidIdentifier                                           testCaseName = "validation_Alter_name_ValidIdentifier"
@@ -27,6 +29,7 @@ const (
 	case_Views_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_Views_validation_Alter_opts_ConflictingFields_IfExists_SetSecure                      testCaseName = "validation_Alter_opts_ConflictingFields_IfExists_SetSecure"
 	case_Views_validation_Alter_opts_ConflictingFields_IfExists_UnsetSecure                    testCaseName = "validation_Alter_opts_ConflictingFields_IfExists_UnsetSecure"
+	case_Views_validation_Alter_SetTags_ValidIdentifier                                        testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_Views_validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier             testCaseName = "validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier"
 	case_Views_validation_Alter_AddRowAccessPolicy_On_ValidateValueSet                         testCaseName = "validation_Alter_AddRowAccessPolicy_On_ValidateValueSet"
 	case_Views_validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier            testCaseName = "validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier"
@@ -34,6 +37,7 @@ const (
 	case_Views_validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier  testCaseName = "validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier"
 	case_Views_validation_Alter_DropAndAddRowAccessPolicy_Add_On_ValidateValueSet              testCaseName = "validation_Alter_DropAndAddRowAccessPolicy_Add_On_ValidateValueSet"
 	case_Views_validation_Alter_SetAggregationPolicy_AggregationPolicy_ValidIdentifier         testCaseName = "validation_Alter_SetAggregationPolicy_AggregationPolicy_ValidIdentifier"
+	case_Views_validation_Alter_SetTagsOnColumn_SetTags_ValidIdentifier                        testCaseName = "validation_Alter_SetTagsOnColumn_SetTags_ValidIdentifier"
 	case_Views_sql_Alter_RenameTo                                                              testCaseName = "sql_Alter_RenameTo"
 	case_Views_sql_Alter_SetComment                                                            testCaseName = "sql_Alter_SetComment"
 	case_Views_sql_Alter_UnsetComment                                                          testCaseName = "sql_Alter_UnsetComment"
@@ -124,6 +128,14 @@ var viewsTests = ViewsTestsContext{
 				},
 			},
 			validationCase[*CreateViewOptions]{
+				Name:        case_Views_validation_Create_Columns_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateViewOptions.Columns[0].Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateViewOptions) {
+					opts.Columns = []ViewColumn{{}}
+					opts.Columns[0].Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
+			validationCase[*CreateViewOptions]{
 				Name:        case_Views_validation_Create_RowAccessPolicy_RowAccessPolicy_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("CreateViewOptions.RowAccessPolicy", "RowAccessPolicy"),
 				DefaultModify: func(opts *CreateViewOptions) {
@@ -145,6 +157,13 @@ var viewsTests = ViewsTestsContext{
 				DefaultModify: func(opts *CreateViewOptions) {
 					opts.AggregationPolicy = &ViewAggregationPolicy{}
 					opts.AggregationPolicy.AggregationPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateViewOptions]{
+				Name:        case_Views_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateViewOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateViewOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).
@@ -229,6 +248,13 @@ var viewsTests = ViewsTestsContext{
 				},
 			},
 			validationCase[*AlterViewOptions]{
+				Name:        case_Views_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterViewOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterViewOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
+			validationCase[*AlterViewOptions]{
 				Name:        case_Views_validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("AlterViewOptions.AddRowAccessPolicy", "RowAccessPolicy"),
 				DefaultModify: func(opts *AlterViewOptions) {
@@ -282,6 +308,14 @@ var viewsTests = ViewsTestsContext{
 				DefaultModify: func(opts *AlterViewOptions) {
 					opts.SetAggregationPolicy = &ViewSetAggregationPolicy{}
 					opts.SetAggregationPolicy.AggregationPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterViewOptions]{
+				Name:        case_Views_validation_Alter_SetTagsOnColumn_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterViewOptions.SetTagsOnColumn.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterViewOptions) {
+					opts.SetTagsOnColumn = &ViewSetColumnTags{}
+					opts.SetTagsOnColumn.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

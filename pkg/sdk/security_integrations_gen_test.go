@@ -67,6 +67,7 @@ const (
 	case_SecurityIntegrations_validation_AlterApiAuthenticationWithClientCredentialsFlow_name_ValidIdentifier                                      testCaseName = "validation_AlterApiAuthenticationWithClientCredentialsFlow_name_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_ExactlyOneValueSet_NoneSet                           testCaseName = "validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_ExactlyOneValueSet_NoneSet"
 	case_SecurityIntegrations_validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_ExactlyOneValueSet_MoreThanOneSet                    testCaseName = "validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_SecurityIntegrations_validation_AlterApiAuthenticationWithClientCredentialsFlow_SetTags_ValidIdentifier                                   testCaseName = "validation_AlterApiAuthenticationWithClientCredentialsFlow_SetTags_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_Set_AtLeastOneValueSet                               testCaseName = "validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_Set_AtLeastOneValueSet"
 	case_SecurityIntegrations_validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_Unset_AtLeastOneValueSet                             testCaseName = "validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_Unset_AtLeastOneValueSet"
 	case_SecurityIntegrations_sql_AlterApiAuthenticationWithClientCredentialsFlow_Set                                                              testCaseName = "sql_AlterApiAuthenticationWithClientCredentialsFlow_Set"
@@ -76,6 +77,7 @@ const (
 	case_SecurityIntegrations_validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_name_ValidIdentifier                                 testCaseName = "validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_name_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_ExactlyOneValueSet_NoneSet                      testCaseName = "validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_ExactlyOneValueSet_NoneSet"
 	case_SecurityIntegrations_validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_ExactlyOneValueSet_MoreThanOneSet               testCaseName = "validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_SecurityIntegrations_validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_SetTags_ValidIdentifier                              testCaseName = "validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_SetTags_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_Set_AtLeastOneValueSet                          testCaseName = "validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_Set_AtLeastOneValueSet"
 	case_SecurityIntegrations_validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_Unset_AtLeastOneValueSet                        testCaseName = "validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_Unset_AtLeastOneValueSet"
 	case_SecurityIntegrations_sql_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_Set                                                         testCaseName = "sql_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_Set"
@@ -85,6 +87,7 @@ const (
 	case_SecurityIntegrations_validation_AlterApiAuthenticationWithJwtBearerFlow_name_ValidIdentifier                                              testCaseName = "validation_AlterApiAuthenticationWithJwtBearerFlow_name_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterApiAuthenticationWithJwtBearerFlow_opts_ExactlyOneValueSet_NoneSet                                   testCaseName = "validation_AlterApiAuthenticationWithJwtBearerFlow_opts_ExactlyOneValueSet_NoneSet"
 	case_SecurityIntegrations_validation_AlterApiAuthenticationWithJwtBearerFlow_opts_ExactlyOneValueSet_MoreThanOneSet                            testCaseName = "validation_AlterApiAuthenticationWithJwtBearerFlow_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_SecurityIntegrations_validation_AlterApiAuthenticationWithJwtBearerFlow_SetTags_ValidIdentifier                                           testCaseName = "validation_AlterApiAuthenticationWithJwtBearerFlow_SetTags_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterApiAuthenticationWithJwtBearerFlow_opts_Set_AtLeastOneValueSet                                       testCaseName = "validation_AlterApiAuthenticationWithJwtBearerFlow_opts_Set_AtLeastOneValueSet"
 	case_SecurityIntegrations_validation_AlterApiAuthenticationWithJwtBearerFlow_opts_Unset_AtLeastOneValueSet                                     testCaseName = "validation_AlterApiAuthenticationWithJwtBearerFlow_opts_Unset_AtLeastOneValueSet"
 	case_SecurityIntegrations_sql_AlterApiAuthenticationWithJwtBearerFlow_Set                                                                      testCaseName = "sql_AlterApiAuthenticationWithJwtBearerFlow_Set"
@@ -94,6 +97,7 @@ const (
 	case_SecurityIntegrations_validation_AlterExternalOauth_name_ValidIdentifier                                                                   testCaseName = "validation_AlterExternalOauth_name_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterExternalOauth_opts_ExactlyOneValueSet_NoneSet                                                        testCaseName = "validation_AlterExternalOauth_opts_ExactlyOneValueSet_NoneSet"
 	case_SecurityIntegrations_validation_AlterExternalOauth_opts_ExactlyOneValueSet_MoreThanOneSet                                                 testCaseName = "validation_AlterExternalOauth_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_SecurityIntegrations_validation_AlterExternalOauth_SetTags_ValidIdentifier                                                                testCaseName = "validation_AlterExternalOauth_SetTags_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterExternalOauth_opts_Set_ConflictingFields_ExternalOauthBlockedRolesList_ExternalOauthAllowedRolesList testCaseName = "validation_AlterExternalOauth_opts_Set_ConflictingFields_ExternalOauthBlockedRolesList_ExternalOauthAllowedRolesList"
 	case_SecurityIntegrations_validation_AlterExternalOauth_opts_Set_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey           testCaseName = "validation_AlterExternalOauth_opts_Set_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey"
 	case_SecurityIntegrations_validation_AlterExternalOauth_opts_Set_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey2          testCaseName = "validation_AlterExternalOauth_opts_Set_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey2"
@@ -108,6 +112,7 @@ const (
 	case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_name_ValidIdentifier                                                     testCaseName = "validation_AlterOauthForPartnerApplications_name_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_opts_ExactlyOneValueSet_NoneSet                                          testCaseName = "validation_AlterOauthForPartnerApplications_opts_ExactlyOneValueSet_NoneSet"
 	case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_opts_ExactlyOneValueSet_MoreThanOneSet                                   testCaseName = "validation_AlterOauthForPartnerApplications_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_SetTags_ValidIdentifier                                                  testCaseName = "validation_AlterOauthForPartnerApplications_SetTags_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_opts_Set_AtLeastOneValueSet                                              testCaseName = "validation_AlterOauthForPartnerApplications_opts_Set_AtLeastOneValueSet"
 	case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_Set_AllowedRolesList_AllowedRolesList_ValidIdentifier                    testCaseName = "validation_AlterOauthForPartnerApplications_Set_AllowedRolesList_AllowedRolesList_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_Set_BlockedRolesList_BlockedRolesList_ValidIdentifier                    testCaseName = "validation_AlterOauthForPartnerApplications_Set_BlockedRolesList_BlockedRolesList_ValidIdentifier"
@@ -119,6 +124,7 @@ const (
 	case_SecurityIntegrations_validation_AlterOauthForCustomClients_name_ValidIdentifier                                                           testCaseName = "validation_AlterOauthForCustomClients_name_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterOauthForCustomClients_opts_ExactlyOneValueSet_NoneSet                                                testCaseName = "validation_AlterOauthForCustomClients_opts_ExactlyOneValueSet_NoneSet"
 	case_SecurityIntegrations_validation_AlterOauthForCustomClients_opts_ExactlyOneValueSet_MoreThanOneSet                                         testCaseName = "validation_AlterOauthForCustomClients_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_SecurityIntegrations_validation_AlterOauthForCustomClients_SetTags_ValidIdentifier                                                        testCaseName = "validation_AlterOauthForCustomClients_SetTags_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterOauthForCustomClients_opts_Set_AtLeastOneValueSet                                                    testCaseName = "validation_AlterOauthForCustomClients_opts_Set_AtLeastOneValueSet"
 	case_SecurityIntegrations_validation_AlterOauthForCustomClients_Set_PreAuthorizedRolesList_PreAuthorizedRolesList_ValidIdentifier              testCaseName = "validation_AlterOauthForCustomClients_Set_PreAuthorizedRolesList_PreAuthorizedRolesList_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterOauthForCustomClients_Set_AllowedRolesList_AllowedRolesList_ValidIdentifier                          testCaseName = "validation_AlterOauthForCustomClients_Set_AllowedRolesList_AllowedRolesList_ValidIdentifier"
@@ -131,6 +137,7 @@ const (
 	case_SecurityIntegrations_validation_AlterSaml2_name_ValidIdentifier                                                                           testCaseName = "validation_AlterSaml2_name_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterSaml2_opts_ExactlyOneValueSet_NoneSet                                                                testCaseName = "validation_AlterSaml2_opts_ExactlyOneValueSet_NoneSet"
 	case_SecurityIntegrations_validation_AlterSaml2_opts_ExactlyOneValueSet_MoreThanOneSet                                                         testCaseName = "validation_AlterSaml2_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_SecurityIntegrations_validation_AlterSaml2_SetTags_ValidIdentifier                                                                        testCaseName = "validation_AlterSaml2_SetTags_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterSaml2_opts_Set_AtLeastOneValueSet                                                                    testCaseName = "validation_AlterSaml2_opts_Set_AtLeastOneValueSet"
 	case_SecurityIntegrations_validation_AlterSaml2_opts_Unset_AtLeastOneValueSet                                                                  testCaseName = "validation_AlterSaml2_opts_Unset_AtLeastOneValueSet"
 	case_SecurityIntegrations_sql_AlterSaml2_Set                                                                                                   testCaseName = "sql_AlterSaml2_Set"
@@ -141,6 +148,7 @@ const (
 	case_SecurityIntegrations_validation_AlterScim_name_ValidIdentifier                                                                            testCaseName = "validation_AlterScim_name_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterScim_opts_ExactlyOneValueSet_NoneSet                                                                 testCaseName = "validation_AlterScim_opts_ExactlyOneValueSet_NoneSet"
 	case_SecurityIntegrations_validation_AlterScim_opts_ExactlyOneValueSet_MoreThanOneSet                                                          testCaseName = "validation_AlterScim_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_SecurityIntegrations_validation_AlterScim_SetTags_ValidIdentifier                                                                         testCaseName = "validation_AlterScim_SetTags_ValidIdentifier"
 	case_SecurityIntegrations_validation_AlterScim_opts_Set_AtLeastOneValueSet                                                                     testCaseName = "validation_AlterScim_opts_Set_AtLeastOneValueSet"
 	case_SecurityIntegrations_validation_AlterScim_opts_Unset_AtLeastOneValueSet                                                                   testCaseName = "validation_AlterScim_opts_Unset_AtLeastOneValueSet"
 	case_SecurityIntegrations_sql_AlterScim_Set                                                                                                    testCaseName = "sql_AlterScim_Set"
@@ -567,6 +575,13 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 				},
 			},
 			validationCase[*AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithClientCredentialsFlow_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
+			validationCase[*AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_Set_AtLeastOneValueSet,
 				ExpectedErr: errAtLeastOneOf("AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions.Set", "Enabled", "OauthTokenEndpoint", "OauthClientAuthMethod", "OauthClientId", "OauthClientSecret", "OauthGrantClientCredentials", "OauthAccessTokenValidity", "OauthRefreshTokenValidity", "OauthAllowedScopes", "Comment"),
 				DefaultModify: func(opts *AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions) {
@@ -639,6 +654,13 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 				DefaultModify: func(opts *AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions) {
 					opts.Set = &ApiAuthenticationWithAuthorizationCodeGrantFlowIntegrationSet{}
 					opts.Unset = &ApiAuthenticationWithAuthorizationCodeGrantFlowIntegrationUnset{}
+				},
+			},
+			validationCase[*AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 			validationCase[*AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions]{
@@ -718,6 +740,13 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 				},
 			},
 			validationCase[*AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithJwtBearerFlow_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
+			validationCase[*AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithJwtBearerFlow_opts_Set_AtLeastOneValueSet,
 				ExpectedErr: errAtLeastOneOf("AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions.Set", "Enabled", "OauthAuthorizationEndpoint", "OauthTokenEndpoint", "OauthClientAuthMethod", "OauthClientId", "OauthClientSecret", "OauthGrantJwtBearer", "OauthAccessTokenValidity", "OauthRefreshTokenValidity", "Comment"),
 				DefaultModify: func(opts *AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) {
@@ -790,6 +819,13 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 				DefaultModify: func(opts *AlterExternalOauthSecurityIntegrationOptions) {
 					opts.Set = &ExternalOauthIntegrationSet{}
 					opts.Unset = &ExternalOauthIntegrationUnset{}
+				},
+			},
+			validationCase[*AlterExternalOauthSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterExternalOauth_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterExternalOauthSecurityIntegrationOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterExternalOauthSecurityIntegrationOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 			validationCase[*AlterExternalOauthSecurityIntegrationOptions]{
@@ -908,6 +944,13 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 				},
 			},
 			validationCase[*AlterOauthForPartnerApplicationsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOauthForPartnerApplicationsSecurityIntegrationOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterOauthForPartnerApplicationsSecurityIntegrationOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
+			validationCase[*AlterOauthForPartnerApplicationsSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_opts_Set_AtLeastOneValueSet,
 				ExpectedErr: errAtLeastOneOf("AlterOauthForPartnerApplicationsSecurityIntegrationOptions.Set", "Enabled", "OauthIssueRefreshTokens", "OauthRedirectUri", "OauthRefreshTokenValidity", "OauthUseSecondaryRoles", "AllowedRolesList", "BlockedRolesList", "Comment"),
 				DefaultModify: func(opts *AlterOauthForPartnerApplicationsSecurityIntegrationOptions) {
@@ -996,6 +1039,13 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 				DefaultModify: func(opts *AlterOauthForCustomClientsSecurityIntegrationOptions) {
 					opts.Set = &OauthForCustomClientsIntegrationSet{}
 					opts.Unset = &OauthForCustomClientsIntegrationUnset{}
+				},
+			},
+			validationCase[*AlterOauthForCustomClientsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterOauthForCustomClients_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterOauthForCustomClientsSecurityIntegrationOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterOauthForCustomClientsSecurityIntegrationOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 			validationCase[*AlterOauthForCustomClientsSecurityIntegrationOptions]{
@@ -1109,6 +1159,13 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 				},
 			},
 			validationCase[*AlterSaml2SecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterSaml2_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterSaml2SecurityIntegrationOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterSaml2SecurityIntegrationOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
+			validationCase[*AlterSaml2SecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_AlterSaml2_opts_Set_AtLeastOneValueSet,
 				ExpectedErr: errAtLeastOneOf("AlterSaml2SecurityIntegrationOptions.Set", "Enabled", "Saml2Issuer", "Saml2SsoUrl", "Saml2Provider", "Saml2X509Cert", "AllowedUserDomains", "AllowedEmailPatterns", "Saml2SpInitiatedLoginPageLabel", "Saml2EnableSpInitiated", "Saml2SnowflakeX509Cert", "Saml2SignRequest", "Saml2RequestedNameidFormat", "Saml2PostLogoutRedirectUrl", "Saml2ForceAuthn", "Saml2SnowflakeIssuerUrl", "Saml2SnowflakeAcsUrl", "Comment"),
 				DefaultModify: func(opts *AlterSaml2SecurityIntegrationOptions) {
@@ -1193,6 +1250,13 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 				DefaultModify: func(opts *AlterScimSecurityIntegrationOptions) {
 					opts.Set = &ScimIntegrationSet{}
 					opts.Unset = &ScimIntegrationUnset{}
+				},
+			},
+			validationCase[*AlterScimSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterScim_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterScimSecurityIntegrationOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterScimSecurityIntegrationOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 			validationCase[*AlterScimSecurityIntegrationOptions]{

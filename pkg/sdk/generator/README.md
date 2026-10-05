@@ -155,8 +155,6 @@ make generate-sdk-examples SF_TF_GENERATOR_ARGS='--help'
 ##### Known issues/limitations
 - The generator was added after parts of the SDK were implemented manually. Some objects don't have the generator definitions which make it harder to keep the up-to-date. All of them should be gradually migrated to the definition-based generation implementation.
 - The implementation of nested fields causes problems when reusing nested definitions (the same `[]Fields` slice is reused causing parent redefinition and incorrect mapping; the root cause being the lack of separation between the definition and model structs). It's currently validated programmatically and the panic is raised (`Field <field> already has a parent`). When it happens, create a function wrapper instead of directly creating a `var` with a definition.
-- Nested slice validations:
-  - DSL gap: per-element checks on `[]TagAssociation` lists (`OptionalTags()`). Still `additionalValidations()`. Not a template bug.
 
 ##### Remaining TODOs
 

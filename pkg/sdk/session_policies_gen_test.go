@@ -37,6 +37,7 @@ const (
 	case_SessionPolicies_validation_Alter_opts_Set_BlockedSecondaryRoles_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_Set_BlockedSecondaryRoles_ExactlyOneValueSet_NoneSet"
 	case_SessionPolicies_validation_Alter_opts_Set_BlockedSecondaryRoles_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_Set_BlockedSecondaryRoles_ExactlyOneValueSet_MoreThanOneSet"
 	case_SessionPolicies_validation_Alter_Set_BlockedSecondaryRoles_Roles_ValidIdentifier                  testCaseName = "validation_Alter_Set_BlockedSecondaryRoles_Roles_ValidIdentifier"
+	case_SessionPolicies_validation_Alter_SetTags_ValidIdentifier                                          testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_SessionPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet                                    testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_SessionPolicies_sql_Alter_RenameTo                                                                testCaseName = "sql_Alter_RenameTo"
 	case_SessionPolicies_sql_Alter_Set                                                                     testCaseName = "sql_Alter_Set"
@@ -271,6 +272,13 @@ var sessionPoliciesTests = SessionPoliciesTestsContext{
 					opts.Set = &SessionPolicySet{}
 					opts.Set.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{}
 					opts.Set.BlockedSecondaryRoles.Roles = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*AlterSessionPolicyOptions]{
+				Name:        case_SessionPolicies_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterSessionPolicyOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterSessionPolicyOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 			validationCase[*AlterSessionPolicyOptions]{

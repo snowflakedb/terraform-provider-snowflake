@@ -89,6 +89,13 @@ func (opts *CreateIcebergTableOptions) validate() error {
 						}
 					}
 				}
+				if valueSet(column.Tag) {
+					for tagIdx, tag := range column.Tag {
+						if !ValidObjectIdentifier(tag.Name) {
+							errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[%d].Tag[%d]", columnIdx, tagIdx), "Name"))
+						}
+					}
+				}
 			}
 		}
 		if valueSet(opts.ColumnsAndConstraints.OutOfLineConstraint) {
@@ -167,6 +174,13 @@ func (opts *CreateIcebergTableOptions) validate() error {
 			errs = append(errs, errInvalidIdentifier("CreateIcebergTableOptions.AggregationPolicy", "AggregationPolicy"))
 		}
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateIcebergTableOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -180,6 +194,13 @@ func (opts *CreateFromIcebergFilesIcebergTableOptions) validate() error {
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateFromIcebergFilesIcebergTableOptions", "OrReplace", "IfNotExists"))
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateFromIcebergFilesIcebergTableOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -195,6 +216,13 @@ func (opts *CreateFromDeltaLakeIcebergTableOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateFromDeltaLakeIcebergTableOptions", "OrReplace", "IfNotExists"))
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateFromDeltaLakeIcebergTableOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -209,6 +237,13 @@ func (opts *CreateFromIcebergRestIcebergTableOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateFromIcebergRestIcebergTableOptions", "OrReplace", "IfNotExists"))
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateFromIcebergRestIcebergTableOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -222,6 +257,13 @@ func (opts *CreateFromAwsGlueIcebergTableOptions) validate() error {
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateFromAwsGlueIcebergTableOptions", "OrReplace", "IfNotExists"))
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateFromAwsGlueIcebergTableOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -294,11 +336,27 @@ func (opts *AlterIcebergTableOptions) validate() error {
 				}
 			}
 		}
+		if valueSet(opts.AddColumnAction.Tag) {
+			for tagIdx, tag := range opts.AddColumnAction.Tag {
+				if !ValidObjectIdentifier(tag.Name) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterIcebergTableOptions.AddColumnAction.Tag[%d]", tagIdx), "Name"))
+				}
+			}
+		}
 	}
 	if valueSet(opts.AlterColumnAction) {
 		for alterColumnActionIdx, alterColumnAction := range opts.AlterColumnAction {
 			if !exactlyOneValueSet(alterColumnAction.SetNotNull, alterColumnAction.DropNotNull, alterColumnAction.DataType, alterColumnAction.Comment, alterColumnAction.UnsetComment, alterColumnAction.SetWriteDefault, alterColumnAction.DropWriteDefault) {
 				errs = append(errs, errExactlyOneOf(fmt.Sprintf("AlterIcebergTableOptions.AlterColumnAction[%d]", alterColumnActionIdx), "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"))
+			}
+		}
+	}
+	if valueSet(opts.SetTagsOnColumn) {
+		if valueSet(opts.SetTagsOnColumn.SetTags) {
+			for setTagIdx, setTag := range opts.SetTagsOnColumn.SetTags {
+				if !ValidObjectIdentifier(setTag.Name) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterIcebergTableOptions.SetTagsOnColumn.SetTags[%d]", setTagIdx), "Name"))
+				}
 			}
 		}
 	}
@@ -315,6 +373,13 @@ func (opts *AlterIcebergTableOptions) validate() error {
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.ReplaceInvalidCharacters, opts.Unset.CatalogSync, opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.TargetFileSize, opts.Unset.LogEventLevel, opts.Unset.ErrorLogging, opts.Unset.EnableDataCompaction, opts.Unset.EnableIcebergMergeOnRead, opts.Unset.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterIcebergTableOptions.Unset", "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "TargetFileSize", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment"))
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterIcebergTableOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
 		}
 	}
 	if valueSet(opts.AddRowAccessPolicy) {

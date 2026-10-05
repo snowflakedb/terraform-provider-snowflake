@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateDatabaseRoleOptions)
 	_ validatable = new(AlterDatabaseRoleOptions)
@@ -50,6 +52,13 @@ func (opts *AlterDatabaseRoleOptions) validate() error {
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterDatabaseRoleOptions.Unset", "Comment"))
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterDatabaseRoleOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
 		}
 	}
 	return JoinErrors(errs...)

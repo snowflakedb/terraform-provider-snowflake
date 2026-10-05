@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateInternalStageOptions)
 	_ validatable = new(CreateOnS3StageOptions)
@@ -37,6 +39,13 @@ func (opts *CreateInternalStageOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
 		}
 		errs = append(errs, opts.FileFormat.additionalValidations())
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateInternalStageOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -79,6 +88,13 @@ func (opts *CreateOnS3StageOptions) validate() error {
 		}
 		errs = append(errs, opts.FileFormat.additionalValidations())
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateOnS3StageOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -102,6 +118,13 @@ func (opts *CreateOnGCSStageOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
 		}
 		errs = append(errs, opts.FileFormat.additionalValidations())
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateOnGCSStageOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -133,6 +156,13 @@ func (opts *CreateOnAzureStageOptions) validate() error {
 		}
 		errs = append(errs, opts.FileFormat.additionalValidations())
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateOnAzureStageOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -150,6 +180,13 @@ func (opts *CreateOnS3CompatibleStageOptions) validate() error {
 		}
 		errs = append(errs, opts.FileFormat.additionalValidations())
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateOnS3CompatibleStageOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -166,6 +203,13 @@ func (opts *AlterStageOptions) validate() error {
 	}
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("AlterStageOptions", "name"))
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterStageOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }

@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateEventTableOptions)
 	_ validatable = new(ShowEventTableOptions)
@@ -20,6 +22,13 @@ func (opts *CreateEventTableOptions) validate() error {
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateEventTableOptions", "OrReplace", "IfNotExists"))
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateEventTableOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -84,6 +93,13 @@ func (opts *AlterEventTableOptions) validate() error {
 		if valueSet(opts.DropAndAddRowAccessPolicy.Add) {
 			if !ValidObjectIdentifier(opts.DropAndAddRowAccessPolicy.Add.RowAccessPolicy) {
 				errs = append(errs, errInvalidIdentifier("AlterEventTableOptions.DropAndAddRowAccessPolicy.Add", "RowAccessPolicy"))
+			}
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterEventTableOptions.SetTags[%d]", setTagIdx), "Name"))
 			}
 		}
 	}

@@ -32,6 +32,7 @@ const (
 	case_ExternalAccessIntegrations_validation_Alter_opts_Set_AllowedAuthenticationSecrets_ExactlyOneValueSet_MoreThanOneSet         testCaseName = "validation_Alter_opts_Set_AllowedAuthenticationSecrets_ExactlyOneValueSet_MoreThanOneSet"
 	case_ExternalAccessIntegrations_validation_Alter_Set_AllowedAuthenticationSecrets_Secrets_ValidIdentifier                        testCaseName = "validation_Alter_Set_AllowedAuthenticationSecrets_Secrets_ValidIdentifier"
 	case_ExternalAccessIntegrations_validation_Alter_opts_Unset_AtLeastOneValueSet                                                   testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_ExternalAccessIntegrations_validation_Alter_SetTags_ValidIdentifier                                                         testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_ExternalAccessIntegrations_sql_Alter_Set                                                                                    testCaseName = "sql_Alter_Set"
 	case_ExternalAccessIntegrations_sql_Alter_Unset                                                                                  testCaseName = "sql_Alter_Unset"
 	case_ExternalAccessIntegrations_sql_Alter_SetTags                                                                                testCaseName = "sql_Alter_SetTags"
@@ -260,6 +261,13 @@ var externalAccessIntegrationsTests = ExternalAccessIntegrationsTestsContext{
 					opts.Unset.AllowedAuthenticationSecrets = nil
 					opts.Unset.Enabled = nil
 					opts.Unset.Comment = nil
+				},
+			},
+			validationCase[*AlterExternalAccessIntegrationOptions]{
+				Name:        case_ExternalAccessIntegrations_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterExternalAccessIntegrationOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterExternalAccessIntegrationOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

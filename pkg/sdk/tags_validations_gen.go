@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateTagOptions)
 	_ validatable = new(AlterTagOptions)
@@ -125,6 +127,13 @@ func (opts *SetTagOptions) validate() error {
 		errs = append(errs, errInvalidIdentifier("SetTagOptions", "objectName"))
 	}
 	errs = append(errs, opts.additionalValidations())
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("SetTagOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 

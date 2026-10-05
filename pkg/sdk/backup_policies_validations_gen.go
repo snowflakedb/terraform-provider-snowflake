@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateBackupPolicyOptions)
 	_ validatable = new(AlterBackupPolicyOptions)
@@ -24,6 +26,13 @@ func (opts *CreateBackupPolicyOptions) validate() error {
 	if !anyValueSet(opts.Schedule, opts.ExpireAfterDays) {
 		errs = append(errs, errAtLeastOneOf("CreateBackupPolicyOptions", "Schedule", "ExpireAfterDays"))
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateBackupPolicyOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -41,6 +50,13 @@ func (opts *AlterBackupPolicyOptions) validate() error {
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.Schedule, opts.Set.ExpireAfterDays, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterBackupPolicyOptions.Set", "Schedule", "ExpireAfterDays", "Comment"))
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterBackupPolicyOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
 		}
 	}
 	if valueSet(opts.Unset) {

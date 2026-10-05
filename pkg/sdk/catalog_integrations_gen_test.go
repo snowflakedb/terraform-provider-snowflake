@@ -30,6 +30,7 @@ const (
 	case_CatalogIntegrations_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                 testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_CatalogIntegrations_validation_Alter_opts_Set_ConflictingFields                                             testCaseName = "validation_Alter_opts_Set_ConflictingFields"
 	case_CatalogIntegrations_validation_Alter_opts_Set_AtLeastOneValueSet                                            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_CatalogIntegrations_validation_Alter_SetTags_ValidIdentifier                                                testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_CatalogIntegrations_sql_Alter_Set                                                                           testCaseName = "sql_Alter_Set"
 	case_CatalogIntegrations_sql_Alter_SetTags                                                                       testCaseName = "sql_Alter_SetTags"
 	case_CatalogIntegrations_sql_Alter_UnsetTags                                                                     testCaseName = "sql_Alter_UnsetTags"
@@ -171,6 +172,13 @@ var catalogIntegrationsTests = CatalogIntegrationsTestsContext{
 					opts.Set.Enabled = nil
 					opts.Set.RefreshIntervalSeconds = nil
 					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterCatalogIntegrationOptions]{
+				Name:        case_CatalogIntegrations_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterCatalogIntegrationOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterCatalogIntegrationOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

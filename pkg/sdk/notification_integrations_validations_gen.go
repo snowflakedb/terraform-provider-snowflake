@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateNotificationIntegrationOptions)
 	_ validatable = new(AlterNotificationIntegrationOptions)
@@ -74,6 +76,13 @@ func (opts *AlterNotificationIntegrationOptions) validate() error {
 	if valueSet(opts.UnsetWebhookParams) {
 		if !anyValueSet(opts.UnsetWebhookParams.WebhookSecret, opts.UnsetWebhookParams.WebhookBodyTemplate, opts.UnsetWebhookParams.WebhookHeaders, opts.UnsetWebhookParams.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterNotificationIntegrationOptions.UnsetWebhookParams", "WebhookSecret", "WebhookBodyTemplate", "WebhookHeaders", "Comment"))
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterNotificationIntegrationOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
 		}
 	}
 	return JoinErrors(errs...)

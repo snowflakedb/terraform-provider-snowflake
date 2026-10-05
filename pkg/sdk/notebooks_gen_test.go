@@ -27,6 +27,7 @@ const (
 	case_Notebooks_validation_Alter_opts_Set_AtLeastOneValueSet                    testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_Notebooks_validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier testCaseName = "validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier"
 	case_Notebooks_validation_Alter_opts_Unset_AtLeastOneValueSet                  testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Notebooks_validation_Alter_SetTags_ValidIdentifier                        testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_Notebooks_sql_Alter_Set                                                   testCaseName = "sql_Alter_Set"
 	case_Notebooks_sql_Alter_Unset                                                 testCaseName = "sql_Alter_Unset"
 	case_Notebooks_sql_Alter_SetTags                                               testCaseName = "sql_Alter_SetTags"
@@ -220,6 +221,13 @@ var notebooksTests = NotebooksTestsContext{
 					opts.Unset.ComputePool = nil
 					opts.Unset.ExternalAccessIntegrations = nil
 					opts.Unset.RuntimeEnvironmentVersion = nil
+				},
+			},
+			validationCase[*AlterNotebookOptions]{
+				Name:        case_Notebooks_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterNotebookOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterNotebookOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

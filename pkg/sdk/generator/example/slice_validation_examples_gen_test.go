@@ -30,6 +30,7 @@ const (
 	case_SliceValidationExamples_validation_Create_opts_Items_SubItems_LeafItems_ExactlyOneValueSet_BothInvalid        testCaseName = "validation_Create_opts_Items_SubItems_LeafItems_ExactlyOneValueSet_BothInvalid"
 	case_SliceValidationExamples_validation_Create_Columns_MaskingPolicy_MaskingPolicy_ValidIdentifier                 testCaseName = "validation_Create_Columns_MaskingPolicy_MaskingPolicy_ValidIdentifier"
 	case_SliceValidationExamples_validation_Create_ExternalAccessIntegrations_ValidIdentifier                          testCaseName = "validation_Create_ExternalAccessIntegrations_ValidIdentifier"
+	case_SliceValidationExamples_validation_Create_Tag_ValidIdentifier                                                 testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_SliceValidationExamples_sql_Create_basic                                                                      testCaseName = "sql_Create_basic"
 	case_SliceValidationExamples_sql_Create_all                                                                        testCaseName = "sql_Create_all"
 )
@@ -211,6 +212,13 @@ var sliceValidationExamplesTests = SliceValidationExamplesTestsContext{
 				ExpectedErr: errInvalidIdentifier("CreateSliceValidationExampleOptions.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations"),
 				DefaultModify: func(opts *CreateSliceValidationExampleOptions) {
 					opts.ExternalAccessIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*CreateSliceValidationExampleOptions]{
+				Name:        case_SliceValidationExamples_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSliceValidationExampleOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateSliceValidationExampleOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

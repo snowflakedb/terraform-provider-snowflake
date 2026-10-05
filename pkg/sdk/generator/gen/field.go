@@ -148,6 +148,18 @@ func (f *Field) IsIdentifierElementSlice() bool {
 	return f.IsSlice() && !f.HasAnyFields() && genhelpers.IsIdentifierType(f.KindNoPtr())
 }
 
+// IsTagAssociationSlice reports whether f is a flat []TagAssociation with no QueryStruct
+// children (OptionalTags / SetTags / OptionalSetTags).
+func (f *Field) IsTagAssociationSlice() bool {
+	return f.IsSlice() && !f.HasAnyFields() && f.KindNoPtr() == "TagAssociation"
+}
+
+// acceptsRelocatedValidIdentifier reports whether WithValidation(ValidIdentifier, f.Name)
+// on the parent should move onto f so the validations template opens a per-element loop.
+func (f *Field) acceptsRelocatedValidIdentifier() bool {
+	return f.IsIdentifierElementSlice() || f.IsTagAssociationSlice()
+}
+
 // SliceElemVar returns a loop variable name derived from the field name.
 // E.g. "Arguments" -> "argument", "Columns" -> "column", "On" -> "on".
 func (f *Field) SliceElemVar() string {

@@ -18,6 +18,7 @@ const (
 	case_Pipes_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_Pipes_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_Pipes_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Pipes_validation_Alter_SetTags_ValidIdentifier                testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_Pipes_sql_Alter_Set                                           testCaseName = "sql_Alter_Set"
 	case_Pipes_sql_Alter_Unset                                         testCaseName = "sql_Alter_Unset"
 	case_Pipes_sql_Alter_SetTags                                       testCaseName = "sql_Alter_SetTags"
@@ -130,6 +131,13 @@ var pipesTests = PipesTestsContext{
 					opts.Unset.ErrorIntegration = nil
 					opts.Unset.PipeExecutionPaused = nil
 					opts.Unset.Comment = nil
+				},
+			},
+			validationCase[*AlterPipeOptions]{
+				Name:        case_Pipes_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterPipeOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterPipeOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

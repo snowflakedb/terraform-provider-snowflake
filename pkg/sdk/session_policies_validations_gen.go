@@ -102,6 +102,13 @@ func (opts *AlterSessionPolicyOptions) validate() error {
 			}
 		}
 	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSessionPolicyOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
+	}
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.SessionIdleTimeoutMins, opts.Unset.SessionUiIdleTimeoutMins, opts.Unset.AllowedSecondaryRoles, opts.Unset.BlockedSecondaryRoles, opts.Unset.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterSessionPolicyOptions.Unset", "SessionIdleTimeoutMins", "SessionUiIdleTimeoutMins", "AllowedSecondaryRoles", "BlockedSecondaryRoles", "Comment"))

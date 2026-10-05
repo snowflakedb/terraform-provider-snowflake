@@ -29,6 +29,7 @@ const (
 	case_Shares_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_Shares_validation_Alter_Set_Accounts_ValidIdentifier           testCaseName = "validation_Alter_Set_Accounts_ValidIdentifier"
 	case_Shares_validation_Alter_opts_Unset_ExactlyOneValueSet_NoneSet  testCaseName = "validation_Alter_opts_Unset_ExactlyOneValueSet_NoneSet"
+	case_Shares_validation_Alter_SetTags_ValidIdentifier                testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_Shares_sql_Alter_Add                                           testCaseName = "sql_Alter_Add"
 	case_Shares_sql_Alter_Remove                                        testCaseName = "sql_Alter_Remove"
 	case_Shares_sql_Alter_Set                                           testCaseName = "sql_Alter_Set"
@@ -173,6 +174,13 @@ var sharesTests = SharesTestsContext{
 				DefaultModify: func(opts *AlterShareOptions) {
 					opts.Unset = &ShareUnset{}
 					opts.Unset.Comment = nil
+				},
+			},
+			validationCase[*AlterShareOptions]{
+				Name:        case_Shares_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterShareOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterShareOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

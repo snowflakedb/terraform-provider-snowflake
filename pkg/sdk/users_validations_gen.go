@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateUserOptions)
 	_ validatable = new(AlterUserOptions)
@@ -31,6 +33,13 @@ func (opts *CreateUserOptions) validate() error {
 		if valueSet(opts.ObjectProperties.WorkloadIdentity) {
 			if !exactlyOneValueSet(opts.ObjectProperties.WorkloadIdentity.AwsType, opts.ObjectProperties.WorkloadIdentity.AzureType, opts.ObjectProperties.WorkloadIdentity.GcpType, opts.ObjectProperties.WorkloadIdentity.OidcType) {
 				errs = append(errs, errExactlyOneOf("CreateUserOptions.ObjectProperties.WorkloadIdentity", "AwsType", "AzureType", "GcpType", "OidcType"))
+			}
+		}
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateUserOptions.Tag[%d]", tagIdx), "Name"))
 			}
 		}
 	}
@@ -85,6 +94,13 @@ func (opts *AlterUserOptions) validate() error {
 			errs = append(errs, errMoreThanOneOf("AlterUserOptions.Unset", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
 		}
 		errs = append(errs, opts.Unset.additionalValidations())
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterUserOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }

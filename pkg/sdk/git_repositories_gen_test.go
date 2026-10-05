@@ -13,6 +13,7 @@ const (
 	case_GitRepositories_validation_Create_ApiIntegration_ValidIdentifier         testCaseName = "validation_Create_ApiIntegration_ValidIdentifier"
 	case_GitRepositories_validation_Create_GitCredentials_ValidIdentifierIfSet    testCaseName = "validation_Create_GitCredentials_ValidIdentifierIfSet"
 	case_GitRepositories_validation_Create_opts_ConflictingFields                 testCaseName = "validation_Create_opts_ConflictingFields"
+	case_GitRepositories_validation_Create_Tag_ValidIdentifier                    testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_GitRepositories_sql_Create_basic                                         testCaseName = "sql_Create_basic"
 	case_GitRepositories_sql_Create_all                                           testCaseName = "sql_Create_all"
 	case_GitRepositories_validation_Alter_name_ValidIdentifier                    testCaseName = "validation_Alter_name_ValidIdentifier"
@@ -20,6 +21,7 @@ const (
 	case_GitRepositories_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_GitRepositories_validation_Alter_Set_ApiIntegration_ValidIdentifierIfSet testCaseName = "validation_Alter_Set_ApiIntegration_ValidIdentifierIfSet"
 	case_GitRepositories_validation_Alter_Set_GitCredentials_ValidIdentifierIfSet testCaseName = "validation_Alter_Set_GitCredentials_ValidIdentifierIfSet"
+	case_GitRepositories_validation_Alter_SetTags_ValidIdentifier                 testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_GitRepositories_sql_Alter_Set                                            testCaseName = "sql_Alter_Set"
 	case_GitRepositories_sql_Alter_Unset                                          testCaseName = "sql_Alter_Unset"
 	case_GitRepositories_sql_Alter_SetTags                                        testCaseName = "sql_Alter_SetTags"
@@ -92,6 +94,13 @@ var gitRepositoriesTests = GitRepositoriesTestsContext{
 					opts.OrReplace = new(true)
 				},
 			},
+			validationCase[*CreateGitRepositoryOptions]{
+				Name:        case_GitRepositories_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateGitRepositoryOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateGitRepositoryOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateGitRepositoryOptions]{
@@ -151,6 +160,13 @@ var gitRepositoriesTests = GitRepositoriesTestsContext{
 				DefaultModify: func(opts *AlterGitRepositoryOptions) {
 					opts.Set = &GitRepositorySet{}
 					opts.Set.GitCredentials = new(emptySchemaObjectIdentifier)
+				},
+			},
+			validationCase[*AlterGitRepositoryOptions]{
+				Name:        case_GitRepositories_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterGitRepositoryOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterGitRepositoryOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

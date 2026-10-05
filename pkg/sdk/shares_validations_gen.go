@@ -75,6 +75,13 @@ func (opts *AlterShareOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("AlterShareOptions.Unset", "Comment"))
 		}
 	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterShareOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 

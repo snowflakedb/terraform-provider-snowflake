@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateGitRepositoryOptions)
 	_ validatable = new(AlterGitRepositoryOptions)
@@ -29,6 +31,13 @@ func (opts *CreateGitRepositoryOptions) validate() error {
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateGitRepositoryOptions", "IfNotExists", "OrReplace"))
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateGitRepositoryOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -49,6 +58,13 @@ func (opts *AlterGitRepositoryOptions) validate() error {
 		}
 		if opts.Set.GitCredentials != nil && !ValidObjectIdentifier(opts.Set.GitCredentials) {
 			errs = append(errs, errInvalidIdentifier("AlterGitRepositoryOptions.Set", "GitCredentials"))
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterGitRepositoryOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
 		}
 	}
 	return JoinErrors(errs...)

@@ -41,6 +41,13 @@ func (opts *CreateTaskOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("CreateTaskOptions.Warehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
 		}
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateTaskOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	if valueSet(opts.After) {
 		for afterIdx, after := range opts.After {
 			if !ValidObjectIdentifier(after) {
@@ -145,6 +152,13 @@ func (opts *AlterTaskOptions) validate() error {
 		errs = append(errs, opts.Unset.additionalValidations())
 		if !anyValueSet(opts.Unset.Warehouse, opts.Unset.UserTaskManagedInitialWarehouseSize, opts.Unset.Schedule, opts.Unset.Config, opts.Unset.AllowOverlappingExecution, opts.Unset.UserTaskTimeoutMs, opts.Unset.SuspendTaskAfterNumFailures, opts.Unset.ErrorIntegration, opts.Unset.Comment, opts.Unset.SessionParametersUnset, opts.Unset.TaskAutoRetryAttempts, opts.Unset.UserTaskMinimumTriggerIntervalInSeconds, opts.Unset.TargetCompletionInterval, opts.Unset.ServerlessTaskMinStatementSize, opts.Unset.ServerlessTaskMaxStatementSize) {
 			errs = append(errs, errAtLeastOneOf("AlterTaskOptions.Unset", "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParametersUnset", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds", "TargetCompletionInterval", "ServerlessTaskMinStatementSize", "ServerlessTaskMaxStatementSize"))
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterTaskOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
 		}
 	}
 	return JoinErrors(errs...)

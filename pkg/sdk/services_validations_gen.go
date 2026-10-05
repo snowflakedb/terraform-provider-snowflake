@@ -59,6 +59,13 @@ func (opts *CreateServiceOptions) validate() error {
 			}
 		}
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateServiceOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -121,6 +128,13 @@ func (opts *AlterServiceOptions) validate() error {
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.MinInstances, opts.Unset.AutoSuspendSecs, opts.Unset.MaxInstances, opts.Unset.MinReadyInstances, opts.Unset.QueryWarehouse, opts.Unset.AutoResume, opts.Unset.ExternalAccessIntegrations, opts.Unset.Comment, opts.Unset.ServiceCallerTokenValiditySecs) {
 			errs = append(errs, errAtLeastOneOf("AlterServiceOptions.Unset", "MinInstances", "AutoSuspendSecs", "MaxInstances", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment", "ServiceCallerTokenValiditySecs"))
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterServiceOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
 		}
 	}
 	return JoinErrors(errs...)
@@ -205,6 +219,13 @@ func (opts *ExecuteJobServiceOptions) validate() error {
 		}
 		if opts.JobServiceFromSpecificationTemplate.SpecificationTemplate != nil && containsDoubleDollarQuotes(*opts.JobServiceFromSpecificationTemplate.SpecificationTemplate) {
 			errs = append(errs, errDoubleDollarQuotesNotAllowed("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplate"))
+		}
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("ExecuteJobServiceOptions.Tag[%d]", tagIdx), "Name"))
+			}
 		}
 	}
 	return JoinErrors(errs...)

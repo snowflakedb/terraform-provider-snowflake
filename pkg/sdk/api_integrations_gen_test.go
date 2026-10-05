@@ -60,6 +60,7 @@ const (
 	case_ApiIntegrations_validation_Alter_opts_Unset_AzureParams_AtLeastOneValueSet                                                                 testCaseName = "validation_Alter_opts_Unset_AzureParams_AtLeastOneValueSet"
 	case_ApiIntegrations_validation_Alter_opts_Unset_GitHttpsApiTokenBasedParams_AtLeastOneValueSet                                                 testCaseName = "validation_Alter_opts_Unset_GitHttpsApiTokenBasedParams_AtLeastOneValueSet"
 	case_ApiIntegrations_validation_Alter_opts_Unset_GitHttpsApiPrivateLinkParams_AtLeastOneValueSet                                                testCaseName = "validation_Alter_opts_Unset_GitHttpsApiPrivateLinkParams_AtLeastOneValueSet"
+	case_ApiIntegrations_validation_Alter_SetTags_ValidIdentifier                                                                                   testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_ApiIntegrations_sql_Alter_Set                                                                                                              testCaseName = "sql_Alter_Set"
 	case_ApiIntegrations_sql_Alter_Unset                                                                                                            testCaseName = "sql_Alter_Unset"
 	case_ApiIntegrations_sql_Alter_SetTags                                                                                                          testCaseName = "sql_Alter_SetTags"
@@ -467,6 +468,13 @@ var apiIntegrationsTests = ApiIntegrationsTestsContext{
 					opts.Unset.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets = nil
 					opts.Unset.GitHttpsApiPrivateLinkParams.TlsTrustedCertificates = nil
 					opts.Unset.GitHttpsApiPrivateLinkParams.UsePrivatelinkEndpoint = nil
+				},
+			},
+			validationCase[*AlterApiIntegrationOptions]{
+				Name:        case_ApiIntegrations_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterApiIntegrationOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterApiIntegrationOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

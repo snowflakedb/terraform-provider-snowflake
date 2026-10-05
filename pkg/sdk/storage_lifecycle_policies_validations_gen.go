@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateStorageLifecyclePolicyOptions)
 	_ validatable = new(AlterStorageLifecyclePolicyOptions)
@@ -27,6 +29,13 @@ func (opts *CreateStorageLifecyclePolicyOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateStorageLifecyclePolicyOptions", "OrReplace", "IfNotExists"))
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateStorageLifecyclePolicyOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -44,6 +53,13 @@ func (opts *AlterStorageLifecyclePolicyOptions) validate() error {
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.ArchiveTier, opts.Set.ArchiveForDays, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterStorageLifecyclePolicyOptions.Set", "ArchiveTier", "ArchiveForDays", "Comment"))
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterStorageLifecyclePolicyOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
 		}
 	}
 	if valueSet(opts.Unset) {

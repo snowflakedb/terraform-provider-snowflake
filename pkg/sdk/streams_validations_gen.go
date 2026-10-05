@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateOnTableStreamOptions)
 	_ validatable = new(CreateOnExternalTableStreamOptions)
@@ -27,6 +29,13 @@ func (opts *CreateOnTableStreamOptions) validate() error {
 	}
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateOnTableStreamOptions", "IfNotExists", "OrReplace"))
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateOnTableStreamOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
 	}
 	if valueSet(opts.On) {
 		if !exactlyOneValueSet(opts.On.At, opts.On.Before) {
@@ -55,6 +64,13 @@ func (opts *CreateOnExternalTableStreamOptions) validate() error {
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateOnExternalTableStreamOptions", "IfNotExists", "OrReplace"))
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateOnExternalTableStreamOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	if valueSet(opts.On) {
 		if !exactlyOneValueSet(opts.On.At, opts.On.Before) {
 			errs = append(errs, errExactlyOneOf("CreateOnExternalTableStreamOptions.On", "At", "Before"))
@@ -82,6 +98,13 @@ func (opts *CreateOnDirectoryTableStreamOptions) validate() error {
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateOnDirectoryTableStreamOptions", "IfNotExists", "OrReplace"))
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateOnDirectoryTableStreamOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -98,6 +121,13 @@ func (opts *CreateOnViewStreamOptions) validate() error {
 	}
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateOnViewStreamOptions", "IfNotExists", "OrReplace"))
+	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateOnViewStreamOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
 	}
 	if valueSet(opts.On) {
 		if !exactlyOneValueSet(opts.On.At, opts.On.Before) {
@@ -136,6 +166,13 @@ func (opts *AlterStreamOptions) validate() error {
 	}
 	if !exactlyOneValueSet(opts.SetComment, opts.UnsetComment, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterStreamOptions", "SetComment", "UnsetComment", "SetTags", "UnsetTags"))
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterStreamOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }

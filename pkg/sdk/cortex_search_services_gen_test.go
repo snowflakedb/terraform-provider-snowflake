@@ -27,6 +27,7 @@ const (
 	case_CortexSearchServices_validation_Alter_opts_SetDefaults_AtLeastOneValueSet       testCaseName = "validation_Alter_opts_SetDefaults_AtLeastOneValueSet"
 	case_CortexSearchServices_validation_Alter_SetPrimaryKey_PrimaryKey_ValidateValueSet testCaseName = "validation_Alter_SetPrimaryKey_PrimaryKey_ValidateValueSet"
 	case_CortexSearchServices_validation_Alter_SetAttributes_Columns_ValidateValueSet    testCaseName = "validation_Alter_SetAttributes_Columns_ValidateValueSet"
+	case_CortexSearchServices_validation_Alter_SetTags_ValidIdentifier                   testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_CortexSearchServices_sql_Alter_Suspend                                          testCaseName = "sql_Alter_Suspend"
 	case_CortexSearchServices_sql_Alter_Resume                                           testCaseName = "sql_Alter_Resume"
 	case_CortexSearchServices_sql_Alter_Refresh                                          testCaseName = "sql_Alter_Refresh"
@@ -184,6 +185,13 @@ var cortexSearchServicesTests = CortexSearchServicesTestsContext{
 				DefaultModify: func(opts *AlterCortexSearchServiceOptions) {
 					opts.SetAttributes = &CortexSearchServiceSetAttributes{}
 					opts.SetAttributes.Columns = nil
+				},
+			},
+			validationCase[*AlterCortexSearchServiceOptions]{
+				Name:        case_CortexSearchServices_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterCortexSearchServiceOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterCortexSearchServiceOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

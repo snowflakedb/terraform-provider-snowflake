@@ -309,6 +309,12 @@ func Test_Field_NeedsSliceIndexVar(t *testing.T) {
 			expected: true,
 		},
 		{
+			name:     "tag-association slice with ValidIdentifier on the slice itself",
+			root:     tagAssociationSliceTree(),
+			target:   func(root *gen.Field) *gen.Field { return &root.Fields[0] },
+			expected: true,
+		},
+		{
 			name: "slice with its own ExactlyOneValueSet",
 			root: &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
 				{Name: "Arguments", Kind: "[]Argument", Validations: []*gen.Validation{
@@ -377,6 +383,9 @@ func Test_Validation_ReturnedError_usesPathWithRootExpr(t *testing.T) {
 	identifierElemSlice := buildTree(identifierElementSliceTree())
 	require.Equal(t, `errInvalidIdentifier(fmt.Sprintf("RootOptions.ExternalAccessIntegrations[%d]", externalAccessIntegrationIdx), "ExternalAccessIntegrations")`,
 		gen.NewValidation(gen.ValidIdentifier, "ExternalAccessIntegrations").ReturnedError(&identifierElemSlice.Fields[0]))
+	tagSlice := buildTree(tagAssociationSliceTree())
+	require.Equal(t, `errInvalidIdentifier(fmt.Sprintf("RootOptions.Tag[%d]", tagIdx), "Name")`,
+		gen.NewValidation(gen.ValidIdentifier, "Tag").ReturnedError(&tagSlice.Fields[0]))
 }
 
 func identifierUnderSliceTree() *gen.Field {
@@ -407,6 +416,22 @@ func identifierElementSliceUnderSetTree() *gen.Field {
 			{Name: "ExternalAccessIntegrations", Kind: "[]AccountObjectIdentifier", Validations: []*gen.Validation{
 				gen.NewValidation(gen.ValidIdentifier, "ExternalAccessIntegrations"),
 			}},
+		}},
+	}}
+}
+
+func tagAssociationSliceTree() *gen.Field {
+	return &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+		{Name: "Tag", Kind: "[]TagAssociation", Validations: []*gen.Validation{
+			gen.NewValidation(gen.ValidIdentifier, "Tag"),
+		}},
+	}}
+}
+
+func tagAssociationSliceUnderSetTree() *gen.Field {
+	return &gen.Field{Name: "RootOptions", Kind: "RootOptions", Fields: []gen.Field{
+		{Name: "SetTags", Kind: "[]TagAssociation", Validations: []*gen.Validation{
+			gen.NewValidation(gen.ValidIdentifier, "SetTags"),
 		}},
 	}}
 }
@@ -707,6 +732,20 @@ func Test_Validation_DeriveModify_usesIndexedPath(t *testing.T) {
 				"opts.Set = &Set{}",
 			},
 		},
+		{
+			name:         "tag-association slice — assign a one-element slice with an empty Name",
+			root:         tagAssociationSliceTree(),
+			field:        func(root *gen.Field) *gen.Field { return &root.Fields[0] },
+			validation:   gen.NewValidation(gen.ValidIdentifier, "Tag"),
+			expectedLast: "opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}",
+		},
+		{
+			name:         "tag-association SetTags — assign a one-element slice with an empty Name",
+			root:         tagAssociationSliceUnderSetTree(),
+			field:        func(root *gen.Field) *gen.Field { return &root.Fields[0] },
+			validation:   gen.NewValidation(gen.ValidIdentifier, "SetTags"),
+			expectedLast: "opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}",
+		},
 	}
 
 	for _, tt := range tests {
@@ -785,6 +824,8 @@ func Test_Validation_TestExpectedError(t *testing.T) {
 	maskingPolicy := &identifierSlice.Fields[0].Fields[0]
 	identifierElemSlice := buildTree(identifierElementSliceTree())
 	eaiSlice := &identifierElemSlice.Fields[0]
+	tagAssocSlice := buildTree(tagAssociationSliceTree())
+	tagSlice := &tagAssocSlice.Fields[0]
 
 	tests := []struct {
 		name         string
@@ -828,6 +869,13 @@ func Test_Validation_TestExpectedError(t *testing.T) {
 			field:       eaiSlice,
 			expectedOk:  true,
 			expectedErr: `errInvalidIdentifier("RootOptions.ExternalAccessIntegrations[0]", "ExternalAccessIntegrations")`,
+		},
+		{
+			name:        "ValidIdentifier on a tag-association slice — default [0], field Name",
+			validation:  gen.NewValidation(gen.ValidIdentifier, "Tag"),
+			field:       tagSlice,
+			expectedOk:  true,
+			expectedErr: `errInvalidIdentifier("RootOptions.Tag[0]", "Name")`,
 		},
 		{
 			name:        "ExactlyOneValueSet on a slice — default all [0]",
@@ -1000,10 +1048,56 @@ func Test_Field_IsIdentifierElementSlice(t *testing.T) {
 			field:    &gen.Field{Name: "name", Kind: "AccountObjectIdentifier"},
 			expected: false,
 		},
+		{
+			name:     "[]TagAssociation is not an identifier element slice",
+			field:    &gen.Field{Name: "Tag", Kind: "[]TagAssociation"},
+			expected: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			require.Equal(t, tt.expected, tt.field.IsIdentifierElementSlice())
+		})
+	}
+}
+
+func Test_Field_IsTagAssociationSlice(t *testing.T) {
+	tests := []struct {
+		name     string
+		field    *gen.Field
+		expected bool
+	}{
+		{
+			name:     "[]TagAssociation with no children",
+			field:    &gen.Field{Name: "Tag", Kind: "[]TagAssociation"},
+			expected: true,
+		},
+		{
+			name:     "[]TagAssociation SetTags with no children",
+			field:    &gen.Field{Name: "SetTags", Kind: "[]TagAssociation"},
+			expected: true,
+		},
+		{
+			name:     "[]AccountObjectIdentifier is not a tag-association slice",
+			field:    &gen.Field{Name: "ExternalAccessIntegrations", Kind: "[]AccountObjectIdentifier"},
+			expected: false,
+		},
+		{
+			name: "[]TagAssociation with QueryStruct children is not treated as flat",
+			field: &gen.Field{Name: "Tag", Kind: "[]TagAssociation", Fields: []gen.Field{
+				{Name: "Name", Kind: "ObjectIdentifier"},
+			}},
+			expected: false,
+		},
+		{
+			name:     "non-slice TagAssociation",
+			field:    &gen.Field{Name: "Tag", Kind: "TagAssociation"},
+			expected: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.expected, tt.field.IsTagAssociationSlice())
 		})
 	}
 }
@@ -1077,6 +1171,25 @@ func Test_RelocateIdentifierElementSliceValidations(t *testing.T) {
 			gen.NewValidation(gen.ValidIdentifier, "ExternalAccessIntegrations"),
 		}, root.Fields[0].Fields[0].Validations)
 	})
+
+	t.Run("moves ValidIdentifier from the container onto a tag-association slice", func(t *testing.T) {
+		root := &gen.Field{Name: "RootOptions", Kind: "RootOptions", Validations: []*gen.Validation{
+			gen.NewValidation(gen.ValidIdentifier, "name"),
+			gen.NewValidation(gen.ValidIdentifier, "Tag"),
+		}, Fields: []gen.Field{
+			{Name: "name", Kind: "SchemaObjectIdentifier"},
+			{Name: "Tag", Kind: "[]TagAssociation"},
+		}}
+		gen.SetParent(root)
+		gen.RelocateIdentifierElementSliceValidations(root)
+
+		require.Equal(t, []*gen.Validation{
+			gen.NewValidation(gen.ValidIdentifier, "name"),
+		}, root.Validations)
+		require.Equal(t, []*gen.Validation{
+			gen.NewValidation(gen.ValidIdentifier, "Tag"),
+		}, root.Fields[1].Validations)
+	})
 }
 
 func Test_Validation_Condition_identifierElementSlice(t *testing.T) {
@@ -1087,6 +1200,17 @@ func Test_Validation_Condition_identifierElementSlice(t *testing.T) {
 
 	require.Panics(t, func() {
 		gen.NewValidation(gen.ValidIdentifierIfSet, "ExternalAccessIntegrations").Condition(slice)
+	})
+}
+
+func Test_Validation_Condition_tagAssociationSlice(t *testing.T) {
+	root := buildTree(tagAssociationSliceTree())
+	slice := &root.Fields[0]
+	v := gen.NewValidation(gen.ValidIdentifier, "Tag")
+	require.Equal(t, "!ValidObjectIdentifier(tag.Name)", v.Condition(slice))
+
+	require.Panics(t, func() {
+		gen.NewValidation(gen.ValidIdentifierIfSet, "Tag").Condition(slice)
 	})
 }
 
@@ -1108,5 +1232,26 @@ func Test_BuildSingleFieldValidationCase_identifierElementSliceSlug(t *testing.T
 		v := gen.NewValidation(gen.ValidIdentifier, "ExternalAccessIntegrations")
 		tc := gen.BuildSingleFieldValidationCase(v, slice, "Alter", "", true)
 		require.Equal(t, "validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier", tc.Name)
+	})
+}
+
+func Test_BuildSingleFieldValidationCase_tagAssociationSliceSlug(t *testing.T) {
+	t.Run("does not double the slice name", func(t *testing.T) {
+		root := buildTree(tagAssociationSliceTree())
+		slice := &root.Fields[0]
+		v := gen.NewValidation(gen.ValidIdentifier, "Tag")
+		tc := gen.BuildSingleFieldValidationCase(v, slice, "Create", `errInvalidIdentifier("RootOptions.Tag[0]", "Name")`, true)
+		require.Equal(t, "validation_Create_Tag_ValidIdentifier", tc.Name)
+		require.Equal(t, []string{
+			"opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}",
+		}, tc.ModifyLines)
+	})
+
+	t.Run("SetTags does not double the slice name", func(t *testing.T) {
+		root := buildTree(tagAssociationSliceUnderSetTree())
+		slice := &root.Fields[0]
+		v := gen.NewValidation(gen.ValidIdentifier, "SetTags")
+		tc := gen.BuildSingleFieldValidationCase(v, slice, "Alter", "", true)
+		require.Equal(t, "validation_Alter_SetTags_ValidIdentifier", tc.Name)
 	})
 }

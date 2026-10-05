@@ -11,12 +11,14 @@ var rolesTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 const (
 	case_Roles_validation_Create_name_ValidIdentifier                          testCaseName = "validation_Create_name_ValidIdentifier"
 	case_Roles_validation_Create_opts_ConflictingFields                        testCaseName = "validation_Create_opts_ConflictingFields"
+	case_Roles_validation_Create_Tag_ValidIdentifier                           testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_Roles_sql_Create_basic                                                testCaseName = "sql_Create_basic"
 	case_Roles_sql_Create_all                                                  testCaseName = "sql_Create_all"
 	case_Roles_validation_Alter_name_ValidIdentifier                           testCaseName = "validation_Alter_name_ValidIdentifier"
 	case_Roles_validation_Alter_opts_ExactlyOneValueSet_NoneSet                testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_Roles_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_Roles_validation_Alter_RenameTo_ValidIdentifierIfSet                  testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_Roles_validation_Alter_SetTags_ValidIdentifier                        testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_Roles_sql_Alter_RenameTo                                              testCaseName = "sql_Alter_RenameTo"
 	case_Roles_sql_Alter_SetComment                                            testCaseName = "sql_Alter_SetComment"
 	case_Roles_sql_Alter_SetTags                                               testCaseName = "sql_Alter_SetTags"
@@ -74,6 +76,13 @@ var rolesTests = RolesTestsContext{
 					opts.IfNotExists = new(true)
 				},
 			},
+			validationCase[*CreateRoleOptions]{
+				Name:        case_Roles_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateRoleOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateRoleOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateRoleOptions]{
@@ -124,6 +133,13 @@ var rolesTests = RolesTestsContext{
 				ExpectedErr: errInvalidIdentifier("AlterRoleOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterRoleOptions) {
 					opts.RenameTo = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterRoleOptions]{
+				Name:        case_Roles_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterRoleOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterRoleOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
 		).

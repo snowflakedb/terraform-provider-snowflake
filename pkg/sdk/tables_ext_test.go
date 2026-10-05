@@ -49,17 +49,6 @@ func init() {
 			errNotSet("CreateTableOptions", "Columns"),
 		).
 		withAdditionalValidationCase(
-			"validation_Create_columnTag_invalidIdentifier",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:       "FIRST_COLUMN",
-					ColumnType: DataTypeVARCHAR,
-					Tag:        []TagAssociation{{Name: emptySchemaObjectIdentifier, Value: "v"}},
-				}}
-			},
-			errInvalidIdentifier("CreateTableOptions.ColumnsAndConstraints.Columns[0].Tag[0]", "Name"),
-		).
-		withAdditionalValidationCase(
 			"validation_Create_RowAccessPolicy_invalidIdentifier",
 			func(opts *CreateTableOptions) {
 				opts.RowAccessPolicy = &TableRowAccessPolicyLegacy{Name: emptySchemaObjectIdentifier, On: []string{"COLUMN_1"}}

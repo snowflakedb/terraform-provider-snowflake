@@ -208,7 +208,7 @@ func buildSingleFieldValidationCase(v *Validation, f *Field, opName, expectedErr
 	fieldName := v.FieldNames[0]
 	var fieldSlug string
 	switch {
-	case f.IsIdentifierElementSlice():
+	case f.IsIdentifierElementSlice(), f.IsTagAssociationSlice():
 		// Validation lives on the slice field itself; do not double the name.
 		if f.IsRoot() {
 			fieldSlug = f.Name

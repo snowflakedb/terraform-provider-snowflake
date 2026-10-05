@@ -75,7 +75,8 @@ func (v *QueryStruct) NamedListWithParens(sqlPrefix string, listItemKind string,
 }
 
 func (v *QueryStruct) OptionalTags() *QueryStruct {
-	return v.NamedListWithParens("TAG", "TagAssociation", nil)
+	v.NamedListWithParens("TAG", "TagAssociation", nil)
+	return v.WithValidation(ValidIdentifier, "Tag")
 }
 
 func (v *QueryStruct) SetTags() *QueryStruct {
@@ -87,7 +88,8 @@ func (v *QueryStruct) OptionalSetTags() *QueryStruct {
 }
 
 func (v *QueryStruct) setTags(transformer *KeywordTransformer) *QueryStruct {
-	return v.PredefinedQueryStructField("SetTags", "[]TagAssociation", transformer)
+	v.PredefinedQueryStructField("SetTags", "[]TagAssociation", transformer)
+	return v.WithValidation(ValidIdentifier, "SetTags")
 }
 
 func (v *QueryStruct) UnsetTags() *QueryStruct {
