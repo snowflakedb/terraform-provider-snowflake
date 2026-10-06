@@ -3,6 +3,7 @@ package datasources
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
 
@@ -325,10 +326,18 @@ func handleServiceIn(d *schema.ResourceData, setField **sdk.ServiceIn) error {
 }
 
 func TrackingReadWrapper(datasourceName datasources.Datasource, readImplementation schema.ReadContextFunc) schema.ReadContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta any) (diags diag.Diagnostics) {
+		start := time.Now()
 		ctx = tracking.NewContext(ctx, tracking.NewVersionedDatasourceMetadata(datasourceName))
-		telemetry.EmitDatasourceOp(ctx, meta, datasourceName, d.Id())
-		return readImplementation(ctx, d, meta)
+		defer func() {
+			recovered := recover()
+			telemetry.EmitDatasourceOp(ctx, meta, datasourceName, time.Since(start), diags, recovered)
+			if recovered != nil {
+				panic(recovered)
+			}
+		}()
+		diags = readImplementation(ctx, d, meta)
+		return diags
 	}
 }
 

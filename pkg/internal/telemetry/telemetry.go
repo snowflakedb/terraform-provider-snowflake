@@ -8,6 +8,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
 const (
@@ -20,6 +21,25 @@ const (
 	typeProviderInit eventType = "provider_init"
 	typeDatasourceOp eventType = "datasource_op"
 )
+
+type operationStatus string
+
+const (
+	statusSuccess operationStatus = "success"
+	statusFailure operationStatus = "failure"
+	statusPanic   operationStatus = "panic"
+)
+
+func getOperationStatus(diags diag.Diagnostics, recovered any) operationStatus {
+	switch {
+	case recovered != nil:
+		return statusPanic
+	case diags.HasError():
+		return statusFailure
+	default:
+		return statusSuccess
+	}
+}
 
 // NewSpanID returns a UUID used to correlate events for one provider configure/run.
 func NewSpanID() (string, error) {

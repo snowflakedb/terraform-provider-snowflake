@@ -59,3 +59,26 @@ func Test_TrackingReadWrapper_emitsOnEveryRead(t *testing.T) {
 		})
 	}
 }
+
+func Test_TrackingReadWrapper_emitsAndRepanics(t *testing.T) {
+	var logs bytes.Buffer
+	originalLogOutput := log.Writer()
+	log.SetOutput(&logs)
+	t.Cleanup(func() {
+		log.SetOutput(originalLogOutput)
+	})
+
+	meta := &provider.Context{
+		Client: &sdk.Client{},
+		SpanID: "span",
+	}
+	d := schema.TestResourceDataRaw(t, map[string]*schema.Schema{}, map[string]any{})
+	read := func(context.Context, *schema.ResourceData, any) diag.Diagnostics {
+		panic("exploded")
+	}
+
+	require.PanicsWithValue(t, "exploded", func() {
+		TrackingReadWrapper(datasources.Databases, read)(t.Context(), d, meta)
+	})
+	require.Contains(t, logs.String(), "[DEBUG] failed to emit datasource_op telemetry: client is not connected")
+}
