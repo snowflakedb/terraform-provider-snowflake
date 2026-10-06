@@ -452,7 +452,7 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 			{ParameterName: string(sdk.ObjectParameterSuspendTaskAfterNumFailures), ParameterType: "int", DefaultValue: "10", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.ObjectParameterTaskAutoRetryAttempts), ParameterType: "int", DefaultValue: "0", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.ObjectParameterTraceLevel), ParameterType: "sdk.TraceLevel", DefaultValue: "sdk.TraceLevelOff", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
-			{ParameterName: string(sdk.ObjectParameterUserTaskManagedInitialWarehouseSize), ParameterType: "sdk.WarehouseSize", DefaultValue: "sdk.WarehouseSizeMedium", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterUserTaskManagedInitialWarehouseSize), ParameterType: "sdk.WarehouseSize", DefaultValue: `sdk.WarehouseSize("Medium")`, DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.ObjectParameterUserTaskMinimumTriggerIntervalInSeconds), ParameterType: "int", DefaultValue: "30", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.ObjectParameterUserTaskTimeoutMs), ParameterType: "int", DefaultValue: "3600000", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 		},

@@ -479,7 +479,7 @@ func (s *SchemaParametersAssert) HasDefaultTraceLevelValueExplicit() *SchemaPara
 }
 
 func (s *SchemaParametersAssert) HasDefaultUserTaskManagedInitialWarehouseSizeValueExplicit() *SchemaParametersAssert {
-	return s.HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium)
+	return s.HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSize("Medium"))
 }
 
 func (s *SchemaParametersAssert) HasDefaultUserTaskMinimumTriggerIntervalInSecondsValueExplicit() *SchemaParametersAssert {

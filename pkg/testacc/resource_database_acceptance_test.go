@@ -146,8 +146,8 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 			HasCommentString(comment).
 			HasDataRetentionTimeInDaysString("2").
 			HasMaxDataExtensionTimeInDaysString("15").
-			HasExternalVolumeString(externalVolumeId.Name()).
-			HasCatalogString(catalogId.Name()).
+			HasExternalVolumeString(externalVolumeId.FullyQualifiedName()).
+			HasCatalogString(catalogId.FullyQualifiedName()).
 			HasReplaceInvalidCharactersString("true").
 			HasDefaultDdlCollationString("en_US").
 			HasDefaultNotebookComputePoolCpuString("CPU_X64_S").
@@ -365,8 +365,8 @@ func TestAcc_Database_CompleteUseCase(t *testing.T) {
 						HasCommentString(comment).
 						HasDataRetentionTimeInDaysString("1").
 						HasMaxDataExtensionTimeInDaysString("15").
-						HasExternalVolumeString(externalVolumeId.Name()).
-						HasCatalogString(catalogId.Name()).
+						HasExternalVolumeString(externalVolumeId.FullyQualifiedName()).
+						HasCatalogString(catalogId.FullyQualifiedName()).
 						HasReplaceInvalidCharactersString("true").
 						HasDefaultDdlCollationString("en_US").
 						HasDefaultNotebookComputePoolCpuString("CPU_X64_S").
@@ -557,6 +557,9 @@ func TestAcc_Database_ComputedValues(t *testing.T) {
 					*accountSuspendTaskAfterNumFailures = helpers.FindParameter(t, params, sdk.AccountParameterSuspendTaskAfterNumFailures).Value
 					*accountTaskAutoRetryAttempts = helpers.FindParameter(t, params, sdk.AccountParameterTaskAutoRetryAttempts).Value
 					*accountUserTaskMangedInitialWarehouseSize = helpers.FindParameter(t, params, sdk.AccountParameterUserTaskManagedInitialWarehouseSize).Value
+					if warehouseSize, err := sdk.ToWarehouseSize(*accountUserTaskMangedInitialWarehouseSize); err == nil {
+						*accountUserTaskMangedInitialWarehouseSize = string(warehouseSize)
+					}
 					*accountUserTaskTimeoutMs = helpers.FindParameter(t, params, sdk.AccountParameterUserTaskTimeoutMs).Value
 					*accountUserTaskMinimumTriggerIntervalInSeconds = helpers.FindParameter(t, params, sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds).Value
 					*accountQuotedIdentifiersIgnoreCase = helpers.FindParameter(t, params, sdk.AccountParameterQuotedIdentifiersIgnoreCase).Value
@@ -599,8 +602,8 @@ func TestAcc_Database_ComputedValues(t *testing.T) {
 
 					resource.TestCheckResourceAttr("snowflake_database.test", "data_retention_time_in_days", "20"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "max_data_extension_time_in_days", "30"),
-					resource.TestCheckResourceAttr("snowflake_database.test", "external_volume", externalVolumeId.Name()),
-					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.Name()),
+					resource.TestCheckResourceAttr("snowflake_database.test", "external_volume", externalVolumeId.FullyQualifiedName()),
+					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr("snowflake_database.test", "replace_invalid_characters", "true"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "default_notebook_compute_pool_cpu", "CPU_X64_S"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "default_notebook_compute_pool_gpu", "GPU_NV_S"),
@@ -718,8 +721,8 @@ func TestAcc_Database_Update(t *testing.T) {
 
 					resource.TestCheckResourceAttr("snowflake_database.test", "data_retention_time_in_days", "20"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "max_data_extension_time_in_days", "30"),
-					resource.TestCheckResourceAttr("snowflake_database.test", "external_volume", externalVolumeId.Name()),
-					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.Name()),
+					resource.TestCheckResourceAttr("snowflake_database.test", "external_volume", externalVolumeId.FullyQualifiedName()),
+					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr("snowflake_database.test", "replace_invalid_characters", "true"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "default_ddl_collation", "en_US"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "default_notebook_compute_pool_cpu", "CPU_X64_S"),
@@ -1188,7 +1191,7 @@ func TestAcc_Database_StringValueSetOnDifferentParameterLevelWithSameValue(t *te
 				ConfigVariables: configVariables,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_database.test", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.Name()),
+					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.FullyQualifiedName()),
 				),
 			},
 			{
@@ -1200,7 +1203,7 @@ func TestAcc_Database_StringValueSetOnDifferentParameterLevelWithSameValue(t *te
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails("snowflake_database.test", "catalog"),
-						planchecks.ExpectChange("snowflake_database.test", "catalog", tfjson.ActionUpdate, sdk.String(catalogId.Name()), nil),
+						planchecks.ExpectChange("snowflake_database.test", "catalog", tfjson.ActionUpdate, sdk.String(catalogId.FullyQualifiedName()), nil),
 						planchecks.ExpectComputed("snowflake_database.test", "catalog", true),
 					},
 				},
@@ -1208,7 +1211,7 @@ func TestAcc_Database_StringValueSetOnDifferentParameterLevelWithSameValue(t *te
 				ConfigVariables: configVariables,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_database.test", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.Name()),
+					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.FullyQualifiedName()),
 				),
 			},
 		},

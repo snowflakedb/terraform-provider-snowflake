@@ -131,8 +131,8 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 			HasCommentString(comment).
 			HasDataRetentionTimeInDaysString("20").
 			HasMaxDataExtensionTimeInDaysString("25").
-			HasExternalVolumeString(externalVolumeId.Name()).
-			HasCatalogString(catalogId.Name()).
+			HasExternalVolumeString(externalVolumeId.FullyQualifiedName()).
+			HasCatalogString(catalogId.FullyQualifiedName()).
 			HasReplaceInvalidCharactersString("true").
 			HasDefaultDdlCollationString("en_US").
 			HasDefaultNotebookComputePoolCpuString("CPU_X64_S").
@@ -332,8 +332,8 @@ func TestAcc_SecondaryDatabase_CompleteUseCase(t *testing.T) {
 						HasIsTransientString("true").
 						HasCommentString(comment).
 						HasMaxDataExtensionTimeInDaysString("25").
-						HasExternalVolumeString(externalVolumeId.Name()).
-						HasCatalogString(catalogId.Name()).
+						HasExternalVolumeString(externalVolumeId.FullyQualifiedName()).
+						HasCatalogString(catalogId.FullyQualifiedName()).
 						HasReplaceInvalidCharactersString("true").
 						HasDefaultDdlCollationString("en_US").
 						HasDefaultNotebookComputePoolCpuString("CPU_X64_S").

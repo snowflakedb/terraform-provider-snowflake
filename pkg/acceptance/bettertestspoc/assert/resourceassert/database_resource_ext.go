@@ -21,7 +21,7 @@ func (d *DatabaseResourceAssert) HasAllDefaultParameters() *DatabaseResourceAsse
 		HasTraceLevelString("OFF").
 		HasSuspendTaskAfterNumFailuresString("10").
 		HasTaskAutoRetryAttemptsString("0").
-		HasUserTaskManagedInitialWarehouseSizeString("Medium").
+		HasUserTaskManagedInitialWarehouseSizeString(string(sdk.WarehouseSizeMedium)).
 		HasUserTaskTimeoutMsString("3600000").
 		HasUserTaskMinimumTriggerIntervalInSecondsString("30").
 		HasQuotedIdentifiersIgnoreCaseString("false").
