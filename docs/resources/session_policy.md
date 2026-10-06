@@ -140,6 +140,7 @@ Read-Only:
 - `owner` (String)
 - `owner_role_type` (String)
 - `schema_name` (String)
+- `target_scopes` (List of String)
 
 ## Import
 

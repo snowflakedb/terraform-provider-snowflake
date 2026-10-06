@@ -110,7 +110,10 @@ var DescribeUserDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// rsa_public_key_last_set_time is skipped and won't be generated
+	"rsa_public_key_last_set_time": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	"rsa_public_key2": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -119,7 +122,10 @@ var DescribeUserDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// rsa_public_key2_last_set_time is skipped and won't be generated
+	"rsa_public_key2_last_set_time": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	"password_last_set_time": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -180,10 +186,10 @@ func UserDetailsToSchema(userDetails *sdk.UserDetails) map[string]any {
 	}
 	userDetailsSchema["rsa_public_key"] = userDetails.RsaPublicKey
 	userDetailsSchema["rsa_public_key_fp"] = userDetails.RsaPublicKeyFp
-	// rsa_public_key_last_set_time is skipped and won't be generated
+	userDetailsSchema["rsa_public_key_last_set_time"] = userDetails.RsaPublicKeyLastSetTime
 	userDetailsSchema["rsa_public_key2"] = userDetails.RsaPublicKey2
 	userDetailsSchema["rsa_public_key2_fp"] = userDetails.RsaPublicKey2Fp
-	// rsa_public_key2_last_set_time is skipped and won't be generated
+	userDetailsSchema["rsa_public_key2_last_set_time"] = userDetails.RsaPublicKey2LastSetTime
 	userDetailsSchema["password_last_set_time"] = userDetails.PasswordLastSetTime
 	userDetailsSchema["custom_landing_page_url"] = userDetails.CustomLandingPageUrl
 	userDetailsSchema["custom_landing_page_url_flush_next_ui_load"] = userDetails.CustomLandingPageUrlFlushNextUiLoad

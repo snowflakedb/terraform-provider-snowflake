@@ -75,7 +75,10 @@ var DescribeCortexSearchServiceDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// serving_state is skipped and won't be generated
+	"serving_state": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	"embedding_model": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -85,8 +88,14 @@ var DescribeCortexSearchServiceDetailsSchema = map[string]*schema.Schema{
 		Elem:     &schema.Schema{Type: schema.TypeString},
 		Computed: true,
 	},
-	// scoring_profile_count is skipped and won't be generated
-	// full_index_build_interval_days is skipped and won't be generated
+	"scoring_profile_count": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+	"full_index_build_interval_days": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
 }
 
 var _ = DescribeCortexSearchServiceDetailsSchema
@@ -117,13 +126,15 @@ func CortexSearchServiceDetailsToSchema(cortexSearchServiceDetails *sdk.CortexSe
 	if cortexSearchServiceDetails.IndexingError != nil {
 		cortexSearchServiceDetailsSchema["indexing_error"] = (*cortexSearchServiceDetails.IndexingError)
 	}
-	// serving_state is skipped and won't be generated
+	cortexSearchServiceDetailsSchema["serving_state"] = cortexSearchServiceDetails.ServingState
 	if cortexSearchServiceDetails.EmbeddingModel != nil {
 		cortexSearchServiceDetailsSchema["embedding_model"] = (*cortexSearchServiceDetails.EmbeddingModel)
 	}
 	cortexSearchServiceDetailsSchema["primary_key_columns"] = cortexSearchServiceDetails.PrimaryKeyColumns
-	// scoring_profile_count is skipped and won't be generated
-	// full_index_build_interval_days is skipped and won't be generated
+	cortexSearchServiceDetailsSchema["scoring_profile_count"] = cortexSearchServiceDetails.ScoringProfileCount
+	if cortexSearchServiceDetails.FullIndexBuildIntervalDays != nil {
+		cortexSearchServiceDetailsSchema["full_index_build_interval_days"] = (*cortexSearchServiceDetails.FullIndexBuildIntervalDays)
+	}
 	return cortexSearchServiceDetailsSchema
 }
 

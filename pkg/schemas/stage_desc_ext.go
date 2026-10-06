@@ -29,6 +29,14 @@ func stageDirectoryTableDescribeSchema() *schema.Schema {
 					Type:     schema.TypeString,
 					Computed: true,
 				},
+				"directory_notification_channel": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+				"aws_sns_topic": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
 			},
 		},
 		Computed: true,
@@ -120,11 +128,21 @@ func stagePrivateLinkDescribeSchema() *schema.Schema {
 
 func mapStageCommonDescribe(src *sdk.StageCommon, dst map[string]any) {
 	if src.DirectoryTable != nil {
+		directoryNotificationChannel := ""
+		if src.DirectoryTable.DirectoryNotificationChannel != nil {
+			directoryNotificationChannel = *src.DirectoryTable.DirectoryNotificationChannel
+		}
+		awsSnsTopic := ""
+		if src.DirectoryTable.AwsSnsTopic != nil {
+			awsSnsTopic = *src.DirectoryTable.AwsSnsTopic
+		}
 		dst["directory_table"] = []map[string]any{
 			{
-				"enable":            src.DirectoryTable.Enable,
-				"auto_refresh":      src.DirectoryTable.AutoRefresh,
-				"last_refreshed_on": src.DirectoryTable.LastRefreshedOn,
+				"enable":                         src.DirectoryTable.Enable,
+				"auto_refresh":                   src.DirectoryTable.AutoRefresh,
+				"last_refreshed_on":              src.DirectoryTable.LastRefreshedOn,
+				"directory_notification_channel": directoryNotificationChannel,
+				"aws_sns_topic":                  awsSnsTopic,
 			},
 		}
 	}

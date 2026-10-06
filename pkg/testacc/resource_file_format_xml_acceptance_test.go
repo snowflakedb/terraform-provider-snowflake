@@ -102,7 +102,8 @@ func TestAcc_FileFormatXml_BasicUseCase(t *testing.T) {
 			HasDisableAutoConvert(false).
 			HasReplaceInvalidCharacters(false).
 			HasIgnoreUtf8Errors(false).
-			HasSkipByteOrderMark(true),
+			HasSkipByteOrderMark(true).
+			HasDisableSnowflakeData(false),
 	}
 
 	completeAssertions := []assert.TestCheckFuncProvider{
@@ -133,7 +134,8 @@ func TestAcc_FileFormatXml_BasicUseCase(t *testing.T) {
 			HasDisableAutoConvert(true).
 			HasReplaceInvalidCharacters(false).
 			HasIgnoreUtf8Errors(true).
-			HasSkipByteOrderMark(false),
+			HasSkipByteOrderMark(false).
+			HasDisableSnowflakeData(false),
 	}
 
 	alteredAssertions := []assert.TestCheckFuncProvider{
@@ -164,7 +166,8 @@ func TestAcc_FileFormatXml_BasicUseCase(t *testing.T) {
 			HasDisableAutoConvert(false).
 			HasReplaceInvalidCharacters(false).
 			HasIgnoreUtf8Errors(false).
-			HasSkipByteOrderMark(true),
+			HasSkipByteOrderMark(true).
+			HasDisableSnowflakeData(false),
 	}
 
 	replaceInvalidCharactersAssertions := []assert.TestCheckFuncProvider{
@@ -367,7 +370,8 @@ func TestAcc_FileFormatXml_CompleteUseCase(t *testing.T) {
 						HasDisableAutoConvert(true).
 						HasReplaceInvalidCharacters(false).
 						HasIgnoreUtf8Errors(true).
-						HasSkipByteOrderMark(false),
+						HasSkipByteOrderMark(false).
+						HasDisableSnowflakeData(false),
 				),
 			},
 			// import

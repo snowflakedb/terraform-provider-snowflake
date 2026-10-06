@@ -449,6 +449,8 @@ Read-Only:
 Read-Only:
 
 - `auto_refresh` (Boolean)
+- `aws_sns_topic` (String)
+- `directory_notification_channel` (String)
 - `enable` (Boolean)
 - `last_refreshed_on` (String)
 

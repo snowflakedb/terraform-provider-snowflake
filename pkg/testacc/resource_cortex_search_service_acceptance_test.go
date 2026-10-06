@@ -132,6 +132,8 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "describe_output.0.indexing_state"),
 					resource.TestCheckResourceAttr(resourceName, "describe_output.0.indexing_error", ""),
 					resource.TestCheckResourceAttr(resourceName, "describe_output.0.embedding_model", "snowflake-arctic-embed-m-v1.5"),
+					resource.TestCheckResourceAttrSet(resourceName, "describe_output.0.serving_state"),
+					resource.TestCheckResourceAttrSet(resourceName, "describe_output.0.scoring_profile_count"),
 				),
 			},
 			{
@@ -179,6 +181,8 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "describe_output.0.indexing_state"),
 					resource.TestCheckResourceAttr(resourceName, "describe_output.0.indexing_error", ""),
 					resource.TestCheckResourceAttr(resourceName, "describe_output.0.embedding_model", "snowflake-arctic-embed-m-v1.5"),
+					resource.TestCheckResourceAttrSet(resourceName, "describe_output.0.serving_state"),
+					resource.TestCheckResourceAttrSet(resourceName, "describe_output.0.scoring_profile_count"),
 				),
 			},
 			// primary_key and auto_suspend are updated in place

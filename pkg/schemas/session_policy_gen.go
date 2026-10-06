@@ -7,8 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type sessionPolicyToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.SessionPolicy] = sessionPolicyToSchemaMapper{}
+
 // ShowSessionPolicySchema represents output of SHOW query for the single SessionPolicy.
-var ShowSessionPolicySchema = map[string]*schema.Schema{
+var ShowSessionPolicySchema = mergeSchema(map[string]*schema.Schema{
 	"created_on": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -45,8 +49,8 @@ var ShowSessionPolicySchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// target_scopes is skipped and won't be generated
-}
+	// target_scopes: manual addition and mapping is needed
+}, sessionPolicyToSchemaMapper{}.additionalSchema())
 
 var _ = ShowSessionPolicySchema
 
@@ -61,7 +65,8 @@ func SessionPolicyToSchema(sessionPolicy *sdk.SessionPolicy) map[string]any {
 	sessionPolicySchema["comment"] = sessionPolicy.Comment
 	sessionPolicySchema["owner_role_type"] = sessionPolicy.OwnerRoleType
 	sessionPolicySchema["options"] = sessionPolicy.Options
-	// target_scopes is skipped and won't be generated
+	// target_scopes: manual addition and mapping is needed
+	sessionPolicyToSchemaMapper{}.additionalToSchema(sessionPolicy, sessionPolicySchema)
 	return sessionPolicySchema
 }
 

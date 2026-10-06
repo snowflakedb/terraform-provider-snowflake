@@ -85,7 +85,8 @@ func TestAcc_SessionPolicy_BasicUseCase(t *testing.T) {
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment("").
 			HasOwnerRoleType("ROLE").
-			HasOptions(""),
+			HasOptions("").
+			HasNoTargetScopes(),
 		resourceshowoutputassert.SessionPolicyDescribeOutput(t, ref).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
@@ -127,7 +128,8 @@ func TestAcc_SessionPolicy_BasicUseCase(t *testing.T) {
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment(comment).
 			HasOwnerRoleType("ROLE").
-			HasOptions(""),
+			HasOptions("").
+			HasNoTargetScopes(),
 		resourceshowoutputassert.SessionPolicyDescribeOutput(t, ref).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
@@ -157,7 +159,8 @@ func TestAcc_SessionPolicy_BasicUseCase(t *testing.T) {
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment(comment).
 			HasOwnerRoleType("ROLE").
-			HasOptions(""),
+			HasOptions("").
+			HasNoTargetScopes(),
 		resourceshowoutputassert.SessionPolicyDescribeOutput(t, ref).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
@@ -372,7 +375,8 @@ func TestAcc_SessionPolicy_CompleteUseCase(t *testing.T) {
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment(comment).
 			HasOwnerRoleType("ROLE").
-			HasOptions(""),
+			HasOptions("").
+			HasNoTargetScopes(),
 		resourceshowoutputassert.SessionPolicyDescribeOutput(t, ref).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").

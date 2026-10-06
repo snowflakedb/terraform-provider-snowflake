@@ -22,7 +22,10 @@ var ShowShareSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// owner_account is skipped and won't be generated
+	"owner_account": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	// name: manual addition and mapping is needed
 	"database_name": {
 		Type:     schema.TypeString,
@@ -49,7 +52,7 @@ func ShareToSchema(share *sdk.Share) map[string]any {
 	shareSchema := make(map[string]any)
 	shareSchema["created_on"] = share.CreatedOn.String()
 	shareSchema["kind"] = string(share.Kind)
-	// owner_account is skipped and won't be generated
+	shareSchema["owner_account"] = share.OwnerAccount
 	// name: manual addition and mapping is needed
 	shareSchema["database_name"] = share.DatabaseName.Name()
 	shareSchema["to"] = collections.Map(share.To, sdk.AccountIdentifier.Name)

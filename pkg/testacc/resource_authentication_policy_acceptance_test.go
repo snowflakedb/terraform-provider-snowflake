@@ -167,7 +167,8 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment("").
 						HasOwnerRoleType("ROLE").
-						HasOptions(""),
+						HasOptions("").
+						HasNoTargetScopes(),
 					assert.Check(resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
@@ -207,7 +208,8 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment("").
 						HasOwnerRoleType("ROLE").
-						HasOptions(""),
+						HasOptions("").
+						HasNoTargetScopes(),
 				),
 			},
 			// set optionals
@@ -233,7 +235,8 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
 						HasOwnerRoleType("ROLE").
-						HasOptions(""),
+						HasOptions("").
+						HasNoTargetScopes(),
 					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
@@ -272,7 +275,8 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(changedComment).
 						HasOwnerRoleType("ROLE").
-						HasOptions(""),
+						HasOptions("").
+						HasNoTargetScopes(),
 					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.name", id2.Name())),
 					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
@@ -321,7 +325,8 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(changedComment).
 						HasOwnerRoleType("ROLE").
-						HasOptions(""),
+						HasOptions("").
+						HasNoTargetScopes(),
 					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.name", id2.Name())),
 					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
@@ -358,7 +363,8 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment("").
 						HasOwnerRoleType("ROLE").
-						HasOptions(""),
+						HasOptions("").
+						HasNoTargetScopes(),
 					assert.Check(resource.TestCheckResourceAttr(basicModelWithDifferentName.ResourceReference(), "describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(basicModelWithDifferentName.ResourceReference(), "describe_output.0.name", id2.Name())),
 					assert.Check(resource.TestCheckResourceAttr(basicModelWithDifferentName.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
@@ -457,7 +463,8 @@ func TestAcc_AuthenticationPolicy_CompleteUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
 						HasOwnerRoleType("ROLE").
-						HasOptions(""),
+						HasOptions("").
+						HasNoTargetScopes(),
 					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
@@ -494,7 +501,8 @@ func TestAcc_AuthenticationPolicy_CompleteUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
 						HasOwnerRoleType("ROLE").
-						HasOptions(""),
+						HasOptions("").
+						HasNoTargetScopes(),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.#", "1")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.name", id.Name())),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
@@ -633,7 +641,8 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment("").
 						HasOwnerRoleType("ROLE").
-						HasOptions(""),
+						HasOptions("").
+						HasNoTargetScopes(),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
@@ -668,7 +677,8 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment("").
 						HasOwnerRoleType("ROLE").
-						HasOptions(""),
+						HasOptions("").
+						HasNoTargetScopes(),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
@@ -703,7 +713,8 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment("").
 						HasOwnerRoleType("ROLE").
-						HasOptions(""),
+						HasOptions("").
+						HasNoTargetScopes(),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
@@ -743,7 +754,8 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment("").
 						HasOwnerRoleType("ROLE").
-						HasOptions(""),
+						HasOptions("").
+						HasNoTargetScopes(),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),

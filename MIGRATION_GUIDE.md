@@ -28,6 +28,50 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.21.x ➞ v2.22.0
 
+### *(new feature)* New computed SHOW/DESCRIBE fields in `show_output` and `describe_output`
+
+The following Snowflake SHOW/DESCRIBE columns are now exposed as computed attributes. They were previously omitted from the public schemas. No configuration changes are required. After upgrading, the next plan may report an update on `show_output` / `describe_output` until those resources are refreshed (see the [intro](#migration-guide)).
+
+#### Authentication and session policies — `show_output.target_scopes`
+
+A new `target_scopes` list has been added to `show_output` on:
+
+- [`snowflake_authentication_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy) and [`snowflake_authentication_policies`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/authentication_policies)
+- [`snowflake_session_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/session_policy) and [`snowflake_session_policies`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/session_policies)
+
+It reflects the `target_scopes` values parsed from the SHOW `options` column (`ACCOUNT`, `PERSON_USERS`, `SERVICE_USERS`).
+
+#### Cortex search service — `describe_output` fields
+
+The [`snowflake_cortex_search_service`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/cortex_search_service) resource `describe_output` now includes:
+
+- `serving_state`
+- `scoring_profile_count`
+- `full_index_build_interval_days`
+
+These come from `DESCRIBE CORTEX SEARCH SERVICE`.
+
+#### XML file format — `describe_output.disable_snowflake_data`
+
+A new `disable_snowflake_data` field has been added to `describe_output` on [`snowflake_file_format_xml`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_xml). XML rows in [`snowflake_file_formats`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/file_formats) include the same key. It reflects the `DISABLE_SNOWFLAKE_DATA` DESCRIBE column.
+
+#### Users data source — RSA key last-set times
+
+The [`snowflake_users`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/users) data source `describe_output` now includes `rsa_public_key_last_set_time` and `rsa_public_key2_last_set_time` from `DESCRIBE USER`. User resources do not expose `describe_output`.
+
+#### Stages — `describe_output.directory_table` notification fields
+
+Stage `describe_output.directory_table` now includes `directory_notification_channel` and `aws_sns_topic` from `DESCRIBE STAGE`, on:
+
+- [`snowflake_stage_internal`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_internal)
+- [`snowflake_stage_external_s3`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_s3)
+- [`snowflake_stage_external_s3_compatible`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_s3_compatible)
+- [`snowflake_stage_external_gcs`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_gcs)
+- [`snowflake_stage_external_azure`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_azure)
+- [`snowflake_stages`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/stages)
+
+No configuration changes are required. Config `directory.0.aws_sns_topic` is unchanged (ForceNew; external change detection for that config field is still not supported).
+
 ### *(new feature)* Parameters output on `snowflake_accounts` data source
 
 The [`snowflake_accounts`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/accounts) data source now exposes a `parameters` block on each listed account, populated from `SHOW PARAMETERS IN ACCOUNT`.

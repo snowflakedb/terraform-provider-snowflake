@@ -7,8 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type authenticationPolicyToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.AuthenticationPolicy] = authenticationPolicyToSchemaMapper{}
+
 // ShowAuthenticationPolicySchema represents output of SHOW query for the single AuthenticationPolicy.
-var ShowAuthenticationPolicySchema = map[string]*schema.Schema{
+var ShowAuthenticationPolicySchema = mergeSchema(map[string]*schema.Schema{
 	"created_on": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -45,8 +49,8 @@ var ShowAuthenticationPolicySchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// target_scopes is skipped and won't be generated
-}
+	// target_scopes: manual addition and mapping is needed
+}, authenticationPolicyToSchemaMapper{}.additionalSchema())
 
 var _ = ShowAuthenticationPolicySchema
 
@@ -61,7 +65,8 @@ func AuthenticationPolicyToSchema(authenticationPolicy *sdk.AuthenticationPolicy
 	authenticationPolicySchema["owner"] = authenticationPolicy.Owner
 	authenticationPolicySchema["owner_role_type"] = authenticationPolicy.OwnerRoleType
 	authenticationPolicySchema["options"] = authenticationPolicy.Options
-	// target_scopes is skipped and won't be generated
+	// target_scopes: manual addition and mapping is needed
+	authenticationPolicyToSchemaMapper{}.additionalToSchema(authenticationPolicy, authenticationPolicySchema)
 	return authenticationPolicySchema
 }
 

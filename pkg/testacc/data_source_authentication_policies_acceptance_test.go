@@ -89,7 +89,8 @@ func TestAcc_AuthenticationPolicies_CompleteUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
 						HasOwnerRoleType("ROLE").
-						HasOptions(""),
+						HasOptions("").
+						HasNoTargetScopes(),
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
@@ -118,7 +119,8 @@ func TestAcc_AuthenticationPolicies_CompleteUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
 						HasOwnerRoleType("ROLE").
-						HasOptions(""),
+						HasOptions("").
+						HasNoTargetScopes(),
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModelWithoutOptionals.DatasourceReference(), "authentication_policies.0.describe_output.#", "0")),
 				),
 			},

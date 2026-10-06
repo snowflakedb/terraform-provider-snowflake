@@ -68,7 +68,8 @@ func TestAcc_SessionPolicies_BasicUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
 						HasOwnerRoleType("ROLE").
-						HasOptions(""),
+						HasOptions("").
+						HasNoTargetScopes(),
 					resourceshowoutputassert.SessionPoliciesDatasourceDescribeOutput(t, sessionPoliciesModel.DatasourceReference()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
@@ -93,7 +94,8 @@ func TestAcc_SessionPolicies_BasicUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
 						HasOwnerRoleType("ROLE").
-						HasOptions(""),
+						HasOptions("").
+						HasNoTargetScopes(),
 					assert.Check(resource.TestCheckResourceAttr(sessionPoliciesModelWithoutDescribe.DatasourceReference(), "session_policies.0.describe_output.#", "0")),
 				),
 			},

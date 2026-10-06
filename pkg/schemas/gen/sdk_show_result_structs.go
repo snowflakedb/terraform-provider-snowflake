@@ -44,7 +44,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.ApplicationPackage{}},
 	{ObjectStruct: sdk.ApplicationRole{}},
 	{ObjectStruct: sdk.Application{}},
-	{ObjectStruct: sdk.AuthenticationPolicy{}, SkipFields: []string{"target_scopes"}}, // TODO [next PRs]: un-skip target_scopes (stale public schema).
+	{ObjectStruct: sdk.AuthenticationPolicy{}, ManualFields: []string{"target_scopes"}},
 	{ObjectStruct: sdk.CatalogIntegration{}},
 	{ObjectStruct: sdk.ComputePool{}},
 	{ObjectStruct: sdk.Connection{}},
@@ -104,10 +104,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.SemanticView{}},
 	{ObjectStruct: sdk.Service{}, TypeOverrides: map[string]schema.ValueType{"external_access_integrations": schema.TypeSet}},
 	{ObjectStruct: sdk.Sequence{}},
-	{ObjectStruct: sdk.SessionPolicy{}, SkipFields: []string{"target_scopes"}}, // TODO [next PRs]: un-skip target_scopes (stale public schema).
-	// ManualFields `name` remapped in ext; SkipFields `owner_account` is stale public schema (add later).
-	// TODO [next PRs]: un-skip owner_account.
-	{ObjectStruct: sdk.Share{}, SkipFields: []string{"owner_account"}, ManualFields: []string{"name"}},
+	{ObjectStruct: sdk.SessionPolicy{}, ManualFields: []string{"target_scopes"}},
+	{ObjectStruct: sdk.Share{}, ManualFields: []string{"name"}},
 	{ObjectStruct: sdk.Stage{}},
 	{ObjectStruct: sdk.StorageIntegration{}},
 	{ObjectStruct: sdk.StorageLifecyclePolicy{}},
@@ -180,10 +178,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.CatalogIntegrationOpenCatalogDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "rest_authentication"}},
 	{ObjectStruct: sdk.ComputePoolDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.CortexAgentDetails{}, IsDescribe: true, ManualFields: []string{"profile"}},
-	// TODO [next PRs]: un-skip serving_state / scoring_profile_count / full_index_build_interval_days (stale public schema).
-	{ObjectStruct: sdk.CortexSearchServiceDetails{}, IsDescribe: true, SkipFields: []string{
-		"serving_state", "scoring_profile_count", "full_index_build_interval_days",
-	}},
+	{ObjectStruct: sdk.CortexSearchServiceDetails{}, IsDescribe: true},
 	// Public describe_output Elem is the row (created_on / name / kind). DatabaseDetails is a Rows wrapper; list helper in ext.
 	{ObjectStruct: sdk.DatabaseDetailsRow{}, IsDescribe: true},
 	{ObjectStruct: sdk.DynamicTableDetails{}, IsDescribe: true},
@@ -209,8 +204,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.FileFormatJson{}, IsDescribe: true},
 	{ObjectStruct: sdk.FileFormatOrc{}, IsDescribe: true},
 	{ObjectStruct: sdk.FileFormatParquet{}, IsDescribe: true},
-	// TODO [next PRs]: un-skip disable_snowflake_data (stale public schema; still a DESCRIBE column).
-	{ObjectStruct: sdk.FileFormatXml{}, IsDescribe: true, SkipFields: []string{"disable_snowflake_data"}},
+	{ObjectStruct: sdk.FileFormatXml{}, IsDescribe: true},
 	// SkipFields omits SDK-only identifier/normalized fields (not Snowflake DESCRIBE properties; schema is not wired yet).
 	{ObjectStruct: sdk.FunctionDetails{}, IsDescribe: true, SkipFields: []string{
 		"id", "normalized_imports", "normalized_target_path",
@@ -298,7 +292,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	// Keep omitted: id (SDK identifier), credentials (secret).
 	// TODO [next PRs]: first move only — generated schemas are empty (every public key is nested/slice).
 	// Native slices/nested structs should drop from ManualFields and shrink the ext. Same pattern for API variant DESCRIBE.
-	// TODO [next PRs]: DirectoryTable directory_notification_channel / aws_sns_topic (stale public schema).
 	{ObjectStruct: sdk.StageAws{}, IsDescribe: true, ManualFields: []string{
 		"file_format_name", "file_format_csv", "file_format_json", "file_format_avro", "file_format_orc", "file_format_parquet", "file_format_xml",
 		"directory_table", "private_link", "location",
@@ -336,10 +329,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.StreamlitDetail{}, IsDescribe: true, ManualFields: []string{"root_location", "user_packages", "import_urls", "external_access_integrations"}},
 	// ManualFields `check`: SDK is *bool; public describe_output is TypeString.
 	{ObjectStruct: sdk.TableColumnDetails{}, IsDescribe: true, ManualFields: []string{"check"}},
-	// Keep omitted: password (secret). Add later: rsa_public_key_last_set_time / rsa_public_key2_last_set_time (stale public schema).
-	{ObjectStruct: sdk.UserDetails{}, IsDescribe: true, SkipFields: []string{
-		"password", "rsa_public_key_last_set_time", "rsa_public_key2_last_set_time",
-	}},
+	// Keep omitted: password (secret).
+	{ObjectStruct: sdk.UserDetails{}, IsDescribe: true, SkipFields: []string{"password"}},
 	// ManualFields `check`: SDK is *bool; public describe_output is TypeString.
 	{ObjectStruct: sdk.ViewDetails{}, IsDescribe: true, ManualFields: []string{"check"}},
 	{ObjectStruct: sdk.WarehouseDetails{}, IsDescribe: true},

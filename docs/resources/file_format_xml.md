@@ -89,6 +89,7 @@ Read-Only:
 
 - `compression` (String)
 - `disable_auto_convert` (Boolean)
+- `disable_snowflake_data` (Boolean)
 - `id` (String)
 - `ignore_utf8_errors` (Boolean)
 - `preserve_space` (Boolean)

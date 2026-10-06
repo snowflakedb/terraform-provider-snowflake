@@ -119,6 +119,7 @@ Read-Only:
 - `compression` (String)
 - `date_format` (String)
 - `disable_auto_convert` (Boolean)
+- `disable_snowflake_data` (Boolean)
 - `empty_field_as_null` (Boolean)
 - `enable_octal` (Boolean)
 - `encoding` (String)
