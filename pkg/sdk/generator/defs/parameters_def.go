@@ -16,7 +16,7 @@ var (
 	onTable                    = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelTable}
 	onTask                     = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelTask}
 	onFunctionAndProcedure     = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelFunction, parameterdefs.ParameterLevelProcedure}
-	onLog                      = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelProject, parameterdefs.ParameterLevelProcedure, parameterdefs.ParameterLevelFunction, parameterdefs.ParameterLevelTable, parameterdefs.ParameterLevelTask, parameterdefs.ParameterLevelService}
+	onLog                      = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelProject, parameterdefs.ParameterLevelProcedure, parameterdefs.ParameterLevelFunction, parameterdefs.ParameterLevelTable, parameterdefs.ParameterLevelTask}
 	onWarehouse                = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelWarehouse, parameterdefs.ParameterLevelWarehouseInteractive}
 	onWarehouseAll             = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelWarehouse, parameterdefs.ParameterLevelWarehouseAdaptive, parameterdefs.ParameterLevelWarehouseInteractive}
 	onWarehouseInteractiveOnly = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelWarehouseInteractive}
@@ -793,6 +793,14 @@ var (
 		DefaultValue: "sdk.WarehouseSizeXSmall",
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
+	ServiceCallerTokenValiditySecs = parameterdefs.ParameterDef{
+		SqlName:      "SERVICE_CALLER_TOKEN_VALIDITY_SECS",
+		Kind:         g.KindInt,
+		Levels:       []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelService},
+		Description:  "Controls how long a caller's rights login token is valid for Snowpark Container Services.",
+		DefaultValue: "120",
+		DefaultLevel: parameterTypeSnowflakeDefault,
+	}
 	ShareRestrictions = parameterdefs.ParameterDef{
 		SqlName: "SHARE_RESTRICTIONS",
 		Kind:    g.KindBool,
@@ -1155,6 +1163,7 @@ var AllParameters = []parameterdefs.ParameterDef{
 	SearchPath,
 	ServerlessTaskMaxStatementSize,
 	ServerlessTaskMinStatementSize,
+	ServiceCallerTokenValiditySecs,
 	ShareRestrictions,
 	SimulatedDataSharingConsumer,
 	SqlTraceQueryText,

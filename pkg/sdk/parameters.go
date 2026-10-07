@@ -576,6 +576,7 @@ const (
 	AccountParameterSearchPath                                               AccountParameter = "SEARCH_PATH"
 	AccountParameterServerlessTaskMaxStatementSize                           AccountParameter = "SERVERLESS_TASK_MAX_STATEMENT_SIZE"
 	AccountParameterServerlessTaskMinStatementSize                           AccountParameter = "SERVERLESS_TASK_MIN_STATEMENT_SIZE"
+	AccountParameterServiceCallerTokenValiditySecs                           AccountParameter = "SERVICE_CALLER_TOKEN_VALIDITY_SECS"
 	AccountParameterSimulatedDataSharingConsumer                             AccountParameter = "SIMULATED_DATA_SHARING_CONSUMER"
 	AccountParameterSsoLoginPage                                             AccountParameter = "SSO_LOGIN_PAGE"
 	AccountParameterSqlTraceQueryText                                        AccountParameter = "SQL_TRACE_QUERY_TEXT"
@@ -709,6 +710,7 @@ var AllAccountParameters = []AccountParameter{
 	AccountParameterSearchPath,
 	AccountParameterServerlessTaskMaxStatementSize,
 	AccountParameterServerlessTaskMinStatementSize,
+	AccountParameterServiceCallerTokenValiditySecs,
 	AccountParameterSimulatedDataSharingConsumer,
 	AccountParameterSsoLoginPage,
 	AccountParameterStatementQueuedTimeoutInSeconds,
@@ -855,6 +857,7 @@ const (
 	ObjectParameterDefaultNotebookComputePoolCpu           ObjectParameter = "DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"
 	ObjectParameterDefaultNotebookComputePoolGpu           ObjectParameter = "DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"
 	ObjectParameterEnableConsoleOutput                     ObjectParameter = "ENABLE_CONSOLE_OUTPUT"
+	ObjectParameterServiceCallerTokenValiditySecs          ObjectParameter = "SERVICE_CALLER_TOKEN_VALIDITY_SECS"
 
 	// User Parameters
 	ObjectParameterEnableNotebookCreationInPersonalDb ObjectParameter = "ENABLE_NOTEBOOK_CREATION_IN_PERSONAL_DB"
@@ -1180,6 +1183,7 @@ const (
 	DatabaseParameterUserTaskMinimumTriggerIntervalInSeconds DatabaseParameter = "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"
 	DatabaseParameterQuotedIdentifiersIgnoreCase             DatabaseParameter = "QUOTED_IDENTIFIERS_IGNORE_CASE"
 	DatabaseParameterEnableConsoleOutput                     DatabaseParameter = "ENABLE_CONSOLE_OUTPUT"
+	DatabaseParameterServiceCallerTokenValiditySecs          DatabaseParameter = "SERVICE_CALLER_TOKEN_VALIDITY_SECS"
 )
 
 type FunctionParameter string

@@ -111,8 +111,8 @@ func (opts *AlterServiceOptions) validate() error {
 		if opts.Set.QueryWarehouse != nil && !ValidObjectIdentifier(opts.Set.QueryWarehouse) {
 			errs = append(errs, errInvalidIdentifier("AlterServiceOptions.Set", "QueryWarehouse"))
 		}
-		if !anyValueSet(opts.Set.MinInstances, opts.Set.MaxInstances, opts.Set.AutoSuspendSecs, opts.Set.MinReadyInstances, opts.Set.QueryWarehouse, opts.Set.AutoResume, opts.Set.ExternalAccessIntegrations, opts.Set.Comment, opts.Set.ServiceCallerTokenValiditySecs) {
-			errs = append(errs, errAtLeastOneOf("AlterServiceOptions.Set", "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment", "ServiceCallerTokenValiditySecs"))
+		if !anyValueSet(opts.Set.ServiceCallerTokenValiditySecs, opts.Set.MinInstances, opts.Set.MaxInstances, opts.Set.AutoSuspendSecs, opts.Set.MinReadyInstances, opts.Set.QueryWarehouse, opts.Set.AutoResume, opts.Set.ExternalAccessIntegrations, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterServiceOptions.Set", "ServiceCallerTokenValiditySecs", "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment"))
 		}
 		errs = append(errs, opts.Set.additionalValidations())
 		if valueSet(opts.Set.ExternalAccessIntegrations) {
@@ -126,8 +126,8 @@ func (opts *AlterServiceOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.MinInstances, opts.Unset.AutoSuspendSecs, opts.Unset.MaxInstances, opts.Unset.MinReadyInstances, opts.Unset.QueryWarehouse, opts.Unset.AutoResume, opts.Unset.ExternalAccessIntegrations, opts.Unset.Comment, opts.Unset.ServiceCallerTokenValiditySecs) {
-			errs = append(errs, errAtLeastOneOf("AlterServiceOptions.Unset", "MinInstances", "AutoSuspendSecs", "MaxInstances", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment", "ServiceCallerTokenValiditySecs"))
+		if !anyValueSet(opts.Unset.ServiceCallerTokenValiditySecs, opts.Unset.MinInstances, opts.Unset.AutoSuspendSecs, opts.Unset.MaxInstances, opts.Unset.MinReadyInstances, opts.Unset.QueryWarehouse, opts.Unset.AutoResume, opts.Unset.ExternalAccessIntegrations, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterServiceOptions.Unset", "ServiceCallerTokenValiditySecs", "MinInstances", "AutoSuspendSecs", "MaxInstances", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment"))
 		}
 	}
 	if valueSet(opts.SetTags) {

@@ -1,10 +1,18 @@
 package defs
 
 import (
+	"slices"
+
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
+
+var serviceParameters = ParameterDefsForLevel(parameterdefs.ParameterLevelService)
+
+var serviceParameterFieldNames = collections.Map(serviceParameters, g.ParameterSqlToFieldName)
 
 var serviceExternalAccessIntegrationsDef = g.NewQueryStruct("ServiceExternalAccessIntegrations").
 	List("ExternalAccessIntegrations", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.ListOptions().Required().MustParentheses()).
@@ -76,7 +84,7 @@ var servicesDef = g.NewInterface(
 		OptionalNumberAssignment("AUTO_SUSPEND_SECS", g.ParameterOptions()).
 		OptionalQueryStructField("ExternalAccessIntegrations", serviceExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
 		OptionalBooleanAssignment("AUTO_RESUME", g.ParameterOptions()).
-		OptionalNumberAssignment("SERVICE_CALLER_TOKEN_VALIDITY_SECS", g.ParameterOptions()).
+		WithParameters(serviceParameters...).
 		OptionalNumberAssignment("MIN_INSTANCES", g.ParameterOptions()).
 		OptionalNumberAssignment("MIN_READY_INSTANCES", g.ParameterOptions()).
 		OptionalNumberAssignment("MAX_INSTANCES", g.ParameterOptions()).
@@ -120,11 +128,11 @@ var servicesDef = g.NewInterface(
 				OptionalNumberAssignment("MIN_READY_INSTANCES", g.ParameterOptions()).
 				OptionalIdentifier("QueryWarehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("QUERY_WAREHOUSE")).
 				OptionalBooleanAssignment("AUTO_RESUME", g.ParameterOptions()).
-				OptionalNumberAssignment("SERVICE_CALLER_TOKEN_VALIDITY_SECS", g.ParameterOptions()).
+				WithParameters(serviceParameters...).
 				OptionalQueryStructField("ExternalAccessIntegrations", serviceExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
 				OptionalComment().
 				WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
-				WithValidation(g.AtLeastOneValueSet, "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment", "ServiceCallerTokenValiditySecs").
+				WithValidation(g.AtLeastOneValueSet, append(slices.Clone(serviceParameterFieldNames), "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment")...).
 				WithAdditionalValidations(),
 			g.KeywordOptions().SQL("SET"),
 		).
@@ -137,10 +145,10 @@ var servicesDef = g.NewInterface(
 				OptionalSQL("MIN_READY_INSTANCES").
 				OptionalSQL("QUERY_WAREHOUSE").
 				OptionalSQL("AUTO_RESUME").
-				OptionalSQL("SERVICE_CALLER_TOKEN_VALIDITY_SECS").
+				WithParametersUnset(serviceParameters...).
 				OptionalSQL("EXTERNAL_ACCESS_INTEGRATIONS").
 				OptionalSQL("COMMENT").
-				WithValidation(g.AtLeastOneValueSet, "MinInstances", "AutoSuspendSecs", "MaxInstances", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment", "ServiceCallerTokenValiditySecs"),
+				WithValidation(g.AtLeastOneValueSet, append(slices.Clone(serviceParameterFieldNames), "MinInstances", "AutoSuspendSecs", "MaxInstances", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment")...),
 			g.ListOptions().NoParentheses().SQL("UNSET"),
 		).
 		OptionalSetTags().
@@ -256,6 +264,7 @@ var servicesDef = g.NewInterface(
 		WithValidation(g.ExactlyOneValueSet, "JobServiceFromSpecification", "JobServiceFromSpecificationTemplate").
 		WithValidation(g.ValidIdentifier, "InComputePool").
 		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse"),
-).ShowParameters(g.KindOfT[sdkcommons.SchemaObjectIdentifier]()).WithEnums(
+).ShowParameters(g.KindOfT[sdkcommons.SchemaObjectIdentifier]()).
+	ShowParametersDetails(serviceParameters...).WithEnums(
 	ServiceStatusEnumDef,
 )

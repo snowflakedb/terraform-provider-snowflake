@@ -2,6 +2,8 @@
 
 package sdk
 
+import "strconv"
+
 func NewCreateServiceRequest(
 	name SchemaObjectIdentifier,
 	inComputePool AccountObjectIdentifier,
@@ -75,6 +77,15 @@ func (s *CreateServiceRequest) WithTag(tag []TagAssociation) *CreateServiceReque
 func (s *CreateServiceRequest) WithComment(comment string) *CreateServiceRequest {
 	s.Comment = &comment
 	return s
+}
+
+func (s *CreateServiceRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "SERVICE_CALLER_TOKEN_VALIDITY_SECS":
+		return assignParsedParameter(value, strconv.Atoi, &s.ServiceCallerTokenValiditySecs)
+	default:
+		return ErrParameterNotSupported
+	}
 }
 
 func NewServiceFromSpecificationRequest() *ServiceFromSpecificationRequest {
@@ -248,6 +259,15 @@ func (s *ServiceSetRequest) WithComment(comment string) *ServiceSetRequest {
 	return s
 }
 
+func (s *ServiceSetRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "SERVICE_CALLER_TOKEN_VALIDITY_SECS":
+		return assignParsedParameter(value, strconv.Atoi, &s.ServiceCallerTokenValiditySecs)
+	default:
+		return ErrParameterNotSupported
+	}
+}
+
 func NewServiceUnsetRequest() *ServiceUnsetRequest {
 	s := ServiceUnsetRequest{}
 	return &s
@@ -296,6 +316,16 @@ func (s *ServiceUnsetRequest) WithExternalAccessIntegrations(externalAccessInteg
 func (s *ServiceUnsetRequest) WithComment(comment bool) *ServiceUnsetRequest {
 	s.Comment = &comment
 	return s
+}
+
+func (s *ServiceUnsetRequest) UnsetParameterFromRaw(key string) error {
+	switch key {
+	case "SERVICE_CALLER_TOKEN_VALIDITY_SECS":
+		s.ServiceCallerTokenValiditySecs = Bool(true)
+	default:
+		return ErrParameterNotSupported
+	}
+	return nil
 }
 
 func NewDropServiceRequest(

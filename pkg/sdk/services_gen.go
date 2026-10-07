@@ -19,6 +19,12 @@ type Services interface {
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*ServiceDetails, error)
 	ExecuteJob(ctx context.Context, request *ExecuteJobServiceRequest) error
 	ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error)
+	ShowParametersDetails(ctx context.Context, id SchemaObjectIdentifier) (*ServiceParametersDetails, error)
+}
+
+// ServiceParametersDetails holds the object's parameters with values parsed into their Go types.
+type ServiceParametersDetails struct {
+	ServiceCallerTokenValiditySecs TypedParameter[int]
 }
 
 // CreateServiceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-service.

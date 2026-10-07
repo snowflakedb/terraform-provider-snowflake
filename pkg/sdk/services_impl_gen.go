@@ -4,6 +4,8 @@ package sdk
 
 import (
 	"context"
+	"errors"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -314,4 +316,23 @@ func (r *ExecuteJobServiceRequest) toOpts() *ExecuteJobServiceOptions {
 		}
 	}
 	return opts
+}
+
+func toServiceParametersDetails(params []*Parameter) (*ServiceParametersDetails, error) {
+	byKey := parametersByKey(params)
+	var d ServiceParametersDetails
+	if err := errors.Join(
+		fillTypedParameter(byKey["SERVICE_CALLER_TOKEN_VALIDITY_SECS"], strconv.Atoi, &d.ServiceCallerTokenValiditySecs),
+	); err != nil {
+		return nil, err
+	}
+	return &d, nil
+}
+
+func (v *services) ShowParametersDetails(ctx context.Context, id SchemaObjectIdentifier) (*ServiceParametersDetails, error) {
+	params, err := v.ShowParameters(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return toServiceParametersDetails(params)
 }

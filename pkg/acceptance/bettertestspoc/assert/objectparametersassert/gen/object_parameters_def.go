@@ -412,12 +412,10 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		},
 	},
 	{
-		Name:   "Service",
-		IdType: "sdk.SchemaObjectIdentifier",
-		Level:  sdk.ParameterTypeService,
-		Parameters: []SnowflakeParameter{
-			{ParameterName: string(sdk.ServiceParameterServiceCallerTokenValiditySecs), ParameterType: "int", DefaultValue: "120", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
-		},
+		Name:       "Service",
+		IdType:     "sdk.SchemaObjectIdentifier",
+		Level:      sdk.ParameterTypeService,
+		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelService)),
 	},
 	{
 		Name:                    "HybridTable",
