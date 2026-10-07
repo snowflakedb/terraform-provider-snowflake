@@ -346,9 +346,6 @@ func TestInt_TagsAssociations(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	awsBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
-	awsRoleARN := testenvs.GetOrSkipTest(t, testenvs.AwsExternalRoleArn)
-
 	tag, tagCleanup := testClientHelper().Tag.CreateTag(t)
 	t.Cleanup(tagCleanup)
 
@@ -525,6 +522,8 @@ func TestInt_TagsAssociations(t *testing.T) {
 			name:       "StorageIntegration",
 			objectType: sdk.ObjectTypeIntegration,
 			setupObject: func() (IDProvider[sdk.AccountObjectIdentifier], func()) {
+				awsBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+				awsRoleARN := testenvs.GetOrSkipTest(t, testenvs.AwsExternalRoleArn)
 				return testClientHelper().StorageIntegration.CreateS3(t, awsBucketUrl, awsRoleARN)
 			},
 			setTags: func(id sdk.AccountObjectIdentifier, tags []sdk.TagAssociation) error {
@@ -1054,6 +1053,23 @@ func TestInt_TagsAssociations(t *testing.T) {
 			},
 			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
 				return client.Services.Alter(ctx, sdk.NewAlterServiceRequest(id).WithUnsetTags(tags))
+			},
+		},
+		{
+			name:       "Agent",
+			objectType: sdk.ObjectTypeAgent,
+			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {
+				id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+				cleanup := testClientHelper().CortexAgent.CreateWithId(t, id)
+				agent, err := testClientHelper().CortexAgent.Show(t, id)
+				require.NoError(t, err)
+				return agent, cleanup
+			},
+			setTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.TagAssociation) error {
+				return client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeAgent, id).WithSetTags(tags))
+			},
+			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
+				return client.Tags.Unset(ctx, sdk.NewUnsetTagRequest(sdk.ObjectTypeAgent, id).WithUnsetTags(tags))
 			},
 		},
 	}

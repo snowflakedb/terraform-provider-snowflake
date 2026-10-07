@@ -336,6 +336,14 @@ Previously, [`snowflake_tag`](https://registry.terraform.io/providers/snowflaked
 
 No action is needed.
 
+### *(bugfix)* Fixed tag associations on AGENT objects
+
+Associating a tag with an agent via [`snowflake_tag_association`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag_association) failed with `Unknown domain: AGENT.` Snowflake's DDL uses `AGENT` (`ALTER AGENT ... SET TAG`), but `SYSTEM$GET_TAG` expects the `CORTEX AGENT` domain.
+
+This has been fixed. Keep `object_type = "AGENT"` (matching CREATE/ALTER AGENT).
+
+No changes in the configuration are required.
+
 ## v2.20.x ➞ v2.21.0
 
 ### *(breaking change)* Renamed constraint column fields in `snowflake_iceberg_table`

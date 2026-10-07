@@ -25,6 +25,7 @@ var (
 		ObjectTypeSchema,
 
 		// schema level
+		ObjectTypeAgent,
 		ObjectTypeAlert,
 		ObjectTypeBudget,
 		ObjectTypeClassification,

@@ -414,6 +414,52 @@ func TestAcc_TagAssociation_CompleteUseCase_IcebergTableColumn(t *testing.T) {
 	})
 }
 
+func TestAcc_TagAssociation_Agent(t *testing.T) {
+	tag, tagCleanup := testClient().Tag.CreateTag(t)
+	t.Cleanup(tagCleanup)
+
+	agentId := testClient().Ids.RandomSchemaObjectIdentifier()
+	agentCleanup := testClient().CortexAgent.CreateWithId(t, agentId)
+	t.Cleanup(agentCleanup)
+
+	tagId := tag.ID()
+	tagValue := "TAG_VALUE"
+
+	tagAssociationModel := model.TagAssociation("test", []sdk.ObjectIdentifier{agentId}, string(sdk.ObjectTypeAgent), tag.ID().FullyQualifiedName(), tagValue)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: nil,
+		Steps: []resource.TestStep{
+			// v2.21.0 accepts AGENT as object_type (forward-compat) but SYSTEM$GET_TAG still uses domain AGENT, which Snowflake rejects.
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.21.0"),
+				Config:            accconfig.FromModels(t, tagAssociationModel),
+				ExpectError:       regexp.MustCompile("Unknown domain: AGENT"),
+			},
+			{
+				ProtoV6ProviderFactories: tagsProviderFactory,
+				Config:                   accconfig.FromModels(t, tagAssociationModel),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeAgent))),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_type", string(sdk.ObjectTypeAgent)),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_identifiers.#", "1"),
+					resource.TestCheckTypeSetElemAttr(tagAssociationModel.ResourceReference(), "object_identifiers.*", agentId.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "tag_id", tagId.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "tag_value", tagValue),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: tagsProviderFactory,
+				Config:                   accconfig.FromModels(t, tagAssociationModel),
+				Destroy:                  true,
+			},
+		},
+	})
+}
+
 func TestAcc_TagAssociationIssue1202(t *testing.T) {
 	tag, tagCleanup := testClient().Tag.CreateTag(t)
 	t.Cleanup(tagCleanup)

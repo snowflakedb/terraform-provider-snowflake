@@ -113,6 +113,10 @@ func normalizeTagObjectType(objectType *ObjectType) {
 	if slices.Contains([]ObjectType{ObjectTypeExternalFunction}, *objectType) {
 		*objectType = ObjectTypeFunction
 	}
+	// SYSTEM$GET_TAG uses CORTEX AGENT; ALTER requires AGENT.
+	if *objectType == getTagDomainCortexAgent {
+		*objectType = ObjectTypeAgent
+	}
 }
 
 // normalizeTagColumnIdentifier splits a column identifier into its table-level components.

@@ -327,6 +327,20 @@ func init() {
 		)
 }
 
+func TestTags_Set_withCortexAgent(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	tagId := randomSchemaObjectIdentifier()
+	request := NewSetTagRequest(getTagDomainCortexAgent, id).WithSetTags([]TagAssociation{
+		{
+			Name:  tagId,
+			Value: "value1",
+		},
+	})
+	request.adjust()
+	opts := request.toOpts()
+	assertOptsValidAndSqlEqualsf(t, opts, `ALTER AGENT %s SET TAG %s = 'value1'`, id.FullyQualifiedName(), tagId.FullyQualifiedName())
+}
+
 func TestTags_Set_withColumn(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 	objectId := randomTableColumnIdentifierInSchemaObject(id)

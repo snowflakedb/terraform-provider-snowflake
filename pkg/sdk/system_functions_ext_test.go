@@ -187,6 +187,35 @@ func singleQuotedIdentifier(id ObjectIdentifier) string {
 	return strings.ReplaceAll(id.FullyQualifiedName(), `"`, `\"`)
 }
 
+func Test_normalizeGetTagObjectType(t *testing.T) {
+	tests := []struct {
+		name  string
+		input ObjectType
+		want  ObjectType
+	}{
+		{name: "agent", input: ObjectTypeAgent, want: getTagDomainCortexAgent},
+		{name: "view", input: ObjectTypeView, want: ObjectTypeTable},
+		{name: "table passthrough", input: ObjectTypeTable, want: ObjectTypeTable},
+		{name: "iceberg table column", input: ObjectTypeIcebergTableColumn, want: ObjectTypeColumn},
+		{name: "external function", input: ObjectTypeExternalFunction, want: ObjectTypeFunction},
+		{name: "cortex agent domain passthrough", input: getTagDomainCortexAgent, want: getTagDomainCortexAgent},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.want, normalizeGetTagObjectType(tt.input))
+		})
+	}
+}
+
+func TestSystemFunctions_GetTag_withAgent(t *testing.T) {
+	tagId := randomSchemaObjectIdentifier()
+	objectId := randomSchemaObjectIdentifier()
+	request := NewGetTagRequest(*NewGetTagArgumentsRequest(tagId, objectId, ObjectTypeAgent))
+	request.adjust()
+	opts := request.toOpts()
+	assertOptsValidAndSqlEqualsf(t, opts, `SELECT SYSTEM$GET_TAG ('%s', '%s', 'CORTEX AGENT') AS "TAG"`, singleQuotedIdentifier(tagId), singleQuotedIdentifier(objectId))
+}
+
 func Test_parseClusteringInformation(t *testing.T) {
 	t.Run("valid output", func(t *testing.T) {
 		// Output captured from SYSTEM$CLUSTERING_INFORMATION on a clustered table.

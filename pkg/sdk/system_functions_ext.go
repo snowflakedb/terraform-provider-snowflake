@@ -71,6 +71,10 @@ func (r *GetTagRequest) adjust() {
 	r.Arguments.ObjectType = normalizeGetTagObjectType(r.Arguments.ObjectType)
 }
 
+// Snowflake SYSTEM$GET_TAG domains that differ from the DDL object type.
+// DDL uses AGENT (CREATE/ALTER AGENT); GET_TAG expects CORTEX AGENT.
+const getTagDomainCortexAgent ObjectType = "CORTEX AGENT"
+
 // normalize object types for some values because of errors like below
 // SQL compilation error: Invalid value VIEW for argument OBJECT_TYPE. Please use object type TABLE for all kinds of table-like objects.
 // TODO [SNOW-1022645]: discuss how we handle situation like this in the SDK
@@ -85,6 +89,9 @@ func normalizeGetTagObjectType(objectType ObjectType) ObjectType {
 	// However, Snowflake expects just the column type.
 	if objectType == ObjectTypeIcebergTableColumn {
 		return ObjectTypeColumn
+	}
+	if objectType == ObjectTypeAgent {
+		return getTagDomainCortexAgent
 	}
 	return objectType
 }
