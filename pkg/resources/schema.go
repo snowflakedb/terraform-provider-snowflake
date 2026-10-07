@@ -3,419 +3,156 @@ package resources
 import (
 	"context"
 	"errors"
-	"fmt"
-	"log"
-	"slices"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var schemaParameterFieldNames = collections.Map(
-	defs.ParameterDefsForLevel(parameterdefs.ParameterLevelSchema),
-	func(p parameterdefs.ParameterDef) string { return p.FieldName() },
-)
-
-var schemaSchema = map[string]*schema.Schema{
-	"name": {
-		Type:             schema.TypeString,
-		Required:         true,
-		Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the schema; must be unique for the database in which the schema is created. When the name is `PUBLIC`, during creation the provider checks if this schema has already been created and, in such case, `ALTER` is used to match the desired state."),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
-	"database": {
-		Type:             schema.TypeString,
-		Required:         true,
-		Description:      blocklistedCharactersFieldDescription("The database in which to create the schema."),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
-	"with_managed_access": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Description:      booleanStringFieldDescription("Specifies a managed schema. Managed access schemas centralize privilege management with the schema owner."),
-		ValidateDiagFunc: validateBooleanString,
-		Default:          BooleanDefault,
-		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShowWithMapping("options", func(x any) any {
-			return slices.Contains(sdk.ParseCommaSeparatedStringArray(x.(string), false), "MANAGED ACCESS")
-		}),
-	},
-	"is_transient": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		ForceNew:         true,
-		Description:      booleanStringFieldDescription("Specifies the schema as transient. Transient schemas do not have a Fail-safe period so they do not incur additional storage costs once they leave Time Travel; however, this means they are also not protected by Fail-safe in the event of a data loss."),
-		ValidateDiagFunc: validateBooleanString,
-		Default:          BooleanDefault,
-		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShowWithMapping("options", func(x any) any {
-			return slices.Contains(sdk.ParseCommaSeparatedStringArray(x.(string), false), "TRANSIENT")
-		}),
-	},
-	"comment": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Specifies a comment for the schema.",
-	},
-	ShowOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `SHOW SCHEMA` for the given object.",
-		Elem: &schema.Resource{
-			Schema: schemas.ShowSchemaSchema,
-		},
-	},
-	DescribeOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `DESCRIBE SCHEMA` for the given object. In order to handle this output, one must grant sufficient privileges, e.g. [grant_ownership](./grant_ownership) on all objects in the schema.",
-		Elem: &schema.Resource{
-			Schema: schemas.DescribeSchemaDetailsSchema,
-		},
-	},
-	ParametersAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `SHOW PARAMETERS IN SCHEMA` for the given object.",
-		Elem: &schema.Resource{
-			Schema: schemas.ShowSchemaParametersSchema,
-		},
-	},
-	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-}
-
-// Schema returns a pointer to the resource representing a schema.
 func Schema() *schema.Resource {
-	deleteFunc := ResourceDeleteContextFunc(
-		sdk.ParseDatabaseObjectIdentifier,
-		func(client *sdk.Client) DropSafelyFunc[sdk.DatabaseObjectIdentifier] {
-			return client.Schemas.DropSafely
-		},
-	)
-
 	return &schema.Resource{
-		SchemaVersion: 2,
+		Schema:      schemaSchema,
+		Description: schemaDescriptionExt,
 
-		CreateContext: TrackingCreateWrapper(resources.Schema, CreateContextSchema),
-		ReadContext:   TrackingReadWrapper(resources.Schema, ReadContextSchema(true)),
-		UpdateContext: TrackingUpdateWrapper(resources.Schema, UpdateContextSchema),
-		DeleteContext: TrackingDeleteWrapper(resources.Schema, deleteFunc),
-		Description:   "Resource used to manage schema objects. For more information, check [schema documentation](https://docs.snowflake.com/en/sql-reference/sql/create-schema).",
+		CreateContext: schemaCreateExt,
+		ReadContext:   schemaReadExt,
+		UpdateContext: schemaUpdateExt,
+		DeleteContext: schemaDeleteExt,
+		Importer:      schemaImporterExt,
 
-		CustomizeDiff: TrackingCustomDiffWrapper(resources.Schema, customdiff.All(
-			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
-			ComputedIfAnyAttributeChanged(schemaSchema, ShowOutputAttributeName, "name", "database", "comment", "with_managed_access", "is_transient"),
-			ComputedIfAnyAttributeChanged(schemaSchema, DescribeOutputAttributeName, "name", "database"),
-			ComputedIfAnyAttributeChanged(schemaSchema, FullyQualifiedNameAttributeName, "name", "database"),
-			ComputedIfAnyAttributeChanged(schemaParametersSchema, ParametersAttributeName, schemaParameterFieldNames...),
-			schemaParametersCustomDiff,
-		)),
-
-		Schema: collections.MergeMaps(schemaSchema, schemaParametersSchema),
-		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.Schema, ImportSchema),
-		},
-
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Version: 0,
-				// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
-				Type:    cty.EmptyObject,
-				Upgrade: v093SchemaStateUpgrader,
-			},
-			{
-				Version: 1,
-				// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
-				Type:    cty.EmptyObject,
-				Upgrade: migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName,
-			},
-		},
-		Timeouts: defaultTimeouts,
+		CustomizeDiff:  schemaCustomizeDiffExt,
+		Timeouts:       defaultTimeouts,
+		SchemaVersion:  schemaSchemaVersionExt,
+		StateUpgraders: schemaStateUpgradersExt,
 	}
 }
 
 func ImportSchema(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	log.Printf("[DEBUG] Starting schema import")
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseDatabaseObjectIdentifier(d.Id())
+	id, err := schemaParseIdExt(d.Id())
 	if err != nil {
 		return nil, err
 	}
 
-	if err := d.Set("name", id.Name()); err != nil {
-		return nil, err
-	}
-
-	if err := d.Set("database", id.DatabaseName()); err != nil {
-		return nil, err
-	}
-
-	s, err := client.Schemas.ShowByID(ctx, id)
+	s, err := schemaShowByIdInSdkExt(ctx, meta, id)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := d.Set("comment", s.Comment); err != nil {
-		return nil, err
-	}
-
-	if err := d.Set("is_transient", booleanStringFromBool(s.IsTransient())); err != nil {
-		return nil, err
-	}
-
-	if err := d.Set("with_managed_access", booleanStringFromBool(s.IsManagedAccess())); err != nil {
+	if err := schemaSetFieldsNotSetByReadExt(d, id, s); err != nil {
 		return nil, err
 	}
 	return []*schema.ResourceData{d}, nil
 }
 
-func CreateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	name := d.Get("name").(string)
-	database := d.Get("database").(string)
-	id := sdk.NewDatabaseObjectIdentifier(database, name)
-
-	if strings.EqualFold(strings.TrimSpace(name), "PUBLIC") {
-		_, err := client.Schemas.ShowByID(ctx, id)
-		if err != nil && !errors.Is(err, sdk.ErrObjectNotFound) {
-			return diag.FromErr(err)
-		} else if err == nil {
-			// there is already a PUBLIC schema, so we need to alter it instead
-			log.Printf("[DEBUG] found PUBLIC schema during creation, updating...")
-			d.SetId(helpers.EncodeResourceIdentifier(id))
-			return UpdateContextSchema(ctx, d, meta)
-		}
+func CreateSchema(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	id, err := schemaParseIdFromConfigExt(d)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	req := sdk.NewCreateSchemaRequest(id)
-	if v := GetConfigPropertyAsPointerAllowingZeroValue[string](d, "comment"); v != nil {
-		req.WithComment(*v)
-	}
-	if parametersCreateDiags := handleSchemaParametersCreate(d, req); len(parametersCreateDiags) > 0 {
-		return parametersCreateDiags
+	done, diags := schemaBeforeCreateExt(ctx, d, meta, id)
+	if done {
+		return diags
 	}
 
-	if v := d.Get("is_transient").(string); v != BooleanDefault {
-		parsed, err := booleanStringToBool(v)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		req.WithTransient(parsed)
+	req, err := schemaNewCreateRequestExt(d, id)
+	if err != nil {
+		return diag.FromErr(err)
 	}
-	if v := d.Get("with_managed_access").(string); v != BooleanDefault {
-		parsed, err := booleanStringToBool(v)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		req.WithWithManagedAccess(parsed)
+
+	if err := schemaApplyCreateOptionalsExt(d, req); err != nil {
+		return diag.FromErr(err)
 	}
-	if err := client.Schemas.Create(ctx, req); err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Failed to create schema.",
-				Detail:   fmt.Sprintf("schema name: %s, err: %s", id.FullyQualifiedName(), err),
-			},
-		}
+
+	if diags := schemaApplyParametersCreateExt(d, req); diags != nil {
+		return diags
+	}
+
+	if err := schemaCreateInSdkExt(ctx, meta, req); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
-
-	return ReadContextSchema(false)(ctx, d, meta)
+	return ReadSchemaFunc(false)(ctx, d, meta)
 }
 
-func ReadContextSchema(withExternalChangesMarking bool) schema.ReadContextFunc {
+func ReadSchemaFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		providerCtx := meta.(*provider.Context)
-		client := providerCtx.Client
-		id, err := sdk.ParseDatabaseObjectIdentifier(d.Id())
+		id, err := schemaParseIdExt(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		schema, err := client.Schemas.ShowByIDSafely(ctx, id)
-		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query schema. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Schema id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
-		}
-
-		if err := d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()); err != nil {
-			return diag.FromErr(err)
-		}
-
-		if err := d.Set("comment", schema.Comment); err != nil {
-			return diag.FromErr(err)
-		}
-
-		rawSchemaParameters, err := client.Schemas.ShowParameters(ctx, id)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		schemaParameters, err := client.Schemas.ShowParametersDetails(ctx, id)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		if diags := handleSchemaParameterRead(d, schemaParameters); diags != nil {
+		schema, diags := schemaShowByIdSafelyInSdkExt(ctx, d, meta, id)
+		if diags != nil {
 			return diags
 		}
-
-		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInShow(
-				d,
-				outputMapping{"options", "is_transient", schema.IsTransient(), booleanStringFromBool(schema.IsTransient()), func(x any) any {
-					return slices.Contains(sdk.ParseCommaSeparatedStringArray(x.(string), false), "TRANSIENT")
-				}},
-				outputMapping{"options", "with_managed_access", schema.IsManagedAccess(), booleanStringFromBool(schema.IsManagedAccess()), func(x any) any {
-					return slices.Contains(sdk.ParseCommaSeparatedStringArray(x.(string), false), "MANAGED ACCESS")
-				}},
-			); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-
-		if err = setStateToValuesFromConfig(d, schemaSchema, []string{
-			"is_transient",
-			"with_managed_access",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
-
-		describeResult, err := client.Schemas.Describe(ctx, schema.ID())
+		// TODO [next PR]: Unlike compute pool, Describe uses the SHOW object's id and is best-effort: log + skip Set, do not fail Read. Will be addressed with the generation.
+		describeResult, describeErr := schemaDescribeInSdkExt(ctx, meta, schema.ID())
+		rawSchemaParameters, err := schemaShowParametersInSdkExt(ctx, meta, id)
 		if err != nil {
-			log.Printf("[DEBUG] describing schema: %s, err: %s", id.FullyQualifiedName(), err)
-		} else {
-			if err = d.Set(DescribeOutputAttributeName, schemas.SchemaDetailsListToSchema(describeResult)); err != nil {
-				return diag.FromErr(err)
-			}
+			return diag.FromErr(err)
 		}
-
-		if err = d.Set(ShowOutputAttributeName, []map[string]any{schemas.SchemaToSchema(schema)}); err != nil {
+		schemaParameters, err := schemaShowParametersDetailsInSdkExt(ctx, meta, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if diags := schemaSetParametersFieldsExt(d, schemaParameters); diags != nil {
+			return diags
+		}
+		if err = schemaHandleExternalChangesExt(d, schema, withExternalChangesMarking); err != nil {
 			return diag.FromErr(err)
 		}
 
-		if err = d.Set(ParametersAttributeName, []map[string]any{schemas.SchemaParametersToSchema(rawSchemaParameters, providerCtx)}); err != nil {
+		if err = setStateToValuesFromConfig(d, schemaSchema, schemaSetStateToValueFromConfigFieldsExt); err != nil {
 			return diag.FromErr(err)
+		}
+		errs := errors.Join(
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.SchemaToSchema(schema)}),
+			schemaSetDescribeOutputExt(d, id, describeResult, describeErr),
+			d.Set(ParametersAttributeName, []map[string]any{schemas.SchemaParametersToSchema(rawSchemaParameters, meta.(*provider.Context))}),
+			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
+			schemaSetConfigFieldsExt(d, schema),
+		)
+		if errs != nil {
+			return diag.FromErr(errs)
 		}
 		return nil
 	}
 }
 
-func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	providerCtx := meta.(*provider.Context)
-	client := providerCtx.Client
-	id, err := sdk.ParseDatabaseObjectIdentifier(d.Id())
+func UpdateSchema(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	id, err := schemaParseIdExt(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if diags := schemaHierarchyRenameExt(ctx, d, meta, &id); diags != nil {
+		return diags
+	}
+
+	if diags := schemaBeforeAlterExt(ctx, d, meta, id); diags != nil {
+		return diags
+	}
+
+	setUnset, err := schemaApplySetUnsetExt(d)
 	if err != nil {
 		d.Partial(true)
 		return diag.FromErr(err)
 	}
-
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && d.HasChange("database") {
-		schemaRenameFn := func(currentId, targetId sdk.DatabaseObjectIdentifier) func() error {
-			return func() error {
-				return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(currentId).WithRenameTo(targetId))
-			}
-		}
-
-		if diags := handleTwoLevelHierarchyRename(
-			ctx, d, client, &id,
-			schemaRenameFn,
-			client.Schemas.ShowByID,
-			func(id sdk.DatabaseObjectIdentifier) string { return helpers.EncodeResourceIdentifier(id) },
-			"schema",
-		); diags != nil {
-			return diags
-		}
-	}
-
-	if d.HasChange("name") && !d.GetRawState().IsNull() {
-		newId := sdk.NewDatabaseObjectIdentifier(d.Get("database").(string), d.Get("name").(string))
-		err := client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithRenameTo(newId))
-		if err != nil {
-			d.Partial(true)
-			return diag.FromErr(err)
-		}
-		d.SetId(helpers.EncodeResourceIdentifier(newId))
-		id = newId
-	}
-
-	if d.HasChange("with_managed_access") {
-		if v := d.Get("with_managed_access").(string); v != BooleanDefault {
-			var err error
-			parsed, err := booleanStringToBool(v)
-			if err != nil {
-				d.Partial(true)
-				return diag.FromErr(err)
-			}
-			if parsed {
-				err = client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithEnableManagedAccess(true))
-			} else {
-				err = client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithDisableManagedAccess(true))
-			}
-			if err != nil {
-				d.Partial(true)
-				return diag.FromErr(fmt.Errorf("error handling with_managed_access on %v err = %w", d.Id(), err))
-			}
-		} else {
-			// managed access can not be UNSET to a default value
-			if err := client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithDisableManagedAccess(true)); err != nil {
-				d.Partial(true)
-				return diag.FromErr(fmt.Errorf("error handling with_managed_access on %v err = %w", d.Id(), err))
-			}
-		}
-	}
-
-	set := sdk.NewSchemaSetRequest()
-	unset := sdk.NewSchemaUnsetRequest()
-
-	if d.HasChange("comment") {
-		comment := d.Get("comment").(string)
-		if len(comment) > 0 {
-			set.Comment = &comment
-		} else {
-			unset.Comment = sdk.Bool(true)
-		}
-	}
-
-	if updateParamDiags := handleSchemaParametersChanges(d, set, unset); len(updateParamDiags) > 0 {
+	if diags := schemaApplyParametersChangesExt(d, setUnset); diags != nil {
 		d.Partial(true)
-		return updateParamDiags
+		return diags
 	}
-	if *set != *sdk.NewSchemaSetRequest() {
-		err := client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithSet(*set))
-		if err != nil {
-			d.Partial(true)
-			return diag.FromErr(err)
-		}
+	if err := schemaAlterSetInSdkExt(ctx, meta, id, setUnset); err != nil {
+		d.Partial(true)
+		return diag.FromErr(err)
 	}
-
-	if *unset != *sdk.NewSchemaUnsetRequest() {
-		err := client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithUnset(*unset))
-		if err != nil {
-			d.Partial(true)
-			return diag.FromErr(err)
-		}
+	if err := schemaAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
+		d.Partial(true)
+		return diag.FromErr(err)
 	}
-
-	return ReadContextSchema(false)(ctx, d, meta)
+	return ReadSchemaFunc(false)(ctx, d, meta)
 }
