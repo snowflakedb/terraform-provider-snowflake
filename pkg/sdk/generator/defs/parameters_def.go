@@ -20,6 +20,9 @@ var (
 	onTask                     = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelTask}
 	onFunctionAndProcedure     = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelFunction, parameterdefs.ParameterLevelProcedure}
 	onLog                      = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelProject, parameterdefs.ParameterLevelProcedure, parameterdefs.ParameterLevelFunction, parameterdefs.ParameterLevelTable, parameterdefs.ParameterLevelTask}
+	onUser                     = append(slices.Clone(onAccount), parameterdefs.ParameterLevelSession, parameterdefs.ParameterLevelUser)
+	onUserOnly                 = append(slices.Clone(onAccount), parameterdefs.ParameterLevelUser)
+	onLogUser                  = append(slices.Clone(onLog), parameterdefs.ParameterLevelSession, parameterdefs.ParameterLevelUser)
 	onWarehouse                = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelWarehouse, parameterdefs.ParameterLevelWarehouseInteractive}
 	onWarehouseAll             = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelWarehouse, parameterdefs.ParameterLevelWarehouseAdaptive, parameterdefs.ParameterLevelWarehouseInteractive}
 	onWarehouseInteractiveOnly = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelWarehouseInteractive}
@@ -31,7 +34,7 @@ var (
 	AbortDetachedQuery = parameterdefs.ParameterDef{
 		SqlName:      "ABORT_DETACHED_QUERY",
 		Kind:         g.KindBool,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the action that Snowflake performs for in-progress queries if connectivity is lost due to abrupt termination of a session (e.g. network outage, browser termination, service interruption).",
 		DefaultValue: "false",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -77,7 +80,7 @@ var (
 	Autocommit = parameterdefs.ParameterDef{
 		SqlName:      "AUTOCOMMIT",
 		Kind:         g.KindBool,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies whether autocommit is enabled for the session. Autocommit determines whether a DML statement, when executed without an active transaction, is automatically committed after the statement successfully completes. For more information, see [Transactions](https://docs.snowflake.com/en/sql-reference/transactions).",
 		DefaultValue: "true",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -91,7 +94,7 @@ var (
 	BinaryInputFormat = parameterdefs.ParameterDef{
 		SqlName:      "BINARY_INPUT_FORMAT",
 		Kind:         g.KindOfT[sdkcommons.BinaryInputFormat](),
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "The format of VARCHAR values passed as input to VARCHAR-to-BINARY conversion functions. For more information, see [Binary input and output](https://docs.snowflake.com/en/sql-reference/binary-input-output).",
 		DefaultValue: "sdk.BinaryInputFormatHex",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -99,7 +102,7 @@ var (
 	BinaryOutputFormat = parameterdefs.ParameterDef{
 		SqlName:      "BINARY_OUTPUT_FORMAT",
 		Kind:         g.KindOfT[sdkcommons.BinaryOutputFormat](),
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "The format for VARCHAR values returned as output by BINARY-to-VARCHAR conversion functions. For more information, see [Binary input and output](https://docs.snowflake.com/en/sql-reference/binary-input-output).",
 		DefaultValue: "sdk.BinaryOutputFormatHex",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -135,7 +138,7 @@ var (
 	ClientMemoryLimit = parameterdefs.ParameterDef{
 		SqlName:      "CLIENT_MEMORY_LIMIT",
 		Kind:         g.KindInt,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Parameter that specifies the maximum amount of memory the JDBC driver or ODBC driver should use for the result set from queries (in MB).",
 		DefaultValue: "1536",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -143,7 +146,7 @@ var (
 	ClientMetadataRequestUseConnectionCtx = parameterdefs.ParameterDef{
 		SqlName:      "CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX",
 		Kind:         g.KindBool,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "For specific ODBC functions and JDBC methods, this parameter can change the default search scope from all databases/schemas to the current database/schema. The narrower search typically returns fewer rows and executes more quickly.",
 		DefaultValue: "false",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -157,7 +160,7 @@ var (
 	ClientPrefetchThreads = parameterdefs.ParameterDef{
 		SqlName:      "CLIENT_PREFETCH_THREADS",
 		Kind:         g.KindInt,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Parameter that specifies the number of threads used by the client to pre-fetch large result sets. The driver will attempt to honor the parameter value, but defines the minimum and maximum values (depending on your system’s resources) to improve performance.",
 		DefaultValue: "4",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -165,7 +168,7 @@ var (
 	ClientResultChunkSize = parameterdefs.ParameterDef{
 		SqlName:      "CLIENT_RESULT_CHUNK_SIZE",
 		Kind:         g.KindInt,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Parameter that specifies the maximum size of each set (or chunk) of query results to download (in MB). The JDBC driver downloads query results in chunks.",
 		DefaultValue: "160",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -173,7 +176,7 @@ var (
 	ClientResultColumnCaseInsensitive = parameterdefs.ParameterDef{
 		SqlName:      "CLIENT_RESULT_COLUMN_CASE_INSENSITIVE",
 		Kind:         g.KindBool,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Parameter that indicates whether to match column name case-insensitively in ResultSet.get* methods in JDBC.",
 		DefaultValue: "false",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -181,7 +184,7 @@ var (
 	ClientSessionKeepAlive = parameterdefs.ParameterDef{
 		SqlName:      "CLIENT_SESSION_KEEP_ALIVE",
 		Kind:         g.KindBool,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Parameter that indicates whether to force a user to log in again after a period of inactivity in the session.",
 		DefaultValue: "false",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -189,7 +192,7 @@ var (
 	ClientSessionKeepAliveHeartbeatFrequency = parameterdefs.ParameterDef{
 		SqlName:      "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY",
 		Kind:         g.KindInt,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Number of seconds in-between client attempts to update the token for the session.",
 		DefaultValue: "3600",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -197,7 +200,7 @@ var (
 	ClientTimestampTypeMapping = parameterdefs.ParameterDef{
 		SqlName:      "CLIENT_TIMESTAMP_TYPE_MAPPING",
 		Kind:         g.KindOfT[sdkcommons.ClientTimestampTypeMapping](),
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the [TIMESTAMP_* variation](https://docs.snowflake.com/en/sql-reference/data-types-datetime.html#label-datatypes-timestamp-variations) to use when binding timestamp variables for JDBC or ODBC applications that use the bind API to load data.",
 		DefaultValue: "sdk.ClientTimestampTypeMappingLtz",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -257,7 +260,7 @@ var (
 	DateInputFormat = parameterdefs.ParameterDef{
 		SqlName:      "DATE_INPUT_FORMAT",
 		Kind:         g.KindString,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the input format for the DATE data type. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output).",
 		DefaultValue: "AUTO",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -265,7 +268,7 @@ var (
 	DateOutputFormat = parameterdefs.ParameterDef{
 		SqlName:      "DATE_OUTPUT_FORMAT",
 		Kind:         g.KindString,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the display format for the DATE data type. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output).",
 		DefaultValue: "YYYY-MM-DD",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -452,16 +455,18 @@ var (
 	EnableUnloadPhysicalTypeOptimization = parameterdefs.ParameterDef{
 		SqlName:      "ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION",
 		Kind:         g.KindBool,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies whether to set the schema for unloaded Parquet files based on the logical column data types (i.e. the types in the unload SQL query or source table) or on the unloaded column values (i.e. the smallest data types and precision that support the values in the output columns of the unload SQL statement or source table).",
 		DefaultValue: "true",
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	EnableUnredactedQuerySyntaxError = parameterdefs.ParameterDef{
-		SqlName:     "ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR",
-		Kind:        g.KindBool,
-		Levels:      onAccount,
-		Description: "Controls whether query text is redacted if a SQL query fails due to a syntax or parsing error. If FALSE, the content of a failed query is redacted in the views, pages, and functions that provide a query history. Only users with a role that is granted or inherits the AUDIT privilege can set the ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR parameter. When using the ALTER USER command to set the parameter to TRUE for a particular user, modify the user that you want to see the query text, not the user who executed the query (if those are different users).",
+		SqlName:      "ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR",
+		Kind:         g.KindBool,
+		Levels:       onUserOnly,
+		Description:  "Controls whether query text is redacted if a SQL query fails due to a syntax or parsing error. If FALSE, the content of a failed query is redacted in the views, pages, and functions that provide a query history. Only users with a role that is granted or inherits the AUDIT privilege can set the ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR parameter. When using the ALTER USER command to set the parameter to TRUE for a particular user, modify the user that you want to see the query text, not the user who executed the query (if those are different users).",
+		DefaultValue: "false",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	EnableUnredactedSecureObjectError = parameterdefs.ParameterDef{
 		SqlName:     "ENABLE_UNREDACTED_SECURE_OBJECT_ERROR",
@@ -478,7 +483,7 @@ var (
 	ErrorOnNondeterministicMerge = parameterdefs.ParameterDef{
 		SqlName:      "ERROR_ON_NONDETERMINISTIC_MERGE",
 		Kind:         g.KindBool,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies whether to return an error when the [MERGE](https://docs.snowflake.com/en/sql-reference/sql/merge) command is used to update or delete a target row that joins multiple source rows and the system cannot determine the action to perform on the target row.",
 		DefaultValue: "true",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -486,7 +491,7 @@ var (
 	ErrorOnNondeterministicUpdate = parameterdefs.ParameterDef{
 		SqlName:      "ERROR_ON_NONDETERMINISTIC_UPDATE",
 		Kind:         g.KindBool,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies whether to return an error when the [UPDATE](https://docs.snowflake.com/en/sql-reference/sql/update) command is used to update a target row that joins multiple source rows and the system cannot determine the action to perform on the target row.",
 		DefaultValue: "false",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -524,7 +529,7 @@ var (
 	GeographyOutputFormat = parameterdefs.ParameterDef{
 		SqlName:      "GEOGRAPHY_OUTPUT_FORMAT",
 		Kind:         g.KindOfT[sdkcommons.GeographyOutputFormat](),
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Display format for [GEOGRAPHY values](https://docs.snowflake.com/en/sql-reference/data-types-geospatial.html#label-data-types-geography).",
 		DefaultValue: "sdk.GeographyOutputFormatGeoJSON",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -532,7 +537,7 @@ var (
 	GeometryOutputFormat = parameterdefs.ParameterDef{
 		SqlName:      "GEOMETRY_OUTPUT_FORMAT",
 		Kind:         g.KindOfT[sdkcommons.GeometryOutputFormat](),
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Display format for [GEOMETRY values](https://docs.snowflake.com/en/sql-reference/data-types-geospatial.html#label-data-types-geometry).",
 		DefaultValue: "sdk.GeometryOutputFormatGeoJSON",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -564,15 +569,17 @@ var (
 		Description: "Sets the maximum estimated size limit for the initial replication of a primary database to a secondary database (in TB). Set this parameter on any account that stores a secondary database. This size limit helps prevent accounts from accidentally incurring large database replication charges. To remove the size limit, set the value to 0.0. It is required to pass numbers with scale of at least 1 (e.g. 20.5, 32.25, 33.333, etc.).",
 	}
 	JdbcTreatDecimalAsInt = parameterdefs.ParameterDef{
-		SqlName:     "JDBC_TREAT_DECIMAL_AS_INT",
-		Kind:        g.KindBool,
-		Levels:      onAccount,
-		Description: "Specifies how JDBC processes columns that have a scale of zero (0).",
+		SqlName:      "JDBC_TREAT_DECIMAL_AS_INT",
+		Kind:         g.KindBool,
+		Levels:       onUser,
+		Description:  "Specifies how JDBC processes columns that have a scale of zero (0).",
+		DefaultValue: "true",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	JdbcTreatTimestampNtzAsUtc = parameterdefs.ParameterDef{
 		SqlName:      "JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC",
 		Kind:         g.KindBool,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies how JDBC processes TIMESTAMP_NTZ values ([more details](https://docs.snowflake.com/en/sql-reference/parameters#jdbc-treat-timestamp-ntz-as-utc)).",
 		DefaultValue: "false",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -580,7 +587,7 @@ var (
 	JdbcUseSessionTimezone = parameterdefs.ParameterDef{
 		SqlName:      "JDBC_USE_SESSION_TIMEZONE",
 		Kind:         g.KindBool,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies whether the JDBC Driver uses the time zone of the JVM or the time zone of the session (specified by the [TIMEZONE](https://docs.snowflake.com/en/sql-reference/parameters#label-timezone) parameter) for the getDate(), getTime(), and getTimestamp() methods of the ResultSet class.",
 		DefaultValue: "true",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -594,7 +601,7 @@ var (
 	JsonIndent = parameterdefs.ParameterDef{
 		SqlName:      "JSON_INDENT",
 		Kind:         g.KindInt,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the number of blank spaces to indent each new element in JSON output in the session. Also specifies whether to insert newline characters after each element.",
 		DefaultValue: "2",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -608,7 +615,7 @@ var (
 	LockTimeout = parameterdefs.ParameterDef{
 		SqlName:      "LOCK_TIMEOUT",
 		Kind:         g.KindInt,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Number of seconds to wait while trying to lock a resource, before timing out and aborting the statement.",
 		DefaultValue: "43200",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -624,7 +631,7 @@ var (
 	LogLevel = parameterdefs.ParameterDef{
 		SqlName:      "LOG_LEVEL",
 		Kind:         g.KindOfT[sdkcommons.LogLevel](),
-		Levels:       append(slices.Clone(onLog), parameterdefs.ParameterLevelSession, parameterdefs.ParameterLevelUser),
+		Levels:       onLogUser,
 		Description:  "Specifies the severity level of messages that should be ingested and made available in the active event table. Messages at the specified level (and at more severe levels) are ingested.",
 		DefaultValue: "sdk.LogLevelOff",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -660,21 +667,23 @@ var (
 	MultiStatementCount = parameterdefs.ParameterDef{
 		SqlName:      "MULTI_STATEMENT_COUNT",
 		Kind:         g.KindInt,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Number of statements to execute when using the multi-statement capability.",
 		DefaultValue: "1",
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	NetworkPolicy = parameterdefs.ParameterDef{
-		SqlName:     "NETWORK_POLICY",
-		Kind:        g.KindOfT[sdkcommons.AccountObjectIdentifier](),
-		Levels:      onAccount,
-		Description: "Specifies the network policy to enforce for your account. Network policies enable restricting access to your account based on users’ IP address. For more details, see [Controlling network traffic with network policies](https://docs.snowflake.com/en/user-guide/network-policies).",
+		SqlName:      "NETWORK_POLICY",
+		Kind:         g.KindOfT[sdkcommons.AccountObjectIdentifier](),
+		Levels:       onUserOnly,
+		Description:  "Specifies the network policy to enforce for your account. Network policies enable restricting access to your account based on users’ IP address. For more details, see [Controlling network traffic with network policies](https://docs.snowflake.com/en/user-guide/network-policies).",
+		DefaultValue: "",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	NoorderSequenceAsDefault = parameterdefs.ParameterDef{
 		SqlName:      "NOORDER_SEQUENCE_AS_DEFAULT",
 		Kind:         g.KindBool,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies whether the ORDER or NOORDER property is set by default when you create a new sequence or add a new table column. The ORDER and NOORDER properties determine whether or not the values are generated for the sequence or auto-incremented column in [increasing or decreasing order](https://docs.snowflake.com/en/user-guide/querying-sequences.html#label-querying-sequences-increasing-values).",
 		DefaultValue: "true",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -688,7 +697,7 @@ var (
 	OdbcTreatDecimalAsInt = parameterdefs.ParameterDef{
 		SqlName:      "ODBC_TREAT_DECIMAL_AS_INT",
 		Kind:         g.KindBool,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies how ODBC processes columns that have a scale of zero (0).",
 		DefaultValue: "false",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -725,10 +734,12 @@ var (
 		Description: "Specifies whether to prevent ad hoc data unload operations to external cloud storage locations (that is, [COPY INTO location](https://docs.snowflake.com/en/sql-reference/sql/copy-into-location) statements that specify the cloud storage URL and access settings directly in the statement). For an example, see [Unloading data from a table directly to files in an external location](https://docs.snowflake.com/en/sql-reference/sql/copy-into-location.html#label-copy-into-location-ad-hoc).",
 	}
 	PreventUnloadToInternalStages = parameterdefs.ParameterDef{
-		SqlName:     "PREVENT_UNLOAD_TO_INTERNAL_STAGES",
-		Kind:        g.KindBool,
-		Levels:      onAccount,
-		Description: "Specifies whether to prevent data unload operations to internal (Snowflake) stages using [COPY INTO location](https://docs.snowflake.com/en/sql-reference/sql/copy-into-location) statements.",
+		SqlName:      "PREVENT_UNLOAD_TO_INTERNAL_STAGES",
+		Kind:         g.KindBool,
+		Levels:       onUserOnly,
+		Description:  "Specifies whether to prevent data unload operations to internal (Snowflake) stages using [COPY INTO location](https://docs.snowflake.com/en/sql-reference/sql/copy-into-location) statements.",
+		DefaultValue: "false",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	PythonProfilerModules = parameterdefs.ParameterDef{
 		SqlName:     "PYTHON_PROFILER_MODULES",
@@ -745,7 +756,7 @@ var (
 	QueryTag = parameterdefs.ParameterDef{
 		SqlName:      "QUERY_TAG",
 		Kind:         g.KindString,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Optional string that can be used to tag queries and other SQL statements executed within a session. The tags are displayed in the output of the [QUERY_HISTORY, QUERY_HISTORY_BY_*](https://docs.snowflake.com/en/sql-reference/functions/query_history) functions.",
 		DefaultValue: "",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -793,7 +804,7 @@ var (
 	RowsPerResultset = parameterdefs.ParameterDef{
 		SqlName:      "ROWS_PER_RESULTSET",
 		Kind:         g.KindInt,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the maximum number of rows returned in a result set. A value of 0 specifies no maximum.",
 		DefaultValue: "0",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -801,16 +812,18 @@ var (
 	S3StageVpceDnsName = parameterdefs.ParameterDef{
 		SqlName:      "S3_STAGE_VPCE_DNS_NAME",
 		Kind:         g.KindString,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the DNS name of an Amazon S3 interface endpoint. Requests sent to the internal stage of an account via [AWS PrivateLink for Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/privatelink-interface-endpoints.html) use this endpoint to connect. For more information, see [Accessing Internal stages with dedicated interface endpoints](https://docs.snowflake.com/en/user-guide/private-internal-stages-aws.html#label-aws-privatelink-internal-stage-network-isolation).",
 		DefaultValue: "",
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	SearchPath = parameterdefs.ParameterDef{
-		SqlName:     "SEARCH_PATH",
-		Kind:        g.KindString,
-		Levels:      onAccount,
-		Description: "Specifies the path to search to resolve unqualified object names in queries. For more information, see [Name resolution in queries](https://docs.snowflake.com/en/sql-reference/name-resolution.html#label-object-name-resolution-search-path). Comma-separated list of identifiers. An identifier can be a fully or partially qualified schema name.",
+		SqlName:      "SEARCH_PATH",
+		Kind:         g.KindString,
+		Levels:       onUser,
+		Description:  "Specifies the path to search to resolve unqualified object names in queries. For more information, see [Name resolution in queries](https://docs.snowflake.com/en/sql-reference/name-resolution.html#label-object-name-resolution-search-path). Comma-separated list of identifiers. An identifier can be a fully or partially qualified schema name.",
+		DefaultValue: "$current, $public",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	ServerlessTaskMaxStatementSize = parameterdefs.ParameterDef{
 		SqlName:      "SERVERLESS_TASK_MAX_STATEMENT_SIZE",
@@ -842,10 +855,12 @@ var (
 		Levels:  onAccountExt,
 	}
 	SimulatedDataSharingConsumer = parameterdefs.ParameterDef{
-		SqlName:     "SIMULATED_DATA_SHARING_CONSUMER",
-		Kind:        g.KindString,
-		Levels:      onAccount,
-		Description: "Specifies the name of a consumer account to simulate for testing/validating shared data, particularly shared secure views. When this parameter is set in a session, shared views return rows as if executed in the specified consumer account rather than the provider account.",
+		SqlName:      "SIMULATED_DATA_SHARING_CONSUMER",
+		Kind:         g.KindString,
+		Levels:       onUser,
+		Description:  "Specifies the name of a consumer account to simulate for testing/validating shared data, particularly shared secure views. When this parameter is set in a session, shared views return rows as if executed in the specified consumer account rather than the provider account.",
+		DefaultValue: "",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	SqlTraceQueryText = parameterdefs.ParameterDef{
 		SqlName:     "SQL_TRACE_QUERY_TEXT",
@@ -862,7 +877,7 @@ var (
 	StatementQueuedTimeoutInSeconds = parameterdefs.ParameterDef{
 		SqlName:      "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS",
 		Kind:         g.KindInt,
-		Levels:       append(slices.Clone(onWarehouseAll), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onWarehouseAll), parameterdefs.ParameterLevelTask, parameterdefs.ParameterLevelSession, parameterdefs.ParameterLevelUser),
 		Description:  "Amount of time, in seconds, a SQL statement (query, DDL, DML, etc.) remains queued for a warehouse before it is canceled by the system. This parameter can be used in conjunction with the [MAX_CONCURRENCY_LEVEL](https://docs.snowflake.com/en/sql-reference/parameters#label-max-concurrency-level) parameter to ensure a warehouse is never backlogged.",
 		DefaultValue: "0",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -870,7 +885,7 @@ var (
 	StatementTimeoutInSeconds = parameterdefs.ParameterDef{
 		SqlName:      "STATEMENT_TIMEOUT_IN_SECONDS",
 		Kind:         g.KindInt,
-		Levels:       append(slices.Clone(onWarehouseAll), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onWarehouseAll), parameterdefs.ParameterLevelTask, parameterdefs.ParameterLevelSession, parameterdefs.ParameterLevelUser),
 		Description:  "Amount of time, in seconds, after which a running SQL statement (query, DDL, DML, etc.) is canceled by the system.",
 		DefaultValue: "172800",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -886,7 +901,7 @@ var (
 	StrictJsonOutput = parameterdefs.ParameterDef{
 		SqlName:      "STRICT_JSON_OUTPUT",
 		Kind:         g.KindBool,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "This parameter specifies whether JSON output in a session is compatible with the general standard (as described by [http://json.org](http://json.org)). By design, Snowflake allows JSON input that contains non-standard values; however, these non-standard values might result in Snowflake outputting JSON that is incompatible with other platforms and languages. This parameter, when enabled, ensures that Snowflake outputs valid/compatible JSON.",
 		DefaultValue: "false",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -918,7 +933,7 @@ var (
 	TimeInputFormat = parameterdefs.ParameterDef{
 		SqlName:      "TIME_INPUT_FORMAT",
 		Kind:         g.KindString,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the input format for the TIME data type. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output). Any valid, supported time format or AUTO (AUTO specifies that Snowflake attempts to automatically detect the format of times stored in the system during the session).",
 		DefaultValue: "AUTO",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -926,7 +941,7 @@ var (
 	TimeOutputFormat = parameterdefs.ParameterDef{
 		SqlName:      "TIME_OUTPUT_FORMAT",
 		Kind:         g.KindString,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the display format for the TIME data type. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output).",
 		DefaultValue: "HH24:MI:SS",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -934,7 +949,7 @@ var (
 	TimestampDayIsAlways24h = parameterdefs.ParameterDef{
 		SqlName:      "TIMESTAMP_DAY_IS_ALWAYS_24H",
 		Kind:         g.KindBool,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies whether the [DATEADD](https://docs.snowflake.com/en/sql-reference/functions/dateadd) function (and its aliases) always consider a day to be exactly 24 hours for expressions that span multiple days.",
 		DefaultValue: "false",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -942,7 +957,7 @@ var (
 	TimestampInputFormat = parameterdefs.ParameterDef{
 		SqlName:      "TIMESTAMP_INPUT_FORMAT",
 		Kind:         g.KindString,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the input format for the TIMESTAMP data type alias. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output). Any valid, supported timestamp format or AUTO (AUTO specifies that Snowflake attempts to automatically detect the format of timestamps stored in the system during the session).",
 		DefaultValue: "AUTO",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -950,7 +965,7 @@ var (
 	TimestampLtzOutputFormat = parameterdefs.ParameterDef{
 		SqlName:      "TIMESTAMP_LTZ_OUTPUT_FORMAT",
 		Kind:         g.KindString,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the display format for the TIMESTAMP_LTZ data type. If no format is specified, defaults to [TIMESTAMP_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-output-format). For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output).",
 		DefaultValue: "",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -958,7 +973,7 @@ var (
 	TimestampNtzOutputFormat = parameterdefs.ParameterDef{
 		SqlName:      "TIMESTAMP_NTZ_OUTPUT_FORMAT",
 		Kind:         g.KindString,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the display format for the TIMESTAMP_NTZ data type.",
 		DefaultValue: "YYYY-MM-DD HH24:MI:SS.FF3",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -966,7 +981,7 @@ var (
 	TimestampOutputFormat = parameterdefs.ParameterDef{
 		SqlName:      "TIMESTAMP_OUTPUT_FORMAT",
 		Kind:         g.KindString,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the display format for the TIMESTAMP data type alias. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output).",
 		DefaultValue: "YYYY-MM-DD HH24:MI:SS.FF3 TZHTZM",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -974,7 +989,7 @@ var (
 	TimestampTypeMapping = parameterdefs.ParameterDef{
 		SqlName:      "TIMESTAMP_TYPE_MAPPING",
 		Kind:         g.KindOfT[sdkcommons.TimestampTypeMapping](),
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the TIMESTAMP_* variation that the TIMESTAMP data type alias maps to.",
 		DefaultValue: "sdk.TimestampTypeMappingNtz",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -982,7 +997,7 @@ var (
 	TimestampTzOutputFormat = parameterdefs.ParameterDef{
 		SqlName:      "TIMESTAMP_TZ_OUTPUT_FORMAT",
 		Kind:         g.KindString,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the display format for the TIMESTAMP_TZ data type. If no format is specified, defaults to [TIMESTAMP_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-output-format). For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output).",
 		DefaultValue: "",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -990,7 +1005,7 @@ var (
 	Timezone = parameterdefs.ParameterDef{
 		SqlName:      "TIMEZONE",
 		Kind:         g.KindString,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the time zone for the session. You can specify a [time zone name](https://data.iana.org/time-zones/tzdb-2021a/zone1970.tab) or a [link name](https://data.iana.org/time-zones/tzdb-2021a/backward) from release 2021a of the [IANA Time Zone Database](https://www.iana.org/time-zones) (e.g. America/Los_Angeles, Europe/London, UTC, Etc/GMT, etc.).",
 		DefaultValue: "America/Los_Angeles",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -1006,7 +1021,7 @@ var (
 	TransactionAbortOnError = parameterdefs.ParameterDef{
 		SqlName:      "TRANSACTION_ABORT_ON_ERROR",
 		Kind:         g.KindBool,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the action to perform when a statement issued within a non-autocommit transaction returns with an error.",
 		DefaultValue: "false",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -1014,7 +1029,7 @@ var (
 	TransactionDefaultIsolationLevel = parameterdefs.ParameterDef{
 		SqlName:      "TRANSACTION_DEFAULT_ISOLATION_LEVEL",
 		Kind:         g.KindOfT[sdkcommons.TransactionDefaultIsolationLevel](),
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the isolation level for transactions in the user session.",
 		DefaultValue: "sdk.TransactionDefaultIsolationLevelReadCommitted",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -1022,7 +1037,7 @@ var (
 	TwoDigitCenturyStart = parameterdefs.ParameterDef{
 		SqlName:      "TWO_DIGIT_CENTURY_START",
 		Kind:         g.KindInt,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the “century start” year for 2-digit years (i.e. the earliest year such dates can represent). This parameter prevents ambiguous dates when importing or converting data with the `YY` date format component (i.e. years represented as 2 digits).",
 		DefaultValue: "1970",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -1030,7 +1045,7 @@ var (
 	UnsupportedDdlAction = parameterdefs.ParameterDef{
 		SqlName:     "UNSUPPORTED_DDL_ACTION",
 		Kind:        g.KindOfT[sdkcommons.UnsupportedDDLAction](),
-		Levels:      append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:      append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description: "Determines if an unsupported (i.e. non-default) value specified for a constraint property returns an error.",
 		// TODO [SNOW-1501905]: quick workaround for now: lowercase for ignore in snowflake by default but uppercase for FAIL
 		DefaultValue: "sdk.UnsupportedDDLAction(strings.ToLower(string(sdk.UnsupportedDDLActionIgnore)))",
@@ -1039,7 +1054,7 @@ var (
 	UseCachedResult = parameterdefs.ParameterDef{
 		SqlName:      "USE_CACHED_RESULT",
 		Kind:         g.KindBool,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies whether to reuse persisted query results, if available, when a matching query is submitted.",
 		DefaultValue: "true",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -1077,7 +1092,7 @@ var (
 	WeekOfYearPolicy = parameterdefs.ParameterDef{
 		SqlName:      "WEEK_OF_YEAR_POLICY",
 		Kind:         g.KindInt,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies how the weeks in a given year are computed. `0`: The semantics used are equivalent to the ISO semantics, in which a week belongs to a given year if at least 4 days of that week are in that year. `1`: January 1 is included in the first week of the year and December 31 is included in the last week of the year.",
 		DefaultValue: "0",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -1085,7 +1100,7 @@ var (
 	WeekStart = parameterdefs.ParameterDef{
 		SqlName:      "WEEK_START",
 		Kind:         g.KindInt,
-		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
+		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the first day of the week (used by week-related date functions). `0`: Legacy Snowflake behavior is used (i.e. ISO-like semantics). `1` (Monday) to `7` (Sunday): All the week-related functions use weeks that start on the specified day of the week.",
 		DefaultValue: "0",
 		DefaultLevel: parameterTypeSnowflakeDefault,

@@ -46,12 +46,12 @@ func init() {
 					DefaultWarehouse:      &defaultWarehouseId,
 					DefaultSecondaryRoles: &SecondaryRoles{All: new(true)},
 				}
-				opts.ObjectParameters = &UserObjectParameters{EnableUnredactedQuerySyntaxError: new(true)}
-				opts.SessionParameters = &SessionParameters{Autocommit: new(true)}
+				opts.EnableUnredactedQuerySyntaxError = new(true)
+				opts.Autocommit = new(true)
 				opts.With = new(true)
 				opts.Tag = []TagAssociation{{Name: tagId, Value: "v1"}}
 			},
-			`CREATE USER IF NOT EXISTS %s PASSWORD = '%s' LOGIN_NAME = '%s' DEFAULT_WAREHOUSE = %s DEFAULT_NAMESPACE = %s DEFAULT_ROLE = %s DEFAULT_SECONDARY_ROLES = ('ALL') ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR = true AUTOCOMMIT = true WITH TAG (%s = 'v1')`,
+			`CREATE USER IF NOT EXISTS %s PASSWORD = '%s' LOGIN_NAME = '%s' DEFAULT_WAREHOUSE = %s DEFAULT_NAMESPACE = %s DEFAULT_ROLE = %s DEFAULT_SECONDARY_ROLES = ('ALL') AUTOCOMMIT = true ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR = true WITH TAG (%s = 'v1')`,
 			id.FullyQualifiedName(), password, loginName, defaultWarehouseId.FullyQualifiedName(), defaultNamespaceId.FullyQualifiedName(), defaultRoleId.FullyQualifiedName(), tagId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -160,8 +160,8 @@ func init() {
 			"validation_Alter_Set_policyWithPropertiesOrParameters",
 			func(opts *AlterUserOptions) {
 				opts.Set = &UserSet{
-					AuthenticationPolicy: &authenticationPolicyId,
-					ObjectParameters:     &UserObjectParameters{EnableUnredactedQuerySyntaxError: new(true)},
+					AuthenticationPolicy:             &authenticationPolicyId,
+					EnableUnredactedQuerySyntaxError: new(true),
 				}
 			},
 			NewError("policies cannot be set with user properties or parameters at the same time"),
@@ -180,8 +180,8 @@ func init() {
 			"validation_Alter_Unset_policyWithPropertiesOrParameters",
 			func(opts *AlterUserOptions) {
 				opts.Unset = &UserUnset{
-					PasswordPolicy:   new(true),
-					ObjectParameters: &UserObjectParametersUnset{EnableUnredactedQuerySyntaxError: new(true)},
+					PasswordPolicy:                   new(true),
+					EnableUnredactedQuerySyntaxError: new(true),
 				}
 			},
 			NewError("policies cannot be unset with user properties or parameters at the same time"),
@@ -245,11 +245,11 @@ func init() {
 			case_Users_sql_Alter_Set,
 			func(opts *AlterUserOptions) {
 				opts.Set = &UserSet{
-					SessionParameters: &SessionParameters{AbortDetachedQuery: new(true)},
-					ObjectParameters:  &UserObjectParameters{EnableUnredactedQuerySyntaxError: new(true)},
+					AbortDetachedQuery:               new(true),
+					EnableUnredactedQuerySyntaxError: new(true),
 				}
 			},
-			`ALTER USER %s SET ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR = true ABORT_DETACHED_QUERY = true`, id.FullyQualifiedName(),
+			`ALTER USER %s SET ABORT_DETACHED_QUERY = true ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR = true`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_Set_UserType",
@@ -309,14 +309,14 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_Alter_Set_ObjectParameters",
 			func(opts *AlterUserOptions) {
-				opts.Set = &UserSet{ObjectParameters: &UserObjectParameters{EnableUnredactedQuerySyntaxError: new(true)}}
+				opts.Set = &UserSet{EnableUnredactedQuerySyntaxError: new(true)}
 			},
 			`ALTER USER %s SET ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR = true`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_Set_SessionParameters",
 			func(opts *AlterUserOptions) {
-				opts.Set = &UserSet{SessionParameters: &SessionParameters{Autocommit: new(true)}}
+				opts.Set = &UserSet{Autocommit: new(true)}
 			},
 			`ALTER USER %s SET AUTOCOMMIT = true`, id.FullyQualifiedName(),
 		).
@@ -419,11 +419,11 @@ func init() {
 			case_Users_sql_Alter_Unset,
 			func(opts *AlterUserOptions) {
 				opts.Unset = &UserUnset{
-					ObjectParameters:  &UserObjectParametersUnset{EnableUnredactedQuerySyntaxError: new(true)},
-					SessionParameters: &SessionParametersUnset{BinaryOutputFormat: new(true)},
+					BinaryOutputFormat:               new(true),
+					EnableUnredactedQuerySyntaxError: new(true),
 				}
 			},
-			`ALTER USER %s UNSET ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR, BINARY_OUTPUT_FORMAT`, id.FullyQualifiedName(),
+			`ALTER USER %s UNSET BINARY_OUTPUT_FORMAT, ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_Unset_UserType",

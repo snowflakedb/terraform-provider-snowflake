@@ -24,12 +24,12 @@ func TestInt_ContextQueryTags(t *testing.T) {
 	userQueryTag := "user query tag"
 	testClientHelper().User.AlterCurrentUser(t, func(id sdk.AccountObjectIdentifier) *sdk.AlterUserRequest {
 		return sdk.NewAlterUserRequest(id).WithSet(*sdk.NewUserSetRequest().
-			WithSessionParameters(sdk.SessionParameters{QueryTag: sdk.String(userQueryTag)}))
+			WithQueryTag(userQueryTag))
 	})
 	t.Cleanup(func() {
 		testClientHelper().User.AlterCurrentUser(t, func(id sdk.AccountObjectIdentifier) *sdk.AlterUserRequest {
 			return sdk.NewAlterUserRequest(id).WithUnset(*sdk.NewUserUnsetRequest().
-				WithSessionParameters(sdk.SessionParametersUnset{QueryTag: sdk.Bool(true)}))
+				WithQueryTag(true))
 		})
 	})
 	queryId := executeQueryAndReturnQueryId(t, context.Background(), client)

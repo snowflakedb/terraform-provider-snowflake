@@ -4,6 +4,8 @@ package sdk
 
 import (
 	"context"
+	"errors"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -83,12 +85,70 @@ func (v *users) ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx context.
 
 func (r *CreateUserRequest) toOpts() *CreateUserOptions {
 	opts := &CreateUserOptions{
-		OrReplace:         r.OrReplace,
-		IfNotExists:       r.IfNotExists,
-		name:              r.name,
-		SessionParameters: r.SessionParameters,
-		With:              r.With,
-		Tag:               r.Tag,
+		OrReplace:                                r.OrReplace,
+		IfNotExists:                              r.IfNotExists,
+		name:                                     r.name,
+		AbortDetachedQuery:                       r.AbortDetachedQuery,
+		Autocommit:                               r.Autocommit,
+		BinaryInputFormat:                        r.BinaryInputFormat,
+		BinaryOutputFormat:                       r.BinaryOutputFormat,
+		ClientMemoryLimit:                        r.ClientMemoryLimit,
+		ClientMetadataRequestUseConnectionCtx:    r.ClientMetadataRequestUseConnectionCtx,
+		ClientPrefetchThreads:                    r.ClientPrefetchThreads,
+		ClientResultChunkSize:                    r.ClientResultChunkSize,
+		ClientResultColumnCaseInsensitive:        r.ClientResultColumnCaseInsensitive,
+		ClientSessionKeepAlive:                   r.ClientSessionKeepAlive,
+		ClientSessionKeepAliveHeartbeatFrequency: r.ClientSessionKeepAliveHeartbeatFrequency,
+		ClientTimestampTypeMapping:               r.ClientTimestampTypeMapping,
+		DateInputFormat:                          r.DateInputFormat,
+		DateOutputFormat:                         r.DateOutputFormat,
+		EnableUnloadPhysicalTypeOptimization:     r.EnableUnloadPhysicalTypeOptimization,
+		EnableUnredactedQuerySyntaxError:         r.EnableUnredactedQuerySyntaxError,
+		ErrorOnNondeterministicMerge:             r.ErrorOnNondeterministicMerge,
+		ErrorOnNondeterministicUpdate:            r.ErrorOnNondeterministicUpdate,
+		GeographyOutputFormat:                    r.GeographyOutputFormat,
+		GeometryOutputFormat:                     r.GeometryOutputFormat,
+		JdbcTreatDecimalAsInt:                    r.JdbcTreatDecimalAsInt,
+		JdbcTreatTimestampNtzAsUtc:               r.JdbcTreatTimestampNtzAsUtc,
+		JdbcUseSessionTimezone:                   r.JdbcUseSessionTimezone,
+		JsonIndent:                               r.JsonIndent,
+		LockTimeout:                              r.LockTimeout,
+		LogEventLevel:                            r.LogEventLevel,
+		LogLevel:                                 r.LogLevel,
+		MultiStatementCount:                      r.MultiStatementCount,
+		NetworkPolicy:                            r.NetworkPolicy,
+		NoorderSequenceAsDefault:                 r.NoorderSequenceAsDefault,
+		OdbcTreatDecimalAsInt:                    r.OdbcTreatDecimalAsInt,
+		PreventUnloadToInternalStages:            r.PreventUnloadToInternalStages,
+		QueryTag:                                 r.QueryTag,
+		QuotedIdentifiersIgnoreCase:              r.QuotedIdentifiersIgnoreCase,
+		RowsPerResultset:                         r.RowsPerResultset,
+		S3StageVpceDnsName:                       r.S3StageVpceDnsName,
+		SearchPath:                               r.SearchPath,
+		SimulatedDataSharingConsumer:             r.SimulatedDataSharingConsumer,
+		StatementQueuedTimeoutInSeconds:          r.StatementQueuedTimeoutInSeconds,
+		StatementTimeoutInSeconds:                r.StatementTimeoutInSeconds,
+		StrictJsonOutput:                         r.StrictJsonOutput,
+		TimeInputFormat:                          r.TimeInputFormat,
+		TimeOutputFormat:                         r.TimeOutputFormat,
+		TimestampDayIsAlways24H:                  r.TimestampDayIsAlways24H,
+		TimestampInputFormat:                     r.TimestampInputFormat,
+		TimestampLtzOutputFormat:                 r.TimestampLtzOutputFormat,
+		TimestampNtzOutputFormat:                 r.TimestampNtzOutputFormat,
+		TimestampOutputFormat:                    r.TimestampOutputFormat,
+		TimestampTypeMapping:                     r.TimestampTypeMapping,
+		TimestampTzOutputFormat:                  r.TimestampTzOutputFormat,
+		Timezone:                                 r.Timezone,
+		TraceLevel:                               r.TraceLevel,
+		TransactionAbortOnError:                  r.TransactionAbortOnError,
+		TransactionDefaultIsolationLevel:         r.TransactionDefaultIsolationLevel,
+		TwoDigitCenturyStart:                     r.TwoDigitCenturyStart,
+		UnsupportedDdlAction:                     r.UnsupportedDdlAction,
+		UseCachedResult:                          r.UseCachedResult,
+		WeekOfYearPolicy:                         r.WeekOfYearPolicy,
+		WeekStart:                                r.WeekStart,
+		With:                                     r.With,
+		Tag:                                      r.Tag,
 	}
 	if r.ObjectProperties != nil {
 		opts.ObjectProperties = &UserObjectProperties{
@@ -148,13 +208,6 @@ func (r *CreateUserRequest) toOpts() *CreateUserOptions {
 			}
 		}
 	}
-	if r.ObjectParameters != nil {
-		opts.ObjectParameters = &UserObjectParameters{
-			EnableUnredactedQuerySyntaxError: r.ObjectParameters.EnableUnredactedQuerySyntaxError,
-			NetworkPolicy:                    r.ObjectParameters.NetworkPolicy,
-			PreventUnloadToInternalStages:    r.ObjectParameters.PreventUnloadToInternalStages,
-		}
-	}
 	return opts
 }
 
@@ -183,11 +236,69 @@ func (r *AlterUserRequest) toOpts() *AlterUserOptions {
 	}
 	if r.Set != nil {
 		opts.Set = &UserSet{
-			PasswordPolicy:       r.Set.PasswordPolicy,
-			SessionPolicy:        r.Set.SessionPolicy,
-			AuthenticationPolicy: r.Set.AuthenticationPolicy,
-			SessionParameters:    r.Set.SessionParameters,
-			Force:                r.Set.Force,
+			PasswordPolicy:                           r.Set.PasswordPolicy,
+			SessionPolicy:                            r.Set.SessionPolicy,
+			AuthenticationPolicy:                     r.Set.AuthenticationPolicy,
+			AbortDetachedQuery:                       r.Set.AbortDetachedQuery,
+			Autocommit:                               r.Set.Autocommit,
+			BinaryInputFormat:                        r.Set.BinaryInputFormat,
+			BinaryOutputFormat:                       r.Set.BinaryOutputFormat,
+			ClientMemoryLimit:                        r.Set.ClientMemoryLimit,
+			ClientMetadataRequestUseConnectionCtx:    r.Set.ClientMetadataRequestUseConnectionCtx,
+			ClientPrefetchThreads:                    r.Set.ClientPrefetchThreads,
+			ClientResultChunkSize:                    r.Set.ClientResultChunkSize,
+			ClientResultColumnCaseInsensitive:        r.Set.ClientResultColumnCaseInsensitive,
+			ClientSessionKeepAlive:                   r.Set.ClientSessionKeepAlive,
+			ClientSessionKeepAliveHeartbeatFrequency: r.Set.ClientSessionKeepAliveHeartbeatFrequency,
+			ClientTimestampTypeMapping:               r.Set.ClientTimestampTypeMapping,
+			DateInputFormat:                          r.Set.DateInputFormat,
+			DateOutputFormat:                         r.Set.DateOutputFormat,
+			EnableUnloadPhysicalTypeOptimization:     r.Set.EnableUnloadPhysicalTypeOptimization,
+			EnableUnredactedQuerySyntaxError:         r.Set.EnableUnredactedQuerySyntaxError,
+			ErrorOnNondeterministicMerge:             r.Set.ErrorOnNondeterministicMerge,
+			ErrorOnNondeterministicUpdate:            r.Set.ErrorOnNondeterministicUpdate,
+			GeographyOutputFormat:                    r.Set.GeographyOutputFormat,
+			GeometryOutputFormat:                     r.Set.GeometryOutputFormat,
+			JdbcTreatDecimalAsInt:                    r.Set.JdbcTreatDecimalAsInt,
+			JdbcTreatTimestampNtzAsUtc:               r.Set.JdbcTreatTimestampNtzAsUtc,
+			JdbcUseSessionTimezone:                   r.Set.JdbcUseSessionTimezone,
+			JsonIndent:                               r.Set.JsonIndent,
+			LockTimeout:                              r.Set.LockTimeout,
+			LogEventLevel:                            r.Set.LogEventLevel,
+			LogLevel:                                 r.Set.LogLevel,
+			MultiStatementCount:                      r.Set.MultiStatementCount,
+			NetworkPolicy:                            r.Set.NetworkPolicy,
+			NoorderSequenceAsDefault:                 r.Set.NoorderSequenceAsDefault,
+			OdbcTreatDecimalAsInt:                    r.Set.OdbcTreatDecimalAsInt,
+			PreventUnloadToInternalStages:            r.Set.PreventUnloadToInternalStages,
+			QueryTag:                                 r.Set.QueryTag,
+			QuotedIdentifiersIgnoreCase:              r.Set.QuotedIdentifiersIgnoreCase,
+			RowsPerResultset:                         r.Set.RowsPerResultset,
+			S3StageVpceDnsName:                       r.Set.S3StageVpceDnsName,
+			SearchPath:                               r.Set.SearchPath,
+			SimulatedDataSharingConsumer:             r.Set.SimulatedDataSharingConsumer,
+			StatementQueuedTimeoutInSeconds:          r.Set.StatementQueuedTimeoutInSeconds,
+			StatementTimeoutInSeconds:                r.Set.StatementTimeoutInSeconds,
+			StrictJsonOutput:                         r.Set.StrictJsonOutput,
+			TimeInputFormat:                          r.Set.TimeInputFormat,
+			TimeOutputFormat:                         r.Set.TimeOutputFormat,
+			TimestampDayIsAlways24H:                  r.Set.TimestampDayIsAlways24H,
+			TimestampInputFormat:                     r.Set.TimestampInputFormat,
+			TimestampLtzOutputFormat:                 r.Set.TimestampLtzOutputFormat,
+			TimestampNtzOutputFormat:                 r.Set.TimestampNtzOutputFormat,
+			TimestampOutputFormat:                    r.Set.TimestampOutputFormat,
+			TimestampTypeMapping:                     r.Set.TimestampTypeMapping,
+			TimestampTzOutputFormat:                  r.Set.TimestampTzOutputFormat,
+			Timezone:                                 r.Set.Timezone,
+			TraceLevel:                               r.Set.TraceLevel,
+			TransactionAbortOnError:                  r.Set.TransactionAbortOnError,
+			TransactionDefaultIsolationLevel:         r.Set.TransactionDefaultIsolationLevel,
+			TwoDigitCenturyStart:                     r.Set.TwoDigitCenturyStart,
+			UnsupportedDdlAction:                     r.Set.UnsupportedDdlAction,
+			UseCachedResult:                          r.Set.UseCachedResult,
+			WeekOfYearPolicy:                         r.Set.WeekOfYearPolicy,
+			WeekStart:                                r.Set.WeekStart,
+			Force:                                    r.Set.Force,
 		}
 		if r.Set.ObjectProperties != nil {
 			opts.Set.ObjectProperties = &UserAlterObjectProperties{
@@ -248,20 +359,71 @@ func (r *AlterUserRequest) toOpts() *AlterUserOptions {
 				}
 			}
 		}
-		if r.Set.ObjectParameters != nil {
-			opts.Set.ObjectParameters = &UserObjectParameters{
-				EnableUnredactedQuerySyntaxError: r.Set.ObjectParameters.EnableUnredactedQuerySyntaxError,
-				NetworkPolicy:                    r.Set.ObjectParameters.NetworkPolicy,
-				PreventUnloadToInternalStages:    r.Set.ObjectParameters.PreventUnloadToInternalStages,
-			}
-		}
 	}
 	if r.Unset != nil {
 		opts.Unset = &UserUnset{
-			PasswordPolicy:       r.Unset.PasswordPolicy,
-			SessionPolicy:        r.Unset.SessionPolicy,
-			AuthenticationPolicy: r.Unset.AuthenticationPolicy,
-			SessionParameters:    r.Unset.SessionParameters,
+			PasswordPolicy:                           r.Unset.PasswordPolicy,
+			SessionPolicy:                            r.Unset.SessionPolicy,
+			AuthenticationPolicy:                     r.Unset.AuthenticationPolicy,
+			AbortDetachedQuery:                       r.Unset.AbortDetachedQuery,
+			Autocommit:                               r.Unset.Autocommit,
+			BinaryInputFormat:                        r.Unset.BinaryInputFormat,
+			BinaryOutputFormat:                       r.Unset.BinaryOutputFormat,
+			ClientMemoryLimit:                        r.Unset.ClientMemoryLimit,
+			ClientMetadataRequestUseConnectionCtx:    r.Unset.ClientMetadataRequestUseConnectionCtx,
+			ClientPrefetchThreads:                    r.Unset.ClientPrefetchThreads,
+			ClientResultChunkSize:                    r.Unset.ClientResultChunkSize,
+			ClientResultColumnCaseInsensitive:        r.Unset.ClientResultColumnCaseInsensitive,
+			ClientSessionKeepAlive:                   r.Unset.ClientSessionKeepAlive,
+			ClientSessionKeepAliveHeartbeatFrequency: r.Unset.ClientSessionKeepAliveHeartbeatFrequency,
+			ClientTimestampTypeMapping:               r.Unset.ClientTimestampTypeMapping,
+			DateInputFormat:                          r.Unset.DateInputFormat,
+			DateOutputFormat:                         r.Unset.DateOutputFormat,
+			EnableUnloadPhysicalTypeOptimization:     r.Unset.EnableUnloadPhysicalTypeOptimization,
+			EnableUnredactedQuerySyntaxError:         r.Unset.EnableUnredactedQuerySyntaxError,
+			ErrorOnNondeterministicMerge:             r.Unset.ErrorOnNondeterministicMerge,
+			ErrorOnNondeterministicUpdate:            r.Unset.ErrorOnNondeterministicUpdate,
+			GeographyOutputFormat:                    r.Unset.GeographyOutputFormat,
+			GeometryOutputFormat:                     r.Unset.GeometryOutputFormat,
+			JdbcTreatDecimalAsInt:                    r.Unset.JdbcTreatDecimalAsInt,
+			JdbcTreatTimestampNtzAsUtc:               r.Unset.JdbcTreatTimestampNtzAsUtc,
+			JdbcUseSessionTimezone:                   r.Unset.JdbcUseSessionTimezone,
+			JsonIndent:                               r.Unset.JsonIndent,
+			LockTimeout:                              r.Unset.LockTimeout,
+			LogEventLevel:                            r.Unset.LogEventLevel,
+			LogLevel:                                 r.Unset.LogLevel,
+			MultiStatementCount:                      r.Unset.MultiStatementCount,
+			NetworkPolicy:                            r.Unset.NetworkPolicy,
+			NoorderSequenceAsDefault:                 r.Unset.NoorderSequenceAsDefault,
+			OdbcTreatDecimalAsInt:                    r.Unset.OdbcTreatDecimalAsInt,
+			PreventUnloadToInternalStages:            r.Unset.PreventUnloadToInternalStages,
+			QueryTag:                                 r.Unset.QueryTag,
+			QuotedIdentifiersIgnoreCase:              r.Unset.QuotedIdentifiersIgnoreCase,
+			RowsPerResultset:                         r.Unset.RowsPerResultset,
+			S3StageVpceDnsName:                       r.Unset.S3StageVpceDnsName,
+			SearchPath:                               r.Unset.SearchPath,
+			SimulatedDataSharingConsumer:             r.Unset.SimulatedDataSharingConsumer,
+			StatementQueuedTimeoutInSeconds:          r.Unset.StatementQueuedTimeoutInSeconds,
+			StatementTimeoutInSeconds:                r.Unset.StatementTimeoutInSeconds,
+			StrictJsonOutput:                         r.Unset.StrictJsonOutput,
+			TimeInputFormat:                          r.Unset.TimeInputFormat,
+			TimeOutputFormat:                         r.Unset.TimeOutputFormat,
+			TimestampDayIsAlways24H:                  r.Unset.TimestampDayIsAlways24H,
+			TimestampInputFormat:                     r.Unset.TimestampInputFormat,
+			TimestampLtzOutputFormat:                 r.Unset.TimestampLtzOutputFormat,
+			TimestampNtzOutputFormat:                 r.Unset.TimestampNtzOutputFormat,
+			TimestampOutputFormat:                    r.Unset.TimestampOutputFormat,
+			TimestampTypeMapping:                     r.Unset.TimestampTypeMapping,
+			TimestampTzOutputFormat:                  r.Unset.TimestampTzOutputFormat,
+			Timezone:                                 r.Unset.Timezone,
+			TraceLevel:                               r.Unset.TraceLevel,
+			TransactionAbortOnError:                  r.Unset.TransactionAbortOnError,
+			TransactionDefaultIsolationLevel:         r.Unset.TransactionDefaultIsolationLevel,
+			TwoDigitCenturyStart:                     r.Unset.TwoDigitCenturyStart,
+			UnsupportedDdlAction:                     r.Unset.UnsupportedDdlAction,
+			UseCachedResult:                          r.Unset.UseCachedResult,
+			WeekOfYearPolicy:                         r.Unset.WeekOfYearPolicy,
+			WeekStart:                                r.Unset.WeekStart,
 		}
 		if r.Unset.ObjectProperties != nil {
 			opts.Unset.ObjectProperties = &UserObjectPropertiesUnset{
@@ -287,13 +449,6 @@ func (r *AlterUserRequest) toOpts() *AlterUserOptions {
 				UserType:              r.Unset.ObjectProperties.UserType,
 				WorkloadIdentity:      r.Unset.ObjectProperties.WorkloadIdentity,
 				Comment:               r.Unset.ObjectProperties.Comment,
-			}
-		}
-		if r.Unset.ObjectParameters != nil {
-			opts.Unset.ObjectParameters = &UserObjectParametersUnset{
-				EnableUnredactedQuerySyntaxError: r.Unset.ObjectParameters.EnableUnredactedQuerySyntaxError,
-				NetworkPolicy:                    r.Unset.ObjectParameters.NetworkPolicy,
-				PreventUnloadToInternalStages:    r.Unset.ObjectParameters.PreventUnloadToInternalStages,
 			}
 		}
 	}
@@ -387,4 +542,81 @@ func (r userWorkloadIdentityAuthenticationMethodsDBRow) convert() (*UserWorkload
 		return nil, err
 	}
 	return result, nil
+}
+
+func toUserParametersDetails(params []*Parameter) (*UserParametersDetails, error) {
+	byKey := parametersByKey(params)
+	var d UserParametersDetails
+	if err := errors.Join(
+		fillTypedParameter(byKey["ABORT_DETACHED_QUERY"], strconv.ParseBool, &d.AbortDetachedQuery),
+		fillTypedParameter(byKey["AUTOCOMMIT"], strconv.ParseBool, &d.Autocommit),
+		fillTypedParameter(byKey["BINARY_INPUT_FORMAT"], ToBinaryInputFormat, &d.BinaryInputFormat),
+		fillTypedParameter(byKey["BINARY_OUTPUT_FORMAT"], ToBinaryOutputFormat, &d.BinaryOutputFormat),
+		fillTypedParameter(byKey["CLIENT_MEMORY_LIMIT"], strconv.Atoi, &d.ClientMemoryLimit),
+		fillTypedParameter(byKey["CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX"], strconv.ParseBool, &d.ClientMetadataRequestUseConnectionCtx),
+		fillTypedParameter(byKey["CLIENT_PREFETCH_THREADS"], strconv.Atoi, &d.ClientPrefetchThreads),
+		fillTypedParameter(byKey["CLIENT_RESULT_CHUNK_SIZE"], strconv.Atoi, &d.ClientResultChunkSize),
+		fillTypedParameter(byKey["CLIENT_RESULT_COLUMN_CASE_INSENSITIVE"], strconv.ParseBool, &d.ClientResultColumnCaseInsensitive),
+		fillTypedParameter(byKey["CLIENT_SESSION_KEEP_ALIVE"], strconv.ParseBool, &d.ClientSessionKeepAlive),
+		fillTypedParameter(byKey["CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY"], strconv.Atoi, &d.ClientSessionKeepAliveHeartbeatFrequency),
+		fillTypedParameter(byKey["CLIENT_TIMESTAMP_TYPE_MAPPING"], ToClientTimestampTypeMapping, &d.ClientTimestampTypeMapping),
+		fillTypedParameter(byKey["DATE_INPUT_FORMAT"], identityParse, &d.DateInputFormat),
+		fillTypedParameter(byKey["DATE_OUTPUT_FORMAT"], identityParse, &d.DateOutputFormat),
+		fillTypedParameter(byKey["ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"], strconv.ParseBool, &d.EnableUnloadPhysicalTypeOptimization),
+		fillTypedParameter(byKey["ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"], strconv.ParseBool, &d.EnableUnredactedQuerySyntaxError),
+		fillTypedParameter(byKey["ERROR_ON_NONDETERMINISTIC_MERGE"], strconv.ParseBool, &d.ErrorOnNondeterministicMerge),
+		fillTypedParameter(byKey["ERROR_ON_NONDETERMINISTIC_UPDATE"], strconv.ParseBool, &d.ErrorOnNondeterministicUpdate),
+		fillTypedParameter(byKey["GEOGRAPHY_OUTPUT_FORMAT"], ToGeographyOutputFormat, &d.GeographyOutputFormat),
+		fillTypedParameter(byKey["GEOMETRY_OUTPUT_FORMAT"], ToGeometryOutputFormat, &d.GeometryOutputFormat),
+		fillTypedParameter(byKey["JDBC_TREAT_DECIMAL_AS_INT"], strconv.ParseBool, &d.JdbcTreatDecimalAsInt),
+		fillTypedParameter(byKey["JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC"], strconv.ParseBool, &d.JdbcTreatTimestampNtzAsUtc),
+		fillTypedParameter(byKey["JDBC_USE_SESSION_TIMEZONE"], strconv.ParseBool, &d.JdbcUseSessionTimezone),
+		fillTypedParameter(byKey["JSON_INDENT"], strconv.Atoi, &d.JsonIndent),
+		fillTypedParameter(byKey["LOCK_TIMEOUT"], strconv.Atoi, &d.LockTimeout),
+		fillTypedParameter(byKey["LOG_EVENT_LEVEL"], ToLogLevel, &d.LogEventLevel),
+		fillTypedParameter(byKey["LOG_LEVEL"], ToLogLevel, &d.LogLevel),
+		fillTypedParameter(byKey["MULTI_STATEMENT_COUNT"], strconv.Atoi, &d.MultiStatementCount),
+		fillTypedParameter(byKey["NETWORK_POLICY"], ParseAccountObjectIdentifier, &d.NetworkPolicy),
+		fillTypedParameter(byKey["NOORDER_SEQUENCE_AS_DEFAULT"], strconv.ParseBool, &d.NoorderSequenceAsDefault),
+		fillTypedParameter(byKey["ODBC_TREAT_DECIMAL_AS_INT"], strconv.ParseBool, &d.OdbcTreatDecimalAsInt),
+		fillTypedParameter(byKey["PREVENT_UNLOAD_TO_INTERNAL_STAGES"], strconv.ParseBool, &d.PreventUnloadToInternalStages),
+		fillTypedParameter(byKey["QUERY_TAG"], identityParse, &d.QueryTag),
+		fillTypedParameter(byKey["QUOTED_IDENTIFIERS_IGNORE_CASE"], strconv.ParseBool, &d.QuotedIdentifiersIgnoreCase),
+		fillTypedParameter(byKey["ROWS_PER_RESULTSET"], strconv.Atoi, &d.RowsPerResultset),
+		fillTypedParameter(byKey["S3_STAGE_VPCE_DNS_NAME"], identityParse, &d.S3StageVpceDnsName),
+		fillTypedParameter(byKey["SEARCH_PATH"], identityParse, &d.SearchPath),
+		fillTypedParameter(byKey["SIMULATED_DATA_SHARING_CONSUMER"], identityParse, &d.SimulatedDataSharingConsumer),
+		fillTypedParameter(byKey["STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"], strconv.Atoi, &d.StatementQueuedTimeoutInSeconds),
+		fillTypedParameter(byKey["STATEMENT_TIMEOUT_IN_SECONDS"], strconv.Atoi, &d.StatementTimeoutInSeconds),
+		fillTypedParameter(byKey["STRICT_JSON_OUTPUT"], strconv.ParseBool, &d.StrictJsonOutput),
+		fillTypedParameter(byKey["TIME_INPUT_FORMAT"], identityParse, &d.TimeInputFormat),
+		fillTypedParameter(byKey["TIME_OUTPUT_FORMAT"], identityParse, &d.TimeOutputFormat),
+		fillTypedParameter(byKey["TIMESTAMP_DAY_IS_ALWAYS_24H"], strconv.ParseBool, &d.TimestampDayIsAlways24H),
+		fillTypedParameter(byKey["TIMESTAMP_INPUT_FORMAT"], identityParse, &d.TimestampInputFormat),
+		fillTypedParameter(byKey["TIMESTAMP_LTZ_OUTPUT_FORMAT"], identityParse, &d.TimestampLtzOutputFormat),
+		fillTypedParameter(byKey["TIMESTAMP_NTZ_OUTPUT_FORMAT"], identityParse, &d.TimestampNtzOutputFormat),
+		fillTypedParameter(byKey["TIMESTAMP_OUTPUT_FORMAT"], identityParse, &d.TimestampOutputFormat),
+		fillTypedParameter(byKey["TIMESTAMP_TYPE_MAPPING"], ToTimestampTypeMapping, &d.TimestampTypeMapping),
+		fillTypedParameter(byKey["TIMESTAMP_TZ_OUTPUT_FORMAT"], identityParse, &d.TimestampTzOutputFormat),
+		fillTypedParameter(byKey["TIMEZONE"], identityParse, &d.Timezone),
+		fillTypedParameter(byKey["TRACE_LEVEL"], ToTraceLevel, &d.TraceLevel),
+		fillTypedParameter(byKey["TRANSACTION_ABORT_ON_ERROR"], strconv.ParseBool, &d.TransactionAbortOnError),
+		fillTypedParameter(byKey["TRANSACTION_DEFAULT_ISOLATION_LEVEL"], ToTransactionDefaultIsolationLevel, &d.TransactionDefaultIsolationLevel),
+		fillTypedParameter(byKey["TWO_DIGIT_CENTURY_START"], strconv.Atoi, &d.TwoDigitCenturyStart),
+		fillTypedParameter(byKey["UNSUPPORTED_DDL_ACTION"], ToUnsupportedDDLAction, &d.UnsupportedDdlAction),
+		fillTypedParameter(byKey["USE_CACHED_RESULT"], strconv.ParseBool, &d.UseCachedResult),
+		fillTypedParameter(byKey["WEEK_OF_YEAR_POLICY"], strconv.Atoi, &d.WeekOfYearPolicy),
+		fillTypedParameter(byKey["WEEK_START"], strconv.Atoi, &d.WeekStart),
+	); err != nil {
+		return nil, err
+	}
+	return &d, nil
+}
+
+func (v *users) ShowParametersDetails(ctx context.Context, id AccountObjectIdentifier) (*UserParametersDetails, error) {
+	params, err := v.ShowParameters(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return toUserParametersDetails(params)
 }

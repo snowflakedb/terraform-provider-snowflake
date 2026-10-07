@@ -76,9 +76,7 @@ func TestUnsetObjectParameterNetworkPolicyOnUser(t *testing.T) {
 	opts := &AlterUserOptions{
 		name: NewAccountObjectIdentifierFromFullyQualifiedName("TEST_USER"),
 		Unset: &UserUnset{
-			ObjectParameters: &UserObjectParametersUnset{
-				NetworkPolicy: Bool(true),
-			},
+			NetworkPolicy: Bool(true),
 		},
 	}
 	t.Run("Unset User Network Policy", func(t *testing.T) {

@@ -313,8 +313,6 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 		}
 
 		objectProperties := &sdk.UserObjectPropertiesRequest{}
-		objectParameters := &sdk.UserObjectParametersRequest{}
-		sessionParameters := &sdk.SessionParameters{}
 		name := d.Get("name").(string)
 		id := sdk.NewAccountObjectIdentifier(name)
 
@@ -398,11 +396,12 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			return diag.FromErr(userTypeSpecificFieldsErrs)
 		}
 
-		if parametersCreateDiags := handleUserParametersCreate(d, sessionParameters, objectParameters); len(parametersCreateDiags) > 0 {
+		createReq := sdk.NewCreateUserRequest(id).WithObjectProperties(*objectProperties)
+		if parametersCreateDiags := handleUserParametersCreate(d, createReq); len(parametersCreateDiags) > 0 {
 			return parametersCreateDiags
 		}
 
-		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).WithObjectProperties(*objectProperties).WithObjectParameters(*objectParameters).WithSessionParameters(*sessionParameters))
+		err := client.Users.Create(ctx, createReq)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -691,23 +690,21 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			return diag.FromErr(err)
 		}
 
-		setSessionParams := &sdk.SessionParameters{}
-		setObjectParams := &sdk.UserObjectParametersRequest{}
-		unsetSessionParams := &sdk.SessionParametersUnset{}
-		unsetObjectParams := &sdk.UserObjectParametersUnsetRequest{}
-		if updateParamDiags := handleUserParametersUpdate(d, setSessionParams, setObjectParams, unsetSessionParams, unsetObjectParams); len(updateParamDiags) > 0 {
+		setParams := sdk.NewUserSetRequest()
+		unsetParams := sdk.NewUserUnsetRequest()
+		if updateParamDiags := handleUserParametersUpdate(d, setParams, unsetParams); len(updateParamDiags) > 0 {
 			return updateParamDiags
 		}
 
-		if !reflect.DeepEqual(*setSessionParams, sdk.SessionParameters{}) || !reflect.DeepEqual(*setObjectParams, sdk.UserObjectParametersRequest{}) {
-			err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithSet(*sdk.NewUserSetRequest().WithSessionParameters(*setSessionParams).WithObjectParameters(*setObjectParams)))
+		if !reflect.DeepEqual(*setParams, sdk.UserSetRequest{}) {
+			err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithSet(*setParams))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		}
 
-		if !reflect.DeepEqual(*unsetSessionParams, sdk.SessionParametersUnset{}) || !reflect.DeepEqual(*unsetObjectParams, sdk.UserObjectParametersUnsetRequest{}) {
-			err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithUnset(*sdk.NewUserUnsetRequest().WithSessionParameters(*unsetSessionParams).WithObjectParameters(*unsetObjectParams)))
+		if !reflect.DeepEqual(*unsetParams, sdk.UserUnsetRequest{}) {
+			err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithUnset(*unsetParams))
 			if err != nil {
 				return diag.FromErr(err)
 			}

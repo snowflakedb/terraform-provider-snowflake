@@ -1,9 +1,18 @@
 package defs
 
 import (
+	"slices"
+
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
+
+var userParameters = ParameterDefsForLevel(parameterdefs.ParameterLevelUser)
+
+var userParameterFieldNames = collections.Map(userParameters, g.ParameterSqlToFieldName)
 
 var wifTypeEnum = g.NewEnum("WIFType", "WIFTypes", "AWS", "AZURE", "GCP", "OIDC")
 
@@ -157,13 +166,6 @@ func userAlterObjectPropertiesStruct() *g.QueryStruct {
 		OptionalBooleanAssignment("DISABLE_MFA", nil)
 }
 
-func userObjectParametersStruct() *g.QueryStruct {
-	return g.NewQueryStruct("UserObjectParameters").
-		OptionalBooleanAssignment("ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR", nil).
-		OptionalIdentifier("NetworkPolicy", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("NETWORK_POLICY").Equals()).
-		OptionalBooleanAssignment("PREVENT_UNLOAD_TO_INTERNAL_STAGES", nil)
-}
-
 func userObjectPropertiesUnsetStruct() *g.QueryStruct {
 	return g.NewQueryStruct("UserObjectPropertiesUnset").
 		OptionalSQL("PASSWORD").
@@ -190,13 +192,6 @@ func userObjectPropertiesUnsetStruct() *g.QueryStruct {
 		OptionalSQL("COMMENT")
 }
 
-func userObjectParametersUnsetStruct() *g.QueryStruct {
-	return g.NewQueryStruct("UserObjectParametersUnset").
-		OptionalSQL("ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR").
-		OptionalSQL("NETWORK_POLICY").
-		OptionalSQL("PREVENT_UNLOAD_TO_INTERNAL_STAGES")
-}
-
 func addDelegatedAuthorizationStruct() *g.QueryStruct {
 	return g.NewQueryStruct("AddDelegatedAuthorization").
 		PredefinedQueryStructField("Role", "string", g.ParameterOptions().NoEquals().SQL("ADD DELEGATED AUTHORIZATION OF ROLE")).
@@ -218,10 +213,9 @@ func userSetStruct() *g.QueryStruct {
 		OptionalIdentifier("SessionPolicy", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("SESSION POLICY")).
 		OptionalIdentifier("AuthenticationPolicy", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("AUTHENTICATION POLICY")).
 		OptionalQueryStructField("ObjectProperties", userAlterObjectPropertiesStruct(), g.KeywordOptions()).
-		OptionalQueryStructField("ObjectParameters", userObjectParametersStruct(), g.KeywordOptions()).
-		PredefinedQueryStructField("SessionParameters", "*SessionParameters", g.KeywordOptions()).
+		WithParameters(userParameters...).
 		OptionalSQL("FORCE").
-		WithValidation(g.AtLeastOneValueSet, "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ObjectProperties", "ObjectParameters", "SessionParameters").
+		WithValidation(g.AtLeastOneValueSet, append(slices.Clone(userParameterFieldNames), "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ObjectProperties")...).
 		WithValidation(g.MoreThanOneValueSet, "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy").
 		WithAdditionalValidations()
 }
@@ -232,9 +226,8 @@ func userUnsetStruct() *g.QueryStruct {
 		OptionalSQL("SESSION POLICY").
 		OptionalSQL("AUTHENTICATION POLICY").
 		OptionalQueryStructField("ObjectProperties", userObjectPropertiesUnsetStruct(), g.ListOptions()).
-		OptionalQueryStructField("ObjectParameters", userObjectParametersUnsetStruct(), g.ListOptions()).
-		PredefinedQueryStructField("SessionParameters", "*SessionParametersUnset", g.ListOptions()).
-		WithValidation(g.AtLeastOneValueSet, "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ObjectProperties", "ObjectParameters", "SessionParameters").
+		WithParametersUnset(userParameters...).
+		WithValidation(g.AtLeastOneValueSet, append(slices.Clone(userParameterFieldNames), "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ObjectProperties")...).
 		WithValidation(g.MoreThanOneValueSet, "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy").
 		WithAdditionalValidations()
 }
@@ -252,8 +245,7 @@ var usersDef = g.NewInterface(
 		IfNotExists().
 		Name().
 		OptionalQueryStructField("ObjectProperties", userObjectPropertiesStruct(), g.KeywordOptions()).
-		OptionalQueryStructField("ObjectParameters", userObjectParametersStruct(), g.KeywordOptions()).
-		PredefinedQueryStructField("SessionParameters", "*SessionParameters", g.KeywordOptions()).
+		WithParameters(userParameters...).
 		OptionalSQL("WITH").
 		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").
@@ -340,6 +332,7 @@ var usersDef = g.NewInterface(
 		Bool("HasMfa").
 		Bool("HasWorkloadIdentity"),
 ).ShowParameters("AccountObjectIdentifier").
+	ShowParametersDetails(userParameters...).
 	WithCustomInterfaceMethod(
 		"DescribeDetails",
 		"DescribeDetails aggregates the []UserProperty result of Describe into *UserDetails. Callers should migrate from Describe to DescribeDetails.",

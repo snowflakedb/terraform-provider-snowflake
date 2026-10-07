@@ -320,6 +320,6 @@ func (c *UserClient) UpdateEnableUnredactedQuerySyntaxError(t *testing.T, userId
 
 	err := c.client().Alter(ctx, sdk.NewAlterUserRequest(userId).
 		WithSet(*sdk.NewUserSetRequest().
-			WithObjectParameters(*sdk.NewUserObjectParametersRequest().WithEnableUnredactedQuerySyntaxError(newValue))))
+			WithEnableUnredactedQuerySyntaxError(newValue)))
 	require.NoError(t, err)
 }

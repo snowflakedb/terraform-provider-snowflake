@@ -223,15 +223,72 @@ var usersTests = UsersTestsContext{
 			},
 			validationCase[*AlterUserOptions]{
 				Name:        case_Users_validation_Alter_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterUserOptions.Set", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ObjectProperties", "ObjectParameters", "SessionParameters"),
+				ExpectedErr: errAtLeastOneOf("AlterUserOptions.Set", "AbortDetachedQuery", "Autocommit", "BinaryInputFormat", "BinaryOutputFormat", "ClientMemoryLimit", "ClientMetadataRequestUseConnectionCtx", "ClientPrefetchThreads", "ClientResultChunkSize", "ClientResultColumnCaseInsensitive", "ClientSessionKeepAlive", "ClientSessionKeepAliveHeartbeatFrequency", "ClientTimestampTypeMapping", "DateInputFormat", "DateOutputFormat", "EnableUnloadPhysicalTypeOptimization", "EnableUnredactedQuerySyntaxError", "ErrorOnNondeterministicMerge", "ErrorOnNondeterministicUpdate", "GeographyOutputFormat", "GeometryOutputFormat", "JdbcTreatDecimalAsInt", "JdbcTreatTimestampNtzAsUtc", "JdbcUseSessionTimezone", "JsonIndent", "LockTimeout", "LogEventLevel", "LogLevel", "MultiStatementCount", "NetworkPolicy", "NoorderSequenceAsDefault", "OdbcTreatDecimalAsInt", "PreventUnloadToInternalStages", "QueryTag", "QuotedIdentifiersIgnoreCase", "RowsPerResultset", "S3StageVpceDnsName", "SearchPath", "SimulatedDataSharingConsumer", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "StrictJsonOutput", "TimeInputFormat", "TimeOutputFormat", "TimestampDayIsAlways24H", "TimestampInputFormat", "TimestampLtzOutputFormat", "TimestampNtzOutputFormat", "TimestampOutputFormat", "TimestampTypeMapping", "TimestampTzOutputFormat", "Timezone", "TraceLevel", "TransactionAbortOnError", "TransactionDefaultIsolationLevel", "TwoDigitCenturyStart", "UnsupportedDdlAction", "UseCachedResult", "WeekOfYearPolicy", "WeekStart", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ObjectProperties"),
 				DefaultModify: func(opts *AlterUserOptions) {
 					opts.Set = &UserSet{}
+					opts.Set.AbortDetachedQuery = nil
+					opts.Set.Autocommit = nil
+					opts.Set.BinaryInputFormat = nil
+					opts.Set.BinaryOutputFormat = nil
+					opts.Set.ClientMemoryLimit = nil
+					opts.Set.ClientMetadataRequestUseConnectionCtx = nil
+					opts.Set.ClientPrefetchThreads = nil
+					opts.Set.ClientResultChunkSize = nil
+					opts.Set.ClientResultColumnCaseInsensitive = nil
+					opts.Set.ClientSessionKeepAlive = nil
+					opts.Set.ClientSessionKeepAliveHeartbeatFrequency = nil
+					opts.Set.ClientTimestampTypeMapping = nil
+					opts.Set.DateInputFormat = nil
+					opts.Set.DateOutputFormat = nil
+					opts.Set.EnableUnloadPhysicalTypeOptimization = nil
+					opts.Set.EnableUnredactedQuerySyntaxError = nil
+					opts.Set.ErrorOnNondeterministicMerge = nil
+					opts.Set.ErrorOnNondeterministicUpdate = nil
+					opts.Set.GeographyOutputFormat = nil
+					opts.Set.GeometryOutputFormat = nil
+					opts.Set.JdbcTreatDecimalAsInt = nil
+					opts.Set.JdbcTreatTimestampNtzAsUtc = nil
+					opts.Set.JdbcUseSessionTimezone = nil
+					opts.Set.JsonIndent = nil
+					opts.Set.LockTimeout = nil
+					opts.Set.LogEventLevel = nil
+					opts.Set.LogLevel = nil
+					opts.Set.MultiStatementCount = nil
+					opts.Set.NetworkPolicy = nil
+					opts.Set.NoorderSequenceAsDefault = nil
+					opts.Set.OdbcTreatDecimalAsInt = nil
+					opts.Set.PreventUnloadToInternalStages = nil
+					opts.Set.QueryTag = nil
+					opts.Set.QuotedIdentifiersIgnoreCase = nil
+					opts.Set.RowsPerResultset = nil
+					opts.Set.S3StageVpceDnsName = nil
+					opts.Set.SearchPath = nil
+					opts.Set.SimulatedDataSharingConsumer = nil
+					opts.Set.StatementQueuedTimeoutInSeconds = nil
+					opts.Set.StatementTimeoutInSeconds = nil
+					opts.Set.StrictJsonOutput = nil
+					opts.Set.TimeInputFormat = nil
+					opts.Set.TimeOutputFormat = nil
+					opts.Set.TimestampDayIsAlways24H = nil
+					opts.Set.TimestampInputFormat = nil
+					opts.Set.TimestampLtzOutputFormat = nil
+					opts.Set.TimestampNtzOutputFormat = nil
+					opts.Set.TimestampOutputFormat = nil
+					opts.Set.TimestampTypeMapping = nil
+					opts.Set.TimestampTzOutputFormat = nil
+					opts.Set.Timezone = nil
+					opts.Set.TraceLevel = nil
+					opts.Set.TransactionAbortOnError = nil
+					opts.Set.TransactionDefaultIsolationLevel = nil
+					opts.Set.TwoDigitCenturyStart = nil
+					opts.Set.UnsupportedDdlAction = nil
+					opts.Set.UseCachedResult = nil
+					opts.Set.WeekOfYearPolicy = nil
+					opts.Set.WeekStart = nil
 					opts.Set.PasswordPolicy = nil
 					opts.Set.SessionPolicy = nil
 					opts.Set.AuthenticationPolicy = nil
 					opts.Set.ObjectProperties = nil
-					opts.Set.ObjectParameters = nil
-					opts.Set.SessionParameters = nil
 				},
 			},
 			validationCase[*AlterUserOptions]{
@@ -291,15 +348,72 @@ var usersTests = UsersTestsContext{
 			},
 			validationCase[*AlterUserOptions]{
 				Name:        case_Users_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterUserOptions.Unset", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ObjectProperties", "ObjectParameters", "SessionParameters"),
+				ExpectedErr: errAtLeastOneOf("AlterUserOptions.Unset", "AbortDetachedQuery", "Autocommit", "BinaryInputFormat", "BinaryOutputFormat", "ClientMemoryLimit", "ClientMetadataRequestUseConnectionCtx", "ClientPrefetchThreads", "ClientResultChunkSize", "ClientResultColumnCaseInsensitive", "ClientSessionKeepAlive", "ClientSessionKeepAliveHeartbeatFrequency", "ClientTimestampTypeMapping", "DateInputFormat", "DateOutputFormat", "EnableUnloadPhysicalTypeOptimization", "EnableUnredactedQuerySyntaxError", "ErrorOnNondeterministicMerge", "ErrorOnNondeterministicUpdate", "GeographyOutputFormat", "GeometryOutputFormat", "JdbcTreatDecimalAsInt", "JdbcTreatTimestampNtzAsUtc", "JdbcUseSessionTimezone", "JsonIndent", "LockTimeout", "LogEventLevel", "LogLevel", "MultiStatementCount", "NetworkPolicy", "NoorderSequenceAsDefault", "OdbcTreatDecimalAsInt", "PreventUnloadToInternalStages", "QueryTag", "QuotedIdentifiersIgnoreCase", "RowsPerResultset", "S3StageVpceDnsName", "SearchPath", "SimulatedDataSharingConsumer", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "StrictJsonOutput", "TimeInputFormat", "TimeOutputFormat", "TimestampDayIsAlways24H", "TimestampInputFormat", "TimestampLtzOutputFormat", "TimestampNtzOutputFormat", "TimestampOutputFormat", "TimestampTypeMapping", "TimestampTzOutputFormat", "Timezone", "TraceLevel", "TransactionAbortOnError", "TransactionDefaultIsolationLevel", "TwoDigitCenturyStart", "UnsupportedDdlAction", "UseCachedResult", "WeekOfYearPolicy", "WeekStart", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ObjectProperties"),
 				DefaultModify: func(opts *AlterUserOptions) {
 					opts.Unset = &UserUnset{}
+					opts.Unset.AbortDetachedQuery = nil
+					opts.Unset.Autocommit = nil
+					opts.Unset.BinaryInputFormat = nil
+					opts.Unset.BinaryOutputFormat = nil
+					opts.Unset.ClientMemoryLimit = nil
+					opts.Unset.ClientMetadataRequestUseConnectionCtx = nil
+					opts.Unset.ClientPrefetchThreads = nil
+					opts.Unset.ClientResultChunkSize = nil
+					opts.Unset.ClientResultColumnCaseInsensitive = nil
+					opts.Unset.ClientSessionKeepAlive = nil
+					opts.Unset.ClientSessionKeepAliveHeartbeatFrequency = nil
+					opts.Unset.ClientTimestampTypeMapping = nil
+					opts.Unset.DateInputFormat = nil
+					opts.Unset.DateOutputFormat = nil
+					opts.Unset.EnableUnloadPhysicalTypeOptimization = nil
+					opts.Unset.EnableUnredactedQuerySyntaxError = nil
+					opts.Unset.ErrorOnNondeterministicMerge = nil
+					opts.Unset.ErrorOnNondeterministicUpdate = nil
+					opts.Unset.GeographyOutputFormat = nil
+					opts.Unset.GeometryOutputFormat = nil
+					opts.Unset.JdbcTreatDecimalAsInt = nil
+					opts.Unset.JdbcTreatTimestampNtzAsUtc = nil
+					opts.Unset.JdbcUseSessionTimezone = nil
+					opts.Unset.JsonIndent = nil
+					opts.Unset.LockTimeout = nil
+					opts.Unset.LogEventLevel = nil
+					opts.Unset.LogLevel = nil
+					opts.Unset.MultiStatementCount = nil
+					opts.Unset.NetworkPolicy = nil
+					opts.Unset.NoorderSequenceAsDefault = nil
+					opts.Unset.OdbcTreatDecimalAsInt = nil
+					opts.Unset.PreventUnloadToInternalStages = nil
+					opts.Unset.QueryTag = nil
+					opts.Unset.QuotedIdentifiersIgnoreCase = nil
+					opts.Unset.RowsPerResultset = nil
+					opts.Unset.S3StageVpceDnsName = nil
+					opts.Unset.SearchPath = nil
+					opts.Unset.SimulatedDataSharingConsumer = nil
+					opts.Unset.StatementQueuedTimeoutInSeconds = nil
+					opts.Unset.StatementTimeoutInSeconds = nil
+					opts.Unset.StrictJsonOutput = nil
+					opts.Unset.TimeInputFormat = nil
+					opts.Unset.TimeOutputFormat = nil
+					opts.Unset.TimestampDayIsAlways24H = nil
+					opts.Unset.TimestampInputFormat = nil
+					opts.Unset.TimestampLtzOutputFormat = nil
+					opts.Unset.TimestampNtzOutputFormat = nil
+					opts.Unset.TimestampOutputFormat = nil
+					opts.Unset.TimestampTypeMapping = nil
+					opts.Unset.TimestampTzOutputFormat = nil
+					opts.Unset.Timezone = nil
+					opts.Unset.TraceLevel = nil
+					opts.Unset.TransactionAbortOnError = nil
+					opts.Unset.TransactionDefaultIsolationLevel = nil
+					opts.Unset.TwoDigitCenturyStart = nil
+					opts.Unset.UnsupportedDdlAction = nil
+					opts.Unset.UseCachedResult = nil
+					opts.Unset.WeekOfYearPolicy = nil
+					opts.Unset.WeekStart = nil
 					opts.Unset.PasswordPolicy = nil
 					opts.Unset.SessionPolicy = nil
 					opts.Unset.AuthenticationPolicy = nil
 					opts.Unset.ObjectProperties = nil
-					opts.Unset.ObjectParameters = nil
-					opts.Unset.SessionParameters = nil
 				},
 			},
 			validationCase[*AlterUserOptions]{

@@ -12,14 +12,71 @@ var (
 )
 
 type CreateUserRequest struct {
-	OrReplace         *bool
-	IfNotExists       *bool
-	name              AccountObjectIdentifier // required
-	ObjectProperties  *UserObjectPropertiesRequest
-	ObjectParameters  *UserObjectParametersRequest
-	SessionParameters *SessionParameters
-	With              *bool
-	Tag               []TagAssociation
+	OrReplace                                *bool
+	IfNotExists                              *bool
+	name                                     AccountObjectIdentifier // required
+	ObjectProperties                         *UserObjectPropertiesRequest
+	AbortDetachedQuery                       *bool
+	Autocommit                               *bool
+	BinaryInputFormat                        *BinaryInputFormat
+	BinaryOutputFormat                       *BinaryOutputFormat
+	ClientMemoryLimit                        *int
+	ClientMetadataRequestUseConnectionCtx    *bool
+	ClientPrefetchThreads                    *int
+	ClientResultChunkSize                    *int
+	ClientResultColumnCaseInsensitive        *bool
+	ClientSessionKeepAlive                   *bool
+	ClientSessionKeepAliveHeartbeatFrequency *int
+	ClientTimestampTypeMapping               *ClientTimestampTypeMapping
+	DateInputFormat                          *string
+	DateOutputFormat                         *string
+	EnableUnloadPhysicalTypeOptimization     *bool
+	EnableUnredactedQuerySyntaxError         *bool
+	ErrorOnNondeterministicMerge             *bool
+	ErrorOnNondeterministicUpdate            *bool
+	GeographyOutputFormat                    *GeographyOutputFormat
+	GeometryOutputFormat                     *GeometryOutputFormat
+	JdbcTreatDecimalAsInt                    *bool
+	JdbcTreatTimestampNtzAsUtc               *bool
+	JdbcUseSessionTimezone                   *bool
+	JsonIndent                               *int
+	LockTimeout                              *int
+	LogEventLevel                            *LogLevel
+	LogLevel                                 *LogLevel
+	MultiStatementCount                      *int
+	NetworkPolicy                            *AccountObjectIdentifier
+	NoorderSequenceAsDefault                 *bool
+	OdbcTreatDecimalAsInt                    *bool
+	PreventUnloadToInternalStages            *bool
+	QueryTag                                 *string
+	QuotedIdentifiersIgnoreCase              *bool
+	RowsPerResultset                         *int
+	S3StageVpceDnsName                       *string
+	SearchPath                               *string
+	SimulatedDataSharingConsumer             *string
+	StatementQueuedTimeoutInSeconds          *int
+	StatementTimeoutInSeconds                *int
+	StrictJsonOutput                         *bool
+	TimeInputFormat                          *string
+	TimeOutputFormat                         *string
+	TimestampDayIsAlways24H                  *bool
+	TimestampInputFormat                     *string
+	TimestampLtzOutputFormat                 *string
+	TimestampNtzOutputFormat                 *string
+	TimestampOutputFormat                    *string
+	TimestampTypeMapping                     *TimestampTypeMapping
+	TimestampTzOutputFormat                  *string
+	Timezone                                 *string
+	TraceLevel                               *TraceLevel
+	TransactionAbortOnError                  *bool
+	TransactionDefaultIsolationLevel         *TransactionDefaultIsolationLevel
+	TwoDigitCenturyStart                     *int
+	UnsupportedDdlAction                     *UnsupportedDDLAction
+	UseCachedResult                          *bool
+	WeekOfYearPolicy                         *int
+	WeekStart                                *int
+	With                                     *bool
+	Tag                                      []TagAssociation
 }
 
 type UserObjectPropertiesRequest struct {
@@ -80,12 +137,6 @@ type UserObjectWorkloadIdentityOidcRequest struct {
 	OidcAudienceList []StringListItemWrapper
 }
 
-type UserObjectParametersRequest struct {
-	EnableUnredactedQuerySyntaxError *bool
-	NetworkPolicy                    *AccountObjectIdentifier
-	PreventUnloadToInternalStages    *bool
-}
-
 type AlterUserRequest struct {
 	IfExists                     *bool
 	name                         AccountObjectIdentifier // required
@@ -112,13 +163,70 @@ type RemoveDelegatedAuthorizationRequest struct {
 }
 
 type UserSetRequest struct {
-	PasswordPolicy       *SchemaObjectIdentifier
-	SessionPolicy        *SchemaObjectIdentifier
-	AuthenticationPolicy *SchemaObjectIdentifier
-	ObjectProperties     *UserAlterObjectPropertiesRequest
-	ObjectParameters     *UserObjectParametersRequest
-	SessionParameters    *SessionParameters
-	Force                *bool
+	PasswordPolicy                           *SchemaObjectIdentifier
+	SessionPolicy                            *SchemaObjectIdentifier
+	AuthenticationPolicy                     *SchemaObjectIdentifier
+	ObjectProperties                         *UserAlterObjectPropertiesRequest
+	AbortDetachedQuery                       *bool
+	Autocommit                               *bool
+	BinaryInputFormat                        *BinaryInputFormat
+	BinaryOutputFormat                       *BinaryOutputFormat
+	ClientMemoryLimit                        *int
+	ClientMetadataRequestUseConnectionCtx    *bool
+	ClientPrefetchThreads                    *int
+	ClientResultChunkSize                    *int
+	ClientResultColumnCaseInsensitive        *bool
+	ClientSessionKeepAlive                   *bool
+	ClientSessionKeepAliveHeartbeatFrequency *int
+	ClientTimestampTypeMapping               *ClientTimestampTypeMapping
+	DateInputFormat                          *string
+	DateOutputFormat                         *string
+	EnableUnloadPhysicalTypeOptimization     *bool
+	EnableUnredactedQuerySyntaxError         *bool
+	ErrorOnNondeterministicMerge             *bool
+	ErrorOnNondeterministicUpdate            *bool
+	GeographyOutputFormat                    *GeographyOutputFormat
+	GeometryOutputFormat                     *GeometryOutputFormat
+	JdbcTreatDecimalAsInt                    *bool
+	JdbcTreatTimestampNtzAsUtc               *bool
+	JdbcUseSessionTimezone                   *bool
+	JsonIndent                               *int
+	LockTimeout                              *int
+	LogEventLevel                            *LogLevel
+	LogLevel                                 *LogLevel
+	MultiStatementCount                      *int
+	NetworkPolicy                            *AccountObjectIdentifier
+	NoorderSequenceAsDefault                 *bool
+	OdbcTreatDecimalAsInt                    *bool
+	PreventUnloadToInternalStages            *bool
+	QueryTag                                 *string
+	QuotedIdentifiersIgnoreCase              *bool
+	RowsPerResultset                         *int
+	S3StageVpceDnsName                       *string
+	SearchPath                               *string
+	SimulatedDataSharingConsumer             *string
+	StatementQueuedTimeoutInSeconds          *int
+	StatementTimeoutInSeconds                *int
+	StrictJsonOutput                         *bool
+	TimeInputFormat                          *string
+	TimeOutputFormat                         *string
+	TimestampDayIsAlways24H                  *bool
+	TimestampInputFormat                     *string
+	TimestampLtzOutputFormat                 *string
+	TimestampNtzOutputFormat                 *string
+	TimestampOutputFormat                    *string
+	TimestampTypeMapping                     *TimestampTypeMapping
+	TimestampTzOutputFormat                  *string
+	Timezone                                 *string
+	TraceLevel                               *TraceLevel
+	TransactionAbortOnError                  *bool
+	TransactionDefaultIsolationLevel         *TransactionDefaultIsolationLevel
+	TwoDigitCenturyStart                     *int
+	UnsupportedDdlAction                     *UnsupportedDDLAction
+	UseCachedResult                          *bool
+	WeekOfYearPolicy                         *int
+	WeekStart                                *int
+	Force                                    *bool
 }
 
 type UserAlterObjectPropertiesRequest struct {
@@ -149,12 +257,69 @@ type UserAlterObjectPropertiesRequest struct {
 }
 
 type UserUnsetRequest struct {
-	PasswordPolicy       *bool
-	SessionPolicy        *bool
-	AuthenticationPolicy *bool
-	ObjectProperties     *UserObjectPropertiesUnsetRequest
-	ObjectParameters     *UserObjectParametersUnsetRequest
-	SessionParameters    *SessionParametersUnset
+	PasswordPolicy                           *bool
+	SessionPolicy                            *bool
+	AuthenticationPolicy                     *bool
+	ObjectProperties                         *UserObjectPropertiesUnsetRequest
+	AbortDetachedQuery                       *bool
+	Autocommit                               *bool
+	BinaryInputFormat                        *bool
+	BinaryOutputFormat                       *bool
+	ClientMemoryLimit                        *bool
+	ClientMetadataRequestUseConnectionCtx    *bool
+	ClientPrefetchThreads                    *bool
+	ClientResultChunkSize                    *bool
+	ClientResultColumnCaseInsensitive        *bool
+	ClientSessionKeepAlive                   *bool
+	ClientSessionKeepAliveHeartbeatFrequency *bool
+	ClientTimestampTypeMapping               *bool
+	DateInputFormat                          *bool
+	DateOutputFormat                         *bool
+	EnableUnloadPhysicalTypeOptimization     *bool
+	EnableUnredactedQuerySyntaxError         *bool
+	ErrorOnNondeterministicMerge             *bool
+	ErrorOnNondeterministicUpdate            *bool
+	GeographyOutputFormat                    *bool
+	GeometryOutputFormat                     *bool
+	JdbcTreatDecimalAsInt                    *bool
+	JdbcTreatTimestampNtzAsUtc               *bool
+	JdbcUseSessionTimezone                   *bool
+	JsonIndent                               *bool
+	LockTimeout                              *bool
+	LogEventLevel                            *bool
+	LogLevel                                 *bool
+	MultiStatementCount                      *bool
+	NetworkPolicy                            *bool
+	NoorderSequenceAsDefault                 *bool
+	OdbcTreatDecimalAsInt                    *bool
+	PreventUnloadToInternalStages            *bool
+	QueryTag                                 *bool
+	QuotedIdentifiersIgnoreCase              *bool
+	RowsPerResultset                         *bool
+	S3StageVpceDnsName                       *bool
+	SearchPath                               *bool
+	SimulatedDataSharingConsumer             *bool
+	StatementQueuedTimeoutInSeconds          *bool
+	StatementTimeoutInSeconds                *bool
+	StrictJsonOutput                         *bool
+	TimeInputFormat                          *bool
+	TimeOutputFormat                         *bool
+	TimestampDayIsAlways24H                  *bool
+	TimestampInputFormat                     *bool
+	TimestampLtzOutputFormat                 *bool
+	TimestampNtzOutputFormat                 *bool
+	TimestampOutputFormat                    *bool
+	TimestampTypeMapping                     *bool
+	TimestampTzOutputFormat                  *bool
+	Timezone                                 *bool
+	TraceLevel                               *bool
+	TransactionAbortOnError                  *bool
+	TransactionDefaultIsolationLevel         *bool
+	TwoDigitCenturyStart                     *bool
+	UnsupportedDdlAction                     *bool
+	UseCachedResult                          *bool
+	WeekOfYearPolicy                         *bool
+	WeekStart                                *bool
 }
 
 type UserObjectPropertiesUnsetRequest struct {
@@ -180,12 +345,6 @@ type UserObjectPropertiesUnsetRequest struct {
 	UserType              *bool
 	WorkloadIdentity      *bool
 	Comment               *bool
-}
-
-type UserObjectParametersUnsetRequest struct {
-	EnableUnredactedQuerySyntaxError *bool
-	NetworkPolicy                    *bool
-	PreventUnloadToInternalStages    *bool
 }
 
 type DropUserRequest struct {

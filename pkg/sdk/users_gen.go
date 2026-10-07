@@ -19,6 +19,7 @@ type Users interface {
 	Describe(ctx context.Context, id AccountObjectIdentifier) ([]UserProperty, error)
 	ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx context.Context, request *ShowUserWorkloadIdentityAuthenticationMethodOptionsUserRequest) ([]UserWorkloadIdentityAuthenticationMethod, error)
 	ShowParameters(ctx context.Context, id AccountObjectIdentifier) ([]*Parameter, error)
+	ShowParametersDetails(ctx context.Context, id AccountObjectIdentifier) (*UserParametersDetails, error)
 	// DescribeDetails aggregates the []UserProperty result of Describe into *UserDetails. Callers should migrate from Describe to DescribeDetails.
 	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*UserDetails, error)
 	AddProgrammaticAccessToken(ctx context.Context, request *AddUserProgrammaticAccessTokenRequest) (*AddProgrammaticAccessTokenResult, error)
@@ -31,18 +32,138 @@ type Users interface {
 	ShowProgrammaticAccessTokenByNameSafely(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
 }
 
+// UserParametersDetails holds the object's parameters with values parsed into their Go types.
+type UserParametersDetails struct {
+	AbortDetachedQuery                       TypedParameter[bool]
+	Autocommit                               TypedParameter[bool]
+	BinaryInputFormat                        TypedParameter[BinaryInputFormat]
+	BinaryOutputFormat                       TypedParameter[BinaryOutputFormat]
+	ClientMemoryLimit                        TypedParameter[int]
+	ClientMetadataRequestUseConnectionCtx    TypedParameter[bool]
+	ClientPrefetchThreads                    TypedParameter[int]
+	ClientResultChunkSize                    TypedParameter[int]
+	ClientResultColumnCaseInsensitive        TypedParameter[bool]
+	ClientSessionKeepAlive                   TypedParameter[bool]
+	ClientSessionKeepAliveHeartbeatFrequency TypedParameter[int]
+	ClientTimestampTypeMapping               TypedParameter[ClientTimestampTypeMapping]
+	DateInputFormat                          TypedParameter[string]
+	DateOutputFormat                         TypedParameter[string]
+	EnableUnloadPhysicalTypeOptimization     TypedParameter[bool]
+	EnableUnredactedQuerySyntaxError         TypedParameter[bool]
+	ErrorOnNondeterministicMerge             TypedParameter[bool]
+	ErrorOnNondeterministicUpdate            TypedParameter[bool]
+	GeographyOutputFormat                    TypedParameter[GeographyOutputFormat]
+	GeometryOutputFormat                     TypedParameter[GeometryOutputFormat]
+	JdbcTreatDecimalAsInt                    TypedParameter[bool]
+	JdbcTreatTimestampNtzAsUtc               TypedParameter[bool]
+	JdbcUseSessionTimezone                   TypedParameter[bool]
+	JsonIndent                               TypedParameter[int]
+	LockTimeout                              TypedParameter[int]
+	LogEventLevel                            TypedParameter[LogLevel]
+	LogLevel                                 TypedParameter[LogLevel]
+	MultiStatementCount                      TypedParameter[int]
+	NetworkPolicy                            TypedParameter[AccountObjectIdentifier]
+	NoorderSequenceAsDefault                 TypedParameter[bool]
+	OdbcTreatDecimalAsInt                    TypedParameter[bool]
+	PreventUnloadToInternalStages            TypedParameter[bool]
+	QueryTag                                 TypedParameter[string]
+	QuotedIdentifiersIgnoreCase              TypedParameter[bool]
+	RowsPerResultset                         TypedParameter[int]
+	S3StageVpceDnsName                       TypedParameter[string]
+	SearchPath                               TypedParameter[string]
+	SimulatedDataSharingConsumer             TypedParameter[string]
+	StatementQueuedTimeoutInSeconds          TypedParameter[int]
+	StatementTimeoutInSeconds                TypedParameter[int]
+	StrictJsonOutput                         TypedParameter[bool]
+	TimeInputFormat                          TypedParameter[string]
+	TimeOutputFormat                         TypedParameter[string]
+	TimestampDayIsAlways24H                  TypedParameter[bool]
+	TimestampInputFormat                     TypedParameter[string]
+	TimestampLtzOutputFormat                 TypedParameter[string]
+	TimestampNtzOutputFormat                 TypedParameter[string]
+	TimestampOutputFormat                    TypedParameter[string]
+	TimestampTypeMapping                     TypedParameter[TimestampTypeMapping]
+	TimestampTzOutputFormat                  TypedParameter[string]
+	Timezone                                 TypedParameter[string]
+	TraceLevel                               TypedParameter[TraceLevel]
+	TransactionAbortOnError                  TypedParameter[bool]
+	TransactionDefaultIsolationLevel         TypedParameter[TransactionDefaultIsolationLevel]
+	TwoDigitCenturyStart                     TypedParameter[int]
+	UnsupportedDdlAction                     TypedParameter[UnsupportedDDLAction]
+	UseCachedResult                          TypedParameter[bool]
+	WeekOfYearPolicy                         TypedParameter[int]
+	WeekStart                                TypedParameter[int]
+}
+
 // CreateUserOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-user.
 type CreateUserOptions struct {
-	create            bool                    `ddl:"static" sql:"CREATE"`
-	OrReplace         *bool                   `ddl:"keyword" sql:"OR REPLACE"`
-	user              bool                    `ddl:"static" sql:"USER"`
-	IfNotExists       *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name              AccountObjectIdentifier `ddl:"identifier"`
-	ObjectProperties  *UserObjectProperties   `ddl:"keyword"`
-	ObjectParameters  *UserObjectParameters   `ddl:"keyword"`
-	SessionParameters *SessionParameters      `ddl:"keyword"`
-	With              *bool                   `ddl:"keyword" sql:"WITH"`
-	Tag               []TagAssociation        `ddl:"keyword,parentheses" sql:"TAG"`
+	create                                   bool                              `ddl:"static" sql:"CREATE"`
+	OrReplace                                *bool                             `ddl:"keyword" sql:"OR REPLACE"`
+	user                                     bool                              `ddl:"static" sql:"USER"`
+	IfNotExists                              *bool                             `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                                     AccountObjectIdentifier           `ddl:"identifier"`
+	ObjectProperties                         *UserObjectProperties             `ddl:"keyword"`
+	AbortDetachedQuery                       *bool                             `ddl:"parameter" sql:"ABORT_DETACHED_QUERY"`
+	Autocommit                               *bool                             `ddl:"parameter" sql:"AUTOCOMMIT"`
+	BinaryInputFormat                        *BinaryInputFormat                `ddl:"parameter,single_quotes" sql:"BINARY_INPUT_FORMAT"`
+	BinaryOutputFormat                       *BinaryOutputFormat               `ddl:"parameter,single_quotes" sql:"BINARY_OUTPUT_FORMAT"`
+	ClientMemoryLimit                        *int                              `ddl:"parameter" sql:"CLIENT_MEMORY_LIMIT"`
+	ClientMetadataRequestUseConnectionCtx    *bool                             `ddl:"parameter" sql:"CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX"`
+	ClientPrefetchThreads                    *int                              `ddl:"parameter" sql:"CLIENT_PREFETCH_THREADS"`
+	ClientResultChunkSize                    *int                              `ddl:"parameter" sql:"CLIENT_RESULT_CHUNK_SIZE"`
+	ClientResultColumnCaseInsensitive        *bool                             `ddl:"parameter" sql:"CLIENT_RESULT_COLUMN_CASE_INSENSITIVE"`
+	ClientSessionKeepAlive                   *bool                             `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE"`
+	ClientSessionKeepAliveHeartbeatFrequency *int                              `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY"`
+	ClientTimestampTypeMapping               *ClientTimestampTypeMapping       `ddl:"parameter,single_quotes" sql:"CLIENT_TIMESTAMP_TYPE_MAPPING"`
+	DateInputFormat                          *string                           `ddl:"parameter,single_quotes" sql:"DATE_INPUT_FORMAT"`
+	DateOutputFormat                         *string                           `ddl:"parameter,single_quotes" sql:"DATE_OUTPUT_FORMAT"`
+	EnableUnloadPhysicalTypeOptimization     *bool                             `ddl:"parameter" sql:"ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"`
+	EnableUnredactedQuerySyntaxError         *bool                             `ddl:"parameter" sql:"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"`
+	ErrorOnNondeterministicMerge             *bool                             `ddl:"parameter" sql:"ERROR_ON_NONDETERMINISTIC_MERGE"`
+	ErrorOnNondeterministicUpdate            *bool                             `ddl:"parameter" sql:"ERROR_ON_NONDETERMINISTIC_UPDATE"`
+	GeographyOutputFormat                    *GeographyOutputFormat            `ddl:"parameter,single_quotes" sql:"GEOGRAPHY_OUTPUT_FORMAT"`
+	GeometryOutputFormat                     *GeometryOutputFormat             `ddl:"parameter,single_quotes" sql:"GEOMETRY_OUTPUT_FORMAT"`
+	JdbcTreatDecimalAsInt                    *bool                             `ddl:"parameter" sql:"JDBC_TREAT_DECIMAL_AS_INT"`
+	JdbcTreatTimestampNtzAsUtc               *bool                             `ddl:"parameter" sql:"JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC"`
+	JdbcUseSessionTimezone                   *bool                             `ddl:"parameter" sql:"JDBC_USE_SESSION_TIMEZONE"`
+	JsonIndent                               *int                              `ddl:"parameter" sql:"JSON_INDENT"`
+	LockTimeout                              *int                              `ddl:"parameter" sql:"LOCK_TIMEOUT"`
+	LogEventLevel                            *LogLevel                         `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
+	LogLevel                                 *LogLevel                         `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
+	MultiStatementCount                      *int                              `ddl:"parameter" sql:"MULTI_STATEMENT_COUNT"`
+	NetworkPolicy                            *AccountObjectIdentifier          `ddl:"identifier,equals" sql:"NETWORK_POLICY"`
+	NoorderSequenceAsDefault                 *bool                             `ddl:"parameter" sql:"NOORDER_SEQUENCE_AS_DEFAULT"`
+	OdbcTreatDecimalAsInt                    *bool                             `ddl:"parameter" sql:"ODBC_TREAT_DECIMAL_AS_INT"`
+	PreventUnloadToInternalStages            *bool                             `ddl:"parameter" sql:"PREVENT_UNLOAD_TO_INTERNAL_STAGES"`
+	QueryTag                                 *string                           `ddl:"parameter,single_quotes" sql:"QUERY_TAG"`
+	QuotedIdentifiersIgnoreCase              *bool                             `ddl:"parameter" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
+	RowsPerResultset                         *int                              `ddl:"parameter" sql:"ROWS_PER_RESULTSET"`
+	S3StageVpceDnsName                       *string                           `ddl:"parameter,single_quotes" sql:"S3_STAGE_VPCE_DNS_NAME"`
+	SearchPath                               *string                           `ddl:"parameter,single_quotes" sql:"SEARCH_PATH"`
+	SimulatedDataSharingConsumer             *string                           `ddl:"parameter,single_quotes" sql:"SIMULATED_DATA_SHARING_CONSUMER"`
+	StatementQueuedTimeoutInSeconds          *int                              `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
+	StatementTimeoutInSeconds                *int                              `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+	StrictJsonOutput                         *bool                             `ddl:"parameter" sql:"STRICT_JSON_OUTPUT"`
+	TimeInputFormat                          *string                           `ddl:"parameter,single_quotes" sql:"TIME_INPUT_FORMAT"`
+	TimeOutputFormat                         *string                           `ddl:"parameter,single_quotes" sql:"TIME_OUTPUT_FORMAT"`
+	TimestampDayIsAlways24H                  *bool                             `ddl:"parameter" sql:"TIMESTAMP_DAY_IS_ALWAYS_24H"`
+	TimestampInputFormat                     *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_INPUT_FORMAT"`
+	TimestampLtzOutputFormat                 *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_LTZ_OUTPUT_FORMAT"`
+	TimestampNtzOutputFormat                 *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_NTZ_OUTPUT_FORMAT"`
+	TimestampOutputFormat                    *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_OUTPUT_FORMAT"`
+	TimestampTypeMapping                     *TimestampTypeMapping             `ddl:"parameter,single_quotes" sql:"TIMESTAMP_TYPE_MAPPING"`
+	TimestampTzOutputFormat                  *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_TZ_OUTPUT_FORMAT"`
+	Timezone                                 *string                           `ddl:"parameter,single_quotes" sql:"TIMEZONE"`
+	TraceLevel                               *TraceLevel                       `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`
+	TransactionAbortOnError                  *bool                             `ddl:"parameter" sql:"TRANSACTION_ABORT_ON_ERROR"`
+	TransactionDefaultIsolationLevel         *TransactionDefaultIsolationLevel `ddl:"parameter,single_quotes" sql:"TRANSACTION_DEFAULT_ISOLATION_LEVEL"`
+	TwoDigitCenturyStart                     *int                              `ddl:"parameter" sql:"TWO_DIGIT_CENTURY_START"`
+	UnsupportedDdlAction                     *UnsupportedDDLAction             `ddl:"parameter,single_quotes" sql:"UNSUPPORTED_DDL_ACTION"`
+	UseCachedResult                          *bool                             `ddl:"parameter" sql:"USE_CACHED_RESULT"`
+	WeekOfYearPolicy                         *int                              `ddl:"parameter" sql:"WEEK_OF_YEAR_POLICY"`
+	WeekStart                                *int                              `ddl:"parameter" sql:"WEEK_START"`
+	With                                     *bool                             `ddl:"keyword" sql:"WITH"`
+	Tag                                      []TagAssociation                  `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
 type UserObjectProperties struct {
@@ -107,12 +228,6 @@ type UserObjectWorkloadIdentityOidc struct {
 	OidcAudienceList []StringListItemWrapper `ddl:"parameter,parentheses" sql:"OIDC_AUDIENCE_LIST"`
 }
 
-type UserObjectParameters struct {
-	EnableUnredactedQuerySyntaxError *bool                    `ddl:"parameter" sql:"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"`
-	NetworkPolicy                    *AccountObjectIdentifier `ddl:"identifier,equals" sql:"NETWORK_POLICY"`
-	PreventUnloadToInternalStages    *bool                    `ddl:"parameter" sql:"PREVENT_UNLOAD_TO_INTERNAL_STAGES"`
-}
-
 // AlterUserOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-user.
 type AlterUserOptions struct {
 	alter                        bool                          `ddl:"static" sql:"ALTER"`
@@ -142,13 +257,70 @@ type RemoveDelegatedAuthorization struct {
 }
 
 type UserSet struct {
-	PasswordPolicy       *SchemaObjectIdentifier    `ddl:"identifier" sql:"PASSWORD POLICY"`
-	SessionPolicy        *SchemaObjectIdentifier    `ddl:"identifier" sql:"SESSION POLICY"`
-	AuthenticationPolicy *SchemaObjectIdentifier    `ddl:"identifier" sql:"AUTHENTICATION POLICY"`
-	ObjectProperties     *UserAlterObjectProperties `ddl:"keyword"`
-	ObjectParameters     *UserObjectParameters      `ddl:"keyword"`
-	SessionParameters    *SessionParameters         `ddl:"keyword"`
-	Force                *bool                      `ddl:"keyword" sql:"FORCE"`
+	PasswordPolicy                           *SchemaObjectIdentifier           `ddl:"identifier" sql:"PASSWORD POLICY"`
+	SessionPolicy                            *SchemaObjectIdentifier           `ddl:"identifier" sql:"SESSION POLICY"`
+	AuthenticationPolicy                     *SchemaObjectIdentifier           `ddl:"identifier" sql:"AUTHENTICATION POLICY"`
+	ObjectProperties                         *UserAlterObjectProperties        `ddl:"keyword"`
+	AbortDetachedQuery                       *bool                             `ddl:"parameter" sql:"ABORT_DETACHED_QUERY"`
+	Autocommit                               *bool                             `ddl:"parameter" sql:"AUTOCOMMIT"`
+	BinaryInputFormat                        *BinaryInputFormat                `ddl:"parameter,single_quotes" sql:"BINARY_INPUT_FORMAT"`
+	BinaryOutputFormat                       *BinaryOutputFormat               `ddl:"parameter,single_quotes" sql:"BINARY_OUTPUT_FORMAT"`
+	ClientMemoryLimit                        *int                              `ddl:"parameter" sql:"CLIENT_MEMORY_LIMIT"`
+	ClientMetadataRequestUseConnectionCtx    *bool                             `ddl:"parameter" sql:"CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX"`
+	ClientPrefetchThreads                    *int                              `ddl:"parameter" sql:"CLIENT_PREFETCH_THREADS"`
+	ClientResultChunkSize                    *int                              `ddl:"parameter" sql:"CLIENT_RESULT_CHUNK_SIZE"`
+	ClientResultColumnCaseInsensitive        *bool                             `ddl:"parameter" sql:"CLIENT_RESULT_COLUMN_CASE_INSENSITIVE"`
+	ClientSessionKeepAlive                   *bool                             `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE"`
+	ClientSessionKeepAliveHeartbeatFrequency *int                              `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY"`
+	ClientTimestampTypeMapping               *ClientTimestampTypeMapping       `ddl:"parameter,single_quotes" sql:"CLIENT_TIMESTAMP_TYPE_MAPPING"`
+	DateInputFormat                          *string                           `ddl:"parameter,single_quotes" sql:"DATE_INPUT_FORMAT"`
+	DateOutputFormat                         *string                           `ddl:"parameter,single_quotes" sql:"DATE_OUTPUT_FORMAT"`
+	EnableUnloadPhysicalTypeOptimization     *bool                             `ddl:"parameter" sql:"ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"`
+	EnableUnredactedQuerySyntaxError         *bool                             `ddl:"parameter" sql:"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"`
+	ErrorOnNondeterministicMerge             *bool                             `ddl:"parameter" sql:"ERROR_ON_NONDETERMINISTIC_MERGE"`
+	ErrorOnNondeterministicUpdate            *bool                             `ddl:"parameter" sql:"ERROR_ON_NONDETERMINISTIC_UPDATE"`
+	GeographyOutputFormat                    *GeographyOutputFormat            `ddl:"parameter,single_quotes" sql:"GEOGRAPHY_OUTPUT_FORMAT"`
+	GeometryOutputFormat                     *GeometryOutputFormat             `ddl:"parameter,single_quotes" sql:"GEOMETRY_OUTPUT_FORMAT"`
+	JdbcTreatDecimalAsInt                    *bool                             `ddl:"parameter" sql:"JDBC_TREAT_DECIMAL_AS_INT"`
+	JdbcTreatTimestampNtzAsUtc               *bool                             `ddl:"parameter" sql:"JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC"`
+	JdbcUseSessionTimezone                   *bool                             `ddl:"parameter" sql:"JDBC_USE_SESSION_TIMEZONE"`
+	JsonIndent                               *int                              `ddl:"parameter" sql:"JSON_INDENT"`
+	LockTimeout                              *int                              `ddl:"parameter" sql:"LOCK_TIMEOUT"`
+	LogEventLevel                            *LogLevel                         `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
+	LogLevel                                 *LogLevel                         `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
+	MultiStatementCount                      *int                              `ddl:"parameter" sql:"MULTI_STATEMENT_COUNT"`
+	NetworkPolicy                            *AccountObjectIdentifier          `ddl:"identifier,equals" sql:"NETWORK_POLICY"`
+	NoorderSequenceAsDefault                 *bool                             `ddl:"parameter" sql:"NOORDER_SEQUENCE_AS_DEFAULT"`
+	OdbcTreatDecimalAsInt                    *bool                             `ddl:"parameter" sql:"ODBC_TREAT_DECIMAL_AS_INT"`
+	PreventUnloadToInternalStages            *bool                             `ddl:"parameter" sql:"PREVENT_UNLOAD_TO_INTERNAL_STAGES"`
+	QueryTag                                 *string                           `ddl:"parameter,single_quotes" sql:"QUERY_TAG"`
+	QuotedIdentifiersIgnoreCase              *bool                             `ddl:"parameter" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
+	RowsPerResultset                         *int                              `ddl:"parameter" sql:"ROWS_PER_RESULTSET"`
+	S3StageVpceDnsName                       *string                           `ddl:"parameter,single_quotes" sql:"S3_STAGE_VPCE_DNS_NAME"`
+	SearchPath                               *string                           `ddl:"parameter,single_quotes" sql:"SEARCH_PATH"`
+	SimulatedDataSharingConsumer             *string                           `ddl:"parameter,single_quotes" sql:"SIMULATED_DATA_SHARING_CONSUMER"`
+	StatementQueuedTimeoutInSeconds          *int                              `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
+	StatementTimeoutInSeconds                *int                              `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+	StrictJsonOutput                         *bool                             `ddl:"parameter" sql:"STRICT_JSON_OUTPUT"`
+	TimeInputFormat                          *string                           `ddl:"parameter,single_quotes" sql:"TIME_INPUT_FORMAT"`
+	TimeOutputFormat                         *string                           `ddl:"parameter,single_quotes" sql:"TIME_OUTPUT_FORMAT"`
+	TimestampDayIsAlways24H                  *bool                             `ddl:"parameter" sql:"TIMESTAMP_DAY_IS_ALWAYS_24H"`
+	TimestampInputFormat                     *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_INPUT_FORMAT"`
+	TimestampLtzOutputFormat                 *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_LTZ_OUTPUT_FORMAT"`
+	TimestampNtzOutputFormat                 *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_NTZ_OUTPUT_FORMAT"`
+	TimestampOutputFormat                    *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_OUTPUT_FORMAT"`
+	TimestampTypeMapping                     *TimestampTypeMapping             `ddl:"parameter,single_quotes" sql:"TIMESTAMP_TYPE_MAPPING"`
+	TimestampTzOutputFormat                  *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_TZ_OUTPUT_FORMAT"`
+	Timezone                                 *string                           `ddl:"parameter,single_quotes" sql:"TIMEZONE"`
+	TraceLevel                               *TraceLevel                       `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`
+	TransactionAbortOnError                  *bool                             `ddl:"parameter" sql:"TRANSACTION_ABORT_ON_ERROR"`
+	TransactionDefaultIsolationLevel         *TransactionDefaultIsolationLevel `ddl:"parameter,single_quotes" sql:"TRANSACTION_DEFAULT_ISOLATION_LEVEL"`
+	TwoDigitCenturyStart                     *int                              `ddl:"parameter" sql:"TWO_DIGIT_CENTURY_START"`
+	UnsupportedDdlAction                     *UnsupportedDDLAction             `ddl:"parameter,single_quotes" sql:"UNSUPPORTED_DDL_ACTION"`
+	UseCachedResult                          *bool                             `ddl:"parameter" sql:"USE_CACHED_RESULT"`
+	WeekOfYearPolicy                         *int                              `ddl:"parameter" sql:"WEEK_OF_YEAR_POLICY"`
+	WeekStart                                *int                              `ddl:"parameter" sql:"WEEK_START"`
+	Force                                    *bool                             `ddl:"keyword" sql:"FORCE"`
 }
 
 type UserAlterObjectProperties struct {
@@ -179,12 +351,69 @@ type UserAlterObjectProperties struct {
 }
 
 type UserUnset struct {
-	PasswordPolicy       *bool                      `ddl:"keyword" sql:"PASSWORD POLICY"`
-	SessionPolicy        *bool                      `ddl:"keyword" sql:"SESSION POLICY"`
-	AuthenticationPolicy *bool                      `ddl:"keyword" sql:"AUTHENTICATION POLICY"`
-	ObjectProperties     *UserObjectPropertiesUnset `ddl:"list"`
-	ObjectParameters     *UserObjectParametersUnset `ddl:"list"`
-	SessionParameters    *SessionParametersUnset    `ddl:"list"`
+	PasswordPolicy                           *bool                      `ddl:"keyword" sql:"PASSWORD POLICY"`
+	SessionPolicy                            *bool                      `ddl:"keyword" sql:"SESSION POLICY"`
+	AuthenticationPolicy                     *bool                      `ddl:"keyword" sql:"AUTHENTICATION POLICY"`
+	ObjectProperties                         *UserObjectPropertiesUnset `ddl:"list"`
+	AbortDetachedQuery                       *bool                      `ddl:"keyword" sql:"ABORT_DETACHED_QUERY"`
+	Autocommit                               *bool                      `ddl:"keyword" sql:"AUTOCOMMIT"`
+	BinaryInputFormat                        *bool                      `ddl:"keyword" sql:"BINARY_INPUT_FORMAT"`
+	BinaryOutputFormat                       *bool                      `ddl:"keyword" sql:"BINARY_OUTPUT_FORMAT"`
+	ClientMemoryLimit                        *bool                      `ddl:"keyword" sql:"CLIENT_MEMORY_LIMIT"`
+	ClientMetadataRequestUseConnectionCtx    *bool                      `ddl:"keyword" sql:"CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX"`
+	ClientPrefetchThreads                    *bool                      `ddl:"keyword" sql:"CLIENT_PREFETCH_THREADS"`
+	ClientResultChunkSize                    *bool                      `ddl:"keyword" sql:"CLIENT_RESULT_CHUNK_SIZE"`
+	ClientResultColumnCaseInsensitive        *bool                      `ddl:"keyword" sql:"CLIENT_RESULT_COLUMN_CASE_INSENSITIVE"`
+	ClientSessionKeepAlive                   *bool                      `ddl:"keyword" sql:"CLIENT_SESSION_KEEP_ALIVE"`
+	ClientSessionKeepAliveHeartbeatFrequency *bool                      `ddl:"keyword" sql:"CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY"`
+	ClientTimestampTypeMapping               *bool                      `ddl:"keyword" sql:"CLIENT_TIMESTAMP_TYPE_MAPPING"`
+	DateInputFormat                          *bool                      `ddl:"keyword" sql:"DATE_INPUT_FORMAT"`
+	DateOutputFormat                         *bool                      `ddl:"keyword" sql:"DATE_OUTPUT_FORMAT"`
+	EnableUnloadPhysicalTypeOptimization     *bool                      `ddl:"keyword" sql:"ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"`
+	EnableUnredactedQuerySyntaxError         *bool                      `ddl:"keyword" sql:"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"`
+	ErrorOnNondeterministicMerge             *bool                      `ddl:"keyword" sql:"ERROR_ON_NONDETERMINISTIC_MERGE"`
+	ErrorOnNondeterministicUpdate            *bool                      `ddl:"keyword" sql:"ERROR_ON_NONDETERMINISTIC_UPDATE"`
+	GeographyOutputFormat                    *bool                      `ddl:"keyword" sql:"GEOGRAPHY_OUTPUT_FORMAT"`
+	GeometryOutputFormat                     *bool                      `ddl:"keyword" sql:"GEOMETRY_OUTPUT_FORMAT"`
+	JdbcTreatDecimalAsInt                    *bool                      `ddl:"keyword" sql:"JDBC_TREAT_DECIMAL_AS_INT"`
+	JdbcTreatTimestampNtzAsUtc               *bool                      `ddl:"keyword" sql:"JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC"`
+	JdbcUseSessionTimezone                   *bool                      `ddl:"keyword" sql:"JDBC_USE_SESSION_TIMEZONE"`
+	JsonIndent                               *bool                      `ddl:"keyword" sql:"JSON_INDENT"`
+	LockTimeout                              *bool                      `ddl:"keyword" sql:"LOCK_TIMEOUT"`
+	LogEventLevel                            *bool                      `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
+	LogLevel                                 *bool                      `ddl:"keyword" sql:"LOG_LEVEL"`
+	MultiStatementCount                      *bool                      `ddl:"keyword" sql:"MULTI_STATEMENT_COUNT"`
+	NetworkPolicy                            *bool                      `ddl:"keyword" sql:"NETWORK_POLICY"`
+	NoorderSequenceAsDefault                 *bool                      `ddl:"keyword" sql:"NOORDER_SEQUENCE_AS_DEFAULT"`
+	OdbcTreatDecimalAsInt                    *bool                      `ddl:"keyword" sql:"ODBC_TREAT_DECIMAL_AS_INT"`
+	PreventUnloadToInternalStages            *bool                      `ddl:"keyword" sql:"PREVENT_UNLOAD_TO_INTERNAL_STAGES"`
+	QueryTag                                 *bool                      `ddl:"keyword" sql:"QUERY_TAG"`
+	QuotedIdentifiersIgnoreCase              *bool                      `ddl:"keyword" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
+	RowsPerResultset                         *bool                      `ddl:"keyword" sql:"ROWS_PER_RESULTSET"`
+	S3StageVpceDnsName                       *bool                      `ddl:"keyword" sql:"S3_STAGE_VPCE_DNS_NAME"`
+	SearchPath                               *bool                      `ddl:"keyword" sql:"SEARCH_PATH"`
+	SimulatedDataSharingConsumer             *bool                      `ddl:"keyword" sql:"SIMULATED_DATA_SHARING_CONSUMER"`
+	StatementQueuedTimeoutInSeconds          *bool                      `ddl:"keyword" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
+	StatementTimeoutInSeconds                *bool                      `ddl:"keyword" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+	StrictJsonOutput                         *bool                      `ddl:"keyword" sql:"STRICT_JSON_OUTPUT"`
+	TimeInputFormat                          *bool                      `ddl:"keyword" sql:"TIME_INPUT_FORMAT"`
+	TimeOutputFormat                         *bool                      `ddl:"keyword" sql:"TIME_OUTPUT_FORMAT"`
+	TimestampDayIsAlways24H                  *bool                      `ddl:"keyword" sql:"TIMESTAMP_DAY_IS_ALWAYS_24H"`
+	TimestampInputFormat                     *bool                      `ddl:"keyword" sql:"TIMESTAMP_INPUT_FORMAT"`
+	TimestampLtzOutputFormat                 *bool                      `ddl:"keyword" sql:"TIMESTAMP_LTZ_OUTPUT_FORMAT"`
+	TimestampNtzOutputFormat                 *bool                      `ddl:"keyword" sql:"TIMESTAMP_NTZ_OUTPUT_FORMAT"`
+	TimestampOutputFormat                    *bool                      `ddl:"keyword" sql:"TIMESTAMP_OUTPUT_FORMAT"`
+	TimestampTypeMapping                     *bool                      `ddl:"keyword" sql:"TIMESTAMP_TYPE_MAPPING"`
+	TimestampTzOutputFormat                  *bool                      `ddl:"keyword" sql:"TIMESTAMP_TZ_OUTPUT_FORMAT"`
+	Timezone                                 *bool                      `ddl:"keyword" sql:"TIMEZONE"`
+	TraceLevel                               *bool                      `ddl:"keyword" sql:"TRACE_LEVEL"`
+	TransactionAbortOnError                  *bool                      `ddl:"keyword" sql:"TRANSACTION_ABORT_ON_ERROR"`
+	TransactionDefaultIsolationLevel         *bool                      `ddl:"keyword" sql:"TRANSACTION_DEFAULT_ISOLATION_LEVEL"`
+	TwoDigitCenturyStart                     *bool                      `ddl:"keyword" sql:"TWO_DIGIT_CENTURY_START"`
+	UnsupportedDdlAction                     *bool                      `ddl:"keyword" sql:"UNSUPPORTED_DDL_ACTION"`
+	UseCachedResult                          *bool                      `ddl:"keyword" sql:"USE_CACHED_RESULT"`
+	WeekOfYearPolicy                         *bool                      `ddl:"keyword" sql:"WEEK_OF_YEAR_POLICY"`
+	WeekStart                                *bool                      `ddl:"keyword" sql:"WEEK_START"`
 }
 
 type UserObjectPropertiesUnset struct {
@@ -210,12 +439,6 @@ type UserObjectPropertiesUnset struct {
 	UserType              *bool `ddl:"keyword" sql:"TYPE"`
 	WorkloadIdentity      *bool `ddl:"keyword" sql:"WORKLOAD_IDENTITY"`
 	Comment               *bool `ddl:"keyword" sql:"COMMENT"`
-}
-
-type UserObjectParametersUnset struct {
-	EnableUnredactedQuerySyntaxError *bool `ddl:"keyword" sql:"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"`
-	NetworkPolicy                    *bool `ddl:"keyword" sql:"NETWORK_POLICY"`
-	PreventUnloadToInternalStages    *bool `ddl:"keyword" sql:"PREVENT_UNLOAD_TO_INTERNAL_STAGES"`
 }
 
 // DropUserOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-user.

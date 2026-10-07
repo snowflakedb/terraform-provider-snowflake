@@ -275,7 +275,7 @@ func (r *userDBRow) additionalConvert(result *User) error {
 // that cannot be expressed as a single generator validation type.
 func (opts *UserSet) additionalValidations() error {
 	var errs []error
-	if anyValueSet(opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy) && anyValueSet(opts.ObjectProperties, opts.ObjectParameters, opts.SessionParameters) {
+	if anyValueSet(opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy) && anyValueSet(userSetParameterValues(opts)...) {
 		errs = append(errs, NewError("policies cannot be set with user properties or parameters at the same time"))
 	}
 	if valueSet(opts.Force) && !anyValueSet(opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy) {
@@ -288,8 +288,138 @@ func (opts *UserSet) additionalValidations() error {
 // that cannot be expressed as a single generator validation type.
 // TODO [SNOW-1645875]: change validations with policies
 func (opts *UserUnset) additionalValidations() error {
-	if anyValueSet(opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy) && anyValueSet(opts.ObjectProperties, opts.ObjectParameters, opts.SessionParameters) {
+	if anyValueSet(opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy) && anyValueSet(userUnsetParameterValues(opts)...) {
 		return NewError("policies cannot be unset with user properties or parameters at the same time")
 	}
 	return nil
+}
+
+func userSetParameterValues(opts *UserSet) []any {
+	return []any{
+		opts.ObjectProperties,
+		opts.AbortDetachedQuery,
+		opts.Autocommit,
+		opts.BinaryInputFormat,
+		opts.BinaryOutputFormat,
+		opts.ClientMemoryLimit,
+		opts.ClientMetadataRequestUseConnectionCtx,
+		opts.ClientPrefetchThreads,
+		opts.ClientResultChunkSize,
+		opts.ClientResultColumnCaseInsensitive,
+		opts.ClientSessionKeepAlive,
+		opts.ClientSessionKeepAliveHeartbeatFrequency,
+		opts.ClientTimestampTypeMapping,
+		opts.DateInputFormat,
+		opts.DateOutputFormat,
+		opts.EnableUnloadPhysicalTypeOptimization,
+		opts.EnableUnredactedQuerySyntaxError,
+		opts.ErrorOnNondeterministicMerge,
+		opts.ErrorOnNondeterministicUpdate,
+		opts.GeographyOutputFormat,
+		opts.GeometryOutputFormat,
+		opts.JdbcTreatDecimalAsInt,
+		opts.JdbcTreatTimestampNtzAsUtc,
+		opts.JdbcUseSessionTimezone,
+		opts.JsonIndent,
+		opts.LockTimeout,
+		opts.LogEventLevel,
+		opts.LogLevel,
+		opts.MultiStatementCount,
+		opts.NetworkPolicy,
+		opts.NoorderSequenceAsDefault,
+		opts.OdbcTreatDecimalAsInt,
+		opts.PreventUnloadToInternalStages,
+		opts.QueryTag,
+		opts.QuotedIdentifiersIgnoreCase,
+		opts.RowsPerResultset,
+		opts.S3StageVpceDnsName,
+		opts.SearchPath,
+		opts.SimulatedDataSharingConsumer,
+		opts.StatementQueuedTimeoutInSeconds,
+		opts.StatementTimeoutInSeconds,
+		opts.StrictJsonOutput,
+		opts.TimeInputFormat,
+		opts.TimeOutputFormat,
+		opts.TimestampDayIsAlways24H,
+		opts.TimestampInputFormat,
+		opts.TimestampLtzOutputFormat,
+		opts.TimestampNtzOutputFormat,
+		opts.TimestampOutputFormat,
+		opts.TimestampTypeMapping,
+		opts.TimestampTzOutputFormat,
+		opts.Timezone,
+		opts.TraceLevel,
+		opts.TransactionAbortOnError,
+		opts.TransactionDefaultIsolationLevel,
+		opts.TwoDigitCenturyStart,
+		opts.UnsupportedDdlAction,
+		opts.UseCachedResult,
+		opts.WeekOfYearPolicy,
+		opts.WeekStart,
+	}
+}
+
+func userUnsetParameterValues(opts *UserUnset) []any {
+	return []any{
+		opts.ObjectProperties,
+		opts.AbortDetachedQuery,
+		opts.Autocommit,
+		opts.BinaryInputFormat,
+		opts.BinaryOutputFormat,
+		opts.ClientMemoryLimit,
+		opts.ClientMetadataRequestUseConnectionCtx,
+		opts.ClientPrefetchThreads,
+		opts.ClientResultChunkSize,
+		opts.ClientResultColumnCaseInsensitive,
+		opts.ClientSessionKeepAlive,
+		opts.ClientSessionKeepAliveHeartbeatFrequency,
+		opts.ClientTimestampTypeMapping,
+		opts.DateInputFormat,
+		opts.DateOutputFormat,
+		opts.EnableUnloadPhysicalTypeOptimization,
+		opts.EnableUnredactedQuerySyntaxError,
+		opts.ErrorOnNondeterministicMerge,
+		opts.ErrorOnNondeterministicUpdate,
+		opts.GeographyOutputFormat,
+		opts.GeometryOutputFormat,
+		opts.JdbcTreatDecimalAsInt,
+		opts.JdbcTreatTimestampNtzAsUtc,
+		opts.JdbcUseSessionTimezone,
+		opts.JsonIndent,
+		opts.LockTimeout,
+		opts.LogEventLevel,
+		opts.LogLevel,
+		opts.MultiStatementCount,
+		opts.NetworkPolicy,
+		opts.NoorderSequenceAsDefault,
+		opts.OdbcTreatDecimalAsInt,
+		opts.PreventUnloadToInternalStages,
+		opts.QueryTag,
+		opts.QuotedIdentifiersIgnoreCase,
+		opts.RowsPerResultset,
+		opts.S3StageVpceDnsName,
+		opts.SearchPath,
+		opts.SimulatedDataSharingConsumer,
+		opts.StatementQueuedTimeoutInSeconds,
+		opts.StatementTimeoutInSeconds,
+		opts.StrictJsonOutput,
+		opts.TimeInputFormat,
+		opts.TimeOutputFormat,
+		opts.TimestampDayIsAlways24H,
+		opts.TimestampInputFormat,
+		opts.TimestampLtzOutputFormat,
+		opts.TimestampNtzOutputFormat,
+		opts.TimestampOutputFormat,
+		opts.TimestampTypeMapping,
+		opts.TimestampTzOutputFormat,
+		opts.Timezone,
+		opts.TraceLevel,
+		opts.TransactionAbortOnError,
+		opts.TransactionDefaultIsolationLevel,
+		opts.TwoDigitCenturyStart,
+		opts.UnsupportedDdlAction,
+		opts.UseCachedResult,
+		opts.WeekOfYearPolicy,
+		opts.WeekStart,
+	}
 }

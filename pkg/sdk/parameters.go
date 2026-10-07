@@ -186,16 +186,11 @@ func (v *parameters) UnsetSessionParameterOnAccount(ctx context.Context, paramet
 }
 
 func (v *parameters) SetSessionParameterOnUser(ctx context.Context, userId AccountObjectIdentifier, parameter SessionParameter, value string) error {
-	sp := &SessionParameters{}
-	err := sp.setParam(parameter, value)
-	if err != nil {
+	set := NewUserSetRequest()
+	if err := set.SetParameterFromRaw(string(parameter), value); err != nil {
 		return err
 	}
-	err = v.client.Users.Alter(ctx, NewAlterUserRequest(userId).WithSet(*NewUserSetRequest().WithSessionParameters(*sp)))
-	if err != nil {
-		return err
-	}
-	return nil
+	return v.client.Users.Alter(ctx, NewAlterUserRequest(userId).WithSet(*set))
 }
 
 func (v *parameters) SetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter, value string) error {
