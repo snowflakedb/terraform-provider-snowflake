@@ -2,7 +2,11 @@
 
 package sdk
 
-import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+import (
+	"strconv"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+)
 
 func NewCreateIcebergTableRequest(
 	name SchemaObjectIdentifier,
@@ -1414,8 +1418,13 @@ func NewIcebergTableSetPropertiesRequest() *IcebergTableSetPropertiesRequest {
 	return &s
 }
 
-func (s *IcebergTableSetPropertiesRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *IcebergTableSetPropertiesRequest {
-	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+func (s *IcebergTableSetPropertiesRequest) WithAllowRowTimestamp(allowRowTimestamp bool) *IcebergTableSetPropertiesRequest {
+	s.AllowRowTimestamp = &allowRowTimestamp
+	return s
+}
+
+func (s *IcebergTableSetPropertiesRequest) WithCatalog(catalog AccountObjectIdentifier) *IcebergTableSetPropertiesRequest {
+	s.Catalog = &catalog
 	return s
 }
 
@@ -1424,38 +1433,18 @@ func (s *IcebergTableSetPropertiesRequest) WithCatalogSync(catalogSync string) *
 	return s
 }
 
+func (s *IcebergTableSetPropertiesRequest) WithDataMetricSchedule(dataMetricSchedule string) *IcebergTableSetPropertiesRequest {
+	s.DataMetricSchedule = &dataMetricSchedule
+	return s
+}
+
 func (s *IcebergTableSetPropertiesRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *IcebergTableSetPropertiesRequest {
 	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
 	return s
 }
 
-func (s *IcebergTableSetPropertiesRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *IcebergTableSetPropertiesRequest {
-	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
-	return s
-}
-
-func (s *IcebergTableSetPropertiesRequest) WithAutoRefresh(autoRefresh bool) *IcebergTableSetPropertiesRequest {
-	s.AutoRefresh = &autoRefresh
-	return s
-}
-
-func (s *IcebergTableSetPropertiesRequest) WithTargetFileSize(targetFileSize IcebergTableTargetFileSize) *IcebergTableSetPropertiesRequest {
-	s.TargetFileSize = &targetFileSize
-	return s
-}
-
-func (s *IcebergTableSetPropertiesRequest) WithContact(contact []TableContact) *IcebergTableSetPropertiesRequest {
-	s.Contact = contact
-	return s
-}
-
-func (s *IcebergTableSetPropertiesRequest) WithLogEventLevel(logEventLevel IcebergTableLogEventLevel) *IcebergTableSetPropertiesRequest {
-	s.LogEventLevel = &logEventLevel
-	return s
-}
-
-func (s *IcebergTableSetPropertiesRequest) WithErrorLogging(errorLogging bool) *IcebergTableSetPropertiesRequest {
-	s.ErrorLogging = &errorLogging
+func (s *IcebergTableSetPropertiesRequest) WithDefaultDdlCollation(defaultDdlCollation StringAllowEmpty) *IcebergTableSetPropertiesRequest {
+	s.DefaultDdlCollation = &defaultDdlCollation
 	return s
 }
 
@@ -1469,9 +1458,110 @@ func (s *IcebergTableSetPropertiesRequest) WithEnableIcebergMergeOnRead(enableIc
 	return s
 }
 
+func (s *IcebergTableSetPropertiesRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *IcebergTableSetPropertiesRequest {
+	s.ExternalVolume = &externalVolume
+	return s
+}
+
+func (s *IcebergTableSetPropertiesRequest) WithIcebergMergeOnReadBehavior(icebergMergeOnReadBehavior IcebergTableIcebergMergeOnReadBehavior) *IcebergTableSetPropertiesRequest {
+	s.IcebergMergeOnReadBehavior = &icebergMergeOnReadBehavior
+	return s
+}
+
+func (s *IcebergTableSetPropertiesRequest) WithLogEventLevel(logEventLevel LogLevel) *IcebergTableSetPropertiesRequest {
+	s.LogEventLevel = &logEventLevel
+	return s
+}
+
+func (s *IcebergTableSetPropertiesRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *IcebergTableSetPropertiesRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
+	return s
+}
+
+func (s *IcebergTableSetPropertiesRequest) WithOptimizeDataLayout(optimizeDataLayout bool) *IcebergTableSetPropertiesRequest {
+	s.OptimizeDataLayout = &optimizeDataLayout
+	return s
+}
+
+func (s *IcebergTableSetPropertiesRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *IcebergTableSetPropertiesRequest {
+	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
+	return s
+}
+
+func (s *IcebergTableSetPropertiesRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *IcebergTableSetPropertiesRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *IcebergTableSetPropertiesRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *IcebergTableSetPropertiesRequest {
+	s.StorageSerializationPolicy = &storageSerializationPolicy
+	return s
+}
+
+func (s *IcebergTableSetPropertiesRequest) WithTargetFileSize(targetFileSize IcebergTableTargetFileSize) *IcebergTableSetPropertiesRequest {
+	s.TargetFileSize = &targetFileSize
+	return s
+}
+
+func (s *IcebergTableSetPropertiesRequest) WithAutoRefresh(autoRefresh bool) *IcebergTableSetPropertiesRequest {
+	s.AutoRefresh = &autoRefresh
+	return s
+}
+
+func (s *IcebergTableSetPropertiesRequest) WithContact(contact []TableContact) *IcebergTableSetPropertiesRequest {
+	s.Contact = contact
+	return s
+}
+
+func (s *IcebergTableSetPropertiesRequest) WithErrorLogging(errorLogging bool) *IcebergTableSetPropertiesRequest {
+	s.ErrorLogging = &errorLogging
+	return s
+}
+
 func (s *IcebergTableSetPropertiesRequest) WithComment(comment string) *IcebergTableSetPropertiesRequest {
 	s.Comment = &comment
 	return s
+}
+
+func (s *IcebergTableSetPropertiesRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "ALLOW_ROW_TIMESTAMP":
+		return assignParsedParameter(value, strconv.ParseBool, &s.AllowRowTimestamp)
+	case "CATALOG":
+		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.Catalog)
+	case "CATALOG_SYNC":
+		return assignParsedParameter(value, identityParse, &s.CatalogSync)
+	case "DATA_METRIC_SCHEDULE":
+		return assignParsedParameter(value, identityParse, &s.DataMetricSchedule)
+	case "DATA_RETENTION_TIME_IN_DAYS":
+		return assignParsedParameter(value, strconv.Atoi, &s.DataRetentionTimeInDays)
+	case "DEFAULT_DDL_COLLATION":
+		return assignParsedParameter(value, ToStringAllowEmpty, &s.DefaultDdlCollation)
+	case "ENABLE_DATA_COMPACTION":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableDataCompaction)
+	case "ENABLE_ICEBERG_MERGE_ON_READ":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableIcebergMergeOnRead)
+	case "EXTERNAL_VOLUME":
+		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.ExternalVolume)
+	case "ICEBERG_MERGE_ON_READ_BEHAVIOR":
+		return assignParsedParameter(value, ToIcebergTableIcebergMergeOnReadBehavior, &s.IcebergMergeOnReadBehavior)
+	case "LOG_EVENT_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
+	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":
+		return assignParsedParameter(value, strconv.Atoi, &s.MaxDataExtensionTimeInDays)
+	case "OPTIMIZE_DATA_LAYOUT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.OptimizeDataLayout)
+	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.QuotedIdentifiersIgnoreCase)
+	case "REPLACE_INVALID_CHARACTERS":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ReplaceInvalidCharacters)
+	case "STORAGE_SERIALIZATION_POLICY":
+		return assignParsedParameter(value, ToStorageSerializationPolicy, &s.StorageSerializationPolicy)
+	case "TARGET_FILE_SIZE":
+		return assignParsedParameter(value, ToIcebergTableTargetFileSize, &s.TargetFileSize)
+	default:
+		return ErrParameterNotSupported
+	}
 }
 
 func NewIcebergTableUnsetPropertiesRequest() *IcebergTableUnsetPropertiesRequest {
@@ -1479,8 +1569,13 @@ func NewIcebergTableUnsetPropertiesRequest() *IcebergTableUnsetPropertiesRequest
 	return &s
 }
 
-func (s *IcebergTableUnsetPropertiesRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *IcebergTableUnsetPropertiesRequest {
-	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+func (s *IcebergTableUnsetPropertiesRequest) WithAllowRowTimestamp(allowRowTimestamp bool) *IcebergTableUnsetPropertiesRequest {
+	s.AllowRowTimestamp = &allowRowTimestamp
+	return s
+}
+
+func (s *IcebergTableUnsetPropertiesRequest) WithCatalog(catalog bool) *IcebergTableUnsetPropertiesRequest {
+	s.Catalog = &catalog
 	return s
 }
 
@@ -1489,28 +1584,18 @@ func (s *IcebergTableUnsetPropertiesRequest) WithCatalogSync(catalogSync bool) *
 	return s
 }
 
+func (s *IcebergTableUnsetPropertiesRequest) WithDataMetricSchedule(dataMetricSchedule bool) *IcebergTableUnsetPropertiesRequest {
+	s.DataMetricSchedule = &dataMetricSchedule
+	return s
+}
+
 func (s *IcebergTableUnsetPropertiesRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays bool) *IcebergTableUnsetPropertiesRequest {
 	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
 	return s
 }
 
-func (s *IcebergTableUnsetPropertiesRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays bool) *IcebergTableUnsetPropertiesRequest {
-	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
-	return s
-}
-
-func (s *IcebergTableUnsetPropertiesRequest) WithTargetFileSize(targetFileSize bool) *IcebergTableUnsetPropertiesRequest {
-	s.TargetFileSize = &targetFileSize
-	return s
-}
-
-func (s *IcebergTableUnsetPropertiesRequest) WithLogEventLevel(logEventLevel bool) *IcebergTableUnsetPropertiesRequest {
-	s.LogEventLevel = &logEventLevel
-	return s
-}
-
-func (s *IcebergTableUnsetPropertiesRequest) WithErrorLogging(errorLogging bool) *IcebergTableUnsetPropertiesRequest {
-	s.ErrorLogging = &errorLogging
+func (s *IcebergTableUnsetPropertiesRequest) WithDefaultDdlCollation(defaultDdlCollation bool) *IcebergTableUnsetPropertiesRequest {
+	s.DefaultDdlCollation = &defaultDdlCollation
 	return s
 }
 
@@ -1524,9 +1609,101 @@ func (s *IcebergTableUnsetPropertiesRequest) WithEnableIcebergMergeOnRead(enable
 	return s
 }
 
+func (s *IcebergTableUnsetPropertiesRequest) WithExternalVolume(externalVolume bool) *IcebergTableUnsetPropertiesRequest {
+	s.ExternalVolume = &externalVolume
+	return s
+}
+
+func (s *IcebergTableUnsetPropertiesRequest) WithIcebergMergeOnReadBehavior(icebergMergeOnReadBehavior bool) *IcebergTableUnsetPropertiesRequest {
+	s.IcebergMergeOnReadBehavior = &icebergMergeOnReadBehavior
+	return s
+}
+
+func (s *IcebergTableUnsetPropertiesRequest) WithLogEventLevel(logEventLevel bool) *IcebergTableUnsetPropertiesRequest {
+	s.LogEventLevel = &logEventLevel
+	return s
+}
+
+func (s *IcebergTableUnsetPropertiesRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays bool) *IcebergTableUnsetPropertiesRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
+	return s
+}
+
+func (s *IcebergTableUnsetPropertiesRequest) WithOptimizeDataLayout(optimizeDataLayout bool) *IcebergTableUnsetPropertiesRequest {
+	s.OptimizeDataLayout = &optimizeDataLayout
+	return s
+}
+
+func (s *IcebergTableUnsetPropertiesRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *IcebergTableUnsetPropertiesRequest {
+	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
+	return s
+}
+
+func (s *IcebergTableUnsetPropertiesRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *IcebergTableUnsetPropertiesRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *IcebergTableUnsetPropertiesRequest) WithStorageSerializationPolicy(storageSerializationPolicy bool) *IcebergTableUnsetPropertiesRequest {
+	s.StorageSerializationPolicy = &storageSerializationPolicy
+	return s
+}
+
+func (s *IcebergTableUnsetPropertiesRequest) WithTargetFileSize(targetFileSize bool) *IcebergTableUnsetPropertiesRequest {
+	s.TargetFileSize = &targetFileSize
+	return s
+}
+
+func (s *IcebergTableUnsetPropertiesRequest) WithErrorLogging(errorLogging bool) *IcebergTableUnsetPropertiesRequest {
+	s.ErrorLogging = &errorLogging
+	return s
+}
+
 func (s *IcebergTableUnsetPropertiesRequest) WithComment(comment bool) *IcebergTableUnsetPropertiesRequest {
 	s.Comment = &comment
 	return s
+}
+
+func (s *IcebergTableUnsetPropertiesRequest) UnsetParameterFromRaw(key string) error {
+	switch key {
+	case "ALLOW_ROW_TIMESTAMP":
+		s.AllowRowTimestamp = Bool(true)
+	case "CATALOG":
+		s.Catalog = Bool(true)
+	case "CATALOG_SYNC":
+		s.CatalogSync = Bool(true)
+	case "DATA_METRIC_SCHEDULE":
+		s.DataMetricSchedule = Bool(true)
+	case "DATA_RETENTION_TIME_IN_DAYS":
+		s.DataRetentionTimeInDays = Bool(true)
+	case "DEFAULT_DDL_COLLATION":
+		s.DefaultDdlCollation = Bool(true)
+	case "ENABLE_DATA_COMPACTION":
+		s.EnableDataCompaction = Bool(true)
+	case "ENABLE_ICEBERG_MERGE_ON_READ":
+		s.EnableIcebergMergeOnRead = Bool(true)
+	case "EXTERNAL_VOLUME":
+		s.ExternalVolume = Bool(true)
+	case "ICEBERG_MERGE_ON_READ_BEHAVIOR":
+		s.IcebergMergeOnReadBehavior = Bool(true)
+	case "LOG_EVENT_LEVEL":
+		s.LogEventLevel = Bool(true)
+	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":
+		s.MaxDataExtensionTimeInDays = Bool(true)
+	case "OPTIMIZE_DATA_LAYOUT":
+		s.OptimizeDataLayout = Bool(true)
+	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
+		s.QuotedIdentifiersIgnoreCase = Bool(true)
+	case "REPLACE_INVALID_CHARACTERS":
+		s.ReplaceInvalidCharacters = Bool(true)
+	case "STORAGE_SERIALIZATION_POLICY":
+		s.StorageSerializationPolicy = Bool(true)
+	case "TARGET_FILE_SIZE":
+		s.TargetFileSize = Bool(true)
+	default:
+		return ErrParameterNotSupported
+	}
+	return nil
 }
 
 func NewIcebergTableDropAndAddRowAccessPolicyRequest(

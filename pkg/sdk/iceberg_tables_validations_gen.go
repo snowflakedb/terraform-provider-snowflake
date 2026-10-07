@@ -366,13 +366,19 @@ func (opts *AlterIcebergTableOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Set) {
-		if !anyValueSet(opts.Set.ReplaceInvalidCharacters, opts.Set.CatalogSync, opts.Set.DataRetentionTimeInDays, opts.Set.MaxDataExtensionTimeInDays, opts.Set.AutoRefresh, opts.Set.TargetFileSize, opts.Set.Contact, opts.Set.LogEventLevel, opts.Set.ErrorLogging, opts.Set.EnableDataCompaction, opts.Set.EnableIcebergMergeOnRead, opts.Set.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterIcebergTableOptions.Set", "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "AutoRefresh", "TargetFileSize", "Contact", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment"))
+		if opts.Set.ExternalVolume != nil && !ValidObjectIdentifier(opts.Set.ExternalVolume) {
+			errs = append(errs, errInvalidIdentifier("AlterIcebergTableOptions.Set", "ExternalVolume"))
+		}
+		if opts.Set.Catalog != nil && !ValidObjectIdentifier(opts.Set.Catalog) {
+			errs = append(errs, errInvalidIdentifier("AlterIcebergTableOptions.Set", "Catalog"))
+		}
+		if !anyValueSet(opts.Set.AllowRowTimestamp, opts.Set.Catalog, opts.Set.CatalogSync, opts.Set.DataMetricSchedule, opts.Set.DataRetentionTimeInDays, opts.Set.DefaultDdlCollation, opts.Set.EnableDataCompaction, opts.Set.EnableIcebergMergeOnRead, opts.Set.ExternalVolume, opts.Set.IcebergMergeOnReadBehavior, opts.Set.LogEventLevel, opts.Set.MaxDataExtensionTimeInDays, opts.Set.OptimizeDataLayout, opts.Set.QuotedIdentifiersIgnoreCase, opts.Set.ReplaceInvalidCharacters, opts.Set.StorageSerializationPolicy, opts.Set.TargetFileSize, opts.Set.AutoRefresh, opts.Set.Contact, opts.Set.ErrorLogging, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterIcebergTableOptions.Set", "AllowRowTimestamp", "Catalog", "CatalogSync", "DataMetricSchedule", "DataRetentionTimeInDays", "DefaultDdlCollation", "EnableDataCompaction", "EnableIcebergMergeOnRead", "ExternalVolume", "IcebergMergeOnReadBehavior", "LogEventLevel", "MaxDataExtensionTimeInDays", "OptimizeDataLayout", "QuotedIdentifiersIgnoreCase", "ReplaceInvalidCharacters", "StorageSerializationPolicy", "TargetFileSize", "AutoRefresh", "Contact", "ErrorLogging", "Comment"))
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.ReplaceInvalidCharacters, opts.Unset.CatalogSync, opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.TargetFileSize, opts.Unset.LogEventLevel, opts.Unset.ErrorLogging, opts.Unset.EnableDataCompaction, opts.Unset.EnableIcebergMergeOnRead, opts.Unset.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterIcebergTableOptions.Unset", "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "TargetFileSize", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment"))
+		if !anyValueSet(opts.Unset.AllowRowTimestamp, opts.Unset.Catalog, opts.Unset.CatalogSync, opts.Unset.DataMetricSchedule, opts.Unset.DataRetentionTimeInDays, opts.Unset.DefaultDdlCollation, opts.Unset.EnableDataCompaction, opts.Unset.EnableIcebergMergeOnRead, opts.Unset.ExternalVolume, opts.Unset.IcebergMergeOnReadBehavior, opts.Unset.LogEventLevel, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.OptimizeDataLayout, opts.Unset.QuotedIdentifiersIgnoreCase, opts.Unset.ReplaceInvalidCharacters, opts.Unset.StorageSerializationPolicy, opts.Unset.TargetFileSize, opts.Unset.ErrorLogging, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterIcebergTableOptions.Unset", "AllowRowTimestamp", "Catalog", "CatalogSync", "DataMetricSchedule", "DataRetentionTimeInDays", "DefaultDdlCollation", "EnableDataCompaction", "EnableIcebergMergeOnRead", "ExternalVolume", "IcebergMergeOnReadBehavior", "LogEventLevel", "MaxDataExtensionTimeInDays", "OptimizeDataLayout", "QuotedIdentifiersIgnoreCase", "ReplaceInvalidCharacters", "StorageSerializationPolicy", "TargetFileSize", "ErrorLogging", "Comment"))
 		}
 	}
 	if valueSet(opts.SetTags) {

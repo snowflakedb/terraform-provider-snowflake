@@ -917,7 +917,7 @@ func init() {
 						{Purpose: "SUPPORT", Contact: contactId},
 						{Purpose: "ACCESS_APPROVAL", Contact: contactId},
 					},
-					LogEventLevel:            new(IcebergTableLogEventLevelError),
+					LogEventLevel:            new(LogLevelError),
 					ErrorLogging:             new(true),
 					EnableDataCompaction:     new(true),
 					EnableIcebergMergeOnRead: new(true),
@@ -925,17 +925,17 @@ func init() {
 				}
 			},
 			`ALTER ICEBERG TABLE IF EXISTS %s SET `+
-				`REPLACE_INVALID_CHARACTERS = true `+
 				`CATALOG_SYNC = 'integration1' `+
 				`DATA_RETENTION_TIME_IN_DAYS = 7 `+
-				`MAX_DATA_EXTENSION_TIME_IN_DAYS = 14 `+
-				`AUTO_REFRESH = true `+
-				`TARGET_FILE_SIZE = '128MB' `+
-				`CONTACT (SUPPORT = %s, ACCESS_APPROVAL = %s) `+
-				`LOG_EVENT_LEVEL = ERROR `+
-				`ERROR_LOGGING = true `+
 				`ENABLE_DATA_COMPACTION = true `+
 				`ENABLE_ICEBERG_MERGE_ON_READ = true `+
+				`LOG_EVENT_LEVEL = 'ERROR' `+
+				`MAX_DATA_EXTENSION_TIME_IN_DAYS = 14 `+
+				`REPLACE_INVALID_CHARACTERS = true `+
+				`TARGET_FILE_SIZE = '128MB' `+
+				`AUTO_REFRESH = true `+
+				`CONTACT (SUPPORT = %s, ACCESS_APPROVAL = %s) `+
+				`ERROR_LOGGING = true `+
 				`COMMENT = 'updated comment'`,
 			icebergTablesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 			contactId.FullyQualifiedName(), contactId.FullyQualifiedName(),
@@ -958,15 +958,15 @@ func init() {
 				}
 			},
 			`ALTER ICEBERG TABLE IF EXISTS %s UNSET `+
-				`REPLACE_INVALID_CHARACTERS, `+
 				`CATALOG_SYNC, `+
 				`DATA_RETENTION_TIME_IN_DAYS, `+
-				`MAX_DATA_EXTENSION_TIME_IN_DAYS, `+
-				`TARGET_FILE_SIZE, `+
-				`LOG_EVENT_LEVEL, `+
-				`ERROR_LOGGING, `+
 				`ENABLE_DATA_COMPACTION, `+
 				`ENABLE_ICEBERG_MERGE_ON_READ, `+
+				`LOG_EVENT_LEVEL, `+
+				`MAX_DATA_EXTENSION_TIME_IN_DAYS, `+
+				`REPLACE_INVALID_CHARACTERS, `+
+				`TARGET_FILE_SIZE, `+
+				`ERROR_LOGGING, `+
 				`COMMENT`,
 			icebergTablesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).

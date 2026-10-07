@@ -11,7 +11,6 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[IcebergTablePathLayout]{"IcebergTablePathLayout", AllIcebergTablePathLayouts, ToIcebergTablePathLayout})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[IcebergTableDescribeType]{"IcebergTableDescribeType", AllIcebergTableDescribeTypes, ToIcebergTableDescribeType})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableSearchMethod]{"TableSearchMethod", AllTableSearchMethods, ToTableSearchMethod})
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[IcebergTableLogEventLevel]{"IcebergTableLogEventLevel", AllIcebergTableLogEventLevels, ToIcebergTableLogEventLevel})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[IcebergTableType]{"IcebergTableType", AllIcebergTableTypes, ToIcebergTableType})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[IcebergTableCatalog]{"IcebergTableCatalog", AllIcebergTableCatalogs, ToIcebergTableCatalog})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[StorageSerializationPolicy]{"StorageSerializationPolicy", AllStorageSerializationPolicies, ToStorageSerializationPolicy})
@@ -121,6 +120,8 @@ const (
 	case_IcebergTables_validation_Alter_SetTagsOnColumn_SetTags_ValidIdentifier                                                                              testCaseName = "validation_Alter_SetTagsOnColumn_SetTags_ValidIdentifier"
 	case_IcebergTables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet                                                                     testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet"
 	case_IcebergTables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet                                                              testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet"
+	case_IcebergTables_validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet                                                                              testCaseName = "validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet"
+	case_IcebergTables_validation_Alter_Set_Catalog_ValidIdentifierIfSet                                                                                     testCaseName = "validation_Alter_Set_Catalog_ValidIdentifierIfSet"
 	case_IcebergTables_validation_Alter_opts_Set_AtLeastOneValueSet                                                                                          testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_IcebergTables_validation_Alter_opts_Unset_AtLeastOneValueSet                                                                                        testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_IcebergTables_validation_Alter_SetTags_ValidIdentifier                                                                                              testCaseName = "validation_Alter_SetTags_ValidIdentifier"
@@ -1133,38 +1134,72 @@ var icebergTablesTests = IcebergTablesTestsContext{
 				ExpectedErr: errExactlyOneOf("AlterIcebergTableOptions.ClusteringAction", "ClusterBy", "ChangeReclusterState", "DropClusteringKey"),
 			},
 			validationCase[*AlterIcebergTableOptions]{
-				Name:        case_IcebergTables_validation_Alter_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterIcebergTableOptions.Set", "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "AutoRefresh", "TargetFileSize", "Contact", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment"),
+				Name:        case_IcebergTables_validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.Set", "ExternalVolume"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
 					opts.Set = &IcebergTableSetProperties{}
-					opts.Set.ReplaceInvalidCharacters = nil
+					opts.Set.ExternalVolume = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_Set_Catalog_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.Set", "Catalog"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.Set = &IcebergTableSetProperties{}
+					opts.Set.Catalog = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterIcebergTableOptions.Set", "AllowRowTimestamp", "Catalog", "CatalogSync", "DataMetricSchedule", "DataRetentionTimeInDays", "DefaultDdlCollation", "EnableDataCompaction", "EnableIcebergMergeOnRead", "ExternalVolume", "IcebergMergeOnReadBehavior", "LogEventLevel", "MaxDataExtensionTimeInDays", "OptimizeDataLayout", "QuotedIdentifiersIgnoreCase", "ReplaceInvalidCharacters", "StorageSerializationPolicy", "TargetFileSize", "AutoRefresh", "Contact", "ErrorLogging", "Comment"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.Set = &IcebergTableSetProperties{}
+					opts.Set.AllowRowTimestamp = nil
+					opts.Set.Catalog = nil
 					opts.Set.CatalogSync = nil
+					opts.Set.DataMetricSchedule = nil
 					opts.Set.DataRetentionTimeInDays = nil
-					opts.Set.MaxDataExtensionTimeInDays = nil
-					opts.Set.AutoRefresh = nil
-					opts.Set.TargetFileSize = nil
-					opts.Set.Contact = nil
-					opts.Set.LogEventLevel = nil
-					opts.Set.ErrorLogging = nil
+					opts.Set.DefaultDdlCollation = nil
 					opts.Set.EnableDataCompaction = nil
 					opts.Set.EnableIcebergMergeOnRead = nil
+					opts.Set.ExternalVolume = nil
+					opts.Set.IcebergMergeOnReadBehavior = nil
+					opts.Set.LogEventLevel = nil
+					opts.Set.MaxDataExtensionTimeInDays = nil
+					opts.Set.OptimizeDataLayout = nil
+					opts.Set.QuotedIdentifiersIgnoreCase = nil
+					opts.Set.ReplaceInvalidCharacters = nil
+					opts.Set.StorageSerializationPolicy = nil
+					opts.Set.TargetFileSize = nil
+					opts.Set.AutoRefresh = nil
+					opts.Set.Contact = nil
+					opts.Set.ErrorLogging = nil
 					opts.Set.Comment = nil
 				},
 			},
 			validationCase[*AlterIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterIcebergTableOptions.Unset", "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "TargetFileSize", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterIcebergTableOptions.Unset", "AllowRowTimestamp", "Catalog", "CatalogSync", "DataMetricSchedule", "DataRetentionTimeInDays", "DefaultDdlCollation", "EnableDataCompaction", "EnableIcebergMergeOnRead", "ExternalVolume", "IcebergMergeOnReadBehavior", "LogEventLevel", "MaxDataExtensionTimeInDays", "OptimizeDataLayout", "QuotedIdentifiersIgnoreCase", "ReplaceInvalidCharacters", "StorageSerializationPolicy", "TargetFileSize", "ErrorLogging", "Comment"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
 					opts.Unset = &IcebergTableUnsetProperties{}
-					opts.Unset.ReplaceInvalidCharacters = nil
+					opts.Unset.AllowRowTimestamp = nil
+					opts.Unset.Catalog = nil
 					opts.Unset.CatalogSync = nil
+					opts.Unset.DataMetricSchedule = nil
 					opts.Unset.DataRetentionTimeInDays = nil
-					opts.Unset.MaxDataExtensionTimeInDays = nil
-					opts.Unset.TargetFileSize = nil
-					opts.Unset.LogEventLevel = nil
-					opts.Unset.ErrorLogging = nil
+					opts.Unset.DefaultDdlCollation = nil
 					opts.Unset.EnableDataCompaction = nil
 					opts.Unset.EnableIcebergMergeOnRead = nil
+					opts.Unset.ExternalVolume = nil
+					opts.Unset.IcebergMergeOnReadBehavior = nil
+					opts.Unset.LogEventLevel = nil
+					opts.Unset.MaxDataExtensionTimeInDays = nil
+					opts.Unset.OptimizeDataLayout = nil
+					opts.Unset.QuotedIdentifiersIgnoreCase = nil
+					opts.Unset.ReplaceInvalidCharacters = nil
+					opts.Unset.StorageSerializationPolicy = nil
+					opts.Unset.TargetFileSize = nil
+					opts.Unset.ErrorLogging = nil
 					opts.Unset.Comment = nil
 				},
 			},

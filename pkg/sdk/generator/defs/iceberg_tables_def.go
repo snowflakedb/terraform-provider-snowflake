@@ -1,10 +1,18 @@
 package defs
 
 import (
+	"slices"
+
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
+
+var icebergTableParameters = ParameterDefsForLevel(parameterdefs.ParameterLevelIcebergTable)
+
+var icebergTableParameterFieldNames = collections.Map(icebergTableParameters, g.ParameterSqlToFieldName)
 
 var (
 	IcebergTableTargetFileSizeEnumDef = g.NewEnum(
@@ -18,10 +26,6 @@ var (
 	IcebergTableDescribeTypeEnumDef = g.NewEnum(
 		"IcebergTableDescribeType", "IcebergTableDescribeTypes",
 		"COLUMNS", "STAGE",
-	)
-	IcebergTableLogEventLevelEnumDef = g.NewEnum(
-		"IcebergTableLogEventLevel", "IcebergTableLogEventLevels",
-		"ERROR", "WARN", "DEBUG",
 	)
 	IcebergTableTypeEnumDef = g.NewEnum(
 		"IcebergTableType", "IcebergTableTypes",
@@ -102,32 +106,20 @@ var icebergTablePartitionExpression = g.NewQueryStruct("IcebergTablePartitionExp
 	WithValidation(g.ExactlyOneValueSet, "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour")
 
 var icebergTableSetProperties = g.NewQueryStruct("IcebergTableSetProperties").
-	OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
-	OptionalTextAssignment("CATALOG_SYNC", g.ParameterOptions().SingleQuotes()).
-	OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
-	OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
+	WithParameters(icebergTableParameters...).
 	OptionalBooleanAssignment("AUTO_REFRESH", g.ParameterOptions()).
-	OptionalAssignment("TARGET_FILE_SIZE", IcebergTableTargetFileSizeEnumDef.KindPtr(), g.ParameterOptions().SingleQuotes()).
 	PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().Parentheses().SQL("CONTACT")).
-	OptionalAssignment("LOG_EVENT_LEVEL", IcebergTableLogEventLevelEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
 	OptionalBooleanAssignment("ERROR_LOGGING", g.ParameterOptions()).
-	OptionalBooleanAssignment("ENABLE_DATA_COMPACTION", g.ParameterOptions()).
-	OptionalBooleanAssignment("ENABLE_ICEBERG_MERGE_ON_READ", g.ParameterOptions()).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-	WithValidation(g.AtLeastOneValueSet, "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "AutoRefresh", "TargetFileSize", "Contact", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment")
+	WithValidation(g.ValidIdentifierIfSet, "ExternalVolume").
+	WithValidation(g.ValidIdentifierIfSet, "Catalog").
+	WithValidation(g.AtLeastOneValueSet, append(slices.Clone(icebergTableParameterFieldNames), "AutoRefresh", "Contact", "ErrorLogging", "Comment")...)
 
 var icebergTableUnsetProperties = g.NewQueryStruct("IcebergTableUnsetProperties").
-	OptionalSQL("REPLACE_INVALID_CHARACTERS").
-	OptionalSQL("CATALOG_SYNC").
-	OptionalSQL("DATA_RETENTION_TIME_IN_DAYS").
-	OptionalSQL("MAX_DATA_EXTENSION_TIME_IN_DAYS").
-	OptionalSQL("TARGET_FILE_SIZE").
-	OptionalSQL("LOG_EVENT_LEVEL").
+	WithParametersUnset(icebergTableParameters...).
 	OptionalSQL("ERROR_LOGGING").
-	OptionalSQL("ENABLE_DATA_COMPACTION").
-	OptionalSQL("ENABLE_ICEBERG_MERGE_ON_READ").
 	OptionalSQL("COMMENT").
-	WithValidation(g.AtLeastOneValueSet, "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "TargetFileSize", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment")
+	WithValidation(g.AtLeastOneValueSet, append(slices.Clone(icebergTableParameterFieldNames), "ErrorLogging", "Comment")...)
 
 var icebergTableAddColumnAction = g.NewQueryStruct("IcebergTableAddColumnAction").
 	SQL("ADD COLUMN").
@@ -483,14 +475,15 @@ var icebergTablesDef = g.NewInterface(
 		Name().
 		OptionalAssignmentWithFieldName("TYPE", IcebergTableDescribeTypeEnumDef.Kind(), g.ParameterOptions().NoQuotes(), "DescribeType").
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowParameters(g.KindOfT[sdkcommons.SchemaObjectIdentifier]()).WithEnums(
-	IcebergTableTargetFileSizeEnumDef,
-	IcebergTablePathLayoutEnumDef,
-	IcebergTableDescribeTypeEnumDef,
-	TableSearchMethodEnumDef,
-	IcebergTableLogEventLevelEnumDef,
-	IcebergTableTypeEnumDef,
-	IcebergTableCatalogEnumDef,
-	StorageSerializationPolicyEnumDef,
-	IcebergTableIcebergMergeOnReadBehaviorEnumDef,
-)
+).ShowParameters(g.KindOfT[sdkcommons.SchemaObjectIdentifier]()).
+	ShowParametersDetails(icebergTableParameters...).
+	WithEnums(
+		IcebergTableTargetFileSizeEnumDef,
+		IcebergTablePathLayoutEnumDef,
+		IcebergTableDescribeTypeEnumDef,
+		TableSearchMethodEnumDef,
+		IcebergTableTypeEnumDef,
+		IcebergTableCatalogEnumDef,
+		StorageSerializationPolicyEnumDef,
+		IcebergTableIcebergMergeOnReadBehaviorEnumDef,
+	)

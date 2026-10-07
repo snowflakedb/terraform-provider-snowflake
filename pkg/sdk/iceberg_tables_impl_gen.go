@@ -5,7 +5,9 @@ package sdk
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -551,32 +553,50 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 	}
 	if r.Set != nil {
 		opts.Set = &IcebergTableSetProperties{
-			ReplaceInvalidCharacters:   r.Set.ReplaceInvalidCharacters,
-			CatalogSync:                r.Set.CatalogSync,
-			DataRetentionTimeInDays:    r.Set.DataRetentionTimeInDays,
-			MaxDataExtensionTimeInDays: r.Set.MaxDataExtensionTimeInDays,
-			AutoRefresh:                r.Set.AutoRefresh,
-			TargetFileSize:             r.Set.TargetFileSize,
-			Contact:                    r.Set.Contact,
-			LogEventLevel:              r.Set.LogEventLevel,
-			ErrorLogging:               r.Set.ErrorLogging,
-			EnableDataCompaction:       r.Set.EnableDataCompaction,
-			EnableIcebergMergeOnRead:   r.Set.EnableIcebergMergeOnRead,
-			Comment:                    r.Set.Comment,
+			AllowRowTimestamp:           r.Set.AllowRowTimestamp,
+			Catalog:                     r.Set.Catalog,
+			CatalogSync:                 r.Set.CatalogSync,
+			DataMetricSchedule:          r.Set.DataMetricSchedule,
+			DataRetentionTimeInDays:     r.Set.DataRetentionTimeInDays,
+			DefaultDdlCollation:         r.Set.DefaultDdlCollation,
+			EnableDataCompaction:        r.Set.EnableDataCompaction,
+			EnableIcebergMergeOnRead:    r.Set.EnableIcebergMergeOnRead,
+			ExternalVolume:              r.Set.ExternalVolume,
+			IcebergMergeOnReadBehavior:  r.Set.IcebergMergeOnReadBehavior,
+			LogEventLevel:               r.Set.LogEventLevel,
+			MaxDataExtensionTimeInDays:  r.Set.MaxDataExtensionTimeInDays,
+			OptimizeDataLayout:          r.Set.OptimizeDataLayout,
+			QuotedIdentifiersIgnoreCase: r.Set.QuotedIdentifiersIgnoreCase,
+			ReplaceInvalidCharacters:    r.Set.ReplaceInvalidCharacters,
+			StorageSerializationPolicy:  r.Set.StorageSerializationPolicy,
+			TargetFileSize:              r.Set.TargetFileSize,
+			AutoRefresh:                 r.Set.AutoRefresh,
+			Contact:                     r.Set.Contact,
+			ErrorLogging:                r.Set.ErrorLogging,
+			Comment:                     r.Set.Comment,
 		}
 	}
 	if r.Unset != nil {
 		opts.Unset = &IcebergTableUnsetProperties{
-			ReplaceInvalidCharacters:   r.Unset.ReplaceInvalidCharacters,
-			CatalogSync:                r.Unset.CatalogSync,
-			DataRetentionTimeInDays:    r.Unset.DataRetentionTimeInDays,
-			MaxDataExtensionTimeInDays: r.Unset.MaxDataExtensionTimeInDays,
-			TargetFileSize:             r.Unset.TargetFileSize,
-			LogEventLevel:              r.Unset.LogEventLevel,
-			ErrorLogging:               r.Unset.ErrorLogging,
-			EnableDataCompaction:       r.Unset.EnableDataCompaction,
-			EnableIcebergMergeOnRead:   r.Unset.EnableIcebergMergeOnRead,
-			Comment:                    r.Unset.Comment,
+			AllowRowTimestamp:           r.Unset.AllowRowTimestamp,
+			Catalog:                     r.Unset.Catalog,
+			CatalogSync:                 r.Unset.CatalogSync,
+			DataMetricSchedule:          r.Unset.DataMetricSchedule,
+			DataRetentionTimeInDays:     r.Unset.DataRetentionTimeInDays,
+			DefaultDdlCollation:         r.Unset.DefaultDdlCollation,
+			EnableDataCompaction:        r.Unset.EnableDataCompaction,
+			EnableIcebergMergeOnRead:    r.Unset.EnableIcebergMergeOnRead,
+			ExternalVolume:              r.Unset.ExternalVolume,
+			IcebergMergeOnReadBehavior:  r.Unset.IcebergMergeOnReadBehavior,
+			LogEventLevel:               r.Unset.LogEventLevel,
+			MaxDataExtensionTimeInDays:  r.Unset.MaxDataExtensionTimeInDays,
+			OptimizeDataLayout:          r.Unset.OptimizeDataLayout,
+			QuotedIdentifiersIgnoreCase: r.Unset.QuotedIdentifiersIgnoreCase,
+			ReplaceInvalidCharacters:    r.Unset.ReplaceInvalidCharacters,
+			StorageSerializationPolicy:  r.Unset.StorageSerializationPolicy,
+			TargetFileSize:              r.Unset.TargetFileSize,
+			ErrorLogging:                r.Unset.ErrorLogging,
+			Comment:                     r.Unset.Comment,
 		}
 	}
 	if r.AddRowAccessPolicy != nil {
@@ -741,4 +761,39 @@ func (r *TableDropSearchOptimizationRequest) toOpts() *TableDropSearchOptimizati
 		opts.On = on
 	}
 	return opts
+}
+
+func toIcebergTableParametersDetails(params []*Parameter) (*IcebergTableParametersDetails, error) {
+	byKey := parametersByKey(params)
+	var d IcebergTableParametersDetails
+	if err := errors.Join(
+		fillTypedParameter(byKey["ALLOW_ROW_TIMESTAMP"], strconv.ParseBool, &d.AllowRowTimestamp),
+		fillTypedParameter(byKey["CATALOG"], ParseAccountObjectIdentifier, &d.Catalog),
+		fillTypedParameter(byKey["CATALOG_SYNC"], identityParse, &d.CatalogSync),
+		fillTypedParameter(byKey["DATA_METRIC_SCHEDULE"], identityParse, &d.DataMetricSchedule),
+		fillTypedParameter(byKey["DATA_RETENTION_TIME_IN_DAYS"], strconv.Atoi, &d.DataRetentionTimeInDays),
+		fillTypedParameter(byKey["DEFAULT_DDL_COLLATION"], identityParse, &d.DefaultDdlCollation),
+		fillTypedParameter(byKey["ENABLE_DATA_COMPACTION"], strconv.ParseBool, &d.EnableDataCompaction),
+		fillTypedParameter(byKey["ENABLE_ICEBERG_MERGE_ON_READ"], strconv.ParseBool, &d.EnableIcebergMergeOnRead),
+		fillTypedParameter(byKey["EXTERNAL_VOLUME"], ParseAccountObjectIdentifier, &d.ExternalVolume),
+		fillTypedParameter(byKey["ICEBERG_MERGE_ON_READ_BEHAVIOR"], ToIcebergTableIcebergMergeOnReadBehavior, &d.IcebergMergeOnReadBehavior),
+		fillTypedParameter(byKey["LOG_EVENT_LEVEL"], ToLogLevel, &d.LogEventLevel),
+		fillTypedParameter(byKey["MAX_DATA_EXTENSION_TIME_IN_DAYS"], strconv.Atoi, &d.MaxDataExtensionTimeInDays),
+		fillTypedParameter(byKey["OPTIMIZE_DATA_LAYOUT"], strconv.ParseBool, &d.OptimizeDataLayout),
+		fillTypedParameter(byKey["QUOTED_IDENTIFIERS_IGNORE_CASE"], strconv.ParseBool, &d.QuotedIdentifiersIgnoreCase),
+		fillTypedParameter(byKey["REPLACE_INVALID_CHARACTERS"], strconv.ParseBool, &d.ReplaceInvalidCharacters),
+		fillTypedParameter(byKey["STORAGE_SERIALIZATION_POLICY"], ToStorageSerializationPolicy, &d.StorageSerializationPolicy),
+		fillTypedParameter(byKey["TARGET_FILE_SIZE"], ToIcebergTableTargetFileSize, &d.TargetFileSize),
+	); err != nil {
+		return nil, err
+	}
+	return &d, nil
+}
+
+func (v *icebergTables) ShowParametersDetails(ctx context.Context, id SchemaObjectIdentifier) (*IcebergTableParametersDetails, error) {
+	params, err := v.ShowParameters(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return toIcebergTableParametersDetails(params)
 }

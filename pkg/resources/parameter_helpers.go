@@ -18,21 +18,23 @@ type enumParameterMetadata struct {
 
 // enumParameterValidators maps a catalog Kind naming an enum type to its derived Terraform behaviors.
 var enumParameterValidators = map[string]enumParameterMetadata{
-	"ActivePythonProfiler":             {sdkValidation(sdk.ToActivePythonProfiler), NormalizeAndCompare(sdk.ToActivePythonProfiler), enumValuesDescription(sdk.AllActivePythonProfilers)},
-	"BinaryInputFormat":                {sdkValidation(sdk.ToBinaryInputFormat), NormalizeAndCompare(sdk.ToBinaryInputFormat), enumValuesDescription(sdk.AllBinaryInputFormats)},
-	"BinaryOutputFormat":               {sdkValidation(sdk.ToBinaryOutputFormat), NormalizeAndCompare(sdk.ToBinaryOutputFormat), enumValuesDescription(sdk.AllBinaryOutputFormats)},
-	"ClientTimestampTypeMapping":       {sdkValidation(sdk.ToClientTimestampTypeMapping), NormalizeAndCompare(sdk.ToClientTimestampTypeMapping), enumValuesDescription(sdk.AllClientTimestampTypeMappings)},
-	"DefaultNullOrdering":              {sdkValidation(sdk.ToDefaultNullOrdering), NormalizeAndCompare(sdk.ToDefaultNullOrdering), enumValuesDescription(sdk.AllDefaultNullOrderings)},
-	"GeographyOutputFormat":            {sdkValidation(sdk.ToGeographyOutputFormat), NormalizeAndCompare(sdk.ToGeographyOutputFormat), enumValuesDescription(sdk.AllGeographyOutputFormats)},
-	"GeometryOutputFormat":             {sdkValidation(sdk.ToGeometryOutputFormat), NormalizeAndCompare(sdk.ToGeometryOutputFormat), enumValuesDescription(sdk.AllGeometryOutputFormats)},
-	"LogLevel":                         {sdkValidation(sdk.ToLogLevel), NormalizeAndCompare(sdk.ToLogLevel), enumValuesDescription(sdk.AllLogLevels)},
-	"MetricLevel":                      {sdkValidation(sdk.ToMetricLevel), NormalizeAndCompare(sdk.ToMetricLevel), enumValuesDescription(sdk.AllMetricLevels)},
-	"StorageSerializationPolicy":       {sdkValidation(sdk.ToStorageSerializationPolicy), NormalizeAndCompare(sdk.ToStorageSerializationPolicy), enumValuesDescription(sdk.AllStorageSerializationPolicies)},
-	"TimestampTypeMapping":             {sdkValidation(sdk.ToTimestampTypeMapping), NormalizeAndCompare(sdk.ToTimestampTypeMapping), enumValuesDescription(sdk.AllTimestampTypeMappings)},
-	"TraceLevel":                       {sdkValidation(sdk.ToTraceLevel), NormalizeAndCompare(sdk.ToTraceLevel), enumValuesDescription(sdk.AllTraceLevels)},
-	"TransactionDefaultIsolationLevel": {sdkValidation(sdk.ToTransactionDefaultIsolationLevel), NormalizeAndCompare(sdk.ToTransactionDefaultIsolationLevel), enumValuesDescription(sdk.AllTransactionDefaultIsolationLevels)},
-	"UnsupportedDDLAction":             {sdkValidation(sdk.ToUnsupportedDDLAction), NormalizeAndCompare(sdk.ToUnsupportedDDLAction), enumValuesDescription(sdk.AllUnsupportedDDLActions)},
-	"WarehouseSize":                    {sdkValidation(sdk.ToWarehouseSize), NormalizeAndCompare(sdk.ToWarehouseSize), enumValuesDescription(sdk.AllWarehouseSizes)},
+	"ActivePythonProfiler":                   {sdkValidation(sdk.ToActivePythonProfiler), NormalizeAndCompare(sdk.ToActivePythonProfiler), enumValuesDescription(sdk.AllActivePythonProfilers)},
+	"BinaryInputFormat":                      {sdkValidation(sdk.ToBinaryInputFormat), NormalizeAndCompare(sdk.ToBinaryInputFormat), enumValuesDescription(sdk.AllBinaryInputFormats)},
+	"BinaryOutputFormat":                     {sdkValidation(sdk.ToBinaryOutputFormat), NormalizeAndCompare(sdk.ToBinaryOutputFormat), enumValuesDescription(sdk.AllBinaryOutputFormats)},
+	"ClientTimestampTypeMapping":             {sdkValidation(sdk.ToClientTimestampTypeMapping), NormalizeAndCompare(sdk.ToClientTimestampTypeMapping), enumValuesDescription(sdk.AllClientTimestampTypeMappings)},
+	"DefaultNullOrdering":                    {sdkValidation(sdk.ToDefaultNullOrdering), NormalizeAndCompare(sdk.ToDefaultNullOrdering), enumValuesDescription(sdk.AllDefaultNullOrderings)},
+	"GeographyOutputFormat":                  {sdkValidation(sdk.ToGeographyOutputFormat), NormalizeAndCompare(sdk.ToGeographyOutputFormat), enumValuesDescription(sdk.AllGeographyOutputFormats)},
+	"GeometryOutputFormat":                   {sdkValidation(sdk.ToGeometryOutputFormat), NormalizeAndCompare(sdk.ToGeometryOutputFormat), enumValuesDescription(sdk.AllGeometryOutputFormats)},
+	"IcebergTableIcebergMergeOnReadBehavior": {sdkValidation(sdk.ToIcebergTableIcebergMergeOnReadBehavior), NormalizeAndCompare(sdk.ToIcebergTableIcebergMergeOnReadBehavior), enumValuesDescription(sdk.AllIcebergTableIcebergMergeOnReadBehaviors)},
+	"IcebergTableTargetFileSize":             {sdkValidation(sdk.ToIcebergTableTargetFileSize), NormalizeAndCompare(sdk.ToIcebergTableTargetFileSize), enumValuesDescription(sdk.AllIcebergTableTargetFileSizes)},
+	"LogLevel":                               {sdkValidation(sdk.ToLogLevel), NormalizeAndCompare(sdk.ToLogLevel), enumValuesDescription(sdk.AllLogLevels)},
+	"MetricLevel":                            {sdkValidation(sdk.ToMetricLevel), NormalizeAndCompare(sdk.ToMetricLevel), enumValuesDescription(sdk.AllMetricLevels)},
+	"StorageSerializationPolicy":             {sdkValidation(sdk.ToStorageSerializationPolicy), NormalizeAndCompare(sdk.ToStorageSerializationPolicy), enumValuesDescription(sdk.AllStorageSerializationPolicies)},
+	"TimestampTypeMapping":                   {sdkValidation(sdk.ToTimestampTypeMapping), NormalizeAndCompare(sdk.ToTimestampTypeMapping), enumValuesDescription(sdk.AllTimestampTypeMappings)},
+	"TraceLevel":                             {sdkValidation(sdk.ToTraceLevel), NormalizeAndCompare(sdk.ToTraceLevel), enumValuesDescription(sdk.AllTraceLevels)},
+	"TransactionDefaultIsolationLevel":       {sdkValidation(sdk.ToTransactionDefaultIsolationLevel), NormalizeAndCompare(sdk.ToTransactionDefaultIsolationLevel), enumValuesDescription(sdk.AllTransactionDefaultIsolationLevels)},
+	"UnsupportedDDLAction":                   {sdkValidation(sdk.ToUnsupportedDDLAction), NormalizeAndCompare(sdk.ToUnsupportedDDLAction), enumValuesDescription(sdk.AllUnsupportedDDLActions)},
+	"WarehouseSize":                          {sdkValidation(sdk.ToWarehouseSize), NormalizeAndCompare(sdk.ToWarehouseSize), enumValuesDescription(sdk.AllWarehouseSizes)},
 }
 
 // identifierParameterValidators maps a catalog Kind naming an identifier type to its validator.

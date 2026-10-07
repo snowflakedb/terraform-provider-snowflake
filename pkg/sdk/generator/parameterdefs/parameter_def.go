@@ -15,6 +15,7 @@ const (
 	ParameterLevelDatabase             ParameterLevel = "DATABASE"
 	ParameterLevelSchema               ParameterLevel = "SCHEMA"
 	ParameterLevelTable                ParameterLevel = "TABLE"
+	ParameterLevelIcebergTable         ParameterLevel = "ICEBERG_TABLE"
 	ParameterLevelTask                 ParameterLevel = "TASK"
 	ParameterLevelFunction             ParameterLevel = "FUNCTION"
 	ParameterLevelProcedure            ParameterLevel = "PROCEDURE"
@@ -29,7 +30,8 @@ const (
 	// ParameterLevelAccountExt has no Snowflake counterpart. It marks the broader set of account
 	// parameters consumed by the generic account_parameter resource, while ParameterLevelAccount
 	// marks the narrower set exposed as typed fields on current_account.
-	ParameterLevelAccountExt ParameterLevel = "ACCOUNT_EXT"
+	ParameterLevelAccountExt  ParameterLevel = "ACCOUNT_EXT"
+	ParameterLevelHybridTable ParameterLevel = "HYBRID_TABLE"
 )
 
 // ParameterDef is one parameter declaration consumed by SDK generator definitions.

@@ -1728,14 +1728,14 @@ func TestInt_IcebergTables(t *testing.T) {
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
 			WithSet(
 				*sdk.NewIcebergTableSetPropertiesRequest().
-					WithLogEventLevel(sdk.IcebergTableLogEventLevelDebug).
+					WithLogEventLevel(sdk.LogLevelDebug).
 					WithReplaceInvalidCharacters(true),
 			))
 		require.NoError(t, err)
 
 		assertThatObject(
 			t, objectparametersassert.IcebergTableParameters(t, id).
-				HasLogEventLevel(string(sdk.IcebergTableLogEventLevelDebug)).
+				HasLogEventLevel(string(sdk.LogLevelDebug)).
 				HasReplaceInvalidCharacters(true),
 		)
 

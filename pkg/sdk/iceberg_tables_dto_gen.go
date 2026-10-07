@@ -402,31 +402,49 @@ type IcebergTableReclusterChangeStateRequest struct {
 }
 
 type IcebergTableSetPropertiesRequest struct {
-	ReplaceInvalidCharacters   *bool
-	CatalogSync                *string
-	DataRetentionTimeInDays    *int
-	MaxDataExtensionTimeInDays *int
-	AutoRefresh                *bool
-	TargetFileSize             *IcebergTableTargetFileSize
-	Contact                    []TableContact
-	LogEventLevel              *IcebergTableLogEventLevel
-	ErrorLogging               *bool
-	EnableDataCompaction       *bool
-	EnableIcebergMergeOnRead   *bool
-	Comment                    *string
+	AllowRowTimestamp           *bool
+	Catalog                     *AccountObjectIdentifier
+	CatalogSync                 *string
+	DataMetricSchedule          *string
+	DataRetentionTimeInDays     *int
+	DefaultDdlCollation         *StringAllowEmpty
+	EnableDataCompaction        *bool
+	EnableIcebergMergeOnRead    *bool
+	ExternalVolume              *AccountObjectIdentifier
+	IcebergMergeOnReadBehavior  *IcebergTableIcebergMergeOnReadBehavior
+	LogEventLevel               *LogLevel
+	MaxDataExtensionTimeInDays  *int
+	OptimizeDataLayout          *bool
+	QuotedIdentifiersIgnoreCase *bool
+	ReplaceInvalidCharacters    *bool
+	StorageSerializationPolicy  *StorageSerializationPolicy
+	TargetFileSize              *IcebergTableTargetFileSize
+	AutoRefresh                 *bool
+	Contact                     []TableContact
+	ErrorLogging                *bool
+	Comment                     *string
 }
 
 type IcebergTableUnsetPropertiesRequest struct {
-	ReplaceInvalidCharacters   *bool
-	CatalogSync                *bool
-	DataRetentionTimeInDays    *bool
-	MaxDataExtensionTimeInDays *bool
-	TargetFileSize             *bool
-	LogEventLevel              *bool
-	ErrorLogging               *bool
-	EnableDataCompaction       *bool
-	EnableIcebergMergeOnRead   *bool
-	Comment                    *bool
+	AllowRowTimestamp           *bool
+	Catalog                     *bool
+	CatalogSync                 *bool
+	DataMetricSchedule          *bool
+	DataRetentionTimeInDays     *bool
+	DefaultDdlCollation         *bool
+	EnableDataCompaction        *bool
+	EnableIcebergMergeOnRead    *bool
+	ExternalVolume              *bool
+	IcebergMergeOnReadBehavior  *bool
+	LogEventLevel               *bool
+	MaxDataExtensionTimeInDays  *bool
+	OptimizeDataLayout          *bool
+	QuotedIdentifiersIgnoreCase *bool
+	ReplaceInvalidCharacters    *bool
+	StorageSerializationPolicy  *bool
+	TargetFileSize              *bool
+	ErrorLogging                *bool
+	Comment                     *bool
 }
 
 type IcebergTableDropAndAddRowAccessPolicyRequest struct {

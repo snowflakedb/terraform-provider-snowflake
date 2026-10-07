@@ -14,6 +14,9 @@ var (
 	onAccountExt               = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccountExt}
 	onSchema                   = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema}
 	onTable                    = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelTable}
+	onTableAndIcebergTable     = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelTable, parameterdefs.ParameterLevelIcebergTable}
+	onAccountAndIcebergTable   = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelIcebergTable}
+	onIcebergTableOnly         = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelIcebergTable}
 	onTask                     = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelTask}
 	onFunctionAndProcedure     = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelFunction, parameterdefs.ParameterLevelProcedure}
 	onLog                      = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelProject, parameterdefs.ParameterLevelProcedure, parameterdefs.ParameterLevelFunction, parameterdefs.ParameterLevelTable, parameterdefs.ParameterLevelTask}
@@ -57,6 +60,14 @@ var (
 		Levels:      onAccount,
 		Description: "Specifies whether a connection token can be saved in the client-side operating system keystore to promote continuous, secure connectivity without users needing to enter login credentials at the start of each connection attempt to Snowflake. For details and the list of supported Snowflake-provided clients, see [Using connection caching to minimize the number of prompts for authentication — optional.](https://docs.snowflake.com/en/user-guide/admin-security-fed-auth-use.html#label-browser-based-sso-connection-caching)",
 	}
+	AllowRowTimestamp = parameterdefs.ParameterDef{
+		SqlName:      "ALLOW_ROW_TIMESTAMP",
+		Kind:         g.KindBool,
+		Levels:       onIcebergTableOnly,
+		Description:  "Specifies whether a hidden row-level timestamp column is maintained on a Snowflake-managed Apache Iceberg™ table.",
+		DefaultValue: "false",
+		DefaultLevel: parameterTypeSnowflakeDefault,
+	}
 	AllowedSpcsWorkloadTypes = parameterdefs.ParameterDef{
 		SqlName:     "ALLOWED_SPCS_WORKLOAD_TYPES",
 		Kind:        g.KindString,
@@ -96,16 +107,18 @@ var (
 	Catalog = parameterdefs.ParameterDef{
 		SqlName:      "CATALOG",
 		Kind:         g.KindOfT[sdkcommons.AccountObjectIdentifier](),
-		Levels:       onTable,
+		Levels:       onTableAndIcebergTable,
 		Description:  "The parameter that specifies the default catalog to use for Iceberg tables.",
 		DefaultValue: "",
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	CatalogSync = parameterdefs.ParameterDef{
-		SqlName:     "CATALOG_SYNC",
-		Kind:        g.KindString,
-		Levels:      onAccount,
-		Description: "Specifies the name of your catalog integration for [Snowflake Open Catalog](https://other-docs.snowflake.com/en/opencatalog/overview). Snowflake syncs tables that use the specified catalog integration with your Snowflake Open Catalog account. For more information, see [Sync a Snowflake-managed table with Snowflake Open Catalog](https://docs.snowflake.com/en/user-guide/tables-iceberg-open-catalog-sync).",
+		SqlName:      "CATALOG_SYNC",
+		Kind:         g.KindString,
+		Levels:       onAccountAndIcebergTable,
+		Description:  "Specifies the name of your catalog integration for [Snowflake Open Catalog](https://other-docs.snowflake.com/en/opencatalog/overview). Snowflake syncs tables that use the specified catalog integration with your Snowflake Open Catalog account. For more information, see [Sync a Snowflake-managed table with Snowflake Open Catalog](https://docs.snowflake.com/en/user-guide/tables-iceberg-open-catalog-sync).",
+		DefaultValue: "",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	ClientEnableLogInfoStatementParameters = parameterdefs.ParameterDef{
 		SqlName:     "CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS",
@@ -226,15 +239,17 @@ var (
 		Description: "Specifies the format for TIMESTAMP values in CSV files downloaded from Snowsight. If this parameter is not set, [TIMESTAMP_LTZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-ltz-output-format) will be used for TIMESTAMP_LTZ values, [TIMESTAMP_TZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-tz-output-format) will be used for TIMESTAMP_TZ and [TIMESTAMP_NTZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-ntz-output-format) for TIMESTAMP_NTZ values. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output) or [Download your query results](https://docs.snowflake.com/en/user-guide/ui-snowsight-query.html#label-snowsight-download-query-results).",
 	}
 	DataMetricSchedule = parameterdefs.ParameterDef{
-		SqlName:     "DATA_METRIC_SCHEDULE",
-		Kind:        g.KindString,
-		Levels:      onAccount,
-		Description: "Specifies the schedule to run the data metric functions associated to the table. All data metric functions on the table or view follow the same schedule.",
+		SqlName:      "DATA_METRIC_SCHEDULE",
+		Kind:         g.KindString,
+		Levels:       onAccountAndIcebergTable,
+		Description:  "Specifies the schedule to run the data metric functions associated to the table. All data metric functions on the table or view follow the same schedule.",
+		DefaultValue: "60 MINUTES",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	DataRetentionTimeInDays = parameterdefs.ParameterDef{
 		SqlName:      "DATA_RETENTION_TIME_IN_DAYS",
 		Kind:         g.KindInt,
-		Levels:       onTable,
+		Levels:       append(slices.Clone(onTableAndIcebergTable), parameterdefs.ParameterLevelHybridTable),
 		Description:  "Specifies the number of days for which Time Travel actions (CLONE and UNDROP) can be performed on the database, as well as specifying the default Time Travel retention time for all schemas created in the database. For more details, see [Understanding & Using Time Travel](https://docs.snowflake.com/en/user-guide/data-time-travel).",
 		DefaultValue: "1",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -264,7 +279,7 @@ var (
 	DefaultDdlCollation = parameterdefs.ParameterDef{
 		SqlName:      "DEFAULT_DDL_COLLATION",
 		Kind:         g.KindOfT[sdkcommons.StringAllowEmpty](),
-		Levels:       onTable,
+		Levels:       onTableAndIcebergTable,
 		Description:  "Specifies a default collation specification for all schemas and tables added to the database. It can be overridden on schema or table level. For more information, see [collation specification](https://docs.snowflake.com/en/sql-reference/collation#label-collation-specification).",
 		DefaultValue: "",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -348,10 +363,12 @@ var (
 		Description: "Controls whether Cortex Analyst is enabled for the account.",
 	}
 	EnableDataCompaction = parameterdefs.ParameterDef{
-		SqlName:     "ENABLE_DATA_COMPACTION",
-		Kind:        g.KindBool,
-		Levels:      onAccount,
-		Description: "Specifies whether Snowflake should enable data compaction on Snowflake-managed Apache Iceberg™ tables.",
+		SqlName:      "ENABLE_DATA_COMPACTION",
+		Kind:         g.KindBool,
+		Levels:       onAccountAndIcebergTable,
+		Description:  "Specifies whether Snowflake should enable data compaction on Snowflake-managed Apache Iceberg™ tables.",
+		DefaultValue: "true",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	EnableEgressCostOptimizer = parameterdefs.ParameterDef{
 		SqlName:     "ENABLE_EGRESS_COST_OPTIMIZER",
@@ -366,10 +383,12 @@ var (
 		Description: "Specifies whether the output returned by the GET_DDL function contains data type synonyms specified in the original DDL statement. Data type synonyms are also called data type aliases.",
 	}
 	EnableIcebergMergeOnRead = parameterdefs.ParameterDef{
-		SqlName:     "ENABLE_ICEBERG_MERGE_ON_READ",
-		Kind:        g.KindBool,
-		Levels:      onAccount,
-		Description: "Specifies whether to enable merge-on-read behavior for Snowflake-managed Apache Iceberg™ tables.",
+		SqlName:      "ENABLE_ICEBERG_MERGE_ON_READ",
+		Kind:         g.KindBool,
+		Levels:       onAccountAndIcebergTable,
+		Description:  "Specifies whether to enable merge-on-read behavior for Snowflake-managed Apache Iceberg™ tables.",
+		DefaultValue: "true",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	EnableIdentifierFirstLogin = parameterdefs.ParameterDef{
 		SqlName:     "ENABLE_IDENTIFIER_FIRST_LOGIN",
@@ -489,7 +508,7 @@ var (
 	ExternalVolume = parameterdefs.ParameterDef{
 		SqlName:      "EXTERNAL_VOLUME",
 		Kind:         g.KindOfT[sdkcommons.AccountObjectIdentifier](),
-		Levels:       onTable,
+		Levels:       onTableAndIcebergTable,
 		Description:  "The parameter that specifies the default external volume to use for Iceberg tables.",
 		DefaultValue: "",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -523,6 +542,14 @@ var (
 		Kind:        g.KindInt,
 		Levels:      onAccount,
 		Description: "Number of seconds to wait while trying to acquire row-level locks on a hybrid table, before timing out and aborting the statement.",
+	}
+	IcebergMergeOnReadBehavior = parameterdefs.ParameterDef{
+		SqlName:      "ICEBERG_MERGE_ON_READ_BEHAVIOR",
+		Kind:         IcebergTableIcebergMergeOnReadBehaviorEnumDef.Kind(),
+		Levels:       onIcebergTableOnly,
+		Description:  "Specifies the merge-on-read behavior for Snowflake-managed Apache Iceberg™ tables.",
+		DefaultValue: `sdk.IcebergTableIcebergMergeOnReadBehavior("auto")`,
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	IcebergVersionDefault = parameterdefs.ParameterDef{
 		SqlName:     "ICEBERG_VERSION_DEFAULT",
@@ -589,7 +616,7 @@ var (
 	LogEventLevel = parameterdefs.ParameterDef{
 		SqlName:      "LOG_EVENT_LEVEL",
 		Kind:         g.KindOfT[sdkcommons.LogLevel](),
-		Levels:       append(slices.Clone(onLog), parameterdefs.ParameterLevelSession, parameterdefs.ParameterLevelUser),
+		Levels:       append(slices.Clone(onLog), parameterdefs.ParameterLevelIcebergTable, parameterdefs.ParameterLevelSession, parameterdefs.ParameterLevelUser),
 		Description:  "Specifies the severity level of log events (rows with record type EVENT) that should be ingested and made available in the active event table. Log events at the specified level (and at more severe levels) are ingested.",
 		DefaultValue: "sdk.LogLevelOff",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -613,7 +640,7 @@ var (
 	MaxDataExtensionTimeInDays = parameterdefs.ParameterDef{
 		SqlName:      "MAX_DATA_EXTENSION_TIME_IN_DAYS",
 		Kind:         g.KindInt,
-		Levels:       onTable,
+		Levels:       append(slices.Clone(onTableAndIcebergTable), parameterdefs.ParameterLevelHybridTable),
 		Description:  "Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period for tables in the database to prevent streams on the tables from becoming stale.",
 		DefaultValue: "14",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -664,6 +691,14 @@ var (
 		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies how ODBC processes columns that have a scale of zero (0).",
 		DefaultValue: "false",
+		DefaultLevel: parameterTypeSnowflakeDefault,
+	}
+	OptimizeDataLayout = parameterdefs.ParameterDef{
+		SqlName:      "OPTIMIZE_DATA_LAYOUT",
+		Kind:         g.KindBool,
+		Levels:       onIcebergTableOnly,
+		Description:  "Specifies whether Snowflake should optimize the data layout (e.g. file sizes) of a Snowflake-managed Apache Iceberg™ table.",
+		DefaultValue: "true",
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	PeriodicDataRekeying = parameterdefs.ParameterDef{
@@ -718,7 +753,7 @@ var (
 	QuotedIdentifiersIgnoreCase = parameterdefs.ParameterDef{
 		SqlName:      "QUOTED_IDENTIFIERS_IGNORE_CASE",
 		Kind:         g.KindBool,
-		Levels:       append(slices.Clone(onTable), parameterdefs.ParameterLevelTask, parameterdefs.ParameterLevelSession, parameterdefs.ParameterLevelUser),
+		Levels:       append(slices.Clone(onTableAndIcebergTable), parameterdefs.ParameterLevelTask, parameterdefs.ParameterLevelSession, parameterdefs.ParameterLevelUser),
 		Description:  "If true, the case of quoted identifiers is ignored.",
 		DefaultValue: "false",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -732,7 +767,7 @@ var (
 	ReplaceInvalidCharacters = parameterdefs.ParameterDef{
 		SqlName:      "REPLACE_INVALID_CHARACTERS",
 		Kind:         g.KindBool,
-		Levels:       onTable,
+		Levels:       onTableAndIcebergTable,
 		Description:  "Specifies whether to replace invalid UTF-8 characters with the Unicode replacement character in query results for an Iceberg table. You can only set this parameter for tables that use an external Iceberg catalog.",
 		DefaultValue: "false",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -843,7 +878,7 @@ var (
 	StorageSerializationPolicy = parameterdefs.ParameterDef{
 		SqlName:      "STORAGE_SERIALIZATION_POLICY",
 		Kind:         g.KindOfT[sdkcommons.StorageSerializationPolicy](),
-		Levels:       onTable,
+		Levels:       onTableAndIcebergTable,
 		Description:  "The storage serialization policy for Iceberg tables that use Snowflake as the catalog. COMPATIBLE: Snowflake performs encoding and compression of data files that ensures interoperability with third-party compute engines. OPTIMIZED: Snowflake performs encoding and compression of data files that ensures the best table performance within Snowflake.",
 		DefaultValue: "sdk.StorageSerializationPolicyOptimized",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -862,6 +897,14 @@ var (
 		Levels:       onTask,
 		Description:  "How many times a task must fail in a row before it is automatically suspended. 0 disables auto-suspending.",
 		DefaultValue: "10",
+		DefaultLevel: parameterTypeSnowflakeDefault,
+	}
+	TargetFileSize = parameterdefs.ParameterDef{
+		SqlName:      "TARGET_FILE_SIZE",
+		Kind:         IcebergTableTargetFileSizeEnumDef.Kind(),
+		Levels:       onIcebergTableOnly,
+		Description:  "Specifies the target file size for the Parquet data files generated for a Snowflake-managed Apache Iceberg™ table.",
+		DefaultValue: "sdk.IcebergTableTargetFileSizeAuto",
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	TaskAutoRetryAttempts = parameterdefs.ParameterDef{
@@ -1055,6 +1098,7 @@ var AllParameters = []parameterdefs.ParameterDef{
 	AllowBindValuesAccess,
 	AllowClientMfaCaching,
 	AllowIdToken,
+	AllowRowTimestamp,
 	AllowedSpcsWorkloadTypes,
 	Autocommit,
 	BaseLocationPrefix,
@@ -1124,6 +1168,7 @@ var AllParameters = []parameterdefs.ParameterDef{
 	GeographyOutputFormat,
 	GeometryOutputFormat,
 	HybridTableLockTimeout,
+	IcebergMergeOnReadBehavior,
 	IcebergVersionDefault,
 	InitialReplicationSizeLimitInTb,
 	JdbcTreatDecimalAsInt,
@@ -1144,6 +1189,7 @@ var AllParameters = []parameterdefs.ParameterDef{
 	NoorderSequenceAsDefault,
 	OauthAddPrivilegedRolesToBlockedList,
 	OdbcTreatDecimalAsInt,
+	OptimizeDataLayout,
 	PeriodicDataRekeying,
 	PipeExecutionPaused,
 	PreventLoadFromInlineUrl,
@@ -1173,6 +1219,7 @@ var AllParameters = []parameterdefs.ParameterDef{
 	StorageSerializationPolicy,
 	StrictJsonOutput,
 	SuspendTaskAfterNumFailures,
+	TargetFileSize,
 	TaskAutoRetryAttempts,
 	TimeInputFormat,
 	TimeOutputFormat,

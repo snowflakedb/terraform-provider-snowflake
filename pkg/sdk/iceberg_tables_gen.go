@@ -24,6 +24,28 @@ type IcebergTables interface {
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*IcebergTable, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]IcebergTableDetails, error)
 	ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error)
+	ShowParametersDetails(ctx context.Context, id SchemaObjectIdentifier) (*IcebergTableParametersDetails, error)
+}
+
+// IcebergTableParametersDetails holds the object's parameters with values parsed into their Go types.
+type IcebergTableParametersDetails struct {
+	AllowRowTimestamp           TypedParameter[bool]
+	Catalog                     TypedParameter[AccountObjectIdentifier]
+	CatalogSync                 TypedParameter[string]
+	DataMetricSchedule          TypedParameter[string]
+	DataRetentionTimeInDays     TypedParameter[int]
+	DefaultDdlCollation         TypedParameter[string]
+	EnableDataCompaction        TypedParameter[bool]
+	EnableIcebergMergeOnRead    TypedParameter[bool]
+	ExternalVolume              TypedParameter[AccountObjectIdentifier]
+	IcebergMergeOnReadBehavior  TypedParameter[IcebergTableIcebergMergeOnReadBehavior]
+	LogEventLevel               TypedParameter[LogLevel]
+	MaxDataExtensionTimeInDays  TypedParameter[int]
+	OptimizeDataLayout          TypedParameter[bool]
+	QuotedIdentifiersIgnoreCase TypedParameter[bool]
+	ReplaceInvalidCharacters    TypedParameter[bool]
+	StorageSerializationPolicy  TypedParameter[StorageSerializationPolicy]
+	TargetFileSize              TypedParameter[IcebergTableTargetFileSize]
 }
 
 // CreateIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-snowflake.
@@ -460,31 +482,49 @@ type IcebergTableReclusterChangeState struct {
 }
 
 type IcebergTableSetProperties struct {
-	ReplaceInvalidCharacters   *bool                       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
-	CatalogSync                *string                     `ddl:"parameter,single_quotes" sql:"CATALOG_SYNC"`
-	DataRetentionTimeInDays    *int                        `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays *int                        `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	AutoRefresh                *bool                       `ddl:"parameter" sql:"AUTO_REFRESH"`
-	TargetFileSize             *IcebergTableTargetFileSize `ddl:"parameter,single_quotes" sql:"TARGET_FILE_SIZE"`
-	Contact                    []TableContact              `ddl:"keyword,parentheses" sql:"CONTACT"`
-	LogEventLevel              *IcebergTableLogEventLevel  `ddl:"parameter,no_quotes" sql:"LOG_EVENT_LEVEL"`
-	ErrorLogging               *bool                       `ddl:"parameter" sql:"ERROR_LOGGING"`
-	EnableDataCompaction       *bool                       `ddl:"parameter" sql:"ENABLE_DATA_COMPACTION"`
-	EnableIcebergMergeOnRead   *bool                       `ddl:"parameter" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
-	Comment                    *string                     `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	AllowRowTimestamp           *bool                                   `ddl:"parameter" sql:"ALLOW_ROW_TIMESTAMP"`
+	Catalog                     *AccountObjectIdentifier                `ddl:"identifier,equals" sql:"CATALOG"`
+	CatalogSync                 *string                                 `ddl:"parameter,single_quotes" sql:"CATALOG_SYNC"`
+	DataMetricSchedule          *string                                 `ddl:"parameter,single_quotes" sql:"DATA_METRIC_SCHEDULE"`
+	DataRetentionTimeInDays     *int                                    `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	DefaultDdlCollation         *StringAllowEmpty                       `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
+	EnableDataCompaction        *bool                                   `ddl:"parameter" sql:"ENABLE_DATA_COMPACTION"`
+	EnableIcebergMergeOnRead    *bool                                   `ddl:"parameter" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
+	ExternalVolume              *AccountObjectIdentifier                `ddl:"identifier,equals" sql:"EXTERNAL_VOLUME"`
+	IcebergMergeOnReadBehavior  *IcebergTableIcebergMergeOnReadBehavior `ddl:"parameter,single_quotes" sql:"ICEBERG_MERGE_ON_READ_BEHAVIOR"`
+	LogEventLevel               *LogLevel                               `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
+	MaxDataExtensionTimeInDays  *int                                    `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	OptimizeDataLayout          *bool                                   `ddl:"parameter" sql:"OPTIMIZE_DATA_LAYOUT"`
+	QuotedIdentifiersIgnoreCase *bool                                   `ddl:"parameter" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
+	ReplaceInvalidCharacters    *bool                                   `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	StorageSerializationPolicy  *StorageSerializationPolicy             `ddl:"parameter,single_quotes" sql:"STORAGE_SERIALIZATION_POLICY"`
+	TargetFileSize              *IcebergTableTargetFileSize             `ddl:"parameter,single_quotes" sql:"TARGET_FILE_SIZE"`
+	AutoRefresh                 *bool                                   `ddl:"parameter" sql:"AUTO_REFRESH"`
+	Contact                     []TableContact                          `ddl:"keyword,parentheses" sql:"CONTACT"`
+	ErrorLogging                *bool                                   `ddl:"parameter" sql:"ERROR_LOGGING"`
+	Comment                     *string                                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type IcebergTableUnsetProperties struct {
-	ReplaceInvalidCharacters   *bool `ddl:"keyword" sql:"REPLACE_INVALID_CHARACTERS"`
-	CatalogSync                *bool `ddl:"keyword" sql:"CATALOG_SYNC"`
-	DataRetentionTimeInDays    *bool `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays *bool `ddl:"keyword" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	TargetFileSize             *bool `ddl:"keyword" sql:"TARGET_FILE_SIZE"`
-	LogEventLevel              *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
-	ErrorLogging               *bool `ddl:"keyword" sql:"ERROR_LOGGING"`
-	EnableDataCompaction       *bool `ddl:"keyword" sql:"ENABLE_DATA_COMPACTION"`
-	EnableIcebergMergeOnRead   *bool `ddl:"keyword" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
-	Comment                    *bool `ddl:"keyword" sql:"COMMENT"`
+	AllowRowTimestamp           *bool `ddl:"keyword" sql:"ALLOW_ROW_TIMESTAMP"`
+	Catalog                     *bool `ddl:"keyword" sql:"CATALOG"`
+	CatalogSync                 *bool `ddl:"keyword" sql:"CATALOG_SYNC"`
+	DataMetricSchedule          *bool `ddl:"keyword" sql:"DATA_METRIC_SCHEDULE"`
+	DataRetentionTimeInDays     *bool `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	DefaultDdlCollation         *bool `ddl:"keyword" sql:"DEFAULT_DDL_COLLATION"`
+	EnableDataCompaction        *bool `ddl:"keyword" sql:"ENABLE_DATA_COMPACTION"`
+	EnableIcebergMergeOnRead    *bool `ddl:"keyword" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
+	ExternalVolume              *bool `ddl:"keyword" sql:"EXTERNAL_VOLUME"`
+	IcebergMergeOnReadBehavior  *bool `ddl:"keyword" sql:"ICEBERG_MERGE_ON_READ_BEHAVIOR"`
+	LogEventLevel               *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
+	MaxDataExtensionTimeInDays  *bool `ddl:"keyword" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	OptimizeDataLayout          *bool `ddl:"keyword" sql:"OPTIMIZE_DATA_LAYOUT"`
+	QuotedIdentifiersIgnoreCase *bool `ddl:"keyword" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
+	ReplaceInvalidCharacters    *bool `ddl:"keyword" sql:"REPLACE_INVALID_CHARACTERS"`
+	StorageSerializationPolicy  *bool `ddl:"keyword" sql:"STORAGE_SERIALIZATION_POLICY"`
+	TargetFileSize              *bool `ddl:"keyword" sql:"TARGET_FILE_SIZE"`
+	ErrorLogging                *bool `ddl:"keyword" sql:"ERROR_LOGGING"`
+	Comment                     *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
 type IcebergTableDropAndAddRowAccessPolicy struct {

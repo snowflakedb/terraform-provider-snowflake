@@ -154,6 +154,28 @@ func TestParameterDefsForLevel(t *testing.T) {
 		}, sqlNames(ParameterDefsForLevel(parameterdefs.ParameterLevelSession)))
 	})
 
+	t.Run("iceberg table level", func(t *testing.T) {
+		require.Equal(t, []string{
+			"ALLOW_ROW_TIMESTAMP",
+			"CATALOG",
+			"CATALOG_SYNC",
+			"DATA_METRIC_SCHEDULE",
+			"DATA_RETENTION_TIME_IN_DAYS",
+			"DEFAULT_DDL_COLLATION",
+			"ENABLE_DATA_COMPACTION",
+			"ENABLE_ICEBERG_MERGE_ON_READ",
+			"EXTERNAL_VOLUME",
+			"ICEBERG_MERGE_ON_READ_BEHAVIOR",
+			"LOG_EVENT_LEVEL",
+			"MAX_DATA_EXTENSION_TIME_IN_DAYS",
+			"OPTIMIZE_DATA_LAYOUT",
+			"QUOTED_IDENTIFIERS_IGNORE_CASE",
+			"REPLACE_INVALID_CHARACTERS",
+			"STORAGE_SERIALIZATION_POLICY",
+			"TARGET_FILE_SIZE",
+		}, sqlNames(ParameterDefsForLevel(parameterdefs.ParameterLevelIcebergTable)))
+	})
+
 	t.Run("account level skips parameters that are only settable on the extended set", func(t *testing.T) {
 		require.NotContains(t, sqlNames(ParameterDefsForLevel(parameterdefs.ParameterLevelAccount)), "ENABLE_CONSOLE_OUTPUT")
 		require.Contains(t, sqlNames(ParameterDefsForLevel(parameterdefs.ParameterLevelAccountExt)), "ENABLE_CONSOLE_OUTPUT")

@@ -119,34 +119,6 @@ func ToTableSearchMethod(s string) (TableSearchMethod, error) {
 	}
 }
 
-type IcebergTableLogEventLevel string
-
-const (
-	IcebergTableLogEventLevelError IcebergTableLogEventLevel = "ERROR"
-	IcebergTableLogEventLevelWarn  IcebergTableLogEventLevel = "WARN"
-	IcebergTableLogEventLevelDebug IcebergTableLogEventLevel = "DEBUG"
-)
-
-var AllIcebergTableLogEventLevels = []IcebergTableLogEventLevel{
-	IcebergTableLogEventLevelError,
-	IcebergTableLogEventLevelWarn,
-	IcebergTableLogEventLevelDebug,
-}
-
-func ToIcebergTableLogEventLevel(s string) (IcebergTableLogEventLevel, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(IcebergTableLogEventLevelError):
-		return IcebergTableLogEventLevelError, nil
-	case string(IcebergTableLogEventLevelWarn):
-		return IcebergTableLogEventLevelWarn, nil
-	case string(IcebergTableLogEventLevelDebug):
-		return IcebergTableLogEventLevelDebug, nil
-	default:
-		return "", fmt.Errorf("invalid iceberg table log event level: %s", s)
-	}
-}
-
 type IcebergTableType string
 
 const (
