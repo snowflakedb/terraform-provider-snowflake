@@ -20,6 +20,7 @@ type eventType string
 const (
 	typeProviderInit eventType = "provider_init"
 	typeDatasourceOp eventType = "datasource_op"
+	typeResourceOp   eventType = "resource_op"
 )
 
 type operationStatus string

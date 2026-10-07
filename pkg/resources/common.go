@@ -10,6 +10,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/telemetry"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -147,37 +148,58 @@ func ImportName[T sdk.AccountObjectIdentifier | sdk.DatabaseObjectIdentifier | s
 }
 
 func TrackingImportWrapper(resourceName resources.Resource, importImplementation schema.StateContextFunc) schema.StateContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-		ctx = tracking.NewContext(ctx, tracking.NewVersionedResourceMetadata(resourceName, tracking.ImportOperation))
-		return importImplementation(ctx, d, meta)
+	return func(ctx context.Context, d *schema.ResourceData, meta any) (result []*schema.ResourceData, err error) {
+		// Import still has its own wrapper because it returns an error instead of diagnostics.
+		ctx, finish := trackResourceOp(ctx, resourceName, tracking.ImportOperation)
+		defer func() {
+			var diags diag.Diagnostics
+			if err != nil {
+				diags = diag.FromErr(err)
+			}
+			finish(meta, diags, recover())
+		}()
+		result, err = importImplementation(ctx, d, meta)
+		return result, err
 	}
 }
 
 func TrackingCreateWrapper(resourceName resources.Resource, createImplementation schema.CreateContextFunc) schema.CreateContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		ctx = tracking.NewContext(ctx, tracking.NewVersionedResourceMetadata(resourceName, tracking.CreateOperation))
-		return createImplementation(ctx, d, meta)
-	}
+	return trackingDiagWrapper(resourceName, tracking.CreateOperation, createImplementation)
 }
 
 func TrackingReadWrapper(resourceName resources.Resource, readImplementation schema.ReadContextFunc) schema.ReadContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		ctx = tracking.NewContext(ctx, tracking.NewVersionedResourceMetadata(resourceName, tracking.ReadOperation))
-		return readImplementation(ctx, d, meta)
-	}
+	return trackingDiagWrapper(resourceName, tracking.ReadOperation, readImplementation)
 }
 
 func TrackingUpdateWrapper(resourceName resources.Resource, updateImplementation schema.UpdateContextFunc) schema.UpdateContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		ctx = tracking.NewContext(ctx, tracking.NewVersionedResourceMetadata(resourceName, tracking.UpdateOperation))
-		return updateImplementation(ctx, d, meta)
-	}
+	return trackingDiagWrapper(resourceName, tracking.UpdateOperation, updateImplementation)
 }
 
 func TrackingDeleteWrapper(resourceName resources.Resource, deleteImplementation schema.DeleteContextFunc) schema.DeleteContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		ctx = tracking.NewContext(ctx, tracking.NewVersionedResourceMetadata(resourceName, tracking.DeleteOperation))
-		return deleteImplementation(ctx, d, meta)
+	return trackingDiagWrapper(resourceName, tracking.DeleteOperation, deleteImplementation)
+}
+
+// trackingDiagWrapper wraps a resource operation with tracking and diagnostics.
+func trackingDiagWrapper(resourceName resources.Resource, operation tracking.Operation, impl func(context.Context, *schema.ResourceData, any) diag.Diagnostics) func(context.Context, *schema.ResourceData, any) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta any) (diags diag.Diagnostics) {
+		ctx, finish := trackResourceOp(ctx, resourceName, operation)
+		defer func() {
+			finish(meta, diags, recover())
+		}()
+		diags = impl(ctx, d, meta)
+		return diags
+	}
+}
+
+func trackResourceOp(ctx context.Context, resourceName resources.Resource, operation tracking.Operation) (context.Context, func(any, diag.Diagnostics, any)) {
+	start := time.Now()
+	ctx = tracking.NewContext(ctx, tracking.NewVersionedResourceMetadata(resourceName, operation))
+	return ctx, func(meta any, diags diag.Diagnostics, recovered any) {
+		telemetry.EmitResourceOp(ctx, meta, resourceName, operation, time.Since(start), diags, recovered)
+		// Tracking does not change the provider behavior, so we can still panic if the implementation panics.
+		if recovered != nil {
+			panic(recovered)
+		}
 	}
 }
 

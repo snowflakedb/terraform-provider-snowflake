@@ -41,6 +41,15 @@ func Test_datasourceOpFields(t *testing.T) {
 	})
 }
 
+func Test_formatSeconds(t *testing.T) {
+	require.Equal(t, "1.5", formatSeconds(1500*time.Millisecond))
+	require.Equal(t, "1", formatSeconds(time.Second))
+	require.Equal(t, "0.001", formatSeconds(time.Millisecond))
+	require.Equal(t, "0.002", formatSeconds(1500*time.Microsecond))
+	require.Equal(t, "1.235", formatSeconds(1234500*time.Microsecond))
+	require.Equal(t, "0", formatSeconds(4131*time.Nanosecond))
+}
+
 func Test_EmitDatasourceOp_skipsNilMeta(t *testing.T) {
 	require.NotPanics(t, func() {
 		EmitDatasourceOp(t.Context(), nil, datasources.Databases, time.Second, diag.Errorf("boom"), nil)

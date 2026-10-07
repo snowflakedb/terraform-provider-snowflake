@@ -3,6 +3,7 @@ package telemetry
 import (
 	"context"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
@@ -28,7 +29,9 @@ func datasourceOpFields(datasourceName datasources.Datasource, duration time.Dur
 	}
 }
 
-// formatSeconds reports duration_s in fractional seconds.
+// formatSeconds reports duration_s in fractional seconds, rounded to milliseconds.
 func formatSeconds(duration time.Duration) string {
-	return strconv.FormatFloat(duration.Seconds(), 'f', -1, 64)
+	formatted := strconv.FormatFloat(duration.Round(time.Millisecond).Seconds(), 'f', 3, 64)
+	formatted = strings.TrimRight(formatted, "0")
+	return strings.TrimRight(formatted, ".")
 }
