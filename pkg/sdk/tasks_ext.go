@@ -13,43 +13,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-func (opts *CreateTaskOptions) additionalValidations() error {
-	var errs []error
-	if valueSet(opts.SessionParameters) {
-		if err := opts.SessionParameters.validate(); err != nil {
-			errs = append(errs, err)
-		}
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *CreateOrAlterTaskOptions) additionalValidations() error {
-	var errs []error
-	if valueSet(opts.SessionParameters) {
-		if err := opts.SessionParameters.validate(); err != nil {
-			errs = append(errs, err)
-		}
-	}
-	return JoinErrors(errs...)
-}
-
-func (s *TaskSet) additionalValidations() error {
-	var errs []error
-	if valueSet(s.SessionParameters) {
-		if err := s.SessionParameters.validate(); err != nil {
-			errs = append(errs, err)
-		}
-	}
-	return JoinErrors(errs...)
-}
-
-func (s *TaskUnset) additionalValidations() error {
-	if valueSet(s.SessionParametersUnset) {
-		return s.SessionParametersUnset.validate()
-	}
-	return nil
-}
-
 type TaskRelationsRepresentation struct {
 	Predecessors      []string `json:"Predecessors"`
 	FinalizerTask     string   `json:"FinalizerTask"`

@@ -1,10 +1,23 @@
 package defs
 
 import (
+	"slices"
+
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
+
+var taskParameters = ParameterDefsForLevel(parameterdefs.ParameterLevelTask)
+
+var taskParameterFieldNames = collections.Map(taskParameters, g.ParameterSqlToFieldName)
+
+// CREATE TASK sets the initial warehouse size through the WAREHOUSE clause (taskCreateWarehouse), not as a standalone assignment.
+var taskCreateParameters = collections.Filter(taskParameters, func(p parameterdefs.ParameterDef) bool {
+	return p.SqlName != UserTaskManagedInitialWarehouseSize.SqlName
+})
 
 var taskPairs = g.StructPair("taskDBRow", "Task").
 	Text("created_on").
@@ -54,24 +67,17 @@ var tasksDef = g.NewInterface(
 			OptionalTextAssignment("SCHEDULE", g.ParameterOptions().SingleQuotes()).
 			OptionalTextAssignment("CONFIG", g.ParameterOptions().DoubleDollarQuotes()).
 			OptionalBooleanAssignment("ALLOW_OVERLAPPING_EXECUTION", nil).
-			PredefinedQueryStructField("SessionParameters", "*SessionParameters", g.ListOptions().NoParentheses()).
-			OptionalNumberAssignment("USER_TASK_TIMEOUT_MS", nil).
-			OptionalNumberAssignment("SUSPEND_TASK_AFTER_NUM_FAILURES", nil).
 			OptionalIdentifier("ErrorIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("ERROR_INTEGRATION")).
 			OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 			OptionalIdentifier("Finalize", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Equals().SQL("FINALIZE")).
-			OptionalNumberAssignment("TASK_AUTO_RETRY_ATTEMPTS", g.ParameterOptions()).
 			OptionalTags().
-			OptionalNumberAssignment("USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS", g.ParameterOptions()).
 			OptionalTextAssignment("TARGET_COMPLETION_INTERVAL", g.ParameterOptions().SingleQuotes()).
-			OptionalAssignment("SERVERLESS_TASK_MIN_STATEMENT_SIZE", "WarehouseSize", g.ParameterOptions().SingleQuotes()).
-			OptionalAssignment("SERVERLESS_TASK_MAX_STATEMENT_SIZE", "WarehouseSize", g.ParameterOptions().SingleQuotes()).
+			WithParameters(taskCreateParameters...).
 			ListAssignment("AFTER", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().NoEquals()).
 			OptionalIdentifier("ExecuteAsUser", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXECUTE AS USER")).
 			OptionalTextAssignment("WHEN", g.ParameterOptions().NoQuotes().NoEquals()).
 			SQL("AS").
 			Text("sql", g.KeywordOptions().NoQuotes().Required()).
-			WithAdditionalValidations().
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ValidIdentifierIfSet, "ErrorIntegration").
 			WithValidation(g.ValidIdentifierIfSet, "ExecuteAsUser").
@@ -90,19 +96,15 @@ var tasksDef = g.NewInterface(
 			OptionalTextAssignment("SCHEDULE", g.ParameterOptions().SingleQuotes()).
 			OptionalTextAssignment("CONFIG", g.ParameterOptions().DoubleDollarQuotes()).
 			OptionalBooleanAssignment("ALLOW_OVERLAPPING_EXECUTION", nil).
-			OptionalNumberAssignment("USER_TASK_TIMEOUT_MS", nil).
-			PredefinedQueryStructField("SessionParameters", "*SessionParameters", g.ListOptions().NoParentheses()).
-			OptionalNumberAssignment("SUSPEND_TASK_AFTER_NUM_FAILURES", nil).
 			OptionalIdentifier("ErrorIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("ERROR_INTEGRATION")).
 			OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 			OptionalIdentifier("Finalize", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Equals().SQL("FINALIZE")).
-			OptionalNumberAssignment("TASK_AUTO_RETRY_ATTEMPTS", g.ParameterOptions()).
+			WithParameters(taskCreateParameters...).
 			ListAssignment("AFTER", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().NoEquals()).
 			OptionalIdentifier("ExecuteAsUser", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXECUTE AS USER")).
 			OptionalTextAssignment("WHEN", g.ParameterOptions().NoQuotes().NoEquals()).
 			SQL("AS").
 			Text("sql", g.KeywordOptions().NoQuotes().Required()).
-			WithAdditionalValidations().
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ValidIdentifierIfSet, "ErrorIntegration").
 			WithValidation(g.ValidIdentifierIfSet, "ExecuteAsUser").
@@ -138,22 +140,14 @@ var tasksDef = g.NewInterface(
 				"Set",
 				g.NewQueryStruct("TaskSet").
 					OptionalIdentifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("WAREHOUSE")).
-					OptionalAssignment("USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE", "WarehouseSize", g.ParameterOptions().SingleQuotes()).
 					OptionalTextAssignment("SCHEDULE", g.ParameterOptions().SingleQuotes()).
 					OptionalTextAssignment("CONFIG", g.ParameterOptions().DoubleDollarQuotes()).
 					OptionalBooleanAssignment("ALLOW_OVERLAPPING_EXECUTION", nil).
-					OptionalNumberAssignment("USER_TASK_TIMEOUT_MS", nil).
-					OptionalNumberAssignment("SUSPEND_TASK_AFTER_NUM_FAILURES", nil).
 					OptionalIdentifier("ErrorIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("ERROR_INTEGRATION")).
 					OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-					PredefinedQueryStructField("SessionParameters", "*SessionParameters", g.ListOptions().NoParentheses()).
-					OptionalNumberAssignment("TASK_AUTO_RETRY_ATTEMPTS", nil).
-					OptionalNumberAssignment("USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS", nil).
 					OptionalTextAssignment("TARGET_COMPLETION_INTERVAL", g.ParameterOptions().SingleQuotes()).
-					OptionalAssignment("SERVERLESS_TASK_MIN_STATEMENT_SIZE", "WarehouseSize", g.ParameterOptions().SingleQuotes()).
-					OptionalAssignment("SERVERLESS_TASK_MAX_STATEMENT_SIZE", "WarehouseSize", g.ParameterOptions().SingleQuotes()).
-					WithAdditionalValidations().
-					WithValidation(g.AtLeastOneValueSet, "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParameters", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds", "TargetCompletionInterval", "ServerlessTaskMinStatementSize", "ServerlessTaskMaxStatementSize").
+					WithParameters(taskParameters...).
+					WithValidation(g.AtLeastOneValueSet, append(slices.Clone(taskParameterFieldNames), "Warehouse", "Schedule", "Config", "AllowOverlappingExecution", "ErrorIntegration", "Comment", "TargetCompletionInterval")...).
 					WithValidation(g.ConflictingFields, "Warehouse", "UserTaskManagedInitialWarehouseSize").
 					WithValidation(g.ValidIdentifierIfSet, "ErrorIntegration").
 					WithValidation(g.NoDoubleDollarQuotesIfSet, "Config"),
@@ -163,22 +157,14 @@ var tasksDef = g.NewInterface(
 				"Unset",
 				g.NewQueryStruct("TaskUnset").
 					OptionalSQL("WAREHOUSE").
-					OptionalSQL("USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE").
 					OptionalSQL("SCHEDULE").
 					OptionalSQL("CONFIG").
 					OptionalSQL("ALLOW_OVERLAPPING_EXECUTION").
-					OptionalSQL("USER_TASK_TIMEOUT_MS").
-					OptionalSQL("SUSPEND_TASK_AFTER_NUM_FAILURES").
 					OptionalSQL("ERROR_INTEGRATION").
 					OptionalSQL("COMMENT").
-					OptionalSQL("TASK_AUTO_RETRY_ATTEMPTS").
-					OptionalSQL("USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS").
 					OptionalSQL("TARGET_COMPLETION_INTERVAL").
-					OptionalSQL("SERVERLESS_TASK_MIN_STATEMENT_SIZE").
-					OptionalSQL("SERVERLESS_TASK_MAX_STATEMENT_SIZE").
-					PredefinedQueryStructField("SessionParametersUnset", "*SessionParametersUnset", g.ListOptions().NoParentheses()).
-					WithAdditionalValidations().
-					WithValidation(g.AtLeastOneValueSet, "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParametersUnset", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds", "TargetCompletionInterval", "ServerlessTaskMinStatementSize", "ServerlessTaskMaxStatementSize"),
+					WithParametersUnset(taskParameters...).
+					WithValidation(g.AtLeastOneValueSet, append(slices.Clone(taskParameterFieldNames), "Warehouse", "Schedule", "Config", "AllowOverlappingExecution", "ErrorIntegration", "Comment", "TargetCompletionInterval")...),
 				g.ListOptions().SQL("UNSET").NoParentheses(),
 			).
 			OptionalSetTags().
@@ -246,6 +232,7 @@ var tasksDef = g.NewInterface(
 		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
 		"[]*Parameter", "error",
 	).
+	ShowParametersDetails(taskParameters...).
 	WithCustomInterfaceMethod(
 		"SuspendRootTasks",
 		"",

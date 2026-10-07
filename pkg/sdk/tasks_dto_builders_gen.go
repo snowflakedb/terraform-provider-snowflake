@@ -2,6 +2,8 @@
 
 package sdk
 
+import "strconv"
+
 func NewCreateTaskRequest(
 	name SchemaObjectIdentifier,
 	sql string,
@@ -42,21 +44,6 @@ func (s *CreateTaskRequest) WithAllowOverlappingExecution(allowOverlappingExecut
 	return s
 }
 
-func (s *CreateTaskRequest) WithSessionParameters(sessionParameters SessionParameters) *CreateTaskRequest {
-	s.SessionParameters = &sessionParameters
-	return s
-}
-
-func (s *CreateTaskRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *CreateTaskRequest {
-	s.UserTaskTimeoutMs = &userTaskTimeoutMs
-	return s
-}
-
-func (s *CreateTaskRequest) WithSuspendTaskAfterNumFailures(suspendTaskAfterNumFailures int) *CreateTaskRequest {
-	s.SuspendTaskAfterNumFailures = &suspendTaskAfterNumFailures
-	return s
-}
-
 func (s *CreateTaskRequest) WithErrorIntegration(errorIntegration AccountObjectIdentifier) *CreateTaskRequest {
 	s.ErrorIntegration = &errorIntegration
 	return s
@@ -72,18 +59,8 @@ func (s *CreateTaskRequest) WithFinalize(finalize SchemaObjectIdentifier) *Creat
 	return s
 }
 
-func (s *CreateTaskRequest) WithTaskAutoRetryAttempts(taskAutoRetryAttempts int) *CreateTaskRequest {
-	s.TaskAutoRetryAttempts = &taskAutoRetryAttempts
-	return s
-}
-
 func (s *CreateTaskRequest) WithTag(tag []TagAssociation) *CreateTaskRequest {
 	s.Tag = tag
-	return s
-}
-
-func (s *CreateTaskRequest) WithUserTaskMinimumTriggerIntervalInSeconds(userTaskMinimumTriggerIntervalInSeconds int) *CreateTaskRequest {
-	s.UserTaskMinimumTriggerIntervalInSeconds = &userTaskMinimumTriggerIntervalInSeconds
 	return s
 }
 
@@ -92,13 +69,298 @@ func (s *CreateTaskRequest) WithTargetCompletionInterval(targetCompletionInterva
 	return s
 }
 
-func (s *CreateTaskRequest) WithServerlessTaskMinStatementSize(serverlessTaskMinStatementSize WarehouseSize) *CreateTaskRequest {
-	s.ServerlessTaskMinStatementSize = &serverlessTaskMinStatementSize
+func (s *CreateTaskRequest) WithAbortDetachedQuery(abortDetachedQuery bool) *CreateTaskRequest {
+	s.AbortDetachedQuery = &abortDetachedQuery
+	return s
+}
+
+func (s *CreateTaskRequest) WithAutocommit(autocommit bool) *CreateTaskRequest {
+	s.Autocommit = &autocommit
+	return s
+}
+
+func (s *CreateTaskRequest) WithBinaryInputFormat(binaryInputFormat BinaryInputFormat) *CreateTaskRequest {
+	s.BinaryInputFormat = &binaryInputFormat
+	return s
+}
+
+func (s *CreateTaskRequest) WithBinaryOutputFormat(binaryOutputFormat BinaryOutputFormat) *CreateTaskRequest {
+	s.BinaryOutputFormat = &binaryOutputFormat
+	return s
+}
+
+func (s *CreateTaskRequest) WithClientMemoryLimit(clientMemoryLimit int) *CreateTaskRequest {
+	s.ClientMemoryLimit = &clientMemoryLimit
+	return s
+}
+
+func (s *CreateTaskRequest) WithClientMetadataRequestUseConnectionCtx(clientMetadataRequestUseConnectionCtx bool) *CreateTaskRequest {
+	s.ClientMetadataRequestUseConnectionCtx = &clientMetadataRequestUseConnectionCtx
+	return s
+}
+
+func (s *CreateTaskRequest) WithClientPrefetchThreads(clientPrefetchThreads int) *CreateTaskRequest {
+	s.ClientPrefetchThreads = &clientPrefetchThreads
+	return s
+}
+
+func (s *CreateTaskRequest) WithClientResultChunkSize(clientResultChunkSize int) *CreateTaskRequest {
+	s.ClientResultChunkSize = &clientResultChunkSize
+	return s
+}
+
+func (s *CreateTaskRequest) WithClientResultColumnCaseInsensitive(clientResultColumnCaseInsensitive bool) *CreateTaskRequest {
+	s.ClientResultColumnCaseInsensitive = &clientResultColumnCaseInsensitive
+	return s
+}
+
+func (s *CreateTaskRequest) WithClientSessionKeepAlive(clientSessionKeepAlive bool) *CreateTaskRequest {
+	s.ClientSessionKeepAlive = &clientSessionKeepAlive
+	return s
+}
+
+func (s *CreateTaskRequest) WithClientSessionKeepAliveHeartbeatFrequency(clientSessionKeepAliveHeartbeatFrequency int) *CreateTaskRequest {
+	s.ClientSessionKeepAliveHeartbeatFrequency = &clientSessionKeepAliveHeartbeatFrequency
+	return s
+}
+
+func (s *CreateTaskRequest) WithClientTimestampTypeMapping(clientTimestampTypeMapping ClientTimestampTypeMapping) *CreateTaskRequest {
+	s.ClientTimestampTypeMapping = &clientTimestampTypeMapping
+	return s
+}
+
+func (s *CreateTaskRequest) WithDateInputFormat(dateInputFormat string) *CreateTaskRequest {
+	s.DateInputFormat = &dateInputFormat
+	return s
+}
+
+func (s *CreateTaskRequest) WithDateOutputFormat(dateOutputFormat string) *CreateTaskRequest {
+	s.DateOutputFormat = &dateOutputFormat
+	return s
+}
+
+func (s *CreateTaskRequest) WithEnableUnloadPhysicalTypeOptimization(enableUnloadPhysicalTypeOptimization bool) *CreateTaskRequest {
+	s.EnableUnloadPhysicalTypeOptimization = &enableUnloadPhysicalTypeOptimization
+	return s
+}
+
+func (s *CreateTaskRequest) WithErrorOnNondeterministicMerge(errorOnNondeterministicMerge bool) *CreateTaskRequest {
+	s.ErrorOnNondeterministicMerge = &errorOnNondeterministicMerge
+	return s
+}
+
+func (s *CreateTaskRequest) WithErrorOnNondeterministicUpdate(errorOnNondeterministicUpdate bool) *CreateTaskRequest {
+	s.ErrorOnNondeterministicUpdate = &errorOnNondeterministicUpdate
+	return s
+}
+
+func (s *CreateTaskRequest) WithGeographyOutputFormat(geographyOutputFormat GeographyOutputFormat) *CreateTaskRequest {
+	s.GeographyOutputFormat = &geographyOutputFormat
+	return s
+}
+
+func (s *CreateTaskRequest) WithGeometryOutputFormat(geometryOutputFormat GeometryOutputFormat) *CreateTaskRequest {
+	s.GeometryOutputFormat = &geometryOutputFormat
+	return s
+}
+
+func (s *CreateTaskRequest) WithJdbcTreatTimestampNtzAsUtc(jdbcTreatTimestampNtzAsUtc bool) *CreateTaskRequest {
+	s.JdbcTreatTimestampNtzAsUtc = &jdbcTreatTimestampNtzAsUtc
+	return s
+}
+
+func (s *CreateTaskRequest) WithJdbcUseSessionTimezone(jdbcUseSessionTimezone bool) *CreateTaskRequest {
+	s.JdbcUseSessionTimezone = &jdbcUseSessionTimezone
+	return s
+}
+
+func (s *CreateTaskRequest) WithJsonIndent(jsonIndent int) *CreateTaskRequest {
+	s.JsonIndent = &jsonIndent
+	return s
+}
+
+func (s *CreateTaskRequest) WithLockTimeout(lockTimeout int) *CreateTaskRequest {
+	s.LockTimeout = &lockTimeout
+	return s
+}
+
+func (s *CreateTaskRequest) WithLogEventLevel(logEventLevel LogLevel) *CreateTaskRequest {
+	s.LogEventLevel = &logEventLevel
+	return s
+}
+
+func (s *CreateTaskRequest) WithLogLevel(logLevel LogLevel) *CreateTaskRequest {
+	s.LogLevel = &logLevel
+	return s
+}
+
+func (s *CreateTaskRequest) WithMultiStatementCount(multiStatementCount int) *CreateTaskRequest {
+	s.MultiStatementCount = &multiStatementCount
+	return s
+}
+
+func (s *CreateTaskRequest) WithNoorderSequenceAsDefault(noorderSequenceAsDefault bool) *CreateTaskRequest {
+	s.NoorderSequenceAsDefault = &noorderSequenceAsDefault
+	return s
+}
+
+func (s *CreateTaskRequest) WithOdbcTreatDecimalAsInt(odbcTreatDecimalAsInt bool) *CreateTaskRequest {
+	s.OdbcTreatDecimalAsInt = &odbcTreatDecimalAsInt
+	return s
+}
+
+func (s *CreateTaskRequest) WithQueryTag(queryTag string) *CreateTaskRequest {
+	s.QueryTag = &queryTag
+	return s
+}
+
+func (s *CreateTaskRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *CreateTaskRequest {
+	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
+	return s
+}
+
+func (s *CreateTaskRequest) WithRowsPerResultset(rowsPerResultset int) *CreateTaskRequest {
+	s.RowsPerResultset = &rowsPerResultset
+	return s
+}
+
+func (s *CreateTaskRequest) WithS3StageVpceDnsName(s3StageVpceDnsName string) *CreateTaskRequest {
+	s.S3StageVpceDnsName = &s3StageVpceDnsName
 	return s
 }
 
 func (s *CreateTaskRequest) WithServerlessTaskMaxStatementSize(serverlessTaskMaxStatementSize WarehouseSize) *CreateTaskRequest {
 	s.ServerlessTaskMaxStatementSize = &serverlessTaskMaxStatementSize
+	return s
+}
+
+func (s *CreateTaskRequest) WithServerlessTaskMinStatementSize(serverlessTaskMinStatementSize WarehouseSize) *CreateTaskRequest {
+	s.ServerlessTaskMinStatementSize = &serverlessTaskMinStatementSize
+	return s
+}
+
+func (s *CreateTaskRequest) WithStatementQueuedTimeoutInSeconds(statementQueuedTimeoutInSeconds int) *CreateTaskRequest {
+	s.StatementQueuedTimeoutInSeconds = &statementQueuedTimeoutInSeconds
+	return s
+}
+
+func (s *CreateTaskRequest) WithStatementTimeoutInSeconds(statementTimeoutInSeconds int) *CreateTaskRequest {
+	s.StatementTimeoutInSeconds = &statementTimeoutInSeconds
+	return s
+}
+
+func (s *CreateTaskRequest) WithStrictJsonOutput(strictJsonOutput bool) *CreateTaskRequest {
+	s.StrictJsonOutput = &strictJsonOutput
+	return s
+}
+
+func (s *CreateTaskRequest) WithSuspendTaskAfterNumFailures(suspendTaskAfterNumFailures int) *CreateTaskRequest {
+	s.SuspendTaskAfterNumFailures = &suspendTaskAfterNumFailures
+	return s
+}
+
+func (s *CreateTaskRequest) WithTaskAutoRetryAttempts(taskAutoRetryAttempts int) *CreateTaskRequest {
+	s.TaskAutoRetryAttempts = &taskAutoRetryAttempts
+	return s
+}
+
+func (s *CreateTaskRequest) WithTimeInputFormat(timeInputFormat string) *CreateTaskRequest {
+	s.TimeInputFormat = &timeInputFormat
+	return s
+}
+
+func (s *CreateTaskRequest) WithTimeOutputFormat(timeOutputFormat string) *CreateTaskRequest {
+	s.TimeOutputFormat = &timeOutputFormat
+	return s
+}
+
+func (s *CreateTaskRequest) WithTimestampDayIsAlways24H(timestampDayIsAlways24H bool) *CreateTaskRequest {
+	s.TimestampDayIsAlways24H = &timestampDayIsAlways24H
+	return s
+}
+
+func (s *CreateTaskRequest) WithTimestampInputFormat(timestampInputFormat string) *CreateTaskRequest {
+	s.TimestampInputFormat = &timestampInputFormat
+	return s
+}
+
+func (s *CreateTaskRequest) WithTimestampLtzOutputFormat(timestampLtzOutputFormat string) *CreateTaskRequest {
+	s.TimestampLtzOutputFormat = &timestampLtzOutputFormat
+	return s
+}
+
+func (s *CreateTaskRequest) WithTimestampNtzOutputFormat(timestampNtzOutputFormat string) *CreateTaskRequest {
+	s.TimestampNtzOutputFormat = &timestampNtzOutputFormat
+	return s
+}
+
+func (s *CreateTaskRequest) WithTimestampOutputFormat(timestampOutputFormat string) *CreateTaskRequest {
+	s.TimestampOutputFormat = &timestampOutputFormat
+	return s
+}
+
+func (s *CreateTaskRequest) WithTimestampTypeMapping(timestampTypeMapping TimestampTypeMapping) *CreateTaskRequest {
+	s.TimestampTypeMapping = &timestampTypeMapping
+	return s
+}
+
+func (s *CreateTaskRequest) WithTimestampTzOutputFormat(timestampTzOutputFormat string) *CreateTaskRequest {
+	s.TimestampTzOutputFormat = &timestampTzOutputFormat
+	return s
+}
+
+func (s *CreateTaskRequest) WithTimezone(timezone string) *CreateTaskRequest {
+	s.Timezone = &timezone
+	return s
+}
+
+func (s *CreateTaskRequest) WithTraceLevel(traceLevel TraceLevel) *CreateTaskRequest {
+	s.TraceLevel = &traceLevel
+	return s
+}
+
+func (s *CreateTaskRequest) WithTransactionAbortOnError(transactionAbortOnError bool) *CreateTaskRequest {
+	s.TransactionAbortOnError = &transactionAbortOnError
+	return s
+}
+
+func (s *CreateTaskRequest) WithTransactionDefaultIsolationLevel(transactionDefaultIsolationLevel TransactionDefaultIsolationLevel) *CreateTaskRequest {
+	s.TransactionDefaultIsolationLevel = &transactionDefaultIsolationLevel
+	return s
+}
+
+func (s *CreateTaskRequest) WithTwoDigitCenturyStart(twoDigitCenturyStart int) *CreateTaskRequest {
+	s.TwoDigitCenturyStart = &twoDigitCenturyStart
+	return s
+}
+
+func (s *CreateTaskRequest) WithUnsupportedDdlAction(unsupportedDdlAction UnsupportedDDLAction) *CreateTaskRequest {
+	s.UnsupportedDdlAction = &unsupportedDdlAction
+	return s
+}
+
+func (s *CreateTaskRequest) WithUseCachedResult(useCachedResult bool) *CreateTaskRequest {
+	s.UseCachedResult = &useCachedResult
+	return s
+}
+
+func (s *CreateTaskRequest) WithUserTaskMinimumTriggerIntervalInSeconds(userTaskMinimumTriggerIntervalInSeconds int) *CreateTaskRequest {
+	s.UserTaskMinimumTriggerIntervalInSeconds = &userTaskMinimumTriggerIntervalInSeconds
+	return s
+}
+
+func (s *CreateTaskRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *CreateTaskRequest {
+	s.UserTaskTimeoutMs = &userTaskTimeoutMs
+	return s
+}
+
+func (s *CreateTaskRequest) WithWeekOfYearPolicy(weekOfYearPolicy int) *CreateTaskRequest {
+	s.WeekOfYearPolicy = &weekOfYearPolicy
+	return s
+}
+
+func (s *CreateTaskRequest) WithWeekStart(weekStart int) *CreateTaskRequest {
+	s.WeekStart = &weekStart
 	return s
 }
 
@@ -115,6 +377,131 @@ func (s *CreateTaskRequest) WithExecuteAsUser(executeAsUser AccountObjectIdentif
 func (s *CreateTaskRequest) WithWhen(when string) *CreateTaskRequest {
 	s.When = &when
 	return s
+}
+
+func (s *CreateTaskRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "ABORT_DETACHED_QUERY":
+		return assignParsedParameter(value, strconv.ParseBool, &s.AbortDetachedQuery)
+	case "AUTOCOMMIT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.Autocommit)
+	case "BINARY_INPUT_FORMAT":
+		return assignParsedParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
+	case "BINARY_OUTPUT_FORMAT":
+		return assignParsedParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
+	case "CLIENT_MEMORY_LIMIT":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientMemoryLimit)
+	case "CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientMetadataRequestUseConnectionCtx)
+	case "CLIENT_PREFETCH_THREADS":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientPrefetchThreads)
+	case "CLIENT_RESULT_CHUNK_SIZE":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientResultChunkSize)
+	case "CLIENT_RESULT_COLUMN_CASE_INSENSITIVE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientResultColumnCaseInsensitive)
+	case "CLIENT_SESSION_KEEP_ALIVE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientSessionKeepAlive)
+	case "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientSessionKeepAliveHeartbeatFrequency)
+	case "CLIENT_TIMESTAMP_TYPE_MAPPING":
+		return assignParsedParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
+	case "DATE_INPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.DateInputFormat)
+	case "DATE_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.DateOutputFormat)
+	case "ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableUnloadPhysicalTypeOptimization)
+	case "ERROR_ON_NONDETERMINISTIC_MERGE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ErrorOnNondeterministicMerge)
+	case "ERROR_ON_NONDETERMINISTIC_UPDATE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ErrorOnNondeterministicUpdate)
+	case "GEOGRAPHY_OUTPUT_FORMAT":
+		return assignParsedParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
+	case "GEOMETRY_OUTPUT_FORMAT":
+		return assignParsedParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
+	case "JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC":
+		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcTreatTimestampNtzAsUtc)
+	case "JDBC_USE_SESSION_TIMEZONE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcUseSessionTimezone)
+	case "JSON_INDENT":
+		return assignParsedParameter(value, strconv.Atoi, &s.JsonIndent)
+	case "LOCK_TIMEOUT":
+		return assignParsedParameter(value, strconv.Atoi, &s.LockTimeout)
+	case "LOG_EVENT_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
+	case "LOG_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+	case "MULTI_STATEMENT_COUNT":
+		return assignParsedParameter(value, strconv.Atoi, &s.MultiStatementCount)
+	case "NOORDER_SEQUENCE_AS_DEFAULT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.NoorderSequenceAsDefault)
+	case "ODBC_TREAT_DECIMAL_AS_INT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.OdbcTreatDecimalAsInt)
+	case "QUERY_TAG":
+		return assignParsedParameter(value, identityParse, &s.QueryTag)
+	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.QuotedIdentifiersIgnoreCase)
+	case "ROWS_PER_RESULTSET":
+		return assignParsedParameter(value, strconv.Atoi, &s.RowsPerResultset)
+	case "S3_STAGE_VPCE_DNS_NAME":
+		return assignParsedParameter(value, identityParse, &s.S3StageVpceDnsName)
+	case "SERVERLESS_TASK_MAX_STATEMENT_SIZE":
+		return assignParsedParameter(value, ToWarehouseSize, &s.ServerlessTaskMaxStatementSize)
+	case "SERVERLESS_TASK_MIN_STATEMENT_SIZE":
+		return assignParsedParameter(value, ToWarehouseSize, &s.ServerlessTaskMinStatementSize)
+	case "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.StatementQueuedTimeoutInSeconds)
+	case "STATEMENT_TIMEOUT_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.StatementTimeoutInSeconds)
+	case "STRICT_JSON_OUTPUT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.StrictJsonOutput)
+	case "SUSPEND_TASK_AFTER_NUM_FAILURES":
+		return assignParsedParameter(value, strconv.Atoi, &s.SuspendTaskAfterNumFailures)
+	case "TASK_AUTO_RETRY_ATTEMPTS":
+		return assignParsedParameter(value, strconv.Atoi, &s.TaskAutoRetryAttempts)
+	case "TIME_INPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimeInputFormat)
+	case "TIME_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimeOutputFormat)
+	case "TIMESTAMP_DAY_IS_ALWAYS_24H":
+		return assignParsedParameter(value, strconv.ParseBool, &s.TimestampDayIsAlways24H)
+	case "TIMESTAMP_INPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampInputFormat)
+	case "TIMESTAMP_LTZ_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampLtzOutputFormat)
+	case "TIMESTAMP_NTZ_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampNtzOutputFormat)
+	case "TIMESTAMP_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampOutputFormat)
+	case "TIMESTAMP_TYPE_MAPPING":
+		return assignParsedParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
+	case "TIMESTAMP_TZ_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampTzOutputFormat)
+	case "TIMEZONE":
+		return assignParsedParameter(value, identityParse, &s.Timezone)
+	case "TRACE_LEVEL":
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+	case "TRANSACTION_ABORT_ON_ERROR":
+		return assignParsedParameter(value, strconv.ParseBool, &s.TransactionAbortOnError)
+	case "TRANSACTION_DEFAULT_ISOLATION_LEVEL":
+		return assignParsedParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
+	case "TWO_DIGIT_CENTURY_START":
+		return assignParsedParameter(value, strconv.Atoi, &s.TwoDigitCenturyStart)
+	case "UNSUPPORTED_DDL_ACTION":
+		return assignParsedParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
+	case "USE_CACHED_RESULT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.UseCachedResult)
+	case "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.UserTaskMinimumTriggerIntervalInSeconds)
+	case "USER_TASK_TIMEOUT_MS":
+		return assignParsedParameter(value, strconv.Atoi, &s.UserTaskTimeoutMs)
+	case "WEEK_OF_YEAR_POLICY":
+		return assignParsedParameter(value, strconv.Atoi, &s.WeekOfYearPolicy)
+	case "WEEK_START":
+		return assignParsedParameter(value, strconv.Atoi, &s.WeekStart)
+	default:
+		return ErrParameterNotSupported
+	}
 }
 
 func NewCreateTaskWarehouseRequest() *CreateTaskWarehouseRequest {
@@ -162,21 +549,6 @@ func (s *CreateOrAlterTaskRequest) WithAllowOverlappingExecution(allowOverlappin
 	return s
 }
 
-func (s *CreateOrAlterTaskRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *CreateOrAlterTaskRequest {
-	s.UserTaskTimeoutMs = &userTaskTimeoutMs
-	return s
-}
-
-func (s *CreateOrAlterTaskRequest) WithSessionParameters(sessionParameters SessionParameters) *CreateOrAlterTaskRequest {
-	s.SessionParameters = &sessionParameters
-	return s
-}
-
-func (s *CreateOrAlterTaskRequest) WithSuspendTaskAfterNumFailures(suspendTaskAfterNumFailures int) *CreateOrAlterTaskRequest {
-	s.SuspendTaskAfterNumFailures = &suspendTaskAfterNumFailures
-	return s
-}
-
 func (s *CreateOrAlterTaskRequest) WithErrorIntegration(errorIntegration AccountObjectIdentifier) *CreateOrAlterTaskRequest {
 	s.ErrorIntegration = &errorIntegration
 	return s
@@ -192,8 +564,298 @@ func (s *CreateOrAlterTaskRequest) WithFinalize(finalize SchemaObjectIdentifier)
 	return s
 }
 
+func (s *CreateOrAlterTaskRequest) WithAbortDetachedQuery(abortDetachedQuery bool) *CreateOrAlterTaskRequest {
+	s.AbortDetachedQuery = &abortDetachedQuery
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithAutocommit(autocommit bool) *CreateOrAlterTaskRequest {
+	s.Autocommit = &autocommit
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithBinaryInputFormat(binaryInputFormat BinaryInputFormat) *CreateOrAlterTaskRequest {
+	s.BinaryInputFormat = &binaryInputFormat
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithBinaryOutputFormat(binaryOutputFormat BinaryOutputFormat) *CreateOrAlterTaskRequest {
+	s.BinaryOutputFormat = &binaryOutputFormat
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithClientMemoryLimit(clientMemoryLimit int) *CreateOrAlterTaskRequest {
+	s.ClientMemoryLimit = &clientMemoryLimit
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithClientMetadataRequestUseConnectionCtx(clientMetadataRequestUseConnectionCtx bool) *CreateOrAlterTaskRequest {
+	s.ClientMetadataRequestUseConnectionCtx = &clientMetadataRequestUseConnectionCtx
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithClientPrefetchThreads(clientPrefetchThreads int) *CreateOrAlterTaskRequest {
+	s.ClientPrefetchThreads = &clientPrefetchThreads
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithClientResultChunkSize(clientResultChunkSize int) *CreateOrAlterTaskRequest {
+	s.ClientResultChunkSize = &clientResultChunkSize
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithClientResultColumnCaseInsensitive(clientResultColumnCaseInsensitive bool) *CreateOrAlterTaskRequest {
+	s.ClientResultColumnCaseInsensitive = &clientResultColumnCaseInsensitive
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithClientSessionKeepAlive(clientSessionKeepAlive bool) *CreateOrAlterTaskRequest {
+	s.ClientSessionKeepAlive = &clientSessionKeepAlive
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithClientSessionKeepAliveHeartbeatFrequency(clientSessionKeepAliveHeartbeatFrequency int) *CreateOrAlterTaskRequest {
+	s.ClientSessionKeepAliveHeartbeatFrequency = &clientSessionKeepAliveHeartbeatFrequency
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithClientTimestampTypeMapping(clientTimestampTypeMapping ClientTimestampTypeMapping) *CreateOrAlterTaskRequest {
+	s.ClientTimestampTypeMapping = &clientTimestampTypeMapping
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithDateInputFormat(dateInputFormat string) *CreateOrAlterTaskRequest {
+	s.DateInputFormat = &dateInputFormat
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithDateOutputFormat(dateOutputFormat string) *CreateOrAlterTaskRequest {
+	s.DateOutputFormat = &dateOutputFormat
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithEnableUnloadPhysicalTypeOptimization(enableUnloadPhysicalTypeOptimization bool) *CreateOrAlterTaskRequest {
+	s.EnableUnloadPhysicalTypeOptimization = &enableUnloadPhysicalTypeOptimization
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithErrorOnNondeterministicMerge(errorOnNondeterministicMerge bool) *CreateOrAlterTaskRequest {
+	s.ErrorOnNondeterministicMerge = &errorOnNondeterministicMerge
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithErrorOnNondeterministicUpdate(errorOnNondeterministicUpdate bool) *CreateOrAlterTaskRequest {
+	s.ErrorOnNondeterministicUpdate = &errorOnNondeterministicUpdate
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithGeographyOutputFormat(geographyOutputFormat GeographyOutputFormat) *CreateOrAlterTaskRequest {
+	s.GeographyOutputFormat = &geographyOutputFormat
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithGeometryOutputFormat(geometryOutputFormat GeometryOutputFormat) *CreateOrAlterTaskRequest {
+	s.GeometryOutputFormat = &geometryOutputFormat
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithJdbcTreatTimestampNtzAsUtc(jdbcTreatTimestampNtzAsUtc bool) *CreateOrAlterTaskRequest {
+	s.JdbcTreatTimestampNtzAsUtc = &jdbcTreatTimestampNtzAsUtc
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithJdbcUseSessionTimezone(jdbcUseSessionTimezone bool) *CreateOrAlterTaskRequest {
+	s.JdbcUseSessionTimezone = &jdbcUseSessionTimezone
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithJsonIndent(jsonIndent int) *CreateOrAlterTaskRequest {
+	s.JsonIndent = &jsonIndent
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithLockTimeout(lockTimeout int) *CreateOrAlterTaskRequest {
+	s.LockTimeout = &lockTimeout
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithLogEventLevel(logEventLevel LogLevel) *CreateOrAlterTaskRequest {
+	s.LogEventLevel = &logEventLevel
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithLogLevel(logLevel LogLevel) *CreateOrAlterTaskRequest {
+	s.LogLevel = &logLevel
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithMultiStatementCount(multiStatementCount int) *CreateOrAlterTaskRequest {
+	s.MultiStatementCount = &multiStatementCount
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithNoorderSequenceAsDefault(noorderSequenceAsDefault bool) *CreateOrAlterTaskRequest {
+	s.NoorderSequenceAsDefault = &noorderSequenceAsDefault
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithOdbcTreatDecimalAsInt(odbcTreatDecimalAsInt bool) *CreateOrAlterTaskRequest {
+	s.OdbcTreatDecimalAsInt = &odbcTreatDecimalAsInt
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithQueryTag(queryTag string) *CreateOrAlterTaskRequest {
+	s.QueryTag = &queryTag
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *CreateOrAlterTaskRequest {
+	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithRowsPerResultset(rowsPerResultset int) *CreateOrAlterTaskRequest {
+	s.RowsPerResultset = &rowsPerResultset
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithS3StageVpceDnsName(s3StageVpceDnsName string) *CreateOrAlterTaskRequest {
+	s.S3StageVpceDnsName = &s3StageVpceDnsName
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithServerlessTaskMaxStatementSize(serverlessTaskMaxStatementSize WarehouseSize) *CreateOrAlterTaskRequest {
+	s.ServerlessTaskMaxStatementSize = &serverlessTaskMaxStatementSize
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithServerlessTaskMinStatementSize(serverlessTaskMinStatementSize WarehouseSize) *CreateOrAlterTaskRequest {
+	s.ServerlessTaskMinStatementSize = &serverlessTaskMinStatementSize
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithStatementQueuedTimeoutInSeconds(statementQueuedTimeoutInSeconds int) *CreateOrAlterTaskRequest {
+	s.StatementQueuedTimeoutInSeconds = &statementQueuedTimeoutInSeconds
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithStatementTimeoutInSeconds(statementTimeoutInSeconds int) *CreateOrAlterTaskRequest {
+	s.StatementTimeoutInSeconds = &statementTimeoutInSeconds
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithStrictJsonOutput(strictJsonOutput bool) *CreateOrAlterTaskRequest {
+	s.StrictJsonOutput = &strictJsonOutput
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithSuspendTaskAfterNumFailures(suspendTaskAfterNumFailures int) *CreateOrAlterTaskRequest {
+	s.SuspendTaskAfterNumFailures = &suspendTaskAfterNumFailures
+	return s
+}
+
 func (s *CreateOrAlterTaskRequest) WithTaskAutoRetryAttempts(taskAutoRetryAttempts int) *CreateOrAlterTaskRequest {
 	s.TaskAutoRetryAttempts = &taskAutoRetryAttempts
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithTimeInputFormat(timeInputFormat string) *CreateOrAlterTaskRequest {
+	s.TimeInputFormat = &timeInputFormat
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithTimeOutputFormat(timeOutputFormat string) *CreateOrAlterTaskRequest {
+	s.TimeOutputFormat = &timeOutputFormat
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithTimestampDayIsAlways24H(timestampDayIsAlways24H bool) *CreateOrAlterTaskRequest {
+	s.TimestampDayIsAlways24H = &timestampDayIsAlways24H
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithTimestampInputFormat(timestampInputFormat string) *CreateOrAlterTaskRequest {
+	s.TimestampInputFormat = &timestampInputFormat
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithTimestampLtzOutputFormat(timestampLtzOutputFormat string) *CreateOrAlterTaskRequest {
+	s.TimestampLtzOutputFormat = &timestampLtzOutputFormat
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithTimestampNtzOutputFormat(timestampNtzOutputFormat string) *CreateOrAlterTaskRequest {
+	s.TimestampNtzOutputFormat = &timestampNtzOutputFormat
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithTimestampOutputFormat(timestampOutputFormat string) *CreateOrAlterTaskRequest {
+	s.TimestampOutputFormat = &timestampOutputFormat
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithTimestampTypeMapping(timestampTypeMapping TimestampTypeMapping) *CreateOrAlterTaskRequest {
+	s.TimestampTypeMapping = &timestampTypeMapping
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithTimestampTzOutputFormat(timestampTzOutputFormat string) *CreateOrAlterTaskRequest {
+	s.TimestampTzOutputFormat = &timestampTzOutputFormat
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithTimezone(timezone string) *CreateOrAlterTaskRequest {
+	s.Timezone = &timezone
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithTraceLevel(traceLevel TraceLevel) *CreateOrAlterTaskRequest {
+	s.TraceLevel = &traceLevel
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithTransactionAbortOnError(transactionAbortOnError bool) *CreateOrAlterTaskRequest {
+	s.TransactionAbortOnError = &transactionAbortOnError
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithTransactionDefaultIsolationLevel(transactionDefaultIsolationLevel TransactionDefaultIsolationLevel) *CreateOrAlterTaskRequest {
+	s.TransactionDefaultIsolationLevel = &transactionDefaultIsolationLevel
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithTwoDigitCenturyStart(twoDigitCenturyStart int) *CreateOrAlterTaskRequest {
+	s.TwoDigitCenturyStart = &twoDigitCenturyStart
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithUnsupportedDdlAction(unsupportedDdlAction UnsupportedDDLAction) *CreateOrAlterTaskRequest {
+	s.UnsupportedDdlAction = &unsupportedDdlAction
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithUseCachedResult(useCachedResult bool) *CreateOrAlterTaskRequest {
+	s.UseCachedResult = &useCachedResult
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithUserTaskMinimumTriggerIntervalInSeconds(userTaskMinimumTriggerIntervalInSeconds int) *CreateOrAlterTaskRequest {
+	s.UserTaskMinimumTriggerIntervalInSeconds = &userTaskMinimumTriggerIntervalInSeconds
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *CreateOrAlterTaskRequest {
+	s.UserTaskTimeoutMs = &userTaskTimeoutMs
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithWeekOfYearPolicy(weekOfYearPolicy int) *CreateOrAlterTaskRequest {
+	s.WeekOfYearPolicy = &weekOfYearPolicy
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithWeekStart(weekStart int) *CreateOrAlterTaskRequest {
+	s.WeekStart = &weekStart
 	return s
 }
 
@@ -210,6 +872,131 @@ func (s *CreateOrAlterTaskRequest) WithExecuteAsUser(executeAsUser AccountObject
 func (s *CreateOrAlterTaskRequest) WithWhen(when string) *CreateOrAlterTaskRequest {
 	s.When = &when
 	return s
+}
+
+func (s *CreateOrAlterTaskRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "ABORT_DETACHED_QUERY":
+		return assignParsedParameter(value, strconv.ParseBool, &s.AbortDetachedQuery)
+	case "AUTOCOMMIT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.Autocommit)
+	case "BINARY_INPUT_FORMAT":
+		return assignParsedParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
+	case "BINARY_OUTPUT_FORMAT":
+		return assignParsedParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
+	case "CLIENT_MEMORY_LIMIT":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientMemoryLimit)
+	case "CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientMetadataRequestUseConnectionCtx)
+	case "CLIENT_PREFETCH_THREADS":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientPrefetchThreads)
+	case "CLIENT_RESULT_CHUNK_SIZE":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientResultChunkSize)
+	case "CLIENT_RESULT_COLUMN_CASE_INSENSITIVE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientResultColumnCaseInsensitive)
+	case "CLIENT_SESSION_KEEP_ALIVE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientSessionKeepAlive)
+	case "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientSessionKeepAliveHeartbeatFrequency)
+	case "CLIENT_TIMESTAMP_TYPE_MAPPING":
+		return assignParsedParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
+	case "DATE_INPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.DateInputFormat)
+	case "DATE_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.DateOutputFormat)
+	case "ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableUnloadPhysicalTypeOptimization)
+	case "ERROR_ON_NONDETERMINISTIC_MERGE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ErrorOnNondeterministicMerge)
+	case "ERROR_ON_NONDETERMINISTIC_UPDATE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ErrorOnNondeterministicUpdate)
+	case "GEOGRAPHY_OUTPUT_FORMAT":
+		return assignParsedParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
+	case "GEOMETRY_OUTPUT_FORMAT":
+		return assignParsedParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
+	case "JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC":
+		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcTreatTimestampNtzAsUtc)
+	case "JDBC_USE_SESSION_TIMEZONE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcUseSessionTimezone)
+	case "JSON_INDENT":
+		return assignParsedParameter(value, strconv.Atoi, &s.JsonIndent)
+	case "LOCK_TIMEOUT":
+		return assignParsedParameter(value, strconv.Atoi, &s.LockTimeout)
+	case "LOG_EVENT_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
+	case "LOG_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+	case "MULTI_STATEMENT_COUNT":
+		return assignParsedParameter(value, strconv.Atoi, &s.MultiStatementCount)
+	case "NOORDER_SEQUENCE_AS_DEFAULT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.NoorderSequenceAsDefault)
+	case "ODBC_TREAT_DECIMAL_AS_INT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.OdbcTreatDecimalAsInt)
+	case "QUERY_TAG":
+		return assignParsedParameter(value, identityParse, &s.QueryTag)
+	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.QuotedIdentifiersIgnoreCase)
+	case "ROWS_PER_RESULTSET":
+		return assignParsedParameter(value, strconv.Atoi, &s.RowsPerResultset)
+	case "S3_STAGE_VPCE_DNS_NAME":
+		return assignParsedParameter(value, identityParse, &s.S3StageVpceDnsName)
+	case "SERVERLESS_TASK_MAX_STATEMENT_SIZE":
+		return assignParsedParameter(value, ToWarehouseSize, &s.ServerlessTaskMaxStatementSize)
+	case "SERVERLESS_TASK_MIN_STATEMENT_SIZE":
+		return assignParsedParameter(value, ToWarehouseSize, &s.ServerlessTaskMinStatementSize)
+	case "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.StatementQueuedTimeoutInSeconds)
+	case "STATEMENT_TIMEOUT_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.StatementTimeoutInSeconds)
+	case "STRICT_JSON_OUTPUT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.StrictJsonOutput)
+	case "SUSPEND_TASK_AFTER_NUM_FAILURES":
+		return assignParsedParameter(value, strconv.Atoi, &s.SuspendTaskAfterNumFailures)
+	case "TASK_AUTO_RETRY_ATTEMPTS":
+		return assignParsedParameter(value, strconv.Atoi, &s.TaskAutoRetryAttempts)
+	case "TIME_INPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimeInputFormat)
+	case "TIME_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimeOutputFormat)
+	case "TIMESTAMP_DAY_IS_ALWAYS_24H":
+		return assignParsedParameter(value, strconv.ParseBool, &s.TimestampDayIsAlways24H)
+	case "TIMESTAMP_INPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampInputFormat)
+	case "TIMESTAMP_LTZ_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampLtzOutputFormat)
+	case "TIMESTAMP_NTZ_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampNtzOutputFormat)
+	case "TIMESTAMP_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampOutputFormat)
+	case "TIMESTAMP_TYPE_MAPPING":
+		return assignParsedParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
+	case "TIMESTAMP_TZ_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampTzOutputFormat)
+	case "TIMEZONE":
+		return assignParsedParameter(value, identityParse, &s.Timezone)
+	case "TRACE_LEVEL":
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+	case "TRANSACTION_ABORT_ON_ERROR":
+		return assignParsedParameter(value, strconv.ParseBool, &s.TransactionAbortOnError)
+	case "TRANSACTION_DEFAULT_ISOLATION_LEVEL":
+		return assignParsedParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
+	case "TWO_DIGIT_CENTURY_START":
+		return assignParsedParameter(value, strconv.Atoi, &s.TwoDigitCenturyStart)
+	case "UNSUPPORTED_DDL_ACTION":
+		return assignParsedParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
+	case "USE_CACHED_RESULT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.UseCachedResult)
+	case "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.UserTaskMinimumTriggerIntervalInSeconds)
+	case "USER_TASK_TIMEOUT_MS":
+		return assignParsedParameter(value, strconv.Atoi, &s.UserTaskTimeoutMs)
+	case "WEEK_OF_YEAR_POLICY":
+		return assignParsedParameter(value, strconv.Atoi, &s.WeekOfYearPolicy)
+	case "WEEK_START":
+		return assignParsedParameter(value, strconv.Atoi, &s.WeekStart)
+	default:
+		return ErrParameterNotSupported
+	}
 }
 
 func NewCloneTaskRequest(
@@ -330,11 +1117,6 @@ func (s *TaskSetRequest) WithWarehouse(warehouse AccountObjectIdentifier) *TaskS
 	return s
 }
 
-func (s *TaskSetRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *TaskSetRequest {
-	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
-	return s
-}
-
 func (s *TaskSetRequest) WithSchedule(schedule string) *TaskSetRequest {
 	s.Schedule = &schedule
 	return s
@@ -350,16 +1132,6 @@ func (s *TaskSetRequest) WithAllowOverlappingExecution(allowOverlappingExecution
 	return s
 }
 
-func (s *TaskSetRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *TaskSetRequest {
-	s.UserTaskTimeoutMs = &userTaskTimeoutMs
-	return s
-}
-
-func (s *TaskSetRequest) WithSuspendTaskAfterNumFailures(suspendTaskAfterNumFailures int) *TaskSetRequest {
-	s.SuspendTaskAfterNumFailures = &suspendTaskAfterNumFailures
-	return s
-}
-
 func (s *TaskSetRequest) WithErrorIntegration(errorIntegration AccountObjectIdentifier) *TaskSetRequest {
 	s.ErrorIntegration = &errorIntegration
 	return s
@@ -370,23 +1142,173 @@ func (s *TaskSetRequest) WithComment(comment string) *TaskSetRequest {
 	return s
 }
 
-func (s *TaskSetRequest) WithSessionParameters(sessionParameters SessionParameters) *TaskSetRequest {
-	s.SessionParameters = &sessionParameters
-	return s
-}
-
-func (s *TaskSetRequest) WithTaskAutoRetryAttempts(taskAutoRetryAttempts int) *TaskSetRequest {
-	s.TaskAutoRetryAttempts = &taskAutoRetryAttempts
-	return s
-}
-
-func (s *TaskSetRequest) WithUserTaskMinimumTriggerIntervalInSeconds(userTaskMinimumTriggerIntervalInSeconds int) *TaskSetRequest {
-	s.UserTaskMinimumTriggerIntervalInSeconds = &userTaskMinimumTriggerIntervalInSeconds
-	return s
-}
-
 func (s *TaskSetRequest) WithTargetCompletionInterval(targetCompletionInterval string) *TaskSetRequest {
 	s.TargetCompletionInterval = &targetCompletionInterval
+	return s
+}
+
+func (s *TaskSetRequest) WithAbortDetachedQuery(abortDetachedQuery bool) *TaskSetRequest {
+	s.AbortDetachedQuery = &abortDetachedQuery
+	return s
+}
+
+func (s *TaskSetRequest) WithAutocommit(autocommit bool) *TaskSetRequest {
+	s.Autocommit = &autocommit
+	return s
+}
+
+func (s *TaskSetRequest) WithBinaryInputFormat(binaryInputFormat BinaryInputFormat) *TaskSetRequest {
+	s.BinaryInputFormat = &binaryInputFormat
+	return s
+}
+
+func (s *TaskSetRequest) WithBinaryOutputFormat(binaryOutputFormat BinaryOutputFormat) *TaskSetRequest {
+	s.BinaryOutputFormat = &binaryOutputFormat
+	return s
+}
+
+func (s *TaskSetRequest) WithClientMemoryLimit(clientMemoryLimit int) *TaskSetRequest {
+	s.ClientMemoryLimit = &clientMemoryLimit
+	return s
+}
+
+func (s *TaskSetRequest) WithClientMetadataRequestUseConnectionCtx(clientMetadataRequestUseConnectionCtx bool) *TaskSetRequest {
+	s.ClientMetadataRequestUseConnectionCtx = &clientMetadataRequestUseConnectionCtx
+	return s
+}
+
+func (s *TaskSetRequest) WithClientPrefetchThreads(clientPrefetchThreads int) *TaskSetRequest {
+	s.ClientPrefetchThreads = &clientPrefetchThreads
+	return s
+}
+
+func (s *TaskSetRequest) WithClientResultChunkSize(clientResultChunkSize int) *TaskSetRequest {
+	s.ClientResultChunkSize = &clientResultChunkSize
+	return s
+}
+
+func (s *TaskSetRequest) WithClientResultColumnCaseInsensitive(clientResultColumnCaseInsensitive bool) *TaskSetRequest {
+	s.ClientResultColumnCaseInsensitive = &clientResultColumnCaseInsensitive
+	return s
+}
+
+func (s *TaskSetRequest) WithClientSessionKeepAlive(clientSessionKeepAlive bool) *TaskSetRequest {
+	s.ClientSessionKeepAlive = &clientSessionKeepAlive
+	return s
+}
+
+func (s *TaskSetRequest) WithClientSessionKeepAliveHeartbeatFrequency(clientSessionKeepAliveHeartbeatFrequency int) *TaskSetRequest {
+	s.ClientSessionKeepAliveHeartbeatFrequency = &clientSessionKeepAliveHeartbeatFrequency
+	return s
+}
+
+func (s *TaskSetRequest) WithClientTimestampTypeMapping(clientTimestampTypeMapping ClientTimestampTypeMapping) *TaskSetRequest {
+	s.ClientTimestampTypeMapping = &clientTimestampTypeMapping
+	return s
+}
+
+func (s *TaskSetRequest) WithDateInputFormat(dateInputFormat string) *TaskSetRequest {
+	s.DateInputFormat = &dateInputFormat
+	return s
+}
+
+func (s *TaskSetRequest) WithDateOutputFormat(dateOutputFormat string) *TaskSetRequest {
+	s.DateOutputFormat = &dateOutputFormat
+	return s
+}
+
+func (s *TaskSetRequest) WithEnableUnloadPhysicalTypeOptimization(enableUnloadPhysicalTypeOptimization bool) *TaskSetRequest {
+	s.EnableUnloadPhysicalTypeOptimization = &enableUnloadPhysicalTypeOptimization
+	return s
+}
+
+func (s *TaskSetRequest) WithErrorOnNondeterministicMerge(errorOnNondeterministicMerge bool) *TaskSetRequest {
+	s.ErrorOnNondeterministicMerge = &errorOnNondeterministicMerge
+	return s
+}
+
+func (s *TaskSetRequest) WithErrorOnNondeterministicUpdate(errorOnNondeterministicUpdate bool) *TaskSetRequest {
+	s.ErrorOnNondeterministicUpdate = &errorOnNondeterministicUpdate
+	return s
+}
+
+func (s *TaskSetRequest) WithGeographyOutputFormat(geographyOutputFormat GeographyOutputFormat) *TaskSetRequest {
+	s.GeographyOutputFormat = &geographyOutputFormat
+	return s
+}
+
+func (s *TaskSetRequest) WithGeometryOutputFormat(geometryOutputFormat GeometryOutputFormat) *TaskSetRequest {
+	s.GeometryOutputFormat = &geometryOutputFormat
+	return s
+}
+
+func (s *TaskSetRequest) WithJdbcTreatTimestampNtzAsUtc(jdbcTreatTimestampNtzAsUtc bool) *TaskSetRequest {
+	s.JdbcTreatTimestampNtzAsUtc = &jdbcTreatTimestampNtzAsUtc
+	return s
+}
+
+func (s *TaskSetRequest) WithJdbcUseSessionTimezone(jdbcUseSessionTimezone bool) *TaskSetRequest {
+	s.JdbcUseSessionTimezone = &jdbcUseSessionTimezone
+	return s
+}
+
+func (s *TaskSetRequest) WithJsonIndent(jsonIndent int) *TaskSetRequest {
+	s.JsonIndent = &jsonIndent
+	return s
+}
+
+func (s *TaskSetRequest) WithLockTimeout(lockTimeout int) *TaskSetRequest {
+	s.LockTimeout = &lockTimeout
+	return s
+}
+
+func (s *TaskSetRequest) WithLogEventLevel(logEventLevel LogLevel) *TaskSetRequest {
+	s.LogEventLevel = &logEventLevel
+	return s
+}
+
+func (s *TaskSetRequest) WithLogLevel(logLevel LogLevel) *TaskSetRequest {
+	s.LogLevel = &logLevel
+	return s
+}
+
+func (s *TaskSetRequest) WithMultiStatementCount(multiStatementCount int) *TaskSetRequest {
+	s.MultiStatementCount = &multiStatementCount
+	return s
+}
+
+func (s *TaskSetRequest) WithNoorderSequenceAsDefault(noorderSequenceAsDefault bool) *TaskSetRequest {
+	s.NoorderSequenceAsDefault = &noorderSequenceAsDefault
+	return s
+}
+
+func (s *TaskSetRequest) WithOdbcTreatDecimalAsInt(odbcTreatDecimalAsInt bool) *TaskSetRequest {
+	s.OdbcTreatDecimalAsInt = &odbcTreatDecimalAsInt
+	return s
+}
+
+func (s *TaskSetRequest) WithQueryTag(queryTag string) *TaskSetRequest {
+	s.QueryTag = &queryTag
+	return s
+}
+
+func (s *TaskSetRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *TaskSetRequest {
+	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
+	return s
+}
+
+func (s *TaskSetRequest) WithRowsPerResultset(rowsPerResultset int) *TaskSetRequest {
+	s.RowsPerResultset = &rowsPerResultset
+	return s
+}
+
+func (s *TaskSetRequest) WithS3StageVpceDnsName(s3StageVpceDnsName string) *TaskSetRequest {
+	s.S3StageVpceDnsName = &s3StageVpceDnsName
+	return s
+}
+
+func (s *TaskSetRequest) WithServerlessTaskMaxStatementSize(serverlessTaskMaxStatementSize WarehouseSize) *TaskSetRequest {
+	s.ServerlessTaskMaxStatementSize = &serverlessTaskMaxStatementSize
 	return s
 }
 
@@ -395,9 +1317,261 @@ func (s *TaskSetRequest) WithServerlessTaskMinStatementSize(serverlessTaskMinSta
 	return s
 }
 
-func (s *TaskSetRequest) WithServerlessTaskMaxStatementSize(serverlessTaskMaxStatementSize WarehouseSize) *TaskSetRequest {
-	s.ServerlessTaskMaxStatementSize = &serverlessTaskMaxStatementSize
+func (s *TaskSetRequest) WithStatementQueuedTimeoutInSeconds(statementQueuedTimeoutInSeconds int) *TaskSetRequest {
+	s.StatementQueuedTimeoutInSeconds = &statementQueuedTimeoutInSeconds
 	return s
+}
+
+func (s *TaskSetRequest) WithStatementTimeoutInSeconds(statementTimeoutInSeconds int) *TaskSetRequest {
+	s.StatementTimeoutInSeconds = &statementTimeoutInSeconds
+	return s
+}
+
+func (s *TaskSetRequest) WithStrictJsonOutput(strictJsonOutput bool) *TaskSetRequest {
+	s.StrictJsonOutput = &strictJsonOutput
+	return s
+}
+
+func (s *TaskSetRequest) WithSuspendTaskAfterNumFailures(suspendTaskAfterNumFailures int) *TaskSetRequest {
+	s.SuspendTaskAfterNumFailures = &suspendTaskAfterNumFailures
+	return s
+}
+
+func (s *TaskSetRequest) WithTaskAutoRetryAttempts(taskAutoRetryAttempts int) *TaskSetRequest {
+	s.TaskAutoRetryAttempts = &taskAutoRetryAttempts
+	return s
+}
+
+func (s *TaskSetRequest) WithTimeInputFormat(timeInputFormat string) *TaskSetRequest {
+	s.TimeInputFormat = &timeInputFormat
+	return s
+}
+
+func (s *TaskSetRequest) WithTimeOutputFormat(timeOutputFormat string) *TaskSetRequest {
+	s.TimeOutputFormat = &timeOutputFormat
+	return s
+}
+
+func (s *TaskSetRequest) WithTimestampDayIsAlways24H(timestampDayIsAlways24H bool) *TaskSetRequest {
+	s.TimestampDayIsAlways24H = &timestampDayIsAlways24H
+	return s
+}
+
+func (s *TaskSetRequest) WithTimestampInputFormat(timestampInputFormat string) *TaskSetRequest {
+	s.TimestampInputFormat = &timestampInputFormat
+	return s
+}
+
+func (s *TaskSetRequest) WithTimestampLtzOutputFormat(timestampLtzOutputFormat string) *TaskSetRequest {
+	s.TimestampLtzOutputFormat = &timestampLtzOutputFormat
+	return s
+}
+
+func (s *TaskSetRequest) WithTimestampNtzOutputFormat(timestampNtzOutputFormat string) *TaskSetRequest {
+	s.TimestampNtzOutputFormat = &timestampNtzOutputFormat
+	return s
+}
+
+func (s *TaskSetRequest) WithTimestampOutputFormat(timestampOutputFormat string) *TaskSetRequest {
+	s.TimestampOutputFormat = &timestampOutputFormat
+	return s
+}
+
+func (s *TaskSetRequest) WithTimestampTypeMapping(timestampTypeMapping TimestampTypeMapping) *TaskSetRequest {
+	s.TimestampTypeMapping = &timestampTypeMapping
+	return s
+}
+
+func (s *TaskSetRequest) WithTimestampTzOutputFormat(timestampTzOutputFormat string) *TaskSetRequest {
+	s.TimestampTzOutputFormat = &timestampTzOutputFormat
+	return s
+}
+
+func (s *TaskSetRequest) WithTimezone(timezone string) *TaskSetRequest {
+	s.Timezone = &timezone
+	return s
+}
+
+func (s *TaskSetRequest) WithTraceLevel(traceLevel TraceLevel) *TaskSetRequest {
+	s.TraceLevel = &traceLevel
+	return s
+}
+
+func (s *TaskSetRequest) WithTransactionAbortOnError(transactionAbortOnError bool) *TaskSetRequest {
+	s.TransactionAbortOnError = &transactionAbortOnError
+	return s
+}
+
+func (s *TaskSetRequest) WithTransactionDefaultIsolationLevel(transactionDefaultIsolationLevel TransactionDefaultIsolationLevel) *TaskSetRequest {
+	s.TransactionDefaultIsolationLevel = &transactionDefaultIsolationLevel
+	return s
+}
+
+func (s *TaskSetRequest) WithTwoDigitCenturyStart(twoDigitCenturyStart int) *TaskSetRequest {
+	s.TwoDigitCenturyStart = &twoDigitCenturyStart
+	return s
+}
+
+func (s *TaskSetRequest) WithUnsupportedDdlAction(unsupportedDdlAction UnsupportedDDLAction) *TaskSetRequest {
+	s.UnsupportedDdlAction = &unsupportedDdlAction
+	return s
+}
+
+func (s *TaskSetRequest) WithUseCachedResult(useCachedResult bool) *TaskSetRequest {
+	s.UseCachedResult = &useCachedResult
+	return s
+}
+
+func (s *TaskSetRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *TaskSetRequest {
+	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
+	return s
+}
+
+func (s *TaskSetRequest) WithUserTaskMinimumTriggerIntervalInSeconds(userTaskMinimumTriggerIntervalInSeconds int) *TaskSetRequest {
+	s.UserTaskMinimumTriggerIntervalInSeconds = &userTaskMinimumTriggerIntervalInSeconds
+	return s
+}
+
+func (s *TaskSetRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *TaskSetRequest {
+	s.UserTaskTimeoutMs = &userTaskTimeoutMs
+	return s
+}
+
+func (s *TaskSetRequest) WithWeekOfYearPolicy(weekOfYearPolicy int) *TaskSetRequest {
+	s.WeekOfYearPolicy = &weekOfYearPolicy
+	return s
+}
+
+func (s *TaskSetRequest) WithWeekStart(weekStart int) *TaskSetRequest {
+	s.WeekStart = &weekStart
+	return s
+}
+
+func (s *TaskSetRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "ABORT_DETACHED_QUERY":
+		return assignParsedParameter(value, strconv.ParseBool, &s.AbortDetachedQuery)
+	case "AUTOCOMMIT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.Autocommit)
+	case "BINARY_INPUT_FORMAT":
+		return assignParsedParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
+	case "BINARY_OUTPUT_FORMAT":
+		return assignParsedParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
+	case "CLIENT_MEMORY_LIMIT":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientMemoryLimit)
+	case "CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientMetadataRequestUseConnectionCtx)
+	case "CLIENT_PREFETCH_THREADS":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientPrefetchThreads)
+	case "CLIENT_RESULT_CHUNK_SIZE":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientResultChunkSize)
+	case "CLIENT_RESULT_COLUMN_CASE_INSENSITIVE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientResultColumnCaseInsensitive)
+	case "CLIENT_SESSION_KEEP_ALIVE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientSessionKeepAlive)
+	case "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientSessionKeepAliveHeartbeatFrequency)
+	case "CLIENT_TIMESTAMP_TYPE_MAPPING":
+		return assignParsedParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
+	case "DATE_INPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.DateInputFormat)
+	case "DATE_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.DateOutputFormat)
+	case "ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableUnloadPhysicalTypeOptimization)
+	case "ERROR_ON_NONDETERMINISTIC_MERGE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ErrorOnNondeterministicMerge)
+	case "ERROR_ON_NONDETERMINISTIC_UPDATE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ErrorOnNondeterministicUpdate)
+	case "GEOGRAPHY_OUTPUT_FORMAT":
+		return assignParsedParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
+	case "GEOMETRY_OUTPUT_FORMAT":
+		return assignParsedParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
+	case "JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC":
+		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcTreatTimestampNtzAsUtc)
+	case "JDBC_USE_SESSION_TIMEZONE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcUseSessionTimezone)
+	case "JSON_INDENT":
+		return assignParsedParameter(value, strconv.Atoi, &s.JsonIndent)
+	case "LOCK_TIMEOUT":
+		return assignParsedParameter(value, strconv.Atoi, &s.LockTimeout)
+	case "LOG_EVENT_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
+	case "LOG_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+	case "MULTI_STATEMENT_COUNT":
+		return assignParsedParameter(value, strconv.Atoi, &s.MultiStatementCount)
+	case "NOORDER_SEQUENCE_AS_DEFAULT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.NoorderSequenceAsDefault)
+	case "ODBC_TREAT_DECIMAL_AS_INT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.OdbcTreatDecimalAsInt)
+	case "QUERY_TAG":
+		return assignParsedParameter(value, identityParse, &s.QueryTag)
+	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.QuotedIdentifiersIgnoreCase)
+	case "ROWS_PER_RESULTSET":
+		return assignParsedParameter(value, strconv.Atoi, &s.RowsPerResultset)
+	case "S3_STAGE_VPCE_DNS_NAME":
+		return assignParsedParameter(value, identityParse, &s.S3StageVpceDnsName)
+	case "SERVERLESS_TASK_MAX_STATEMENT_SIZE":
+		return assignParsedParameter(value, ToWarehouseSize, &s.ServerlessTaskMaxStatementSize)
+	case "SERVERLESS_TASK_MIN_STATEMENT_SIZE":
+		return assignParsedParameter(value, ToWarehouseSize, &s.ServerlessTaskMinStatementSize)
+	case "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.StatementQueuedTimeoutInSeconds)
+	case "STATEMENT_TIMEOUT_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.StatementTimeoutInSeconds)
+	case "STRICT_JSON_OUTPUT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.StrictJsonOutput)
+	case "SUSPEND_TASK_AFTER_NUM_FAILURES":
+		return assignParsedParameter(value, strconv.Atoi, &s.SuspendTaskAfterNumFailures)
+	case "TASK_AUTO_RETRY_ATTEMPTS":
+		return assignParsedParameter(value, strconv.Atoi, &s.TaskAutoRetryAttempts)
+	case "TIME_INPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimeInputFormat)
+	case "TIME_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimeOutputFormat)
+	case "TIMESTAMP_DAY_IS_ALWAYS_24H":
+		return assignParsedParameter(value, strconv.ParseBool, &s.TimestampDayIsAlways24H)
+	case "TIMESTAMP_INPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampInputFormat)
+	case "TIMESTAMP_LTZ_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampLtzOutputFormat)
+	case "TIMESTAMP_NTZ_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampNtzOutputFormat)
+	case "TIMESTAMP_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampOutputFormat)
+	case "TIMESTAMP_TYPE_MAPPING":
+		return assignParsedParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
+	case "TIMESTAMP_TZ_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampTzOutputFormat)
+	case "TIMEZONE":
+		return assignParsedParameter(value, identityParse, &s.Timezone)
+	case "TRACE_LEVEL":
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+	case "TRANSACTION_ABORT_ON_ERROR":
+		return assignParsedParameter(value, strconv.ParseBool, &s.TransactionAbortOnError)
+	case "TRANSACTION_DEFAULT_ISOLATION_LEVEL":
+		return assignParsedParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
+	case "TWO_DIGIT_CENTURY_START":
+		return assignParsedParameter(value, strconv.Atoi, &s.TwoDigitCenturyStart)
+	case "UNSUPPORTED_DDL_ACTION":
+		return assignParsedParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
+	case "USE_CACHED_RESULT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.UseCachedResult)
+	case "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE":
+		return assignParsedParameter(value, ToWarehouseSize, &s.UserTaskManagedInitialWarehouseSize)
+	case "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.UserTaskMinimumTriggerIntervalInSeconds)
+	case "USER_TASK_TIMEOUT_MS":
+		return assignParsedParameter(value, strconv.Atoi, &s.UserTaskTimeoutMs)
+	case "WEEK_OF_YEAR_POLICY":
+		return assignParsedParameter(value, strconv.Atoi, &s.WeekOfYearPolicy)
+	case "WEEK_START":
+		return assignParsedParameter(value, strconv.Atoi, &s.WeekStart)
+	default:
+		return ErrParameterNotSupported
+	}
 }
 
 func NewTaskUnsetRequest() *TaskUnsetRequest {
@@ -407,11 +1581,6 @@ func NewTaskUnsetRequest() *TaskUnsetRequest {
 
 func (s *TaskUnsetRequest) WithWarehouse(warehouse bool) *TaskUnsetRequest {
 	s.Warehouse = &warehouse
-	return s
-}
-
-func (s *TaskUnsetRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize bool) *TaskUnsetRequest {
-	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
 	return s
 }
 
@@ -430,16 +1599,6 @@ func (s *TaskUnsetRequest) WithAllowOverlappingExecution(allowOverlappingExecuti
 	return s
 }
 
-func (s *TaskUnsetRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs bool) *TaskUnsetRequest {
-	s.UserTaskTimeoutMs = &userTaskTimeoutMs
-	return s
-}
-
-func (s *TaskUnsetRequest) WithSuspendTaskAfterNumFailures(suspendTaskAfterNumFailures bool) *TaskUnsetRequest {
-	s.SuspendTaskAfterNumFailures = &suspendTaskAfterNumFailures
-	return s
-}
-
 func (s *TaskUnsetRequest) WithErrorIntegration(errorIntegration bool) *TaskUnsetRequest {
 	s.ErrorIntegration = &errorIntegration
 	return s
@@ -450,23 +1609,168 @@ func (s *TaskUnsetRequest) WithComment(comment bool) *TaskUnsetRequest {
 	return s
 }
 
-func (s *TaskUnsetRequest) WithTaskAutoRetryAttempts(taskAutoRetryAttempts bool) *TaskUnsetRequest {
-	s.TaskAutoRetryAttempts = &taskAutoRetryAttempts
-	return s
-}
-
-func (s *TaskUnsetRequest) WithUserTaskMinimumTriggerIntervalInSeconds(userTaskMinimumTriggerIntervalInSeconds bool) *TaskUnsetRequest {
-	s.UserTaskMinimumTriggerIntervalInSeconds = &userTaskMinimumTriggerIntervalInSeconds
-	return s
-}
-
 func (s *TaskUnsetRequest) WithTargetCompletionInterval(targetCompletionInterval bool) *TaskUnsetRequest {
 	s.TargetCompletionInterval = &targetCompletionInterval
 	return s
 }
 
-func (s *TaskUnsetRequest) WithServerlessTaskMinStatementSize(serverlessTaskMinStatementSize bool) *TaskUnsetRequest {
-	s.ServerlessTaskMinStatementSize = &serverlessTaskMinStatementSize
+func (s *TaskUnsetRequest) WithAbortDetachedQuery(abortDetachedQuery bool) *TaskUnsetRequest {
+	s.AbortDetachedQuery = &abortDetachedQuery
+	return s
+}
+
+func (s *TaskUnsetRequest) WithAutocommit(autocommit bool) *TaskUnsetRequest {
+	s.Autocommit = &autocommit
+	return s
+}
+
+func (s *TaskUnsetRequest) WithBinaryInputFormat(binaryInputFormat bool) *TaskUnsetRequest {
+	s.BinaryInputFormat = &binaryInputFormat
+	return s
+}
+
+func (s *TaskUnsetRequest) WithBinaryOutputFormat(binaryOutputFormat bool) *TaskUnsetRequest {
+	s.BinaryOutputFormat = &binaryOutputFormat
+	return s
+}
+
+func (s *TaskUnsetRequest) WithClientMemoryLimit(clientMemoryLimit bool) *TaskUnsetRequest {
+	s.ClientMemoryLimit = &clientMemoryLimit
+	return s
+}
+
+func (s *TaskUnsetRequest) WithClientMetadataRequestUseConnectionCtx(clientMetadataRequestUseConnectionCtx bool) *TaskUnsetRequest {
+	s.ClientMetadataRequestUseConnectionCtx = &clientMetadataRequestUseConnectionCtx
+	return s
+}
+
+func (s *TaskUnsetRequest) WithClientPrefetchThreads(clientPrefetchThreads bool) *TaskUnsetRequest {
+	s.ClientPrefetchThreads = &clientPrefetchThreads
+	return s
+}
+
+func (s *TaskUnsetRequest) WithClientResultChunkSize(clientResultChunkSize bool) *TaskUnsetRequest {
+	s.ClientResultChunkSize = &clientResultChunkSize
+	return s
+}
+
+func (s *TaskUnsetRequest) WithClientResultColumnCaseInsensitive(clientResultColumnCaseInsensitive bool) *TaskUnsetRequest {
+	s.ClientResultColumnCaseInsensitive = &clientResultColumnCaseInsensitive
+	return s
+}
+
+func (s *TaskUnsetRequest) WithClientSessionKeepAlive(clientSessionKeepAlive bool) *TaskUnsetRequest {
+	s.ClientSessionKeepAlive = &clientSessionKeepAlive
+	return s
+}
+
+func (s *TaskUnsetRequest) WithClientSessionKeepAliveHeartbeatFrequency(clientSessionKeepAliveHeartbeatFrequency bool) *TaskUnsetRequest {
+	s.ClientSessionKeepAliveHeartbeatFrequency = &clientSessionKeepAliveHeartbeatFrequency
+	return s
+}
+
+func (s *TaskUnsetRequest) WithClientTimestampTypeMapping(clientTimestampTypeMapping bool) *TaskUnsetRequest {
+	s.ClientTimestampTypeMapping = &clientTimestampTypeMapping
+	return s
+}
+
+func (s *TaskUnsetRequest) WithDateInputFormat(dateInputFormat bool) *TaskUnsetRequest {
+	s.DateInputFormat = &dateInputFormat
+	return s
+}
+
+func (s *TaskUnsetRequest) WithDateOutputFormat(dateOutputFormat bool) *TaskUnsetRequest {
+	s.DateOutputFormat = &dateOutputFormat
+	return s
+}
+
+func (s *TaskUnsetRequest) WithEnableUnloadPhysicalTypeOptimization(enableUnloadPhysicalTypeOptimization bool) *TaskUnsetRequest {
+	s.EnableUnloadPhysicalTypeOptimization = &enableUnloadPhysicalTypeOptimization
+	return s
+}
+
+func (s *TaskUnsetRequest) WithErrorOnNondeterministicMerge(errorOnNondeterministicMerge bool) *TaskUnsetRequest {
+	s.ErrorOnNondeterministicMerge = &errorOnNondeterministicMerge
+	return s
+}
+
+func (s *TaskUnsetRequest) WithErrorOnNondeterministicUpdate(errorOnNondeterministicUpdate bool) *TaskUnsetRequest {
+	s.ErrorOnNondeterministicUpdate = &errorOnNondeterministicUpdate
+	return s
+}
+
+func (s *TaskUnsetRequest) WithGeographyOutputFormat(geographyOutputFormat bool) *TaskUnsetRequest {
+	s.GeographyOutputFormat = &geographyOutputFormat
+	return s
+}
+
+func (s *TaskUnsetRequest) WithGeometryOutputFormat(geometryOutputFormat bool) *TaskUnsetRequest {
+	s.GeometryOutputFormat = &geometryOutputFormat
+	return s
+}
+
+func (s *TaskUnsetRequest) WithJdbcTreatTimestampNtzAsUtc(jdbcTreatTimestampNtzAsUtc bool) *TaskUnsetRequest {
+	s.JdbcTreatTimestampNtzAsUtc = &jdbcTreatTimestampNtzAsUtc
+	return s
+}
+
+func (s *TaskUnsetRequest) WithJdbcUseSessionTimezone(jdbcUseSessionTimezone bool) *TaskUnsetRequest {
+	s.JdbcUseSessionTimezone = &jdbcUseSessionTimezone
+	return s
+}
+
+func (s *TaskUnsetRequest) WithJsonIndent(jsonIndent bool) *TaskUnsetRequest {
+	s.JsonIndent = &jsonIndent
+	return s
+}
+
+func (s *TaskUnsetRequest) WithLockTimeout(lockTimeout bool) *TaskUnsetRequest {
+	s.LockTimeout = &lockTimeout
+	return s
+}
+
+func (s *TaskUnsetRequest) WithLogEventLevel(logEventLevel bool) *TaskUnsetRequest {
+	s.LogEventLevel = &logEventLevel
+	return s
+}
+
+func (s *TaskUnsetRequest) WithLogLevel(logLevel bool) *TaskUnsetRequest {
+	s.LogLevel = &logLevel
+	return s
+}
+
+func (s *TaskUnsetRequest) WithMultiStatementCount(multiStatementCount bool) *TaskUnsetRequest {
+	s.MultiStatementCount = &multiStatementCount
+	return s
+}
+
+func (s *TaskUnsetRequest) WithNoorderSequenceAsDefault(noorderSequenceAsDefault bool) *TaskUnsetRequest {
+	s.NoorderSequenceAsDefault = &noorderSequenceAsDefault
+	return s
+}
+
+func (s *TaskUnsetRequest) WithOdbcTreatDecimalAsInt(odbcTreatDecimalAsInt bool) *TaskUnsetRequest {
+	s.OdbcTreatDecimalAsInt = &odbcTreatDecimalAsInt
+	return s
+}
+
+func (s *TaskUnsetRequest) WithQueryTag(queryTag bool) *TaskUnsetRequest {
+	s.QueryTag = &queryTag
+	return s
+}
+
+func (s *TaskUnsetRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *TaskUnsetRequest {
+	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
+	return s
+}
+
+func (s *TaskUnsetRequest) WithRowsPerResultset(rowsPerResultset bool) *TaskUnsetRequest {
+	s.RowsPerResultset = &rowsPerResultset
+	return s
+}
+
+func (s *TaskUnsetRequest) WithS3StageVpceDnsName(s3StageVpceDnsName bool) *TaskUnsetRequest {
+	s.S3StageVpceDnsName = &s3StageVpceDnsName
 	return s
 }
 
@@ -475,9 +1779,267 @@ func (s *TaskUnsetRequest) WithServerlessTaskMaxStatementSize(serverlessTaskMaxS
 	return s
 }
 
-func (s *TaskUnsetRequest) WithSessionParametersUnset(sessionParametersUnset SessionParametersUnset) *TaskUnsetRequest {
-	s.SessionParametersUnset = &sessionParametersUnset
+func (s *TaskUnsetRequest) WithServerlessTaskMinStatementSize(serverlessTaskMinStatementSize bool) *TaskUnsetRequest {
+	s.ServerlessTaskMinStatementSize = &serverlessTaskMinStatementSize
 	return s
+}
+
+func (s *TaskUnsetRequest) WithStatementQueuedTimeoutInSeconds(statementQueuedTimeoutInSeconds bool) *TaskUnsetRequest {
+	s.StatementQueuedTimeoutInSeconds = &statementQueuedTimeoutInSeconds
+	return s
+}
+
+func (s *TaskUnsetRequest) WithStatementTimeoutInSeconds(statementTimeoutInSeconds bool) *TaskUnsetRequest {
+	s.StatementTimeoutInSeconds = &statementTimeoutInSeconds
+	return s
+}
+
+func (s *TaskUnsetRequest) WithStrictJsonOutput(strictJsonOutput bool) *TaskUnsetRequest {
+	s.StrictJsonOutput = &strictJsonOutput
+	return s
+}
+
+func (s *TaskUnsetRequest) WithSuspendTaskAfterNumFailures(suspendTaskAfterNumFailures bool) *TaskUnsetRequest {
+	s.SuspendTaskAfterNumFailures = &suspendTaskAfterNumFailures
+	return s
+}
+
+func (s *TaskUnsetRequest) WithTaskAutoRetryAttempts(taskAutoRetryAttempts bool) *TaskUnsetRequest {
+	s.TaskAutoRetryAttempts = &taskAutoRetryAttempts
+	return s
+}
+
+func (s *TaskUnsetRequest) WithTimeInputFormat(timeInputFormat bool) *TaskUnsetRequest {
+	s.TimeInputFormat = &timeInputFormat
+	return s
+}
+
+func (s *TaskUnsetRequest) WithTimeOutputFormat(timeOutputFormat bool) *TaskUnsetRequest {
+	s.TimeOutputFormat = &timeOutputFormat
+	return s
+}
+
+func (s *TaskUnsetRequest) WithTimestampDayIsAlways24H(timestampDayIsAlways24H bool) *TaskUnsetRequest {
+	s.TimestampDayIsAlways24H = &timestampDayIsAlways24H
+	return s
+}
+
+func (s *TaskUnsetRequest) WithTimestampInputFormat(timestampInputFormat bool) *TaskUnsetRequest {
+	s.TimestampInputFormat = &timestampInputFormat
+	return s
+}
+
+func (s *TaskUnsetRequest) WithTimestampLtzOutputFormat(timestampLtzOutputFormat bool) *TaskUnsetRequest {
+	s.TimestampLtzOutputFormat = &timestampLtzOutputFormat
+	return s
+}
+
+func (s *TaskUnsetRequest) WithTimestampNtzOutputFormat(timestampNtzOutputFormat bool) *TaskUnsetRequest {
+	s.TimestampNtzOutputFormat = &timestampNtzOutputFormat
+	return s
+}
+
+func (s *TaskUnsetRequest) WithTimestampOutputFormat(timestampOutputFormat bool) *TaskUnsetRequest {
+	s.TimestampOutputFormat = &timestampOutputFormat
+	return s
+}
+
+func (s *TaskUnsetRequest) WithTimestampTypeMapping(timestampTypeMapping bool) *TaskUnsetRequest {
+	s.TimestampTypeMapping = &timestampTypeMapping
+	return s
+}
+
+func (s *TaskUnsetRequest) WithTimestampTzOutputFormat(timestampTzOutputFormat bool) *TaskUnsetRequest {
+	s.TimestampTzOutputFormat = &timestampTzOutputFormat
+	return s
+}
+
+func (s *TaskUnsetRequest) WithTimezone(timezone bool) *TaskUnsetRequest {
+	s.Timezone = &timezone
+	return s
+}
+
+func (s *TaskUnsetRequest) WithTraceLevel(traceLevel bool) *TaskUnsetRequest {
+	s.TraceLevel = &traceLevel
+	return s
+}
+
+func (s *TaskUnsetRequest) WithTransactionAbortOnError(transactionAbortOnError bool) *TaskUnsetRequest {
+	s.TransactionAbortOnError = &transactionAbortOnError
+	return s
+}
+
+func (s *TaskUnsetRequest) WithTransactionDefaultIsolationLevel(transactionDefaultIsolationLevel bool) *TaskUnsetRequest {
+	s.TransactionDefaultIsolationLevel = &transactionDefaultIsolationLevel
+	return s
+}
+
+func (s *TaskUnsetRequest) WithTwoDigitCenturyStart(twoDigitCenturyStart bool) *TaskUnsetRequest {
+	s.TwoDigitCenturyStart = &twoDigitCenturyStart
+	return s
+}
+
+func (s *TaskUnsetRequest) WithUnsupportedDdlAction(unsupportedDdlAction bool) *TaskUnsetRequest {
+	s.UnsupportedDdlAction = &unsupportedDdlAction
+	return s
+}
+
+func (s *TaskUnsetRequest) WithUseCachedResult(useCachedResult bool) *TaskUnsetRequest {
+	s.UseCachedResult = &useCachedResult
+	return s
+}
+
+func (s *TaskUnsetRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize bool) *TaskUnsetRequest {
+	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
+	return s
+}
+
+func (s *TaskUnsetRequest) WithUserTaskMinimumTriggerIntervalInSeconds(userTaskMinimumTriggerIntervalInSeconds bool) *TaskUnsetRequest {
+	s.UserTaskMinimumTriggerIntervalInSeconds = &userTaskMinimumTriggerIntervalInSeconds
+	return s
+}
+
+func (s *TaskUnsetRequest) WithUserTaskTimeoutMs(userTaskTimeoutMs bool) *TaskUnsetRequest {
+	s.UserTaskTimeoutMs = &userTaskTimeoutMs
+	return s
+}
+
+func (s *TaskUnsetRequest) WithWeekOfYearPolicy(weekOfYearPolicy bool) *TaskUnsetRequest {
+	s.WeekOfYearPolicy = &weekOfYearPolicy
+	return s
+}
+
+func (s *TaskUnsetRequest) WithWeekStart(weekStart bool) *TaskUnsetRequest {
+	s.WeekStart = &weekStart
+	return s
+}
+
+func (s *TaskUnsetRequest) UnsetParameterFromRaw(key string) error {
+	switch key {
+	case "ABORT_DETACHED_QUERY":
+		s.AbortDetachedQuery = Bool(true)
+	case "AUTOCOMMIT":
+		s.Autocommit = Bool(true)
+	case "BINARY_INPUT_FORMAT":
+		s.BinaryInputFormat = Bool(true)
+	case "BINARY_OUTPUT_FORMAT":
+		s.BinaryOutputFormat = Bool(true)
+	case "CLIENT_MEMORY_LIMIT":
+		s.ClientMemoryLimit = Bool(true)
+	case "CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX":
+		s.ClientMetadataRequestUseConnectionCtx = Bool(true)
+	case "CLIENT_PREFETCH_THREADS":
+		s.ClientPrefetchThreads = Bool(true)
+	case "CLIENT_RESULT_CHUNK_SIZE":
+		s.ClientResultChunkSize = Bool(true)
+	case "CLIENT_RESULT_COLUMN_CASE_INSENSITIVE":
+		s.ClientResultColumnCaseInsensitive = Bool(true)
+	case "CLIENT_SESSION_KEEP_ALIVE":
+		s.ClientSessionKeepAlive = Bool(true)
+	case "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY":
+		s.ClientSessionKeepAliveHeartbeatFrequency = Bool(true)
+	case "CLIENT_TIMESTAMP_TYPE_MAPPING":
+		s.ClientTimestampTypeMapping = Bool(true)
+	case "DATE_INPUT_FORMAT":
+		s.DateInputFormat = Bool(true)
+	case "DATE_OUTPUT_FORMAT":
+		s.DateOutputFormat = Bool(true)
+	case "ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION":
+		s.EnableUnloadPhysicalTypeOptimization = Bool(true)
+	case "ERROR_ON_NONDETERMINISTIC_MERGE":
+		s.ErrorOnNondeterministicMerge = Bool(true)
+	case "ERROR_ON_NONDETERMINISTIC_UPDATE":
+		s.ErrorOnNondeterministicUpdate = Bool(true)
+	case "GEOGRAPHY_OUTPUT_FORMAT":
+		s.GeographyOutputFormat = Bool(true)
+	case "GEOMETRY_OUTPUT_FORMAT":
+		s.GeometryOutputFormat = Bool(true)
+	case "JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC":
+		s.JdbcTreatTimestampNtzAsUtc = Bool(true)
+	case "JDBC_USE_SESSION_TIMEZONE":
+		s.JdbcUseSessionTimezone = Bool(true)
+	case "JSON_INDENT":
+		s.JsonIndent = Bool(true)
+	case "LOCK_TIMEOUT":
+		s.LockTimeout = Bool(true)
+	case "LOG_EVENT_LEVEL":
+		s.LogEventLevel = Bool(true)
+	case "LOG_LEVEL":
+		s.LogLevel = Bool(true)
+	case "MULTI_STATEMENT_COUNT":
+		s.MultiStatementCount = Bool(true)
+	case "NOORDER_SEQUENCE_AS_DEFAULT":
+		s.NoorderSequenceAsDefault = Bool(true)
+	case "ODBC_TREAT_DECIMAL_AS_INT":
+		s.OdbcTreatDecimalAsInt = Bool(true)
+	case "QUERY_TAG":
+		s.QueryTag = Bool(true)
+	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
+		s.QuotedIdentifiersIgnoreCase = Bool(true)
+	case "ROWS_PER_RESULTSET":
+		s.RowsPerResultset = Bool(true)
+	case "S3_STAGE_VPCE_DNS_NAME":
+		s.S3StageVpceDnsName = Bool(true)
+	case "SERVERLESS_TASK_MAX_STATEMENT_SIZE":
+		s.ServerlessTaskMaxStatementSize = Bool(true)
+	case "SERVERLESS_TASK_MIN_STATEMENT_SIZE":
+		s.ServerlessTaskMinStatementSize = Bool(true)
+	case "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS":
+		s.StatementQueuedTimeoutInSeconds = Bool(true)
+	case "STATEMENT_TIMEOUT_IN_SECONDS":
+		s.StatementTimeoutInSeconds = Bool(true)
+	case "STRICT_JSON_OUTPUT":
+		s.StrictJsonOutput = Bool(true)
+	case "SUSPEND_TASK_AFTER_NUM_FAILURES":
+		s.SuspendTaskAfterNumFailures = Bool(true)
+	case "TASK_AUTO_RETRY_ATTEMPTS":
+		s.TaskAutoRetryAttempts = Bool(true)
+	case "TIME_INPUT_FORMAT":
+		s.TimeInputFormat = Bool(true)
+	case "TIME_OUTPUT_FORMAT":
+		s.TimeOutputFormat = Bool(true)
+	case "TIMESTAMP_DAY_IS_ALWAYS_24H":
+		s.TimestampDayIsAlways24H = Bool(true)
+	case "TIMESTAMP_INPUT_FORMAT":
+		s.TimestampInputFormat = Bool(true)
+	case "TIMESTAMP_LTZ_OUTPUT_FORMAT":
+		s.TimestampLtzOutputFormat = Bool(true)
+	case "TIMESTAMP_NTZ_OUTPUT_FORMAT":
+		s.TimestampNtzOutputFormat = Bool(true)
+	case "TIMESTAMP_OUTPUT_FORMAT":
+		s.TimestampOutputFormat = Bool(true)
+	case "TIMESTAMP_TYPE_MAPPING":
+		s.TimestampTypeMapping = Bool(true)
+	case "TIMESTAMP_TZ_OUTPUT_FORMAT":
+		s.TimestampTzOutputFormat = Bool(true)
+	case "TIMEZONE":
+		s.Timezone = Bool(true)
+	case "TRACE_LEVEL":
+		s.TraceLevel = Bool(true)
+	case "TRANSACTION_ABORT_ON_ERROR":
+		s.TransactionAbortOnError = Bool(true)
+	case "TRANSACTION_DEFAULT_ISOLATION_LEVEL":
+		s.TransactionDefaultIsolationLevel = Bool(true)
+	case "TWO_DIGIT_CENTURY_START":
+		s.TwoDigitCenturyStart = Bool(true)
+	case "UNSUPPORTED_DDL_ACTION":
+		s.UnsupportedDdlAction = Bool(true)
+	case "USE_CACHED_RESULT":
+		s.UseCachedResult = Bool(true)
+	case "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE":
+		s.UserTaskManagedInitialWarehouseSize = Bool(true)
+	case "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS":
+		s.UserTaskMinimumTriggerIntervalInSeconds = Bool(true)
+	case "USER_TASK_TIMEOUT_MS":
+		s.UserTaskTimeoutMs = Bool(true)
+	case "WEEK_OF_YEAR_POLICY":
+		s.WeekOfYearPolicy = Bool(true)
+	case "WEEK_START":
+		s.WeekStart = Bool(true)
+	default:
+		return ErrParameterNotSupported
+	}
+	return nil
 }
 
 func NewDropTaskRequest(

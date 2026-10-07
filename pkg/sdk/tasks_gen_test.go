@@ -333,24 +333,76 @@ var tasksTests = TasksTestsContext{
 			},
 			validationCase[*AlterTaskOptions]{
 				Name:        case_Tasks_validation_Alter_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterTaskOptions.Set", "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParameters", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds", "TargetCompletionInterval", "ServerlessTaskMinStatementSize", "ServerlessTaskMaxStatementSize"),
+				ExpectedErr: errAtLeastOneOf("AlterTaskOptions.Set", "AbortDetachedQuery", "Autocommit", "BinaryInputFormat", "BinaryOutputFormat", "ClientMemoryLimit", "ClientMetadataRequestUseConnectionCtx", "ClientPrefetchThreads", "ClientResultChunkSize", "ClientResultColumnCaseInsensitive", "ClientSessionKeepAlive", "ClientSessionKeepAliveHeartbeatFrequency", "ClientTimestampTypeMapping", "DateInputFormat", "DateOutputFormat", "EnableUnloadPhysicalTypeOptimization", "ErrorOnNondeterministicMerge", "ErrorOnNondeterministicUpdate", "GeographyOutputFormat", "GeometryOutputFormat", "JdbcTreatTimestampNtzAsUtc", "JdbcUseSessionTimezone", "JsonIndent", "LockTimeout", "LogEventLevel", "LogLevel", "MultiStatementCount", "NoorderSequenceAsDefault", "OdbcTreatDecimalAsInt", "QueryTag", "QuotedIdentifiersIgnoreCase", "RowsPerResultset", "S3StageVpceDnsName", "ServerlessTaskMaxStatementSize", "ServerlessTaskMinStatementSize", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "StrictJsonOutput", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "TimeInputFormat", "TimeOutputFormat", "TimestampDayIsAlways24H", "TimestampInputFormat", "TimestampLtzOutputFormat", "TimestampNtzOutputFormat", "TimestampOutputFormat", "TimestampTypeMapping", "TimestampTzOutputFormat", "Timezone", "TraceLevel", "TransactionAbortOnError", "TransactionDefaultIsolationLevel", "TwoDigitCenturyStart", "UnsupportedDdlAction", "UseCachedResult", "UserTaskManagedInitialWarehouseSize", "UserTaskMinimumTriggerIntervalInSeconds", "UserTaskTimeoutMs", "WeekOfYearPolicy", "WeekStart", "Warehouse", "Schedule", "Config", "AllowOverlappingExecution", "ErrorIntegration", "Comment", "TargetCompletionInterval"),
 				DefaultModify: func(opts *AlterTaskOptions) {
 					opts.Set = &TaskSet{}
-					opts.Set.Warehouse = nil
+					opts.Set.AbortDetachedQuery = nil
+					opts.Set.Autocommit = nil
+					opts.Set.BinaryInputFormat = nil
+					opts.Set.BinaryOutputFormat = nil
+					opts.Set.ClientMemoryLimit = nil
+					opts.Set.ClientMetadataRequestUseConnectionCtx = nil
+					opts.Set.ClientPrefetchThreads = nil
+					opts.Set.ClientResultChunkSize = nil
+					opts.Set.ClientResultColumnCaseInsensitive = nil
+					opts.Set.ClientSessionKeepAlive = nil
+					opts.Set.ClientSessionKeepAliveHeartbeatFrequency = nil
+					opts.Set.ClientTimestampTypeMapping = nil
+					opts.Set.DateInputFormat = nil
+					opts.Set.DateOutputFormat = nil
+					opts.Set.EnableUnloadPhysicalTypeOptimization = nil
+					opts.Set.ErrorOnNondeterministicMerge = nil
+					opts.Set.ErrorOnNondeterministicUpdate = nil
+					opts.Set.GeographyOutputFormat = nil
+					opts.Set.GeometryOutputFormat = nil
+					opts.Set.JdbcTreatTimestampNtzAsUtc = nil
+					opts.Set.JdbcUseSessionTimezone = nil
+					opts.Set.JsonIndent = nil
+					opts.Set.LockTimeout = nil
+					opts.Set.LogEventLevel = nil
+					opts.Set.LogLevel = nil
+					opts.Set.MultiStatementCount = nil
+					opts.Set.NoorderSequenceAsDefault = nil
+					opts.Set.OdbcTreatDecimalAsInt = nil
+					opts.Set.QueryTag = nil
+					opts.Set.QuotedIdentifiersIgnoreCase = nil
+					opts.Set.RowsPerResultset = nil
+					opts.Set.S3StageVpceDnsName = nil
+					opts.Set.ServerlessTaskMaxStatementSize = nil
+					opts.Set.ServerlessTaskMinStatementSize = nil
+					opts.Set.StatementQueuedTimeoutInSeconds = nil
+					opts.Set.StatementTimeoutInSeconds = nil
+					opts.Set.StrictJsonOutput = nil
+					opts.Set.SuspendTaskAfterNumFailures = nil
+					opts.Set.TaskAutoRetryAttempts = nil
+					opts.Set.TimeInputFormat = nil
+					opts.Set.TimeOutputFormat = nil
+					opts.Set.TimestampDayIsAlways24H = nil
+					opts.Set.TimestampInputFormat = nil
+					opts.Set.TimestampLtzOutputFormat = nil
+					opts.Set.TimestampNtzOutputFormat = nil
+					opts.Set.TimestampOutputFormat = nil
+					opts.Set.TimestampTypeMapping = nil
+					opts.Set.TimestampTzOutputFormat = nil
+					opts.Set.Timezone = nil
+					opts.Set.TraceLevel = nil
+					opts.Set.TransactionAbortOnError = nil
+					opts.Set.TransactionDefaultIsolationLevel = nil
+					opts.Set.TwoDigitCenturyStart = nil
+					opts.Set.UnsupportedDdlAction = nil
+					opts.Set.UseCachedResult = nil
 					opts.Set.UserTaskManagedInitialWarehouseSize = nil
+					opts.Set.UserTaskMinimumTriggerIntervalInSeconds = nil
+					opts.Set.UserTaskTimeoutMs = nil
+					opts.Set.WeekOfYearPolicy = nil
+					opts.Set.WeekStart = nil
+					opts.Set.Warehouse = nil
 					opts.Set.Schedule = nil
 					opts.Set.Config = nil
 					opts.Set.AllowOverlappingExecution = nil
-					opts.Set.UserTaskTimeoutMs = nil
-					opts.Set.SuspendTaskAfterNumFailures = nil
 					opts.Set.ErrorIntegration = nil
 					opts.Set.Comment = nil
-					opts.Set.SessionParameters = nil
-					opts.Set.TaskAutoRetryAttempts = nil
-					opts.Set.UserTaskMinimumTriggerIntervalInSeconds = nil
 					opts.Set.TargetCompletionInterval = nil
-					opts.Set.ServerlessTaskMinStatementSize = nil
-					opts.Set.ServerlessTaskMaxStatementSize = nil
 				},
 			},
 			validationCase[*AlterTaskOptions]{
@@ -375,24 +427,76 @@ var tasksTests = TasksTestsContext{
 			},
 			validationCase[*AlterTaskOptions]{
 				Name:        case_Tasks_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterTaskOptions.Unset", "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParametersUnset", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds", "TargetCompletionInterval", "ServerlessTaskMinStatementSize", "ServerlessTaskMaxStatementSize"),
+				ExpectedErr: errAtLeastOneOf("AlterTaskOptions.Unset", "AbortDetachedQuery", "Autocommit", "BinaryInputFormat", "BinaryOutputFormat", "ClientMemoryLimit", "ClientMetadataRequestUseConnectionCtx", "ClientPrefetchThreads", "ClientResultChunkSize", "ClientResultColumnCaseInsensitive", "ClientSessionKeepAlive", "ClientSessionKeepAliveHeartbeatFrequency", "ClientTimestampTypeMapping", "DateInputFormat", "DateOutputFormat", "EnableUnloadPhysicalTypeOptimization", "ErrorOnNondeterministicMerge", "ErrorOnNondeterministicUpdate", "GeographyOutputFormat", "GeometryOutputFormat", "JdbcTreatTimestampNtzAsUtc", "JdbcUseSessionTimezone", "JsonIndent", "LockTimeout", "LogEventLevel", "LogLevel", "MultiStatementCount", "NoorderSequenceAsDefault", "OdbcTreatDecimalAsInt", "QueryTag", "QuotedIdentifiersIgnoreCase", "RowsPerResultset", "S3StageVpceDnsName", "ServerlessTaskMaxStatementSize", "ServerlessTaskMinStatementSize", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "StrictJsonOutput", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "TimeInputFormat", "TimeOutputFormat", "TimestampDayIsAlways24H", "TimestampInputFormat", "TimestampLtzOutputFormat", "TimestampNtzOutputFormat", "TimestampOutputFormat", "TimestampTypeMapping", "TimestampTzOutputFormat", "Timezone", "TraceLevel", "TransactionAbortOnError", "TransactionDefaultIsolationLevel", "TwoDigitCenturyStart", "UnsupportedDdlAction", "UseCachedResult", "UserTaskManagedInitialWarehouseSize", "UserTaskMinimumTriggerIntervalInSeconds", "UserTaskTimeoutMs", "WeekOfYearPolicy", "WeekStart", "Warehouse", "Schedule", "Config", "AllowOverlappingExecution", "ErrorIntegration", "Comment", "TargetCompletionInterval"),
 				DefaultModify: func(opts *AlterTaskOptions) {
 					opts.Unset = &TaskUnset{}
-					opts.Unset.Warehouse = nil
+					opts.Unset.AbortDetachedQuery = nil
+					opts.Unset.Autocommit = nil
+					opts.Unset.BinaryInputFormat = nil
+					opts.Unset.BinaryOutputFormat = nil
+					opts.Unset.ClientMemoryLimit = nil
+					opts.Unset.ClientMetadataRequestUseConnectionCtx = nil
+					opts.Unset.ClientPrefetchThreads = nil
+					opts.Unset.ClientResultChunkSize = nil
+					opts.Unset.ClientResultColumnCaseInsensitive = nil
+					opts.Unset.ClientSessionKeepAlive = nil
+					opts.Unset.ClientSessionKeepAliveHeartbeatFrequency = nil
+					opts.Unset.ClientTimestampTypeMapping = nil
+					opts.Unset.DateInputFormat = nil
+					opts.Unset.DateOutputFormat = nil
+					opts.Unset.EnableUnloadPhysicalTypeOptimization = nil
+					opts.Unset.ErrorOnNondeterministicMerge = nil
+					opts.Unset.ErrorOnNondeterministicUpdate = nil
+					opts.Unset.GeographyOutputFormat = nil
+					opts.Unset.GeometryOutputFormat = nil
+					opts.Unset.JdbcTreatTimestampNtzAsUtc = nil
+					opts.Unset.JdbcUseSessionTimezone = nil
+					opts.Unset.JsonIndent = nil
+					opts.Unset.LockTimeout = nil
+					opts.Unset.LogEventLevel = nil
+					opts.Unset.LogLevel = nil
+					opts.Unset.MultiStatementCount = nil
+					opts.Unset.NoorderSequenceAsDefault = nil
+					opts.Unset.OdbcTreatDecimalAsInt = nil
+					opts.Unset.QueryTag = nil
+					opts.Unset.QuotedIdentifiersIgnoreCase = nil
+					opts.Unset.RowsPerResultset = nil
+					opts.Unset.S3StageVpceDnsName = nil
+					opts.Unset.ServerlessTaskMaxStatementSize = nil
+					opts.Unset.ServerlessTaskMinStatementSize = nil
+					opts.Unset.StatementQueuedTimeoutInSeconds = nil
+					opts.Unset.StatementTimeoutInSeconds = nil
+					opts.Unset.StrictJsonOutput = nil
+					opts.Unset.SuspendTaskAfterNumFailures = nil
+					opts.Unset.TaskAutoRetryAttempts = nil
+					opts.Unset.TimeInputFormat = nil
+					opts.Unset.TimeOutputFormat = nil
+					opts.Unset.TimestampDayIsAlways24H = nil
+					opts.Unset.TimestampInputFormat = nil
+					opts.Unset.TimestampLtzOutputFormat = nil
+					opts.Unset.TimestampNtzOutputFormat = nil
+					opts.Unset.TimestampOutputFormat = nil
+					opts.Unset.TimestampTypeMapping = nil
+					opts.Unset.TimestampTzOutputFormat = nil
+					opts.Unset.Timezone = nil
+					opts.Unset.TraceLevel = nil
+					opts.Unset.TransactionAbortOnError = nil
+					opts.Unset.TransactionDefaultIsolationLevel = nil
+					opts.Unset.TwoDigitCenturyStart = nil
+					opts.Unset.UnsupportedDdlAction = nil
+					opts.Unset.UseCachedResult = nil
 					opts.Unset.UserTaskManagedInitialWarehouseSize = nil
+					opts.Unset.UserTaskMinimumTriggerIntervalInSeconds = nil
+					opts.Unset.UserTaskTimeoutMs = nil
+					opts.Unset.WeekOfYearPolicy = nil
+					opts.Unset.WeekStart = nil
+					opts.Unset.Warehouse = nil
 					opts.Unset.Schedule = nil
 					opts.Unset.Config = nil
 					opts.Unset.AllowOverlappingExecution = nil
-					opts.Unset.UserTaskTimeoutMs = nil
-					opts.Unset.SuspendTaskAfterNumFailures = nil
 					opts.Unset.ErrorIntegration = nil
 					opts.Unset.Comment = nil
-					opts.Unset.SessionParametersUnset = nil
-					opts.Unset.TaskAutoRetryAttempts = nil
-					opts.Unset.UserTaskMinimumTriggerIntervalInSeconds = nil
 					opts.Unset.TargetCompletionInterval = nil
-					opts.Unset.ServerlessTaskMinStatementSize = nil
-					opts.Unset.ServerlessTaskMaxStatementSize = nil
 				},
 			},
 			validationCase[*AlterTaskOptions]{

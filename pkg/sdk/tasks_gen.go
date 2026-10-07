@@ -20,38 +20,155 @@ type Tasks interface {
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*Task, error)
 	Execute(ctx context.Context, request *ExecuteTaskRequest) error
 	ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error)
+	ShowParametersDetails(ctx context.Context, id SchemaObjectIdentifier) (*TaskParametersDetails, error)
 	SuspendRootTasks(ctx context.Context, taskId SchemaObjectIdentifier, id SchemaObjectIdentifier) ([]SchemaObjectIdentifier, error)
 	ResumeTasks(ctx context.Context, ids []SchemaObjectIdentifier) error
 }
 
+// TaskParametersDetails holds the object's parameters with values parsed into their Go types.
+type TaskParametersDetails struct {
+	AbortDetachedQuery                       TypedParameter[bool]
+	Autocommit                               TypedParameter[bool]
+	BinaryInputFormat                        TypedParameter[BinaryInputFormat]
+	BinaryOutputFormat                       TypedParameter[BinaryOutputFormat]
+	ClientMemoryLimit                        TypedParameter[int]
+	ClientMetadataRequestUseConnectionCtx    TypedParameter[bool]
+	ClientPrefetchThreads                    TypedParameter[int]
+	ClientResultChunkSize                    TypedParameter[int]
+	ClientResultColumnCaseInsensitive        TypedParameter[bool]
+	ClientSessionKeepAlive                   TypedParameter[bool]
+	ClientSessionKeepAliveHeartbeatFrequency TypedParameter[int]
+	ClientTimestampTypeMapping               TypedParameter[ClientTimestampTypeMapping]
+	DateInputFormat                          TypedParameter[string]
+	DateOutputFormat                         TypedParameter[string]
+	EnableUnloadPhysicalTypeOptimization     TypedParameter[bool]
+	ErrorOnNondeterministicMerge             TypedParameter[bool]
+	ErrorOnNondeterministicUpdate            TypedParameter[bool]
+	GeographyOutputFormat                    TypedParameter[GeographyOutputFormat]
+	GeometryOutputFormat                     TypedParameter[GeometryOutputFormat]
+	JdbcTreatTimestampNtzAsUtc               TypedParameter[bool]
+	JdbcUseSessionTimezone                   TypedParameter[bool]
+	JsonIndent                               TypedParameter[int]
+	LockTimeout                              TypedParameter[int]
+	LogEventLevel                            TypedParameter[LogLevel]
+	LogLevel                                 TypedParameter[LogLevel]
+	MultiStatementCount                      TypedParameter[int]
+	NoorderSequenceAsDefault                 TypedParameter[bool]
+	OdbcTreatDecimalAsInt                    TypedParameter[bool]
+	QueryTag                                 TypedParameter[string]
+	QuotedIdentifiersIgnoreCase              TypedParameter[bool]
+	RowsPerResultset                         TypedParameter[int]
+	S3StageVpceDnsName                       TypedParameter[string]
+	ServerlessTaskMaxStatementSize           TypedParameter[WarehouseSize]
+	ServerlessTaskMinStatementSize           TypedParameter[WarehouseSize]
+	StatementQueuedTimeoutInSeconds          TypedParameter[int]
+	StatementTimeoutInSeconds                TypedParameter[int]
+	StrictJsonOutput                         TypedParameter[bool]
+	SuspendTaskAfterNumFailures              TypedParameter[int]
+	TaskAutoRetryAttempts                    TypedParameter[int]
+	TimeInputFormat                          TypedParameter[string]
+	TimeOutputFormat                         TypedParameter[string]
+	TimestampDayIsAlways24H                  TypedParameter[bool]
+	TimestampInputFormat                     TypedParameter[string]
+	TimestampLtzOutputFormat                 TypedParameter[string]
+	TimestampNtzOutputFormat                 TypedParameter[string]
+	TimestampOutputFormat                    TypedParameter[string]
+	TimestampTypeMapping                     TypedParameter[TimestampTypeMapping]
+	TimestampTzOutputFormat                  TypedParameter[string]
+	Timezone                                 TypedParameter[string]
+	TraceLevel                               TypedParameter[TraceLevel]
+	TransactionAbortOnError                  TypedParameter[bool]
+	TransactionDefaultIsolationLevel         TypedParameter[TransactionDefaultIsolationLevel]
+	TwoDigitCenturyStart                     TypedParameter[int]
+	UnsupportedDdlAction                     TypedParameter[UnsupportedDDLAction]
+	UseCachedResult                          TypedParameter[bool]
+	UserTaskManagedInitialWarehouseSize      TypedParameter[WarehouseSize]
+	UserTaskMinimumTriggerIntervalInSeconds  TypedParameter[int]
+	UserTaskTimeoutMs                        TypedParameter[int]
+	WeekOfYearPolicy                         TypedParameter[int]
+	WeekStart                                TypedParameter[int]
+}
+
 // CreateTaskOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-task.
 type CreateTaskOptions struct {
-	create                                  bool                     `ddl:"static" sql:"CREATE"`
-	OrReplace                               *bool                    `ddl:"keyword" sql:"OR REPLACE"`
-	task                                    bool                     `ddl:"static" sql:"TASK"`
-	IfNotExists                             *bool                    `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                                    SchemaObjectIdentifier   `ddl:"identifier"`
-	Warehouse                               *CreateTaskWarehouse     `ddl:"keyword"`
-	Schedule                                *string                  `ddl:"parameter,single_quotes" sql:"SCHEDULE"`
-	Config                                  *string                  `ddl:"parameter,double_dollar_quotes" sql:"CONFIG"`
-	AllowOverlappingExecution               *bool                    `ddl:"parameter" sql:"ALLOW_OVERLAPPING_EXECUTION"`
-	SessionParameters                       *SessionParameters       `ddl:"list,no_parentheses"`
-	UserTaskTimeoutMs                       *int                     `ddl:"parameter" sql:"USER_TASK_TIMEOUT_MS"`
-	SuspendTaskAfterNumFailures             *int                     `ddl:"parameter" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
-	ErrorIntegration                        *AccountObjectIdentifier `ddl:"identifier,equals" sql:"ERROR_INTEGRATION"`
-	Comment                                 *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	Finalize                                *SchemaObjectIdentifier  `ddl:"identifier,equals" sql:"FINALIZE"`
-	TaskAutoRetryAttempts                   *int                     `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
-	Tag                                     []TagAssociation         `ddl:"keyword,parentheses" sql:"TAG"`
-	UserTaskMinimumTriggerIntervalInSeconds *int                     `ddl:"parameter" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
-	TargetCompletionInterval                *string                  `ddl:"parameter,single_quotes" sql:"TARGET_COMPLETION_INTERVAL"`
-	ServerlessTaskMinStatementSize          *WarehouseSize           `ddl:"parameter,single_quotes" sql:"SERVERLESS_TASK_MIN_STATEMENT_SIZE"`
-	ServerlessTaskMaxStatementSize          *WarehouseSize           `ddl:"parameter,single_quotes" sql:"SERVERLESS_TASK_MAX_STATEMENT_SIZE"`
-	After                                   []SchemaObjectIdentifier `ddl:"parameter,no_equals" sql:"AFTER"`
-	ExecuteAsUser                           *AccountObjectIdentifier `ddl:"identifier" sql:"EXECUTE AS USER"`
-	When                                    *string                  `ddl:"parameter,no_quotes,no_equals" sql:"WHEN"`
-	as                                      bool                     `ddl:"static" sql:"AS"`
-	sql                                     string                   `ddl:"keyword,no_quotes"`
+	create                                   bool                              `ddl:"static" sql:"CREATE"`
+	OrReplace                                *bool                             `ddl:"keyword" sql:"OR REPLACE"`
+	task                                     bool                              `ddl:"static" sql:"TASK"`
+	IfNotExists                              *bool                             `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                                     SchemaObjectIdentifier            `ddl:"identifier"`
+	Warehouse                                *CreateTaskWarehouse              `ddl:"keyword"`
+	Schedule                                 *string                           `ddl:"parameter,single_quotes" sql:"SCHEDULE"`
+	Config                                   *string                           `ddl:"parameter,double_dollar_quotes" sql:"CONFIG"`
+	AllowOverlappingExecution                *bool                             `ddl:"parameter" sql:"ALLOW_OVERLAPPING_EXECUTION"`
+	ErrorIntegration                         *AccountObjectIdentifier          `ddl:"identifier,equals" sql:"ERROR_INTEGRATION"`
+	Comment                                  *string                           `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Finalize                                 *SchemaObjectIdentifier           `ddl:"identifier,equals" sql:"FINALIZE"`
+	Tag                                      []TagAssociation                  `ddl:"keyword,parentheses" sql:"TAG"`
+	TargetCompletionInterval                 *string                           `ddl:"parameter,single_quotes" sql:"TARGET_COMPLETION_INTERVAL"`
+	AbortDetachedQuery                       *bool                             `ddl:"parameter" sql:"ABORT_DETACHED_QUERY"`
+	Autocommit                               *bool                             `ddl:"parameter" sql:"AUTOCOMMIT"`
+	BinaryInputFormat                        *BinaryInputFormat                `ddl:"parameter,single_quotes" sql:"BINARY_INPUT_FORMAT"`
+	BinaryOutputFormat                       *BinaryOutputFormat               `ddl:"parameter,single_quotes" sql:"BINARY_OUTPUT_FORMAT"`
+	ClientMemoryLimit                        *int                              `ddl:"parameter" sql:"CLIENT_MEMORY_LIMIT"`
+	ClientMetadataRequestUseConnectionCtx    *bool                             `ddl:"parameter" sql:"CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX"`
+	ClientPrefetchThreads                    *int                              `ddl:"parameter" sql:"CLIENT_PREFETCH_THREADS"`
+	ClientResultChunkSize                    *int                              `ddl:"parameter" sql:"CLIENT_RESULT_CHUNK_SIZE"`
+	ClientResultColumnCaseInsensitive        *bool                             `ddl:"parameter" sql:"CLIENT_RESULT_COLUMN_CASE_INSENSITIVE"`
+	ClientSessionKeepAlive                   *bool                             `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE"`
+	ClientSessionKeepAliveHeartbeatFrequency *int                              `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY"`
+	ClientTimestampTypeMapping               *ClientTimestampTypeMapping       `ddl:"parameter,single_quotes" sql:"CLIENT_TIMESTAMP_TYPE_MAPPING"`
+	DateInputFormat                          *string                           `ddl:"parameter,single_quotes" sql:"DATE_INPUT_FORMAT"`
+	DateOutputFormat                         *string                           `ddl:"parameter,single_quotes" sql:"DATE_OUTPUT_FORMAT"`
+	EnableUnloadPhysicalTypeOptimization     *bool                             `ddl:"parameter" sql:"ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"`
+	ErrorOnNondeterministicMerge             *bool                             `ddl:"parameter" sql:"ERROR_ON_NONDETERMINISTIC_MERGE"`
+	ErrorOnNondeterministicUpdate            *bool                             `ddl:"parameter" sql:"ERROR_ON_NONDETERMINISTIC_UPDATE"`
+	GeographyOutputFormat                    *GeographyOutputFormat            `ddl:"parameter,single_quotes" sql:"GEOGRAPHY_OUTPUT_FORMAT"`
+	GeometryOutputFormat                     *GeometryOutputFormat             `ddl:"parameter,single_quotes" sql:"GEOMETRY_OUTPUT_FORMAT"`
+	JdbcTreatTimestampNtzAsUtc               *bool                             `ddl:"parameter" sql:"JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC"`
+	JdbcUseSessionTimezone                   *bool                             `ddl:"parameter" sql:"JDBC_USE_SESSION_TIMEZONE"`
+	JsonIndent                               *int                              `ddl:"parameter" sql:"JSON_INDENT"`
+	LockTimeout                              *int                              `ddl:"parameter" sql:"LOCK_TIMEOUT"`
+	LogEventLevel                            *LogLevel                         `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
+	LogLevel                                 *LogLevel                         `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
+	MultiStatementCount                      *int                              `ddl:"parameter" sql:"MULTI_STATEMENT_COUNT"`
+	NoorderSequenceAsDefault                 *bool                             `ddl:"parameter" sql:"NOORDER_SEQUENCE_AS_DEFAULT"`
+	OdbcTreatDecimalAsInt                    *bool                             `ddl:"parameter" sql:"ODBC_TREAT_DECIMAL_AS_INT"`
+	QueryTag                                 *string                           `ddl:"parameter,single_quotes" sql:"QUERY_TAG"`
+	QuotedIdentifiersIgnoreCase              *bool                             `ddl:"parameter" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
+	RowsPerResultset                         *int                              `ddl:"parameter" sql:"ROWS_PER_RESULTSET"`
+	S3StageVpceDnsName                       *string                           `ddl:"parameter,single_quotes" sql:"S3_STAGE_VPCE_DNS_NAME"`
+	ServerlessTaskMaxStatementSize           *WarehouseSize                    `ddl:"parameter,single_quotes" sql:"SERVERLESS_TASK_MAX_STATEMENT_SIZE"`
+	ServerlessTaskMinStatementSize           *WarehouseSize                    `ddl:"parameter,single_quotes" sql:"SERVERLESS_TASK_MIN_STATEMENT_SIZE"`
+	StatementQueuedTimeoutInSeconds          *int                              `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
+	StatementTimeoutInSeconds                *int                              `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+	StrictJsonOutput                         *bool                             `ddl:"parameter" sql:"STRICT_JSON_OUTPUT"`
+	SuspendTaskAfterNumFailures              *int                              `ddl:"parameter" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
+	TaskAutoRetryAttempts                    *int                              `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
+	TimeInputFormat                          *string                           `ddl:"parameter,single_quotes" sql:"TIME_INPUT_FORMAT"`
+	TimeOutputFormat                         *string                           `ddl:"parameter,single_quotes" sql:"TIME_OUTPUT_FORMAT"`
+	TimestampDayIsAlways24H                  *bool                             `ddl:"parameter" sql:"TIMESTAMP_DAY_IS_ALWAYS_24H"`
+	TimestampInputFormat                     *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_INPUT_FORMAT"`
+	TimestampLtzOutputFormat                 *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_LTZ_OUTPUT_FORMAT"`
+	TimestampNtzOutputFormat                 *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_NTZ_OUTPUT_FORMAT"`
+	TimestampOutputFormat                    *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_OUTPUT_FORMAT"`
+	TimestampTypeMapping                     *TimestampTypeMapping             `ddl:"parameter,single_quotes" sql:"TIMESTAMP_TYPE_MAPPING"`
+	TimestampTzOutputFormat                  *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_TZ_OUTPUT_FORMAT"`
+	Timezone                                 *string                           `ddl:"parameter,single_quotes" sql:"TIMEZONE"`
+	TraceLevel                               *TraceLevel                       `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`
+	TransactionAbortOnError                  *bool                             `ddl:"parameter" sql:"TRANSACTION_ABORT_ON_ERROR"`
+	TransactionDefaultIsolationLevel         *TransactionDefaultIsolationLevel `ddl:"parameter,single_quotes" sql:"TRANSACTION_DEFAULT_ISOLATION_LEVEL"`
+	TwoDigitCenturyStart                     *int                              `ddl:"parameter" sql:"TWO_DIGIT_CENTURY_START"`
+	UnsupportedDdlAction                     *UnsupportedDDLAction             `ddl:"parameter,single_quotes" sql:"UNSUPPORTED_DDL_ACTION"`
+	UseCachedResult                          *bool                             `ddl:"parameter" sql:"USE_CACHED_RESULT"`
+	UserTaskMinimumTriggerIntervalInSeconds  *int                              `ddl:"parameter" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
+	UserTaskTimeoutMs                        *int                              `ddl:"parameter" sql:"USER_TASK_TIMEOUT_MS"`
+	WeekOfYearPolicy                         *int                              `ddl:"parameter" sql:"WEEK_OF_YEAR_POLICY"`
+	WeekStart                                *int                              `ddl:"parameter" sql:"WEEK_START"`
+	After                                    []SchemaObjectIdentifier          `ddl:"parameter,no_equals" sql:"AFTER"`
+	ExecuteAsUser                            *AccountObjectIdentifier          `ddl:"identifier" sql:"EXECUTE AS USER"`
+	When                                     *string                           `ddl:"parameter,no_quotes,no_equals" sql:"WHEN"`
+	as                                       bool                              `ddl:"static" sql:"AS"`
+	sql                                      string                            `ddl:"keyword,no_quotes"`
 }
 
 type CreateTaskWarehouse struct {
@@ -61,25 +178,80 @@ type CreateTaskWarehouse struct {
 
 // CreateOrAlterTaskOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-task#create-or-alter-task.
 type CreateOrAlterTaskOptions struct {
-	createOrAlter               bool                     `ddl:"static" sql:"CREATE OR ALTER"`
-	task                        bool                     `ddl:"static" sql:"TASK"`
-	name                        SchemaObjectIdentifier   `ddl:"identifier"`
-	Warehouse                   *CreateTaskWarehouse     `ddl:"keyword"`
-	Schedule                    *string                  `ddl:"parameter,single_quotes" sql:"SCHEDULE"`
-	Config                      *string                  `ddl:"parameter,double_dollar_quotes" sql:"CONFIG"`
-	AllowOverlappingExecution   *bool                    `ddl:"parameter" sql:"ALLOW_OVERLAPPING_EXECUTION"`
-	UserTaskTimeoutMs           *int                     `ddl:"parameter" sql:"USER_TASK_TIMEOUT_MS"`
-	SessionParameters           *SessionParameters       `ddl:"list,no_parentheses"`
-	SuspendTaskAfterNumFailures *int                     `ddl:"parameter" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
-	ErrorIntegration            *AccountObjectIdentifier `ddl:"identifier,equals" sql:"ERROR_INTEGRATION"`
-	Comment                     *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	Finalize                    *SchemaObjectIdentifier  `ddl:"identifier,equals" sql:"FINALIZE"`
-	TaskAutoRetryAttempts       *int                     `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
-	After                       []SchemaObjectIdentifier `ddl:"parameter,no_equals" sql:"AFTER"`
-	ExecuteAsUser               *AccountObjectIdentifier `ddl:"identifier" sql:"EXECUTE AS USER"`
-	When                        *string                  `ddl:"parameter,no_quotes,no_equals" sql:"WHEN"`
-	as                          bool                     `ddl:"static" sql:"AS"`
-	sql                         string                   `ddl:"keyword,no_quotes"`
+	createOrAlter                            bool                              `ddl:"static" sql:"CREATE OR ALTER"`
+	task                                     bool                              `ddl:"static" sql:"TASK"`
+	name                                     SchemaObjectIdentifier            `ddl:"identifier"`
+	Warehouse                                *CreateTaskWarehouse              `ddl:"keyword"`
+	Schedule                                 *string                           `ddl:"parameter,single_quotes" sql:"SCHEDULE"`
+	Config                                   *string                           `ddl:"parameter,double_dollar_quotes" sql:"CONFIG"`
+	AllowOverlappingExecution                *bool                             `ddl:"parameter" sql:"ALLOW_OVERLAPPING_EXECUTION"`
+	ErrorIntegration                         *AccountObjectIdentifier          `ddl:"identifier,equals" sql:"ERROR_INTEGRATION"`
+	Comment                                  *string                           `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Finalize                                 *SchemaObjectIdentifier           `ddl:"identifier,equals" sql:"FINALIZE"`
+	AbortDetachedQuery                       *bool                             `ddl:"parameter" sql:"ABORT_DETACHED_QUERY"`
+	Autocommit                               *bool                             `ddl:"parameter" sql:"AUTOCOMMIT"`
+	BinaryInputFormat                        *BinaryInputFormat                `ddl:"parameter,single_quotes" sql:"BINARY_INPUT_FORMAT"`
+	BinaryOutputFormat                       *BinaryOutputFormat               `ddl:"parameter,single_quotes" sql:"BINARY_OUTPUT_FORMAT"`
+	ClientMemoryLimit                        *int                              `ddl:"parameter" sql:"CLIENT_MEMORY_LIMIT"`
+	ClientMetadataRequestUseConnectionCtx    *bool                             `ddl:"parameter" sql:"CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX"`
+	ClientPrefetchThreads                    *int                              `ddl:"parameter" sql:"CLIENT_PREFETCH_THREADS"`
+	ClientResultChunkSize                    *int                              `ddl:"parameter" sql:"CLIENT_RESULT_CHUNK_SIZE"`
+	ClientResultColumnCaseInsensitive        *bool                             `ddl:"parameter" sql:"CLIENT_RESULT_COLUMN_CASE_INSENSITIVE"`
+	ClientSessionKeepAlive                   *bool                             `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE"`
+	ClientSessionKeepAliveHeartbeatFrequency *int                              `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY"`
+	ClientTimestampTypeMapping               *ClientTimestampTypeMapping       `ddl:"parameter,single_quotes" sql:"CLIENT_TIMESTAMP_TYPE_MAPPING"`
+	DateInputFormat                          *string                           `ddl:"parameter,single_quotes" sql:"DATE_INPUT_FORMAT"`
+	DateOutputFormat                         *string                           `ddl:"parameter,single_quotes" sql:"DATE_OUTPUT_FORMAT"`
+	EnableUnloadPhysicalTypeOptimization     *bool                             `ddl:"parameter" sql:"ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"`
+	ErrorOnNondeterministicMerge             *bool                             `ddl:"parameter" sql:"ERROR_ON_NONDETERMINISTIC_MERGE"`
+	ErrorOnNondeterministicUpdate            *bool                             `ddl:"parameter" sql:"ERROR_ON_NONDETERMINISTIC_UPDATE"`
+	GeographyOutputFormat                    *GeographyOutputFormat            `ddl:"parameter,single_quotes" sql:"GEOGRAPHY_OUTPUT_FORMAT"`
+	GeometryOutputFormat                     *GeometryOutputFormat             `ddl:"parameter,single_quotes" sql:"GEOMETRY_OUTPUT_FORMAT"`
+	JdbcTreatTimestampNtzAsUtc               *bool                             `ddl:"parameter" sql:"JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC"`
+	JdbcUseSessionTimezone                   *bool                             `ddl:"parameter" sql:"JDBC_USE_SESSION_TIMEZONE"`
+	JsonIndent                               *int                              `ddl:"parameter" sql:"JSON_INDENT"`
+	LockTimeout                              *int                              `ddl:"parameter" sql:"LOCK_TIMEOUT"`
+	LogEventLevel                            *LogLevel                         `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
+	LogLevel                                 *LogLevel                         `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
+	MultiStatementCount                      *int                              `ddl:"parameter" sql:"MULTI_STATEMENT_COUNT"`
+	NoorderSequenceAsDefault                 *bool                             `ddl:"parameter" sql:"NOORDER_SEQUENCE_AS_DEFAULT"`
+	OdbcTreatDecimalAsInt                    *bool                             `ddl:"parameter" sql:"ODBC_TREAT_DECIMAL_AS_INT"`
+	QueryTag                                 *string                           `ddl:"parameter,single_quotes" sql:"QUERY_TAG"`
+	QuotedIdentifiersIgnoreCase              *bool                             `ddl:"parameter" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
+	RowsPerResultset                         *int                              `ddl:"parameter" sql:"ROWS_PER_RESULTSET"`
+	S3StageVpceDnsName                       *string                           `ddl:"parameter,single_quotes" sql:"S3_STAGE_VPCE_DNS_NAME"`
+	ServerlessTaskMaxStatementSize           *WarehouseSize                    `ddl:"parameter,single_quotes" sql:"SERVERLESS_TASK_MAX_STATEMENT_SIZE"`
+	ServerlessTaskMinStatementSize           *WarehouseSize                    `ddl:"parameter,single_quotes" sql:"SERVERLESS_TASK_MIN_STATEMENT_SIZE"`
+	StatementQueuedTimeoutInSeconds          *int                              `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
+	StatementTimeoutInSeconds                *int                              `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+	StrictJsonOutput                         *bool                             `ddl:"parameter" sql:"STRICT_JSON_OUTPUT"`
+	SuspendTaskAfterNumFailures              *int                              `ddl:"parameter" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
+	TaskAutoRetryAttempts                    *int                              `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
+	TimeInputFormat                          *string                           `ddl:"parameter,single_quotes" sql:"TIME_INPUT_FORMAT"`
+	TimeOutputFormat                         *string                           `ddl:"parameter,single_quotes" sql:"TIME_OUTPUT_FORMAT"`
+	TimestampDayIsAlways24H                  *bool                             `ddl:"parameter" sql:"TIMESTAMP_DAY_IS_ALWAYS_24H"`
+	TimestampInputFormat                     *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_INPUT_FORMAT"`
+	TimestampLtzOutputFormat                 *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_LTZ_OUTPUT_FORMAT"`
+	TimestampNtzOutputFormat                 *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_NTZ_OUTPUT_FORMAT"`
+	TimestampOutputFormat                    *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_OUTPUT_FORMAT"`
+	TimestampTypeMapping                     *TimestampTypeMapping             `ddl:"parameter,single_quotes" sql:"TIMESTAMP_TYPE_MAPPING"`
+	TimestampTzOutputFormat                  *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_TZ_OUTPUT_FORMAT"`
+	Timezone                                 *string                           `ddl:"parameter,single_quotes" sql:"TIMEZONE"`
+	TraceLevel                               *TraceLevel                       `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`
+	TransactionAbortOnError                  *bool                             `ddl:"parameter" sql:"TRANSACTION_ABORT_ON_ERROR"`
+	TransactionDefaultIsolationLevel         *TransactionDefaultIsolationLevel `ddl:"parameter,single_quotes" sql:"TRANSACTION_DEFAULT_ISOLATION_LEVEL"`
+	TwoDigitCenturyStart                     *int                              `ddl:"parameter" sql:"TWO_DIGIT_CENTURY_START"`
+	UnsupportedDdlAction                     *UnsupportedDDLAction             `ddl:"parameter,single_quotes" sql:"UNSUPPORTED_DDL_ACTION"`
+	UseCachedResult                          *bool                             `ddl:"parameter" sql:"USE_CACHED_RESULT"`
+	UserTaskMinimumTriggerIntervalInSeconds  *int                              `ddl:"parameter" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
+	UserTaskTimeoutMs                        *int                              `ddl:"parameter" sql:"USER_TASK_TIMEOUT_MS"`
+	WeekOfYearPolicy                         *int                              `ddl:"parameter" sql:"WEEK_OF_YEAR_POLICY"`
+	WeekStart                                *int                              `ddl:"parameter" sql:"WEEK_START"`
+	After                                    []SchemaObjectIdentifier          `ddl:"parameter,no_equals" sql:"AFTER"`
+	ExecuteAsUser                            *AccountObjectIdentifier          `ddl:"identifier" sql:"EXECUTE AS USER"`
+	When                                     *string                           `ddl:"parameter,no_quotes,no_equals" sql:"WHEN"`
+	as                                       bool                              `ddl:"static" sql:"AS"`
+	sql                                      string                            `ddl:"keyword,no_quotes"`
 }
 
 // CloneTaskOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-task#create-task-clone.
@@ -117,39 +289,143 @@ type AlterTaskOptions struct {
 }
 
 type TaskSet struct {
-	Warehouse                               *AccountObjectIdentifier `ddl:"identifier,equals" sql:"WAREHOUSE"`
-	UserTaskManagedInitialWarehouseSize     *WarehouseSize           `ddl:"parameter,single_quotes" sql:"USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"`
-	Schedule                                *string                  `ddl:"parameter,single_quotes" sql:"SCHEDULE"`
-	Config                                  *string                  `ddl:"parameter,double_dollar_quotes" sql:"CONFIG"`
-	AllowOverlappingExecution               *bool                    `ddl:"parameter" sql:"ALLOW_OVERLAPPING_EXECUTION"`
-	UserTaskTimeoutMs                       *int                     `ddl:"parameter" sql:"USER_TASK_TIMEOUT_MS"`
-	SuspendTaskAfterNumFailures             *int                     `ddl:"parameter" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
-	ErrorIntegration                        *AccountObjectIdentifier `ddl:"identifier,equals" sql:"ERROR_INTEGRATION"`
-	Comment                                 *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	SessionParameters                       *SessionParameters       `ddl:"list,no_parentheses"`
-	TaskAutoRetryAttempts                   *int                     `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
-	UserTaskMinimumTriggerIntervalInSeconds *int                     `ddl:"parameter" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
-	TargetCompletionInterval                *string                  `ddl:"parameter,single_quotes" sql:"TARGET_COMPLETION_INTERVAL"`
-	ServerlessTaskMinStatementSize          *WarehouseSize           `ddl:"parameter,single_quotes" sql:"SERVERLESS_TASK_MIN_STATEMENT_SIZE"`
-	ServerlessTaskMaxStatementSize          *WarehouseSize           `ddl:"parameter,single_quotes" sql:"SERVERLESS_TASK_MAX_STATEMENT_SIZE"`
+	Warehouse                                *AccountObjectIdentifier          `ddl:"identifier,equals" sql:"WAREHOUSE"`
+	Schedule                                 *string                           `ddl:"parameter,single_quotes" sql:"SCHEDULE"`
+	Config                                   *string                           `ddl:"parameter,double_dollar_quotes" sql:"CONFIG"`
+	AllowOverlappingExecution                *bool                             `ddl:"parameter" sql:"ALLOW_OVERLAPPING_EXECUTION"`
+	ErrorIntegration                         *AccountObjectIdentifier          `ddl:"identifier,equals" sql:"ERROR_INTEGRATION"`
+	Comment                                  *string                           `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	TargetCompletionInterval                 *string                           `ddl:"parameter,single_quotes" sql:"TARGET_COMPLETION_INTERVAL"`
+	AbortDetachedQuery                       *bool                             `ddl:"parameter" sql:"ABORT_DETACHED_QUERY"`
+	Autocommit                               *bool                             `ddl:"parameter" sql:"AUTOCOMMIT"`
+	BinaryInputFormat                        *BinaryInputFormat                `ddl:"parameter,single_quotes" sql:"BINARY_INPUT_FORMAT"`
+	BinaryOutputFormat                       *BinaryOutputFormat               `ddl:"parameter,single_quotes" sql:"BINARY_OUTPUT_FORMAT"`
+	ClientMemoryLimit                        *int                              `ddl:"parameter" sql:"CLIENT_MEMORY_LIMIT"`
+	ClientMetadataRequestUseConnectionCtx    *bool                             `ddl:"parameter" sql:"CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX"`
+	ClientPrefetchThreads                    *int                              `ddl:"parameter" sql:"CLIENT_PREFETCH_THREADS"`
+	ClientResultChunkSize                    *int                              `ddl:"parameter" sql:"CLIENT_RESULT_CHUNK_SIZE"`
+	ClientResultColumnCaseInsensitive        *bool                             `ddl:"parameter" sql:"CLIENT_RESULT_COLUMN_CASE_INSENSITIVE"`
+	ClientSessionKeepAlive                   *bool                             `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE"`
+	ClientSessionKeepAliveHeartbeatFrequency *int                              `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY"`
+	ClientTimestampTypeMapping               *ClientTimestampTypeMapping       `ddl:"parameter,single_quotes" sql:"CLIENT_TIMESTAMP_TYPE_MAPPING"`
+	DateInputFormat                          *string                           `ddl:"parameter,single_quotes" sql:"DATE_INPUT_FORMAT"`
+	DateOutputFormat                         *string                           `ddl:"parameter,single_quotes" sql:"DATE_OUTPUT_FORMAT"`
+	EnableUnloadPhysicalTypeOptimization     *bool                             `ddl:"parameter" sql:"ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"`
+	ErrorOnNondeterministicMerge             *bool                             `ddl:"parameter" sql:"ERROR_ON_NONDETERMINISTIC_MERGE"`
+	ErrorOnNondeterministicUpdate            *bool                             `ddl:"parameter" sql:"ERROR_ON_NONDETERMINISTIC_UPDATE"`
+	GeographyOutputFormat                    *GeographyOutputFormat            `ddl:"parameter,single_quotes" sql:"GEOGRAPHY_OUTPUT_FORMAT"`
+	GeometryOutputFormat                     *GeometryOutputFormat             `ddl:"parameter,single_quotes" sql:"GEOMETRY_OUTPUT_FORMAT"`
+	JdbcTreatTimestampNtzAsUtc               *bool                             `ddl:"parameter" sql:"JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC"`
+	JdbcUseSessionTimezone                   *bool                             `ddl:"parameter" sql:"JDBC_USE_SESSION_TIMEZONE"`
+	JsonIndent                               *int                              `ddl:"parameter" sql:"JSON_INDENT"`
+	LockTimeout                              *int                              `ddl:"parameter" sql:"LOCK_TIMEOUT"`
+	LogEventLevel                            *LogLevel                         `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
+	LogLevel                                 *LogLevel                         `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
+	MultiStatementCount                      *int                              `ddl:"parameter" sql:"MULTI_STATEMENT_COUNT"`
+	NoorderSequenceAsDefault                 *bool                             `ddl:"parameter" sql:"NOORDER_SEQUENCE_AS_DEFAULT"`
+	OdbcTreatDecimalAsInt                    *bool                             `ddl:"parameter" sql:"ODBC_TREAT_DECIMAL_AS_INT"`
+	QueryTag                                 *string                           `ddl:"parameter,single_quotes" sql:"QUERY_TAG"`
+	QuotedIdentifiersIgnoreCase              *bool                             `ddl:"parameter" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
+	RowsPerResultset                         *int                              `ddl:"parameter" sql:"ROWS_PER_RESULTSET"`
+	S3StageVpceDnsName                       *string                           `ddl:"parameter,single_quotes" sql:"S3_STAGE_VPCE_DNS_NAME"`
+	ServerlessTaskMaxStatementSize           *WarehouseSize                    `ddl:"parameter,single_quotes" sql:"SERVERLESS_TASK_MAX_STATEMENT_SIZE"`
+	ServerlessTaskMinStatementSize           *WarehouseSize                    `ddl:"parameter,single_quotes" sql:"SERVERLESS_TASK_MIN_STATEMENT_SIZE"`
+	StatementQueuedTimeoutInSeconds          *int                              `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
+	StatementTimeoutInSeconds                *int                              `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+	StrictJsonOutput                         *bool                             `ddl:"parameter" sql:"STRICT_JSON_OUTPUT"`
+	SuspendTaskAfterNumFailures              *int                              `ddl:"parameter" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
+	TaskAutoRetryAttempts                    *int                              `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
+	TimeInputFormat                          *string                           `ddl:"parameter,single_quotes" sql:"TIME_INPUT_FORMAT"`
+	TimeOutputFormat                         *string                           `ddl:"parameter,single_quotes" sql:"TIME_OUTPUT_FORMAT"`
+	TimestampDayIsAlways24H                  *bool                             `ddl:"parameter" sql:"TIMESTAMP_DAY_IS_ALWAYS_24H"`
+	TimestampInputFormat                     *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_INPUT_FORMAT"`
+	TimestampLtzOutputFormat                 *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_LTZ_OUTPUT_FORMAT"`
+	TimestampNtzOutputFormat                 *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_NTZ_OUTPUT_FORMAT"`
+	TimestampOutputFormat                    *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_OUTPUT_FORMAT"`
+	TimestampTypeMapping                     *TimestampTypeMapping             `ddl:"parameter,single_quotes" sql:"TIMESTAMP_TYPE_MAPPING"`
+	TimestampTzOutputFormat                  *string                           `ddl:"parameter,single_quotes" sql:"TIMESTAMP_TZ_OUTPUT_FORMAT"`
+	Timezone                                 *string                           `ddl:"parameter,single_quotes" sql:"TIMEZONE"`
+	TraceLevel                               *TraceLevel                       `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`
+	TransactionAbortOnError                  *bool                             `ddl:"parameter" sql:"TRANSACTION_ABORT_ON_ERROR"`
+	TransactionDefaultIsolationLevel         *TransactionDefaultIsolationLevel `ddl:"parameter,single_quotes" sql:"TRANSACTION_DEFAULT_ISOLATION_LEVEL"`
+	TwoDigitCenturyStart                     *int                              `ddl:"parameter" sql:"TWO_DIGIT_CENTURY_START"`
+	UnsupportedDdlAction                     *UnsupportedDDLAction             `ddl:"parameter,single_quotes" sql:"UNSUPPORTED_DDL_ACTION"`
+	UseCachedResult                          *bool                             `ddl:"parameter" sql:"USE_CACHED_RESULT"`
+	UserTaskManagedInitialWarehouseSize      *WarehouseSize                    `ddl:"parameter,single_quotes" sql:"USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"`
+	UserTaskMinimumTriggerIntervalInSeconds  *int                              `ddl:"parameter" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
+	UserTaskTimeoutMs                        *int                              `ddl:"parameter" sql:"USER_TASK_TIMEOUT_MS"`
+	WeekOfYearPolicy                         *int                              `ddl:"parameter" sql:"WEEK_OF_YEAR_POLICY"`
+	WeekStart                                *int                              `ddl:"parameter" sql:"WEEK_START"`
 }
 
 type TaskUnset struct {
-	Warehouse                               *bool                   `ddl:"keyword" sql:"WAREHOUSE"`
-	UserTaskManagedInitialWarehouseSize     *bool                   `ddl:"keyword" sql:"USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"`
-	Schedule                                *bool                   `ddl:"keyword" sql:"SCHEDULE"`
-	Config                                  *bool                   `ddl:"keyword" sql:"CONFIG"`
-	AllowOverlappingExecution               *bool                   `ddl:"keyword" sql:"ALLOW_OVERLAPPING_EXECUTION"`
-	UserTaskTimeoutMs                       *bool                   `ddl:"keyword" sql:"USER_TASK_TIMEOUT_MS"`
-	SuspendTaskAfterNumFailures             *bool                   `ddl:"keyword" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
-	ErrorIntegration                        *bool                   `ddl:"keyword" sql:"ERROR_INTEGRATION"`
-	Comment                                 *bool                   `ddl:"keyword" sql:"COMMENT"`
-	TaskAutoRetryAttempts                   *bool                   `ddl:"keyword" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
-	UserTaskMinimumTriggerIntervalInSeconds *bool                   `ddl:"keyword" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
-	TargetCompletionInterval                *bool                   `ddl:"keyword" sql:"TARGET_COMPLETION_INTERVAL"`
-	ServerlessTaskMinStatementSize          *bool                   `ddl:"keyword" sql:"SERVERLESS_TASK_MIN_STATEMENT_SIZE"`
-	ServerlessTaskMaxStatementSize          *bool                   `ddl:"keyword" sql:"SERVERLESS_TASK_MAX_STATEMENT_SIZE"`
-	SessionParametersUnset                  *SessionParametersUnset `ddl:"list,no_parentheses"`
+	Warehouse                                *bool `ddl:"keyword" sql:"WAREHOUSE"`
+	Schedule                                 *bool `ddl:"keyword" sql:"SCHEDULE"`
+	Config                                   *bool `ddl:"keyword" sql:"CONFIG"`
+	AllowOverlappingExecution                *bool `ddl:"keyword" sql:"ALLOW_OVERLAPPING_EXECUTION"`
+	ErrorIntegration                         *bool `ddl:"keyword" sql:"ERROR_INTEGRATION"`
+	Comment                                  *bool `ddl:"keyword" sql:"COMMENT"`
+	TargetCompletionInterval                 *bool `ddl:"keyword" sql:"TARGET_COMPLETION_INTERVAL"`
+	AbortDetachedQuery                       *bool `ddl:"keyword" sql:"ABORT_DETACHED_QUERY"`
+	Autocommit                               *bool `ddl:"keyword" sql:"AUTOCOMMIT"`
+	BinaryInputFormat                        *bool `ddl:"keyword" sql:"BINARY_INPUT_FORMAT"`
+	BinaryOutputFormat                       *bool `ddl:"keyword" sql:"BINARY_OUTPUT_FORMAT"`
+	ClientMemoryLimit                        *bool `ddl:"keyword" sql:"CLIENT_MEMORY_LIMIT"`
+	ClientMetadataRequestUseConnectionCtx    *bool `ddl:"keyword" sql:"CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX"`
+	ClientPrefetchThreads                    *bool `ddl:"keyword" sql:"CLIENT_PREFETCH_THREADS"`
+	ClientResultChunkSize                    *bool `ddl:"keyword" sql:"CLIENT_RESULT_CHUNK_SIZE"`
+	ClientResultColumnCaseInsensitive        *bool `ddl:"keyword" sql:"CLIENT_RESULT_COLUMN_CASE_INSENSITIVE"`
+	ClientSessionKeepAlive                   *bool `ddl:"keyword" sql:"CLIENT_SESSION_KEEP_ALIVE"`
+	ClientSessionKeepAliveHeartbeatFrequency *bool `ddl:"keyword" sql:"CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY"`
+	ClientTimestampTypeMapping               *bool `ddl:"keyword" sql:"CLIENT_TIMESTAMP_TYPE_MAPPING"`
+	DateInputFormat                          *bool `ddl:"keyword" sql:"DATE_INPUT_FORMAT"`
+	DateOutputFormat                         *bool `ddl:"keyword" sql:"DATE_OUTPUT_FORMAT"`
+	EnableUnloadPhysicalTypeOptimization     *bool `ddl:"keyword" sql:"ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"`
+	ErrorOnNondeterministicMerge             *bool `ddl:"keyword" sql:"ERROR_ON_NONDETERMINISTIC_MERGE"`
+	ErrorOnNondeterministicUpdate            *bool `ddl:"keyword" sql:"ERROR_ON_NONDETERMINISTIC_UPDATE"`
+	GeographyOutputFormat                    *bool `ddl:"keyword" sql:"GEOGRAPHY_OUTPUT_FORMAT"`
+	GeometryOutputFormat                     *bool `ddl:"keyword" sql:"GEOMETRY_OUTPUT_FORMAT"`
+	JdbcTreatTimestampNtzAsUtc               *bool `ddl:"keyword" sql:"JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC"`
+	JdbcUseSessionTimezone                   *bool `ddl:"keyword" sql:"JDBC_USE_SESSION_TIMEZONE"`
+	JsonIndent                               *bool `ddl:"keyword" sql:"JSON_INDENT"`
+	LockTimeout                              *bool `ddl:"keyword" sql:"LOCK_TIMEOUT"`
+	LogEventLevel                            *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
+	LogLevel                                 *bool `ddl:"keyword" sql:"LOG_LEVEL"`
+	MultiStatementCount                      *bool `ddl:"keyword" sql:"MULTI_STATEMENT_COUNT"`
+	NoorderSequenceAsDefault                 *bool `ddl:"keyword" sql:"NOORDER_SEQUENCE_AS_DEFAULT"`
+	OdbcTreatDecimalAsInt                    *bool `ddl:"keyword" sql:"ODBC_TREAT_DECIMAL_AS_INT"`
+	QueryTag                                 *bool `ddl:"keyword" sql:"QUERY_TAG"`
+	QuotedIdentifiersIgnoreCase              *bool `ddl:"keyword" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
+	RowsPerResultset                         *bool `ddl:"keyword" sql:"ROWS_PER_RESULTSET"`
+	S3StageVpceDnsName                       *bool `ddl:"keyword" sql:"S3_STAGE_VPCE_DNS_NAME"`
+	ServerlessTaskMaxStatementSize           *bool `ddl:"keyword" sql:"SERVERLESS_TASK_MAX_STATEMENT_SIZE"`
+	ServerlessTaskMinStatementSize           *bool `ddl:"keyword" sql:"SERVERLESS_TASK_MIN_STATEMENT_SIZE"`
+	StatementQueuedTimeoutInSeconds          *bool `ddl:"keyword" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
+	StatementTimeoutInSeconds                *bool `ddl:"keyword" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+	StrictJsonOutput                         *bool `ddl:"keyword" sql:"STRICT_JSON_OUTPUT"`
+	SuspendTaskAfterNumFailures              *bool `ddl:"keyword" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
+	TaskAutoRetryAttempts                    *bool `ddl:"keyword" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
+	TimeInputFormat                          *bool `ddl:"keyword" sql:"TIME_INPUT_FORMAT"`
+	TimeOutputFormat                         *bool `ddl:"keyword" sql:"TIME_OUTPUT_FORMAT"`
+	TimestampDayIsAlways24H                  *bool `ddl:"keyword" sql:"TIMESTAMP_DAY_IS_ALWAYS_24H"`
+	TimestampInputFormat                     *bool `ddl:"keyword" sql:"TIMESTAMP_INPUT_FORMAT"`
+	TimestampLtzOutputFormat                 *bool `ddl:"keyword" sql:"TIMESTAMP_LTZ_OUTPUT_FORMAT"`
+	TimestampNtzOutputFormat                 *bool `ddl:"keyword" sql:"TIMESTAMP_NTZ_OUTPUT_FORMAT"`
+	TimestampOutputFormat                    *bool `ddl:"keyword" sql:"TIMESTAMP_OUTPUT_FORMAT"`
+	TimestampTypeMapping                     *bool `ddl:"keyword" sql:"TIMESTAMP_TYPE_MAPPING"`
+	TimestampTzOutputFormat                  *bool `ddl:"keyword" sql:"TIMESTAMP_TZ_OUTPUT_FORMAT"`
+	Timezone                                 *bool `ddl:"keyword" sql:"TIMEZONE"`
+	TraceLevel                               *bool `ddl:"keyword" sql:"TRACE_LEVEL"`
+	TransactionAbortOnError                  *bool `ddl:"keyword" sql:"TRANSACTION_ABORT_ON_ERROR"`
+	TransactionDefaultIsolationLevel         *bool `ddl:"keyword" sql:"TRANSACTION_DEFAULT_ISOLATION_LEVEL"`
+	TwoDigitCenturyStart                     *bool `ddl:"keyword" sql:"TWO_DIGIT_CENTURY_START"`
+	UnsupportedDdlAction                     *bool `ddl:"keyword" sql:"UNSUPPORTED_DDL_ACTION"`
+	UseCachedResult                          *bool `ddl:"keyword" sql:"USE_CACHED_RESULT"`
+	UserTaskManagedInitialWarehouseSize      *bool `ddl:"keyword" sql:"USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"`
+	UserTaskMinimumTriggerIntervalInSeconds  *bool `ddl:"keyword" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
+	UserTaskTimeoutMs                        *bool `ddl:"keyword" sql:"USER_TASK_TIMEOUT_MS"`
+	WeekOfYearPolicy                         *bool `ddl:"keyword" sql:"WEEK_OF_YEAR_POLICY"`
+	WeekStart                                *bool `ddl:"keyword" sql:"WEEK_START"`
 }
 
 // DropTaskOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-task.

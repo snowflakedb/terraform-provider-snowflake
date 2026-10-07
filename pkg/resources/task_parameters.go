@@ -272,7 +272,6 @@ func handleTaskParameterRead(d *schema.ResourceData, taskParameters []*sdk.Param
 // so this would be unnecessary running in circles)
 // TODO [SNOW-1645342]: include mappers in the param definition (after moving it to the SDK: identity versus concrete)
 func handleTaskParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateTaskRequest) diag.Diagnostics {
-	createOpts.WithSessionParameters(sdk.SessionParameters{})
 	if v, ok := d.GetOk("user_task_managed_initial_warehouse_size"); ok {
 		size, err := sdk.ToWarehouseSize(v.(string))
 		if err != nil {
@@ -289,62 +288,62 @@ func handleTaskParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateTa
 		handleParameterCreateWithMapping(d, sdk.TaskParameterServerlessTaskMinStatementSize, &createOpts.ServerlessTaskMinStatementSize, stringToStringEnumProvider(sdk.ToWarehouseSize)),
 		handleParameterCreateWithMapping(d, sdk.TaskParameterServerlessTaskMaxStatementSize, &createOpts.ServerlessTaskMaxStatementSize, stringToStringEnumProvider(sdk.ToWarehouseSize)),
 		// session parameters
-		handleParameterCreate(d, sdk.TaskParameterAbortDetachedQuery, &createOpts.SessionParameters.AbortDetachedQuery),
-		handleParameterCreateWithMapping(d, sdk.TaskParameterBinaryInputFormat, &createOpts.SessionParameters.BinaryInputFormat, stringToStringEnumProvider(sdk.ToBinaryInputFormat)),
-		handleParameterCreateWithMapping(d, sdk.TaskParameterBinaryOutputFormat, &createOpts.SessionParameters.BinaryOutputFormat, stringToStringEnumProvider(sdk.ToBinaryOutputFormat)),
-		handleParameterCreate(d, sdk.TaskParameterClientMemoryLimit, &createOpts.SessionParameters.ClientMemoryLimit),
-		handleParameterCreate(d, sdk.TaskParameterClientMetadataRequestUseConnectionCtx, &createOpts.SessionParameters.ClientMetadataRequestUseConnectionCtx),
-		handleParameterCreate(d, sdk.TaskParameterClientPrefetchThreads, &createOpts.SessionParameters.ClientPrefetchThreads),
-		handleParameterCreate(d, sdk.TaskParameterClientResultChunkSize, &createOpts.SessionParameters.ClientResultChunkSize),
-		handleParameterCreate(d, sdk.TaskParameterClientResultColumnCaseInsensitive, &createOpts.SessionParameters.ClientResultColumnCaseInsensitive),
-		handleParameterCreate(d, sdk.TaskParameterClientSessionKeepAlive, &createOpts.SessionParameters.ClientSessionKeepAlive),
-		handleParameterCreate(d, sdk.TaskParameterClientSessionKeepAliveHeartbeatFrequency, &createOpts.SessionParameters.ClientSessionKeepAliveHeartbeatFrequency),
-		handleParameterCreateWithMapping(d, sdk.TaskParameterClientTimestampTypeMapping, &createOpts.SessionParameters.ClientTimestampTypeMapping, stringToStringEnumProvider(sdk.ToClientTimestampTypeMapping)),
-		handleParameterCreate(d, sdk.TaskParameterDateInputFormat, &createOpts.SessionParameters.DateInputFormat),
-		handleParameterCreate(d, sdk.TaskParameterDateOutputFormat, &createOpts.SessionParameters.DateOutputFormat),
-		handleParameterCreate(d, sdk.TaskParameterEnableUnloadPhysicalTypeOptimization, &createOpts.SessionParameters.EnableUnloadPhysicalTypeOptimization),
-		handleParameterCreate(d, sdk.TaskParameterErrorOnNondeterministicMerge, &createOpts.SessionParameters.ErrorOnNondeterministicMerge),
-		handleParameterCreate(d, sdk.TaskParameterErrorOnNondeterministicUpdate, &createOpts.SessionParameters.ErrorOnNondeterministicUpdate),
-		handleParameterCreateWithMapping(d, sdk.TaskParameterGeographyOutputFormat, &createOpts.SessionParameters.GeographyOutputFormat, stringToStringEnumProvider(sdk.ToGeographyOutputFormat)),
-		handleParameterCreateWithMapping(d, sdk.TaskParameterGeometryOutputFormat, &createOpts.SessionParameters.GeometryOutputFormat, stringToStringEnumProvider(sdk.ToGeometryOutputFormat)),
-		handleParameterCreate(d, sdk.TaskParameterJdbcTreatTimestampNtzAsUtc, &createOpts.SessionParameters.JdbcTreatTimestampNtzAsUtc),
-		handleParameterCreate(d, sdk.TaskParameterJdbcUseSessionTimezone, &createOpts.SessionParameters.JdbcUseSessionTimezone),
-		handleParameterCreate(d, sdk.TaskParameterJsonIndent, &createOpts.SessionParameters.JsonIndent),
-		handleParameterCreate(d, sdk.TaskParameterLockTimeout, &createOpts.SessionParameters.LockTimeout),
-		handleParameterCreateWithMapping(d, sdk.TaskParameterLogLevel, &createOpts.SessionParameters.LogLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
-		handleParameterCreateWithMapping(d, sdk.TaskParameterLogEventLevel, &createOpts.SessionParameters.LogEventLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
-		handleParameterCreate(d, sdk.TaskParameterMultiStatementCount, &createOpts.SessionParameters.MultiStatementCount),
-		handleParameterCreate(d, sdk.TaskParameterNoorderSequenceAsDefault, &createOpts.SessionParameters.NoorderSequenceAsDefault),
-		handleParameterCreate(d, sdk.TaskParameterOdbcTreatDecimalAsInt, &createOpts.SessionParameters.OdbcTreatDecimalAsInt),
-		handleParameterCreate(d, sdk.TaskParameterQueryTag, &createOpts.SessionParameters.QueryTag),
-		handleParameterCreate(d, sdk.TaskParameterQuotedIdentifiersIgnoreCase, &createOpts.SessionParameters.QuotedIdentifiersIgnoreCase),
-		handleParameterCreate(d, sdk.TaskParameterRowsPerResultset, &createOpts.SessionParameters.RowsPerResultset),
-		handleParameterCreate(d, sdk.TaskParameterS3StageVpceDnsName, &createOpts.SessionParameters.S3StageVpceDnsName),
-		handleParameterCreate(d, sdk.TaskParameterStatementQueuedTimeoutInSeconds, &createOpts.SessionParameters.StatementQueuedTimeoutInSeconds),
-		handleParameterCreate(d, sdk.TaskParameterStatementTimeoutInSeconds, &createOpts.SessionParameters.StatementTimeoutInSeconds),
-		handleParameterCreate(d, sdk.TaskParameterStrictJsonOutput, &createOpts.SessionParameters.StrictJsonOutput),
-		handleParameterCreate(d, sdk.TaskParameterTimestampDayIsAlways24h, &createOpts.SessionParameters.TimestampDayIsAlways24h),
-		handleParameterCreate(d, sdk.TaskParameterTimestampInputFormat, &createOpts.SessionParameters.TimestampInputFormat),
-		handleParameterCreate(d, sdk.TaskParameterTimestampLtzOutputFormat, &createOpts.SessionParameters.TimestampLTZOutputFormat),
-		handleParameterCreate(d, sdk.TaskParameterTimestampNtzOutputFormat, &createOpts.SessionParameters.TimestampNTZOutputFormat),
-		handleParameterCreate(d, sdk.TaskParameterTimestampOutputFormat, &createOpts.SessionParameters.TimestampOutputFormat),
-		handleParameterCreateWithMapping(d, sdk.TaskParameterTimestampTypeMapping, &createOpts.SessionParameters.TimestampTypeMapping, stringToStringEnumProvider(sdk.ToTimestampTypeMapping)),
-		handleParameterCreate(d, sdk.TaskParameterTimestampTzOutputFormat, &createOpts.SessionParameters.TimestampTZOutputFormat),
-		handleParameterCreate(d, sdk.TaskParameterTimezone, &createOpts.SessionParameters.Timezone),
-		handleParameterCreate(d, sdk.TaskParameterTimeInputFormat, &createOpts.SessionParameters.TimeInputFormat),
-		handleParameterCreate(d, sdk.TaskParameterTimeOutputFormat, &createOpts.SessionParameters.TimeOutputFormat),
-		handleParameterCreateWithMapping(d, sdk.TaskParameterTraceLevel, &createOpts.SessionParameters.TraceLevel, stringToStringEnumProvider(sdk.ToTraceLevel)),
-		handleParameterCreate(d, sdk.TaskParameterTransactionAbortOnError, &createOpts.SessionParameters.TransactionAbortOnError),
-		handleParameterCreateWithMapping(d, sdk.TaskParameterTransactionDefaultIsolationLevel, &createOpts.SessionParameters.TransactionDefaultIsolationLevel, stringToStringEnumProvider(sdk.ToTransactionDefaultIsolationLevel)),
-		handleParameterCreate(d, sdk.TaskParameterTwoDigitCenturyStart, &createOpts.SessionParameters.TwoDigitCenturyStart),
-		handleParameterCreateWithMapping(d, sdk.TaskParameterUnsupportedDdlAction, &createOpts.SessionParameters.UnsupportedDDLAction, stringToStringEnumProvider(sdk.ToUnsupportedDDLAction)),
-		handleParameterCreate(d, sdk.TaskParameterUseCachedResult, &createOpts.SessionParameters.UseCachedResult),
-		handleParameterCreate(d, sdk.TaskParameterWeekOfYearPolicy, &createOpts.SessionParameters.WeekOfYearPolicy),
-		handleParameterCreate(d, sdk.TaskParameterWeekStart, &createOpts.SessionParameters.WeekStart),
+		handleParameterCreate(d, sdk.TaskParameterAbortDetachedQuery, &createOpts.AbortDetachedQuery),
+		handleParameterCreateWithMapping(d, sdk.TaskParameterBinaryInputFormat, &createOpts.BinaryInputFormat, stringToStringEnumProvider(sdk.ToBinaryInputFormat)),
+		handleParameterCreateWithMapping(d, sdk.TaskParameterBinaryOutputFormat, &createOpts.BinaryOutputFormat, stringToStringEnumProvider(sdk.ToBinaryOutputFormat)),
+		handleParameterCreate(d, sdk.TaskParameterClientMemoryLimit, &createOpts.ClientMemoryLimit),
+		handleParameterCreate(d, sdk.TaskParameterClientMetadataRequestUseConnectionCtx, &createOpts.ClientMetadataRequestUseConnectionCtx),
+		handleParameterCreate(d, sdk.TaskParameterClientPrefetchThreads, &createOpts.ClientPrefetchThreads),
+		handleParameterCreate(d, sdk.TaskParameterClientResultChunkSize, &createOpts.ClientResultChunkSize),
+		handleParameterCreate(d, sdk.TaskParameterClientResultColumnCaseInsensitive, &createOpts.ClientResultColumnCaseInsensitive),
+		handleParameterCreate(d, sdk.TaskParameterClientSessionKeepAlive, &createOpts.ClientSessionKeepAlive),
+		handleParameterCreate(d, sdk.TaskParameterClientSessionKeepAliveHeartbeatFrequency, &createOpts.ClientSessionKeepAliveHeartbeatFrequency),
+		handleParameterCreateWithMapping(d, sdk.TaskParameterClientTimestampTypeMapping, &createOpts.ClientTimestampTypeMapping, stringToStringEnumProvider(sdk.ToClientTimestampTypeMapping)),
+		handleParameterCreate(d, sdk.TaskParameterDateInputFormat, &createOpts.DateInputFormat),
+		handleParameterCreate(d, sdk.TaskParameterDateOutputFormat, &createOpts.DateOutputFormat),
+		handleParameterCreate(d, sdk.TaskParameterEnableUnloadPhysicalTypeOptimization, &createOpts.EnableUnloadPhysicalTypeOptimization),
+		handleParameterCreate(d, sdk.TaskParameterErrorOnNondeterministicMerge, &createOpts.ErrorOnNondeterministicMerge),
+		handleParameterCreate(d, sdk.TaskParameterErrorOnNondeterministicUpdate, &createOpts.ErrorOnNondeterministicUpdate),
+		handleParameterCreateWithMapping(d, sdk.TaskParameterGeographyOutputFormat, &createOpts.GeographyOutputFormat, stringToStringEnumProvider(sdk.ToGeographyOutputFormat)),
+		handleParameterCreateWithMapping(d, sdk.TaskParameterGeometryOutputFormat, &createOpts.GeometryOutputFormat, stringToStringEnumProvider(sdk.ToGeometryOutputFormat)),
+		handleParameterCreate(d, sdk.TaskParameterJdbcTreatTimestampNtzAsUtc, &createOpts.JdbcTreatTimestampNtzAsUtc),
+		handleParameterCreate(d, sdk.TaskParameterJdbcUseSessionTimezone, &createOpts.JdbcUseSessionTimezone),
+		handleParameterCreate(d, sdk.TaskParameterJsonIndent, &createOpts.JsonIndent),
+		handleParameterCreate(d, sdk.TaskParameterLockTimeout, &createOpts.LockTimeout),
+		handleParameterCreateWithMapping(d, sdk.TaskParameterLogLevel, &createOpts.LogLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
+		handleParameterCreateWithMapping(d, sdk.TaskParameterLogEventLevel, &createOpts.LogEventLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
+		handleParameterCreate(d, sdk.TaskParameterMultiStatementCount, &createOpts.MultiStatementCount),
+		handleParameterCreate(d, sdk.TaskParameterNoorderSequenceAsDefault, &createOpts.NoorderSequenceAsDefault),
+		handleParameterCreate(d, sdk.TaskParameterOdbcTreatDecimalAsInt, &createOpts.OdbcTreatDecimalAsInt),
+		handleParameterCreate(d, sdk.TaskParameterQueryTag, &createOpts.QueryTag),
+		handleParameterCreate(d, sdk.TaskParameterQuotedIdentifiersIgnoreCase, &createOpts.QuotedIdentifiersIgnoreCase),
+		handleParameterCreate(d, sdk.TaskParameterRowsPerResultset, &createOpts.RowsPerResultset),
+		handleParameterCreate(d, sdk.TaskParameterS3StageVpceDnsName, &createOpts.S3StageVpceDnsName),
+		handleParameterCreate(d, sdk.TaskParameterStatementQueuedTimeoutInSeconds, &createOpts.StatementQueuedTimeoutInSeconds),
+		handleParameterCreate(d, sdk.TaskParameterStatementTimeoutInSeconds, &createOpts.StatementTimeoutInSeconds),
+		handleParameterCreate(d, sdk.TaskParameterStrictJsonOutput, &createOpts.StrictJsonOutput),
+		handleParameterCreate(d, sdk.TaskParameterTimestampDayIsAlways24h, &createOpts.TimestampDayIsAlways24H),
+		handleParameterCreate(d, sdk.TaskParameterTimestampInputFormat, &createOpts.TimestampInputFormat),
+		handleParameterCreate(d, sdk.TaskParameterTimestampLtzOutputFormat, &createOpts.TimestampLtzOutputFormat),
+		handleParameterCreate(d, sdk.TaskParameterTimestampNtzOutputFormat, &createOpts.TimestampNtzOutputFormat),
+		handleParameterCreate(d, sdk.TaskParameterTimestampOutputFormat, &createOpts.TimestampOutputFormat),
+		handleParameterCreateWithMapping(d, sdk.TaskParameterTimestampTypeMapping, &createOpts.TimestampTypeMapping, stringToStringEnumProvider(sdk.ToTimestampTypeMapping)),
+		handleParameterCreate(d, sdk.TaskParameterTimestampTzOutputFormat, &createOpts.TimestampTzOutputFormat),
+		handleParameterCreate(d, sdk.TaskParameterTimezone, &createOpts.Timezone),
+		handleParameterCreate(d, sdk.TaskParameterTimeInputFormat, &createOpts.TimeInputFormat),
+		handleParameterCreate(d, sdk.TaskParameterTimeOutputFormat, &createOpts.TimeOutputFormat),
+		handleParameterCreateWithMapping(d, sdk.TaskParameterTraceLevel, &createOpts.TraceLevel, stringToStringEnumProvider(sdk.ToTraceLevel)),
+		handleParameterCreate(d, sdk.TaskParameterTransactionAbortOnError, &createOpts.TransactionAbortOnError),
+		handleParameterCreateWithMapping(d, sdk.TaskParameterTransactionDefaultIsolationLevel, &createOpts.TransactionDefaultIsolationLevel, stringToStringEnumProvider(sdk.ToTransactionDefaultIsolationLevel)),
+		handleParameterCreate(d, sdk.TaskParameterTwoDigitCenturyStart, &createOpts.TwoDigitCenturyStart),
+		handleParameterCreateWithMapping(d, sdk.TaskParameterUnsupportedDdlAction, &createOpts.UnsupportedDdlAction, stringToStringEnumProvider(sdk.ToUnsupportedDDLAction)),
+		handleParameterCreate(d, sdk.TaskParameterUseCachedResult, &createOpts.UseCachedResult),
+		handleParameterCreate(d, sdk.TaskParameterWeekOfYearPolicy, &createOpts.WeekOfYearPolicy),
+		handleParameterCreate(d, sdk.TaskParameterWeekStart, &createOpts.WeekStart),
 		func() diag.Diagnostics {
 			key := strings.ToLower(string(sdk.TaskParameterAutocommit))
 			if v := GetConfigPropertyAsPointerAllowingZeroValue[bool](d, key); v != nil {
-				createOpts.SessionParameters.Autocommit = v
+				createOpts.Autocommit = v
 				if !*v {
 					return diag.Diagnostics{
 						diag.Diagnostic{
@@ -359,7 +358,6 @@ func handleTaskParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateTa
 		func() diag.Diagnostics {
 			key := strings.ToLower(string(sdk.TaskParameterSearchPath))
 			if v := GetConfigPropertyAsPointerAllowingZeroValue[string](d, key); v != nil {
-				createOpts.SessionParameters.SearchPath = v
 				return diag.Diagnostics{
 					diag.Diagnostic{
 						Severity: diag.Warning,
@@ -370,15 +368,10 @@ func handleTaskParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateTa
 			return nil
 		}(),
 	)
-	if *createOpts.SessionParameters == (sdk.SessionParameters{}) {
-		createOpts.SessionParameters = nil
-	}
 	return diags
 }
 
 func handleTaskParametersUpdate(d *schema.ResourceData, set *sdk.TaskSetRequest, unset *sdk.TaskUnsetRequest) diag.Diagnostics {
-	set.WithSessionParameters(sdk.SessionParameters{})
-	unset.WithSessionParametersUnset(sdk.SessionParametersUnset{})
 	diags := JoinDiags(
 		// task parameters
 		handleParameterUpdateWithMapping(d, sdk.TaskParameterUserTaskManagedInitialWarehouseSize, &set.UserTaskManagedInitialWarehouseSize, &unset.UserTaskManagedInitialWarehouseSize, stringToStringEnumProvider(sdk.ToWarehouseSize)),
@@ -389,58 +382,58 @@ func handleTaskParametersUpdate(d *schema.ResourceData, set *sdk.TaskSetRequest,
 		handleParameterUpdateWithMapping(d, sdk.TaskParameterServerlessTaskMinStatementSize, &set.ServerlessTaskMinStatementSize, &unset.ServerlessTaskMinStatementSize, stringToStringEnumProvider(sdk.ToWarehouseSize)),
 		handleParameterUpdateWithMapping(d, sdk.TaskParameterServerlessTaskMaxStatementSize, &set.ServerlessTaskMaxStatementSize, &unset.ServerlessTaskMaxStatementSize, stringToStringEnumProvider(sdk.ToWarehouseSize)),
 		// session parameters
-		handleParameterUpdate(d, sdk.TaskParameterAbortDetachedQuery, &set.SessionParameters.AbortDetachedQuery, &unset.SessionParametersUnset.AbortDetachedQuery),
-		handleParameterUpdateWithMapping(d, sdk.TaskParameterBinaryInputFormat, &set.SessionParameters.BinaryInputFormat, &unset.SessionParametersUnset.BinaryInputFormat, stringToStringEnumProvider(sdk.ToBinaryInputFormat)),
-		handleParameterUpdateWithMapping(d, sdk.TaskParameterBinaryOutputFormat, &set.SessionParameters.BinaryOutputFormat, &unset.SessionParametersUnset.BinaryOutputFormat, stringToStringEnumProvider(sdk.ToBinaryOutputFormat)),
-		handleParameterUpdate(d, sdk.TaskParameterClientMemoryLimit, &set.SessionParameters.ClientMemoryLimit, &unset.SessionParametersUnset.ClientMemoryLimit),
-		handleParameterUpdate(d, sdk.TaskParameterClientMetadataRequestUseConnectionCtx, &set.SessionParameters.ClientMetadataRequestUseConnectionCtx, &unset.SessionParametersUnset.ClientMetadataRequestUseConnectionCtx),
-		handleParameterUpdate(d, sdk.TaskParameterClientPrefetchThreads, &set.SessionParameters.ClientPrefetchThreads, &unset.SessionParametersUnset.ClientPrefetchThreads),
-		handleParameterUpdate(d, sdk.TaskParameterClientResultChunkSize, &set.SessionParameters.ClientResultChunkSize, &unset.SessionParametersUnset.ClientResultChunkSize),
-		handleParameterUpdate(d, sdk.TaskParameterClientResultColumnCaseInsensitive, &set.SessionParameters.ClientResultColumnCaseInsensitive, &unset.SessionParametersUnset.ClientResultColumnCaseInsensitive),
-		handleParameterUpdate(d, sdk.TaskParameterClientSessionKeepAlive, &set.SessionParameters.ClientSessionKeepAlive, &unset.SessionParametersUnset.ClientSessionKeepAlive),
-		handleParameterUpdate(d, sdk.TaskParameterClientSessionKeepAliveHeartbeatFrequency, &set.SessionParameters.ClientSessionKeepAliveHeartbeatFrequency, &unset.SessionParametersUnset.ClientSessionKeepAliveHeartbeatFrequency),
-		handleParameterUpdateWithMapping(d, sdk.TaskParameterClientTimestampTypeMapping, &set.SessionParameters.ClientTimestampTypeMapping, &unset.SessionParametersUnset.ClientTimestampTypeMapping, stringToStringEnumProvider(sdk.ToClientTimestampTypeMapping)),
-		handleParameterUpdate(d, sdk.TaskParameterDateInputFormat, &set.SessionParameters.DateInputFormat, &unset.SessionParametersUnset.DateInputFormat),
-		handleParameterUpdate(d, sdk.TaskParameterDateOutputFormat, &set.SessionParameters.DateOutputFormat, &unset.SessionParametersUnset.DateOutputFormat),
-		handleParameterUpdate(d, sdk.TaskParameterEnableUnloadPhysicalTypeOptimization, &set.SessionParameters.EnableUnloadPhysicalTypeOptimization, &unset.SessionParametersUnset.EnableUnloadPhysicalTypeOptimization),
-		handleParameterUpdate(d, sdk.TaskParameterErrorOnNondeterministicMerge, &set.SessionParameters.ErrorOnNondeterministicMerge, &unset.SessionParametersUnset.ErrorOnNondeterministicMerge),
-		handleParameterUpdate(d, sdk.TaskParameterErrorOnNondeterministicUpdate, &set.SessionParameters.ErrorOnNondeterministicUpdate, &unset.SessionParametersUnset.ErrorOnNondeterministicUpdate),
-		handleParameterUpdateWithMapping(d, sdk.TaskParameterGeographyOutputFormat, &set.SessionParameters.GeographyOutputFormat, &unset.SessionParametersUnset.GeographyOutputFormat, stringToStringEnumProvider(sdk.ToGeographyOutputFormat)),
-		handleParameterUpdateWithMapping(d, sdk.TaskParameterGeometryOutputFormat, &set.SessionParameters.GeometryOutputFormat, &unset.SessionParametersUnset.GeometryOutputFormat, stringToStringEnumProvider(sdk.ToGeometryOutputFormat)),
-		handleParameterUpdate(d, sdk.TaskParameterJdbcTreatTimestampNtzAsUtc, &set.SessionParameters.JdbcTreatTimestampNtzAsUtc, &unset.SessionParametersUnset.JdbcTreatTimestampNtzAsUtc),
-		handleParameterUpdate(d, sdk.TaskParameterJdbcUseSessionTimezone, &set.SessionParameters.JdbcUseSessionTimezone, &unset.SessionParametersUnset.JdbcUseSessionTimezone),
-		handleParameterUpdate(d, sdk.TaskParameterJsonIndent, &set.SessionParameters.JsonIndent, &unset.SessionParametersUnset.JsonIndent),
-		handleParameterUpdate(d, sdk.TaskParameterLockTimeout, &set.SessionParameters.LockTimeout, &unset.SessionParametersUnset.LockTimeout),
-		handleParameterUpdateWithMapping(d, sdk.TaskParameterLogLevel, &set.SessionParameters.LogLevel, &unset.SessionParametersUnset.LogLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
-		handleParameterUpdateWithMapping(d, sdk.TaskParameterLogEventLevel, &set.SessionParameters.LogEventLevel, &unset.SessionParametersUnset.LogEventLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
-		handleParameterUpdate(d, sdk.TaskParameterMultiStatementCount, &set.SessionParameters.MultiStatementCount, &unset.SessionParametersUnset.MultiStatementCount),
-		handleParameterUpdate(d, sdk.TaskParameterNoorderSequenceAsDefault, &set.SessionParameters.NoorderSequenceAsDefault, &unset.SessionParametersUnset.NoorderSequenceAsDefault),
-		handleParameterUpdate(d, sdk.TaskParameterOdbcTreatDecimalAsInt, &set.SessionParameters.OdbcTreatDecimalAsInt, &unset.SessionParametersUnset.OdbcTreatDecimalAsInt),
-		handleParameterUpdate(d, sdk.TaskParameterQueryTag, &set.SessionParameters.QueryTag, &unset.SessionParametersUnset.QueryTag),
-		handleParameterUpdate(d, sdk.TaskParameterQuotedIdentifiersIgnoreCase, &set.SessionParameters.QuotedIdentifiersIgnoreCase, &unset.SessionParametersUnset.QuotedIdentifiersIgnoreCase),
-		handleParameterUpdate(d, sdk.TaskParameterRowsPerResultset, &set.SessionParameters.RowsPerResultset, &unset.SessionParametersUnset.RowsPerResultset),
-		handleParameterUpdate(d, sdk.TaskParameterS3StageVpceDnsName, &set.SessionParameters.S3StageVpceDnsName, &unset.SessionParametersUnset.S3StageVpceDnsName),
-		handleParameterUpdate(d, sdk.TaskParameterStatementQueuedTimeoutInSeconds, &set.SessionParameters.StatementQueuedTimeoutInSeconds, &unset.SessionParametersUnset.StatementQueuedTimeoutInSeconds),
-		handleParameterUpdate(d, sdk.TaskParameterStatementTimeoutInSeconds, &set.SessionParameters.StatementTimeoutInSeconds, &unset.SessionParametersUnset.StatementTimeoutInSeconds),
-		handleParameterUpdate(d, sdk.TaskParameterStrictJsonOutput, &set.SessionParameters.StrictJsonOutput, &unset.SessionParametersUnset.StrictJsonOutput),
-		handleParameterUpdate(d, sdk.TaskParameterTimestampDayIsAlways24h, &set.SessionParameters.TimestampDayIsAlways24h, &unset.SessionParametersUnset.TimestampDayIsAlways24h),
-		handleParameterUpdate(d, sdk.TaskParameterTimestampInputFormat, &set.SessionParameters.TimestampInputFormat, &unset.SessionParametersUnset.TimestampInputFormat),
-		handleParameterUpdate(d, sdk.TaskParameterTimestampLtzOutputFormat, &set.SessionParameters.TimestampLTZOutputFormat, &unset.SessionParametersUnset.TimestampLTZOutputFormat),
-		handleParameterUpdate(d, sdk.TaskParameterTimestampNtzOutputFormat, &set.SessionParameters.TimestampNTZOutputFormat, &unset.SessionParametersUnset.TimestampNTZOutputFormat),
-		handleParameterUpdate(d, sdk.TaskParameterTimestampOutputFormat, &set.SessionParameters.TimestampOutputFormat, &unset.SessionParametersUnset.TimestampOutputFormat),
-		handleParameterUpdateWithMapping(d, sdk.TaskParameterTimestampTypeMapping, &set.SessionParameters.TimestampTypeMapping, &unset.SessionParametersUnset.TimestampTypeMapping, stringToStringEnumProvider(sdk.ToTimestampTypeMapping)),
-		handleParameterUpdate(d, sdk.TaskParameterTimestampTzOutputFormat, &set.SessionParameters.TimestampTZOutputFormat, &unset.SessionParametersUnset.TimestampTZOutputFormat),
-		handleParameterUpdate(d, sdk.TaskParameterTimezone, &set.SessionParameters.Timezone, &unset.SessionParametersUnset.Timezone),
-		handleParameterUpdate(d, sdk.TaskParameterTimeInputFormat, &set.SessionParameters.TimeInputFormat, &unset.SessionParametersUnset.TimeInputFormat),
-		handleParameterUpdate(d, sdk.TaskParameterTimeOutputFormat, &set.SessionParameters.TimeOutputFormat, &unset.SessionParametersUnset.TimeOutputFormat),
-		handleParameterUpdateWithMapping(d, sdk.TaskParameterTraceLevel, &set.SessionParameters.TraceLevel, &unset.SessionParametersUnset.TraceLevel, stringToStringEnumProvider(sdk.ToTraceLevel)),
-		handleParameterUpdate(d, sdk.TaskParameterTransactionAbortOnError, &set.SessionParameters.TransactionAbortOnError, &unset.SessionParametersUnset.TransactionAbortOnError),
-		handleParameterUpdateWithMapping(d, sdk.TaskParameterTransactionDefaultIsolationLevel, &set.SessionParameters.TransactionDefaultIsolationLevel, &unset.SessionParametersUnset.TransactionDefaultIsolationLevel, stringToStringEnumProvider(sdk.ToTransactionDefaultIsolationLevel)),
-		handleParameterUpdate(d, sdk.TaskParameterTwoDigitCenturyStart, &set.SessionParameters.TwoDigitCenturyStart, &unset.SessionParametersUnset.TwoDigitCenturyStart),
-		handleParameterUpdateWithMapping(d, sdk.TaskParameterUnsupportedDdlAction, &set.SessionParameters.UnsupportedDDLAction, &unset.SessionParametersUnset.UnsupportedDDLAction, stringToStringEnumProvider(sdk.ToUnsupportedDDLAction)),
-		handleParameterUpdate(d, sdk.TaskParameterUseCachedResult, &set.SessionParameters.UseCachedResult, &unset.SessionParametersUnset.UseCachedResult),
-		handleParameterUpdate(d, sdk.TaskParameterWeekOfYearPolicy, &set.SessionParameters.WeekOfYearPolicy, &unset.SessionParametersUnset.WeekOfYearPolicy),
-		handleParameterUpdate(d, sdk.TaskParameterWeekStart, &set.SessionParameters.WeekStart, &unset.SessionParametersUnset.WeekStart),
+		handleParameterUpdate(d, sdk.TaskParameterAbortDetachedQuery, &set.AbortDetachedQuery, &unset.AbortDetachedQuery),
+		handleParameterUpdateWithMapping(d, sdk.TaskParameterBinaryInputFormat, &set.BinaryInputFormat, &unset.BinaryInputFormat, stringToStringEnumProvider(sdk.ToBinaryInputFormat)),
+		handleParameterUpdateWithMapping(d, sdk.TaskParameterBinaryOutputFormat, &set.BinaryOutputFormat, &unset.BinaryOutputFormat, stringToStringEnumProvider(sdk.ToBinaryOutputFormat)),
+		handleParameterUpdate(d, sdk.TaskParameterClientMemoryLimit, &set.ClientMemoryLimit, &unset.ClientMemoryLimit),
+		handleParameterUpdate(d, sdk.TaskParameterClientMetadataRequestUseConnectionCtx, &set.ClientMetadataRequestUseConnectionCtx, &unset.ClientMetadataRequestUseConnectionCtx),
+		handleParameterUpdate(d, sdk.TaskParameterClientPrefetchThreads, &set.ClientPrefetchThreads, &unset.ClientPrefetchThreads),
+		handleParameterUpdate(d, sdk.TaskParameterClientResultChunkSize, &set.ClientResultChunkSize, &unset.ClientResultChunkSize),
+		handleParameterUpdate(d, sdk.TaskParameterClientResultColumnCaseInsensitive, &set.ClientResultColumnCaseInsensitive, &unset.ClientResultColumnCaseInsensitive),
+		handleParameterUpdate(d, sdk.TaskParameterClientSessionKeepAlive, &set.ClientSessionKeepAlive, &unset.ClientSessionKeepAlive),
+		handleParameterUpdate(d, sdk.TaskParameterClientSessionKeepAliveHeartbeatFrequency, &set.ClientSessionKeepAliveHeartbeatFrequency, &unset.ClientSessionKeepAliveHeartbeatFrequency),
+		handleParameterUpdateWithMapping(d, sdk.TaskParameterClientTimestampTypeMapping, &set.ClientTimestampTypeMapping, &unset.ClientTimestampTypeMapping, stringToStringEnumProvider(sdk.ToClientTimestampTypeMapping)),
+		handleParameterUpdate(d, sdk.TaskParameterDateInputFormat, &set.DateInputFormat, &unset.DateInputFormat),
+		handleParameterUpdate(d, sdk.TaskParameterDateOutputFormat, &set.DateOutputFormat, &unset.DateOutputFormat),
+		handleParameterUpdate(d, sdk.TaskParameterEnableUnloadPhysicalTypeOptimization, &set.EnableUnloadPhysicalTypeOptimization, &unset.EnableUnloadPhysicalTypeOptimization),
+		handleParameterUpdate(d, sdk.TaskParameterErrorOnNondeterministicMerge, &set.ErrorOnNondeterministicMerge, &unset.ErrorOnNondeterministicMerge),
+		handleParameterUpdate(d, sdk.TaskParameterErrorOnNondeterministicUpdate, &set.ErrorOnNondeterministicUpdate, &unset.ErrorOnNondeterministicUpdate),
+		handleParameterUpdateWithMapping(d, sdk.TaskParameterGeographyOutputFormat, &set.GeographyOutputFormat, &unset.GeographyOutputFormat, stringToStringEnumProvider(sdk.ToGeographyOutputFormat)),
+		handleParameterUpdateWithMapping(d, sdk.TaskParameterGeometryOutputFormat, &set.GeometryOutputFormat, &unset.GeometryOutputFormat, stringToStringEnumProvider(sdk.ToGeometryOutputFormat)),
+		handleParameterUpdate(d, sdk.TaskParameterJdbcTreatTimestampNtzAsUtc, &set.JdbcTreatTimestampNtzAsUtc, &unset.JdbcTreatTimestampNtzAsUtc),
+		handleParameterUpdate(d, sdk.TaskParameterJdbcUseSessionTimezone, &set.JdbcUseSessionTimezone, &unset.JdbcUseSessionTimezone),
+		handleParameterUpdate(d, sdk.TaskParameterJsonIndent, &set.JsonIndent, &unset.JsonIndent),
+		handleParameterUpdate(d, sdk.TaskParameterLockTimeout, &set.LockTimeout, &unset.LockTimeout),
+		handleParameterUpdateWithMapping(d, sdk.TaskParameterLogLevel, &set.LogLevel, &unset.LogLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
+		handleParameterUpdateWithMapping(d, sdk.TaskParameterLogEventLevel, &set.LogEventLevel, &unset.LogEventLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
+		handleParameterUpdate(d, sdk.TaskParameterMultiStatementCount, &set.MultiStatementCount, &unset.MultiStatementCount),
+		handleParameterUpdate(d, sdk.TaskParameterNoorderSequenceAsDefault, &set.NoorderSequenceAsDefault, &unset.NoorderSequenceAsDefault),
+		handleParameterUpdate(d, sdk.TaskParameterOdbcTreatDecimalAsInt, &set.OdbcTreatDecimalAsInt, &unset.OdbcTreatDecimalAsInt),
+		handleParameterUpdate(d, sdk.TaskParameterQueryTag, &set.QueryTag, &unset.QueryTag),
+		handleParameterUpdate(d, sdk.TaskParameterQuotedIdentifiersIgnoreCase, &set.QuotedIdentifiersIgnoreCase, &unset.QuotedIdentifiersIgnoreCase),
+		handleParameterUpdate(d, sdk.TaskParameterRowsPerResultset, &set.RowsPerResultset, &unset.RowsPerResultset),
+		handleParameterUpdate(d, sdk.TaskParameterS3StageVpceDnsName, &set.S3StageVpceDnsName, &unset.S3StageVpceDnsName),
+		handleParameterUpdate(d, sdk.TaskParameterStatementQueuedTimeoutInSeconds, &set.StatementQueuedTimeoutInSeconds, &unset.StatementQueuedTimeoutInSeconds),
+		handleParameterUpdate(d, sdk.TaskParameterStatementTimeoutInSeconds, &set.StatementTimeoutInSeconds, &unset.StatementTimeoutInSeconds),
+		handleParameterUpdate(d, sdk.TaskParameterStrictJsonOutput, &set.StrictJsonOutput, &unset.StrictJsonOutput),
+		handleParameterUpdate(d, sdk.TaskParameterTimestampDayIsAlways24h, &set.TimestampDayIsAlways24H, &unset.TimestampDayIsAlways24H),
+		handleParameterUpdate(d, sdk.TaskParameterTimestampInputFormat, &set.TimestampInputFormat, &unset.TimestampInputFormat),
+		handleParameterUpdate(d, sdk.TaskParameterTimestampLtzOutputFormat, &set.TimestampLtzOutputFormat, &unset.TimestampLtzOutputFormat),
+		handleParameterUpdate(d, sdk.TaskParameterTimestampNtzOutputFormat, &set.TimestampNtzOutputFormat, &unset.TimestampNtzOutputFormat),
+		handleParameterUpdate(d, sdk.TaskParameterTimestampOutputFormat, &set.TimestampOutputFormat, &unset.TimestampOutputFormat),
+		handleParameterUpdateWithMapping(d, sdk.TaskParameterTimestampTypeMapping, &set.TimestampTypeMapping, &unset.TimestampTypeMapping, stringToStringEnumProvider(sdk.ToTimestampTypeMapping)),
+		handleParameterUpdate(d, sdk.TaskParameterTimestampTzOutputFormat, &set.TimestampTzOutputFormat, &unset.TimestampTzOutputFormat),
+		handleParameterUpdate(d, sdk.TaskParameterTimezone, &set.Timezone, &unset.Timezone),
+		handleParameterUpdate(d, sdk.TaskParameterTimeInputFormat, &set.TimeInputFormat, &unset.TimeInputFormat),
+		handleParameterUpdate(d, sdk.TaskParameterTimeOutputFormat, &set.TimeOutputFormat, &unset.TimeOutputFormat),
+		handleParameterUpdateWithMapping(d, sdk.TaskParameterTraceLevel, &set.TraceLevel, &unset.TraceLevel, stringToStringEnumProvider(sdk.ToTraceLevel)),
+		handleParameterUpdate(d, sdk.TaskParameterTransactionAbortOnError, &set.TransactionAbortOnError, &unset.TransactionAbortOnError),
+		handleParameterUpdateWithMapping(d, sdk.TaskParameterTransactionDefaultIsolationLevel, &set.TransactionDefaultIsolationLevel, &unset.TransactionDefaultIsolationLevel, stringToStringEnumProvider(sdk.ToTransactionDefaultIsolationLevel)),
+		handleParameterUpdate(d, sdk.TaskParameterTwoDigitCenturyStart, &set.TwoDigitCenturyStart, &unset.TwoDigitCenturyStart),
+		handleParameterUpdateWithMapping(d, sdk.TaskParameterUnsupportedDdlAction, &set.UnsupportedDdlAction, &unset.UnsupportedDdlAction, stringToStringEnumProvider(sdk.ToUnsupportedDDLAction)),
+		handleParameterUpdate(d, sdk.TaskParameterUseCachedResult, &set.UseCachedResult, &unset.UseCachedResult),
+		handleParameterUpdate(d, sdk.TaskParameterWeekOfYearPolicy, &set.WeekOfYearPolicy, &unset.WeekOfYearPolicy),
+		handleParameterUpdate(d, sdk.TaskParameterWeekStart, &set.WeekStart, &unset.WeekStart),
 		func() diag.Diagnostics {
 			key := strings.ToLower(string(sdk.TaskParameterAutocommit))
 			if d.HasChange(key) || !d.GetRawPlan().AsValueMap()[key].IsKnown() {
@@ -453,9 +446,9 @@ func handleTaskParametersUpdate(d *schema.ResourceData, set *sdk.TaskSetRequest,
 							},
 						}
 					}
-					set.SessionParameters.Autocommit = sdk.Bool(true)
+					set.Autocommit = sdk.Bool(true)
 				} else {
-					unset.SessionParametersUnset.Autocommit = sdk.Bool(true)
+					unset.Autocommit = sdk.Bool(true)
 				}
 			}
 			return nil
@@ -464,26 +457,16 @@ func handleTaskParametersUpdate(d *schema.ResourceData, set *sdk.TaskSetRequest,
 			key := strings.ToLower(string(sdk.TaskParameterSearchPath))
 			if d.HasChange(key) || !d.GetRawPlan().AsValueMap()[key].IsKnown() {
 				if !d.GetRawConfig().AsValueMap()[key].IsNull() {
-					value := d.Get(key).(string)
-					set.SessionParameters.SearchPath = sdk.String(value)
 					return diag.Diagnostics{
 						diag.Diagnostic{
 							Severity: diag.Warning,
 							Summary:  "Invalid value for SEARCH_PATH parameter: cannot be set on a task",
 						},
 					}
-				} else {
-					unset.SessionParametersUnset.SearchPath = sdk.Bool(true)
 				}
 			}
 			return nil
 		}(),
 	)
-	if *set.SessionParameters == (sdk.SessionParameters{}) {
-		set.SessionParameters = nil
-	}
-	if *unset.SessionParametersUnset == (sdk.SessionParametersUnset{}) {
-		unset.SessionParametersUnset = nil
-	}
 	return diags
 }

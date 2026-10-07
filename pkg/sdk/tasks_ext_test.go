@@ -30,13 +30,6 @@ func init() {
 				}
 			},
 		).
-		withAdditionalValidationCase(
-			"validation_Create_SessionParameters_shouldBeValid",
-			func(opts *CreateTaskOptions) {
-				opts.SessionParameters = &SessionParameters{JsonIndent: new(-1)}
-			},
-			errIntValue("SessionParameters", "JsonIndent", IntErrGreaterOrEqual, 0),
-		).
 		withExpectedSqlf(
 			case_Tasks_sql_Create_basic,
 			"CREATE TASK %s AS %s", tasksTestIdSchemaObjectIdentifier.FullyQualifiedName(), sql,
@@ -49,10 +42,8 @@ func init() {
 				opts.Schedule = new("10 MINUTE")
 				opts.Config = new(`{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`)
 				opts.AllowOverlappingExecution = new(true)
-				opts.SessionParameters = &SessionParameters{
-					JsonIndent:  new(10),
-					LockTimeout: new(5),
-				}
+				opts.JsonIndent = new(10)
+				opts.LockTimeout = new(5)
 				opts.UserTaskTimeoutMs = new(5)
 				opts.SuspendTaskAfterNumFailures = new(6)
 				opts.ErrorIntegration = new(NewAccountObjectIdentifier("some_error_integration"))
@@ -68,7 +59,7 @@ func init() {
 				opts.ExecuteAsUser = new(NewAccountObjectIdentifier("some_user"))
 				opts.When = new(`SYSTEM$STREAM_HAS_DATA('MYSTREAM')`)
 			},
-			`CREATE TASK IF NOT EXISTS %s WAREHOUSE = %s SCHEDULE = '10 MINUTE' CONFIG = $${"output_dir": "/temp/test_directory/", "learning_rate": 0.1}$$ ALLOW_OVERLAPPING_EXECUTION = true JSON_INDENT = 10, LOCK_TIMEOUT = 5 USER_TASK_TIMEOUT_MS = 5 SUSPEND_TASK_AFTER_NUM_FAILURES = 6 ERROR_INTEGRATION = "some_error_integration" COMMENT = 'some comment' FINALIZE = %s TASK_AUTO_RETRY_ATTEMPTS = 10 TAG (%s = 'v1') USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 10 TARGET_COMPLETION_INTERVAL = '10 MINUTES' SERVERLESS_TASK_MIN_STATEMENT_SIZE = 'SMALL' SERVERLESS_TASK_MAX_STATEMENT_SIZE = 'LARGE' AFTER %s EXECUTE AS USER "some_user" WHEN SYSTEM$STREAM_HAS_DATA('MYSTREAM') AS SELECT CURRENT_TIMESTAMP`,
+			`CREATE TASK IF NOT EXISTS %s WAREHOUSE = %s SCHEDULE = '10 MINUTE' CONFIG = $${"output_dir": "/temp/test_directory/", "learning_rate": 0.1}$$ ALLOW_OVERLAPPING_EXECUTION = true ERROR_INTEGRATION = "some_error_integration" COMMENT = 'some comment' FINALIZE = %s TAG (%s = 'v1') TARGET_COMPLETION_INTERVAL = '10 MINUTES' JSON_INDENT = 10 LOCK_TIMEOUT = 5 SERVERLESS_TASK_MAX_STATEMENT_SIZE = 'LARGE' SERVERLESS_TASK_MIN_STATEMENT_SIZE = 'SMALL' SUSPEND_TASK_AFTER_NUM_FAILURES = 6 TASK_AUTO_RETRY_ATTEMPTS = 10 USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 10 USER_TASK_TIMEOUT_MS = 5 AFTER %s EXECUTE AS USER "some_user" WHEN SYSTEM$STREAM_HAS_DATA('MYSTREAM') AS SELECT CURRENT_TIMESTAMP`,
 			tasksTestIdSchemaObjectIdentifier.FullyQualifiedName(), warehouseId.FullyQualifiedName(), finalizerId.FullyQualifiedName(), tagId.FullyQualifiedName(), otherTaskId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -110,13 +101,6 @@ func init() {
 				}
 			},
 		).
-		withAdditionalValidationCase(
-			"validation_CreateOrAlter_SessionParameters_shouldBeValid",
-			func(opts *CreateOrAlterTaskOptions) {
-				opts.SessionParameters = &SessionParameters{JsonIndent: new(-1)}
-			},
-			errIntValue("SessionParameters", "JsonIndent", IntErrGreaterOrEqual, 0),
-		).
 		withExpectedSqlf(
 			case_Tasks_sql_CreateOrAlter_basic,
 			"CREATE OR ALTER TASK %s AS %s", tasksTestIdSchemaObjectIdentifier.FullyQualifiedName(), sql,
@@ -129,10 +113,8 @@ func init() {
 				opts.Config = new(`{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`)
 				opts.AllowOverlappingExecution = new(true)
 				opts.UserTaskTimeoutMs = new(5)
-				opts.SessionParameters = &SessionParameters{
-					JsonIndent:  new(10),
-					LockTimeout: new(5),
-				}
+				opts.JsonIndent = new(10)
+				opts.LockTimeout = new(5)
 				opts.SuspendTaskAfterNumFailures = new(6)
 				opts.ErrorIntegration = new(NewAccountObjectIdentifier("some_error_integration"))
 				opts.Comment = new("some comment")
@@ -142,7 +124,7 @@ func init() {
 				opts.ExecuteAsUser = new(NewAccountObjectIdentifier("some_user"))
 				opts.When = new(`SYSTEM$STREAM_HAS_DATA('MYSTREAM')`)
 			},
-			`CREATE OR ALTER TASK %s WAREHOUSE = %s SCHEDULE = '10 MINUTE' CONFIG = $${"output_dir": "/temp/test_directory/", "learning_rate": 0.1}$$ ALLOW_OVERLAPPING_EXECUTION = true USER_TASK_TIMEOUT_MS = 5 JSON_INDENT = 10, LOCK_TIMEOUT = 5 SUSPEND_TASK_AFTER_NUM_FAILURES = 6 ERROR_INTEGRATION = "some_error_integration" COMMENT = 'some comment' FINALIZE = %s TASK_AUTO_RETRY_ATTEMPTS = 10 AFTER %s EXECUTE AS USER "some_user" WHEN SYSTEM$STREAM_HAS_DATA('MYSTREAM') AS SELECT CURRENT_TIMESTAMP`,
+			`CREATE OR ALTER TASK %s WAREHOUSE = %s SCHEDULE = '10 MINUTE' CONFIG = $${"output_dir": "/temp/test_directory/", "learning_rate": 0.1}$$ ALLOW_OVERLAPPING_EXECUTION = true ERROR_INTEGRATION = "some_error_integration" COMMENT = 'some comment' FINALIZE = %s JSON_INDENT = 10 LOCK_TIMEOUT = 5 SUSPEND_TASK_AFTER_NUM_FAILURES = 6 TASK_AUTO_RETRY_ATTEMPTS = 10 USER_TASK_TIMEOUT_MS = 5 AFTER %s EXECUTE AS USER "some_user" WHEN SYSTEM$STREAM_HAS_DATA('MYSTREAM') AS SELECT CURRENT_TIMESTAMP`,
 			tasksTestIdSchemaObjectIdentifier.FullyQualifiedName(), warehouseId.FullyQualifiedName(), finalizerId.FullyQualifiedName(), otherTaskId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -187,24 +169,6 @@ func init() {
 				}
 			},
 		).
-		withAdditionalValidationCase(
-			"validation_Alter_Set_SessionParameters_shouldBeValid",
-			func(opts *AlterTaskOptions) {
-				opts.Set = &TaskSet{
-					SessionParameters: &SessionParameters{JsonIndent: new(-1)},
-				}
-			},
-			errIntValue("SessionParameters", "JsonIndent", IntErrGreaterOrEqual, 0),
-		).
-		withAdditionalValidationCase(
-			"validation_Alter_Unset_SessionParametersUnset_shouldBeValid",
-			func(opts *AlterTaskOptions) {
-				opts.Unset = &TaskUnset{
-					SessionParametersUnset: &SessionParametersUnset{},
-				}
-			},
-			errAtLeastOneOf("SessionParametersUnset", "AbortDetachedQuery", "ActivePythonProfiler", "Autocommit", "BinaryInputFormat", "BinaryOutputFormat", "ClientEnableLogInfoStatementParameters", "ClientMemoryLimit", "ClientMetadataRequestUseConnectionCtx", "ClientPrefetchThreads", "ClientResultChunkSize", "ClientResultColumnCaseInsensitive", "ClientMetadataUseSessionDatabase", "ClientSessionKeepAlive", "ClientSessionKeepAliveHeartbeatFrequency", "ClientTimestampTypeMapping", "CsvTimestampFormat", "DateInputFormat", "DateOutputFormat", "EnableCortexAnalyst", "EnableGetDdlUseDataTypeAlias", "EnableUnloadPhysicalTypeOptimization", "ErrorOnNondeterministicMerge", "ErrorOnNondeterministicUpdate", "GeographyOutputFormat", "GeometryOutputFormat", "HybridTableLockTimeout", "JdbcTreatDecimalAsInt", "JdbcTreatTimestampNtzAsUtc", "JdbcUseSessionTimezone", "JsonIndent", "JsTreatIntegerAsBigInt", "LockTimeout", "LogLevel", "LogEventLevel", "MultiStatementCount", "NoorderSequenceAsDefault", "OdbcTreatDecimalAsInt", "PythonProfilerModules", "PythonProfilerTargetStage", "QueryTag", "QuotedIdentifiersIgnoreCase", "RowsPerResultset", "S3StageVpceDnsName", "SearchPath", "SimulatedDataSharingConsumer", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "StrictJsonOutput", "TimestampDayIsAlways24h", "TimestampInputFormat", "TimestampLTZOutputFormat", "TimestampNTZOutputFormat", "TimestampOutputFormat", "TimestampTypeMapping", "TimestampTZOutputFormat", "Timezone", "TimeInputFormat", "TimeOutputFormat", "TraceLevel", "TransactionAbortOnError", "TransactionDefaultIsolationLevel", "TwoDigitCenturyStart", "UnsupportedDDLAction", "UseCachedResult", "WeekOfYearPolicy", "WeekStart"),
-		).
 		withModifyAndExpectedSqlf(
 			case_Tasks_sql_Alter_Resume,
 			func(opts *AlterTaskOptions) { opts.Resume = new(true) },
@@ -236,7 +200,7 @@ func init() {
 					ServerlessTaskMaxStatementSize: new(WarehouseSizeXLarge),
 				}
 			},
-			"ALTER TASK %s SET USER_TASK_TIMEOUT_MS = 2000, COMMENT = 'some comment', TARGET_COMPLETION_INTERVAL = '15 MINUTES', SERVERLESS_TASK_MIN_STATEMENT_SIZE = 'XSMALL', SERVERLESS_TASK_MAX_STATEMENT_SIZE = 'XLARGE'",
+			"ALTER TASK %s SET COMMENT = 'some comment', TARGET_COMPLETION_INTERVAL = '15 MINUTES', SERVERLESS_TASK_MAX_STATEMENT_SIZE = 'XLARGE', SERVERLESS_TASK_MIN_STATEMENT_SIZE = 'XSMALL', USER_TASK_TIMEOUT_MS = 2000",
 			tasksTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -257,7 +221,7 @@ func init() {
 			"sql_Alter_Set_sessionParameter",
 			func(opts *AlterTaskOptions) {
 				opts.Set = &TaskSet{
-					SessionParameters: &SessionParameters{JsonIndent: new(15)},
+					JsonIndent: new(15),
 				}
 			},
 			"ALTER TASK %s SET JSON_INDENT = 15", tasksTestIdSchemaObjectIdentifier.FullyQualifiedName(),
@@ -273,7 +237,7 @@ func init() {
 					ServerlessTaskMaxStatementSize: new(true),
 				}
 			},
-			"ALTER TASK %s UNSET USER_TASK_TIMEOUT_MS, COMMENT, TARGET_COMPLETION_INTERVAL, SERVERLESS_TASK_MIN_STATEMENT_SIZE, SERVERLESS_TASK_MAX_STATEMENT_SIZE",
+			"ALTER TASK %s UNSET COMMENT, TARGET_COMPLETION_INTERVAL, SERVERLESS_TASK_MAX_STATEMENT_SIZE, SERVERLESS_TASK_MIN_STATEMENT_SIZE, USER_TASK_TIMEOUT_MS",
 			tasksTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
