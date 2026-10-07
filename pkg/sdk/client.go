@@ -88,6 +88,7 @@ type Client struct {
 	SessionPolicies              SessionPolicies
 	Sessions                     Sessions
 	Shares                       Shares
+	SnowflakeIntelligences       SnowflakeIntelligences
 	Stages                       Stages
 	StorageIntegrations          StorageIntegrations
 	StorageLifecyclePolicies     StorageLifecyclePolicies
@@ -236,6 +237,7 @@ func (c *Client) initialize() {
 	c.SessionPolicies = &sessionPolicies{client: c}
 	c.Sessions = &sessions{client: c}
 	c.Shares = &shares{client: c}
+	c.SnowflakeIntelligences = &snowflakeIntelligences{client: c}
 	c.Stages = &stages{client: c}
 	c.StorageIntegrations = &storageIntegrations{client: c}
 	c.StorageLifecyclePolicies = &storageLifecyclePolicies{client: c}

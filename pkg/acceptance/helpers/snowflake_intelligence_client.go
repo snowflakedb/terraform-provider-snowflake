@@ -2,14 +2,12 @@ package helpers
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
 
-// TODO(SNOW-3648593): change raw sqls to proper client
 type SnowflakeIntelligenceClient struct {
 	context *TestClientContext
 	ids     *IdsGenerator
@@ -31,7 +29,7 @@ func (c *SnowflakeIntelligenceClient) Create(t *testing.T) (sdk.AccountObjectIde
 	ctx := context.Background()
 
 	id := c.ids.RandomAccountObjectIdentifier()
-	_, err := c.client().ExecForTests(ctx, fmt.Sprintf(`CREATE SNOWFLAKE INTELLIGENCE %s`, id.FullyQualifiedName()))
+	err := c.client().SnowflakeIntelligences.Create(ctx, sdk.NewCreateSnowflakeIntelligenceRequest(id))
 	require.NoError(t, err)
 	return id, c.DropFunc(t, id)
 }
@@ -41,7 +39,7 @@ func (c *SnowflakeIntelligenceClient) DropFunc(t *testing.T, id sdk.AccountObjec
 	ctx := context.Background()
 
 	return func() {
-		_, err := c.client().ExecForTests(ctx, fmt.Sprintf(`DROP SNOWFLAKE INTELLIGENCE IF EXISTS %s`, id.FullyQualifiedName()))
+		err := c.client().SnowflakeIntelligences.Drop(ctx, sdk.NewDropSnowflakeIntelligenceRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
 }

@@ -75,6 +75,7 @@ func init() {
 		sequencesDef,
 		servicesDef,
 		sessionPoliciesDef,
+		snowflakeIntelligencesDef,
 		stagesDef,
 		storageIntegrationsDef,
 		storageLifecyclePoliciesDef,
