@@ -2,6 +2,8 @@
 
 package sdk
 
+import "strconv"
+
 func NewCreateWarehouseRequest(
 	name AccountObjectIdentifier,
 ) *CreateWarehouseRequest {
@@ -108,6 +110,19 @@ func (s *CreateWarehouseRequest) WithStatementTimeoutInSeconds(statementTimeoutI
 func (s *CreateWarehouseRequest) WithTag(tag []TagAssociation) *CreateWarehouseRequest {
 	s.Tag = tag
 	return s
+}
+
+func (s *CreateWarehouseRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "MAX_CONCURRENCY_LEVEL":
+		return assignParsedParameter(value, strconv.Atoi, &s.MaxConcurrencyLevel)
+	case "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.StatementQueuedTimeoutInSeconds)
+	case "STATEMENT_TIMEOUT_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.StatementTimeoutInSeconds)
+	default:
+		return ErrParameterNotSupported
+	}
 }
 
 func NewCreateAdaptiveWarehouseRequest(
@@ -404,6 +419,11 @@ func (s *WarehouseSetRequest) WithMaxQueryPerformanceLevel(maxQueryPerformanceLe
 	return s
 }
 
+func (s *WarehouseSetRequest) WithFallbackWarehouse(fallbackWarehouse AccountObjectIdentifier) *WarehouseSetRequest {
+	s.FallbackWarehouse = &fallbackWarehouse
+	return s
+}
+
 func (s *WarehouseSetRequest) WithMaxConcurrencyLevel(maxConcurrencyLevel int) *WarehouseSetRequest {
 	s.MaxConcurrencyLevel = &maxConcurrencyLevel
 	return s
@@ -419,9 +439,19 @@ func (s *WarehouseSetRequest) WithStatementTimeoutInSeconds(statementTimeoutInSe
 	return s
 }
 
-func (s *WarehouseSetRequest) WithFallbackWarehouse(fallbackWarehouse AccountObjectIdentifier) *WarehouseSetRequest {
-	s.FallbackWarehouse = &fallbackWarehouse
-	return s
+func (s *WarehouseSetRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "FALLBACK_WAREHOUSE":
+		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.FallbackWarehouse)
+	case "MAX_CONCURRENCY_LEVEL":
+		return assignParsedParameter(value, strconv.Atoi, &s.MaxConcurrencyLevel)
+	case "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.StatementQueuedTimeoutInSeconds)
+	case "STATEMENT_TIMEOUT_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.StatementTimeoutInSeconds)
+	default:
+		return ErrParameterNotSupported
+	}
 }
 
 func NewWarehouseUnsetRequest() *WarehouseUnsetRequest {
@@ -494,6 +524,21 @@ func (s *WarehouseUnsetRequest) WithGeneration(generation bool) *WarehouseUnsetR
 	return s
 }
 
+func (s *WarehouseUnsetRequest) WithQueryThroughputMultiplier(queryThroughputMultiplier bool) *WarehouseUnsetRequest {
+	s.QueryThroughputMultiplier = &queryThroughputMultiplier
+	return s
+}
+
+func (s *WarehouseUnsetRequest) WithMaxQueryPerformanceLevel(maxQueryPerformanceLevel bool) *WarehouseUnsetRequest {
+	s.MaxQueryPerformanceLevel = &maxQueryPerformanceLevel
+	return s
+}
+
+func (s *WarehouseUnsetRequest) WithFallbackWarehouse(fallbackWarehouse bool) *WarehouseUnsetRequest {
+	s.FallbackWarehouse = &fallbackWarehouse
+	return s
+}
+
 func (s *WarehouseUnsetRequest) WithMaxConcurrencyLevel(maxConcurrencyLevel bool) *WarehouseUnsetRequest {
 	s.MaxConcurrencyLevel = &maxConcurrencyLevel
 	return s
@@ -509,19 +554,20 @@ func (s *WarehouseUnsetRequest) WithStatementTimeoutInSeconds(statementTimeoutIn
 	return s
 }
 
-func (s *WarehouseUnsetRequest) WithQueryThroughputMultiplier(queryThroughputMultiplier bool) *WarehouseUnsetRequest {
-	s.QueryThroughputMultiplier = &queryThroughputMultiplier
-	return s
-}
-
-func (s *WarehouseUnsetRequest) WithMaxQueryPerformanceLevel(maxQueryPerformanceLevel bool) *WarehouseUnsetRequest {
-	s.MaxQueryPerformanceLevel = &maxQueryPerformanceLevel
-	return s
-}
-
-func (s *WarehouseUnsetRequest) WithFallbackWarehouse(fallbackWarehouse bool) *WarehouseUnsetRequest {
-	s.FallbackWarehouse = &fallbackWarehouse
-	return s
+func (s *WarehouseUnsetRequest) UnsetParameterFromRaw(key string) error {
+	switch key {
+	case "FALLBACK_WAREHOUSE":
+		s.FallbackWarehouse = Bool(true)
+	case "MAX_CONCURRENCY_LEVEL":
+		s.MaxConcurrencyLevel = Bool(true)
+	case "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS":
+		s.StatementQueuedTimeoutInSeconds = Bool(true)
+	case "STATEMENT_TIMEOUT_IN_SECONDS":
+		s.StatementTimeoutInSeconds = Bool(true)
+	default:
+		return ErrParameterNotSupported
+	}
+	return nil
 }
 
 func NewDropWarehouseRequest(

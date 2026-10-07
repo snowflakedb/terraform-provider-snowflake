@@ -247,9 +247,13 @@ var warehousesTests = WarehousesTestsContext{
 			},
 			validationCase[*AlterWarehouseOptions]{
 				Name:        case_Warehouses_validation_Alter_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterWarehouseOptions.Set", "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "FallbackWarehouse"),
+				ExpectedErr: errAtLeastOneOf("AlterWarehouseOptions.Set", "FallbackWarehouse", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel"),
 				DefaultModify: func(opts *AlterWarehouseOptions) {
 					opts.Set = &WarehouseSet{}
+					opts.Set.FallbackWarehouse = nil
+					opts.Set.MaxConcurrencyLevel = nil
+					opts.Set.StatementQueuedTimeoutInSeconds = nil
+					opts.Set.StatementTimeoutInSeconds = nil
 					opts.Set.WarehouseType = nil
 					opts.Set.WarehouseSize = nil
 					opts.Set.WaitForCompletion = nil
@@ -266,17 +270,17 @@ var warehousesTests = WarehousesTestsContext{
 					opts.Set.Generation = nil
 					opts.Set.QueryThroughputMultiplier = nil
 					opts.Set.MaxQueryPerformanceLevel = nil
-					opts.Set.MaxConcurrencyLevel = nil
-					opts.Set.StatementQueuedTimeoutInSeconds = nil
-					opts.Set.StatementTimeoutInSeconds = nil
-					opts.Set.FallbackWarehouse = nil
 				},
 			},
 			validationCase[*AlterWarehouseOptions]{
 				Name:        case_Warehouses_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterWarehouseOptions.Unset", "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel", "FallbackWarehouse"),
+				ExpectedErr: errAtLeastOneOf("AlterWarehouseOptions.Unset", "FallbackWarehouse", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel"),
 				DefaultModify: func(opts *AlterWarehouseOptions) {
 					opts.Unset = &WarehouseUnset{}
+					opts.Unset.FallbackWarehouse = nil
+					opts.Unset.MaxConcurrencyLevel = nil
+					opts.Unset.StatementQueuedTimeoutInSeconds = nil
+					opts.Unset.StatementTimeoutInSeconds = nil
 					opts.Unset.WarehouseType = nil
 					opts.Unset.WaitForCompletion = nil
 					opts.Unset.MaxClusterCount = nil
@@ -290,12 +294,8 @@ var warehousesTests = WarehousesTestsContext{
 					opts.Unset.QueryAccelerationMaxScaleFactor = nil
 					opts.Unset.ResourceConstraint = nil
 					opts.Unset.Generation = nil
-					opts.Unset.MaxConcurrencyLevel = nil
-					opts.Unset.StatementQueuedTimeoutInSeconds = nil
-					opts.Unset.StatementTimeoutInSeconds = nil
 					opts.Unset.QueryThroughputMultiplier = nil
 					opts.Unset.MaxQueryPerformanceLevel = nil
-					opts.Unset.FallbackWarehouse = nil
 				},
 			},
 			validationCase[*AlterWarehouseOptions]{

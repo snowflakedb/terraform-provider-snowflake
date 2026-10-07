@@ -11,17 +11,20 @@ import "strings"
 type ParameterLevel string
 
 const (
-	ParameterLevelAccount   ParameterLevel = "ACCOUNT"
-	ParameterLevelDatabase  ParameterLevel = "DATABASE"
-	ParameterLevelSchema    ParameterLevel = "SCHEMA"
-	ParameterLevelTable     ParameterLevel = "TABLE"
-	ParameterLevelTask      ParameterLevel = "TASK"
-	ParameterLevelFunction  ParameterLevel = "FUNCTION"
-	ParameterLevelProcedure ParameterLevel = "PROCEDURE"
-	ParameterLevelProject   ParameterLevel = "PROJECT"
-	ParameterLevelService   ParameterLevel = "SERVICE"
-	ParameterLevelUser      ParameterLevel = "USER"
-	ParameterLevelSession   ParameterLevel = "SESSION"
+	ParameterLevelAccount              ParameterLevel = "ACCOUNT"
+	ParameterLevelDatabase             ParameterLevel = "DATABASE"
+	ParameterLevelSchema               ParameterLevel = "SCHEMA"
+	ParameterLevelTable                ParameterLevel = "TABLE"
+	ParameterLevelTask                 ParameterLevel = "TASK"
+	ParameterLevelFunction             ParameterLevel = "FUNCTION"
+	ParameterLevelProcedure            ParameterLevel = "PROCEDURE"
+	ParameterLevelProject              ParameterLevel = "PROJECT"
+	ParameterLevelService              ParameterLevel = "SERVICE"
+	ParameterLevelUser                 ParameterLevel = "USER"
+	ParameterLevelSession              ParameterLevel = "SESSION"
+	ParameterLevelWarehouse            ParameterLevel = "WAREHOUSE"
+	ParameterLevelWarehouseAdaptive    ParameterLevel = "WAREHOUSE_ADAPTIVE"
+	ParameterLevelWarehouseInteractive ParameterLevel = "WAREHOUSE_INTERACTIVE"
 	// ParameterLevelAccountExt has no Snowflake counterpart. It marks the broader set of account
 	// parameters consumed by the generic account_parameter resource, while ParameterLevelAccount
 	// marks the narrower set exposed as typed fields on current_account.

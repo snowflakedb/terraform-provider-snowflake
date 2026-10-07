@@ -1,9 +1,23 @@
 package defs
 
 import (
+	"slices"
+
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
+
+var warehouseParameters = ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouseInteractive)
+
+var warehouseParameterFieldNames = collections.Map(warehouseParameters, g.ParameterSqlToFieldName)
+
+// CREATE WAREHOUSE does not accept FALLBACK_WAREHOUSE.
+var warehouseCreateParameters = collections.Filter(warehouseParameters, func(p parameterdefs.ParameterDef) bool {
+	return p.SqlName != FallbackWarehouse.SqlName
+})
 
 var warehouseTypeEnum = g.NewEnum(
 	"WarehouseType", "WarehouseTypes",
@@ -181,11 +195,8 @@ var warehouseSetStruct = g.NewQueryStruct("WarehouseSet").
 	WithField(g.OptionalEnumLegacy[sdkcommons.WarehouseGeneration]("Generation", g.ParameterOptions().SingleQuotes().SQL("GENERATION"))).
 	OptionalNumberAssignment("QUERY_THROUGHPUT_MULTIPLIER", g.ParameterOptions()).
 	OptionalEnumAssignment("MAX_QUERY_PERFORMANCE_LEVEL", maxQueryPerformanceLevelEnum, g.ParameterOptions().SingleQuotes()).
-	OptionalNumberAssignment("MAX_CONCURRENCY_LEVEL", g.ParameterOptions()).
-	OptionalNumberAssignment("STATEMENT_QUEUED_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
-	OptionalNumberAssignment("STATEMENT_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
-	OptionalIdentifier("FallbackWarehouse", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("FALLBACK_WAREHOUSE").Equals()).
-	WithValidation(g.AtLeastOneValueSet, "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "FallbackWarehouse").
+	WithParameters(warehouseParameters...).
+	WithValidation(g.AtLeastOneValueSet, append(slices.Clone(warehouseParameterFieldNames), "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel")...).
 	WithAdditionalValidations()
 
 var warehouseUnsetStruct = g.NewQueryStruct("WarehouseUnset").
@@ -202,13 +213,10 @@ var warehouseUnsetStruct = g.NewQueryStruct("WarehouseUnset").
 	OptionalSQL("QUERY_ACCELERATION_MAX_SCALE_FACTOR").
 	OptionalSQL("RESOURCE_CONSTRAINT").
 	OptionalSQL("GENERATION").
-	OptionalSQL("MAX_CONCURRENCY_LEVEL").
-	OptionalSQL("STATEMENT_QUEUED_TIMEOUT_IN_SECONDS").
-	OptionalSQL("STATEMENT_TIMEOUT_IN_SECONDS").
 	OptionalSQL("QUERY_THROUGHPUT_MULTIPLIER").
 	OptionalSQL("MAX_QUERY_PERFORMANCE_LEVEL").
-	OptionalSQL("FALLBACK_WAREHOUSE").
-	WithValidation(g.AtLeastOneValueSet, "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel", "FallbackWarehouse")
+	WithParametersUnset(warehouseParameters...).
+	WithValidation(g.AtLeastOneValueSet, append(slices.Clone(warehouseParameterFieldNames), "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel")...)
 
 var warehousesDef = g.NewInterface(
 	"Warehouses",
@@ -236,9 +244,7 @@ var warehousesDef = g.NewInterface(
 		OptionalNumberAssignment("QUERY_ACCELERATION_MAX_SCALE_FACTOR", g.ParameterOptions()).
 		OptionalEnumAssignment("RESOURCE_CONSTRAINT", warehouseResourceConstraintEnum, g.ParameterOptions().SingleQuotes()).
 		WithField(g.OptionalEnumLegacy[sdkcommons.WarehouseGeneration]("Generation", g.ParameterOptions().SingleQuotes().SQL("GENERATION"))).
-		OptionalNumberAssignment("MAX_CONCURRENCY_LEVEL", g.ParameterOptions()).
-		OptionalNumberAssignment("STATEMENT_QUEUED_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
-		OptionalNumberAssignment("STATEMENT_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
+		WithParameters(warehouseCreateParameters...).
 		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
@@ -344,6 +350,7 @@ var warehousesDef = g.NewInterface(
 	warehouseAdaptiveDef,
 	warehouseInteractiveDef,
 ).ShowParameters("AccountObjectIdentifier").
+	ShowParametersDetails(warehouseParameters...).
 	WithCustomInterfaceMethod(
 		"ShowByIDExperimental", "ShowByIDExperimental is a show by id function with improved performance (using starts with and limit)",
 		[]*g.MethodParameter{g.NewMethodParameter("id", "AccountObjectIdentifier")},

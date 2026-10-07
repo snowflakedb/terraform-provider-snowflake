@@ -68,6 +68,30 @@ func TestParameterDefsForLevel(t *testing.T) {
 		}, sqlNames(ParameterDefsForLevel(parameterdefs.ParameterLevelTask)))
 	})
 
+	t.Run("warehouse level", func(t *testing.T) {
+		require.Equal(t, []string{
+			"MAX_CONCURRENCY_LEVEL",
+			"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS",
+			"STATEMENT_TIMEOUT_IN_SECONDS",
+		}, sqlNames(ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouse)))
+	})
+
+	t.Run("warehouse adaptive level", func(t *testing.T) {
+		require.Equal(t, []string{
+			"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS",
+			"STATEMENT_TIMEOUT_IN_SECONDS",
+		}, sqlNames(ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouseAdaptive)))
+	})
+
+	t.Run("warehouse interactive level", func(t *testing.T) {
+		require.Equal(t, []string{
+			"FALLBACK_WAREHOUSE",
+			"MAX_CONCURRENCY_LEVEL",
+			"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS",
+			"STATEMENT_TIMEOUT_IN_SECONDS",
+		}, sqlNames(ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouseInteractive)))
+	})
+
 	t.Run("session level", func(t *testing.T) {
 		require.Equal(t, []string{
 			"LOG_EVENT_LEVEL",

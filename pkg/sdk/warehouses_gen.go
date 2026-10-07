@@ -20,6 +20,7 @@ type Warehouses interface {
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) (*WarehouseDetails, error)
 	ShowParameters(ctx context.Context, id AccountObjectIdentifier) ([]*Parameter, error)
+	ShowParametersDetails(ctx context.Context, id AccountObjectIdentifier) (*WarehouseParametersDetails, error)
 	// ShowByIDExperimental is a show by id function with improved performance (using starts with and limit)
 	ShowByIDExperimental(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
 	ShowByIDExperimentalSafely(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
@@ -27,6 +28,14 @@ type Warehouses interface {
 	AlterWithSuspend(ctx context.Context, request *AlterWarehouseRequest) error
 	// CreateInteractivePreservingSession wraps CreateInteractive to work around a known Snowflake behavior: creating a warehouse implicitly switches the session to it, which for interactive warehouses (5 second statement timeout) can cause subsequent statements in the same session to time out. It restores whichever warehouse (or lack of one) was active in the session before creation
 	CreateInteractivePreservingSession(ctx context.Context, request *CreateInteractiveWarehouseRequest) error
+}
+
+// WarehouseParametersDetails holds the object's parameters with values parsed into their Go types.
+type WarehouseParametersDetails struct {
+	FallbackWarehouse               TypedParameter[AccountObjectIdentifier]
+	MaxConcurrencyLevel             TypedParameter[int]
+	StatementQueuedTimeoutInSeconds TypedParameter[int]
+	StatementTimeoutInSeconds       TypedParameter[int]
 }
 
 // CreateWarehouseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-warehouse.
@@ -132,10 +141,10 @@ type WarehouseSet struct {
 	Generation                      *WarehouseGeneration         `ddl:"parameter,single_quotes" sql:"GENERATION"`
 	QueryThroughputMultiplier       *int                         `ddl:"parameter" sql:"QUERY_THROUGHPUT_MULTIPLIER"`
 	MaxQueryPerformanceLevel        *MaxQueryPerformanceLevel    `ddl:"parameter,single_quotes" sql:"MAX_QUERY_PERFORMANCE_LEVEL"`
+	FallbackWarehouse               *AccountObjectIdentifier     `ddl:"identifier,equals" sql:"FALLBACK_WAREHOUSE"`
 	MaxConcurrencyLevel             *int                         `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
 	StatementQueuedTimeoutInSeconds *int                         `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
 	StatementTimeoutInSeconds       *int                         `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
-	FallbackWarehouse               *AccountObjectIdentifier     `ddl:"identifier,equals" sql:"FALLBACK_WAREHOUSE"`
 }
 
 type WarehouseUnset struct {
@@ -152,12 +161,12 @@ type WarehouseUnset struct {
 	QueryAccelerationMaxScaleFactor *bool `ddl:"keyword" sql:"QUERY_ACCELERATION_MAX_SCALE_FACTOR"`
 	ResourceConstraint              *bool `ddl:"keyword" sql:"RESOURCE_CONSTRAINT"`
 	Generation                      *bool `ddl:"keyword" sql:"GENERATION"`
-	MaxConcurrencyLevel             *bool `ddl:"keyword" sql:"MAX_CONCURRENCY_LEVEL"`
-	StatementQueuedTimeoutInSeconds *bool `ddl:"keyword" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
-	StatementTimeoutInSeconds       *bool `ddl:"keyword" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
 	QueryThroughputMultiplier       *bool `ddl:"keyword" sql:"QUERY_THROUGHPUT_MULTIPLIER"`
 	MaxQueryPerformanceLevel        *bool `ddl:"keyword" sql:"MAX_QUERY_PERFORMANCE_LEVEL"`
 	FallbackWarehouse               *bool `ddl:"keyword" sql:"FALLBACK_WAREHOUSE"`
+	MaxConcurrencyLevel             *bool `ddl:"keyword" sql:"MAX_CONCURRENCY_LEVEL"`
+	StatementQueuedTimeoutInSeconds *bool `ddl:"keyword" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
+	StatementTimeoutInSeconds       *bool `ddl:"keyword" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
 }
 
 // DropWarehouseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-warehouse.

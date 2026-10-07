@@ -102,10 +102,10 @@ type WarehouseSetRequest struct {
 	Generation                      *WarehouseGeneration
 	QueryThroughputMultiplier       *int
 	MaxQueryPerformanceLevel        *MaxQueryPerformanceLevel
+	FallbackWarehouse               *AccountObjectIdentifier
 	MaxConcurrencyLevel             *int
 	StatementQueuedTimeoutInSeconds *int
 	StatementTimeoutInSeconds       *int
-	FallbackWarehouse               *AccountObjectIdentifier
 }
 
 type WarehouseUnsetRequest struct {
@@ -122,12 +122,12 @@ type WarehouseUnsetRequest struct {
 	QueryAccelerationMaxScaleFactor *bool
 	ResourceConstraint              *bool
 	Generation                      *bool
-	MaxConcurrencyLevel             *bool
-	StatementQueuedTimeoutInSeconds *bool
-	StatementTimeoutInSeconds       *bool
 	QueryThroughputMultiplier       *bool
 	MaxQueryPerformanceLevel        *bool
 	FallbackWarehouse               *bool
+	MaxConcurrencyLevel             *bool
+	StatementQueuedTimeoutInSeconds *bool
+	StatementTimeoutInSeconds       *bool
 }
 
 type DropWarehouseRequest struct {

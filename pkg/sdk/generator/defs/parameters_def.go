@@ -10,13 +10,16 @@ import (
 )
 
 var (
-	onAccount              = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt}
-	onAccountExt           = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccountExt}
-	onSchema               = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema}
-	onTable                = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelTable}
-	onTask                 = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelTask}
-	onFunctionAndProcedure = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelFunction, parameterdefs.ParameterLevelProcedure}
-	onLog                  = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelProject, parameterdefs.ParameterLevelProcedure, parameterdefs.ParameterLevelFunction, parameterdefs.ParameterLevelTable, parameterdefs.ParameterLevelTask, parameterdefs.ParameterLevelService}
+	onAccount                  = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt}
+	onAccountExt               = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccountExt}
+	onSchema                   = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema}
+	onTable                    = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelTable}
+	onTask                     = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelTask}
+	onFunctionAndProcedure     = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelFunction, parameterdefs.ParameterLevelProcedure}
+	onLog                      = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelProject, parameterdefs.ParameterLevelProcedure, parameterdefs.ParameterLevelFunction, parameterdefs.ParameterLevelTable, parameterdefs.ParameterLevelTask, parameterdefs.ParameterLevelService}
+	onWarehouse                = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelWarehouse, parameterdefs.ParameterLevelWarehouseInteractive}
+	onWarehouseAll             = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelWarehouse, parameterdefs.ParameterLevelWarehouseAdaptive, parameterdefs.ParameterLevelWarehouseInteractive}
+	onWarehouseInteractiveOnly = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelWarehouseInteractive}
 )
 
 const parameterTypeSnowflakeDefault = "sdk.ParameterTypeSnowflakeDefault"
@@ -455,6 +458,14 @@ var (
 		DefaultValue: "",
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
+	FallbackWarehouse = parameterdefs.ParameterDef{
+		SqlName:      "FALLBACK_WAREHOUSE",
+		Kind:         g.KindOfT[sdkcommons.AccountObjectIdentifier](),
+		Levels:       onWarehouseInteractiveOnly,
+		Description:  "If not null, specifies the warehouse to use as a fallback for statements that timed out.",
+		DefaultValue: "",
+		DefaultLevel: parameterTypeSnowflakeDefault,
+	}
 	GeographyOutputFormat = parameterdefs.ParameterDef{
 		SqlName:     "GEOGRAPHY_OUTPUT_FORMAT",
 		Kind:        g.KindOfT[sdkcommons.GeographyOutputFormat](),
@@ -544,10 +555,12 @@ var (
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	MaxConcurrencyLevel = parameterdefs.ParameterDef{
-		SqlName:     "MAX_CONCURRENCY_LEVEL",
-		Kind:        g.KindInt,
-		Levels:      onAccount,
-		Description: "Specifies the concurrency level for SQL statements (that is, queries and DML) executed by a warehouse ([more details](https://docs.snowflake.com/en/sql-reference/parameters#max-concurrency-level)).",
+		SqlName:      "MAX_CONCURRENCY_LEVEL",
+		Kind:         g.KindInt,
+		Levels:       onWarehouse,
+		Description:  "Specifies the concurrency level for SQL statements (that is, queries and DML) executed by a warehouse ([more details](https://docs.snowflake.com/en/sql-reference/parameters#max-concurrency-level)).",
+		DefaultValue: "8",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	MaxDataExtensionTimeInDays = parameterdefs.ParameterDef{
 		SqlName:      "MAX_DATA_EXTENSION_TIME_IN_DAYS",
@@ -740,16 +753,20 @@ var (
 		Description: "This deprecated parameter disables preview mode for testing SSO (after enabling federated authentication) before rolling it out to users.",
 	}
 	StatementQueuedTimeoutInSeconds = parameterdefs.ParameterDef{
-		SqlName:     "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS",
-		Kind:        g.KindInt,
-		Levels:      onAccount,
-		Description: "Amount of time, in seconds, a SQL statement (query, DDL, DML, etc.) remains queued for a warehouse before it is canceled by the system. This parameter can be used in conjunction with the [MAX_CONCURRENCY_LEVEL](https://docs.snowflake.com/en/sql-reference/parameters#label-max-concurrency-level) parameter to ensure a warehouse is never backlogged.",
+		SqlName:      "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS",
+		Kind:         g.KindInt,
+		Levels:       onWarehouseAll,
+		Description:  "Amount of time, in seconds, a SQL statement (query, DDL, DML, etc.) remains queued for a warehouse before it is canceled by the system. This parameter can be used in conjunction with the [MAX_CONCURRENCY_LEVEL](https://docs.snowflake.com/en/sql-reference/parameters#label-max-concurrency-level) parameter to ensure a warehouse is never backlogged.",
+		DefaultValue: "0",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	StatementTimeoutInSeconds = parameterdefs.ParameterDef{
-		SqlName:     "STATEMENT_TIMEOUT_IN_SECONDS",
-		Kind:        g.KindInt,
-		Levels:      onAccount,
-		Description: "Amount of time, in seconds, after which a running SQL statement (query, DDL, DML, etc.) is canceled by the system.",
+		SqlName:      "STATEMENT_TIMEOUT_IN_SECONDS",
+		Kind:         g.KindInt,
+		Levels:       onWarehouseAll,
+		Description:  "Amount of time, in seconds, after which a running SQL statement (query, DDL, DML, etc.) is canceled by the system.",
+		DefaultValue: "172800",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	StorageSerializationPolicy = parameterdefs.ParameterDef{
 		SqlName:      "STORAGE_SERIALIZATION_POLICY",
@@ -994,6 +1011,7 @@ var AllParameters = []parameterdefs.ParameterDef{
 	EventTable,
 	ExternalOauthAddPrivilegedRolesToBlockedList,
 	ExternalVolume,
+	FallbackWarehouse,
 	GeographyOutputFormat,
 	GeometryOutputFormat,
 	HybridTableLockTimeout,

@@ -4,7 +4,9 @@ package sdk
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -180,10 +182,10 @@ func (r *AlterWarehouseRequest) toOpts() *AlterWarehouseOptions {
 			Generation:                      r.Set.Generation,
 			QueryThroughputMultiplier:       r.Set.QueryThroughputMultiplier,
 			MaxQueryPerformanceLevel:        r.Set.MaxQueryPerformanceLevel,
+			FallbackWarehouse:               r.Set.FallbackWarehouse,
 			MaxConcurrencyLevel:             r.Set.MaxConcurrencyLevel,
 			StatementQueuedTimeoutInSeconds: r.Set.StatementQueuedTimeoutInSeconds,
 			StatementTimeoutInSeconds:       r.Set.StatementTimeoutInSeconds,
-			FallbackWarehouse:               r.Set.FallbackWarehouse,
 		}
 	}
 	if r.Unset != nil {
@@ -201,12 +203,12 @@ func (r *AlterWarehouseRequest) toOpts() *AlterWarehouseOptions {
 			QueryAccelerationMaxScaleFactor: r.Unset.QueryAccelerationMaxScaleFactor,
 			ResourceConstraint:              r.Unset.ResourceConstraint,
 			Generation:                      r.Unset.Generation,
-			MaxConcurrencyLevel:             r.Unset.MaxConcurrencyLevel,
-			StatementQueuedTimeoutInSeconds: r.Unset.StatementQueuedTimeoutInSeconds,
-			StatementTimeoutInSeconds:       r.Unset.StatementTimeoutInSeconds,
 			QueryThroughputMultiplier:       r.Unset.QueryThroughputMultiplier,
 			MaxQueryPerformanceLevel:        r.Unset.MaxQueryPerformanceLevel,
 			FallbackWarehouse:               r.Unset.FallbackWarehouse,
+			MaxConcurrencyLevel:             r.Unset.MaxConcurrencyLevel,
+			StatementQueuedTimeoutInSeconds: r.Unset.StatementQueuedTimeoutInSeconds,
+			StatementTimeoutInSeconds:       r.Unset.StatementTimeoutInSeconds,
 		}
 	}
 	return opts
@@ -291,4 +293,26 @@ func (r warehouseDetailsRow) convert() (*WarehouseDetails, error) {
 		Kind:      r.Kind,
 	}
 	return result, nil
+}
+
+func toWarehouseParametersDetails(params []*Parameter) (*WarehouseParametersDetails, error) {
+	byKey := parametersByKey(params)
+	var d WarehouseParametersDetails
+	if err := errors.Join(
+		fillTypedParameter(byKey["FALLBACK_WAREHOUSE"], ParseAccountObjectIdentifier, &d.FallbackWarehouse),
+		fillTypedParameter(byKey["MAX_CONCURRENCY_LEVEL"], strconv.Atoi, &d.MaxConcurrencyLevel),
+		fillTypedParameter(byKey["STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"], strconv.Atoi, &d.StatementQueuedTimeoutInSeconds),
+		fillTypedParameter(byKey["STATEMENT_TIMEOUT_IN_SECONDS"], strconv.Atoi, &d.StatementTimeoutInSeconds),
+	); err != nil {
+		return nil, err
+	}
+	return &d, nil
+}
+
+func (v *warehouses) ShowParametersDetails(ctx context.Context, id AccountObjectIdentifier) (*WarehouseParametersDetails, error) {
+	params, err := v.ShowParameters(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return toWarehouseParametersDetails(params)
 }
