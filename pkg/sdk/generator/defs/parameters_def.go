@@ -354,7 +354,7 @@ var (
 	EnableConsoleOutput = parameterdefs.ParameterDef{
 		SqlName:      "ENABLE_CONSOLE_OUTPUT",
 		Kind:         g.KindBool,
-		Levels:       []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelTable},
+		Levels:       []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelTable, parameterdefs.ParameterLevelFunction, parameterdefs.ParameterLevelProcedure},
 		Description:  "If true, enables stdout/stderr fast path logging for anonymous stored procedures.",
 		DefaultValue: "false",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -653,10 +653,12 @@ var (
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	MetricLevel = parameterdefs.ParameterDef{
-		SqlName:     "METRIC_LEVEL",
-		Kind:        g.KindOfT[sdkcommons.MetricLevel](),
-		Levels:      onAccount,
-		Description: "Controls how metrics data is ingested into the event table. For more information about metric levels, see [Setting levels for logging, metrics, and tracing](https://docs.snowflake.com/en/developer-guide/logging-tracing/telemetry-levels).",
+		SqlName:      "METRIC_LEVEL",
+		Kind:         g.KindOfT[sdkcommons.MetricLevel](),
+		Levels:       []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelFunction, parameterdefs.ParameterLevelProcedure},
+		Description:  "Controls how metrics data is ingested into the event table. For more information about metric levels, see [Setting levels for logging, metrics, and tracing](https://docs.snowflake.com/en/developer-guide/logging-tracing/telemetry-levels).",
+		DefaultValue: "sdk.MetricLevelNone",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	MinDataRetentionTimeInDays = parameterdefs.ParameterDef{
 		SqlName:     "MIN_DATA_RETENTION_TIME_IN_DAYS",

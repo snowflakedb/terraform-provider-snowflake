@@ -121,6 +121,26 @@ func TestParameterDefsForLevel(t *testing.T) {
 		}, sqlNames(ParameterDefsForLevel(parameterdefs.ParameterLevelTask)))
 	})
 
+	t.Run("function level", func(t *testing.T) {
+		require.Equal(t, []string{
+			"ENABLE_CONSOLE_OUTPUT",
+			"LOG_EVENT_LEVEL",
+			"LOG_LEVEL",
+			"METRIC_LEVEL",
+			"TRACE_LEVEL",
+		}, sqlNames(ParameterDefsForLevel(parameterdefs.ParameterLevelFunction)))
+	})
+
+	t.Run("procedure level", func(t *testing.T) {
+		require.Equal(t, []string{
+			"ENABLE_CONSOLE_OUTPUT",
+			"LOG_EVENT_LEVEL",
+			"LOG_LEVEL",
+			"METRIC_LEVEL",
+			"TRACE_LEVEL",
+		}, sqlNames(ParameterDefsForLevel(parameterdefs.ParameterLevelProcedure)))
+	})
+
 	t.Run("warehouse level", func(t *testing.T) {
 		require.Equal(t, []string{
 			"MAX_CONCURRENCY_LEVEL",

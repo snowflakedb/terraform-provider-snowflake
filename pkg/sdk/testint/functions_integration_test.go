@@ -53,15 +53,19 @@ func TestInt_Functions(t *testing.T) {
 	tmpJavaFunction := testClientHelper().CreateSampleJavaFunctionAndJarOnUserStage(t)
 	tmpPythonFunction := testClientHelper().CreateSamplePythonFunctionAndModuleOnUserStage(t)
 
-	assertParametersSet := func(t *testing.T, functionParametersAssert *objectparametersassert.FunctionParametersAssert) {
+	assertParametersSet := func(t *testing.T, id sdk.SchemaObjectIdentifierWithArguments) {
 		t.Helper()
+
+		details, err := client.Functions.ShowParametersDetails(ctx, id)
+		require.NoError(t, err)
+
 		assertThatObject(
-			t, functionParametersAssert.
-				HasEnableConsoleOutput(true).
-				HasLogLevel(sdk.LogLevelWarn).
-				HasLogEventLevel(sdk.LogLevelWarn).
-				HasMetricLevel(sdk.MetricLevelAll).
-				HasTraceLevel(sdk.TraceLevelAlways),
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasBoolParameterValue(sdk.FunctionParameterEnableConsoleOutput, details.EnableConsoleOutput.Value).
+				HasStringParameterValue(sdk.FunctionParameterLogLevel, string(details.LogLevel.Value)).
+				HasStringParameterValue(sdk.FunctionParameterLogEventLevel, string(details.LogEventLevel.Value)).
+				HasStringParameterValue(sdk.FunctionParameterMetricLevel, string(details.MetricLevel.Value)).
+				HasStringParameterValue(sdk.FunctionParameterTraceLevel, string(details.TraceLevel.Value)),
 		)
 	}
 
@@ -1738,7 +1742,7 @@ func TestInt_Functions(t *testing.T) {
 				ContainsExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
 		)
 
-		assertParametersSet(t, objectparametersassert.FunctionParameters(t, id))
+		assertParametersSet(t, id)
 
 		unsetRequest := sdk.NewAlterFunctionRequest(id).WithUnset(
 			*sdk.NewFunctionUnsetRequest().
@@ -1821,7 +1825,7 @@ func TestInt_Functions(t *testing.T) {
 				HasDescription("new comment"),
 		)
 
-		assertParametersSet(t, objectparametersassert.FunctionParameters(t, id))
+		assertParametersSet(t, id)
 
 		unsetRequest := sdk.NewAlterFunctionRequest(id).WithUnset(
 			*sdk.NewFunctionUnsetRequest().

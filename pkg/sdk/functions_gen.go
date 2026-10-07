@@ -25,6 +25,16 @@ type Functions interface {
 	// DescribeDetails returns aggregated describe results for the given function.
 	DescribeDetails(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*FunctionDetails, error)
 	ShowParameters(ctx context.Context, id SchemaObjectIdentifierWithArguments) ([]*Parameter, error)
+	ShowParametersDetails(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*FunctionParametersDetails, error)
+}
+
+// FunctionParametersDetails holds the object's parameters with values parsed into their Go types.
+type FunctionParametersDetails struct {
+	EnableConsoleOutput TypedParameter[bool]
+	LogEventLevel       TypedParameter[LogLevel]
+	LogLevel            TypedParameter[LogLevel]
+	MetricLevel         TypedParameter[MetricLevel]
+	TraceLevel          TypedParameter[TraceLevel]
 }
 
 // CreateForJavaFunctionOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-function#java-handler.
@@ -224,8 +234,8 @@ type FunctionSet struct {
 	ExternalAccessIntegrations []AccountObjectIdentifier `ddl:"parameter,parentheses" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
 	SecretsList                *SecretsList              `ddl:"parameter,parentheses" sql:"SECRETS"`
 	EnableConsoleOutput        *bool                     `ddl:"parameter" sql:"ENABLE_CONSOLE_OUTPUT"`
-	LogLevel                   *LogLevel                 `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
 	LogEventLevel              *LogLevel                 `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
+	LogLevel                   *LogLevel                 `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
 	MetricLevel                *MetricLevel              `ddl:"parameter,single_quotes" sql:"METRIC_LEVEL"`
 	TraceLevel                 *TraceLevel               `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`
 }
@@ -238,8 +248,8 @@ type FunctionUnset struct {
 	Comment                    *bool `ddl:"keyword" sql:"COMMENT"`
 	ExternalAccessIntegrations *bool `ddl:"keyword" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
 	EnableConsoleOutput        *bool `ddl:"keyword" sql:"ENABLE_CONSOLE_OUTPUT"`
-	LogLevel                   *bool `ddl:"keyword" sql:"LOG_LEVEL"`
 	LogEventLevel              *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
+	LogLevel                   *bool `ddl:"keyword" sql:"LOG_LEVEL"`
 	MetricLevel                *bool `ddl:"keyword" sql:"METRIC_LEVEL"`
 	TraceLevel                 *bool `ddl:"keyword" sql:"TRACE_LEVEL"`
 }

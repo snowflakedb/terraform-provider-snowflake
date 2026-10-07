@@ -1,10 +1,23 @@
 package defs
 
 import (
+	"slices"
+
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
+
+var functionParameters = ParameterDefsForLevel(parameterdefs.ParameterLevelFunction)
+
+var functionParameterFieldNames = collections.Map(functionParameters, g.ParameterSqlToFieldName)
+
+// CREATE FUNCTION doesn't accept LOG_EVENT_LEVEL (ALTER-only clause).
+var functionCreateParameters = collections.Filter(functionParameters, func(p parameterdefs.ParameterDef) bool {
+	return p.SqlName != "LOG_EVENT_LEVEL"
+})
 
 var functionArgument = func() *g.QueryStruct {
 	return g.NewQueryStruct("FunctionArgument").
@@ -127,10 +140,7 @@ var functionsDef = g.NewInterface(
 		ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", "AccountObjectIdentifier", g.ParameterOptions().Parentheses()).
 		ListAssignment("SECRETS", "SecretReference", g.ParameterOptions().Parentheses()).
 		OptionalTextAssignment("TARGET_PATH", g.ParameterOptions().SingleQuotes()).
-		OptionalBooleanAssignment("ENABLE_CONSOLE_OUTPUT", nil).
-		OptionalAssignment("LOG_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
-		OptionalAssignment("METRIC_LEVEL", g.KindOfTPointer[sdkcommons.MetricLevel](), g.ParameterOptions().SingleQuotes()).
-		OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
+		WithParameters(functionCreateParameters...).
 		PredefinedQueryStructField("FunctionDefinition", "*string", g.ParameterOptions().NoEquals().SQL("AS")).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidateValueSet, "Handler").
@@ -164,10 +174,7 @@ var functionsDef = g.NewInterface(
 		PredefinedQueryStructField("NullInputBehavior", "*NullInputBehavior", g.KeywordOptions()).
 		PredefinedQueryStructField("ReturnResultsBehavior", "*ReturnResultsBehavior", g.KeywordOptions()).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-		OptionalBooleanAssignment("ENABLE_CONSOLE_OUTPUT", nil).
-		OptionalAssignment("LOG_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
-		OptionalAssignment("METRIC_LEVEL", g.KindOfTPointer[sdkcommons.MetricLevel](), g.ParameterOptions().SingleQuotes()).
-		OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
+		WithParameters(functionCreateParameters...).
 		PredefinedQueryStructField("FunctionDefinition", "string", g.ParameterOptions().NoEquals().SQL("AS").Required()).
 		WithValidation(g.ValidateValueSet, "FunctionDefinition").
 		WithValidation(g.ValidIdentifier, "name").
@@ -214,10 +221,7 @@ var functionsDef = g.NewInterface(
 		TextAssignment("HANDLER", g.ParameterOptions().SingleQuotes().Required()).
 		ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", "AccountObjectIdentifier", g.ParameterOptions().Parentheses()).
 		ListAssignment("SECRETS", "SecretReference", g.ParameterOptions().Parentheses()).
-		OptionalBooleanAssignment("ENABLE_CONSOLE_OUTPUT", nil).
-		OptionalAssignment("LOG_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
-		OptionalAssignment("METRIC_LEVEL", g.KindOfTPointer[sdkcommons.MetricLevel](), g.ParameterOptions().SingleQuotes()).
-		OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
+		WithParameters(functionCreateParameters...).
 		PredefinedQueryStructField("FunctionDefinition", "*string", g.ParameterOptions().NoEquals().SQL("AS")).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidateValueSet, "RuntimeVersion").
@@ -265,10 +269,7 @@ var functionsDef = g.NewInterface(
 		ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", "AccountObjectIdentifier", g.ParameterOptions().Parentheses()).
 		ListAssignment("SECRETS", "SecretReference", g.ParameterOptions().Parentheses()).
 		OptionalTextAssignment("TARGET_PATH", g.ParameterOptions().SingleQuotes()).
-		OptionalBooleanAssignment("ENABLE_CONSOLE_OUTPUT", nil).
-		OptionalAssignment("LOG_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
-		OptionalAssignment("METRIC_LEVEL", g.KindOfTPointer[sdkcommons.MetricLevel](), g.ParameterOptions().SingleQuotes()).
-		OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
+		WithParameters(functionCreateParameters...).
 		PredefinedQueryStructField("FunctionDefinition", "*string", g.ParameterOptions().NoEquals().SQL("AS")).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidateValueSet, "Handler").
@@ -302,10 +303,7 @@ var functionsDef = g.NewInterface(
 		PredefinedQueryStructField("ReturnResultsBehavior", "*ReturnResultsBehavior", g.KeywordOptions()).
 		OptionalSQL("MEMOIZABLE").
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-		OptionalBooleanAssignment("ENABLE_CONSOLE_OUTPUT", nil).
-		OptionalAssignment("LOG_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
-		OptionalAssignment("METRIC_LEVEL", g.KindOfTPointer[sdkcommons.MetricLevel](), g.ParameterOptions().SingleQuotes()).
-		OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
+		WithParameters(functionCreateParameters...).
 		PredefinedQueryStructField("FunctionDefinition", "string", g.ParameterOptions().NoEquals().SQL("AS").Required()).
 		WithValidation(g.ValidateValueSet, "FunctionDefinition").
 		WithValidation(g.ValidIdentifier, "name").
@@ -324,13 +322,9 @@ var functionsDef = g.NewInterface(
 				OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 				ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", "AccountObjectIdentifier", g.ParameterOptions().Parentheses()).
 				OptionalQueryStructField("SecretsList", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
-				OptionalBooleanAssignment("ENABLE_CONSOLE_OUTPUT", nil).
-				OptionalAssignment("LOG_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
-				OptionalAssignment("LOG_EVENT_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
-				OptionalAssignment("METRIC_LEVEL", g.KindOfTPointer[sdkcommons.MetricLevel](), g.ParameterOptions().SingleQuotes()).
-				OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
+				WithParameters(functionParameters...).
 				WithValidation(g.ValidIdentifier, "ExternalAccessIntegrations").
-				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "SecretsList", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"),
+				WithValidation(g.AtLeastOneValueSet, append(slices.Clone(functionParameterFieldNames), "Comment", "ExternalAccessIntegrations", "SecretsList")...),
 			g.ListOptions().SQL("SET"),
 		).
 		OptionalQueryStructField(
@@ -338,12 +332,8 @@ var functionsDef = g.NewInterface(
 			g.NewQueryStruct("FunctionUnset").
 				OptionalSQL("COMMENT").
 				OptionalSQL("EXTERNAL_ACCESS_INTEGRATIONS").
-				OptionalSQL("ENABLE_CONSOLE_OUTPUT").
-				OptionalSQL("LOG_LEVEL").
-				OptionalSQL("LOG_EVENT_LEVEL").
-				OptionalSQL("METRIC_LEVEL").
-				OptionalSQL("TRACE_LEVEL").
-				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"),
+				WithParametersUnset(functionParameters...).
+				WithValidation(g.AtLeastOneValueSet, append(slices.Clone(functionParameterFieldNames), "Comment", "ExternalAccessIntegrations")...),
 			g.ListOptions().SQL("UNSET"),
 		).
 		OptionalSQL("SET SECURE").
@@ -385,9 +375,5 @@ var functionsDef = g.NewInterface(
 	"DescribeDetails returns aggregated describe results for the given function.",
 	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifierWithArguments]())},
 	"*FunctionDetails", "error",
-).WithCustomInterfaceMethod(
-	"ShowParameters",
-	"",
-	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifierWithArguments]())},
-	"[]*Parameter", "error",
-)
+).ShowParameters("SchemaObjectIdentifierWithArguments").
+	ShowParametersDetails(functionParameters...)

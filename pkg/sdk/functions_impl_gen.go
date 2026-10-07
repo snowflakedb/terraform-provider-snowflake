@@ -4,6 +4,8 @@ package sdk
 
 import (
 	"context"
+	"errors"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -427,8 +429,8 @@ func (r *AlterFunctionRequest) toOpts() *AlterFunctionOptions {
 			Comment:                    r.Set.Comment,
 			ExternalAccessIntegrations: r.Set.ExternalAccessIntegrations,
 			EnableConsoleOutput:        r.Set.EnableConsoleOutput,
-			LogLevel:                   r.Set.LogLevel,
 			LogEventLevel:              r.Set.LogEventLevel,
+			LogLevel:                   r.Set.LogLevel,
 			MetricLevel:                r.Set.MetricLevel,
 			TraceLevel:                 r.Set.TraceLevel,
 		}
@@ -441,8 +443,8 @@ func (r *AlterFunctionRequest) toOpts() *AlterFunctionOptions {
 			Comment:                    r.Unset.Comment,
 			ExternalAccessIntegrations: r.Unset.ExternalAccessIntegrations,
 			EnableConsoleOutput:        r.Unset.EnableConsoleOutput,
-			LogLevel:                   r.Unset.LogLevel,
 			LogEventLevel:              r.Unset.LogEventLevel,
+			LogLevel:                   r.Unset.LogLevel,
 			MetricLevel:                r.Unset.MetricLevel,
 			TraceLevel:                 r.Unset.TraceLevel,
 		}
@@ -515,4 +517,27 @@ func (r *SecretsListRequest) toOpts() *SecretsList {
 		SecretsList: r.SecretsList,
 	}
 	return opts
+}
+
+func toFunctionParametersDetails(params []*Parameter) (*FunctionParametersDetails, error) {
+	byKey := parametersByKey(params)
+	var d FunctionParametersDetails
+	if err := errors.Join(
+		fillTypedParameter(byKey["ENABLE_CONSOLE_OUTPUT"], strconv.ParseBool, &d.EnableConsoleOutput),
+		fillTypedParameter(byKey["LOG_EVENT_LEVEL"], ToLogLevel, &d.LogEventLevel),
+		fillTypedParameter(byKey["LOG_LEVEL"], ToLogLevel, &d.LogLevel),
+		fillTypedParameter(byKey["METRIC_LEVEL"], ToMetricLevel, &d.MetricLevel),
+		fillTypedParameter(byKey["TRACE_LEVEL"], ToTraceLevel, &d.TraceLevel),
+	); err != nil {
+		return nil, err
+	}
+	return &d, nil
+}
+
+func (v *functions) ShowParametersDetails(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*FunctionParametersDetails, error) {
+	params, err := v.ShowParameters(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return toFunctionParametersDetails(params)
 }

@@ -774,17 +774,17 @@ var functionsTests = FunctionsTestsContext{
 			},
 			validationCase[*AlterFunctionOptions]{
 				Name:        case_Functions_validation_Alter_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterFunctionOptions.Set", "Comment", "ExternalAccessIntegrations", "SecretsList", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"),
+				ExpectedErr: errAtLeastOneOf("AlterFunctionOptions.Set", "EnableConsoleOutput", "LogEventLevel", "LogLevel", "MetricLevel", "TraceLevel", "Comment", "ExternalAccessIntegrations", "SecretsList"),
 				DefaultModify: func(opts *AlterFunctionOptions) {
 					opts.Set = &FunctionSet{}
+					opts.Set.EnableConsoleOutput = nil
+					opts.Set.LogEventLevel = nil
+					opts.Set.LogLevel = nil
+					opts.Set.MetricLevel = nil
+					opts.Set.TraceLevel = nil
 					opts.Set.Comment = nil
 					opts.Set.ExternalAccessIntegrations = nil
 					opts.Set.SecretsList = nil
-					opts.Set.EnableConsoleOutput = nil
-					opts.Set.LogLevel = nil
-					opts.Set.LogEventLevel = nil
-					opts.Set.MetricLevel = nil
-					opts.Set.TraceLevel = nil
 				},
 			},
 			validationCase[*AlterFunctionOptions]{
@@ -797,16 +797,16 @@ var functionsTests = FunctionsTestsContext{
 			},
 			validationCase[*AlterFunctionOptions]{
 				Name:        case_Functions_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterFunctionOptions.Unset", "Comment", "ExternalAccessIntegrations", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"),
+				ExpectedErr: errAtLeastOneOf("AlterFunctionOptions.Unset", "EnableConsoleOutput", "LogEventLevel", "LogLevel", "MetricLevel", "TraceLevel", "Comment", "ExternalAccessIntegrations"),
 				DefaultModify: func(opts *AlterFunctionOptions) {
 					opts.Unset = &FunctionUnset{}
-					opts.Unset.Comment = nil
-					opts.Unset.ExternalAccessIntegrations = nil
 					opts.Unset.EnableConsoleOutput = nil
-					opts.Unset.LogLevel = nil
 					opts.Unset.LogEventLevel = nil
+					opts.Unset.LogLevel = nil
 					opts.Unset.MetricLevel = nil
 					opts.Unset.TraceLevel = nil
+					opts.Unset.Comment = nil
+					opts.Unset.ExternalAccessIntegrations = nil
 				},
 			},
 			validationCase[*AlterFunctionOptions]{

@@ -1170,6 +1170,7 @@ const (
 	DatabaseParameterStorageSerializationPolicy              DatabaseParameter = "STORAGE_SERIALIZATION_POLICY"
 	DatabaseParameterLogLevel                                DatabaseParameter = "LOG_LEVEL"
 	DatabaseParameterLogEventLevel                           DatabaseParameter = "LOG_EVENT_LEVEL"
+	DatabaseParameterMetricLevel                             DatabaseParameter = "METRIC_LEVEL"
 	DatabaseParameterTraceLevel                              DatabaseParameter = "TRACE_LEVEL"
 	DatabaseParameterSuspendTaskAfterNumFailures             DatabaseParameter = "SUSPEND_TASK_AFTER_NUM_FAILURES"
 	DatabaseParameterTaskAutoRetryAttempts                   DatabaseParameter = "TASK_AUTO_RETRY_ATTEMPTS"

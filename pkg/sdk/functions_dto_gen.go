@@ -190,8 +190,8 @@ type FunctionSetRequest struct {
 	ExternalAccessIntegrations []AccountObjectIdentifier
 	SecretsList                *SecretsListRequest
 	EnableConsoleOutput        *bool
-	LogLevel                   *LogLevel
 	LogEventLevel              *LogLevel
+	LogLevel                   *LogLevel
 	MetricLevel                *MetricLevel
 	TraceLevel                 *TraceLevel
 }
@@ -204,8 +204,8 @@ type FunctionUnsetRequest struct {
 	Comment                    *bool
 	ExternalAccessIntegrations *bool
 	EnableConsoleOutput        *bool
-	LogLevel                   *bool
 	LogEventLevel              *bool
+	LogLevel                   *bool
 	MetricLevel                *bool
 	TraceLevel                 *bool
 }

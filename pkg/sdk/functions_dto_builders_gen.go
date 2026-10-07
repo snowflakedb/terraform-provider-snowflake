@@ -2,7 +2,11 @@
 
 package sdk
 
-import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+import (
+	"strconv"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+)
 
 func NewCreateForJavaFunctionRequest(
 	name SchemaObjectIdentifier,
@@ -119,6 +123,21 @@ func (s *CreateForJavaFunctionRequest) WithTraceLevel(traceLevel TraceLevel) *Cr
 func (s *CreateForJavaFunctionRequest) WithFunctionDefinition(functionDefinition string) *CreateForJavaFunctionRequest {
 	s.FunctionDefinition = &functionDefinition
 	return s
+}
+
+func (s *CreateForJavaFunctionRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "ENABLE_CONSOLE_OUTPUT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
+	case "LOG_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+	case "METRIC_LEVEL":
+		return assignParsedParameter(value, ToMetricLevel, &s.MetricLevel)
+	case "TRACE_LEVEL":
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+	default:
+		return ErrParameterNotSupported
+	}
 }
 
 func NewFunctionArgumentRequest(
@@ -296,6 +315,21 @@ func (s *CreateForJavascriptFunctionRequest) WithTraceLevel(traceLevel TraceLeve
 	return s
 }
 
+func (s *CreateForJavascriptFunctionRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "ENABLE_CONSOLE_OUTPUT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
+	case "LOG_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+	case "METRIC_LEVEL":
+		return assignParsedParameter(value, ToMetricLevel, &s.MetricLevel)
+	case "TRACE_LEVEL":
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+	default:
+		return ErrParameterNotSupported
+	}
+}
+
 func NewCreateForPythonFunctionRequest(
 	name SchemaObjectIdentifier,
 	returns FunctionReturnsRequest,
@@ -408,6 +442,21 @@ func (s *CreateForPythonFunctionRequest) WithTraceLevel(traceLevel TraceLevel) *
 func (s *CreateForPythonFunctionRequest) WithFunctionDefinition(functionDefinition string) *CreateForPythonFunctionRequest {
 	s.FunctionDefinition = &functionDefinition
 	return s
+}
+
+func (s *CreateForPythonFunctionRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "ENABLE_CONSOLE_OUTPUT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
+	case "LOG_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+	case "METRIC_LEVEL":
+		return assignParsedParameter(value, ToMetricLevel, &s.MetricLevel)
+	case "TRACE_LEVEL":
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+	default:
+		return ErrParameterNotSupported
+	}
 }
 
 func NewCreateForScalaFunctionRequest(
@@ -529,6 +578,21 @@ func (s *CreateForScalaFunctionRequest) WithFunctionDefinition(functionDefinitio
 	return s
 }
 
+func (s *CreateForScalaFunctionRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "ENABLE_CONSOLE_OUTPUT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
+	case "LOG_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+	case "METRIC_LEVEL":
+		return assignParsedParameter(value, ToMetricLevel, &s.MetricLevel)
+	case "TRACE_LEVEL":
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+	default:
+		return ErrParameterNotSupported
+	}
+}
+
 func NewCreateForSQLFunctionRequest(
 	name SchemaObjectIdentifier,
 	returns FunctionReturnsRequest,
@@ -611,6 +675,21 @@ func (s *CreateForSQLFunctionRequest) WithTraceLevel(traceLevel TraceLevel) *Cre
 	return s
 }
 
+func (s *CreateForSQLFunctionRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "ENABLE_CONSOLE_OUTPUT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
+	case "LOG_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+	case "METRIC_LEVEL":
+		return assignParsedParameter(value, ToMetricLevel, &s.MetricLevel)
+	case "TRACE_LEVEL":
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+	default:
+		return ErrParameterNotSupported
+	}
+}
+
 func NewAlterFunctionRequest(
 	name SchemaObjectIdentifierWithArguments,
 ) *AlterFunctionRequest {
@@ -684,13 +763,13 @@ func (s *FunctionSetRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *
 	return s
 }
 
-func (s *FunctionSetRequest) WithLogLevel(logLevel LogLevel) *FunctionSetRequest {
-	s.LogLevel = &logLevel
+func (s *FunctionSetRequest) WithLogEventLevel(logEventLevel LogLevel) *FunctionSetRequest {
+	s.LogEventLevel = &logEventLevel
 	return s
 }
 
-func (s *FunctionSetRequest) WithLogEventLevel(logEventLevel LogLevel) *FunctionSetRequest {
-	s.LogEventLevel = &logEventLevel
+func (s *FunctionSetRequest) WithLogLevel(logLevel LogLevel) *FunctionSetRequest {
+	s.LogLevel = &logLevel
 	return s
 }
 
@@ -702,6 +781,23 @@ func (s *FunctionSetRequest) WithMetricLevel(metricLevel MetricLevel) *FunctionS
 func (s *FunctionSetRequest) WithTraceLevel(traceLevel TraceLevel) *FunctionSetRequest {
 	s.TraceLevel = &traceLevel
 	return s
+}
+
+func (s *FunctionSetRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "ENABLE_CONSOLE_OUTPUT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
+	case "LOG_EVENT_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
+	case "LOG_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+	case "METRIC_LEVEL":
+		return assignParsedParameter(value, ToMetricLevel, &s.MetricLevel)
+	case "TRACE_LEVEL":
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+	default:
+		return ErrParameterNotSupported
+	}
 }
 
 func NewSecretsListRequest(
@@ -732,13 +828,13 @@ func (s *FunctionUnsetRequest) WithEnableConsoleOutput(enableConsoleOutput bool)
 	return s
 }
 
-func (s *FunctionUnsetRequest) WithLogLevel(logLevel bool) *FunctionUnsetRequest {
-	s.LogLevel = &logLevel
+func (s *FunctionUnsetRequest) WithLogEventLevel(logEventLevel bool) *FunctionUnsetRequest {
+	s.LogEventLevel = &logEventLevel
 	return s
 }
 
-func (s *FunctionUnsetRequest) WithLogEventLevel(logEventLevel bool) *FunctionUnsetRequest {
-	s.LogEventLevel = &logEventLevel
+func (s *FunctionUnsetRequest) WithLogLevel(logLevel bool) *FunctionUnsetRequest {
+	s.LogLevel = &logLevel
 	return s
 }
 
@@ -750,6 +846,24 @@ func (s *FunctionUnsetRequest) WithMetricLevel(metricLevel bool) *FunctionUnsetR
 func (s *FunctionUnsetRequest) WithTraceLevel(traceLevel bool) *FunctionUnsetRequest {
 	s.TraceLevel = &traceLevel
 	return s
+}
+
+func (s *FunctionUnsetRequest) UnsetParameterFromRaw(key string) error {
+	switch key {
+	case "ENABLE_CONSOLE_OUTPUT":
+		s.EnableConsoleOutput = Bool(true)
+	case "LOG_EVENT_LEVEL":
+		s.LogEventLevel = Bool(true)
+	case "LOG_LEVEL":
+		s.LogLevel = Bool(true)
+	case "METRIC_LEVEL":
+		s.MetricLevel = Bool(true)
+	case "TRACE_LEVEL":
+		s.TraceLevel = Bool(true)
+	default:
+		return ErrParameterNotSupported
+	}
+	return nil
 }
 
 func NewDropFunctionRequest(
