@@ -659,6 +659,21 @@ var allStructs = []SdkObjectDef{
 		NoIdentifiableObject: true,
 		SkipFields:           []string{"FailureDetails", "raw"},
 	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.SnowflakeIntelligence{},
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.SnowflakeIntelligenceDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.SnowflakeIntelligenceAgent{},
+		// Agents are listed with SHOW AGENTS IN SNOWFLAKE INTELLIGENCE, so there is no ShowByID.
+		NoShowById: true,
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {

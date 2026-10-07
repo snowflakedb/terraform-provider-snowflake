@@ -43,3 +43,17 @@ func (c *SnowflakeIntelligenceClient) DropFunc(t *testing.T, id sdk.AccountObjec
 		require.NoError(t, err)
 	}
 }
+
+func (c *SnowflakeIntelligenceClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.SnowflakeIntelligence, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().SnowflakeIntelligences.ShowByID(ctx, id)
+}
+
+func (c *SnowflakeIntelligenceClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.SnowflakeIntelligenceDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().SnowflakeIntelligences.Describe(ctx, id)
+}
