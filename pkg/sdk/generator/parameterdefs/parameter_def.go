@@ -22,6 +22,7 @@ const (
 	ParameterLevelService              ParameterLevel = "SERVICE"
 	ParameterLevelUser                 ParameterLevel = "USER"
 	ParameterLevelSession              ParameterLevel = "SESSION"
+	ParameterLevelOpenflowDeployment   ParameterLevel = "OPENFLOW_DEPLOYMENT"
 	ParameterLevelWarehouse            ParameterLevel = "WAREHOUSE"
 	ParameterLevelWarehouseAdaptive    ParameterLevel = "WAREHOUSE_ADAPTIVE"
 	ParameterLevelWarehouseInteractive ParameterLevel = "WAREHOUSE_INTERACTIVE"

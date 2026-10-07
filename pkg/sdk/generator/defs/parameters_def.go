@@ -439,10 +439,12 @@ var (
 		Description: "Specifies whether to return an error when the [UPDATE](https://docs.snowflake.com/en/sql-reference/sql/update) command is used to update a target row that joins multiple source rows and the system cannot determine the action to perform on the target row.",
 	}
 	EventTable = parameterdefs.ParameterDef{
-		SqlName:     "EVENT_TABLE",
-		Kind:        g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
-		Levels:      onAccount,
-		Description: "Specifies the name of the event table for logging messages from stored procedures and UDFs contained by the object with which the event table is associated. Associating an event table with a database is available in [Enterprise Edition or higher](https://docs.snowflake.com/en/user-guide/intro-editions).",
+		SqlName:      "EVENT_TABLE",
+		Kind:         g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
+		Levels:       append(slices.Clone(onAccount), parameterdefs.ParameterLevelOpenflowDeployment),
+		Description:  "Specifies the name of the event table for logging messages from stored procedures and UDFs contained by the object with which the event table is associated. Associating an event table with a database is available in [Enterprise Edition or higher](https://docs.snowflake.com/en/user-guide/intro-editions).",
+		DefaultValue: "",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	ExternalOauthAddPrivilegedRolesToBlockedList = parameterdefs.ParameterDef{
 		SqlName:     "EXTERNAL_OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST",

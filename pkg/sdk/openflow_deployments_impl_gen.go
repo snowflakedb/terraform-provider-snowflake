@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -180,4 +181,23 @@ func (r openflowDeploymentDetailsRow) convert() (*OpenflowDeploymentDetails, err
 	mapNullString(&result.Key, r.Key)
 	mapNullString(&result.Comment, r.Comment)
 	return result, nil
+}
+
+func toOpenflowDeploymentParametersDetails(params []*Parameter) (*OpenflowDeploymentParametersDetails, error) {
+	byKey := parametersByKey(params)
+	var d OpenflowDeploymentParametersDetails
+	if err := errors.Join(
+		fillTypedParameter(byKey["EVENT_TABLE"], ParseSchemaObjectIdentifier, &d.EventTable),
+	); err != nil {
+		return nil, err
+	}
+	return &d, nil
+}
+
+func (v *openflowDeployments) ShowParametersDetails(ctx context.Context, id AccountObjectIdentifier) (*OpenflowDeploymentParametersDetails, error) {
+	params, err := v.ShowParameters(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return toOpenflowDeploymentParametersDetails(params)
 }

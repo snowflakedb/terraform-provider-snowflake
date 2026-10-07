@@ -1,9 +1,18 @@
 package defs
 
 import (
+	"slices"
+
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
+
+var openflowDeploymentParameters = ParameterDefsForLevel(parameterdefs.ParameterLevelOpenflowDeployment)
+
+var openflowDeploymentParameterFieldNames = collections.Map(openflowDeploymentParameters, g.ParameterSqlToFieldName)
 
 var OpenflowDeploymentTypeEnumDef = g.NewEnum(
 	"OpenflowDeploymentType", "OpenflowDeploymentTypes",
@@ -39,6 +48,11 @@ var OpenflowDeploymentStatusEnumDef = g.NewEnum(
 //
 // NONE is not the same as omitting the clause. NONE drops all events for the deployment, whereas leaving
 // it unset - or UNSET on ALTER - falls back to the account's default event table.
+//
+// This is why CREATE/SET still use this hand-written field instead of WithParameters(openflowDeploymentParameters...):
+// WithParameters' identifier case only emits a plain `EVENT_TABLE = <id>` assignment and has no way to express
+// the NONE alternative. WithParametersUnset has no such gap (UNSET is always the bare `EVENT_TABLE` keyword), so
+// the Unset struct below is catalog-driven.
 func openflowDeploymentEventTableDef() *g.QueryStruct {
 	return g.NewQueryStruct("OpenflowDeploymentEventTable").
 		OptionalIdentifier("EventTable", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SingleQuotes()).
@@ -85,7 +99,7 @@ var openflowDeploymentsDef = g.NewInterface(
 				OptionalTextAssignment("DISPLAY_NAME", g.ParameterOptions().SingleQuotes()).
 				OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 				OptionalQueryStructField("EventTable", openflowDeploymentEventTableDef(), g.ParameterOptions().SQL("EVENT_TABLE")).
-				WithValidation(g.AtLeastOneValueSet, "Comment", "DisplayName", "EventTable"),
+				WithValidation(g.AtLeastOneValueSet, append(slices.Clone(openflowDeploymentParameterFieldNames), "Comment", "DisplayName")...),
 			g.KeywordOptions().SQL("SET"),
 		).
 		OptionalQueryStructField(
@@ -93,8 +107,8 @@ var openflowDeploymentsDef = g.NewInterface(
 			g.NewQueryStruct("OpenflowDeploymentUnset").
 				OptionalSQL("DISPLAY_NAME").
 				OptionalSQL("COMMENT").
-				OptionalSQL("EVENT_TABLE").
-				WithValidation(g.AtLeastOneValueSet, "Comment", "DisplayName", "EventTable"),
+				WithParametersUnset(openflowDeploymentParameters...).
+				WithValidation(g.AtLeastOneValueSet, append(slices.Clone(openflowDeploymentParameterFieldNames), "Comment", "DisplayName")...),
 			g.ListOptions().NoParentheses().SQL("UNSET"),
 		).
 		WithValidation(g.ValidIdentifier, "name").
@@ -156,6 +170,8 @@ var openflowDeploymentsDef = g.NewInterface(
 	// SHOW PARAMETERS LIKE 'EVENT_TABLE' IN OPENFLOW DEPLOYMENT <name>, hence ShowParameters.
 ).ShowParameters(
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
+).ShowParametersDetails(
+	openflowDeploymentParameters...,
 ).WithEnums(
 	OpenflowDeploymentTypeEnumDef,
 	OpenflowVpcTypeEnumDef,

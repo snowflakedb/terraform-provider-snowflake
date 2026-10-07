@@ -18,6 +18,12 @@ type OpenflowDeployments interface {
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*OpenflowDeployment, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) (*OpenflowDeploymentDetails, error)
 	ShowParameters(ctx context.Context, id AccountObjectIdentifier) ([]*Parameter, error)
+	ShowParametersDetails(ctx context.Context, id AccountObjectIdentifier) (*OpenflowDeploymentParametersDetails, error)
+}
+
+// OpenflowDeploymentParametersDetails holds the object's parameters with values parsed into their Go types.
+type OpenflowDeploymentParametersDetails struct {
+	EventTable TypedParameter[SchemaObjectIdentifier]
 }
 
 // CreateOpenflowDeploymentOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-openflow-deployment.

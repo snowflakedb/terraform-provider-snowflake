@@ -29,6 +29,15 @@ func TestInt_OpenflowDeployments(t *testing.T) {
 
 	currentRole := testClientHelper().Context.CurrentRole(t)
 
+	assertOpenflowDeploymentParametersDetails := func(t *testing.T, id sdk.AccountObjectIdentifier, expectedEventTable string, expectedLevel *sdk.ParameterType) {
+		t.Helper()
+		assertion := objectparametersassert.OpenflowDeploymentParameters(t, id).HasEventTable(expectedEventTable)
+		if expectedLevel != nil {
+			assertion = assertion.HasEventTableLevel(*expectedLevel)
+		}
+		assertThatObject(t, assertion)
+	}
+
 	t.Run("create: basic byoc", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		request := sdk.NewCreateOpenflowDeploymentRequest(id, sdk.OpenflowDeploymentTypeByoc).
@@ -106,6 +115,24 @@ func TestInt_OpenflowDeployments(t *testing.T) {
 		)
 	})
 
+	t.Run("create: with event table", func(t *testing.T) {
+		eventTable, eventTableCleanup := testClientHelper().EventTable.Create(t)
+		t.Cleanup(eventTableCleanup)
+
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		request := sdk.NewCreateOpenflowDeploymentRequest(id, sdk.OpenflowDeploymentTypeByoc).
+			WithVpcType(sdk.OpenflowVpcTypeManaged).
+			WithEventTable(*sdk.NewOpenflowDeploymentEventTableRequest().WithEventTable(eventTable.ID()))
+
+		err := client.OpenflowDeployments.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().OpenflowDeployment.DropFunc(t, id))
+
+		testClientHelper().OpenflowDeployment.WaitUntilSettled(t, id, helpers.OpenflowDeploymentActiveTimeout)
+
+		assertOpenflowDeploymentParametersDetails(t, id, eventTable.ID().FullyQualifiedName(), sdk.Pointer(sdk.ParameterTypeOpenflowDeployment))
+	})
+
 	t.Run("alter: set and unset", func(t *testing.T) {
 		eventTable, eventTableCleanup := testClientHelper().EventTable.Create(t)
 		t.Cleanup(eventTableCleanup)
@@ -134,11 +161,7 @@ func TestInt_OpenflowDeployments(t *testing.T) {
 				HasComment(comment).
 				HasDisplayName(displayName),
 		)
-		assertThatObject(
-			t, objectparametersassert.OpenflowDeploymentParameters(t, id).
-				HasEventTable(eventTable.ID().FullyQualifiedName()).
-				HasEventTableLevel(sdk.ParameterTypeOpenflowDeployment),
-		)
+		assertOpenflowDeploymentParametersDetails(t, id, eventTable.ID().FullyQualifiedName(), sdk.Pointer(sdk.ParameterTypeOpenflowDeployment))
 
 		err = client.OpenflowDeployments.Alter(ctx, sdk.NewAlterOpenflowDeploymentRequest(id).WithUnset(
 			*sdk.NewOpenflowDeploymentUnsetRequest().WithComment(true).WithDisplayName(true).WithEventTable(true),
@@ -150,10 +173,7 @@ func TestInt_OpenflowDeployments(t *testing.T) {
 				HasNoComment().
 				HasNoDisplayName(),
 		)
-		assertThatObject(
-			t, objectparametersassert.OpenflowDeploymentParameters(t, id).
-				HasEventTable(accountEventTable),
-		)
+		assertOpenflowDeploymentParametersDetails(t, id, accountEventTable, nil)
 	})
 
 	t.Run("alter: rename", func(t *testing.T) {

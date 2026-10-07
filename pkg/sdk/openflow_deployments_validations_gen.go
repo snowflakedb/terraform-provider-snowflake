@@ -41,8 +41,8 @@ func (opts *AlterOpenflowDeploymentOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterOpenflowDeploymentOptions", "Upgrade", "Terminate", "RenameTo", "Set", "Unset"))
 	}
 	if valueSet(opts.Set) {
-		if !anyValueSet(opts.Set.Comment, opts.Set.DisplayName, opts.Set.EventTable) {
-			errs = append(errs, errAtLeastOneOf("AlterOpenflowDeploymentOptions.Set", "Comment", "DisplayName", "EventTable"))
+		if !anyValueSet(opts.Set.EventTable, opts.Set.Comment, opts.Set.DisplayName) {
+			errs = append(errs, errAtLeastOneOf("AlterOpenflowDeploymentOptions.Set", "EventTable", "Comment", "DisplayName"))
 		}
 		if valueSet(opts.Set.EventTable) {
 			if !exactlyOneValueSet(opts.Set.EventTable.EventTable, opts.Set.EventTable.None) {
@@ -51,8 +51,8 @@ func (opts *AlterOpenflowDeploymentOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.Comment, opts.Unset.DisplayName, opts.Unset.EventTable) {
-			errs = append(errs, errAtLeastOneOf("AlterOpenflowDeploymentOptions.Unset", "Comment", "DisplayName", "EventTable"))
+		if !anyValueSet(opts.Unset.EventTable, opts.Unset.Comment, opts.Unset.DisplayName) {
+			errs = append(errs, errAtLeastOneOf("AlterOpenflowDeploymentOptions.Unset", "EventTable", "Comment", "DisplayName"))
 		}
 	}
 	return JoinErrors(errs...)

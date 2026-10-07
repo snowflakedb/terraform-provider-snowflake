@@ -142,12 +142,12 @@ var openflowDeploymentsTests = OpenflowDeploymentsTestsContext{
 			},
 			validationCase[*AlterOpenflowDeploymentOptions]{
 				Name:        case_OpenflowDeployments_validation_Alter_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterOpenflowDeploymentOptions.Set", "Comment", "DisplayName", "EventTable"),
+				ExpectedErr: errAtLeastOneOf("AlterOpenflowDeploymentOptions.Set", "EventTable", "Comment", "DisplayName"),
 				DefaultModify: func(opts *AlterOpenflowDeploymentOptions) {
 					opts.Set = &OpenflowDeploymentSet{}
+					opts.Set.EventTable = nil
 					opts.Set.Comment = nil
 					opts.Set.DisplayName = nil
-					opts.Set.EventTable = nil
 				},
 			},
 			validationCase[*AlterOpenflowDeploymentOptions]{
@@ -172,12 +172,12 @@ var openflowDeploymentsTests = OpenflowDeploymentsTestsContext{
 			},
 			validationCase[*AlterOpenflowDeploymentOptions]{
 				Name:        case_OpenflowDeployments_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterOpenflowDeploymentOptions.Unset", "Comment", "DisplayName", "EventTable"),
+				ExpectedErr: errAtLeastOneOf("AlterOpenflowDeploymentOptions.Unset", "EventTable", "Comment", "DisplayName"),
 				DefaultModify: func(opts *AlterOpenflowDeploymentOptions) {
 					opts.Unset = &OpenflowDeploymentUnset{}
+					opts.Unset.EventTable = nil
 					opts.Unset.Comment = nil
 					opts.Unset.DisplayName = nil
-					opts.Unset.EventTable = nil
 				},
 			},
 		).

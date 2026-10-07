@@ -106,6 +106,12 @@ func TestParameterDefsForLevel(t *testing.T) {
 		require.Contains(t, sqlNames(ParameterDefsForLevel(parameterdefs.ParameterLevelAccountExt)), "ENABLE_CONSOLE_OUTPUT")
 	})
 
+	t.Run("openflow deployment level", func(t *testing.T) {
+		require.Equal(t, []string{
+			"EVENT_TABLE",
+		}, sqlNames(ParameterDefsForLevel(parameterdefs.ParameterLevelOpenflowDeployment)))
+	})
+
 	t.Run("unknown level", func(t *testing.T) {
 		require.Empty(t, ParameterDefsForLevel(parameterdefs.ParameterLevel("NOT_A_LEVEL")))
 	})

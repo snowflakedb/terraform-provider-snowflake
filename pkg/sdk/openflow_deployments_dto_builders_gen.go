@@ -145,6 +145,16 @@ func (s *OpenflowDeploymentUnsetRequest) WithEventTable(eventTable bool) *Openfl
 	return s
 }
 
+func (s *OpenflowDeploymentUnsetRequest) UnsetParameterFromRaw(key string) error {
+	switch key {
+	case "EVENT_TABLE":
+		s.EventTable = Bool(true)
+	default:
+		return ErrParameterNotSupported
+	}
+	return nil
+}
+
 func NewDropOpenflowDeploymentRequest(
 	name AccountObjectIdentifier,
 ) *DropOpenflowDeploymentRequest {
