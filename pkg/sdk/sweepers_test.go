@@ -83,6 +83,7 @@ func sweep(client *sdk.Client, suffix string, includePostgres bool) error {
 		nukeStorageIntegrations(client, suffix),
 		nukeApiIntegrations(client, suffix),
 		nukeCatalogIntegrations(client, suffix),
+		nukeSnowflakeIntelligences(client),
 		nukeExternalAccessIntegrations(client, suffix),
 		nukeComputePools(client, suffix),
 		nukeConnections(client, suffix),
@@ -270,6 +271,13 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 	t.Run("sweep catalog integrations", func(t *testing.T) {
 		for _, c := range allClients {
 			err := nukeCatalogIntegrations(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep snowflake intelligences", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeSnowflakeIntelligences(c)()
 			assert.NoError(t, err)
 		}
 	})
@@ -537,6 +545,36 @@ func nukeCatalogIntegrations(client *sdk.Client, suffix string) func() error {
 		id:         func(object sdk.CatalogIntegration) sdk.AccountObjectIdentifier { return object.ID() },
 		dropSafely: client.CatalogIntegrations.DropSafely,
 	})
+}
+
+// nukeSnowflakeIntelligences drops every Snowflake Intelligence in the account.
+// An account can hold only one, and any leftover blocks the tests, so this sweeper
+// does not filter by the test suffix or by age.
+func nukeSnowflakeIntelligences(client *sdk.Client) func() error {
+	return func() error {
+		ctx := context.Background()
+
+		log.Printf("[DEBUG] Sweeping all snowflake intelligences")
+
+		objects, err := client.SnowflakeIntelligences.Show(ctx, sdk.NewShowSnowflakeIntelligenceRequest())
+		if err != nil {
+			return fmt.Errorf("showing snowflake intelligences ended with error, err = %w", err)
+		}
+
+		log.Printf("[DEBUG] Found %d snowflake intelligences", len(objects))
+
+		var errs []error
+		for idx, object := range objects {
+			id := object.ID()
+			log.Printf("[DEBUG] Dropping snowflake intelligence [%d/%d]: %s", idx+1, len(objects), id.FullyQualifiedName())
+			if err := client.SnowflakeIntelligences.DropSafely(ctx, id); err != nil {
+				log.Printf("[DEBUG] Dropping snowflake intelligence %s, resulted in error %v", id.FullyQualifiedName(), err)
+				errs = append(errs, fmt.Errorf("sweeping snowflake intelligence %s ended with error, err = %w", id.FullyQualifiedName(), err))
+			}
+		}
+
+		return errors.Join(errs...)
+	}
 }
 
 func nukeExternalAccessIntegrations(client *sdk.Client, suffix string) func() error {
