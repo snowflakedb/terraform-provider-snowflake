@@ -104,10 +104,10 @@ func importIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) (
 }
 
 func readIcebergTable(ctx context.Context, d *schema.ResourceData, meta any, setExtra func(d *schema.ResourceData, table *sdk.IcebergTable, details []sdk.IcebergTableDetails) error) diag.Diagnostics {
-	return readIcebergTableWithParameterHandler(ctx, d, meta, handleIcebergTableParameterRead, schemas.IcebergTableExternallyManagedParametersToSchema, setExtra)
+	return readIcebergTableWithParameterHandler(ctx, d, meta, handleIcebergTableExternalManagedParameterRead, schemas.IcebergTableExternallyManagedParametersToSchema, setExtra)
 }
 
-func readIcebergTableWithParameterHandler(ctx context.Context, d *schema.ResourceData, meta any, handleParameterRead func(d *schema.ResourceData, parameters []*sdk.Parameter) error, parametersToSchema func([]*sdk.Parameter, *provider.Context) map[string]any, setExtra func(d *schema.ResourceData, table *sdk.IcebergTable, details []sdk.IcebergTableDetails) error) diag.Diagnostics {
+func readIcebergTableWithParameterHandler(ctx context.Context, d *schema.ResourceData, meta any, handleParameterRead func(d *schema.ResourceData, parameters []*sdk.Parameter, parameterDetails *sdk.IcebergTableParametersDetails) diag.Diagnostics, parametersToSchema func([]*sdk.Parameter, *provider.Context) map[string]any, setExtra func(d *schema.ResourceData, table *sdk.IcebergTable, details []sdk.IcebergTableDetails) error) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
@@ -139,6 +139,11 @@ func readIcebergTableWithParameterHandler(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(fmt.Errorf("could not show parameters for Iceberg table (%s), err = %w", id.FullyQualifiedName(), err))
 	}
 
+	parameterDetails, err := sdk.ToIcebergTableParametersDetails(parameters)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("could not parse parameters for Iceberg table (%s), err = %w", id.FullyQualifiedName(), err))
+	}
+
 	var comment string
 	if table.Comment != nil {
 		comment = *table.Comment
@@ -159,22 +164,11 @@ func readIcebergTableWithParameterHandler(ctx context.Context, d *schema.Resourc
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.IcebergTableToSchema(table)}),
 		d.Set(DescribeOutputAttributeName, schemas.IcebergTableDetailsListToSchema(details)),
 		d.Set(ParametersAttributeName, []map[string]any{parametersToSchema(parameters, providerCtx)}),
-		handleParameterRead(d, parameters),
 	)
 	if errs != nil {
 		return diag.FromErr(errs)
 	}
-	return nil
-}
-
-// handleIcebergTableParametersCreate populates the parameter-backed fields shared by all Iceberg
-// table create requests (external_volume, catalog, replace_invalid_characters).
-func handleIcebergTableParametersCreate(d *schema.ResourceData, externalVolume, catalog **sdk.AccountObjectIdentifier, replaceInvalidCharacters **bool) diag.Diagnostics {
-	return JoinDiags(
-		handleParameterCreateWithMapping(d, sdk.IcebergTableParameterExternalVolume, externalVolume, sdk.ParseAccountObjectIdentifier),
-		handleParameterCreateWithMapping(d, sdk.IcebergTableParameterCatalog, catalog, sdk.ParseAccountObjectIdentifier),
-		handleParameterCreate(d, sdk.IcebergTableParameterReplaceInvalidCharacters, replaceInvalidCharacters),
-	)
+	return handleParameterRead(d, parameters, parameterDetails)
 }
 
 func handleIcebergTableCommonUpdate(d *schema.ResourceData, set *sdk.IcebergTableSetPropertiesRequest, unset *sdk.IcebergTableUnsetPropertiesRequest) diag.Diagnostics {
@@ -183,7 +177,7 @@ func handleIcebergTableCommonUpdate(d *schema.ResourceData, set *sdk.IcebergTabl
 	); errs != nil {
 		return diag.FromErr(errs)
 	}
-	if diags := handleParameterUpdate(d, sdk.IcebergTableParameterReplaceInvalidCharacters, &set.ReplaceInvalidCharacters, &unset.ReplaceInvalidCharacters); len(diags) > 0 {
+	if diags := handleIcebergTableExternalManagedParametersUpdate(set, unset, d); len(diags) > 0 {
 		return diags
 	}
 	return nil

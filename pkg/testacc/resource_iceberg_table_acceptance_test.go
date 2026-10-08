@@ -897,11 +897,11 @@ func TestAcc_IcebergTable_Validations(t *testing.T) {
 			},
 			{
 				Config:      accconfig.FromModels(t, baseModel().WithTargetFileSize("INVALID")),
-				ExpectError: regexp.MustCompile(`expected .*target_file_size.* to be one of .*, got INVALID`),
+				ExpectError: regexp.MustCompile(`invalid iceberg table target file size: INVALID`),
 			},
 			{
 				Config:      accconfig.FromModels(t, baseModel().WithStorageSerializationPolicy("INVALID")),
-				ExpectError: regexp.MustCompile(`expected .*storage_serialization_policy.* to be one of .*, got INVALID`),
+				ExpectError: regexp.MustCompile(`invalid storage serialization policy: INVALID`),
 			},
 			{
 				Config:      accconfig.FromModels(t, baseModel().WithIcebergVersion(0)),

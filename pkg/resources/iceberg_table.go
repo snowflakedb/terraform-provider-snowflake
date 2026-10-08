@@ -405,37 +405,6 @@ func UpdateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 	return ReadIcebergTableFunc(false)(ctx, d, meta)
 }
 
-func handleIcebergTableSnowflakeManagedParametersCreate(d *schema.ResourceData, req *sdk.CreateIcebergTableRequest) diag.Diagnostics {
-	if diags := JoinDiags(
-		handleParameterCreateWithMapping(d, sdk.IcebergTableParameterExternalVolume, &req.ExternalVolume, sdk.ParseAccountObjectIdentifier),
-		handleParameterCreateWithMapping(d, sdk.IcebergTableParameterCatalog, &req.Catalog, stringToStringEnumProvider(sdk.ToIcebergTableCatalog)),
-		handleParameterCreateWithMapping(d, sdk.IcebergTableParameterTargetFileSize, &req.TargetFileSize, stringToStringEnumProvider(sdk.ToIcebergTableTargetFileSize)),
-		handleParameterCreateWithMapping(d, sdk.IcebergTableParameterStorageSerializationPolicy, &req.StorageSerializationPolicy, stringToStringEnumProvider(sdk.ToStorageSerializationPolicy)),
-		handleParameterCreate(d, sdk.IcebergTableParameterCatalogSync, &req.CatalogSync),
-		handleParameterCreate(d, sdk.IcebergTableParameterDataRetentionTimeInDays, &req.DataRetentionTimeInDays),
-		handleParameterCreate(d, sdk.IcebergTableParameterMaxDataExtensionTimeInDays, &req.MaxDataExtensionTimeInDays),
-		handleParameterCreate(d, sdk.IcebergTableParameterEnableDataCompaction, &req.EnableDataCompaction),
-		handleParameterCreate(d, sdk.IcebergTableParameterEnableIcebergMergeOnRead, &req.EnableIcebergMergeOnRead),
-	); diags.HasError() {
-		return diags
-	}
-
-	return nil
-}
-
-// handleIcebergTableParametersUpdate populates the set/unset requests for all alterable Iceberg table parameters.
-// storage_serialization_policy is intentionally omitted: it is create-only (ForceNew) and cannot be altered.
-func handleIcebergTableSnowflakeManagedParametersUpdate(d *schema.ResourceData, set *sdk.IcebergTableSetPropertiesRequest, unset *sdk.IcebergTableUnsetPropertiesRequest) diag.Diagnostics {
-	return JoinDiags(
-		handleParameterUpdate(d, sdk.IcebergTableParameterCatalogSync, &set.CatalogSync, &unset.CatalogSync),
-		handleParameterUpdate(d, sdk.IcebergTableParameterDataRetentionTimeInDays, &set.DataRetentionTimeInDays, &unset.DataRetentionTimeInDays),
-		handleParameterUpdate(d, sdk.IcebergTableParameterMaxDataExtensionTimeInDays, &set.MaxDataExtensionTimeInDays, &unset.MaxDataExtensionTimeInDays),
-		handleParameterUpdate(d, sdk.IcebergTableParameterEnableDataCompaction, &set.EnableDataCompaction, &unset.EnableDataCompaction),
-		handleParameterUpdate(d, sdk.IcebergTableParameterEnableIcebergMergeOnRead, &set.EnableIcebergMergeOnRead, &unset.EnableIcebergMergeOnRead),
-		handleParameterUpdateWithMapping(d, sdk.IcebergTableParameterTargetFileSize, &set.TargetFileSize, &unset.TargetFileSize, stringToStringEnumProvider(sdk.ToIcebergTableTargetFileSize)),
-	)
-}
-
 func handleIcebergTableColumns(columns []sdk.IcebergTableDetails, policyRefs []sdk.PolicyReference) []map[string]any {
 	if len(columns) == 0 {
 		return nil

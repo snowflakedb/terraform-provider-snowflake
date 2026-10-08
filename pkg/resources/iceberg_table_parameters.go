@@ -2,266 +2,173 @@ package resources
 
 import (
 	"context"
-	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// icebergTableExternalManagedParametersSchema returns the parameter-backed schema fields shared by all Iceberg
-// table resources (external_volume, catalog, replace_invalid_characters). It is a builder for the
-// same reason as icebergTableCommonSchema.
-func icebergTableExternalManagedParametersSchema() map[string]*schema.Schema {
-	parametersSchema := icebergTableCommonParametersSchema()
-
-	fieldName := strings.ToLower(string(sdk.IcebergTableParameterReplaceInvalidCharacters))
-	parametersSchema[fieldName] = &schema.Schema{
-		Type:        schema.TypeBool,
-		Description: enrichWithReferenceToParameterDocs(sdk.IcebergTableParameterReplaceInvalidCharacters, "Specifies whether to replace invalid UTF-8 characters with the Unicode replacement character (`�`) in query results for an Iceberg table."),
-		Computed:    true,
-		Optional:    true,
-	}
-	return parametersSchema
-}
-
+// external_volume and catalog are ForceNew: Snowflake does not support altering them after creation
+// for any Iceberg table type.
 func icebergTableCommonParametersSchema() map[string]*schema.Schema {
 	parametersSchema := make(map[string]*schema.Schema)
-
-	forceNewFields := []parameterDef[sdk.IcebergTableParameter]{
-		{
-			Name:         sdk.IcebergTableParameterExternalVolume,
-			Type:         schema.TypeString,
-			Description:  "Specifies the identifier for the external volume where the Iceberg table stores its metadata files and data in Parquet format. If not specified, the account-level default is used.",
-			DiffSuppress: suppressIdentifierQuoting,
-		},
-		{
-			Name:         sdk.IcebergTableParameterCatalog,
-			Type:         schema.TypeString,
-			Description:  "Specifies the identifier for the catalog integration to use for the Iceberg table. If not specified, the account-level default is used.",
-			DiffSuppress: suppressIdentifierQuoting,
-		},
+	for _, p := range []parameterdefs.ParameterDef{defs.ExternalVolume, defs.Catalog} {
+		s := parameterSchema(p)
+		s.ForceNew = true
+		parametersSchema[p.FieldName()] = s
 	}
-	for _, field := range forceNewFields {
-		fieldName := strings.ToLower(string(field.Name))
-		parametersSchema[fieldName] = &schema.Schema{
-			Type:             field.Type,
-			Description:      field.Description,
-			Computed:         true,
-			Optional:         true,
-			ForceNew:         true,
-			DiffSuppressFunc: field.DiffSuppress,
-		}
-	}
-
 	return parametersSchema
 }
 
-var icebergTableExternalManagedParametersCustomDiff = ParametersCustomDiff(
-	icebergTableParametersProvider,
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterExternalVolume, valueTypeString, sdk.ParameterTypeTable},
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterCatalog, valueTypeString, sdk.ParameterTypeTable},
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterReplaceInvalidCharacters, valueTypeBool, sdk.ParameterTypeTable},
-)
-
-// icebergTableFromRestParametersCustomDiff extends the common Iceberg table parameters custom diff
-// with the additional parameter-backed fields supported by the REST catalog create path.
-var icebergTableFromRestParametersCustomDiff = ParametersCustomDiff(
-	icebergTableParametersProvider,
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterExternalVolume, valueTypeString, sdk.ParameterTypeTable},
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterCatalog, valueTypeString, sdk.ParameterTypeTable},
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterReplaceInvalidCharacters, valueTypeBool, sdk.ParameterTypeTable},
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterTargetFileSize, valueTypeString, sdk.ParameterTypeTable},
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterStorageSerializationPolicy, valueTypeString, sdk.ParameterTypeTable},
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterEnableIcebergMergeOnRead, valueTypeBool, sdk.ParameterTypeTable},
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterIcebergMergeOnReadBehavior, valueTypeString, sdk.ParameterTypeTable},
-)
+func icebergTableExternalManagedParametersSchema() map[string]*schema.Schema {
+	parametersSchema := icebergTableCommonParametersSchema()
+	parametersSchema[defs.ReplaceInvalidCharacters.FieldName()] = parameterSchema(defs.ReplaceInvalidCharacters)
+	return parametersSchema
+}
 
 func icebergTableFromRestParametersSchema() map[string]*schema.Schema {
 	parametersSchema := icebergTableExternalManagedParametersSchema()
-	fields := []parameterDef[sdk.IcebergTableParameter]{
-		{
-			Name:         sdk.IcebergTableParameterTargetFileSize,
-			Type:         schema.TypeString,
-			ValidateDiag: StringInSlice(sdk.AsStringList(sdk.AllIcebergTableTargetFileSizes), true),
-			Description:  enrichWithReferenceToParameterDocs(sdk.IcebergTableParameterTargetFileSize, fmt.Sprintf("Specifies the target file size (in bytes) used when writing the Iceberg table's Parquet files. Valid values are: %v.", sdk.AllIcebergTableTargetFileSizes)),
-		},
-		{
-			Name:        sdk.IcebergTableParameterEnableIcebergMergeOnRead,
-			Type:        schema.TypeBool,
-			Description: enrichWithReferenceToParameterDocs(sdk.IcebergTableParameterEnableIcebergMergeOnRead, "Specifies whether merge-on-read is enabled for the Iceberg table."),
-		},
-	}
-	for _, field := range fields {
-		fieldName := strings.ToLower(string(field.Name))
-		parametersSchema[fieldName] = &schema.Schema{
-			Type:             field.Type,
-			Description:      field.Description,
-			Computed:         true,
-			Optional:         true,
-			DiffSuppressFunc: field.DiffSuppress,
-			ValidateDiagFunc: field.ValidateDiag,
-		}
-	}
+	parametersSchema[defs.TargetFileSize.FieldName()] = parameterSchema(defs.TargetFileSize)
+	parametersSchema[defs.EnableIcebergMergeOnRead.FieldName()] = parameterSchema(defs.EnableIcebergMergeOnRead)
 
-	fieldsWithForceNew := []parameterDef[sdk.IcebergTableParameter]{
-		{
-			Name:         sdk.IcebergTableParameterStorageSerializationPolicy,
-			Type:         schema.TypeString,
-			Description:  enrichWithReferenceToParameterDocs(sdk.IcebergTableParameterStorageSerializationPolicy, fmt.Sprintf("Specifies the storage serialization policy for the Iceberg table. Valid values are: %v. Cannot be changed after creation.", sdk.AllStorageSerializationPolicies)),
-			ValidateDiag: StringInSlice(sdk.AsStringList(sdk.AllStorageSerializationPolicies), true),
-		},
-		// TODO (next PRs): this is now available in ALTER ... SET - add to sdk and make it non-force-new here.
-		{
-			Name:         sdk.IcebergTableParameterIcebergMergeOnReadBehavior,
-			Type:         schema.TypeString,
-			ValidateDiag: StringInSlice(sdk.AsStringList(sdk.AllIcebergTableIcebergMergeOnReadBehaviors), true),
-			Description:  enrichWithReferenceToParameterDocs(sdk.IcebergTableParameterIcebergMergeOnReadBehavior, fmt.Sprintf("Specifies the merge-on-read behavior for the Iceberg table. Valid values are: %v. Cannot be changed after creation.", sdk.AllIcebergTableIcebergMergeOnReadBehaviors)),
-		},
-	}
-	for _, field := range fieldsWithForceNew {
-		fieldName := strings.ToLower(string(field.Name))
-		parametersSchema[fieldName] = &schema.Schema{
-			Type:             field.Type,
-			Description:      field.Description,
-			ForceNew:         true,
-			Computed:         true,
-			Optional:         true,
-			ValidateDiagFunc: field.ValidateDiag,
-		}
-	}
+	storageSerializationPolicy := parameterSchema(defs.StorageSerializationPolicy)
+	storageSerializationPolicy.ForceNew = true
+	parametersSchema[defs.StorageSerializationPolicy.FieldName()] = storageSerializationPolicy
+
+	// TODO (next PRs): this is now available in ALTER ... SET - add to sdk and make it non-force-new here.
+	icebergMergeOnReadBehavior := parameterSchema(defs.IcebergMergeOnReadBehavior)
+	icebergMergeOnReadBehavior.ForceNew = true
+	parametersSchema[defs.IcebergMergeOnReadBehavior.FieldName()] = icebergMergeOnReadBehavior
+
 	return parametersSchema
-}
-
-func icebergTableParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) ([]*sdk.Parameter, error) {
-	return parametersProvider(ctx, d, meta.(*provider.Context), icebergTableParametersProviderFunc, sdk.ParseSchemaObjectIdentifier)
-}
-
-func icebergTableParametersProviderFunc(c *sdk.Client) showParametersFunc[sdk.SchemaObjectIdentifier] {
-	return c.IcebergTables.ShowParameters
-}
-
-func handleIcebergTableCommonParameterRead(d *schema.ResourceData, parameters []*sdk.Parameter) error {
-	for _, p := range parameters {
-		switch p.Key {
-		case string(sdk.IcebergTableParameterExternalVolume),
-			string(sdk.IcebergTableParameterCatalog):
-			if err := d.Set(strings.ToLower(p.Key), p.Value); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-// handleIcebergTableParameterRead extends handleIcebergTableCommonParameterRead with
-// replace_invalid_characters, which is exposed by all Iceberg table resources except the
-// Snowflake-managed one (see handleIcebergTableSnowflakeManagedParameterRead).
-func handleIcebergTableParameterRead(d *schema.ResourceData, parameters []*sdk.Parameter) error {
-	if err := handleIcebergTableCommonParameterRead(d, parameters); err != nil {
-		return err
-	}
-	for _, p := range parameters {
-		if p.Key == string(sdk.IcebergTableParameterReplaceInvalidCharacters) {
-			value, err := strconv.ParseBool(p.Value)
-			if err != nil {
-				return err
-			}
-			if err := d.Set(strings.ToLower(p.Key), value); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-// handleIcebergTableFromRestParameterRead extends handleIcebergTableParameterRead with the additional
-// parameter-backed fields supported by the REST catalog create path.
-func handleIcebergTableFromRestParameterRead(d *schema.ResourceData, parameters []*sdk.Parameter) error {
-	if err := handleIcebergTableParameterRead(d, parameters); err != nil {
-		return err
-	}
-	for _, p := range parameters {
-		switch p.Key {
-		case string(sdk.IcebergTableParameterTargetFileSize),
-			string(sdk.IcebergTableParameterStorageSerializationPolicy),
-			string(sdk.IcebergTableParameterIcebergMergeOnReadBehavior):
-			if err := d.Set(strings.ToLower(p.Key), p.Value); err != nil {
-				return err
-			}
-		case string(sdk.IcebergTableParameterEnableIcebergMergeOnRead):
-			value, err := strconv.ParseBool(p.Value)
-			if err != nil {
-				return err
-			}
-			if err := d.Set(strings.ToLower(p.Key), value); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
 }
 
 func icebergTableSnowflakeManagedParametersSchema() map[string]*schema.Schema {
 	parametersSchema := icebergTableCommonParametersSchema()
 
-	fields := []parameterDef[sdk.IcebergTableParameter]{
-		{
-			Name:         sdk.IcebergTableParameterTargetFileSize,
-			Type:         schema.TypeString,
-			ValidateDiag: StringInSlice(sdk.AsStringList(sdk.AllIcebergTableTargetFileSizes), true),
-			Description:  enrichWithReferenceToParameterDocs(sdk.IcebergTableParameterTargetFileSize, fmt.Sprintf("Specifies the target file size (in bytes) used when writing the Iceberg table's Parquet files. Valid values are: %v.", sdk.AllIcebergTableTargetFileSizes)),
-		},
-		{
-			Name:        sdk.IcebergTableParameterCatalogSync,
-			Type:        schema.TypeString,
-			Description: enrichWithReferenceToParameterDocs(sdk.IcebergTableParameterCatalogSync, "Specifies the name of the catalog integration that Snowflake uses to automatically synchronize the Iceberg table with an external catalog."),
-		},
-		{
-			Name:        sdk.IcebergTableParameterDataRetentionTimeInDays,
-			Type:        schema.TypeInt,
-			Description: enrichWithReferenceToParameterDocs(sdk.IcebergTableParameterDataRetentionTimeInDays, "Specifies the retention period for the Iceberg table so that Time Travel actions can be performed on historical data."),
-		},
-		{
-			Name:        sdk.IcebergTableParameterMaxDataExtensionTimeInDays,
-			Type:        schema.TypeInt,
-			Description: enrichWithReferenceToParameterDocs(sdk.IcebergTableParameterMaxDataExtensionTimeInDays, "Specifies the maximum number of days for which Snowflake can extend the data retention period for the Iceberg table to prevent streams on the table from becoming stale."),
-		},
-		{
-			Name:        sdk.IcebergTableParameterEnableDataCompaction,
-			Type:        schema.TypeBool,
-			Description: enrichWithReferenceToParameterDocs(sdk.IcebergTableParameterEnableDataCompaction, "Specifies whether automatic background data compaction is enabled for the Iceberg table."),
-		},
-		{
-			Name:        sdk.IcebergTableParameterEnableIcebergMergeOnRead,
-			Type:        schema.TypeBool,
-			Description: enrichWithReferenceToParameterDocs(sdk.IcebergTableParameterEnableIcebergMergeOnRead, "Specifies whether merge-on-read is enabled for the Iceberg table."),
-		},
-	}
-	for _, field := range fields {
-		fieldName := strings.ToLower(string(field.Name))
-		parametersSchema[fieldName] = &schema.Schema{
-			Type:             field.Type,
-			Description:      field.Description,
-			Computed:         true,
-			Optional:         true,
-			ValidateDiagFunc: field.ValidateDiag,
-		}
+	for _, p := range []parameterdefs.ParameterDef{
+		defs.TargetFileSize,
+		defs.CatalogSync,
+		defs.DataRetentionTimeInDays,
+		defs.MaxDataExtensionTimeInDays,
+		defs.EnableDataCompaction,
+		defs.EnableIcebergMergeOnRead,
+	} {
+		parametersSchema[p.FieldName()] = parameterSchema(p)
 	}
 
 	// storage_serialization_policy is only accepted at CREATE time (there is no ALTER ... SET for it), so it is ForceNew.
-	fieldName := strings.ToLower(string(sdk.IcebergTableParameterStorageSerializationPolicy))
-	parametersSchema[fieldName] = &schema.Schema{
-		Type:             schema.TypeString,
-		Description:      enrichWithReferenceToParameterDocs(sdk.IcebergTableParameterStorageSerializationPolicy, fmt.Sprintf("Specifies the storage serialization policy for the Iceberg table. Valid values are: %v. Cannot be changed after creation.", sdk.AllStorageSerializationPolicies)),
-		ForceNew:         true,
-		Computed:         true,
-		Optional:         true,
-		ValidateDiagFunc: StringInSlice(sdk.AsStringList(sdk.AllStorageSerializationPolicies), true),
-	}
+	storageSerializationPolicy := parameterSchema(defs.StorageSerializationPolicy)
+	storageSerializationPolicy.ForceNew = true
+	parametersSchema[defs.StorageSerializationPolicy.FieldName()] = storageSerializationPolicy
+
 	return parametersSchema
+}
+
+func icebergTableParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) (*sdk.IcebergTableParametersDetails, error) {
+	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
+	if err != nil {
+		return nil, err
+	}
+	return meta.(*provider.Context).Client.IcebergTables.ShowParametersDetails(ctx, id)
+}
+
+func icebergTableExternalManagedParameterDiffFunctions(parameters *sdk.IcebergTableParametersDetails) []schema.CustomizeDiffFunc {
+	return []schema.CustomizeDiffFunc{
+		IdentifierTypedParameterValueComputedIf(defs.ExternalVolume.FieldName(), parameters.ExternalVolume, sdk.ParameterTypeTable),
+		IdentifierTypedParameterValueComputedIf(defs.Catalog.FieldName(), parameters.Catalog, sdk.ParameterTypeTable),
+		BoolTypedParameterValueComputedIf(defs.ReplaceInvalidCharacters.FieldName(), parameters.ReplaceInvalidCharacters, sdk.ParameterTypeTable),
+	}
+}
+
+var icebergTableExternalManagedParametersCustomDiff = ParametersCustomDiffFromTypedParameters(
+	icebergTableParametersProvider,
+	icebergTableExternalManagedParameterDiffFunctions,
+)
+
+var icebergTableFromRestParametersCustomDiff = ParametersCustomDiffFromTypedParameters(
+	icebergTableParametersProvider,
+	icebergTableFromRestParameterDiffFunctions,
+)
+
+func icebergTableFromRestParameterDiffFunctions(parameters *sdk.IcebergTableParametersDetails) []schema.CustomizeDiffFunc {
+	return append(
+		icebergTableExternalManagedParameterDiffFunctions(parameters),
+		StringTypedParameterValueComputedIf(defs.TargetFileSize.FieldName(), parameters.TargetFileSize, sdk.ParameterTypeTable),
+		BoolTypedParameterValueComputedIf(defs.EnableIcebergMergeOnRead.FieldName(), parameters.EnableIcebergMergeOnRead, sdk.ParameterTypeTable),
+	)
+}
+
+func handleIcebergTableExternalManagedParametersCreate(d *schema.ResourceData, externalVolume, catalog **sdk.AccountObjectIdentifier, replaceInvalidCharacters **bool) diag.Diagnostics {
+	return JoinDiags(
+		handleParameterCreateWithMapping(d, defs.ExternalVolume.FieldName(), externalVolume, sdk.ParseAccountObjectIdentifier),
+		handleParameterCreateWithMapping(d, defs.Catalog.FieldName(), catalog, sdk.ParseAccountObjectIdentifier),
+		handleParameterCreate(d, defs.ReplaceInvalidCharacters.FieldName(), replaceInvalidCharacters),
+	)
+}
+
+// replace_invalid_characters is the only alterable parameter here: external_volume and catalog are
+// both ForceNew.
+func handleIcebergTableExternalManagedParametersUpdate(set *sdk.IcebergTableSetPropertiesRequest, unset *sdk.IcebergTableUnsetPropertiesRequest, d *schema.ResourceData) diag.Diagnostics {
+	return handleParameterUpdate(d, defs.ReplaceInvalidCharacters.FieldName(), &set.ReplaceInvalidCharacters, &unset.ReplaceInvalidCharacters)
+}
+
+// rawParameterValue returns the as-reported SHOW PARAMETERS value for key, or "" if absent.
+func rawParameterValue(parameters []*sdk.Parameter, key string) string {
+	for _, p := range parameters {
+		if strings.EqualFold(p.Key, key) {
+			return p.Value
+		}
+	}
+	return ""
+}
+
+// external_volume/catalog are read from the raw SHOW PARAMETERS value rather than the typed
+// AccountObjectIdentifier: Snowflake reports these inconsistently quoted depending on whether the
+// value is inherited or explicitly set, and the typed identifier can only render one fixed form.
+func handleIcebergTableExternalManagedParameterRead(d *schema.ResourceData, parameters []*sdk.Parameter, parameterDetails *sdk.IcebergTableParametersDetails) diag.Diagnostics {
+	return JoinDiags(
+		setResourceData(d, defs.ExternalVolume.FieldName(), rawParameterValue(parameters, defs.ExternalVolume.SqlName)),
+		setResourceData(d, defs.Catalog.FieldName(), rawParameterValue(parameters, defs.Catalog.SqlName)),
+		setResourceData(d, defs.ReplaceInvalidCharacters.FieldName(), parameterDetails.ReplaceInvalidCharacters.Value),
+	)
+}
+
+func handleIcebergTableFromRestParametersCreate(d *schema.ResourceData, req *sdk.CreateFromIcebergRestIcebergTableRequest) diag.Diagnostics {
+	return JoinDiags(
+		handleParameterCreateWithMapping(d, defs.TargetFileSize.FieldName(), &req.TargetFileSize, stringToStringEnumProvider(sdk.ToIcebergTableTargetFileSize)),
+		handleParameterCreateWithMapping(d, defs.StorageSerializationPolicy.FieldName(), &req.StorageSerializationPolicy, stringToStringEnumProvider(sdk.ToStorageSerializationPolicy)),
+		handleParameterCreateWithMapping(d, defs.IcebergMergeOnReadBehavior.FieldName(), &req.IcebergMergeOnReadBehavior, stringToStringEnumProvider(sdk.ToIcebergTableIcebergMergeOnReadBehavior)),
+		handleParameterCreate(d, defs.EnableIcebergMergeOnRead.FieldName(), &req.EnableIcebergMergeOnRead),
+	)
+}
+
+// storage_serialization_policy and iceberg_merge_on_read_behavior are omitted: both are create-only
+// (ForceNew) and cannot be altered.
+//
+// NOTE(SNOW-3735539): altering replace_invalid_characters and target_file_size together with comment
+// does not cause any changes, so changes to these parameters must be applied via a separate ALTER call
+// from the comment update - see UpdateIcebergTableFromRest.
+func handleIcebergTableFromRestParametersUpdate(d *schema.ResourceData, set *sdk.IcebergTableSetPropertiesRequest, unset *sdk.IcebergTableUnsetPropertiesRequest) diag.Diagnostics {
+	return JoinDiags(
+		handleParameterUpdateWithMapping(d, defs.TargetFileSize.FieldName(), &set.TargetFileSize, &unset.TargetFileSize, stringToStringEnumProvider(sdk.ToIcebergTableTargetFileSize)),
+		handleParameterUpdate(d, defs.ReplaceInvalidCharacters.FieldName(), &set.ReplaceInvalidCharacters, &unset.ReplaceInvalidCharacters),
+		handleParameterUpdate(d, defs.EnableIcebergMergeOnRead.FieldName(), &set.EnableIcebergMergeOnRead, &unset.EnableIcebergMergeOnRead),
+	)
+}
+
+func handleIcebergTableFromRestParameterRead(d *schema.ResourceData, parameters []*sdk.Parameter, parameterDetails *sdk.IcebergTableParametersDetails) diag.Diagnostics {
+	return JoinDiags(
+		handleIcebergTableExternalManagedParameterRead(d, parameters, parameterDetails),
+		setResourceData(d, defs.TargetFileSize.FieldName(), parameterDetails.TargetFileSize.Value),
+		setResourceData(d, defs.StorageSerializationPolicy.FieldName(), parameterDetails.StorageSerializationPolicy.Value),
+		setResourceData(d, defs.EnableIcebergMergeOnRead.FieldName(), parameterDetails.EnableIcebergMergeOnRead.Value),
+		setResourceData(d, defs.IcebergMergeOnReadBehavior.FieldName(), parameterDetails.IcebergMergeOnReadBehavior.Value),
+	)
 }
 
 // storage_serialization_policy is intentionally omitted: it is ForceNew and create-only, and Snowflake
@@ -269,51 +176,62 @@ func icebergTableSnowflakeManagedParametersSchema() map[string]*schema.Schema {
 // for it to drift from). Running it through ParameterValueComputedIf would make the
 // `parameter.Level == objectParameterLevel` branch always true, marking it computed - and being
 // ForceNew - forcing a spurious replace on every plan.
-var icebergTableSnowflakeManagedParametersCustomDiff = ParametersCustomDiff(
+func icebergTableSnowflakeManagedParameterDiffFunctions(parameters *sdk.IcebergTableParametersDetails) []schema.CustomizeDiffFunc {
+	return []schema.CustomizeDiffFunc{
+		IdentifierTypedParameterValueComputedIf(defs.ExternalVolume.FieldName(), parameters.ExternalVolume, sdk.ParameterTypeTable),
+		IdentifierTypedParameterValueComputedIf(defs.Catalog.FieldName(), parameters.Catalog, sdk.ParameterTypeTable),
+		StringTypedParameterValueComputedIf(defs.TargetFileSize.FieldName(), parameters.TargetFileSize, sdk.ParameterTypeTable),
+		StringTypedParameterValueComputedIf(defs.CatalogSync.FieldName(), parameters.CatalogSync, sdk.ParameterTypeTable),
+		IntTypedParameterValueComputedIf(defs.DataRetentionTimeInDays.FieldName(), parameters.DataRetentionTimeInDays, sdk.ParameterTypeTable),
+		IntTypedParameterValueComputedIf(defs.MaxDataExtensionTimeInDays.FieldName(), parameters.MaxDataExtensionTimeInDays, sdk.ParameterTypeTable),
+		BoolTypedParameterValueComputedIf(defs.EnableDataCompaction.FieldName(), parameters.EnableDataCompaction, sdk.ParameterTypeTable),
+		BoolTypedParameterValueComputedIf(defs.EnableIcebergMergeOnRead.FieldName(), parameters.EnableIcebergMergeOnRead, sdk.ParameterTypeTable),
+	}
+}
+
+var icebergTableSnowflakeManagedParametersCustomDiff = ParametersCustomDiffFromTypedParameters(
 	icebergTableParametersProvider,
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterExternalVolume, valueTypeString, sdk.ParameterTypeTable},
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterCatalog, valueTypeString, sdk.ParameterTypeTable},
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterTargetFileSize, valueTypeString, sdk.ParameterTypeTable},
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterCatalogSync, valueTypeString, sdk.ParameterTypeTable},
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterDataRetentionTimeInDays, valueTypeInt, sdk.ParameterTypeTable},
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterMaxDataExtensionTimeInDays, valueTypeInt, sdk.ParameterTypeTable},
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterEnableDataCompaction, valueTypeBool, sdk.ParameterTypeTable},
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterEnableIcebergMergeOnRead, valueTypeBool, sdk.ParameterTypeTable},
+	icebergTableSnowflakeManagedParameterDiffFunctions,
 )
 
-// handleIcebergTableSnowflakeManagedParameterRead sets all the plain (Snowflake-managed) Iceberg table
-// parameter-backed fields into the state from the SHOW PARAMETERS output.
-func handleIcebergTableSnowflakeManagedParameterRead(d *schema.ResourceData, parameters []*sdk.Parameter) error {
-	if err := handleIcebergTableCommonParameterRead(d, parameters); err != nil {
-		return err
-	}
-	for _, p := range parameters {
-		switch p.Key {
-		case string(sdk.IcebergTableParameterTargetFileSize),
-			string(sdk.IcebergTableParameterStorageSerializationPolicy),
-			string(sdk.IcebergTableParameterCatalogSync):
-			if err := d.Set(strings.ToLower(p.Key), p.Value); err != nil {
-				return err
-			}
-		case string(sdk.IcebergTableParameterEnableDataCompaction),
-			string(sdk.IcebergTableParameterEnableIcebergMergeOnRead):
-			value, err := strconv.ParseBool(p.Value)
-			if err != nil {
-				return err
-			}
-			if err := d.Set(strings.ToLower(p.Key), value); err != nil {
-				return err
-			}
-		case string(sdk.IcebergTableParameterDataRetentionTimeInDays),
-			string(sdk.IcebergTableParameterMaxDataExtensionTimeInDays):
-			value, err := strconv.Atoi(p.Value)
-			if err != nil {
-				return err
-			}
-			if err := d.Set(strings.ToLower(p.Key), value); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
+func handleIcebergTableSnowflakeManagedParametersCreate(d *schema.ResourceData, req *sdk.CreateIcebergTableRequest) diag.Diagnostics {
+	return JoinDiags(
+		handleParameterCreateWithMapping(d, defs.ExternalVolume.FieldName(), &req.ExternalVolume, sdk.ParseAccountObjectIdentifier),
+		handleParameterCreateWithMapping(d, defs.Catalog.FieldName(), &req.Catalog, stringToStringEnumProvider(sdk.ToIcebergTableCatalog)),
+		handleParameterCreateWithMapping(d, defs.TargetFileSize.FieldName(), &req.TargetFileSize, stringToStringEnumProvider(sdk.ToIcebergTableTargetFileSize)),
+		handleParameterCreateWithMapping(d, defs.StorageSerializationPolicy.FieldName(), &req.StorageSerializationPolicy, stringToStringEnumProvider(sdk.ToStorageSerializationPolicy)),
+		handleParameterCreate(d, defs.CatalogSync.FieldName(), &req.CatalogSync),
+		handleParameterCreate(d, defs.DataRetentionTimeInDays.FieldName(), &req.DataRetentionTimeInDays),
+		handleParameterCreate(d, defs.MaxDataExtensionTimeInDays.FieldName(), &req.MaxDataExtensionTimeInDays),
+		handleParameterCreate(d, defs.EnableDataCompaction.FieldName(), &req.EnableDataCompaction),
+		handleParameterCreate(d, defs.EnableIcebergMergeOnRead.FieldName(), &req.EnableIcebergMergeOnRead),
+	)
+}
+
+// storage_serialization_policy is omitted: it is create-only (ForceNew) and cannot be altered.
+func handleIcebergTableSnowflakeManagedParametersUpdate(d *schema.ResourceData, set *sdk.IcebergTableSetPropertiesRequest, unset *sdk.IcebergTableUnsetPropertiesRequest) diag.Diagnostics {
+	return JoinDiags(
+		handleParameterUpdate(d, defs.CatalogSync.FieldName(), &set.CatalogSync, &unset.CatalogSync),
+		handleParameterUpdate(d, defs.DataRetentionTimeInDays.FieldName(), &set.DataRetentionTimeInDays, &unset.DataRetentionTimeInDays),
+		handleParameterUpdate(d, defs.MaxDataExtensionTimeInDays.FieldName(), &set.MaxDataExtensionTimeInDays, &unset.MaxDataExtensionTimeInDays),
+		handleParameterUpdate(d, defs.EnableDataCompaction.FieldName(), &set.EnableDataCompaction, &unset.EnableDataCompaction),
+		handleParameterUpdate(d, defs.EnableIcebergMergeOnRead.FieldName(), &set.EnableIcebergMergeOnRead, &unset.EnableIcebergMergeOnRead),
+		handleParameterUpdateWithMapping(d, defs.TargetFileSize.FieldName(), &set.TargetFileSize, &unset.TargetFileSize, stringToStringEnumProvider(sdk.ToIcebergTableTargetFileSize)),
+	)
+}
+
+// external_volume/catalog come from the raw SHOW PARAMETERS value (see rawParameterValue), not the
+// typed ShowParametersDetails output.
+func handleIcebergTableSnowflakeManagedParameterRead(d *schema.ResourceData, parameters []*sdk.Parameter, parameterDetails *sdk.IcebergTableParametersDetails) diag.Diagnostics {
+	return JoinDiags(
+		setResourceData(d, defs.ExternalVolume.FieldName(), rawParameterValue(parameters, defs.ExternalVolume.SqlName)),
+		setResourceData(d, defs.Catalog.FieldName(), rawParameterValue(parameters, defs.Catalog.SqlName)),
+		setResourceData(d, defs.TargetFileSize.FieldName(), parameterDetails.TargetFileSize.Value),
+		setResourceData(d, defs.StorageSerializationPolicy.FieldName(), parameterDetails.StorageSerializationPolicy.Value),
+		setResourceData(d, defs.CatalogSync.FieldName(), parameterDetails.CatalogSync.Value),
+		setResourceData(d, defs.DataRetentionTimeInDays.FieldName(), parameterDetails.DataRetentionTimeInDays.Value),
+		setResourceData(d, defs.MaxDataExtensionTimeInDays.FieldName(), parameterDetails.MaxDataExtensionTimeInDays.Value),
+		setResourceData(d, defs.EnableDataCompaction.FieldName(), parameterDetails.EnableDataCompaction.Value),
+		setResourceData(d, defs.EnableIcebergMergeOnRead.FieldName(), parameterDetails.EnableIcebergMergeOnRead.Value),
+	)
 }

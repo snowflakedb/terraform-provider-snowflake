@@ -57,11 +57,11 @@ resource "snowflake_iceberg_table_from_aws_glue" "complete" {
 ### Optional
 
 - `auto_refresh` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether Snowflake should periodically refresh the Iceberg table metadata from the AWS Glue catalog. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
-- `catalog` (String) Specifies the identifier for the catalog integration to use for the Iceberg table. If not specified, the account-level default is used.
+- `catalog` (String) The parameter that specifies the default catalog to use for Iceberg tables. For more information, check [CATALOG docs](https://docs.snowflake.com/en/sql-reference/parameters#catalog).
 - `catalog_namespace` (String) Specifies the namespace (or database) in the AWS Glue catalog that the table belongs to. If not specified, the catalog integration's default namespace is used.
 - `comment` (String) Specifies a comment for the Iceberg table.
-- `external_volume` (String) Specifies the identifier for the external volume where the Iceberg table stores its metadata files and data in Parquet format. If not specified, the account-level default is used.
-- `replace_invalid_characters` (Boolean) Specifies whether to replace invalid UTF-8 characters with the Unicode replacement character (`�`) in query results for an Iceberg table. For more information, check [REPLACE_INVALID_CHARACTERS docs](https://docs.snowflake.com/en/sql-reference/parameters#replace-invalid-characters).
+- `external_volume` (String) The parameter that specifies the default external volume to use for Iceberg tables. For more information, check [EXTERNAL_VOLUME docs](https://docs.snowflake.com/en/sql-reference/parameters#external-volume).
+- `replace_invalid_characters` (Boolean) Specifies whether to replace invalid UTF-8 characters with the Unicode replacement character in query results for an Iceberg table. You can only set this parameter for tables that use an external Iceberg catalog. For more information, check [REPLACE_INVALID_CHARACTERS docs](https://docs.snowflake.com/en/sql-reference/parameters#replace-invalid-characters).
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only

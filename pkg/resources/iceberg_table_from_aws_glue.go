@@ -120,7 +120,7 @@ func CreateIcebergTableFromAwsGlue(ctx context.Context, d *schema.ResourceData, 
 	if err := booleanStringAttributeCreate(d, "auto_refresh", &req.AutoRefresh); err != nil {
 		return diag.FromErr(err)
 	}
-	if diags := handleIcebergTableParametersCreate(d, &req.ExternalVolume, &req.Catalog, &req.ReplaceInvalidCharacters); diags.HasError() {
+	if diags := handleIcebergTableExternalManagedParametersCreate(d, &req.ExternalVolume, &req.Catalog, &req.ReplaceInvalidCharacters); diags.HasError() {
 		return diags
 	}
 

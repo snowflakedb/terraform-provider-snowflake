@@ -126,15 +126,10 @@ func CreateIcebergTableFromRest(ctx context.Context, d *schema.ResourceData, met
 	); err != nil {
 		return diag.FromErr(err)
 	}
-	if diags := handleIcebergTableParametersCreate(d, &req.ExternalVolume, &req.Catalog, &req.ReplaceInvalidCharacters); diags.HasError() {
+	if diags := handleIcebergTableExternalManagedParametersCreate(d, &req.ExternalVolume, &req.Catalog, &req.ReplaceInvalidCharacters); diags.HasError() {
 		return diags
 	}
-	if diags := JoinDiags(
-		handleParameterCreateWithMapping(d, sdk.IcebergTableParameterTargetFileSize, &req.TargetFileSize, stringToStringEnumProvider(sdk.ToIcebergTableTargetFileSize)),
-		handleParameterCreateWithMapping(d, sdk.IcebergTableParameterStorageSerializationPolicy, &req.StorageSerializationPolicy, stringToStringEnumProvider(sdk.ToStorageSerializationPolicy)),
-		handleParameterCreateWithMapping(d, sdk.IcebergTableParameterIcebergMergeOnReadBehavior, &req.IcebergMergeOnReadBehavior, stringToStringEnumProvider(sdk.ToIcebergTableIcebergMergeOnReadBehavior)),
-		handleParameterCreate(d, sdk.IcebergTableParameterEnableIcebergMergeOnRead, &req.EnableIcebergMergeOnRead),
-	); diags.HasError() {
+	if diags := handleIcebergTableFromRestParametersCreate(d, req); diags.HasError() {
 		return diags
 	}
 
@@ -211,11 +206,7 @@ func UpdateIcebergTableFromRest(ctx context.Context, d *schema.ResourceData, met
 
 	set = sdk.NewIcebergTableSetPropertiesRequest()
 	unset = sdk.NewIcebergTableUnsetPropertiesRequest()
-	if diags := JoinDiags(
-		handleParameterUpdateWithMapping(d, sdk.IcebergTableParameterTargetFileSize, &set.TargetFileSize, &unset.TargetFileSize, stringToStringEnumProvider(sdk.ToIcebergTableTargetFileSize)),
-		handleParameterUpdate(d, sdk.IcebergTableParameterReplaceInvalidCharacters, &set.ReplaceInvalidCharacters, &unset.ReplaceInvalidCharacters),
-		handleParameterUpdate(d, sdk.IcebergTableParameterEnableIcebergMergeOnRead, &set.EnableIcebergMergeOnRead, &unset.EnableIcebergMergeOnRead),
-	); diags.HasError() {
+	if diags := handleIcebergTableFromRestParametersUpdate(d, set, unset); diags.HasError() {
 		return diags
 	}
 
