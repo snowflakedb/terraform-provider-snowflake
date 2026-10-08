@@ -179,8 +179,8 @@ type ProcedureSetRequest struct {
 	SecretsList                *SecretsListRequest
 	AutoEventLogging           *AutoEventLogging
 	EnableConsoleOutput        *bool
-	LogLevel                   *LogLevel
 	LogEventLevel              *LogLevel
+	LogLevel                   *LogLevel
 	MetricLevel                *MetricLevel
 	TraceLevel                 *TraceLevel
 }
@@ -190,8 +190,8 @@ type ProcedureUnsetRequest struct {
 	ExternalAccessIntegrations *bool
 	AutoEventLogging           *bool
 	EnableConsoleOutput        *bool
-	LogLevel                   *bool
 	LogEventLevel              *bool
+	LogLevel                   *bool
 	MetricLevel                *bool
 	TraceLevel                 *bool
 }

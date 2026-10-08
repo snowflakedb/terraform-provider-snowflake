@@ -31,6 +31,17 @@ type Procedures interface {
 	// DescribeDetails returns aggregated describe results for the given procedure.
 	DescribeDetails(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*ProcedureDetails, error)
 	ShowParameters(ctx context.Context, id SchemaObjectIdentifierWithArguments) ([]*Parameter, error)
+	ShowParametersDetails(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*ProcedureParametersDetails, error)
+}
+
+// ProcedureParametersDetails holds the object's parameters with values parsed into their Go types.
+type ProcedureParametersDetails struct {
+	AutoEventLogging    TypedParameter[AutoEventLogging]
+	EnableConsoleOutput TypedParameter[bool]
+	LogEventLevel       TypedParameter[LogLevel]
+	LogLevel            TypedParameter[LogLevel]
+	MetricLevel         TypedParameter[MetricLevel]
+	TraceLevel          TypedParameter[TraceLevel]
 }
 
 // CreateForJavaProcedureOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-procedure#java-handler.
@@ -214,8 +225,8 @@ type ProcedureSet struct {
 	SecretsList                *SecretsList              `ddl:"parameter,parentheses" sql:"SECRETS"`
 	AutoEventLogging           *AutoEventLogging         `ddl:"parameter,single_quotes" sql:"AUTO_EVENT_LOGGING"`
 	EnableConsoleOutput        *bool                     `ddl:"parameter" sql:"ENABLE_CONSOLE_OUTPUT"`
-	LogLevel                   *LogLevel                 `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
 	LogEventLevel              *LogLevel                 `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
+	LogLevel                   *LogLevel                 `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
 	MetricLevel                *MetricLevel              `ddl:"parameter,single_quotes" sql:"METRIC_LEVEL"`
 	TraceLevel                 *TraceLevel               `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`
 }
@@ -225,8 +236,8 @@ type ProcedureUnset struct {
 	ExternalAccessIntegrations *bool `ddl:"keyword" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
 	AutoEventLogging           *bool `ddl:"keyword" sql:"AUTO_EVENT_LOGGING"`
 	EnableConsoleOutput        *bool `ddl:"keyword" sql:"ENABLE_CONSOLE_OUTPUT"`
-	LogLevel                   *bool `ddl:"keyword" sql:"LOG_LEVEL"`
 	LogEventLevel              *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
+	LogLevel                   *bool `ddl:"keyword" sql:"LOG_LEVEL"`
 	MetricLevel                *bool `ddl:"keyword" sql:"METRIC_LEVEL"`
 	TraceLevel                 *bool `ddl:"keyword" sql:"TRACE_LEVEL"`
 }

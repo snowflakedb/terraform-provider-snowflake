@@ -41,17 +41,17 @@ func TestInt_Procedures(t *testing.T) {
 	tmpJavaProcedure := testClientHelper().CreateSampleJavaProcedureAndJarOnUserStage(t)
 	tmpPythonFunction := testClientHelper().CreateSamplePythonFunctionAndModuleOnUserStage(t)
 
-	assertParametersSet := func(t *testing.T, procedureParametersAssert *objectparametersassert.ProcedureParametersAssert) {
+	// TODO [SNOW-1850370]: AutoEventLogging is excluded - every value ends with invalid value [OFF] for parameter 'AUTO_EVENT_LOGGING'.
+	assertProcedureParametersDetails := func(t *testing.T, id sdk.SchemaObjectIdentifierWithArguments, expectedEnableConsoleOutput bool, expectedLogLevel sdk.LogLevel, expectedLogEventLevel sdk.LogLevel, expectedMetricLevel sdk.MetricLevel, expectedTraceLevel sdk.TraceLevel) {
 		t.Helper()
+
 		assertThatObject(
-			t, procedureParametersAssert.
-				// TODO [SNOW-1850370]: every value end with invalid value [OFF] for parameter 'AUTO_EVENT_LOGGING'
-				// HasAutoEventLogging(sdk.AutoEventLoggingTracing).
-				HasEnableConsoleOutput(true).
-				HasLogLevel(sdk.LogLevelWarn).
-				HasLogEventLevel(sdk.LogLevelWarn).
-				HasMetricLevel(sdk.MetricLevelAll).
-				HasTraceLevel(sdk.TraceLevelAlways),
+			t, objectparametersassert.ProcedureParameters(t, id).
+				HasEnableConsoleOutput(expectedEnableConsoleOutput).
+				HasLogLevel(expectedLogLevel).
+				HasLogEventLevel(expectedLogEventLevel).
+				HasMetricLevel(expectedMetricLevel).
+				HasTraceLevel(expectedTraceLevel),
 		)
 	}
 
@@ -1928,6 +1928,46 @@ def filter_by_role(session, table_name, role):
 		)
 	})
 
+	// Generic Parameters.SetObjectParameterOnObject path, separate from Alter().WithSet.
+	t.Run("set and unset object parameter on procedure object - generic/catalog path", func(t *testing.T) {
+		p, pCleanup := testClientHelper().Procedure.CreateSql(t)
+		t.Cleanup(pCleanup)
+		id := p.ID()
+		object := sdk.Object{ObjectType: sdk.ObjectTypeProcedure, Name: id}
+
+		metricLevelParam, err := client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameterMetricLevel, object)
+		require.NoError(t, err)
+		assert.Equal(t, string(sdk.MetricLevelNone), metricLevelParam.Value)
+
+		enableConsoleOutputParam, err := client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameterEnableConsoleOutput, object)
+		require.NoError(t, err)
+		assert.Equal(t, "false", enableConsoleOutputParam.Value)
+
+		err = client.Parameters.SetObjectParameterOnObject(ctx, object, sdk.ObjectParameterMetricLevel, string(sdk.MetricLevelAll))
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			err := client.Parameters.UnsetObjectParameterOnObject(ctx, object, sdk.ObjectParameterMetricLevel)
+			require.NoError(t, err)
+		})
+
+		err = client.Parameters.SetObjectParameterOnObject(ctx, object, sdk.ObjectParameterEnableConsoleOutput, "true")
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			err := client.Parameters.UnsetObjectParameterOnObject(ctx, object, sdk.ObjectParameterEnableConsoleOutput)
+			require.NoError(t, err)
+		})
+
+		metricLevelParam, err = client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameterMetricLevel, object)
+		require.NoError(t, err)
+		assert.Equal(t, string(sdk.MetricLevelAll), metricLevelParam.Value)
+		assert.Equal(t, sdk.ParameterTypeProcedure, metricLevelParam.Level)
+
+		enableConsoleOutputParam, err = client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameterEnableConsoleOutput, object)
+		require.NoError(t, err)
+		assert.Equal(t, "true", enableConsoleOutputParam.Value)
+		assert.Equal(t, sdk.ParameterTypeProcedure, enableConsoleOutputParam.Level)
+	})
+
 	t.Run("alter procedure: rename", func(t *testing.T) {
 		p, pCleanup := testClientHelper().Procedure.CreateSql(t)
 		t.Cleanup(pCleanup)
@@ -2002,7 +2042,7 @@ def filter_by_role(session, table_name, role):
 				ContainsExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
 		)
 
-		assertParametersSet(t, objectparametersassert.ProcedureParameters(t, id))
+		assertProcedureParametersDetails(t, id, true, sdk.LogLevelWarn, sdk.LogLevelWarn, sdk.MetricLevelAll, sdk.TraceLevelAlways)
 
 		unsetRequest := sdk.NewAlterProcedureRequest(id).WithUnset(
 			*sdk.NewProcedureUnsetRequest().
@@ -2086,7 +2126,7 @@ def filter_by_role(session, table_name, role):
 				HasDescription("new comment"),
 		)
 
-		assertParametersSet(t, objectparametersassert.ProcedureParameters(t, id))
+		assertProcedureParametersDetails(t, id, true, sdk.LogLevelWarn, sdk.LogLevelWarn, sdk.MetricLevelAll, sdk.TraceLevelAlways)
 
 		unsetRequest := sdk.NewAlterProcedureRequest(id).WithUnset(
 			*sdk.NewProcedureUnsetRequest().

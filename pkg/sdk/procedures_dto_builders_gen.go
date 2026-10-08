@@ -2,7 +2,11 @@
 
 package sdk
 
-import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+import (
+	"strconv"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+)
 
 func NewCreateForJavaProcedureRequest(
 	name SchemaObjectIdentifier,
@@ -561,13 +565,13 @@ func (s *ProcedureSetRequest) WithEnableConsoleOutput(enableConsoleOutput bool) 
 	return s
 }
 
-func (s *ProcedureSetRequest) WithLogLevel(logLevel LogLevel) *ProcedureSetRequest {
-	s.LogLevel = &logLevel
+func (s *ProcedureSetRequest) WithLogEventLevel(logEventLevel LogLevel) *ProcedureSetRequest {
+	s.LogEventLevel = &logEventLevel
 	return s
 }
 
-func (s *ProcedureSetRequest) WithLogEventLevel(logEventLevel LogLevel) *ProcedureSetRequest {
-	s.LogEventLevel = &logEventLevel
+func (s *ProcedureSetRequest) WithLogLevel(logLevel LogLevel) *ProcedureSetRequest {
+	s.LogLevel = &logLevel
 	return s
 }
 
@@ -579,6 +583,25 @@ func (s *ProcedureSetRequest) WithMetricLevel(metricLevel MetricLevel) *Procedur
 func (s *ProcedureSetRequest) WithTraceLevel(traceLevel TraceLevel) *ProcedureSetRequest {
 	s.TraceLevel = &traceLevel
 	return s
+}
+
+func (s *ProcedureSetRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "AUTO_EVENT_LOGGING":
+		return assignParsedParameter(value, ToAutoEventLogging, &s.AutoEventLogging)
+	case "ENABLE_CONSOLE_OUTPUT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
+	case "LOG_EVENT_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
+	case "LOG_LEVEL":
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+	case "METRIC_LEVEL":
+		return assignParsedParameter(value, ToMetricLevel, &s.MetricLevel)
+	case "TRACE_LEVEL":
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+	default:
+		return ErrParameterNotSupported
+	}
 }
 
 func NewProcedureUnsetRequest() *ProcedureUnsetRequest {
@@ -606,13 +629,13 @@ func (s *ProcedureUnsetRequest) WithEnableConsoleOutput(enableConsoleOutput bool
 	return s
 }
 
-func (s *ProcedureUnsetRequest) WithLogLevel(logLevel bool) *ProcedureUnsetRequest {
-	s.LogLevel = &logLevel
+func (s *ProcedureUnsetRequest) WithLogEventLevel(logEventLevel bool) *ProcedureUnsetRequest {
+	s.LogEventLevel = &logEventLevel
 	return s
 }
 
-func (s *ProcedureUnsetRequest) WithLogEventLevel(logEventLevel bool) *ProcedureUnsetRequest {
-	s.LogEventLevel = &logEventLevel
+func (s *ProcedureUnsetRequest) WithLogLevel(logLevel bool) *ProcedureUnsetRequest {
+	s.LogLevel = &logLevel
 	return s
 }
 
@@ -624,6 +647,26 @@ func (s *ProcedureUnsetRequest) WithMetricLevel(metricLevel bool) *ProcedureUnse
 func (s *ProcedureUnsetRequest) WithTraceLevel(traceLevel bool) *ProcedureUnsetRequest {
 	s.TraceLevel = &traceLevel
 	return s
+}
+
+func (s *ProcedureUnsetRequest) UnsetParameterFromRaw(key string) error {
+	switch key {
+	case "AUTO_EVENT_LOGGING":
+		s.AutoEventLogging = Bool(true)
+	case "ENABLE_CONSOLE_OUTPUT":
+		s.EnableConsoleOutput = Bool(true)
+	case "LOG_EVENT_LEVEL":
+		s.LogEventLevel = Bool(true)
+	case "LOG_LEVEL":
+		s.LogLevel = Bool(true)
+	case "METRIC_LEVEL":
+		s.MetricLevel = Bool(true)
+	case "TRACE_LEVEL":
+		s.TraceLevel = Bool(true)
+	default:
+		return ErrParameterNotSupported
+	}
+	return nil
 }
 
 func NewDropProcedureRequest(

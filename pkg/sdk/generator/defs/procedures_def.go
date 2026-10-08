@@ -1,10 +1,18 @@
 package defs
 
 import (
+	"slices"
+
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
+
+var procedureParameters = ParameterDefsForLevel(parameterdefs.ParameterLevelProcedure)
+
+var procedureParameterFieldNames = collections.Map(procedureParameters, g.ParameterSqlToFieldName)
 
 var procedureArgument = func() *g.QueryStruct {
 	return g.NewQueryStruct("ProcedureArgument").
@@ -319,14 +327,9 @@ var proceduresDef = g.NewInterface(
 				OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 				ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", "AccountObjectIdentifier", g.ParameterOptions().Parentheses()).
 				OptionalSharedQueryStructField("SecretsList", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
-				OptionalAssignment("AUTO_EVENT_LOGGING", g.KindOfTPointer[sdkcommons.AutoEventLogging](), g.ParameterOptions().SingleQuotes()).
-				OptionalBooleanAssignment("ENABLE_CONSOLE_OUTPUT", nil).
-				OptionalAssignment("LOG_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
-				OptionalAssignment("LOG_EVENT_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
-				OptionalAssignment("METRIC_LEVEL", g.KindOfTPointer[sdkcommons.MetricLevel](), g.ParameterOptions().SingleQuotes()).
-				OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
+				WithParameters(procedureParameters...).
 				WithValidation(g.ValidIdentifier, "ExternalAccessIntegrations").
-				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "SecretsList", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"),
+				WithValidation(g.AtLeastOneValueSet, append(slices.Clone(procedureParameterFieldNames), "Comment", "ExternalAccessIntegrations", "SecretsList")...),
 			g.ListOptions().SQL("SET"),
 		).
 		OptionalQueryStructField(
@@ -334,13 +337,8 @@ var proceduresDef = g.NewInterface(
 			g.NewQueryStruct("ProcedureUnset").
 				OptionalSQL("COMMENT").
 				OptionalSQL("EXTERNAL_ACCESS_INTEGRATIONS").
-				OptionalSQL("AUTO_EVENT_LOGGING").
-				OptionalSQL("ENABLE_CONSOLE_OUTPUT").
-				OptionalSQL("LOG_LEVEL").
-				OptionalSQL("LOG_EVENT_LEVEL").
-				OptionalSQL("METRIC_LEVEL").
-				OptionalSQL("TRACE_LEVEL").
-				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"),
+				WithParametersUnset(procedureParameters...).
+				WithValidation(g.AtLeastOneValueSet, append(slices.Clone(procedureParameterFieldNames), "Comment", "ExternalAccessIntegrations")...),
 			g.ListOptions().SQL("UNSET"),
 		).
 		OptionalSetTags().
@@ -592,9 +590,5 @@ var proceduresDef = g.NewInterface(
 	"DescribeDetails returns aggregated describe results for the given procedure.",
 	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifierWithArguments]())},
 	"*ProcedureDetails", "error",
-).WithCustomInterfaceMethod(
-	"ShowParameters",
-	"",
-	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifierWithArguments]())},
-	"[]*Parameter", "error",
-)
+).ShowParameters("SchemaObjectIdentifierWithArguments").
+	ShowParametersDetails(procedureParameters...)

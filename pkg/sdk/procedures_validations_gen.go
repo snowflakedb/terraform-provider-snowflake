@@ -262,8 +262,8 @@ func (opts *AlterProcedureOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterProcedureOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "ExecuteAs"))
 	}
 	if valueSet(opts.Set) {
-		if !anyValueSet(opts.Set.Comment, opts.Set.ExternalAccessIntegrations, opts.Set.SecretsList, opts.Set.AutoEventLogging, opts.Set.EnableConsoleOutput, opts.Set.LogLevel, opts.Set.LogEventLevel, opts.Set.MetricLevel, opts.Set.TraceLevel) {
-			errs = append(errs, errAtLeastOneOf("AlterProcedureOptions.Set", "Comment", "ExternalAccessIntegrations", "SecretsList", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"))
+		if !anyValueSet(opts.Set.AutoEventLogging, opts.Set.EnableConsoleOutput, opts.Set.LogEventLevel, opts.Set.LogLevel, opts.Set.MetricLevel, opts.Set.TraceLevel, opts.Set.Comment, opts.Set.ExternalAccessIntegrations, opts.Set.SecretsList) {
+			errs = append(errs, errAtLeastOneOf("AlterProcedureOptions.Set", "AutoEventLogging", "EnableConsoleOutput", "LogEventLevel", "LogLevel", "MetricLevel", "TraceLevel", "Comment", "ExternalAccessIntegrations", "SecretsList"))
 		}
 		if valueSet(opts.Set.ExternalAccessIntegrations) {
 			for externalAccessIntegrationIdx, externalAccessIntegration := range opts.Set.ExternalAccessIntegrations {
@@ -274,8 +274,8 @@ func (opts *AlterProcedureOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.Comment, opts.Unset.ExternalAccessIntegrations, opts.Unset.AutoEventLogging, opts.Unset.EnableConsoleOutput, opts.Unset.LogLevel, opts.Unset.LogEventLevel, opts.Unset.MetricLevel, opts.Unset.TraceLevel) {
-			errs = append(errs, errAtLeastOneOf("AlterProcedureOptions.Unset", "Comment", "ExternalAccessIntegrations", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"))
+		if !anyValueSet(opts.Unset.AutoEventLogging, opts.Unset.EnableConsoleOutput, opts.Unset.LogEventLevel, opts.Unset.LogLevel, opts.Unset.MetricLevel, opts.Unset.TraceLevel, opts.Unset.Comment, opts.Unset.ExternalAccessIntegrations) {
+			errs = append(errs, errAtLeastOneOf("AlterProcedureOptions.Unset", "AutoEventLogging", "EnableConsoleOutput", "LogEventLevel", "LogLevel", "MetricLevel", "TraceLevel", "Comment", "ExternalAccessIntegrations"))
 		}
 	}
 	if valueSet(opts.SetTags) {

@@ -70,8 +70,8 @@ func (p *ProcedureParametersAssert) HasAllDefaults() *ProcedureParametersAssert 
 	return p.
 		HasDefaultParameterValueOnLevel(sdk.ProcedureParameterAutoEventLogging, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.ProcedureParameterEnableConsoleOutput, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.ProcedureParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.ProcedureParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.ProcedureParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.ProcedureParameterMetricLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.ProcedureParameterTraceLevel, sdk.ParameterTypeSnowflakeDefault)
 }
@@ -80,8 +80,8 @@ func (p *ProcedureParametersAssert) HasAllDefaultsExplicit() *ProcedureParameter
 	return p.
 		HasDefaultAutoEventLoggingValueExplicit().
 		HasDefaultEnableConsoleOutputValueExplicit().
-		HasDefaultLogLevelValueExplicit().
 		HasDefaultLogEventLevelValueExplicit().
+		HasDefaultLogLevelValueExplicit().
 		HasDefaultMetricLevelValueExplicit().
 		HasDefaultTraceLevelValueExplicit()
 }
@@ -100,13 +100,13 @@ func (p *ProcedureParametersAssert) HasEnableConsoleOutput(expected bool) *Proce
 	return p
 }
 
-func (p *ProcedureParametersAssert) HasLogLevel(expected sdk.LogLevel) *ProcedureParametersAssert {
-	p.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.ProcedureParameterLogLevel, expected))
+func (p *ProcedureParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *ProcedureParametersAssert {
+	p.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.ProcedureParameterLogEventLevel, expected))
 	return p
 }
 
-func (p *ProcedureParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *ProcedureParametersAssert {
-	p.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.ProcedureParameterLogEventLevel, expected))
+func (p *ProcedureParametersAssert) HasLogLevel(expected sdk.LogLevel) *ProcedureParametersAssert {
+	p.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.ProcedureParameterLogLevel, expected))
 	return p
 }
 
@@ -134,13 +134,13 @@ func (p *ProcedureParametersAssert) HasEnableConsoleOutputLevel(expected sdk.Par
 	return p
 }
 
-func (p *ProcedureParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *ProcedureParametersAssert {
-	p.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.ProcedureParameterLogLevel, expected))
+func (p *ProcedureParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *ProcedureParametersAssert {
+	p.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.ProcedureParameterLogEventLevel, expected))
 	return p
 }
 
-func (p *ProcedureParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *ProcedureParametersAssert {
-	p.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.ProcedureParameterLogEventLevel, expected))
+func (p *ProcedureParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *ProcedureParametersAssert {
+	p.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.ProcedureParameterLogLevel, expected))
 	return p
 }
 
@@ -166,12 +166,12 @@ func (p *ProcedureParametersAssert) HasDefaultEnableConsoleOutputValue() *Proced
 	return p.HasDefaultParameterValue(sdk.ProcedureParameterEnableConsoleOutput)
 }
 
-func (p *ProcedureParametersAssert) HasDefaultLogLevelValue() *ProcedureParametersAssert {
-	return p.HasDefaultParameterValue(sdk.ProcedureParameterLogLevel)
-}
-
 func (p *ProcedureParametersAssert) HasDefaultLogEventLevelValue() *ProcedureParametersAssert {
 	return p.HasDefaultParameterValue(sdk.ProcedureParameterLogEventLevel)
+}
+
+func (p *ProcedureParametersAssert) HasDefaultLogLevelValue() *ProcedureParametersAssert {
+	return p.HasDefaultParameterValue(sdk.ProcedureParameterLogLevel)
 }
 
 func (p *ProcedureParametersAssert) HasDefaultMetricLevelValue() *ProcedureParametersAssert {
@@ -194,12 +194,12 @@ func (p *ProcedureParametersAssert) HasDefaultEnableConsoleOutputValueExplicit()
 	return p.HasEnableConsoleOutput(false)
 }
 
-func (p *ProcedureParametersAssert) HasDefaultLogLevelValueExplicit() *ProcedureParametersAssert {
-	return p.HasLogLevel(sdk.LogLevelOff)
-}
-
 func (p *ProcedureParametersAssert) HasDefaultLogEventLevelValueExplicit() *ProcedureParametersAssert {
 	return p.HasLogEventLevel(sdk.LogLevelOff)
+}
+
+func (p *ProcedureParametersAssert) HasDefaultLogLevelValueExplicit() *ProcedureParametersAssert {
+	return p.HasLogLevel(sdk.LogLevelOff)
 }
 
 func (p *ProcedureParametersAssert) HasDefaultMetricLevelValueExplicit() *ProcedureParametersAssert {

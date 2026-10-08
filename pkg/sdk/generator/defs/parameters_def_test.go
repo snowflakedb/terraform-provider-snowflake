@@ -133,6 +133,7 @@ func TestParameterDefsForLevel(t *testing.T) {
 
 	t.Run("procedure level", func(t *testing.T) {
 		require.Equal(t, []string{
+			"AUTO_EVENT_LOGGING",
 			"ENABLE_CONSOLE_OUTPUT",
 			"LOG_EVENT_LEVEL",
 			"LOG_LEVEL",

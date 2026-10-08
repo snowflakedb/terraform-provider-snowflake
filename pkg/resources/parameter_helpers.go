@@ -19,6 +19,7 @@ type enumParameterMetadata struct {
 // enumParameterValidators maps a catalog Kind naming an enum type to its derived Terraform behaviors.
 var enumParameterValidators = map[string]enumParameterMetadata{
 	"ActivePythonProfiler":                   {sdkValidation(sdk.ToActivePythonProfiler), NormalizeAndCompare(sdk.ToActivePythonProfiler), enumValuesDescription(sdk.AllActivePythonProfilers)},
+	"AutoEventLogging":                       {sdkValidation(sdk.ToAutoEventLogging), NormalizeAndCompare(sdk.ToAutoEventLogging), enumValuesDescription(sdk.AllAutoEventLoggings)},
 	"BinaryInputFormat":                      {sdkValidation(sdk.ToBinaryInputFormat), NormalizeAndCompare(sdk.ToBinaryInputFormat), enumValuesDescription(sdk.AllBinaryInputFormats)},
 	"BinaryOutputFormat":                     {sdkValidation(sdk.ToBinaryOutputFormat), NormalizeAndCompare(sdk.ToBinaryOutputFormat), enumValuesDescription(sdk.AllBinaryOutputFormats)},
 	"ClientTimestampTypeMapping":             {sdkValidation(sdk.ToClientTimestampTypeMapping), NormalizeAndCompare(sdk.ToClientTimestampTypeMapping), enumValuesDescription(sdk.AllClientTimestampTypeMappings)},

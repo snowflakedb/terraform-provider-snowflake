@@ -1146,6 +1146,7 @@ var AllSchemaParameters = []ObjectParameter{
 	ObjectParameterLogLevel,
 	ObjectParameterLogEventLevel,
 	ObjectParameterTraceLevel,
+	ObjectParameterMetricLevel,
 	ObjectParameterSuspendTaskAfterNumFailures,
 	ObjectParameterTaskAutoRetryAttempts,
 	ObjectParameterUserTaskManagedInitialWarehouseSize,
@@ -1212,6 +1213,7 @@ const (
 )
 
 var AllProcedureParameters = []ProcedureParameter{
+	ProcedureParameterAutoEventLogging,
 	ProcedureParameterEnableConsoleOutput,
 	ProcedureParameterLogLevel,
 	ProcedureParameterLogEventLevel,

@@ -45,13 +45,13 @@ func (p *ProcedureResourceParametersAssert) HasEnableConsoleOutput(expected bool
 	return p
 }
 
-func (p *ProcedureResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *ProcedureResourceParametersAssert {
-	p.ParameterValueSet(string(sdk.ProcedureParameterLogLevel), string(expected))
+func (p *ProcedureResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *ProcedureResourceParametersAssert {
+	p.ParameterValueSet(string(sdk.ProcedureParameterLogEventLevel), string(expected))
 	return p
 }
 
-func (p *ProcedureResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *ProcedureResourceParametersAssert {
-	p.ParameterValueSet(string(sdk.ProcedureParameterLogEventLevel), string(expected))
+func (p *ProcedureResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *ProcedureResourceParametersAssert {
+	p.ParameterValueSet(string(sdk.ProcedureParameterLogLevel), string(expected))
 	return p
 }
 
@@ -79,13 +79,13 @@ func (p *ProcedureResourceParametersAssert) HasEnableConsoleOutputLevel(expected
 	return p
 }
 
-func (p *ProcedureResourceParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *ProcedureResourceParametersAssert {
-	p.ParameterLevelSet(string(sdk.ProcedureParameterLogLevel), expected)
+func (p *ProcedureResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *ProcedureResourceParametersAssert {
+	p.ParameterLevelSet(string(sdk.ProcedureParameterLogEventLevel), expected)
 	return p
 }
 
-func (p *ProcedureResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *ProcedureResourceParametersAssert {
-	p.ParameterLevelSet(string(sdk.ProcedureParameterLogEventLevel), expected)
+func (p *ProcedureResourceParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *ProcedureResourceParametersAssert {
+	p.ParameterLevelSet(string(sdk.ProcedureParameterLogLevel), expected)
 	return p
 }
 
