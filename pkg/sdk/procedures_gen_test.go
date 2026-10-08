@@ -861,10 +861,9 @@ var proceduresTests = ProceduresTestsContext{
 			},
 			validationCase[*AlterProcedureOptions]{
 				Name:        case_Procedures_validation_Alter_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterProcedureOptions.Set", "AutoEventLogging", "EnableConsoleOutput", "LogEventLevel", "LogLevel", "MetricLevel", "TraceLevel", "Comment", "ExternalAccessIntegrations", "SecretsList"),
+				ExpectedErr: errAtLeastOneOf("AlterProcedureOptions.Set", "EnableConsoleOutput", "LogEventLevel", "LogLevel", "MetricLevel", "TraceLevel", "Comment", "ExternalAccessIntegrations", "SecretsList"),
 				DefaultModify: func(opts *AlterProcedureOptions) {
 					opts.Set = &ProcedureSet{}
-					opts.Set.AutoEventLogging = nil
 					opts.Set.EnableConsoleOutput = nil
 					opts.Set.LogEventLevel = nil
 					opts.Set.LogLevel = nil
@@ -885,10 +884,9 @@ var proceduresTests = ProceduresTestsContext{
 			},
 			validationCase[*AlterProcedureOptions]{
 				Name:        case_Procedures_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterProcedureOptions.Unset", "AutoEventLogging", "EnableConsoleOutput", "LogEventLevel", "LogLevel", "MetricLevel", "TraceLevel", "Comment", "ExternalAccessIntegrations"),
+				ExpectedErr: errAtLeastOneOf("AlterProcedureOptions.Unset", "EnableConsoleOutput", "LogEventLevel", "LogLevel", "MetricLevel", "TraceLevel", "Comment", "ExternalAccessIntegrations"),
 				DefaultModify: func(opts *AlterProcedureOptions) {
 					opts.Unset = &ProcedureUnset{}
-					opts.Unset.AutoEventLogging = nil
 					opts.Unset.EnableConsoleOutput = nil
 					opts.Unset.LogEventLevel = nil
 					opts.Unset.LogLevel = nil

@@ -1926,6 +1926,59 @@ def filter_by_role(session, table_name, role):
 				HasAllDefaults().
 				HasAllDefaultsExplicit(),
 		)
+
+		// NOTE [SNOW-4233370]: unlike other object types, Snowflake does not expose a CREATE PROCEDURE
+		// clause for LOG_LEVEL/LOG_EVENT_LEVEL/METRIC_LEVEL/TRACE_LEVEL/ENABLE_CONSOLE_OUTPUT/AUTO_EVENT_LOGGING
+		// (no CreateFor*ProcedureRequest exposes parameter fields), so a "create with all catalog params" test
+		// isn't possible for this object; HasAllDefaultsExplicit() above is the closest equivalent, asserting
+		// that a freshly created procedure reports catalog defaults for all of them. The SET/UNSET round trip
+		// for all of these parameters is covered by the "alter procedure: set and unset all for Java/SQL" tests
+		// below via assertProcedureParametersDetails.
+	})
+
+	// This covers the generic/catalog-driven parameter path (SetObjectParameterOnObject / UnsetObjectParameterOnObject),
+	// distinct from the Procedure-specific hand-written Alter(...).WithSet/WithUnset(...) builder methods covered elsewhere
+	// in this file. It targets MetricLevel and EnableConsoleOutput specifically because their catalog-level tagging
+	// (pkg/sdk/generator/defs/parameters_def.go) was extended to include Function/Procedure as part of SNOW-4233370 -
+	// this confirms SET/UNSET/read-back for the Procedure level actually works end to end against a live account, not
+	// just that the catalog metadata compiles.
+	t.Run("set and unset object parameter on procedure object - generic/catalog path", func(t *testing.T) {
+		p, pCleanup := testClientHelper().Procedure.CreateSql(t)
+		t.Cleanup(pCleanup)
+		id := p.ID()
+		object := sdk.Object{ObjectType: sdk.ObjectTypeProcedure, Name: id}
+
+		metricLevelParam, err := client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameterMetricLevel, object)
+		require.NoError(t, err)
+		assert.Equal(t, string(sdk.MetricLevelNone), metricLevelParam.Value)
+
+		enableConsoleOutputParam, err := client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameterEnableConsoleOutput, object)
+		require.NoError(t, err)
+		assert.Equal(t, "false", enableConsoleOutputParam.Value)
+
+		err = client.Parameters.SetObjectParameterOnObject(ctx, object, sdk.ObjectParameterMetricLevel, string(sdk.MetricLevelAll))
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			err := client.Parameters.UnsetObjectParameterOnObject(ctx, object, sdk.ObjectParameterMetricLevel)
+			require.NoError(t, err)
+		})
+
+		err = client.Parameters.SetObjectParameterOnObject(ctx, object, sdk.ObjectParameterEnableConsoleOutput, "true")
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			err := client.Parameters.UnsetObjectParameterOnObject(ctx, object, sdk.ObjectParameterEnableConsoleOutput)
+			require.NoError(t, err)
+		})
+
+		metricLevelParam, err = client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameterMetricLevel, object)
+		require.NoError(t, err)
+		assert.Equal(t, string(sdk.MetricLevelAll), metricLevelParam.Value)
+		assert.Equal(t, sdk.ParameterTypeProcedure, metricLevelParam.Level)
+
+		enableConsoleOutputParam, err = client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameterEnableConsoleOutput, object)
+		require.NoError(t, err)
+		assert.Equal(t, "true", enableConsoleOutputParam.Value)
+		assert.Equal(t, sdk.ParameterTypeProcedure, enableConsoleOutputParam.Level)
 	})
 
 	// Generic Parameters.SetObjectParameterOnObject path, separate from Alter().WithSet.

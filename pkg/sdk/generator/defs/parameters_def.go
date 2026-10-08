@@ -77,14 +77,6 @@ var (
 		Levels:      onAccount,
 		Description: "Used to specify the workload types that are allowed in your account to deploy to Snowpark Container Services.",
 	}
-	AutoEventLogging = parameterdefs.ParameterDef{
-		SqlName:      "AUTO_EVENT_LOGGING",
-		Kind:         g.KindOfT[sdkcommons.AutoEventLogging](),
-		Levels:       []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelProcedure},
-		Description:  "Controls whether Snowflake Scripting log messages and trace events are ingested automatically into the event table.",
-		DefaultValue: "sdk.AutoEventLoggingOff",
-		DefaultLevel: parameterTypeSnowflakeDefault,
-	}
 	Autocommit = parameterdefs.ParameterDef{
 		SqlName:      "AUTOCOMMIT",
 		Kind:         g.KindBool,
@@ -1125,7 +1117,6 @@ var AllParameters = []parameterdefs.ParameterDef{
 	AllowIdToken,
 	AllowRowTimestamp,
 	AllowedSpcsWorkloadTypes,
-	AutoEventLogging,
 	Autocommit,
 	BaseLocationPrefix,
 	BinaryInputFormat,

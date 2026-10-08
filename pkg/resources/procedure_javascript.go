@@ -115,6 +115,10 @@ func ReadContextProcedureJavascript(ctx context.Context, d *schema.ResourceData,
 	// TODO [SNOW-1348103]: handle external changes marking
 	// TODO [SNOW-1348103]: handle setting state to value from config
 
+	if diags := handleProcedureParameterRead(d, allProcedureDetails.procedureParametersDetails); diags != nil {
+		return diags
+	}
+
 	errs := errors.Join(
 		// not reading is_secure on purpose (handled as external change to show output)
 		readFunctionOrProcedureArguments(d, allProcedureDetails.procedureDetails.NormalizedArguments),
@@ -125,7 +129,6 @@ func ReadContextProcedureJavascript(ctx context.Context, d *schema.ResourceData,
 		setOptionalFromStringPtr(d, "procedure_definition", allProcedureDetails.procedureDetails.Body),
 		d.Set("procedure_language", allProcedureDetails.procedureDetails.Language),
 
-		handleProcedureParameterRead(d, allProcedureDetails.procedureParameters),
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.ProcedureToSchema(allProcedureDetails.procedure)}),
 		d.Set(ParametersAttributeName, []map[string]any{schemas.ProcedureParametersToSchema(allProcedureDetails.procedureParameters, providerCtx)}),

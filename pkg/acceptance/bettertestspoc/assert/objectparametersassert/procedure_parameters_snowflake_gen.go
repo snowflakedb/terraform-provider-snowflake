@@ -68,7 +68,6 @@ func (p *ProcedureParametersAssert) HasDefaultParameterValueOnLevel(parameterNam
 // - have an expected level
 func (p *ProcedureParametersAssert) HasAllDefaults() *ProcedureParametersAssert {
 	return p.
-		HasDefaultParameterValueOnLevel(sdk.ProcedureParameterAutoEventLogging, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.ProcedureParameterEnableConsoleOutput, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.ProcedureParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.ProcedureParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
@@ -78,7 +77,6 @@ func (p *ProcedureParametersAssert) HasAllDefaults() *ProcedureParametersAssert 
 
 func (p *ProcedureParametersAssert) HasAllDefaultsExplicit() *ProcedureParametersAssert {
 	return p.
-		HasDefaultAutoEventLoggingValueExplicit().
 		HasDefaultEnableConsoleOutputValueExplicit().
 		HasDefaultLogEventLevelValueExplicit().
 		HasDefaultLogLevelValueExplicit().
@@ -89,11 +87,6 @@ func (p *ProcedureParametersAssert) HasAllDefaultsExplicit() *ProcedureParameter
 ////////////////////////////
 // Parameter value checks //
 ////////////////////////////
-
-func (p *ProcedureParametersAssert) HasAutoEventLogging(expected sdk.AutoEventLogging) *ProcedureParametersAssert {
-	p.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.ProcedureParameterAutoEventLogging, expected))
-	return p
-}
 
 func (p *ProcedureParametersAssert) HasEnableConsoleOutput(expected bool) *ProcedureParametersAssert {
 	p.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.ProcedureParameterEnableConsoleOutput, expected))
@@ -124,11 +117,6 @@ func (p *ProcedureParametersAssert) HasTraceLevel(expected sdk.TraceLevel) *Proc
 // Parameter level checks //
 ////////////////////////////
 
-func (p *ProcedureParametersAssert) HasAutoEventLoggingLevel(expected sdk.ParameterType) *ProcedureParametersAssert {
-	p.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.ProcedureParameterAutoEventLogging, expected))
-	return p
-}
-
 func (p *ProcedureParametersAssert) HasEnableConsoleOutputLevel(expected sdk.ParameterType) *ProcedureParametersAssert {
 	p.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.ProcedureParameterEnableConsoleOutput, expected))
 	return p
@@ -158,10 +146,6 @@ func (p *ProcedureParametersAssert) HasTraceLevelLevel(expected sdk.ParameterTyp
 // Parameter default value checks //
 ////////////////////////////////////
 
-func (p *ProcedureParametersAssert) HasDefaultAutoEventLoggingValue() *ProcedureParametersAssert {
-	return p.HasDefaultParameterValue(sdk.ProcedureParameterAutoEventLogging)
-}
-
 func (p *ProcedureParametersAssert) HasDefaultEnableConsoleOutputValue() *ProcedureParametersAssert {
 	return p.HasDefaultParameterValue(sdk.ProcedureParameterEnableConsoleOutput)
 }
@@ -185,10 +169,6 @@ func (p *ProcedureParametersAssert) HasDefaultTraceLevelValue() *ProcedureParame
 /////////////////////////////////////////////
 // Parameter explicit default value checks //
 /////////////////////////////////////////////
-
-func (p *ProcedureParametersAssert) HasDefaultAutoEventLoggingValueExplicit() *ProcedureParametersAssert {
-	return p.HasAutoEventLogging(sdk.AutoEventLoggingOff)
-}
 
 func (p *ProcedureParametersAssert) HasDefaultEnableConsoleOutputValueExplicit() *ProcedureParametersAssert {
 	return p.HasEnableConsoleOutput(false)

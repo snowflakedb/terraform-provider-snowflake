@@ -36,7 +36,6 @@ type Procedures interface {
 
 // ProcedureParametersDetails holds the object's parameters with values parsed into their Go types.
 type ProcedureParametersDetails struct {
-	AutoEventLogging    TypedParameter[AutoEventLogging]
 	EnableConsoleOutput TypedParameter[bool]
 	LogEventLevel       TypedParameter[LogLevel]
 	LogLevel            TypedParameter[LogLevel]
@@ -223,7 +222,6 @@ type ProcedureSet struct {
 	Comment                    *string                   `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	ExternalAccessIntegrations []AccountObjectIdentifier `ddl:"parameter,parentheses" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
 	SecretsList                *SecretsList              `ddl:"parameter,parentheses" sql:"SECRETS"`
-	AutoEventLogging           *AutoEventLogging         `ddl:"parameter,single_quotes" sql:"AUTO_EVENT_LOGGING"`
 	EnableConsoleOutput        *bool                     `ddl:"parameter" sql:"ENABLE_CONSOLE_OUTPUT"`
 	LogEventLevel              *LogLevel                 `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
 	LogLevel                   *LogLevel                 `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
@@ -234,7 +232,6 @@ type ProcedureSet struct {
 type ProcedureUnset struct {
 	Comment                    *bool `ddl:"keyword" sql:"COMMENT"`
 	ExternalAccessIntegrations *bool `ddl:"keyword" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
-	AutoEventLogging           *bool `ddl:"keyword" sql:"AUTO_EVENT_LOGGING"`
 	EnableConsoleOutput        *bool `ddl:"keyword" sql:"ENABLE_CONSOLE_OUTPUT"`
 	LogEventLevel              *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
 	LogLevel                   *bool `ddl:"keyword" sql:"LOG_LEVEL"`

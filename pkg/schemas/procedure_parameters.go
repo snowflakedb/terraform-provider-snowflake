@@ -6,32 +6,28 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var (
 	ShowProcedureParametersSchema = make(map[string]*schema.Schema)
-	ProcedureParameters           = []sdk.ProcedureParameter{
-		sdk.ProcedureParameterEnableConsoleOutput,
-		sdk.ProcedureParameterLogLevel,
-		sdk.ProcedureParameterLogEventLevel,
-		sdk.ProcedureParameterMetricLevel,
-		sdk.ProcedureParameterTraceLevel,
-	}
+	procedureParameters           = defs.ParameterDefsForLevel(parameterdefs.ParameterLevelProcedure)
 )
 
 func init() {
-	for _, param := range ProcedureParameters {
-		ShowProcedureParametersSchema[strings.ToLower(string(param))] = ParameterListSchema
+	for _, def := range procedureParameters {
+		ShowProcedureParametersSchema[def.FieldName()] = ParameterListSchema
 	}
 }
 
 func ProcedureParametersToSchema(parameters []*sdk.Parameter, providerCtx *provider.Context) map[string]any {
-	ProcedureParametersValue := make(map[string]any)
-	for _, param := range parameters {
-		if slices.Contains(ProcedureParameters, sdk.ProcedureParameter(param.Key)) {
-			ProcedureParametersValue[strings.ToLower(param.Key)] = []map[string]any{ParameterToSchemaReducedOutput(param, providerCtx)}
+	procedureParametersValue := make(map[string]any)
+	for _, parameter := range parameters {
+		if slices.ContainsFunc(procedureParameters, func(def parameterdefs.ParameterDef) bool { return def.SqlName == parameter.Key }) {
+			procedureParametersValue[strings.ToLower(parameter.Key)] = []map[string]any{ParameterToSchemaReducedOutput(parameter, providerCtx)}
 		}
 	}
-	return ProcedureParametersValue
+	return procedureParametersValue
 }

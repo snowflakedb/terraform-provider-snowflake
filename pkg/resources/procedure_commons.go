@@ -566,17 +566,24 @@ func queryAllProcedureDetailsCommon(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return nil, diag.FromErr(err)
 	}
+	procedureParametersDetails, err := sdk.ToProcedureParametersDetails(procedureParameters)
+	if err != nil {
+		return nil, diag.FromErr(err)
+	}
+
 	return &allProcedureDetailsCommon{
-		procedure:           procedure,
-		procedureDetails:    procedureDetails,
-		procedureParameters: procedureParameters,
+		procedure:                  procedure,
+		procedureDetails:           procedureDetails,
+		procedureParameters:        procedureParameters,
+		procedureParametersDetails: procedureParametersDetails,
 	}, nil
 }
 
 type allProcedureDetailsCommon struct {
-	procedure           *sdk.Procedure
-	procedureDetails    *sdk.ProcedureDetails
-	procedureParameters []*sdk.Parameter
+	procedure                  *sdk.Procedure
+	procedureDetails           *sdk.ProcedureDetails
+	procedureParameters        []*sdk.Parameter
+	procedureParametersDetails *sdk.ProcedureParametersDetails
 }
 
 // TODO [SNOW-1850370]: Make the rest of the functions in this file generic (for reuse with functions)

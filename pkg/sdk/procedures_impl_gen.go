@@ -435,7 +435,6 @@ func (r *AlterProcedureRequest) toOpts() *AlterProcedureOptions {
 		opts.Set = &ProcedureSet{
 			Comment:                    r.Set.Comment,
 			ExternalAccessIntegrations: r.Set.ExternalAccessIntegrations,
-			AutoEventLogging:           r.Set.AutoEventLogging,
 			EnableConsoleOutput:        r.Set.EnableConsoleOutput,
 			LogEventLevel:              r.Set.LogEventLevel,
 			LogLevel:                   r.Set.LogLevel,
@@ -450,7 +449,6 @@ func (r *AlterProcedureRequest) toOpts() *AlterProcedureOptions {
 		opts.Unset = &ProcedureUnset{
 			Comment:                    r.Unset.Comment,
 			ExternalAccessIntegrations: r.Unset.ExternalAccessIntegrations,
-			AutoEventLogging:           r.Unset.AutoEventLogging,
 			EnableConsoleOutput:        r.Unset.EnableConsoleOutput,
 			LogEventLevel:              r.Unset.LogEventLevel,
 			LogLevel:                   r.Unset.LogLevel,
@@ -856,7 +854,6 @@ func ToProcedureParametersDetails(params []*Parameter) (*ProcedureParametersDeta
 	byKey := parametersByKey(params)
 	var d ProcedureParametersDetails
 	if err := errors.Join(
-		fillTypedParameter(byKey["AUTO_EVENT_LOGGING"], ToAutoEventLogging, &d.AutoEventLogging),
 		fillTypedParameter(byKey["ENABLE_CONSOLE_OUTPUT"], strconv.ParseBool, &d.EnableConsoleOutput),
 		fillTypedParameter(byKey["LOG_EVENT_LEVEL"], ToLogLevel, &d.LogEventLevel),
 		fillTypedParameter(byKey["LOG_LEVEL"], ToLogLevel, &d.LogLevel),

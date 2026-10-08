@@ -35,11 +35,6 @@ func ImportedProcedureResourceParameters(t *testing.T, id string) *ProcedureReso
 // Parameter value checks //
 ////////////////////////////
 
-func (p *ProcedureResourceParametersAssert) HasAutoEventLogging(expected sdk.AutoEventLogging) *ProcedureResourceParametersAssert {
-	p.ParameterValueSet(string(sdk.ProcedureParameterAutoEventLogging), string(expected))
-	return p
-}
-
 func (p *ProcedureResourceParametersAssert) HasEnableConsoleOutput(expected bool) *ProcedureResourceParametersAssert {
 	p.ParameterBoolValueSet(string(sdk.ProcedureParameterEnableConsoleOutput), expected)
 	return p
@@ -68,11 +63,6 @@ func (p *ProcedureResourceParametersAssert) HasTraceLevel(expected sdk.TraceLeve
 ////////////////////////////
 // Parameter level checks //
 ////////////////////////////
-
-func (p *ProcedureResourceParametersAssert) HasAutoEventLoggingLevel(expected sdk.ParameterType) *ProcedureResourceParametersAssert {
-	p.ParameterLevelSet(string(sdk.ProcedureParameterAutoEventLogging), expected)
-	return p
-}
 
 func (p *ProcedureResourceParametersAssert) HasEnableConsoleOutputLevel(expected sdk.ParameterType) *ProcedureResourceParametersAssert {
 	p.ParameterLevelSet(string(sdk.ProcedureParameterEnableConsoleOutput), expected)

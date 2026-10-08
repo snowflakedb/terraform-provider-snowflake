@@ -556,11 +556,6 @@ func (s *ProcedureSetRequest) WithSecretsList(secretsList SecretsListRequest) *P
 	return s
 }
 
-func (s *ProcedureSetRequest) WithAutoEventLogging(autoEventLogging AutoEventLogging) *ProcedureSetRequest {
-	s.AutoEventLogging = &autoEventLogging
-	return s
-}
-
 func (s *ProcedureSetRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *ProcedureSetRequest {
 	s.EnableConsoleOutput = &enableConsoleOutput
 	return s
@@ -588,8 +583,6 @@ func (s *ProcedureSetRequest) WithTraceLevel(traceLevel TraceLevel) *ProcedureSe
 
 func (s *ProcedureSetRequest) SetParameterFromRaw(key string, value string) error {
 	switch strings.ToUpper(key) {
-	case "AUTO_EVENT_LOGGING":
-		return assignParsedParameter(value, ToAutoEventLogging, &s.AutoEventLogging)
 	case "ENABLE_CONSOLE_OUTPUT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
 	case "LOG_EVENT_LEVEL":
@@ -620,11 +613,6 @@ func (s *ProcedureUnsetRequest) WithExternalAccessIntegrations(externalAccessInt
 	return s
 }
 
-func (s *ProcedureUnsetRequest) WithAutoEventLogging(autoEventLogging bool) *ProcedureUnsetRequest {
-	s.AutoEventLogging = &autoEventLogging
-	return s
-}
-
 func (s *ProcedureUnsetRequest) WithEnableConsoleOutput(enableConsoleOutput bool) *ProcedureUnsetRequest {
 	s.EnableConsoleOutput = &enableConsoleOutput
 	return s
@@ -652,8 +640,6 @@ func (s *ProcedureUnsetRequest) WithTraceLevel(traceLevel bool) *ProcedureUnsetR
 
 func (s *ProcedureUnsetRequest) UnsetParameterFromRaw(key string) error {
 	switch key {
-	case "AUTO_EVENT_LOGGING":
-		s.AutoEventLogging = Bool(true)
 	case "ENABLE_CONSOLE_OUTPUT":
 		s.EnableConsoleOutput = Bool(true)
 	case "LOG_EVENT_LEVEL":

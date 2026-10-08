@@ -177,7 +177,6 @@ type ProcedureSetRequest struct {
 	Comment                    *string
 	ExternalAccessIntegrations []AccountObjectIdentifier
 	SecretsList                *SecretsListRequest
-	AutoEventLogging           *AutoEventLogging
 	EnableConsoleOutput        *bool
 	LogEventLevel              *LogLevel
 	LogLevel                   *LogLevel
@@ -188,7 +187,6 @@ type ProcedureSetRequest struct {
 type ProcedureUnsetRequest struct {
 	Comment                    *bool
 	ExternalAccessIntegrations *bool
-	AutoEventLogging           *bool
 	EnableConsoleOutput        *bool
 	LogEventLevel              *bool
 	LogLevel                   *bool
