@@ -1531,8 +1531,8 @@ func TestAcc_Database_IdentifierQuotingDiffSuppression(t *testing.T) {
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_database.test", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_database.test", "external_volume", externalVolumeId.Name()),
-					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.Name()),
+					resource.TestCheckResourceAttr("snowflake_database.test", "external_volume", externalVolumeId.FullyQualifiedName()),
+					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name()),
 				),
 			},

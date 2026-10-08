@@ -287,7 +287,7 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.aws_sns_topic", "")),
-					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.directory_notification_channel")),
+					assert.Check(checkDirectoryNotificationChannel(modelComplete.ResourceReference())),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.aws_access_point_arn", "arn:aws:s3:us-west-2:123456789012:accesspoint/complete")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
@@ -745,7 +745,7 @@ func TestAcc_ExternalS3Stage_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.aws_sns_topic", "")),
-					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.directory_notification_channel")),
+					assert.Check(checkDirectoryNotificationChannel(modelComplete.ResourceReference())),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.url.0", awsUrl)),
@@ -1014,4 +1014,14 @@ func TestAcc_ExternalS3Stage_DescribeOutputPermadiff(t *testing.T) {
 			},
 		},
 	})
+}
+
+// checkDirectoryNotificationChannel asserts the directory notification channel.
+// Non-prod accounts populate it when a directory table is enabled. Prod accounts leave it empty.
+func checkDirectoryNotificationChannel(resourceReference string) resource.TestCheckFunc {
+	attribute := "describe_output.0.directory_table.0.directory_notification_channel"
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeProdEnvironment {
+		return resource.TestCheckResourceAttr(resourceReference, attribute, "")
+	}
+	return resource.TestCheckResourceAttrSet(resourceReference, attribute)
 }

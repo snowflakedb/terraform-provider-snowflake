@@ -58,6 +58,21 @@ func (c *TestClient) SetUpTemporaryLegacyServiceUserWithPat(t *testing.T) *TmpSe
 			WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
 				WithUserType(sdk.UserTypeLegacyService)))
 	})
+	// Some accounts reject PAT creation unless the user has a network policy (099410).
+	// Allow every IP so the policy satisfies that requirement without blocking the test runner.
+	networkPolicy, networkPolicyCleanup := c.NetworkPolicy.CreateNetworkPolicyWithRequest(t, sdk.NewCreateNetworkPolicyRequest(c.Ids.RandomAccountObjectIdentifier()).
+		WithAllowedIpList([]sdk.IPRequest{*sdk.NewIPRequest("0.0.0.0/0")}))
+	t.Cleanup(networkPolicyCleanup)
+	c.User.Alter(t, sdk.NewAlterUserRequest(tmpUser.UserId).
+		WithSet(*sdk.NewUserSetRequest().
+			WithObjectParameters(*sdk.NewUserObjectParametersRequest().
+				WithNetworkPolicy(networkPolicy.ID()))))
+	t.Cleanup(func() {
+		c.User.Alter(t, sdk.NewAlterUserRequest(tmpUser.UserId).
+			WithUnset(*sdk.NewUserUnsetRequest().
+				WithObjectParameters(*sdk.NewUserObjectParametersUnsetRequest().
+					WithNetworkPolicy(true))))
+	})
 	req := sdk.NewAddUserProgrammaticAccessTokenRequest(tmpUser.UserId, c.Ids.RandomAccountObjectIdentifier()).WithRoleRestriction(tmpUser.RoleId)
 	pat, cleanupPat := c.User.AddProgrammaticAccessTokenWithRequest(t, tmpUser.UserId, req)
 	t.Cleanup(cleanupPat)

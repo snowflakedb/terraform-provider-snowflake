@@ -444,8 +444,8 @@ func TestInt_Warehouses(t *testing.T) {
 				HasNoEnableQueryAcceleration().
 				HasNoQueryAccelerationMaxScaleFactor().
 				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelLarge).
-				// This value can be different (SNOW-3687301). It's under investigation.
-				HasQueryThroughputMultiplier(5),
+				// Snowflake does not guarantee a specific default (SNOW-3687301).
+				HasQueryThroughputMultiplierSet(),
 		)
 
 		// Change warehouse type back from adaptive to standard

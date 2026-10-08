@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"slices"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -83,7 +84,20 @@ func handleDatabaseParametersUpdate(d *schema.ResourceData, set *sdk.DatabaseSet
 }
 
 func handleDatabaseParameterRead(d *schema.ResourceData, databaseParameters *sdk.DatabaseParametersDetails) diag.Diagnostics {
+	return handleDatabaseParameterReadWithSkip(d, databaseParameters, nil)
+}
+
+// handleSharedDatabaseParameterRead skips parameters that cannot be set on a database created from a share.
+// Those attributes are absent from sharedDatabaseParametersSchema, and schema.ResourceData.Set panics on an unknown address.
+func handleSharedDatabaseParameterRead(d *schema.ResourceData, databaseParameters *sdk.DatabaseParametersDetails) diag.Diagnostics {
+	return handleDatabaseParameterReadWithSkip(d, databaseParameters, sharedDatabaseNotApplicableParameters)
+}
+
+func handleDatabaseParameterReadWithSkip(d *schema.ResourceData, databaseParameters *sdk.DatabaseParametersDetails, skip []string) diag.Diagnostics {
 	set := func(key string, value any) diag.Diagnostics {
+		if slices.Contains(skip, strings.ToUpper(key)) {
+			return nil
+		}
 		if err := d.Set(key, value); err != nil {
 			return diag.FromErr(err)
 		}

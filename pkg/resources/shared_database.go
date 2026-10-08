@@ -197,7 +197,7 @@ func ReadSharedDatabase(ctx context.Context, d *schema.ResourceData, meta any) d
 		return diag.FromErr(err)
 	}
 
-	if diags := handleDatabaseParameterRead(d, databaseParameters); diags != nil {
+	if diags := handleSharedDatabaseParameterRead(d, databaseParameters); diags != nil {
 		return diags
 	}
 

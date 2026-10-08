@@ -25,6 +25,19 @@ func (w *WarehouseAssert) HasTables(expected ...sdk.SchemaObjectIdentifier) *War
 	return w
 }
 
+// HasQueryThroughputMultiplierSet asserts the multiplier is present.
+// Snowflake does not guarantee a specific default after a warehouse type change (SNOW-3687301).
+func (w *WarehouseAssert) HasQueryThroughputMultiplierSet() *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.QueryThroughputMultiplier == nil {
+			return fmt.Errorf("expected query throughput multiplier to have value; got: nil")
+		}
+		return nil
+	})
+	return w
+}
+
 func (w *WarehouseAssert) HasStateOneOf(expected ...sdk.WarehouseState) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()

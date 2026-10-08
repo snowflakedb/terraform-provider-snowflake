@@ -20,19 +20,20 @@ import (
 
 func TestAcc_Experimental_AccountParameter_CatalogWritePath(t *testing.T) {
 	stringParam := sdk.AccountParameterPythonProfilerModules
-	identifierParam := sdk.AccountParameterNetworkPolicy
+	identifierParam := sdk.AccountParameterPythonProfilerTargetStage
 	floatParam := sdk.AccountParameterInitialReplicationSizeLimitInTb
 
-	networkPolicy, networkPolicyCleanup := testClient().NetworkPolicy.CreateNetworkPolicyNotEmpty(t)
-	t.Cleanup(networkPolicyCleanup)
+	stage, stageCleanup := testClient().Stage.CreateStage(t)
+	t.Cleanup(stageCleanup)
 	t.Cleanup(func() {
 		testClient().Parameter.UnsetAccountParameter(t, stringParam)
 		testClient().Parameter.UnsetAccountParameter(t, identifierParam)
 		testClient().Parameter.UnsetAccountParameter(t, floatParam)
 	})
 
+	stageName := stage.ID().FullyQualifiedName()
 	legacyStringModel := model.AccountParameter("string_type", string(stringParam), "'module_a,module_b'")
-	identifierModel := model.AccountParameter("identifier_type", string(identifierParam), networkPolicy.ID().Name())
+	identifierModel := model.AccountParameter("identifier_type", string(identifierParam), stageName)
 	floatModel := model.AccountParameter("float_type", string(floatParam), "3.0")
 
 	catalogStringModel := model.AccountParameter("string_type", string(stringParam), "module_a,module_b")
@@ -72,7 +73,7 @@ func TestAcc_Experimental_AccountParameter_CatalogWritePath(t *testing.T) {
 						HasValueString("module_a,module_b"),
 					resourceassert.AccountParameterResource(t, identifierModel.ResourceReference()).
 						HasKeyString(string(identifierParam)).
-						HasValueString(networkPolicy.ID().Name()),
+						HasValueString(stageName),
 					resourceassert.AccountParameterResource(t, floatModel.ResourceReference()).
 						HasKeyString(string(floatParam)).
 						HasValueString("3.0"),
@@ -93,7 +94,7 @@ func TestAcc_Experimental_AccountParameter_CatalogWritePath(t *testing.T) {
 						HasValueString("module_a,module_b"),
 					resourceassert.AccountParameterResource(t, identifierModel.ResourceReference()).
 						HasKeyString(string(identifierParam)).
-						HasValueString(networkPolicy.ID().Name()),
+						HasValueString(stageName),
 					resourceassert.AccountParameterResource(t, floatModel.ResourceReference()).
 						HasKeyString(string(floatParam)).
 						HasValueString("3.0"),

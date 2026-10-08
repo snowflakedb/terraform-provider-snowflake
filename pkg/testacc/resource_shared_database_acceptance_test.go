@@ -78,6 +78,9 @@ func TestAcc_CreateSharedDatabase_BasicUseCase(t *testing.T) {
 					*accountSuspendTaskAfterNumFailures = helpers.FindParameter(t, params, sdk.AccountParameterSuspendTaskAfterNumFailures).Value
 					*accountTaskAutoRetryAttempts = helpers.FindParameter(t, params, sdk.AccountParameterTaskAutoRetryAttempts).Value
 					*accountUserTaskMangedInitialWarehouseSize = helpers.FindParameter(t, params, sdk.AccountParameterUserTaskManagedInitialWarehouseSize).Value
+					if warehouseSize, err := sdk.ToWarehouseSize(*accountUserTaskMangedInitialWarehouseSize); err == nil {
+						*accountUserTaskMangedInitialWarehouseSize = string(warehouseSize)
+					}
 					*accountUserTaskTimeoutMs = helpers.FindParameter(t, params, sdk.AccountParameterUserTaskTimeoutMs).Value
 					*accountUserTaskMinimumTriggerIntervalInSeconds = helpers.FindParameter(t, params, sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds).Value
 					*accountQuotedIdentifiersIgnoreCase = helpers.FindParameter(t, params, sdk.AccountParameterQuotedIdentifiersIgnoreCase).Value
@@ -204,8 +207,8 @@ func TestAcc_CreateSharedDatabase_CompleteUseCase(t *testing.T) {
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "from_share", externalShareId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "comment", comment),
 
-					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "external_volume", externalVolumeId.Name()),
-					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "catalog", catalogId.Name()),
+					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "external_volume", externalVolumeId.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "catalog", catalogId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "replace_invalid_characters", "true"),
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "default_ddl_collation", "en_US"),
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "default_notebook_compute_pool_cpu", "CPU_X64_S"),

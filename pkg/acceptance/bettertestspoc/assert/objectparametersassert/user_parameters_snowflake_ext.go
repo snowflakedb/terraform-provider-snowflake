@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvidentifiers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -14,7 +15,7 @@ func (u *UserParametersAssert) HasAllDefaultsForEnvironment(t *testing.T, defaul
 	t.Helper()
 	return u.
 		HasDefaultParameterValueOnLevel(sdk.UserParameterEnableUnredactedQuerySyntaxError, sdk.ParameterTypeSnowflakeDefault).
-		HasNetworkPolicy("RESTRICTED_ACCESS").
+		HasNetworkPolicy(testenvidentifiers.NetworkPolicy.Name()).
 		HasNetworkPolicyLevel(sdk.ParameterTypeAccount).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterPreventUnloadToInternalStages, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterAbortDetachedQuery, sdk.ParameterTypeSnowflakeDefault).
