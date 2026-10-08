@@ -45,6 +45,7 @@ func handleTaskParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateTa
 		handleParameterCreateWithMapping(d, defs.ServerlessTaskMinStatementSize.FieldName(), &createOpts.ServerlessTaskMinStatementSize, stringToStringEnumProvider(sdk.ToWarehouseSize)),
 		handleParameterCreateWithMapping(d, defs.ServerlessTaskMaxStatementSize.FieldName(), &createOpts.ServerlessTaskMaxStatementSize, stringToStringEnumProvider(sdk.ToWarehouseSize)),
 		// session parameters
+		handleParameterCreate(d, defs.AbortDetachedQuery.FieldName(), &createOpts.AbortDetachedQuery),
 		handleParameterCreateWithMapping(d, defs.BinaryInputFormat.FieldName(), &createOpts.BinaryInputFormat, stringToStringEnumProvider(sdk.ToBinaryInputFormat)),
 		handleParameterCreateWithMapping(d, defs.BinaryOutputFormat.FieldName(), &createOpts.BinaryOutputFormat, stringToStringEnumProvider(sdk.ToBinaryOutputFormat)),
 		handleParameterCreate(d, defs.ClientMemoryLimit.FieldName(), &createOpts.ClientMemoryLimit),
@@ -112,6 +113,7 @@ func handleTaskParametersChanges(d *schema.ResourceData, set *sdk.TaskSetRequest
 		handleParameterUpdateWithMapping(d, defs.ServerlessTaskMinStatementSize.FieldName(), &set.ServerlessTaskMinStatementSize, &unset.ServerlessTaskMinStatementSize, stringToStringEnumProvider(sdk.ToWarehouseSize)),
 		handleParameterUpdateWithMapping(d, defs.ServerlessTaskMaxStatementSize.FieldName(), &set.ServerlessTaskMaxStatementSize, &unset.ServerlessTaskMaxStatementSize, stringToStringEnumProvider(sdk.ToWarehouseSize)),
 		// session parameters
+		handleParameterUpdate(d, defs.AbortDetachedQuery.FieldName(), &set.AbortDetachedQuery, &unset.AbortDetachedQuery),
 		handleParameterUpdateWithMapping(d, defs.BinaryInputFormat.FieldName(), &set.BinaryInputFormat, &unset.BinaryInputFormat, stringToStringEnumProvider(sdk.ToBinaryInputFormat)),
 		handleParameterUpdateWithMapping(d, defs.BinaryOutputFormat.FieldName(), &set.BinaryOutputFormat, &unset.BinaryOutputFormat, stringToStringEnumProvider(sdk.ToBinaryOutputFormat)),
 		handleParameterUpdate(d, defs.ClientMemoryLimit.FieldName(), &set.ClientMemoryLimit, &unset.ClientMemoryLimit),
