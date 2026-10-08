@@ -40,13 +40,13 @@ func (f *FunctionResourceParametersAssert) HasEnableConsoleOutput(expected bool)
 	return f
 }
 
-func (f *FunctionResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *FunctionResourceParametersAssert {
-	f.ParameterValueSet(string(sdk.FunctionParameterLogLevel), string(expected))
+func (f *FunctionResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *FunctionResourceParametersAssert {
+	f.ParameterValueSet(string(sdk.FunctionParameterLogEventLevel), string(expected))
 	return f
 }
 
-func (f *FunctionResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *FunctionResourceParametersAssert {
-	f.ParameterValueSet(string(sdk.FunctionParameterLogEventLevel), string(expected))
+func (f *FunctionResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *FunctionResourceParametersAssert {
+	f.ParameterValueSet(string(sdk.FunctionParameterLogLevel), string(expected))
 	return f
 }
 
@@ -69,13 +69,13 @@ func (f *FunctionResourceParametersAssert) HasEnableConsoleOutputLevel(expected 
 	return f
 }
 
-func (f *FunctionResourceParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *FunctionResourceParametersAssert {
-	f.ParameterLevelSet(string(sdk.FunctionParameterLogLevel), expected)
+func (f *FunctionResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *FunctionResourceParametersAssert {
+	f.ParameterLevelSet(string(sdk.FunctionParameterLogEventLevel), expected)
 	return f
 }
 
-func (f *FunctionResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *FunctionResourceParametersAssert {
-	f.ParameterLevelSet(string(sdk.FunctionParameterLogEventLevel), expected)
+func (f *FunctionResourceParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *FunctionResourceParametersAssert {
+	f.ParameterLevelSet(string(sdk.FunctionParameterLogLevel), expected)
 	return f
 }
 

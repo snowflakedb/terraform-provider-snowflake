@@ -679,15 +679,22 @@ func queryAllFunctionDetailsCommon(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return nil, diag.FromErr(err)
 	}
+	functionParametersDetails, err := sdk.ToFunctionParametersDetails(functionParameters)
+	if err != nil {
+		return nil, diag.FromErr(err)
+	}
+
 	return &allFunctionDetailsCommon{
-		function:           function,
-		functionDetails:    functionDetails,
-		functionParameters: functionParameters,
+		function:                  function,
+		functionDetails:           functionDetails,
+		functionParameters:        functionParameters,
+		functionParametersDetails: functionParametersDetails,
 	}, nil
 }
 
 type allFunctionDetailsCommon struct {
-	function           *sdk.Function
-	functionDetails    *sdk.FunctionDetails
-	functionParameters []*sdk.Parameter
+	function                  *sdk.Function
+	functionDetails           *sdk.FunctionDetails
+	functionParameters        []*sdk.Parameter
+	functionParametersDetails *sdk.FunctionParametersDetails
 }

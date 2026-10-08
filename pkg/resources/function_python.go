@@ -120,6 +120,10 @@ func ReadContextFunctionPython(ctx context.Context, d *schema.ResourceData, meta
 	// TODO [SNOW-1348103]: handle external changes marking
 	// TODO [SNOW-1348103]: handle setting state to value from config
 
+	if diags := handleFunctionParameterRead(d, allFunctionDetails.functionParametersDetails); diags != nil {
+		return diags
+	}
+
 	errs := errors.Join(
 		// not reading is_secure on purpose (handled as external change to show output)
 		readFunctionOrProcedureArguments(d, allFunctionDetails.functionDetails.NormalizedArguments),
@@ -136,7 +140,6 @@ func ReadContextFunctionPython(ctx context.Context, d *schema.ResourceData, meta
 		setOptionalFromStringPtr(d, "function_definition", allFunctionDetails.functionDetails.Body),
 		d.Set("function_language", allFunctionDetails.functionDetails.Language),
 
-		handleFunctionParameterRead(d, allFunctionDetails.functionParameters),
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.FunctionToSchema(allFunctionDetails.function)}),
 		d.Set(ParametersAttributeName, []map[string]any{schemas.FunctionParametersToSchema(allFunctionDetails.functionParameters, providerCtx)}),

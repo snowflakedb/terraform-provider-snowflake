@@ -2,103 +2,73 @@ package resources
 
 import (
 	"context"
-	"strconv"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var (
-	functionParametersSchema     = make(map[string]*schema.Schema)
-	functionParametersCustomDiff = ParametersCustomDiff(
-		functionParametersProvider,
-		parameter[sdk.FunctionParameter]{sdk.FunctionParameterEnableConsoleOutput, valueTypeBool, sdk.ParameterTypeFunction},
-		parameter[sdk.FunctionParameter]{sdk.FunctionParameterLogLevel, valueTypeString, sdk.ParameterTypeFunction},
-		parameter[sdk.FunctionParameter]{sdk.FunctionParameterLogEventLevel, valueTypeString, sdk.ParameterTypeFunction},
-		parameter[sdk.FunctionParameter]{sdk.FunctionParameterMetricLevel, valueTypeString, sdk.ParameterTypeFunction},
-		parameter[sdk.FunctionParameter]{sdk.FunctionParameterTraceLevel, valueTypeString, sdk.ParameterTypeFunction},
-	)
-)
+var functionParametersSchema = make(map[string]*schema.Schema)
 
 func init() {
-	functionParameterFields := []parameterDef[sdk.FunctionParameter]{
-		// session params
-		{Name: sdk.FunctionParameterEnableConsoleOutput, Type: schema.TypeBool, Description: "Enable stdout/stderr fast path logging for anonymous stored procs. This is a public parameter (similar to LOG_LEVEL)."},
-		{Name: sdk.FunctionParameterLogLevel, Type: schema.TypeString, Description: "LOG_LEVEL to use when filtering events"},
-		{Name: sdk.FunctionParameterLogEventLevel, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToLogLevel), DiffSuppress: NormalizeAndCompare(sdk.ToLogLevel), Description: "Specifies the severity level of log events (rows with record type EVENT) that should be ingested and made available in the active event table. Log events at the specified level (and at more severe levels) are ingested. For more information, see [LOG_EVENT_LEVEL](https://docs.snowflake.com/en/sql-reference/parameters#log_event_level). " + enumValuesDescription(sdk.AllLogLevels)},
-		{Name: sdk.FunctionParameterMetricLevel, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToMetricLevel), DiffSuppress: NormalizeAndCompare(sdk.ToMetricLevel), Description: "METRIC_LEVEL value to control whether to emit metrics to Event Table"},
-		{Name: sdk.FunctionParameterTraceLevel, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToTraceLevel), DiffSuppress: NormalizeAndCompare(sdk.ToTraceLevel), Description: "Trace level value to use when generating/filtering trace events"},
+	for _, p := range defs.ParameterDefsForLevel(parameterdefs.ParameterLevelFunction) {
+		functionParametersSchema[p.FieldName()] = parameterSchema(p)
 	}
-
-	for _, field := range functionParameterFields {
-		fieldName := strings.ToLower(string(field.Name))
-
-		functionParametersSchema[fieldName] = &schema.Schema{
-			Type:             field.Type,
-			Description:      enrichWithReferenceToParameterDocs(field.Name, field.Description),
-			Computed:         true,
-			Optional:         true,
-			ValidateDiagFunc: field.ValidateDiag,
-			DiffSuppressFunc: field.DiffSuppress,
-			ConflictsWith:    field.ConflictsWith,
-		}
-	}
-}
-
-func functionParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) ([]*sdk.Parameter, error) {
-	return parametersProvider(ctx, d, meta.(*provider.Context), functionParametersProviderFunc, sdk.ParseSchemaObjectIdentifierWithArguments)
-}
-
-func functionParametersProviderFunc(c *sdk.Client) showParametersFunc[sdk.SchemaObjectIdentifierWithArguments] {
-	return c.Functions.ShowParameters
-}
-
-func handleFunctionParameterRead(d *schema.ResourceData, functionParameters []*sdk.Parameter) error {
-	for _, p := range functionParameters {
-		switch p.Key {
-		case
-			string(sdk.FunctionParameterLogLevel),
-			string(sdk.FunctionParameterLogEventLevel),
-			string(sdk.FunctionParameterMetricLevel),
-			string(sdk.FunctionParameterTraceLevel):
-			if err := d.Set(strings.ToLower(p.Key), p.Value); err != nil {
-				return err
-			}
-		case
-			string(sdk.FunctionParameterEnableConsoleOutput):
-			value, err := strconv.ParseBool(p.Value)
-			if err != nil {
-				return err
-			}
-			if err := d.Set(strings.ToLower(p.Key), value); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
 }
 
 // They do not work in create, that's why are set in alter
 func handleFunctionParametersCreate(d *schema.ResourceData, set *sdk.FunctionSetRequest) diag.Diagnostics {
 	return JoinDiags(
-		handleParameterCreate(d, sdk.FunctionParameterEnableConsoleOutput, &set.EnableConsoleOutput),
-		handleParameterCreateWithMapping(d, sdk.FunctionParameterLogLevel, &set.LogLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
-		handleParameterCreateWithMapping(d, sdk.FunctionParameterLogEventLevel, &set.LogEventLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
-		handleParameterCreateWithMapping(d, sdk.FunctionParameterMetricLevel, &set.MetricLevel, stringToStringEnumProvider(sdk.ToMetricLevel)),
-		handleParameterCreateWithMapping(d, sdk.FunctionParameterTraceLevel, &set.TraceLevel, stringToStringEnumProvider(sdk.ToTraceLevel)),
+		handleParameterCreate(d, defs.EnableConsoleOutput.FieldName(), &set.EnableConsoleOutput),
+		handleParameterCreateWithMapping(d, defs.LogLevel.FieldName(), &set.LogLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
+		handleParameterCreateWithMapping(d, defs.LogEventLevel.FieldName(), &set.LogEventLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
+		handleParameterCreateWithMapping(d, defs.MetricLevel.FieldName(), &set.MetricLevel, stringToStringEnumProvider(sdk.ToMetricLevel)),
+		handleParameterCreateWithMapping(d, defs.TraceLevel.FieldName(), &set.TraceLevel, stringToStringEnumProvider(sdk.ToTraceLevel)),
 	)
 }
 
 func handleFunctionParametersUpdate(d *schema.ResourceData, set *sdk.FunctionSetRequest, unset *sdk.FunctionUnsetRequest) diag.Diagnostics {
 	return JoinDiags(
-		handleParameterUpdate(d, sdk.FunctionParameterEnableConsoleOutput, &set.EnableConsoleOutput, &unset.EnableConsoleOutput),
-		handleParameterUpdateWithMapping(d, sdk.FunctionParameterLogLevel, &set.LogLevel, &unset.LogLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
-		handleParameterUpdateWithMapping(d, sdk.FunctionParameterLogEventLevel, &set.LogEventLevel, &unset.LogEventLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
-		handleParameterUpdateWithMapping(d, sdk.FunctionParameterMetricLevel, &set.MetricLevel, &unset.MetricLevel, stringToStringEnumProvider(sdk.ToMetricLevel)),
-		handleParameterUpdateWithMapping(d, sdk.FunctionParameterTraceLevel, &set.TraceLevel, &unset.TraceLevel, stringToStringEnumProvider(sdk.ToTraceLevel)),
+		handleParameterUpdate(d, defs.EnableConsoleOutput.FieldName(), &set.EnableConsoleOutput, &unset.EnableConsoleOutput),
+		handleParameterUpdateWithMapping(d, defs.LogLevel.FieldName(), &set.LogLevel, &unset.LogLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
+		handleParameterUpdateWithMapping(d, defs.LogEventLevel.FieldName(), &set.LogEventLevel, &unset.LogEventLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
+		handleParameterUpdateWithMapping(d, defs.MetricLevel.FieldName(), &set.MetricLevel, &unset.MetricLevel, stringToStringEnumProvider(sdk.ToMetricLevel)),
+		handleParameterUpdateWithMapping(d, defs.TraceLevel.FieldName(), &set.TraceLevel, &unset.TraceLevel, stringToStringEnumProvider(sdk.ToTraceLevel)),
 	)
+}
+
+func handleFunctionParameterRead(d *schema.ResourceData, parameters *sdk.FunctionParametersDetails) diag.Diagnostics {
+	return JoinDiags(
+		setResourceData(d, defs.EnableConsoleOutput.FieldName(), parameters.EnableConsoleOutput.Value),
+		setResourceData(d, defs.LogLevel.FieldName(), parameters.LogLevel.Value),
+		setResourceData(d, defs.LogEventLevel.FieldName(), parameters.LogEventLevel.Value),
+		setResourceData(d, defs.MetricLevel.FieldName(), parameters.MetricLevel.Value),
+		setResourceData(d, defs.TraceLevel.FieldName(), parameters.TraceLevel.Value),
+	)
+}
+
+var functionParametersCustomDiff = ParametersCustomDiffFromTypedParameters(
+	functionParametersProvider,
+	functionParameterDiffFunctions,
+)
+
+func functionParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) (*sdk.FunctionParametersDetails, error) {
+	id, err := sdk.ParseSchemaObjectIdentifierWithArguments(d.Id())
+	if err != nil {
+		return nil, err
+	}
+	return meta.(*provider.Context).Client.Functions.ShowParametersDetails(ctx, id)
+}
+
+func functionParameterDiffFunctions(parameters *sdk.FunctionParametersDetails) []schema.CustomizeDiffFunc {
+	return []schema.CustomizeDiffFunc{
+		BoolTypedParameterValueComputedIf(defs.EnableConsoleOutput.FieldName(), parameters.EnableConsoleOutput, sdk.ParameterTypeFunction),
+		StringTypedParameterValueComputedIf(defs.LogLevel.FieldName(), parameters.LogLevel, sdk.ParameterTypeFunction),
+		StringTypedParameterValueComputedIf(defs.LogEventLevel.FieldName(), parameters.LogEventLevel, sdk.ParameterTypeFunction),
+		StringTypedParameterValueComputedIf(defs.MetricLevel.FieldName(), parameters.MetricLevel, sdk.ParameterTypeFunction),
+		StringTypedParameterValueComputedIf(defs.TraceLevel.FieldName(), parameters.TraceLevel, sdk.ParameterTypeFunction),
+	}
 }

@@ -6,31 +6,27 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var (
 	ShowFunctionParametersSchema = make(map[string]*schema.Schema)
-	functionParameters           = []sdk.FunctionParameter{
-		sdk.FunctionParameterEnableConsoleOutput,
-		sdk.FunctionParameterLogLevel,
-		sdk.FunctionParameterLogEventLevel,
-		sdk.FunctionParameterMetricLevel,
-		sdk.FunctionParameterTraceLevel,
-	}
+	functionParameters           = defs.ParameterDefsForLevel(parameterdefs.ParameterLevelFunction)
 )
 
 func init() {
-	for _, param := range functionParameters {
-		ShowFunctionParametersSchema[strings.ToLower(string(param))] = ParameterListSchema
+	for _, def := range functionParameters {
+		ShowFunctionParametersSchema[def.FieldName()] = ParameterListSchema
 	}
 }
 
 func FunctionParametersToSchema(parameters []*sdk.Parameter, providerCtx *provider.Context) map[string]any {
 	functionParametersValue := make(map[string]any)
-	for _, param := range parameters {
-		if slices.Contains(functionParameters, sdk.FunctionParameter(param.Key)) {
-			functionParametersValue[strings.ToLower(param.Key)] = []map[string]any{ParameterToSchemaReducedOutput(param, providerCtx)}
+	for _, parameter := range parameters {
+		if slices.ContainsFunc(functionParameters, func(def parameterdefs.ParameterDef) bool { return def.SqlName == parameter.Key }) {
+			functionParametersValue[strings.ToLower(parameter.Key)] = []map[string]any{ParameterToSchemaReducedOutput(parameter, providerCtx)}
 		}
 	}
 	return functionParametersValue

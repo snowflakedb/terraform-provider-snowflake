@@ -69,8 +69,8 @@ func (f *FunctionParametersAssert) HasDefaultParameterValueOnLevel(parameterName
 func (f *FunctionParametersAssert) HasAllDefaults() *FunctionParametersAssert {
 	return f.
 		HasDefaultParameterValueOnLevel(sdk.FunctionParameterEnableConsoleOutput, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.FunctionParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.FunctionParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.FunctionParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.FunctionParameterMetricLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.FunctionParameterTraceLevel, sdk.ParameterTypeSnowflakeDefault)
 }
@@ -78,8 +78,8 @@ func (f *FunctionParametersAssert) HasAllDefaults() *FunctionParametersAssert {
 func (f *FunctionParametersAssert) HasAllDefaultsExplicit() *FunctionParametersAssert {
 	return f.
 		HasDefaultEnableConsoleOutputValueExplicit().
-		HasDefaultLogLevelValueExplicit().
 		HasDefaultLogEventLevelValueExplicit().
+		HasDefaultLogLevelValueExplicit().
 		HasDefaultMetricLevelValueExplicit().
 		HasDefaultTraceLevelValueExplicit()
 }
@@ -93,13 +93,13 @@ func (f *FunctionParametersAssert) HasEnableConsoleOutput(expected bool) *Functi
 	return f
 }
 
-func (f *FunctionParametersAssert) HasLogLevel(expected sdk.LogLevel) *FunctionParametersAssert {
-	f.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.FunctionParameterLogLevel, expected))
+func (f *FunctionParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *FunctionParametersAssert {
+	f.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.FunctionParameterLogEventLevel, expected))
 	return f
 }
 
-func (f *FunctionParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *FunctionParametersAssert {
-	f.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.FunctionParameterLogEventLevel, expected))
+func (f *FunctionParametersAssert) HasLogLevel(expected sdk.LogLevel) *FunctionParametersAssert {
+	f.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.FunctionParameterLogLevel, expected))
 	return f
 }
 
@@ -122,13 +122,13 @@ func (f *FunctionParametersAssert) HasEnableConsoleOutputLevel(expected sdk.Para
 	return f
 }
 
-func (f *FunctionParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *FunctionParametersAssert {
-	f.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.FunctionParameterLogLevel, expected))
+func (f *FunctionParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *FunctionParametersAssert {
+	f.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.FunctionParameterLogEventLevel, expected))
 	return f
 }
 
-func (f *FunctionParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *FunctionParametersAssert {
-	f.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.FunctionParameterLogEventLevel, expected))
+func (f *FunctionParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *FunctionParametersAssert {
+	f.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.FunctionParameterLogLevel, expected))
 	return f
 }
 
@@ -150,12 +150,12 @@ func (f *FunctionParametersAssert) HasDefaultEnableConsoleOutputValue() *Functio
 	return f.HasDefaultParameterValue(sdk.FunctionParameterEnableConsoleOutput)
 }
 
-func (f *FunctionParametersAssert) HasDefaultLogLevelValue() *FunctionParametersAssert {
-	return f.HasDefaultParameterValue(sdk.FunctionParameterLogLevel)
-}
-
 func (f *FunctionParametersAssert) HasDefaultLogEventLevelValue() *FunctionParametersAssert {
 	return f.HasDefaultParameterValue(sdk.FunctionParameterLogEventLevel)
+}
+
+func (f *FunctionParametersAssert) HasDefaultLogLevelValue() *FunctionParametersAssert {
+	return f.HasDefaultParameterValue(sdk.FunctionParameterLogLevel)
 }
 
 func (f *FunctionParametersAssert) HasDefaultMetricLevelValue() *FunctionParametersAssert {
@@ -174,12 +174,12 @@ func (f *FunctionParametersAssert) HasDefaultEnableConsoleOutputValueExplicit() 
 	return f.HasEnableConsoleOutput(false)
 }
 
-func (f *FunctionParametersAssert) HasDefaultLogLevelValueExplicit() *FunctionParametersAssert {
-	return f.HasLogLevel(sdk.LogLevelOff)
-}
-
 func (f *FunctionParametersAssert) HasDefaultLogEventLevelValueExplicit() *FunctionParametersAssert {
 	return f.HasLogEventLevel(sdk.LogLevelOff)
+}
+
+func (f *FunctionParametersAssert) HasDefaultLogLevelValueExplicit() *FunctionParametersAssert {
+	return f.HasLogLevel(sdk.LogLevelOff)
 }
 
 func (f *FunctionParametersAssert) HasDefaultMetricLevelValueExplicit() *FunctionParametersAssert {
