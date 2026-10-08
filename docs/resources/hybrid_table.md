@@ -137,7 +137,7 @@ resource "snowflake_hybrid_table" "complete" {
 ### Optional
 
 - `comment` (String) Specifies a comment for the hybrid table.
-- `data_retention_time_in_days` (Number) Specifies the retention period for the hybrid table so that Time Travel actions can be performed on historical data. For more information, check [DATA_RETENTION_TIME_IN_DAYS docs](https://docs.snowflake.com/en/sql-reference/parameters#data-retention-time-in-days).
+- `data_retention_time_in_days` (Number) Specifies the number of days for which Time Travel actions (CLONE and UNDROP) can be performed on the hybrid table. For more information, check [DATA_RETENTION_TIME_IN_DAYS docs](https://docs.snowflake.com/en/sql-reference/parameters#data-retention-time-in-days).
 - `foreign_key_constraint` (Block Set) Defines FOREIGN KEY constraints. (see [below for nested schema](#nestedblock--foreign_key_constraint))
 - `index` (Block Set) Defines secondary indexes on the hybrid table. (see [below for nested schema](#nestedblock--index))
 - `max_data_extension_time_in_days` (Number) Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period for the hybrid table to prevent streams on it from becoming stale. For more information, check [MAX_DATA_EXTENSION_TIME_IN_DAYS docs](https://docs.snowflake.com/en/sql-reference/parameters#max-data-extension-time-in-days).

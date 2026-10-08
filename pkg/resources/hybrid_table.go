@@ -876,7 +876,11 @@ func GetReadHybridTableFunc(withExternalChangesMarking bool) schema.ReadContextF
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if diags := handleHybridTableParameterRead(d, parameters); diags.HasError() {
+		parameterDetails, err := sdk.ToHybridTableParametersDetails(parameters)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if diags := handleHybridTableParameterRead(d, parameterDetails); diags.HasError() {
 			return diags
 		}
 
