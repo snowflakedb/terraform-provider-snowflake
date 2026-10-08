@@ -30,7 +30,11 @@ const (
 	// ParameterLevelAccountExt has no Snowflake counterpart. It marks the broader set of account
 	// parameters consumed by the generic account_parameter resource, while ParameterLevelAccount
 	// marks the narrower set exposed as typed fields on current_account.
-	ParameterLevelAccountExt  ParameterLevel = "ACCOUNT_EXT"
+	ParameterLevelAccountExt ParameterLevel = "ACCOUNT_EXT"
+	// ParameterLevelHybridTable has no Snowflake counterpart. It marks the narrower subset of
+	// ParameterLevelTable parameters that are actually settable on HYBRID TABLE objects (verified
+	// against ALTER HYBRID TABLE SET/UNSET and CREATE HYBRID TABLE support), mirroring the
+	// ParameterLevelAccount/ParameterLevelAccountExt narrow-vs-broad split above.
 	ParameterLevelHybridTable ParameterLevel = "HYBRID_TABLE"
 )
 

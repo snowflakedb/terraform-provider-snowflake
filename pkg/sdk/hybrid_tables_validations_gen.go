@@ -74,8 +74,8 @@ func (opts *AlterHybridTableOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.Comment, opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays) {
-			errs = append(errs, errAtLeastOneOf("AlterHybridTableOptions.Unset", "Comment", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays"))
+		if !anyValueSet(opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterHybridTableOptions.Unset", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "Comment"))
 		}
 	}
 	return JoinErrors(errs...)

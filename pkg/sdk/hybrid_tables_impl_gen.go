@@ -4,6 +4,8 @@ package sdk
 
 import (
 	"context"
+	"errors"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -438,4 +440,24 @@ func (r tableImportedKeyRow) convert() (*TableImportedKey, error) {
 		UpdateRule:     r.UpdateRule,
 	}
 	return result, nil
+}
+
+func toHybridTableParametersDetails(params []*Parameter) (*HybridTableParametersDetails, error) {
+	byKey := parametersByKey(params)
+	var d HybridTableParametersDetails
+	if err := errors.Join(
+		fillTypedParameter(byKey["DATA_RETENTION_TIME_IN_DAYS"], strconv.Atoi, &d.DataRetentionTimeInDays),
+		fillTypedParameter(byKey["MAX_DATA_EXTENSION_TIME_IN_DAYS"], strconv.Atoi, &d.MaxDataExtensionTimeInDays),
+	); err != nil {
+		return nil, err
+	}
+	return &d, nil
+}
+
+func (v *hybridTables) ShowParametersDetails(ctx context.Context, id SchemaObjectIdentifier) (*HybridTableParametersDetails, error) {
+	params, err := v.ShowParameters(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return toHybridTableParametersDetails(params)
 }

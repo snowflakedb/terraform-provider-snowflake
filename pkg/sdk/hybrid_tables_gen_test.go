@@ -264,12 +264,12 @@ var hybridTablesTests = HybridTablesTestsContext{
 			},
 			validationCase[*AlterHybridTableOptions]{
 				Name:        case_HybridTables_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterHybridTableOptions.Unset", "Comment", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays"),
+				ExpectedErr: errAtLeastOneOf("AlterHybridTableOptions.Unset", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "Comment"),
 				DefaultModify: func(opts *AlterHybridTableOptions) {
 					opts.Unset = &HybridTableUnsetProperties{}
-					opts.Unset.Comment = nil
 					opts.Unset.DataRetentionTimeInDays = nil
 					opts.Unset.MaxDataExtensionTimeInDays = nil
+					opts.Unset.Comment = nil
 				},
 			},
 		).

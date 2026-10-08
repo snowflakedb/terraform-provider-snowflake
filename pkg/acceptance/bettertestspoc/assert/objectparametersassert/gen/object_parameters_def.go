@@ -422,10 +422,7 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		IdType:                  "sdk.SchemaObjectIdentifier",
 		Level:                   sdk.ParameterTypeObject,
 		ParameterConstantPrefix: "Object",
-		Parameters: []SnowflakeParameter{
-			{ParameterName: string(sdk.ObjectParameterDataRetentionTimeInDays), ParameterType: "int", DefaultValue: "0", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
-			{ParameterName: string(sdk.ObjectParameterMaxDataExtensionTimeInDays), ParameterType: "int", DefaultValue: "14", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
-		},
+		Parameters:              snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelHybridTable)),
 	},
 	{
 		Name:                    "Schema",

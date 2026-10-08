@@ -24,7 +24,14 @@ type HybridTables interface {
 	ShowUniqueKeys(ctx context.Context, request *ShowUniqueKeysHybridTableRequest) ([]TableUniqueKey, error)
 	ShowImportedKeys(ctx context.Context, request *ShowImportedKeysHybridTableRequest) ([]TableImportedKey, error)
 	ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error)
+	ShowParametersDetails(ctx context.Context, id SchemaObjectIdentifier) (*HybridTableParametersDetails, error)
 	GetConstraints(ctx context.Context, id SchemaObjectIdentifier) ([]HybridTableConstraint, error)
+}
+
+// HybridTableParametersDetails holds the object's parameters with values parsed into their Go types.
+type HybridTableParametersDetails struct {
+	DataRetentionTimeInDays    TypedParameter[int]
+	MaxDataExtensionTimeInDays TypedParameter[int]
 }
 
 // CreateHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-hybrid-table.

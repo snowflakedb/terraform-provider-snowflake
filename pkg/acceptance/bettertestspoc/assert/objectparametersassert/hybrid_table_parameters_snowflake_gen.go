@@ -123,7 +123,7 @@ func (h *HybridTableParametersAssert) HasDefaultMaxDataExtensionTimeInDaysValue(
 /////////////////////////////////////////////
 
 func (h *HybridTableParametersAssert) HasDefaultDataRetentionTimeInDaysValueExplicit() *HybridTableParametersAssert {
-	return h.HasDataRetentionTimeInDays(0)
+	return h.HasDataRetentionTimeInDays(1)
 }
 
 func (h *HybridTableParametersAssert) HasDefaultMaxDataExtensionTimeInDaysValueExplicit() *HybridTableParametersAssert {

@@ -2,6 +2,8 @@
 
 package sdk
 
+import "strconv"
+
 func NewCreateHybridTableRequest(
 	name SchemaObjectIdentifier,
 	columnsAndConstraints HybridTableColumnsConstraintsAndIndexesRequest,
@@ -35,6 +37,17 @@ func (s *CreateHybridTableRequest) WithMaxDataExtensionTimeInDays(maxDataExtensi
 func (s *CreateHybridTableRequest) WithComment(comment string) *CreateHybridTableRequest {
 	s.Comment = &comment
 	return s
+}
+
+func (s *CreateHybridTableRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "DATA_RETENTION_TIME_IN_DAYS":
+		return assignParsedParameter(value, strconv.Atoi, &s.DataRetentionTimeInDays)
+	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":
+		return assignParsedParameter(value, strconv.Atoi, &s.MaxDataExtensionTimeInDays)
+	default:
+		return ErrParameterNotSupported
+	}
 }
 
 func NewHybridTableColumnsConstraintsAndIndexesRequest() *HybridTableColumnsConstraintsAndIndexesRequest {
@@ -435,6 +448,17 @@ func (s *HybridTableSetPropertiesRequest) WithComment(comment string) *HybridTab
 	return s
 }
 
+func (s *HybridTableSetPropertiesRequest) SetParameterFromRaw(key string, value string) error {
+	switch key {
+	case "DATA_RETENTION_TIME_IN_DAYS":
+		return assignParsedParameter(value, strconv.Atoi, &s.DataRetentionTimeInDays)
+	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":
+		return assignParsedParameter(value, strconv.Atoi, &s.MaxDataExtensionTimeInDays)
+	default:
+		return ErrParameterNotSupported
+	}
+}
+
 func NewHybridTableUnsetPropertiesRequest() *HybridTableUnsetPropertiesRequest {
 	s := HybridTableUnsetPropertiesRequest{}
 	return &s
@@ -453,6 +477,18 @@ func (s *HybridTableUnsetPropertiesRequest) WithDataRetentionTimeInDays(dataRete
 func (s *HybridTableUnsetPropertiesRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays bool) *HybridTableUnsetPropertiesRequest {
 	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
 	return s
+}
+
+func (s *HybridTableUnsetPropertiesRequest) UnsetParameterFromRaw(key string) error {
+	switch key {
+	case "DATA_RETENTION_TIME_IN_DAYS":
+		s.DataRetentionTimeInDays = Bool(true)
+	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":
+		s.MaxDataExtensionTimeInDays = Bool(true)
+	default:
+		return ErrParameterNotSupported
+	}
+	return nil
 }
 
 func NewDropHybridTableRequest(

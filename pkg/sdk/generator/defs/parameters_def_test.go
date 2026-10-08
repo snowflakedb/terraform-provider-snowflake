@@ -312,6 +312,13 @@ func TestParameterDefsForLevel(t *testing.T) {
 		}, sqlNames(ParameterDefsForLevel(parameterdefs.ParameterLevelUser)))
 	})
 
+	t.Run("hybrid table level", func(t *testing.T) {
+		require.Equal(t, []string{
+			"DATA_RETENTION_TIME_IN_DAYS",
+			"MAX_DATA_EXTENSION_TIME_IN_DAYS",
+		}, sqlNames(ParameterDefsForLevel(parameterdefs.ParameterLevelHybridTable)))
+	})
+
 	t.Run("account level skips parameters that are only settable on the extended set", func(t *testing.T) {
 		require.NotContains(t, sqlNames(ParameterDefsForLevel(parameterdefs.ParameterLevelAccount)), "ENABLE_CONSOLE_OUTPUT")
 		require.Contains(t, sqlNames(ParameterDefsForLevel(parameterdefs.ParameterLevelAccountExt)), "ENABLE_CONSOLE_OUTPUT")

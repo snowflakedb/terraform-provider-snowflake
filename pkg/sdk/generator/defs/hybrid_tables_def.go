@@ -1,10 +1,18 @@
 package defs
 
 import (
+	"slices"
+
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
+
+var hybridTableParameters = ParameterDefsForLevel(parameterdefs.ParameterLevelHybridTable)
+
+var hybridTableParameterFieldNames = collections.Map(hybridTableParameters, g.ParameterSqlToFieldName)
 
 var hybridTableColumn = g.NewQueryStruct("HybridTableColumn").
 	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
@@ -128,10 +136,9 @@ var hybridTableClusteringAction = g.NewQueryStruct("HybridTableClusteringAction"
 // NOTE: Hybrid tables do not support CHANGE_TRACKING, DEFAULT_DDL_COLLATION, ENABLE_SCHEMA_EVOLUTION,
 // CONTACT, or ROW_TIMESTAMP in ALTER TABLE SET (per Snowflake documentation and runtime behavior).
 var hybridTableSetProperties = g.NewQueryStruct("HybridTableSetProperties").
-	OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
-	OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
+	WithParameters(hybridTableParameters...).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "Comment")
+	WithValidation(g.AtLeastOneValueSet, append(slices.Clone(hybridTableParameterFieldNames), "Comment")...)
 
 // NOTE: Multi-property `ALTER TABLE ... UNSET` on hybrid tables requires comma-separated
 // property names (`UNSET A, B, C`); the generator's default `keyword` rendering emits the
@@ -140,9 +147,8 @@ var hybridTableSetProperties = g.NewQueryStruct("HybridTableSetProperties").
 // to comma-join the children — mirrors NetworkPolicyUnset in pkg/sdk/network_policies_gen.go:74.
 var hybridTableUnsetProperties = g.NewQueryStruct("HybridTableUnsetProperties").
 	OptionalSQL("COMMENT").
-	OptionalSQL("DATA_RETENTION_TIME_IN_DAYS").
-	OptionalSQL("MAX_DATA_EXTENSION_TIME_IN_DAYS").
-	WithValidation(g.AtLeastOneValueSet, "Comment", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays")
+	WithParametersUnset(hybridTableParameters...).
+	WithValidation(g.AtLeastOneValueSet, append(slices.Clone(hybridTableParameterFieldNames), "Comment")...)
 
 // NOTE: After running make generate-sdk, the hybridTableDetailsRow.Null field in
 // hybrid_tables_gen.go will have tag db:"null" (the generator strips '?'). It must
@@ -173,8 +179,7 @@ var hybridTablesDef = g.NewInterface(
 		// NOTE: DATA_RETENTION_TIME_IN_DAYS and MAX_DATA_EXTENSION_TIME_IN_DAYS are
 		// accepted at CREATE HYBRID TABLE time even though the public docs omit them
 		// from the syntax diagram. Verified against production via SHOW PARAMETERS.
-		OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
-		OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
+		WithParameters(hybridTableParameters...).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
@@ -374,4 +379,5 @@ var hybridTablesDef = g.NewInterface(
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
 ).ShowParameters(g.KindOfT[sdkcommons.SchemaObjectIdentifier]()).
+	ShowParametersDetails(hybridTableParameters...).
 	WithCustomInterfaceMethod("GetConstraints", "", []*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())}, "[]HybridTableConstraint", "error")
