@@ -1,6 +1,7 @@
 package genhelpers
 
 import (
+	"fmt"
 	"reflect"
 	"runtime"
 	"strings"
@@ -88,6 +89,12 @@ func ShouldGenerateWithForAttributeType(valueType schema.ValueType) bool {
 
 func IsLastItem(itemIdx int, collectionLength int) bool {
 	return itemIdx+1 == collectionLength
+}
+
+// Unimplemented panics at generate time.
+// Call it from a template branch that is not implemented yet, e.g. {{ Unimplemented "ParseIdFromConfig" }}.
+func Unimplemented(name string) string {
+	panic(fmt.Sprintf("generated implementation for %s is not implemented", name))
 }
 
 func BuildTemplateFuncMap(funcs ...any) template.FuncMap {

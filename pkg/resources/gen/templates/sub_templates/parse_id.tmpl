@@ -1,0 +1,6 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
+{{- if .Hooks.ParseId.Generate -}}
+{{ Unimplemented "ParseId" }}
+{{- else if .Hooks.ParseId.Present -}}
+	id, err := {{ .Prefix }}ParseIdExt(d.Id())
+{{ end -}}

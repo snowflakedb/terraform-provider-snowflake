@@ -1,0 +1,18 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/}}
+		Schema:      {{ .Prefix }}Schema,
+		Description: {{ .Prefix }}DescriptionExt,
+
+		CreateContext: {{ .Prefix }}CreateExt,
+		ReadContext:   {{ .Prefix }}ReadExt,
+		UpdateContext: {{ .Prefix }}UpdateExt,
+		DeleteContext: {{ .Prefix }}DeleteExt,
+		Importer:      {{ .Prefix }}ImporterExt,
+
+		CustomizeDiff: {{ .Prefix }}CustomizeDiffExt,
+		Timeouts:      defaultTimeouts,
+{{- if .Hooks.SchemaVersion.Generate }}
+{{ Unimplemented "SchemaVersion" }}
+{{- else if .Hooks.SchemaVersion.Present }}
+		SchemaVersion:  {{ .Prefix }}SchemaVersionExt,
+		StateUpgraders: {{ .Prefix }}StateUpgradersExt,
+{{- end }}

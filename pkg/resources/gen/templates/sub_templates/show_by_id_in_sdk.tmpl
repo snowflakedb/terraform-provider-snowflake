@@ -1,0 +1,6 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
+{{- if .Hooks.ShowByIdInSdk.Generate -}}
+{{ Unimplemented "ShowByIdInSdk" }}
+{{- else if .Hooks.ShowByIdInSdk.Present -}}
+	{{ .Prefix }}, err := {{ .Prefix }}ShowByIdInSdkExt(ctx, meta, id)
+{{ end -}}

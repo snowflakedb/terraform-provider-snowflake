@@ -1,0 +1,82 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
+
+func {{ .Name }}() *schema.Resource {
+	return &schema.Resource{
+{{ template "constructor" . }}
+	}
+}
+
+func Import{{ .Name }}(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
+{{ template "parseId" . -}}
+	if err != nil {
+		return nil, err
+	}
+
+{{ template "showByIdInSdk" . -}}
+	if err != nil {
+		return nil, err
+	}
+
+{{ template "setFieldsNotSetByRead" . -}}
+	return []*schema.ResourceData{d}, nil
+}
+
+func Create{{ .Name }}(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+{{ template "parseIdFromConfig" . -}}
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+{{ template "beforeCreate" . -}}
+{{ template "newCreateRequest" . -}}
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+{{ template "applyCreateOptionals" . }}
+{{ template "createInSdk" . }}
+
+	d.SetId(helpers.EncodeResourceIdentifier(id))
+	return Read{{ .Name }}Func(false)(ctx, d, meta)
+}
+
+func Read{{ .Name }}Func(withExternalChangesMarking bool) schema.ReadContextFunc {
+	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+{{ template "parseId" . -}}
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+{{ template "showByIdSafelyInSdk" . -}}
+		if diags != nil {
+			return diags
+		}
+{{ template "describeInSdk" . -}}
+{{ template "handleExternalChanges" . }}
+{{ template "setStateToValuesFromConfig" . -}}
+		errs := errors.Join(
+{{ template "showOutputSet" . -}}
+{{ template "describeOutputSet" . -}}
+{{ template "setDescribeOutput" . -}}
+{{ template "fqnSet" . -}}
+{{ template "setConfigFields" . }}
+		)
+		if errs != nil {
+			return diag.FromErr(errs)
+		}
+		return nil
+	}
+}
+
+func Update{{ .Name }}(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+{{ template "parseId" . -}}
+	if err != nil {
+		return diag.FromErr(err)
+	}
+{{ template "hierarchyRename" . -}}
+{{ template "beforeAlter" . -}}
+{{ template "applySetUnset" . -}}
+{{ template "alterSetInSdk" . -}}
+{{ template "alterUnsetInSdk" . -}}
+	return Read{{ .Name }}Func(false)(ctx, d, meta)
+}

@@ -1,0 +1,6 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
+{{- if .Hooks.DescribeOutputSet.Generate -}}
+{{ Unimplemented "DescribeOutputSet" }}
+{{- else if .Hooks.DescribeOutputSet.Present -}}
+			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.{{ .Name }}DetailsToSchema({{ .Prefix }}Details)}),
+{{ end -}}

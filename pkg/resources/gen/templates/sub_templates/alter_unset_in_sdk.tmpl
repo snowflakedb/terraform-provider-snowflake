@@ -1,0 +1,11 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
+{{- if .Hooks.AlterUnsetInSdk.Generate -}}
+{{ Unimplemented "AlterUnsetInSdk" }}
+{{- else if .Hooks.AlterUnsetInSdk.Present -}}
+	if err := {{ .Prefix }}AlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
+{{- if .HasPartialOnUpdate }}
+		d.Partial(true)
+{{- end }}
+		return diag.FromErr(err)
+	}
+{{ end -}}
