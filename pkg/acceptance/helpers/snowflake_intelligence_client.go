@@ -34,14 +34,20 @@ func (c *SnowflakeIntelligenceClient) Create(t *testing.T) (sdk.AccountObjectIde
 	return id, c.DropFunc(t, id)
 }
 
-func (c *SnowflakeIntelligenceClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
+func (c *SnowflakeIntelligenceClient) ShowAgents(t *testing.T, id sdk.AccountObjectIdentifier) ([]sdk.SnowflakeIntelligenceAgent, error) {
 	t.Helper()
 	ctx := context.Background()
 
-	return func() {
-		err := c.client().SnowflakeIntelligences.Drop(ctx, sdk.NewDropSnowflakeIntelligenceRequest(id).WithIfExists(true))
-		require.NoError(t, err)
-	}
+	return c.client().SnowflakeIntelligences.ShowAgents(ctx, sdk.NewShowAgentsSnowflakeIntelligenceRequest(id))
+}
+
+// DropAgent detaches the agent when it is currently attached. It is a no-op when the agent is already absent.
+func (c *SnowflakeIntelligenceClient) DropAgent(t *testing.T, id sdk.AccountObjectIdentifier, agentId sdk.SchemaObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().SnowflakeIntelligences.DropAgentSafely(ctx, id, agentId)
+	require.NoError(t, err)
 }
 
 func (c *SnowflakeIntelligenceClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.SnowflakeIntelligence, error) {
@@ -56,4 +62,14 @@ func (c *SnowflakeIntelligenceClient) Describe(t *testing.T, id sdk.AccountObjec
 	ctx := context.Background()
 
 	return c.client().SnowflakeIntelligences.Describe(ctx, id)
+}
+
+func (c *SnowflakeIntelligenceClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
+	t.Helper()
+	ctx := context.Background()
+
+	return func() {
+		err := c.client().SnowflakeIntelligences.Drop(ctx, sdk.NewDropSnowflakeIntelligenceRequest(id).WithIfExists(true))
+		require.NoError(t, err)
+	}
 }

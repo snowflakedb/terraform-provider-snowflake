@@ -28,6 +28,16 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.21.x ➞ v2.22.0
 
+### *(new feature)* Snowflake Intelligence Cortex agent attachment
+
+We have added a new preview resource, [`snowflake_intelligence_cortex_agent_attachment`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/intelligence_cortex_agent_attachment), that attaches a Cortex agent to a Snowflake Intelligence object so the agent is available in Snowflake CoWork.
+
+To use it, add `snowflake_intelligence_cortex_agent_attachment_resource` to the `preview_features_enabled` field in the provider configuration.
+
+See the [Snowflake CoWork deploy agents guide](https://docs.snowflake.com/en/user-guide/snowflake-cortex/snowflake-cowork/deploy-agents).
+
+No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+
 ### *(new feature)* New computed SHOW/DESCRIBE fields in `show_output` and `describe_output`
 
 The following Snowflake SHOW/DESCRIBE columns are now exposed as computed attributes. They were previously omitted from the public schemas. No configuration changes are required. After upgrading, the next plan may report an update on `show_output` / `describe_output` until those resources are refreshed (see the [intro](#migration-guide)).

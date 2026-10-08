@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
@@ -88,17 +87,7 @@ func TestInt_SnowflakeIntelligences(t *testing.T) {
 	detachAgentOnCleanup := func(t *testing.T, id sdk.AccountObjectIdentifier, agentId sdk.SchemaObjectIdentifier) {
 		t.Helper()
 		t.Cleanup(func() {
-			agents, err := client.SnowflakeIntelligences.ShowAgents(ctx, sdk.NewShowAgentsSnowflakeIntelligenceRequest(id))
-			if err != nil {
-				return
-			}
-			_, err = collections.FindFirst(agents, func(agent sdk.SnowflakeIntelligenceAgent) bool {
-				return agent.ID().FullyQualifiedName() == agentId.FullyQualifiedName()
-			})
-			if err != nil {
-				return
-			}
-			_ = client.SnowflakeIntelligences.Alter(ctx, sdk.NewAlterSnowflakeIntelligenceRequest(id).WithDropAgent(agentId))
+			_ = client.SnowflakeIntelligences.DropAgentSafely(ctx, id, agentId)
 		})
 	}
 
@@ -179,6 +168,50 @@ func TestInt_SnowflakeIntelligences(t *testing.T) {
 		require.Empty(t, showAgents(t, id))
 	})
 
+	t.Run("alter: drop agent that does not exist", func(t *testing.T) {
+		id := createSnowflakeIntelligence(t).ID()
+
+		err := client.SnowflakeIntelligences.Alter(ctx, sdk.NewAlterSnowflakeIntelligenceRequest(id).WithDropAgent(NonExistingSchemaObjectIdentifier))
+		assert.ErrorIs(t, err, sdk.ErrDoesNotExistOrOperationCannotBePerformed)
+		assert.NotErrorIs(t, err, sdk.ErrObjectWasNotFoundIn)
+		require.Empty(t, showAgents(t, id))
+	})
+
+	t.Run("alter: drop agent that is not attached", func(t *testing.T) {
+		id := createSnowflakeIntelligence(t).ID()
+		agentId := createAgent(t)
+
+		err := client.SnowflakeIntelligences.Alter(ctx, sdk.NewAlterSnowflakeIntelligenceRequest(id).WithDropAgent(agentId))
+		assert.ErrorIs(t, err, sdk.ErrObjectWasNotFoundIn)
+		assert.NotErrorIs(t, err, sdk.ErrDoesNotExistOrOperationCannotBePerformed)
+		require.Empty(t, showAgents(t, id))
+	})
+
+	t.Run("drop agent safely: existing", func(t *testing.T) {
+		id := createSnowflakeIntelligence(t).ID()
+		agentId := createAgent(t)
+		detachAgentOnCleanup(t, id, agentId)
+
+		err := client.SnowflakeIntelligences.Alter(ctx, sdk.NewAlterSnowflakeIntelligenceRequest(id).WithAddAgent(agentId))
+		require.NoError(t, err)
+		require.Len(t, showAgents(t, id), 1)
+
+		err = client.SnowflakeIntelligences.DropAgentSafely(ctx, id, agentId)
+		require.NoError(t, err)
+		require.Empty(t, showAgents(t, id))
+
+		err = client.SnowflakeIntelligences.DropAgentSafely(ctx, id, agentId)
+		require.NoError(t, err)
+	})
+
+	t.Run("drop agent safely: non-existing", func(t *testing.T) {
+		id := createSnowflakeIntelligence(t).ID()
+
+		err := client.SnowflakeIntelligences.DropAgentSafely(ctx, id, NonExistingSchemaObjectIdentifier)
+		require.NoError(t, err)
+		require.Empty(t, showAgents(t, id))
+	})
+
 	t.Run("drop safely: existing", func(t *testing.T) {
 		id := createSnowflakeIntelligence(t).ID()
 
@@ -201,6 +234,16 @@ func TestInt_SnowflakeIntelligences(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Contains(t, returnedIntelligences, *intelligence)
+	})
+
+	t.Run("show: non-existing", func(t *testing.T) {
+		_, err := client.SnowflakeIntelligences.ShowByID(ctx, NonExistingAccountObjectIdentifier)
+		assert.ErrorIs(t, err, sdk.ErrObjectNotFound)
+	})
+
+	t.Run("show: agents: non-existing", func(t *testing.T) {
+		_, err := client.SnowflakeIntelligences.ShowAgents(ctx, sdk.NewShowAgentsSnowflakeIntelligenceRequest(NonExistingAccountObjectIdentifier))
+		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 	})
 
 	t.Run("describe: basic", func(t *testing.T) {

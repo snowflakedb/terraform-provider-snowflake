@@ -102,4 +102,13 @@ var snowflakeIntelligencesDef = g.NewInterface(
 			SQL("AGENTS IN SNOWFLAKE INTELLIGENCE").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
+	).
+	WithCustomInterfaceMethod(
+		"DropAgentSafely",
+		"Drops an agent from the Snowflake Intelligence object. A missing agent does not return an error.",
+		[]*g.MethodParameter{
+			g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]()),
+			g.NewMethodParameter("agentId", g.KindOfT[sdkcommons.SchemaObjectIdentifier]()),
+		},
+		"error",
 	)

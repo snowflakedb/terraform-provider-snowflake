@@ -23,6 +23,7 @@
 - [snowflake_iceberg_table_from_delta_files](./docs/resources/iceberg_table_from_delta_files)
 - [snowflake_iceberg_table_from_files](./docs/resources/iceberg_table_from_files)
 - [snowflake_iceberg_table_from_rest](./docs/resources/iceberg_table_from_rest)
+- [snowflake_intelligence_cortex_agent_attachment](./docs/resources/intelligence_cortex_agent_attachment)
 - [snowflake_job_service](./docs/resources/job_service)
 - [snowflake_managed_account](./docs/resources/managed_account)
 - [snowflake_materialized_view](./docs/resources/materialized_view)

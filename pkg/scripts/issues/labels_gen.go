@@ -91,6 +91,7 @@ var RepositoryLabels = []string{
 	"resource:iceberg_table_from_files",
 	"resource:iceberg_table_from_rest",
 	"resource:image_repository",
+	"resource:intelligence_cortex_agent_attachment",
 	"resource:job_service",
 	"resource:legacy_service_user",
 	"resource:listing",

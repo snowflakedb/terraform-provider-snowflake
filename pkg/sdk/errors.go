@@ -25,6 +25,7 @@ var (
 	ErrGrantPartiallyExecuted                   = NewError("grant partially executed")
 	ErrPatNotFound                              = NewError("programmatic access token not found")
 	ErrTableNotClustered                        = NewError("table is not clustered")
+	ErrObjectWasNotFoundIn                      = NewError("object was not found in")
 
 	// snowflake-sdk errors.
 	ErrInvalidObjectIdentifier = NewError("invalid object identifier")
@@ -106,6 +107,7 @@ func errDoubleDollarQuotesNotAllowed(structName string, fieldName string) error 
 var errorRegexes = map[*regexp.Regexp]error{
 	regexp.MustCompile(`Programmatic access token .* not found`):                   ErrPatNotFound,
 	regexp.MustCompile(`Any policy of kind [a-zA-z_]+ is not attached to ACCOUNT`): ErrPolicyNotAttachedToAccount,
+	regexp.MustCompile(`.+ was not found in .+`):                                   ErrObjectWasNotFoundIn,
 }
 
 func decodeDriverError(err error) error {

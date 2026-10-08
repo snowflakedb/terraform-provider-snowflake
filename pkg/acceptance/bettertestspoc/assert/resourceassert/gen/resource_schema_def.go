@@ -254,6 +254,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ImageRepository().Schema,
 	},
 	{
+		name:   "IntelligenceCortexAgentAttachment",
+		schema: resources.IntelligenceCortexAgentAttachment().Schema,
+	},
+	{
 		name:   "InternalStage",
 		schema: resources.InternalStage().Schema,
 	},

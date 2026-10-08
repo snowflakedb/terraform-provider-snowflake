@@ -18,6 +18,8 @@ type SnowflakeIntelligences interface {
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*SnowflakeIntelligence, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) (*SnowflakeIntelligenceDetails, error)
 	ShowAgents(ctx context.Context, request *ShowAgentsSnowflakeIntelligenceRequest) ([]SnowflakeIntelligenceAgent, error)
+	// Drops an agent from the Snowflake Intelligence object. A missing agent does not return an error.
+	DropAgentSafely(ctx context.Context, id AccountObjectIdentifier, agentId SchemaObjectIdentifier) error
 }
 
 // CreateSnowflakeIntelligenceOptions is based on https://docs.snowflake.com/en/user-guide/snowflake-cortex/snowflake-cowork/deploy-agents.

@@ -178,6 +178,11 @@ func TestDecodeDriverError(t *testing.T) {
 			want:  ErrPolicyNotAttachedToAccount,
 		},
 		{
+			name:  "Match ErrObjectWasNotFoundIn",
+			input: errors.New("400204 (02000): AGENT was not found in INTELLIGENCE."),
+			want:  ErrObjectWasNotFoundIn,
+		},
+		{
 			name:  "Unmatched error returns original",
 			input: unrecognizedErr,
 			want:  unrecognizedErr,

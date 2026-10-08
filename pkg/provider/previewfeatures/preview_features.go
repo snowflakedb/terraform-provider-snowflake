@@ -88,6 +88,7 @@ const (
 	IcebergTablesDatasource                        feature = "snowflake_iceberg_tables_datasource"
 	ImageRepositoryResource                        feature = "snowflake_image_repository_resource"
 	ImageRepositoriesDatasource                    feature = "snowflake_image_repositories_datasource"
+	IntelligenceCortexAgentAttachmentResource      feature = "snowflake_intelligence_cortex_agent_attachment_resource"
 	InternalStageResource                          feature = "snowflake_stage_internal_resource"
 	JobServiceResource                             feature = "snowflake_job_service_resource"
 	ListingResource                                feature = "snowflake_listing_resource"
@@ -199,6 +200,7 @@ var allPreviewFeatures = []feature{
 	IcebergTableFromFilesResource,
 	IcebergTableFromRestResource,
 	IcebergTablesDatasource,
+	IntelligenceCortexAgentAttachmentResource,
 	JobServiceResource,
 	ManagedAccountResource,
 	MaterializedViewResource,

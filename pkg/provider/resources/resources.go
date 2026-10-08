@@ -75,6 +75,7 @@ const (
 	IcebergTableFromFiles                                  resource = "snowflake_iceberg_table_from_files"
 	IcebergTableFromRest                                   resource = "snowflake_iceberg_table_from_rest"
 	ImageRepository                                        resource = "snowflake_image_repository"
+	IntelligenceCortexAgentAttachment                      resource = "snowflake_intelligence_cortex_agent_attachment"
 	InternalStage                                          resource = "snowflake_stage_internal"
 	JobService                                             resource = "snowflake_job_service"
 	LegacyServiceUser                                      resource = "snowflake_legacy_service_user"

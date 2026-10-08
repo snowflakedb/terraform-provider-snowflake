@@ -680,6 +680,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_iceberg_table_from_files":                                     resources.IcebergTableFromFiles(),
 		"snowflake_iceberg_table_from_rest":                                      resources.IcebergTableFromRest(),
 		"snowflake_image_repository":                                             resources.ImageRepository(),
+		"snowflake_intelligence_cortex_agent_attachment":                         resources.IntelligenceCortexAgentAttachment(),
 		"snowflake_stage_internal":                                               resources.InternalStage(),
 		"snowflake_job_service":                                                  resources.JobService(),
 		"snowflake_legacy_service_user":                                          resources.LegacyServiceUser(),

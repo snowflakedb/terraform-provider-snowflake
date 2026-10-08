@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -940,6 +941,44 @@ func checkPolicyAttachmentDestroy(t *testing.T, resource resources.Resource, get
 				if ref.PolicyKind == policyKind {
 					return fmt.Errorf("%s attachment on %s still exists (policy %s)", policyKind, entityId.FullyQualifiedName(), ref.PolicyName)
 				}
+			}
+		}
+		return nil
+	}
+}
+
+// CheckIntelligenceCortexAgentAttachmentDestroy is a custom check that should be later incorporated into generic CheckDestroy.
+func CheckIntelligenceCortexAgentAttachmentDestroy(t *testing.T) func(*terraform.State) error {
+	t.Helper()
+
+	return func(s *terraform.State) error {
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != resources.IntelligenceCortexAgentAttachment.String() {
+				continue
+			}
+
+			intelligenceId, err := sdk.ParseAccountObjectIdentifier(rs.Primary.Attributes["snowflake_intelligence_name"])
+			if err != nil {
+				return err
+			}
+			agentId, err := sdk.ParseSchemaObjectIdentifier(rs.Primary.Attributes["cortex_agent_name"])
+			if err != nil {
+				return err
+			}
+
+			agents, err := testClient().SnowflakeIntelligence.ShowAgents(t, intelligenceId)
+			if err != nil {
+				if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) || errors.Is(err, sdk.ErrDoesNotExistOrOperationCannotBePerformed) {
+					continue
+				}
+				return err
+			}
+
+			_, err = collections.FindFirst(agents, func(agent sdk.SnowflakeIntelligenceAgent) bool {
+				return agent.ID().FullyQualifiedName() == agentId.FullyQualifiedName()
+			})
+			if err == nil {
+				return fmt.Errorf("agent %s is still attached to Snowflake Intelligence %s", agentId.FullyQualifiedName(), intelligenceId.FullyQualifiedName())
 			}
 		}
 		return nil

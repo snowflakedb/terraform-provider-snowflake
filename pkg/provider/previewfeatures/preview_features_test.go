@@ -93,6 +93,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_iceberg_tables_datasource", want: IcebergTablesDatasource},
 		{input: "snowflake_image_repository_resource", want: ImageRepositoryResource},
 		{input: "snowflake_image_repositories_datasource", want: ImageRepositoriesDatasource},
+		{input: "snowflake_intelligence_cortex_agent_attachment_resource", want: IntelligenceCortexAgentAttachmentResource},
 		{input: "snowflake_stage_internal_resource", want: InternalStageResource},
 		{input: "snowflake_job_service_resource", want: JobServiceResource},
 		{input: "snowflake_listing_resource", want: ListingResource},
