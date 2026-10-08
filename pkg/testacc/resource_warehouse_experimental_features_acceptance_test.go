@@ -13,6 +13,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
@@ -35,7 +36,7 @@ func TestAcc_Experimental_Warehouse_ShowImprovedPerformance(t *testing.T) {
 					t,
 					resourceassert.WarehouseResource(t, warehouseModel.ResourceReference()).
 						HasNameString(warehouseId.Name()),
-					invokeactionassert.QueryHistoryEntry(t, testClient(), expectedWarehouseQuery, tracking.CreateOperation, 100),
+					invokeactionassert.QueryHistoryEntry(t, testClient(), resources.Warehouse, expectedWarehouseQuery, tracking.CreateOperation, 100),
 				),
 			},
 			{
@@ -46,7 +47,7 @@ func TestAcc_Experimental_Warehouse_ShowImprovedPerformance(t *testing.T) {
 					t,
 					resourceassert.ImportedWarehouseResource(t, helpers.EncodeResourceIdentifier(warehouseId)).
 						HasNameString(warehouseId.Name()),
-					invokeactionassert.QueryHistoryEntryInImport(t, testClient(), expectedWarehouseQuery, tracking.ImportOperation, 100),
+					invokeactionassert.QueryHistoryEntryInImport(t, testClient(), resources.Warehouse, expectedWarehouseQuery, tracking.ImportOperation, 100),
 				),
 			},
 		},
@@ -74,7 +75,135 @@ func TestAcc_Experimental_Warehouse_ShowImprovedPerformance_Disabled(t *testing.
 					t,
 					resourceassert.WarehouseResource(t, warehouseModel.ResourceReference()).
 						HasNameString(warehouseId.Name()),
-					invokeactionassert.QueryHistoryEntry(t, testClient(), expectedWarehouseQuery, tracking.CreateOperation, 100),
+					invokeactionassert.QueryHistoryEntry(t, testClient(), resources.Warehouse, expectedWarehouseQuery, tracking.CreateOperation, 100),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Experimental_WarehouseAdaptive_ShowImprovedPerformance(t *testing.T) {
+	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
+	warehouseModel := model.WarehouseAdaptiveWithId(warehouseId)
+
+	expectedWarehouseQuery := fmt.Sprintf("SHOW WAREHOUSES LIKE '%[1]s' STARTS WITH '%[1]s' LIMIT 1", warehouseId.Name())
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, warehouseModel),
+				Check: assertThat(
+					t,
+					resourceassert.WarehouseAdaptiveResource(t, warehouseModel.ResourceReference()).
+						HasNameString(warehouseId.Name()),
+					invokeactionassert.QueryHistoryEntry(t, testClient(), resources.WarehouseAdaptive, expectedWarehouseQuery, tracking.CreateOperation, 100),
+				),
+			},
+			{
+				Config:       config.FromModels(t, warehouseModel),
+				ResourceName: warehouseModel.ResourceReference(),
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					resourceassert.ImportedWarehouseAdaptiveResource(t, helpers.EncodeResourceIdentifier(warehouseId)).
+						HasNameString(warehouseId.Name()),
+					invokeactionassert.QueryHistoryEntryInImport(t, testClient(), resources.WarehouseAdaptive, expectedWarehouseQuery, tracking.ImportOperation, 100),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Experimental_WarehouseAdaptive_ShowImprovedPerformance_Disabled(t *testing.T) {
+	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithAllEnabledByDefaultExperimentsDisabled()
+	warehouseModel := model.WarehouseAdaptiveWithId(warehouseId)
+
+	expectedWarehouseQuery := fmt.Sprintf("SHOW WAREHOUSES LIKE '%s'", warehouseId.Name())
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, providerModel, warehouseModel),
+				Check: assertThat(
+					t,
+					resourceassert.WarehouseAdaptiveResource(t, warehouseModel.ResourceReference()).
+						HasNameString(warehouseId.Name()),
+					invokeactionassert.QueryHistoryEntry(t, testClient(), resources.WarehouseAdaptive, expectedWarehouseQuery, tracking.CreateOperation, 100),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Experimental_WarehouseInteractive_ShowImprovedPerformance(t *testing.T) {
+	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
+	warehouseModel := model.WarehouseInteractiveWithId(warehouseId)
+
+	expectedWarehouseQuery := fmt.Sprintf("SHOW WAREHOUSES LIKE '%[1]s' STARTS WITH '%[1]s' LIMIT 1", warehouseId.Name())
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: interactiveWarehouseProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, warehouseModel),
+				Check: assertThat(
+					t,
+					resourceassert.WarehouseInteractiveResource(t, warehouseModel.ResourceReference()).
+						HasNameString(warehouseId.Name()),
+					invokeactionassert.QueryHistoryEntry(t, testClient(), resources.WarehouseInteractive, expectedWarehouseQuery, tracking.CreateOperation, 100),
+				),
+			},
+			{
+				Config:       config.FromModels(t, warehouseModel),
+				ResourceName: warehouseModel.ResourceReference(),
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					resourceassert.ImportedWarehouseInteractiveResource(t, helpers.EncodeResourceIdentifier(warehouseId)).
+						HasNameString(warehouseId.Name()),
+					invokeactionassert.QueryHistoryEntryInImport(t, testClient(), resources.WarehouseInteractive, expectedWarehouseQuery, tracking.ImportOperation, 100),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Experimental_WarehouseInteractive_ShowImprovedPerformance_Disabled(t *testing.T) {
+	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithAllEnabledByDefaultExperimentsDisabled()
+	warehouseModel := model.WarehouseInteractiveWithId(warehouseId)
+
+	expectedWarehouseQuery := fmt.Sprintf("SHOW WAREHOUSES LIKE '%s'", warehouseId.Name())
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: interactiveWarehouseExperimentsDisabledProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, providerModel, warehouseModel),
+				Check: assertThat(
+					t,
+					resourceassert.WarehouseInteractiveResource(t, warehouseModel.ResourceReference()).
+						HasNameString(warehouseId.Name()),
+					invokeactionassert.QueryHistoryEntry(t, testClient(), resources.WarehouseInteractive, expectedWarehouseQuery, tracking.CreateOperation, 100),
 				),
 			},
 		},

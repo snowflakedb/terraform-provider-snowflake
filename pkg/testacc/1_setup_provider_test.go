@@ -54,17 +54,21 @@ var (
 	// switches the session onto the new warehouse and there is no way to un-use it, so these tests must run on a
 	// dedicated (isolated) session rather than the shared default one to avoid leaking that state into other tests.
 	interactiveWarehouseProviderFactory, interactiveWarehouseProvider = providerFactoryUsingCacheReturningProvider("InteractiveWarehouse")
-	explicitAccountAdminRoleProviderFactory                           = providerFactoryUsingCache("ExplicitAccountAdminRole")
-	userEnableDefaultWorkloadIdentityProviderFactory                  = providerFactoryUsingCache("UserEnableDefaultWorkloadIdentity")
-	s3StageProviderFactory                                            = providerFactoryUsingCache("StageExternalS3")
-	enabledByDefaultExperimentsDisabledProviderFactory                = providerFactoryUsingCache("EnabledByDefaultExperimentsDisabled")
-	objectParameterUnsetOnDeleteProviderFactory                       = providerFactoryUsingCache("ObjectParameterUnsetOnDelete")
-	grantAccountRoleShowCachingProviderFactory                        = providerFactoryUsingCache("GrantAccountRoleShowCaching")
-	accountRoleShowCachingProviderFactory                             = providerFactoryUsingCache("AccountRoleShowCaching")
-	grantsShowCachingProviderFactory                                  = providerFactoryUsingCache("GrantsShowCaching")
-	experimentalHierarchyRenamesProviderFactory                       = providerFactoryUsingCache("ExperimentalHierarchyRenames")
-	activeWarehouseSetOnUserProviderFactory                           = providerFactoryUsingCache("ActiveWarehouseSetOnUser")
-	accountParameterCatalogWritePathProviderFactory                   = providerFactoryUsingCache("AccountParameterCatalogWritePath")
+	// interactiveWarehouseExperimentsDisabledProviderFactory is the interactive-warehouse equivalent of
+	// enabledByDefaultExperimentsDisabledProviderFactory. CREATE INTERACTIVE WAREHOUSE switches the session,
+	// so these tests cannot share the default-on-disabled cache used by other resources.
+	interactiveWarehouseExperimentsDisabledProviderFactory = providerFactoryUsingCache("InteractiveWarehouseExperimentsDisabled")
+	explicitAccountAdminRoleProviderFactory                = providerFactoryUsingCache("ExplicitAccountAdminRole")
+	userEnableDefaultWorkloadIdentityProviderFactory       = providerFactoryUsingCache("UserEnableDefaultWorkloadIdentity")
+	s3StageProviderFactory                                 = providerFactoryUsingCache("StageExternalS3")
+	enabledByDefaultExperimentsDisabledProviderFactory     = providerFactoryUsingCache("EnabledByDefaultExperimentsDisabled")
+	objectParameterUnsetOnDeleteProviderFactory            = providerFactoryUsingCache("ObjectParameterUnsetOnDelete")
+	grantAccountRoleShowCachingProviderFactory             = providerFactoryUsingCache("GrantAccountRoleShowCaching")
+	accountRoleShowCachingProviderFactory                  = providerFactoryUsingCache("AccountRoleShowCaching")
+	grantsShowCachingProviderFactory                       = providerFactoryUsingCache("GrantsShowCaching")
+	experimentalHierarchyRenamesProviderFactory            = providerFactoryUsingCache("ExperimentalHierarchyRenames")
+	activeWarehouseSetOnUserProviderFactory                = providerFactoryUsingCache("ActiveWarehouseSetOnUser")
+	accountParameterCatalogWritePathProviderFactory        = providerFactoryUsingCache("AccountParameterCatalogWritePath")
 )
 
 // TODO [SNOW-2661409]: secondary account can have also a different configuration, so for now we need to be careful; let's add some hash check for the config or something else to mitigate

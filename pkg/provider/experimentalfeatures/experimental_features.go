@@ -109,6 +109,7 @@ var allExperiments = []Experiment{
 		[]string{"v2.23.0", "v2.24.0"},
 		"It's meant to improve the performance for accounts with many warehouses.",
 		"When enabled, it uses a slightly different SHOW query to read warehouse details (`SHOW WAREHOUSES LIKE '<identifier>' STARTS WITH '<identifier>' LIMIT 1`).",
+		"Currently supported by: `snowflake_warehouse`, `snowflake_warehouse_adaptive`, `snowflake_warehouse_interactive`.",
 		"This feature is enabled by default on the Snowflake side.",
 	),
 	NewEnabledByDefaultExperiment(

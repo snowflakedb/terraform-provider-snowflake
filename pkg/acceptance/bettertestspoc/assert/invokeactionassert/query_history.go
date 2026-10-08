@@ -19,6 +19,7 @@ import (
 type queryHistoryCheck struct {
 	expectedSql       string
 	expectedOperation tracking.Operation
+	expectedResource  resources.Resource
 	limit             int
 
 	// TODO [SNOW-1501905]: test client passed here temporarily to be able to check secondary (by default our assertions use the default one)
@@ -46,7 +47,7 @@ func (w *queryHistoryCheck) checkQueryHistoryEntry(t *testing.T) error {
 	}
 	queryHistory := w.testClient.InformationSchema.GetQueryHistory(t, w.limit)
 	if _, err := collections.FindFirst(queryHistory, func(history helpers.QueryHistory) bool {
-		expectedMetadata := tracking.NewVersionedResourceMetadata(resources.Warehouse, w.expectedOperation)
+		expectedMetadata := tracking.NewVersionedResourceMetadata(w.expectedResource, w.expectedOperation)
 		if strings.Contains(history.QueryText, w.expectedSql) {
 			metadata, err := tracking.ParseMetadata(history.QueryText)
 			if err != nil {
@@ -61,12 +62,12 @@ func (w *queryHistoryCheck) checkQueryHistoryEntry(t *testing.T) error {
 	return nil
 }
 
-func QueryHistoryEntry(t *testing.T, testClient *helpers.TestClient, sql string, operation tracking.Operation, limit int) assert.TestCheckFuncProvider {
+func QueryHistoryEntry(t *testing.T, testClient *helpers.TestClient, res resources.Resource, sql string, operation tracking.Operation, limit int) assert.TestCheckFuncProvider {
 	t.Helper()
-	return &queryHistoryCheck{expectedSql: sql, expectedOperation: operation, limit: limit, testClient: testClient}
+	return &queryHistoryCheck{expectedSql: sql, expectedOperation: operation, expectedResource: res, limit: limit, testClient: testClient}
 }
 
-func QueryHistoryEntryInImport(t *testing.T, testClient *helpers.TestClient, sql string, operation tracking.Operation, limit int) assert.ImportStateCheckFuncProvider {
+func QueryHistoryEntryInImport(t *testing.T, testClient *helpers.TestClient, res resources.Resource, sql string, operation tracking.Operation, limit int) assert.ImportStateCheckFuncProvider {
 	t.Helper()
-	return &queryHistoryCheck{expectedSql: sql, expectedOperation: operation, limit: limit, testClient: testClient}
+	return &queryHistoryCheck{expectedSql: sql, expectedOperation: operation, expectedResource: res, limit: limit, testClient: testClient}
 }

@@ -180,13 +180,13 @@ func parseTablesSet(raw *schema.Set) ([]sdk.SchemaObjectIdentifier, error) {
 }
 
 func ImportWarehouseInteractive(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {
 		return nil, err
 	}
 
-	w, err := client.Warehouses.ShowByID(ctx, id)
+	w, err := showWarehouseByID(ctx, providerCtx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -270,7 +270,7 @@ func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) schema.ReadCo
 			return diag.FromErr(err)
 		}
 
-		w, err := client.Warehouses.ShowByIDSafely(ctx, id)
+		w, err := showWarehouseByIDSafely(ctx, providerCtx, id)
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotFound) {
 				d.SetId("")

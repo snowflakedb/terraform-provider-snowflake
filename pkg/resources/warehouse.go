@@ -217,9 +217,22 @@ func Warehouse() *schema.Resource {
 	}
 }
 
+func showWarehouseByID(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.Warehouse, error) {
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.WarehouseShowImprovedPerformance) {
+		return providerCtx.Client.Warehouses.ShowByIDExperimental(ctx, id)
+	}
+	return providerCtx.Client.Warehouses.ShowByID(ctx, id)
+}
+
+func showWarehouseByIDSafely(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.Warehouse, error) {
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.WarehouseShowImprovedPerformance) {
+		return providerCtx.Client.Warehouses.ShowByIDExperimentalSafely(ctx, id)
+	}
+	return providerCtx.Client.Warehouses.ShowByIDSafely(ctx, id)
+}
+
 func ImportWarehouse(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	providerCtx := meta.(*provider.Context)
-	client := providerCtx.Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {
 		return nil, err
@@ -229,12 +242,7 @@ func ImportWarehouse(ctx context.Context, d *schema.ResourceData, meta any) ([]*
 		return nil, err
 	}
 
-	var w *sdk.Warehouse
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.WarehouseShowImprovedPerformance) {
-		w, err = client.Warehouses.ShowByIDExperimental(ctx, id)
-	} else {
-		w, err = client.Warehouses.ShowByID(ctx, id)
-	}
+	w, err := showWarehouseByID(ctx, providerCtx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -361,12 +369,7 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			return diag.FromErr(err)
 		}
 
-		var w *sdk.Warehouse
-		if providerCtx.Experiments.IsEnabled(experimentalfeatures.WarehouseShowImprovedPerformance) {
-			w, err = client.Warehouses.ShowByIDExperimentalSafely(ctx, id)
-		} else {
-			w, err = client.Warehouses.ShowByIDSafely(ctx, id)
-		}
+		w, err := showWarehouseByIDSafely(ctx, providerCtx, id)
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotFound) {
 				d.SetId("")

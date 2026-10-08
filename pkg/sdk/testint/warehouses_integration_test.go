@@ -994,6 +994,131 @@ func TestInt_Warehouses_Experimental(t *testing.T) {
 	})
 }
 
+func TestInt_Warehouses_Experimental_Adaptive(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	prefix := random.StringN(6) + "_"
+	warehouseId1 := testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
+	warehouseId2 := testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
+	warehouseId3 := testClientHelper().Ids.RandomAccountObjectIdentifier()
+	_, warehouse1Cleanup := testClientHelper().Warehouse.CreateAdaptiveWithRequest(t, sdk.NewCreateAdaptiveWarehouseRequest(warehouseId1))
+	t.Cleanup(warehouse1Cleanup)
+	_, warehouse2Cleanup := testClientHelper().Warehouse.CreateAdaptiveWithRequest(t, sdk.NewCreateAdaptiveWarehouseRequest(warehouseId2))
+	t.Cleanup(warehouse2Cleanup)
+	_, warehouse3Cleanup := testClientHelper().Warehouse.CreateAdaptiveWithRequest(t, sdk.NewCreateAdaptiveWarehouseRequest(warehouseId3))
+	t.Cleanup(warehouse3Cleanup)
+
+	t.Run("show experimental", func(t *testing.T) {
+		wh, err := client.Warehouses.ShowByIDExperimental(ctx, warehouseId1)
+		require.NoError(t, err)
+		assert.Equal(t, warehouseId1.Name(), wh.Name)
+		assert.Equal(t, sdk.WarehouseTypeAdaptive, wh.Type)
+
+		wh, err = client.Warehouses.ShowByIDExperimental(ctx, warehouseId2)
+		require.NoError(t, err)
+		assert.Equal(t, warehouseId2.Name(), wh.Name)
+		assert.Equal(t, sdk.WarehouseTypeAdaptive, wh.Type)
+
+		wh, err = client.Warehouses.ShowByIDExperimental(ctx, warehouseId3)
+		require.NoError(t, err)
+		assert.Equal(t, warehouseId3.Name(), wh.Name)
+		assert.Equal(t, sdk.WarehouseTypeAdaptive, wh.Type)
+	})
+
+	t.Run("show experimental safely", func(t *testing.T) {
+		wh, err := client.Warehouses.ShowByIDExperimentalSafely(ctx, warehouseId1)
+		require.NoError(t, err)
+		assert.Equal(t, warehouseId1.Name(), wh.Name)
+		assert.Equal(t, sdk.WarehouseTypeAdaptive, wh.Type)
+
+		wh, err = client.Warehouses.ShowByIDExperimentalSafely(ctx, warehouseId2)
+		require.NoError(t, err)
+		assert.Equal(t, warehouseId2.Name(), wh.Name)
+		assert.Equal(t, sdk.WarehouseTypeAdaptive, wh.Type)
+
+		wh, err = client.Warehouses.ShowByIDExperimentalSafely(ctx, warehouseId3)
+		require.NoError(t, err)
+		assert.Equal(t, warehouseId3.Name(), wh.Name)
+		assert.Equal(t, sdk.WarehouseTypeAdaptive, wh.Type)
+	})
+
+	t.Run("show using starts with prefix", func(t *testing.T) {
+		warehouses, err := client.Warehouses.Show(ctx, sdk.NewShowWarehouseRequest().
+			WithLike(sdk.Like{Pattern: sdk.String(warehouseId2.Name())}).
+			WithStartsWith(prefix).
+			WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}))
+		require.NoError(t, err)
+		require.Len(t, warehouses, 1)
+		assert.Equal(t, warehouseId2.Name(), warehouses[0].Name)
+		assert.Equal(t, sdk.WarehouseTypeAdaptive, warehouses[0].Type)
+	})
+}
+
+func TestInt_Warehouses_Experimental_Interactive(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	prefix := random.StringN(6) + "_"
+	warehouseId1 := testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
+	warehouseId2 := testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
+	warehouseId3 := testClientHelper().Ids.RandomAccountObjectIdentifier()
+	err := client.Warehouses.CreateInteractivePreservingSession(ctx, sdk.NewCreateInteractiveWarehouseRequest(warehouseId1))
+	require.NoError(t, err)
+	t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, warehouseId1))
+	err = client.Warehouses.CreateInteractivePreservingSession(ctx, sdk.NewCreateInteractiveWarehouseRequest(warehouseId2))
+	require.NoError(t, err)
+	t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, warehouseId2))
+	err = client.Warehouses.CreateInteractivePreservingSession(ctx, sdk.NewCreateInteractiveWarehouseRequest(warehouseId3))
+	require.NoError(t, err)
+	t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, warehouseId3))
+
+	t.Run("show experimental", func(t *testing.T) {
+		wh, err := client.Warehouses.ShowByIDExperimental(ctx, warehouseId1)
+		require.NoError(t, err)
+		assert.Equal(t, warehouseId1.Name(), wh.Name)
+		assert.Equal(t, sdk.WarehouseTypeInteractive, wh.Type)
+
+		wh, err = client.Warehouses.ShowByIDExperimental(ctx, warehouseId2)
+		require.NoError(t, err)
+		assert.Equal(t, warehouseId2.Name(), wh.Name)
+		assert.Equal(t, sdk.WarehouseTypeInteractive, wh.Type)
+
+		wh, err = client.Warehouses.ShowByIDExperimental(ctx, warehouseId3)
+		require.NoError(t, err)
+		assert.Equal(t, warehouseId3.Name(), wh.Name)
+		assert.Equal(t, sdk.WarehouseTypeInteractive, wh.Type)
+	})
+
+	t.Run("show experimental safely", func(t *testing.T) {
+		wh, err := client.Warehouses.ShowByIDExperimentalSafely(ctx, warehouseId1)
+		require.NoError(t, err)
+		assert.Equal(t, warehouseId1.Name(), wh.Name)
+		assert.Equal(t, sdk.WarehouseTypeInteractive, wh.Type)
+
+		wh, err = client.Warehouses.ShowByIDExperimentalSafely(ctx, warehouseId2)
+		require.NoError(t, err)
+		assert.Equal(t, warehouseId2.Name(), wh.Name)
+		assert.Equal(t, sdk.WarehouseTypeInteractive, wh.Type)
+
+		wh, err = client.Warehouses.ShowByIDExperimentalSafely(ctx, warehouseId3)
+		require.NoError(t, err)
+		assert.Equal(t, warehouseId3.Name(), wh.Name)
+		assert.Equal(t, sdk.WarehouseTypeInteractive, wh.Type)
+	})
+
+	t.Run("show using starts with prefix", func(t *testing.T) {
+		warehouses, err := client.Warehouses.Show(ctx, sdk.NewShowWarehouseRequest().
+			WithLike(sdk.Like{Pattern: sdk.String(warehouseId2.Name())}).
+			WithStartsWith(prefix).
+			WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}))
+		require.NoError(t, err)
+		require.Len(t, warehouses, 1)
+		assert.Equal(t, warehouseId2.Name(), warehouses[0].Name)
+		assert.Equal(t, sdk.WarehouseTypeInteractive, warehouses[0].Type)
+	})
+}
+
 func TestInt_Warehouses_Interactive(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)

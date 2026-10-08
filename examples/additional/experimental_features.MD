@@ -118,6 +118,8 @@ It's meant to improve the performance for accounts with many warehouses.
 
 When enabled, it uses a slightly different SHOW query to read warehouse details (`SHOW WAREHOUSES LIKE '<identifier>' STARTS WITH '<identifier>' LIMIT 1`).
 
+Currently supported by: `snowflake_warehouse`, `snowflake_warehouse_adaptive`, `snowflake_warehouse_interactive`.
+
 This feature is enabled by default on the Snowflake side.
 
 This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
