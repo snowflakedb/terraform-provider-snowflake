@@ -50,21 +50,6 @@ func UsersDatasourceParametersOnIdx(t *testing.T, name string, idx int) *UserRes
 // Parameter value checks //
 ////////////////////////////
 
-func (u *UserResourceParametersAssert) HasEnableUnredactedQuerySyntaxError(expected bool) *UserResourceParametersAssert {
-	u.ParameterBoolValueSet(string(sdk.UserParameterEnableUnredactedQuerySyntaxError), expected)
-	return u
-}
-
-func (u *UserResourceParametersAssert) HasNetworkPolicy(expected string) *UserResourceParametersAssert {
-	u.ParameterValueSet(string(sdk.UserParameterNetworkPolicy), expected)
-	return u
-}
-
-func (u *UserResourceParametersAssert) HasPreventUnloadToInternalStages(expected bool) *UserResourceParametersAssert {
-	u.ParameterBoolValueSet(string(sdk.UserParameterPreventUnloadToInternalStages), expected)
-	return u
-}
-
 func (u *UserResourceParametersAssert) HasAbortDetachedQuery(expected bool) *UserResourceParametersAssert {
 	u.ParameterBoolValueSet(string(sdk.UserParameterAbortDetachedQuery), expected)
 	return u
@@ -140,6 +125,11 @@ func (u *UserResourceParametersAssert) HasEnableUnloadPhysicalTypeOptimization(e
 	return u
 }
 
+func (u *UserResourceParametersAssert) HasEnableUnredactedQuerySyntaxError(expected bool) *UserResourceParametersAssert {
+	u.ParameterBoolValueSet(string(sdk.UserParameterEnableUnredactedQuerySyntaxError), expected)
+	return u
+}
+
 func (u *UserResourceParametersAssert) HasErrorOnNondeterministicMerge(expected bool) *UserResourceParametersAssert {
 	u.ParameterBoolValueSet(string(sdk.UserParameterErrorOnNondeterministicMerge), expected)
 	return u
@@ -185,13 +175,13 @@ func (u *UserResourceParametersAssert) HasLockTimeout(expected int) *UserResourc
 	return u
 }
 
-func (u *UserResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *UserResourceParametersAssert {
-	u.ParameterValueSet(string(sdk.UserParameterLogLevel), string(expected))
+func (u *UserResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *UserResourceParametersAssert {
+	u.ParameterValueSet(string(sdk.UserParameterLogEventLevel), string(expected))
 	return u
 }
 
-func (u *UserResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *UserResourceParametersAssert {
-	u.ParameterValueSet(string(sdk.UserParameterLogEventLevel), string(expected))
+func (u *UserResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *UserResourceParametersAssert {
+	u.ParameterValueSet(string(sdk.UserParameterLogLevel), string(expected))
 	return u
 }
 
@@ -207,6 +197,11 @@ func (u *UserResourceParametersAssert) HasNoorderSequenceAsDefault(expected bool
 
 func (u *UserResourceParametersAssert) HasOdbcTreatDecimalAsInt(expected bool) *UserResourceParametersAssert {
 	u.ParameterBoolValueSet(string(sdk.UserParameterOdbcTreatDecimalAsInt), expected)
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasPreventUnloadToInternalStages(expected bool) *UserResourceParametersAssert {
+	u.ParameterBoolValueSet(string(sdk.UserParameterPreventUnloadToInternalStages), expected)
 	return u
 }
 
@@ -255,6 +250,16 @@ func (u *UserResourceParametersAssert) HasStrictJsonOutput(expected bool) *UserR
 	return u
 }
 
+func (u *UserResourceParametersAssert) HasTimeInputFormat(expected string) *UserResourceParametersAssert {
+	u.ParameterValueSet(string(sdk.UserParameterTimeInputFormat), expected)
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasTimeOutputFormat(expected string) *UserResourceParametersAssert {
+	u.ParameterValueSet(string(sdk.UserParameterTimeOutputFormat), expected)
+	return u
+}
+
 func (u *UserResourceParametersAssert) HasTimestampDayIsAlways24h(expected bool) *UserResourceParametersAssert {
 	u.ParameterBoolValueSet(string(sdk.UserParameterTimestampDayIsAlways24h), expected)
 	return u
@@ -292,16 +297,6 @@ func (u *UserResourceParametersAssert) HasTimestampTzOutputFormat(expected strin
 
 func (u *UserResourceParametersAssert) HasTimezone(expected string) *UserResourceParametersAssert {
 	u.ParameterValueSet(string(sdk.UserParameterTimezone), expected)
-	return u
-}
-
-func (u *UserResourceParametersAssert) HasTimeInputFormat(expected string) *UserResourceParametersAssert {
-	u.ParameterValueSet(string(sdk.UserParameterTimeInputFormat), expected)
-	return u
-}
-
-func (u *UserResourceParametersAssert) HasTimeOutputFormat(expected string) *UserResourceParametersAssert {
-	u.ParameterValueSet(string(sdk.UserParameterTimeOutputFormat), expected)
 	return u
 }
 
@@ -345,24 +340,14 @@ func (u *UserResourceParametersAssert) HasWeekStart(expected int) *UserResourceP
 	return u
 }
 
+func (u *UserResourceParametersAssert) HasNetworkPolicy(expected string) *UserResourceParametersAssert {
+	u.ParameterValueSet(string(sdk.UserParameterNetworkPolicy), expected)
+	return u
+}
+
 ////////////////////////////
 // Parameter level checks //
 ////////////////////////////
-
-func (u *UserResourceParametersAssert) HasEnableUnredactedQuerySyntaxErrorLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
-	u.ParameterLevelSet(string(sdk.UserParameterEnableUnredactedQuerySyntaxError), expected)
-	return u
-}
-
-func (u *UserResourceParametersAssert) HasNetworkPolicyLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
-	u.ParameterLevelSet(string(sdk.UserParameterNetworkPolicy), expected)
-	return u
-}
-
-func (u *UserResourceParametersAssert) HasPreventUnloadToInternalStagesLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
-	u.ParameterLevelSet(string(sdk.UserParameterPreventUnloadToInternalStages), expected)
-	return u
-}
 
 func (u *UserResourceParametersAssert) HasAbortDetachedQueryLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
 	u.ParameterLevelSet(string(sdk.UserParameterAbortDetachedQuery), expected)
@@ -439,6 +424,11 @@ func (u *UserResourceParametersAssert) HasEnableUnloadPhysicalTypeOptimizationLe
 	return u
 }
 
+func (u *UserResourceParametersAssert) HasEnableUnredactedQuerySyntaxErrorLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
+	u.ParameterLevelSet(string(sdk.UserParameterEnableUnredactedQuerySyntaxError), expected)
+	return u
+}
+
 func (u *UserResourceParametersAssert) HasErrorOnNondeterministicMergeLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
 	u.ParameterLevelSet(string(sdk.UserParameterErrorOnNondeterministicMerge), expected)
 	return u
@@ -484,13 +474,13 @@ func (u *UserResourceParametersAssert) HasLockTimeoutLevel(expected sdk.Paramete
 	return u
 }
 
-func (u *UserResourceParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
-	u.ParameterLevelSet(string(sdk.UserParameterLogLevel), expected)
+func (u *UserResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
+	u.ParameterLevelSet(string(sdk.UserParameterLogEventLevel), expected)
 	return u
 }
 
-func (u *UserResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
-	u.ParameterLevelSet(string(sdk.UserParameterLogEventLevel), expected)
+func (u *UserResourceParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
+	u.ParameterLevelSet(string(sdk.UserParameterLogLevel), expected)
 	return u
 }
 
@@ -506,6 +496,11 @@ func (u *UserResourceParametersAssert) HasNoorderSequenceAsDefaultLevel(expected
 
 func (u *UserResourceParametersAssert) HasOdbcTreatDecimalAsIntLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
 	u.ParameterLevelSet(string(sdk.UserParameterOdbcTreatDecimalAsInt), expected)
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasPreventUnloadToInternalStagesLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
+	u.ParameterLevelSet(string(sdk.UserParameterPreventUnloadToInternalStages), expected)
 	return u
 }
 
@@ -554,6 +549,16 @@ func (u *UserResourceParametersAssert) HasStrictJsonOutputLevel(expected sdk.Par
 	return u
 }
 
+func (u *UserResourceParametersAssert) HasTimeInputFormatLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
+	u.ParameterLevelSet(string(sdk.UserParameterTimeInputFormat), expected)
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasTimeOutputFormatLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
+	u.ParameterLevelSet(string(sdk.UserParameterTimeOutputFormat), expected)
+	return u
+}
+
 func (u *UserResourceParametersAssert) HasTimestampDayIsAlways24hLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
 	u.ParameterLevelSet(string(sdk.UserParameterTimestampDayIsAlways24h), expected)
 	return u
@@ -594,16 +599,6 @@ func (u *UserResourceParametersAssert) HasTimezoneLevel(expected sdk.ParameterTy
 	return u
 }
 
-func (u *UserResourceParametersAssert) HasTimeInputFormatLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
-	u.ParameterLevelSet(string(sdk.UserParameterTimeInputFormat), expected)
-	return u
-}
-
-func (u *UserResourceParametersAssert) HasTimeOutputFormatLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
-	u.ParameterLevelSet(string(sdk.UserParameterTimeOutputFormat), expected)
-	return u
-}
-
 func (u *UserResourceParametersAssert) HasTraceLevelLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
 	u.ParameterLevelSet(string(sdk.UserParameterTraceLevel), expected)
 	return u
@@ -641,5 +636,10 @@ func (u *UserResourceParametersAssert) HasWeekOfYearPolicyLevel(expected sdk.Par
 
 func (u *UserResourceParametersAssert) HasWeekStartLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
 	u.ParameterLevelSet(string(sdk.UserParameterWeekStart), expected)
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasNetworkPolicyLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
+	u.ParameterLevelSet(string(sdk.UserParameterNetworkPolicy), expected)
 	return u
 }

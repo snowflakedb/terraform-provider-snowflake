@@ -1757,7 +1757,7 @@ func TestAcc_User_gh3655(t *testing.T) {
 				Config:                   config.FromModels(t, networkPolicyModel, userModel),
 				Check: assertThat(
 					t, resourceassert.UserResource(t, userModel.ResourceReference()).
-						HasNetworkPolicyString(networkPolicyId.Name()),
+						HasNetworkPolicyString(networkPolicyId.FullyQualifiedName()),
 				),
 			},
 		},

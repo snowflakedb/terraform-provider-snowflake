@@ -129,6 +129,14 @@ func buildParameterSchemaModifiers() map[string][]parameterSchemaModifier {
 
 // parameterSchema derives a resource schema entry from a catalog parameter.
 func parameterSchema(p parameterdefs.ParameterDef) *schema.Schema {
+	return parameterSchemaWithModifiers(p, true)
+}
+
+func parameterSchemaWithoutModifiers(p parameterdefs.ParameterDef) *schema.Schema {
+	return parameterSchemaWithModifiers(p, false)
+}
+
+func parameterSchemaWithModifiers(p parameterdefs.ParameterDef, applyModifiers bool) *schema.Schema {
 	valueType, isPrimitive := primitiveParameterValueTypes[p.Kind]
 	enumMetadata, isEnum := enumParameterValidators[p.Kind]
 	identifierValidator, isIdentifier := identifierParameterValidators[p.Kind]
@@ -156,8 +164,10 @@ func parameterSchema(p parameterdefs.ParameterDef) *schema.Schema {
 		s.ValidateDiagFunc = identifierValidator
 		s.DiffSuppressFunc = suppressIdentifierQuoting
 	}
-	for _, modify := range parameterSchemaModifiers[p.SqlName] {
-		modify(s)
+	if applyModifiers {
+		for _, modify := range parameterSchemaModifiers[p.SqlName] {
+			modify(s)
+		}
 	}
 
 	return s

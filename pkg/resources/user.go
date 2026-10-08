@@ -200,7 +200,7 @@ func User() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.User, customdiff.All(
 			ComputedIfAnyAttributeChanged(userSchema, ShowOutputAttributeName, userExternalChangesAttributes...),
-			ComputedIfAnyAttributeChanged(userParametersSchema, ParametersAttributeName, collections.Map(sdk.AsStringList(sdk.AllUserParameters), strings.ToLower)...),
+			ComputedIfAnyAttributeChanged(userParametersSchema, ParametersAttributeName, userParameterFieldNames...),
 			ComputedIfAnyAttributeChanged(userSchema, FullyQualifiedNameAttributeName, "name"),
 			userParametersCustomDiff,
 			RecreateWhenUserTypeChangedExternally(sdk.UserTypePerson),
@@ -233,7 +233,7 @@ func ServiceUser() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ServiceUser, customdiff.All(
 			ComputedIfAnyAttributeChanged(userSchema, ShowOutputAttributeName, serviceUserExternalChangesAttributes...),
-			ComputedIfAnyAttributeChanged(userParametersSchema, ParametersAttributeName, collections.Map(sdk.AsStringList(sdk.AllUserParameters), strings.ToLower)...),
+			ComputedIfAnyAttributeChanged(userParametersSchema, ParametersAttributeName, userParameterFieldNames...),
 			ComputedIfAnyAttributeChanged(userSchema, FullyQualifiedNameAttributeName, "name"),
 			userParametersCustomDiff,
 			RecreateWhenUserTypeChangedExternally(sdk.UserTypeService),
@@ -256,7 +256,7 @@ func LegacyServiceUser() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.LegacyServiceUser, customdiff.All(
 			ComputedIfAnyAttributeChanged(userSchema, ShowOutputAttributeName, legacyServiceUserExternalChangesAttributes...),
-			ComputedIfAnyAttributeChanged(userParametersSchema, ParametersAttributeName, collections.Map(sdk.AsStringList(sdk.AllUserParameters), strings.ToLower)...),
+			ComputedIfAnyAttributeChanged(userParametersSchema, ParametersAttributeName, userParameterFieldNames...),
 			ComputedIfAnyAttributeChanged(userSchema, FullyQualifiedNameAttributeName, "name"),
 			userParametersCustomDiff,
 			RecreateWhenUserTypeChangedExternally(sdk.UserTypeLegacyService),
@@ -472,9 +472,18 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 			return diag.FromErr(err)
 		}
 
-		userParameters, err := client.Users.ShowParameters(ctx, id)
+		rawUserParameters, err := client.Users.ShowParameters(ctx, id)
 		if err != nil {
 			return diag.FromErr(err)
+		}
+
+		userParameters, err := sdk.ToUserParametersDetails(rawUserParameters)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		if diags := handleUserParameterRead(d, userParameters); diags != nil {
+			return diags
 		}
 
 		if withExternalChangesMarking {
@@ -566,9 +575,8 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 			}(d, userDetails),
 
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			handleUserParameterRead(d, userParameters),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.UserToSchema(u)}),
-			d.Set(ParametersAttributeName, []map[string]any{schemas.UserParametersToSchema(userParameters, providerCtx)}),
+			d.Set(ParametersAttributeName, []map[string]any{schemas.UserParametersToSchema(rawUserParameters, providerCtx)}),
 		)
 		if errs != nil {
 			return diag.FromErr(err)
