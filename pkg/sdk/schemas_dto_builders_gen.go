@@ -2,7 +2,10 @@
 
 package sdk
 
-import "strconv"
+import (
+	"strconv"
+	"strings"
+)
 
 func NewCreateSchemaRequest(
 	name DatabaseObjectIdentifier,
@@ -143,7 +146,7 @@ func (s *CreateSchemaRequest) WithTag(tag []TagAssociation) *CreateSchemaRequest
 }
 
 func (s *CreateSchemaRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "CATALOG":
 		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.Catalog)
 	case "DATA_RETENTION_TIME_IN_DAYS":
@@ -381,7 +384,7 @@ func (s *SchemaSetRequest) WithComment(comment string) *SchemaSetRequest {
 }
 
 func (s *SchemaSetRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "CATALOG":
 		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.Catalog)
 	case "DATA_RETENTION_TIME_IN_DAYS":

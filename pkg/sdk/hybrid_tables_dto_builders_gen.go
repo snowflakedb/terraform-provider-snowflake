@@ -2,7 +2,10 @@
 
 package sdk
 
-import "strconv"
+import (
+	"strconv"
+	"strings"
+)
 
 func NewCreateHybridTableRequest(
 	name SchemaObjectIdentifier,
@@ -40,7 +43,7 @@ func (s *CreateHybridTableRequest) WithComment(comment string) *CreateHybridTabl
 }
 
 func (s *CreateHybridTableRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "DATA_RETENTION_TIME_IN_DAYS":
 		return assignParsedParameter(value, strconv.Atoi, &s.DataRetentionTimeInDays)
 	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":
@@ -449,7 +452,7 @@ func (s *HybridTableSetPropertiesRequest) WithComment(comment string) *HybridTab
 }
 
 func (s *HybridTableSetPropertiesRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "DATA_RETENTION_TIME_IN_DAYS":
 		return assignParsedParameter(value, strconv.Atoi, &s.DataRetentionTimeInDays)
 	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":

@@ -29,7 +29,7 @@ func (s *{{ $name }}) With{{ .Name }}({{ FirstLetterLowercase .Name }}  {{ if .I
 
 {{- with .SetParameters }}
 func (s *{{ $name }}) SetParameterFromRaw(key string, value string) error {
-    switch key {
+    switch strings.ToUpper(key) {
     {{- range . }}
     case "{{ .SqlName }}":
         return assignParsedParameter(value, {{ .Parser }}, &s.{{ .FieldName }})

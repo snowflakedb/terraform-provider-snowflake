@@ -763,7 +763,7 @@ func (r *TableDropSearchOptimizationRequest) toOpts() *TableDropSearchOptimizati
 	return opts
 }
 
-func toIcebergTableParametersDetails(params []*Parameter) (*IcebergTableParametersDetails, error) {
+func ToIcebergTableParametersDetails(params []*Parameter) (*IcebergTableParametersDetails, error) {
 	byKey := parametersByKey(params)
 	var d IcebergTableParametersDetails
 	if err := errors.Join(
@@ -795,5 +795,5 @@ func (v *icebergTables) ShowParametersDetails(ctx context.Context, id SchemaObje
 	if err != nil {
 		return nil, err
 	}
-	return toIcebergTableParametersDetails(params)
+	return ToIcebergTableParametersDetails(params)
 }

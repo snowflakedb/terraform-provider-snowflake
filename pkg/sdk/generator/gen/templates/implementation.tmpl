@@ -19,7 +19,7 @@ client *Client
 {{ template "implementationMappings" . }}
 {{- if .ParametersDetails }}
 
-func to{{ .NameSingular }}ParametersDetails(params []*Parameter) (*{{ .NameSingular }}ParametersDetails, error) {
+func To{{ .NameSingular }}ParametersDetails(params []*Parameter) (*{{ .NameSingular }}ParametersDetails, error) {
 	byKey := parametersByKey(params)
 	var d {{ .NameSingular }}ParametersDetails
 	if err := errors.Join(
@@ -37,6 +37,6 @@ func (v *{{ .NameLowerCased }}) ShowParametersDetails(ctx context.Context{{ if n
 	if err != nil {
 		return nil, err
 	}
-	return to{{ .NameSingular }}ParametersDetails(params)
+	return To{{ .NameSingular }}ParametersDetails(params)
 }
 {{- end }}

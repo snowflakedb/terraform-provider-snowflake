@@ -98,10 +98,7 @@ func handleDatabaseParameterReadWithSkip(d *schema.ResourceData, databaseParamet
 		if slices.Contains(skip, strings.ToUpper(key)) {
 			return nil
 		}
-		if err := d.Set(key, value); err != nil {
-			return diag.FromErr(err)
-		}
-		return nil
+		return setResourceData(d, key, value)
 	}
 
 	return JoinDiags(

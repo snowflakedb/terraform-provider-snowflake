@@ -491,7 +491,7 @@ func (r *ExecuteTaskRequest) toOpts() *ExecuteTaskOptions {
 	return opts
 }
 
-func toTaskParametersDetails(params []*Parameter) (*TaskParametersDetails, error) {
+func ToTaskParametersDetails(params []*Parameter) (*TaskParametersDetails, error) {
 	byKey := parametersByKey(params)
 	var d TaskParametersDetails
 	if err := errors.Join(
@@ -566,5 +566,5 @@ func (v *tasks) ShowParametersDetails(ctx context.Context, id SchemaObjectIdenti
 	if err != nil {
 		return nil, err
 	}
-	return toTaskParametersDetails(params)
+	return ToTaskParametersDetails(params)
 }

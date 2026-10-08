@@ -11,6 +11,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+func setResourceData(d *schema.ResourceData, key string, value any) diag.Diagnostics {
+	if err := d.Set(key, value); err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
+}
+
 // handleParameterCreate calls internally handleParameterCreateWithMapping with identity mapping
 func handleParameterCreate[T any, P ~string](d *schema.ResourceData, parameterName P, createField **T) diag.Diagnostics {
 	return handleParameterCreateWithMapping[T, T](d, parameterName, createField, identityMapping[T])

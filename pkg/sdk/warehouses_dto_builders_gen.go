@@ -2,7 +2,10 @@
 
 package sdk
 
-import "strconv"
+import (
+	"strconv"
+	"strings"
+)
 
 func NewCreateWarehouseRequest(
 	name AccountObjectIdentifier,
@@ -113,7 +116,7 @@ func (s *CreateWarehouseRequest) WithTag(tag []TagAssociation) *CreateWarehouseR
 }
 
 func (s *CreateWarehouseRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "MAX_CONCURRENCY_LEVEL":
 		return assignParsedParameter(value, strconv.Atoi, &s.MaxConcurrencyLevel)
 	case "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS":
@@ -440,7 +443,7 @@ func (s *WarehouseSetRequest) WithStatementTimeoutInSeconds(statementTimeoutInSe
 }
 
 func (s *WarehouseSetRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "FALLBACK_WAREHOUSE":
 		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.FallbackWarehouse)
 	case "MAX_CONCURRENCY_LEVEL":

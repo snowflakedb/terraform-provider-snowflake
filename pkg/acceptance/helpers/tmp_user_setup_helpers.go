@@ -65,13 +65,11 @@ func (c *TestClient) SetUpTemporaryLegacyServiceUserWithPat(t *testing.T) *TmpSe
 	t.Cleanup(networkPolicyCleanup)
 	c.User.Alter(t, sdk.NewAlterUserRequest(tmpUser.UserId).
 		WithSet(*sdk.NewUserSetRequest().
-			WithObjectParameters(*sdk.NewUserObjectParametersRequest().
-				WithNetworkPolicy(networkPolicy.ID()))))
+			WithNetworkPolicy(networkPolicy.ID())))
 	t.Cleanup(func() {
 		c.User.Alter(t, sdk.NewAlterUserRequest(tmpUser.UserId).
 			WithUnset(*sdk.NewUserUnsetRequest().
-				WithObjectParameters(*sdk.NewUserObjectParametersUnsetRequest().
-					WithNetworkPolicy(true))))
+				WithNetworkPolicy(true)))
 	})
 	req := sdk.NewAddUserProgrammaticAccessTokenRequest(tmpUser.UserId, c.Ids.RandomAccountObjectIdentifier()).WithRoleRestriction(tmpUser.RoleId)
 	pat, cleanupPat := c.User.AddProgrammaticAccessTokenWithRequest(t, tmpUser.UserId, req)

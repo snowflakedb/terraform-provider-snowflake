@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
@@ -126,7 +127,7 @@ func (s *CreateForJavaFunctionRequest) WithFunctionDefinition(functionDefinition
 }
 
 func (s *CreateForJavaFunctionRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "ENABLE_CONSOLE_OUTPUT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
 	case "LOG_LEVEL":
@@ -316,7 +317,7 @@ func (s *CreateForJavascriptFunctionRequest) WithTraceLevel(traceLevel TraceLeve
 }
 
 func (s *CreateForJavascriptFunctionRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "ENABLE_CONSOLE_OUTPUT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
 	case "LOG_LEVEL":
@@ -445,7 +446,7 @@ func (s *CreateForPythonFunctionRequest) WithFunctionDefinition(functionDefiniti
 }
 
 func (s *CreateForPythonFunctionRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "ENABLE_CONSOLE_OUTPUT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
 	case "LOG_LEVEL":
@@ -579,7 +580,7 @@ func (s *CreateForScalaFunctionRequest) WithFunctionDefinition(functionDefinitio
 }
 
 func (s *CreateForScalaFunctionRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "ENABLE_CONSOLE_OUTPUT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
 	case "LOG_LEVEL":
@@ -676,7 +677,7 @@ func (s *CreateForSQLFunctionRequest) WithTraceLevel(traceLevel TraceLevel) *Cre
 }
 
 func (s *CreateForSQLFunctionRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "ENABLE_CONSOLE_OUTPUT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
 	case "LOG_LEVEL":
@@ -784,7 +785,7 @@ func (s *FunctionSetRequest) WithTraceLevel(traceLevel TraceLevel) *FunctionSetR
 }
 
 func (s *FunctionSetRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "ENABLE_CONSOLE_OUTPUT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
 	case "LOG_EVENT_LEVEL":

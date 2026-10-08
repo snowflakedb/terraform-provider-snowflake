@@ -183,7 +183,7 @@ func (r openflowDeploymentDetailsRow) convert() (*OpenflowDeploymentDetails, err
 	return result, nil
 }
 
-func toOpenflowDeploymentParametersDetails(params []*Parameter) (*OpenflowDeploymentParametersDetails, error) {
+func ToOpenflowDeploymentParametersDetails(params []*Parameter) (*OpenflowDeploymentParametersDetails, error) {
 	byKey := parametersByKey(params)
 	var d OpenflowDeploymentParametersDetails
 	if err := errors.Join(
@@ -199,5 +199,5 @@ func (v *openflowDeployments) ShowParametersDetails(ctx context.Context, id Acco
 	if err != nil {
 		return nil, err
 	}
-	return toOpenflowDeploymentParametersDetails(params)
+	return ToOpenflowDeploymentParametersDetails(params)
 }

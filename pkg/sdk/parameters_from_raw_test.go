@@ -82,7 +82,7 @@ func TestSetParameterFromRaw(t *testing.T) {
 				request := NewDatabaseSetRequest()
 				require.NoError(t, request.SetParameterFromRaw(tt.key, tt.raw))
 
-				details, err := toDatabaseParametersDetails([]*Parameter{{Key: tt.key, Value: tt.raw}})
+				details, err := ToDatabaseParametersDetails([]*Parameter{{Key: tt.key, Value: tt.raw}})
 				require.NoError(t, err)
 
 				require.EqualValues(t, tt.fromRead(details), tt.fromSet(request))
@@ -175,6 +175,13 @@ func TestSetParameterFromRaw(t *testing.T) {
 		require.Equal(t, setAccountSql(t, direct), sql)
 		require.Contains(t, sql, "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB = 9.9")
 		require.NotContains(t, sql, "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB = '9.9'")
+	})
+
+	t.Run("accepts a lowercase parameter name", func(t *testing.T) {
+		request := NewDatabaseSetRequest()
+		require.NoError(t, request.SetParameterFromRaw("data_retention_time_in_days", "10"))
+		require.NotNil(t, request.DataRetentionTimeInDays)
+		require.Equal(t, 10, *request.DataRetentionTimeInDays)
 	})
 
 	t.Run("accepts an empty string for a StringAllowEmpty parameter", func(t *testing.T) {

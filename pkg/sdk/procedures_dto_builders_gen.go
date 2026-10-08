@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
@@ -586,7 +587,7 @@ func (s *ProcedureSetRequest) WithTraceLevel(traceLevel TraceLevel) *ProcedureSe
 }
 
 func (s *ProcedureSetRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "AUTO_EVENT_LOGGING":
 		return assignParsedParameter(value, ToAutoEventLogging, &s.AutoEventLogging)
 	case "ENABLE_CONSOLE_OUTPUT":

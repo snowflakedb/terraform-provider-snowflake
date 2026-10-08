@@ -852,7 +852,7 @@ func (r *CreateAndCallForSQLProcedureRequest) toOpts() *CreateAndCallForSQLProce
 	return opts
 }
 
-func toProcedureParametersDetails(params []*Parameter) (*ProcedureParametersDetails, error) {
+func ToProcedureParametersDetails(params []*Parameter) (*ProcedureParametersDetails, error) {
 	byKey := parametersByKey(params)
 	var d ProcedureParametersDetails
 	if err := errors.Join(
@@ -873,5 +873,5 @@ func (v *procedures) ShowParametersDetails(ctx context.Context, id SchemaObjectI
 	if err != nil {
 		return nil, err
 	}
-	return toProcedureParametersDetails(params)
+	return ToProcedureParametersDetails(params)
 }

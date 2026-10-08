@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
@@ -1524,7 +1525,7 @@ func (s *IcebergTableSetPropertiesRequest) WithComment(comment string) *IcebergT
 }
 
 func (s *IcebergTableSetPropertiesRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "ALLOW_ROW_TIMESTAMP":
 		return assignParsedParameter(value, strconv.ParseBool, &s.AllowRowTimestamp)
 	case "CATALOG":

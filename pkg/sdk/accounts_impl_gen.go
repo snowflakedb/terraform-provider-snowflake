@@ -543,7 +543,7 @@ func (r *AccountParametersUnsetRequest) toOpts() *AccountParametersUnset {
 	return opts
 }
 
-func toAccountParametersDetails(params []*Parameter) (*AccountParametersDetails, error) {
+func ToAccountParametersDetails(params []*Parameter) (*AccountParametersDetails, error) {
 	byKey := parametersByKey(params)
 	var d AccountParametersDetails
 	if err := errors.Join(
@@ -702,5 +702,5 @@ func (v *accounts) ShowParametersDetails(ctx context.Context) (*AccountParameter
 	if err != nil {
 		return nil, err
 	}
-	return toAccountParametersDetails(params)
+	return ToAccountParametersDetails(params)
 }

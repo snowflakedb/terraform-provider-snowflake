@@ -134,34 +134,27 @@ func schemaApplyParametersChangesExt(d *schema.ResourceData, reqs *schemaAlterRe
 }
 
 func schemaSetParametersFieldsExt(d *schema.ResourceData, parameters *sdk.SchemaParametersDetails) diag.Diagnostics {
-	set := func(key string, value any) diag.Diagnostics {
-		if err := d.Set(key, value); err != nil {
-			return diag.FromErr(err)
-		}
-		return nil
-	}
-
 	return JoinDiags(
-		set(defs.Catalog.FieldName(), parameters.Catalog.Value.FullyQualifiedName()),
-		set(defs.DataRetentionTimeInDays.FieldName(), parameters.DataRetentionTimeInDays.Value),
-		set(defs.DefaultDdlCollation.FieldName(), parameters.DefaultDdlCollation.Value),
-		set(defs.DefaultNotebookComputePoolCpu.FieldName(), parameters.DefaultNotebookComputePoolCpu.Value),
-		set(defs.DefaultNotebookComputePoolGpu.FieldName(), parameters.DefaultNotebookComputePoolGpu.Value),
-		set(defs.EnableConsoleOutput.FieldName(), parameters.EnableConsoleOutput.Value),
-		set(defs.ExternalVolume.FieldName(), parameters.ExternalVolume.Value.FullyQualifiedName()),
-		set(defs.LogEventLevel.FieldName(), parameters.LogEventLevel.Value),
-		set(defs.LogLevel.FieldName(), parameters.LogLevel.Value),
-		set(defs.MaxDataExtensionTimeInDays.FieldName(), parameters.MaxDataExtensionTimeInDays.Value),
-		set(defs.PipeExecutionPaused.FieldName(), parameters.PipeExecutionPaused.Value),
-		set(defs.QuotedIdentifiersIgnoreCase.FieldName(), parameters.QuotedIdentifiersIgnoreCase.Value),
-		set(defs.ReplaceInvalidCharacters.FieldName(), parameters.ReplaceInvalidCharacters.Value),
-		set(defs.StorageSerializationPolicy.FieldName(), parameters.StorageSerializationPolicy.Value),
-		set(defs.SuspendTaskAfterNumFailures.FieldName(), parameters.SuspendTaskAfterNumFailures.Value),
-		set(defs.TaskAutoRetryAttempts.FieldName(), parameters.TaskAutoRetryAttempts.Value),
-		set(defs.TraceLevel.FieldName(), parameters.TraceLevel.Value),
-		set(defs.UserTaskManagedInitialWarehouseSize.FieldName(), parameters.UserTaskManagedInitialWarehouseSize.Value),
-		set(defs.UserTaskMinimumTriggerIntervalInSeconds.FieldName(), parameters.UserTaskMinimumTriggerIntervalInSeconds.Value),
-		set(defs.UserTaskTimeoutMs.FieldName(), parameters.UserTaskTimeoutMs.Value),
+		setResourceData(d, defs.Catalog.FieldName(), parameters.Catalog.Value.FullyQualifiedName()),
+		setResourceData(d, defs.DataRetentionTimeInDays.FieldName(), parameters.DataRetentionTimeInDays.Value),
+		setResourceData(d, defs.DefaultDdlCollation.FieldName(), parameters.DefaultDdlCollation.Value),
+		setResourceData(d, defs.DefaultNotebookComputePoolCpu.FieldName(), parameters.DefaultNotebookComputePoolCpu.Value),
+		setResourceData(d, defs.DefaultNotebookComputePoolGpu.FieldName(), parameters.DefaultNotebookComputePoolGpu.Value),
+		setResourceData(d, defs.EnableConsoleOutput.FieldName(), parameters.EnableConsoleOutput.Value),
+		setResourceData(d, defs.ExternalVolume.FieldName(), parameters.ExternalVolume.Value.FullyQualifiedName()),
+		setResourceData(d, defs.LogEventLevel.FieldName(), parameters.LogEventLevel.Value),
+		setResourceData(d, defs.LogLevel.FieldName(), parameters.LogLevel.Value),
+		setResourceData(d, defs.MaxDataExtensionTimeInDays.FieldName(), parameters.MaxDataExtensionTimeInDays.Value),
+		setResourceData(d, defs.PipeExecutionPaused.FieldName(), parameters.PipeExecutionPaused.Value),
+		setResourceData(d, defs.QuotedIdentifiersIgnoreCase.FieldName(), parameters.QuotedIdentifiersIgnoreCase.Value),
+		setResourceData(d, defs.ReplaceInvalidCharacters.FieldName(), parameters.ReplaceInvalidCharacters.Value),
+		setResourceData(d, defs.StorageSerializationPolicy.FieldName(), parameters.StorageSerializationPolicy.Value),
+		setResourceData(d, defs.SuspendTaskAfterNumFailures.FieldName(), parameters.SuspendTaskAfterNumFailures.Value),
+		setResourceData(d, defs.TaskAutoRetryAttempts.FieldName(), parameters.TaskAutoRetryAttempts.Value),
+		setResourceData(d, defs.TraceLevel.FieldName(), parameters.TraceLevel.Value),
+		setResourceData(d, defs.UserTaskManagedInitialWarehouseSize.FieldName(), parameters.UserTaskManagedInitialWarehouseSize.Value),
+		setResourceData(d, defs.UserTaskMinimumTriggerIntervalInSeconds.FieldName(), parameters.UserTaskMinimumTriggerIntervalInSeconds.Value),
+		setResourceData(d, defs.UserTaskTimeoutMs.FieldName(), parameters.UserTaskTimeoutMs.Value),
 	)
 }
 
@@ -172,6 +165,10 @@ func schemaSetParametersFieldsExt(d *schema.ResourceData, parameters *sdk.Schema
 func schemaShowParametersInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObjectIdentifier) ([]*sdk.Parameter, error) {
 	client := meta.(*provider.Context).Client
 	return client.Schemas.ShowParameters(ctx, id)
+}
+
+func schemaParametersDetailsFromRawExt(params []*sdk.Parameter) (*sdk.SchemaParametersDetails, error) {
+	return sdk.ToSchemaParametersDetails(params)
 }
 
 func schemaShowParametersDetailsInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObjectIdentifier) (*sdk.SchemaParametersDetails, error) {

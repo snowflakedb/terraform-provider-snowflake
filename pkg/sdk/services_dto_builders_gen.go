@@ -2,7 +2,10 @@
 
 package sdk
 
-import "strconv"
+import (
+	"strconv"
+	"strings"
+)
 
 func NewCreateServiceRequest(
 	name SchemaObjectIdentifier,
@@ -80,7 +83,7 @@ func (s *CreateServiceRequest) WithComment(comment string) *CreateServiceRequest
 }
 
 func (s *CreateServiceRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "SERVICE_CALLER_TOKEN_VALIDITY_SECS":
 		return assignParsedParameter(value, strconv.Atoi, &s.ServiceCallerTokenValiditySecs)
 	default:
@@ -260,7 +263,7 @@ func (s *ServiceSetRequest) WithComment(comment string) *ServiceSetRequest {
 }
 
 func (s *ServiceSetRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "SERVICE_CALLER_TOKEN_VALIDITY_SECS":
 		return assignParsedParameter(value, strconv.Atoi, &s.ServiceCallerTokenValiditySecs)
 	default:

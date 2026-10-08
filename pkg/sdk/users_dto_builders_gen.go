@@ -2,7 +2,10 @@
 
 package sdk
 
-import "strconv"
+import (
+	"strconv"
+	"strings"
+)
 
 func NewCreateUserRequest(
 	name AccountObjectIdentifier,
@@ -333,7 +336,7 @@ func (s *CreateUserRequest) WithTag(tag []TagAssociation) *CreateUserRequest {
 }
 
 func (s *CreateUserRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "ABORT_DETACHED_QUERY":
 		return assignParsedParameter(value, strconv.ParseBool, &s.AbortDetachedQuery)
 	case "AUTOCOMMIT":
@@ -1096,7 +1099,7 @@ func (s *UserSetRequest) WithForce(force bool) *UserSetRequest {
 }
 
 func (s *UserSetRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "ABORT_DETACHED_QUERY":
 		return assignParsedParameter(value, strconv.ParseBool, &s.AbortDetachedQuery)
 	case "AUTOCOMMIT":

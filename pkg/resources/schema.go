@@ -95,7 +95,7 @@ func ReadSchemaFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		schemaParameters, err := schemaShowParametersDetailsInSdkExt(ctx, meta, id)
+		schemaParameters, err := schemaParametersDetailsFromRawExt(rawSchemaParameters)
 		if err != nil {
 			return diag.FromErr(err)
 		}

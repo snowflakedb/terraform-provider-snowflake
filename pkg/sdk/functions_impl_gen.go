@@ -519,7 +519,7 @@ func (r *SecretsListRequest) toOpts() *SecretsList {
 	return opts
 }
 
-func toFunctionParametersDetails(params []*Parameter) (*FunctionParametersDetails, error) {
+func ToFunctionParametersDetails(params []*Parameter) (*FunctionParametersDetails, error) {
 	byKey := parametersByKey(params)
 	var d FunctionParametersDetails
 	if err := errors.Join(
@@ -539,5 +539,5 @@ func (v *functions) ShowParametersDetails(ctx context.Context, id SchemaObjectId
 	if err != nil {
 		return nil, err
 	}
-	return toFunctionParametersDetails(params)
+	return ToFunctionParametersDetails(params)
 }

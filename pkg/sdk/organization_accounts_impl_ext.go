@@ -20,7 +20,7 @@ func (v *organizationAccounts) ShowParametersDetails(ctx context.Context) (*Acco
 	if err != nil {
 		return nil, err
 	}
-	return toAccountParametersDetails(params)
+	return ToAccountParametersDetails(params)
 }
 
 func (v *organizationAccounts) UnsetAllParameters(ctx context.Context) error {

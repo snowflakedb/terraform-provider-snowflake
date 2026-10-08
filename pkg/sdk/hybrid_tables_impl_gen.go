@@ -442,7 +442,7 @@ func (r tableImportedKeyRow) convert() (*TableImportedKey, error) {
 	return result, nil
 }
 
-func toHybridTableParametersDetails(params []*Parameter) (*HybridTableParametersDetails, error) {
+func ToHybridTableParametersDetails(params []*Parameter) (*HybridTableParametersDetails, error) {
 	byKey := parametersByKey(params)
 	var d HybridTableParametersDetails
 	if err := errors.Join(
@@ -459,5 +459,5 @@ func (v *hybridTables) ShowParametersDetails(ctx context.Context, id SchemaObjec
 	if err != nil {
 		return nil, err
 	}
-	return toHybridTableParametersDetails(params)
+	return ToHybridTableParametersDetails(params)
 }

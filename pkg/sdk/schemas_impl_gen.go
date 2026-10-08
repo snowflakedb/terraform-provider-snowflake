@@ -254,7 +254,7 @@ func (r schemaDetailRow) convert() (*SchemaDetails, error) {
 	return result, nil
 }
 
-func toSchemaParametersDetails(params []*Parameter) (*SchemaParametersDetails, error) {
+func ToSchemaParametersDetails(params []*Parameter) (*SchemaParametersDetails, error) {
 	byKey := parametersByKey(params)
 	var d SchemaParametersDetails
 	if err := errors.Join(
@@ -289,5 +289,5 @@ func (v *schemas) ShowParametersDetails(ctx context.Context, id DatabaseObjectId
 	if err != nil {
 		return nil, err
 	}
-	return toSchemaParametersDetails(params)
+	return ToSchemaParametersDetails(params)
 }

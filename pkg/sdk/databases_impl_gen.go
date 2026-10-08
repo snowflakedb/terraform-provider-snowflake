@@ -418,7 +418,7 @@ func (r databaseRow) convert() (*Database, error) {
 	return result, nil
 }
 
-func toDatabaseParametersDetails(params []*Parameter) (*DatabaseParametersDetails, error) {
+func ToDatabaseParametersDetails(params []*Parameter) (*DatabaseParametersDetails, error) {
 	byKey := parametersByKey(params)
 	var d DatabaseParametersDetails
 	if err := errors.Join(
@@ -452,5 +452,5 @@ func (v *databases) ShowParametersDetails(ctx context.Context, id AccountObjectI
 	if err != nil {
 		return nil, err
 	}
-	return toDatabaseParametersDetails(params)
+	return ToDatabaseParametersDetails(params)
 }

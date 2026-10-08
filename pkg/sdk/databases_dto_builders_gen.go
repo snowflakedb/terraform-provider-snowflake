@@ -2,7 +2,10 @@
 
 package sdk
 
-import "strconv"
+import (
+	"strconv"
+	"strings"
+)
 
 func NewCreateDatabaseRequest(
 	name AccountObjectIdentifier,
@@ -133,7 +136,7 @@ func (s *CreateDatabaseRequest) WithTag(tag []TagAssociation) *CreateDatabaseReq
 }
 
 func (s *CreateDatabaseRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "CATALOG":
 		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.Catalog)
 	case "DATA_RETENTION_TIME_IN_DAYS":
@@ -326,7 +329,7 @@ func (s *CreateSharedDatabaseRequest) WithTag(tag []TagAssociation) *CreateShare
 }
 
 func (s *CreateSharedDatabaseRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "CATALOG":
 		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.Catalog)
 	case "DEFAULT_DDL_COLLATION":
@@ -492,7 +495,7 @@ func (s *CreateSecondaryDatabaseRequest) WithComment(comment string) *CreateSeco
 }
 
 func (s *CreateSecondaryDatabaseRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "CATALOG":
 		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.Catalog)
 	case "DATA_RETENTION_TIME_IN_DAYS":
@@ -768,7 +771,7 @@ func (s *DatabaseSetRequest) WithComment(comment string) *DatabaseSetRequest {
 }
 
 func (s *DatabaseSetRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "CATALOG":
 		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.Catalog)
 	case "DATA_RETENTION_TIME_IN_DAYS":

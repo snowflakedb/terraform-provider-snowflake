@@ -544,7 +544,7 @@ func (r userWorkloadIdentityAuthenticationMethodsDBRow) convert() (*UserWorkload
 	return result, nil
 }
 
-func toUserParametersDetails(params []*Parameter) (*UserParametersDetails, error) {
+func ToUserParametersDetails(params []*Parameter) (*UserParametersDetails, error) {
 	byKey := parametersByKey(params)
 	var d UserParametersDetails
 	if err := errors.Join(
@@ -618,5 +618,5 @@ func (v *users) ShowParametersDetails(ctx context.Context, id AccountObjectIdent
 	if err != nil {
 		return nil, err
 	}
-	return toUserParametersDetails(params)
+	return ToUserParametersDetails(params)
 }

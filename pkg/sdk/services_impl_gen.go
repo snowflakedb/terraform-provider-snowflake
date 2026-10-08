@@ -318,7 +318,7 @@ func (r *ExecuteJobServiceRequest) toOpts() *ExecuteJobServiceOptions {
 	return opts
 }
 
-func toServiceParametersDetails(params []*Parameter) (*ServiceParametersDetails, error) {
+func ToServiceParametersDetails(params []*Parameter) (*ServiceParametersDetails, error) {
 	byKey := parametersByKey(params)
 	var d ServiceParametersDetails
 	if err := errors.Join(
@@ -334,5 +334,5 @@ func (v *services) ShowParametersDetails(ctx context.Context, id SchemaObjectIde
 	if err != nil {
 		return nil, err
 	}
-	return toServiceParametersDetails(params)
+	return ToServiceParametersDetails(params)
 }

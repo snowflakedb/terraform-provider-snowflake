@@ -295,7 +295,7 @@ func (r warehouseDetailsRow) convert() (*WarehouseDetails, error) {
 	return result, nil
 }
 
-func toWarehouseParametersDetails(params []*Parameter) (*WarehouseParametersDetails, error) {
+func ToWarehouseParametersDetails(params []*Parameter) (*WarehouseParametersDetails, error) {
 	byKey := parametersByKey(params)
 	var d WarehouseParametersDetails
 	if err := errors.Join(
@@ -314,5 +314,5 @@ func (v *warehouses) ShowParametersDetails(ctx context.Context, id AccountObject
 	if err != nil {
 		return nil, err
 	}
-	return toWarehouseParametersDetails(params)
+	return ToWarehouseParametersDetails(params)
 }

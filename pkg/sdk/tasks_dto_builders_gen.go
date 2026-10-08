@@ -2,7 +2,10 @@
 
 package sdk
 
-import "strconv"
+import (
+	"strconv"
+	"strings"
+)
 
 func NewCreateTaskRequest(
 	name SchemaObjectIdentifier,
@@ -380,7 +383,7 @@ func (s *CreateTaskRequest) WithWhen(when string) *CreateTaskRequest {
 }
 
 func (s *CreateTaskRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "ABORT_DETACHED_QUERY":
 		return assignParsedParameter(value, strconv.ParseBool, &s.AbortDetachedQuery)
 	case "AUTOCOMMIT":
@@ -875,7 +878,7 @@ func (s *CreateOrAlterTaskRequest) WithWhen(when string) *CreateOrAlterTaskReque
 }
 
 func (s *CreateOrAlterTaskRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "ABORT_DETACHED_QUERY":
 		return assignParsedParameter(value, strconv.ParseBool, &s.AbortDetachedQuery)
 	case "AUTOCOMMIT":
@@ -1448,7 +1451,7 @@ func (s *TaskSetRequest) WithWeekStart(weekStart int) *TaskSetRequest {
 }
 
 func (s *TaskSetRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "ABORT_DETACHED_QUERY":
 		return assignParsedParameter(value, strconv.ParseBool, &s.AbortDetachedQuery)
 	case "AUTOCOMMIT":

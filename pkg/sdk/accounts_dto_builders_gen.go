@@ -2,7 +2,10 @@
 
 package sdk
 
-import "strconv"
+import (
+	"strconv"
+	"strings"
+)
 
 func NewCreateAccountRequest(
 	name AccountObjectIdentifier,
@@ -907,7 +910,7 @@ func (s *AccountParametersRequest) WithWeekStart(weekStart int) *AccountParamete
 }
 
 func (s *AccountParametersRequest) SetParameterFromRaw(key string, value string) error {
-	switch key {
+	switch strings.ToUpper(key) {
 	case "ABORT_DETACHED_QUERY":
 		return assignParsedParameter(value, strconv.ParseBool, &s.AbortDetachedQuery)
 	case "ACTIVE_PYTHON_PROFILER":
