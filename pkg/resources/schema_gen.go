@@ -72,8 +72,8 @@ func CreateSchema(ctx context.Context, d *tfschema.ResourceData, meta any) diag.
 		return diags
 	}
 
-	if err := schemaCreateInSdkExt(ctx, meta, req); err != nil {
-		return diag.FromErr(err)
+	if diags := schemaCreateInSdkExt(ctx, meta, id, req); diags != nil {
+		return diags
 	}
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))

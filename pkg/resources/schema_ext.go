@@ -253,9 +253,18 @@ func schemaSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.DatabaseObjec
 // SDK incision points
 // =============================================================================
 
-func schemaCreateInSdkExt(ctx context.Context, meta any, req *sdk.CreateSchemaRequest) error {
+func schemaCreateInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObjectIdentifier, req *sdk.CreateSchemaRequest) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	return client.Schemas.Create(ctx, req)
+	if err := client.Schemas.Create(ctx, req); err != nil {
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Failed to create schema.",
+				Detail:   fmt.Sprintf("schema name: %s, err: %s", id.FullyQualifiedName(), err),
+			},
+		}
+	}
+	return nil
 }
 
 func schemaShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.DatabaseObjectIdentifier) (*sdk.Schema, diag.Diagnostics) {

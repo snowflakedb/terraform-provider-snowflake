@@ -151,9 +151,12 @@ func computePoolSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountO
 // SDK incision points
 // =============================================================================
 
-func computePoolCreateInSdkExt(ctx context.Context, meta any, req *sdk.CreateComputePoolRequest) error {
+func computePoolCreateInSdkExt(ctx context.Context, meta any, _ sdk.AccountObjectIdentifier, req *sdk.CreateComputePoolRequest) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	return client.ComputePools.Create(ctx, req)
+	if err := client.ComputePools.Create(ctx, req); err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
 }
 
 func computePoolShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier) (*sdk.ComputePool, diag.Diagnostics) {

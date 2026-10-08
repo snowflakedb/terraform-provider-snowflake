@@ -60,8 +60,8 @@ func CreateComputePool(ctx context.Context, d *tfschema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 
-	if err := computePoolCreateInSdkExt(ctx, meta, req); err != nil {
-		return diag.FromErr(err)
+	if diags := computePoolCreateInSdkExt(ctx, meta, id, req); diags != nil {
+		return diags
 	}
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
