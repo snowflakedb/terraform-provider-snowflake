@@ -69,11 +69,6 @@ func (t *TaskParametersAssert) HasDefaultParameterValueOnLevel(parameterName sdk
 // - have an expected level
 func (t *TaskParametersAssert) HasAllDefaults() *TaskParametersAssert {
 	return t.
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterSuspendTaskAfterNumFailures, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterTaskAutoRetryAttempts, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterUserTaskManagedInitialWarehouseSize, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterUserTaskTimeoutMs, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterAbortDetachedQuery, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterAutocommit, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterBinaryInputFormat, sdk.ParameterTypeSnowflakeDefault).
@@ -97,8 +92,8 @@ func (t *TaskParametersAssert) HasAllDefaults() *TaskParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterJdbcUseSessionTimezone, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterJsonIndent, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterLockTimeout, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterMultiStatementCount, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterNoorderSequenceAsDefault, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterOdbcTreatDecimalAsInt, sdk.ParameterTypeSnowflakeDefault).
@@ -106,12 +101,15 @@ func (t *TaskParametersAssert) HasAllDefaults() *TaskParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterQuotedIdentifiersIgnoreCase, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterRowsPerResultset, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterS3StageVpceDnsName, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterSearchPath, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterServerlessTaskMaxStatementSize, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterServerlessTaskMinStatementSize, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterStatementQueuedTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterStatementTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterStrictJsonOutput, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterSuspendTaskAfterNumFailures, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterTaskAutoRetryAttempts, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimeInputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimeOutputFormat, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimestampDayIsAlways24h, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimestampInputFormat, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimestampLtzOutputFormat, sdk.ParameterTypeSnowflakeDefault).
@@ -120,25 +118,22 @@ func (t *TaskParametersAssert) HasAllDefaults() *TaskParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimestampTypeMapping, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimestampTzOutputFormat, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimezone, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimeInputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimeOutputFormat, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterTraceLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterTransactionAbortOnError, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterTransactionDefaultIsolationLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterTwoDigitCenturyStart, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterUnsupportedDdlAction, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterUseCachedResult, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterUserTaskManagedInitialWarehouseSize, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterUserTaskTimeoutMs, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterWeekOfYearPolicy, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterWeekStart, sdk.ParameterTypeSnowflakeDefault)
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterWeekStart, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterSearchPath, sdk.ParameterTypeSnowflakeDefault)
 }
 
 func (t *TaskParametersAssert) HasAllDefaultsExplicit() *TaskParametersAssert {
 	return t.
-		HasDefaultSuspendTaskAfterNumFailuresValueExplicit().
-		HasDefaultTaskAutoRetryAttemptsValueExplicit().
-		HasDefaultUserTaskManagedInitialWarehouseSizeValueExplicit().
-		HasDefaultUserTaskMinimumTriggerIntervalInSecondsValueExplicit().
-		HasDefaultUserTaskTimeoutMsValueExplicit().
 		HasDefaultAbortDetachedQueryValueExplicit().
 		HasDefaultAutocommitValueExplicit().
 		HasDefaultBinaryInputFormatValueExplicit().
@@ -162,8 +157,8 @@ func (t *TaskParametersAssert) HasAllDefaultsExplicit() *TaskParametersAssert {
 		HasDefaultJdbcUseSessionTimezoneValueExplicit().
 		HasDefaultJsonIndentValueExplicit().
 		HasDefaultLockTimeoutValueExplicit().
-		HasDefaultLogLevelValueExplicit().
 		HasDefaultLogEventLevelValueExplicit().
+		HasDefaultLogLevelValueExplicit().
 		HasDefaultMultiStatementCountValueExplicit().
 		HasDefaultNoorderSequenceAsDefaultValueExplicit().
 		HasDefaultOdbcTreatDecimalAsIntValueExplicit().
@@ -171,12 +166,15 @@ func (t *TaskParametersAssert) HasAllDefaultsExplicit() *TaskParametersAssert {
 		HasDefaultQuotedIdentifiersIgnoreCaseValueExplicit().
 		HasDefaultRowsPerResultsetValueExplicit().
 		HasDefaultS3StageVpceDnsNameValueExplicit().
-		HasDefaultSearchPathValueExplicit().
 		HasDefaultServerlessTaskMaxStatementSizeValueExplicit().
 		HasDefaultServerlessTaskMinStatementSizeValueExplicit().
 		HasDefaultStatementQueuedTimeoutInSecondsValueExplicit().
 		HasDefaultStatementTimeoutInSecondsValueExplicit().
 		HasDefaultStrictJsonOutputValueExplicit().
+		HasDefaultSuspendTaskAfterNumFailuresValueExplicit().
+		HasDefaultTaskAutoRetryAttemptsValueExplicit().
+		HasDefaultTimeInputFormatValueExplicit().
+		HasDefaultTimeOutputFormatValueExplicit().
 		HasDefaultTimestampDayIsAlways24hValueExplicit().
 		HasDefaultTimestampInputFormatValueExplicit().
 		HasDefaultTimestampLtzOutputFormatValueExplicit().
@@ -185,46 +183,23 @@ func (t *TaskParametersAssert) HasAllDefaultsExplicit() *TaskParametersAssert {
 		HasDefaultTimestampTypeMappingValueExplicit().
 		HasDefaultTimestampTzOutputFormatValueExplicit().
 		HasDefaultTimezoneValueExplicit().
-		HasDefaultTimeInputFormatValueExplicit().
-		HasDefaultTimeOutputFormatValueExplicit().
 		HasDefaultTraceLevelValueExplicit().
 		HasDefaultTransactionAbortOnErrorValueExplicit().
 		HasDefaultTransactionDefaultIsolationLevelValueExplicit().
 		HasDefaultTwoDigitCenturyStartValueExplicit().
 		HasDefaultUnsupportedDdlActionValueExplicit().
 		HasDefaultUseCachedResultValueExplicit().
+		HasDefaultUserTaskManagedInitialWarehouseSizeValueExplicit().
+		HasDefaultUserTaskMinimumTriggerIntervalInSecondsValueExplicit().
+		HasDefaultUserTaskTimeoutMsValueExplicit().
 		HasDefaultWeekOfYearPolicyValueExplicit().
-		HasDefaultWeekStartValueExplicit()
+		HasDefaultWeekStartValueExplicit().
+		HasDefaultSearchPathValueExplicit()
 }
 
 ////////////////////////////
 // Parameter value checks //
 ////////////////////////////
-
-func (t *TaskParametersAssert) HasSuspendTaskAfterNumFailures(expected int) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.TaskParameterSuspendTaskAfterNumFailures, expected))
-	return t
-}
-
-func (t *TaskParametersAssert) HasTaskAutoRetryAttempts(expected int) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.TaskParameterTaskAutoRetryAttempts, expected))
-	return t
-}
-
-func (t *TaskParametersAssert) HasUserTaskManagedInitialWarehouseSize(expected sdk.WarehouseSize) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.TaskParameterUserTaskManagedInitialWarehouseSize, expected))
-	return t
-}
-
-func (t *TaskParametersAssert) HasUserTaskMinimumTriggerIntervalInSeconds(expected int) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, expected))
-	return t
-}
-
-func (t *TaskParametersAssert) HasUserTaskTimeoutMs(expected int) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.TaskParameterUserTaskTimeoutMs, expected))
-	return t
-}
 
 func (t *TaskParametersAssert) HasAbortDetachedQuery(expected bool) *TaskParametersAssert {
 	t.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.TaskParameterAbortDetachedQuery, expected))
@@ -341,13 +316,13 @@ func (t *TaskParametersAssert) HasLockTimeout(expected int) *TaskParametersAsser
 	return t
 }
 
-func (t *TaskParametersAssert) HasLogLevel(expected sdk.LogLevel) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.TaskParameterLogLevel, expected))
+func (t *TaskParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.TaskParameterLogEventLevel, expected))
 	return t
 }
 
-func (t *TaskParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.TaskParameterLogEventLevel, expected))
+func (t *TaskParametersAssert) HasLogLevel(expected sdk.LogLevel) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.TaskParameterLogLevel, expected))
 	return t
 }
 
@@ -386,11 +361,6 @@ func (t *TaskParametersAssert) HasS3StageVpceDnsName(expected string) *TaskParam
 	return t
 }
 
-func (t *TaskParametersAssert) HasSearchPath(expected string) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterValueSet(sdk.TaskParameterSearchPath, expected))
-	return t
-}
-
 func (t *TaskParametersAssert) HasServerlessTaskMaxStatementSize(expected sdk.WarehouseSize) *TaskParametersAssert {
 	t.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.TaskParameterServerlessTaskMaxStatementSize, expected))
 	return t
@@ -413,6 +383,26 @@ func (t *TaskParametersAssert) HasStatementTimeoutInSeconds(expected int) *TaskP
 
 func (t *TaskParametersAssert) HasStrictJsonOutput(expected bool) *TaskParametersAssert {
 	t.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.TaskParameterStrictJsonOutput, expected))
+	return t
+}
+
+func (t *TaskParametersAssert) HasSuspendTaskAfterNumFailures(expected int) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.TaskParameterSuspendTaskAfterNumFailures, expected))
+	return t
+}
+
+func (t *TaskParametersAssert) HasTaskAutoRetryAttempts(expected int) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.TaskParameterTaskAutoRetryAttempts, expected))
+	return t
+}
+
+func (t *TaskParametersAssert) HasTimeInputFormat(expected string) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterValueSet(sdk.TaskParameterTimeInputFormat, expected))
+	return t
+}
+
+func (t *TaskParametersAssert) HasTimeOutputFormat(expected string) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterValueSet(sdk.TaskParameterTimeOutputFormat, expected))
 	return t
 }
 
@@ -456,16 +446,6 @@ func (t *TaskParametersAssert) HasTimezone(expected string) *TaskParametersAsser
 	return t
 }
 
-func (t *TaskParametersAssert) HasTimeInputFormat(expected string) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterValueSet(sdk.TaskParameterTimeInputFormat, expected))
-	return t
-}
-
-func (t *TaskParametersAssert) HasTimeOutputFormat(expected string) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterValueSet(sdk.TaskParameterTimeOutputFormat, expected))
-	return t
-}
-
 func (t *TaskParametersAssert) HasTraceLevel(expected sdk.TraceLevel) *TaskParametersAssert {
 	t.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.TaskParameterTraceLevel, expected))
 	return t
@@ -496,6 +476,21 @@ func (t *TaskParametersAssert) HasUseCachedResult(expected bool) *TaskParameters
 	return t
 }
 
+func (t *TaskParametersAssert) HasUserTaskManagedInitialWarehouseSize(expected sdk.WarehouseSize) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.TaskParameterUserTaskManagedInitialWarehouseSize, expected))
+	return t
+}
+
+func (t *TaskParametersAssert) HasUserTaskMinimumTriggerIntervalInSeconds(expected int) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, expected))
+	return t
+}
+
+func (t *TaskParametersAssert) HasUserTaskTimeoutMs(expected int) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.TaskParameterUserTaskTimeoutMs, expected))
+	return t
+}
+
 func (t *TaskParametersAssert) HasWeekOfYearPolicy(expected int) *TaskParametersAssert {
 	t.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.TaskParameterWeekOfYearPolicy, expected))
 	return t
@@ -506,34 +501,14 @@ func (t *TaskParametersAssert) HasWeekStart(expected int) *TaskParametersAssert 
 	return t
 }
 
+func (t *TaskParametersAssert) HasSearchPath(expected string) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterValueSet(sdk.TaskParameterSearchPath, expected))
+	return t
+}
+
 ////////////////////////////
 // Parameter level checks //
 ////////////////////////////
-
-func (t *TaskParametersAssert) HasSuspendTaskAfterNumFailuresLevel(expected sdk.ParameterType) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterSuspendTaskAfterNumFailures, expected))
-	return t
-}
-
-func (t *TaskParametersAssert) HasTaskAutoRetryAttemptsLevel(expected sdk.ParameterType) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterTaskAutoRetryAttempts, expected))
-	return t
-}
-
-func (t *TaskParametersAssert) HasUserTaskManagedInitialWarehouseSizeLevel(expected sdk.ParameterType) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterUserTaskManagedInitialWarehouseSize, expected))
-	return t
-}
-
-func (t *TaskParametersAssert) HasUserTaskMinimumTriggerIntervalInSecondsLevel(expected sdk.ParameterType) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, expected))
-	return t
-}
-
-func (t *TaskParametersAssert) HasUserTaskTimeoutMsLevel(expected sdk.ParameterType) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterUserTaskTimeoutMs, expected))
-	return t
-}
 
 func (t *TaskParametersAssert) HasAbortDetachedQueryLevel(expected sdk.ParameterType) *TaskParametersAssert {
 	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterAbortDetachedQuery, expected))
@@ -650,13 +625,13 @@ func (t *TaskParametersAssert) HasLockTimeoutLevel(expected sdk.ParameterType) *
 	return t
 }
 
-func (t *TaskParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterLogLevel, expected))
+func (t *TaskParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterLogEventLevel, expected))
 	return t
 }
 
-func (t *TaskParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterLogEventLevel, expected))
+func (t *TaskParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterLogLevel, expected))
 	return t
 }
 
@@ -695,11 +670,6 @@ func (t *TaskParametersAssert) HasS3StageVpceDnsNameLevel(expected sdk.Parameter
 	return t
 }
 
-func (t *TaskParametersAssert) HasSearchPathLevel(expected sdk.ParameterType) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterSearchPath, expected))
-	return t
-}
-
 func (t *TaskParametersAssert) HasServerlessTaskMaxStatementSizeLevel(expected sdk.ParameterType) *TaskParametersAssert {
 	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterServerlessTaskMaxStatementSize, expected))
 	return t
@@ -722,6 +692,26 @@ func (t *TaskParametersAssert) HasStatementTimeoutInSecondsLevel(expected sdk.Pa
 
 func (t *TaskParametersAssert) HasStrictJsonOutputLevel(expected sdk.ParameterType) *TaskParametersAssert {
 	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterStrictJsonOutput, expected))
+	return t
+}
+
+func (t *TaskParametersAssert) HasSuspendTaskAfterNumFailuresLevel(expected sdk.ParameterType) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterSuspendTaskAfterNumFailures, expected))
+	return t
+}
+
+func (t *TaskParametersAssert) HasTaskAutoRetryAttemptsLevel(expected sdk.ParameterType) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterTaskAutoRetryAttempts, expected))
+	return t
+}
+
+func (t *TaskParametersAssert) HasTimeInputFormatLevel(expected sdk.ParameterType) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterTimeInputFormat, expected))
+	return t
+}
+
+func (t *TaskParametersAssert) HasTimeOutputFormatLevel(expected sdk.ParameterType) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterTimeOutputFormat, expected))
 	return t
 }
 
@@ -765,16 +755,6 @@ func (t *TaskParametersAssert) HasTimezoneLevel(expected sdk.ParameterType) *Tas
 	return t
 }
 
-func (t *TaskParametersAssert) HasTimeInputFormatLevel(expected sdk.ParameterType) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterTimeInputFormat, expected))
-	return t
-}
-
-func (t *TaskParametersAssert) HasTimeOutputFormatLevel(expected sdk.ParameterType) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterTimeOutputFormat, expected))
-	return t
-}
-
 func (t *TaskParametersAssert) HasTraceLevelLevel(expected sdk.ParameterType) *TaskParametersAssert {
 	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterTraceLevel, expected))
 	return t
@@ -805,6 +785,21 @@ func (t *TaskParametersAssert) HasUseCachedResultLevel(expected sdk.ParameterTyp
 	return t
 }
 
+func (t *TaskParametersAssert) HasUserTaskManagedInitialWarehouseSizeLevel(expected sdk.ParameterType) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterUserTaskManagedInitialWarehouseSize, expected))
+	return t
+}
+
+func (t *TaskParametersAssert) HasUserTaskMinimumTriggerIntervalInSecondsLevel(expected sdk.ParameterType) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, expected))
+	return t
+}
+
+func (t *TaskParametersAssert) HasUserTaskTimeoutMsLevel(expected sdk.ParameterType) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterUserTaskTimeoutMs, expected))
+	return t
+}
+
 func (t *TaskParametersAssert) HasWeekOfYearPolicyLevel(expected sdk.ParameterType) *TaskParametersAssert {
 	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterWeekOfYearPolicy, expected))
 	return t
@@ -815,29 +810,14 @@ func (t *TaskParametersAssert) HasWeekStartLevel(expected sdk.ParameterType) *Ta
 	return t
 }
 
+func (t *TaskParametersAssert) HasSearchPathLevel(expected sdk.ParameterType) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterSearchPath, expected))
+	return t
+}
+
 ////////////////////////////////////
 // Parameter default value checks //
 ////////////////////////////////////
-
-func (t *TaskParametersAssert) HasDefaultSuspendTaskAfterNumFailuresValue() *TaskParametersAssert {
-	return t.HasDefaultParameterValue(sdk.TaskParameterSuspendTaskAfterNumFailures)
-}
-
-func (t *TaskParametersAssert) HasDefaultTaskAutoRetryAttemptsValue() *TaskParametersAssert {
-	return t.HasDefaultParameterValue(sdk.TaskParameterTaskAutoRetryAttempts)
-}
-
-func (t *TaskParametersAssert) HasDefaultUserTaskManagedInitialWarehouseSizeValue() *TaskParametersAssert {
-	return t.HasDefaultParameterValue(sdk.TaskParameterUserTaskManagedInitialWarehouseSize)
-}
-
-func (t *TaskParametersAssert) HasDefaultUserTaskMinimumTriggerIntervalInSecondsValue() *TaskParametersAssert {
-	return t.HasDefaultParameterValue(sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds)
-}
-
-func (t *TaskParametersAssert) HasDefaultUserTaskTimeoutMsValue() *TaskParametersAssert {
-	return t.HasDefaultParameterValue(sdk.TaskParameterUserTaskTimeoutMs)
-}
 
 func (t *TaskParametersAssert) HasDefaultAbortDetachedQueryValue() *TaskParametersAssert {
 	return t.HasDefaultParameterValue(sdk.TaskParameterAbortDetachedQuery)
@@ -931,12 +911,12 @@ func (t *TaskParametersAssert) HasDefaultLockTimeoutValue() *TaskParametersAsser
 	return t.HasDefaultParameterValue(sdk.TaskParameterLockTimeout)
 }
 
-func (t *TaskParametersAssert) HasDefaultLogLevelValue() *TaskParametersAssert {
-	return t.HasDefaultParameterValue(sdk.TaskParameterLogLevel)
-}
-
 func (t *TaskParametersAssert) HasDefaultLogEventLevelValue() *TaskParametersAssert {
 	return t.HasDefaultParameterValue(sdk.TaskParameterLogEventLevel)
+}
+
+func (t *TaskParametersAssert) HasDefaultLogLevelValue() *TaskParametersAssert {
+	return t.HasDefaultParameterValue(sdk.TaskParameterLogLevel)
 }
 
 func (t *TaskParametersAssert) HasDefaultMultiStatementCountValue() *TaskParametersAssert {
@@ -967,10 +947,6 @@ func (t *TaskParametersAssert) HasDefaultS3StageVpceDnsNameValue() *TaskParamete
 	return t.HasDefaultParameterValue(sdk.TaskParameterS3StageVpceDnsName)
 }
 
-func (t *TaskParametersAssert) HasDefaultSearchPathValue() *TaskParametersAssert {
-	return t.HasDefaultParameterValue(sdk.TaskParameterSearchPath)
-}
-
 func (t *TaskParametersAssert) HasDefaultServerlessTaskMaxStatementSizeValue() *TaskParametersAssert {
 	return t.HasDefaultParameterValue(sdk.TaskParameterServerlessTaskMaxStatementSize)
 }
@@ -989,6 +965,22 @@ func (t *TaskParametersAssert) HasDefaultStatementTimeoutInSecondsValue() *TaskP
 
 func (t *TaskParametersAssert) HasDefaultStrictJsonOutputValue() *TaskParametersAssert {
 	return t.HasDefaultParameterValue(sdk.TaskParameterStrictJsonOutput)
+}
+
+func (t *TaskParametersAssert) HasDefaultSuspendTaskAfterNumFailuresValue() *TaskParametersAssert {
+	return t.HasDefaultParameterValue(sdk.TaskParameterSuspendTaskAfterNumFailures)
+}
+
+func (t *TaskParametersAssert) HasDefaultTaskAutoRetryAttemptsValue() *TaskParametersAssert {
+	return t.HasDefaultParameterValue(sdk.TaskParameterTaskAutoRetryAttempts)
+}
+
+func (t *TaskParametersAssert) HasDefaultTimeInputFormatValue() *TaskParametersAssert {
+	return t.HasDefaultParameterValue(sdk.TaskParameterTimeInputFormat)
+}
+
+func (t *TaskParametersAssert) HasDefaultTimeOutputFormatValue() *TaskParametersAssert {
+	return t.HasDefaultParameterValue(sdk.TaskParameterTimeOutputFormat)
 }
 
 func (t *TaskParametersAssert) HasDefaultTimestampDayIsAlways24hValue() *TaskParametersAssert {
@@ -1023,14 +1015,6 @@ func (t *TaskParametersAssert) HasDefaultTimezoneValue() *TaskParametersAssert {
 	return t.HasDefaultParameterValue(sdk.TaskParameterTimezone)
 }
 
-func (t *TaskParametersAssert) HasDefaultTimeInputFormatValue() *TaskParametersAssert {
-	return t.HasDefaultParameterValue(sdk.TaskParameterTimeInputFormat)
-}
-
-func (t *TaskParametersAssert) HasDefaultTimeOutputFormatValue() *TaskParametersAssert {
-	return t.HasDefaultParameterValue(sdk.TaskParameterTimeOutputFormat)
-}
-
 func (t *TaskParametersAssert) HasDefaultTraceLevelValue() *TaskParametersAssert {
 	return t.HasDefaultParameterValue(sdk.TaskParameterTraceLevel)
 }
@@ -1055,6 +1039,18 @@ func (t *TaskParametersAssert) HasDefaultUseCachedResultValue() *TaskParametersA
 	return t.HasDefaultParameterValue(sdk.TaskParameterUseCachedResult)
 }
 
+func (t *TaskParametersAssert) HasDefaultUserTaskManagedInitialWarehouseSizeValue() *TaskParametersAssert {
+	return t.HasDefaultParameterValue(sdk.TaskParameterUserTaskManagedInitialWarehouseSize)
+}
+
+func (t *TaskParametersAssert) HasDefaultUserTaskMinimumTriggerIntervalInSecondsValue() *TaskParametersAssert {
+	return t.HasDefaultParameterValue(sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds)
+}
+
+func (t *TaskParametersAssert) HasDefaultUserTaskTimeoutMsValue() *TaskParametersAssert {
+	return t.HasDefaultParameterValue(sdk.TaskParameterUserTaskTimeoutMs)
+}
+
 func (t *TaskParametersAssert) HasDefaultWeekOfYearPolicyValue() *TaskParametersAssert {
 	return t.HasDefaultParameterValue(sdk.TaskParameterWeekOfYearPolicy)
 }
@@ -1063,29 +1059,13 @@ func (t *TaskParametersAssert) HasDefaultWeekStartValue() *TaskParametersAssert 
 	return t.HasDefaultParameterValue(sdk.TaskParameterWeekStart)
 }
 
+func (t *TaskParametersAssert) HasDefaultSearchPathValue() *TaskParametersAssert {
+	return t.HasDefaultParameterValue(sdk.TaskParameterSearchPath)
+}
+
 /////////////////////////////////////////////
 // Parameter explicit default value checks //
 /////////////////////////////////////////////
-
-func (t *TaskParametersAssert) HasDefaultSuspendTaskAfterNumFailuresValueExplicit() *TaskParametersAssert {
-	return t.HasSuspendTaskAfterNumFailures(10)
-}
-
-func (t *TaskParametersAssert) HasDefaultTaskAutoRetryAttemptsValueExplicit() *TaskParametersAssert {
-	return t.HasTaskAutoRetryAttempts(0)
-}
-
-func (t *TaskParametersAssert) HasDefaultUserTaskManagedInitialWarehouseSizeValueExplicit() *TaskParametersAssert {
-	return t.HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSize("Medium"))
-}
-
-func (t *TaskParametersAssert) HasDefaultUserTaskMinimumTriggerIntervalInSecondsValueExplicit() *TaskParametersAssert {
-	return t.HasUserTaskMinimumTriggerIntervalInSeconds(30)
-}
-
-func (t *TaskParametersAssert) HasDefaultUserTaskTimeoutMsValueExplicit() *TaskParametersAssert {
-	return t.HasUserTaskTimeoutMs(3600000)
-}
 
 func (t *TaskParametersAssert) HasDefaultAbortDetachedQueryValueExplicit() *TaskParametersAssert {
 	return t.HasAbortDetachedQuery(false)
@@ -1179,12 +1159,12 @@ func (t *TaskParametersAssert) HasDefaultLockTimeoutValueExplicit() *TaskParamet
 	return t.HasLockTimeout(43200)
 }
 
-func (t *TaskParametersAssert) HasDefaultLogLevelValueExplicit() *TaskParametersAssert {
-	return t.HasLogLevel(sdk.LogLevelOff)
-}
-
 func (t *TaskParametersAssert) HasDefaultLogEventLevelValueExplicit() *TaskParametersAssert {
 	return t.HasLogEventLevel(sdk.LogLevelOff)
+}
+
+func (t *TaskParametersAssert) HasDefaultLogLevelValueExplicit() *TaskParametersAssert {
+	return t.HasLogLevel(sdk.LogLevelOff)
 }
 
 func (t *TaskParametersAssert) HasDefaultMultiStatementCountValueExplicit() *TaskParametersAssert {
@@ -1215,10 +1195,6 @@ func (t *TaskParametersAssert) HasDefaultS3StageVpceDnsNameValueExplicit() *Task
 	return t.HasS3StageVpceDnsName("")
 }
 
-func (t *TaskParametersAssert) HasDefaultSearchPathValueExplicit() *TaskParametersAssert {
-	return t.HasSearchPath("$current, $public")
-}
-
 func (t *TaskParametersAssert) HasDefaultServerlessTaskMaxStatementSizeValueExplicit() *TaskParametersAssert {
 	return t.HasServerlessTaskMaxStatementSize(sdk.WarehouseSize("X2Large"))
 }
@@ -1237,6 +1213,22 @@ func (t *TaskParametersAssert) HasDefaultStatementTimeoutInSecondsValueExplicit(
 
 func (t *TaskParametersAssert) HasDefaultStrictJsonOutputValueExplicit() *TaskParametersAssert {
 	return t.HasStrictJsonOutput(false)
+}
+
+func (t *TaskParametersAssert) HasDefaultSuspendTaskAfterNumFailuresValueExplicit() *TaskParametersAssert {
+	return t.HasSuspendTaskAfterNumFailures(10)
+}
+
+func (t *TaskParametersAssert) HasDefaultTaskAutoRetryAttemptsValueExplicit() *TaskParametersAssert {
+	return t.HasTaskAutoRetryAttempts(0)
+}
+
+func (t *TaskParametersAssert) HasDefaultTimeInputFormatValueExplicit() *TaskParametersAssert {
+	return t.HasTimeInputFormat("AUTO")
+}
+
+func (t *TaskParametersAssert) HasDefaultTimeOutputFormatValueExplicit() *TaskParametersAssert {
+	return t.HasTimeOutputFormat("HH24:MI:SS")
 }
 
 func (t *TaskParametersAssert) HasDefaultTimestampDayIsAlways24hValueExplicit() *TaskParametersAssert {
@@ -1271,14 +1263,6 @@ func (t *TaskParametersAssert) HasDefaultTimezoneValueExplicit() *TaskParameters
 	return t.HasTimezone("America/Los_Angeles")
 }
 
-func (t *TaskParametersAssert) HasDefaultTimeInputFormatValueExplicit() *TaskParametersAssert {
-	return t.HasTimeInputFormat("AUTO")
-}
-
-func (t *TaskParametersAssert) HasDefaultTimeOutputFormatValueExplicit() *TaskParametersAssert {
-	return t.HasTimeOutputFormat("HH24:MI:SS")
-}
-
 func (t *TaskParametersAssert) HasDefaultTraceLevelValueExplicit() *TaskParametersAssert {
 	return t.HasTraceLevel(sdk.TraceLevelOff)
 }
@@ -1303,10 +1287,26 @@ func (t *TaskParametersAssert) HasDefaultUseCachedResultValueExplicit() *TaskPar
 	return t.HasUseCachedResult(true)
 }
 
+func (t *TaskParametersAssert) HasDefaultUserTaskManagedInitialWarehouseSizeValueExplicit() *TaskParametersAssert {
+	return t.HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium)
+}
+
+func (t *TaskParametersAssert) HasDefaultUserTaskMinimumTriggerIntervalInSecondsValueExplicit() *TaskParametersAssert {
+	return t.HasUserTaskMinimumTriggerIntervalInSeconds(30)
+}
+
+func (t *TaskParametersAssert) HasDefaultUserTaskTimeoutMsValueExplicit() *TaskParametersAssert {
+	return t.HasUserTaskTimeoutMs(3600000)
+}
+
 func (t *TaskParametersAssert) HasDefaultWeekOfYearPolicyValueExplicit() *TaskParametersAssert {
 	return t.HasWeekOfYearPolicy(0)
 }
 
 func (t *TaskParametersAssert) HasDefaultWeekStartValueExplicit() *TaskParametersAssert {
 	return t.HasWeekStart(0)
+}
+
+func (t *TaskParametersAssert) HasDefaultSearchPathValueExplicit() *TaskParametersAssert {
+	return t.HasSearchPath("$current, $public")
 }

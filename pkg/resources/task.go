@@ -508,7 +508,7 @@ func UpdateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 		}
 	}
 
-	if updateDiags := handleTaskParametersUpdate(d, set, unset); len(updateDiags) > 0 {
+	if updateDiags := handleTaskParametersChanges(d, set, unset); len(updateDiags) > 0 {
 		return updateDiags
 	}
 
@@ -685,6 +685,13 @@ func ReadTask(withExternalChangesMarking bool) schema.ReadContextFunc {
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		typedTaskParameters, err := sdk.ToTaskParametersDetails(taskParameters)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if diags := handleTaskParameterRead(d, typedTaskParameters, taskParameters); diags != nil {
+			return diags
+		}
 
 		if withExternalChangesMarking {
 			if err = handleExternalChangesToObjectInShow(
@@ -783,7 +790,6 @@ func ReadTask(withExternalChangesMarking bool) schema.ReadContextFunc {
 			d.Set("comment", task.Comment),
 			d.Set("sql_statement", task.Definition),
 			d.Set("after", collections.Map(task.TaskRelations.Predecessors, sdk.SchemaObjectIdentifier.FullyQualifiedName)),
-			handleTaskParameterRead(d, taskParameters),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.TaskToSchema(task)}),
 			d.Set(ParametersAttributeName, []map[string]any{schemas.TaskParametersToSchema(taskParameters, providerCtx)}),

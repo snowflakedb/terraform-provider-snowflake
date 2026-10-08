@@ -50,31 +50,6 @@ func TasksDatasourceParametersOnIdx(t *testing.T, name string, idx int) *TaskRes
 // Parameter value checks //
 ////////////////////////////
 
-func (t *TaskResourceParametersAssert) HasSuspendTaskAfterNumFailures(expected int) *TaskResourceParametersAssert {
-	t.ParameterIntValueSet(string(sdk.TaskParameterSuspendTaskAfterNumFailures), expected)
-	return t
-}
-
-func (t *TaskResourceParametersAssert) HasTaskAutoRetryAttempts(expected int) *TaskResourceParametersAssert {
-	t.ParameterIntValueSet(string(sdk.TaskParameterTaskAutoRetryAttempts), expected)
-	return t
-}
-
-func (t *TaskResourceParametersAssert) HasUserTaskManagedInitialWarehouseSize(expected sdk.WarehouseSize) *TaskResourceParametersAssert {
-	t.ParameterValueSet(string(sdk.TaskParameterUserTaskManagedInitialWarehouseSize), string(expected))
-	return t
-}
-
-func (t *TaskResourceParametersAssert) HasUserTaskMinimumTriggerIntervalInSeconds(expected int) *TaskResourceParametersAssert {
-	t.ParameterIntValueSet(string(sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds), expected)
-	return t
-}
-
-func (t *TaskResourceParametersAssert) HasUserTaskTimeoutMs(expected int) *TaskResourceParametersAssert {
-	t.ParameterIntValueSet(string(sdk.TaskParameterUserTaskTimeoutMs), expected)
-	return t
-}
-
 func (t *TaskResourceParametersAssert) HasAbortDetachedQuery(expected bool) *TaskResourceParametersAssert {
 	t.ParameterBoolValueSet(string(sdk.TaskParameterAbortDetachedQuery), expected)
 	return t
@@ -190,13 +165,13 @@ func (t *TaskResourceParametersAssert) HasLockTimeout(expected int) *TaskResourc
 	return t
 }
 
-func (t *TaskResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *TaskResourceParametersAssert {
-	t.ParameterValueSet(string(sdk.TaskParameterLogLevel), string(expected))
+func (t *TaskResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *TaskResourceParametersAssert {
+	t.ParameterValueSet(string(sdk.TaskParameterLogEventLevel), string(expected))
 	return t
 }
 
-func (t *TaskResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *TaskResourceParametersAssert {
-	t.ParameterValueSet(string(sdk.TaskParameterLogEventLevel), string(expected))
+func (t *TaskResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *TaskResourceParametersAssert {
+	t.ParameterValueSet(string(sdk.TaskParameterLogLevel), string(expected))
 	return t
 }
 
@@ -235,11 +210,6 @@ func (t *TaskResourceParametersAssert) HasS3StageVpceDnsName(expected string) *T
 	return t
 }
 
-func (t *TaskResourceParametersAssert) HasSearchPath(expected string) *TaskResourceParametersAssert {
-	t.ParameterValueSet(string(sdk.TaskParameterSearchPath), expected)
-	return t
-}
-
 func (t *TaskResourceParametersAssert) HasServerlessTaskMaxStatementSize(expected sdk.WarehouseSize) *TaskResourceParametersAssert {
 	t.ParameterValueSet(string(sdk.TaskParameterServerlessTaskMaxStatementSize), string(expected))
 	return t
@@ -262,6 +232,26 @@ func (t *TaskResourceParametersAssert) HasStatementTimeoutInSeconds(expected int
 
 func (t *TaskResourceParametersAssert) HasStrictJsonOutput(expected bool) *TaskResourceParametersAssert {
 	t.ParameterBoolValueSet(string(sdk.TaskParameterStrictJsonOutput), expected)
+	return t
+}
+
+func (t *TaskResourceParametersAssert) HasSuspendTaskAfterNumFailures(expected int) *TaskResourceParametersAssert {
+	t.ParameterIntValueSet(string(sdk.TaskParameterSuspendTaskAfterNumFailures), expected)
+	return t
+}
+
+func (t *TaskResourceParametersAssert) HasTaskAutoRetryAttempts(expected int) *TaskResourceParametersAssert {
+	t.ParameterIntValueSet(string(sdk.TaskParameterTaskAutoRetryAttempts), expected)
+	return t
+}
+
+func (t *TaskResourceParametersAssert) HasTimeInputFormat(expected string) *TaskResourceParametersAssert {
+	t.ParameterValueSet(string(sdk.TaskParameterTimeInputFormat), expected)
+	return t
+}
+
+func (t *TaskResourceParametersAssert) HasTimeOutputFormat(expected string) *TaskResourceParametersAssert {
+	t.ParameterValueSet(string(sdk.TaskParameterTimeOutputFormat), expected)
 	return t
 }
 
@@ -305,16 +295,6 @@ func (t *TaskResourceParametersAssert) HasTimezone(expected string) *TaskResourc
 	return t
 }
 
-func (t *TaskResourceParametersAssert) HasTimeInputFormat(expected string) *TaskResourceParametersAssert {
-	t.ParameterValueSet(string(sdk.TaskParameterTimeInputFormat), expected)
-	return t
-}
-
-func (t *TaskResourceParametersAssert) HasTimeOutputFormat(expected string) *TaskResourceParametersAssert {
-	t.ParameterValueSet(string(sdk.TaskParameterTimeOutputFormat), expected)
-	return t
-}
-
 func (t *TaskResourceParametersAssert) HasTraceLevel(expected sdk.TraceLevel) *TaskResourceParametersAssert {
 	t.ParameterValueSet(string(sdk.TaskParameterTraceLevel), string(expected))
 	return t
@@ -345,6 +325,21 @@ func (t *TaskResourceParametersAssert) HasUseCachedResult(expected bool) *TaskRe
 	return t
 }
 
+func (t *TaskResourceParametersAssert) HasUserTaskManagedInitialWarehouseSize(expected sdk.WarehouseSize) *TaskResourceParametersAssert {
+	t.ParameterValueSet(string(sdk.TaskParameterUserTaskManagedInitialWarehouseSize), string(expected))
+	return t
+}
+
+func (t *TaskResourceParametersAssert) HasUserTaskMinimumTriggerIntervalInSeconds(expected int) *TaskResourceParametersAssert {
+	t.ParameterIntValueSet(string(sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds), expected)
+	return t
+}
+
+func (t *TaskResourceParametersAssert) HasUserTaskTimeoutMs(expected int) *TaskResourceParametersAssert {
+	t.ParameterIntValueSet(string(sdk.TaskParameterUserTaskTimeoutMs), expected)
+	return t
+}
+
 func (t *TaskResourceParametersAssert) HasWeekOfYearPolicy(expected int) *TaskResourceParametersAssert {
 	t.ParameterIntValueSet(string(sdk.TaskParameterWeekOfYearPolicy), expected)
 	return t
@@ -355,34 +350,14 @@ func (t *TaskResourceParametersAssert) HasWeekStart(expected int) *TaskResourceP
 	return t
 }
 
+func (t *TaskResourceParametersAssert) HasSearchPath(expected string) *TaskResourceParametersAssert {
+	t.ParameterValueSet(string(sdk.TaskParameterSearchPath), expected)
+	return t
+}
+
 ////////////////////////////
 // Parameter level checks //
 ////////////////////////////
-
-func (t *TaskResourceParametersAssert) HasSuspendTaskAfterNumFailuresLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.ParameterLevelSet(string(sdk.TaskParameterSuspendTaskAfterNumFailures), expected)
-	return t
-}
-
-func (t *TaskResourceParametersAssert) HasTaskAutoRetryAttemptsLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.ParameterLevelSet(string(sdk.TaskParameterTaskAutoRetryAttempts), expected)
-	return t
-}
-
-func (t *TaskResourceParametersAssert) HasUserTaskManagedInitialWarehouseSizeLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.ParameterLevelSet(string(sdk.TaskParameterUserTaskManagedInitialWarehouseSize), expected)
-	return t
-}
-
-func (t *TaskResourceParametersAssert) HasUserTaskMinimumTriggerIntervalInSecondsLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.ParameterLevelSet(string(sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds), expected)
-	return t
-}
-
-func (t *TaskResourceParametersAssert) HasUserTaskTimeoutMsLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.ParameterLevelSet(string(sdk.TaskParameterUserTaskTimeoutMs), expected)
-	return t
-}
 
 func (t *TaskResourceParametersAssert) HasAbortDetachedQueryLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
 	t.ParameterLevelSet(string(sdk.TaskParameterAbortDetachedQuery), expected)
@@ -499,13 +474,13 @@ func (t *TaskResourceParametersAssert) HasLockTimeoutLevel(expected sdk.Paramete
 	return t
 }
 
-func (t *TaskResourceParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.ParameterLevelSet(string(sdk.TaskParameterLogLevel), expected)
+func (t *TaskResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
+	t.ParameterLevelSet(string(sdk.TaskParameterLogEventLevel), expected)
 	return t
 }
 
-func (t *TaskResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.ParameterLevelSet(string(sdk.TaskParameterLogEventLevel), expected)
+func (t *TaskResourceParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
+	t.ParameterLevelSet(string(sdk.TaskParameterLogLevel), expected)
 	return t
 }
 
@@ -544,11 +519,6 @@ func (t *TaskResourceParametersAssert) HasS3StageVpceDnsNameLevel(expected sdk.P
 	return t
 }
 
-func (t *TaskResourceParametersAssert) HasSearchPathLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.ParameterLevelSet(string(sdk.TaskParameterSearchPath), expected)
-	return t
-}
-
 func (t *TaskResourceParametersAssert) HasServerlessTaskMaxStatementSizeLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
 	t.ParameterLevelSet(string(sdk.TaskParameterServerlessTaskMaxStatementSize), expected)
 	return t
@@ -571,6 +541,26 @@ func (t *TaskResourceParametersAssert) HasStatementTimeoutInSecondsLevel(expecte
 
 func (t *TaskResourceParametersAssert) HasStrictJsonOutputLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
 	t.ParameterLevelSet(string(sdk.TaskParameterStrictJsonOutput), expected)
+	return t
+}
+
+func (t *TaskResourceParametersAssert) HasSuspendTaskAfterNumFailuresLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
+	t.ParameterLevelSet(string(sdk.TaskParameterSuspendTaskAfterNumFailures), expected)
+	return t
+}
+
+func (t *TaskResourceParametersAssert) HasTaskAutoRetryAttemptsLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
+	t.ParameterLevelSet(string(sdk.TaskParameterTaskAutoRetryAttempts), expected)
+	return t
+}
+
+func (t *TaskResourceParametersAssert) HasTimeInputFormatLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
+	t.ParameterLevelSet(string(sdk.TaskParameterTimeInputFormat), expected)
+	return t
+}
+
+func (t *TaskResourceParametersAssert) HasTimeOutputFormatLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
+	t.ParameterLevelSet(string(sdk.TaskParameterTimeOutputFormat), expected)
 	return t
 }
 
@@ -614,16 +604,6 @@ func (t *TaskResourceParametersAssert) HasTimezoneLevel(expected sdk.ParameterTy
 	return t
 }
 
-func (t *TaskResourceParametersAssert) HasTimeInputFormatLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.ParameterLevelSet(string(sdk.TaskParameterTimeInputFormat), expected)
-	return t
-}
-
-func (t *TaskResourceParametersAssert) HasTimeOutputFormatLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.ParameterLevelSet(string(sdk.TaskParameterTimeOutputFormat), expected)
-	return t
-}
-
 func (t *TaskResourceParametersAssert) HasTraceLevelLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
 	t.ParameterLevelSet(string(sdk.TaskParameterTraceLevel), expected)
 	return t
@@ -654,6 +634,21 @@ func (t *TaskResourceParametersAssert) HasUseCachedResultLevel(expected sdk.Para
 	return t
 }
 
+func (t *TaskResourceParametersAssert) HasUserTaskManagedInitialWarehouseSizeLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
+	t.ParameterLevelSet(string(sdk.TaskParameterUserTaskManagedInitialWarehouseSize), expected)
+	return t
+}
+
+func (t *TaskResourceParametersAssert) HasUserTaskMinimumTriggerIntervalInSecondsLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
+	t.ParameterLevelSet(string(sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds), expected)
+	return t
+}
+
+func (t *TaskResourceParametersAssert) HasUserTaskTimeoutMsLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
+	t.ParameterLevelSet(string(sdk.TaskParameterUserTaskTimeoutMs), expected)
+	return t
+}
+
 func (t *TaskResourceParametersAssert) HasWeekOfYearPolicyLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
 	t.ParameterLevelSet(string(sdk.TaskParameterWeekOfYearPolicy), expected)
 	return t
@@ -661,5 +656,10 @@ func (t *TaskResourceParametersAssert) HasWeekOfYearPolicyLevel(expected sdk.Par
 
 func (t *TaskResourceParametersAssert) HasWeekStartLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
 	t.ParameterLevelSet(string(sdk.TaskParameterWeekStart), expected)
+	return t
+}
+
+func (t *TaskResourceParametersAssert) HasSearchPathLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
+	t.ParameterLevelSet(string(sdk.TaskParameterSearchPath), expected)
 	return t
 }
