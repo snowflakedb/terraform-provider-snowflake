@@ -59,7 +59,7 @@ resource "snowflake_openflow_deployment_snowflake_managed" "complete" {
 
 - `comment` (String) Specifies a comment for the Openflow deployment.
 - `display_name` (String) A free-text alias for the deployment. Shown in the Openflow UI in place of the deployment's identifier when set.
-- `event_table` (String) Fully qualified name of an event table the deployment logs to. For more information, check [EVENT_TABLE documentation](https://docs.snowflake.com/en/sql-reference/parameters#event-table).
+- `event_table` (String) Specifies the name of the event table for logging messages from stored procedures and UDFs contained by the object with which the event table is associated. Associating an event table with a database is available in [Enterprise Edition or higher](https://docs.snowflake.com/en/user-guide/intro-editions). For more information, check [EVENT_TABLE docs](https://docs.snowflake.com/en/sql-reference/parameters#event-table).
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only

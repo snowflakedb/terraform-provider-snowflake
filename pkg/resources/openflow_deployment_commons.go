@@ -27,11 +27,6 @@ const (
 	openflowDeploymentUpdateTimeout = 30 * time.Minute
 	// openflowDeploymentDeleteTimeout covers TERMINATE tearing infrastructure down, then DROP.
 	openflowDeploymentDeleteTimeout = 30 * time.Minute
-
-	// openflowDeploymentEventTableAttribute is not part of SHOW or DESCRIBE output; it is a
-	// deployment-level parameter read back through SHOW PARAMETERS.
-	openflowDeploymentEventTableAttribute = "event_table"
-	openflowDeploymentEventTableParameter = "EVENT_TABLE"
 )
 
 var openflowDeploymentTimeouts = &schema.ResourceTimeout{
@@ -55,13 +50,6 @@ func openflowDeploymentCommonSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "A free-text alias for the deployment. Shown in the Openflow UI in place of the deployment's identifier when set.",
-		},
-		openflowDeploymentEventTableAttribute: {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Computed:         true,
-			Description:      "Fully qualified name of an event table the deployment logs to. For more information, check [EVENT_TABLE documentation](https://docs.snowflake.com/en/sql-reference/parameters#event-table).",
-			DiffSuppressFunc: suppressIdentifierQuoting,
 		},
 		"comment": {
 			Type:        schema.TypeString,
@@ -109,8 +97,8 @@ func createOpenflowDeploymentCommonFields(d *schema.ResourceData, request *sdk.C
 	); err != nil {
 		return err
 	}
-	if diags := handleOpenflowDeploymentParameterCreate(d, request); diags.HasError() {
-		return fmt.Errorf("%s", diags[0].Summary)
+	if diags := handleOpenflowDeploymentParametersCreate(d, request); diags.HasError() {
+		return errorFromDiagnostics(diags)
 	}
 	return nil
 }
@@ -163,7 +151,11 @@ func readOpenflowDeploymentFunc(
 			return diag.FromErr(err)
 		}
 
-		parameters, err := client.OpenflowDeployments.ShowParameters(ctx, id)
+		rawParameters, err := client.OpenflowDeployments.ShowParameters(ctx, id)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("reading parameters of openflow deployment %s: %w", id.Name(), err))
+		}
+		parameters, err := sdk.ToOpenflowDeploymentParametersDetails(rawParameters)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("reading parameters of openflow deployment %s: %w", id.Name(), err))
 		}
@@ -188,8 +180,8 @@ func readOpenflowDeploymentFunc(
 			}
 		}
 
-		if err = handleOpenflowDeploymentParameterRead(d, parameters); err != nil {
-			return diag.FromErr(err)
+		if diags := handleOpenflowDeploymentParameterRead(d, parameters); diags.HasError() {
+			return diags
 		}
 
 		if err = setStateToValuesFromConfig(d, resourceSchema, []string{
@@ -204,7 +196,7 @@ func readOpenflowDeploymentFunc(
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.OpenflowDeploymentDetailsToSchema(deploymentDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set("type", string(deployment.Type)),
-			d.Set(ParametersAttributeName, []map[string]any{schemas.OpenflowDeploymentParametersToSchema(parameters, meta.(*provider.Context))}),
+			d.Set(ParametersAttributeName, []map[string]any{schemas.OpenflowDeploymentParametersToSchema(rawParameters, meta.(*provider.Context))}),
 			setTypeSpecificFields(d, deployment),
 		)
 		if errs != nil {
@@ -237,8 +229,8 @@ func updateOpenflowDeploymentCommonFields(ctx context.Context, client *sdk.Clien
 	); err != nil {
 		return err
 	}
-	if diags := handleOpenflowDeploymentParameterUpdate(d, set, unset); diags.HasError() {
-		return fmt.Errorf("%s", diags[0].Summary)
+	if diags := handleOpenflowDeploymentParametersChanges(d, set, unset); diags.HasError() {
+		return errorFromDiagnostics(diags)
 	}
 
 	if (*set != sdk.OpenflowDeploymentSetRequest{}) {
@@ -301,4 +293,14 @@ func deleteOpenflowDeployment(ctx context.Context, d *schema.ResourceData, meta 
 
 	d.SetId("")
 	return nil
+}
+
+func errorFromDiagnostics(diags diag.Diagnostics) error {
+	errs := make([]error, 0, len(diags))
+	for _, diagnostic := range diags {
+		if diagnostic.Severity == diag.Error {
+			errs = append(errs, errors.New(diagnostic.Summary))
+		}
+	}
+	return errors.Join(errs...)
 }

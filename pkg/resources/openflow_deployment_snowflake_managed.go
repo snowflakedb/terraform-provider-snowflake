@@ -3,8 +3,10 @@ package resources
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -17,6 +19,11 @@ import (
 // openflowDeploymentSnowflakeManagedSchema is the common deployment schema with no additions: a
 // Snowflake-managed deployment takes none of the BYOC networking options, which is the main reason the two
 // types are separate resources.
+//
+// This must stay the base schema only (not merged with openflowDeploymentParametersSchema): that map is
+// populated by an init() in another file, which runs after package-level var initializers, so merging it
+// here at var-init time would silently copy it while still empty. The merge happens in
+// OpenflowDeploymentSnowflakeManaged's Schema field instead, which runs after all init()s.
 var openflowDeploymentSnowflakeManagedSchema = openflowDeploymentCommonSchema()
 
 func OpenflowDeploymentSnowflakeManaged() *schema.Resource {
@@ -37,11 +44,11 @@ func OpenflowDeploymentSnowflakeManaged() *schema.Resource {
 			ComputedIfAnyAttributeChanged(openflowDeploymentSnowflakeManagedSchema, ShowOutputAttributeName, "name", "display_name", "comment"),
 			ComputedIfAnyAttributeChanged(openflowDeploymentSnowflakeManagedSchema, DescribeOutputAttributeName, "name", "display_name", "comment"),
 			ComputedIfAnyAttributeChanged(openflowDeploymentSnowflakeManagedSchema, FullyQualifiedNameAttributeName, "name"),
-			ComputedIfAnyAttributeChanged(openflowDeploymentSnowflakeManagedSchema, ParametersAttributeName, openflowDeploymentEventTableAttribute),
+			ComputedIfAnyAttributeChanged(openflowDeploymentParametersSchema, ParametersAttributeName, strings.ToLower(string(sdk.OpenflowDeploymentParameterEventTable))),
 			openflowDeploymentParametersCustomDiff,
 		)),
 
-		Schema: openflowDeploymentSnowflakeManagedSchema,
+		Schema: collections.MergeMaps(openflowDeploymentSnowflakeManagedSchema, openflowDeploymentParametersSchema),
 		Importer: &schema.ResourceImporter{
 			StateContext: TrackingImportWrapper(resources.OpenflowDeploymentSnowflakeManaged, ImportOpenflowDeploymentSnowflakeManaged),
 		},
@@ -66,14 +73,16 @@ func ImportOpenflowDeploymentSnowflakeManaged(ctx context.Context, d *schema.Res
 			"; import it as snowflake_openflow_deployment_byoc instead")
 	}
 
-	parameters, err := client.OpenflowDeployments.ShowParameters(ctx, id)
+	parameters, err := client.OpenflowDeployments.ShowParametersDetails(ctx, id)
 	if err != nil {
 		return nil, err
+	}
+	if diags := handleOpenflowDeploymentParameterRead(d, parameters); diags.HasError() {
+		return nil, errorFromDiagnostics(diags)
 	}
 
 	if errs := errors.Join(
 		d.Set("name", deployment.Name),
-		handleOpenflowDeploymentParameterRead(d, parameters),
 		importOpenflowDeploymentOptionals(d, deployment),
 	); errs != nil {
 		return nil, errs

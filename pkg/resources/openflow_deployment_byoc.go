@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -78,11 +79,11 @@ func OpenflowDeploymentByoc() *schema.Resource {
 			ComputedIfAnyAttributeChanged(openflowDeploymentByocSchema, ShowOutputAttributeName, "name", "display_name", "comment"),
 			ComputedIfAnyAttributeChanged(openflowDeploymentByocSchema, DescribeOutputAttributeName, "name", "display_name", "comment"),
 			ComputedIfAnyAttributeChanged(openflowDeploymentByocSchema, FullyQualifiedNameAttributeName, "name"),
-			ComputedIfAnyAttributeChanged(openflowDeploymentByocSchema, ParametersAttributeName, openflowDeploymentEventTableAttribute),
+			ComputedIfAnyAttributeChanged(openflowDeploymentParametersSchema, ParametersAttributeName, strings.ToLower(string(sdk.OpenflowDeploymentParameterEventTable))),
 			openflowDeploymentParametersCustomDiff,
 		)),
 
-		Schema: openflowDeploymentByocSchema,
+		Schema: collections.MergeMaps(openflowDeploymentByocSchema, openflowDeploymentParametersSchema),
 		Importer: &schema.ResourceImporter{
 			StateContext: TrackingImportWrapper(resources.OpenflowDeploymentByoc, ImportOpenflowDeploymentByoc),
 		},
@@ -107,14 +108,16 @@ func ImportOpenflowDeploymentByoc(ctx context.Context, d *schema.ResourceData, m
 			"; import it as snowflake_openflow_deployment_snowflake_managed instead")
 	}
 
-	parameters, err := client.OpenflowDeployments.ShowParameters(ctx, id)
+	parameters, err := client.OpenflowDeployments.ShowParametersDetails(ctx, id)
 	if err != nil {
 		return nil, err
+	}
+	if diags := handleOpenflowDeploymentParameterRead(d, parameters); diags.HasError() {
+		return nil, errorFromDiagnostics(diags)
 	}
 
 	errs := errors.Join(
 		d.Set("name", deployment.Name),
-		handleOpenflowDeploymentParameterRead(d, parameters),
 		importOpenflowDeploymentOptionals(d, deployment),
 		d.Set("custom_ingress_hostname", deployment.CustomIngressHostname),
 		d.Set("use_private_link", BooleanDefault),

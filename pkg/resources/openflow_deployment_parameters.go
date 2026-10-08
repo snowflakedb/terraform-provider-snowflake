@@ -2,30 +2,29 @@ package resources
 
 import (
 	"context"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func openflowDeploymentParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) ([]*sdk.Parameter, error) {
-	return parametersProvider(ctx, d, meta.(*provider.Context), openflowDeploymentParametersProviderFunc, sdk.ParseAccountObjectIdentifier)
+var openflowDeploymentParametersSchema = make(map[string]*schema.Schema)
+
+func init() {
+	for _, p := range defs.ParameterDefsForLevel(parameterdefs.ParameterLevelOpenflowDeployment) {
+		openflowDeploymentParametersSchema[p.FieldName()] = parameterSchema(p)
+	}
 }
 
-func openflowDeploymentParametersProviderFunc(c *sdk.Client) showParametersFunc[sdk.AccountObjectIdentifier] {
-	return c.OpenflowDeployments.ShowParameters
-}
-
-var openflowDeploymentParametersCustomDiff = ParametersCustomDiff(
-	openflowDeploymentParametersProvider,
-	parameter[sdk.OpenflowDeploymentParameter]{sdk.OpenflowDeploymentParameterEventTable, valueTypeString, sdk.ParameterTypeOpenflowDeployment},
-)
-
-func handleOpenflowDeploymentParameterCreate(d *schema.ResourceData, request *sdk.CreateOpenflowDeploymentRequest) diag.Diagnostics {
+// handleOpenflowDeploymentParametersCreate builds the EventTable request wrapper by hand because
+// WithParameters' identifier case can only emit `EVENT_TABLE = <id>`, with no way to express the NONE
+// alternative that openflowDeploymentEventTableDef() supports.
+func handleOpenflowDeploymentParametersCreate(d *schema.ResourceData, request *sdk.CreateOpenflowDeploymentRequest) diag.Diagnostics {
 	eventTable := sdk.NewOpenflowDeploymentEventTableRequest()
-	if diags := handleParameterCreateWithMapping(d, sdk.OpenflowDeploymentParameterEventTable, &eventTable.EventTable, sdk.ParseSchemaObjectIdentifier); diags.HasError() {
+	if diags := handleParameterCreateWithMapping(d, defs.EventTable.FieldName(), &eventTable.EventTable, sdk.ParseSchemaObjectIdentifier); diags.HasError() {
 		return diags
 	}
 	if eventTable.EventTable != nil {
@@ -34,9 +33,9 @@ func handleOpenflowDeploymentParameterCreate(d *schema.ResourceData, request *sd
 	return nil
 }
 
-func handleOpenflowDeploymentParameterUpdate(d *schema.ResourceData, set *sdk.OpenflowDeploymentSetRequest, unset *sdk.OpenflowDeploymentUnsetRequest) diag.Diagnostics {
+func handleOpenflowDeploymentParametersChanges(d *schema.ResourceData, set *sdk.OpenflowDeploymentSetRequest, unset *sdk.OpenflowDeploymentUnsetRequest) diag.Diagnostics {
 	eventTable := sdk.NewOpenflowDeploymentEventTableRequest()
-	if diags := handleParameterUpdateWithMapping(d, sdk.OpenflowDeploymentParameterEventTable, &eventTable.EventTable, &unset.EventTable, sdk.ParseSchemaObjectIdentifier); diags.HasError() {
+	if diags := handleParameterUpdateWithMapping(d, defs.EventTable.FieldName(), &eventTable.EventTable, &unset.EventTable, sdk.ParseSchemaObjectIdentifier); diags.HasError() {
 		return diags
 	}
 	if eventTable.EventTable != nil {
@@ -45,13 +44,25 @@ func handleOpenflowDeploymentParameterUpdate(d *schema.ResourceData, set *sdk.Op
 	return nil
 }
 
-func handleOpenflowDeploymentParameterRead(d *schema.ResourceData, parameters []*sdk.Parameter) error {
-	for _, p := range parameters {
-		if strings.ToUpper(p.Key) == string(sdk.OpenflowDeploymentParameterEventTable) {
-			if err := d.Set(strings.ToLower(p.Key), p.Value); err != nil {
-				return err
-			}
-		}
+func handleOpenflowDeploymentParameterRead(d *schema.ResourceData, parameters *sdk.OpenflowDeploymentParametersDetails) diag.Diagnostics {
+	return setResourceData(d, defs.EventTable.FieldName(), parameters.EventTable.Value.FullyQualifiedName())
+}
+
+var openflowDeploymentParametersCustomDiff = ParametersCustomDiffFromTypedParameters(
+	openflowDeploymentParametersProvider,
+	openflowDeploymentParameterDiffFunctions,
+)
+
+func openflowDeploymentParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) (*sdk.OpenflowDeploymentParametersDetails, error) {
+	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	return meta.(*provider.Context).Client.OpenflowDeployments.ShowParametersDetails(ctx, id)
+}
+
+func openflowDeploymentParameterDiffFunctions(parameters *sdk.OpenflowDeploymentParametersDetails) []schema.CustomizeDiffFunc {
+	return []schema.CustomizeDiffFunc{
+		IdentifierTypedParameterValueComputedIf(defs.EventTable.FieldName(), parameters.EventTable, sdk.ParameterTypeOpenflowDeployment),
+	}
 }
