@@ -3,7 +3,6 @@ package resources
 import (
 	"context"
 	"errors"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -11,10 +10,17 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+)
+
+var serviceParameterFieldNames = collections.Map(
+	defs.ParameterDefsForLevel(parameterdefs.ParameterLevelService),
+	func(p parameterdefs.ParameterDef) string { return p.FieldName() },
 )
 
 var serviceSchema = func() map[string]*schema.Schema {
@@ -90,7 +96,7 @@ func Service() *schema.Resource {
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Service, customdiff.All(
 			ComputedIfAnyAttributeChanged(serviceSchema, ShowOutputAttributeName, "auto_suspend_secs", "auto_resume", "min_instances", "max_instances", "min_ready_instances", "query_warehouse", "comment"),
 			ComputedIfAnyAttributeChanged(serviceSchema, DescribeOutputAttributeName, "auto_suspend_secs", "auto_resume", "min_instances", "max_instances", "min_ready_instances", "query_warehouse", "comment"),
-			ComputedIfAnyAttributeChanged(serviceParametersSchema, ParametersAttributeName, collections.Map(sdk.AsStringList(sdk.AllServiceParameters), strings.ToLower)...),
+			ComputedIfAnyAttributeChanged(serviceParametersSchema, ParametersAttributeName, serviceParameterFieldNames...),
 			serviceParametersCustomDiff,
 			RecreateWhenServiceTypeChangedExternally(sdk.ServiceTypeService),
 		)),
@@ -137,7 +143,7 @@ func CreateService(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 		return diag.FromErr(errs)
 	}
 	diags := JoinDiags(
-		handleParameterCreate(d, sdk.ServiceParameterServiceCallerTokenValiditySecs, &request.ServiceCallerTokenValiditySecs),
+		handleParameterCreate(d, defs.ServiceCallerTokenValiditySecs.FieldName(), &request.ServiceCallerTokenValiditySecs),
 	)
 	if len(diags) > 0 {
 		return diags

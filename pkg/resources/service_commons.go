@@ -246,8 +246,13 @@ func ReadServiceCommonFunc(withExternalChangesMarking bool, extraOutputMappingsF
 			return diag.FromErr(err)
 		}
 		var serviceParameters []*sdk.Parameter
+		var serviceParametersDetails *sdk.ServiceParametersDetails
 		if withParameters {
 			serviceParameters, err = client.Services.ShowParameters(ctx, id)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			serviceParametersDetails, err = sdk.ToServiceParametersDetails(serviceParameters)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -279,9 +284,11 @@ func ReadServiceCommonFunc(withExternalChangesMarking bool, extraOutputMappingsF
 			d.Set("service_type", service.Type()),
 		)
 		if withParameters {
+			if diags := handleServiceParameterRead(d, serviceParametersDetails); diags != nil {
+				return diags
+			}
 			errs = errors.Join(
 				errs,
-				handleServiceParameterRead(d, serviceParameters),
 				d.Set(ParametersAttributeName, []map[string]any{schemas.ServiceParametersToSchema(serviceParameters, providerCtx)}),
 			)
 		}

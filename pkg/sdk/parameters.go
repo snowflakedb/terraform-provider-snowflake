@@ -1227,10 +1227,6 @@ const (
 	ServiceParameterServiceCallerTokenValiditySecs ServiceParameter = "SERVICE_CALLER_TOKEN_VALIDITY_SECS"
 )
 
-var AllServiceParameters = []ServiceParameter{
-	ServiceParameterServiceCallerTokenValiditySecs,
-}
-
 type IcebergTableParameter string
 
 const (
