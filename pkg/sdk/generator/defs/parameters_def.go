@@ -648,7 +648,7 @@ var (
 		SqlName:      "MAX_CONCURRENCY_LEVEL",
 		Kind:         g.KindInt,
 		Levels:       onWarehouse,
-		Description:  "Specifies the concurrency level for SQL statements (that is, queries and DML) executed by a warehouse ([more details](https://docs.snowflake.com/en/sql-reference/parameters#max-concurrency-level)).",
+		Description:  "Specifies the concurrency level for SQL statements (that is, queries and DML) executed by a warehouse.",
 		DefaultValue: "8",
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}

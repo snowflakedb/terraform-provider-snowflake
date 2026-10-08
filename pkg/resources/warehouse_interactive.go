@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -101,35 +102,6 @@ var warehouseInteractiveSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Specifies the type for the interactive warehouse. This field is used for checking external changes and recreating the resource if needed.",
 	},
-	strings.ToLower(string(sdk.WarehouseParameterFallbackWarehouse)): {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Computed:         true,
-		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-		Description:      relatedResourceDescription("Specifies the name of the fallback warehouse for the interactive warehouse.", resources.Warehouse),
-	},
-	strings.ToLower(string(sdk.WarehouseParameterMaxConcurrencyLevel)): {
-		Type:             schema.TypeInt,
-		Optional:         true,
-		Computed:         true,
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
-		Description:      "Object parameter that specifies the concurrency level for SQL statements (i.e. queries and DML) executed by an interactive warehouse.",
-	},
-	strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)): {
-		Type:             schema.TypeInt,
-		Optional:         true,
-		Computed:         true,
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
-		Description:      "Object parameter that specifies the time, in seconds, a SQL statement (query, DDL, DML, etc.) can be queued on an interactive warehouse before it is canceled by the system.",
-	},
-	strings.ToLower(string(sdk.WarehouseParameterStatementTimeoutInSeconds)): {
-		Type:             schema.TypeInt,
-		Optional:         true,
-		Computed:         true,
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(0, 604800)),
-		Description:      "Specifies the time, in seconds, after which a running SQL statement (query, DDL, DML, etc.) is canceled by the system.",
-	},
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,
 		Computed:    true,
@@ -164,7 +136,7 @@ func WarehouseInteractive() *schema.Resource {
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.WarehouseInteractiveResource), TrackingDeleteWrapper(resources.WarehouseInteractive, deleteFunc)),
 		Description:   "Resource used to manage interactive warehouse objects. Interactive warehouses are optimized for low-latency, high-concurrency queries against a defined set of tables. For more information, check [interactive warehouse documentation](https://docs.snowflake.com/en/user-guide/warehouses-interactive).",
 
-		Schema: warehouseInteractiveSchema,
+		Schema: collections.MergeMaps(warehouseInteractiveSchema, warehouseInteractiveParametersSchema),
 		Importer: &schema.ResourceImporter{
 			StateContext: TrackingImportWrapper(resources.WarehouseInteractive, ImportWarehouseInteractive),
 		},
@@ -172,11 +144,11 @@ func WarehouseInteractive() *schema.Resource {
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.WarehouseInteractive, customdiff.All(
 			ComputedIfAnyAttributeChanged(warehouseInteractiveSchema, ShowOutputAttributeName, "name", "warehouse_size", "max_cluster_count", "min_cluster_count", "auto_suspend", "auto_resume", "resource_monitor", "comment", "tables"),
 			ComputedIfAnyAttributeChanged(
-				warehouseInteractiveSchema, ParametersAttributeName,
-				strings.ToLower(string(sdk.WarehouseParameterFallbackWarehouse)),
-				strings.ToLower(string(sdk.WarehouseParameterMaxConcurrencyLevel)),
-				strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)),
-				strings.ToLower(string(sdk.WarehouseParameterStatementTimeoutInSeconds)),
+				warehouseInteractiveParametersSchema, ParametersAttributeName,
+				strings.ToLower(string(sdk.ObjectParameterMaxConcurrencyLevel)),
+				strings.ToLower(string(sdk.ObjectParameterStatementQueuedTimeoutInSeconds)),
+				strings.ToLower(string(sdk.ObjectParameterStatementTimeoutInSeconds)),
+				"fallback_warehouse",
 			),
 			ComputedIfAnyAttributeChanged(warehouseInteractiveSchema, FullyQualifiedNameAttributeName, "name"),
 			// A resize between two concrete sizes is applied in place via suspend/alter/resume (see
@@ -186,13 +158,7 @@ func WarehouseInteractive() *schema.Resource {
 			customdiff.ForceNewIfChange("warehouse_size", func(ctx context.Context, old, new, meta any) bool {
 				return old.(string) != "" && new.(string) == ""
 			}),
-			ParametersCustomDiff(
-				warehouseParametersProvider,
-				parameter[sdk.WarehouseParameter]{sdk.WarehouseParameterMaxConcurrencyLevel, valueTypeInt, sdk.ParameterTypeWarehouse},
-				parameter[sdk.WarehouseParameter]{sdk.WarehouseParameterStatementQueuedTimeoutInSeconds, valueTypeInt, sdk.ParameterTypeWarehouse},
-				parameter[sdk.WarehouseParameter]{sdk.WarehouseParameterStatementTimeoutInSeconds, valueTypeInt, sdk.ParameterTypeWarehouse},
-				parameter[sdk.WarehouseParameter]{sdk.WarehouseParameterFallbackWarehouse, valueTypeString, sdk.ParameterTypeWarehouse},
-			),
+			warehouseInteractiveParametersCustomDiff,
 			HandleWarehouseExternalTypeChange(sdk.WarehouseTypeInteractive),
 		)),
 		Timeouts: defaultTimeouts,
@@ -211,19 +177,6 @@ func parseTablesSet(raw *schema.Set) ([]sdk.SchemaObjectIdentifier, error) {
 		tables = append(tables, id)
 	}
 	return tables, nil
-}
-
-// fallbackWarehouseFromParameters returns the FALLBACK_WAREHOUSE value from SHOW PARAMETERS output.
-// Its value is an account-object identifier (the fallback warehouse name), or empty when unset. It is
-// read here rather than in the shared handleWarehouseParameterRead because it applies to interactive
-// warehouses only.
-func fallbackWarehouseFromParameters(parameters []*sdk.Parameter) string {
-	for _, parameter := range parameters {
-		if parameter.Key == string(sdk.WarehouseParameterFallbackWarehouse) {
-			return parameter.Value
-		}
-	}
-	return ""
 }
 
 func ImportWarehouseInteractive(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
@@ -285,7 +238,6 @@ func CreateWarehouseInteractive(ctx context.Context, d *schema.ResourceData, met
 	errs := errors.Join(
 		boolAttributeCreateBuilder(d, "initially_suspended", req.WithInitiallySuspended),
 		accountObjectIdentifierAttributeCreateBuilder(d, "resource_monitor", req.WithResourceMonitor),
-		accountObjectIdentifierAttributeCreateBuilder(d, "fallback_warehouse", req.WithFallbackWarehouse),
 		attributeMappedValueCreateBuilder(d, "warehouse_size", req.WithWarehouseSize, sdk.ToWarehouseSize),
 		intAttributeCreateBuilder(d, "max_cluster_count", req.WithMaxClusterCount),
 		intAttributeCreateBuilder(d, "min_cluster_count", req.WithMinClusterCount),
@@ -297,14 +249,8 @@ func CreateWarehouseInteractive(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(errs)
 	}
 
-	if v := GetConfigPropertyAsPointerAllowingZeroValue[int](d, "max_concurrency_level"); v != nil {
-		req.WithMaxConcurrencyLevel(*v)
-	}
-	if v := GetConfigPropertyAsPointerAllowingZeroValue[int](d, "statement_queued_timeout_in_seconds"); v != nil {
-		req.WithStatementQueuedTimeoutInSeconds(*v)
-	}
-	if v := GetConfigPropertyAsPointerAllowingZeroValue[int](d, "statement_timeout_in_seconds"); v != nil {
-		req.WithStatementTimeoutInSeconds(*v)
+	if diags := handleWarehouseInteractiveParametersCreate(d, req); diags != nil {
+		return diags
 	}
 
 	if err := client.Warehouses.CreateInteractivePreservingSession(ctx, req); err != nil {
@@ -343,6 +289,10 @@ func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) schema.ReadCo
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		warehouseParametersDetails, err := sdk.ToWarehouseParametersDetails(warehouseParameters)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
 		// Snowflake reports interactive warehouses through the type column (type = INTERACTIVE)
 		effectiveType := string(sdk.WarehouseTypeStandard)
@@ -354,8 +304,6 @@ func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) schema.ReadCo
 		for i, table := range w.Tables {
 			tables[i] = table.FullyQualifiedName()
 		}
-
-		fallbackWarehouse := fallbackWarehouseFromParameters(warehouseParameters)
 
 		if withExternalChangesMarking {
 			sizeVal, sizeStr := optionalStringOutputMapping(w.Size)
@@ -380,7 +328,6 @@ func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) schema.ReadCo
 			d.Set("name", w.Name),
 			d.Set("comment", w.Comment),
 			d.Set("warehouse_type", effectiveType),
-			d.Set("fallback_warehouse", fallbackWarehouse),
 			d.Set("tables", tables),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseInteractiveToSchema(w.AsInteractive())}),
@@ -390,7 +337,7 @@ func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) schema.ReadCo
 			return diag.FromErr(errs)
 		}
 
-		if diags := handleWarehouseParameterRead(d, warehouseParameters); diags != nil {
+		if diags := handleWarehouseInteractiveParameterRead(d, warehouseParametersDetails); diags != nil {
 			return diags
 		}
 
@@ -459,16 +406,11 @@ func UpdateWarehouseInteractive(ctx context.Context, d *schema.ResourceData, met
 		booleanStringAttributeUpdate(d, "auto_resume", &set.AutoResume, &unset.AutoResume),
 		accountObjectIdentifierAttributeUpdate(d, "resource_monitor", &set.ResourceMonitor, &unset.ResourceMonitor),
 		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
-		accountObjectIdentifierAttributeUpdate(d, "fallback_warehouse", &set.FallbackWarehouse, &unset.FallbackWarehouse),
 	); err != nil {
 		return diag.FromErr(err)
 	}
 
-	if diags := JoinDiags(
-		handleParameterUpdate(d, sdk.WarehouseParameterMaxConcurrencyLevel, &set.MaxConcurrencyLevel, &unset.MaxConcurrencyLevel),
-		handleParameterUpdate(d, sdk.WarehouseParameterStatementQueuedTimeoutInSeconds, &set.StatementQueuedTimeoutInSeconds, &unset.StatementQueuedTimeoutInSeconds),
-		handleParameterUpdate(d, sdk.WarehouseParameterStatementTimeoutInSeconds, &set.StatementTimeoutInSeconds, &unset.StatementTimeoutInSeconds),
-	); diags != nil {
+	if diags := handleWarehouseInteractiveParametersChanges(d, set, unset); diags != nil {
 		return diags
 	}
 

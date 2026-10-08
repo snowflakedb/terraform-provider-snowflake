@@ -68,23 +68,28 @@ func (w *WarehouseInteractiveParametersAssert) HasDefaultParameterValueOnLevel(p
 // - have an expected level
 func (w *WarehouseInteractiveParametersAssert) HasAllDefaults() *WarehouseInteractiveParametersAssert {
 	return w.
+		HasDefaultParameterValueOnLevel(sdk.WarehouseParameterFallbackWarehouse, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.WarehouseParameterMaxConcurrencyLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.WarehouseParameterStatementTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.WarehouseParameterFallbackWarehouse, sdk.ParameterTypeSnowflakeDefault)
+		HasDefaultParameterValueOnLevel(sdk.WarehouseParameterStatementTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault)
 }
 
 func (w *WarehouseInteractiveParametersAssert) HasAllDefaultsExplicit() *WarehouseInteractiveParametersAssert {
 	return w.
+		HasDefaultFallbackWarehouseValueExplicit().
 		HasDefaultMaxConcurrencyLevelValueExplicit().
 		HasDefaultStatementQueuedTimeoutInSecondsValueExplicit().
-		HasDefaultStatementTimeoutInSecondsValueExplicit().
-		HasDefaultFallbackWarehouseValueExplicit()
+		HasDefaultStatementTimeoutInSecondsValueExplicit()
 }
 
 ////////////////////////////
 // Parameter value checks //
 ////////////////////////////
+
+func (w *WarehouseInteractiveParametersAssert) HasFallbackWarehouse(expected string) *WarehouseInteractiveParametersAssert {
+	w.AddAssertion(assert.SnowflakeParameterValueSet(sdk.WarehouseParameterFallbackWarehouse, expected))
+	return w
+}
 
 func (w *WarehouseInteractiveParametersAssert) HasMaxConcurrencyLevel(expected int) *WarehouseInteractiveParametersAssert {
 	w.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.WarehouseParameterMaxConcurrencyLevel, expected))
@@ -101,14 +106,14 @@ func (w *WarehouseInteractiveParametersAssert) HasStatementTimeoutInSeconds(expe
 	return w
 }
 
-func (w *WarehouseInteractiveParametersAssert) HasFallbackWarehouse(expected string) *WarehouseInteractiveParametersAssert {
-	w.AddAssertion(assert.SnowflakeParameterValueSet(sdk.WarehouseParameterFallbackWarehouse, expected))
-	return w
-}
-
 ////////////////////////////
 // Parameter level checks //
 ////////////////////////////
+
+func (w *WarehouseInteractiveParametersAssert) HasFallbackWarehouseLevel(expected sdk.ParameterType) *WarehouseInteractiveParametersAssert {
+	w.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.WarehouseParameterFallbackWarehouse, expected))
+	return w
+}
 
 func (w *WarehouseInteractiveParametersAssert) HasMaxConcurrencyLevelLevel(expected sdk.ParameterType) *WarehouseInteractiveParametersAssert {
 	w.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.WarehouseParameterMaxConcurrencyLevel, expected))
@@ -125,14 +130,13 @@ func (w *WarehouseInteractiveParametersAssert) HasStatementTimeoutInSecondsLevel
 	return w
 }
 
-func (w *WarehouseInteractiveParametersAssert) HasFallbackWarehouseLevel(expected sdk.ParameterType) *WarehouseInteractiveParametersAssert {
-	w.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.WarehouseParameterFallbackWarehouse, expected))
-	return w
-}
-
 ////////////////////////////////////
 // Parameter default value checks //
 ////////////////////////////////////
+
+func (w *WarehouseInteractiveParametersAssert) HasDefaultFallbackWarehouseValue() *WarehouseInteractiveParametersAssert {
+	return w.HasDefaultParameterValue(sdk.WarehouseParameterFallbackWarehouse)
+}
 
 func (w *WarehouseInteractiveParametersAssert) HasDefaultMaxConcurrencyLevelValue() *WarehouseInteractiveParametersAssert {
 	return w.HasDefaultParameterValue(sdk.WarehouseParameterMaxConcurrencyLevel)
@@ -146,13 +150,13 @@ func (w *WarehouseInteractiveParametersAssert) HasDefaultStatementTimeoutInSecon
 	return w.HasDefaultParameterValue(sdk.WarehouseParameterStatementTimeoutInSeconds)
 }
 
-func (w *WarehouseInteractiveParametersAssert) HasDefaultFallbackWarehouseValue() *WarehouseInteractiveParametersAssert {
-	return w.HasDefaultParameterValue(sdk.WarehouseParameterFallbackWarehouse)
-}
-
 /////////////////////////////////////////////
 // Parameter explicit default value checks //
 /////////////////////////////////////////////
+
+func (w *WarehouseInteractiveParametersAssert) HasDefaultFallbackWarehouseValueExplicit() *WarehouseInteractiveParametersAssert {
+	return w.HasFallbackWarehouse("")
+}
 
 func (w *WarehouseInteractiveParametersAssert) HasDefaultMaxConcurrencyLevelValueExplicit() *WarehouseInteractiveParametersAssert {
 	return w.HasMaxConcurrencyLevel(8)
@@ -164,8 +168,4 @@ func (w *WarehouseInteractiveParametersAssert) HasDefaultStatementQueuedTimeoutI
 
 func (w *WarehouseInteractiveParametersAssert) HasDefaultStatementTimeoutInSecondsValueExplicit() *WarehouseInteractiveParametersAssert {
 	return w.HasStatementTimeoutInSeconds(172800)
-}
-
-func (w *WarehouseInteractiveParametersAssert) HasDefaultFallbackWarehouseValueExplicit() *WarehouseInteractiveParametersAssert {
-	return w.HasFallbackWarehouse("")
 }

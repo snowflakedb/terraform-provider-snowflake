@@ -103,14 +103,10 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		},
 	},
 	{
-		Name:   "Warehouse",
-		IdType: "sdk.AccountObjectIdentifier",
-		Level:  sdk.ParameterTypeWarehouse,
-		Parameters: []SnowflakeParameter{
-			{ParameterName: string(sdk.WarehouseParameterMaxConcurrencyLevel), ParameterType: "int", DefaultValue: "8", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
-			{ParameterName: string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds), ParameterType: "int", DefaultValue: "0", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
-			{ParameterName: string(sdk.WarehouseParameterStatementTimeoutInSeconds), ParameterType: "int", DefaultValue: "172800", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
-		},
+		Name:       "Warehouse",
+		IdType:     "sdk.AccountObjectIdentifier",
+		Level:      sdk.ParameterTypeWarehouse,
+		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouse)),
 	},
 	{
 		Name:                    "WarehouseAdaptive",
@@ -118,10 +114,7 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		Level:                   sdk.ParameterTypeWarehouse,
 		ParameterConstantPrefix: "Warehouse",
 		ObjectTypeName:          "Warehouse",
-		Parameters: []SnowflakeParameter{
-			{ParameterName: string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds), ParameterType: "int", DefaultValue: "0", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
-			{ParameterName: string(sdk.WarehouseParameterStatementTimeoutInSeconds), ParameterType: "int", DefaultValue: "172800", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
-		},
+		Parameters:              snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouseAdaptive)),
 	},
 	{
 		Name:                    "WarehouseInteractive",
@@ -129,12 +122,7 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		Level:                   sdk.ParameterTypeWarehouse,
 		ParameterConstantPrefix: "Warehouse",
 		ObjectTypeName:          "Warehouse",
-		Parameters: []SnowflakeParameter{
-			{ParameterName: string(sdk.WarehouseParameterMaxConcurrencyLevel), ParameterType: "int", DefaultValue: "8", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
-			{ParameterName: string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds), ParameterType: "int", DefaultValue: "0", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
-			{ParameterName: string(sdk.WarehouseParameterStatementTimeoutInSeconds), ParameterType: "int", DefaultValue: "172800", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
-			{ParameterName: string(sdk.WarehouseParameterFallbackWarehouse), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
-		},
+		Parameters:              snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouseInteractive)),
 	},
 	{
 		Name:       "Database",

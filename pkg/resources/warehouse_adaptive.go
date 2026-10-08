@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
@@ -56,20 +56,6 @@ var warehouseAdaptiveSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("resource_monitor")),
 		Description:      relatedResourceDescription("Specifies the name of a resource monitor that is explicitly assigned to the adaptive warehouse.", resources.ResourceMonitor),
 	},
-	strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)): {
-		Type:             schema.TypeInt,
-		Optional:         true,
-		Computed:         true,
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
-		Description:      "Object parameter that specifies the time, in seconds, a SQL statement (query, DDL, DML, etc.) can be queued on a warehouse before it is canceled by the system.",
-	},
-	strings.ToLower(string(sdk.WarehouseParameterStatementTimeoutInSeconds)): {
-		Type:             schema.TypeInt,
-		Optional:         true,
-		Computed:         true,
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(0, 604800)),
-		Description:      "Specifies the time, in seconds, after which a running SQL statement (query, DDL, DML, etc.) is canceled by the system.",
-	},
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,
 		Computed:    true,
@@ -104,7 +90,7 @@ func WarehouseAdaptive() *schema.Resource {
 		DeleteContext: TrackingDeleteWrapper(resources.WarehouseAdaptive, deleteFunc),
 		Description:   "Resource used to manage adaptive warehouse objects. Adaptive Compute is a compute service focused on delivering strong performance with effortless operations. It replaces the fixed compute of the Standard Warehouse with a workload-aware one that adapts to your queries automatically. The system decides how to allocate resources for the best performance, eliminating the need for infrastructure tuning.",
 
-		Schema: warehouseAdaptiveSchema,
+		Schema: collections.MergeMaps(warehouseAdaptiveSchema, warehouseAdaptiveParametersSchema),
 		Importer: &schema.ResourceImporter{
 			StateContext: TrackingImportWrapper(resources.WarehouseAdaptive, ImportWarehouseAdaptive),
 		},
@@ -112,16 +98,12 @@ func WarehouseAdaptive() *schema.Resource {
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.WarehouseAdaptive, customdiff.All(
 			ComputedIfAnyAttributeChanged(warehouseAdaptiveSchema, ShowOutputAttributeName, "name", "comment", "max_query_performance_level", "query_throughput_multiplier", "resource_monitor"),
 			ComputedIfAnyAttributeChanged(
-				warehouseAdaptiveSchema, ParametersAttributeName,
-				strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)),
-				strings.ToLower(string(sdk.WarehouseParameterStatementTimeoutInSeconds)),
+				warehouseAdaptiveParametersSchema, ParametersAttributeName,
+				strings.ToLower(string(sdk.ObjectParameterStatementQueuedTimeoutInSeconds)),
+				strings.ToLower(string(sdk.ObjectParameterStatementTimeoutInSeconds)),
 			),
 			ComputedIfAnyAttributeChanged(warehouseAdaptiveSchema, FullyQualifiedNameAttributeName, "name"),
-			ParametersCustomDiff(
-				warehouseParametersProvider,
-				parameter[sdk.AccountParameter]{sdk.AccountParameterStatementQueuedTimeoutInSeconds, valueTypeInt, sdk.ParameterTypeWarehouse},
-				parameter[sdk.AccountParameter]{sdk.AccountParameterStatementTimeoutInSeconds, valueTypeInt, sdk.ParameterTypeWarehouse},
-			),
+			warehouseAdaptiveParametersCustomDiff,
 			HandleWarehouseExternalTypeChange(sdk.WarehouseTypeAdaptive),
 		)),
 		Timeouts: defaultTimeouts,
@@ -185,8 +167,9 @@ func CreateWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta a
 		return diag.FromErr(errs)
 	}
 
-	opts.StatementQueuedTimeoutInSeconds = GetConfigPropertyAsPointerAllowingZeroValue[int](d, "statement_queued_timeout_in_seconds")
-	opts.StatementTimeoutInSeconds = GetConfigPropertyAsPointerAllowingZeroValue[int](d, "statement_timeout_in_seconds")
+	if diags := handleWarehouseAdaptiveParametersCreate(d, opts); diags != nil {
+		return diags
+	}
 
 	if err := client.Warehouses.CreateAdaptive(ctx, opts); err != nil {
 		return diag.FromErr(fmt.Errorf("error creating adaptive warehouse %s: %w", id.FullyQualifiedName(), err))
@@ -223,6 +206,10 @@ func ReadWarehouseAdaptiveFunc(withExternalChangesMarking bool) schema.ReadConte
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		warehouseParametersDetails, err := sdk.ToWarehouseParametersDetails(warehouseParameters)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
 		if withExternalChangesMarking {
 			var maxQueryPerformanceLevel string
@@ -253,19 +240,8 @@ func ReadWarehouseAdaptiveFunc(withExternalChangesMarking bool) schema.ReadConte
 			return diag.FromErr(errs)
 		}
 
-		for _, parameter := range warehouseParameters {
-			switch parameter.Key {
-			case
-				string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds),
-				string(sdk.WarehouseParameterStatementTimeoutInSeconds):
-				value, err := strconv.Atoi(parameter.Value)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				if err := d.Set(strings.ToLower(parameter.Key), value); err != nil {
-					return diag.FromErr(err)
-				}
-			}
+		if diags := handleWarehouseAdaptiveParameterRead(d, warehouseParametersDetails); diags != nil {
+			return diags
 		}
 
 		return nil
@@ -304,10 +280,7 @@ func UpdateWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta a
 		return diag.FromErr(err)
 	}
 
-	if diags := JoinDiags(
-		handleParameterUpdate(d, sdk.WarehouseParameterStatementQueuedTimeoutInSeconds, &set.StatementQueuedTimeoutInSeconds, &unset.StatementQueuedTimeoutInSeconds),
-		handleParameterUpdate(d, sdk.WarehouseParameterStatementTimeoutInSeconds, &set.StatementTimeoutInSeconds, &unset.StatementTimeoutInSeconds),
-	); diags != nil {
+	if diags := handleWarehouseAdaptiveParametersChanges(d, set, unset); diags != nil {
 		return diags
 	}
 

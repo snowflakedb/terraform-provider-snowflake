@@ -62,6 +62,12 @@ func withIntAtLeast(minimum int) parameterSchemaModifier {
 	}
 }
 
+func withIntBetween(minimum, maximum int) parameterSchemaModifier {
+	return func(s *schema.Schema) {
+		s.ValidateDiagFunc = validation.ToDiagFunc(validation.IntBetween(minimum, maximum))
+	}
+}
+
 func withFloatValidation() parameterSchemaModifier {
 	return func(s *schema.Schema) {
 		s.ValidateDiagFunc = sdkValidation(sdk.ToFloat64)
@@ -106,6 +112,7 @@ func buildParameterSchemaModifiers() map[string][]parameterSchemaModifier {
 	register(withIntAtLeast(1),
 		defs.ClientMemoryLimit,
 		defs.ClientPrefetchThreads,
+		defs.MaxConcurrencyLevel,
 	)
 	register(withIntAtLeast(16), defs.ClientResultChunkSize)
 	register(withIntAtLeast(900), defs.ClientSessionKeepAliveHeartbeatFrequency)

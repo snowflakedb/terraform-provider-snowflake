@@ -50,6 +50,11 @@ func WarehousesDatasourceParametersOnIdx(t *testing.T, name string, idx int) *Wa
 // Parameter value checks //
 ////////////////////////////
 
+func (w *WarehouseInteractiveResourceParametersAssert) HasFallbackWarehouse(expected string) *WarehouseInteractiveResourceParametersAssert {
+	w.ParameterValueSet(string(sdk.WarehouseParameterFallbackWarehouse), expected)
+	return w
+}
+
 func (w *WarehouseInteractiveResourceParametersAssert) HasMaxConcurrencyLevel(expected int) *WarehouseInteractiveResourceParametersAssert {
 	w.ParameterIntValueSet(string(sdk.WarehouseParameterMaxConcurrencyLevel), expected)
 	return w
@@ -65,14 +70,14 @@ func (w *WarehouseInteractiveResourceParametersAssert) HasStatementTimeoutInSeco
 	return w
 }
 
-func (w *WarehouseInteractiveResourceParametersAssert) HasFallbackWarehouse(expected string) *WarehouseInteractiveResourceParametersAssert {
-	w.ParameterValueSet(string(sdk.WarehouseParameterFallbackWarehouse), expected)
-	return w
-}
-
 ////////////////////////////
 // Parameter level checks //
 ////////////////////////////
+
+func (w *WarehouseInteractiveResourceParametersAssert) HasFallbackWarehouseLevel(expected sdk.ParameterType) *WarehouseInteractiveResourceParametersAssert {
+	w.ParameterLevelSet(string(sdk.WarehouseParameterFallbackWarehouse), expected)
+	return w
+}
 
 func (w *WarehouseInteractiveResourceParametersAssert) HasMaxConcurrencyLevelLevel(expected sdk.ParameterType) *WarehouseInteractiveResourceParametersAssert {
 	w.ParameterLevelSet(string(sdk.WarehouseParameterMaxConcurrencyLevel), expected)
@@ -86,10 +91,5 @@ func (w *WarehouseInteractiveResourceParametersAssert) HasStatementQueuedTimeout
 
 func (w *WarehouseInteractiveResourceParametersAssert) HasStatementTimeoutInSecondsLevel(expected sdk.ParameterType) *WarehouseInteractiveResourceParametersAssert {
 	w.ParameterLevelSet(string(sdk.WarehouseParameterStatementTimeoutInSeconds), expected)
-	return w
-}
-
-func (w *WarehouseInteractiveResourceParametersAssert) HasFallbackWarehouseLevel(expected sdk.ParameterType) *WarehouseInteractiveResourceParametersAssert {
-	w.ParameterLevelSet(string(sdk.WarehouseParameterFallbackWarehouse), expected)
 	return w
 }

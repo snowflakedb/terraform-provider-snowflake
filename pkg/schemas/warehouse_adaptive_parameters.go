@@ -1,31 +1,33 @@
 package schemas
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// ShowWarehouseAdaptiveParametersSchema contains all Snowflake parameters for the adaptive warehouses.
-// TODO [SNOW-1473425]: descriptions (take from .Description; tool to validate changes later)
-// TODO [SNOW-1473425]: should be generated later based on sdk.WarehouseParameters
-var ShowWarehouseAdaptiveParametersSchema = map[string]*schema.Schema{
-	"statement_queued_timeout_in_seconds": ParameterListSchema,
-	"statement_timeout_in_seconds":        ParameterListSchema,
+var (
+	ShowWarehouseAdaptiveParametersSchema = make(map[string]*schema.Schema)
+	warehouseAdaptiveParameters           = defs.ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouseAdaptive)
+)
+
+func init() {
+	for _, def := range warehouseAdaptiveParameters {
+		ShowWarehouseAdaptiveParametersSchema[def.FieldName()] = ParameterListSchema
+	}
 }
 
-// TODO [SNOW-1473425]: validate all present?
 func WarehouseAdaptiveParametersToSchema(parameters []*sdk.Parameter, providerCtx *provider.Context) map[string]any {
-	warehouseParameters := make(map[string]any)
-	for _, param := range parameters {
-		parameterSchema := ParameterToSchemaReducedOutput(param, providerCtx)
-		switch key := strings.ToUpper(param.Key); key {
-		case string(sdk.ObjectParameterStatementQueuedTimeoutInSeconds),
-			string(sdk.ObjectParameterStatementTimeoutInSeconds):
-			warehouseParameters[strings.ToLower(key)] = []map[string]any{parameterSchema}
+	warehouseParametersValue := make(map[string]any)
+	for _, parameter := range parameters {
+		if slices.ContainsFunc(warehouseAdaptiveParameters, func(def parameterdefs.ParameterDef) bool { return def.SqlName == parameter.Key }) {
+			warehouseParametersValue[strings.ToLower(parameter.Key)] = []map[string]any{ParameterToSchemaReducedOutput(parameter, providerCtx)}
 		}
 	}
-	return warehouseParameters
+	return warehouseParametersValue
 }

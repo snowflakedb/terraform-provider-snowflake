@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -133,27 +133,6 @@ var warehouseSchema = map[string]*schema.Schema{
 			"Gen2 warehouses are not available in all regions. Please consult the [Snowflake Gen2 Region Availability documentation](https://docs.snowflake.com/en/user-guide/warehouses-gen2#region-availability) prior to configuration."),
 		ConflictsWith: []string{"resource_constraint"},
 	},
-	strings.ToLower(string(sdk.WarehouseParameterMaxConcurrencyLevel)): {
-		Type:             schema.TypeInt,
-		Optional:         true,
-		Computed:         true,
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
-		Description:      "Object parameter that specifies the concurrency level for SQL statements (i.e. queries and DML) executed by a warehouse.",
-	},
-	strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)): {
-		Type:             schema.TypeInt,
-		Optional:         true,
-		Computed:         true,
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
-		Description:      "Object parameter that specifies the time, in seconds, a SQL statement (query, DDL, DML, etc.) can be queued on a warehouse before it is canceled by the system.",
-	},
-	strings.ToLower(string(sdk.WarehouseParameterStatementTimeoutInSeconds)): {
-		Type:             schema.TypeInt,
-		Optional:         true,
-		Computed:         true,
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(0, 604800)),
-		Description:      "Specifies the time, in seconds, after which a running SQL statement (query, DDL, DML, etc.) is canceled by the system",
-	},
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,
 		Computed:    true,
@@ -171,42 +150,6 @@ var warehouseSchema = map[string]*schema.Schema{
 		},
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-}
-
-func warehouseParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) ([]*sdk.Parameter, error) {
-	return parametersProvider(ctx, d, meta.(*provider.Context), warehouseParametersProviderFunc, sdk.ParseAccountObjectIdentifier)
-}
-
-func warehouseParametersProviderFunc(c *sdk.Client) showParametersFunc[sdk.AccountObjectIdentifier] {
-	return c.Warehouses.ShowParameters
-}
-
-func handleWarehouseParametersChanges(d *schema.ResourceData, set *sdk.WarehouseSetRequest, unset *sdk.WarehouseUnsetRequest) diag.Diagnostics {
-	return JoinDiags(
-		handleParameterUpdate(d, sdk.WarehouseParameterMaxConcurrencyLevel, &set.MaxConcurrencyLevel, &unset.MaxConcurrencyLevel),
-		handleParameterUpdate(d, sdk.WarehouseParameterStatementQueuedTimeoutInSeconds, &set.StatementQueuedTimeoutInSeconds, &unset.StatementQueuedTimeoutInSeconds),
-		handleParameterUpdate(d, sdk.WarehouseParameterStatementTimeoutInSeconds, &set.StatementTimeoutInSeconds, &unset.StatementTimeoutInSeconds),
-	)
-}
-
-func handleWarehouseParameterRead(d *schema.ResourceData, warehouseParameters []*sdk.Parameter) diag.Diagnostics {
-	for _, parameter := range warehouseParameters {
-		switch parameter.Key {
-		case
-			string(sdk.WarehouseParameterMaxConcurrencyLevel),
-			string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds),
-			string(sdk.WarehouseParameterStatementTimeoutInSeconds):
-			value, err := strconv.Atoi(parameter.Value)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			if err := d.Set(strings.ToLower(parameter.Key), value); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-	}
-
-	return nil
 }
 
 func Warehouse() *schema.Resource {
@@ -237,7 +180,7 @@ func Warehouse() *schema.Resource {
 		DeleteContext: TrackingDeleteWrapper(resources.Warehouse, deleteFunc),
 		Description:   "Resource used to manage warehouse objects. For more information, check [warehouse documentation](https://docs.snowflake.com/en/sql-reference/commands-warehouse).",
 
-		Schema: warehouseSchema,
+		Schema: collections.MergeMaps(warehouseSchema, warehouseParametersSchema),
 		Importer: &schema.ResourceImporter{
 			StateContext: TrackingImportWrapper(resources.Warehouse, ImportWarehouse),
 		},
@@ -245,19 +188,14 @@ func Warehouse() *schema.Resource {
 		CustomizeDiff: TrackingCustomDiffWrapper(
 			resources.Warehouse, customdiff.All(
 				ComputedIfAnyAttributeChanged(warehouseSchema, ShowOutputAttributeName, "name", "warehouse_type", "warehouse_size", "max_cluster_count", "min_cluster_count", "scaling_policy", "auto_suspend", "auto_resume", "resource_monitor", "comment", "enable_query_acceleration", "query_acceleration_max_scale_factor", "resource_constraint", "generation"),
-				ComputedIfAnyAttributeChanged(warehouseSchema, ParametersAttributeName, strings.ToLower(string(sdk.ObjectParameterMaxConcurrencyLevel)), strings.ToLower(string(sdk.ObjectParameterStatementQueuedTimeoutInSeconds)), strings.ToLower(string(sdk.ObjectParameterStatementTimeoutInSeconds))),
+				ComputedIfAnyAttributeChanged(warehouseParametersSchema, ParametersAttributeName, strings.ToLower(string(sdk.ObjectParameterMaxConcurrencyLevel)), strings.ToLower(string(sdk.ObjectParameterStatementQueuedTimeoutInSeconds)), strings.ToLower(string(sdk.ObjectParameterStatementTimeoutInSeconds))),
 				ComputedIfAnyAttributeChanged(warehouseSchema, FullyQualifiedNameAttributeName, "name"),
 
 				customdiff.ForceNewIfChange("warehouse_size", func(ctx context.Context, old, new, meta any) bool {
 					return old.(string) != "" && new.(string) == ""
 				}),
 				forceNewIfChangedToInteractive(),
-				ParametersCustomDiff(
-					warehouseParametersProvider,
-					parameter[sdk.AccountParameter]{sdk.AccountParameterMaxConcurrencyLevel, valueTypeInt, sdk.ParameterTypeWarehouse},
-					parameter[sdk.AccountParameter]{sdk.AccountParameterStatementQueuedTimeoutInSeconds, valueTypeInt, sdk.ParameterTypeWarehouse},
-					parameter[sdk.AccountParameter]{sdk.AccountParameterStatementTimeoutInSeconds, valueTypeInt, sdk.ParameterTypeWarehouse},
-				),
+				warehouseParametersCustomDiff,
 			),
 		),
 
@@ -401,14 +339,8 @@ func CreateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 		}
 		request.WithGeneration(generation)
 	}
-	if v := GetConfigPropertyAsPointerAllowingZeroValue[int](d, "max_concurrency_level"); v != nil {
-		request.WithMaxConcurrencyLevel(*v)
-	}
-	if v := GetConfigPropertyAsPointerAllowingZeroValue[int](d, "statement_queued_timeout_in_seconds"); v != nil {
-		request.WithStatementQueuedTimeoutInSeconds(*v)
-	}
-	if v := GetConfigPropertyAsPointerAllowingZeroValue[int](d, "statement_timeout_in_seconds"); v != nil {
-		request.WithStatementTimeoutInSeconds(*v)
+	if diags := handleWarehouseParametersCreate(d, request); diags != nil {
+		return diags
 	}
 
 	err := client.Warehouses.Create(ctx, request)
@@ -450,6 +382,10 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 		}
 
 		warehouseParameters, err := client.Warehouses.ShowParameters(ctx, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		warehouseParametersDetails, err := sdk.ToWarehouseParametersDetails(warehouseParameters)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -513,7 +449,7 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			return diag.FromErr(err)
 		}
 
-		if diags := handleWarehouseParameterRead(d, warehouseParameters); diags != nil {
+		if diags := handleWarehouseParameterRead(d, warehouseParametersDetails); diags != nil {
 			return diags
 		}
 
