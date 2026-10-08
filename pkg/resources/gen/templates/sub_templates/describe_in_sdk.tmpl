@@ -8,7 +8,7 @@
 			return diag.FromErr(err)
 		}
 {{- else }}
-		// Describe is best-effort: log + skip Set, do not fail Read. Uses parsed id.
-		{{ .Prefix }}Details, describeErr := {{ .Prefix }}DescribeInSdkExt(ctx, meta, id)
+		// Describe is best-effort: log + skip Set, do not fail Read. {{ if .DescribeUsesShowId }}Uses SHOW object's id.{{ else }}Uses parsed id.{{ end }}
+		{{ .Prefix }}Details, describeErr := {{ .Prefix }}DescribeInSdkExt(ctx, meta, {{ if .DescribeUsesShowId }}{{ .Prefix }}.ID(){{ else }}id{{ end }})
 {{- end }}
 {{ end -}}

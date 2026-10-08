@@ -214,7 +214,7 @@ generate-show-output-schemas-check: generate-show-output-schemas ## Check that g
 clean-show-output-schemas: ## Clean generated show output schemas
 	rm -f ./pkg/schemas/*_gen.go
 
-generate-resource: ## Generate resource lifecycle and schema skeletons
+generate-resource: ## Generate resource lifecycle, schema, and parameters skeletons
 	go generate ./pkg/resources/generate.go
 
 generate-resource-check: generate-resource ## Check that generated resource files are up-to-date

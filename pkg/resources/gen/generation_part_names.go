@@ -7,11 +7,13 @@ type generationPartName string
 func (g generationPartName) GenerationPartName() string { return string(g) }
 
 const (
-	PartDefault generationPartName = "default"
-	PartSchema  generationPartName = "schema"
+	PartDefault    generationPartName = "default"
+	PartSchema     generationPartName = "schema"
+	PartParameters generationPartName = "parameters"
 )
 
 var (
 	_ genhelpers.GenerationPartNamer = PartDefault
 	_ genhelpers.GenerationPartNamer = PartSchema
+	_ genhelpers.GenerationPartNamer = PartParameters
 )

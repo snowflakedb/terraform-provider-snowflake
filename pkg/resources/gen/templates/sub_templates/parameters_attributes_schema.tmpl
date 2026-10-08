@@ -1,0 +1,6 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
+{{- if .Hooks.ParametersAttributesSchema.Generate -}}
+{{ Unimplemented "ParametersAttributesSchema" }}
+{{- else if .Hooks.ParametersAttributesSchema.Present -}}
+	{{ .Prefix }}ParametersAttributesSchema,
+{{ end -}}

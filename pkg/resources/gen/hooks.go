@@ -34,6 +34,14 @@ type ResourceHooks struct {
 	FqnSchema                  Hook
 	ShowOutputSchema           Hook
 	DescribeOutputSchema       Hook
+	ApplyParametersCreate      Hook
+	ShowParametersInSdk        Hook
+	ParametersDetailsFromRaw   Hook
+	SetParametersFields        Hook
+	ParametersOutputSet        Hook
+	ApplyParametersChanges     Hook
+	ParametersAttributesSchema Hook
+	ParametersOutputSchema     Hook
 }
 
 type HookOption func(*ResourceHooks)
@@ -80,6 +88,14 @@ func defaultExtHooks(opts ...HookOption) ResourceHooks {
 		FqnSchema:                  extCall(),
 		ShowOutputSchema:           extCall(),
 		DescribeOutputSchema:       extCall(),
+		ApplyParametersCreate:      omitted(),
+		ShowParametersInSdk:        omitted(),
+		ParametersDetailsFromRaw:   omitted(),
+		SetParametersFields:        omitted(),
+		ParametersOutputSet:        omitted(),
+		ApplyParametersChanges:     omitted(),
+		ParametersAttributesSchema: omitted(),
+		ParametersOutputSchema:     omitted(),
 	}
 	for _, opt := range opts {
 		opt(&h)
@@ -197,4 +213,36 @@ func WithShowOutputSchema(h Hook) HookOption {
 
 func WithDescribeOutputSchema(h Hook) HookOption {
 	return func(hooks *ResourceHooks) { hooks.DescribeOutputSchema = h }
+}
+
+func WithApplyParametersCreate(h Hook) HookOption {
+	return func(hooks *ResourceHooks) { hooks.ApplyParametersCreate = h }
+}
+
+func WithShowParametersInSdk(h Hook) HookOption {
+	return func(hooks *ResourceHooks) { hooks.ShowParametersInSdk = h }
+}
+
+func WithParametersDetailsFromRaw(h Hook) HookOption {
+	return func(hooks *ResourceHooks) { hooks.ParametersDetailsFromRaw = h }
+}
+
+func WithSetParametersFields(h Hook) HookOption {
+	return func(hooks *ResourceHooks) { hooks.SetParametersFields = h }
+}
+
+func WithParametersOutputSet(h Hook) HookOption {
+	return func(hooks *ResourceHooks) { hooks.ParametersOutputSet = h }
+}
+
+func WithApplyParametersChanges(h Hook) HookOption {
+	return func(hooks *ResourceHooks) { hooks.ApplyParametersChanges = h }
+}
+
+func WithParametersAttributesSchema(h Hook) HookOption {
+	return func(hooks *ResourceHooks) { hooks.ParametersAttributesSchema = h }
+}
+
+func WithParametersOutputSchema(h Hook) HookOption {
+	return func(hooks *ResourceHooks) { hooks.ParametersOutputSchema = h }
 }

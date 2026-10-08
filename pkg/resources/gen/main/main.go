@@ -23,14 +23,15 @@ func main() {
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas").
 			WithImport("github.com/hashicorp/terraform-plugin-sdk/v2/diag").
-			WithImport("github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"),
+			WithNamedImport("tfschema", "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"),
 		gen.GetAllObjects,
 		gen.ModelFromInputObject,
 		lifecycleFilename,
 		[]*template.Template{genhelpers.PreambleTemplate, gen.LifecycleTemplate},
 	).
 		WithGenerationPart(gen.PartSchema, schemaFilename, []*template.Template{genhelpers.PreambleTemplate, gen.SchemaTemplate}).
-		WithDescription("Generate resource lifecycle and schema skeletons.").
+		WithOptionalGenerationPart(gen.PartParameters, parametersFilename, []*template.Template{genhelpers.PreambleTemplate, gen.ParametersTemplate}).
+		WithDescription("Generate resource lifecycle, schema, and parameters skeletons.").
 		WithMakefileCommandPart("resource").
 		RunAndHandleOsReturn()
 }
@@ -41,4 +42,8 @@ func lifecycleFilename(_ gen.ResourceDef, model gen.ResourceModel) string {
 
 func schemaFilename(_ gen.ResourceDef, model gen.ResourceModel) string {
 	return genhelpers.ToSnakeCase(model.Name) + "_schema_gen.go"
+}
+
+func parametersFilename(_ gen.ResourceDef, model gen.ResourceModel) string {
+	return genhelpers.ToSnakeCase(model.Name) + "_parameters_gen.go"
 }

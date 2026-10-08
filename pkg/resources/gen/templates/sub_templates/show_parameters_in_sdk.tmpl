@@ -1,0 +1,9 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
+{{- if .Hooks.ShowParametersInSdk.Generate -}}
+{{ Unimplemented "ShowParametersInSdk" }}
+{{- else if .Hooks.ShowParametersInSdk.Present -}}
+		raw{{ .Name }}Parameters, err := {{ .Prefix }}ShowParametersInSdkExt(ctx, meta, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+{{ end -}}

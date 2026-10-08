@@ -2,7 +2,7 @@
 {{- if .Hooks.FqnSchema.Generate -}}
 {{ Unimplemented "FqnSchema" }}
 {{- else if .Hooks.FqnSchema.Present -}}
-	map[string]*schema.Schema{
+	map[string]*tfschema.Schema{
 		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	},
 {{ end -}}

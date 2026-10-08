@@ -3,7 +3,9 @@
 var {{ .Prefix }}Schema = collections.MergeMaps(
 {{ template "identitySchema" . -}}
 {{ template "attributesSchema" . -}}
+{{ template "parametersAttributesSchema" . -}}
 {{ template "fqnSchema" . -}}
 {{ template "showOutputSchema" . -}}
-{{ template "describeOutputSchema" . }}
+{{ template "describeOutputSchema" . -}}
+{{ template "parametersOutputSchema" . }}
 )

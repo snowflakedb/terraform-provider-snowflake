@@ -5,6 +5,7 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genh
 type ResourceModel struct {
 	Name               string
 	DescribeFailRead   bool
+	DescribeUsesShowId bool
 	HasPartialOnUpdate bool
 	Hooks              ResourceHooks
 	*genhelpers.PreambleModel
@@ -18,6 +19,7 @@ func ModelFromInputObject(input ResourceDef, preamble *genhelpers.PreambleModel)
 	return ResourceModel{
 		Name:               input.name,
 		DescribeFailRead:   input.describeFailRead,
+		DescribeUsesShowId: input.describeUsesShowId,
 		HasPartialOnUpdate: input.hasPartialOnUpdate,
 		Hooks:              defaultExtHooks(input.hooks...),
 		PreambleModel:      preamble,

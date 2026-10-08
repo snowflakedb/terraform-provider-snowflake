@@ -1,12 +1,12 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
 
-func {{ .Name }}() *schema.Resource {
-	return &schema.Resource{
+func {{ .Name }}() *tfschema.Resource {
+	return &tfschema.Resource{
 {{ template "constructor" . }}
 	}
 }
 
-func Import{{ .Name }}(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
+func Import{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
 {{ template "parseId" . -}}
 	if err != nil {
 		return nil, err
@@ -18,10 +18,10 @@ func Import{{ .Name }}(ctx context.Context, d *schema.ResourceData, meta any) ([
 	}
 
 {{ template "setFieldsNotSetByRead" . -}}
-	return []*schema.ResourceData{d}, nil
+	return []*tfschema.ResourceData{d}, nil
 }
 
-func Create{{ .Name }}(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func Create{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
 {{ template "parseIdFromConfig" . -}}
 	if err != nil {
 		return diag.FromErr(err)
@@ -34,14 +34,15 @@ func Create{{ .Name }}(ctx context.Context, d *schema.ResourceData, meta any) di
 	}
 
 {{ template "applyCreateOptionals" . }}
+{{ template "applyParametersCreate" . }}
 {{ template "createInSdk" . }}
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
 	return Read{{ .Name }}Func(false)(ctx, d, meta)
 }
 
-func Read{{ .Name }}Func(withExternalChangesMarking bool) schema.ReadContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func Read{{ .Name }}Func(withExternalChangesMarking bool) tfschema.ReadContextFunc {
+	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
 {{ template "parseId" . -}}
 		if err != nil {
 			return diag.FromErr(err)
@@ -52,12 +53,16 @@ func Read{{ .Name }}Func(withExternalChangesMarking bool) schema.ReadContextFunc
 			return diags
 		}
 {{ template "describeInSdk" . -}}
+{{ template "showParametersInSdk" . -}}
+{{ template "parametersDetailsFromRaw" . -}}
+{{ template "setParametersFields" . -}}
 {{ template "handleExternalChanges" . }}
 {{ template "setStateToValuesFromConfig" . -}}
 		errs := errors.Join(
 {{ template "showOutputSet" . -}}
 {{ template "describeOutputSet" . -}}
 {{ template "setDescribeOutput" . -}}
+{{ template "parametersOutputSet" . -}}
 {{ template "fqnSet" . -}}
 {{ template "setConfigFields" . }}
 		)
@@ -68,7 +73,7 @@ func Read{{ .Name }}Func(withExternalChangesMarking bool) schema.ReadContextFunc
 	}
 }
 
-func Update{{ .Name }}(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func Update{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
 {{ template "parseId" . -}}
 	if err != nil {
 		return diag.FromErr(err)
@@ -76,6 +81,7 @@ func Update{{ .Name }}(ctx context.Context, d *schema.ResourceData, meta any) di
 {{ template "hierarchyRename" . -}}
 {{ template "beforeAlter" . -}}
 {{ template "applySetUnset" . -}}
+{{ template "applyParametersChanges" . -}}
 {{ template "alterSetInSdk" . -}}
 {{ template "alterUnsetInSdk" . -}}
 	return Read{{ .Name }}Func(false)(ctx, d, meta)

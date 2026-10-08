@@ -17,6 +17,10 @@ var (
 	schemaTemplateContent string
 	SchemaTemplate        *template.Template
 
+	//go:embed templates/parameters.tmpl
+	parametersTemplateContent string
+	ParametersTemplate        *template.Template
+
 	//go:embed templates/sub_templates/constructor.tmpl
 	constructorTemplateContent string
 
@@ -100,6 +104,30 @@ var (
 
 	//go:embed templates/sub_templates/describe_output_schema.tmpl
 	describeOutputSchemaTemplateContent string
+
+	//go:embed templates/sub_templates/apply_parameters_create.tmpl
+	applyParametersCreateTemplateContent string
+
+	//go:embed templates/sub_templates/show_parameters_in_sdk.tmpl
+	showParametersInSdkTemplateContent string
+
+	//go:embed templates/sub_templates/parameters_details_from_raw.tmpl
+	parametersDetailsFromRawTemplateContent string
+
+	//go:embed templates/sub_templates/set_parameters_fields.tmpl
+	setParametersFieldsTemplateContent string
+
+	//go:embed templates/sub_templates/parameters_output_set.tmpl
+	parametersOutputSetTemplateContent string
+
+	//go:embed templates/sub_templates/apply_parameters_changes.tmpl
+	applyParametersChangesTemplateContent string
+
+	//go:embed templates/sub_templates/parameters_attributes_schema.tmpl
+	parametersAttributesSchemaTemplateContent string
+
+	//go:embed templates/sub_templates/parameters_output_schema.tmpl
+	parametersOutputSchemaTemplateContent string
 )
 
 func init() {
@@ -134,6 +162,15 @@ func init() {
 	subTemplates, _ = subTemplates.New("fqnSchema").Parse(fqnSchemaTemplateContent)
 	subTemplates, _ = subTemplates.New("showOutputSchema").Parse(showOutputSchemaTemplateContent)
 	subTemplates, _ = subTemplates.New("describeOutputSchema").Parse(describeOutputSchemaTemplateContent)
+	subTemplates, _ = subTemplates.New("applyParametersCreate").Parse(applyParametersCreateTemplateContent)
+	subTemplates, _ = subTemplates.New("showParametersInSdk").Parse(showParametersInSdkTemplateContent)
+	subTemplates, _ = subTemplates.New("parametersDetailsFromRaw").Parse(parametersDetailsFromRawTemplateContent)
+	subTemplates, _ = subTemplates.New("setParametersFields").Parse(setParametersFieldsTemplateContent)
+	subTemplates, _ = subTemplates.New("parametersOutputSet").Parse(parametersOutputSetTemplateContent)
+	subTemplates, _ = subTemplates.New("applyParametersChanges").Parse(applyParametersChangesTemplateContent)
+	subTemplates, _ = subTemplates.New("parametersAttributesSchema").Parse(parametersAttributesSchemaTemplateContent)
+	subTemplates, _ = subTemplates.New("parametersOutputSchema").Parse(parametersOutputSchemaTemplateContent)
 	LifecycleTemplate, _ = subTemplates.New("lifecycleTemplate").Parse(lifecycleTemplateContent)
 	SchemaTemplate, _ = subTemplates.New("schemaTemplate").Parse(schemaTemplateContent)
+	ParametersTemplate, _ = subTemplates.New("parametersTemplate").Parse(parametersTemplateContent)
 }

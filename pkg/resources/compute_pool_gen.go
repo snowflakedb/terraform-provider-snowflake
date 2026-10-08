@@ -9,11 +9,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func ComputePool() *schema.Resource {
-	return &schema.Resource{
+func ComputePool() *tfschema.Resource {
+	return &tfschema.Resource{
 		Schema:      computePoolSchema,
 		Description: computePoolDescriptionExt,
 
@@ -28,7 +28,7 @@ func ComputePool() *schema.Resource {
 	}
 }
 
-func ImportComputePool(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
+func ImportComputePool(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
 	id, err := computePoolParseIdExt(d.Id())
 	if err != nil {
 		return nil, err
@@ -42,10 +42,10 @@ func ImportComputePool(ctx context.Context, d *schema.ResourceData, meta any) ([
 	if err := computePoolSetFieldsNotSetByReadExt(d, id, computePool); err != nil {
 		return nil, err
 	}
-	return []*schema.ResourceData{d}, nil
+	return []*tfschema.ResourceData{d}, nil
 }
 
-func CreateComputePool(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func CreateComputePool(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
 	id, err := computePoolParseIdFromConfigExt(d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -68,8 +68,8 @@ func CreateComputePool(ctx context.Context, d *schema.ResourceData, meta any) di
 	return ReadComputePoolFunc(false)(ctx, d, meta)
 }
 
-func ReadComputePoolFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func ReadComputePoolFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
+	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
 		id, err := computePoolParseIdExt(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
@@ -103,7 +103,7 @@ func ReadComputePoolFunc(withExternalChangesMarking bool) schema.ReadContextFunc
 	}
 }
 
-func UpdateComputePool(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func UpdateComputePool(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
 	id, err := computePoolParseIdExt(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
