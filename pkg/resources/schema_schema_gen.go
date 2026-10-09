@@ -8,6 +8,29 @@ import (
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+var schemaAttributesSchema = schemaAttributesModificationExt(map[string]*tfschema.Schema{
+	"with_managed_access": {
+		Type:             tfschema.TypeString,
+		Optional:         true,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Specifies a managed schema. Managed access schemas centralize privilege management with the schema owner."),
+		Default:          BooleanDefault,
+	},
+	"is_transient": {
+		Type:             tfschema.TypeString,
+		Optional:         true,
+		ForceNew:         true,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Specifies the schema as transient. Transient schemas do not have a Fail-safe period so they do not incur additional storage costs once they leave Time Travel; however, this means they are also not protected by Fail-safe in the event of a data loss."),
+		Default:          BooleanDefault,
+	},
+	"comment": {
+		Type:        tfschema.TypeString,
+		Optional:    true,
+		Description: "Specifies a comment for the schema.",
+	},
+})
+
 var schemaSchema = collections.MergeMaps(
 	map[string]*tfschema.Schema{
 		"name": {
@@ -23,7 +46,7 @@ var schemaSchema = collections.MergeMaps(
 			DiffSuppressFunc: suppressIdentifierQuoting,
 		},
 	},
-	schemaAttributesSchemaExt,
+	schemaAttributesSchema,
 	schemaParametersAttributesSchema,
 	map[string]*tfschema.Schema{
 		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,

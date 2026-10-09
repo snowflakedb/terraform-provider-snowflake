@@ -32,5 +32,8 @@ var (
 		defs.ParameterDefsForLevel(parameterdefs.ParameterLevelSchema),
 		func(p parameterdefs.ParameterDef) string { return p.FieldName() },
 	)
-	schemaParametersCustomDiff = schemaParametersCustomDiffExt
+	schemaParametersCustomDiff = ParametersCustomDiffFromTypedParameters(
+		schemaParametersProviderExt,
+		schemaParameterDiffFunctionsExt,
+	)
 )

@@ -34,5 +34,12 @@ var (
 {{- else if .Hooks.ParametersFieldNames.Present }}
 	{{ .Prefix }}ParametersFieldNames = {{ .Prefix }}ParametersFieldNamesExt
 {{- end }}
+{{- if .Hooks.ParametersCustomDiff.Generate }}
+	{{ .Prefix }}ParametersCustomDiff = ParametersCustomDiffFromTypedParameters(
+		{{ .Prefix }}ParametersProviderExt,
+		{{ .Prefix }}ParameterDiffFunctionsExt,
+	)
+{{- else if .Hooks.ParametersCustomDiff.Present }}
 	{{ .Prefix }}ParametersCustomDiff = {{ .Prefix }}ParametersCustomDiffExt
+{{- end }}
 )

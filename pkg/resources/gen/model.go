@@ -11,6 +11,8 @@ type ResourceModel struct {
 	IdType                              string
 	IdentityNameForceNew                bool
 	AdditionalIdentityNameDescription   string
+	Attributes                          []ResolvedAttribute
+	AttributesModification              bool
 	Hooks                               ResourceHooks
 	*genhelpers.PreambleModel
 }
@@ -29,6 +31,8 @@ func ModelFromInputObject(input ResourceDef, preamble *genhelpers.PreambleModel)
 		IdType:                              input.idType,
 		IdentityNameForceNew:                input.identityNameForceNew,
 		AdditionalIdentityNameDescription:   input.additionalIdentityNameDescription,
+		Attributes:                          applyAttributeRules(input.name, input.attributes),
+		AttributesModification:              input.attributesModification,
 		Hooks:                               defaultExtHooks(input.hooks...),
 		PreambleModel:                       preamble,
 	}

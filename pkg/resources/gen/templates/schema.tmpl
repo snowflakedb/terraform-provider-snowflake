@@ -1,5 +1,6 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
 
+{{ template "attributesSchemaDefinition" . -}}
 var {{ .Prefix }}Schema = collections.MergeMaps(
 {{ template "identitySchema" . -}}
 {{ template "attributesSchema" . -}}

@@ -10,15 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// =============================================================================
-// Schema maps
-// =============================================================================
-
-var schemaParametersCustomDiffExt = ParametersCustomDiffFromTypedParameters(
-	schemaParametersProviderExt,
-	schemaParameterDiffFunctionsExt,
-)
-
 func schemaParametersProviderExt(ctx context.Context, d ResourceIdProvider, meta any) (*sdk.SchemaParametersDetails, error) {
 	id, err := schemaParseIdExt(d.Id())
 	if err != nil {

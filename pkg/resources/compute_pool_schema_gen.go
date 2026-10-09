@@ -5,8 +5,76 @@ package resources
 import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
+
+var computePoolAttributesSchema = computePoolAttributesModificationExt(map[string]*tfschema.Schema{
+	"for_application": {
+		Type:             tfschema.TypeString,
+		Optional:         true,
+		ForceNew:         true,
+		DiffSuppressFunc: suppressIdentifierQuoting,
+		Description:      "Specifies the Snowflake Native App name.",
+	},
+	"min_nodes": {
+		Type:             tfschema.TypeInt,
+		Required:         true,
+		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+		Description:      "Specifies the minimum number of nodes for the compute pool.",
+	},
+	"max_nodes": {
+		Type:             tfschema.TypeInt,
+		Required:         true,
+		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+		Description:      "Specifies the maximum number of nodes for the compute pool.",
+	},
+	"instance_family": {
+		Type:             tfschema.TypeString,
+		Required:         true,
+		ForceNew:         true,
+		ValidateDiagFunc: sdkValidation(sdk.ToComputePoolInstanceFamily),
+		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToComputePoolInstanceFamily)),
+		Description:      "Identifies the type of machine you want to provision for the nodes in the compute pool. " + enumValuesDescription(sdk.AllComputePoolInstanceFamilies) + " Not all instance families are supported in all regions. Run `SHOW COMPUTE POOL INSTANCE FAMILIES` to see the list of supported instance families in your region.",
+	},
+	"backup_instance_families": {
+		Type:     tfschema.TypeList,
+		Optional: true,
+		Elem: &tfschema.Schema{
+			Type:             tfschema.TypeString,
+			ValidateDiagFunc: sdkValidation(sdk.ToComputePoolInstanceFamily),
+		},
+		DiffSuppressFunc: NormalizeAndCompare(sdk.ToComputePoolInstanceFamily),
+		Description:      "Specifies an ordered list of instance families to fall back on when the primary `instance_family` is unavailable. The order determines the fallback priority. " + enumValuesDescription(sdk.AllComputePoolInstanceFamilies),
+	},
+	"auto_resume": {
+		Type:             tfschema.TypeString,
+		Optional:         true,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Specifies whether to automatically resume a compute pool when a service or job is submitted to it."),
+		Default:          BooleanDefault,
+	},
+	"initially_suspended": {
+		Type:             tfschema.TypeString,
+		Optional:         true,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      "Specifies whether the compute pool is created initially in the suspended state. This field is used only when creating a compute pool. Changes on this field are ignored after creation.",
+		Default:          BooleanDefault,
+	},
+	"auto_suspend_secs": {
+		Type:             tfschema.TypeInt,
+		Optional:         true,
+		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
+		Description:      "Number of seconds of inactivity after which you want Snowflake to automatically suspend the compute pool.",
+		Default:          IntDefault,
+	},
+	"comment": {
+		Type:        tfschema.TypeString,
+		Optional:    true,
+		Description: "Specifies a comment for the compute pool.",
+	},
+})
 
 var computePoolSchema = collections.MergeMaps(
 	map[string]*tfschema.Schema{
@@ -18,7 +86,7 @@ var computePoolSchema = collections.MergeMaps(
 			DiffSuppressFunc: suppressIdentifierQuoting,
 		},
 	},
-	computePoolAttributesSchemaExt,
+	computePoolAttributesSchema,
 	map[string]*tfschema.Schema{
 		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	},

@@ -97,6 +97,9 @@ var (
 	//go:embed templates/sub_templates/attributes_schema.tmpl
 	attributesSchemaTemplateContent string
 
+	//go:embed templates/sub_templates/attributes_schema_definition.tmpl
+	attributesSchemaDefinitionTemplateContent string
+
 	//go:embed templates/sub_templates/fqn_schema.tmpl
 	fqnSchemaTemplateContent string
 
@@ -162,6 +165,7 @@ func init() {
 	subTemplates, _ = subTemplates.New("showByIdInSdk").Parse(showByIdInSdkTemplateContent)
 	subTemplates, _ = subTemplates.New("identitySchema").Parse(identitySchemaTemplateContent)
 	subTemplates, _ = subTemplates.New("attributesSchema").Parse(attributesSchemaTemplateContent)
+	subTemplates, _ = subTemplates.New("attributesSchemaDefinition").Parse(attributesSchemaDefinitionTemplateContent)
 	subTemplates, _ = subTemplates.New("fqnSchema").Parse(fqnSchemaTemplateContent)
 	subTemplates, _ = subTemplates.New("showOutputSchema").Parse(showOutputSchemaTemplateContent)
 	subTemplates, _ = subTemplates.New("describeOutputSchema").Parse(describeOutputSchemaTemplateContent)
