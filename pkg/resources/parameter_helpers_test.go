@@ -76,8 +76,8 @@ func TestHandleDatabaseParameterRead(t *testing.T) {
 }
 
 func TestHandleSchemaParameterRead(t *testing.T) {
-	state := make(map[string]any, len(schemaParametersAttributesSchemaExt))
-	for key, s := range schemaParametersAttributesSchemaExt {
+	state := make(map[string]any, len(schemaParametersAttributesSchema))
+	for key, s := range schemaParametersAttributesSchema {
 		switch s.Type {
 		case schema.TypeInt:
 			state[key] = 0
@@ -87,7 +87,7 @@ func TestHandleSchemaParameterRead(t *testing.T) {
 			state[key] = ""
 		}
 	}
-	d := schema.TestResourceDataRaw(t, schemaParametersAttributesSchemaExt, state)
+	d := schema.TestResourceDataRaw(t, schemaParametersAttributesSchema, state)
 
 	diags := schemaSetParametersFieldsExt(d, &sdk.SchemaParametersDetails{
 		ExternalVolume:          sdk.TypedParameter[sdk.AccountObjectIdentifier]{Value: sdk.NewAccountObjectIdentifier("external_volume")},

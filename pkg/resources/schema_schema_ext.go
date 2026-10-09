@@ -3,25 +3,9 @@ package resources
 import (
 	"slices"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
-
-var schemaIdentitySchemaExt = map[string]*schema.Schema{
-	"name": {
-		Type:             schema.TypeString,
-		Required:         true,
-		Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the schema; must be unique for the database in which the schema is created. When the name is `PUBLIC`, during creation the provider checks if this schema has already been created and, in such case, `ALTER` is used to match the desired state."),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
-	"database": {
-		Type:             schema.TypeString,
-		Required:         true,
-		Description:      blocklistedCharactersFieldDescription("The database in which to create the schema."),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
-}
 
 var schemaAttributesSchemaExt = map[string]*schema.Schema{
 	"with_managed_access": {
@@ -49,27 +33,5 @@ var schemaAttributesSchemaExt = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
 		Description: "Specifies a comment for the schema.",
-	},
-}
-
-var schemaShowOutputSchemaExt = map[string]*schema.Schema{
-	ShowOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `SHOW SCHEMA` for the given object.",
-		Elem: &schema.Resource{
-			Schema: schemas.ShowSchemaSchema,
-		},
-	},
-}
-
-var schemaDescribeOutputSchemaExt = map[string]*schema.Schema{
-	DescribeOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `DESCRIBE SCHEMA` for the given object. In order to handle this output, one must grant sufficient privileges, e.g. [grant_ownership](./grant_ownership) on all objects in the schema.",
-		Elem: &schema.Resource{
-			Schema: schemas.DescribeSchemaDetailsSchema,
-		},
 	},
 }

@@ -42,6 +42,7 @@ type ResourceHooks struct {
 	ApplyParametersChanges     Hook
 	ParametersAttributesSchema Hook
 	ParametersOutputSchema     Hook
+	ParametersFieldNames       Hook
 }
 
 type HookOption func(*ResourceHooks)
@@ -83,11 +84,11 @@ func defaultExtHooks(opts ...HookOption) ResourceHooks {
 		SetFieldsNotSetByRead:      extCall(),
 		ShowByIdInSdk:              extCall(),
 		SchemaVersion:              omitted(),
-		IdentitySchema:             extCall(),
+		IdentitySchema:             generated(),
 		AttributesSchema:           extCall(),
-		FqnSchema:                  extCall(),
-		ShowOutputSchema:           extCall(),
-		DescribeOutputSchema:       extCall(),
+		FqnSchema:                  generated(),
+		ShowOutputSchema:           generated(),
+		DescribeOutputSchema:       generated(),
 		ApplyParametersCreate:      omitted(),
 		ShowParametersInSdk:        omitted(),
 		ParametersDetailsFromRaw:   omitted(),
@@ -96,6 +97,7 @@ func defaultExtHooks(opts ...HookOption) ResourceHooks {
 		ApplyParametersChanges:     omitted(),
 		ParametersAttributesSchema: omitted(),
 		ParametersOutputSchema:     omitted(),
+		ParametersFieldNames:       omitted(),
 	}
 	for _, opt := range opts {
 		opt(&h)
@@ -245,4 +247,8 @@ func WithParametersAttributesSchema(h Hook) HookOption {
 
 func WithParametersOutputSchema(h Hook) HookOption {
 	return func(hooks *ResourceHooks) { hooks.ParametersOutputSchema = h }
+}
+
+func WithParametersFieldNames(h Hook) HookOption {
+	return func(hooks *ResourceHooks) { hooks.ParametersFieldNames = h }
 }

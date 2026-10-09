@@ -1,6 +1,38 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
 {{- if .Hooks.IdentitySchema.Generate -}}
-{{ Unimplemented "IdentitySchema" }}
-{{- else if .Hooks.IdentitySchema.Present -}}
+	map[string]*tfschema.Schema{
+		"name": {
+			Type:     tfschema.TypeString,
+			Required: true,
+{{- if .IdentityNameForceNew }}
+			ForceNew: true,
+{{- end }}
+			Description: blocklistedCharactersFieldDescription("Specifies the identifier for the {{ CamelToWords .Name }}; must be unique for the {{ if eq .IdType "AccountObjectIdentifier" -}}
+account
+{{- else if eq .IdType "DatabaseObjectIdentifier" -}}
+database in which the {{ CamelToWords .Name }} is created
+{{- else if eq .IdType "SchemaObjectIdentifier" -}}
+schema in which the {{ CamelToWords .Name }} is created
+{{- end }}.{{ if .AdditionalIdentityNameDescription }} {{ .AdditionalIdentityNameDescription }}{{ end }}"),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+		},
+{{- if or (eq .IdType "DatabaseObjectIdentifier") (eq .IdType "SchemaObjectIdentifier") }}
+		"database": {
+			Type:             tfschema.TypeString,
+			Required:         true,
+			Description:      blocklistedCharactersFieldDescription("The database in which to create the {{ CamelToWords .Name }}."),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+		},
+{{- end }}
+{{- if eq .IdType "SchemaObjectIdentifier" }}
+		"schema": {
+			Type:             tfschema.TypeString,
+			Required:         true,
+			Description:      blocklistedCharactersFieldDescription("The schema in which to create the {{ CamelToWords .Name }}."),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+		},
+{{- end }}
+	},
+{{ else if .Hooks.IdentitySchema.Present -}}
 	{{ .Prefix }}IdentitySchemaExt,
 {{ end -}}

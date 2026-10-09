@@ -2,9 +2,35 @@
 
 package resources
 
+import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
+	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
 var (
-	schemaParametersAttributesSchema = schemaParametersAttributesSchemaExt
-	schemaParametersOutputSchema     = schemaParametersOutputSchemaExt
-	schemaParametersFieldNames       = schemaParametersFieldNamesExt
-	schemaParametersCustomDiff       = schemaParametersCustomDiffExt
+	schemaParametersAttributesSchema = func() map[string]*tfschema.Schema {
+		m := make(map[string]*tfschema.Schema)
+		for _, p := range defs.ParameterDefsForLevel(parameterdefs.ParameterLevelSchema) {
+			m[p.FieldName()] = parameterSchema(p)
+		}
+		return m
+	}()
+	schemaParametersOutputSchema = map[string]*tfschema.Schema{
+		ParametersAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `SHOW PARAMETERS IN SCHEMA` for the given schema.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.ShowSchemaParametersSchema,
+			},
+		},
+	}
+	schemaParametersFieldNames = collections.Map(
+		defs.ParameterDefsForLevel(parameterdefs.ParameterLevelSchema),
+		func(p parameterdefs.ParameterDef) string { return p.FieldName() },
+	)
+	schemaParametersCustomDiff = schemaParametersCustomDiffExt
 )

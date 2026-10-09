@@ -9,11 +9,37 @@ import (
 )
 
 var computePoolSchema = collections.MergeMaps(
-	computePoolIdentitySchemaExt,
+	map[string]*tfschema.Schema{
+		"name": {
+			Type:             tfschema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the compute pool; must be unique for the account."),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+		},
+	},
 	computePoolAttributesSchemaExt,
 	map[string]*tfschema.Schema{
 		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	},
-	computePoolShowOutputSchemaExt,
-	computePoolDescribeOutputSchemaExt,
+	map[string]*tfschema.Schema{
+		ShowOutputAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `SHOW COMPUTE POOLS` for the given compute pool.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.ShowComputePoolSchema,
+			},
+		},
+	},
+	map[string]*tfschema.Schema{
+		DescribeOutputAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `DESCRIBE COMPUTE POOL` for the given compute pool.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.DescribeComputePoolDetailsSchema,
+			},
+		},
+	},
 )

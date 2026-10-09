@@ -1,8 +1,38 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
 
 var (
+{{- if .Hooks.ParametersAttributesSchema.Generate }}
+	{{ .Prefix }}ParametersAttributesSchema = func() map[string]*tfschema.Schema {
+		m := make(map[string]*tfschema.Schema)
+		for _, p := range defs.ParameterDefsForLevel(parameterdefs.ParameterLevel{{ .Name }}) {
+			m[p.FieldName()] = parameterSchema(p)
+		}
+		return m
+	}()
+{{- else if .Hooks.ParametersAttributesSchema.Present }}
 	{{ .Prefix }}ParametersAttributesSchema = {{ .Prefix }}ParametersAttributesSchemaExt
-	{{ .Prefix }}ParametersOutputSchema     = {{ .Prefix }}ParametersOutputSchemaExt
-	{{ .Prefix }}ParametersFieldNames       = {{ .Prefix }}ParametersFieldNamesExt
-	{{ .Prefix }}ParametersCustomDiff       = {{ .Prefix }}ParametersCustomDiffExt
+{{- end }}
+{{- if .Hooks.ParametersOutputSchema.Generate }}
+	{{ .Prefix }}ParametersOutputSchema = map[string]*tfschema.Schema{
+		ParametersAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `SHOW PARAMETERS IN {{ ToUpper (CamelToWords .Name) }}` for the given {{ CamelToWords .Name }}.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.Show{{ .Name }}ParametersSchema,
+			},
+		},
+	}
+{{- else if .Hooks.ParametersOutputSchema.Present }}
+	{{ .Prefix }}ParametersOutputSchema = {{ .Prefix }}ParametersOutputSchemaExt
+{{- end }}
+{{- if .Hooks.ParametersFieldNames.Generate }}
+	{{ .Prefix }}ParametersFieldNames = collections.Map(
+		defs.ParameterDefsForLevel(parameterdefs.ParameterLevel{{ .Name }}),
+		func(p parameterdefs.ParameterDef) string { return p.FieldName() },
+	)
+{{- else if .Hooks.ParametersFieldNames.Present }}
+	{{ .Prefix }}ParametersFieldNames = {{ .Prefix }}ParametersFieldNamesExt
+{{- end }}
+	{{ .Prefix }}ParametersCustomDiff = {{ .Prefix }}ParametersCustomDiffExt
 )

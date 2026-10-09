@@ -3,21 +3,10 @@ package resources
 import (
 	"fmt"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
-
-var computePoolIdentitySchemaExt = map[string]*schema.Schema{
-	"name": {
-		Type:             schema.TypeString,
-		Required:         true,
-		ForceNew:         true,
-		Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the compute pool; must be unique for the account."),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
-}
 
 var computePoolAttributesSchemaExt = map[string]*schema.Schema{
 	"for_application": {
@@ -87,27 +76,5 @@ var computePoolAttributesSchemaExt = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
 		Description: "Specifies a comment for the compute pool.",
-	},
-}
-
-var computePoolShowOutputSchemaExt = map[string]*schema.Schema{
-	ShowOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `SHOW COMPUTE POOLS` for the given compute pool.",
-		Elem: &schema.Resource{
-			Schema: schemas.ShowComputePoolSchema,
-		},
-	},
-}
-
-var computePoolDescribeOutputSchemaExt = map[string]*schema.Schema{
-	DescribeOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `DESCRIBE COMPUTE POOL` for the given compute pool.",
-		Elem: &schema.Resource{
-			Schema: schemas.DescribeComputePoolDetailsSchema,
-		},
 	},
 }

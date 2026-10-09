@@ -9,13 +9,44 @@ import (
 )
 
 var schemaSchema = collections.MergeMaps(
-	schemaIdentitySchemaExt,
+	map[string]*tfschema.Schema{
+		"name": {
+			Type:             tfschema.TypeString,
+			Required:         true,
+			Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the schema; must be unique for the database in which the schema is created. When the name is `PUBLIC`, during creation the provider checks if this schema has already been created and, in such case, `ALTER` is used to match the desired state."),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+		},
+		"database": {
+			Type:             tfschema.TypeString,
+			Required:         true,
+			Description:      blocklistedCharactersFieldDescription("The database in which to create the schema."),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+		},
+	},
 	schemaAttributesSchemaExt,
 	schemaParametersAttributesSchema,
 	map[string]*tfschema.Schema{
 		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	},
-	schemaShowOutputSchemaExt,
-	schemaDescribeOutputSchemaExt,
+	map[string]*tfschema.Schema{
+		ShowOutputAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `SHOW SCHEMAS` for the given schema.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.ShowSchemaSchema,
+			},
+		},
+	},
+	map[string]*tfschema.Schema{
+		DescribeOutputAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `DESCRIBE SCHEMA` for the given schema. In order to handle this output, one must grant sufficient privileges, e.g. [grant_ownership](./grant_ownership) on all objects in the schema.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.DescribeSchemaDetailsSchema,
+			},
+		},
+	},
 	schemaParametersOutputSchema,
 )

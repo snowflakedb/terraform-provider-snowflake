@@ -3,12 +3,9 @@ package resources
 import (
 	"context"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -16,30 +13,6 @@ import (
 // =============================================================================
 // Schema maps
 // =============================================================================
-
-var schemaParametersAttributesSchemaExt = func() map[string]*schema.Schema {
-	m := make(map[string]*schema.Schema)
-	for _, p := range defs.ParameterDefsForLevel(parameterdefs.ParameterLevelSchema) {
-		m[p.FieldName()] = parameterSchema(p)
-	}
-	return m
-}()
-
-var schemaParametersOutputSchemaExt = map[string]*schema.Schema{
-	ParametersAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `SHOW PARAMETERS IN SCHEMA` for the given object.",
-		Elem: &schema.Resource{
-			Schema: schemas.ShowSchemaParametersSchema,
-		},
-	},
-}
-
-var schemaParametersFieldNamesExt = collections.Map(
-	defs.ParameterDefsForLevel(parameterdefs.ParameterLevelSchema),
-	func(p parameterdefs.ParameterDef) string { return p.FieldName() },
-)
 
 var schemaParametersCustomDiffExt = ParametersCustomDiffFromTypedParameters(
 	schemaParametersProviderExt,

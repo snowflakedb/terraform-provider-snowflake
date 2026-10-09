@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"strings"
 	"text/template"
 
 	_ "embed"
@@ -133,6 +134,8 @@ var (
 func init() {
 	subTemplates := template.New("subTemplates").Funcs(genhelpers.BuildTemplateFuncMap(
 		genhelpers.Unimplemented,
+		genhelpers.CamelToWords,
+		strings.ToUpper,
 	))
 	subTemplates, _ = subTemplates.New("constructor").Parse(constructorTemplateContent)
 	subTemplates, _ = subTemplates.New("parseId").Parse(parseIdTemplateContent)
