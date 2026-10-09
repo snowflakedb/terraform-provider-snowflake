@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -320,11 +322,29 @@ func UpdateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 	if shouldRotateToken(o.(string), n.(string), d.GetRawPlan().AsValueMap()["keeper"].IsKnown()) {
 		request := sdk.NewRotateUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName)
 		if v := d.Get("expire_rotated_token_after_hours").(int); v != IntDefault {
-			request.WithExpireRotatedTokenAfterHours(v)
+			currentToken, err := client.Users.ShowProgrammaticAccessTokenByNameSafely(ctx, resourceId.userName, resourceId.tokenName)
+			if err != nil {
+				d.Partial(true)
+				return diag.FromErr(err)
+			}
+			// Snowflake rejects values exceeding the remaining lifetime of the token being rotated out.
+			// Truncation is intentional: rounding up would exceed that lifetime.
+			remaining := int(time.Until(currentToken.ExpiresAt).Hours())
+			switch {
+			case v != 0 && remaining <= 0:
+				// Under an hour left: omit the clause so the old secret keeps its natural expiry instead of being revoked now.
+				log.Printf("[DEBUG] less than an hour of token lifetime left; omitting expire_rotated_token_after_hours (%d)", v)
+			case v != 0 && v > remaining:
+				log.Printf("[DEBUG] expire_rotated_token_after_hours (%d) exceeds the remaining token lifetime (%d hours); using %d", v, remaining, remaining)
+				request.WithExpireRotatedTokenAfterHours(remaining)
+			default:
+				request.WithExpireRotatedTokenAfterHours(v)
+			}
 		}
 
 		token, err := client.Users.RotateProgrammaticAccessToken(ctx, request)
 		if err != nil {
+			d.Partial(true)
 			return diag.FromErr(err)
 		}
 		errs := errors.Join(

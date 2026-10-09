@@ -1,10 +1,67 @@
 package resources
 
 import (
+	"context"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestUserProgrammaticAccessToken_ExpiryChangeDiff(t *testing.T) {
+	for _, rotate := range []bool{false, true} {
+		name := "expiry only"
+		keeper := "original"
+		if rotate {
+			name = "expiry and keeper"
+			keeper = "rotated"
+		}
+		t.Run(name, func(t *testing.T) {
+			diff, err := UserProgrammaticAccessToken().Diff(
+				context.Background(),
+				&terraform.InstanceState{
+					ID: "existing-token",
+					RawPlan: cty.ObjectVal(map[string]cty.Value{
+						"keeper": cty.StringVal(keeper),
+					}),
+					Attributes: map[string]string{
+						"user":                             "TEST_USER",
+						"name":                             "TEST_TOKEN",
+						"keeper":                           "original",
+						"disabled":                         BooleanDefault,
+						"expire_rotated_token_after_hours": "24",
+						"token":                            "secret",
+						"rotated_token_name":               "previous-token",
+					},
+				},
+				terraform.NewResourceConfigRaw(map[string]any{
+					"user":                             "TEST_USER",
+					"name":                             "TEST_TOKEN",
+					"keeper":                           keeper,
+					"expire_rotated_token_after_hours": 48,
+				}),
+				&provider.Context{Client: &sdk.Client{}},
+			)
+			require.NoError(t, err)
+			require.NotNil(t, diff)
+			assert.False(t, diff.RequiresNew())
+			require.Contains(t, diff.Attributes, "expire_rotated_token_after_hours")
+			assert.Equal(t, "48", diff.Attributes["expire_rotated_token_after_hours"].New)
+			for _, attribute := range []string{"token", "rotated_token_name"} {
+				if rotate {
+					require.Contains(t, diff.Attributes, attribute)
+					assert.True(t, diff.Attributes[attribute].NewComputed)
+				} else {
+					assert.NotContains(t, diff.Attributes, attribute)
+				}
+			}
+		})
+	}
+}
 
 func TestShouldRotateToken(t *testing.T) {
 	tests := []struct {
