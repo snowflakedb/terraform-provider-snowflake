@@ -101,6 +101,7 @@ func (r *CreateFailoverGroupRequest) toOpts() *CreateFailoverGroupOptions {
 		AllowedAccounts:         r.AllowedAccounts,
 		IgnoreEditionCheck:      r.IgnoreEditionCheck,
 		ReplicationSchedule:     r.ReplicationSchedule,
+		OptimizedRefresh:        r.OptimizedRefresh,
 	}
 	return opts
 }
@@ -125,11 +126,15 @@ func (r *AlterSourceFailoverGroupRequest) toOpts() *AlterSourceFailoverGroupOpti
 			ObjectTypes:             r.Set.ObjectTypes,
 			AllowedIntegrationTypes: r.Set.AllowedIntegrationTypes,
 			ReplicationSchedule:     r.Set.ReplicationSchedule,
+			OptimizedRefresh:        r.Set.OptimizedRefresh,
+			RpoAssurance:            r.Set.RpoAssurance,
 		}
 	}
 	if r.Unset != nil {
 		opts.Unset = &FailoverGroupUnset{
 			ReplicationSchedule: r.Unset.ReplicationSchedule,
+			OptimizedRefresh:    r.Unset.OptimizedRefresh,
+			RpoAssurance:        r.Unset.RpoAssurance,
 		}
 	}
 	if r.Add != nil {
@@ -186,15 +191,17 @@ func (r *ShowFailoverGroupRequest) toOpts() *ShowFailoverGroupOptions {
 
 func (r failoverGroupDBRow) convert() (*FailoverGroup, error) {
 	result := &FailoverGroup{
-		RegionGroup:      r.RegionGroup,
-		SnowflakeRegion:  r.SnowflakeRegion,
-		CreatedOn:        r.CreatedOn,
-		AccountName:      r.AccountName,
-		Name:             r.Name,
-		Type:             r.Type,
-		IsPrimary:        r.IsPrimary,
-		OrganizationName: r.OrganizationName,
-		AccountLocator:   r.AccountLocator,
+		RegionGroup:               r.RegionGroup,
+		SnowflakeRegion:           r.SnowflakeRegion,
+		CreatedOn:                 r.CreatedOn,
+		AccountName:               r.AccountName,
+		Name:                      r.Name,
+		Type:                      r.Type,
+		IsPrimary:                 r.IsPrimary,
+		OrganizationName:          r.OrganizationName,
+		AccountLocator:            r.AccountLocator,
+		IsOptimizedRefreshEnabled: r.IsOptimizedRefreshEnabled,
+		RpoAssurance:              r.RpoAssurance,
 	}
 	mapNullStringToNonNullableField(&result.Comment, r.Comment)
 	mapNullStringToNonNullableField(&result.ReplicationSchedule, r.ReplicationSchedule)

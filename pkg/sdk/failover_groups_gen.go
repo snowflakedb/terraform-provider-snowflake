@@ -39,6 +39,7 @@ type CreateFailoverGroupOptions struct {
 	AllowedAccounts         []AccountIdentifier       `ddl:"parameter" sql:"ALLOWED_ACCOUNTS"`
 	IgnoreEditionCheck      *bool                     `ddl:"keyword" sql:"IGNORE EDITION CHECK"`
 	ReplicationSchedule     *string                   `ddl:"parameter,single_quotes" sql:"REPLICATION_SCHEDULE"`
+	OptimizedRefresh        *bool                     `ddl:"parameter" sql:"OPTIMIZED_REFRESH"`
 }
 
 // CreateSecondaryReplicationGroupFailoverGroupOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-failover-group.
@@ -58,7 +59,7 @@ type AlterSourceFailoverGroupOptions struct {
 	name          AccountObjectIdentifier  `ddl:"identifier"`
 	RenameTo      *AccountObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 	Set           *FailoverGroupSet        `ddl:"keyword" sql:"SET"`
-	Unset         *FailoverGroupUnset      `ddl:"keyword" sql:"UNSET"`
+	Unset         *FailoverGroupUnset      `ddl:"list,no_parentheses" sql:"UNSET"`
 	Add           *FailoverGroupAdd        `ddl:"keyword" sql:"ADD"`
 	Move          *FailoverGroupMove       `ddl:"keyword" sql:"MOVE"`
 	Remove        *FailoverGroupRemove     `ddl:"keyword" sql:"REMOVE"`
@@ -68,10 +69,14 @@ type FailoverGroupSet struct {
 	ObjectTypes             []PluralObjectType `ddl:"parameter" sql:"OBJECT_TYPES"`
 	AllowedIntegrationTypes []IntegrationType  `ddl:"parameter" sql:"ALLOWED_INTEGRATION_TYPES"`
 	ReplicationSchedule     *string            `ddl:"parameter,single_quotes" sql:"REPLICATION_SCHEDULE"`
+	OptimizedRefresh        *bool              `ddl:"parameter" sql:"OPTIMIZED_REFRESH"`
+	RpoAssurance            *bool              `ddl:"parameter" sql:"RPO_ASSURANCE"`
 }
 
 type FailoverGroupUnset struct {
 	ReplicationSchedule *bool `ddl:"keyword" sql:"REPLICATION_SCHEDULE"`
+	OptimizedRefresh    *bool `ddl:"keyword" sql:"OPTIMIZED_REFRESH"`
+	RpoAssurance        *bool `ddl:"keyword" sql:"RPO_ASSURANCE"`
 }
 
 type FailoverGroupAdd struct {
@@ -121,45 +126,49 @@ type ShowFailoverGroupOptions struct {
 }
 
 type failoverGroupDBRow struct {
-	RegionGroup             string         `db:"region_group"`
-	SnowflakeRegion         string         `db:"snowflake_region"`
-	CreatedOn               time.Time      `db:"created_on"`
-	AccountName             string         `db:"account_name"`
-	Name                    string         `db:"name"`
-	Type                    string         `db:"type"`
-	Comment                 sql.NullString `db:"comment"`
-	IsPrimary               bool           `db:"is_primary"`
-	Primary                 string         `db:"primary"`
-	ObjectTypes             string         `db:"object_types"`
-	AllowedIntegrationTypes string         `db:"allowed_integration_types"`
-	AllowedAccounts         string         `db:"allowed_accounts"`
-	OrganizationName        string         `db:"organization_name"`
-	AccountLocator          string         `db:"account_locator"`
-	ReplicationSchedule     sql.NullString `db:"replication_schedule"`
-	SecondaryState          sql.NullString `db:"secondary_state"`
-	NextScheduledRefresh    sql.NullString `db:"next_scheduled_refresh"`
-	Owner                   sql.NullString `db:"owner"`
+	RegionGroup               string         `db:"region_group"`
+	SnowflakeRegion           string         `db:"snowflake_region"`
+	CreatedOn                 time.Time      `db:"created_on"`
+	AccountName               string         `db:"account_name"`
+	Name                      string         `db:"name"`
+	Type                      string         `db:"type"`
+	Comment                   sql.NullString `db:"comment"`
+	IsPrimary                 bool           `db:"is_primary"`
+	Primary                   string         `db:"primary"`
+	ObjectTypes               string         `db:"object_types"`
+	AllowedIntegrationTypes   string         `db:"allowed_integration_types"`
+	AllowedAccounts           string         `db:"allowed_accounts"`
+	OrganizationName          string         `db:"organization_name"`
+	AccountLocator            string         `db:"account_locator"`
+	ReplicationSchedule       sql.NullString `db:"replication_schedule"`
+	SecondaryState            sql.NullString `db:"secondary_state"`
+	NextScheduledRefresh      sql.NullString `db:"next_scheduled_refresh"`
+	Owner                     sql.NullString `db:"owner"`
+	IsOptimizedRefreshEnabled bool           `db:"is_optimized_refresh_enabled"`
+	RpoAssurance              bool           `db:"rpo_assurance"`
 }
 
 type FailoverGroup struct {
-	RegionGroup             string
-	SnowflakeRegion         string
-	CreatedOn               time.Time
-	AccountName             string
-	Name                    string
-	Type                    string
-	Comment                 string
-	IsPrimary               bool
-	Primary                 ExternalObjectIdentifier
-	ObjectTypes             []PluralObjectType
-	AllowedIntegrationTypes []IntegrationType
-	AllowedAccounts         []AccountIdentifier
-	OrganizationName        string
-	AccountLocator          string
-	ReplicationSchedule     string
-	SecondaryState          FailoverGroupSecondaryState
-	NextScheduledRefresh    string
-	Owner                   string
+	RegionGroup               string
+	SnowflakeRegion           string
+	CreatedOn                 time.Time
+	AccountName               string
+	Name                      string
+	Type                      string
+	Comment                   string
+	IsPrimary                 bool
+	Primary                   ExternalObjectIdentifier
+	ObjectTypes               []PluralObjectType
+	AllowedIntegrationTypes   []IntegrationType
+	AllowedAccounts           []AccountIdentifier
+	OrganizationName          string
+	AccountLocator            string
+	ReplicationSchedule       string
+	SecondaryState            FailoverGroupSecondaryState
+	NextScheduledRefresh      string
+	Owner                     string
+	IsOptimizedRefreshEnabled bool
+	RpoAssurance              bool
 }
 
 func (v *FailoverGroup) ID() AccountObjectIdentifier {

@@ -28,6 +28,17 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.21.x ➞ v2.22.0
 
+### *(new feature)* `optimized_refresh` and `rpo_assurance` on `snowflake_failover_group`
+
+We added optional `optimized_refresh` and `rpo_assurance` fields to the preview [`snowflake_failover_group`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/failover_group) resource ([#5237](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5237)). They map to Snowflake Optimized Refresh and RPO Assurance on the primary failover group only (`from_replica` cannot set them).
+
+- `optimized_refresh` can be set on create or update. When `true`, a `replication_schedule` with an interval of 6 hours or less is required.
+- `rpo_assurance` is applied with `ALTER` (it is not valid on `CREATE`). It cannot be combined with `replication_schedule` or an explicit `optimized_refresh`. Enabling it turns Optimized Refresh on automatically; the provider keeps `optimized_refresh` false in state in that case so SHOW's implied-true value does not produce a diff.
+
+This resource is in preview. To use it, `snowflake_failover_group_resource` must already be listed in `preview_features_enabled`.
+
+No configuration changes are required for existing configurations unless you want to manage these settings with Terraform. After upgrading, the next plan may report the new attributes as `false`. If Optimized Refresh or RPO Assurance was already enabled outside Terraform, add the matching field to the configuration; otherwise the next apply will unset it.
+
 ### *(new feature)* Snowflake Intelligence Cortex agent attachment
 
 We have added a new preview resource, [`snowflake_intelligence_cortex_agent_attachment`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/intelligence_cortex_agent_attachment), that attaches a Cortex agent to a Snowflake Intelligence object so the agent is available in Snowflake CoWork.

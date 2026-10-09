@@ -44,6 +44,11 @@ func (s *CreateFailoverGroupRequest) WithReplicationSchedule(replicationSchedule
 	return s
 }
 
+func (s *CreateFailoverGroupRequest) WithOptimizedRefresh(optimizedRefresh bool) *CreateFailoverGroupRequest {
+	s.OptimizedRefresh = &optimizedRefresh
+	return s
+}
+
 func NewCreateSecondaryReplicationGroupFailoverGroupRequest(
 	name AccountObjectIdentifier,
 	primaryFailoverGroup ExternalObjectIdentifier,
@@ -122,6 +127,16 @@ func (s *FailoverGroupSetRequest) WithReplicationSchedule(replicationSchedule st
 	return s
 }
 
+func (s *FailoverGroupSetRequest) WithOptimizedRefresh(optimizedRefresh bool) *FailoverGroupSetRequest {
+	s.OptimizedRefresh = &optimizedRefresh
+	return s
+}
+
+func (s *FailoverGroupSetRequest) WithRpoAssurance(rpoAssurance bool) *FailoverGroupSetRequest {
+	s.RpoAssurance = &rpoAssurance
+	return s
+}
+
 func NewFailoverGroupUnsetRequest() *FailoverGroupUnsetRequest {
 	s := FailoverGroupUnsetRequest{}
 	return &s
@@ -129,6 +144,16 @@ func NewFailoverGroupUnsetRequest() *FailoverGroupUnsetRequest {
 
 func (s *FailoverGroupUnsetRequest) WithReplicationSchedule(replicationSchedule bool) *FailoverGroupUnsetRequest {
 	s.ReplicationSchedule = &replicationSchedule
+	return s
+}
+
+func (s *FailoverGroupUnsetRequest) WithOptimizedRefresh(optimizedRefresh bool) *FailoverGroupUnsetRequest {
+	s.OptimizedRefresh = &optimizedRefresh
+	return s
+}
+
+func (s *FailoverGroupUnsetRequest) WithRpoAssurance(rpoAssurance bool) *FailoverGroupUnsetRequest {
+	s.RpoAssurance = &rpoAssurance
 	return s
 }
 

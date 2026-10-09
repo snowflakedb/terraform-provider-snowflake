@@ -77,6 +77,14 @@ var ShowFailoverGroupSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"is_optimized_refresh_enabled": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
+	"rpo_assurance": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
 }
 
 var _ = ShowFailoverGroupSchema
@@ -101,6 +109,8 @@ func FailoverGroupToSchema(failoverGroup *sdk.FailoverGroup) map[string]any {
 	failoverGroupSchema["secondary_state"] = string(failoverGroup.SecondaryState)
 	failoverGroupSchema["next_scheduled_refresh"] = failoverGroup.NextScheduledRefresh
 	failoverGroupSchema["owner"] = failoverGroup.Owner
+	failoverGroupSchema["is_optimized_refresh_enabled"] = failoverGroup.IsOptimizedRefreshEnabled
+	failoverGroupSchema["rpo_assurance"] = failoverGroup.RpoAssurance
 	return failoverGroupSchema
 }
 

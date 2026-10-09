@@ -23,6 +23,7 @@ var failoverGroupsDef = g.NewInterface(
 		ListAssignment("ALLOWED_ACCOUNTS", "AccountIdentifier", g.ParameterOptions().Required()).
 		OptionalSQL("IGNORE EDITION CHECK").
 		OptionalTextAssignment("REPLICATION_SCHEDULE", g.ParameterOptions().SingleQuotes()).
+		OptionalBooleanAssignment("OPTIMIZED_REFRESH", nil).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifier, "AllowedDatabases").
 		WithValidation(g.ValidIdentifier, "AllowedShares").
@@ -53,13 +54,18 @@ var failoverGroupsDef = g.NewInterface(
 				ListAssignment("OBJECT_TYPES", "PluralObjectType", g.ParameterOptions()).
 				ListAssignment("ALLOWED_INTEGRATION_TYPES", "IntegrationType", g.ParameterOptions()).
 				OptionalTextAssignment("REPLICATION_SCHEDULE", g.ParameterOptions().SingleQuotes()).
+				OptionalBooleanAssignment("OPTIMIZED_REFRESH", nil).
+				OptionalBooleanAssignment("RPO_ASSURANCE", nil).
+				WithValidation(g.ConflictingFields, "OptimizedRefresh", "RpoAssurance").
 				WithAdditionalValidations(),
 			g.KeywordOptions().SQL("SET")).
 		OptionalQueryStructField("Unset",
 			g.NewQueryStruct("FailoverGroupUnset").
 				OptionalSQL("REPLICATION_SCHEDULE").
-				WithValidation(g.AtLeastOneValueSet, "ReplicationSchedule"),
-			g.KeywordOptions().SQL("UNSET")).
+				OptionalSQL("OPTIMIZED_REFRESH").
+				OptionalSQL("RPO_ASSURANCE").
+				WithValidation(g.ExactlyOneValueSet, "ReplicationSchedule", "OptimizedRefresh", "RpoAssurance"),
+			g.ListOptions().NoParentheses().SQL("UNSET")).
 		OptionalQueryStructField("Add",
 			g.NewQueryStruct("FailoverGroupAdd").
 				ListAssignmentWithFieldName("TO ALLOWED_DATABASES", "AccountObjectIdentifier", g.ParameterOptions().Reverse(), "AllowedDatabases").
@@ -138,7 +144,9 @@ var failoverGroupsDef = g.NewInterface(
 		// sql.NullString → FailoverGroupSecondaryState with non-zero default
 		Field("secondary_state", "sql.NullString", "FailoverGroupSecondaryState", g.WithManualConvert()).
 		OptionalText("next_scheduled_refresh", g.WithRequiredInPlain()).
-		OptionalText("owner", g.WithRequiredInPlain()),
+		OptionalText("owner", g.WithRequiredInPlain()).
+		Bool("is_optimized_refresh_enabled").
+		Bool("rpo_assurance"),
 	g.NewQueryStruct("ShowFailoverGroups").
 		Show().
 		SQL("FAILOVER GROUPS").

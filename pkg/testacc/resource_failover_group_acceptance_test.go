@@ -81,7 +81,7 @@ func TestAcc_FailoverGroupRemoveObjectTypes(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.FailoverGroup),
 		Steps: []resource.TestStep{
 			{
-				Config: failoverGroupWithInterval(id, currentAccountId, businessCriticalAccountId, 20, testClient().Ids.DatabaseId()),
+				Config: failoverGroupWithInterval(id, currentAccountId, businessCriticalAccountId, 20, testClient().Ids.DatabaseId(), false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
@@ -123,7 +123,7 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.FailoverGroup),
 		Steps: []resource.TestStep{
 			{
-				Config: failoverGroupWithInterval(id, currentAccountId, businessCriticalAccountId, 10, testClient().Ids.DatabaseId()),
+				Config: failoverGroupWithInterval(id, currentAccountId, businessCriticalAccountId, 10, testClient().Ids.DatabaseId(), true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
@@ -133,11 +133,13 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.0.cron.#", "0"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.0.interval", "10"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "optimized_refresh", "true"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "rpo_assurance", "false"),
 				),
 			},
 			// Update Interval
 			{
-				Config: failoverGroupWithInterval(id, currentAccountId, businessCriticalAccountId, 20, testClient().Ids.DatabaseId()),
+				Config: failoverGroupWithInterval(id, currentAccountId, businessCriticalAccountId, 20, testClient().Ids.DatabaseId(), true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
@@ -147,6 +149,8 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.0.cron.#", "0"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.0.interval", "20"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "optimized_refresh", "true"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "rpo_assurance", "false"),
 				),
 			},
 			// Change to Cron Expression
@@ -163,6 +167,8 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.0.cron.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.0.cron.0.expression", "0 0 10-20 * TUE,THU"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.0.cron.0.time_zone", "UTC"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "optimized_refresh", "false"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "rpo_assurance", "false"),
 				),
 			},
 			// Update Cron Expression
@@ -179,11 +185,13 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.0.cron.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.0.cron.0.expression", "0 0 5-20 * TUE,THU"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.0.cron.0.time_zone", "UTC"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "optimized_refresh", "false"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "rpo_assurance", "false"),
 				),
 			},
 			// Remove replication schedule
 			{
-				Config: failoverGroupWithoutReplicationSchedule(id, currentAccountId, businessCriticalAccountId, testClient().Ids.DatabaseId()),
+				Config: failoverGroupWithoutReplicationSchedule(id, currentAccountId, businessCriticalAccountId, testClient().Ids.DatabaseId(), false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
@@ -191,11 +199,26 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_databases.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_integration_types.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.#", "0"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "optimized_refresh", "false"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "rpo_assurance", "false"),
+				),
+			},
+			{
+				Config: failoverGroupWithoutReplicationSchedule(id, currentAccountId, businessCriticalAccountId, testClient().Ids.DatabaseId(), true),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "2"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_databases.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_integration_types.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.#", "0"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "optimized_refresh", "false"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "rpo_assurance", "true"),
 				),
 			},
 			// Change to Interval
 			{
-				Config: failoverGroupWithInterval(id, currentAccountId, businessCriticalAccountId, 10, testClient().Ids.DatabaseId()),
+				Config: failoverGroupWithInterval(id, currentAccountId, businessCriticalAccountId, 10, testClient().Ids.DatabaseId(), false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
@@ -205,6 +228,8 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.0.cron.#", "0"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.0.interval", "10"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "optimized_refresh", "false"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "rpo_assurance", "false"),
 				),
 			},
 			// IMPORT
@@ -302,7 +327,11 @@ resource "snowflake_failover_group" "fg" {
 `, failoverGroupId.Name(), currentAccountId.Name(), allowedAccountId.Name(), databaseId.Name())
 }
 
-func failoverGroupWithInterval(id sdk.AccountObjectIdentifier, currentAccountId sdk.AccountIdentifier, allowedAccountId sdk.AccountIdentifier, interval int, databaseId sdk.AccountObjectIdentifier) string {
+func failoverGroupWithInterval(id sdk.AccountObjectIdentifier, currentAccountId sdk.AccountIdentifier, allowedAccountId sdk.AccountIdentifier, interval int, databaseId sdk.AccountObjectIdentifier, optimizedRefresh bool) string {
+	optimizedRefreshConfig := ""
+	if optimizedRefresh {
+		optimizedRefreshConfig = "\n\toptimized_refresh = true"
+	}
 	return fmt.Sprintf(`
 resource "snowflake_failover_group" "fg" {
 	name = "%s"
@@ -312,21 +341,25 @@ resource "snowflake_failover_group" "fg" {
 	allowed_integration_types = ["SECURITY INTEGRATIONS"]
 	replication_schedule {
 		interval = %d
-	}
+	}%s
 }
-`, id.Name(), currentAccountId.Name(), allowedAccountId.Name(), databaseId.Name(), interval)
+`, id.Name(), currentAccountId.Name(), allowedAccountId.Name(), databaseId.Name(), interval, optimizedRefreshConfig)
 }
 
-func failoverGroupWithoutReplicationSchedule(id sdk.AccountObjectIdentifier, currentAccountId sdk.AccountIdentifier, allowedAccountId sdk.AccountIdentifier, databaseId sdk.AccountObjectIdentifier) string {
+func failoverGroupWithoutReplicationSchedule(id sdk.AccountObjectIdentifier, currentAccountId sdk.AccountIdentifier, allowedAccountId sdk.AccountIdentifier, databaseId sdk.AccountObjectIdentifier, rpoAssurance bool) string {
+	rpoAssuranceConfig := ""
+	if rpoAssurance {
+		rpoAssuranceConfig = "\n\trpo_assurance = true"
+	}
 	return fmt.Sprintf(`
 resource "snowflake_failover_group" "fg" {
 	name = "%s"
 	object_types = ["WAREHOUSES","DATABASES", "INTEGRATIONS", "ROLES"]
 	allowed_accounts= ["%s", "%s"]
 	allowed_databases = ["%s"]
-	allowed_integration_types = ["SECURITY INTEGRATIONS"]
+	allowed_integration_types = ["SECURITY INTEGRATIONS"]%s
 }
-`, id.Name(), currentAccountId.Name(), allowedAccountId.Name(), databaseId.Name())
+`, id.Name(), currentAccountId.Name(), allowedAccountId.Name(), databaseId.Name(), rpoAssuranceConfig)
 }
 
 func failoverGroupWithNoWarehouse(id sdk.AccountObjectIdentifier, currentAccountId sdk.AccountIdentifier, allowedAccountId sdk.AccountIdentifier, interval int) string {

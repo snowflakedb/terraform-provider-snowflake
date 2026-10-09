@@ -22,7 +22,9 @@ const (
 	case_FailoverGroups_validation_AlterSource_name_ValidIdentifier                                     testCaseName = "validation_AlterSource_name_ValidIdentifier"
 	case_FailoverGroups_validation_AlterSource_opts_ExactlyOneValueSet_NoneSet                          testCaseName = "validation_AlterSource_opts_ExactlyOneValueSet_NoneSet"
 	case_FailoverGroups_validation_AlterSource_opts_ExactlyOneValueSet_MoreThanOneSet                   testCaseName = "validation_AlterSource_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_FailoverGroups_validation_AlterSource_opts_Unset_AtLeastOneValueSet                            testCaseName = "validation_AlterSource_opts_Unset_AtLeastOneValueSet"
+	case_FailoverGroups_validation_AlterSource_opts_Set_ConflictingFields                               testCaseName = "validation_AlterSource_opts_Set_ConflictingFields"
+	case_FailoverGroups_validation_AlterSource_opts_Unset_ExactlyOneValueSet_NoneSet                    testCaseName = "validation_AlterSource_opts_Unset_ExactlyOneValueSet_NoneSet"
+	case_FailoverGroups_validation_AlterSource_opts_Unset_ExactlyOneValueSet_MoreThanOneSet             testCaseName = "validation_AlterSource_opts_Unset_ExactlyOneValueSet_MoreThanOneSet"
 	case_FailoverGroups_validation_AlterSource_Add_AllowedDatabases_ValidIdentifier                     testCaseName = "validation_AlterSource_Add_AllowedDatabases_ValidIdentifier"
 	case_FailoverGroups_validation_AlterSource_Add_AllowedShares_ValidIdentifier                        testCaseName = "validation_AlterSource_Add_AllowedShares_ValidIdentifier"
 	case_FailoverGroups_validation_AlterSource_Add_AllowedAccounts_ValidIdentifier                      testCaseName = "validation_AlterSource_Add_AllowedAccounts_ValidIdentifier"
@@ -185,11 +187,31 @@ var failoverGroupsTests = FailoverGroupsTestsContext{
 				},
 			},
 			validationCase[*AlterSourceFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_AlterSource_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterSourceFailoverGroupOptions.Unset", "ReplicationSchedule"),
+				Name:        case_FailoverGroups_validation_AlterSource_opts_Set_ConflictingFields,
+				ExpectedErr: errOneOf("AlterSourceFailoverGroupOptions.Set", "OptimizedRefresh", "RpoAssurance"),
+				DefaultModify: func(opts *AlterSourceFailoverGroupOptions) {
+					opts.Set = &FailoverGroupSet{}
+					opts.Set.OptimizedRefresh = new(true)
+					opts.Set.RpoAssurance = new(true)
+				},
+			},
+			validationCase[*AlterSourceFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_AlterSource_opts_Unset_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterSourceFailoverGroupOptions.Unset", "ReplicationSchedule", "OptimizedRefresh", "RpoAssurance"),
 				DefaultModify: func(opts *AlterSourceFailoverGroupOptions) {
 					opts.Unset = &FailoverGroupUnset{}
 					opts.Unset.ReplicationSchedule = nil
+					opts.Unset.OptimizedRefresh = nil
+					opts.Unset.RpoAssurance = nil
+				},
+			},
+			validationCase[*AlterSourceFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_AlterSource_opts_Unset_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterSourceFailoverGroupOptions.Unset", "ReplicationSchedule", "OptimizedRefresh", "RpoAssurance"),
+				DefaultModify: func(opts *AlterSourceFailoverGroupOptions) {
+					opts.Unset = &FailoverGroupUnset{}
+					opts.Unset.ReplicationSchedule = new(true)
+					opts.Unset.OptimizedRefresh = new(true)
 				},
 			},
 			validationCase[*AlterSourceFailoverGroupOptions]{

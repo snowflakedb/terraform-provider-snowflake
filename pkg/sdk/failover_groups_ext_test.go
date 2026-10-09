@@ -32,8 +32,9 @@ func init() {
 				opts.AllowedShares = []AccountObjectIdentifier{NewAccountObjectIdentifier("share1")}
 				opts.IgnoreEditionCheck = Bool(true)
 				opts.ReplicationSchedule = String("10 MINUTE")
+				opts.OptimizedRefresh = Bool(true)
 			},
-			`CREATE FAILOVER GROUP IF NOT EXISTS %s OBJECT_TYPES = SHARES, DATABASES ALLOWED_DATABASES = "db1" ALLOWED_SHARES = "share1" ALLOWED_ACCOUNTS = "MY_ORG"."MY_ACCOUNT" IGNORE EDITION CHECK REPLICATION_SCHEDULE = '10 MINUTE'`,
+			`CREATE FAILOVER GROUP IF NOT EXISTS %s OBJECT_TYPES = SHARES, DATABASES ALLOWED_DATABASES = "db1" ALLOWED_SHARES = "share1" ALLOWED_ACCOUNTS = "MY_ORG"."MY_ACCOUNT" IGNORE EDITION CHECK REPLICATION_SCHEDULE = '10 MINUTE' OPTIMIZED_REFRESH = true`,
 			id.FullyQualifiedName(),
 		)
 
@@ -80,15 +81,18 @@ func init() {
 				opts.Set = &FailoverGroupSet{
 					ObjectTypes:         []PluralObjectType{PluralObjectTypeShares},
 					ReplicationSchedule: String("10 MINUTE"),
+					OptimizedRefresh:    Bool(true),
 				}
 			},
-			`ALTER FAILOVER GROUP %s SET OBJECT_TYPES = SHARES REPLICATION_SCHEDULE = '10 MINUTE'`,
+			`ALTER FAILOVER GROUP %s SET OBJECT_TYPES = SHARES REPLICATION_SCHEDULE = '10 MINUTE' OPTIMIZED_REFRESH = true`,
 			id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_FailoverGroups_sql_AlterSource_Unset,
 			func(opts *AlterSourceFailoverGroupOptions) {
-				opts.Unset = &FailoverGroupUnset{ReplicationSchedule: Bool(true)}
+				opts.Unset = &FailoverGroupUnset{
+					ReplicationSchedule: Bool(true),
+				}
 			},
 			`ALTER FAILOVER GROUP %s UNSET REPLICATION_SCHEDULE`,
 			id.FullyQualifiedName(),
@@ -156,6 +160,30 @@ func init() {
 				opts.Remove = &FailoverGroupRemove{AllowedShares: []AccountObjectIdentifier{NewAccountObjectIdentifier("share1")}}
 			},
 			`ALTER FAILOVER GROUP %s REMOVE "share1" FROM ALLOWED_SHARES`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_AlterSource_Set_RpoAssurance",
+			func(opts *AlterSourceFailoverGroupOptions) {
+				opts.Set = &FailoverGroupSet{RpoAssurance: Bool(true)}
+			},
+			`ALTER FAILOVER GROUP %s SET RPO_ASSURANCE = true`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_AlterSource_Unset_OptimizedRefresh",
+			func(opts *AlterSourceFailoverGroupOptions) {
+				opts.Unset = &FailoverGroupUnset{OptimizedRefresh: Bool(true)}
+			},
+			`ALTER FAILOVER GROUP %s UNSET OPTIMIZED_REFRESH`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_AlterSource_Unset_RpoAssurance",
+			func(opts *AlterSourceFailoverGroupOptions) {
+				opts.Unset = &FailoverGroupUnset{RpoAssurance: Bool(true)}
+			},
+			`ALTER FAILOVER GROUP %s UNSET RPO_ASSURANCE`,
 			id.FullyQualifiedName(),
 		)
 

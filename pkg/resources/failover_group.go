@@ -81,7 +81,7 @@ var failoverGroupSchema = map[string]*schema.Schema{
 		Optional:      true,
 		ForceNew:      true,
 		MaxItems:      1,
-		ConflictsWith: []string{"object_types", "allowed_accounts", "allowed_databases", "allowed_shares", "allowed_integration_types", "ignore_edition_check", "replication_schedule"},
+		ConflictsWith: []string{"object_types", "allowed_accounts", "allowed_databases", "allowed_shares", "allowed_integration_types", "ignore_edition_check", "replication_schedule", "optimized_refresh", "rpo_assurance"},
 		Description:   "Specifies the name of the replica to use as the source for the failover group.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -108,7 +108,7 @@ var failoverGroupSchema = map[string]*schema.Schema{
 		Optional:      true,
 		MaxItems:      1,
 		Description:   "Specifies the schedule for refreshing secondary failover groups.",
-		ConflictsWith: []string{"from_replica"},
+		ConflictsWith: []string{"from_replica", "rpo_assurance"},
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"cron": {
@@ -140,6 +140,20 @@ var failoverGroupSchema = map[string]*schema.Schema{
 				},
 			},
 		},
+	},
+	"optimized_refresh": {
+		Type:          schema.TypeBool,
+		Optional:      true,
+		Default:       false,
+		ConflictsWith: []string{"from_replica", "rpo_assurance"},
+		Description:   "Specifies whether the failover group uses Optimized Refresh. Can be set on the primary failover group only. When true, a replication_schedule with an interval of 6 hours or less is required (Snowflake recommends 10 MINUTE or less). Do not set when rpo_assurance is true. Default: false.",
+	},
+	"rpo_assurance": {
+		Type:          schema.TypeBool,
+		Optional:      true,
+		Default:       false,
+		ConflictsWith: []string{"from_replica", "replication_schedule", "optimized_refresh"},
+		Description:   "Specifies whether the failover group uses RPO Assurance. Can be set on the primary failover group only. Cannot be set with replication_schedule (unset the schedule first). Enables Optimized Refresh automatically; do not also set optimized_refresh. Default: false.",
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
@@ -268,12 +282,24 @@ func CreateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 		}
 	}
 
+	if v, ok := d.GetOk("optimized_refresh"); ok {
+		req.WithOptimizedRefresh(v.(bool))
+	}
+
 	err := client.FailoverGroups.Create(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(name)
+
+	if v, ok := d.GetOk("rpo_assurance"); ok && v.(bool) {
+		if err := client.FailoverGroups.AlterSource(ctx, sdk.NewAlterSourceFailoverGroupRequest(id).
+			WithSet(*sdk.NewFailoverGroupSetRequest().WithRpoAssurance(true))); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	return ReadFailoverGroup(ctx, d, meta)
 }
 
@@ -305,6 +331,19 @@ func ReadFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) di
 	}
 	if _, ok := d.GetOk("from_replica"); ok {
 		return nil
+	}
+
+	if err := d.Set("rpo_assurance", failoverGroup.RpoAssurance); err != nil {
+		return diag.FromErr(err)
+	}
+	// RPO Assurance enables Optimized Refresh automatically. Do not write SHOW's
+	// implied-true value back when RPO is on, or config default false will drift.
+	if failoverGroup.RpoAssurance {
+		if err := d.Set("optimized_refresh", false); err != nil {
+			return diag.FromErr(err)
+		}
+	} else if err := d.Set("optimized_refresh", failoverGroup.IsOptimizedRefreshEnabled); err != nil {
+		return diag.FromErr(err)
 	}
 
 	replicationSchedule := failoverGroup.ReplicationSchedule
@@ -455,6 +494,29 @@ func UpdateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 		}
 	}
 
+	if d.HasChange("rpo_assurance") && !d.Get("rpo_assurance").(bool) {
+		req := sdk.NewAlterSourceFailoverGroupRequest(id).WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithRpoAssurance(true))
+		if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
+			return diag.FromErr(err)
+		}
+		// RPO auto-enables Optimized Refresh and leaves it on after UNSET RPO.
+		// Read stores optimized_refresh as false while RPO is on, so HasChange
+		// may not fire even though SHOW still reports it enabled.
+		if !d.Get("optimized_refresh").(bool) {
+			req := sdk.NewAlterSourceFailoverGroupRequest(id).WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithOptimizedRefresh(true))
+			if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
+	if d.HasChange("optimized_refresh") && !d.Get("optimized_refresh").(bool) {
+		req := sdk.NewAlterSourceFailoverGroupRequest(id).WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithOptimizedRefresh(true))
+		if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	if d.HasChange("replication_schedule") {
 		replicationSchedules := d.Get("replication_schedule").([]any)
 		if len(replicationSchedules) > 0 {
@@ -484,6 +546,20 @@ func UpdateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 			if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
 				return diag.FromErr(err)
 			}
+		}
+	}
+
+	if d.HasChange("optimized_refresh") && d.Get("optimized_refresh").(bool) {
+		req := sdk.NewAlterSourceFailoverGroupRequest(id).WithSet(*sdk.NewFailoverGroupSetRequest().WithOptimizedRefresh(true))
+		if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("rpo_assurance") && d.Get("rpo_assurance").(bool) {
+		req := sdk.NewAlterSourceFailoverGroupRequest(id).WithSet(*sdk.NewFailoverGroupSetRequest().WithRpoAssurance(true))
+		if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 

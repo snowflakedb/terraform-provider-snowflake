@@ -71,7 +71,9 @@ resource "snowflake_failover_group" "target_failover_group" {
 - `from_replica` (Block List, Max: 1) Specifies the name of the replica to use as the source for the failover group. (see [below for nested schema](#nestedblock--from_replica))
 - `ignore_edition_check` (Boolean) (Default: `false`) Allows replicating objects to accounts on lower editions.
 - `object_types` (Set of String) Type(s) of objects for which you are enabling replication and failover from the source account to the target account. The following object types are supported: "ACCOUNT PARAMETERS", "DATABASES", "INTEGRATIONS", "NETWORK POLICIES", "RESOURCE MONITORS", "ROLES", "SHARES", "USERS", "WAREHOUSES"
+- `optimized_refresh` (Boolean) (Default: `false`) Specifies whether the failover group uses Optimized Refresh. Can be set on the primary failover group only. When true, a replication_schedule with an interval of 6 hours or less is required (Snowflake recommends 10 MINUTE or less). Do not set when rpo_assurance is true. Default: false.
 - `replication_schedule` (Block List, Max: 1) Specifies the schedule for refreshing secondary failover groups. (see [below for nested schema](#nestedblock--replication_schedule))
+- `rpo_assurance` (Boolean) (Default: `false`) Specifies whether the failover group uses RPO Assurance. Can be set on the primary failover group only. Cannot be set with replication_schedule (unset the schedule first). Enables Optimized Refresh automatically; do not also set optimized_refresh. Default: false.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only

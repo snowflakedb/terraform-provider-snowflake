@@ -73,11 +73,14 @@ func (opts *AlterSourceFailoverGroupOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterSourceFailoverGroupOptions", "RenameTo", "Set", "Unset", "Add", "Move", "Remove"))
 	}
 	if valueSet(opts.Set) {
+		if everyValueSet(opts.Set.OptimizedRefresh, opts.Set.RpoAssurance) {
+			errs = append(errs, errOneOf("AlterSourceFailoverGroupOptions.Set", "OptimizedRefresh", "RpoAssurance"))
+		}
 		errs = append(errs, opts.Set.additionalValidations())
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.ReplicationSchedule) {
-			errs = append(errs, errAtLeastOneOf("AlterSourceFailoverGroupOptions.Unset", "ReplicationSchedule"))
+		if !exactlyOneValueSet(opts.Unset.ReplicationSchedule, opts.Unset.OptimizedRefresh, opts.Unset.RpoAssurance) {
+			errs = append(errs, errExactlyOneOf("AlterSourceFailoverGroupOptions.Unset", "ReplicationSchedule", "OptimizedRefresh", "RpoAssurance"))
 		}
 	}
 	if valueSet(opts.Add) {

@@ -3,6 +3,7 @@
 package testint
 
 import (
+	"fmt"
 	"slices"
 	"testing"
 	"time"
@@ -40,7 +41,8 @@ func TestInt_FailoverGroupsCreate(t *testing.T) {
 			WithAllowedDatabases([]sdk.AccountObjectIdentifier{testClientHelper().Ids.DatabaseId()}).
 			WithAllowedShares([]sdk.AccountObjectIdentifier{shareTest.ID()}).
 			WithIgnoreEditionCheck(true).
-			WithReplicationSchedule(replicationSchedule))
+			WithReplicationSchedule(replicationSchedule).
+			WithOptimizedRefresh(true))
 		require.NoError(t, err)
 		failoverGroup, err := client.FailoverGroups.ShowByID(ctx, id)
 		require.NoError(t, err)
@@ -60,6 +62,8 @@ func TestInt_FailoverGroupsCreate(t *testing.T) {
 			assert.Contains(t, failoverGroup.AllowedAccounts, allowedAccount)
 		}
 		assert.Equal(t, replicationSchedule, failoverGroup.ReplicationSchedule)
+		assert.True(t, failoverGroup.IsOptimizedRefreshEnabled)
+		assert.False(t, failoverGroup.RpoAssurance)
 
 		fgDBS, err := client.FailoverGroups.ShowDatabases(ctx, id)
 		require.NoError(t, err)
@@ -287,6 +291,77 @@ func TestInt_FailoverGroupsAlterSource(t *testing.T) {
 		failoverGroup, err = client.FailoverGroups.ShowByID(ctx, failoverGroup.ID())
 		require.NoError(t, err)
 		assert.Equal(t, objectTypes, failoverGroup.ObjectTypes)
+	})
+
+	t.Run("set and unset", func(t *testing.T) {
+		failoverGroup, cleanupFailoverGroup := testClientHelper().FailoverGroup.Create(t)
+		t.Cleanup(cleanupFailoverGroup)
+
+		err := client.FailoverGroups.AlterSource(ctx, sdk.NewAlterSourceFailoverGroupRequest(failoverGroup.ID()).
+			WithSet(*sdk.NewFailoverGroupSetRequest().
+				WithReplicationSchedule("10 MINUTE").
+				WithOptimizedRefresh(true)))
+		require.NoError(t, err)
+
+		failoverGroup, err = client.FailoverGroups.ShowByID(ctx, failoverGroup.ID())
+		require.NoError(t, err)
+		assert.Equal(t, "10 MINUTE", failoverGroup.ReplicationSchedule)
+		assert.True(t, failoverGroup.IsOptimizedRefreshEnabled)
+		assert.False(t, failoverGroup.RpoAssurance)
+
+		// UNSET OPTIMIZED_REFRESH first: unsetting it together with REPLICATION_SCHEDULE
+		// fails because OPTIMIZED_REFRESH requires a schedule.
+		err = client.FailoverGroups.AlterSource(ctx, sdk.NewAlterSourceFailoverGroupRequest(failoverGroup.ID()).
+			WithUnset(*sdk.NewFailoverGroupUnsetRequest().
+				WithOptimizedRefresh(true)))
+		require.NoError(t, err)
+
+		err = client.FailoverGroups.AlterSource(ctx, sdk.NewAlterSourceFailoverGroupRequest(failoverGroup.ID()).
+			WithUnset(*sdk.NewFailoverGroupUnsetRequest().
+				WithReplicationSchedule(true)))
+		require.NoError(t, err)
+
+		failoverGroup, err = client.FailoverGroups.ShowByID(ctx, failoverGroup.ID())
+		require.NoError(t, err)
+		require.Empty(t, failoverGroup.ReplicationSchedule)
+		assert.False(t, failoverGroup.IsOptimizedRefreshEnabled)
+
+		// RPO_ASSURANCE cannot be set with REPLICATION_SCHEDULE; enable after unset.
+		err = client.FailoverGroups.AlterSource(ctx, sdk.NewAlterSourceFailoverGroupRequest(failoverGroup.ID()).
+			WithSet(*sdk.NewFailoverGroupSetRequest().WithRpoAssurance(true)))
+		require.NoError(t, err)
+
+		failoverGroup, err = client.FailoverGroups.ShowByID(ctx, failoverGroup.ID())
+		require.NoError(t, err)
+		assert.True(t, failoverGroup.RpoAssurance)
+
+		err = client.FailoverGroups.AlterSource(ctx, sdk.NewAlterSourceFailoverGroupRequest(failoverGroup.ID()).
+			WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithRpoAssurance(true)))
+		require.NoError(t, err)
+
+		failoverGroup, err = client.FailoverGroups.ShowByID(ctx, failoverGroup.ID())
+		require.NoError(t, err)
+		assert.False(t, failoverGroup.RpoAssurance)
+	})
+
+	// This tests checks if unsetting multiple values is possible (docs suggest the comma syntax).
+	// The errors are returned so SDK has the exactly one field validation on UNSET.
+	t.Run("cannot unset multiple properties in one statement", func(t *testing.T) {
+		failoverGroup, cleanupFailoverGroup := testClientHelper().FailoverGroup.Create(t)
+		t.Cleanup(cleanupFailoverGroup)
+		id := failoverGroup.ID()
+
+		err := client.FailoverGroups.AlterSource(ctx, sdk.NewAlterSourceFailoverGroupRequest(id).
+			WithSet(*sdk.NewFailoverGroupSetRequest().
+				WithReplicationSchedule("10 MINUTE").
+				WithOptimizedRefresh(true)))
+		require.NoError(t, err)
+
+		_, err = client.ExecForTests(ctx, fmt.Sprintf(`ALTER FAILOVER GROUP %s UNSET REPLICATION_SCHEDULE, OPTIMIZED_REFRESH`, id.FullyQualifiedName()))
+		require.ErrorContains(t, err, "Cannot set OPTIMIZED_REFRESH on Failover group without REPLICATION_SCHEDULE")
+
+		_, err = client.ExecForTests(ctx, fmt.Sprintf(`ALTER FAILOVER GROUP %s UNSET REPLICATION_SCHEDULE, OPTIMIZED_REFRESH, RPO_ASSURANCE`, id.FullyQualifiedName()))
+		require.ErrorContains(t, err, "Cannot set OPTIMIZED_REFRESH on Failover group without REPLICATION_SCHEDULE")
 	})
 
 	t.Run("set or update the replication schedule for automatic refresh of secondary failover groups.", func(t *testing.T) {

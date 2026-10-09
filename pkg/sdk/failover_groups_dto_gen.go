@@ -23,6 +23,7 @@ type CreateFailoverGroupRequest struct {
 	AllowedAccounts         []AccountIdentifier // required
 	IgnoreEditionCheck      *bool
 	ReplicationSchedule     *string
+	OptimizedRefresh        *bool
 }
 
 type CreateSecondaryReplicationGroupFailoverGroupRequest struct {
@@ -46,10 +47,14 @@ type FailoverGroupSetRequest struct {
 	ObjectTypes             []PluralObjectType
 	AllowedIntegrationTypes []IntegrationType
 	ReplicationSchedule     *string
+	OptimizedRefresh        *bool
+	RpoAssurance            *bool
 }
 
 type FailoverGroupUnsetRequest struct {
 	ReplicationSchedule *bool
+	OptimizedRefresh    *bool
+	RpoAssurance        *bool
 }
 
 type FailoverGroupAddRequest struct {
