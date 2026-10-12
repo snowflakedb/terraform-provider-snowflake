@@ -330,6 +330,13 @@ func TestAcc_GrantOwnership_BasicUseCase_OnObject_ProcedureWithArguments_ToAccou
 		WithOnObject(sdk.ObjectTypeProcedure, procedureId.FullyQualifiedName()).
 		WithDependsOn(accountRoleModel.ResourceReference(), procedureModel.ResourceReference())
 
+	// TODO(SNOW-4275685): Update this once the issue is fixed.
+	currentRole := testClient().Context.CurrentRole(t)
+	usageGrantModel := model.GrantPrivilegesToAccountRole("usage", currentRole.Name()).
+		WithSchemaObjectPrivileges(sdk.SchemaObjectPrivilegeUsage).
+		WithOnSchemaObjectObject(sdk.ObjectTypeProcedure, procedureId.FullyQualifiedName()).
+		WithDependsOn(grantModel.ResourceReference())
+
 	resourceName := "snowflake_grant_ownership.test"
 
 	resource.Test(t, resource.TestCase{
@@ -339,7 +346,7 @@ func TestAcc_GrantOwnership_BasicUseCase_OnObject_ProcedureWithArguments_ToAccou
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: accconfig.FromModels(t, accountRoleModel, schemaModel, procedureModel, grantModel),
+				Config: accconfig.FromModels(t, accountRoleModel, schemaModel, procedureModel, grantModel, usageGrantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleId.Name()),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", string(sdk.ObjectTypeProcedure)),
@@ -349,7 +356,7 @@ func TestAcc_GrantOwnership_BasicUseCase_OnObject_ProcedureWithArguments_ToAccou
 				),
 			},
 			{
-				Config:            accconfig.FromModels(t, accountRoleModel, schemaModel, procedureModel, grantModel),
+				Config:            accconfig.FromModels(t, accountRoleModel, schemaModel, procedureModel, grantModel, usageGrantModel),
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
