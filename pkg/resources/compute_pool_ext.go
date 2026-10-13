@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -82,7 +81,7 @@ func computePoolApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.Cre
 		booleanStringAttributeCreateBuilder(d, "auto_resume", request.WithAutoResume),
 		booleanStringAttributeCreateBuilder(d, "initially_suspended", request.WithInitiallySuspended),
 		intAttributeWithSpecialDefaultCreateBuilder(d, "auto_suspend_secs", request.WithAutoSuspendSecs),
-		attributeMappedValueCreateBuilder(d, "backup_instance_families", request.WithBackupInstanceFamilies, toComputePoolBackupInstanceFamilies),
+		listValueCreate(d, "backup_instance_families", &request.BackupInstanceFamilies, toComputePoolBackupInstanceFamily),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
 }
@@ -218,8 +217,4 @@ func toComputePoolBackupInstanceFamily(value any) (sdk.ComputePoolBackupInstance
 		return sdk.ComputePoolBackupInstanceFamilyListItem{}, err
 	}
 	return sdk.ComputePoolBackupInstanceFamilyListItem{Value: instanceFamily}, nil
-}
-
-func toComputePoolBackupInstanceFamilies(values []any) ([]sdk.ComputePoolBackupInstanceFamilyListItem, error) {
-	return collections.MapErr(values, toComputePoolBackupInstanceFamily)
 }

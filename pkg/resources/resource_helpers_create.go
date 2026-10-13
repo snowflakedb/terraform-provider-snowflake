@@ -237,6 +237,19 @@ func setValueCreate[T any](d *schema.ResourceData, key string, createField *[]T,
 	return nil
 }
 
+// listValueCreate maps each element of a TypeList attribute and assigns the mapped slice when the
+// attribute is set. An absent list leaves createField untouched.
+func listValueCreate[T any](d *schema.ResourceData, key string, createField *[]T, mapper func(any) (T, error)) error {
+	if v, ok := d.GetOk(key); ok {
+		mappedValue, err := collections.MapErr(v.([]any), mapper)
+		if err != nil {
+			return err
+		}
+		*createField = mappedValue
+	}
+	return nil
+}
+
 // setMappedValueCreateBuilder maps each element of a schema.Set attribute and passes the mapped
 // slice to setValue when the attribute is set. An absent or empty set leaves the request unchanged.
 func setMappedValueCreateBuilder[T any, RequestBuilder any](d *schema.ResourceData, key string, setValue func([]T) RequestBuilder, mapper func(any) (T, error)) error {

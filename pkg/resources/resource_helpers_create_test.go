@@ -63,6 +63,32 @@ func Test_setValueCreate(t *testing.T) {
 	assert.Nil(t, untouched)
 }
 
+func Test_listValueCreate(t *testing.T) {
+	listSchema := map[string]*schema.Schema{
+		"items": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+	}
+	d := schema.TestResourceDataRaw(t, listSchema, map[string]any{
+		"items": []any{"a", "b"},
+	})
+
+	var got []string
+	require.NoError(t, listValueCreate(d, "items", &got, func(v any) (string, error) {
+		return v.(string), nil
+	}))
+	assert.Equal(t, []string{"a", "b"}, got)
+
+	absent := schema.TestResourceDataRaw(t, listSchema, map[string]any{})
+	var untouched []string
+	require.NoError(t, listValueCreate(absent, "items", &untouched, func(v any) (string, error) {
+		return v.(string), nil
+	}))
+	assert.Nil(t, untouched)
+}
+
 type exampleBlock struct {
 	Name *string
 }
