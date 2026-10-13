@@ -4,7 +4,7 @@
 		ShowOutputAttributeName: {
 			Type:        tfschema.TypeList,
 			Computed:    true,
-			Description: "Outputs the result of `SHOW {{ ToUpper (CamelToWords .Name) }}S` for the given {{ CamelToWords .Name }}.",
+			Description: "Outputs the result of `SHOW {{ ToUpper (CamelToWords .NamePlural) }}` for the given {{ CamelToWords .Name }}.",
 			Elem: &tfschema.Resource{
 				Schema: schemas.Show{{ .Name }}Schema,
 			},

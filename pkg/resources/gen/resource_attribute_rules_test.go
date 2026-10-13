@@ -3,12 +3,14 @@ package gen
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/stretchr/testify/require"
 )
 
-func Test_attributeRules_namesAreUniqueAndDocumented(t *testing.T) {
-	seen := make(map[string]struct{}, len(attributeRules))
-	for _, rule := range attributeRules {
+func Test_resourceAttributeRules_namesAreUniqueAndDocumented(t *testing.T) {
+	seen := make(map[string]struct{}, len(resourceAttributeRules))
+	for _, rule := range resourceAttributeRules {
 		require.NotEmpty(t, rule.Name)
 		require.NotEmpty(t, rule.Description, rule.Name)
 		_, dup := seen[rule.Name]
@@ -17,12 +19,12 @@ func Test_attributeRules_namesAreUniqueAndDocumented(t *testing.T) {
 	}
 }
 
-func Test_applyAttributeRules_optionalBoolIsBooleanString(t *testing.T) {
-	got := resolveAttribute(Attribute{
+func Test_applyResourceAttributeRules_optionalBoolIsBooleanString(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "auto_resume",
-		Type:        AttrBool,
+		Type:        ssot.AttrBool,
 		Description: "Specifies whether to automatically resume.",
-	}, attributeRuleContext{})
+	}, resourceAttributeRuleContext{})
 
 	require.Equal(t, SchemaTypeString, got.TfType)
 	require.True(t, got.Optional)
@@ -31,26 +33,26 @@ func Test_applyAttributeRules_optionalBoolIsBooleanString(t *testing.T) {
 	require.Equal(t, `booleanStringFieldDescription("Specifies whether to automatically resume.")`, got.DescriptionExpr)
 }
 
-func Test_applyAttributeRules_optionalBoolRawDescription(t *testing.T) {
-	got := resolveAttribute(Attribute{
+func Test_applyResourceAttributeRules_optionalBoolRawDescription(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
 		Name:           "initially_suspended",
-		Type:           AttrBool,
+		Type:           ssot.AttrBool,
 		Description:    "Specifies whether the compute pool is created initially in the suspended state.",
 		RawDescription: true,
-	}, attributeRuleContext{})
+	}, resourceAttributeRuleContext{})
 
 	require.Equal(t, SchemaTypeString, got.TfType)
 	require.Equal(t, "BooleanDefault", got.DefaultExpr)
 	require.Equal(t, `"Specifies whether the compute pool is created initially in the suspended state."`, got.DescriptionExpr)
 }
 
-func Test_applyAttributeRules_requiredBoolIsNative(t *testing.T) {
-	got := resolveAttribute(Attribute{
+func Test_applyResourceAttributeRules_requiredBoolIsNative(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "enabled",
-		Type:        AttrBool,
+		Type:        ssot.AttrBool,
 		Required:    true,
 		Description: "Specifies whether it is enabled.",
-	}, attributeRuleContext{})
+	}, resourceAttributeRuleContext{})
 
 	require.Equal(t, SchemaTypeBool, got.TfType)
 	require.True(t, got.Required)
@@ -59,59 +61,59 @@ func Test_applyAttributeRules_requiredBoolIsNative(t *testing.T) {
 	require.Equal(t, `"Specifies whether it is enabled."`, got.DescriptionExpr)
 }
 
-func Test_applyAttributeRules_optionalIntMinAllowsZeroUsesIntDefault(t *testing.T) {
-	got := resolveAttribute(Attribute{
+func Test_applyResourceAttributeRules_optionalIntMinAllowsZeroUsesIntDefault(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "auto_suspend_secs",
-		Type:        AttrInt,
+		Type:        ssot.AttrInt,
 		Description: "Number of seconds.",
 		Min:         new(0),
-	}, attributeRuleContext{})
+	}, resourceAttributeRuleContext{})
 
 	require.Equal(t, SchemaTypeInt, got.TfType)
 	require.Equal(t, "IntDefault", got.DefaultExpr)
 	require.Equal(t, "validation.ToDiagFunc(validation.IntAtLeast(0))", got.ValidateDiagExpr)
 }
 
-func Test_applyAttributeRules_optionalIntWithoutZeroMinHasNoIntDefault(t *testing.T) {
+func Test_applyResourceAttributeRules_optionalIntWithoutZeroMinHasNoIntDefault(t *testing.T) {
 	t.Run("no min", func(t *testing.T) {
-		got := resolveAttribute(Attribute{Name: "n", Type: AttrInt}, attributeRuleContext{})
+		got := resolveResourceAttribute(ssot.Attribute{Name: "n", Type: ssot.AttrInt}, resourceAttributeRuleContext{})
 		require.Empty(t, got.DefaultExpr)
 		require.Empty(t, got.ValidateDiagExpr)
 	})
 	t.Run("min greater than zero", func(t *testing.T) {
-		got := resolveAttribute(Attribute{Name: "n", Type: AttrInt, Min: new(1)}, attributeRuleContext{})
+		got := resolveResourceAttribute(ssot.Attribute{Name: "n", Type: ssot.AttrInt, Min: new(1)}, resourceAttributeRuleContext{})
 		require.Empty(t, got.DefaultExpr)
 		require.Equal(t, "validation.ToDiagFunc(validation.IntAtLeast(1))", got.ValidateDiagExpr)
 	})
 	t.Run("required with min zero", func(t *testing.T) {
-		got := resolveAttribute(Attribute{Name: "n", Type: AttrInt, Required: true, Min: new(0)}, attributeRuleContext{})
+		got := resolveResourceAttribute(ssot.Attribute{Name: "n", Type: ssot.AttrInt, Required: true, Min: new(0)}, resourceAttributeRuleContext{})
 		require.Empty(t, got.DefaultExpr)
 	})
 }
 
-func Test_applyAttributeRules_identifierSuppressesQuoting(t *testing.T) {
-	got := resolveAttribute(Attribute{
+func Test_applyResourceAttributeRules_identifierSuppressesQuoting(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "for_application",
-		Type:        AttrIdentifier,
+		Type:        ssot.AttrIdentifier,
 		ForceNew:    true,
 		Description: "Specifies the Snowflake Native App name.",
-	}, attributeRuleContext{})
+	}, resourceAttributeRuleContext{})
 
 	require.Equal(t, SchemaTypeString, got.TfType)
 	require.True(t, got.ForceNew)
 	require.Equal(t, "suppressIdentifierQuoting", got.DiffSuppressExpr)
 }
 
-func Test_applyAttributeRules_enumField(t *testing.T) {
-	got := resolveAttribute(Attribute{
+func Test_applyResourceAttributeRules_enumField(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
 		Name:                  "instance_family",
-		Type:                  AttrEnum,
+		Type:                  ssot.AttrEnum,
 		Required:              true,
 		ForceNew:              true,
 		Description:           "Identifies the type of machine.",
 		AdditionalDescription: "Not all instance families are supported.",
-		EnumPlural:            "InstanceFamilies",
-	}, attributeRuleContext{ResourceName: "ComputePool"})
+		Enum:                  defs.ComputePoolInstanceFamily,
+	}, resourceAttributeRuleContext{})
 
 	require.Equal(t, SchemaTypeString, got.TfType)
 	require.True(t, got.Required)
@@ -120,17 +122,16 @@ func Test_applyAttributeRules_enumField(t *testing.T) {
 	require.Equal(t, `"Identifies the type of machine. " + enumValuesDescription(sdk.AllComputePoolInstanceFamilies) + " Not all instance families are supported."`, got.DescriptionExpr)
 }
 
-func Test_applyAttributeRules_listOfEnum(t *testing.T) {
-	got := resolveAttribute(Attribute{
+func Test_applyResourceAttributeRules_listOfEnum(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "backup_instance_families",
-		Type:        AttrList,
+		Type:        ssot.AttrList,
 		Description: "Specifies an ordered list of instance families.",
-		Elem: &Attribute{
-			Type:       AttrEnum,
-			Enum:       "InstanceFamily",
-			EnumPlural: "InstanceFamilies",
+		Elem: &ssot.Attribute{
+			Type: ssot.AttrEnum,
+			Enum: defs.ComputePoolInstanceFamily,
 		},
-	}, attributeRuleContext{ResourceName: "ComputePool"})
+	}, resourceAttributeRuleContext{})
 
 	require.Equal(t, SchemaTypeList, got.TfType)
 	require.True(t, got.Optional)
@@ -145,17 +146,16 @@ func Test_applyAttributeRules_listOfEnum(t *testing.T) {
 	require.Empty(t, got.Elem.DescriptionExpr)
 }
 
-func Test_applyAttributeRules_setOfEnum(t *testing.T) {
-	got := resolveAttribute(Attribute{
+func Test_applyResourceAttributeRules_setOfEnum(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "allowed_values",
-		Type:        AttrSet,
+		Type:        ssot.AttrSet,
 		Description: "Specifies a set of allowed values.",
-		Elem: &Attribute{
-			Type:       AttrEnum,
-			Enum:       "InstanceFamily",
-			EnumPlural: "InstanceFamilies",
+		Elem: &ssot.Attribute{
+			Type: ssot.AttrEnum,
+			Enum: defs.ComputePoolInstanceFamily,
 		},
-	}, attributeRuleContext{ResourceName: "ComputePool"})
+	}, resourceAttributeRuleContext{})
 
 	require.Equal(t, SchemaTypeSet, got.TfType)
 	require.True(t, got.Optional)
@@ -170,13 +170,13 @@ func Test_applyAttributeRules_setOfEnum(t *testing.T) {
 	require.Empty(t, got.Elem.DescriptionExpr)
 }
 
-func Test_applyAttributeRules_setOfString(t *testing.T) {
-	got := resolveAttribute(Attribute{
+func Test_applyResourceAttributeRules_setOfString(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "allowed_accounts",
-		Type:        AttrSet,
+		Type:        ssot.AttrSet,
 		Description: "Specifies a set of accounts.",
-		Elem:        &Attribute{Type: AttrString},
-	}, attributeRuleContext{})
+		Elem:        &ssot.Attribute{Type: ssot.AttrString},
+	}, resourceAttributeRuleContext{})
 
 	require.Equal(t, SchemaTypeSet, got.TfType)
 	require.True(t, got.Optional)
@@ -190,34 +190,34 @@ func Test_applyAttributeRules_setOfString(t *testing.T) {
 }
 
 func Test_isCollection(t *testing.T) {
-	require.True(t, isCollection(Attribute{Type: AttrList}))
-	require.True(t, isCollection(Attribute{Type: AttrSet}))
-	require.False(t, isCollection(Attribute{Type: AttrString}))
-	require.False(t, isCollection(Attribute{Type: AttrEnum}))
+	require.True(t, isCollection(ssot.Attribute{Type: ssot.AttrList}))
+	require.True(t, isCollection(ssot.Attribute{Type: ssot.AttrSet}))
+	require.False(t, isCollection(ssot.Attribute{Type: ssot.AttrString}))
+	require.False(t, isCollection(ssot.Attribute{Type: ssot.AttrEnum}))
 
-	require.True(t, isCollectionOfEnum(Attribute{Type: AttrList, Elem: &Attribute{Type: AttrEnum}}))
-	require.True(t, isCollectionOfEnum(Attribute{Type: AttrSet, Elem: &Attribute{Type: AttrEnum}}))
-	require.False(t, isCollectionOfEnum(Attribute{Type: AttrList, Elem: &Attribute{Type: AttrString}}))
-	require.False(t, isCollectionOfEnum(Attribute{Type: AttrSet}))
-	require.False(t, isCollectionOfEnum(Attribute{Type: AttrEnum}))
+	require.True(t, isCollectionOfEnum(ssot.Attribute{Type: ssot.AttrList, Elem: &ssot.Attribute{Type: ssot.AttrEnum}}))
+	require.True(t, isCollectionOfEnum(ssot.Attribute{Type: ssot.AttrSet, Elem: &ssot.Attribute{Type: ssot.AttrEnum}}))
+	require.False(t, isCollectionOfEnum(ssot.Attribute{Type: ssot.AttrList, Elem: &ssot.Attribute{Type: ssot.AttrString}}))
+	require.False(t, isCollectionOfEnum(ssot.Attribute{Type: ssot.AttrSet}))
+	require.False(t, isCollectionOfEnum(ssot.Attribute{Type: ssot.AttrEnum}))
 }
 
 func Test_sdkEnumSymbols(t *testing.T) {
-	ctx := attributeRuleContext{ResourceName: "ComputePool"}
-	attr := Attribute{Name: "instance_family", Type: AttrEnum, EnumPlural: "InstanceFamilies"}
+	ctx := resourceAttributeRuleContext{}
+	attr := ssot.Attribute{Name: "instance_family", Type: ssot.AttrEnum, Enum: defs.ComputePoolInstanceFamily}
 
-	require.Equal(t, "InstanceFamily", enumName(attr))
-	require.Equal(t, "InstanceFamilies", enumPlural(attr))
+	require.Equal(t, "ComputePoolInstanceFamily", enumDef(attr).Name)
+	require.Equal(t, "ComputePoolInstanceFamilies", enumDef(attr).NamePlural)
 	require.Equal(t, "sdk.ToComputePoolInstanceFamily", ctx.sdkEnumTo(attr))
 	require.Equal(t, "sdk.AllComputePoolInstanceFamilies", ctx.sdkEnumAll(attr))
 }
 
-func Test_applyAttributeRules_comment(t *testing.T) {
-	got := resolveAttribute(Attribute{
+func Test_applyResourceAttributeRules_comment(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "comment",
-		Type:        AttrString,
+		Type:        ssot.AttrString,
 		Description: "Specifies a comment for the compute pool.",
-	}, attributeRuleContext{})
+	}, resourceAttributeRuleContext{})
 
 	require.Equal(t, SchemaTypeString, got.TfType)
 	require.True(t, got.Optional)

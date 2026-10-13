@@ -1,6 +1,7 @@
 package defs
 
 import (
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
@@ -13,7 +14,7 @@ var ComputePoolStateEnumDef = g.NewEnum(
 )
 
 var ComputePoolBackupInstanceFamilyListItemDef = g.NewQueryStruct("ComputePoolBackupInstanceFamilyListItem").
-	WithField(g.EnumLegacy[sdkcommons.ComputePoolInstanceFamily]("Value", g.KeywordOptions().SingleQuotes().Required()))
+	Enum("Value", ssotdefs.ComputePoolInstanceFamily, g.KeywordOptions().SingleQuotes().Required())
 
 var computePoolsDef = g.NewInterface(
 	"ComputePools",
@@ -30,11 +31,7 @@ var computePoolsDef = g.NewInterface(
 		OptionalIdentifier("ForApplication", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("FOR APPLICATION")).
 		NumberAssignment("MIN_NODES", g.ParameterOptions().Required()).
 		NumberAssignment("MAX_NODES", g.ParameterOptions().Required()).
-		Assignment(
-			"INSTANCE_FAMILY",
-			g.KindOfT[sdkcommons.ComputePoolInstanceFamily](),
-			g.ParameterOptions().NoQuotes().Required(),
-		).
+		EnumAssignment("INSTANCE_FAMILY", ssotdefs.ComputePoolInstanceFamily, g.ParameterOptions().NoQuotes().Required()).
 		OptionalBooleanAssignment("AUTO_RESUME", g.ParameterOptions()).
 		OptionalBooleanAssignment("INITIALLY_SUSPENDED", g.ParameterOptions()).
 		OptionalNumberAssignment("AUTO_SUSPEND_SECS", g.ParameterOptions()).
@@ -97,7 +94,7 @@ var computePoolsDef = g.NewInterface(
 		Enum("state", ComputePoolStateEnumDef).
 		Number("min_nodes").
 		Number("max_nodes").
-		PlainField("instance_family", "ComputePoolInstanceFamily", g.WithCustomParser("ToComputePoolInstanceFamily")).
+		Enum("instance_family", ssotdefs.ComputePoolInstanceFamily).
 		Number("num_services").
 		Number("num_jobs").
 		Number("auto_suspend_secs").
@@ -127,7 +124,7 @@ var computePoolsDef = g.NewInterface(
 		Enum("state", ComputePoolStateEnumDef).
 		Number("min_nodes").
 		Number("max_nodes").
-		PlainField("instance_family", "ComputePoolInstanceFamily", g.WithCustomParser("ToComputePoolInstanceFamily")).
+		Enum("instance_family", ssotdefs.ComputePoolInstanceFamily).
 		Number("num_services").
 		Number("num_jobs").
 		Number("auto_suspend_secs").
@@ -153,4 +150,5 @@ var computePoolsDef = g.NewInterface(
 ).
 	WithEnums(
 		ComputePoolStateEnumDef,
+		ssotdefs.ComputePoolInstanceFamily,
 	)

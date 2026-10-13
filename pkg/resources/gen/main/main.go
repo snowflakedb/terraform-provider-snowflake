@@ -36,14 +36,14 @@ func main() {
 		RunAndHandleOsReturn()
 }
 
-func lifecycleFilename(_ gen.ResourceDef, model gen.ResourceModel) string {
+func lifecycleFilename(_ gen.ResourceObject, model gen.ResourceModel) string {
 	return genhelpers.ToSnakeCase(model.Name) + "_gen.go"
 }
 
-func schemaFilename(_ gen.ResourceDef, model gen.ResourceModel) string {
+func schemaFilename(_ gen.ResourceObject, model gen.ResourceModel) string {
 	return genhelpers.ToSnakeCase(model.Name) + "_schema_gen.go"
 }
 
-func parametersFilename(_ gen.ResourceDef, model gen.ResourceModel) string {
+func parametersFilename(_ gen.ResourceObject, model gen.ResourceModel) string {
 	return genhelpers.ToSnakeCase(model.Name) + "_parameters_gen.go"
 }

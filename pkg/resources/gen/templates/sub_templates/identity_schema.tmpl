@@ -16,6 +16,7 @@ schema in which the {{ CamelToWords .Name }} is created
 {{- end }}.{{ if .AdditionalIdentityNameDescription }} {{ .AdditionalIdentityNameDescription }}{{ end }}"),
 			DiffSuppressFunc: suppressIdentifierQuoting,
 		},
+{{- /* TODO [next PRs]: depending on the resource rename capabilities and hierarchy renames experiment state, some of these may require force new. Adjust when dealing with renames. */}}
 {{- if or (eq .IdType "DatabaseObjectIdentifier") (eq .IdType "SchemaObjectIdentifier") }}
 		"database": {
 			Type:             tfschema.TypeString,

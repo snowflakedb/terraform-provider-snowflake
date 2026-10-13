@@ -3,16 +3,12 @@ package gen
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/stretchr/testify/require"
 )
 
-func Test_defaultExtHooks_options(t *testing.T) {
-	hooks := defaultExtHooks(
-		WithBeforeCreate(generated()),
-		WithFqnSet(omitted()),
-	)
-
-	require.Equal(t, generated(), hooks.BeforeCreate)
-	require.Equal(t, omitted(), hooks.FqnSet)
-	require.Equal(t, extCall(), hooks.ParseId)
+func Test_ResourceObject_implementsHasObjectGenerationSettings(t *testing.T) {
+	o := ResourceObject{ObjectGenerationSettings: &genhelpers.ObjectGenerationSettings{}}
+	_, ok := any(o).(genhelpers.HasObjectGenerationSettings)
+	require.True(t, ok)
 }
