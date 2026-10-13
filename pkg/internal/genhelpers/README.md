@@ -90,6 +90,9 @@ To create a new generator:
     - `--enable-generation-part-names <name1>,<name2>,...` allowing to force-enable optional (disabled-by-default)
       generation parts for all objects during a run
     - `--verbose` allowing to see the all the additional debug logs
+    - `--parallelism <n>` setting how many objects are generated at once after filtering; `1` (the flag default) keeps
+      sequential generation. `--dry-run` ignores this flag and stays sequential. The `generate-all` leaf recipes pass
+      `GENERATOR_PARALLELISM` (default `5`) as this flag; a `--parallelism` later in `SF_TF_GENERATOR_ARGS` wins
 
 ### Next steps
 
@@ -196,19 +199,28 @@ All genhelpers-based generators accept flags via `SF_TF_GENERATOR_ARGS`:
 make generate-<target> SF_TF_GENERATOR_ARGS='<flags>'
 ```
 
-| Flag                                  | Purpose                                              |
-|---------------------------------------|------------------------------------------------------|
-| `--dry-run`                           | Print output to stdout, write nothing                |
-| `-h` / `--help`                       | List valid object names, generation parts, and flags |
-| `--filter-object-names=A,B`           | Only generate for listed objects (case-sensitive)    |
-| `--exclude-object-names=A,B`          | Skip listed objects                                  |
-| `--filter-generation-part-names=A,B`  | Only run listed generation parts                     |
-| `--exclude-generation-part-names=A,B` | Exclude listed generation parts                      |
-| `--verbose`                           | Print additional debug output                        |
+| Flag                                  | Purpose                                                                                                                                    |
+|---------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
+| `--dry-run`                           | Print output to stdout, write nothing                                                                                                      |
+| `-h` / `--help`                       | List valid object names, generation parts, and flags                                                                                       |
+| `--filter-object-names=A,B`           | Only generate for listed objects (case-sensitive)                                                                                          |
+| `--exclude-object-names=A,B`          | Skip listed objects                                                                                                                        |
+| `--filter-generation-part-names=A,B`  | Only run listed generation parts                                                                                                           |
+| `--exclude-generation-part-names=A,B` | Exclude listed generation parts                                                                                                            |
+| `--verbose`                           | Print additional debug output                                                                                                              |
+| `--parallelism=<n>`                   | Objects generated at once after filtering; flag default 1, `make` passes `GENERATOR_PARALLELISM` (default 5). `--dry-run` stays sequential |
 
 Run `make generate-<target> SF_TF_GENERATOR_ARGS='-h'` to discover valid object names for any generator.
 
 > **Note:** `generate-issue-labels` is a standalone tool and does not support `SF_TF_GENERATOR_ARGS`.
+
+### Parallel execution follow-ups
+
+With `--parallelism` greater than 1, each worker generates one object and writes that object's files. Workers share the process `log` logger. A line from one object can land between lines from another, in whichever order the log calls finish. `errors.Join` reports failures in that same completion order. Generated file bytes stay stable, because each object still writes its own paths and parts of one object still run in order on that worker.
+
+Per-object loggers are the follow-up for that. Give each object a logger prefixed with its name, buffer that object's lines for the whole job, and flush the buffer when the object finishes, following the filtered object list. Lines then stay grouped by object instead of arriving as a mix from every worker.
+
+`--dry-run` still uses the sequential print path. It writes each object's header and rendered source straight to stdout, and it ignores `--parallelism`, because a parallel print would interleave those streams the same way the logs do. The follow-up is the same buffering idea: render every object into its own buffer (headers included), then write those buffers to stdout in input order. After that, dry-run can use the worker pool too.
 
 ### Troubleshooting
 
