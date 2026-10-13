@@ -111,21 +111,17 @@ func deleteCatalogIntegrationFunc() schema.DeleteContextFunc {
 	)
 }
 
-func buildOAuthRestAuthenticationRequest(d *schema.ResourceData, attrName string) (sdk.OAuthRestAuthenticationRequest, error) {
-	v := d.Get(attrName).([]any)
-	block := v[0].(map[string]any)
-	oauthClientId := block["oauth_client_id"].(string)
-	oauthClientSecret := block["oauth_client_secret"].(string)
-	scopesRaw := expandStringList(block["oauth_allowed_scopes"].([]any))
-	scopes := collections.Map(scopesRaw, func(v string) sdk.StringListItemWrapper {
+func parseOAuthRestAuthentication(d *schema.ResourceData, prefix string) (sdk.OAuthRestAuthenticationRequest, error) {
+	scopes := collections.Map(expandStringList(d.Get(prefix+"oauth_allowed_scopes").([]any)), func(v string) sdk.StringListItemWrapper {
 		return sdk.StringListItemWrapper{Value: v}
 	})
-	req := sdk.NewOAuthRestAuthenticationRequest(oauthClientId, oauthClientSecret, scopes)
-
-	if v, ok := block["oauth_token_uri"].(string); ok && v != "" {
-		req = req.WithOauthTokenUri(v)
-	}
-	return *req, nil
+	req := sdk.NewOAuthRestAuthenticationRequest(
+		d.Get(prefix+"oauth_client_id").(string),
+		d.Get(prefix+"oauth_client_secret").(string),
+		scopes,
+	)
+	err := stringAttributeCreateBuilder(d, prefix+"oauth_token_uri", req.WithOauthTokenUri)
+	return *req, err
 }
 
 func handleExternalChangesToOAuthRestAuthentication(d *schema.ResourceData, attrName, oAuthTokenUri, oAuthClientId string, oAuthAllowedScopes []string) error {

@@ -170,19 +170,12 @@ func CreateCatalogIntegrationOpenCatalog(ctx context.Context, d *schema.Resource
 	}
 	enabled := d.Get("enabled").(bool)
 
-	restConfig, err := buildOpenCatalogRestConfigRequest(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	restAuth, err := buildOAuthRestAuthenticationRequest(d, "rest_authentication")
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	openCatalogParams := sdk.NewOpenCatalogParamsRequest().
-		WithRestConfig(restConfig).
-		WithRestAuthentication(restAuth)
-	if err := stringAttributeCreateBuilder(d, "catalog_namespace", openCatalogParams.WithCatalogNamespace); err != nil {
+	openCatalogParams := sdk.NewOpenCatalogParamsRequest()
+	if err := errors.Join(
+		singleBlockAttributeCreate(d, "rest_config", openCatalogParams.WithRestConfig, parseOpenCatalogRestConfig),
+		singleBlockAttributeCreate(d, "rest_authentication", openCatalogParams.WithRestAuthentication, parseOAuthRestAuthentication),
+		stringAttributeCreateBuilder(d, "catalog_namespace", openCatalogParams.WithCatalogNamespace),
+	); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -269,12 +262,12 @@ func UpdateCatalogIntegrationOpenCatalog(ctx context.Context, d *schema.Resource
 
 	set := sdk.NewCatalogIntegrationSetRequest()
 
-	if d.HasChange("rest_authentication.0.oauth_client_secret") {
-		newSecret := d.Get("rest_authentication.0.oauth_client_secret").(string)
-		set.SetOAuthRestAuthentication = sdk.NewSetOAuthRestAuthenticationRequest(newSecret)
-	}
-
-	if errs := handleCatalogIntegrationCommonPropsUpdate(d, set); errs != nil {
+	if errs := errors.Join(
+		attributeMappedValueUpdateSetOnlyAlways(d, "rest_authentication.0.oauth_client_secret", &set.SetOAuthRestAuthentication, func(secret string) (sdk.SetOAuthRestAuthenticationRequest, error) {
+			return *sdk.NewSetOAuthRestAuthenticationRequest(secret), nil
+		}),
+		handleCatalogIntegrationCommonPropsUpdate(d, set),
+	); errs != nil {
 		return diag.FromErr(errs)
 	}
 
@@ -287,28 +280,13 @@ func UpdateCatalogIntegrationOpenCatalog(ctx context.Context, d *schema.Resource
 	return ReadCatalogIntegrationOpenCatalogFunc(false)(ctx, d, meta)
 }
 
-func buildOpenCatalogRestConfigRequest(d *schema.ResourceData) (sdk.OpenCatalogRestConfigRequest, error) {
-	v := d.Get("rest_config").([]any)
-	block := v[0].(map[string]any)
-	catalogUri := block["catalog_uri"].(string)
-	catalogName := block["catalog_name"].(string)
-	req := sdk.NewOpenCatalogRestConfigRequest(catalogUri, catalogName)
-
-	if v, ok := block["catalog_api_type"].(string); ok && v != "" {
-		t, err := sdk.ToCatalogIntegrationCatalogApiType(v)
-		if err != nil {
-			return sdk.OpenCatalogRestConfigRequest{}, err
-		}
-		req = req.WithCatalogApiType(t)
-	}
-	if v, ok := block["access_delegation_mode"].(string); ok && v != "" {
-		t, err := sdk.ToCatalogIntegrationAccessDelegationMode(v)
-		if err != nil {
-			return sdk.OpenCatalogRestConfigRequest{}, err
-		}
-		req = req.WithAccessDelegationMode(t)
-	}
-	return *req, nil
+func parseOpenCatalogRestConfig(d *schema.ResourceData, prefix string) (sdk.OpenCatalogRestConfigRequest, error) {
+	req := sdk.NewOpenCatalogRestConfigRequest(d.Get(prefix+"catalog_uri").(string), d.Get(prefix+"catalog_name").(string))
+	err := errors.Join(
+		attributeMappedValueCreateBuilder(d, prefix+"catalog_api_type", req.WithCatalogApiType, sdk.ToCatalogIntegrationCatalogApiType),
+		attributeMappedValueCreateBuilder(d, prefix+"access_delegation_mode", req.WithAccessDelegationMode, sdk.ToCatalogIntegrationAccessDelegationMode),
+	)
+	return *req, err
 }
 
 // handleExternalChangesToNestedAttrs marks drift on rest_config and rest_authentication when

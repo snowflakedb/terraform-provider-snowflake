@@ -309,6 +309,19 @@ func listValueUpdate[T any](d *schema.ResourceData, key string, setField *[]T, u
 	return nil
 }
 
+// attributeMappedValueUpdateSetOnlyAlways maps the current value whenever the attribute changed,
+// including values GetOk treats as empty. There is no unset.
+func attributeMappedValueUpdateSetOnlyAlways[T, R any](d *schema.ResourceData, key string, setField **R, mapper func(T) (R, error)) error {
+	if d.HasChange(key) {
+		mappedValue, err := mapper(d.Get(key).(T))
+		if err != nil {
+			return err
+		}
+		*setField = sdk.Pointer(mappedValue)
+	}
+	return nil
+}
+
 func attributeMappedValueUpdateSetOnly[T, R any](d *schema.ResourceData, key string, setField **R, mapper func(T) (R, error)) error {
 	if d.HasChange(key) {
 		if v, ok := d.GetOk(key); ok {
