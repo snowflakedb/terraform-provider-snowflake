@@ -26,6 +26,16 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.22.0 ➞ v2.22.1
+
+### *(bug fix)* `snowflake_pipe` reads SNS topic ARNs from every AWS partition
+
+Reading a [`snowflake_pipe`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/pipe) previously set `aws_sns_topic_arn` only when the notification channel contained the commercial prefix `arn:aws:sns:`. Channels in other AWS partitions, such as `arn:aws-iso:sns:...` and `arn:aws-us-gov:sns:...`, left `aws_sns_topic_arn` empty after every refresh. When the configuration set that field, `terraform plan` reported a perpetual diff.
+
+The provider now treats a notification channel as an SNS topic when it contains `:sns:`. Commercial SNS channels are unchanged. SQS channels are still not copied into `aws_sns_topic_arn`.
+
+No configuration changes are required for pipes that use a commercial SNS ARN. After upgrading, refresh pipes whose notification channel is an SNS ARN in another AWS partition. If `aws_sns_topic_arn` is already set and matches the channel, the perpetual diff goes away. The attribute is ForceNew. If the configuration omits it, the next plan may propose replacing the pipe once the read fills the value; add the channel ARN to the configuration to keep the pipe. This resource is still in preview and will be reworked in the future.
+
 ## v2.21.x ➞ v2.22.0
 
 ### *(new feature)* `optimized_refresh` and `rpo_assurance` on `snowflake_failover_group`

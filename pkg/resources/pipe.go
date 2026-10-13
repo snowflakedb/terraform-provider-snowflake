@@ -158,6 +158,12 @@ func CreatePipe(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 	return ReadPipe(ctx, d, meta)
 }
 
+// notificationChannelIsAwsSnsTopic reports whether a pipe notification channel is an SNS topic ARN.
+// ":sns:" matches the service field in any AWS partition, including aws-iso.
+func notificationChannelIsAwsSnsTopic(notificationChannel string) bool {
+	return strings.Contains(notificationChannel, ":sns:")
+}
+
 // ReadPipe implements schema.ReadFunc.
 func ReadPipe(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
@@ -214,7 +220,7 @@ func ReadPipe(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagno
 		return diag.FromErr(err)
 	}
 
-	if strings.Contains(pipe.NotificationChannel, "arn:aws:sns:") {
+	if notificationChannelIsAwsSnsTopic(pipe.NotificationChannel) {
 		if err := d.Set("aws_sns_topic_arn", pipe.NotificationChannel); err != nil {
 			return diag.FromErr(err)
 		}
