@@ -84,6 +84,21 @@ func booleanStringAttributeCreateBuilder[T any](d *schema.ResourceData, key stri
 	return nil
 }
 
+// booleanStringAttributeCreateFallbackBuilder sets fallbackValue when the tri-state field is BooleanDefault.
+// An explicit "true" or "false" is parsed and set.
+func booleanStringAttributeCreateFallbackBuilder[T any](d *schema.ResourceData, key string, setValue func(bool) T, fallbackValue bool) error {
+	if v := d.Get(key).(string); v != BooleanDefault {
+		parsed, err := booleanStringToBool(v)
+		if err != nil {
+			return err
+		}
+		setValue(parsed)
+		return nil
+	}
+	setValue(fallbackValue)
+	return nil
+}
+
 // booleanStringPairAttributeCreate reads a tri-state boolean string field and sets exactly one of the
 // two given pointer fields: positiveField when the value is "true", negativeField when it is "false".
 // Both are left untouched when the value is BooleanDefault. Useful for squashing a pair of mutually
@@ -191,6 +206,33 @@ func attributeMappedValueCreateBuilderNested[MappedType any, RequestBuilder any]
 			return err
 		}
 		setValue(value)
+	}
+	return nil
+}
+
+// singleBlockAttributeCreate parses a MaxItems=1 list block when it is set.
+// parse receives the nested prefix "<key>.0." and reads fields with the existing attribute helpers.
+func singleBlockAttributeCreate[Value any, RequestBuilder any](d *schema.ResourceData, key string, setValue func(Value) RequestBuilder, parse func(*schema.ResourceData, string) (Value, error)) error {
+	if _, ok := d.GetOk(key); !ok {
+		return nil
+	}
+	value, err := parse(d, key+".0.")
+	if err != nil {
+		return err
+	}
+	setValue(value)
+	return nil
+}
+
+// setValueCreate maps each element of a schema.Set attribute and assigns the mapped slice when the
+// attribute is set. An absent or empty set leaves createField untouched.
+func setValueCreate[T any](d *schema.ResourceData, key string, createField *[]T, mapper func(any) (T, error)) error {
+	if v, ok := d.GetOk(key); ok {
+		mappedValue, err := collections.MapErr(v.(*schema.Set).List(), mapper)
+		if err != nil {
+			return err
+		}
+		*createField = mappedValue
 	}
 	return nil
 }

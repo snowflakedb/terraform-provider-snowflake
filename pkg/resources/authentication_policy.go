@@ -368,9 +368,9 @@ func CreateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 		attributeMappedValueCreateBuilder(d, "security_integrations", req.WithSecurityIntegrations, ToSecurityIntegrationsRequest),
 		attributeMappedValueCreateBuilder(d, "mfa_enrollment", req.WithMfaEnrollment, sdk.ToMfaEnrollmentOption),
 		stringAttributeCreateBuilder(d, "comment", req.WithComment),
-		attributeMappedValueCreateBuilder(d, "mfa_policy", req.WithMfaPolicy, ToMfaPolicyRequest),
-		attributeMappedValueCreateBuilder(d, "pat_policy", req.WithPatPolicy, ToPatPolicyRequest),
-		attributeMappedValueCreateBuilder(d, "workload_identity_policy", req.WithWorkloadIdentityPolicy, ToWorkloadIdentityPolicyRequest),
+		singleBlockAttributeCreate(d, "mfa_policy", req.WithMfaPolicy, parseMfaPolicy),
+		singleBlockAttributeCreate(d, "pat_policy", req.WithPatPolicy, parsePatPolicy),
+		singleBlockAttributeCreate(d, "workload_identity_policy", req.WithWorkloadIdentityPolicy, parseWorkloadIdentityPolicy),
 	); err != nil {
 		return diag.FromErr(err)
 	}
@@ -540,9 +540,9 @@ func UpdateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 		setValueUpdate(d, "client_policy", &set.ClientPolicy, &unset.ClientPolicy, toClientPolicyEntries),
 		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
 		attributeMappedValueUpdate(d, "security_integrations", &set.SecurityIntegrations, &unset.SecurityIntegrations, ToSecurityIntegrationsRequest),
-		ToMfaPolicyRequestUpdate(d, &set.MfaPolicy, &unset.MfaPolicy),
-		ToPatPolicyRequestUpdate(d, &set.PatPolicy, &unset.PatPolicy),
-		ToWorkloadIdentityPolicyRequestUpdate(d, &set.WorkloadIdentityPolicy, &unset.WorkloadIdentityPolicy),
+		singleBlockAttributeUpdate(d, "mfa_policy", &set.MfaPolicy, &unset.MfaPolicy, applyMfaPolicyUpdate),
+		singleBlockAttributeUpdate(d, "pat_policy", &set.PatPolicy, &unset.PatPolicy, applyPatPolicyUpdate),
+		singleBlockAttributeUpdate(d, "workload_identity_policy", &set.WorkloadIdentityPolicy, &unset.WorkloadIdentityPolicy, applyWorkloadIdentityPolicyUpdate),
 	); err != nil {
 		return diag.FromErr(err)
 	}
@@ -580,206 +580,88 @@ func clientTypeItem(v any) (sdk.ClientTypes, error) {
 	return sdk.ClientTypes{ClientType: option}, nil
 }
 
-func ToMfaPolicyRequestUpdate(d *schema.ResourceData, set **sdk.AuthenticationPolicyMfaPolicyRequest, unset **bool) error {
-	if !d.HasChange("mfa_policy") {
-		return nil
-	}
-	_, mfaConfigRaw := d.GetChange("mfa_policy")
-	mfaConfigList := mfaConfigRaw.([]any)
-	if len(mfaConfigList) == 0 {
-		*unset = sdk.Bool(true)
-		return nil
-	}
-	mfaConfig := mfaConfigList[0].(map[string]any)
+func parseMfaPolicy(d *schema.ResourceData, prefix string) (sdk.AuthenticationPolicyMfaPolicyRequest, error) {
 	req := sdk.NewAuthenticationPolicyMfaPolicyRequest()
-	if d.HasChange("mfa_policy.0.allowed_methods") {
-		var allowedMethods []sdk.AuthenticationPolicyMfaPolicyListItem
-		if v, ok := mfaConfig["allowed_methods"]; ok && len(v.(*schema.Set).List()) > 0 {
-			allowedMethodsRaw := v.(*schema.Set).List()
-			values, err := collections.MapErr(allowedMethodsRaw, func(v any) (sdk.AuthenticationPolicyMfaPolicyListItem, error) {
-				enum, err := sdk.ToMfaPolicyAllowedMethodsOption(v.(string))
-				if err != nil {
-					return sdk.AuthenticationPolicyMfaPolicyListItem{}, err
-				}
-				return sdk.AuthenticationPolicyMfaPolicyListItem{Method: enum}, nil
-			})
-			if err != nil {
-				return err
-			}
-			allowedMethods = values
-		} else {
-			allowedMethods = []sdk.AuthenticationPolicyMfaPolicyListItem{
-				{Method: sdk.MfaPolicyAllowedMethodsOptionAll},
-			}
-		}
-		req.WithAllowedMethods(allowedMethods)
-	}
-	if d.HasChange("mfa_policy.0.enforce_mfa_on_external_authentication") {
-		var enforceMfaOnExternalAuthentication sdk.EnforceMfaOnExternalAuthenticationOption
-		if v, ok := mfaConfig["enforce_mfa_on_external_authentication"]; ok {
-			v, err := sdk.ToEnforceMfaOnExternalAuthenticationOption(v.(string))
-			if err != nil {
-				return err
-			}
-			enforceMfaOnExternalAuthentication = v
-		} else {
-			enforceMfaOnExternalAuthentication = sdk.EnforceMfaOnExternalAuthenticationOptionNone
-		}
-		req.WithEnforceMfaOnExternalAuthentication(enforceMfaOnExternalAuthentication)
-	}
-	if !reflect.DeepEqual(*req, *sdk.NewAuthenticationPolicyMfaPolicyRequest()) {
-		*set = req
-	}
-
-	return nil
+	err := errors.Join(
+		attributeMappedValueCreateBuilder(d, prefix+"enforce_mfa_on_external_authentication", req.WithEnforceMfaOnExternalAuthentication, sdk.ToEnforceMfaOnExternalAuthenticationOption),
+		setValueCreate(d, prefix+"allowed_methods", &req.AllowedMethods, mfaPolicyAllowedMethodItem),
+	)
+	return *req, err
 }
 
-func ToPatPolicyRequestUpdate(d *schema.ResourceData, set **sdk.AuthenticationPolicyPatPolicyRequest, unset **bool) error {
-	if !d.HasChange("pat_policy") {
-		return nil
+func applyMfaPolicyUpdate(d *schema.ResourceData, prefix string, req *sdk.AuthenticationPolicyMfaPolicyRequest) error {
+	return errors.Join(
+		attributeMappedValueUpdateSetOnlyFallback(d, prefix+"enforce_mfa_on_external_authentication", &req.EnforceMfaOnExternalAuthentication, sdk.ToEnforceMfaOnExternalAuthenticationOption, sdk.EnforceMfaOnExternalAuthenticationOptionNone),
+		setValueUpdateFallback(d, prefix+"allowed_methods", &req.AllowedMethods, mfaPolicyAllowedMethodItem, []sdk.AuthenticationPolicyMfaPolicyListItem{{
+			Method: sdk.MfaPolicyAllowedMethodsOptionAll,
+		}}),
+	)
+}
+
+func mfaPolicyAllowedMethodItem(v any) (sdk.AuthenticationPolicyMfaPolicyListItem, error) {
+	option, err := sdk.ToMfaPolicyAllowedMethodsOption(v.(string))
+	if err != nil {
+		return sdk.AuthenticationPolicyMfaPolicyListItem{}, err
 	}
-	_, patPolicyRaw := d.GetChange("pat_policy")
-	patConfigList := patPolicyRaw.([]any)
-	if len(patConfigList) == 0 {
-		*unset = sdk.Bool(true)
-		return nil
-	}
-	patConfig := patConfigList[0].(map[string]any)
+	return sdk.AuthenticationPolicyMfaPolicyListItem{Method: option}, nil
+}
+
+func parsePatPolicy(d *schema.ResourceData, prefix string) (sdk.AuthenticationPolicyPatPolicyRequest, error) {
 	req := sdk.NewAuthenticationPolicyPatPolicyRequest()
-	if d.HasChange("pat_policy.0.default_expiry_in_days") {
-		if v, ok := patConfig["default_expiry_in_days"]; ok {
-			req.WithDefaultExpiryInDays(v.(int))
-		} else {
-			req.WithDefaultExpiryInDays(15)
-		}
-	}
-	if d.HasChange("pat_policy.0.max_expiry_in_days") {
-		if v, ok := patConfig["max_expiry_in_days"]; ok {
-			req.WithMaxExpiryInDays(v.(int))
-		} else {
-			req.WithMaxExpiryInDays(365)
-		}
-	}
-	if d.HasChange("pat_policy.0.network_policy_evaluation") {
-		if v, ok := patConfig["network_policy_evaluation"]; ok {
-			networkPolicyEvaluation, err := sdk.ToNetworkPolicyEvaluationOption(v.(string))
-			if err != nil {
-				return err
-			}
-			req.WithNetworkPolicyEvaluation(networkPolicyEvaluation)
-		} else {
-			req.WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionEnforcedRequired)
-		}
-	}
-	if d.HasChange("pat_policy.0.require_role_restriction_for_service_users") {
-		if v, ok := patConfig["require_role_restriction_for_service_users"]; ok && v.(string) != BooleanDefault {
-			parsed, err := booleanStringToBool(v.(string))
-			if err != nil {
-				return err
-			}
-			req.WithRequireRoleRestrictionForServiceUsers(parsed)
-		} else {
-			req.WithRequireRoleRestrictionForServiceUsers(true)
-		}
-	}
-	if !reflect.DeepEqual(*req, *sdk.NewAuthenticationPolicyPatPolicyRequest()) {
-		*set = req
-	}
-	return nil
+	err := errors.Join(
+		intAttributeCreateBuilder(d, prefix+"default_expiry_in_days", req.WithDefaultExpiryInDays),
+		intAttributeCreateBuilder(d, prefix+"max_expiry_in_days", req.WithMaxExpiryInDays),
+		attributeMappedValueCreateBuilder(d, prefix+"network_policy_evaluation", req.WithNetworkPolicyEvaluation, sdk.ToNetworkPolicyEvaluationOption),
+		booleanStringAttributeCreateFallbackBuilder(d, prefix+"require_role_restriction_for_service_users", req.WithRequireRoleRestrictionForServiceUsers, true),
+	)
+	return *req, err
 }
 
-func ToWorkloadIdentityPolicyRequestUpdate(d *schema.ResourceData, set **sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest, unset **bool) error {
-	if !d.HasChange("workload_identity_policy") {
-		return nil
-	}
-	_, workloadIdentityPolicyRaw := d.GetChange("workload_identity_policy")
-	workloadIdentityPolicyConfigList := workloadIdentityPolicyRaw.([]any)
-	if len(workloadIdentityPolicyConfigList) == 0 {
-		*unset = sdk.Bool(true)
-		return nil
-	}
-	workloadIdentityPolicyConfig := workloadIdentityPolicyConfigList[0].(map[string]any)
+func applyPatPolicyUpdate(d *schema.ResourceData, prefix string, req *sdk.AuthenticationPolicyPatPolicyRequest) error {
+	return errors.Join(
+		intAttributeUnsetFallbackUpdateWithZeroDefault(d, prefix+"default_expiry_in_days", &req.DefaultExpiryInDays, 15),
+		intAttributeUnsetFallbackUpdateWithZeroDefault(d, prefix+"max_expiry_in_days", &req.MaxExpiryInDays, 365),
+		attributeMappedValueUpdateSetOnlyFallback(d, prefix+"network_policy_evaluation", &req.NetworkPolicyEvaluation, sdk.ToNetworkPolicyEvaluationOption, sdk.NetworkPolicyEvaluationOptionEnforcedRequired),
+		booleanStringAttributeUnsetFallbackUpdate(d, prefix+"require_role_restriction_for_service_users", &req.RequireRoleRestrictionForServiceUsers, true),
+	)
+}
+
+func parseWorkloadIdentityPolicy(d *schema.ResourceData, prefix string) (sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest, error) {
 	req := sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest()
-	if d.HasChange("workload_identity_policy.0.allowed_providers") {
-		var allowedProviders []sdk.AuthenticationPolicyAllowedProviderListItem
-		if v, ok := workloadIdentityPolicyConfig["allowed_providers"]; ok && len(v.(*schema.Set).List()) > 0 {
-			allowedProvidersRaw := v.(*schema.Set).List()
-			values, err := collections.MapErr(allowedProvidersRaw, func(v any) (sdk.AuthenticationPolicyAllowedProviderListItem, error) {
-				enum, err := sdk.ToAllowedProviderOption(v.(string))
-				if err != nil {
-					return sdk.AuthenticationPolicyAllowedProviderListItem{}, err
-				}
-				return sdk.AuthenticationPolicyAllowedProviderListItem{Provider: enum}, nil
-			})
-			if err != nil {
-				return err
-			}
-			allowedProviders = values
-		} else {
-			allowedProviders = []sdk.AuthenticationPolicyAllowedProviderListItem{
-				{Provider: sdk.AllowedProviderOptionAll},
-			}
-		}
-		req.WithAllowedProviders(allowedProviders)
+	err := errors.Join(
+		setValueCreate(d, prefix+"allowed_providers", &req.AllowedProviders, allowedProviderItem),
+		setValueCreate(d, prefix+"allowed_aws_accounts", &req.AllowedAwsAccounts, stringListItem),
+		setValueCreate(d, prefix+"allowed_azure_issuers", &req.AllowedAzureIssuers, stringListItem),
+		setValueCreate(d, prefix+"allowed_oidc_issuers", &req.AllowedOidcIssuers, stringListItem),
+	)
+	return *req, err
+}
+
+func applyWorkloadIdentityPolicyUpdate(d *schema.ResourceData, prefix string, req *sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest) error {
+	return errors.Join(
+		setValueUpdateFallback(d, prefix+"allowed_providers", &req.AllowedProviders, allowedProviderItem, []sdk.AuthenticationPolicyAllowedProviderListItem{{
+			Provider: sdk.AllowedProviderOptionAll,
+		}}),
+		setValueUpdateFallback(d, prefix+"allowed_aws_accounts", &req.AllowedAwsAccounts, stringListItem, allStringListItems()),
+		setValueUpdateFallback(d, prefix+"allowed_azure_issuers", &req.AllowedAzureIssuers, stringListItem, allStringListItems()),
+		setValueUpdateFallback(d, prefix+"allowed_oidc_issuers", &req.AllowedOidcIssuers, stringListItem, allStringListItems()),
+	)
+}
+
+func allStringListItems() []sdk.StringListItemWrapper {
+	return []sdk.StringListItemWrapper{{Value: "ALL"}}
+}
+
+func allowedProviderItem(v any) (sdk.AuthenticationPolicyAllowedProviderListItem, error) {
+	option, err := sdk.ToAllowedProviderOption(v.(string))
+	if err != nil {
+		return sdk.AuthenticationPolicyAllowedProviderListItem{}, err
 	}
-	if d.HasChange("workload_identity_policy.0.allowed_aws_accounts") {
-		var allowedAwsAccounts []sdk.StringListItemWrapper
-		if v, ok := workloadIdentityPolicyConfig["allowed_aws_accounts"]; ok && len(v.(*schema.Set).List()) > 0 {
-			allowedAwsAccountsRaw := v.(*schema.Set).List()
-			values, err := collections.MapErr(allowedAwsAccountsRaw, func(v any) (sdk.StringListItemWrapper, error) {
-				return sdk.StringListItemWrapper{Value: v.(string)}, nil
-			})
-			if err != nil {
-				return err
-			}
-			allowedAwsAccounts = values
-		} else {
-			allowedAwsAccounts = []sdk.StringListItemWrapper{
-				{Value: "ALL"},
-			}
-		}
-		req.WithAllowedAwsAccounts(allowedAwsAccounts)
-	}
-	if d.HasChange("workload_identity_policy.0.allowed_azure_issuers") {
-		var allowedAzureIssuers []sdk.StringListItemWrapper
-		if v, ok := workloadIdentityPolicyConfig["allowed_azure_issuers"]; ok && len(v.(*schema.Set).List()) > 0 {
-			allowedAzureIssuersRaw := v.(*schema.Set).List()
-			values, err := collections.MapErr(allowedAzureIssuersRaw, func(v any) (sdk.StringListItemWrapper, error) {
-				return sdk.StringListItemWrapper{Value: v.(string)}, nil
-			})
-			if err != nil {
-				return err
-			}
-			allowedAzureIssuers = values
-		} else {
-			allowedAzureIssuers = []sdk.StringListItemWrapper{
-				{Value: "ALL"},
-			}
-		}
-		req.WithAllowedAzureIssuers(allowedAzureIssuers)
-	}
-	if d.HasChange("workload_identity_policy.0.allowed_oidc_issuers") {
-		var allowedOidcIssuers []sdk.StringListItemWrapper
-		if v, ok := workloadIdentityPolicyConfig["allowed_oidc_issuers"]; ok && len(v.(*schema.Set).List()) > 0 {
-			allowedOidcIssuersRaw := v.(*schema.Set).List()
-			values, err := collections.MapErr(allowedOidcIssuersRaw, func(v any) (sdk.StringListItemWrapper, error) {
-				return sdk.StringListItemWrapper{Value: v.(string)}, nil
-			})
-			if err != nil {
-				return err
-			}
-			allowedOidcIssuers = values
-		} else {
-			allowedOidcIssuers = []sdk.StringListItemWrapper{
-				{Value: "ALL"},
-			}
-		}
-		req.WithAllowedOidcIssuers(allowedOidcIssuers)
-	}
-	if !reflect.DeepEqual(*req, *sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest()) {
-		*set = req
-	}
-	return nil
+	return sdk.AuthenticationPolicyAllowedProviderListItem{Provider: option}, nil
+}
+
+func stringListItem(v any) (sdk.StringListItemWrapper, error) {
+	return sdk.StringListItemWrapper{Value: v.(string)}, nil
 }
 
 func ToSecurityIntegrationsRequest(value any) (sdk.SecurityIntegrationsOptionRequest, error) {
@@ -790,125 +672,6 @@ func ToSecurityIntegrationsRequest(value any) (sdk.SecurityIntegrationsOptionReq
 	}
 	// ALL is handled as a single-elem list - a pseudoidentifier.
 	return *sdk.NewSecurityIntegrationsOptionRequest().WithSecurityIntegrations(securityIntegrations), nil
-}
-
-func ToMfaPolicyRequest(value any) (sdk.AuthenticationPolicyMfaPolicyRequest, error) {
-	mfaPolicyRaw, ok := value.([]any)
-	if !ok || len(mfaPolicyRaw) != 1 {
-		return sdk.AuthenticationPolicyMfaPolicyRequest{}, fmt.Errorf("unable to extract mfa policy, input is either nil or non expected type (%T): %v", value, value)
-	}
-	mfaConfig := mfaPolicyRaw[0].(map[string]any)
-	mfaPolicy := sdk.NewAuthenticationPolicyMfaPolicyRequest()
-	if v := mfaConfig["enforce_mfa_on_external_authentication"]; v.(string) != "" {
-		enforceMfaOnExternalAuthentication, err := sdk.ToEnforceMfaOnExternalAuthenticationOption(v.(string))
-		if err != nil {
-			return sdk.AuthenticationPolicyMfaPolicyRequest{}, fmt.Errorf("unable to extract enforce MFA on external authentication, input is either nil or non expected type (%T): %v", v, v)
-		}
-		mfaPolicy.WithEnforceMfaOnExternalAuthentication(enforceMfaOnExternalAuthentication)
-	}
-	if v := mfaConfig["allowed_methods"]; v != nil {
-		allowedMethods := v.(*schema.Set).List()
-		values, err := collections.MapErr(allowedMethods, func(v any) (sdk.AuthenticationPolicyMfaPolicyListItem, error) {
-			enum, err := sdk.ToMfaPolicyAllowedMethodsOption(v.(string))
-			if err != nil {
-				return sdk.AuthenticationPolicyMfaPolicyListItem{}, err
-			}
-			return sdk.AuthenticationPolicyMfaPolicyListItem{Method: enum}, nil
-		})
-		if err != nil {
-			return sdk.AuthenticationPolicyMfaPolicyRequest{}, err
-		}
-		mfaPolicy.WithAllowedMethods(values)
-	}
-	return *mfaPolicy, nil
-}
-
-func ToPatPolicyRequest(value any) (sdk.AuthenticationPolicyPatPolicyRequest, error) {
-	patPolicyRaw, ok := value.([]any)
-	if !ok || len(patPolicyRaw) != 1 {
-		return sdk.AuthenticationPolicyPatPolicyRequest{}, fmt.Errorf("unable to extract pat policy, input is either nil or non expected type (%T): %v", value, value)
-	}
-	patConfig := patPolicyRaw[0].(map[string]any)
-	patPolicy := sdk.NewAuthenticationPolicyPatPolicyRequest()
-	if v := patConfig["default_expiry_in_days"]; v.(int) != 0 {
-		patPolicy.WithDefaultExpiryInDays(v.(int))
-	}
-	if v := patConfig["max_expiry_in_days"]; v.(int) != 0 {
-		patPolicy.WithMaxExpiryInDays(v.(int))
-	}
-	if v := patConfig["network_policy_evaluation"]; v.(string) != "" {
-		networkPolicyEvaluation, err := sdk.ToNetworkPolicyEvaluationOption(v.(string))
-		if err != nil {
-			return sdk.AuthenticationPolicyPatPolicyRequest{}, err
-		}
-		patPolicy.WithNetworkPolicyEvaluation(networkPolicyEvaluation)
-	}
-	if v, ok := patConfig["require_role_restriction_for_service_users"]; ok && v.(string) != BooleanDefault {
-		parsed, err := booleanStringToBool(v.(string))
-		if err != nil {
-			return sdk.AuthenticationPolicyPatPolicyRequest{}, err
-		}
-		patPolicy.WithRequireRoleRestrictionForServiceUsers(parsed)
-	} else {
-		// Default to true when pat_policy block is present but attribute unset (per Snowflake default).
-		patPolicy.WithRequireRoleRestrictionForServiceUsers(true)
-	}
-
-	return *patPolicy, nil
-}
-
-func ToWorkloadIdentityPolicyRequest(value any) (sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest, error) {
-	workloadIdentityPolicyRaw, ok := value.([]any)
-	if !ok || len(workloadIdentityPolicyRaw) != 1 {
-		return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, fmt.Errorf("unable to extract workload identity policy, input is either nil or non expected type (%T): %v", value, value)
-	}
-	workloadIdentityPolicyConfig := workloadIdentityPolicyRaw[0].(map[string]any)
-	workloadIdentityPolicy := sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest()
-	if v := workloadIdentityPolicyConfig["allowed_providers"]; v != nil {
-		allowedProviders := v.(*schema.Set).List()
-		values, err := collections.MapErr(allowedProviders, func(v any) (sdk.AuthenticationPolicyAllowedProviderListItem, error) {
-			enum, err := sdk.ToAllowedProviderOption(v.(string))
-			if err != nil {
-				return sdk.AuthenticationPolicyAllowedProviderListItem{}, err
-			}
-			return sdk.AuthenticationPolicyAllowedProviderListItem{Provider: enum}, nil
-		})
-		if err != nil {
-			return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, err
-		}
-		workloadIdentityPolicy.WithAllowedProviders(values)
-	}
-	if v := workloadIdentityPolicyConfig["allowed_aws_accounts"]; v != nil {
-		allowedAwsAccounts := v.(*schema.Set).List()
-		values, err := collections.MapErr(allowedAwsAccounts, func(v any) (sdk.StringListItemWrapper, error) {
-			return sdk.StringListItemWrapper{Value: v.(string)}, nil
-		})
-		if err != nil {
-			return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, err
-		}
-		workloadIdentityPolicy.WithAllowedAwsAccounts(values)
-	}
-	if v := workloadIdentityPolicyConfig["allowed_azure_issuers"]; v != nil {
-		allowedAzureIssuers := v.(*schema.Set).List()
-		values, err := collections.MapErr(allowedAzureIssuers, func(v any) (sdk.StringListItemWrapper, error) {
-			return sdk.StringListItemWrapper{Value: v.(string)}, nil
-		})
-		if err != nil {
-			return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, err
-		}
-		workloadIdentityPolicy.WithAllowedAzureIssuers(values)
-	}
-	if v := workloadIdentityPolicyConfig["allowed_oidc_issuers"]; v != nil {
-		allowedOidcIssuers := v.(*schema.Set).List()
-		values, err := collections.MapErr(allowedOidcIssuers, func(v any) (sdk.StringListItemWrapper, error) {
-			return sdk.StringListItemWrapper{Value: v.(string)}, nil
-		})
-		if err != nil {
-			return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, err
-		}
-		workloadIdentityPolicy.WithAllowedOidcIssuers(values)
-	}
-	return *workloadIdentityPolicy, nil
 }
 
 func toClientPolicyEntries(v any) (sdk.AuthenticationPolicyClientPolicyEntry, error) {

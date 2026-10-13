@@ -26,17 +26,6 @@ func resourceDataWithPlan(t *testing.T, s map[string]*schema.Schema, stateAttrs 
 	return d
 }
 
-// stringSetSchema is a TypeSet of strings named "items" for the set create and update tests.
-func stringSetSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"items": {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-		},
-	}
-}
-
 func Test_setMappedValueCreateBuilder(t *testing.T) {
 	mapItem := func(v any) (string, error) {
 		return v.(string), nil

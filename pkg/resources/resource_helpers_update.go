@@ -1,6 +1,8 @@
 package resources
 
 import (
+	"reflect"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -239,6 +241,27 @@ func attributeMappedValueUpdate[T, R any](d *schema.ResourceData, key string, se
 	return nil
 }
 
+// singleBlockAttributeUpdate unsets a MaxItems=1 list block when it is removed.
+// While the block is present, fill applies the existing attribute update helpers to nested fields at "<key>.0.".
+// The block is set only when fill changes the request.
+func singleBlockAttributeUpdate[T any](d *schema.ResourceData, key string, setField **T, unsetField **bool, fill func(*schema.ResourceData, string, *T) error) error {
+	if !d.HasChange(key) {
+		return nil
+	}
+	if _, ok := d.GetOk(key); !ok {
+		*unsetField = new(true)
+		return nil
+	}
+	req := new(T)
+	if err := fill(d, key+".0.", req); err != nil {
+		return err
+	}
+	if !reflect.DeepEqual(req, new(T)) {
+		*setField = req
+	}
+	return nil
+}
+
 func setValueUpdate[T any](d *schema.ResourceData, key string, setField *[]T, unsetField **bool, mapper func(any) (T, error)) error {
 	if d.HasChange(key) {
 		v := d.Get(key)
@@ -252,6 +275,19 @@ func setValueUpdate[T any](d *schema.ResourceData, key string, setField *[]T, un
 		} else {
 			*unsetField = sdk.Bool(true)
 		}
+	}
+	return nil
+}
+
+// setValueUpdateFallback reuses setValueUpdate. Clearing a set assigns fallback
+// (for example ALL) instead of unsetting the attribute.
+func setValueUpdateFallback[T any](d *schema.ResourceData, key string, setField *[]T, mapper func(any) (T, error), fallback []T) error {
+	var unset *bool
+	if err := setValueUpdate(d, key, setField, &unset, mapper); err != nil {
+		return err
+	}
+	if unset != nil {
+		*setField = fallback
 	}
 	return nil
 }
