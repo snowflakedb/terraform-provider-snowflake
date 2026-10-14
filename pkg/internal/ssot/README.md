@@ -2,7 +2,7 @@
 
 Shared object definitions for generators. Types live in this package; instances in [defs](defs). This package must not import `pkg/sdk` or any meaningful logic package.
 
-Generators consume ssot; they do not all consume `defs.All()` the same way. Resource generation uses every object in `All()`. SHOW/DESCRIBE schema generation is opt-in per object ([Generators](#generators)). More generators will follow. Ultimately, all the generators should default to using ssot and `defs.All()`.
+Generators consume ssot; they do not all consume `defs.All()` the same way. Resource generation uses every object in `All()`. SHOW/DESCRIBE schema generation and resource config model builders are opt-in per object ([Generators](#generators)). More generators will follow. Ultimately, all the generators should default to using ssot and `defs.All()`.
 
 ### Object
 
@@ -42,9 +42,10 @@ They are independent: a column can be optional in SHOW, in the DB row, both, or 
 `Generators` is per-object enablement, not an implicit `All()` feed:
 
 - `WithSchemaShow()` / `WithSchemaDescribe()` - SHOW/DESCRIBE schema generator (`make generate-show-output-schemas`). See [that README](../../schemas/gen/README.md).
+- `WithModel()` - resource config model builders (`make generate-resource-model-builders`). See [that section](../../acceptance/bettertestspoc/README.md#adding-new-resource-config-model-builders). Fields come from `Attributes` and identity, not from [SHOW and DESCRIBE](#show-and-describe) `Columns`. Types are in [attribute.go](attribute.go). An optional bool is stored as a boolean-string; the extra setter takes the ssot type. `fully_qualified_name` is not emitted.
 - SDK generator parts are empty for now.
 
-Fill `Show` / `Describe` first; enable the generator parts when the lists are ready. Enabling SHOW or DESCRIBE without `Columns` panics.
+Fill `Show` / `Describe` first; enable the generator parts when the lists are ready. Enabling SHOW or DESCRIBE without `Columns` panics. Enabling `WithModel()` without `Attributes` is allowed when the object only needs identity.
 
 ### Later
 

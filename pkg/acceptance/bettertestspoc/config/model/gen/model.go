@@ -24,6 +24,10 @@ type ResourceConfigBuilderAttributeModel struct {
 	VariableMethod string
 	MethodImport   string
 	OriginalType   schema.ValueType
+	// SdkType is the richer Go type, empty for schema-reflected fields.
+	SdkType string
+	// SdkKind is "bool", "enum", or "identifier" when SdkType is set.
+	SdkKind string
 }
 
 var excludedAttributeNames = []string{
@@ -32,6 +36,8 @@ var excludedAttributeNames = []string{
 	resources.DescribeOutputAttributeName,
 	resources.ShowKeysOutputAttributeName,
 }
+
+func (m ResourceConfigBuilderModel) ObjectName() string { return m.Name }
 
 func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSchemaDetails, preamble *genhelpers.PreambleModel) ResourceConfigBuilderModel {
 	attributes := make([]ResourceConfigBuilderAttributeModel, 0)

@@ -60,6 +60,7 @@ var Schema = ssot.Object{
 	Generators: []ssot.GeneratorOption{
 		ssot.WithSchemaShow(),
 		ssot.WithSchemaDescribe(),
+		ssot.WithModel(),
 	},
 	Attributes: []ssot.Attribute{
 		SchemaAttrs.WithManagedAccess,

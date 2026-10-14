@@ -16,6 +16,9 @@ func Test_ObjectGenerators_options(t *testing.T) {
 	g = ObjectGenerators(WithSchemaDescribe())
 	require.Equal(t, Generators{Schema: SchemaGenerator{Describe: true}}, g)
 
+	g = ObjectGenerators(WithModel())
+	require.Equal(t, Generators{Model: ModelGenerator{Enabled: true}}, g)
+
 	g = ObjectGenerators()
 	require.Equal(t, Generators{}, g)
 }

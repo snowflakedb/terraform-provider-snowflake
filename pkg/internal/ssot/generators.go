@@ -7,9 +7,14 @@ type SchemaGenerator struct {
 
 type SdkGenerator struct{}
 
+type ModelGenerator struct {
+	Enabled bool
+}
+
 type Generators struct {
 	Schema SchemaGenerator
 	Sdk    SdkGenerator
+	Model  ModelGenerator
 }
 
 type GeneratorOption func(*Generators)
@@ -20,6 +25,10 @@ func WithSchemaShow() GeneratorOption {
 
 func WithSchemaDescribe() GeneratorOption {
 	return func(g *Generators) { g.Schema.Describe = true }
+}
+
+func WithModel() GeneratorOption {
+	return func(g *Generators) { g.Model.Enabled = true }
 }
 
 func ObjectGenerators(opts ...GeneratorOption) Generators {

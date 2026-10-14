@@ -132,9 +132,16 @@ func (w *WarehouseParametersAssert) HasDefaultMaxConcurrencyLevel() *WarehousePa
 ```
 
 ### Adding new resource config model builders
-Resource config model builders can be generated automatically. For object `abc` do the following:
-- add object you want to generate to `allResourceSchemaDefs` slice in the `assert/resourceassert/gen/resource_schema_def.go`
-- to add custom (not generated) config builder methods create file `warehouse_model_ext` in the `config/model` package. Example would be:
+Resource config model builders can be generated automatically. Inputs are merged in [ModelBuilderModels](config/model/gen/ssot_model_plugs.go):
+
+- **Resource schema (default).** `allResourceSchemaDefs` in [resource_schema_def.go](assert/resourceassert/gen/resource_schema_def.go), reflected from `resources.X().Schema`. Resource assertions use this same list. Do not remove an entry from it when opting the model builder into ssot.
+- **ssot (opt-in).** Objects with `WithModel()` ([ssot generators](../../internal/ssot/README.md#generators)). Fields come from `Attributes` and identity ([ssot attribute](../../internal/ssot/README.md#attribute)), not from SHOW/DESCRIBE [columns](../../internal/ssot/README.md#show-and-describe). `defs.All()` is not fed in automatically. `fully_qualified_name` is not emitted. Parameter fields still come from `ParameterDefsForLevel` until those definitions move to ssot.
+
+Filter names are the resource name (`--filter-object-names=ComputePool,Schema`). A name that is both reflected and opted in is taken from ssot.
+
+The storage-type `With` method stays (`WithInstanceFamily(string)`, `WithAutoResume(string)`). When ssot has a richer Go type, an extra method is generated beside it (`WithInstanceFamilySdk`, `WithAutoResumeBool`). `WithXValue` stays. Constructors keep the storage types.
+
+For an object that stays on the resource schema, add it to `allResourceSchemaDefs`. To add custom (not generated) config builder methods create file `warehouse_model_ext` in the `config/model` package. Example would be:
 ```go
 func BasicAbcModel(
 	name string,
