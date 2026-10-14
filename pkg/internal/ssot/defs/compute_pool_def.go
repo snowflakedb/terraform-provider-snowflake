@@ -193,6 +193,8 @@ var ComputePool = ssot.Object{
 		ssot.WithSchemaDescribe(),
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),
+		ssot.WithShowOutputAssert(),
+		ssot.WithDescribeOutputAssert(),
 	},
 	Attributes: []ssot.Attribute{
 		ComputePoolAttrs.ForApplication,

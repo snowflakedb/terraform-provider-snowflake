@@ -22,6 +22,15 @@ func Test_ObjectGenerators_options(t *testing.T) {
 	g = ObjectGenerators(WithResourceAssert())
 	require.Equal(t, Generators{ResourceAssert: ResourceAssertGenerator{Enabled: true}}, g)
 
+	g = ObjectGenerators(WithShowOutputAssert(), WithDescribeOutputAssert())
+	require.Equal(t, Generators{ShowOutputAssert: ShowOutputAssertGenerator{Show: true, Describe: true}}, g)
+
+	g = ObjectGenerators(WithShowOutputAssert())
+	require.Equal(t, Generators{ShowOutputAssert: ShowOutputAssertGenerator{Show: true}}, g)
+
+	g = ObjectGenerators(WithDescribeOutputAssert())
+	require.Equal(t, Generators{ShowOutputAssert: ShowOutputAssertGenerator{Describe: true}}, g)
+
 	g = ObjectGenerators()
 	require.Equal(t, Generators{}, g)
 }

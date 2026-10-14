@@ -2,7 +2,7 @@
 
 Shared object definitions for generators. Types live in this package; instances in [defs](defs). This package must not import `pkg/sdk` or any meaningful logic package.
 
-Generators consume ssot; they do not all consume `defs.All()` the same way. Resource generation uses every object in `All()`. SHOW/DESCRIBE schema generation, resource config model builders, and resource assertions are opt-in per object ([Generators](#generators)). More generators will follow. Ultimately, all the generators should default to using ssot and `defs.All()`.
+Generators consume ssot; they do not all consume `defs.All()` the same way. Resource generation uses every object in `All()`. SHOW/DESCRIBE schema generation, resource config model builders, resource assertions, and resource show output assertions are opt-in per object ([Generators](#generators)). More generators will follow. Ultimately, all the generators should default to using ssot and `defs.All()`.
 
 ### Object
 
@@ -44,9 +44,10 @@ They are independent: a column can be optional in SHOW, in the DB row, both, or 
 - `WithSchemaShow()` / `WithSchemaDescribe()` - SHOW/DESCRIBE schema generator (`make generate-show-output-schemas`). See [that README](../../schemas/gen/README.md).
 - `WithModel()` - resource config model builders (`make generate-resource-model-builders`). See [that section](../../acceptance/bettertestspoc/README.md#adding-new-resource-config-model-builders). Fields come from `Attributes` and identity, not from [SHOW and DESCRIBE](#show-and-describe) `Columns`. Types are in [attribute.go](attribute.go). An optional bool is stored as a boolean-string; the extra setter takes the ssot type. `fully_qualified_name` is not emitted.
 - `WithResourceAssert()` - resource assertions (`make generate-resource-assertions`). See [that section](../../acceptance/bettertestspoc/README.md#adding-new-resource-assertions). Fields come from `Attributes` and identity, not from [SHOW and DESCRIBE](#show-and-describe) `Columns`. Types are in [attribute.go](attribute.go). An optional bool is stored as a boolean-string; the extra method takes the ssot type. `fully_qualified_name` is emitted.
+- `WithShowOutputAssert()` / `WithDescribeOutputAssert()` - resource show output assertions (`make generate-resource-show-output-assertions`). See [that section](../../acceptance/bettertestspoc/README.md#adding-new-resource-show-output-assertions). Fields come from [SHOW and DESCRIBE](#show-and-describe) `Columns`, not from `Attributes`.
 - SDK generator parts are empty for now.
 
-Fill `Show` / `Describe` first; enable the generator parts when the lists are ready. Enabling SHOW or DESCRIBE without `Columns` panics. Enabling `WithModel()` or `WithResourceAssert()` without `Attributes` is allowed when the object only needs identity.
+Fill `Show` / `Describe` first; enable the generator parts when the lists are ready. Enabling SHOW or DESCRIBE schema generation, or show output assertions, without `Columns` panics. Enabling `WithModel()` or `WithResourceAssert()` without `Attributes` is allowed when the object only needs identity.
 
 ### Later
 

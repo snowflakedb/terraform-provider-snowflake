@@ -55,9 +55,16 @@ Here's a short description of every generated assertion:
 - HasXNotEmpty methods check that a field is set with any value.
 
 ### Adding new resource show output assertions
-Resource show output assertions can be generated automatically. For object `abc` do the following:
-- add object you want to generate to `allStructs` slice in the `assert/objectassert/gen/sdk_object_def.go`
-- to add custom (not generated assertions) create file `abc_show_output_ext.go` in the `assert/resourceshowoutputassert` package. Example would be:
+Resource show output assertions can be generated automatically. Inputs are merged in [ShowOutputAssertionDetails](assert/resourceshowoutputassert/gen/ssot_show_output_plugs.go):
+
+- **SDK structs (default).** `GetFilteredSdkObjectDetails` reflects `allStructs` in [sdk_object_def.go](assert/objectassert/gen/sdk_object_def.go). Do not remove an entry from it when opting the assertion into ssot.
+- **ssot (opt-in).** Objects with `WithShowOutputAssert()` / `WithDescribeOutputAssert()` ([ssot generators](../../internal/ssot/README.md#generators)). Fields come from `Columns` ([SHOW and DESCRIBE](../../internal/ssot/README.md#show-and-describe)), not from `Attributes`. `defs.All()` is not fed in automatically.
+
+Filter names stay `sdk.<Type>` (`--filter-object-names=sdk.ComputePool,sdk.ComputePoolDetails,sdk.Schema`). A name that is both reflected and opted in is taken from ssot. A repeated ssot `ObjectName()`, or an ssot name left in the reflected list, panics.
+
+Datasource constructors stay on `dataSourceMappingNormalized`. A slice does not get `Has`; that method stays in the ext file.
+
+For an object that stays on the SDK struct, add it to `allStructs`. To add custom (not generated) assertions create file `abc_show_output_ext.go` in the `assert/resourceshowoutputassert` package. Example would be:
 ```go
 func (u *UserShowOutputAssert) HasNameAndLoginName(expected string) *UserShowOutputAssert {
 	return u.
@@ -67,9 +74,9 @@ func (u *UserShowOutputAssert) HasNameAndLoginName(expected string) *UserShowOut
 ```
 
 ### Adding new resource describe output assertions
-Resource describe output assertions can be generated automatically. For object `abc` do the following:
+Resource describe output assertions use the same merge as [show output assertions](#adding-new-resource-show-output-assertions). Opt in with `WithDescribeOutputAssert()`. `IsDataSourceOutput` stays the describe flag. For an object that stays on the SDK struct:
 - add object you want to generate to `allStructs` slice in the `assert/objectassert/gen/sdk_object_def.go`
-  - remember to mark the struct with `IsDescribeOutput: true` in the `sdkObjectDef` definition
+  - remember to mark the struct with `IsDataSourceOutput: true` in the `sdkObjectDef` definition
 - to add custom (not generated assertions) create file `abc_desc_output_ext.go` in the `assert/resourceshowoutputassert` package. Example would be:
 ```go
 func (u *UserShowOutputAssert) HasNameAndLoginName(expected string) *UserShowOutputAssert {

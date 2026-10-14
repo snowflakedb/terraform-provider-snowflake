@@ -15,11 +15,17 @@ type ResourceAssertGenerator struct {
 	Enabled bool
 }
 
+type ShowOutputAssertGenerator struct {
+	Show     bool
+	Describe bool
+}
+
 type Generators struct {
-	Schema         SchemaGenerator
-	Sdk            SdkGenerator
-	Model          ModelGenerator
-	ResourceAssert ResourceAssertGenerator
+	Schema           SchemaGenerator
+	Sdk              SdkGenerator
+	Model            ModelGenerator
+	ResourceAssert   ResourceAssertGenerator
+	ShowOutputAssert ShowOutputAssertGenerator
 }
 
 type GeneratorOption func(*Generators)
@@ -38,6 +44,14 @@ func WithModel() GeneratorOption {
 
 func WithResourceAssert() GeneratorOption {
 	return func(g *Generators) { g.ResourceAssert.Enabled = true }
+}
+
+func WithShowOutputAssert() GeneratorOption {
+	return func(g *Generators) { g.ShowOutputAssert.Show = true }
+}
+
+func WithDescribeOutputAssert() GeneratorOption {
+	return func(g *Generators) { g.ShowOutputAssert.Describe = true }
 }
 
 func ObjectGenerators(opts ...GeneratorOption) Generators {
