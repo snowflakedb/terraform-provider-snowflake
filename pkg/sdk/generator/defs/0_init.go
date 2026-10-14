@@ -57,6 +57,7 @@ func init() {
 		openflowDeploymentsDef,
 		openflowRuntimesDef,
 		organizationAccountsDef,
+		parametersDef,
 		passwordPoliciesDef,
 		pipesDef,
 		policyReferencesDef,

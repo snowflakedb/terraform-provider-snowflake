@@ -21,22 +21,6 @@ var (
 
 var _ Parameters = (*parameters)(nil)
 
-type Parameters interface {
-	SetAccountParameter(ctx context.Context, parameter AccountParameter, value string) error
-	UnsetAccountParameter(ctx context.Context, parameter AccountParameter) error
-	SetSessionParameterOnAccount(ctx context.Context, parameter SessionParameter, value string) error
-	SetSessionParameterOnUser(ctx context.Context, userID AccountObjectIdentifier, parameter SessionParameter, value string) error
-	SetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter, value string) error
-	SetObjectParameterOnObject(ctx context.Context, object Object, parameter ObjectParameter, value string) error
-	UnsetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter) error
-	UnsetObjectParameterOnObject(ctx context.Context, object Object, parameter ObjectParameter) error
-	ShowParameters(ctx context.Context, opts *ShowParametersOptions) ([]*Parameter, error)
-	ShowAccountParameter(ctx context.Context, parameter AccountParameter) (*Parameter, error)
-	ShowSessionParameter(ctx context.Context, parameter SessionParameter) (*Parameter, error)
-	ShowUserParameter(ctx context.Context, parameter UserParameter, user AccountObjectIdentifier) (*Parameter, error)
-	ShowObjectParameter(ctx context.Context, parameter ObjectParameter, object Object) (*Parameter, error)
-}
-
 type parameters struct {
 	client *Client
 }
