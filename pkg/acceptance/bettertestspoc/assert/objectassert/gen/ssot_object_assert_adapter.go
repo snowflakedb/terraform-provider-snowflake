@@ -10,7 +10,7 @@ import (
 // SnowflakeObjectAssertionsFromSsot builds the show or describe object assertion model for one opted-in object.
 // Columns become genhelpers.Field values, then ModelFromSdkObjectDetails, the same mapper the reflected path uses.
 func SnowflakeObjectAssertionsFromSsot(obj ssot.Object, isDescribe bool) SnowflakeObjectAssertionsModel {
-	return ModelFromSdkObjectDetails(objectAssertionDetailsFromSsot(obj, isDescribe), nil)
+	return ModelFromSdkObjectDetails(objectAssertionDetailsFromSsot(obj, isDescribe), nil, nil)
 }
 
 func objectAssertionDetailsFromSsot(obj ssot.Object, isDescribe bool) genhelpers.SdkObjectDetails {
