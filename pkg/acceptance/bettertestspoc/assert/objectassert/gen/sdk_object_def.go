@@ -38,10 +38,6 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.Database{},
 	},
 	{
-		IdType:       "sdk.DatabaseObjectIdentifier",
-		ObjectStruct: sdk.Schema{},
-	},
-	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.Role{},
 	},
@@ -132,15 +128,6 @@ var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.ImageRepository{},
-	},
-	{
-		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.ComputePool{},
-	},
-	{
-		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.ComputePoolDetails{},
-		IsDataSourceOutput: true,
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
@@ -277,10 +264,6 @@ var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.SecurityIntegration{},
-	},
-	{
-		IdType:       "sdk.DatabaseObjectIdentifier",
-		ObjectStruct: sdk.Schema{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",

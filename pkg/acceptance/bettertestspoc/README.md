@@ -99,9 +99,14 @@ func (w *WarehouseResourceParametersAssert) HasDefaultMaxConcurrencyLevel() *War
 ```
 
 ### Adding new Snowflake object assertions
-Snowflake object assertions can be generated automatically. For object `abc` do the following:
-- add object you want to generate to `allStructs` slice in the `assert/objectassert/gen/sdk_object_def.go`
-- to add custom (not generated assertions) create file `abc_snowflake_ext.go` in the `objectassert` package. Example would be:
+Snowflake object assertions can be generated automatically. Inputs are merged in [SnowflakeObjectAssertionDetails](assert/objectassert/gen/ssot_object_assert_plugs.go):
+
+- **SDK structs (default).** `GetSdkObjectDetails` reflects `allStructs` in [sdk_object_def.go](assert/objectassert/gen/sdk_object_def.go). Show output assertions read the same slice. Leave an entry while show output still reflects that name. Remove it when both generators take the name from ssot.
+- **ssot (opt-in).** Objects with `WithObjectAssertShow()` / `WithObjectAssertDescribe()` ([ssot generators](../../internal/ssot/README.md#generators)). Fields come from `Columns` ([SHOW and DESCRIBE](../../internal/ssot/README.md#show-and-describe)), not from `Attributes`. `StoredAsText` is ignored. A bool stays `bool`. `defs.All()` is not fed in automatically.
+
+Filter names stay `sdk.<Type>` (`--filter-object-names=sdk.ComputePool,sdk.ComputePoolDetails,sdk.Schema`). A name that is both reflected and opted in is taken from ssot. A repeated ssot `ObjectName()`, or an ssot name left in the reflected list, panics.
+
+For an object that stays on the SDK struct, add it to `allStructs`. To add custom (not generated) assertions create file `abc_snowflake_ext.go` in the `objectassert` package. Example would be:
 ```go
 func (w *WarehouseAssert) HasStateOneOf(expected ...sdk.WarehouseState) *WarehouseAssert {
     w.assertions = append(w.assertions, func(t *testing.T, o *sdk.Warehouse) error {
@@ -116,8 +121,8 @@ func (w *WarehouseAssert) HasStateOneOf(expected ...sdk.WarehouseState) *Warehou
 ```
 
 ### Adding new Snowflake object assertions based on the describe output
-Usually the Snowflake object assertions are based on Show command output. If you would like to introduce a similar assertion for Describe command output, for an object named `abc`, do the following:
-- add object you want to generate to `allStructs` slice in the `assert/objectassert/gen/sdk_object_def.go` (remember to fill `IsDescribeOutput` field in the struct definition)
+Describe object assertions use the same merge as [Snowflake object assertions](#adding-new-snowflake-object-assertions). Opt in with `WithObjectAssertDescribe()`. `IsDataSourceOutput` stays the describe flag. `WithObjectAssertDescribe(WithNoIdentifiableObject())` is for a describe result that is a slice of rows with no `ID()`; the generated file then has `FromObject` only. Show output does not emit `sdk.<Name>Details` unless `WithDescribeOutputAssert()` is on, so do not leave that name in `allStructs` when show output describe is off. For an object that stays on the SDK struct:
+- add object you want to generate to `allStructs` slice in the `assert/objectassert/gen/sdk_object_def.go`, with `IsDataSourceOutput: true`. Set `NoIdentifiableObject: true` when the row has no `ID()`.
 - to add custom (not generated assertions) create file `abc_desc_snowflake_ext.go` in the `objectassert` package. Example would be:
 ```go
 func (w *WarehouseDescribeAssert) HasStateOneOf(expected ...sdk.WarehouseState) *WarehouseDescribeAssert {

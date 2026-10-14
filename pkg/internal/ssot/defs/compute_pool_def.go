@@ -195,6 +195,8 @@ var ComputePool = ssot.Object{
 		ssot.WithResourceAssert(),
 		ssot.WithShowOutputAssert(),
 		ssot.WithDescribeOutputAssert(),
+		ssot.WithObjectAssertShow(),
+		ssot.WithObjectAssertDescribe(),
 		ssot.WithSdkShow(),
 		ssot.WithSdkDescribe(),
 	},

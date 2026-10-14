@@ -118,10 +118,6 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.CatalogIntegrationIcebergRest().Schema,
 	},
 	{
-		name:   "ComputePool",
-		schema: resources.ComputePool().Schema,
-	},
-	{
 		name:   "CortexAgent",
 		schema: resources.CortexAgent().Schema,
 	},
@@ -376,10 +372,6 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "Saml2SecurityIntegration",
 		schema: resources.SAML2Integration().Schema,
-	},
-	{
-		name:   "Schema",
-		schema: resources.Schema().Schema,
 	},
 	{
 		name:   "ScimSecurityIntegration",

@@ -23,12 +23,19 @@ type ShowOutputAssertGenerator struct {
 	Describe bool
 }
 
+type ObjectAssertGenerator struct {
+	Show                 bool
+	Describe             bool
+	NoIdentifiableObject bool
+}
+
 type Generators struct {
 	Schema           SchemaGenerator
 	Sdk              SdkGenerator
 	Model            ModelGenerator
 	ResourceAssert   ResourceAssertGenerator
 	ShowOutputAssert ShowOutputAssertGenerator
+	ObjectAssert     ObjectAssertGenerator
 }
 
 type GeneratorOption func(*Generators)
@@ -55,6 +62,25 @@ func WithShowOutputAssert() GeneratorOption {
 
 func WithDescribeOutputAssert() GeneratorOption {
 	return func(g *Generators) { g.ShowOutputAssert.Describe = true }
+}
+
+func WithObjectAssertShow() GeneratorOption {
+	return func(g *Generators) { g.ObjectAssert.Show = true }
+}
+
+type ObjectAssertDescribeOption func(*ObjectAssertGenerator)
+
+func WithObjectAssertDescribe(opts ...ObjectAssertDescribeOption) GeneratorOption {
+	return func(g *Generators) {
+		g.ObjectAssert.Describe = true
+		for _, opt := range opts {
+			opt(&g.ObjectAssert)
+		}
+	}
+}
+
+func WithNoIdentifiableObject() ObjectAssertDescribeOption {
+	return func(a *ObjectAssertGenerator) { a.NoIdentifiableObject = true }
 }
 
 func WithSdkShow() GeneratorOption {

@@ -63,6 +63,8 @@ var Schema = ssot.Object{
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),
 		ssot.WithShowOutputAssert(),
+		ssot.WithObjectAssertShow(),
+		ssot.WithObjectAssertDescribe(ssot.WithNoIdentifiableObject()),
 		ssot.WithSdkShow(),
 		ssot.WithSdkDescribe(),
 	},
