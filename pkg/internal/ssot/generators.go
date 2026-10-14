@@ -5,7 +5,10 @@ type SchemaGenerator struct {
 	Describe bool
 }
 
-type SdkGenerator struct{}
+type SdkGenerator struct {
+	Show     bool
+	Describe bool
+}
 
 type ModelGenerator struct {
 	Enabled bool
@@ -52,6 +55,14 @@ func WithShowOutputAssert() GeneratorOption {
 
 func WithDescribeOutputAssert() GeneratorOption {
 	return func(g *Generators) { g.ShowOutputAssert.Describe = true }
+}
+
+func WithSdkShow() GeneratorOption {
+	return func(g *Generators) { g.Sdk.Show = true }
+}
+
+func WithSdkDescribe() GeneratorOption {
+	return func(g *Generators) { g.Sdk.Describe = true }
 }
 
 func ObjectGenerators(opts ...GeneratorOption) Generators {

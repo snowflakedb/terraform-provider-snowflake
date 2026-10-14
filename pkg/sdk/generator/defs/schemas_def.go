@@ -3,6 +3,7 @@ package defs
 import (
 	"slices"
 
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -129,10 +130,7 @@ var schemasDef = g.NewInterface(
 ).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-schema",
-	g.StructPair("schemaDetailRow", "SchemaDetails").
-		Time("created_on").
-		Text("name").
-		Text("kind"),
+	g.DescribePairedStructs(ssotdefs.Schema),
 	g.NewQueryStruct("DescribeSchema").
 		Describe().
 		SQL("SCHEMA").

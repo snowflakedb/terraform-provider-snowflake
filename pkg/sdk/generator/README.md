@@ -213,7 +213,7 @@ See [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) for co
 
 `PairedStructs` is a single-definition approach for declaring both the database row struct (`dbStruct`) and the plain SDK struct (`plainStruct`) in one field-by-field chain. It replaces the older pattern of calling `ShowOperation`/`DescribeOperation` with separate `DbStruct` and `PlainStruct` builders.
 
-See [paired_struct_def.go](example/defs/paired_struct_def.go) for a complete usage example covering all supported field methods and options. Later, paired structs may be generated from ssot (`OptionalInDb`; see [ssot](../../internal/ssot/README.md#optionalinshow-vs-optionalindb) and [later](../../internal/ssot/README.md#later)). This generator still takes an explicit `PairedStructs` chain.
+See [paired_struct_def.go](example/defs/paired_struct_def.go) for a handwritten chain covering the field methods and options below. The field chain can instead come from ssot [Columns](../../internal/ssot/README.md#show-and-describe) when [WithSdkShow() or WithSdkDescribe()](../../internal/ssot/README.md#generators) is enabled. `ShowPairedStructs` uses the unexported plural plus `Row` as the db row name and the object name as the plain struct name. `DescribePairedStructs` uses the unexported object name plus `DescRow` as the db row name and the object name plus `Details` as the plain struct name. The query struct, ShowByID filtering, and `DescriptionMappingKind` stay in the def. A SHOW bool is a db `bool`. `BoolFromText` is not a current ssot type.
 
 #### Constructor
 

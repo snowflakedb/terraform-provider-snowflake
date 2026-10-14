@@ -13,7 +13,7 @@ import (
 var (
 	_ Schemas                       = (*schemas)(nil)
 	_ convertibleRow[Schema]        = new(schemaRow)
-	_ convertibleRow[SchemaDetails] = new(schemaDetailRow)
+	_ convertibleRow[SchemaDetails] = new(schemaDescRow)
 )
 
 type schemas struct {
@@ -77,11 +77,11 @@ func (v *schemas) Describe(ctx context.Context, id DatabaseObjectIdentifier) ([]
 	opts := &DescribeSchemaOptions{
 		name: id,
 	}
-	rows, err := validateAndQuery[schemaDetailRow](v.client, ctx, opts)
+	rows, err := validateAndQuery[schemaDescRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[schemaDetailRow, SchemaDetails](rows)
+	return convertRows[schemaDescRow, SchemaDetails](rows)
 }
 
 func (r *CreateSchemaRequest) toOpts() *CreateSchemaOptions {
@@ -245,7 +245,7 @@ func (r *DescribeSchemaRequest) toOpts() *DescribeSchemaOptions {
 	return opts
 }
 
-func (r schemaDetailRow) convert() (*SchemaDetails, error) {
+func (r schemaDescRow) convert() (*SchemaDetails, error) {
 	result := &SchemaDetails{
 		CreatedOn: r.CreatedOn,
 		Name:      r.Name,

@@ -2,7 +2,7 @@
 
 Shared object definitions for generators. Types live in this package; instances in [defs](defs). This package must not import `pkg/sdk` or any meaningful logic package.
 
-Generators consume ssot; they do not all consume `defs.All()` the same way. Resource generation uses every object in `All()`. SHOW/DESCRIBE schema generation, resource config model builders, resource assertions, and resource show output assertions are opt-in per object ([Generators](#generators)). More generators will follow. Ultimately, all the generators should default to using ssot and `defs.All()`.
+Generators consume ssot; they do not all consume `defs.All()` the same way. Resource generation uses every object in `All()`. SHOW/DESCRIBE schema generation, resource config model builders, resource assertions, resource show output assertions, and SDK paired structs are opt-in per object ([Generators](#generators)). More generators will follow. Ultimately, all the generators should default to using ssot and `defs.All()`.
 
 ### Object
 
@@ -33,7 +33,7 @@ Def files keep attributes as vars (`ComputePoolAttrs`) so `Columns` can point at
 ### OptionalInShow vs OptionalInDb
 
 - `OptionalInShow` - the SHOW/DESCRIBE SDK Go field is a pointer (`*string`, `*AccountObjectIdentifier`). SHOW schema generation prefixes `*` so `ToSchema` emits a nil-guard.
-- `OptionalInDb` - the DB row is nullable (`sql.NullString`, …). Unused by SHOW schema generation. Reserved for later SDK paired-struct generation from ssot.
+- `OptionalInDb` - the DB row is nullable (`sql.NullString`, …). Unused by SHOW schema generation. Live for the SDK paired-struct db and plain kinds. See [PairedStructs](../../sdk/generator/README.md#pairedstructs).
 
 They are independent: a column can be optional in SHOW, in the DB row, both, or neither.
 
@@ -45,10 +45,10 @@ They are independent: a column can be optional in SHOW, in the DB row, both, or 
 - `WithModel()` - resource config model builders (`make generate-resource-model-builders`). See [that section](../../acceptance/bettertestspoc/README.md#adding-new-resource-config-model-builders). Fields come from `Attributes` and identity, not from [SHOW and DESCRIBE](#show-and-describe) `Columns`. Types are in [attribute.go](attribute.go). An optional bool is stored as a boolean-string; the extra setter takes the ssot type. `fully_qualified_name` is not emitted.
 - `WithResourceAssert()` - resource assertions (`make generate-resource-assertions`). See [that section](../../acceptance/bettertestspoc/README.md#adding-new-resource-assertions). Fields come from `Attributes` and identity, not from [SHOW and DESCRIBE](#show-and-describe) `Columns`. Types are in [attribute.go](attribute.go). An optional bool is stored as a boolean-string; the extra method takes the ssot type. `fully_qualified_name` is emitted.
 - `WithShowOutputAssert()` / `WithDescribeOutputAssert()` - resource show output assertions (`make generate-resource-show-output-assertions`). See [that section](../../acceptance/bettertestspoc/README.md#adding-new-resource-show-output-assertions). Fields come from [SHOW and DESCRIBE](#show-and-describe) `Columns`, not from `Attributes`.
-- SDK generator parts are empty for now.
+- `WithSdkShow()` / `WithSdkDescribe()` - SDK paired structs (`make generate-sdk`). See [PairedStructs](../../sdk/generator/README.md#pairedstructs). Fields come from [SHOW and DESCRIBE](#show-and-describe) `Columns`, not from `Attributes`. `OptionalInDb` is live for the mapped db and plain kinds.
 
-Fill `Show` / `Describe` first; enable the generator parts when the lists are ready. Enabling SHOW or DESCRIBE schema generation, or show output assertions, without `Columns` panics. Enabling `WithModel()` or `WithResourceAssert()` without `Attributes` is allowed when the object only needs identity.
+Fill `Show` / `Describe` first; enable the generator parts when the lists are ready. Enabling SHOW or DESCRIBE schema generation, show output assertions, or SDK paired structs without `Columns` panics. Enabling `WithModel()` or `WithResourceAssert()` without `Attributes` is allowed when the object only needs identity.
 
 ### Later
 
-SDK `ShowOperationWithPairedStructs` / `DescribeOperationWithPairedStructs` still own `sdk.<Name>` / `sdk.<Name>Details`. Until paired structs are generated from ssot, keep those field lists in sync with `Columns`. `OptionalInDb` is the ssot flag that work will consume.
+The SDK field chain can come from `Columns` when `WithSdkShow()` or `WithSdkDescribe()` is on. The def keeps the query struct, ShowByID filtering, and `DescriptionMappingKind`. A handwritten field chain is still the source when the matching option is off; keep that chain in sync with `Columns`. See [PairedStructs](../../sdk/generator/README.md#pairedstructs).

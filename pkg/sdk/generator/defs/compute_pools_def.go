@@ -83,27 +83,7 @@ var computePoolsDef = g.NewInterface(
 	g.WithDropSafelyHook(),
 ).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-compute-pools",
-	g.StructPair("computePoolsRow", "ComputePool").
-		Text("name").
-		Enum("state", ssotdefs.ComputePoolState).
-		Number("min_nodes").
-		Number("max_nodes").
-		Enum("instance_family", ssotdefs.ComputePoolInstanceFamily).
-		Number("num_services").
-		Number("num_jobs").
-		Number("auto_suspend_secs").
-		Bool("auto_resume").
-		Number("active_nodes").
-		Number("idle_nodes").
-		Number("target_nodes").
-		Time("created_on").
-		Time("resumed_on").
-		Time("updated_on").
-		Text("owner").
-		OptionalText("comment").
-		Bool("is_exclusive").
-		Field("application", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("Application")).
-		StringList("backup_instance_families"),
+	g.ShowPairedStructs(ssotdefs.ComputePool),
 	g.NewQueryStruct("ShowComputePools").
 		Show().
 		SQL("COMPUTE POOLS").
@@ -113,29 +93,7 @@ var computePoolsDef = g.NewInterface(
 ).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-compute-pool",
-	g.StructPair("computePoolDescRow", "ComputePoolDetails").
-		Text("name").
-		Enum("state", ssotdefs.ComputePoolState).
-		Number("min_nodes").
-		Number("max_nodes").
-		Enum("instance_family", ssotdefs.ComputePoolInstanceFamily).
-		Number("num_services").
-		Number("num_jobs").
-		Number("auto_suspend_secs").
-		Bool("auto_resume").
-		Number("active_nodes").
-		Number("idle_nodes").
-		Number("target_nodes").
-		Time("created_on").
-		Time("resumed_on").
-		Time("updated_on").
-		Text("owner").
-		OptionalText("comment").
-		Bool("is_exclusive").
-		Field("application", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("Application")).
-		StringList("backup_instance_families").
-		Text("error_code").
-		Text("status_message"),
+	g.DescribePairedStructs(ssotdefs.ComputePool),
 	g.NewQueryStruct("DescComputePool").
 		Describe().
 		SQL("COMPUTE POOL").

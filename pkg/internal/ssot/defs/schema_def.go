@@ -63,6 +63,7 @@ var Schema = ssot.Object{
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),
 		ssot.WithShowOutputAssert(),
+		ssot.WithSdkDescribe(),
 	},
 	Attributes: []ssot.Attribute{
 		SchemaAttrs.WithManagedAccess,

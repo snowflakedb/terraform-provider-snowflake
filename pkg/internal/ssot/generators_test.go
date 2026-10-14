@@ -31,6 +31,15 @@ func Test_ObjectGenerators_options(t *testing.T) {
 	g = ObjectGenerators(WithDescribeOutputAssert())
 	require.Equal(t, Generators{ShowOutputAssert: ShowOutputAssertGenerator{Describe: true}}, g)
 
+	g = ObjectGenerators(WithSdkShow(), WithSdkDescribe())
+	require.Equal(t, Generators{Sdk: SdkGenerator{Show: true, Describe: true}}, g)
+
+	g = ObjectGenerators(WithSdkShow())
+	require.Equal(t, Generators{Sdk: SdkGenerator{Show: true}}, g)
+
+	g = ObjectGenerators(WithSdkDescribe())
+	require.Equal(t, Generators{Sdk: SdkGenerator{Describe: true}}, g)
+
 	g = ObjectGenerators()
 	require.Equal(t, Generators{}, g)
 }

@@ -229,7 +229,7 @@ type DescribeSchemaOptions struct {
 	name     DatabaseObjectIdentifier `ddl:"identifier"`
 }
 
-type schemaDetailRow struct {
+type schemaDescRow struct {
 	CreatedOn time.Time `db:"created_on"`
 	Name      string    `db:"name"`
 	Kind      string    `db:"kind"`
