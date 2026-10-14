@@ -93,7 +93,7 @@ func Test_AssertionsFromSsotObject_databaseAndSchemaIdentity(t *testing.T) {
 func Test_ModelFromResourceSchemaDetails_emitsNothingExtra(t *testing.T) {
 	model := ModelFromResourceSchemaDetails(genhelpers.ExtractResourceSchemaDetails("Warehouse", map[string]*schema.Schema{
 		"warehouse_size": {Type: schema.TypeString, Required: true},
-	}), nil)
+	}), nil, nil)
 	assertions := renderAssertionTemplates(t, model)
 	require.Contains(t, assertions, "func (w *WarehouseResourceAssert) HasWarehouseSize(expected string) *WarehouseResourceAssert {")
 	require.Contains(t, assertions, "func (w *WarehouseResourceAssert) HasWarehouseSizeString(expected string) *WarehouseResourceAssert {")

@@ -24,7 +24,7 @@ type ObjectNameProvider interface {
 
 type Generator[T ObjectNameProvider, M HasPreambleModel] struct {
 	objectsProvider func() []T
-	modelProvider   func(T, *PreambleModel) M
+	modelProvider   func(T, *PreambleModel, *log.Logger) M
 	// TODO [SNOW-1501905]: consider adding filename to model?
 	filenameProvider func(T, M) string
 	templates        []*template.Template
@@ -34,6 +34,7 @@ type Generator[T ObjectNameProvider, M HasPreambleModel] struct {
 	additionalObjectDebugLogProviders []func([]T)
 	objectFilters                     []func(T) bool
 	generationPartFilters             []func(GenerationPart[T, M]) bool
+	objectPrepare                     func(T, *log.Logger)
 
 	description         string
 	makefileCommandPart string
@@ -69,7 +70,7 @@ func NewGenerationPart[T ObjectNameProvider, M HasPreambleModel](name Generation
 	}
 }
 
-func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleModel, objectsProvider func() []T, modelProvider func(T, *PreambleModel) M, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
+func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleModel, objectsProvider func() []T, modelProvider func(T, *PreambleModel, *log.Logger) M, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
 	// TODO [SNOW-2324252]: handle vararg input
 	parts := []GenerationPart[T, M]{
 		// TODO [SNOW-2324252]: change default to name when changing to vararg
@@ -140,6 +141,13 @@ func (g *Generator[T, M]) WithAdditionalObjectFilter(objectFilter func(T) bool) 
 
 func (g *Generator[T, M]) WithAdditionalGenerationPartFilter(generationPartFilter func(GenerationPart[T, M]) bool) *Generator[T, M] {
 	g.generationPartFilters = append(g.generationPartFilters, generationPartFilter)
+	return g
+}
+
+// WithObjectPrepare runs prepare once per object, on that object's logger, after filtering and before the model provider.
+// The function mutates the object and must be safe to call once. It runs on the same worker that generates the object.
+func (g *Generator[T, M]) WithObjectPrepare(prepare func(T, *log.Logger)) *Generator[T, M] {
+	g.objectPrepare = prepare
 	return g
 }
 
@@ -393,7 +401,9 @@ func (g *Generator[T, M]) generateAndSave(objects []T, parts []GenerationPart[T,
 func (g *Generator[T, M]) generateAndSaveSequential(objects []T, parts []GenerationPart[T, M]) error {
 	var errs []error
 	for _, object := range objects {
-		if err := g.generateObject(object, parts); err != nil {
+		batch, err := g.generateObject(object, parts)
+		emitObjectLogBatch(batch)
+		if err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -406,11 +416,14 @@ func (g *Generator[T, M]) generateAndSaveParallel(objects []T, parts []Generatio
 
 	// Return nil from each worker so one object failure does not skip the rest.
 	// Sequential generation reports every object error; this keeps that behavior.
+	batches := make([]string, len(objects))
 	var mu sync.Mutex
 	var errs []error
-	for _, object := range objects {
+	for i, object := range objects {
 		grp.Go(func() error {
-			if err := g.generateObject(object, parts); err != nil {
+			batch, err := g.generateObject(object, parts)
+			batches[i] = batch
+			if err != nil {
 				mu.Lock()
 				errs = append(errs, err)
 				mu.Unlock()
@@ -421,16 +434,25 @@ func (g *Generator[T, M]) generateAndSaveParallel(objects []T, parts []Generatio
 	if err := grp.Wait(); err != nil {
 		return err
 	}
+	for _, batch := range batches {
+		emitObjectLogBatch(batch)
+	}
 	return errors.Join(errs...)
 }
 
-func (g *Generator[T, M]) generateObject(object T, parts []GenerationPart[T, M]) error {
+func (g *Generator[T, M]) generateObject(object T, parts []GenerationPart[T, M]) (string, error) {
+	var batch bytes.Buffer
+	objectLog := log.New(&batch, object.ObjectName()+": ", log.LstdFlags)
+	if g.objectPrepare != nil {
+		g.objectPrepare(object, objectLog)
+	}
+
 	var errs []error
-	model := g.modelProvider(object, g.preamble)
+	model := g.modelProvider(object, g.preamble, objectLog)
 
 	for _, p := range g.effectivePartsForObject(object, parts) {
 		if p.condition != nil && !p.condition(object) {
-			log.Printf("[DEBUG] Condition for generation part %s in object %s not satisfied, skipping", p.name, object.ObjectName())
+			objectLog.Printf("[DEBUG] Condition for generation part %s in object %s not satisfied, skipping", p.name, object.ObjectName())
 			continue
 		}
 		buffer := bytes.Buffer{}
@@ -445,25 +467,41 @@ func (g *Generator[T, M]) generateObject(object T, parts []GenerationPart[T, M])
 			continue
 		}
 	}
-	return errors.Join(errs...)
+	return batch.String(), errors.Join(errs...)
+}
+
+// emitObjectLogBatch writes one object's buffered logs as a single logger record.
+// An empty batch writes nothing. log.Output holds the process logger lock for the whole block.
+func emitObjectLogBatch(batch string) {
+	if batch == "" {
+		return
+	}
+	_ = log.Output(2, batch)
 }
 
 func (g *Generator[T, M]) generateAndPrint(objects []T, parts []GenerationPart[T, M]) error {
 	var errs []error
 	for _, s := range objects {
+		var batch bytes.Buffer
+		objectLog := log.New(&batch, s.ObjectName()+": ", log.LstdFlags)
+		if g.objectPrepare != nil {
+			g.objectPrepare(s, objectLog)
+		}
+
 		fmt.Println("===========================")
 		fmt.Printf("Generating for object %s\n", s.ObjectName())
 		fmt.Println("===========================")
 		for _, p := range g.effectivePartsForObject(s, parts) {
 			if p.condition != nil && !p.condition(s) {
-				log.Printf("[DEBUG] Condition for generation part %s in object %s not satisfied, skipping", p.name, s.ObjectName())
+				objectLog.Printf("[DEBUG] Condition for generation part %s in object %s not satisfied, skipping", p.name, s.ObjectName())
 				continue
 			}
-			if err := executeAllTemplates(g.modelProvider(s, g.preamble), os.Stdout, p.templates...); err != nil {
+			if err := executeAllTemplates(g.modelProvider(s, g.preamble, objectLog), os.Stdout, p.templates...); err != nil {
 				errs = append(errs, fmt.Errorf("generating output for object %s failed with err: %w", s.ObjectName(), err))
 				continue
 			}
 		}
+		emitObjectLogBatch(batch.String())
 	}
 	return errors.Join(errs...)
 }

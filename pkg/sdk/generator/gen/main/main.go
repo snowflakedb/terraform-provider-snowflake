@@ -25,6 +25,7 @@ func main() {
 		filenameForPart(""),
 		[]*template.Template{genhelpers.PreambleTemplate, gen.InterfaceTemplate, gen.OperationStructIterateTemplate},
 	).
+		WithObjectPrepare(gen.PrepareSdkDefinition).
 		WithGenerationPart(gen.PartDto, filenameForPart("dto"), []*template.Template{genhelpers.PreambleTemplate, gen.DtoTemplate}).
 		WithGenerationPart(gen.PartDtoBuilders, filenameForPart("dto_builders"), []*template.Template{genhelpers.PreambleTemplate, gen.DtoBuildersTemplate}).
 		WithGenerationPart(gen.PartImpl, filenameForPart("impl"), []*template.Template{genhelpers.PreambleTemplate, gen.ImplementationTemplate}).

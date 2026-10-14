@@ -22,7 +22,7 @@ func Test_ModelFromStructDetails_SkipFields(t *testing.T) {
 		},
 	}
 
-	model := ModelFromStructDetails(details, nil)
+	model := ModelFromStructDetails(details, nil, nil)
 
 	require.Len(t, model.SchemaFields, 3)
 	assert.Equal(t, "kept", model.SchemaFields[0].Name)
@@ -49,7 +49,7 @@ func Test_ModelFromStructDetails_ManualFields(t *testing.T) {
 		},
 	}
 
-	model := ModelFromStructDetails(details, nil)
+	model := ModelFromStructDetails(details, nil, nil)
 
 	require.Len(t, model.SchemaFields, 2)
 	assert.Equal(t, "kept", model.SchemaFields[0].Name)
@@ -73,7 +73,7 @@ func Test_ModelFromStructDetails_TypeOverrides(t *testing.T) {
 		},
 	}
 
-	model := ModelFromStructDetails(details, nil)
+	model := ModelFromStructDetails(details, nil, nil)
 
 	require.Len(t, model.SchemaFields, 2)
 	assert.Equal(t, schema.TypeString, model.SchemaFields[0].SchemaType)
@@ -97,7 +97,7 @@ func Test_ModelFromStructDetails_TypeOverridesUnknownKey(t *testing.T) {
 	}
 
 	assert.PanicsWithValue(t, "TypeOverrides for sdk.Example contain unknown schema keys: not_a_field", func() {
-		ModelFromStructDetails(details, nil)
+		ModelFromStructDetails(details, nil, nil)
 	})
 }
 
@@ -114,7 +114,7 @@ func Test_ModelFromStructDetails_TypeOverridesAndManualOverlap(t *testing.T) {
 	}
 
 	assert.PanicsWithValue(t, "ManualFields and TypeOverrides for sdk.Secret overlap: oauth_scopes", func() {
-		ModelFromStructDetails(details, nil)
+		ModelFromStructDetails(details, nil, nil)
 	})
 }
 
@@ -131,7 +131,7 @@ func Test_ModelFromStructDetails_TypeOverridesAndSkipOverlap(t *testing.T) {
 	}
 
 	assert.PanicsWithValue(t, "SkipFields and TypeOverrides for sdk.Secret overlap: oauth_scopes", func() {
-		ModelFromStructDetails(details, nil)
+		ModelFromStructDetails(details, nil, nil)
 	})
 }
 
@@ -148,7 +148,7 @@ func Test_ModelFromStructDetails_SkipAndManualOverlap(t *testing.T) {
 	}
 
 	assert.PanicsWithValue(t, "SkipFields and ManualFields for sdk.Example overlap: shared", func() {
-		ModelFromStructDetails(details, nil)
+		ModelFromStructDetails(details, nil, nil)
 	})
 }
 
@@ -164,7 +164,7 @@ func Test_ModelFromStructDetails_ManualFieldsUnknownKey(t *testing.T) {
 	}
 
 	assert.PanicsWithValue(t, "ManualFields for sdk.Example contain unknown schema keys: not_a_field", func() {
-		ModelFromStructDetails(details, nil)
+		ModelFromStructDetails(details, nil, nil)
 	})
 }
 
@@ -180,7 +180,7 @@ func Test_ModelFromStructDetails_SkipFieldsUnknownKey(t *testing.T) {
 	}
 
 	assert.PanicsWithValue(t, "SkipFields for sdk.Example contain unknown schema keys: not_a_field", func() {
-		ModelFromStructDetails(details, nil)
+		ModelFromStructDetails(details, nil, nil)
 	})
 }
 
@@ -201,7 +201,7 @@ func Test_ModelFromStructDetails_IsDescribe(t *testing.T) {
 		},
 	}
 
-	model := ModelFromStructDetails(details, nil)
+	model := ModelFromStructDetails(details, nil, nil)
 	assert.True(t, model.IsDescribe)
 	assert.Equal(t, "password_policy_desc_gen.go", model.Filename())
 }
@@ -217,7 +217,7 @@ func Test_ModelFromStructDetails_UsedAsListEntry(t *testing.T) {
 		},
 	}
 
-	model := ModelFromStructDetails(details, nil)
+	model := ModelFromStructDetails(details, nil, nil)
 	assert.True(t, model.UsedAsListEntry)
 	assert.False(t, model.IsDescribe)
 	assert.Equal(t, "security_integration_property_gen.go", model.Filename())
@@ -232,11 +232,11 @@ func Test_ModelFromStructDetails_AdditionalMappingInferredFromManualFields(t *te
 			},
 		},
 	}
-	assert.False(t, ModelFromStructDetails(withoutManual, nil).AdditionalMapping)
+	assert.False(t, ModelFromStructDetails(withoutManual, nil, nil).AdditionalMapping)
 
 	withManual := withoutManual
 	withManual.ManualFields = []string{"name"}
-	assert.True(t, ModelFromStructDetails(withManual, nil).AdditionalMapping)
+	assert.True(t, ModelFromStructDetails(withManual, nil, nil).AdditionalMapping)
 }
 
 func Test_ModelFromStructDetails_IsDescribeAndUsedAsListEntry(t *testing.T) {
@@ -249,6 +249,6 @@ func Test_ModelFromStructDetails_IsDescribeAndUsedAsListEntry(t *testing.T) {
 	}
 
 	assert.PanicsWithValue(t, "sdk.Example: IsDescribe and UsedAsListEntry are mutually exclusive", func() {
-		ModelFromStructDetails(details, nil)
+		ModelFromStructDetails(details, nil, nil)
 	})
 }

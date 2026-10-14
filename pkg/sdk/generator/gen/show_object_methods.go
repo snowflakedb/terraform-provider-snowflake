@@ -26,7 +26,7 @@ var idTypeParts map[objectIdentifierKind][]string = map[objectIdentifierKind][]s
 }
 
 // TODO [SNOW-2324252]: do we need to search for this struct? Maybe we can have it more easily?
-func CheckRequiredFieldsForIdMethod(structName string, helperStructs []*Field, idKind objectIdentifierKind) bool {
+func CheckRequiredFieldsForIdMethod(structName string, helperStructs []*Field, idKind objectIdentifierKind, logger *log.Logger) bool {
 	if requiredFields, ok := idTypeParts[idKind]; ok {
 		for _, field := range helperStructs {
 			if field.Name == structName {
@@ -34,7 +34,7 @@ func CheckRequiredFieldsForIdMethod(structName string, helperStructs []*Field, i
 			}
 		}
 	}
-	log.Printf("[WARN] no required fields mapping defined for identifier %s", idKind)
+	logger.Printf("[WARN] no required fields mapping defined for identifier %s", idKind)
 	return false
 }
 

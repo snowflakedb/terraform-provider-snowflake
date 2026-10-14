@@ -214,13 +214,15 @@ Run `make generate-<target> SF_TF_GENERATOR_ARGS='-h'` to discover valid object 
 
 > **Note:** `generate-issue-labels` is a standalone tool and does not support `SF_TF_GENERATOR_ARGS`.
 
+### Parallel execution
+
+With `--parallelism` greater than 1, each worker generates one object and writes that object's files. Parts of one object still run in order on that worker, and each object still writes its own paths, so generated file bytes stay stable. `errors.Join` reports failures in completion order.
+
+Each object gets its own logger, prefixed with the object name. An optional prepare hook runs once on that logger before the model provider, and the model provider receives the same logger. The SDK generator uses the hook for `PrepareSdkDefinition`, which is where definition preparation logs. Those calls write into one buffer for the whole object. After every object has finished, the buffers are written to the process logger in filtered-list order, one `log.Output` call per object, so a parallel worker cannot split one object's lines. An empty buffer writes nothing. Calls to the global `log` package are not part of the batch. Definition builders that run at init, and panics, still use that package. `--verbose` callbacks run before this hook, so they see objects that have not been prepared.
+
 ### Parallel execution follow-ups
 
-With `--parallelism` greater than 1, each worker generates one object and writes that object's files. Workers share the process `log` logger. A line from one object can land between lines from another, in whichever order the log calls finish. `errors.Join` reports failures in that same completion order. Generated file bytes stay stable, because each object still writes its own paths and parts of one object still run in order on that worker.
-
-Per-object loggers are the follow-up for that. Give each object a logger prefixed with its name, buffer that object's lines for the whole job, and flush the buffer when the object finishes, following the filtered object list. Lines then stay grouped by object instead of arriving as a mix from every worker.
-
-`--dry-run` still uses the sequential print path. It writes each object's header and rendered source straight to stdout, and it ignores `--parallelism`, because a parallel print would interleave those streams the same way the logs do. The follow-up is the same buffering idea: render every object into its own buffer (headers included), then write those buffers to stdout in input order. After that, dry-run can use the worker pool too.
+`--dry-run` still uses the sequential print path. It writes each object's header and rendered source straight to stdout, and it ignores `--parallelism`, because a parallel print would interleave those streams. The follow-up is to render every object into its own buffer (headers included), then write those buffers to stdout in input order. After that, dry-run can use the worker pool too.
 
 ### Troubleshooting
 

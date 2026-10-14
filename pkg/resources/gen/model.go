@@ -1,6 +1,8 @@
 package gen
 
 import (
+	"log"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 )
@@ -25,7 +27,7 @@ func (m ResourceModel) Prefix() string {
 	return genhelpers.FirstLetterLowercase(m.Name)
 }
 
-func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleModel) ResourceModel {
+func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleModel, _ *log.Logger) ResourceModel {
 	return ResourceModel{
 		Name:                                input.Name,
 		NamePlural:                          input.NamePlural,

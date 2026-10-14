@@ -11,17 +11,19 @@ import (
 var AllSdkObjectDefinitions = make([]*Interface, 0)
 
 func GetSdkDefinitions() []*Interface {
-	allDefinitions := AllSdkObjectDefinitions
-	interfaces := make([]*Interface, len(allDefinitions))
-	for idx, def := range allDefinitions {
-		preprocessDefinition(def)
-		interfaces[idx] = def
-	}
+	interfaces := make([]*Interface, len(AllSdkObjectDefinitions))
+	copy(interfaces, AllSdkObjectDefinitions)
 	return interfaces
 }
 
+// PrepareSdkDefinition prepares one definition on the worker that generates it.
+// It is the SDK generator's WithObjectPrepare hook.
+func PrepareSdkDefinition(definition *Interface, logger *log.Logger) {
+	preprocessDefinition(definition, logger)
+}
+
 // preprocessDefinition is needed because current simple builder is not ideal, should be removed later
-func preprocessDefinition(definition *Interface) {
+func preprocessDefinition(definition *Interface, logger *log.Logger) {
 	generatedStructs := make([]string, 0)
 	generatedDtos := make([]string, 0)
 
@@ -30,7 +32,7 @@ func preprocessDefinition(definition *Interface) {
 		if o.OptsField != nil {
 			o.OptsField.Name = fmt.Sprintf("%s%sOptions", o.Name, o.ObjectInterface.NameSingular)
 			o.OptsField.Kind = fmt.Sprintf("%s%sOptions", o.Name, o.ObjectInterface.NameSingular)
-			setParent(o.OptsField)
+			setParent(o.OptsField, logger)
 			relocateIdentifierElementSliceValidations(o.OptsField)
 			resolveInterfaceIdentifierKinds(o.OptsField, definition.IdentifierKind)
 
@@ -39,7 +41,7 @@ func preprocessDefinition(definition *Interface) {
 			structsToGenerate := make([]*Field, 0)
 			for _, f := range o.HelperStructs {
 				if !slices.Contains(generatedStructs, f.KindNoPtr()) {
-					structsToGenerate, generatedStructs = addStructToGenerate(f, structsToGenerate, generatedStructs)
+					structsToGenerate, generatedStructs = addStructToGenerate(f, structsToGenerate, generatedStructs, logger)
 				}
 			}
 			for idx, f := range o.OptsField.Fields {
@@ -47,10 +49,10 @@ func preprocessDefinition(definition *Interface) {
 					continue
 				}
 				if f.IsStruct() && !slices.Contains(generatedStructs, f.KindNoPtr()) {
-					structsToGenerate, generatedStructs = addStructToGenerate(&o.OptsField.Fields[idx], structsToGenerate, generatedStructs)
+					structsToGenerate, generatedStructs = addStructToGenerate(&o.OptsField.Fields[idx], structsToGenerate, generatedStructs, logger)
 				}
 			}
-			log.Printf("[DEBUG] Structs to generate (length: %d): %v", len(structsToGenerate), structsToGenerate)
+			logger.Printf("[DEBUG] Structs to generate (length: %d): %v", len(structsToGenerate), structsToGenerate)
 			o.StructsToGenerate = structsToGenerate
 
 			// TODO [SNOW-2324252]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
@@ -59,9 +61,9 @@ func preprocessDefinition(definition *Interface) {
 				// TODO [SNOW-2324252]: do we really conversion logic? The definition file should handle this.
 				idKind, err := ToObjectIdentifierKind(definition.IdentifierKind)
 				if err != nil {
-					log.Printf("[WARN] for showObjectIdMethod: %v", err)
+					logger.Printf("[WARN] for showObjectIdMethod: %v", err)
 				}
-				if CheckRequiredFieldsForIdMethod(definition.NameSingular, o.HelperStructs, idKind) {
+				if CheckRequiredFieldsForIdMethod(definition.NameSingular, o.HelperStructs, idKind, logger) {
 					o.ObjectIdMethod = NewShowObjectIDMethod(definition.NameSingular, idKind)
 				}
 
@@ -74,15 +76,15 @@ func preprocessDefinition(definition *Interface) {
 
 			if o.NoRequest {
 				if hasDtoField(o.OptsField) {
-					log.Panicf("operation %s: WithNoRequest is set but the query struct has request fields", o.Name)
+					logger.Panicf("operation %s: WithNoRequest is set but the query struct has request fields", o.Name)
 				}
 				o.DtosToGenerate = nil
 			} else {
 				// TODO [SNOW-2324252]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
 				// fill out DtosToGenerate; it replaces the old GenerateDtos and generateDtoDecls logic
 				dtosToGenerate := make([]*Field, 0)
-				dtosToGenerate, generatedDtos = addDtoToGenerate(o.OptsField, dtosToGenerate, generatedDtos)
-				log.Printf("[DEBUG] Dtos to generate (length: %d): %v", len(dtosToGenerate), dtosToGenerate)
+				dtosToGenerate, generatedDtos = addDtoToGenerate(o.OptsField, dtosToGenerate, generatedDtos, logger)
+				logger.Printf("[DEBUG] Dtos to generate (length: %d): %v", len(dtosToGenerate), dtosToGenerate)
 				o.DtosToGenerate = dtosToGenerate
 			}
 		}
@@ -149,23 +151,23 @@ func relocateIdentifierElementSliceValidations(f *Field) {
 	}
 }
 
-func setParent(field *Field) {
+func setParent(field *Field, logger *log.Logger) {
 	for idx, f := range field.Fields {
 		if f.Parent != nil {
-			log.Panicf("Field %s already has a parent\nold parent: %s (path: %s)\nnew parent: %s (path: %s);\n\nit is caused by the current incorrect implementation of nested fields;\nreuse the common definition by wrapping it in function invocation", f.Name, f.Parent.KindNoPtr(), f.Parent.PathWithRoot(), field.Name, field.PathWithRoot())
+			logger.Panicf("Field %s already has a parent\nold parent: %s (path: %s)\nnew parent: %s (path: %s);\n\nit is caused by the current incorrect implementation of nested fields;\nreuse the common definition by wrapping it in function invocation", f.Name, f.Parent.KindNoPtr(), f.Parent.PathWithRoot(), field.Name, field.PathWithRoot())
 		}
 		(&field.Fields[idx]).Parent = field
-		setParent(&field.Fields[idx])
+		setParent(&field.Fields[idx], logger)
 	}
 }
 
-func addStructToGenerate(field *Field, structsToGenerate []*Field, generatedStructs []string) ([]*Field, []string) {
+func addStructToGenerate(field *Field, structsToGenerate []*Field, generatedStructs []string, logger *log.Logger) ([]*Field, []string) {
 	if !slices.Contains(generatedStructs, field.KindNoPtr()) {
-		log.Printf("[DEBUG] Adding %s (path: %s) to structs to be generated", field.KindNoPtr(), field.PathWithRoot())
+		logger.Printf("[DEBUG] Adding %s (path: %s) to structs to be generated", field.KindNoPtr(), field.PathWithRoot())
 		structsToGenerate = append(structsToGenerate, field)
 		generatedStructs = append(generatedStructs, field.KindNoPtr())
 	} else {
-		log.Printf("[DEBUG] Struct %s (path: %s) already queued for generation", field.KindNoPtr(), field.PathWithRoot())
+		logger.Printf("[DEBUG] Struct %s (path: %s) already queued for generation", field.KindNoPtr(), field.PathWithRoot())
 	}
 
 	for idx, f := range field.Fields {
@@ -173,7 +175,7 @@ func addStructToGenerate(field *Field, structsToGenerate []*Field, generatedStru
 			continue
 		}
 		if f.IsStruct() && !slices.Contains(generatedStructs, f.KindNoPtr()) {
-			structsToGenerate, generatedStructs = addStructToGenerate(&field.Fields[idx], structsToGenerate, generatedStructs)
+			structsToGenerate, generatedStructs = addStructToGenerate(&field.Fields[idx], structsToGenerate, generatedStructs, logger)
 		}
 	}
 	return structsToGenerate, generatedStructs
@@ -190,9 +192,9 @@ func hasDtoField(field *Field) bool {
 	return false
 }
 
-func addDtoToGenerate(field *Field, dtosToGenerate []*Field, generatedDtos []string) ([]*Field, []string) {
+func addDtoToGenerate(field *Field, dtosToGenerate []*Field, generatedDtos []string, logger *log.Logger) ([]*Field, []string) {
 	if !slices.Contains(generatedDtos, field.DtoDecl()) {
-		log.Printf("[DEBUG] Adding %s (path: %s) to structs to be generated", field.DtoDecl(), field.PathWithRoot())
+		logger.Printf("[DEBUG] Adding %s (path: %s) to structs to be generated", field.DtoDecl(), field.PathWithRoot())
 		dtosToGenerate = append(dtosToGenerate, field)
 		generatedDtos = append(generatedDtos, field.DtoDecl())
 
@@ -201,17 +203,17 @@ func addDtoToGenerate(field *Field, dtosToGenerate []*Field, generatedDtos []str
 				continue
 			}
 			if f.HasAnyFields() {
-				dtosToGenerate, generatedDtos = addDtoToGenerate(&field.Fields[idx], dtosToGenerate, generatedDtos)
+				dtosToGenerate, generatedDtos = addDtoToGenerate(&field.Fields[idx], dtosToGenerate, generatedDtos, logger)
 			}
 		}
 	} else {
-		log.Printf("[DEBUG] Struct %s (path: %s) already queued for generation", field.DtoDecl(), field.PathWithRoot())
+		logger.Printf("[DEBUG] Struct %s (path: %s) already queued for generation", field.DtoDecl(), field.PathWithRoot())
 	}
 	return dtosToGenerate, generatedDtos
 }
 
-func ExtendInterface() func(*Interface, *genhelpers.PreambleModel) *Interface {
-	return func(i *Interface, preamble *genhelpers.PreambleModel) *Interface {
+func ExtendInterface() func(*Interface, *genhelpers.PreambleModel, *log.Logger) *Interface {
+	return func(i *Interface, preamble *genhelpers.PreambleModel, _ *log.Logger) *Interface {
 		i.PreambleModel = preamble
 		return i
 	}

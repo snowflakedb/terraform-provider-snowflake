@@ -1,6 +1,8 @@
 package gen
 
 import (
+	"log"
+
 	resourceassertgen "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert/gen"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
@@ -20,7 +22,7 @@ func ModelBuilderModels() []ResourceConfigBuilderModel {
 		if _, ok := plugged[details.ObjectName()]; ok {
 			continue
 		}
-		all = append(all, ModelFromResourceSchemaDetails(details, nil))
+		all = append(all, ModelFromResourceSchemaDetails(details, nil, log.Default()))
 	}
 	return append(all, ssotModels...)
 }
@@ -36,7 +38,7 @@ func ssotModelBuilderModels() []ResourceConfigBuilderModel {
 	return models
 }
 
-func WithPreamble(model ResourceConfigBuilderModel, preamble *genhelpers.PreambleModel) ResourceConfigBuilderModel {
+func WithPreamble(model ResourceConfigBuilderModel, preamble *genhelpers.PreambleModel, _ *log.Logger) ResourceConfigBuilderModel {
 	model.PreambleModel = preamble
 	return model
 }

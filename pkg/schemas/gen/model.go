@@ -2,6 +2,7 @@ package gen
 
 import (
 	"fmt"
+	"log"
 	"slices"
 	"strings"
 
@@ -27,7 +28,7 @@ func (m ShowResultSchemaModel) Filename() string {
 	return snake + "_gen.go"
 }
 
-func ModelFromStructDetails(sdkStruct ShowResultSchemaDetails, preamble *genhelpers.PreambleModel) ShowResultSchemaModel {
+func ModelFromStructDetails(sdkStruct ShowResultSchemaDetails, preamble *genhelpers.PreambleModel, _ *log.Logger) ShowResultSchemaModel {
 	if sdkStruct.IsDescribe && sdkStruct.UsedAsListEntry {
 		panic(fmt.Sprintf("%s: IsDescribe and UsedAsListEntry are mutually exclusive", sdkStruct.Name))
 	}

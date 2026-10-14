@@ -10,7 +10,7 @@ import (
 // ShowOutputAssertionsFromSsot builds the show or describe assertion model for one opted-in object.
 // Columns become genhelpers.Field values, then MapToResourceShowOutputAssertion, the same mapper the reflected path uses.
 func ShowOutputAssertionsFromSsot(obj ssot.Object, isDescribe bool) ResourceShowOutputAssertionsModel {
-	return ModelFromSdkObjectDetails(showOutputDetailsFromSsot(obj, isDescribe), nil)
+	return ModelFromSdkObjectDetails(showOutputDetailsFromSsot(obj, isDescribe), nil, nil)
 }
 
 func showOutputDetailsFromSsot(obj ssot.Object, isDescribe bool) SdkObjectShowOutputDetails {

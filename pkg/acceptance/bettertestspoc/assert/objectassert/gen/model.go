@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"log"
 	"slices"
 	"strings"
 
@@ -89,7 +90,7 @@ func (m SnowflakeObjectAssertionsModel) PlaceholderIdentifier() string {
 	}
 }
 
-func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *genhelpers.PreambleModel) SnowflakeObjectAssertionsModel {
+func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *genhelpers.PreambleModel, _ *log.Logger) SnowflakeObjectAssertionsModel {
 	name, _ := strings.CutPrefix(sdkObject.Name, "sdk.")
 	fields := make([]SnowflakeObjectFieldAssertion, len(sdkObject.Fields))
 	for idx, field := range sdkObject.Fields {

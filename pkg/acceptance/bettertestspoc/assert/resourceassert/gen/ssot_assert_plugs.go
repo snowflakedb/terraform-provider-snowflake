@@ -1,6 +1,8 @@
 package gen
 
 import (
+	"log"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
@@ -18,7 +20,7 @@ func ResourceAssertionModels() []ResourceAssertionsModel {
 		if _, ok := plugged[details.ObjectName()]; ok {
 			continue
 		}
-		all = append(all, ModelFromResourceSchemaDetails(details, nil))
+		all = append(all, ModelFromResourceSchemaDetails(details, nil, nil))
 	}
 	return append(all, ssotModels...)
 }
@@ -34,7 +36,7 @@ func ssotResourceAssertionModels() []ResourceAssertionsModel {
 	return models
 }
 
-func WithPreamble(model ResourceAssertionsModel, preamble *genhelpers.PreambleModel) ResourceAssertionsModel {
+func WithPreamble(model ResourceAssertionsModel, preamble *genhelpers.PreambleModel, _ *log.Logger) ResourceAssertionsModel {
 	model.PreambleModel = preamble
 	return model
 }
