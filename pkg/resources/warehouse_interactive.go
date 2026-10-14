@@ -164,18 +164,8 @@ func WarehouseInteractive() *schema.Resource {
 	}
 }
 
-// parseTablesSet converts a *schema.Set of fully-qualified table identifier strings into
-// a slice of sdk.SchemaObjectIdentifier.
-func parseTablesSet(raw *schema.Set) ([]sdk.SchemaObjectIdentifier, error) {
-	tables := make([]sdk.SchemaObjectIdentifier, 0, raw.Len())
-	for _, v := range raw.List() {
-		id, err := sdk.ParseSchemaObjectIdentifier(v.(string))
-		if err != nil {
-			return nil, err
-		}
-		tables = append(tables, id)
-	}
-	return tables, nil
+func interactiveWarehouseTable(v any) (sdk.SchemaObjectIdentifier, error) {
+	return sdk.ParseSchemaObjectIdentifier(v.(string))
 }
 
 func ImportWarehouseInteractive(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
@@ -227,14 +217,8 @@ func CreateWarehouseInteractive(ctx context.Context, d *schema.ResourceData, met
 
 	req := sdk.NewCreateInteractiveWarehouseRequest(id)
 
-	if v, ok := d.GetOk("tables"); ok {
-		tables, err := parseTablesSet(v.(*schema.Set))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		req.WithTables(tables)
-	}
 	errs := errors.Join(
+		setValueCreate(d, "tables", &req.Tables, interactiveWarehouseTable),
 		boolAttributeCreateBuilder(d, "initially_suspended", req.WithInitiallySuspended),
 		accountObjectIdentifierAttributeCreateBuilder(d, "resource_monitor", req.WithResourceMonitor),
 		attributeMappedValueCreateBuilder(d, "warehouse_size", req.WithWarehouseSize, sdk.ToWarehouseSize),
@@ -351,13 +335,11 @@ func UpdateWarehouseInteractive(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("name") {
-		newId := sdk.NewAccountObjectIdentifier(d.Get("name").(string))
-		if err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithRenameTo(newId)); err != nil {
-			return diag.FromErr(err)
-		}
-		d.SetId(helpers.EncodeResourceIdentifier(newId))
-		id = newId
+	id, err = renameAccountLevelResource(ctx, d, id, func(ctx context.Context, id, newId sdk.AccountObjectIdentifier) error {
+		return client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithRenameTo(newId))
+	})
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	// Tables are applied incrementally: compute the ADD/DROP delta from the change set.
@@ -366,11 +348,11 @@ func UpdateWarehouseInteractive(ctx context.Context, d *schema.ResourceData, met
 		oldSet := o.(*schema.Set)
 		newSet := n.(*schema.Set)
 
-		toAdd, err := parseTablesSet(newSet.Difference(oldSet))
+		toAdd, err := collections.MapErr(newSet.Difference(oldSet).List(), interactiveWarehouseTable)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		toDrop, err := parseTablesSet(oldSet.Difference(newSet))
+		toDrop, err := collections.MapErr(oldSet.Difference(newSet).List(), interactiveWarehouseTable)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -390,15 +372,8 @@ func UpdateWarehouseInteractive(ctx context.Context, d *schema.ResourceData, met
 	set := sdk.NewWarehouseSetRequest()
 	unset := sdk.NewWarehouseUnsetRequest()
 
-	if d.HasChange("warehouse_size") {
-		size, err := sdk.ToWarehouseSize(d.Get("warehouse_size").(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		set.WithWarehouseSize(size)
-	}
-
 	if err := errors.Join(
+		attributeMappedValueUpdateSetOnlyAlways(d, "warehouse_size", &set.WarehouseSize, sdk.ToWarehouseSize),
 		intAttributeUpdate(d, "max_cluster_count", &set.MaxClusterCount, &unset.MaxClusterCount),
 		intAttributeUpdate(d, "min_cluster_count", &set.MinClusterCount, &unset.MinClusterCount),
 		intAttributeWithSpecialDefaultUnsetFallbackUpdate(d, "auto_suspend", &set.AutoSuspend, interactiveWarehouseDefaultAutoSuspend),

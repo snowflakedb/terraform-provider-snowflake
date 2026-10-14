@@ -1,8 +1,10 @@
 package resources
 
 import (
+	"context"
 	"reflect"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -400,6 +402,27 @@ func attributeMappedValueUpdateSetOnlyFallbackNested[R any](d *schema.ResourceDa
 		}
 	}
 	return nil
+}
+
+// renameAccountLevelResource renames an account-level object when name changed.
+// The new identifier is the name attribute.
+// On success the Terraform ID is set with EncodeResourceIdentifier and the new identifier is returned.
+// When name is unchanged, id is returned unchanged.
+func renameAccountLevelResource(
+	ctx context.Context,
+	d *schema.ResourceData,
+	id sdk.AccountObjectIdentifier,
+	rename func(context.Context, sdk.AccountObjectIdentifier, sdk.AccountObjectIdentifier) error,
+) (sdk.AccountObjectIdentifier, error) {
+	if !d.HasChange("name") {
+		return id, nil
+	}
+	target := sdk.NewAccountObjectIdentifier(d.Get("name").(string))
+	if err := rename(ctx, id, target); err != nil {
+		return id, err
+	}
+	d.SetId(helpers.EncodeResourceIdentifier(target))
+	return target, nil
 }
 
 func attributeMappedValueUpdateIf[T, R any](d *schema.ResourceData, key string, setField **R, unsetField **bool, condition func(T) bool, mapper func(T) (R, error)) error {
