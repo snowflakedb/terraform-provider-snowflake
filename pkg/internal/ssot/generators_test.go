@@ -19,6 +19,9 @@ func Test_ObjectGenerators_options(t *testing.T) {
 	g = ObjectGenerators(WithModel())
 	require.Equal(t, Generators{Model: ModelGenerator{Enabled: true}}, g)
 
+	g = ObjectGenerators(WithResourceAssert())
+	require.Equal(t, Generators{ResourceAssert: ResourceAssertGenerator{Enabled: true}}, g)
+
 	g = ObjectGenerators()
 	require.Equal(t, Generators{}, g)
 }

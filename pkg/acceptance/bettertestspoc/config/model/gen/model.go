@@ -24,10 +24,7 @@ type ResourceConfigBuilderAttributeModel struct {
 	VariableMethod string
 	MethodImport   string
 	OriginalType   schema.ValueType
-	// SdkType is the richer Go type, empty for schema-reflected fields.
-	SdkType string
-	// SdkKind is "bool", "enum", or "identifier" when SdkType is set.
-	SdkKind string
+	genhelpers.SdkValueType
 }
 
 var excludedAttributeNames = []string{

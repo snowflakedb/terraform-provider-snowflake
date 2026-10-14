@@ -2,27 +2,16 @@ package gen
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 
 	sdkdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
-
-// SdkMethodSuffix names the extra setter that takes the real Go type.
-// The existing With method stays and still takes the Terraform storage type, usually string.
-// Go cannot overload With, and WithValue is already the arbitrary-value setter, so the real-type method needs its own suffix: Bool for a Go bool, Sdk for an SDK type.
-// TODO [next PRs]: migrate ssot-derived model generation to only the new methods.
-func SdkMethodSuffix(sdkType string) string {
-	if sdkType == "bool" {
-		return "Bool"
-	}
-	return "Sdk"
-}
 
 // ModelFromSsotObject builds the model-builder input for one opted-in object.
 // Field types come from the ssot attribute. Parameter fields come from the parameter catalog when the object generates them.
@@ -31,12 +20,12 @@ func ModelFromSsotObject(obj ssot.Object) ResourceConfigBuilderModel {
 		panic(fmt.Sprintf("object %q is not enabled for model generation", obj.Name))
 	}
 	attrs := identityModelAttributes(obj)
-	for _, attr := range obj.Attributes {
-		attrs = append(attrs, modelAttributeFromSsot(obj, attr))
-	}
-	for _, parameter := range parameterDefsForObject(obj) {
-		attrs = append(attrs, modelAttributeFromParameter(parameter))
-	}
+	attrs = append(attrs, collections.Map(obj.Attributes, func(attr ssot.Attribute) ResourceConfigBuilderAttributeModel {
+		return modelAttributeFromField(ssot.ClassifyAttribute(obj, attr))
+	})...)
+	attrs = append(attrs, collections.Map(parameterDefsForObject(obj), func(parameter parameterdefs.ParameterDef) ResourceConfigBuilderAttributeModel {
+		return modelAttributeFromField(ssot.ClassifyParameter(parameter.FieldName(), parameter.Kind))
+	})...)
 	return ResourceConfigBuilderModel{
 		Name: obj.Name,
 		Attributes: genhelpers.OrderByNameWithPreferredFront(attrs, func(attr ResourceConfigBuilderAttributeModel) string {
@@ -46,19 +35,7 @@ func ModelFromSsotObject(obj ssot.Object) ResourceConfigBuilderModel {
 }
 
 func identityModelAttributes(obj ssot.Object) []ResourceConfigBuilderAttributeModel {
-	name := plainStringAttribute("name", true)
-	database := plainStringAttribute("database", true)
-	schemaName := plainStringAttribute("schema", true)
-	switch obj.IdType {
-	case "AccountObjectIdentifier":
-		return []ResourceConfigBuilderAttributeModel{name}
-	case "DatabaseObjectIdentifier":
-		return []ResourceConfigBuilderAttributeModel{database, name}
-	case "SchemaObjectIdentifier":
-		return []ResourceConfigBuilderAttributeModel{database, schemaName, name}
-	default:
-		panic(fmt.Sprintf("object %q: unsupported IdType %q", obj.Name, obj.IdType))
-	}
+	return modelAttributesFromFields(ssot.IdentityFields(obj))
 }
 
 func parameterDefsForObject(obj ssot.Object) []parameterdefs.ParameterDef {
@@ -74,56 +51,25 @@ func parameterDefsForObject(obj ssot.Object) []parameterdefs.ParameterDef {
 	return parameters
 }
 
-func modelAttributeFromSsot(obj ssot.Object, attr ssot.Attribute) ResourceConfigBuilderAttributeModel {
-	if slices.Contains(excludedAttributeNames, attr.Name) {
-		panic(fmt.Sprintf("object %q: attribute %q is a generated output block", obj.Name, attr.Name))
-	}
-	switch attr.Type {
-	case ssot.AttrInt:
-		return typedAttribute(attr.Name, "int", "IntegerVariable", schema.TypeInt, attr.Required, "", "")
+func modelAttributesFromFields(fields []ssot.ClassifiedField) []ResourceConfigBuilderAttributeModel {
+	return collections.Map(fields, modelAttributeFromField)
+}
+
+func modelAttributeFromField(field ssot.ClassifiedField) ResourceConfigBuilderAttributeModel {
+	switch field.Storage {
 	case ssot.AttrBool:
-		if attr.Required {
-			return typedAttribute(attr.Name, "bool", "BoolVariable", schema.TypeBool, true, "", "")
-		}
-		return typedAttribute(attr.Name, "string", "StringVariable", schema.TypeString, false, "bool", "bool")
-	case ssot.AttrEnum:
-		if attr.Enum == nil || attr.Enum.Name == "" {
-			panic(fmt.Sprintf("object %q: enum attribute %q has no Enum", obj.Name, attr.Name))
-		}
-		return typedAttribute(attr.Name, "string", "StringVariable", schema.TypeString, attr.Required, "sdk."+attr.Enum.Name, "enum")
-	case ssot.AttrIdentifier:
-		if obj.IdType == "" {
-			panic(fmt.Sprintf("object %q: identifier attribute %q has no IdType", obj.Name, attr.Name))
-		}
-		return typedAttribute(attr.Name, "string", "StringVariable", schema.TypeString, attr.Required, "sdk."+obj.IdType, "identifier")
+		return typedAttribute(field.Name, "bool", "BoolVariable", schema.TypeBool, field.Required, field.SdkType, field.SdkKind)
+	case ssot.AttrInt:
+		return typedAttribute(field.Name, "int", "IntegerVariable", schema.TypeInt, field.Required, field.SdkType, field.SdkKind)
 	case ssot.AttrString:
-		return plainStringAttribute(attr.Name, attr.Required)
+		return typedAttribute(field.Name, "string", "StringVariable", schema.TypeString, field.Required, field.SdkType, field.SdkKind)
 	case ssot.AttrList:
-		return typedAttribute(attr.Name, "", "", schema.TypeList, attr.Required, "", "")
+		return typedAttribute(field.Name, "", "", schema.TypeList, field.Required, field.SdkType, field.SdkKind)
 	case ssot.AttrSet:
-		return typedAttribute(attr.Name, "", "", schema.TypeSet, attr.Required, "", "")
+		return typedAttribute(field.Name, "", "", schema.TypeSet, field.Required, field.SdkType, field.SdkKind)
 	default:
-		panic(fmt.Sprintf("object %q: attribute %q has unknown type %q", obj.Name, attr.Name, attr.Type))
+		panic(fmt.Sprintf("attribute %q has unsupported storage %q", field.Name, field.Storage))
 	}
-}
-
-func modelAttributeFromParameter(parameter parameterdefs.ParameterDef) ResourceConfigBuilderAttributeModel {
-	switch parameter.Kind {
-	case "bool":
-		return typedAttribute(parameter.FieldName(), "bool", "BoolVariable", schema.TypeBool, false, "", "")
-	case "int":
-		return typedAttribute(parameter.FieldName(), "int", "IntegerVariable", schema.TypeInt, false, "", "")
-	case "string", "StringAllowEmpty", "float64":
-		return plainStringAttribute(parameter.FieldName(), false)
-	}
-	if strings.HasSuffix(parameter.Kind, "Identifier") {
-		return typedAttribute(parameter.FieldName(), "string", "StringVariable", schema.TypeString, false, "sdk."+parameter.Kind, "identifier")
-	}
-	return typedAttribute(parameter.FieldName(), "string", "StringVariable", schema.TypeString, false, "sdk."+parameter.Kind, "enum")
-}
-
-func plainStringAttribute(name string, required bool) ResourceConfigBuilderAttributeModel {
-	return typedAttribute(name, "string", "StringVariable", schema.TypeString, required, "", "")
 }
 
 func typedAttribute(name, attributeType, variableMethod string, original schema.ValueType, required bool, sdkType, sdkKind string) ResourceConfigBuilderAttributeModel {
@@ -135,7 +81,6 @@ func typedAttribute(name, attributeType, variableMethod string, original schema.
 		VariableMethod: variableMethod,
 		MethodImport:   "tfconfig",
 		OriginalType:   original,
-		SdkType:        sdkType,
-		SdkKind:        sdkKind,
+		SdkValueType:   genhelpers.SdkValueType{SdkType: sdkType, SdkKind: sdkKind},
 	}
 }

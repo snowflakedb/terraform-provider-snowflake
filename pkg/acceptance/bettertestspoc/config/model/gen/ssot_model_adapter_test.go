@@ -4,8 +4,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 	sdkdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/stretchr/testify/require"
 )
@@ -120,11 +122,7 @@ func Test_ModelFromSsotObject_refusesDisabledObject(t *testing.T) {
 }
 
 func attributeNames(model ResourceConfigBuilderModel) []string {
-	names := make([]string, len(model.Attributes))
-	for i, attr := range model.Attributes {
-		names[i] = attr.Name
-	}
-	return names
+	return collections.Map(model.Attributes, func(attr ResourceConfigBuilderAttributeModel) string { return attr.Name })
 }
 
 func renderModelTemplates(t *testing.T, model ResourceConfigBuilderModel) string {

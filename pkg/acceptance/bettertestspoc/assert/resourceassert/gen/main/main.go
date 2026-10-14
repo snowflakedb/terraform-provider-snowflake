@@ -17,14 +17,14 @@ func main() {
 		genhelpers.NewPreambleModel(name, version).
 			WithImport("testing").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"),
-		gen.GetResourceSchemaDetails,
-		gen.ModelFromResourceSchemaDetails,
+		gen.ResourceAssertionModels,
+		gen.WithPreamble,
 		getFilename,
 		gen.AllTemplates,
 	).
 		RunAndHandleOsReturn()
 }
 
-func getFilename(_ genhelpers.ResourceSchemaDetails, model gen.ResourceAssertionsModel) string {
+func getFilename(_ gen.ResourceAssertionsModel, model gen.ResourceAssertionsModel) string {
 	return genhelpers.ToSnakeCase(model.Name) + "_resource" + "_gen.go"
 }

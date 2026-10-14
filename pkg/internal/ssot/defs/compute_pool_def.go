@@ -192,6 +192,7 @@ var ComputePool = ssot.Object{
 		ssot.WithSchemaShow(),
 		ssot.WithSchemaDescribe(),
 		ssot.WithModel(),
+		ssot.WithResourceAssert(),
 	},
 	Attributes: []ssot.Attribute{
 		ComputePoolAttrs.ForApplication,

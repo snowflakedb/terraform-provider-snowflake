@@ -28,9 +28,16 @@ It aims to be more readable than using `Config:` with hardcoded string or `Confi
 
 ## How it works
 ### Adding new resource assertions
-Resource assertions can be generated automatically. For object `abc` do the following:
-- add object you want to generate to `allStructs` slice in the `assert/resourceassert/gen/resource_schema_def.go`
-- to add custom (not generated assertions) create file `abc_resource_ext.go` in the `assert/resourceassert` package. Example would be:
+Resource assertions can be generated automatically. Inputs are merged in [ResourceAssertionModels](assert/resourceassert/gen/ssot_assert_plugs.go):
+
+- **Resource schema (default).** `allResourceSchemaDefs` in [resource_schema_def.go](assert/resourceassert/gen/resource_schema_def.go), reflected from `resources.X().Schema`. Do not remove an entry from it when opting the assertion into ssot.
+- **ssot (opt-in).** Objects with `WithResourceAssert()` ([ssot generators](../../internal/ssot/README.md#generators)). Fields come from `Attributes` and identity ([ssot attribute](../../internal/ssot/README.md#attribute)), not from SHOW/DESCRIBE [columns](../../internal/ssot/README.md#show-and-describe). `defs.All()` is not fed in automatically. `fully_qualified_name` is emitted. Parameter fields still come from `ParameterDefsForLevel` until those definitions move to ssot.
+
+Filter names are the resource name (`--filter-object-names=ComputePool,Schema`). A name that is both reflected and opted in is taken from ssot.
+
+The storage-type `Has` method stays (`HasInstanceFamily(string)`, `HasAutoResume(string)`). When ssot has a richer Go type, an extra method is generated beside it (`HasInstanceFamilySdk`, `HasAutoResumeBool`). `HasXString`, `HasNoX`, `HasXEmpty`, and `HasXNotEmpty` stay.
+
+For an object that stays on the resource schema, add it to `allResourceSchemaDefs`. To add custom (not generated) assertions create file `abc_resource_ext.go` in the `assert/resourceassert` package. Example would be:
 ```go
 func (w *WarehouseResourceAssert) HasDefaultMaxConcurrencyLevel() *WarehouseResourceAssert {
     w.AddAssertion(assert.ValueSet("max_concurrency_level", "8"))
@@ -42,7 +49,7 @@ func (w *WarehouseResourceAssert) HasDefaultMaxConcurrencyLevel() *WarehouseReso
 The generated resource assertions are available in the `assert/resourceassert/gen` package.
 The generated assertions provide a set of methods that can be used to assert the state of the resource.
 Here's a short description of every generated assertion:
-- HasX methods check that a field is set with the provided value.
+- HasX methods check that a field is set with the provided value. When the object is opted into ssot, a richer Go type also gets `HasXBool` or `HasXSdk` beside that method. See [Adding new resource assertions](#adding-new-resource-assertions).
 - HasNoX methods check that a field is not set (not present in state or is empty in case of lists/sets).
 - HasXEmpty methods are generated only for string type fields and are checking if a given field is set to empty string.
 - HasXNotEmpty methods check that a field is set with any value.

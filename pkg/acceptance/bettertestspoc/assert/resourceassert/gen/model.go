@@ -15,6 +15,8 @@ type ResourceAssertionsModel struct {
 	*genhelpers.PreambleModel
 }
 
+func (m ResourceAssertionsModel) ObjectName() string { return m.Name }
+
 type ResourceAttributeAssertionModel struct {
 	Name         string
 	IsCollection bool
@@ -26,6 +28,8 @@ type ResourceAttributeAssertionModel struct {
 	ExpectedType                 string
 	AssertionCreator             string
 	ShouldGenerateTypedAssertion bool
+
+	genhelpers.SdkValueType
 }
 
 var excludedAttributeNames = []string{

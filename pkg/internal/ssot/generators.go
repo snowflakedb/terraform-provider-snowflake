@@ -11,10 +11,15 @@ type ModelGenerator struct {
 	Enabled bool
 }
 
+type ResourceAssertGenerator struct {
+	Enabled bool
+}
+
 type Generators struct {
-	Schema SchemaGenerator
-	Sdk    SdkGenerator
-	Model  ModelGenerator
+	Schema         SchemaGenerator
+	Sdk            SdkGenerator
+	Model          ModelGenerator
+	ResourceAssert ResourceAssertGenerator
 }
 
 type GeneratorOption func(*Generators)
@@ -29,6 +34,10 @@ func WithSchemaDescribe() GeneratorOption {
 
 func WithModel() GeneratorOption {
 	return func(g *Generators) { g.Model.Enabled = true }
+}
+
+func WithResourceAssert() GeneratorOption {
+	return func(g *Generators) { g.ResourceAssert.Enabled = true }
 }
 
 func ObjectGenerators(opts ...GeneratorOption) Generators {

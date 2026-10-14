@@ -18,16 +18,10 @@
     {{ else }}
         // {{ .Name }} attribute type is not yet supported, so With{{ $attributeNameWithoutForbiddenAttributeNameSuffix }} can't be generated
     {{ end }}
-    {{- if .SdkType }}
+    {{- if .SdkType }}{{/* TODO [next PRs]: migrate ssot-derived model generation to only the new methods. */}}
 
         func ({{ $modelVar }} *{{ $modelName }}) With{{ $attributeNameWithoutForbiddenAttributeNameSuffix }}{{ SdkMethodSuffix .SdkType }}({{ FirstLetterLowercase $attributeNameCamel }} {{ .SdkType }}) *{{ $modelName }} {
-            {{- if eq .SdkKind "bool" }}
-            {{ $modelVar }}.{{ $attributeNameCamel }} = tfconfig.StringVariable(strconv.FormatBool({{ FirstLetterLowercase $attributeNameCamel }}))
-            {{- else if eq .SdkKind "identifier" }}
-            {{ $modelVar }}.{{ $attributeNameCamel }} = tfconfig.StringVariable({{ FirstLetterLowercase $attributeNameCamel }}.Name())
-            {{- else }}
-            {{ $modelVar }}.{{ $attributeNameCamel }} = tfconfig.StringVariable(string({{ FirstLetterLowercase $attributeNameCamel }}))
-            {{- end }}
+            {{ $modelVar }}.{{ $attributeNameCamel }} = tfconfig.StringVariable({{ RunMapper (SdkValueMapper .SdkKind) (FirstLetterLowercase $attributeNameCamel) }})
             return {{ $modelVar }}
         }
     {{- end }}
