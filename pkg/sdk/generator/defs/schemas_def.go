@@ -15,19 +15,6 @@ var schemaParameters = ParameterDefsForLevel(parameterdefs.ParameterLevelSchema)
 
 var schemaParameterFieldNames = collections.Map(schemaParameters, g.ParameterSqlToFieldName)
 
-var schemaPairs = g.StructPair("schemaRow", "Schema").
-	Time("created_on").
-	OptionalTime("dropped_on", g.WithRequiredInPlain()).
-	Text("name").
-	BoolFromText("is_default").
-	BoolFromText("is_current").
-	Text("database_name").
-	Text("owner").
-	OptionalText("comment", g.WithRequiredInPlain()).
-	OptionalText("options").
-	Text("retention_time").
-	Text("owner_role_type")
-
 var schemaSetStruct = g.NewQueryStruct("SchemaSet").
 	WithParameters(schemaParameters...).
 	OptionalComment().
@@ -115,7 +102,7 @@ var schemasDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name"),
 ).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-schemas",
-	schemaPairs,
+	g.ShowPairedStructs(ssotdefs.Schema),
 	g.NewQueryStruct("ShowSchemas").
 		Show().
 		Terse().

@@ -12,7 +12,7 @@ import (
 
 var (
 	_ Schemas                       = (*schemas)(nil)
-	_ convertibleRow[Schema]        = new(schemaRow)
+	_ convertibleRow[Schema]        = new(schemasRow)
 	_ convertibleRow[SchemaDetails] = new(schemaDescRow)
 )
 
@@ -51,11 +51,11 @@ func (v *schemas) Undrop(ctx context.Context, request *UndropSchemaRequest) erro
 
 func (v *schemas) Show(ctx context.Context, request *ShowSchemaRequest) ([]Schema, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[schemaRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[schemasRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[schemaRow, Schema](dbRows)
+	return convertRows[schemasRow, Schema](dbRows)
 }
 
 func (v *schemas) ShowByID(ctx context.Context, id DatabaseObjectIdentifier) (*Schema, error) {
@@ -221,7 +221,7 @@ func (r *ShowSchemaRequest) toOpts() *ShowSchemaOptions {
 	return opts
 }
 
-func (r schemaRow) convert() (*Schema, error) {
+func (r schemasRow) convert() (*Schema, error) {
 	result := &Schema{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,

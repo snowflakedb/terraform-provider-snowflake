@@ -38,8 +38,8 @@ var SchemaAttrs = struct {
 	CreatedOn:     ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, Readonly: true},
 	DroppedOn:     ssot.Attribute{Name: "dropped_on", Type: ssot.AttrTime, OptionalInDb: true, Readonly: true},
 	Name:          ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
-	IsDefault:     ssot.Attribute{Name: "is_default", Type: ssot.AttrBool, Readonly: true},
-	IsCurrent:     ssot.Attribute{Name: "is_current", Type: ssot.AttrBool, Readonly: true},
+	IsDefault:     ssot.Attribute{Name: "is_default", Type: ssot.AttrBool, StoredAsText: true, Readonly: true},
+	IsCurrent:     ssot.Attribute{Name: "is_current", Type: ssot.AttrBool, StoredAsText: true, Readonly: true},
 	DatabaseName:  ssot.Attribute{Name: "database_name", Type: ssot.AttrString, Readonly: true},
 	Owner:         ssot.Attribute{Name: "owner", Type: ssot.AttrString, Readonly: true},
 	Options:       ssot.Attribute{Name: "options", Type: ssot.AttrString, OptionalInShow: true, OptionalInDb: true, Readonly: true},
@@ -63,6 +63,7 @@ var Schema = ssot.Object{
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),
 		ssot.WithShowOutputAssert(),
+		ssot.WithSdkShow(),
 		ssot.WithSdkDescribe(),
 	},
 	Attributes: []ssot.Attribute{

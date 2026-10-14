@@ -14,6 +14,7 @@ func Test_PairedStructsFromColumns_matchesHandwrittenChain(t *testing.T) {
 	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
 	minNodes := ssot.Attribute{Name: "min_nodes", Type: ssot.AttrInt}
 	autoResume := ssot.Attribute{Name: "auto_resume", Type: ssot.AttrBool}
+	isDefault := ssot.Attribute{Name: "is_default", Type: ssot.AttrBool, StoredAsText: true}
 	createdOn := ssot.Attribute{Name: "created_on", Type: ssot.AttrTime}
 	stateAttr := ssot.Attribute{Name: "state", Type: ssot.AttrEnum, Enum: state}
 	forApplication := ssot.Attribute{
@@ -45,6 +46,7 @@ func Test_PairedStructsFromColumns_matchesHandwrittenChain(t *testing.T) {
 			&name,
 			&minNodes,
 			&autoResume,
+			&isDefault,
 			&createdOn,
 			&stateAttr,
 			&forApplication,
@@ -65,6 +67,7 @@ func Test_PairedStructsFromColumns_matchesHandwrittenChain(t *testing.T) {
 		Text("name").
 		Number("min_nodes").
 		Bool("auto_resume").
+		BoolFromText("is_default").
 		Time("created_on").
 		Enum("state", state).
 		Field("application", "sql.NullString", "*AccountObjectIdentifier", WithPlainFieldName("Application")).
@@ -74,7 +77,19 @@ func Test_PairedStructsFromColumns_matchesHandwrittenChain(t *testing.T) {
 		StringList("backup_instance_families")
 	require.Equal(t, showWant, showGot)
 	require.True(t, pairedFieldByColumn(showGot, "state").isEnum)
-	require.NotEqual(t, StructPair("fakesRow", "Fake").BoolFromText("auto_resume").fields[0], pairedFieldByColumn(showGot, "auto_resume"))
+	gotAutoResume := pairedFieldByColumn(showGot, "auto_resume")
+	require.Equal(t, StructPair("fakesRow", "Fake").Bool("auto_resume").fields[0], gotAutoResume)
+	require.Equal(t, "bool", gotAutoResume.dbKind)
+	require.Equal(t, "bool", gotAutoResume.plainKind)
+	require.NotEqual(t, StructPair("fakesRow", "Fake").BoolFromText("auto_resume").fields[0], gotAutoResume)
+	gotDefault := pairedFieldByColumn(showGot, "is_default")
+	require.Equal(t, StructPair("fakesRow", "Fake").BoolFromText("is_default").fields[0], gotDefault)
+	require.Equal(t, "string", gotDefault.dbKind)
+	require.Equal(t, "bool", gotDefault.plainKind)
+	require.NotEqual(t, StructPair("fakesRow", "Fake").Bool("is_default").fields[0], gotDefault)
+
+	storedText := ssot.Attribute{Name: "database_name", Type: ssot.AttrString, StoredAsText: true}
+	require.Equal(t, StructPair("fakesRow", "Fake").Text("database_name"), ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &storedText)))
 
 	describeGot := DescribePairedStructs(obj)
 	describeWant := StructPair("fakeDescRow", "FakeDetails").
@@ -154,6 +169,13 @@ func Test_PairedStructsFromColumns_panics(t *testing.T) {
 			name: "optional bool",
 			call: func() {
 				autoResume := ssot.Attribute{Name: "auto_resume", Type: ssot.AttrBool, OptionalInShow: true, OptionalInDb: true}
+				ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &autoResume))
+			},
+		},
+		{
+			name: "optional bool with StoredAsText",
+			call: func() {
+				autoResume := ssot.Attribute{Name: "auto_resume", Type: ssot.AttrBool, OptionalInShow: true, OptionalInDb: true, StoredAsText: true}
 				ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &autoResume))
 			},
 		},

@@ -186,7 +186,7 @@ type ShowSchemaOptions struct {
 	Limit      *LimitFrom  `ddl:"keyword" sql:"LIMIT"`
 }
 
-type schemaRow struct {
+type schemasRow struct {
 	CreatedOn     time.Time      `db:"created_on"`
 	DroppedOn     sql.NullTime   `db:"dropped_on"`
 	Name          string         `db:"name"`

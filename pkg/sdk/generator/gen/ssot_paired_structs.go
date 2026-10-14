@@ -78,7 +78,10 @@ func appendPairedColumn(pairs *PairedStructs, obj ssot.Object, attr ssot.Attribu
 		return pairs.Number(key)
 	case ssot.AttrBool:
 		if attr.OptionalInShow || attr.OptionalInDb {
-			panicPairedColumn(obj, attr, "an optional bool has no paired struct mapping; BoolFromText is not an ssot type")
+			panicPairedColumn(obj, attr, "an optional bool has no paired struct mapping")
+		}
+		if attr.StoredAsText {
+			return pairs.BoolFromText(key)
 		}
 		return pairs.Bool(key)
 	case ssot.AttrTime:
