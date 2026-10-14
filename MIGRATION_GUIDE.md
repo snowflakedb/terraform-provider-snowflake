@@ -49,6 +49,27 @@ This resource is in preview. To use it, `snowflake_failover_group_resource` must
 
 No configuration changes are required for existing configurations unless you want to manage these settings with Terraform. After upgrading, the next plan may report the new attributes as `false`. If Optimized Refresh or RPO Assurance was already enabled outside Terraform, add the matching field to the configuration; otherwise the next apply will unset it.
 
+### *(bug fix)* Setting `default_ddl_collation = ""` now applies in one step
+
+Previously, changing `default_ddl_collation` from a non-empty value straight to `""` did not run `SET DEFAULT_DDL_COLLATION = ''`. SDKv2 treats `""` as unset on an optional computed attribute, so the provider either planned nothing or kept showing an update that never applied. Since [v2.5.0](#v24x--v250) the documented workaround was to set the field to `null`, apply, then set `""` and apply again.
+
+That workaround is no longer required. An explicit empty string now forces the update, and Snowflake stores `''` on the object. This applies to:
+
+- [`snowflake_schema`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/schema)
+- [`snowflake_database`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/database)
+- [`snowflake_secondary_database`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/secondary_database)
+- [`snowflake_shared_database`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/shared_database)
+- [`snowflake_current_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_account)
+- [`snowflake_current_organization_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_organization_account)
+
+No configuration changes are required. If a resource already sets `default_ddl_collation = ""` while Snowflake still has a non-empty value, the next plan updates it to `''`.
+
+### *(new feature)* `parameters` output on `snowflake_database`
+
+[`snowflake_database`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/database) now exposes a computed `parameters` block, the result of `SHOW PARAMETERS IN DATABASE`.
+
+No configuration changes are required. After upgrading, the next plan reports an in-place update that adds `parameters` for every managed `snowflake_database`. Apply once to write it into state.
+
 ### *(new feature)* Snowflake Intelligence Cortex agent attachment
 
 We have added a new preview resource, [`snowflake_intelligence_cortex_agent_attachment`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/intelligence_cortex_agent_attachment), that attaches a Cortex agent to a Snowflake Intelligence object so the agent is available in Snowflake CoWork.

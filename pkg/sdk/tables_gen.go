@@ -46,7 +46,7 @@ type CreateTableOptions struct {
 	DataRetentionTimeInDays    *int                             `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	MaxDataExtensionTimeInDays *int                             `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
 	ChangeTracking             *bool                            `ddl:"parameter" sql:"CHANGE_TRACKING"`
-	DefaultDdlCollation        *string                          `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
+	DefaultDdlCollation        *StringAllowEmpty                `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
 	CopyGrants                 *bool                            `ddl:"keyword" sql:"COPY GRANTS"`
 	RowAccessPolicy            *TableRowAccessPolicyLegacy      `ddl:"keyword"`
 	Tag                        []TagAssociation                 `ddl:"keyword,parentheses" sql:"TAG"`
@@ -379,7 +379,7 @@ type TableSet struct {
 	DataRetentionTimeInDays    *int                    `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	MaxDataExtensionTimeInDays *int                    `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
 	ChangeTracking             *bool                   `ddl:"parameter" sql:"CHANGE_TRACKING"`
-	DefaultDdlCollation        *string                 `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
+	DefaultDdlCollation        *StringAllowEmpty       `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
 	Comment                    *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 

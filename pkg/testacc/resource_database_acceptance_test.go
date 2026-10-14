@@ -405,12 +405,8 @@ func TestAcc_Database_CompleteUseCase(t *testing.T) {
 // Terraform no longer treats the field as "already set", then set default_ddl_collation = "" and assert
 // Snowflake has an empty value at DATABASE.
 //
-// Follow-up: TestAcc_Schema_EmptyParameterAsDefaultValue then sets the value back to a non-empty
-// collation and jumps straight to "". That still does not SET empty (an intermediate null is required),
-// but schema keeps a non-empty plan because it has a computed parameters block marked computed from
-// CustomizeDiff. snowflake_database has no such block, so the same jump is a silent no-op (empty plan,
-// Snowflake still has the previous collation). A follow-up should adjust database parameter handling to
-// match schema so that jump is at least visible in the plan (and ideally applies the empty string).
+// The last step sets a non-empty collation and then replaces it with "" in one apply.
+// CustomizeDiff marks the explicit empty string computed, so the update emits SET DEFAULT_DDL_COLLATION = ”.
 func TestAcc_Database_EmptyParameterAsDefaultValue(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	parameterSet := model.Database("test", id.Name()).WithDefaultDdlCollation("en_nz")
@@ -448,6 +444,31 @@ func TestAcc_Database_EmptyParameterAsDefaultValue(t *testing.T) {
 						plancheck.ExpectResourceAction(parameterSetToEmptyString.ResourceReference(), plancheck.ResourceActionUpdate),
 						planchecks.ExpectChange(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation", tfjson.ActionUpdate, sdk.String(""), nil),
 						planchecks.PrintPlanDetails(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation"),
+					},
+				},
+				Check: assertThat(
+					t,
+					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation", "")),
+					objectparametersassert.DatabaseParameters(t, id).
+						HasDefaultDdlCollation("").
+						HasDefaultDdlCollationLevel(sdk.ParameterTypeDatabase),
+				),
+			},
+			// Set it back, then replace the non-empty value with "" in one step.
+			{
+				Config: accconfig.FromModels(t, parameterSet),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "name", id.Name()),
+					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "default_ddl_collation", "en_nz"),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, parameterSetToEmptyString),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(parameterSetToEmptyString.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation", tfjson.ActionUpdate, sdk.String("en_nz"), nil),
 					},
 				},
 				Check: assertThat(

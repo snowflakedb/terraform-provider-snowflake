@@ -40,7 +40,7 @@ func (s *CreateEventTableRequest) WithChangeTracking(changeTracking bool) *Creat
 	return s
 }
 
-func (s *CreateEventTableRequest) WithDefaultDdlCollation(defaultDdlCollation string) *CreateEventTableRequest {
+func (s *CreateEventTableRequest) WithDefaultDdlCollation(defaultDdlCollation StringAllowEmpty) *CreateEventTableRequest {
 	s.DefaultDdlCollation = &defaultDdlCollation
 	return s
 }

@@ -502,7 +502,7 @@ func accountParameterDiffFunctions(parameters *sdk.AccountParametersDetails) []s
 		StringTypedParameterValueComputedIf(defs.DateInputFormat.FieldName(), parameters.DateInputFormat, sdk.ParameterTypeAccount),
 		StringTypedParameterValueComputedIf(defs.DateOutputFormat.FieldName(), parameters.DateOutputFormat, sdk.ParameterTypeAccount),
 		StringTypedParameterValueComputedIf(defs.DefaultDbtVersion.FieldName(), parameters.DefaultDbtVersion, sdk.ParameterTypeAccount),
-		StringTypedParameterValueComputedIf(defs.DefaultDdlCollation.FieldName(), parameters.DefaultDdlCollation, sdk.ParameterTypeAccount),
+		StringAllowEmptyTypedParameterValueComputedIf(defs.DefaultDdlCollation.FieldName(), parameters.DefaultDdlCollation, sdk.ParameterTypeAccount),
 		StringTypedParameterValueComputedIf(defs.DefaultNotebookComputePoolCpu.FieldName(), parameters.DefaultNotebookComputePoolCpu, sdk.ParameterTypeAccount),
 		StringTypedParameterValueComputedIf(defs.DefaultNotebookComputePoolGpu.FieldName(), parameters.DefaultNotebookComputePoolGpu, sdk.ParameterTypeAccount),
 		StringTypedParameterValueComputedIf(defs.DefaultNullOrdering.FieldName(), parameters.DefaultNullOrdering, sdk.ParameterTypeAccount),

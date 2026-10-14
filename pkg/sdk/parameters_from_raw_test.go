@@ -189,6 +189,10 @@ func TestSetParameterFromRaw(t *testing.T) {
 		require.NoError(t, request.SetParameterFromRaw("DEFAULT_DDL_COLLATION", ""))
 		require.NotNil(t, request.DefaultDdlCollation)
 		require.Equal(t, "", request.DefaultDdlCollation.Value)
+
+		sql, err := structToSQL(NewAlterAccountRequest().WithSet(*NewAccountSetRequest().WithParameters(*request)).toOpts())
+		require.NoError(t, err)
+		require.Contains(t, sql, "DEFAULT_DDL_COLLATION = ''")
 	})
 }
 

@@ -32,7 +32,7 @@ type CreateTableRequest struct {
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
 	ChangeTracking             *bool
-	DefaultDdlCollation        *string
+	DefaultDdlCollation        *StringAllowEmpty
 	CopyGrants                 *bool
 	RowAccessPolicy            *TableRowAccessPolicyLegacy
 	Tag                        []TagAssociation
@@ -341,7 +341,7 @@ type TableSetRequest struct {
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
 	ChangeTracking             *bool
-	DefaultDdlCollation        *string
+	DefaultDdlCollation        *StringAllowEmpty
 	Comment                    *string
 }
 

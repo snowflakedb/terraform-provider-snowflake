@@ -54,7 +54,7 @@ func TestInt_EventTables(t *testing.T) {
 
 		request := sdk.NewCreateEventTableRequest(id).
 			WithChangeTracking(true).
-			WithDefaultDdlCollation("en_US").
+			WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "en_US"}).
 			WithDataRetentionTimeInDays(1).
 			WithMaxDataExtensionTimeInDays(2).
 			WithComment("test").

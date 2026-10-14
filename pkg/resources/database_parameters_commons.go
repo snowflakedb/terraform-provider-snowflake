@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
@@ -16,6 +17,11 @@ import (
 var (
 	databaseParametersSchema       = make(map[string]*schema.Schema)
 	sharedDatabaseParametersSchema = make(map[string]*schema.Schema)
+)
+
+var databaseParameterFieldNames = collections.Map(
+	defs.ParameterDefsForLevel(parameterdefs.ParameterLevelDatabase),
+	func(p parameterdefs.ParameterDef) string { return p.FieldName() },
 )
 
 var sharedDatabaseNotApplicableParameters = []string{
@@ -141,7 +147,7 @@ func databaseParameterDiffFunctions(parameters *sdk.DatabaseParametersDetails) [
 	return []schema.CustomizeDiffFunc{
 		IdentifierTypedParameterValueComputedIf(defs.Catalog.FieldName(), parameters.Catalog, sdk.ParameterTypeDatabase),
 		IntTypedParameterValueComputedIf(defs.DataRetentionTimeInDays.FieldName(), parameters.DataRetentionTimeInDays, sdk.ParameterTypeDatabase),
-		StringTypedParameterValueComputedIf(defs.DefaultDdlCollation.FieldName(), parameters.DefaultDdlCollation, sdk.ParameterTypeDatabase),
+		StringAllowEmptyTypedParameterValueComputedIf(defs.DefaultDdlCollation.FieldName(), parameters.DefaultDdlCollation, sdk.ParameterTypeDatabase),
 		StringTypedParameterValueComputedIf(defs.DefaultNotebookComputePoolCpu.FieldName(), parameters.DefaultNotebookComputePoolCpu, sdk.ParameterTypeDatabase),
 		StringTypedParameterValueComputedIf(defs.DefaultNotebookComputePoolGpu.FieldName(), parameters.DefaultNotebookComputePoolGpu, sdk.ParameterTypeDatabase),
 		BoolTypedParameterValueComputedIf(defs.EnableConsoleOutput.FieldName(), parameters.EnableConsoleOutput, sdk.ParameterTypeDatabase),
