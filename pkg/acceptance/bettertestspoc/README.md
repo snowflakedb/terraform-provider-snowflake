@@ -58,7 +58,7 @@ Here's a short description of every generated assertion:
 Resource show output assertions can be generated automatically. Inputs are merged in [ShowOutputAssertionDetails](assert/resourceshowoutputassert/gen/ssot_show_output_plugs.go):
 
 - **SDK structs (default).** `GetFilteredSdkObjectDetails` reflects `allStructs` in [sdk_object_def.go](assert/objectassert/gen/sdk_object_def.go). Do not remove an entry from it when opting the assertion into ssot.
-- **ssot (opt-in).** Objects with `WithShowOutputAssert()` / `WithDescribeOutputAssert()` ([ssot generators](../../internal/ssot/README.md#generators)). Fields come from `Columns` ([SHOW and DESCRIBE](../../internal/ssot/README.md#show-and-describe)), not from `Attributes`. `defs.All()` is not fed in automatically.
+- **ssot (opt-in).** Objects with `WithShowOutputAssert(ShowOutputShow(), ShowOutputDescribe())` ([ssot generators](../../internal/ssot/README.md#generators)). `ShowOutputShow()` and `ShowOutputDescribe()` are settings of that entry. Fields come from `Columns` ([SHOW and DESCRIBE](../../internal/ssot/README.md#show-and-describe)), not from `Attributes`. `defs.All()` is not fed in automatically.
 
 Filter names stay `sdk.<Type>` (`--filter-object-names=sdk.ComputePool,sdk.ComputePoolDetails,sdk.Schema`). A name that is both reflected and opted in is taken from ssot. A repeated ssot `ObjectName()`, or an ssot name left in the reflected list, panics.
 
@@ -74,7 +74,7 @@ func (u *UserShowOutputAssert) HasNameAndLoginName(expected string) *UserShowOut
 ```
 
 ### Adding new resource describe output assertions
-Resource describe output assertions use the same merge as [show output assertions](#adding-new-resource-show-output-assertions). Opt in with `WithDescribeOutputAssert()`. `IsDataSourceOutput` stays the describe flag. For an object that stays on the SDK struct:
+Resource describe output assertions use the same merge as [show output assertions](#adding-new-resource-show-output-assertions). Opt in by passing `ShowOutputDescribe()` to `WithShowOutputAssert()`. `IsDataSourceOutput` stays the describe flag. For an object that stays on the SDK struct:
 - add object you want to generate to `allStructs` slice in the `assert/objectassert/gen/sdk_object_def.go`
   - remember to mark the struct with `IsDataSourceOutput: true` in the `sdkObjectDef` definition
 - to add custom (not generated assertions) create file `abc_desc_output_ext.go` in the `assert/resourceshowoutputassert` package. Example would be:
@@ -102,7 +102,7 @@ func (w *WarehouseResourceParametersAssert) HasDefaultMaxConcurrencyLevel() *War
 Snowflake object assertions can be generated automatically. Inputs are merged in [SnowflakeObjectAssertionDetails](assert/objectassert/gen/ssot_object_assert_plugs.go):
 
 - **SDK structs (default).** `GetSdkObjectDetails` reflects `allStructs` in [sdk_object_def.go](assert/objectassert/gen/sdk_object_def.go). Show output assertions read the same slice. Leave an entry while show output still reflects that name. Remove it when both generators take the name from ssot.
-- **ssot (opt-in).** Objects with `WithObjectAssertShow()` / `WithObjectAssertDescribe()` ([ssot generators](../../internal/ssot/README.md#generators)). Fields come from `Columns` ([SHOW and DESCRIBE](../../internal/ssot/README.md#show-and-describe)), not from `Attributes`. `StoredAsText` is ignored. A bool stays `bool`. `defs.All()` is not fed in automatically.
+- **ssot (opt-in).** Objects with `WithObjectAssert(ObjectAssertShow(), ObjectAssertDescribe())` ([ssot generators](../../internal/ssot/README.md#generators)). `ObjectAssertShow()` and `ObjectAssertDescribe()` are settings of that entry. Fields come from `Columns` ([SHOW and DESCRIBE](../../internal/ssot/README.md#show-and-describe)), not from `Attributes`. `StoredAsText` is ignored. A bool stays `bool`. `defs.All()` is not fed in automatically.
 
 Filter names stay `sdk.<Type>` (`--filter-object-names=sdk.ComputePool,sdk.ComputePoolDetails,sdk.Schema`). A name that is both reflected and opted in is taken from ssot. A repeated ssot `ObjectName()`, or an ssot name left in the reflected list, panics.
 
@@ -121,7 +121,7 @@ func (w *WarehouseAssert) HasStateOneOf(expected ...sdk.WarehouseState) *Warehou
 ```
 
 ### Adding new Snowflake object assertions based on the describe output
-Describe object assertions use the same merge as [Snowflake object assertions](#adding-new-snowflake-object-assertions). Opt in with `WithObjectAssertDescribe()`. `IsDataSourceOutput` stays the describe flag. `WithObjectAssertDescribe(WithNoIdentifiableObject())` is for a describe result that is a slice of rows with no `ID()`; the generated file then has `FromObject` only. Show output does not emit `sdk.<Name>Details` unless `WithDescribeOutputAssert()` is on, so do not leave that name in `allStructs` when show output describe is off. For an object that stays on the SDK struct:
+Describe object assertions use the same merge as [Snowflake object assertions](#adding-new-snowflake-object-assertions). Opt in by passing `ObjectAssertDescribe()` to `WithObjectAssert()`. `IsDataSourceOutput` stays the describe flag. `ObjectAssertDescribe(WithNoIdentifiableObject())` is for a describe result that is a slice of rows with no `ID()`; the generated file then has `FromObject` only. `WithNoIdentifiableObject()` is a setting of object-assertion describe, not its own generator. Show output does not emit `sdk.<Name>Details` unless `ShowOutputDescribe()` is passed to `WithShowOutputAssert()`, so do not leave that name in `allStructs` when show output describe is off. For an object that stays on the SDK struct:
 - add object you want to generate to `allStructs` slice in the `assert/objectassert/gen/sdk_object_def.go`, with `IsDataSourceOutput: true`. Set `NoIdentifiableObject: true` when the row has no `ID()`.
 - to add custom (not generated assertions) create file `abc_desc_snowflake_ext.go` in the `objectassert` package. Example would be:
 ```go

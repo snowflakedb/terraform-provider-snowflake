@@ -11,7 +11,7 @@ sources, merged in `GetShowResultSchemaDetails`:
 - **SDK structs (default).** Entries in `SdkShowResultStructs` ([sdk_show_result_structs.go](./sdk_show_result_structs.go)) - SHOW
   structs plus struct DESCRIBE (`IsDescribe`) and property-row list entries (`UsedAsListEntry`). Fields are extracted
   by reflect over `pkg/sdk` types.
-- **ssot (opt-in).** Objects with `WithSchemaShow()` / `WithSchemaDescribe()` ([ssot generators](../../../internal/ssot/README.md#generators)).
+- **ssot (opt-in).** Objects with `WithSchema(SchemaShow(), SchemaDescribe())` ([ssot generators](../../../internal/ssot/README.md#generators)). `SchemaShow()` and `SchemaDescribe()` are settings of that entry.
   Fields come from `Show` / `Describe` `Columns` ([ssot SHOW and DESCRIBE](../../../internal/ssot/README.md#show-and-describe)).
   `defs.All()` is not fed in automatically. Objects stay on the SDK-struct path until they opt in.
 

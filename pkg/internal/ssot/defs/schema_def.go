@@ -58,15 +58,15 @@ var Schema = ssot.Object{
 	AdditionalIdentityNameDescription:   "When the name is `PUBLIC`, during creation the provider checks if this schema has already been created and, in such case, `ALTER` is used to match the desired state.",
 	AttributesModification:              true,
 	Generators: []ssot.GeneratorOption{
-		ssot.WithSchemaShow(),
-		ssot.WithSchemaDescribe(),
+		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(),
-		ssot.WithObjectAssertShow(),
-		ssot.WithObjectAssertDescribe(ssot.WithNoIdentifiableObject()),
-		ssot.WithSdkShow(),
-		ssot.WithSdkDescribe(),
+		ssot.WithShowOutputAssert(ssot.ShowOutputShow()),
+		ssot.WithObjectAssert(
+			ssot.ObjectAssertShow(),
+			ssot.ObjectAssertDescribe(ssot.WithNoIdentifiableObject()),
+		),
+		ssot.WithSdk(ssot.SdkShow(), ssot.SdkDescribe()),
 	},
 	Attributes: []ssot.Attribute{
 		SchemaAttrs.WithManagedAccess,

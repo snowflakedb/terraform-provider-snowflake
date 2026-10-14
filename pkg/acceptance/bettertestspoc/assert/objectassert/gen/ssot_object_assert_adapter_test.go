@@ -33,8 +33,7 @@ func Test_SnowflakeObjectAssertionsFromSsot_matchesHandwrittenFields(t *testing.
 		Name:   "Pool",
 		IdType: "AccountObjectIdentifier",
 		Generators: []ssot.GeneratorOption{
-			ssot.WithObjectAssertShow(),
-			ssot.WithObjectAssertDescribe(),
+			ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
 		},
 		Show:     ssot.OutputSpec{Columns: showColumns},
 		Describe: ssot.OutputSpec{Columns: describeColumns},
@@ -93,7 +92,7 @@ func Test_objectAssertionDetailsFromSsot_passesNoIdentifiableObject(t *testing.T
 		Name:   "Schema",
 		IdType: "DatabaseObjectIdentifier",
 		Generators: []ssot.GeneratorOption{
-			ssot.WithObjectAssertDescribe(ssot.WithNoIdentifiableObject()),
+			ssot.WithObjectAssert(ssot.ObjectAssertDescribe(ssot.WithNoIdentifiableObject())),
 		},
 		Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
 	}
@@ -106,7 +105,7 @@ func Test_objectAssertionDetailsFromSsot_passesNoIdentifiableObject(t *testing.T
 
 func Test_SnowflakeObjectAssertionsFromSsot_panics(t *testing.T) {
 	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
-	enabled := []ssot.GeneratorOption{ssot.WithObjectAssertShow()}
+	enabled := []ssot.GeneratorOption{ssot.WithObjectAssert(ssot.ObjectAssertShow())}
 
 	t.Run("show option off", func(t *testing.T) {
 		require.Panics(t, func() {

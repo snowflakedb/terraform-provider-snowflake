@@ -40,41 +40,95 @@ type Generators struct {
 
 type GeneratorOption func(*Generators)
 
-func WithSchemaShow() GeneratorOption {
-	return func(g *Generators) { g.Schema.Show = true }
+type SchemaOption func(*SchemaGenerator)
+
+func SchemaShow() SchemaOption {
+	return func(s *SchemaGenerator) { s.Show = true }
 }
 
-func WithSchemaDescribe() GeneratorOption {
-	return func(g *Generators) { g.Schema.Describe = true }
+func SchemaDescribe() SchemaOption {
+	return func(s *SchemaGenerator) { s.Describe = true }
 }
 
-func WithModel() GeneratorOption {
-	return func(g *Generators) { g.Model.Enabled = true }
+func WithSchema(opts ...SchemaOption) GeneratorOption {
+	return func(g *Generators) {
+		for _, opt := range opts {
+			opt(&g.Schema)
+		}
+	}
 }
 
-func WithResourceAssert() GeneratorOption {
-	return func(g *Generators) { g.ResourceAssert.Enabled = true }
+type SdkOption func(*SdkGenerator)
+
+func SdkShow() SdkOption {
+	return func(s *SdkGenerator) { s.Show = true }
 }
 
-func WithShowOutputAssert() GeneratorOption {
-	return func(g *Generators) { g.ShowOutputAssert.Show = true }
+func SdkDescribe() SdkOption {
+	return func(s *SdkGenerator) { s.Describe = true }
 }
 
-func WithDescribeOutputAssert() GeneratorOption {
-	return func(g *Generators) { g.ShowOutputAssert.Describe = true }
+func WithSdk(opts ...SdkOption) GeneratorOption {
+	return func(g *Generators) {
+		for _, opt := range opts {
+			opt(&g.Sdk)
+		}
+	}
 }
 
-func WithObjectAssertShow() GeneratorOption {
-	return func(g *Generators) { g.ObjectAssert.Show = true }
+type ModelOption func(*ModelGenerator)
+
+func WithModel(opts ...ModelOption) GeneratorOption {
+	return func(g *Generators) {
+		g.Model.Enabled = true
+		for _, opt := range opts {
+			opt(&g.Model)
+		}
+	}
 }
+
+type ResourceAssertOption func(*ResourceAssertGenerator)
+
+func WithResourceAssert(opts ...ResourceAssertOption) GeneratorOption {
+	return func(g *Generators) {
+		g.ResourceAssert.Enabled = true
+		for _, opt := range opts {
+			opt(&g.ResourceAssert)
+		}
+	}
+}
+
+type ShowOutputAssertOption func(*ShowOutputAssertGenerator)
+
+func ShowOutputShow() ShowOutputAssertOption {
+	return func(s *ShowOutputAssertGenerator) { s.Show = true }
+}
+
+func ShowOutputDescribe() ShowOutputAssertOption {
+	return func(s *ShowOutputAssertGenerator) { s.Describe = true }
+}
+
+func WithShowOutputAssert(opts ...ShowOutputAssertOption) GeneratorOption {
+	return func(g *Generators) {
+		for _, opt := range opts {
+			opt(&g.ShowOutputAssert)
+		}
+	}
+}
+
+type ObjectAssertOption func(*ObjectAssertGenerator)
 
 type ObjectAssertDescribeOption func(*ObjectAssertGenerator)
 
-func WithObjectAssertDescribe(opts ...ObjectAssertDescribeOption) GeneratorOption {
-	return func(g *Generators) {
-		g.ObjectAssert.Describe = true
+func ObjectAssertShow() ObjectAssertOption {
+	return func(a *ObjectAssertGenerator) { a.Show = true }
+}
+
+func ObjectAssertDescribe(opts ...ObjectAssertDescribeOption) ObjectAssertOption {
+	return func(a *ObjectAssertGenerator) {
+		a.Describe = true
 		for _, opt := range opts {
-			opt(&g.ObjectAssert)
+			opt(a)
 		}
 	}
 }
@@ -83,12 +137,12 @@ func WithNoIdentifiableObject() ObjectAssertDescribeOption {
 	return func(a *ObjectAssertGenerator) { a.NoIdentifiableObject = true }
 }
 
-func WithSdkShow() GeneratorOption {
-	return func(g *Generators) { g.Sdk.Show = true }
-}
-
-func WithSdkDescribe() GeneratorOption {
-	return func(g *Generators) { g.Sdk.Describe = true }
+func WithObjectAssert(opts ...ObjectAssertOption) GeneratorOption {
+	return func(g *Generators) {
+		for _, opt := range opts {
+			opt(&g.ObjectAssert)
+		}
+	}
 }
 
 func ObjectGenerators(opts ...GeneratorOption) Generators {

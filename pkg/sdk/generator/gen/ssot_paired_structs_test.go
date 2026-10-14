@@ -39,8 +39,7 @@ func Test_PairedStructsFromColumns_matchesHandwrittenChain(t *testing.T) {
 		NamePlural: "Fakes",
 		IdType:     "AccountObjectIdentifier",
 		Generators: []ssot.GeneratorOption{
-			ssot.WithSdkShow(),
-			ssot.WithSdkDescribe(),
+			ssot.WithSdk(ssot.SdkShow(), ssot.SdkDescribe()),
 		},
 		Show: ssot.OutputSpec{Columns: []*ssot.Attribute{
 			&name,
@@ -111,7 +110,7 @@ func Test_PairedStructsFromColumns_panics(t *testing.T) {
 			name: "show option off",
 			call: func() {
 				obj := showPairedObject("AccountObjectIdentifier", &name)
-				obj.Generators = []ssot.GeneratorOption{ssot.WithSdkDescribe()}
+				obj.Generators = []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe())}
 				ShowPairedStructs(obj)
 			},
 		},
@@ -134,7 +133,7 @@ func Test_PairedStructsFromColumns_panics(t *testing.T) {
 			call: func() {
 				obj := showPairedObject("AccountObjectIdentifier", &name)
 				obj.Name = ""
-				obj.Generators = []ssot.GeneratorOption{ssot.WithSdkDescribe()}
+				obj.Generators = []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe())}
 				obj.Describe = ssot.OutputSpec{Columns: []*ssot.Attribute{&name}}
 				DescribePairedStructs(obj)
 			},
@@ -237,7 +236,7 @@ func showPairedObject(idType string, columns ...*ssot.Attribute) ssot.Object {
 		Name:       "Fake",
 		NamePlural: "Fakes",
 		IdType:     idType,
-		Generators: []ssot.GeneratorOption{ssot.WithSdkShow()},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShow())},
 		Show:       ssot.OutputSpec{Columns: columns},
 	}
 }

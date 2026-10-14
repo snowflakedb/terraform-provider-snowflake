@@ -26,8 +26,7 @@ func Test_ShowOutputAssertionsFromSsot_rendersColumnAssertions(t *testing.T) {
 		Name:   "Pool",
 		IdType: "AccountObjectIdentifier",
 		Generators: []ssot.GeneratorOption{
-			ssot.WithShowOutputAssert(),
-			ssot.WithDescribeOutputAssert(),
+			ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
 		},
 		Show:     ssot.OutputSpec{Columns: columns},
 		Describe: ssot.OutputSpec{Columns: columns},
@@ -80,14 +79,14 @@ func Test_ShowOutputAssertionsFromSsot_refusesDisabledOrEmpty(t *testing.T) {
 		ShowOutputAssertionsFromSsot(ssot.Object{
 			Name:       "Pool",
 			IdType:     "AccountObjectIdentifier",
-			Generators: []ssot.GeneratorOption{ssot.WithShowOutputAssert()},
+			Generators: []ssot.GeneratorOption{ssot.WithShowOutputAssert(ssot.ShowOutputShow())},
 		}, false)
 	})
 	require.Panics(t, func() {
 		ShowOutputAssertionsFromSsot(ssot.Object{
 			Name:       "Pool",
 			IdType:     "AccountObjectIdentifier",
-			Generators: []ssot.GeneratorOption{ssot.WithShowOutputAssert()},
+			Generators: []ssot.GeneratorOption{ssot.WithShowOutputAssert(ssot.ShowOutputShow())},
 			Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{nil}},
 		}, false)
 	})
@@ -95,7 +94,7 @@ func Test_ShowOutputAssertionsFromSsot_refusesDisabledOrEmpty(t *testing.T) {
 		ShowOutputAssertionsFromSsot(ssot.Object{
 			Name:       "Pool",
 			IdType:     "AccountObjectIdentifier",
-			Generators: []ssot.GeneratorOption{ssot.WithSchemaShow()},
+			Generators: []ssot.GeneratorOption{ssot.WithSchema(ssot.SchemaShow())},
 			Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&column}},
 		}, false)
 	})
