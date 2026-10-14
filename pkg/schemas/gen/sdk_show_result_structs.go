@@ -99,7 +99,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.ResourceMonitor{}, SkipFields: []string{"notify_at", "notify_users"}, ManualFields: []string{"suspend_immediately_at"}},
 	{ObjectStruct: sdk.Role{}},
 	{ObjectStruct: sdk.RowAccessPolicy{}},
-	{ObjectStruct: sdk.Schema{}},
 	{ObjectStruct: sdk.Secret{}, TypeOverrides: map[string]schema.ValueType{"oauth_scopes": schema.TypeSet}},
 	{ObjectStruct: sdk.SecurityIntegration{}},
 	{ObjectStruct: sdk.SemanticView{}},
@@ -277,7 +276,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"saml2_snowflake_acs_url", "saml2_snowflake_metadata", "saml2_digest_methods_used",
 		"saml2_signature_methods_used", "allowed_user_domains", "allowed_email_patterns", "comment",
 	}},
-	{ObjectStruct: sdk.SchemaDetails{}, IsDescribe: true},
 	// Nested DescribePropertyListSchema in ext (today’s public describe_output).
 	// TODO [v3]: flatten to typed scalars (enabled.0.value → enabled) via a details
 	// struct + DescribeScimDetails parse (API/storage-integration analog); native TypeList of the property row is not the end state.
