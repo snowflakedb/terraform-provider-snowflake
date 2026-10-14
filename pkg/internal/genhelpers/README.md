@@ -169,8 +169,8 @@ Never edit `*_gen.go` files. Changes belong in definition files or `*_ext.go` ex
 | `generate-datasource-model-builders`              | `pkg/acceptance/bettertestspoc/config/datasourcemodel/*_gen.go`          | **Enforced** |
 | `generate-provider-model-builders`                | `pkg/acceptance/bettertestspoc/config/providermodel/*_gen.go`            | **Enforced** |
 
-**Enforced** — regeneration is idempotent; verified in CI by `make pre-push-check`.
-**Converging** — still being cleaned up; `*_gen.go` files may contain manual edits; treat with care.
+**Enforced** - regeneration is idempotent; verified in CI by `make pre-push-check`.
+**Converging** - still being cleaned up; `*_gen.go` files may contain manual edits; treat with care.
 
 Aggregate targets: `generate-all-config-model-builders` (all model builders),
 `generate-all-assertions-and-config-models` (all assertions + model builders), `make pre-push` (everything +
@@ -178,7 +178,7 @@ formatting + linting + docs).
 
 ### When to Regenerate
 
-Always scope to the object you changed — avoid regenerating everything unless preparing a PR.
+Always scope to the object you changed - avoid regenerating everything unless preparing a PR.
 
 | After this change…                                    | Scoped command                                                                                                                                                                              |
 |-------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -189,7 +189,7 @@ Always scope to the object you changed — avoid regenerating everything unless 
 | Before pushing any PR                                 | `make pre-push`                                                                                                                                                                             |
 
 > **Multi-PR note:** Each PR only needs its own generators. Do not run resource assertion or model builder generators in
-> an SDK-only PR — those belong in the resource PR.
+> an SDK-only PR - those belong in the resource PR.
 
 ### CLI Flags
 

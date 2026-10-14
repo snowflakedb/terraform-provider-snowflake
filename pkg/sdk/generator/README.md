@@ -213,7 +213,7 @@ See [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) for co
 
 `PairedStructs` is a single-definition approach for declaring both the database row struct (`dbStruct`) and the plain SDK struct (`plainStruct`) in one field-by-field chain. It replaces the older pattern of calling `ShowOperation`/`DescribeOperation` with separate `DbStruct` and `PlainStruct` builders.
 
-See [paired_struct_def.go](example/defs/paired_struct_def.go) for a complete usage example covering all supported field methods and options.
+See [paired_struct_def.go](example/defs/paired_struct_def.go) for a complete usage example covering all supported field methods and options. Later, paired structs may be generated from ssot (`OptionalInDb`; see [ssot](../../internal/ssot/README.md#optionalinshow-vs-optionalindb) and [later](../../internal/ssot/README.md#later)). This generator still takes an explicit `PairedStructs` chain.
 
 #### Constructor
 

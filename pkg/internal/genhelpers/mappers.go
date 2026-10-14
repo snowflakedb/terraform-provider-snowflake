@@ -17,7 +17,7 @@ var (
 )
 
 // MapSlice maps each identifier (or other method-valued type) in a slice.
-// Emits collections.Map(field, elemType.method) — e.g. sdk.SchemaObjectIdentifier.FullyQualifiedName.
+// Emits collections.Map(field, elemType.method) - e.g. sdk.SchemaObjectIdentifier.FullyQualifiedName.
 func MapSlice(elemType, method string) Mapper {
 	return func(field string) string {
 		return fmt.Sprintf("collections.Map(%s, %s.%s)", field, elemType, method)

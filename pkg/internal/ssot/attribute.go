@@ -11,6 +11,7 @@ const (
 	AttrEnum       AttributeType = "enum"
 	AttrList       AttributeType = "list"
 	AttrSet        AttributeType = "set"
+	AttrTime       AttributeType = "time"
 )
 
 // Attribute is the written intent for one object attribute.
@@ -25,4 +26,15 @@ type Attribute struct {
 	RawDescription        bool
 	Enum                  *Enum
 	Elem                  *Attribute
+	OptionalInShow        bool // SHOW/DESCRIBE SDK field is a pointer; drives schema ToSchema nil-guards
+	OptionalInDb          bool // DB row is nullable; unused (later paired-struct-from-ssot)
+	ShowName              string
+	Readonly              bool
+}
+
+func (a Attribute) OutputKey() string {
+	if a.ShowName != "" {
+		return a.ShowName
+	}
+	return a.Name
 }

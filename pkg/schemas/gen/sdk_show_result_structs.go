@@ -1,6 +1,8 @@
 package gen
 
 import (
+	"fmt"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -46,7 +48,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.Application{}},
 	{ObjectStruct: sdk.AuthenticationPolicy{}, ManualFields: []string{"target_scopes"}},
 	{ObjectStruct: sdk.CatalogIntegration{}},
-	{ObjectStruct: sdk.ComputePool{}},
 	{ObjectStruct: sdk.Connection{}},
 	{ObjectStruct: sdk.CortexAgent{}, ManualFields: []string{"profile"}},
 	{ObjectStruct: sdk.DatabaseRole{}},
@@ -133,7 +134,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"parent_integration", "auth_type", "comment",
 	}},
 	// SkipFields `id` is the SDK identifier (public schema has no `id`).
-	// ManualFields: api_key is Sensitive; api_provider needs strings.ToLower — neither can be generated.
+	// ManualFields: api_key is Sensitive; api_provider needs strings.ToLower - neither can be generated.
 	// TODO [next PRs]: drop prefixes/scopes/certs from ManualFields once MapToSchemaField maps []string.
 	{ObjectStruct: sdk.ApiIntegrationAllDetails{}, IsDescribe: true, SkipFields: []string{"id"}, ManualFields: []string{
 		"api_key", "api_provider", "allowed_prefixes", "blocked_prefixes", "oauth_allowed_scopes", "tls_trusted_certificates",
@@ -176,7 +177,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.CatalogIntegrationIcebergRestDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "o_auth_rest_authentication", "bearer_rest_authentication", "sig_v4_rest_authentication"}},
 	{ObjectStruct: sdk.CatalogIntegrationObjectStorageDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.CatalogIntegrationOpenCatalogDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "rest_authentication"}},
-	{ObjectStruct: sdk.ComputePoolDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.CortexAgentDetails{}, IsDescribe: true, ManualFields: []string{"profile"}},
 	{ObjectStruct: sdk.CortexSearchServiceDetails{}, IsDescribe: true},
 	// Public describe_output Elem is the row (created_on / name / kind). DatabaseDetails is a Rows wrapper; list helper in ext.
@@ -290,7 +290,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.SessionPolicyDetails{}, IsDescribe: true},
 	// Nested directory_table / file_format / location / privatelink in ext (public key privatelink, not private_link).
 	// Keep omitted: id (SDK identifier), credentials (secret).
-	// TODO [next PRs]: first move only — generated schemas are empty (every public key is nested/slice).
+	// TODO [next PRs]: first move only - generated schemas are empty (every public key is nested/slice).
 	// Native slices/nested structs should drop from ManualFields and shrink the ext. Same pattern for API variant DESCRIBE.
 	{ObjectStruct: sdk.StageAws{}, IsDescribe: true, ManualFields: []string{
 		"file_format_name", "file_format_csv", "file_format_json", "file_format_avro", "file_format_orc", "file_format_parquet", "file_format_xml",
@@ -337,16 +337,25 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 }
 
 func GetShowResultSchemaDetails() []ShowResultSchemaDetails {
-	allDetails := make([]ShowResultSchemaDetails, len(SdkShowResultStructs))
-	for idx, d := range SdkShowResultStructs {
-		allDetails[idx] = ShowResultSchemaDetails{
+	ssotDetails := ssotShowResultSchemaDetails()
+	allDetails := make([]ShowResultSchemaDetails, 0, len(SdkShowResultStructs)+len(ssotDetails))
+	for _, d := range SdkShowResultStructs {
+		allDetails = append(allDetails, ShowResultSchemaDetails{
 			IsDescribe:      d.IsDescribe,
 			SkipFields:      d.SkipFields,
 			ManualFields:    d.ManualFields,
 			TypeOverrides:   d.TypeOverrides,
 			UsedAsListEntry: d.UsedAsListEntry,
 			StructDetails:   genhelpers.ExtractStructDetails(d.ObjectStruct),
+		})
+	}
+	allDetails = append(allDetails, ssotDetails...)
+	seen := make(map[string]struct{}, len(allDetails))
+	for _, details := range allDetails {
+		if _, dup := seen[details.Name]; dup {
+			panic(fmt.Sprintf("duplicate SHOW/DESCRIBE schema object name %q", details.Name))
 		}
+		seen[details.Name] = struct{}{}
 	}
 	return allDetails
 }

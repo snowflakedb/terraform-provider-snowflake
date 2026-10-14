@@ -3,8 +3,12 @@ package defs
 import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 
 func All() []ssot.Object {
-	return []ssot.Object{
+	objs := []ssot.Object{
 		ComputePool,
 		Schema,
 	}
+	for _, obj := range objs {
+		ssot.ValidateObject(obj)
+	}
+	return objs
 }

@@ -7,12 +7,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-// See https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-compute-pool#compute-pool-lifecycle.
-var ComputePoolStateEnumDef = g.NewEnum(
-	"ComputePoolState", "ComputePoolStates",
-	"IDLE", "ACTIVE", "SUSPENDED", "STARTING", "STOPPING", "RESIZING",
-)
-
 var ComputePoolBackupInstanceFamilyListItemDef = g.NewQueryStruct("ComputePoolBackupInstanceFamilyListItem").
 	Enum("Value", ssotdefs.ComputePoolInstanceFamily, g.KeywordOptions().SingleQuotes().Required())
 
@@ -91,7 +85,7 @@ var computePoolsDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-compute-pools",
 	g.StructPair("computePoolsRow", "ComputePool").
 		Text("name").
-		Enum("state", ComputePoolStateEnumDef).
+		Enum("state", ssotdefs.ComputePoolState).
 		Number("min_nodes").
 		Number("max_nodes").
 		Enum("instance_family", ssotdefs.ComputePoolInstanceFamily).
@@ -121,7 +115,7 @@ var computePoolsDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-compute-pool",
 	g.StructPair("computePoolDescRow", "ComputePoolDetails").
 		Text("name").
-		Enum("state", ComputePoolStateEnumDef).
+		Enum("state", ssotdefs.ComputePoolState).
 		Number("min_nodes").
 		Number("max_nodes").
 		Enum("instance_family", ssotdefs.ComputePoolInstanceFamily).
@@ -149,6 +143,6 @@ var computePoolsDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name"),
 ).
 	WithEnums(
-		ComputePoolStateEnumDef,
+		ssotdefs.ComputePoolState,
 		ssotdefs.ComputePoolInstanceFamily,
 	)

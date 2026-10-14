@@ -13,6 +13,9 @@ type Object struct {
 	Attributes                          []Attribute
 	AttributesModification              bool
 	ResourceHooks                       []ResourceHookOption
+	Generators                          []GeneratorOption
+	Show                                OutputSpec
+	Describe                            OutputSpec
 }
 
 func (d Object) ObjectName() string { return d.Name }
