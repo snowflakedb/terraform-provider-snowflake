@@ -198,3 +198,82 @@ func Test_renameAccountLevelResource(t *testing.T) {
 		assert.Equal(t, "id", d.Id())
 	})
 }
+
+func Test_removeThenAdd(t *testing.T) {
+	t.Run("removes before adding", func(t *testing.T) {
+		var order []string
+		err := removeThenAdd([]string{"old"}, []string{"new"},
+			func(item string) error {
+				order = append(order, "remove:"+item)
+				return nil
+			},
+			func(item string) error {
+				order = append(order, "add:"+item)
+				return nil
+			},
+		)
+		require.NoError(t, err)
+		assert.Equal(t, []string{"remove:old", "add:new"}, order)
+	})
+
+	t.Run("stops when a removal fails", func(t *testing.T) {
+		var added []string
+		err := removeThenAdd([]string{"old"}, []string{"new"},
+			func(string) error { return errors.New("remove failed") },
+			func(item string) error {
+				added = append(added, item)
+				return nil
+			},
+		)
+		require.EqualError(t, err, "remove failed")
+		assert.Empty(t, added)
+	})
+}
+
+func Test_removeThenAddWithPlaceholder(t *testing.T) {
+	t.Run("removes the placeholder after a failed update", func(t *testing.T) {
+		var order []string
+		err := removeThenAddWithPlaceholder("temp", []string{"old"}, []string{"new"},
+			func(item string) error {
+				order = append(order, "remove:"+item)
+				if item == "old" {
+					return errors.New("remove failed")
+				}
+				return nil
+			},
+			func(item string) error {
+				order = append(order, "add:"+item)
+				return nil
+			},
+		)
+		require.EqualError(t, err, "remove failed")
+		assert.Equal(t, []string{"add:temp", "remove:old", "remove:temp"}, order)
+	})
+
+	t.Run("does not remove a placeholder that failed to add", func(t *testing.T) {
+		var removed []string
+		err := removeThenAddWithPlaceholder("temp", []string{"old"}, []string{"new"},
+			func(item string) error {
+				removed = append(removed, item)
+				return nil
+			},
+			func(item string) error {
+				if item == "temp" {
+					return errors.New("add failed")
+				}
+				return nil
+			},
+		)
+		require.EqualError(t, err, "add failed")
+		assert.Empty(t, removed)
+	})
+
+	t.Run("joins the update error with a placeholder removal error", func(t *testing.T) {
+		err := removeThenAddWithPlaceholder("temp", []string{"old"}, nil,
+			func(item string) error { return errors.New("remove " + item) },
+			func(string) error { return nil },
+		)
+		require.ErrorContains(t, err, "remove old")
+		require.ErrorContains(t, err, "remove temp")
+	})
+}

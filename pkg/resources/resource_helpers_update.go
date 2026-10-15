@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -436,6 +437,37 @@ func attributeMappedValueUpdateIf[T, R any](d *schema.ResourceData, key string, 
 			*setField = sdk.Pointer(mappedValue)
 		} else {
 			*unsetField = sdk.Bool(true)
+		}
+	}
+	return nil
+}
+
+// removeThenAddWithPlaceholder adds a temporary item, applies removeThenAdd, and removes the
+// temporary item even when the update fails. Use this when every existing item is replaced
+// and the object requires at least one item at all times.
+func removeThenAddWithPlaceholder[T any](placeholder T, removed, added []T, remove, add func(T) error) (err error) {
+	if err := add(placeholder); err != nil {
+		return err
+	}
+	defer func() {
+		err = errors.Join(err, remove(placeholder))
+	}()
+
+	return removeThenAdd(removed, added, remove, add)
+}
+
+// removeThenAdd removes items before adding replacements, so a replacement can reuse a name
+// that must stay unique. len(removed) must leave at least one existing item when the object
+// requires a minimum of one; otherwise use removeThenAddWithPlaceholder.
+func removeThenAdd[T any](removed, added []T, remove, add func(T) error) error {
+	for _, item := range removed {
+		if err := remove(item); err != nil {
+			return err
+		}
+	}
+	for _, item := range added {
+		if err := add(item); err != nil {
+			return err
 		}
 	}
 	return nil

@@ -51,6 +51,20 @@ func Test_setMappedValueCreateBuilder(t *testing.T) {
 	assert.Nil(t, untouched)
 }
 
+func Test_listObjects(t *testing.T) {
+	got, err := listObjects([]any{
+		map[string]any{"name": "a"},
+		map[string]any{"name": "b"},
+	}, func(block map[string]any) (string, error) {
+		return block["name"].(string), nil
+	})
+	require.NoError(t, err)
+	assert.Equal(t, []string{"a", "b"}, got)
+
+	_, err = listObjects("nope", func(map[string]any) (string, error) { return "", nil })
+	require.Error(t, err)
+}
+
 func Test_setValueUpdate(t *testing.T) {
 	mapItem := func(v any) (string, error) {
 		return v.(string), nil

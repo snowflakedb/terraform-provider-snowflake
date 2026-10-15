@@ -146,3 +146,51 @@ func Test_singleBlockAttributeCreate_parseError(t *testing.T) {
 	})
 	require.EqualError(t, err, "parse failed")
 }
+
+func exampleBlockListSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"block": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"name": {Type: schema.TypeString, Optional: true},
+				},
+			},
+		},
+	}
+}
+
+func Test_listBlockAttributeCreate(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, exampleBlockListSchema(), map[string]any{
+		"block": []any{
+			map[string]any{"name": "a"},
+			map[string]any{"name": "b"},
+		},
+	})
+
+	var got []exampleBlock
+	require.NoError(t, listBlockAttributeCreate(d, "block", &got, parseExampleBlock))
+	require.Len(t, got, 2)
+	require.NotNil(t, got[0].Name)
+	assert.Equal(t, "a", *got[0].Name)
+	require.NotNil(t, got[1].Name)
+	assert.Equal(t, "b", *got[1].Name)
+
+	absent := schema.TestResourceDataRaw(t, exampleBlockListSchema(), map[string]any{})
+	var untouched []exampleBlock
+	require.NoError(t, listBlockAttributeCreate(absent, "block", &untouched, parseExampleBlock))
+	assert.Nil(t, untouched)
+}
+
+func Test_listBlockAttributeCreate_parseError(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, exampleBlockListSchema(), map[string]any{
+		"block": []any{map[string]any{"name": "a"}},
+	})
+	var got []exampleBlock
+	err := listBlockAttributeCreate(d, "block", &got, func(*schema.ResourceData, string) (exampleBlock, error) {
+		return exampleBlock{}, errors.New("parse failed")
+	})
+	require.EqualError(t, err, "parse failed")
+	assert.Nil(t, got)
+}
