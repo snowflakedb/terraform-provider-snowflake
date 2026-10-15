@@ -13,11 +13,14 @@ import (
 type ServiceUserModel struct {
 	Name                                     tfconfig.Variable `json:"name,omitempty"`
 	AbortDetachedQuery                       tfconfig.Variable `json:"abort_detached_query,omitempty"`
+	ActivePythonProfiler                     tfconfig.Variable `json:"active_python_profiler,omitempty"`
 	Autocommit                               tfconfig.Variable `json:"autocommit,omitempty"`
 	BinaryInputFormat                        tfconfig.Variable `json:"binary_input_format,omitempty"`
 	BinaryOutputFormat                       tfconfig.Variable `json:"binary_output_format,omitempty"`
+	ClientEnableLogInfoStatementParameters   tfconfig.Variable `json:"client_enable_log_info_statement_parameters,omitempty"`
 	ClientMemoryLimit                        tfconfig.Variable `json:"client_memory_limit,omitempty"`
 	ClientMetadataRequestUseConnectionCtx    tfconfig.Variable `json:"client_metadata_request_use_connection_ctx,omitempty"`
+	ClientMetadataUseSessionDatabase         tfconfig.Variable `json:"client_metadata_use_session_database,omitempty"`
 	ClientPrefetchThreads                    tfconfig.Variable `json:"client_prefetch_threads,omitempty"`
 	ClientResultChunkSize                    tfconfig.Variable `json:"client_result_chunk_size,omitempty"`
 	ClientResultColumnCaseInsensitive        tfconfig.Variable `json:"client_result_column_case_insensitive,omitempty"`
@@ -25,6 +28,7 @@ type ServiceUserModel struct {
 	ClientSessionKeepAliveHeartbeatFrequency tfconfig.Variable `json:"client_session_keep_alive_heartbeat_frequency,omitempty"`
 	ClientTimestampTypeMapping               tfconfig.Variable `json:"client_timestamp_type_mapping,omitempty"`
 	Comment                                  tfconfig.Variable `json:"comment,omitempty"`
+	CsvTimestampFormat                       tfconfig.Variable `json:"csv_timestamp_format,omitempty"`
 	DateInputFormat                          tfconfig.Variable `json:"date_input_format,omitempty"`
 	DateOutputFormat                         tfconfig.Variable `json:"date_output_format,omitempty"`
 	DaysToExpiry                             tfconfig.Variable `json:"days_to_expiry,omitempty"`
@@ -36,6 +40,7 @@ type ServiceUserModel struct {
 	Disabled                                 tfconfig.Variable `json:"disabled,omitempty"`
 	DisplayName                              tfconfig.Variable `json:"display_name,omitempty"`
 	Email                                    tfconfig.Variable `json:"email,omitempty"`
+	EnableGetDdlUseDataTypeAlias             tfconfig.Variable `json:"enable_get_ddl_use_data_type_alias,omitempty"`
 	EnableUnloadPhysicalTypeOptimization     tfconfig.Variable `json:"enable_unload_physical_type_optimization,omitempty"`
 	EnableUnredactedQuerySyntaxError         tfconfig.Variable `json:"enable_unredacted_query_syntax_error,omitempty"`
 	ErrorOnNondeterministicMerge             tfconfig.Variable `json:"error_on_nondeterministic_merge,omitempty"`
@@ -43,9 +48,11 @@ type ServiceUserModel struct {
 	FullyQualifiedName                       tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	GeographyOutputFormat                    tfconfig.Variable `json:"geography_output_format,omitempty"`
 	GeometryOutputFormat                     tfconfig.Variable `json:"geometry_output_format,omitempty"`
+	HybridTableLockTimeout                   tfconfig.Variable `json:"hybrid_table_lock_timeout,omitempty"`
 	JdbcTreatDecimalAsInt                    tfconfig.Variable `json:"jdbc_treat_decimal_as_int,omitempty"`
 	JdbcTreatTimestampNtzAsUtc               tfconfig.Variable `json:"jdbc_treat_timestamp_ntz_as_utc,omitempty"`
 	JdbcUseSessionTimezone                   tfconfig.Variable `json:"jdbc_use_session_timezone,omitempty"`
+	JsTreatIntegerAsBigint                   tfconfig.Variable `json:"js_treat_integer_as_bigint,omitempty"`
 	JsonIndent                               tfconfig.Variable `json:"json_indent,omitempty"`
 	LockTimeout                              tfconfig.Variable `json:"lock_timeout,omitempty"`
 	LogEventLevel                            tfconfig.Variable `json:"log_event_level,omitempty"`
@@ -57,6 +64,8 @@ type ServiceUserModel struct {
 	NoorderSequenceAsDefault                 tfconfig.Variable `json:"noorder_sequence_as_default,omitempty"`
 	OdbcTreatDecimalAsInt                    tfconfig.Variable `json:"odbc_treat_decimal_as_int,omitempty"`
 	PreventUnloadToInternalStages            tfconfig.Variable `json:"prevent_unload_to_internal_stages,omitempty"`
+	PythonProfilerModules                    tfconfig.Variable `json:"python_profiler_modules,omitempty"`
+	PythonProfilerTargetStage                tfconfig.Variable `json:"python_profiler_target_stage,omitempty"`
 	QueryTag                                 tfconfig.Variable `json:"query_tag,omitempty"`
 	QuotedIdentifiersIgnoreCase              tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
 	RowsPerResultset                         tfconfig.Variable `json:"rows_per_resultset,omitempty"`
@@ -160,6 +169,11 @@ func (s *ServiceUserModel) WithAbortDetachedQuery(abortDetachedQuery bool) *Serv
 	return s
 }
 
+func (s *ServiceUserModel) WithActivePythonProfiler(activePythonProfiler string) *ServiceUserModel {
+	s.ActivePythonProfiler = tfconfig.StringVariable(activePythonProfiler)
+	return s
+}
+
 func (s *ServiceUserModel) WithAutocommit(autocommit bool) *ServiceUserModel {
 	s.Autocommit = tfconfig.BoolVariable(autocommit)
 	return s
@@ -175,6 +189,11 @@ func (s *ServiceUserModel) WithBinaryOutputFormat(binaryOutputFormat string) *Se
 	return s
 }
 
+func (s *ServiceUserModel) WithClientEnableLogInfoStatementParameters(clientEnableLogInfoStatementParameters bool) *ServiceUserModel {
+	s.ClientEnableLogInfoStatementParameters = tfconfig.BoolVariable(clientEnableLogInfoStatementParameters)
+	return s
+}
+
 func (s *ServiceUserModel) WithClientMemoryLimit(clientMemoryLimit int) *ServiceUserModel {
 	s.ClientMemoryLimit = tfconfig.IntegerVariable(clientMemoryLimit)
 	return s
@@ -182,6 +201,11 @@ func (s *ServiceUserModel) WithClientMemoryLimit(clientMemoryLimit int) *Service
 
 func (s *ServiceUserModel) WithClientMetadataRequestUseConnectionCtx(clientMetadataRequestUseConnectionCtx bool) *ServiceUserModel {
 	s.ClientMetadataRequestUseConnectionCtx = tfconfig.BoolVariable(clientMetadataRequestUseConnectionCtx)
+	return s
+}
+
+func (s *ServiceUserModel) WithClientMetadataUseSessionDatabase(clientMetadataUseSessionDatabase bool) *ServiceUserModel {
+	s.ClientMetadataUseSessionDatabase = tfconfig.BoolVariable(clientMetadataUseSessionDatabase)
 	return s
 }
 
@@ -217,6 +241,11 @@ func (s *ServiceUserModel) WithClientTimestampTypeMapping(clientTimestampTypeMap
 
 func (s *ServiceUserModel) WithComment(comment string) *ServiceUserModel {
 	s.Comment = tfconfig.StringVariable(comment)
+	return s
+}
+
+func (s *ServiceUserModel) WithCsvTimestampFormat(csvTimestampFormat string) *ServiceUserModel {
+	s.CsvTimestampFormat = tfconfig.StringVariable(csvTimestampFormat)
 	return s
 }
 
@@ -272,6 +301,11 @@ func (s *ServiceUserModel) WithEmail(email string) *ServiceUserModel {
 	return s
 }
 
+func (s *ServiceUserModel) WithEnableGetDdlUseDataTypeAlias(enableGetDdlUseDataTypeAlias bool) *ServiceUserModel {
+	s.EnableGetDdlUseDataTypeAlias = tfconfig.BoolVariable(enableGetDdlUseDataTypeAlias)
+	return s
+}
+
 func (s *ServiceUserModel) WithEnableUnloadPhysicalTypeOptimization(enableUnloadPhysicalTypeOptimization bool) *ServiceUserModel {
 	s.EnableUnloadPhysicalTypeOptimization = tfconfig.BoolVariable(enableUnloadPhysicalTypeOptimization)
 	return s
@@ -307,6 +341,11 @@ func (s *ServiceUserModel) WithGeometryOutputFormat(geometryOutputFormat string)
 	return s
 }
 
+func (s *ServiceUserModel) WithHybridTableLockTimeout(hybridTableLockTimeout int) *ServiceUserModel {
+	s.HybridTableLockTimeout = tfconfig.IntegerVariable(hybridTableLockTimeout)
+	return s
+}
+
 func (s *ServiceUserModel) WithJdbcTreatDecimalAsInt(jdbcTreatDecimalAsInt bool) *ServiceUserModel {
 	s.JdbcTreatDecimalAsInt = tfconfig.BoolVariable(jdbcTreatDecimalAsInt)
 	return s
@@ -319,6 +358,11 @@ func (s *ServiceUserModel) WithJdbcTreatTimestampNtzAsUtc(jdbcTreatTimestampNtzA
 
 func (s *ServiceUserModel) WithJdbcUseSessionTimezone(jdbcUseSessionTimezone bool) *ServiceUserModel {
 	s.JdbcUseSessionTimezone = tfconfig.BoolVariable(jdbcUseSessionTimezone)
+	return s
+}
+
+func (s *ServiceUserModel) WithJsTreatIntegerAsBigint(jsTreatIntegerAsBigint bool) *ServiceUserModel {
+	s.JsTreatIntegerAsBigint = tfconfig.BoolVariable(jsTreatIntegerAsBigint)
 	return s
 }
 
@@ -374,6 +418,16 @@ func (s *ServiceUserModel) WithOdbcTreatDecimalAsInt(odbcTreatDecimalAsInt bool)
 
 func (s *ServiceUserModel) WithPreventUnloadToInternalStages(preventUnloadToInternalStages bool) *ServiceUserModel {
 	s.PreventUnloadToInternalStages = tfconfig.BoolVariable(preventUnloadToInternalStages)
+	return s
+}
+
+func (s *ServiceUserModel) WithPythonProfilerModules(pythonProfilerModules string) *ServiceUserModel {
+	s.PythonProfilerModules = tfconfig.StringVariable(pythonProfilerModules)
+	return s
+}
+
+func (s *ServiceUserModel) WithPythonProfilerTargetStage(pythonProfilerTargetStage string) *ServiceUserModel {
+	s.PythonProfilerTargetStage = tfconfig.StringVariable(pythonProfilerTargetStage)
 	return s
 }
 
@@ -541,6 +595,11 @@ func (s *ServiceUserModel) WithAbortDetachedQueryValue(value tfconfig.Variable) 
 	return s
 }
 
+func (s *ServiceUserModel) WithActivePythonProfilerValue(value tfconfig.Variable) *ServiceUserModel {
+	s.ActivePythonProfiler = value
+	return s
+}
+
 func (s *ServiceUserModel) WithAutocommitValue(value tfconfig.Variable) *ServiceUserModel {
 	s.Autocommit = value
 	return s
@@ -556,6 +615,11 @@ func (s *ServiceUserModel) WithBinaryOutputFormatValue(value tfconfig.Variable) 
 	return s
 }
 
+func (s *ServiceUserModel) WithClientEnableLogInfoStatementParametersValue(value tfconfig.Variable) *ServiceUserModel {
+	s.ClientEnableLogInfoStatementParameters = value
+	return s
+}
+
 func (s *ServiceUserModel) WithClientMemoryLimitValue(value tfconfig.Variable) *ServiceUserModel {
 	s.ClientMemoryLimit = value
 	return s
@@ -563,6 +627,11 @@ func (s *ServiceUserModel) WithClientMemoryLimitValue(value tfconfig.Variable) *
 
 func (s *ServiceUserModel) WithClientMetadataRequestUseConnectionCtxValue(value tfconfig.Variable) *ServiceUserModel {
 	s.ClientMetadataRequestUseConnectionCtx = value
+	return s
+}
+
+func (s *ServiceUserModel) WithClientMetadataUseSessionDatabaseValue(value tfconfig.Variable) *ServiceUserModel {
+	s.ClientMetadataUseSessionDatabase = value
 	return s
 }
 
@@ -598,6 +667,11 @@ func (s *ServiceUserModel) WithClientTimestampTypeMappingValue(value tfconfig.Va
 
 func (s *ServiceUserModel) WithCommentValue(value tfconfig.Variable) *ServiceUserModel {
 	s.Comment = value
+	return s
+}
+
+func (s *ServiceUserModel) WithCsvTimestampFormatValue(value tfconfig.Variable) *ServiceUserModel {
+	s.CsvTimestampFormat = value
 	return s
 }
 
@@ -656,6 +730,11 @@ func (s *ServiceUserModel) WithEmailValue(value tfconfig.Variable) *ServiceUserM
 	return s
 }
 
+func (s *ServiceUserModel) WithEnableGetDdlUseDataTypeAliasValue(value tfconfig.Variable) *ServiceUserModel {
+	s.EnableGetDdlUseDataTypeAlias = value
+	return s
+}
+
 func (s *ServiceUserModel) WithEnableUnloadPhysicalTypeOptimizationValue(value tfconfig.Variable) *ServiceUserModel {
 	s.EnableUnloadPhysicalTypeOptimization = value
 	return s
@@ -691,6 +770,11 @@ func (s *ServiceUserModel) WithGeometryOutputFormatValue(value tfconfig.Variable
 	return s
 }
 
+func (s *ServiceUserModel) WithHybridTableLockTimeoutValue(value tfconfig.Variable) *ServiceUserModel {
+	s.HybridTableLockTimeout = value
+	return s
+}
+
 func (s *ServiceUserModel) WithJdbcTreatDecimalAsIntValue(value tfconfig.Variable) *ServiceUserModel {
 	s.JdbcTreatDecimalAsInt = value
 	return s
@@ -703,6 +787,11 @@ func (s *ServiceUserModel) WithJdbcTreatTimestampNtzAsUtcValue(value tfconfig.Va
 
 func (s *ServiceUserModel) WithJdbcUseSessionTimezoneValue(value tfconfig.Variable) *ServiceUserModel {
 	s.JdbcUseSessionTimezone = value
+	return s
+}
+
+func (s *ServiceUserModel) WithJsTreatIntegerAsBigintValue(value tfconfig.Variable) *ServiceUserModel {
+	s.JsTreatIntegerAsBigint = value
 	return s
 }
 
@@ -758,6 +847,16 @@ func (s *ServiceUserModel) WithOdbcTreatDecimalAsIntValue(value tfconfig.Variabl
 
 func (s *ServiceUserModel) WithPreventUnloadToInternalStagesValue(value tfconfig.Variable) *ServiceUserModel {
 	s.PreventUnloadToInternalStages = value
+	return s
+}
+
+func (s *ServiceUserModel) WithPythonProfilerModulesValue(value tfconfig.Variable) *ServiceUserModel {
+	s.PythonProfilerModules = value
+	return s
+}
+
+func (s *ServiceUserModel) WithPythonProfilerTargetStageValue(value tfconfig.Variable) *ServiceUserModel {
+	s.PythonProfilerTargetStage = value
 	return s
 }
 

@@ -42,6 +42,11 @@ func (l *LegacyServiceUserResourceAssert) HasAbortDetachedQuery(expected bool) *
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasActivePythonProfiler(expected string) *LegacyServiceUserResourceAssert {
+	l.StringValueSet("active_python_profiler", expected)
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasAutocommit(expected bool) *LegacyServiceUserResourceAssert {
 	l.BoolValueSet("autocommit", expected)
 	return l
@@ -57,6 +62,11 @@ func (l *LegacyServiceUserResourceAssert) HasBinaryOutputFormat(expected string)
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasClientEnableLogInfoStatementParameters(expected bool) *LegacyServiceUserResourceAssert {
+	l.BoolValueSet("client_enable_log_info_statement_parameters", expected)
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasClientMemoryLimit(expected int) *LegacyServiceUserResourceAssert {
 	l.IntValueSet("client_memory_limit", expected)
 	return l
@@ -64,6 +74,11 @@ func (l *LegacyServiceUserResourceAssert) HasClientMemoryLimit(expected int) *Le
 
 func (l *LegacyServiceUserResourceAssert) HasClientMetadataRequestUseConnectionCtx(expected bool) *LegacyServiceUserResourceAssert {
 	l.BoolValueSet("client_metadata_request_use_connection_ctx", expected)
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasClientMetadataUseSessionDatabase(expected bool) *LegacyServiceUserResourceAssert {
+	l.BoolValueSet("client_metadata_use_session_database", expected)
 	return l
 }
 
@@ -99,6 +114,11 @@ func (l *LegacyServiceUserResourceAssert) HasClientTimestampTypeMapping(expected
 
 func (l *LegacyServiceUserResourceAssert) HasComment(expected string) *LegacyServiceUserResourceAssert {
 	l.StringValueSet("comment", expected)
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasCsvTimestampFormat(expected string) *LegacyServiceUserResourceAssert {
+	l.StringValueSet("csv_timestamp_format", expected)
 	return l
 }
 
@@ -154,6 +174,11 @@ func (l *LegacyServiceUserResourceAssert) HasEmail(expected string) *LegacyServi
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasEnableGetDdlUseDataTypeAlias(expected bool) *LegacyServiceUserResourceAssert {
+	l.BoolValueSet("enable_get_ddl_use_data_type_alias", expected)
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasEnableUnloadPhysicalTypeOptimization(expected bool) *LegacyServiceUserResourceAssert {
 	l.BoolValueSet("enable_unload_physical_type_optimization", expected)
 	return l
@@ -189,6 +214,11 @@ func (l *LegacyServiceUserResourceAssert) HasGeometryOutputFormat(expected strin
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasHybridTableLockTimeout(expected int) *LegacyServiceUserResourceAssert {
+	l.IntValueSet("hybrid_table_lock_timeout", expected)
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasJdbcTreatDecimalAsInt(expected bool) *LegacyServiceUserResourceAssert {
 	l.BoolValueSet("jdbc_treat_decimal_as_int", expected)
 	return l
@@ -201,6 +231,11 @@ func (l *LegacyServiceUserResourceAssert) HasJdbcTreatTimestampNtzAsUtc(expected
 
 func (l *LegacyServiceUserResourceAssert) HasJdbcUseSessionTimezone(expected bool) *LegacyServiceUserResourceAssert {
 	l.BoolValueSet("jdbc_use_session_timezone", expected)
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasJsTreatIntegerAsBigint(expected bool) *LegacyServiceUserResourceAssert {
+	l.BoolValueSet("js_treat_integer_as_bigint", expected)
 	return l
 }
 
@@ -266,6 +301,16 @@ func (l *LegacyServiceUserResourceAssert) HasPassword(expected string) *LegacySe
 
 func (l *LegacyServiceUserResourceAssert) HasPreventUnloadToInternalStages(expected bool) *LegacyServiceUserResourceAssert {
 	l.BoolValueSet("prevent_unload_to_internal_stages", expected)
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasPythonProfilerModules(expected string) *LegacyServiceUserResourceAssert {
+	l.StringValueSet("python_profiler_modules", expected)
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasPythonProfilerTargetStage(expected string) *LegacyServiceUserResourceAssert {
+	l.StringValueSet("python_profiler_target_stage", expected)
 	return l
 }
 
@@ -433,6 +478,11 @@ func (l *LegacyServiceUserResourceAssert) HasAbortDetachedQueryString(expected s
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasActivePythonProfilerString(expected string) *LegacyServiceUserResourceAssert {
+	l.ValueSet("active_python_profiler", expected)
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasAutocommitString(expected string) *LegacyServiceUserResourceAssert {
 	l.ValueSet("autocommit", expected)
 	return l
@@ -448,6 +498,11 @@ func (l *LegacyServiceUserResourceAssert) HasBinaryOutputFormatString(expected s
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasClientEnableLogInfoStatementParametersString(expected string) *LegacyServiceUserResourceAssert {
+	l.ValueSet("client_enable_log_info_statement_parameters", expected)
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasClientMemoryLimitString(expected string) *LegacyServiceUserResourceAssert {
 	l.ValueSet("client_memory_limit", expected)
 	return l
@@ -455,6 +510,11 @@ func (l *LegacyServiceUserResourceAssert) HasClientMemoryLimitString(expected st
 
 func (l *LegacyServiceUserResourceAssert) HasClientMetadataRequestUseConnectionCtxString(expected string) *LegacyServiceUserResourceAssert {
 	l.ValueSet("client_metadata_request_use_connection_ctx", expected)
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasClientMetadataUseSessionDatabaseString(expected string) *LegacyServiceUserResourceAssert {
+	l.ValueSet("client_metadata_use_session_database", expected)
 	return l
 }
 
@@ -490,6 +550,11 @@ func (l *LegacyServiceUserResourceAssert) HasClientTimestampTypeMappingString(ex
 
 func (l *LegacyServiceUserResourceAssert) HasCommentString(expected string) *LegacyServiceUserResourceAssert {
 	l.ValueSet("comment", expected)
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasCsvTimestampFormatString(expected string) *LegacyServiceUserResourceAssert {
+	l.ValueSet("csv_timestamp_format", expected)
 	return l
 }
 
@@ -543,6 +608,11 @@ func (l *LegacyServiceUserResourceAssert) HasEmailString(expected string) *Legac
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasEnableGetDdlUseDataTypeAliasString(expected string) *LegacyServiceUserResourceAssert {
+	l.ValueSet("enable_get_ddl_use_data_type_alias", expected)
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasEnableUnloadPhysicalTypeOptimizationString(expected string) *LegacyServiceUserResourceAssert {
 	l.ValueSet("enable_unload_physical_type_optimization", expected)
 	return l
@@ -578,6 +648,11 @@ func (l *LegacyServiceUserResourceAssert) HasGeometryOutputFormatString(expected
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasHybridTableLockTimeoutString(expected string) *LegacyServiceUserResourceAssert {
+	l.ValueSet("hybrid_table_lock_timeout", expected)
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasJdbcTreatDecimalAsIntString(expected string) *LegacyServiceUserResourceAssert {
 	l.ValueSet("jdbc_treat_decimal_as_int", expected)
 	return l
@@ -590,6 +665,11 @@ func (l *LegacyServiceUserResourceAssert) HasJdbcTreatTimestampNtzAsUtcString(ex
 
 func (l *LegacyServiceUserResourceAssert) HasJdbcUseSessionTimezoneString(expected string) *LegacyServiceUserResourceAssert {
 	l.ValueSet("jdbc_use_session_timezone", expected)
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasJsTreatIntegerAsBigintString(expected string) *LegacyServiceUserResourceAssert {
+	l.ValueSet("js_treat_integer_as_bigint", expected)
 	return l
 }
 
@@ -655,6 +735,16 @@ func (l *LegacyServiceUserResourceAssert) HasPasswordString(expected string) *Le
 
 func (l *LegacyServiceUserResourceAssert) HasPreventUnloadToInternalStagesString(expected string) *LegacyServiceUserResourceAssert {
 	l.ValueSet("prevent_unload_to_internal_stages", expected)
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasPythonProfilerModulesString(expected string) *LegacyServiceUserResourceAssert {
+	l.ValueSet("python_profiler_modules", expected)
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasPythonProfilerTargetStageString(expected string) *LegacyServiceUserResourceAssert {
+	l.ValueSet("python_profiler_target_stage", expected)
 	return l
 }
 
@@ -822,6 +912,11 @@ func (l *LegacyServiceUserResourceAssert) HasNoAbortDetachedQuery() *LegacyServi
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasNoActivePythonProfiler() *LegacyServiceUserResourceAssert {
+	l.ValueNotSet("active_python_profiler")
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasNoAutocommit() *LegacyServiceUserResourceAssert {
 	l.ValueNotSet("autocommit")
 	return l
@@ -837,6 +932,11 @@ func (l *LegacyServiceUserResourceAssert) HasNoBinaryOutputFormat() *LegacyServi
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasNoClientEnableLogInfoStatementParameters() *LegacyServiceUserResourceAssert {
+	l.ValueNotSet("client_enable_log_info_statement_parameters")
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasNoClientMemoryLimit() *LegacyServiceUserResourceAssert {
 	l.ValueNotSet("client_memory_limit")
 	return l
@@ -844,6 +944,11 @@ func (l *LegacyServiceUserResourceAssert) HasNoClientMemoryLimit() *LegacyServic
 
 func (l *LegacyServiceUserResourceAssert) HasNoClientMetadataRequestUseConnectionCtx() *LegacyServiceUserResourceAssert {
 	l.ValueNotSet("client_metadata_request_use_connection_ctx")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasNoClientMetadataUseSessionDatabase() *LegacyServiceUserResourceAssert {
+	l.ValueNotSet("client_metadata_use_session_database")
 	return l
 }
 
@@ -879,6 +984,11 @@ func (l *LegacyServiceUserResourceAssert) HasNoClientTimestampTypeMapping() *Leg
 
 func (l *LegacyServiceUserResourceAssert) HasNoComment() *LegacyServiceUserResourceAssert {
 	l.ValueNotSet("comment")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasNoCsvTimestampFormat() *LegacyServiceUserResourceAssert {
+	l.ValueNotSet("csv_timestamp_format")
 	return l
 }
 
@@ -932,6 +1042,11 @@ func (l *LegacyServiceUserResourceAssert) HasNoEmail() *LegacyServiceUserResourc
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasNoEnableGetDdlUseDataTypeAlias() *LegacyServiceUserResourceAssert {
+	l.ValueNotSet("enable_get_ddl_use_data_type_alias")
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasNoEnableUnloadPhysicalTypeOptimization() *LegacyServiceUserResourceAssert {
 	l.ValueNotSet("enable_unload_physical_type_optimization")
 	return l
@@ -967,6 +1082,11 @@ func (l *LegacyServiceUserResourceAssert) HasNoGeometryOutputFormat() *LegacySer
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasNoHybridTableLockTimeout() *LegacyServiceUserResourceAssert {
+	l.ValueNotSet("hybrid_table_lock_timeout")
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasNoJdbcTreatDecimalAsInt() *LegacyServiceUserResourceAssert {
 	l.ValueNotSet("jdbc_treat_decimal_as_int")
 	return l
@@ -979,6 +1099,11 @@ func (l *LegacyServiceUserResourceAssert) HasNoJdbcTreatTimestampNtzAsUtc() *Leg
 
 func (l *LegacyServiceUserResourceAssert) HasNoJdbcUseSessionTimezone() *LegacyServiceUserResourceAssert {
 	l.ValueNotSet("jdbc_use_session_timezone")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasNoJsTreatIntegerAsBigint() *LegacyServiceUserResourceAssert {
+	l.ValueNotSet("js_treat_integer_as_bigint")
 	return l
 }
 
@@ -1044,6 +1169,16 @@ func (l *LegacyServiceUserResourceAssert) HasNoPassword() *LegacyServiceUserReso
 
 func (l *LegacyServiceUserResourceAssert) HasNoPreventUnloadToInternalStages() *LegacyServiceUserResourceAssert {
 	l.ValueNotSet("prevent_unload_to_internal_stages")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasNoPythonProfilerModules() *LegacyServiceUserResourceAssert {
+	l.ValueNotSet("python_profiler_modules")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasNoPythonProfilerTargetStage() *LegacyServiceUserResourceAssert {
+	l.ValueNotSet("python_profiler_target_stage")
 	return l
 }
 
@@ -1206,6 +1341,11 @@ func (l *LegacyServiceUserResourceAssert) HasAbortDetachedQueryEmpty() *LegacySe
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasActivePythonProfilerEmpty() *LegacyServiceUserResourceAssert {
+	l.ValueSet("active_python_profiler", "")
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasAutocommitEmpty() *LegacyServiceUserResourceAssert {
 	l.ValueSet("autocommit", "")
 	return l
@@ -1221,6 +1361,11 @@ func (l *LegacyServiceUserResourceAssert) HasBinaryOutputFormatEmpty() *LegacySe
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasClientEnableLogInfoStatementParametersEmpty() *LegacyServiceUserResourceAssert {
+	l.ValueSet("client_enable_log_info_statement_parameters", "")
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasClientMemoryLimitEmpty() *LegacyServiceUserResourceAssert {
 	l.ValueSet("client_memory_limit", "")
 	return l
@@ -1228,6 +1373,11 @@ func (l *LegacyServiceUserResourceAssert) HasClientMemoryLimitEmpty() *LegacySer
 
 func (l *LegacyServiceUserResourceAssert) HasClientMetadataRequestUseConnectionCtxEmpty() *LegacyServiceUserResourceAssert {
 	l.ValueSet("client_metadata_request_use_connection_ctx", "")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasClientMetadataUseSessionDatabaseEmpty() *LegacyServiceUserResourceAssert {
+	l.ValueSet("client_metadata_use_session_database", "")
 	return l
 }
 
@@ -1263,6 +1413,11 @@ func (l *LegacyServiceUserResourceAssert) HasClientTimestampTypeMappingEmpty() *
 
 func (l *LegacyServiceUserResourceAssert) HasCommentEmpty() *LegacyServiceUserResourceAssert {
 	l.ValueSet("comment", "")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasCsvTimestampFormatEmpty() *LegacyServiceUserResourceAssert {
+	l.ValueSet("csv_timestamp_format", "")
 	return l
 }
 
@@ -1321,6 +1476,11 @@ func (l *LegacyServiceUserResourceAssert) HasEmailEmpty() *LegacyServiceUserReso
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasEnableGetDdlUseDataTypeAliasEmpty() *LegacyServiceUserResourceAssert {
+	l.ValueSet("enable_get_ddl_use_data_type_alias", "")
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasEnableUnloadPhysicalTypeOptimizationEmpty() *LegacyServiceUserResourceAssert {
 	l.ValueSet("enable_unload_physical_type_optimization", "")
 	return l
@@ -1356,6 +1516,11 @@ func (l *LegacyServiceUserResourceAssert) HasGeometryOutputFormatEmpty() *Legacy
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasHybridTableLockTimeoutEmpty() *LegacyServiceUserResourceAssert {
+	l.ValueSet("hybrid_table_lock_timeout", "")
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasJdbcTreatDecimalAsIntEmpty() *LegacyServiceUserResourceAssert {
 	l.ValueSet("jdbc_treat_decimal_as_int", "")
 	return l
@@ -1368,6 +1533,11 @@ func (l *LegacyServiceUserResourceAssert) HasJdbcTreatTimestampNtzAsUtcEmpty() *
 
 func (l *LegacyServiceUserResourceAssert) HasJdbcUseSessionTimezoneEmpty() *LegacyServiceUserResourceAssert {
 	l.ValueSet("jdbc_use_session_timezone", "")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasJsTreatIntegerAsBigintEmpty() *LegacyServiceUserResourceAssert {
+	l.ValueSet("js_treat_integer_as_bigint", "")
 	return l
 }
 
@@ -1433,6 +1603,16 @@ func (l *LegacyServiceUserResourceAssert) HasPasswordEmpty() *LegacyServiceUserR
 
 func (l *LegacyServiceUserResourceAssert) HasPreventUnloadToInternalStagesEmpty() *LegacyServiceUserResourceAssert {
 	l.ValueSet("prevent_unload_to_internal_stages", "")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasPythonProfilerModulesEmpty() *LegacyServiceUserResourceAssert {
+	l.ValueSet("python_profiler_modules", "")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasPythonProfilerTargetStageEmpty() *LegacyServiceUserResourceAssert {
+	l.ValueSet("python_profiler_target_stage", "")
 	return l
 }
 
@@ -1600,6 +1780,11 @@ func (l *LegacyServiceUserResourceAssert) HasAbortDetachedQueryNotEmpty() *Legac
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasActivePythonProfilerNotEmpty() *LegacyServiceUserResourceAssert {
+	l.ValuePresent("active_python_profiler")
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasAutocommitNotEmpty() *LegacyServiceUserResourceAssert {
 	l.ValuePresent("autocommit")
 	return l
@@ -1615,6 +1800,11 @@ func (l *LegacyServiceUserResourceAssert) HasBinaryOutputFormatNotEmpty() *Legac
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasClientEnableLogInfoStatementParametersNotEmpty() *LegacyServiceUserResourceAssert {
+	l.ValuePresent("client_enable_log_info_statement_parameters")
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasClientMemoryLimitNotEmpty() *LegacyServiceUserResourceAssert {
 	l.ValuePresent("client_memory_limit")
 	return l
@@ -1622,6 +1812,11 @@ func (l *LegacyServiceUserResourceAssert) HasClientMemoryLimitNotEmpty() *Legacy
 
 func (l *LegacyServiceUserResourceAssert) HasClientMetadataRequestUseConnectionCtxNotEmpty() *LegacyServiceUserResourceAssert {
 	l.ValuePresent("client_metadata_request_use_connection_ctx")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasClientMetadataUseSessionDatabaseNotEmpty() *LegacyServiceUserResourceAssert {
+	l.ValuePresent("client_metadata_use_session_database")
 	return l
 }
 
@@ -1657,6 +1852,11 @@ func (l *LegacyServiceUserResourceAssert) HasClientTimestampTypeMappingNotEmpty(
 
 func (l *LegacyServiceUserResourceAssert) HasCommentNotEmpty() *LegacyServiceUserResourceAssert {
 	l.ValuePresent("comment")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasCsvTimestampFormatNotEmpty() *LegacyServiceUserResourceAssert {
+	l.ValuePresent("csv_timestamp_format")
 	return l
 }
 
@@ -1710,6 +1910,11 @@ func (l *LegacyServiceUserResourceAssert) HasEmailNotEmpty() *LegacyServiceUserR
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasEnableGetDdlUseDataTypeAliasNotEmpty() *LegacyServiceUserResourceAssert {
+	l.ValuePresent("enable_get_ddl_use_data_type_alias")
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasEnableUnloadPhysicalTypeOptimizationNotEmpty() *LegacyServiceUserResourceAssert {
 	l.ValuePresent("enable_unload_physical_type_optimization")
 	return l
@@ -1745,6 +1950,11 @@ func (l *LegacyServiceUserResourceAssert) HasGeometryOutputFormatNotEmpty() *Leg
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasHybridTableLockTimeoutNotEmpty() *LegacyServiceUserResourceAssert {
+	l.ValuePresent("hybrid_table_lock_timeout")
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasJdbcTreatDecimalAsIntNotEmpty() *LegacyServiceUserResourceAssert {
 	l.ValuePresent("jdbc_treat_decimal_as_int")
 	return l
@@ -1757,6 +1967,11 @@ func (l *LegacyServiceUserResourceAssert) HasJdbcTreatTimestampNtzAsUtcNotEmpty(
 
 func (l *LegacyServiceUserResourceAssert) HasJdbcUseSessionTimezoneNotEmpty() *LegacyServiceUserResourceAssert {
 	l.ValuePresent("jdbc_use_session_timezone")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasJsTreatIntegerAsBigintNotEmpty() *LegacyServiceUserResourceAssert {
+	l.ValuePresent("js_treat_integer_as_bigint")
 	return l
 }
 
@@ -1822,6 +2037,16 @@ func (l *LegacyServiceUserResourceAssert) HasPasswordNotEmpty() *LegacyServiceUs
 
 func (l *LegacyServiceUserResourceAssert) HasPreventUnloadToInternalStagesNotEmpty() *LegacyServiceUserResourceAssert {
 	l.ValuePresent("prevent_unload_to_internal_stages")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasPythonProfilerModulesNotEmpty() *LegacyServiceUserResourceAssert {
+	l.ValuePresent("python_profiler_modules")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasPythonProfilerTargetStageNotEmpty() *LegacyServiceUserResourceAssert {
+	l.ValuePresent("python_profiler_target_stage")
 	return l
 }
 

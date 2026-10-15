@@ -13,11 +13,14 @@ import (
 type UserModel struct {
 	Name                                     tfconfig.Variable `json:"name,omitempty"`
 	AbortDetachedQuery                       tfconfig.Variable `json:"abort_detached_query,omitempty"`
+	ActivePythonProfiler                     tfconfig.Variable `json:"active_python_profiler,omitempty"`
 	Autocommit                               tfconfig.Variable `json:"autocommit,omitempty"`
 	BinaryInputFormat                        tfconfig.Variable `json:"binary_input_format,omitempty"`
 	BinaryOutputFormat                       tfconfig.Variable `json:"binary_output_format,omitempty"`
+	ClientEnableLogInfoStatementParameters   tfconfig.Variable `json:"client_enable_log_info_statement_parameters,omitempty"`
 	ClientMemoryLimit                        tfconfig.Variable `json:"client_memory_limit,omitempty"`
 	ClientMetadataRequestUseConnectionCtx    tfconfig.Variable `json:"client_metadata_request_use_connection_ctx,omitempty"`
+	ClientMetadataUseSessionDatabase         tfconfig.Variable `json:"client_metadata_use_session_database,omitempty"`
 	ClientPrefetchThreads                    tfconfig.Variable `json:"client_prefetch_threads,omitempty"`
 	ClientResultChunkSize                    tfconfig.Variable `json:"client_result_chunk_size,omitempty"`
 	ClientResultColumnCaseInsensitive        tfconfig.Variable `json:"client_result_column_case_insensitive,omitempty"`
@@ -25,6 +28,7 @@ type UserModel struct {
 	ClientSessionKeepAliveHeartbeatFrequency tfconfig.Variable `json:"client_session_keep_alive_heartbeat_frequency,omitempty"`
 	ClientTimestampTypeMapping               tfconfig.Variable `json:"client_timestamp_type_mapping,omitempty"`
 	Comment                                  tfconfig.Variable `json:"comment,omitempty"`
+	CsvTimestampFormat                       tfconfig.Variable `json:"csv_timestamp_format,omitempty"`
 	DateInputFormat                          tfconfig.Variable `json:"date_input_format,omitempty"`
 	DateOutputFormat                         tfconfig.Variable `json:"date_output_format,omitempty"`
 	DaysToExpiry                             tfconfig.Variable `json:"days_to_expiry,omitempty"`
@@ -36,6 +40,7 @@ type UserModel struct {
 	Disabled                                 tfconfig.Variable `json:"disabled,omitempty"`
 	DisplayName                              tfconfig.Variable `json:"display_name,omitempty"`
 	Email                                    tfconfig.Variable `json:"email,omitempty"`
+	EnableGetDdlUseDataTypeAlias             tfconfig.Variable `json:"enable_get_ddl_use_data_type_alias,omitempty"`
 	EnableUnloadPhysicalTypeOptimization     tfconfig.Variable `json:"enable_unload_physical_type_optimization,omitempty"`
 	EnableUnredactedQuerySyntaxError         tfconfig.Variable `json:"enable_unredacted_query_syntax_error,omitempty"`
 	ErrorOnNondeterministicMerge             tfconfig.Variable `json:"error_on_nondeterministic_merge,omitempty"`
@@ -44,9 +49,11 @@ type UserModel struct {
 	FullyQualifiedName                       tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	GeographyOutputFormat                    tfconfig.Variable `json:"geography_output_format,omitempty"`
 	GeometryOutputFormat                     tfconfig.Variable `json:"geometry_output_format,omitempty"`
+	HybridTableLockTimeout                   tfconfig.Variable `json:"hybrid_table_lock_timeout,omitempty"`
 	JdbcTreatDecimalAsInt                    tfconfig.Variable `json:"jdbc_treat_decimal_as_int,omitempty"`
 	JdbcTreatTimestampNtzAsUtc               tfconfig.Variable `json:"jdbc_treat_timestamp_ntz_as_utc,omitempty"`
 	JdbcUseSessionTimezone                   tfconfig.Variable `json:"jdbc_use_session_timezone,omitempty"`
+	JsTreatIntegerAsBigint                   tfconfig.Variable `json:"js_treat_integer_as_bigint,omitempty"`
 	JsonIndent                               tfconfig.Variable `json:"json_indent,omitempty"`
 	LastName                                 tfconfig.Variable `json:"last_name,omitempty"`
 	LockTimeout                              tfconfig.Variable `json:"lock_timeout,omitempty"`
@@ -63,6 +70,8 @@ type UserModel struct {
 	OdbcTreatDecimalAsInt                    tfconfig.Variable `json:"odbc_treat_decimal_as_int,omitempty"`
 	Password                                 tfconfig.Variable `json:"password,omitempty"`
 	PreventUnloadToInternalStages            tfconfig.Variable `json:"prevent_unload_to_internal_stages,omitempty"`
+	PythonProfilerModules                    tfconfig.Variable `json:"python_profiler_modules,omitempty"`
+	PythonProfilerTargetStage                tfconfig.Variable `json:"python_profiler_target_stage,omitempty"`
 	QueryTag                                 tfconfig.Variable `json:"query_tag,omitempty"`
 	QuotedIdentifiersIgnoreCase              tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
 	RowsPerResultset                         tfconfig.Variable `json:"rows_per_resultset,omitempty"`
@@ -166,6 +175,11 @@ func (u *UserModel) WithAbortDetachedQuery(abortDetachedQuery bool) *UserModel {
 	return u
 }
 
+func (u *UserModel) WithActivePythonProfiler(activePythonProfiler string) *UserModel {
+	u.ActivePythonProfiler = tfconfig.StringVariable(activePythonProfiler)
+	return u
+}
+
 func (u *UserModel) WithAutocommit(autocommit bool) *UserModel {
 	u.Autocommit = tfconfig.BoolVariable(autocommit)
 	return u
@@ -181,6 +195,11 @@ func (u *UserModel) WithBinaryOutputFormat(binaryOutputFormat string) *UserModel
 	return u
 }
 
+func (u *UserModel) WithClientEnableLogInfoStatementParameters(clientEnableLogInfoStatementParameters bool) *UserModel {
+	u.ClientEnableLogInfoStatementParameters = tfconfig.BoolVariable(clientEnableLogInfoStatementParameters)
+	return u
+}
+
 func (u *UserModel) WithClientMemoryLimit(clientMemoryLimit int) *UserModel {
 	u.ClientMemoryLimit = tfconfig.IntegerVariable(clientMemoryLimit)
 	return u
@@ -188,6 +207,11 @@ func (u *UserModel) WithClientMemoryLimit(clientMemoryLimit int) *UserModel {
 
 func (u *UserModel) WithClientMetadataRequestUseConnectionCtx(clientMetadataRequestUseConnectionCtx bool) *UserModel {
 	u.ClientMetadataRequestUseConnectionCtx = tfconfig.BoolVariable(clientMetadataRequestUseConnectionCtx)
+	return u
+}
+
+func (u *UserModel) WithClientMetadataUseSessionDatabase(clientMetadataUseSessionDatabase bool) *UserModel {
+	u.ClientMetadataUseSessionDatabase = tfconfig.BoolVariable(clientMetadataUseSessionDatabase)
 	return u
 }
 
@@ -223,6 +247,11 @@ func (u *UserModel) WithClientTimestampTypeMapping(clientTimestampTypeMapping st
 
 func (u *UserModel) WithComment(comment string) *UserModel {
 	u.Comment = tfconfig.StringVariable(comment)
+	return u
+}
+
+func (u *UserModel) WithCsvTimestampFormat(csvTimestampFormat string) *UserModel {
+	u.CsvTimestampFormat = tfconfig.StringVariable(csvTimestampFormat)
 	return u
 }
 
@@ -281,6 +310,11 @@ func (u *UserModel) WithEmail(email string) *UserModel {
 	return u
 }
 
+func (u *UserModel) WithEnableGetDdlUseDataTypeAlias(enableGetDdlUseDataTypeAlias bool) *UserModel {
+	u.EnableGetDdlUseDataTypeAlias = tfconfig.BoolVariable(enableGetDdlUseDataTypeAlias)
+	return u
+}
+
 func (u *UserModel) WithEnableUnloadPhysicalTypeOptimization(enableUnloadPhysicalTypeOptimization bool) *UserModel {
 	u.EnableUnloadPhysicalTypeOptimization = tfconfig.BoolVariable(enableUnloadPhysicalTypeOptimization)
 	return u
@@ -321,6 +355,11 @@ func (u *UserModel) WithGeometryOutputFormat(geometryOutputFormat string) *UserM
 	return u
 }
 
+func (u *UserModel) WithHybridTableLockTimeout(hybridTableLockTimeout int) *UserModel {
+	u.HybridTableLockTimeout = tfconfig.IntegerVariable(hybridTableLockTimeout)
+	return u
+}
+
 func (u *UserModel) WithJdbcTreatDecimalAsInt(jdbcTreatDecimalAsInt bool) *UserModel {
 	u.JdbcTreatDecimalAsInt = tfconfig.BoolVariable(jdbcTreatDecimalAsInt)
 	return u
@@ -333,6 +372,11 @@ func (u *UserModel) WithJdbcTreatTimestampNtzAsUtc(jdbcTreatTimestampNtzAsUtc bo
 
 func (u *UserModel) WithJdbcUseSessionTimezone(jdbcUseSessionTimezone bool) *UserModel {
 	u.JdbcUseSessionTimezone = tfconfig.BoolVariable(jdbcUseSessionTimezone)
+	return u
+}
+
+func (u *UserModel) WithJsTreatIntegerAsBigint(jsTreatIntegerAsBigint bool) *UserModel {
+	u.JsTreatIntegerAsBigint = tfconfig.BoolVariable(jsTreatIntegerAsBigint)
 	return u
 }
 
@@ -413,6 +457,16 @@ func (u *UserModel) WithPassword(password string) *UserModel {
 
 func (u *UserModel) WithPreventUnloadToInternalStages(preventUnloadToInternalStages bool) *UserModel {
 	u.PreventUnloadToInternalStages = tfconfig.BoolVariable(preventUnloadToInternalStages)
+	return u
+}
+
+func (u *UserModel) WithPythonProfilerModules(pythonProfilerModules string) *UserModel {
+	u.PythonProfilerModules = tfconfig.StringVariable(pythonProfilerModules)
+	return u
+}
+
+func (u *UserModel) WithPythonProfilerTargetStage(pythonProfilerTargetStage string) *UserModel {
+	u.PythonProfilerTargetStage = tfconfig.StringVariable(pythonProfilerTargetStage)
 	return u
 }
 
@@ -580,6 +634,11 @@ func (u *UserModel) WithAbortDetachedQueryValue(value tfconfig.Variable) *UserMo
 	return u
 }
 
+func (u *UserModel) WithActivePythonProfilerValue(value tfconfig.Variable) *UserModel {
+	u.ActivePythonProfiler = value
+	return u
+}
+
 func (u *UserModel) WithAutocommitValue(value tfconfig.Variable) *UserModel {
 	u.Autocommit = value
 	return u
@@ -595,6 +654,11 @@ func (u *UserModel) WithBinaryOutputFormatValue(value tfconfig.Variable) *UserMo
 	return u
 }
 
+func (u *UserModel) WithClientEnableLogInfoStatementParametersValue(value tfconfig.Variable) *UserModel {
+	u.ClientEnableLogInfoStatementParameters = value
+	return u
+}
+
 func (u *UserModel) WithClientMemoryLimitValue(value tfconfig.Variable) *UserModel {
 	u.ClientMemoryLimit = value
 	return u
@@ -602,6 +666,11 @@ func (u *UserModel) WithClientMemoryLimitValue(value tfconfig.Variable) *UserMod
 
 func (u *UserModel) WithClientMetadataRequestUseConnectionCtxValue(value tfconfig.Variable) *UserModel {
 	u.ClientMetadataRequestUseConnectionCtx = value
+	return u
+}
+
+func (u *UserModel) WithClientMetadataUseSessionDatabaseValue(value tfconfig.Variable) *UserModel {
+	u.ClientMetadataUseSessionDatabase = value
 	return u
 }
 
@@ -637,6 +706,11 @@ func (u *UserModel) WithClientTimestampTypeMappingValue(value tfconfig.Variable)
 
 func (u *UserModel) WithCommentValue(value tfconfig.Variable) *UserModel {
 	u.Comment = value
+	return u
+}
+
+func (u *UserModel) WithCsvTimestampFormatValue(value tfconfig.Variable) *UserModel {
+	u.CsvTimestampFormat = value
 	return u
 }
 
@@ -695,6 +769,11 @@ func (u *UserModel) WithEmailValue(value tfconfig.Variable) *UserModel {
 	return u
 }
 
+func (u *UserModel) WithEnableGetDdlUseDataTypeAliasValue(value tfconfig.Variable) *UserModel {
+	u.EnableGetDdlUseDataTypeAlias = value
+	return u
+}
+
 func (u *UserModel) WithEnableUnloadPhysicalTypeOptimizationValue(value tfconfig.Variable) *UserModel {
 	u.EnableUnloadPhysicalTypeOptimization = value
 	return u
@@ -735,6 +814,11 @@ func (u *UserModel) WithGeometryOutputFormatValue(value tfconfig.Variable) *User
 	return u
 }
 
+func (u *UserModel) WithHybridTableLockTimeoutValue(value tfconfig.Variable) *UserModel {
+	u.HybridTableLockTimeout = value
+	return u
+}
+
 func (u *UserModel) WithJdbcTreatDecimalAsIntValue(value tfconfig.Variable) *UserModel {
 	u.JdbcTreatDecimalAsInt = value
 	return u
@@ -747,6 +831,11 @@ func (u *UserModel) WithJdbcTreatTimestampNtzAsUtcValue(value tfconfig.Variable)
 
 func (u *UserModel) WithJdbcUseSessionTimezoneValue(value tfconfig.Variable) *UserModel {
 	u.JdbcUseSessionTimezone = value
+	return u
+}
+
+func (u *UserModel) WithJsTreatIntegerAsBigintValue(value tfconfig.Variable) *UserModel {
+	u.JsTreatIntegerAsBigint = value
 	return u
 }
 
@@ -827,6 +916,16 @@ func (u *UserModel) WithPasswordValue(value tfconfig.Variable) *UserModel {
 
 func (u *UserModel) WithPreventUnloadToInternalStagesValue(value tfconfig.Variable) *UserModel {
 	u.PreventUnloadToInternalStages = value
+	return u
+}
+
+func (u *UserModel) WithPythonProfilerModulesValue(value tfconfig.Variable) *UserModel {
+	u.PythonProfilerModules = value
+	return u
+}
+
+func (u *UserModel) WithPythonProfilerTargetStageValue(value tfconfig.Variable) *UserModel {
+	u.PythonProfilerTargetStage = value
 	return u
 }
 

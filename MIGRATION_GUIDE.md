@@ -59,6 +59,22 @@ No configuration changes are required for pipes that use a commercial SNS ARN. A
 
 ## v2.21.x ➞ v2.22.0
 
+### *(new feature)* User-level parameters that Snowflake documents for Account, User, and Session
+
+These parameters can now be set on [`snowflake_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/user), [`snowflake_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user), and [`snowflake_legacy_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user). They are also exposed in the `parameters` output of those resources and of the [`snowflake_users`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/users) data source:
+
+- `active_python_profiler`
+- `client_enable_log_info_statement_parameters`
+- `client_metadata_use_session_database`
+- `csv_timestamp_format`
+- `enable_get_ddl_use_data_type_alias`
+- `hybrid_table_lock_timeout`
+- `js_treat_integer_as_bigint`
+- `python_profiler_modules`
+- `python_profiler_target_stage`
+
+No configuration changes are required. After upgrading, the next plan may report an update on `parameters` until those resources are refreshed (see the [intro](#migration-guide)).
+
 ### *(new feature)* Opt-in experiment: parse `snowflake_object_parameter` values on set
 
 We added the `OBJECT_PARAMETER_PARSE_ON_SET` opt-in experiment (`experimental_features_enabled = ["OBJECT_PARAMETER_PARSE_ON_SET"]`). It changes how `snowflake_object_parameter` handles the `value` field.

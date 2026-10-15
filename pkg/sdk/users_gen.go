@@ -35,28 +35,35 @@ type Users interface {
 // UserParametersDetails holds the object's parameters with values parsed into their Go types.
 type UserParametersDetails struct {
 	AbortDetachedQuery                       TypedParameter[bool]
+	ActivePythonProfiler                     TypedParameter[ActivePythonProfiler]
 	Autocommit                               TypedParameter[bool]
 	BinaryInputFormat                        TypedParameter[BinaryInputFormat]
 	BinaryOutputFormat                       TypedParameter[BinaryOutputFormat]
+	ClientEnableLogInfoStatementParameters   TypedParameter[bool]
 	ClientMemoryLimit                        TypedParameter[int]
 	ClientMetadataRequestUseConnectionCtx    TypedParameter[bool]
+	ClientMetadataUseSessionDatabase         TypedParameter[bool]
 	ClientPrefetchThreads                    TypedParameter[int]
 	ClientResultChunkSize                    TypedParameter[int]
 	ClientResultColumnCaseInsensitive        TypedParameter[bool]
 	ClientSessionKeepAlive                   TypedParameter[bool]
 	ClientSessionKeepAliveHeartbeatFrequency TypedParameter[int]
 	ClientTimestampTypeMapping               TypedParameter[ClientTimestampTypeMapping]
+	CsvTimestampFormat                       TypedParameter[string]
 	DateInputFormat                          TypedParameter[string]
 	DateOutputFormat                         TypedParameter[string]
+	EnableGetDdlUseDataTypeAlias             TypedParameter[bool]
 	EnableUnloadPhysicalTypeOptimization     TypedParameter[bool]
 	EnableUnredactedQuerySyntaxError         TypedParameter[bool]
 	ErrorOnNondeterministicMerge             TypedParameter[bool]
 	ErrorOnNondeterministicUpdate            TypedParameter[bool]
 	GeographyOutputFormat                    TypedParameter[GeographyOutputFormat]
 	GeometryOutputFormat                     TypedParameter[GeometryOutputFormat]
+	HybridTableLockTimeout                   TypedParameter[int]
 	JdbcTreatDecimalAsInt                    TypedParameter[bool]
 	JdbcTreatTimestampNtzAsUtc               TypedParameter[bool]
 	JdbcUseSessionTimezone                   TypedParameter[bool]
+	JsTreatIntegerAsBigint                   TypedParameter[bool]
 	JsonIndent                               TypedParameter[int]
 	LockTimeout                              TypedParameter[int]
 	LogEventLevel                            TypedParameter[LogLevel]
@@ -66,6 +73,8 @@ type UserParametersDetails struct {
 	NoorderSequenceAsDefault                 TypedParameter[bool]
 	OdbcTreatDecimalAsInt                    TypedParameter[bool]
 	PreventUnloadToInternalStages            TypedParameter[bool]
+	PythonProfilerModules                    TypedParameter[string]
+	PythonProfilerTargetStage                TypedParameter[SchemaObjectIdentifier]
 	QueryTag                                 TypedParameter[string]
 	QuotedIdentifiersIgnoreCase              TypedParameter[bool]
 	RowsPerResultset                         TypedParameter[int]
@@ -104,28 +113,35 @@ type CreateUserOptions struct {
 	name                                     AccountObjectIdentifier           `ddl:"identifier"`
 	ObjectProperties                         *UserObjectProperties             `ddl:"keyword"`
 	AbortDetachedQuery                       *bool                             `ddl:"parameter" sql:"ABORT_DETACHED_QUERY"`
+	ActivePythonProfiler                     *ActivePythonProfiler             `ddl:"parameter,single_quotes" sql:"ACTIVE_PYTHON_PROFILER"`
 	Autocommit                               *bool                             `ddl:"parameter" sql:"AUTOCOMMIT"`
 	BinaryInputFormat                        *BinaryInputFormat                `ddl:"parameter,single_quotes" sql:"BINARY_INPUT_FORMAT"`
 	BinaryOutputFormat                       *BinaryOutputFormat               `ddl:"parameter,single_quotes" sql:"BINARY_OUTPUT_FORMAT"`
+	ClientEnableLogInfoStatementParameters   *bool                             `ddl:"parameter" sql:"CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS"`
 	ClientMemoryLimit                        *int                              `ddl:"parameter" sql:"CLIENT_MEMORY_LIMIT"`
 	ClientMetadataRequestUseConnectionCtx    *bool                             `ddl:"parameter" sql:"CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX"`
+	ClientMetadataUseSessionDatabase         *bool                             `ddl:"parameter" sql:"CLIENT_METADATA_USE_SESSION_DATABASE"`
 	ClientPrefetchThreads                    *int                              `ddl:"parameter" sql:"CLIENT_PREFETCH_THREADS"`
 	ClientResultChunkSize                    *int                              `ddl:"parameter" sql:"CLIENT_RESULT_CHUNK_SIZE"`
 	ClientResultColumnCaseInsensitive        *bool                             `ddl:"parameter" sql:"CLIENT_RESULT_COLUMN_CASE_INSENSITIVE"`
 	ClientSessionKeepAlive                   *bool                             `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE"`
 	ClientSessionKeepAliveHeartbeatFrequency *int                              `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY"`
 	ClientTimestampTypeMapping               *ClientTimestampTypeMapping       `ddl:"parameter,single_quotes" sql:"CLIENT_TIMESTAMP_TYPE_MAPPING"`
+	CsvTimestampFormat                       *string                           `ddl:"parameter,single_quotes" sql:"CSV_TIMESTAMP_FORMAT"`
 	DateInputFormat                          *string                           `ddl:"parameter,single_quotes" sql:"DATE_INPUT_FORMAT"`
 	DateOutputFormat                         *string                           `ddl:"parameter,single_quotes" sql:"DATE_OUTPUT_FORMAT"`
+	EnableGetDdlUseDataTypeAlias             *bool                             `ddl:"parameter" sql:"ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS"`
 	EnableUnloadPhysicalTypeOptimization     *bool                             `ddl:"parameter" sql:"ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"`
 	EnableUnredactedQuerySyntaxError         *bool                             `ddl:"parameter" sql:"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"`
 	ErrorOnNondeterministicMerge             *bool                             `ddl:"parameter" sql:"ERROR_ON_NONDETERMINISTIC_MERGE"`
 	ErrorOnNondeterministicUpdate            *bool                             `ddl:"parameter" sql:"ERROR_ON_NONDETERMINISTIC_UPDATE"`
 	GeographyOutputFormat                    *GeographyOutputFormat            `ddl:"parameter,single_quotes" sql:"GEOGRAPHY_OUTPUT_FORMAT"`
 	GeometryOutputFormat                     *GeometryOutputFormat             `ddl:"parameter,single_quotes" sql:"GEOMETRY_OUTPUT_FORMAT"`
+	HybridTableLockTimeout                   *int                              `ddl:"parameter" sql:"HYBRID_TABLE_LOCK_TIMEOUT"`
 	JdbcTreatDecimalAsInt                    *bool                             `ddl:"parameter" sql:"JDBC_TREAT_DECIMAL_AS_INT"`
 	JdbcTreatTimestampNtzAsUtc               *bool                             `ddl:"parameter" sql:"JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC"`
 	JdbcUseSessionTimezone                   *bool                             `ddl:"parameter" sql:"JDBC_USE_SESSION_TIMEZONE"`
+	JsTreatIntegerAsBigint                   *bool                             `ddl:"parameter" sql:"JS_TREAT_INTEGER_AS_BIGINT"`
 	JsonIndent                               *int                              `ddl:"parameter" sql:"JSON_INDENT"`
 	LockTimeout                              *int                              `ddl:"parameter" sql:"LOCK_TIMEOUT"`
 	LogEventLevel                            *LogLevel                         `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
@@ -135,6 +151,8 @@ type CreateUserOptions struct {
 	NoorderSequenceAsDefault                 *bool                             `ddl:"parameter" sql:"NOORDER_SEQUENCE_AS_DEFAULT"`
 	OdbcTreatDecimalAsInt                    *bool                             `ddl:"parameter" sql:"ODBC_TREAT_DECIMAL_AS_INT"`
 	PreventUnloadToInternalStages            *bool                             `ddl:"parameter" sql:"PREVENT_UNLOAD_TO_INTERNAL_STAGES"`
+	PythonProfilerModules                    *string                           `ddl:"parameter,single_quotes" sql:"PYTHON_PROFILER_MODULES"`
+	PythonProfilerTargetStage                *SchemaObjectIdentifier           `ddl:"identifier,equals" sql:"PYTHON_PROFILER_TARGET_STAGE"`
 	QueryTag                                 *string                           `ddl:"parameter,single_quotes" sql:"QUERY_TAG"`
 	QuotedIdentifiersIgnoreCase              *bool                             `ddl:"parameter" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
 	RowsPerResultset                         *int                              `ddl:"parameter" sql:"ROWS_PER_RESULTSET"`
@@ -262,28 +280,35 @@ type UserSet struct {
 	AuthenticationPolicy                     *SchemaObjectIdentifier           `ddl:"identifier" sql:"AUTHENTICATION POLICY"`
 	ObjectProperties                         *UserAlterObjectProperties        `ddl:"keyword"`
 	AbortDetachedQuery                       *bool                             `ddl:"parameter" sql:"ABORT_DETACHED_QUERY"`
+	ActivePythonProfiler                     *ActivePythonProfiler             `ddl:"parameter,single_quotes" sql:"ACTIVE_PYTHON_PROFILER"`
 	Autocommit                               *bool                             `ddl:"parameter" sql:"AUTOCOMMIT"`
 	BinaryInputFormat                        *BinaryInputFormat                `ddl:"parameter,single_quotes" sql:"BINARY_INPUT_FORMAT"`
 	BinaryOutputFormat                       *BinaryOutputFormat               `ddl:"parameter,single_quotes" sql:"BINARY_OUTPUT_FORMAT"`
+	ClientEnableLogInfoStatementParameters   *bool                             `ddl:"parameter" sql:"CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS"`
 	ClientMemoryLimit                        *int                              `ddl:"parameter" sql:"CLIENT_MEMORY_LIMIT"`
 	ClientMetadataRequestUseConnectionCtx    *bool                             `ddl:"parameter" sql:"CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX"`
+	ClientMetadataUseSessionDatabase         *bool                             `ddl:"parameter" sql:"CLIENT_METADATA_USE_SESSION_DATABASE"`
 	ClientPrefetchThreads                    *int                              `ddl:"parameter" sql:"CLIENT_PREFETCH_THREADS"`
 	ClientResultChunkSize                    *int                              `ddl:"parameter" sql:"CLIENT_RESULT_CHUNK_SIZE"`
 	ClientResultColumnCaseInsensitive        *bool                             `ddl:"parameter" sql:"CLIENT_RESULT_COLUMN_CASE_INSENSITIVE"`
 	ClientSessionKeepAlive                   *bool                             `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE"`
 	ClientSessionKeepAliveHeartbeatFrequency *int                              `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY"`
 	ClientTimestampTypeMapping               *ClientTimestampTypeMapping       `ddl:"parameter,single_quotes" sql:"CLIENT_TIMESTAMP_TYPE_MAPPING"`
+	CsvTimestampFormat                       *string                           `ddl:"parameter,single_quotes" sql:"CSV_TIMESTAMP_FORMAT"`
 	DateInputFormat                          *string                           `ddl:"parameter,single_quotes" sql:"DATE_INPUT_FORMAT"`
 	DateOutputFormat                         *string                           `ddl:"parameter,single_quotes" sql:"DATE_OUTPUT_FORMAT"`
+	EnableGetDdlUseDataTypeAlias             *bool                             `ddl:"parameter" sql:"ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS"`
 	EnableUnloadPhysicalTypeOptimization     *bool                             `ddl:"parameter" sql:"ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"`
 	EnableUnredactedQuerySyntaxError         *bool                             `ddl:"parameter" sql:"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"`
 	ErrorOnNondeterministicMerge             *bool                             `ddl:"parameter" sql:"ERROR_ON_NONDETERMINISTIC_MERGE"`
 	ErrorOnNondeterministicUpdate            *bool                             `ddl:"parameter" sql:"ERROR_ON_NONDETERMINISTIC_UPDATE"`
 	GeographyOutputFormat                    *GeographyOutputFormat            `ddl:"parameter,single_quotes" sql:"GEOGRAPHY_OUTPUT_FORMAT"`
 	GeometryOutputFormat                     *GeometryOutputFormat             `ddl:"parameter,single_quotes" sql:"GEOMETRY_OUTPUT_FORMAT"`
+	HybridTableLockTimeout                   *int                              `ddl:"parameter" sql:"HYBRID_TABLE_LOCK_TIMEOUT"`
 	JdbcTreatDecimalAsInt                    *bool                             `ddl:"parameter" sql:"JDBC_TREAT_DECIMAL_AS_INT"`
 	JdbcTreatTimestampNtzAsUtc               *bool                             `ddl:"parameter" sql:"JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC"`
 	JdbcUseSessionTimezone                   *bool                             `ddl:"parameter" sql:"JDBC_USE_SESSION_TIMEZONE"`
+	JsTreatIntegerAsBigint                   *bool                             `ddl:"parameter" sql:"JS_TREAT_INTEGER_AS_BIGINT"`
 	JsonIndent                               *int                              `ddl:"parameter" sql:"JSON_INDENT"`
 	LockTimeout                              *int                              `ddl:"parameter" sql:"LOCK_TIMEOUT"`
 	LogEventLevel                            *LogLevel                         `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
@@ -293,6 +318,8 @@ type UserSet struct {
 	NoorderSequenceAsDefault                 *bool                             `ddl:"parameter" sql:"NOORDER_SEQUENCE_AS_DEFAULT"`
 	OdbcTreatDecimalAsInt                    *bool                             `ddl:"parameter" sql:"ODBC_TREAT_DECIMAL_AS_INT"`
 	PreventUnloadToInternalStages            *bool                             `ddl:"parameter" sql:"PREVENT_UNLOAD_TO_INTERNAL_STAGES"`
+	PythonProfilerModules                    *string                           `ddl:"parameter,single_quotes" sql:"PYTHON_PROFILER_MODULES"`
+	PythonProfilerTargetStage                *SchemaObjectIdentifier           `ddl:"identifier,equals" sql:"PYTHON_PROFILER_TARGET_STAGE"`
 	QueryTag                                 *string                           `ddl:"parameter,single_quotes" sql:"QUERY_TAG"`
 	QuotedIdentifiersIgnoreCase              *bool                             `ddl:"parameter" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
 	RowsPerResultset                         *int                              `ddl:"parameter" sql:"ROWS_PER_RESULTSET"`
@@ -356,28 +383,35 @@ type UserUnset struct {
 	AuthenticationPolicy                     *bool                      `ddl:"keyword" sql:"AUTHENTICATION POLICY"`
 	ObjectProperties                         *UserObjectPropertiesUnset `ddl:"list"`
 	AbortDetachedQuery                       *bool                      `ddl:"keyword" sql:"ABORT_DETACHED_QUERY"`
+	ActivePythonProfiler                     *bool                      `ddl:"keyword" sql:"ACTIVE_PYTHON_PROFILER"`
 	Autocommit                               *bool                      `ddl:"keyword" sql:"AUTOCOMMIT"`
 	BinaryInputFormat                        *bool                      `ddl:"keyword" sql:"BINARY_INPUT_FORMAT"`
 	BinaryOutputFormat                       *bool                      `ddl:"keyword" sql:"BINARY_OUTPUT_FORMAT"`
+	ClientEnableLogInfoStatementParameters   *bool                      `ddl:"keyword" sql:"CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS"`
 	ClientMemoryLimit                        *bool                      `ddl:"keyword" sql:"CLIENT_MEMORY_LIMIT"`
 	ClientMetadataRequestUseConnectionCtx    *bool                      `ddl:"keyword" sql:"CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX"`
+	ClientMetadataUseSessionDatabase         *bool                      `ddl:"keyword" sql:"CLIENT_METADATA_USE_SESSION_DATABASE"`
 	ClientPrefetchThreads                    *bool                      `ddl:"keyword" sql:"CLIENT_PREFETCH_THREADS"`
 	ClientResultChunkSize                    *bool                      `ddl:"keyword" sql:"CLIENT_RESULT_CHUNK_SIZE"`
 	ClientResultColumnCaseInsensitive        *bool                      `ddl:"keyword" sql:"CLIENT_RESULT_COLUMN_CASE_INSENSITIVE"`
 	ClientSessionKeepAlive                   *bool                      `ddl:"keyword" sql:"CLIENT_SESSION_KEEP_ALIVE"`
 	ClientSessionKeepAliveHeartbeatFrequency *bool                      `ddl:"keyword" sql:"CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY"`
 	ClientTimestampTypeMapping               *bool                      `ddl:"keyword" sql:"CLIENT_TIMESTAMP_TYPE_MAPPING"`
+	CsvTimestampFormat                       *bool                      `ddl:"keyword" sql:"CSV_TIMESTAMP_FORMAT"`
 	DateInputFormat                          *bool                      `ddl:"keyword" sql:"DATE_INPUT_FORMAT"`
 	DateOutputFormat                         *bool                      `ddl:"keyword" sql:"DATE_OUTPUT_FORMAT"`
+	EnableGetDdlUseDataTypeAlias             *bool                      `ddl:"keyword" sql:"ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS"`
 	EnableUnloadPhysicalTypeOptimization     *bool                      `ddl:"keyword" sql:"ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"`
 	EnableUnredactedQuerySyntaxError         *bool                      `ddl:"keyword" sql:"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"`
 	ErrorOnNondeterministicMerge             *bool                      `ddl:"keyword" sql:"ERROR_ON_NONDETERMINISTIC_MERGE"`
 	ErrorOnNondeterministicUpdate            *bool                      `ddl:"keyword" sql:"ERROR_ON_NONDETERMINISTIC_UPDATE"`
 	GeographyOutputFormat                    *bool                      `ddl:"keyword" sql:"GEOGRAPHY_OUTPUT_FORMAT"`
 	GeometryOutputFormat                     *bool                      `ddl:"keyword" sql:"GEOMETRY_OUTPUT_FORMAT"`
+	HybridTableLockTimeout                   *bool                      `ddl:"keyword" sql:"HYBRID_TABLE_LOCK_TIMEOUT"`
 	JdbcTreatDecimalAsInt                    *bool                      `ddl:"keyword" sql:"JDBC_TREAT_DECIMAL_AS_INT"`
 	JdbcTreatTimestampNtzAsUtc               *bool                      `ddl:"keyword" sql:"JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC"`
 	JdbcUseSessionTimezone                   *bool                      `ddl:"keyword" sql:"JDBC_USE_SESSION_TIMEZONE"`
+	JsTreatIntegerAsBigint                   *bool                      `ddl:"keyword" sql:"JS_TREAT_INTEGER_AS_BIGINT"`
 	JsonIndent                               *bool                      `ddl:"keyword" sql:"JSON_INDENT"`
 	LockTimeout                              *bool                      `ddl:"keyword" sql:"LOCK_TIMEOUT"`
 	LogEventLevel                            *bool                      `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
@@ -387,6 +421,8 @@ type UserUnset struct {
 	NoorderSequenceAsDefault                 *bool                      `ddl:"keyword" sql:"NOORDER_SEQUENCE_AS_DEFAULT"`
 	OdbcTreatDecimalAsInt                    *bool                      `ddl:"keyword" sql:"ODBC_TREAT_DECIMAL_AS_INT"`
 	PreventUnloadToInternalStages            *bool                      `ddl:"keyword" sql:"PREVENT_UNLOAD_TO_INTERNAL_STAGES"`
+	PythonProfilerModules                    *bool                      `ddl:"keyword" sql:"PYTHON_PROFILER_MODULES"`
+	PythonProfilerTargetStage                *bool                      `ddl:"keyword" sql:"PYTHON_PROFILER_TARGET_STAGE"`
 	QueryTag                                 *bool                      `ddl:"keyword" sql:"QUERY_TAG"`
 	QuotedIdentifiersIgnoreCase              *bool                      `ddl:"keyword" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
 	RowsPerResultset                         *bool                      `ddl:"keyword" sql:"ROWS_PER_RESULTSET"`

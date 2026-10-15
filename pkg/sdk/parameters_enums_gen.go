@@ -1499,28 +1499,35 @@ type UserParameter string
 
 const (
 	UserParameterAbortDetachedQuery                       UserParameter = "ABORT_DETACHED_QUERY"
+	UserParameterActivePythonProfiler                     UserParameter = "ACTIVE_PYTHON_PROFILER"
 	UserParameterAutocommit                               UserParameter = "AUTOCOMMIT"
 	UserParameterBinaryInputFormat                        UserParameter = "BINARY_INPUT_FORMAT"
 	UserParameterBinaryOutputFormat                       UserParameter = "BINARY_OUTPUT_FORMAT"
+	UserParameterClientEnableLogInfoStatementParameters   UserParameter = "CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS"
 	UserParameterClientMemoryLimit                        UserParameter = "CLIENT_MEMORY_LIMIT"
 	UserParameterClientMetadataRequestUseConnectionCtx    UserParameter = "CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX"
+	UserParameterClientMetadataUseSessionDatabase         UserParameter = "CLIENT_METADATA_USE_SESSION_DATABASE"
 	UserParameterClientPrefetchThreads                    UserParameter = "CLIENT_PREFETCH_THREADS"
 	UserParameterClientResultChunkSize                    UserParameter = "CLIENT_RESULT_CHUNK_SIZE"
 	UserParameterClientResultColumnCaseInsensitive        UserParameter = "CLIENT_RESULT_COLUMN_CASE_INSENSITIVE"
 	UserParameterClientSessionKeepAlive                   UserParameter = "CLIENT_SESSION_KEEP_ALIVE"
 	UserParameterClientSessionKeepAliveHeartbeatFrequency UserParameter = "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY"
 	UserParameterClientTimestampTypeMapping               UserParameter = "CLIENT_TIMESTAMP_TYPE_MAPPING"
+	UserParameterCsvTimestampFormat                       UserParameter = "CSV_TIMESTAMP_FORMAT"
 	UserParameterDateInputFormat                          UserParameter = "DATE_INPUT_FORMAT"
 	UserParameterDateOutputFormat                         UserParameter = "DATE_OUTPUT_FORMAT"
+	UserParameterEnableGetDdlUseDataTypeAlias             UserParameter = "ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS"
 	UserParameterEnableUnloadPhysicalTypeOptimization     UserParameter = "ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"
 	UserParameterEnableUnredactedQuerySyntaxError         UserParameter = "ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"
 	UserParameterErrorOnNondeterministicMerge             UserParameter = "ERROR_ON_NONDETERMINISTIC_MERGE"
 	UserParameterErrorOnNondeterministicUpdate            UserParameter = "ERROR_ON_NONDETERMINISTIC_UPDATE"
 	UserParameterGeographyOutputFormat                    UserParameter = "GEOGRAPHY_OUTPUT_FORMAT"
 	UserParameterGeometryOutputFormat                     UserParameter = "GEOMETRY_OUTPUT_FORMAT"
+	UserParameterHybridTableLockTimeout                   UserParameter = "HYBRID_TABLE_LOCK_TIMEOUT"
 	UserParameterJdbcTreatDecimalAsInt                    UserParameter = "JDBC_TREAT_DECIMAL_AS_INT"
 	UserParameterJdbcTreatTimestampNtzAsUtc               UserParameter = "JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC"
 	UserParameterJdbcUseSessionTimezone                   UserParameter = "JDBC_USE_SESSION_TIMEZONE"
+	UserParameterJsTreatIntegerAsBigint                   UserParameter = "JS_TREAT_INTEGER_AS_BIGINT"
 	UserParameterJsonIndent                               UserParameter = "JSON_INDENT"
 	UserParameterLockTimeout                              UserParameter = "LOCK_TIMEOUT"
 	UserParameterLogEventLevel                            UserParameter = "LOG_EVENT_LEVEL"
@@ -1530,6 +1537,8 @@ const (
 	UserParameterNoorderSequenceAsDefault                 UserParameter = "NOORDER_SEQUENCE_AS_DEFAULT"
 	UserParameterOdbcTreatDecimalAsInt                    UserParameter = "ODBC_TREAT_DECIMAL_AS_INT"
 	UserParameterPreventUnloadToInternalStages            UserParameter = "PREVENT_UNLOAD_TO_INTERNAL_STAGES"
+	UserParameterPythonProfilerModules                    UserParameter = "PYTHON_PROFILER_MODULES"
+	UserParameterPythonProfilerTargetStage                UserParameter = "PYTHON_PROFILER_TARGET_STAGE"
 	UserParameterQueryTag                                 UserParameter = "QUERY_TAG"
 	UserParameterQuotedIdentifiersIgnoreCase              UserParameter = "QUOTED_IDENTIFIERS_IGNORE_CASE"
 	UserParameterRowsPerResultset                         UserParameter = "ROWS_PER_RESULTSET"
@@ -1561,28 +1570,35 @@ const (
 
 var AllUserParameters = []UserParameter{
 	UserParameterAbortDetachedQuery,
+	UserParameterActivePythonProfiler,
 	UserParameterAutocommit,
 	UserParameterBinaryInputFormat,
 	UserParameterBinaryOutputFormat,
+	UserParameterClientEnableLogInfoStatementParameters,
 	UserParameterClientMemoryLimit,
 	UserParameterClientMetadataRequestUseConnectionCtx,
+	UserParameterClientMetadataUseSessionDatabase,
 	UserParameterClientPrefetchThreads,
 	UserParameterClientResultChunkSize,
 	UserParameterClientResultColumnCaseInsensitive,
 	UserParameterClientSessionKeepAlive,
 	UserParameterClientSessionKeepAliveHeartbeatFrequency,
 	UserParameterClientTimestampTypeMapping,
+	UserParameterCsvTimestampFormat,
 	UserParameterDateInputFormat,
 	UserParameterDateOutputFormat,
+	UserParameterEnableGetDdlUseDataTypeAlias,
 	UserParameterEnableUnloadPhysicalTypeOptimization,
 	UserParameterEnableUnredactedQuerySyntaxError,
 	UserParameterErrorOnNondeterministicMerge,
 	UserParameterErrorOnNondeterministicUpdate,
 	UserParameterGeographyOutputFormat,
 	UserParameterGeometryOutputFormat,
+	UserParameterHybridTableLockTimeout,
 	UserParameterJdbcTreatDecimalAsInt,
 	UserParameterJdbcTreatTimestampNtzAsUtc,
 	UserParameterJdbcUseSessionTimezone,
+	UserParameterJsTreatIntegerAsBigint,
 	UserParameterJsonIndent,
 	UserParameterLockTimeout,
 	UserParameterLogEventLevel,
@@ -1592,6 +1608,8 @@ var AllUserParameters = []UserParameter{
 	UserParameterNoorderSequenceAsDefault,
 	UserParameterOdbcTreatDecimalAsInt,
 	UserParameterPreventUnloadToInternalStages,
+	UserParameterPythonProfilerModules,
+	UserParameterPythonProfilerTargetStage,
 	UserParameterQueryTag,
 	UserParameterQuotedIdentifiersIgnoreCase,
 	UserParameterRowsPerResultset,
@@ -1626,16 +1644,22 @@ func ToUserParameter(s string) (UserParameter, error) {
 	switch s {
 	case string(UserParameterAbortDetachedQuery):
 		return UserParameterAbortDetachedQuery, nil
+	case string(UserParameterActivePythonProfiler):
+		return UserParameterActivePythonProfiler, nil
 	case string(UserParameterAutocommit):
 		return UserParameterAutocommit, nil
 	case string(UserParameterBinaryInputFormat):
 		return UserParameterBinaryInputFormat, nil
 	case string(UserParameterBinaryOutputFormat):
 		return UserParameterBinaryOutputFormat, nil
+	case string(UserParameterClientEnableLogInfoStatementParameters):
+		return UserParameterClientEnableLogInfoStatementParameters, nil
 	case string(UserParameterClientMemoryLimit):
 		return UserParameterClientMemoryLimit, nil
 	case string(UserParameterClientMetadataRequestUseConnectionCtx):
 		return UserParameterClientMetadataRequestUseConnectionCtx, nil
+	case string(UserParameterClientMetadataUseSessionDatabase):
+		return UserParameterClientMetadataUseSessionDatabase, nil
 	case string(UserParameterClientPrefetchThreads):
 		return UserParameterClientPrefetchThreads, nil
 	case string(UserParameterClientResultChunkSize):
@@ -1648,10 +1672,14 @@ func ToUserParameter(s string) (UserParameter, error) {
 		return UserParameterClientSessionKeepAliveHeartbeatFrequency, nil
 	case string(UserParameterClientTimestampTypeMapping):
 		return UserParameterClientTimestampTypeMapping, nil
+	case string(UserParameterCsvTimestampFormat):
+		return UserParameterCsvTimestampFormat, nil
 	case string(UserParameterDateInputFormat):
 		return UserParameterDateInputFormat, nil
 	case string(UserParameterDateOutputFormat):
 		return UserParameterDateOutputFormat, nil
+	case string(UserParameterEnableGetDdlUseDataTypeAlias):
+		return UserParameterEnableGetDdlUseDataTypeAlias, nil
 	case string(UserParameterEnableUnloadPhysicalTypeOptimization):
 		return UserParameterEnableUnloadPhysicalTypeOptimization, nil
 	case string(UserParameterEnableUnredactedQuerySyntaxError):
@@ -1664,12 +1692,16 @@ func ToUserParameter(s string) (UserParameter, error) {
 		return UserParameterGeographyOutputFormat, nil
 	case string(UserParameterGeometryOutputFormat):
 		return UserParameterGeometryOutputFormat, nil
+	case string(UserParameterHybridTableLockTimeout):
+		return UserParameterHybridTableLockTimeout, nil
 	case string(UserParameterJdbcTreatDecimalAsInt):
 		return UserParameterJdbcTreatDecimalAsInt, nil
 	case string(UserParameterJdbcTreatTimestampNtzAsUtc):
 		return UserParameterJdbcTreatTimestampNtzAsUtc, nil
 	case string(UserParameterJdbcUseSessionTimezone):
 		return UserParameterJdbcUseSessionTimezone, nil
+	case string(UserParameterJsTreatIntegerAsBigint):
+		return UserParameterJsTreatIntegerAsBigint, nil
 	case string(UserParameterJsonIndent):
 		return UserParameterJsonIndent, nil
 	case string(UserParameterLockTimeout):
@@ -1688,6 +1720,10 @@ func ToUserParameter(s string) (UserParameter, error) {
 		return UserParameterOdbcTreatDecimalAsInt, nil
 	case string(UserParameterPreventUnloadToInternalStages):
 		return UserParameterPreventUnloadToInternalStages, nil
+	case string(UserParameterPythonProfilerModules):
+		return UserParameterPythonProfilerModules, nil
+	case string(UserParameterPythonProfilerTargetStage):
+		return UserParameterPythonProfilerTargetStage, nil
 	case string(UserParameterQueryTag):
 		return UserParameterQueryTag, nil
 	case string(UserParameterQuotedIdentifiersIgnoreCase):
