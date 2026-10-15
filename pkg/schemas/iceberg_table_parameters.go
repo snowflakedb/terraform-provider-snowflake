@@ -6,13 +6,13 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var icebergTableExternallyManagedParameters = []parameterdefs.ParameterDef{
+var icebergTableExternallyManagedParameters = []ssot.ParameterDef{
 	defs.ExternalVolume,
 	defs.Catalog,
 	defs.ReplaceInvalidCharacters,
@@ -25,7 +25,7 @@ var icebergTableFromRestParameters = append(slices.Clone(icebergTableExternallyM
 	defs.IcebergMergeOnReadBehavior,
 )
 
-var icebergTableSnowflakeManagedParameters = []parameterdefs.ParameterDef{
+var icebergTableSnowflakeManagedParameters = []ssot.ParameterDef{
 	defs.ExternalVolume,
 	defs.Catalog,
 	defs.TargetFileSize,
@@ -62,10 +62,10 @@ func init() {
 	)
 }
 
-func icebergTableParametersToSchema(parameters []*sdk.Parameter, providerCtx *provider.Context, defsForVariant []parameterdefs.ParameterDef) map[string]any {
+func icebergTableParametersToSchema(parameters []*sdk.Parameter, providerCtx *provider.Context, defsForVariant []ssot.ParameterDef) map[string]any {
 	result := make(map[string]any)
 	for _, parameter := range parameters {
-		if slices.ContainsFunc(defsForVariant, func(def parameterdefs.ParameterDef) bool { return def.SqlName == parameter.Key }) {
+		if slices.ContainsFunc(defsForVariant, func(def ssot.ParameterDef) bool { return def.SqlName == parameter.Key }) {
 			result[strings.ToLower(parameter.Key)] = []map[string]any{ParameterToSchemaReducedOutput(parameter, providerCtx)}
 		}
 	}

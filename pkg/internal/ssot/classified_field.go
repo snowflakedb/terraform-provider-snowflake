@@ -79,11 +79,11 @@ func ClassifyAttribute(obj Object, attr Attribute) ClassifiedField {
 // Primitive kinds stay on the storage type.
 func ClassifyParameter(name, kind string) ClassifiedField {
 	switch kind {
-	case "bool":
+	case string(AttrBool):
 		return ClassifiedField{Name: name, Storage: AttrBool}
-	case "int":
+	case string(AttrInt):
 		return ClassifiedField{Name: name, Storage: AttrInt}
-	case "string", "StringAllowEmpty", "float64":
+	case string(AttrString), "StringAllowEmpty", string(AttrFloat):
 		return stringField(name, false)
 	}
 	if strings.HasSuffix(kind, "Identifier") {

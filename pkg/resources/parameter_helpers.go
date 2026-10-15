@@ -3,9 +3,9 @@ package resources
 import (
 	"fmt"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -85,7 +85,7 @@ var parameterSchemaModifiers = buildParameterSchemaModifiers()
 
 func buildParameterSchemaModifiers() map[string][]parameterSchemaModifier {
 	result := make(map[string][]parameterSchemaModifier)
-	register := func(modifier parameterSchemaModifier, parameters ...parameterdefs.ParameterDef) {
+	register := func(modifier parameterSchemaModifier, parameters ...ssot.ParameterDef) {
 		for _, parameter := range parameters {
 			result[parameter.SqlName] = append(result[parameter.SqlName], modifier)
 		}
@@ -128,15 +128,15 @@ func buildParameterSchemaModifiers() map[string][]parameterSchemaModifier {
 }
 
 // parameterSchema derives a resource schema entry from a catalog parameter.
-func parameterSchema(p parameterdefs.ParameterDef) *schema.Schema {
+func parameterSchema(p ssot.ParameterDef) *schema.Schema {
 	return parameterSchemaWithModifiers(p, true)
 }
 
-func parameterSchemaWithoutModifiers(p parameterdefs.ParameterDef) *schema.Schema {
+func parameterSchemaWithoutModifiers(p ssot.ParameterDef) *schema.Schema {
 	return parameterSchemaWithModifiers(p, false)
 }
 
-func parameterSchemaWithModifiers(p parameterdefs.ParameterDef, applyModifiers bool) *schema.Schema {
+func parameterSchemaWithModifiers(p ssot.ParameterDef, applyModifiers bool) *schema.Schema {
 	valueType, isPrimitive := primitiveParameterValueTypes[p.Kind]
 	enumMetadata, isEnum := enumParameterValidators[p.Kind]
 	identifierValidator, isIdentifier := identifierParameterValidators[p.Kind]

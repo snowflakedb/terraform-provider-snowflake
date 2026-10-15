@@ -4,7 +4,7 @@ var (
 {{- if .Hooks.ParametersAttributesSchema.Generate }}
 	{{ .Prefix }}ParametersAttributesSchema = func() map[string]*tfschema.Schema {
 		m := make(map[string]*tfschema.Schema)
-		for _, p := range defs.ParameterDefsForLevel(parameterdefs.ParameterLevel{{ .Name }}) {
+		for _, p := range ssotdefs.ParameterDefsForLevel(ssot.ParameterLevel{{ .Name }}) {
 			m[p.FieldName()] = parameterSchema(p)
 		}
 		return m
@@ -28,8 +28,8 @@ var (
 {{- end }}
 {{- if .Hooks.ParametersFieldNames.Generate }}
 	{{ .Prefix }}ParametersFieldNames = collections.Map(
-		defs.ParameterDefsForLevel(parameterdefs.ParameterLevel{{ .Name }}),
-		func(p parameterdefs.ParameterDef) string { return p.FieldName() },
+		ssotdefs.ParameterDefsForLevel(ssot.ParameterLevel{{ .Name }}),
+		func(p ssot.ParameterDef) string { return p.FieldName() },
 	)
 {{- else if .Hooks.ParametersFieldNames.Present }}
 	{{ .Prefix }}ParametersFieldNames = {{ .Prefix }}ParametersFieldNamesExt

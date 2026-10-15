@@ -3,9 +3,9 @@ package resources
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/require"
@@ -122,7 +122,7 @@ func TestParameterSchema_PanicsForUnhandledKind(t *testing.T) {
 		t,
 		`parameter EXAMPLE has unhandled kind "UnhandledKind"; register it as a primitive, enum, or identifier kind`,
 		func() {
-			parameterSchema(parameterdefs.ParameterDef{SqlName: "EXAMPLE", Kind: "UnhandledKind"})
+			parameterSchema(ssot.ParameterDef{SqlName: "EXAMPLE", Kind: "UnhandledKind"})
 		},
 	)
 }
@@ -130,7 +130,7 @@ func TestParameterSchema_PanicsForUnhandledKind(t *testing.T) {
 func TestParameterSchema_AccountSpecificValidation(t *testing.T) {
 	testCases := []struct {
 		name      string
-		parameter parameterdefs.ParameterDef
+		parameter ssot.ParameterDef
 		valid     any
 		invalid   any
 	}{

@@ -3,11 +3,11 @@ package gen
 import (
 	"slices"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvidentifiers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
 )
 
 type SnowflakeObjectParameters struct {
@@ -43,7 +43,7 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		Level:  sdk.ParameterTypeUser,
 		// Adjust defaults according to our testing environments: override NETWORK_POLICY underneath.
 		Parameters: append(
-			slices.DeleteFunc(snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelUser)), func(p SnowflakeParameter) bool {
+			slices.DeleteFunc(snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelUser)), func(p SnowflakeParameter) bool {
 				return p.ParameterName == string(sdk.UserParameterNetworkPolicy)
 			}),
 			SnowflakeParameter{ParameterName: string(sdk.UserParameterNetworkPolicy), ParameterType: "string", DefaultValue: testenvidentifiers.NetworkPolicy.Name(), DefaultLevel: "sdk.ParameterTypeAccount"},
@@ -53,7 +53,7 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		Name:       "Warehouse",
 		IdType:     "sdk.AccountObjectIdentifier",
 		Level:      sdk.ParameterTypeWarehouse,
-		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouse)),
+		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelWarehouse)),
 	},
 	{
 		Name:                    "WarehouseAdaptive",
@@ -61,7 +61,7 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		Level:                   sdk.ParameterTypeWarehouse,
 		ParameterConstantPrefix: "Warehouse",
 		ObjectTypeName:          "Warehouse",
-		Parameters:              snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouseAdaptive)),
+		Parameters:              snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelWarehouseAdaptive)),
 	},
 	{
 		Name:                    "WarehouseInteractive",
@@ -69,13 +69,13 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		Level:                   sdk.ParameterTypeWarehouse,
 		ParameterConstantPrefix: "Warehouse",
 		ObjectTypeName:          "Warehouse",
-		Parameters:              snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouseInteractive)),
+		Parameters:              snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelWarehouseInteractive)),
 	},
 	{
 		Name:       "Database",
 		IdType:     "sdk.AccountObjectIdentifier",
 		Level:      sdk.ParameterTypeDatabase,
-		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelDatabase)),
+		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelDatabase)),
 	},
 	{
 		Name:   "IcebergTable",
@@ -105,7 +105,7 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		Name:   "Task",
 		IdType: "sdk.SchemaObjectIdentifier",
 		Level:  sdk.ParameterTypeTask,
-		Parameters: append(snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelTask)), SnowflakeParameter{
+		Parameters: append(snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelTask)), SnowflakeParameter{
 			ParameterName: string(sdk.TaskParameterSearchPath), ParameterType: "string", DefaultValue: "$current, $public", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault",
 		}),
 	},
@@ -264,26 +264,26 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		Name:       "Function",
 		IdType:     "sdk.SchemaObjectIdentifierWithArguments",
 		Level:      sdk.ParameterTypeFunction,
-		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelFunction)),
+		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelFunction)),
 	},
 	{
 		Name:       "Procedure",
 		IdType:     "sdk.SchemaObjectIdentifierWithArguments",
 		Level:      sdk.ParameterTypeProcedure,
-		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelProcedure)),
+		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelProcedure)),
 	},
 	{
 		Name:       "Service",
 		IdType:     "sdk.SchemaObjectIdentifier",
 		Level:      sdk.ParameterTypeService,
-		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelService)),
+		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelService)),
 	},
 	{
 		Name:                    "HybridTable",
 		IdType:                  "sdk.SchemaObjectIdentifier",
 		Level:                   sdk.ParameterTypeObject,
 		ParameterConstantPrefix: "Object",
-		Parameters:              snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelHybridTable)),
+		Parameters:              snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelHybridTable)),
 	},
 	{
 		Name:                    "Schema",
@@ -321,11 +321,11 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		// down, so what a deployment reports before anything is set differs between accounts and only
 		// the level tells the two apart. Assert HasEventTable and HasEventTableLevel rather than the
 		// generated defaults assertions.
-		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelOpenflowDeployment)),
+		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelOpenflowDeployment)),
 	},
 }
 
-func snowflakeParameters(parameters []parameterdefs.ParameterDef) []SnowflakeParameter {
+func snowflakeParameters(parameters []ssot.ParameterDef) []SnowflakeParameter {
 	out := make([]SnowflakeParameter, 0, len(parameters))
 	for _, parameter := range parameters {
 		out = append(out, SnowflakeParameter{

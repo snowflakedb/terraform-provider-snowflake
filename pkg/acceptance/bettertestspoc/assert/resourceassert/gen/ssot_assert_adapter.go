@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	sdkdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -20,7 +19,7 @@ func AssertionsFromSsotObject(obj ssot.Object) ResourceAssertionsModel {
 	return assertionsFromSsotObject(obj, parameterDefsForObject(obj))
 }
 
-func assertionsFromSsotObject(obj ssot.Object, parameters []parameterdefs.ParameterDef) ResourceAssertionsModel {
+func assertionsFromSsotObject(obj ssot.Object, parameters []ssot.ParameterDef) ResourceAssertionsModel {
 	if !ssot.ObjectGenerators(obj.Generators...).ResourceAssert.Enabled {
 		panic(fmt.Sprintf("object %q is not enabled for resource assertion generation", obj.Name))
 	}
@@ -28,7 +27,7 @@ func assertionsFromSsotObject(obj ssot.Object, parameters []parameterdefs.Parame
 	attributeFields := collections.Map(obj.Attributes, func(attr ssot.Attribute) ResourceAttributeAssertionModel {
 		return assertionAttributeFromField(ssot.ClassifyAttribute(obj, attr))
 	})
-	parameterFields := collections.Map(parameters, func(parameter parameterdefs.ParameterDef) ResourceAttributeAssertionModel {
+	parameterFields := collections.Map(parameters, func(parameter ssot.ParameterDef) ResourceAttributeAssertionModel {
 		return assertionAttributeFromField(ssot.ClassifyParameter(parameter.FieldName(), parameter.Kind))
 	})
 	fullyQualifiedNameFields := []ResourceAttributeAssertionModel{
@@ -47,13 +46,12 @@ func assertionsFromSsotObject(obj ssot.Object, parameters []parameterdefs.Parame
 	}
 }
 
-func parameterDefsForObject(obj ssot.Object) []parameterdefs.ParameterDef {
+func parameterDefsForObject(obj ssot.Object) []ssot.ParameterDef {
 	if !ssot.DefaultResourceExtHooks(obj.ResourceHooks...).ParametersAttributesSchema.Generate {
 		return nil
 	}
-	level := parameterdefs.ParameterLevel(strings.ToUpper(genhelpers.ToSnakeCase(obj.Name)))
-	// TODO [next PRs]: parameter definitions must be moved to ssot and referenced from there.
-	parameters := sdkdefs.ParameterDefsForLevel(level)
+	level := ssot.ParameterLevel(strings.ToUpper(genhelpers.ToSnakeCase(obj.Name)))
+	parameters := ssotdefs.ParameterDefsForLevel(level)
 	if len(parameters) == 0 {
 		panic(fmt.Sprintf("object %q: parameter attributes are generated but level %q has no parameters", obj.Name, level))
 	}

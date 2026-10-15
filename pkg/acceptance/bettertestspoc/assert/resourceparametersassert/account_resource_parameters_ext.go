@@ -1,8 +1,8 @@
 package resourceparametersassert
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 )
 
 // parametersAbsentFromShow lists catalog parameters that SHOW PARAMETERS IN ACCOUNT does not return.
@@ -15,7 +15,7 @@ var parametersAbsentFromShow = map[string]struct{}{
 // HasAllParametersPresent checks that every account parameter from the catalog is present.
 // Values are not checked, because they depend on the connected account.
 func (a *AccountResourceParametersAssert) HasAllParametersPresent() *AccountResourceParametersAssert {
-	for _, def := range defs.ParameterDefsForLevel(parameterdefs.ParameterLevelAccountExt) {
+	for _, def := range defs.ParameterDefsForLevel(ssot.ParameterLevelAccountExt) {
 		if _, absent := parametersAbsentFromShow[def.SqlName]; absent {
 			a.CollectionLength(def.FieldName(), 0)
 			continue

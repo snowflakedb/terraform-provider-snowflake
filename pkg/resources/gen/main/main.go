@@ -21,6 +21,8 @@ func main() {
 			WithImport("errors").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections").
+			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot").
+			WithNamedImport("ssotdefs", "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas").
 			WithImport("github.com/hashicorp/terraform-plugin-sdk/v2/diag").
 			WithNamedImport("tfschema", "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"),

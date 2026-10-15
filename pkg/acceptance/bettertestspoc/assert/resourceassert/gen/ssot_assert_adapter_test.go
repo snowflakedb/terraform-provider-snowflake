@@ -4,13 +4,12 @@ import (
 	"strings"
 	"testing"
 
-	sdkdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/require"
 )
@@ -92,9 +91,9 @@ func Test_AssertionsFromSsotObject_joinsParameterCatalog(t *testing.T) {
 			{Name: "note", Type: ssot.AttrString},
 		},
 	}
-	parameters := sdkdefs.ParameterDefsForLevel(parameterdefs.ParameterLevelSchema)
+	parameters := ssotdefs.ParameterDefsForLevel(ssot.ParameterLevelSchema)
 	require.NotEmpty(t, parameters)
-	parameterFields := collections.Map(parameters, func(parameter parameterdefs.ParameterDef) ssot.ClassifiedField {
+	parameterFields := collections.Map(parameters, func(parameter ssot.ParameterDef) ssot.ClassifiedField {
 		return ssot.ClassifyParameter(parameter.FieldName(), parameter.Kind)
 	})
 	identityNames := classifiedNames(ssot.IdentityFields(obj))

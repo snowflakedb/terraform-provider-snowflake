@@ -3,6 +3,7 @@ package defs
 import (
 	"slices"
 
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -16,7 +17,7 @@ var warehouseParameterFieldNames = collections.Map(warehouseParameters, g.Parame
 
 // CREATE WAREHOUSE does not accept FALLBACK_WAREHOUSE.
 var warehouseCreateParameters = collections.Filter(warehouseParameters, func(p parameterdefs.ParameterDef) bool {
-	return p.SqlName != FallbackWarehouse.SqlName
+	return p.SqlName != ssotdefs.FallbackWarehouse.SqlName
 })
 
 var warehouseTypeEnum = g.NewEnum(

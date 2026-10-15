@@ -7,6 +7,7 @@ const (
 	AttrString     AttributeType = "string"
 	AttrInt        AttributeType = "int"
 	AttrBool       AttributeType = "bool"
+	AttrFloat      AttributeType = "float64"
 	AttrIdentifier AttributeType = "identifier"
 	AttrEnum       AttributeType = "enum"
 	AttrList       AttributeType = "list"

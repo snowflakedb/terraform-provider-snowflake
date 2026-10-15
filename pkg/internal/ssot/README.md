@@ -248,6 +248,12 @@ repeat for an object that ssot does not emit stays. Do not delete it.
 SDK paired structs have no second object list. The SDK def calls `ShowPairedStructs` / `DescribePairedStructs` when the
 setting is on, and keeps the handwritten field chain when it is off.
 
+### Parameters
+
+Parameter types live in [parameter.go](parameter.go). Catalog entries live in [defs/parameters.go](defs/parameters.go).
+
+`AccountLevels` and `SessionLevels` are the fixed hierarchies from the [parameter hierarchy](https://docs.snowflake.com/en/sql-reference/parameters#parameter-hierarchy-and-types): account, and account plus user and session. `ObjectLevels` adds one or more object levels on top of the account levels. Provider-only consumer sets (`ACCOUNT_EXT`, `HYBRID_TABLE`, warehouse variants) stay `ParameterLevel` values inside those sets.
+
 ### Later
 
 The SDK field chain can come from `Columns` when `SdkShow()` or `SdkDescribe()` is passed to `WithSdk()`. The def keeps

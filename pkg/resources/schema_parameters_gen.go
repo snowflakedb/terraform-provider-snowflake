@@ -4,16 +4,16 @@ package resources
 
 import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var (
 	schemaParametersAttributesSchema = func() map[string]*tfschema.Schema {
 		m := make(map[string]*tfschema.Schema)
-		for _, p := range defs.ParameterDefsForLevel(parameterdefs.ParameterLevelSchema) {
+		for _, p := range ssotdefs.ParameterDefsForLevel(ssot.ParameterLevelSchema) {
 			m[p.FieldName()] = parameterSchema(p)
 		}
 		return m
@@ -29,8 +29,8 @@ var (
 		},
 	}
 	schemaParametersFieldNames = collections.Map(
-		defs.ParameterDefsForLevel(parameterdefs.ParameterLevelSchema),
-		func(p parameterdefs.ParameterDef) string { return p.FieldName() },
+		ssotdefs.ParameterDefsForLevel(ssot.ParameterLevelSchema),
+		func(p ssot.ParameterDef) string { return p.FieldName() },
 	)
 	schemaParametersCustomDiff = ParametersCustomDiffFromTypedParameters(
 		schemaParametersProviderExt,

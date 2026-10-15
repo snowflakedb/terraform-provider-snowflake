@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	sdkdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -23,7 +22,7 @@ func ModelFromSsotObject(obj ssot.Object) ResourceConfigBuilderModel {
 	attrs = append(attrs, collections.Map(obj.Attributes, func(attr ssot.Attribute) ResourceConfigBuilderAttributeModel {
 		return modelAttributeFromField(ssot.ClassifyAttribute(obj, attr))
 	})...)
-	attrs = append(attrs, collections.Map(parameterDefsForObject(obj), func(parameter parameterdefs.ParameterDef) ResourceConfigBuilderAttributeModel {
+	attrs = append(attrs, collections.Map(parameterDefsForObject(obj), func(parameter ssot.ParameterDef) ResourceConfigBuilderAttributeModel {
 		return modelAttributeFromField(ssot.ClassifyParameter(parameter.FieldName(), parameter.Kind))
 	})...)
 	return ResourceConfigBuilderModel{
@@ -38,13 +37,12 @@ func identityModelAttributes(obj ssot.Object) []ResourceConfigBuilderAttributeMo
 	return modelAttributesFromFields(ssot.IdentityFields(obj))
 }
 
-func parameterDefsForObject(obj ssot.Object) []parameterdefs.ParameterDef {
+func parameterDefsForObject(obj ssot.Object) []ssot.ParameterDef {
 	if !ssot.DefaultResourceExtHooks(obj.ResourceHooks...).ParametersAttributesSchema.Generate {
 		return nil
 	}
-	level := parameterdefs.ParameterLevel(strings.ToUpper(genhelpers.ToSnakeCase(obj.Name)))
-	// TODO [next PRs]: parameter definitions must be moved to ssot and referenced from there.
-	parameters := sdkdefs.ParameterDefsForLevel(level)
+	level := ssot.ParameterLevel(strings.ToUpper(genhelpers.ToSnakeCase(obj.Name)))
+	parameters := ssotdefs.ParameterDefsForLevel(level)
 	if len(parameters) == 0 {
 		panic(fmt.Sprintf("object %q: parameter attributes are generated but level %q has no parameters", obj.Name, level))
 	}

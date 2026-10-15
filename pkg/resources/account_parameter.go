@@ -9,11 +9,11 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -21,7 +21,7 @@ import (
 var accountParameterSupportedParameters = buildAccountParameterSupportedParameters()
 
 func buildAccountParameterSupportedParameters() []sdk.AccountParameter {
-	catalogParams := defs.ParameterDefsForLevel(parameterdefs.ParameterLevelAccountExt)
+	catalogParams := defs.ParameterDefsForLevel(ssot.ParameterLevelAccountExt)
 	params := make([]sdk.AccountParameter, len(catalogParams))
 	for i, p := range catalogParams {
 		params[i] = sdk.AccountParameter(p.SqlName)

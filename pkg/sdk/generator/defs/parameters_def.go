@@ -1,6 +1,7 @@
 package defs
 
 import (
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
@@ -12,7 +13,7 @@ func parameterEnums() []*g.Enum {
 	return []*g.Enum{
 		g.NewEnum("AccountParameter", "AccountParameters", withAdditionalParameterNames(
 			parameterNamesForLevels(parameterdefs.ParameterLevelAccountExt),
-			ServiceCallerTokenValiditySecs,
+			ssotdefs.ServiceCallerTokenValiditySecs,
 		)...),
 		g.NewEnum("SessionParameter", "SessionParameters", parameterNamesForLevels(parameterdefs.ParameterLevelSession)...),
 		g.NewEnum("ObjectParameter", "ObjectParameters", parameterNamesForLevels(
@@ -36,7 +37,7 @@ func parameterEnums() []*g.Enum {
 		g.NewEnum("UserParameter", "UserParameters", parameterNamesForLevels(parameterdefs.ParameterLevelUser)...),
 		g.NewEnum("TaskParameter", "TaskParameters", withAdditionalParameterNames(
 			parameterNamesForLevels(parameterdefs.ParameterLevelTask),
-			SearchPath,
+			ssotdefs.SearchPath,
 		)...),
 		g.NewEnum("WarehouseParameter", "WarehouseParameters", parameterNamesForLevels(
 			parameterdefs.ParameterLevelWarehouse,
@@ -45,8 +46,8 @@ func parameterEnums() []*g.Enum {
 		)...),
 		g.NewEnum("DatabaseParameter", "DatabaseParameters", withAdditionalParameterNames(
 			parameterNamesForLevels(parameterdefs.ParameterLevelDatabase),
-			MetricLevel,
-			ServiceCallerTokenValiditySecs,
+			ssotdefs.MetricLevel,
+			ssotdefs.ServiceCallerTokenValiditySecs,
 		)...),
 		g.NewEnum("SchemaParameter", "SchemaParameters", parameterNamesForLevels(parameterdefs.ParameterLevelSchema)...),
 		g.NewEnum("FunctionParameter", "FunctionParameters", parameterNamesForLevels(parameterdefs.ParameterLevelFunction)...),

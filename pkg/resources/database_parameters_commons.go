@@ -7,9 +7,9 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -20,8 +20,8 @@ var (
 )
 
 var databaseParameterFieldNames = collections.Map(
-	defs.ParameterDefsForLevel(parameterdefs.ParameterLevelDatabase),
-	func(p parameterdefs.ParameterDef) string { return p.FieldName() },
+	defs.ParameterDefsForLevel(ssot.ParameterLevelDatabase),
+	func(p ssot.ParameterDef) string { return p.FieldName() },
 )
 
 var sharedDatabaseNotApplicableParameters = []string{
@@ -30,7 +30,7 @@ var sharedDatabaseNotApplicableParameters = []string{
 }
 
 func init() {
-	for _, p := range defs.ParameterDefsForLevel(parameterdefs.ParameterLevelDatabase) {
+	for _, p := range defs.ParameterDefsForLevel(ssot.ParameterLevelDatabase) {
 		databaseParametersSchema[p.FieldName()] = parameterSchema(p)
 
 		if !slices.Contains(sharedDatabaseNotApplicableParameters, p.SqlName) {
