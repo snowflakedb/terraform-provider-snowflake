@@ -188,6 +188,10 @@ Required:
 - `refresh_token` (String, Sensitive) The refresh token for the OAuth provider when using a refresh token to renew access token. Can also be sourced from the `SNOWFLAKE_TOKEN_ACCESSOR_REFRESH_TOKEN` environment variable.
 - `token_endpoint` (String, Sensitive) The token endpoint for the OAuth provider e.g. https://{yourDomain}/oauth/token when using a refresh token to renew access token. Can also be sourced from the `SNOWFLAKE_TOKEN_ACCESSOR_TOKEN_ENDPOINT` environment variable.
 
+Optional:
+
+- `min_tls_version` (String) Specifies the minimum TLS version for the HTTP client this block uses to exchange a refresh token. The Snowflake driver connection uses `SNOWFLAKE_MIN_TLS_VERSION`, which the driver reads itself. Valid options are: `1.2` | `1.3`. The value is case-insensitive. This does not handle driver connections. If you want to set a minimum TLS version for the Snowflake driver connection, read the [driver documentation](https://pkg.go.dev/github.com/snowflakedb/gosnowflake/v2). Can also be sourced from the `SNOWFLAKE_TOKEN_ACCESSOR_MIN_TLS_VERSION` environment variable.
+
 ## Authentication
 
 The Snowflake provider supports multiple ways to authenticate:
@@ -271,6 +275,7 @@ export SNOWFLAKE_TOKEN_ACCESSOR_CLIENT_ID='...'
 export SNOWFLAKE_TOKEN_ACCESSOR_CLIENT_SECRET='...'
 export SNOWFLAKE_TOKEN_ACCESSOR_TOKEN_ENDPOINT='...'
 export SNOWFLAKE_TOKEN_ACCESSOR_REDIRECT_URI='https://localhost.com'
+export SNOWFLAKE_TOKEN_ACCESSOR_MIN_TLS_VERSION='1.3' # Optional
 ```
 
 Note because access token have a short life; typically 10 minutes, by passing refresh token new access token will be generated.

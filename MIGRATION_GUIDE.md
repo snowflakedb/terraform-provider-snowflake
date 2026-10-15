@@ -26,6 +26,27 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.22.x ➞ v2.23.0
+
+### *(new feature)* `token_accessor.min_tls_version` provider configuration
+
+We added an optional `min_tls_version` field to the `token_accessor` block. It sets the minimum TLS version for the HTTP client that block uses to exchange a refresh token. If you want to set a minimum TLS version for the Snowflake driver connection, read the [driver documentation](https://pkg.go.dev/github.com/snowflakedb/gosnowflake/v2).
+
+```terraform
+provider "snowflake" {
+  token_accessor {
+    token_endpoint  = "https://example.com/oauth/token"
+    refresh_token   = var.refresh_token
+    client_id       = var.client_id
+    client_secret   = var.client_secret
+    redirect_uri    = "https://example.com/redirect"
+    min_tls_version = "1.3"
+  }
+}
+```
+
+No configuration changes are required for existing configurations.
+
 ## v2.22.0 ➞ v2.22.1
 
 ### *(bug fix)* `snowflake_pipe` reads SNS topic ARNs from every AWS partition

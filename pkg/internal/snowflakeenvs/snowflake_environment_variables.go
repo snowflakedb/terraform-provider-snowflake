@@ -32,6 +32,7 @@ const (
 	TokenAccessorClientId      = "SNOWFLAKE_TOKEN_ACCESSOR_CLIENT_ID"
 	TokenAccessorClientSecret  = "SNOWFLAKE_TOKEN_ACCESSOR_CLIENT_SECRET"
 	TokenAccessorRedirectUri   = "SNOWFLAKE_TOKEN_ACCESSOR_REDIRECT_URI"
+	TokenAccessorMinTLSVersion = "SNOWFLAKE_TOKEN_ACCESSOR_MIN_TLS_VERSION"
 
 	KeepSessionAlive                   = "SNOWFLAKE_KEEP_SESSION_ALIVE"
 	PrivateKey                         = "SNOWFLAKE_PRIVATE_KEY"
@@ -62,6 +63,7 @@ const (
 
 	DisableOCSPChecks                 = "SNOWFLAKE_DISABLE_OCSP_CHECKS"
 	CertRevocationCheckMode           = "SNOWFLAKE_CERT_REVOCATION_CHECK_MODE"
+	MinTLSVersion                     = "SNOWFLAKE_MIN_TLS_VERSION"
 	CrlAllowCertificatesWithoutCrlURL = "SNOWFLAKE_CRL_ALLOW_CERTIFICATES_WITHOUT_CRL_URL"
 	CrlInMemoryCacheDisabled          = "SNOWFLAKE_CRL_IN_MEMORY_CACHE_DISABLED"
 	CrlOnDiskCacheDisabled            = "SNOWFLAKE_CRL_ON_DISK_CACHE_DISABLED"

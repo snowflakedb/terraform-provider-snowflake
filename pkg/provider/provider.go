@@ -298,6 +298,13 @@ func GetProviderSchema() map[string]*schema.Schema {
 						Sensitive:   true,
 						DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.TokenAccessorRedirectUri, nil),
 					},
+					"min_tls_version": {
+						Type:             schema.TypeString,
+						Description:      envNameFieldDescription(fmt.Sprintf("Specifies the minimum TLS version for the HTTP client this block uses to exchange a refresh token. The Snowflake driver connection uses `%s`, which the driver reads itself. Valid options are: %v. The value is case-insensitive. This does not handle driver connections. If you want to set a minimum TLS version for the Snowflake driver connection, read the [driver documentation](https://pkg.go.dev/github.com/snowflakedb/gosnowflake/v2).", snowflakeenvs.MinTLSVersion, docs.PossibleValuesListed(allMinTLSVersionsString)), snowflakeenvs.TokenAccessorMinTLSVersion),
+						Optional:         true,
+						DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.TokenAccessorMinTLSVersion, nil),
+						ValidateDiagFunc: validators.NormalizeValidation(toMinTLSVersion),
+					},
 				},
 			},
 		},
@@ -1162,7 +1169,12 @@ func getDriverConfigFromTerraform(s *schema.ResourceData, experiments experiment
 			clientID := tokenAccessor["client_id"].(string)
 			clientSecret := tokenAccessor["client_secret"].(string)
 			redirectURI := tokenAccessor["redirect_uri"].(string)
-			accessToken, err := GetAccessTokenWithRefreshToken(tokenEndpoint, clientID, clientSecret, refreshToken, redirectURI)
+			minTLSValue, _ := tokenAccessor["min_tls_version"].(string)
+			minTLS, err := toMinTLSVersion(minTLSValue)
+			if err != nil {
+				return nil, diag.FromErr(err)
+			}
+			accessToken, err := GetAccessTokenWithRefreshToken(tokenEndpoint, clientID, clientSecret, refreshToken, redirectURI, minTLS)
 			if err != nil {
 				return nil, diag.FromErr(fmt.Errorf("could not retrieve access token from refresh token, err = %w", err))
 			}
