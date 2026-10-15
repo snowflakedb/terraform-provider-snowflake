@@ -10,29 +10,29 @@ import (
 
 func Test_mergeSnowflakeObjectAssertionDetails_skipsEveryReflectedName(t *testing.T) {
 	reflected := []genhelpers.SdkObjectDetails{
-		detailsNamed("sdk.Schema"),
-		detailsNamed("sdk.HybridTable"),
-		detailsNamed("sdk.Schema"),
-		detailsNamed("sdk.ComputePool"),
-		detailsNamed("sdk.Warehouse"),
+		detailsNamed("sdk.Alpha"),
+		detailsNamed("sdk.Beta"),
+		detailsNamed("sdk.Alpha"),
+		detailsNamed("sdk.Gamma"),
+		detailsNamed("sdk.Delta"),
 	}
 	ssotDetails := []genhelpers.SdkObjectDetails{
 		{
 			StructDetails: genhelpers.StructDetails{
-				Name:   "sdk.Schema",
+				Name:   "sdk.Alpha",
 				Fields: []genhelpers.Field{{Name: "FromSsot"}},
 			},
 		},
-		detailsNamed("sdk.ComputePool"),
+		detailsNamed("sdk.Gamma"),
 	}
 
 	merged := mergeSnowflakeObjectAssertionDetails(reflected, ssotDetails)
-	require.Equal(t, []string{"sdk.HybridTable", "sdk.Warehouse", "sdk.Schema", "sdk.ComputePool"}, objectNames(merged))
+	require.Equal(t, []string{"sdk.Beta", "sdk.Delta", "sdk.Alpha", "sdk.Gamma"}, objectNames(merged))
 	require.Equal(t, "FromSsot", merged[2].Fields[0].Name)
 }
 
 func Test_mergeSnowflakeObjectAssertionDetails_panicsOnDuplicateSsotName(t *testing.T) {
-	ssotDetails := []genhelpers.SdkObjectDetails{detailsNamed("sdk.Pool"), detailsNamed("sdk.Pool")}
+	ssotDetails := []genhelpers.SdkObjectDetails{detailsNamed("sdk.Alpha"), detailsNamed("sdk.Alpha")}
 	require.Panics(t, func() {
 		mergeSnowflakeObjectAssertionDetails(nil, ssotDetails)
 	})

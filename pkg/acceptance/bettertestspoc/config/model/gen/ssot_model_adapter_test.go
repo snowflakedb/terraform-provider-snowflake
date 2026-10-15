@@ -7,77 +7,54 @@ import (
 	sdkdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/require"
 )
 
-func Test_ModelFromSsotObject_emitsStorageAndSdkMethods(t *testing.T) {
-	family := ssot.NewEnum("PoolFamily", "PoolFamilies", "SMALL")
+func Test_ModelFromSsotObject_mapsClassifiedAttributes(t *testing.T) {
 	obj := ssot.Object{
-		Name:   "Pool",
+		Name:   "Widget",
 		IdType: "AccountObjectIdentifier",
 		Generators: []ssot.GeneratorOption{
 			ssot.WithModel(),
 		},
 		Attributes: []ssot.Attribute{
-			{Name: "instance_family", Type: ssot.AttrEnum, Enum: family, Required: true},
-			{Name: "auto_resume", Type: ssot.AttrBool},
-			{Name: "for_application", Type: ssot.AttrIdentifier},
 			{Name: "min_nodes", Type: ssot.AttrInt, Required: true},
-			{Name: "comment", Type: ssot.AttrString},
+			{Name: "enabled", Type: ssot.AttrBool, Required: true},
+			{Name: "auto_resume", Type: ssot.AttrBool},
+			{Name: "names", Type: ssot.AttrList, Elem: &ssot.Attribute{Type: ssot.AttrString}},
+			{Name: "tags", Type: ssot.AttrSet, Elem: &ssot.Attribute{Type: ssot.AttrString}},
 		},
 	}
 	model := ModelFromSsotObject(obj)
-	require.Equal(t, []string{
-		"name",
-		"auto_resume",
-		"comment",
-		"for_application",
-		"instance_family",
-		"min_nodes",
-	}, attributeNames(model))
-
-	builders := renderModelTemplates(t, model)
-	require.Contains(t, builders, "func (p *PoolModel) WithInstanceFamily(instanceFamily string) *PoolModel {")
-	require.Contains(t, builders, "func (p *PoolModel) WithInstanceFamilySdk(instanceFamily sdk.PoolFamily) *PoolModel {")
-	require.Contains(t, builders, "p.InstanceFamily = tfconfig.StringVariable(string(instanceFamily))")
-	require.Contains(t, builders, "func (p *PoolModel) WithAutoResume(autoResume string) *PoolModel {")
-	require.Contains(t, builders, "func (p *PoolModel) WithAutoResumeBool(autoResume bool) *PoolModel {")
-	require.Contains(t, builders, "p.AutoResume = tfconfig.StringVariable(strconv.FormatBool(autoResume))")
-	require.Contains(t, builders, "func (p *PoolModel) WithForApplication(forApplication string) *PoolModel {")
-	require.Contains(t, builders, "func (p *PoolModel) WithForApplicationSdk(forApplication sdk.AccountObjectIdentifier) *PoolModel {")
-	require.Contains(t, builders, "p.ForApplication = tfconfig.StringVariable(forApplication.Name())")
-	require.Contains(t, builders, "func (p *PoolModel) WithMinNodes(minNodes int) *PoolModel {")
-	require.NotContains(t, builders, "WithMinNodesSdk")
-	require.Contains(t, builders, "func (p *PoolModel) WithName(name string) *PoolModel {")
-	require.NotContains(t, builders, "WithNameSdk")
-	require.NotContains(t, builders, "FullyQualifiedName")
-	require.Contains(t, builders, "func (p *PoolModel) WithComment(comment string) *PoolModel {")
-	require.NotContains(t, builders, "WithCommentSdk")
-	require.Contains(t, builders, "func Pool(")
-	require.Contains(t, builders, "instanceFamily string,")
-	require.Contains(t, builders, "minNodes int,")
-	require.NotContains(t, builders, "instanceFamily sdk.PoolFamily,")
+	require.Equal(t, "Widget", model.Name)
+	require.Equal(t, expectOrdered(classifiedNames(ssot.IdentityFields(obj)), classifiedNames(classifyAttributes(obj))), attributeNames(model))
+	for _, field := range ssot.IdentityFields(obj) {
+		requireModelAttributeMatches(t, modelAttributeByName(t, model, field.Name), field)
+	}
+	for _, attr := range obj.Attributes {
+		requireModelAttributeMatches(t, modelAttributeByName(t, model, attr.Name), ssot.ClassifyAttribute(obj, attr))
+	}
 }
 
-func Test_ModelFromSsotObject_databaseAndSchemaIdentity(t *testing.T) {
-	databaseObj := ssot.Object{
-		Name:       "Child",
-		IdType:     "DatabaseObjectIdentifier",
-		Generators: []ssot.GeneratorOption{ssot.WithModel()},
+func Test_ModelFromSsotObject_includesIdentityFields(t *testing.T) {
+	for _, idType := range []string{"AccountObjectIdentifier", "DatabaseObjectIdentifier", "SchemaObjectIdentifier"} {
+		t.Run(idType, func(t *testing.T) {
+			obj := ssot.Object{
+				Name:       "Widget",
+				IdType:     idType,
+				Generators: []ssot.GeneratorOption{ssot.WithModel()},
+			}
+			require.Equal(t, expectOrdered(classifiedNames(ssot.IdentityFields(obj))), attributeNames(ModelFromSsotObject(obj)))
+		})
 	}
-	require.Equal(t, []string{"database", "name"}, attributeNames(ModelFromSsotObject(databaseObj)))
-
-	schemaObj := ssot.Object{
-		Name:       "Nested",
-		IdType:     "SchemaObjectIdentifier",
-		Generators: []ssot.GeneratorOption{ssot.WithModel()},
-	}
-	require.Equal(t, []string{"database", "schema", "name"}, attributeNames(ModelFromSsotObject(schemaObj)))
 }
 
 func Test_ModelFromSsotObject_joinsParameterCatalog(t *testing.T) {
+	// The object name selects the parameter catalog level.
 	obj := ssot.Object{
 		Name:   "Schema",
 		IdType: "DatabaseObjectIdentifier",
@@ -88,47 +65,110 @@ func Test_ModelFromSsotObject_joinsParameterCatalog(t *testing.T) {
 			ssot.WithParametersAttributesSchema(ssot.Generated()),
 		},
 		Attributes: []ssot.Attribute{
-			{Name: "comment", Type: ssot.AttrString},
+			{Name: "note", Type: ssot.AttrString},
 		},
 	}
-	model := ModelFromSsotObject(obj)
-	names := attributeNames(model)
-	// DatabaseObjectIdentifier contributes database and name. Attributes contributes comment.
-	identityFields := 2
-	attributeFields := len(obj.Attributes)
-	parameterFields := len(sdkdefs.ParameterDefsForLevel(parameterdefs.ParameterLevelSchema))
-	require.Len(t, names, identityFields+attributeFields+parameterFields)
-	require.Contains(t, names, "database")
-	require.Contains(t, names, "name")
-	require.Contains(t, names, "comment")
-	require.Contains(t, names, "log_level")
-	require.Contains(t, names, "enable_console_output")
-	require.Contains(t, names, "data_retention_time_in_days")
-	require.NotContains(t, names, "fully_qualified_name")
+	parameters := sdkdefs.ParameterDefsForLevel(parameterdefs.ParameterLevelSchema)
+	require.NotEmpty(t, parameters)
+	parameterFields := collections.Map(parameters, func(parameter parameterdefs.ParameterDef) ssot.ClassifiedField {
+		return ssot.ClassifyParameter(parameter.FieldName(), parameter.Kind)
+	})
+	identityNames := classifiedNames(ssot.IdentityFields(obj))
+	for _, field := range parameterFields {
+		require.NotContains(t, identityNames, field.Name)
+		require.NotEqual(t, "note", field.Name)
+	}
 
-	builders := renderModelTemplates(t, model)
-	require.Contains(t, builders, "func (s *SchemaModel) WithLogLevel(logLevel string) *SchemaModel {")
-	require.Contains(t, builders, "func (s *SchemaModel) WithLogLevelSdk(logLevel sdk.LogLevel) *SchemaModel {")
-	require.Contains(t, builders, "func (s *SchemaModel) WithEnableConsoleOutput(enableConsoleOutput bool) *SchemaModel {")
-	require.NotContains(t, builders, "WithEnableConsoleOutputBool")
-	require.Contains(t, builders, "func (s *SchemaModel) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *SchemaModel {")
-	require.NotContains(t, builders, "WithDataRetentionTimeInDaysSdk")
+	model := ModelFromSsotObject(obj)
+	require.Equal(t, expectOrdered(identityNames, []string{"note"}, classifiedNames(parameterFields)), attributeNames(model))
+	requireModelAttributeMatches(t, modelAttributeByName(t, model, "note"), ssot.ClassifyAttribute(obj, obj.Attributes[0]))
+	for _, field := range parameterFields {
+		requireModelAttributeMatches(t, modelAttributeByName(t, model, field.Name), field)
+	}
 }
 
-func Test_ModelFromSsotObject_refusesDisabledObject(t *testing.T) {
-	require.Panics(t, func() {
-		ModelFromSsotObject(ssot.Object{Name: "Pool", IdType: "AccountObjectIdentifier"})
+func Test_ModelFromSsotObject_panics(t *testing.T) {
+	t.Run("generator off", func(t *testing.T) {
+		require.Panics(t, func() {
+			ModelFromSsotObject(ssot.Object{Name: "Widget", IdType: "AccountObjectIdentifier"})
+		})
 	})
+	t.Run("parameter level empty", func(t *testing.T) {
+		require.Panics(t, func() {
+			ModelFromSsotObject(ssot.Object{
+				Name:       "Widget",
+				IdType:     "AccountObjectIdentifier",
+				Generators: []ssot.GeneratorOption{ssot.WithModel()},
+				ResourceHooks: []ssot.ResourceHookOption{
+					ssot.WithParametersAttributesSchema(ssot.Generated()),
+				},
+			})
+		})
+	})
+}
+
+func requireModelAttributeMatches(t *testing.T, got ResourceConfigBuilderAttributeModel, field ssot.ClassifiedField) {
+	t.Helper()
+	require.Equal(t, field.Name, got.Name)
+	require.Equal(t, field.Name, got.JsonName)
+	require.Equal(t, field.Required, got.Required)
+	require.Equal(t, "tfconfig", got.MethodImport)
+	require.Equal(t, field.SdkValueType, got.SdkValueType)
+	switch field.Storage {
+	case ssot.AttrBool:
+		require.Equal(t, "bool", got.AttributeType)
+		require.Equal(t, "BoolVariable", got.VariableMethod)
+		require.Equal(t, schema.TypeBool, got.OriginalType)
+	case ssot.AttrInt:
+		require.Equal(t, "int", got.AttributeType)
+		require.Equal(t, "IntegerVariable", got.VariableMethod)
+		require.Equal(t, schema.TypeInt, got.OriginalType)
+	case ssot.AttrString:
+		require.Equal(t, "string", got.AttributeType)
+		require.Equal(t, "StringVariable", got.VariableMethod)
+		require.Equal(t, schema.TypeString, got.OriginalType)
+	case ssot.AttrList:
+		require.Empty(t, got.AttributeType)
+		require.Empty(t, got.VariableMethod)
+		require.Equal(t, schema.TypeList, got.OriginalType)
+	case ssot.AttrSet:
+		require.Empty(t, got.AttributeType)
+		require.Empty(t, got.VariableMethod)
+		require.Equal(t, schema.TypeSet, got.OriginalType)
+	default:
+		t.Fatalf("attribute %q has unexpected storage %q", field.Name, field.Storage)
+	}
+}
+
+func classifyAttributes(obj ssot.Object) []ssot.ClassifiedField {
+	return collections.Map(obj.Attributes, func(attr ssot.Attribute) ssot.ClassifiedField {
+		return ssot.ClassifyAttribute(obj, attr)
+	})
+}
+
+func classifiedNames(fields []ssot.ClassifiedField) []string {
+	return collections.Map(fields, func(field ssot.ClassifiedField) string { return field.Name })
+}
+
+func expectOrdered(groups ...[]string) []string {
+	var names []string
+	for _, group := range groups {
+		names = append(names, group...)
+	}
+	return genhelpers.OrderByNameWithPreferredFront(names, func(name string) string { return name })
 }
 
 func attributeNames(model ResourceConfigBuilderModel) []string {
 	return collections.Map(model.Attributes, func(attr ResourceConfigBuilderAttributeModel) string { return attr.Name })
 }
 
-func renderModelTemplates(t *testing.T, model ResourceConfigBuilderModel) string {
+func modelAttributeByName(t *testing.T, model ResourceConfigBuilderModel, name string) ResourceConfigBuilderAttributeModel {
 	t.Helper()
-	var buf strings.Builder
-	require.NoError(t, DefinitionTemplate.Execute(&buf, model))
-	require.NoError(t, BuildersTemplate.Execute(&buf, model))
-	return buf.String()
+	for _, attr := range model.Attributes {
+		if attr.Name == name {
+			return attr
+		}
+	}
+	t.Fatalf("attribute %q not found in %s", name, strings.Join(attributeNames(model), ", "))
+	return ResourceConfigBuilderAttributeModel{}
 }

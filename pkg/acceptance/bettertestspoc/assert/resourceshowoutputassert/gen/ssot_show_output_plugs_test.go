@@ -10,25 +10,25 @@ import (
 
 func Test_mergeShowOutputAssertionDetails_skipsReflectedAndKeepsRepeats(t *testing.T) {
 	reflected := []SdkObjectShowOutputDetails{
-		detailsNamed("sdk.HybridTable"),
-		detailsNamed("sdk.Pool"),
-		detailsNamed("sdk.HybridTable"),
-		detailsNamed("sdk.Warehouse"),
+		detailsNamed("sdk.Alpha"),
+		detailsNamed("sdk.Beta"),
+		detailsNamed("sdk.Alpha"),
+		detailsNamed("sdk.Gamma"),
 	}
 	ssotDetails := []SdkObjectShowOutputDetails{{
 		SdkObjectDetails: genhelpers.SdkObjectDetails{StructDetails: genhelpers.StructDetails{
-			Name:   "sdk.Pool",
+			Name:   "sdk.Beta",
 			Fields: []genhelpers.Field{{Name: "FromSsot"}},
 		}},
 	}}
 
 	merged := mergeShowOutputAssertionDetails(reflected, ssotDetails)
-	require.Equal(t, []string{"sdk.HybridTable", "sdk.HybridTable", "sdk.Warehouse", "sdk.Pool"}, objectNames(merged))
+	require.Equal(t, []string{"sdk.Alpha", "sdk.Alpha", "sdk.Gamma", "sdk.Beta"}, objectNames(merged))
 	require.Equal(t, "FromSsot", merged[3].Fields[0].Name)
 }
 
 func Test_mergeShowOutputAssertionDetails_panicsOnDuplicateSsotName(t *testing.T) {
-	ssotDetails := []SdkObjectShowOutputDetails{detailsNamed("sdk.Pool"), detailsNamed("sdk.Pool")}
+	ssotDetails := []SdkObjectShowOutputDetails{detailsNamed("sdk.Beta"), detailsNamed("sdk.Beta")}
 	require.Panics(t, func() {
 		mergeShowOutputAssertionDetails(nil, ssotDetails)
 	})

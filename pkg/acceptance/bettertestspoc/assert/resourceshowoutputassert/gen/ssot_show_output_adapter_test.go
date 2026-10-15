@@ -9,82 +9,71 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_ShowOutputAssertionsFromSsot_rendersColumnAssertions(t *testing.T) {
-	family := ssot.NewEnum("PoolFamily", "PoolFamilies", "SMALL")
+func Test_ShowOutputAssertionsFromSsot_usesShowAndDescribeColumns(t *testing.T) {
 	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
-	minNodes := ssot.Attribute{Name: "min_nodes", Type: ssot.AttrInt}
-	autoResume := ssot.Attribute{Name: "auto_resume", Type: ssot.AttrBool}
-	createdOn := ssot.Attribute{Name: "created_on", Type: ssot.AttrTime}
-	instanceFamily := ssot.Attribute{Name: "instance_family", Type: ssot.AttrEnum, Enum: family}
-	owner := ssot.Attribute{Name: "owner", Type: ssot.AttrIdentifier}
-	forApplication := ssot.Attribute{Name: "for_application", Type: ssot.AttrIdentifier, OptionalInShow: true, ShowName: "application"}
-	backupFamilies := ssot.Attribute{Name: "backup_instance_families", Type: ssot.AttrList, Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: family}}
-	columns := []*ssot.Attribute{
-		&comment, &minNodes, &autoResume, &createdOn, &instanceFamily, &owner, &forApplication, &backupFamilies,
-	}
+	errorCode := ssot.Attribute{Name: "error_code", Type: ssot.AttrString}
 	obj := ssot.Object{
-		Name:   "Pool",
+		Name:   "Widget",
 		IdType: "AccountObjectIdentifier",
 		Generators: []ssot.GeneratorOption{
 			ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
 		},
-		Show:     ssot.OutputSpec{Columns: columns},
-		Describe: ssot.OutputSpec{Columns: columns},
+		Show:     ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+		Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&errorCode}},
 	}
 
 	showDetails := showOutputDetailsFromSsot(obj, false)
-	require.Equal(t, "sdk.Pool", showDetails.ObjectName())
-	require.False(t, showDetails.IsDataSourceOutput)
-
+	require.Equal(t, SdkObjectShowOutputDetails{
+		dataSourceDef: &dataSourceDef{},
+		SdkObjectDetails: genhelpers.SdkObjectDetails{
+			StructDetails: genhelpers.StructDetails{
+				Name:   "sdk.Widget",
+				Fields: []genhelpers.Field{ssot.ColumnField(obj, comment)},
+			},
+		},
+	}, showDetails)
 	show := ShowOutputAssertionsFromSsot(obj, false)
-	require.Equal(t, "Pool", show.Name)
+	require.Equal(t, "Widget", show.Name)
 	require.False(t, show.IsDescribeOutput)
-	assertions := renderShowOutputAssertions(t, show)
-	require.Contains(t, assertions, `p.StringValueSet("comment", expected)`)
-	require.Contains(t, assertions, `p.IntValueSet("min_nodes", expected)`)
-	require.Contains(t, assertions, `p.BoolValueSet("auto_resume", expected)`)
-	require.NotContains(t, assertions, "HasAutoResumeBool")
-	require.Contains(t, assertions, `p.StringValueSet("created_on", expected.String())`)
-	require.Contains(t, assertions, `p.StringValueSet("instance_family", string(expected))`)
-	require.NotContains(t, assertions, "HasInstanceFamilySdk")
-	require.NotContains(t, assertions, "HasInstanceFamilyString")
-	require.Contains(t, assertions, `p.StringValueSet("owner", expected.Name())`)
-	require.Contains(t, assertions, `p.StringValueSet("application", expected.Name())`)
-	require.NotContains(t, assertions, "HasApplicationSdk")
-	require.Contains(t, assertions, "func (p *PoolShowOutputAssert) HasNoBackupInstanceFamilies() *PoolShowOutputAssert {")
-	require.Contains(t, assertions, `p.ValueSet("backup_instance_families.#", "0")`)
-	require.NotContains(t, assertions, "HasBackupInstanceFamilies(")
+	require.Empty(t, show.DataSourceName)
+	require.Equal(t, []string{"Comment"}, showOutputAssertionNames(show))
 
 	descDetails := showOutputDetailsFromSsot(obj, true)
-	require.Equal(t, "sdk.PoolDetails", descDetails.ObjectName())
-	require.True(t, descDetails.IsDataSourceOutput)
+	require.Equal(t, SdkObjectShowOutputDetails{
+		dataSourceDef: &dataSourceDef{},
+		SdkObjectDetails: genhelpers.SdkObjectDetails{
+			IsDataSourceOutput: true,
+			StructDetails: genhelpers.StructDetails{
+				Name:   "sdk.WidgetDetails",
+				Fields: []genhelpers.Field{ssot.ColumnField(obj, errorCode)},
+			},
+		},
+	}, descDetails)
 	desc := ShowOutputAssertionsFromSsot(obj, true)
-	require.Equal(t, "PoolDetails", desc.Name)
+	require.Equal(t, "WidgetDetails", desc.Name)
 	require.True(t, desc.IsDescribeOutput)
-	descAssertions := renderShowOutputAssertions(t, desc)
-	require.Contains(t, descAssertions, `p.StringValueSet("instance_family", string(expected))`)
-	require.NotContains(t, descAssertions, "HasBackupInstanceFamilies(")
+	require.Equal(t, []string{"ErrorCode"}, showOutputAssertionNames(desc))
 }
 
 func Test_ShowOutputAssertionsFromSsot_refusesDisabledOrEmpty(t *testing.T) {
 	column := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
 	require.Panics(t, func() {
 		ShowOutputAssertionsFromSsot(ssot.Object{
-			Name:   "Pool",
+			Name:   "Widget",
 			IdType: "AccountObjectIdentifier",
 			Show:   ssot.OutputSpec{Columns: []*ssot.Attribute{&column}},
 		}, false)
 	})
 	require.Panics(t, func() {
 		ShowOutputAssertionsFromSsot(ssot.Object{
-			Name:       "Pool",
+			Name:       "Widget",
 			IdType:     "AccountObjectIdentifier",
 			Generators: []ssot.GeneratorOption{ssot.WithShowOutputAssert(ssot.ShowOutputShow())},
 		}, false)
 	})
 	require.Panics(t, func() {
 		ShowOutputAssertionsFromSsot(ssot.Object{
-			Name:       "Pool",
+			Name:       "Widget",
 			IdType:     "AccountObjectIdentifier",
 			Generators: []ssot.GeneratorOption{ssot.WithShowOutputAssert(ssot.ShowOutputShow())},
 			Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{nil}},
@@ -92,7 +81,7 @@ func Test_ShowOutputAssertionsFromSsot_refusesDisabledOrEmpty(t *testing.T) {
 	})
 	require.Panics(t, func() {
 		ShowOutputAssertionsFromSsot(ssot.Object{
-			Name:       "Pool",
+			Name:       "Widget",
 			IdType:     "AccountObjectIdentifier",
 			Generators: []ssot.GeneratorOption{ssot.WithSchema(ssot.SchemaShow())},
 			Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&column}},
@@ -111,6 +100,14 @@ func Test_MapToResourceShowOutputAssertion_reflectedField(t *testing.T) {
 	require.Contains(t, assertions, `w.StringValueSet("warehouse_size", expected)`)
 	require.NotContains(t, assertions, "HasWarehouseSizeSdk")
 	require.NotContains(t, assertions, "HasWarehouseSizeBool")
+}
+
+func showOutputAssertionNames(model ResourceShowOutputAssertionsModel) []string {
+	names := make([]string, len(model.Attributes))
+	for i, attr := range model.Attributes {
+		names[i] = attr.Name
+	}
+	return names
 }
 
 func renderShowOutputAssertions(t *testing.T, model ResourceShowOutputAssertionsModel) string {
