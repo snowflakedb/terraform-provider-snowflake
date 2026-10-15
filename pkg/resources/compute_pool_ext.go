@@ -65,27 +65,6 @@ func computePoolParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
 	return sdk.ParseAccountObjectIdentifier(id)
 }
 
-func computePoolNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateComputePoolRequest, error) {
-	minNodes := d.Get("min_nodes").(int)
-	maxNodes := d.Get("max_nodes").(int)
-	instanceFamily, err := sdk.ToComputePoolInstanceFamily(d.Get("instance_family").(string))
-	if err != nil {
-		return nil, err
-	}
-	return sdk.NewCreateComputePoolRequest(id, minNodes, maxNodes, instanceFamily), nil
-}
-
-func computePoolApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.CreateComputePoolRequest) error {
-	return errors.Join(
-		accountObjectIdentifierAttributeCreate(d, "for_application", &request.ForApplication),
-		booleanStringAttributeCreateBuilder(d, "auto_resume", request.WithAutoResume),
-		booleanStringAttributeCreateBuilder(d, "initially_suspended", request.WithInitiallySuspended),
-		intAttributeWithSpecialDefaultCreateBuilder(d, "auto_suspend_secs", request.WithAutoSuspendSecs),
-		listValueCreate(d, "backup_instance_families", &request.BackupInstanceFamilies, toComputePoolBackupInstanceFamily),
-		stringAttributeCreateBuilder(d, "comment", request.WithComment),
-	)
-}
-
 func computePoolHandleExternalChangesExt(d *schema.ResourceData, computePool *sdk.ComputePool, withExternalChangesMarking bool) error {
 	if !withExternalChangesMarking {
 		return nil

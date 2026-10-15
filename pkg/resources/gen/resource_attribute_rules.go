@@ -206,6 +206,9 @@ func resourceAttributeBaseline(in ssot.Attribute, ctx resourceAttributeRuleConte
 	if in.Min != nil {
 		out.ValidateDiagExpr = fmt.Sprintf("validation.ToDiagFunc(validation.IntAtLeast(%d))", *in.Min)
 	}
+	if in.Type == ssot.AttrEnum && in.Enum != nil {
+		out.EnumName = in.Enum.Name
+	}
 	return out
 }
 

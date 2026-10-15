@@ -117,6 +117,7 @@ func Test_applyResourceAttributeRules_enumField(t *testing.T) {
 
 	require.Equal(t, SchemaTypeString, got.TfType)
 	require.True(t, got.Required)
+	require.Equal(t, "ComputePoolInstanceFamily", got.EnumName)
 	require.Equal(t, "sdkValidation(sdk.ToComputePoolInstanceFamily)", got.ValidateDiagExpr)
 	require.Equal(t, "SuppressIfAny(NormalizeAndCompare(sdk.ToComputePoolInstanceFamily))", got.DiffSuppressExpr)
 	require.Equal(t, `"Identifies the type of machine. " + enumValuesDescription(sdk.AllComputePoolInstanceFamilies) + " Not all instance families are supported."`, got.DescriptionExpr)
@@ -139,6 +140,7 @@ func Test_applyResourceAttributeRules_listOfEnum(t *testing.T) {
 	require.Equal(t, `"Specifies an ordered list of instance families. " + enumValuesDescription(sdk.AllComputePoolInstanceFamilies)`, got.DescriptionExpr)
 	require.NotNil(t, got.Elem)
 	require.Equal(t, SchemaTypeString, got.Elem.TfType)
+	require.Equal(t, "ComputePoolInstanceFamily", got.Elem.EnumName)
 	require.False(t, got.Elem.Required)
 	require.False(t, got.Elem.Optional)
 	require.Equal(t, "sdkValidation(sdk.ToComputePoolInstanceFamily)", got.Elem.ValidateDiagExpr)
@@ -163,6 +165,7 @@ func Test_applyResourceAttributeRules_setOfEnum(t *testing.T) {
 	require.Equal(t, `"Specifies a set of allowed values. " + enumValuesDescription(sdk.AllComputePoolInstanceFamilies)`, got.DescriptionExpr)
 	require.NotNil(t, got.Elem)
 	require.Equal(t, SchemaTypeString, got.Elem.TfType)
+	require.Equal(t, "ComputePoolInstanceFamily", got.Elem.EnumName)
 	require.False(t, got.Elem.Required)
 	require.False(t, got.Elem.Optional)
 	require.Equal(t, "sdkValidation(sdk.ToComputePoolInstanceFamily)", got.Elem.ValidateDiagExpr)

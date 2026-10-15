@@ -13,14 +13,17 @@ const (
 
 // ResourceAttribute is schema chrome after applying resource attribute rules.
 type ResourceAttribute struct {
-	Name             string
-	TfType           SchemaValueType
-	Required         bool
-	Optional         bool
-	ForceNew         bool
-	DescriptionExpr  string
-	DefaultExpr      string
-	ValidateDiagExpr string
-	DiffSuppressExpr string
-	Elem             *ResourceAttribute
+	Name                 string
+	TfType               SchemaValueType
+	Required             bool
+	Optional             bool
+	ForceNew             bool
+	DescriptionExpr      string
+	DefaultExpr          string
+	ValidateDiagExpr     string
+	DiffSuppressExpr     string
+	Elem                 *ResourceAttribute
+	EnumName             string // SDK enum type name; empty when the attribute is not an enum
+	CreateConstructorArg *CreateConstructorArg
+	CreateOptionalCall   *CreateOptionalCall
 }

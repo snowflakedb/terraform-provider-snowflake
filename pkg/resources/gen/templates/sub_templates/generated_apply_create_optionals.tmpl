@@ -1,0 +1,10 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
+func {{ .Prefix }}ApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.Create{{ .Name }}Request) error {
+{{- if .HasCreateOptionalCalls }}
+	return errors.Join({{ range .Attributes }}{{ if .CreateOptionalCall }}
+		{{ .CreateOptionalCall.Helper }}(d, "{{ .Name }}", {{ .CreateOptionalCall.Target }}),{{ end }}{{ end }}
+	)
+{{- else }}
+	return nil
+{{- end }}
+}

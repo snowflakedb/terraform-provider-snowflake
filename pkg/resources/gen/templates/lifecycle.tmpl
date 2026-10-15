@@ -86,3 +86,11 @@ func Update{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) 
 {{ template "alterUnsetInSdk" . -}}
 	return Read{{ .Name }}Func(false)(ctx, d, meta)
 }
+{{- if .Hooks.NewCreateRequest.Generate }}
+
+{{ template "generatedNewCreateRequest" . }}
+{{- end }}
+{{- if .Hooks.ApplyCreateOptionals.Generate }}
+
+{{ template "generatedApplyCreateOptionals" . }}
+{{- end }}

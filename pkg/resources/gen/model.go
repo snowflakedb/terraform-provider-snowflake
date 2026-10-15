@@ -27,7 +27,21 @@ func (m ResourceModel) Prefix() string {
 	return genhelpers.FirstLetterLowercase(m.Name)
 }
 
+func (m ResourceModel) HasCreateOptionalCalls() bool {
+	for _, attr := range m.Attributes {
+		if attr.CreateOptionalCall != nil {
+			return true
+		}
+	}
+	return false
+}
+
 func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleModel, _ *log.Logger) ResourceModel {
+	hooks := ssot.DefaultResourceExtHooks(input.ResourceHooks...)
+	attributes := applyResourceAttributeRules(input.Attributes)
+	if hooks.NewCreateRequest.Generate || hooks.ApplyCreateOptionals.Generate {
+		attachCreateMappings(input.Name, input.Attributes, attributes)
+	}
 	return ResourceModel{
 		Name:                                input.Name,
 		NamePlural:                          input.NamePlural,
@@ -38,9 +52,9 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		IdType:                              input.IdType,
 		IdentityNameForceNew:                input.IdentityNameForceNew,
 		AdditionalIdentityNameDescription:   input.AdditionalIdentityNameDescription,
-		Attributes:                          applyResourceAttributeRules(input.Attributes),
+		Attributes:                          attributes,
 		AttributesModification:              input.AttributesModification,
-		Hooks:                               ssot.DefaultResourceExtHooks(input.ResourceHooks...),
+		Hooks:                               hooks,
 		PreambleModel:                       preamble,
 	}
 }

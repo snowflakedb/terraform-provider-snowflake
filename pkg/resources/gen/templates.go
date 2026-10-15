@@ -37,8 +37,14 @@ var (
 	//go:embed templates/sub_templates/new_create_request.tmpl
 	newCreateRequestTemplateContent string
 
+	//go:embed templates/sub_templates/generated_new_create_request.tmpl
+	generatedNewCreateRequestTemplateContent string
+
 	//go:embed templates/sub_templates/apply_create_optionals.tmpl
 	applyCreateOptionalsTemplateContent string
+
+	//go:embed templates/sub_templates/generated_apply_create_optionals.tmpl
+	generatedApplyCreateOptionalsTemplateContent string
 
 	//go:embed templates/sub_templates/create_in_sdk.tmpl
 	createInSdkTemplateContent string
@@ -138,6 +144,8 @@ func init() {
 	subTemplates := template.New("subTemplates").Funcs(genhelpers.BuildTemplateFuncMap(
 		genhelpers.Unimplemented,
 		genhelpers.CamelToWords,
+		genhelpers.FirstLetterLowercase,
+		genhelpers.SnakeCaseToCamel,
 		strings.ToUpper,
 	))
 	subTemplates, _ = subTemplates.New("constructor").Parse(constructorTemplateContent)
@@ -145,7 +153,9 @@ func init() {
 	subTemplates, _ = subTemplates.New("parseIdFromConfig").Parse(parseIdFromConfigTemplateContent)
 	subTemplates, _ = subTemplates.New("beforeCreate").Parse(beforeCreateTemplateContent)
 	subTemplates, _ = subTemplates.New("newCreateRequest").Parse(newCreateRequestTemplateContent)
+	subTemplates, _ = subTemplates.New("generatedNewCreateRequest").Parse(generatedNewCreateRequestTemplateContent)
 	subTemplates, _ = subTemplates.New("applyCreateOptionals").Parse(applyCreateOptionalsTemplateContent)
+	subTemplates, _ = subTemplates.New("generatedApplyCreateOptionals").Parse(generatedApplyCreateOptionalsTemplateContent)
 	subTemplates, _ = subTemplates.New("createInSdk").Parse(createInSdkTemplateContent)
 	subTemplates, _ = subTemplates.New("showByIdSafelyInSdk").Parse(showByIdSafelyInSdkTemplateContent)
 	subTemplates, _ = subTemplates.New("describeInSdk").Parse(describeInSdkTemplateContent)

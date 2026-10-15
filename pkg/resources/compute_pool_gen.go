@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -51,12 +52,12 @@ func CreateComputePool(ctx context.Context, d *tfschema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 
-	req, err := computePoolNewCreateRequestExt(d, id)
+	req, err := computePoolNewCreateRequest(d, id)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err := computePoolApplyCreateOptionalsExt(d, req); err != nil {
+	if err := computePoolApplyCreateOptionals(d, req); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -119,4 +120,25 @@ func UpdateComputePool(ctx context.Context, d *tfschema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 	return ReadComputePoolFunc(false)(ctx, d, meta)
+}
+
+func computePoolNewCreateRequest(d *tfschema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateComputePoolRequest, error) {
+	minNodes := d.Get("min_nodes").(int)
+	maxNodes := d.Get("max_nodes").(int)
+	instanceFamily, err := sdk.ToComputePoolInstanceFamily(d.Get("instance_family").(string))
+	if err != nil {
+		return nil, err
+	}
+	return sdk.NewCreateComputePoolRequest(id, minNodes, maxNodes, instanceFamily), nil
+}
+
+func computePoolApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateComputePoolRequest) error {
+	return errors.Join(
+		accountObjectIdentifierAttributeCreateBuilder(d, "for_application", request.WithForApplication),
+		listValueCreate(d, "backup_instance_families", &request.BackupInstanceFamilies, toComputePoolBackupInstanceFamily),
+		booleanStringAttributeCreateBuilder(d, "auto_resume", request.WithAutoResume),
+		booleanStringAttributeCreateBuilder(d, "initially_suspended", request.WithInitiallySuspended),
+		intAttributeWithSpecialDefaultCreateBuilder(d, "auto_suspend_secs", request.WithAutoSuspendSecs),
+		stringAttributeCreateBuilder(d, "comment", request.WithComment),
+	)
 }
