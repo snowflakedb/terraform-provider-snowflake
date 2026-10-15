@@ -45,6 +45,7 @@ type ParameterField struct {
 	SqlName   string
 	FieldName string
 	Parser    string
+	IsEnum    bool
 }
 
 func NewField(name string, kind string, tagBuilder *TagBuilder, transformer FieldTransformer) *Field {

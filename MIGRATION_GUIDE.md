@@ -100,7 +100,7 @@ Covered today: account-level (`on_account = true`) parameters and Database, Sche
 
 By default (experiment disabled), the resource keeps its current behavior — this is a zero behavior change for existing configurations.
 
-Newly added Snowflake parameters and object types keep the previous behavior until they are covered. The same pattern is already available for `snowflake_account_parameter` via the `ACCOUNT_PARAMETER_CATALOG_WRITE_PATH` experiment.
+Newly added Snowflake parameters and object types keep the previous behavior until they are covered. If Snowflake adds a value to an enum parameter before the provider catalog recognizes it, the provider logs a warning and also keeps the previous behavior. The same pattern is already available for `snowflake_account_parameter` via the `ACCOUNT_PARAMETER_CATALOG_WRITE_PATH` experiment.
 
 ### *(new feature)* `optimized_refresh` and `rpo_assurance` on `snowflake_failover_group`
 

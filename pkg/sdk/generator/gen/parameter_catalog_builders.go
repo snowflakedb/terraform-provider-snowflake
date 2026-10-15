@@ -53,6 +53,7 @@ func newParameterField(p parameterdefs.ParameterDef) ParameterField {
 		SqlName:   p.SqlName,
 		FieldName: sqlToFieldName(p.SqlName, true),
 		Parser:    info.WriteParser,
+		IsEnum:    info.IsEnum,
 	}
 }
 

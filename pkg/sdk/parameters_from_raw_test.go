@@ -122,19 +122,18 @@ func TestSetParameterFromRaw(t *testing.T) {
 		}
 	})
 
-	// A caller falls back to the untyped setter on the sentinel, so a bad value must never produce it.
-	t.Run("distinguishes an unsupported parameter from a bad value", func(t *testing.T) {
+	t.Run("classifies unsupported parameters and enum values separately from bad values", func(t *testing.T) {
 		tests := []struct {
-			name         string
-			key          string
-			value        string
-			wantSentinel bool
+			name            string
+			key             string
+			value           string
+			wantUnsupported bool
+			wantEnum        bool
 		}{
-			{name: "unknown key", key: "NOT_A_PARAMETER", value: "whatever", wantSentinel: true},
-			// Comment sits on the same struct but is not a parameter.
-			{name: "non-parameter field", key: "COMMENT", value: "x", wantSentinel: true},
+			{name: "unknown key", key: "NOT_A_PARAMETER", value: "whatever", wantUnsupported: true},
+			{name: "non-parameter field", key: "COMMENT", value: "x", wantUnsupported: true},
 			{name: "unparsable int", key: "DATA_RETENTION_TIME_IN_DAYS", value: "abc"},
-			{name: "invalid enum", key: "LOG_LEVEL", value: "NOT_A_LEVEL"},
+			{name: "unknown enum", key: "LOG_LEVEL", value: "NOT_A_LEVEL", wantEnum: true},
 			{name: "invalid identifier", key: "CATALOG", value: `"a"."b"`},
 		}
 
@@ -142,11 +141,8 @@ func TestSetParameterFromRaw(t *testing.T) {
 			t.Run(tt.name, func(t *testing.T) {
 				err := NewDatabaseSetRequest().SetParameterFromRaw(tt.key, tt.value)
 				require.Error(t, err)
-				if tt.wantSentinel {
-					require.ErrorIs(t, err, ErrParameterNotSupported)
-				} else {
-					require.NotErrorIs(t, err, ErrParameterNotSupported)
-				}
+				require.Equal(t, tt.wantUnsupported, errors.Is(err, ErrParameterNotSupported))
+				require.Equal(t, tt.wantEnum, errors.Is(err, ErrEnumValueNotSupported))
 			})
 		}
 	})
@@ -239,6 +235,13 @@ func TestAssignParsedParameter(t *testing.T) {
 		var target *int
 		err := assignParsedParameter("abc", func(string) (int, error) { return 0, parseErr }, &target)
 		require.ErrorIs(t, err, parseErr)
+		require.Nil(t, target)
+	})
+
+	t.Run("classifies an enum parse error and leaves the target unset", func(t *testing.T) {
+		var target *LogLevel
+		err := assignParsedEnumParameter("UNKNOWN", ToLogLevel, &target)
+		require.ErrorIs(t, err, ErrEnumValueNotSupported)
 		require.Nil(t, target)
 	})
 }

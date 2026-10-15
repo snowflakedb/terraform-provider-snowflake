@@ -385,13 +385,13 @@ func (s *CreateUserRequest) SetParameterFromRaw(key string, value string) error 
 	case "ABORT_DETACHED_QUERY":
 		return assignParsedParameter(value, strconv.ParseBool, &s.AbortDetachedQuery)
 	case "ACTIVE_PYTHON_PROFILER":
-		return assignParsedParameter(value, ToActivePythonProfiler, &s.ActivePythonProfiler)
+		return assignParsedEnumParameter(value, ToActivePythonProfiler, &s.ActivePythonProfiler)
 	case "AUTOCOMMIT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.Autocommit)
 	case "BINARY_INPUT_FORMAT":
-		return assignParsedParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
+		return assignParsedEnumParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
 	case "BINARY_OUTPUT_FORMAT":
-		return assignParsedParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
+		return assignParsedEnumParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
 	case "CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ClientEnableLogInfoStatementParameters)
 	case "CLIENT_MEMORY_LIMIT":
@@ -411,7 +411,7 @@ func (s *CreateUserRequest) SetParameterFromRaw(key string, value string) error 
 	case "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY":
 		return assignParsedParameter(value, strconv.Atoi, &s.ClientSessionKeepAliveHeartbeatFrequency)
 	case "CLIENT_TIMESTAMP_TYPE_MAPPING":
-		return assignParsedParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
+		return assignParsedEnumParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
 	case "CSV_TIMESTAMP_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.CsvTimestampFormat)
 	case "DATE_INPUT_FORMAT":
@@ -429,9 +429,9 @@ func (s *CreateUserRequest) SetParameterFromRaw(key string, value string) error 
 	case "ERROR_ON_NONDETERMINISTIC_UPDATE":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ErrorOnNondeterministicUpdate)
 	case "GEOGRAPHY_OUTPUT_FORMAT":
-		return assignParsedParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
+		return assignParsedEnumParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
 	case "GEOMETRY_OUTPUT_FORMAT":
-		return assignParsedParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
+		return assignParsedEnumParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
 	case "HYBRID_TABLE_LOCK_TIMEOUT":
 		return assignParsedParameter(value, strconv.Atoi, &s.HybridTableLockTimeout)
 	case "JDBC_TREAT_DECIMAL_AS_INT":
@@ -447,9 +447,9 @@ func (s *CreateUserRequest) SetParameterFromRaw(key string, value string) error 
 	case "LOCK_TIMEOUT":
 		return assignParsedParameter(value, strconv.Atoi, &s.LockTimeout)
 	case "LOG_EVENT_LEVEL":
-		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
+		return assignParsedEnumParameter(value, ToLogLevel, &s.LogEventLevel)
 	case "LOG_LEVEL":
-		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
 	case "MULTI_STATEMENT_COUNT":
 		return assignParsedParameter(value, strconv.Atoi, &s.MultiStatementCount)
 	case "NETWORK_POLICY":
@@ -497,21 +497,21 @@ func (s *CreateUserRequest) SetParameterFromRaw(key string, value string) error 
 	case "TIMESTAMP_OUTPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.TimestampOutputFormat)
 	case "TIMESTAMP_TYPE_MAPPING":
-		return assignParsedParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
+		return assignParsedEnumParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
 	case "TIMESTAMP_TZ_OUTPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.TimestampTzOutputFormat)
 	case "TIMEZONE":
 		return assignParsedParameter(value, identityParse, &s.Timezone)
 	case "TRACE_LEVEL":
-		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+		return assignParsedEnumParameter(value, ToTraceLevel, &s.TraceLevel)
 	case "TRANSACTION_ABORT_ON_ERROR":
 		return assignParsedParameter(value, strconv.ParseBool, &s.TransactionAbortOnError)
 	case "TRANSACTION_DEFAULT_ISOLATION_LEVEL":
-		return assignParsedParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
+		return assignParsedEnumParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
 	case "TWO_DIGIT_CENTURY_START":
 		return assignParsedParameter(value, strconv.Atoi, &s.TwoDigitCenturyStart)
 	case "UNSUPPORTED_DDL_ACTION":
-		return assignParsedParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
+		return assignParsedEnumParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
 	case "USE_CACHED_RESULT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.UseCachedResult)
 	case "WEEK_OF_YEAR_POLICY":
@@ -1211,13 +1211,13 @@ func (s *UserSetRequest) SetParameterFromRaw(key string, value string) error {
 	case "ABORT_DETACHED_QUERY":
 		return assignParsedParameter(value, strconv.ParseBool, &s.AbortDetachedQuery)
 	case "ACTIVE_PYTHON_PROFILER":
-		return assignParsedParameter(value, ToActivePythonProfiler, &s.ActivePythonProfiler)
+		return assignParsedEnumParameter(value, ToActivePythonProfiler, &s.ActivePythonProfiler)
 	case "AUTOCOMMIT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.Autocommit)
 	case "BINARY_INPUT_FORMAT":
-		return assignParsedParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
+		return assignParsedEnumParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
 	case "BINARY_OUTPUT_FORMAT":
-		return assignParsedParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
+		return assignParsedEnumParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
 	case "CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ClientEnableLogInfoStatementParameters)
 	case "CLIENT_MEMORY_LIMIT":
@@ -1237,7 +1237,7 @@ func (s *UserSetRequest) SetParameterFromRaw(key string, value string) error {
 	case "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY":
 		return assignParsedParameter(value, strconv.Atoi, &s.ClientSessionKeepAliveHeartbeatFrequency)
 	case "CLIENT_TIMESTAMP_TYPE_MAPPING":
-		return assignParsedParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
+		return assignParsedEnumParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
 	case "CSV_TIMESTAMP_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.CsvTimestampFormat)
 	case "DATE_INPUT_FORMAT":
@@ -1255,9 +1255,9 @@ func (s *UserSetRequest) SetParameterFromRaw(key string, value string) error {
 	case "ERROR_ON_NONDETERMINISTIC_UPDATE":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ErrorOnNondeterministicUpdate)
 	case "GEOGRAPHY_OUTPUT_FORMAT":
-		return assignParsedParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
+		return assignParsedEnumParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
 	case "GEOMETRY_OUTPUT_FORMAT":
-		return assignParsedParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
+		return assignParsedEnumParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
 	case "HYBRID_TABLE_LOCK_TIMEOUT":
 		return assignParsedParameter(value, strconv.Atoi, &s.HybridTableLockTimeout)
 	case "JDBC_TREAT_DECIMAL_AS_INT":
@@ -1273,9 +1273,9 @@ func (s *UserSetRequest) SetParameterFromRaw(key string, value string) error {
 	case "LOCK_TIMEOUT":
 		return assignParsedParameter(value, strconv.Atoi, &s.LockTimeout)
 	case "LOG_EVENT_LEVEL":
-		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
+		return assignParsedEnumParameter(value, ToLogLevel, &s.LogEventLevel)
 	case "LOG_LEVEL":
-		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
 	case "MULTI_STATEMENT_COUNT":
 		return assignParsedParameter(value, strconv.Atoi, &s.MultiStatementCount)
 	case "NETWORK_POLICY":
@@ -1323,21 +1323,21 @@ func (s *UserSetRequest) SetParameterFromRaw(key string, value string) error {
 	case "TIMESTAMP_OUTPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.TimestampOutputFormat)
 	case "TIMESTAMP_TYPE_MAPPING":
-		return assignParsedParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
+		return assignParsedEnumParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
 	case "TIMESTAMP_TZ_OUTPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.TimestampTzOutputFormat)
 	case "TIMEZONE":
 		return assignParsedParameter(value, identityParse, &s.Timezone)
 	case "TRACE_LEVEL":
-		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+		return assignParsedEnumParameter(value, ToTraceLevel, &s.TraceLevel)
 	case "TRANSACTION_ABORT_ON_ERROR":
 		return assignParsedParameter(value, strconv.ParseBool, &s.TransactionAbortOnError)
 	case "TRANSACTION_DEFAULT_ISOLATION_LEVEL":
-		return assignParsedParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
+		return assignParsedEnumParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
 	case "TWO_DIGIT_CENTURY_START":
 		return assignParsedParameter(value, strconv.Atoi, &s.TwoDigitCenturyStart)
 	case "UNSUPPORTED_DDL_ACTION":
-		return assignParsedParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
+		return assignParsedEnumParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
 	case "USE_CACHED_RESULT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.UseCachedResult)
 	case "WEEK_OF_YEAR_POLICY":

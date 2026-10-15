@@ -61,6 +61,13 @@ func assignParsedParameter[T any](raw string, parse func(string) (T, error), tar
 	return nil
 }
 
+func assignParsedEnumParameter[T any](raw string, parse func(string) (T, error), target **T) error {
+	if err := assignParsedParameter(raw, parse, target); err != nil {
+		return fmt.Errorf("%w: %w", ErrEnumValueNotSupported, err)
+	}
+	return nil
+}
+
 // identityParse is the parser for string-valued parameters.
 func identityParse(s string) (string, error) { return s, nil }
 

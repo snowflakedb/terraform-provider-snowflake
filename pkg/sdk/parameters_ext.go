@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 )
 
 var _ validatable = new(setParameterOnObject)
@@ -112,6 +113,14 @@ func catalogParameterResult(err error) (handled bool, alter bool, ret error) {
 	return true, false, err
 }
 
+func objectParameterCatalogSetResult(key string, err error) (handled bool, alter bool, ret error) {
+	if errors.Is(err, ErrEnumValueNotSupported) {
+		log.Printf("[WARN] parameter catalog does not recognize an enum value for %s; falling back to the generic object parameter writer: %v", key, err)
+		return false, false, nil
+	}
+	return catalogParameterResult(err)
+}
+
 type rawParameterSetter interface {
 	SetParameterFromRaw(key, value string) error
 }
@@ -126,7 +135,7 @@ func catalogSet[ID any, Req rawParameterSetter](ctx context.Context, name Object
 		return false, nil
 	}
 	req := newReq()
-	handled, doAlter, err := catalogParameterResult(req.SetParameterFromRaw(key, value))
+	handled, doAlter, err := objectParameterCatalogSetResult(key, req.SetParameterFromRaw(key, value))
 	if !doAlter {
 		return handled, err
 	}
@@ -316,7 +325,7 @@ func (v *parameters) UnsetObjectParameterOnObjectViaCatalog(ctx context.Context,
 
 func (v *parameters) SetObjectParameterOnAccountViaCatalog(ctx context.Context, parameter ObjectParameter, value string) (bool, error) {
 	req := NewAccountParametersRequest()
-	handled, alter, err := catalogParameterResult(req.SetParameterFromRaw(string(parameter), value))
+	handled, alter, err := objectParameterCatalogSetResult(string(parameter), req.SetParameterFromRaw(string(parameter), value))
 	if !alter {
 		return handled, err
 	}

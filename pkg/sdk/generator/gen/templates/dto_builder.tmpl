@@ -32,7 +32,7 @@ func (s *{{ $name }}) SetParameterFromRaw(key string, value string) error {
     switch strings.ToUpper(key) {
     {{- range . }}
     case "{{ .SqlName }}":
-        return assignParsedParameter(value, {{ .Parser }}, &s.{{ .FieldName }})
+        return assignParsed{{ if .IsEnum }}Enum{{ end }}Parameter(value, {{ .Parser }}, &s.{{ .FieldName }})
     {{- end }}
     default:
         return ErrParameterNotSupported

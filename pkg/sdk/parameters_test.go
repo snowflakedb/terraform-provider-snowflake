@@ -296,12 +296,10 @@ func TestSetObjectParameterOnObjectViaCatalog(t *testing.T) {
 			value:     "INFO",
 		},
 		{
-			name:        "function parse error propagates",
-			object:      Object{ObjectType: ObjectTypeFunction, Name: NewSchemaObjectIdentifierWithArguments("some_db", "some_schema", "some_fn", DataTypeVARCHAR)},
-			parameter:   "LOG_LEVEL",
-			value:       "not-a-level",
-			wantHandled: true,
-			wantErr:     true,
+			name:      "unknown function enum value falls back",
+			object:    Object{ObjectType: ObjectTypeFunction, Name: NewSchemaObjectIdentifierWithArguments("some_db", "some_schema", "some_fn", DataTypeVARCHAR)},
+			parameter: "LOG_LEVEL",
+			value:     "not-a-level",
 		},
 		{
 			name:      "procedure without arguments falls back",
@@ -348,6 +346,12 @@ func TestSetObjectParameterOnObjectViaCatalog(t *testing.T) {
 			value:       "not-an-int",
 			wantHandled: true,
 			wantErr:     true,
+		},
+		{
+			name:      "unknown database enum value falls back",
+			object:    Object{ObjectType: ObjectTypeDatabase, Name: NewAccountObjectIdentifier("some_db")},
+			parameter: "LOG_LEVEL",
+			value:     "not-a-level",
 		},
 	}
 
@@ -399,6 +403,7 @@ func TestSetObjectParameterOnAccountViaCatalog(t *testing.T) {
 	}{
 		{name: "unknown key falls back", parameter: "NOT_A_REAL_PARAMETER", value: "1"},
 		{name: "genuine parse error propagates", parameter: "MIN_DATA_RETENTION_TIME_IN_DAYS", value: "not-an-int", wantHandled: true, wantErr: true},
+		{name: "unknown enum value falls back", parameter: "LOG_LEVEL", value: "not-a-level"},
 	}
 
 	for _, tc := range cases {
