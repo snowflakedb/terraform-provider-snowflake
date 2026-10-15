@@ -102,6 +102,236 @@ func (v *parameters) UnsetObjectParameterOnObject(ctx context.Context, object Ob
 	return err
 }
 
+func catalogParameterResult(err error) (handled bool, alter bool, ret error) {
+	if err == nil {
+		return true, true, nil
+	}
+	if errors.Is(err, ErrParameterNotSupported) {
+		return false, false, nil
+	}
+	return true, false, err
+}
+
+type rawParameterSetter interface {
+	SetParameterFromRaw(key, value string) error
+}
+
+type rawParameterUnsetter interface {
+	UnsetParameterFromRaw(key string) error
+}
+
+func catalogSet[ID any, Req rawParameterSetter](ctx context.Context, name ObjectIdentifier, key, value string, newReq func() Req, alter func(context.Context, ID, Req) error) (bool, error) {
+	id, ok := name.(ID)
+	if !ok {
+		return false, nil
+	}
+	req := newReq()
+	handled, doAlter, err := catalogParameterResult(req.SetParameterFromRaw(key, value))
+	if !doAlter {
+		return handled, err
+	}
+	return true, alter(ctx, id, req)
+}
+
+type objectParameterCatalogSetter func(*Client, context.Context, ObjectIdentifier, ObjectParameter, string) (bool, error)
+
+func newObjectParameterCatalogSetter[ID any, Req rawParameterSetter](
+	newReq func() Req,
+	alter func(*Client, context.Context, ID, Req) error,
+) objectParameterCatalogSetter {
+	return func(client *Client, ctx context.Context, name ObjectIdentifier, parameter ObjectParameter, value string) (bool, error) {
+		return catalogSet(ctx, name, string(parameter), value, newReq, func(ctx context.Context, id ID, req Req) error {
+			return alter(client, ctx, id, req)
+		})
+	}
+}
+
+var objectParameterCatalogSetters = map[ObjectType]objectParameterCatalogSetter{
+	ObjectTypeDatabase: newObjectParameterCatalogSetter(
+		NewDatabaseSetRequest,
+		func(client *Client, ctx context.Context, id AccountObjectIdentifier, req *DatabaseSetRequest) error {
+			return client.Databases.Alter(ctx, NewAlterDatabaseRequest(id).WithSet(*req))
+		},
+	),
+	ObjectTypeSchema: newObjectParameterCatalogSetter(
+		NewSchemaSetRequest,
+		func(client *Client, ctx context.Context, id DatabaseObjectIdentifier, req *SchemaSetRequest) error {
+			return client.Schemas.Alter(ctx, NewAlterSchemaRequest(id).WithSet(*req))
+		},
+	),
+	ObjectTypeWarehouse: newObjectParameterCatalogSetter(
+		NewWarehouseSetRequest,
+		func(client *Client, ctx context.Context, id AccountObjectIdentifier, req *WarehouseSetRequest) error {
+			return client.Warehouses.Alter(ctx, NewAlterWarehouseRequest(id).WithSet(*req))
+		},
+	),
+	ObjectTypeUser: newObjectParameterCatalogSetter(
+		NewUserSetRequest,
+		func(client *Client, ctx context.Context, id AccountObjectIdentifier, req *UserSetRequest) error {
+			return client.Users.Alter(ctx, NewAlterUserRequest(id).WithSet(*req))
+		},
+	),
+	ObjectTypeTask: newObjectParameterCatalogSetter(
+		NewTaskSetRequest,
+		func(client *Client, ctx context.Context, id SchemaObjectIdentifier, req *TaskSetRequest) error {
+			return client.Tasks.Alter(ctx, NewAlterTaskRequest(id).WithSet(*req))
+		},
+	),
+	ObjectTypeService: newObjectParameterCatalogSetter(
+		NewServiceSetRequest,
+		func(client *Client, ctx context.Context, id SchemaObjectIdentifier, req *ServiceSetRequest) error {
+			return client.Services.Alter(ctx, NewAlterServiceRequest(id).WithSet(*req))
+		},
+	),
+	ObjectTypeHybridTable: newObjectParameterCatalogSetter(
+		NewHybridTableSetPropertiesRequest,
+		func(client *Client, ctx context.Context, id SchemaObjectIdentifier, req *HybridTableSetPropertiesRequest) error {
+			return client.HybridTables.Alter(ctx, NewAlterHybridTableRequest(id).WithSet(*req))
+		},
+	),
+	ObjectTypeIcebergTable: newObjectParameterCatalogSetter(
+		NewIcebergTableSetPropertiesRequest,
+		func(client *Client, ctx context.Context, id SchemaObjectIdentifier, req *IcebergTableSetPropertiesRequest) error {
+			return client.IcebergTables.Alter(ctx, NewAlterIcebergTableRequest(id).WithSet(*req))
+		},
+	),
+	ObjectTypeFunction: newObjectParameterCatalogSetter(
+		NewFunctionSetRequest,
+		func(client *Client, ctx context.Context, id SchemaObjectIdentifierWithArguments, req *FunctionSetRequest) error {
+			return client.Functions.Alter(ctx, NewAlterFunctionRequest(id).WithSet(*req))
+		},
+	),
+	ObjectTypeProcedure: newObjectParameterCatalogSetter(
+		NewProcedureSetRequest,
+		func(client *Client, ctx context.Context, id SchemaObjectIdentifierWithArguments, req *ProcedureSetRequest) error {
+			return client.Procedures.Alter(ctx, NewAlterProcedureRequest(id).WithSet(*req))
+		},
+	),
+}
+
+func catalogUnset[ID any, Req rawParameterUnsetter](ctx context.Context, name ObjectIdentifier, key string, newReq func() Req, alter func(context.Context, ID, Req) error) (bool, error) {
+	id, ok := name.(ID)
+	if !ok {
+		return false, nil
+	}
+	req := newReq()
+	handled, doAlter, err := catalogParameterResult(req.UnsetParameterFromRaw(key))
+	if !doAlter {
+		return handled, err
+	}
+	return true, alter(ctx, id, req)
+}
+
+type objectParameterCatalogUnsetter func(*Client, context.Context, ObjectIdentifier, ObjectParameter) (bool, error)
+
+func newObjectParameterCatalogUnsetter[ID any, Req rawParameterUnsetter](
+	newReq func() Req,
+	alter func(*Client, context.Context, ID, Req) error,
+) objectParameterCatalogUnsetter {
+	return func(client *Client, ctx context.Context, name ObjectIdentifier, parameter ObjectParameter) (bool, error) {
+		return catalogUnset(ctx, name, string(parameter), newReq, func(ctx context.Context, id ID, req Req) error {
+			return alter(client, ctx, id, req)
+		})
+	}
+}
+
+var objectParameterCatalogUnsetters = map[ObjectType]objectParameterCatalogUnsetter{
+	ObjectTypeDatabase: newObjectParameterCatalogUnsetter(
+		NewDatabaseUnsetRequest,
+		func(client *Client, ctx context.Context, id AccountObjectIdentifier, req *DatabaseUnsetRequest) error {
+			return client.Databases.Alter(ctx, NewAlterDatabaseRequest(id).WithUnset(*req))
+		},
+	),
+	ObjectTypeSchema: newObjectParameterCatalogUnsetter(
+		NewSchemaUnsetRequest,
+		func(client *Client, ctx context.Context, id DatabaseObjectIdentifier, req *SchemaUnsetRequest) error {
+			return client.Schemas.Alter(ctx, NewAlterSchemaRequest(id).WithUnset(*req))
+		},
+	),
+	ObjectTypeWarehouse: newObjectParameterCatalogUnsetter(
+		NewWarehouseUnsetRequest,
+		func(client *Client, ctx context.Context, id AccountObjectIdentifier, req *WarehouseUnsetRequest) error {
+			return client.Warehouses.Alter(ctx, NewAlterWarehouseRequest(id).WithUnset(*req))
+		},
+	),
+	ObjectTypeUser: newObjectParameterCatalogUnsetter(
+		NewUserUnsetRequest,
+		func(client *Client, ctx context.Context, id AccountObjectIdentifier, req *UserUnsetRequest) error {
+			return client.Users.Alter(ctx, NewAlterUserRequest(id).WithUnset(*req))
+		},
+	),
+	ObjectTypeTask: newObjectParameterCatalogUnsetter(
+		NewTaskUnsetRequest,
+		func(client *Client, ctx context.Context, id SchemaObjectIdentifier, req *TaskUnsetRequest) error {
+			return client.Tasks.Alter(ctx, NewAlterTaskRequest(id).WithUnset(*req))
+		},
+	),
+	ObjectTypeService: newObjectParameterCatalogUnsetter(
+		NewServiceUnsetRequest,
+		func(client *Client, ctx context.Context, id SchemaObjectIdentifier, req *ServiceUnsetRequest) error {
+			return client.Services.Alter(ctx, NewAlterServiceRequest(id).WithUnset(*req))
+		},
+	),
+	ObjectTypeHybridTable: newObjectParameterCatalogUnsetter(
+		NewHybridTableUnsetPropertiesRequest,
+		func(client *Client, ctx context.Context, id SchemaObjectIdentifier, req *HybridTableUnsetPropertiesRequest) error {
+			return client.HybridTables.Alter(ctx, NewAlterHybridTableRequest(id).WithUnset(*req))
+		},
+	),
+	ObjectTypeIcebergTable: newObjectParameterCatalogUnsetter(
+		NewIcebergTableUnsetPropertiesRequest,
+		func(client *Client, ctx context.Context, id SchemaObjectIdentifier, req *IcebergTableUnsetPropertiesRequest) error {
+			return client.IcebergTables.Alter(ctx, NewAlterIcebergTableRequest(id).WithUnset(*req))
+		},
+	),
+	ObjectTypeFunction: newObjectParameterCatalogUnsetter(
+		NewFunctionUnsetRequest,
+		func(client *Client, ctx context.Context, id SchemaObjectIdentifierWithArguments, req *FunctionUnsetRequest) error {
+			return client.Functions.Alter(ctx, NewAlterFunctionRequest(id).WithUnset(*req))
+		},
+	),
+	ObjectTypeProcedure: newObjectParameterCatalogUnsetter(
+		NewProcedureUnsetRequest,
+		func(client *Client, ctx context.Context, id SchemaObjectIdentifierWithArguments, req *ProcedureUnsetRequest) error {
+			return client.Procedures.Alter(ctx, NewAlterProcedureRequest(id).WithUnset(*req))
+		},
+	),
+}
+
+func (v *parameters) SetObjectParameterOnObjectViaCatalog(ctx context.Context, object Object, parameter ObjectParameter, value string) (bool, error) {
+	setter, ok := objectParameterCatalogSetters[object.ObjectType]
+	if !ok {
+		return false, nil
+	}
+	return setter(v.client, ctx, object.Name, parameter, value)
+}
+
+func (v *parameters) UnsetObjectParameterOnObjectViaCatalog(ctx context.Context, object Object, parameter ObjectParameter) (bool, error) {
+	unsetter, ok := objectParameterCatalogUnsetters[object.ObjectType]
+	if !ok {
+		return false, nil
+	}
+	return unsetter(v.client, ctx, object.Name, parameter)
+}
+
+func (v *parameters) SetObjectParameterOnAccountViaCatalog(ctx context.Context, parameter ObjectParameter, value string) (bool, error) {
+	req := NewAccountParametersRequest()
+	handled, alter, err := catalogParameterResult(req.SetParameterFromRaw(string(parameter), value))
+	if !alter {
+		return handled, err
+	}
+	return true, v.client.Accounts.Alter(ctx, NewAlterAccountRequest().WithSet(*NewAccountSetRequest().WithParameters(*req)))
+}
+
+func (v *parameters) UnsetObjectParameterOnAccountViaCatalog(ctx context.Context, parameter ObjectParameter) (bool, error) {
+	req := NewAccountParametersUnsetRequest()
+	handled, alter, err := catalogParameterResult(req.UnsetParameterFromRaw(string(parameter)))
+	if !alter {
+		return handled, err
+	}
+	return true, v.client.Accounts.Alter(ctx, NewAlterAccountRequest().WithUnset(*NewAccountUnsetRequest().WithParameters(*req)))
+}
+
 func (v *SessionParameters) additionalValidations() error {
 	var errs []error
 	// Do not validate input and output formats, because there are a lot of them, and may be not supported in Go itself.

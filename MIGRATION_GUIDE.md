@@ -59,6 +59,33 @@ No configuration changes are required for pipes that use a commercial SNS ARN. A
 
 ## v2.21.x ➞ v2.22.0
 
+### *(new feature)* Opt-in experiment: parse `snowflake_object_parameter` values on set
+
+We added the `OBJECT_PARAMETER_PARSE_ON_SET` opt-in experiment (`experimental_features_enabled = ["OBJECT_PARAMETER_PARSE_ON_SET"]`). It changes how `snowflake_object_parameter` handles the `value` field.
+
+Without the experiment, `value` is sent as a raw SQL token. You supply any quoting, and a value that does not match the parameter is not checked by the provider. Values with hyphens fail, and simple values are case-folded (e.g. `"en_US"` is stored and read back as `"EN_US"`, which shows up as a perpetual plan diff).
+
+With the experiment, covered parameters are parsed with the same rules as the typed SDK fields. A value that does not match the parameter fails in the provider. String values are quoted by the provider, so the same configuration is stored as written. For example, setting `DEFAULT_DDL_COLLATION`:
+
+```hcl
+resource "snowflake_object_parameter" "example" {
+  key               = "DEFAULT_DDL_COLLATION"
+  value             = "en-ci-upper"
+  object_type       = "DATABASE"
+  object_identifier {
+    name = snowflake_database.example.name
+  }
+}
+```
+
+Identifier-typed parameters (e.g. a parameter referencing a network policy or catalog by name) stay a bare name in configuration. Only the SQL the provider builds internally changes, from a bare token to a quoted identifier. Numeric and boolean values need no quoting at all, with or without the experiment.
+
+Covered today: account-level (`on_account = true`) parameters and Database, Schema, Warehouse, User, Task, Service, Hybrid Table, and Iceberg Table. Account-level parameters already parse values this way. A parameter or object type that is not covered yet keeps the previous behavior, including Function and Procedure, because this resource does not capture argument types.
+
+By default (experiment disabled), the resource keeps its current behavior — this is a zero behavior change for existing configurations.
+
+Newly added Snowflake parameters and object types keep the previous behavior until they are covered. The same pattern is already available for `snowflake_account_parameter` via the `ACCOUNT_PARAMETER_CATALOG_WRITE_PATH` experiment.
+
 ### *(new feature)* `optimized_refresh` and `rpo_assurance` on `snowflake_failover_group`
 
 We added optional `optimized_refresh` and `rpo_assurance` fields to the preview [`snowflake_failover_group`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/failover_group) resource ([#5237](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5237)). They map to Snowflake Optimized Refresh and RPO Assurance on the primary failover group only (`from_replica` cannot set them).

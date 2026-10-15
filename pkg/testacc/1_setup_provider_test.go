@@ -65,6 +65,7 @@ var (
 	s3StageProviderFactory                                 = providerFactoryUsingCache("StageExternalS3")
 	enabledByDefaultExperimentsDisabledProviderFactory     = providerFactoryUsingCache("EnabledByDefaultExperimentsDisabled")
 	objectParameterUnsetOnDeleteProviderFactory            = providerFactoryUsingCache("ObjectParameterUnsetOnDelete")
+	objectParameterParseOnSetProviderFactory               = providerFactoryUsingCache("ObjectParameterParseOnSet")
 	grantAccountRoleShowCachingProviderFactory             = providerFactoryUsingCache("GrantAccountRoleShowCaching")
 	accountRoleShowCachingProviderFactory                  = providerFactoryUsingCache("AccountRoleShowCaching")
 	grantsShowCachingProviderFactory                       = providerFactoryUsingCache("GrantsShowCaching")

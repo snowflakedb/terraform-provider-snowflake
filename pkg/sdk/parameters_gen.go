@@ -13,6 +13,10 @@ type Parameters interface {
 	SetObjectParameterOnObject(ctx context.Context, object Object, parameter ObjectParameter, value string) error
 	UnsetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter) error
 	UnsetObjectParameterOnObject(ctx context.Context, object Object, parameter ObjectParameter) error
+	SetObjectParameterOnObjectViaCatalog(ctx context.Context, object Object, parameter ObjectParameter, value string) (bool, error)
+	UnsetObjectParameterOnObjectViaCatalog(ctx context.Context, object Object, parameter ObjectParameter) (bool, error)
+	SetObjectParameterOnAccountViaCatalog(ctx context.Context, parameter ObjectParameter, value string) (bool, error)
+	UnsetObjectParameterOnAccountViaCatalog(ctx context.Context, parameter ObjectParameter) (bool, error)
 	// https://docs.snowflake.com/en/sql-reference/sql/show-parameters
 	ShowParameters(ctx context.Context, opts *ShowParametersOptions) ([]*Parameter, error)
 	ShowAccountParameter(ctx context.Context, parameter AccountParameter) (*Parameter, error)

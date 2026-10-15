@@ -302,6 +302,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.Pipe().Schema,
 	},
 	{
+		name:   "ObjectParameter",
+		schema: resources.ObjectParameter().Schema,
+	},
+	{
 		name:   "OauthIntegrationForCustomClients",
 		schema: resources.OauthIntegrationForCustomClients().Schema,
 	},

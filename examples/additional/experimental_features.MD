@@ -85,6 +85,17 @@ Without this experiment, deleting the resource fetches the parameter's default v
 
 When enabled, the parameter is properly unset, allowing the inherited value from the higher hierarchy level to take effect.
 
+#### OBJECT_PARAMETER_PARSE_ON_SET
+Changes how `snowflake_object_parameter` handles the `value` field for covered parameters.
+
+Without this experiment, `value` is sent as a raw SQL token. You supply any quoting, and a value that does not match the parameter is not checked by the provider.
+
+With this experiment, covered parameters are parsed with the same rules as the typed SDK fields. A value that does not match the parameter fails in the provider. String values are quoted by the provider, so a configuration such as `DEFAULT_DDL_COLLATION = "en-ci-upper"` is stored as written. Identifier parameters stay a bare name in configuration. Numeric and boolean values need no quoting either way.
+
+Covered today: account-level (`on_account = true`) parameters and Database, Schema, Warehouse, User, Task, Service, Hybrid Table, and Iceberg Table. Account-level parameters already parse values this way. A parameter or object type that is not covered yet keeps the previous behavior, including Function and Procedure, because this resource does not capture argument types.
+
+See the migration guide for a detailed view: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#opt-in-experiment-parse-snowflake_object_parameter-values-on-set.
+
 #### AUTHENTICATOR_EXPLICIT_ONLY
 Removes implicit authenticator derivation from other provider configuration fields.
 

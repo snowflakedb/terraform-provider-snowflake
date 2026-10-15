@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -217,4 +218,206 @@ func TestToAccountParameter(t *testing.T) {
 			require.Error(t, err)
 		})
 	}
+}
+
+func TestSetObjectParameterOnObjectViaCatalog(t *testing.T) {
+	cases := []struct {
+		name        string
+		object      Object
+		parameter   ObjectParameter
+		value       string
+		wantHandled bool
+		wantErr     bool
+	}{
+		{
+			name:      "unknown key falls back for warehouse",
+			object:    Object{ObjectType: ObjectTypeWarehouse, Name: NewAccountObjectIdentifier("some_object")},
+			parameter: "DATA_RETENTION_TIME_IN_DAYS",
+			value:     "1",
+		},
+		{
+			name:        "warehouse parse error propagates",
+			object:      Object{ObjectType: ObjectTypeWarehouse, Name: NewAccountObjectIdentifier("some_object")},
+			parameter:   "MAX_CONCURRENCY_LEVEL",
+			value:       "not-an-int",
+			wantHandled: true,
+			wantErr:     true,
+		},
+		{
+			name:      "unknown key falls back for user",
+			object:    Object{ObjectType: ObjectTypeUser, Name: NewAccountObjectIdentifier("some_object")},
+			parameter: "DATA_RETENTION_TIME_IN_DAYS",
+			value:     "1",
+		},
+		{
+			name:        "user parse error propagates",
+			object:      Object{ObjectType: ObjectTypeUser, Name: NewAccountObjectIdentifier("some_object")},
+			parameter:   "ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR",
+			value:       "not-a-bool",
+			wantHandled: true,
+			wantErr:     true,
+		},
+		{
+			name:        "task parse error propagates",
+			object:      Object{ObjectType: ObjectTypeTask, Name: NewSchemaObjectIdentifier("some_db", "some_schema", "some_task")},
+			parameter:   "ABORT_DETACHED_QUERY",
+			value:       "not-a-bool",
+			wantHandled: true,
+			wantErr:     true,
+		},
+		{
+			name:        "service parse error propagates",
+			object:      Object{ObjectType: ObjectTypeService, Name: NewSchemaObjectIdentifier("some_db", "some_schema", "some_service")},
+			parameter:   "SERVICE_CALLER_TOKEN_VALIDITY_SECS",
+			value:       "not-an-int",
+			wantHandled: true,
+			wantErr:     true,
+		},
+		{
+			name:        "hybrid table parse error propagates",
+			object:      Object{ObjectType: ObjectTypeHybridTable, Name: NewSchemaObjectIdentifier("some_db", "some_schema", "some_table")},
+			parameter:   "DATA_RETENTION_TIME_IN_DAYS",
+			value:       "not-an-int",
+			wantHandled: true,
+			wantErr:     true,
+		},
+		{
+			name:        "iceberg table parse error propagates",
+			object:      Object{ObjectType: ObjectTypeIcebergTable, Name: NewSchemaObjectIdentifier("some_db", "some_schema", "some_table")},
+			parameter:   "DATA_RETENTION_TIME_IN_DAYS",
+			value:       "not-an-int",
+			wantHandled: true,
+			wantErr:     true,
+		},
+		{
+			name:      "function without arguments falls back",
+			object:    Object{ObjectType: ObjectTypeFunction, Name: NewSchemaObjectIdentifier("some_db", "some_schema", "some_fn")},
+			parameter: "LOG_LEVEL",
+			value:     "INFO",
+		},
+		{
+			name:        "function parse error propagates",
+			object:      Object{ObjectType: ObjectTypeFunction, Name: NewSchemaObjectIdentifierWithArguments("some_db", "some_schema", "some_fn", DataTypeVARCHAR)},
+			parameter:   "LOG_LEVEL",
+			value:       "not-a-level",
+			wantHandled: true,
+			wantErr:     true,
+		},
+		{
+			name:      "procedure without arguments falls back",
+			object:    Object{ObjectType: ObjectTypeProcedure, Name: NewSchemaObjectIdentifier("some_db", "some_schema", "some_proc")},
+			parameter: "LOG_LEVEL",
+			value:     "INFO",
+		},
+		{
+			name:        "procedure parse error propagates",
+			object:      Object{ObjectType: ObjectTypeProcedure, Name: NewSchemaObjectIdentifierWithArguments("some_db", "some_schema", "some_proc", DataTypeVARCHAR)},
+			parameter:   "ENABLE_CONSOLE_OUTPUT",
+			value:       "not-a-bool",
+			wantHandled: true,
+			wantErr:     true,
+		},
+		{
+			name:      "no catalog writer for table",
+			object:    Object{ObjectType: ObjectTypeTable, Name: NewSchemaObjectIdentifier("some_db", "some_schema", "some_table")},
+			parameter: "DATA_RETENTION_TIME_IN_DAYS",
+			value:     "1",
+		},
+		{
+			name:      "unknown key falls back for database",
+			object:    Object{ObjectType: ObjectTypeDatabase, Name: NewAccountObjectIdentifier("some_db")},
+			parameter: "NOT_A_REAL_PARAMETER",
+			value:     "1",
+		},
+		{
+			name:      "unknown key falls back for schema",
+			object:    Object{ObjectType: ObjectTypeSchema, Name: NewDatabaseObjectIdentifier("some_db", "some_schema")},
+			parameter: "NOT_A_REAL_PARAMETER",
+			value:     "1",
+		},
+		{
+			name:      "wrong identifier type falls back",
+			object:    Object{ObjectType: ObjectTypeDatabase, Name: NewDatabaseObjectIdentifier("some_db", "some_schema")},
+			parameter: "DATA_RETENTION_TIME_IN_DAYS",
+			value:     "1",
+		},
+		{
+			name:        "genuine parse error propagates",
+			object:      Object{ObjectType: ObjectTypeDatabase, Name: NewAccountObjectIdentifier("some_db")},
+			parameter:   "DATA_RETENTION_TIME_IN_DAYS",
+			value:       "not-an-int",
+			wantHandled: true,
+			wantErr:     true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			p := &parameters{client: &Client{}}
+			handled, err := p.SetObjectParameterOnObjectViaCatalog(context.Background(), tc.object, tc.parameter, tc.value)
+			if tc.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+			require.Equal(t, tc.wantHandled, handled)
+		})
+	}
+}
+
+func TestUnsetObjectParameterOnObjectViaCatalog(t *testing.T) {
+	cases := []struct {
+		name        string
+		object      Object
+		parameter   ObjectParameter
+		wantHandled bool
+	}{
+		{name: "unknown key falls back for warehouse", object: Object{ObjectType: ObjectTypeWarehouse, Name: NewAccountObjectIdentifier("some_object")}, parameter: "DATA_RETENTION_TIME_IN_DAYS"},
+		{name: "unknown key falls back for user", object: Object{ObjectType: ObjectTypeUser, Name: NewAccountObjectIdentifier("some_object")}, parameter: "DATA_RETENTION_TIME_IN_DAYS"},
+		{name: "function without arguments falls back", object: Object{ObjectType: ObjectTypeFunction, Name: NewSchemaObjectIdentifier("some_db", "some_schema", "some_fn")}, parameter: "LOG_LEVEL"},
+		{name: "no catalog writer for table", object: Object{ObjectType: ObjectTypeTable, Name: NewSchemaObjectIdentifier("some_db", "some_schema", "some_table")}, parameter: "DATA_RETENTION_TIME_IN_DAYS"},
+		{name: "unknown key falls back for schema", object: Object{ObjectType: ObjectTypeSchema, Name: NewDatabaseObjectIdentifier("some_db", "some_schema")}, parameter: "NOT_A_REAL_PARAMETER"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			p := &parameters{client: &Client{}}
+			handled, err := p.UnsetObjectParameterOnObjectViaCatalog(context.Background(), tc.object, tc.parameter)
+			require.NoError(t, err)
+			require.Equal(t, tc.wantHandled, handled)
+		})
+	}
+}
+
+func TestSetObjectParameterOnAccountViaCatalog(t *testing.T) {
+	cases := []struct {
+		name        string
+		parameter   ObjectParameter
+		value       string
+		wantHandled bool
+		wantErr     bool
+	}{
+		{name: "unknown key falls back", parameter: "NOT_A_REAL_PARAMETER", value: "1"},
+		{name: "genuine parse error propagates", parameter: "MIN_DATA_RETENTION_TIME_IN_DAYS", value: "not-an-int", wantHandled: true, wantErr: true},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			p := &parameters{client: &Client{}}
+			handled, err := p.SetObjectParameterOnAccountViaCatalog(context.Background(), tc.parameter, tc.value)
+			if tc.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+			require.Equal(t, tc.wantHandled, handled)
+		})
+	}
+}
+
+func TestUnsetObjectParameterOnAccountViaCatalog(t *testing.T) {
+	p := &parameters{client: &Client{}}
+	handled, err := p.UnsetObjectParameterOnAccountViaCatalog(context.Background(), ObjectParameter("NOT_A_REAL_PARAMETER"))
+	require.NoError(t, err)
+	require.False(t, handled)
 }

@@ -1238,3 +1238,32 @@ func TestInt_DatabasesCatalogLinked_WithAdditionalDependencies(t *testing.T) {
 			HasExecutionStateNotEmpty())
 	})
 }
+
+func TestInt_DatabasesSetParameterFromRaw_QuotingFix(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	database, databaseCleanup := testClientHelper().Database.CreateDatabase(t)
+	t.Cleanup(databaseCleanup)
+
+	const quotingSensitiveValue = "en-ci-upper"
+
+	setReq := sdk.NewDatabaseSetRequest()
+	err := setReq.SetParameterFromRaw(string(sdk.ObjectParameterDefaultDdlCollation), quotingSensitiveValue)
+	require.NoError(t, err)
+	err = client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(database.ID()).WithSet(*setReq))
+	require.NoError(t, err)
+
+	param, err := client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameterDefaultDdlCollation, sdk.Object{
+		ObjectType: sdk.ObjectTypeDatabase,
+		Name:       database.ID(),
+	})
+	require.NoError(t, err)
+	require.Equal(t, quotingSensitiveValue, param.Value)
+
+	unsetReq := sdk.NewDatabaseUnsetRequest()
+	err = unsetReq.UnsetParameterFromRaw(string(sdk.ObjectParameterDefaultDdlCollation))
+	require.NoError(t, err)
+	err = client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(database.ID()).WithUnset(*unsetReq))
+	require.NoError(t, err)
+}

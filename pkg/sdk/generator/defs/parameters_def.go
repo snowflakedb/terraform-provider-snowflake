@@ -129,6 +129,40 @@ var parametersDef = g.NewInterface(
 		"error",
 	).
 	WithCustomInterfaceMethod(
+		"SetObjectParameterOnObjectViaCatalog",
+		"",
+		[]*g.MethodParameter{
+			g.NewMethodParameter("object", "Object"),
+			g.NewMethodParameter("parameter", "ObjectParameter"),
+			g.NewMethodParameter("value", g.KindString),
+		},
+		"bool", "error",
+	).
+	WithCustomInterfaceMethod(
+		"UnsetObjectParameterOnObjectViaCatalog",
+		"",
+		[]*g.MethodParameter{
+			g.NewMethodParameter("object", "Object"),
+			g.NewMethodParameter("parameter", "ObjectParameter"),
+		},
+		"bool", "error",
+	).
+	WithCustomInterfaceMethod(
+		"SetObjectParameterOnAccountViaCatalog",
+		"",
+		[]*g.MethodParameter{
+			g.NewMethodParameter("parameter", "ObjectParameter"),
+			g.NewMethodParameter("value", g.KindString),
+		},
+		"bool", "error",
+	).
+	WithCustomInterfaceMethod(
+		"UnsetObjectParameterOnAccountViaCatalog",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("parameter", "ObjectParameter")},
+		"bool", "error",
+	).
+	WithCustomInterfaceMethod(
 		"ShowParameters",
 		parametersDoc,
 		[]*g.MethodParameter{g.NewMethodParameter("opts", "*ShowParametersOptions")},
