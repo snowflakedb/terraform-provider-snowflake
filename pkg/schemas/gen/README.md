@@ -13,7 +13,7 @@ sources, merged in `GetShowResultSchemaDetails`:
   by reflect over `pkg/sdk` types.
 - **ssot (opt-in).** Objects with `WithSchema(SchemaShow(), SchemaDescribe())` ([ssot generators](../../../internal/ssot/README.md#generators)). `SchemaShow()` and `SchemaDescribe()` are settings of that entry.
   Fields come from `Show` / `Describe` `Columns` ([ssot SHOW and DESCRIBE](../../../internal/ssot/README.md#show-and-describe)).
-  `defs.All()` is not fed in automatically. Objects stay on the SDK-struct path until they opt in.
+  `defs.All()` is not fed in automatically. Objects stay on the SDK-struct path until they opt in. Opting in removes the struct from `SdkShowResultStructs` in the same change. There is no skip.
 
 Filter names stay `sdk.<Type>` (including the `sdk.` prefix), so `--filter-object-names=sdk.User` and
 `--filter-object-names=sdk.ComputePool` / `sdk.ComputePoolDetails` still work. Duplicate names after the merge panic.

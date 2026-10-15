@@ -30,7 +30,7 @@ It aims to be more readable than using `Config:` with hardcoded string or `Confi
 ### Adding new resource assertions
 Resource assertions can be generated automatically. Inputs are merged in [ResourceAssertionModels](assert/resourceassert/gen/ssot_assert_plugs.go):
 
-- **Resource schema (default).** `allResourceSchemaDefs` in [resource_schema_def.go](assert/resourceassert/gen/resource_schema_def.go), reflected from `resources.X().Schema`. Do not remove an entry from it when opting the assertion into ssot.
+- **Resource schema (default).** `allResourceSchemaDefs` in [resource_schema_def.go](assert/resourceassert/gen/resource_schema_def.go), reflected from `resources.X().Schema`. Model builders use this same list. Leave an entry while model builders still reflect that name. Remove it when both generators take the name from ssot.
 - **ssot (opt-in).** Objects with `WithResourceAssert()` ([ssot generators](../../internal/ssot/README.md#generators)). Fields come from `Attributes` and identity ([ssot attribute](../../internal/ssot/README.md#attribute)), not from SHOW/DESCRIBE [columns](../../internal/ssot/README.md#show-and-describe). `defs.All()` is not fed in automatically. `fully_qualified_name` is emitted. Parameter fields still come from `ParameterDefsForLevel` until those definitions move to ssot.
 
 Filter names are the resource name (`--filter-object-names=ComputePool,Schema`). A name that is both reflected and opted in is taken from ssot.
@@ -57,10 +57,10 @@ Here's a short description of every generated assertion:
 ### Adding new resource show output assertions
 Resource show output assertions can be generated automatically. Inputs are merged in [ShowOutputAssertionDetails](assert/resourceshowoutputassert/gen/ssot_show_output_plugs.go):
 
-- **SDK structs (default).** `GetFilteredSdkObjectDetails` reflects `allStructs` in [sdk_object_def.go](assert/objectassert/gen/sdk_object_def.go). Do not remove an entry from it when opting the assertion into ssot.
+- **SDK structs (default).** `GetFilteredSdkObjectDetails` reflects `allStructs` in [sdk_object_def.go](assert/objectassert/gen/sdk_object_def.go). Snowflake object assertions read the same slice. Leave an entry while object assertions still reflect that name. Remove it when both generators take the name from ssot.
 - **ssot (opt-in).** Objects with `WithShowOutputAssert(ShowOutputShow(), ShowOutputDescribe())` ([ssot generators](../../internal/ssot/README.md#generators)). `ShowOutputShow()` and `ShowOutputDescribe()` are settings of that entry. Fields come from `Columns` ([SHOW and DESCRIBE](../../internal/ssot/README.md#show-and-describe)), not from `Attributes`. `defs.All()` is not fed in automatically.
 
-Filter names stay `sdk.<Type>` (`--filter-object-names=sdk.ComputePool,sdk.ComputePoolDetails,sdk.Schema`). A name that is both reflected and opted in is taken from ssot. A repeated ssot `ObjectName()`, or an ssot name left in the reflected list, panics.
+Filter names stay `sdk.<Type>` (`--filter-object-names=sdk.ComputePool,sdk.ComputePoolDetails,sdk.Schema`). A name that is both reflected and opted in is taken from ssot. The merge skips that reflected name. A repeated ssot `ObjectName()` panics.
 
 Datasource constructors stay on `dataSourceMappingNormalized`. A slice does not get `Has`; that method stays in the ext file.
 
@@ -104,7 +104,7 @@ Snowflake object assertions can be generated automatically. Inputs are merged in
 - **SDK structs (default).** `GetSdkObjectDetails` reflects `allStructs` in [sdk_object_def.go](assert/objectassert/gen/sdk_object_def.go). Show output assertions read the same slice. Leave an entry while show output still reflects that name. Remove it when both generators take the name from ssot.
 - **ssot (opt-in).** Objects with `WithObjectAssert(ObjectAssertShow(), ObjectAssertDescribe())` ([ssot generators](../../internal/ssot/README.md#generators)). `ObjectAssertShow()` and `ObjectAssertDescribe()` are settings of that entry. Fields come from `Columns` ([SHOW and DESCRIBE](../../internal/ssot/README.md#show-and-describe)), not from `Attributes`. `StoredAsText` is ignored. A bool stays `bool`. `defs.All()` is not fed in automatically.
 
-Filter names stay `sdk.<Type>` (`--filter-object-names=sdk.ComputePool,sdk.ComputePoolDetails,sdk.Schema`). A name that is both reflected and opted in is taken from ssot. A repeated ssot `ObjectName()`, or an ssot name left in the reflected list, panics.
+Filter names stay `sdk.<Type>` (`--filter-object-names=sdk.ComputePool,sdk.ComputePoolDetails,sdk.Schema`). A name that is both reflected and opted in is taken from ssot. The merge skips that reflected name. A repeated ssot `ObjectName()` panics.
 
 For an object that stays on the SDK struct, add it to `allStructs`. To add custom (not generated) assertions create file `abc_snowflake_ext.go` in the `objectassert` package. Example would be:
 ```go
@@ -153,7 +153,7 @@ func (w *WarehouseParametersAssert) HasDefaultMaxConcurrencyLevel() *WarehousePa
 ### Adding new resource config model builders
 Resource config model builders can be generated automatically. Inputs are merged in [ModelBuilderModels](config/model/gen/ssot_model_plugs.go):
 
-- **Resource schema (default).** `allResourceSchemaDefs` in [resource_schema_def.go](assert/resourceassert/gen/resource_schema_def.go), reflected from `resources.X().Schema`. Resource assertions use this same list. Do not remove an entry from it when opting the model builder into ssot.
+- **Resource schema (default).** `allResourceSchemaDefs` in [resource_schema_def.go](assert/resourceassert/gen/resource_schema_def.go), reflected from `resources.X().Schema`. Resource assertions use this same list. Leave an entry while resource assertions still reflect that name. Remove it when both generators take the name from ssot.
 - **ssot (opt-in).** Objects with `WithModel()` ([ssot generators](../../internal/ssot/README.md#generators)). Fields come from `Attributes` and identity ([ssot attribute](../../internal/ssot/README.md#attribute)), not from SHOW/DESCRIBE [columns](../../internal/ssot/README.md#show-and-describe). `defs.All()` is not fed in automatically. `fully_qualified_name` is not emitted. Parameter fields still come from `ParameterDefsForLevel` until those definitions move to ssot.
 
 Filter names are the resource name (`--filter-object-names=ComputePool,Schema`). A name that is both reflected and opted in is taken from ssot.
