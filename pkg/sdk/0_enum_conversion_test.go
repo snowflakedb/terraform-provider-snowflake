@@ -48,12 +48,24 @@ func (p typedEnumTestProvider[T]) RunTest(t *testing.T) {
 	}
 
 	for _, v := range []string{"", "foo"} {
+		if p.hasValue(v) {
+			continue
+		}
 		t.Run(fmt.Sprintf("%s invalid: %s", p.enumName, v), func(t *testing.T) {
 			_, err := p.conversionFunc(v)
 
 			require.Error(t, err)
 		})
 	}
+}
+
+func (p typedEnumTestProvider[T]) hasValue(s string) bool {
+	for _, v := range p.allValues {
+		if string(v) == s {
+			return true
+		}
+	}
+	return false
 }
 
 func Test_AllEnumConversions(t *testing.T) {

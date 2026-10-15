@@ -39,13 +39,13 @@ func TestInt_ContextQueryTags(t *testing.T) {
 	// set query_tag on session level
 	sessionQueryTag := "session query tag"
 	require.NoError(t, client.Sessions.Alter(ctx, sdk.NewAlterSessionRequest().WithSet(sdk.SessionSetRequest{
-		SessionParameters: &sdk.SessionParameters{
+		SessionParameters: &sdk.SessionParametersRequest{
 			QueryTag: sdk.String(sessionQueryTag),
 		},
 	})))
 	t.Cleanup(func() {
 		require.NoError(t, client.Sessions.Alter(ctx, sdk.NewAlterSessionRequest().WithUnset(sdk.SessionUnsetRequest{
-			SessionParametersUnset: &sdk.SessionParametersUnset{
+			SessionParametersUnset: &sdk.SessionParametersUnsetRequest{
 				QueryTag: sdk.Bool(true),
 			},
 		})))

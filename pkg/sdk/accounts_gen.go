@@ -214,7 +214,6 @@ type AlterAccountOptions struct {
 
 type AccountSet struct {
 	Parameters               *AccountParameters              `ddl:"list,no_parentheses"`
-	LegacyParameters         *AccountLevelParameters         `ddl:"list,no_parentheses"`
 	ResourceMonitor          *AccountObjectIdentifier        `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
 	PackagesPolicy           *SchemaObjectIdentifier         `ddl:"identifier" sql:"PACKAGES POLICY"`
 	PasswordPolicy           *SchemaObjectIdentifier         `ddl:"identifier" sql:"PASSWORD POLICY"`
@@ -373,13 +372,6 @@ type AccountParameters struct {
 	WeekStart                                                *int                              `ddl:"parameter" sql:"WEEK_START"`
 }
 
-type AccountLevelParameters struct {
-	AccountParameters *LegacyAccountParameters `ddl:"list,no_parentheses"`
-	SessionParameters *SessionParameters       `ddl:"list,no_parentheses"`
-	ObjectParameters  *ObjectParameters        `ddl:"list,no_parentheses"`
-	UserParameters    *UserParameters          `ddl:"list,no_parentheses"`
-}
-
 type AccountSessionPolicySet struct {
 	SessionPolicy      *SchemaObjectIdentifier `ddl:"identifier" sql:"SESSION POLICY"`
 	ForAllPersonUsers  *bool                   `ddl:"keyword" sql:"FOR ALL PERSON USERS"`
@@ -399,7 +391,6 @@ type AccountFeaturePolicySet struct {
 
 type AccountUnset struct {
 	Parameters                *AccountParametersUnset           `ddl:"list,no_parentheses"`
-	LegacyParameters          *AccountLevelParametersUnset      `ddl:"list,no_parentheses"`
 	AuthenticationPolicyUnset *AccountAuthenticationPolicyUnset `ddl:"keyword"`
 	FeaturePolicyUnset        *AccountFeaturePolicyUnset        `ddl:"keyword"`
 	PackagesPolicy            *bool                             `ddl:"keyword" sql:"PACKAGES POLICY"`
@@ -554,13 +545,6 @@ type AccountParametersUnset struct {
 	UserTaskTimeoutMs                                        *bool `ddl:"keyword" sql:"USER_TASK_TIMEOUT_MS"`
 	WeekOfYearPolicy                                         *bool `ddl:"keyword" sql:"WEEK_OF_YEAR_POLICY"`
 	WeekStart                                                *bool `ddl:"keyword" sql:"WEEK_START"`
-}
-
-type AccountLevelParametersUnset struct {
-	AccountParameters *LegacyAccountParametersUnset `ddl:"list,no_parentheses"`
-	SessionParameters *SessionParametersUnset       `ddl:"list,no_parentheses"`
-	ObjectParameters  *ObjectParametersUnset        `ddl:"list,no_parentheses"`
-	UserParameters    *UserParametersUnset          `ddl:"list,no_parentheses"`
 }
 
 type AccountAuthenticationPolicyUnset struct {

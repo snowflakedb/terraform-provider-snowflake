@@ -20,6 +20,7 @@ var (
 	onTask                     = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelTask}
 	onFunctionAndProcedure     = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelFunction, parameterdefs.ParameterLevelProcedure}
 	onLog                      = []parameterdefs.ParameterLevel{parameterdefs.ParameterLevelAccount, parameterdefs.ParameterLevelAccountExt, parameterdefs.ParameterLevelDatabase, parameterdefs.ParameterLevelSchema, parameterdefs.ParameterLevelProject, parameterdefs.ParameterLevelProcedure, parameterdefs.ParameterLevelFunction, parameterdefs.ParameterLevelTable, parameterdefs.ParameterLevelTask}
+	onSession                  = append(slices.Clone(onAccount), parameterdefs.ParameterLevelSession)
 	onUser                     = append(slices.Clone(onAccount), parameterdefs.ParameterLevelSession, parameterdefs.ParameterLevelUser)
 	onUserOnly                 = append(slices.Clone(onAccount), parameterdefs.ParameterLevelUser)
 	onLogUser                  = append(slices.Clone(onLog), parameterdefs.ParameterLevelSession, parameterdefs.ParameterLevelUser)
@@ -40,10 +41,12 @@ var (
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	ActivePythonProfiler = parameterdefs.ParameterDef{
-		SqlName:     "ACTIVE_PYTHON_PROFILER",
-		Kind:        g.KindOfT[sdkcommons.ActivePythonProfiler](),
-		Levels:      onAccount,
-		Description: "Sets the profiler to use for the session when [profiling Python handler code](https://docs.snowflake.com/en/developer-guide/stored-procedure/python/procedure-python-profiler).",
+		SqlName:      "ACTIVE_PYTHON_PROFILER",
+		Kind:         g.KindOfT[sdkcommons.ActivePythonProfiler](),
+		Levels:       onSession,
+		Description:  "Sets the profiler to use for the session when [profiling Python handler code](https://docs.snowflake.com/en/developer-guide/stored-procedure/python/procedure-python-profiler).",
+		DefaultValue: "sdk.ActivePythonProfilerLine",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	AllowBindValuesAccess = parameterdefs.ParameterDef{
 		SqlName:     "ALLOW_BIND_VALUES_ACCESS",
@@ -124,10 +127,12 @@ var (
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	ClientEnableLogInfoStatementParameters = parameterdefs.ParameterDef{
-		SqlName:     "CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS",
-		Kind:        g.KindBool,
-		Levels:      onAccount,
-		Description: "Enables users to log the data values bound to [PreparedStatements](https://docs.snowflake.com/en/developer-guide/jdbc/jdbc-api.html#label-jdbc-api-preparedstatement).",
+		SqlName:      "CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS",
+		Kind:         g.KindBool,
+		Levels:       onSession,
+		Description:  "Enables users to log the data values bound to [PreparedStatements](https://docs.snowflake.com/en/developer-guide/jdbc/jdbc-api.html#label-jdbc-api-preparedstatement).",
+		DefaultValue: "false",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	ClientEncryptionKeySize = parameterdefs.ParameterDef{
 		SqlName:     "CLIENT_ENCRYPTION_KEY_SIZE",
@@ -152,10 +157,12 @@ var (
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	ClientMetadataUseSessionDatabase = parameterdefs.ParameterDef{
-		SqlName:     "CLIENT_METADATA_USE_SESSION_DATABASE",
-		Kind:        g.KindBool,
-		Levels:      onAccount,
-		Description: "For specific ODBC functions and JDBC methods, this parameter can change the default search scope from all databases to the current database. The narrower search typically returns fewer rows and executes more quickly ([more details on the usage](https://docs.snowflake.com/en/sql-reference/parameters#client-metadata-use-session-database)).",
+		SqlName:      "CLIENT_METADATA_USE_SESSION_DATABASE",
+		Kind:         g.KindBool,
+		Levels:       onSession,
+		Description:  "For specific ODBC functions and JDBC methods, this parameter can change the default search scope from all databases to the current database. The narrower search typically returns fewer rows and executes more quickly ([more details on the usage](https://docs.snowflake.com/en/sql-reference/parameters#client-metadata-use-session-database)).",
+		DefaultValue: "false",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	ClientPrefetchThreads = parameterdefs.ParameterDef{
 		SqlName:      "CLIENT_PREFETCH_THREADS",
@@ -202,7 +209,7 @@ var (
 		Kind:         g.KindOfT[sdkcommons.ClientTimestampTypeMapping](),
 		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the [TIMESTAMP_* variation](https://docs.snowflake.com/en/sql-reference/data-types-datetime.html#label-datatypes-timestamp-variations) to use when binding timestamp variables for JDBC or ODBC applications that use the bind API to load data.",
-		DefaultValue: "sdk.ClientTimestampTypeMappingLtz",
+		DefaultValue: "sdk.ClientTimestampTypeMappingTimestampLtz",
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	CortexCodeCliDailyEstCreditLimitPerUser = parameterdefs.ParameterDef{
@@ -236,10 +243,12 @@ var (
 		Description: "Specifies the models that users in the account can access. Use this parameter to allowlist models for all users in the account. If you need to provide specific users with access beyond what you’ve specified in the allowlist, use role-based access control instead. For more information, see [Model allowlist](https://docs.snowflake.com/en/user-guide/snowflake-cortex/aisql.html#label-cortex-llm-allowlist).",
 	}
 	CsvTimestampFormat = parameterdefs.ParameterDef{
-		SqlName:     "CSV_TIMESTAMP_FORMAT",
-		Kind:        g.KindString,
-		Levels:      onAccount,
-		Description: "Specifies the format for TIMESTAMP values in CSV files downloaded from Snowsight. If this parameter is not set, [TIMESTAMP_LTZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-ltz-output-format) will be used for TIMESTAMP_LTZ values, [TIMESTAMP_TZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-tz-output-format) will be used for TIMESTAMP_TZ and [TIMESTAMP_NTZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-ntz-output-format) for TIMESTAMP_NTZ values. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output) or [Download your query results](https://docs.snowflake.com/en/user-guide/ui-snowsight-query.html#label-snowsight-download-query-results).",
+		SqlName:      "CSV_TIMESTAMP_FORMAT",
+		Kind:         g.KindString,
+		Levels:       onSession,
+		Description:  "Specifies the format for TIMESTAMP values in CSV files downloaded from Snowsight. If this parameter is not set, [TIMESTAMP_LTZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-ltz-output-format) will be used for TIMESTAMP_LTZ values, [TIMESTAMP_TZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-tz-output-format) will be used for TIMESTAMP_TZ and [TIMESTAMP_NTZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-ntz-output-format) for TIMESTAMP_NTZ values. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output) or [Download your query results](https://docs.snowflake.com/en/user-guide/ui-snowsight-query.html#label-snowsight-download-query-results).",
+		DefaultValue: "",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	DataMetricSchedule = parameterdefs.ParameterDef{
 		SqlName:      "DATA_METRIC_SCHEDULE",
@@ -380,10 +389,12 @@ var (
 		Description: "Enables or disables the Listing Cross-cloud auto-fulfillment Egress cost optimizer.",
 	}
 	EnableGetDdlUseDataTypeAlias = parameterdefs.ParameterDef{
-		SqlName:     "ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS",
-		Kind:        g.KindBool,
-		Levels:      onAccount,
-		Description: "Specifies whether the output returned by the GET_DDL function contains data type synonyms specified in the original DDL statement. Data type synonyms are also called data type aliases.",
+		SqlName:      "ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS",
+		Kind:         g.KindBool,
+		Levels:       onSession,
+		Description:  "Specifies whether the output returned by the GET_DDL function contains data type synonyms specified in the original DDL statement. Data type synonyms are also called data type aliases.",
+		DefaultValue: "false",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	EnableIcebergMergeOnRead = parameterdefs.ParameterDef{
 		SqlName:      "ENABLE_ICEBERG_MERGE_ON_READ",
@@ -531,7 +542,7 @@ var (
 		Kind:         g.KindOfT[sdkcommons.GeographyOutputFormat](),
 		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Display format for [GEOGRAPHY values](https://docs.snowflake.com/en/sql-reference/data-types-geospatial.html#label-data-types-geography).",
-		DefaultValue: "sdk.GeographyOutputFormatGeoJSON",
+		DefaultValue: "sdk.GeographyOutputFormatGeojson",
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	GeometryOutputFormat = parameterdefs.ParameterDef{
@@ -539,14 +550,16 @@ var (
 		Kind:         g.KindOfT[sdkcommons.GeometryOutputFormat](),
 		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Display format for [GEOMETRY values](https://docs.snowflake.com/en/sql-reference/data-types-geospatial.html#label-data-types-geometry).",
-		DefaultValue: "sdk.GeometryOutputFormatGeoJSON",
+		DefaultValue: "sdk.GeometryOutputFormatGeojson",
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	HybridTableLockTimeout = parameterdefs.ParameterDef{
-		SqlName:     "HYBRID_TABLE_LOCK_TIMEOUT",
-		Kind:        g.KindInt,
-		Levels:      onAccount,
-		Description: "Number of seconds to wait while trying to acquire row-level locks on a hybrid table, before timing out and aborting the statement.",
+		SqlName:      "HYBRID_TABLE_LOCK_TIMEOUT",
+		Kind:         g.KindInt,
+		Levels:       onSession,
+		Description:  "Number of seconds to wait while trying to acquire row-level locks on a hybrid table, before timing out and aborting the statement.",
+		DefaultValue: "3600",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	IcebergMergeOnReadBehavior = parameterdefs.ParameterDef{
 		SqlName:      "ICEBERG_MERGE_ON_READ_BEHAVIOR",
@@ -593,10 +606,12 @@ var (
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	JsTreatIntegerAsBigint = parameterdefs.ParameterDef{
-		SqlName:     "JS_TREAT_INTEGER_AS_BIGINT",
-		Kind:        g.KindBool,
-		Levels:      onAccount,
-		Description: "Specifies how the Snowflake Node.js Driver processes numeric columns that have a scale of zero (0), for example INTEGER or NUMBER(p, 0).",
+		SqlName:      "JS_TREAT_INTEGER_AS_BIGINT",
+		Kind:         g.KindBool,
+		Levels:       onSession,
+		Description:  "Specifies how the Snowflake Node.js Driver processes numeric columns that have a scale of zero (0), for example INTEGER or NUMBER(p, 0).",
+		DefaultValue: "false",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	JsonIndent = parameterdefs.ParameterDef{
 		SqlName:      "JSON_INDENT",
@@ -744,16 +759,20 @@ var (
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	PythonProfilerModules = parameterdefs.ParameterDef{
-		SqlName:     "PYTHON_PROFILER_MODULES",
-		Kind:        g.KindString,
-		Levels:      onAccount,
-		Description: "Specifies the list of Python modules to include in a report when [profiling Python handler code](https://docs.snowflake.com/en/developer-guide/stored-procedure/python/procedure-python-profiler).",
+		SqlName:      "PYTHON_PROFILER_MODULES",
+		Kind:         g.KindString,
+		Levels:       onSession,
+		Description:  "Specifies the list of Python modules to include in a report when [profiling Python handler code](https://docs.snowflake.com/en/developer-guide/stored-procedure/python/procedure-python-profiler).",
+		DefaultValue: "",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	PythonProfilerTargetStage = parameterdefs.ParameterDef{
-		SqlName:     "PYTHON_PROFILER_TARGET_STAGE",
-		Kind:        g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
-		Levels:      onAccount,
-		Description: "Specifies the fully-qualified name of the stage in which to save a report when [profiling Python handler code](https://docs.snowflake.com/en/developer-guide/stored-procedure/python/procedure-python-profiler).",
+		SqlName:      "PYTHON_PROFILER_TARGET_STAGE",
+		Kind:         g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
+		Levels:       onSession,
+		Description:  "Specifies the fully-qualified name of the stage in which to save a report when [profiling Python handler code](https://docs.snowflake.com/en/developer-guide/stored-procedure/python/procedure-python-profiler).",
+		DefaultValue: "",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	QueryTag = parameterdefs.ParameterDef{
 		SqlName:      "QUERY_TAG",
@@ -993,7 +1012,7 @@ var (
 		Kind:         g.KindOfT[sdkcommons.TimestampTypeMapping](),
 		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Specifies the TIMESTAMP_* variation that the TIMESTAMP data type alias maps to.",
-		DefaultValue: "sdk.TimestampTypeMappingNtz",
+		DefaultValue: "sdk.TimestampTypeMappingTimestampNtz",
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	TimestampTzOutputFormat = parameterdefs.ParameterDef{
@@ -1285,4 +1304,26 @@ func AssertionParameterType(kind string) string {
 		return g.KindString
 	}
 	return "sdk." + kind
+}
+
+func parameterNamesForLevels(levels ...parameterdefs.ParameterLevel) []string {
+	names := make([]string, 0)
+	for _, parameter := range AllParameters {
+		if slices.ContainsFunc(levels, func(level parameterdefs.ParameterLevel) bool {
+			return slices.Contains(parameter.Levels, level)
+		}) && !slices.Contains(names, parameter.SqlName) {
+			names = append(names, parameter.SqlName)
+		}
+	}
+	return names
+}
+
+func withAdditionalParameterNames(names []string, parameters ...parameterdefs.ParameterDef) []string {
+	result := slices.Clone(names)
+	for _, parameter := range parameters {
+		if !slices.Contains(result, parameter.SqlName) {
+			result = append(result, parameter.SqlName)
+		}
+	}
+	return result
 }

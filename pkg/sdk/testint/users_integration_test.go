@@ -59,7 +59,7 @@ func TestInt_Users(t *testing.T) {
 				HasPreventUnloadToInternalStages(details.PreventUnloadToInternalStages.Value).
 				HasAbortDetachedQuery(true).
 				HasAutocommit(details.Autocommit.Value).
-				HasBinaryInputFormat(sdk.BinaryInputFormatUTF8).
+				HasBinaryInputFormat(sdk.BinaryInputFormatUtf8).
 				HasBinaryOutputFormat(sdk.BinaryOutputFormatBase64).
 				HasClientMemoryLimit(1024).
 				HasClientMetadataRequestUseConnectionCtx(true).
@@ -68,14 +68,14 @@ func TestInt_Users(t *testing.T) {
 				HasClientResultColumnCaseInsensitive(true).
 				HasClientSessionKeepAlive(true).
 				HasClientSessionKeepAliveHeartbeatFrequency(2400).
-				HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingNtz).
+				HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingTimestampNtz).
 				HasDateInputFormat("YYYY-MM-DD").
 				HasDateOutputFormat("YY-MM-DD").
 				HasEnableUnloadPhysicalTypeOptimization(false).
 				HasErrorOnNondeterministicMerge(false).
 				HasErrorOnNondeterministicUpdate(true).
-				HasGeographyOutputFormat(sdk.GeographyOutputFormatWKB).
-				HasGeometryOutputFormat(sdk.GeometryOutputFormatWKB).
+				HasGeographyOutputFormat(sdk.GeographyOutputFormatWkb).
+				HasGeometryOutputFormat(sdk.GeometryOutputFormatWkb).
 				HasJdbcTreatDecimalAsInt(false).
 				HasJdbcTreatTimestampNtzAsUtc(true).
 				HasJdbcUseSessionTimezone(false).
@@ -100,7 +100,7 @@ func TestInt_Users(t *testing.T) {
 				HasTimestampLtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 				HasTimestampNtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 				HasTimestampOutputFormat("YYYY-MM-DD HH24:MI:SS").
-				HasTimestampTypeMapping(sdk.TimestampTypeMappingLtz).
+				HasTimestampTypeMapping(sdk.TimestampTypeMappingTimestampLtz).
 				HasTimestampTzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 				HasTimezone("Europe/Warsaw").
 				HasTimeInputFormat("HH24:MI").
@@ -992,7 +992,7 @@ func TestInt_Users(t *testing.T) {
 					WithUserType(userType)).
 				WithAbortDetachedQuery(true).
 				WithAutocommit(false).
-				WithBinaryInputFormat(sdk.BinaryInputFormatUTF8).
+				WithBinaryInputFormat(sdk.BinaryInputFormatUtf8).
 				WithBinaryOutputFormat(sdk.BinaryOutputFormatBase64).
 				WithClientMemoryLimit(1024).
 				WithClientMetadataRequestUseConnectionCtx(true).
@@ -1001,14 +1001,14 @@ func TestInt_Users(t *testing.T) {
 				WithClientResultColumnCaseInsensitive(true).
 				WithClientSessionKeepAlive(true).
 				WithClientSessionKeepAliveHeartbeatFrequency(2400).
-				WithClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingNtz).
+				WithClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingTimestampNtz).
 				WithDateInputFormat("YYYY-MM-DD").
 				WithDateOutputFormat("YY-MM-DD").
 				WithEnableUnloadPhysicalTypeOptimization(false).
 				WithErrorOnNondeterministicMerge(false).
 				WithErrorOnNondeterministicUpdate(true).
-				WithGeographyOutputFormat(sdk.GeographyOutputFormatWKB).
-				WithGeometryOutputFormat(sdk.GeometryOutputFormatWKB).
+				WithGeographyOutputFormat(sdk.GeographyOutputFormatWkb).
+				WithGeometryOutputFormat(sdk.GeometryOutputFormatWkb).
 				WithJdbcTreatDecimalAsInt(false).
 				WithJdbcTreatTimestampNtzAsUtc(true).
 				WithJdbcUseSessionTimezone(false).
@@ -1033,7 +1033,7 @@ func TestInt_Users(t *testing.T) {
 				WithTimestampLtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 				WithTimestampNtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 				WithTimestampOutputFormat("YYYY-MM-DD HH24:MI:SS").
-				WithTimestampTypeMapping(sdk.TimestampTypeMappingLtz).
+				WithTimestampTypeMapping(sdk.TimestampTypeMappingTimestampLtz).
 				WithTimestampTzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 				WithTimezone("Europe/Warsaw").
 				WithTimeInputFormat("HH24:MI").
@@ -1876,7 +1876,7 @@ func TestInt_Users(t *testing.T) {
 				WithSet(*sdk.NewUserSetRequest().
 					WithAbortDetachedQuery(true).
 					WithAutocommit(false).
-					WithBinaryInputFormat(sdk.BinaryInputFormatUTF8).
+					WithBinaryInputFormat(sdk.BinaryInputFormatUtf8).
 					WithBinaryOutputFormat(sdk.BinaryOutputFormatBase64).
 					WithClientMemoryLimit(1024).
 					WithClientMetadataRequestUseConnectionCtx(true).
@@ -1885,14 +1885,14 @@ func TestInt_Users(t *testing.T) {
 					WithClientResultColumnCaseInsensitive(true).
 					WithClientSessionKeepAlive(true).
 					WithClientSessionKeepAliveHeartbeatFrequency(2400).
-					WithClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingNtz).
+					WithClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingTimestampNtz).
 					WithDateInputFormat("YYYY-MM-DD").
 					WithDateOutputFormat("YY-MM-DD").
 					WithEnableUnloadPhysicalTypeOptimization(false).
 					WithErrorOnNondeterministicMerge(false).
 					WithErrorOnNondeterministicUpdate(true).
-					WithGeographyOutputFormat(sdk.GeographyOutputFormatWKB).
-					WithGeometryOutputFormat(sdk.GeometryOutputFormatWKB).
+					WithGeographyOutputFormat(sdk.GeographyOutputFormatWkb).
+					WithGeometryOutputFormat(sdk.GeometryOutputFormatWkb).
 					WithJdbcTreatDecimalAsInt(false).
 					WithJdbcTreatTimestampNtzAsUtc(true).
 					WithJdbcUseSessionTimezone(false).
@@ -1917,7 +1917,7 @@ func TestInt_Users(t *testing.T) {
 					WithTimestampLtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 					WithTimestampNtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 					WithTimestampOutputFormat("YYYY-MM-DD HH24:MI:SS").
-					WithTimestampTypeMapping(sdk.TimestampTypeMappingLtz).
+					WithTimestampTypeMapping(sdk.TimestampTypeMappingTimestampLtz).
 					WithTimestampTzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 					WithTimezone("Europe/Warsaw").
 					WithTimeInputFormat("HH24:MI").
@@ -2180,7 +2180,7 @@ func TestInt_Users(t *testing.T) {
 		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
 			WithAbortDetachedQuery(true).
 			WithAutocommit(false).
-			WithBinaryInputFormat(sdk.BinaryInputFormatUTF8).
+			WithBinaryInputFormat(sdk.BinaryInputFormatUtf8).
 			WithBinaryOutputFormat(sdk.BinaryOutputFormatBase64).
 			WithClientMemoryLimit(1024).
 			WithClientMetadataRequestUseConnectionCtx(true).
@@ -2189,14 +2189,14 @@ func TestInt_Users(t *testing.T) {
 			WithClientResultColumnCaseInsensitive(true).
 			WithClientSessionKeepAlive(true).
 			WithClientSessionKeepAliveHeartbeatFrequency(2400).
-			WithClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingNtz).
+			WithClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingTimestampNtz).
 			WithDateInputFormat("YYYY-MM-DD").
 			WithDateOutputFormat("YY-MM-DD").
 			WithEnableUnloadPhysicalTypeOptimization(false).
 			WithErrorOnNondeterministicMerge(false).
 			WithErrorOnNondeterministicUpdate(true).
-			WithGeographyOutputFormat(sdk.GeographyOutputFormatWKB).
-			WithGeometryOutputFormat(sdk.GeometryOutputFormatWKB).
+			WithGeographyOutputFormat(sdk.GeographyOutputFormatWkb).
+			WithGeometryOutputFormat(sdk.GeometryOutputFormatWkb).
 			WithJdbcTreatDecimalAsInt(false).
 			WithJdbcTreatTimestampNtzAsUtc(true).
 			WithJdbcUseSessionTimezone(false).
@@ -2220,7 +2220,7 @@ func TestInt_Users(t *testing.T) {
 			WithTimestampLtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 			WithTimestampNtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 			WithTimestampOutputFormat("YYYY-MM-DD HH24:MI:SS").
-			WithTimestampTypeMapping(sdk.TimestampTypeMappingLtz).
+			WithTimestampTypeMapping(sdk.TimestampTypeMappingTimestampLtz).
 			WithTimestampTzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 			WithTimezone("Europe/Warsaw").
 			WithTimeInputFormat("HH24:MI").

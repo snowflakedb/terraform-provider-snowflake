@@ -57,21 +57,6 @@ func TestUnsetObjectParameterOnObject(t *testing.T) {
 	})
 }
 
-func TestUnsetObjectParameterNetworkPolicyOnAccount(t *testing.T) {
-	opts := &AlterAccountOptions{
-		Unset: &AccountUnset{
-			LegacyParameters: &AccountLevelParametersUnset{
-				ObjectParameters: &ObjectParametersUnset{
-					NetworkPolicy: Bool(true),
-				},
-			},
-		},
-	}
-	t.Run("Unset Account Network Policy", func(t *testing.T) {
-		assertOptsValidAndSqlEqualsf(t, opts, "ALTER ACCOUNT UNSET NETWORK_POLICY")
-	})
-}
-
 func TestUnsetObjectParameterNetworkPolicyOnUser(t *testing.T) {
 	opts := &AlterUserOptions{
 		name: NewAccountObjectIdentifierFromFullyQualifiedName("TEST_USER"),
@@ -85,61 +70,6 @@ func TestUnsetObjectParameterNetworkPolicyOnUser(t *testing.T) {
 }
 
 // Proves https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/3344 is fixed.
-func TestSetAccountParameterEnforceNetworkRulesForInternalStages(t *testing.T) {
-	opts := &AlterAccountOptions{
-		Set: &AccountSet{
-			LegacyParameters: &AccountLevelParameters{
-				AccountParameters: &LegacyAccountParameters{
-					EnforceNetworkRulesForInternalStages: Bool(true),
-				},
-			},
-		},
-	}
-	t.Run("Set Enforce Network Rules for Internal Stages", func(t *testing.T) {
-		assertOptsValidAndSqlEqualsf(t, opts, "ALTER ACCOUNT SET ENFORCE_NETWORK_RULES_FOR_INTERNAL_STAGES = true")
-	})
-}
-
-func TestSetAccountParameterCortexCodeDailyEstCreditLimitPerUser(t *testing.T) {
-	set := func(params *LegacyAccountParameters) *AlterAccountOptions {
-		return &AlterAccountOptions{
-			Set: &AccountSet{
-				LegacyParameters: &AccountLevelParameters{
-					AccountParameters: params,
-				},
-			},
-		}
-	}
-
-	t.Run("CLI: set to -1 (unlimited)", func(t *testing.T) {
-		opts := set(&LegacyAccountParameters{CortexCodeCliDailyEstCreditLimitPerUser: Pointer(-1)})
-		assertOptsValidAndSqlEqualsf(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER = -1")
-	})
-
-	t.Run("Desktop: set to 0 (blocked)", func(t *testing.T) {
-		opts := set(&LegacyAccountParameters{CortexCodeDesktopDailyEstCreditLimitPerUser: Pointer(0)})
-		assertOptsValidAndSqlEqualsf(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER = 0")
-	})
-
-	t.Run("Snowsight: set to a positive cap", func(t *testing.T) {
-		opts := set(&LegacyAccountParameters{CortexCodeSnowsightDailyEstCreditLimitPerUser: Pointer(10)})
-		assertOptsValidAndSqlEqualsf(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER = 10")
-	})
-
-	t.Run("Unset CLI limit", func(t *testing.T) {
-		opts := &AlterAccountOptions{
-			Unset: &AccountUnset{
-				LegacyParameters: &AccountLevelParametersUnset{
-					AccountParameters: &LegacyAccountParametersUnset{
-						CortexCodeCliDailyEstCreditLimitPerUser: Bool(true),
-					},
-				},
-			},
-		}
-		assertOptsValidAndSqlEqualsf(t, opts, "ALTER ACCOUNT UNSET CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER")
-	})
-}
-
 func TestToAccountParameter(t *testing.T) {
 	type test struct {
 		input string

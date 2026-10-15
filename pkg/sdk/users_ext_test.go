@@ -551,14 +551,14 @@ func Test_User_ToGeographyOutputFormat(t *testing.T) {
 
 	valid := []test{
 		// case insensitive.
-		{input: "geojson", want: GeographyOutputFormatGeoJSON},
+		{input: "geojson", want: GeographyOutputFormatGeojson},
 
 		// Supported Values
-		{input: string(GeographyOutputFormatGeoJSON), want: GeographyOutputFormatGeoJSON},
-		{input: string(GeographyOutputFormatWKT), want: GeographyOutputFormatWKT},
-		{input: string(GeographyOutputFormatWKB), want: GeographyOutputFormatWKB},
-		{input: string(GeographyOutputFormatEWKT), want: GeographyOutputFormatEWKT},
-		{input: string(GeographyOutputFormatEWKB), want: GeographyOutputFormatEWKB},
+		{input: string(GeographyOutputFormatGeojson), want: GeographyOutputFormatGeojson},
+		{input: string(GeographyOutputFormatWkt), want: GeographyOutputFormatWkt},
+		{input: string(GeographyOutputFormatWkb), want: GeographyOutputFormatWkb},
+		{input: string(GeographyOutputFormatEwkt), want: GeographyOutputFormatEwkt},
+		{input: string(GeographyOutputFormatEwkb), want: GeographyOutputFormatEwkb},
 	}
 
 	invalid := []test{
@@ -594,14 +594,14 @@ func Test_User_ToGeometryOutputFormat(t *testing.T) {
 
 	valid := []test{
 		// case insensitive.
-		{input: "geojson", want: GeometryOutputFormatGeoJSON},
+		{input: "geojson", want: GeometryOutputFormatGeojson},
 
 		// Supported Values
-		{input: string(GeometryOutputFormatGeoJSON), want: GeometryOutputFormatGeoJSON},
-		{input: string(GeometryOutputFormatWKT), want: GeometryOutputFormatWKT},
-		{input: string(GeometryOutputFormatWKB), want: GeometryOutputFormatWKB},
-		{input: string(GeometryOutputFormatEWKT), want: GeometryOutputFormatEWKT},
-		{input: string(GeometryOutputFormatEWKB), want: GeometryOutputFormatEWKB},
+		{input: string(GeometryOutputFormatGeojson), want: GeometryOutputFormatGeojson},
+		{input: string(GeometryOutputFormatWkt), want: GeometryOutputFormatWkt},
+		{input: string(GeometryOutputFormatWkb), want: GeometryOutputFormatWkb},
+		{input: string(GeometryOutputFormatEwkt), want: GeometryOutputFormatEwkt},
+		{input: string(GeometryOutputFormatEwkb), want: GeometryOutputFormatEwkb},
 	}
 
 	invalid := []test{
@@ -642,7 +642,7 @@ func Test_User_ToBinaryInputFormat(t *testing.T) {
 		// Supported Values
 		{input: string(BinaryInputFormatHex), want: BinaryInputFormatHex},
 		{input: string(BinaryInputFormatBase64), want: BinaryInputFormatBase64},
-		{input: string(BinaryInputFormatUTF8), want: BinaryInputFormatUTF8},
+		{input: string(BinaryInputFormatUtf8), want: BinaryInputFormatUtf8},
 	}
 
 	invalid := []test{
@@ -718,11 +718,11 @@ func Test_User_ToClientTimestampTypeMapping(t *testing.T) {
 
 	valid := []test{
 		// case insensitive.
-		{input: "timestamp_ltz", want: ClientTimestampTypeMappingLtz},
+		{input: "timestamp_ltz", want: ClientTimestampTypeMappingTimestampLtz},
 
 		// Supported Values
-		{input: string(ClientTimestampTypeMappingLtz), want: ClientTimestampTypeMappingLtz},
-		{input: string(ClientTimestampTypeMappingNtz), want: ClientTimestampTypeMappingNtz},
+		{input: string(ClientTimestampTypeMappingTimestampLtz), want: ClientTimestampTypeMappingTimestampLtz},
+		{input: string(ClientTimestampTypeMappingTimestampNtz), want: ClientTimestampTypeMappingTimestampNtz},
 	}
 
 	invalid := []test{
@@ -758,12 +758,12 @@ func Test_User_ToTimestampTypeMapping(t *testing.T) {
 
 	valid := []test{
 		// case insensitive.
-		{input: "timestamp_ltz", want: TimestampTypeMappingLtz},
+		{input: "timestamp_ltz", want: TimestampTypeMappingTimestampLtz},
 
 		// Supported Values
-		{input: string(TimestampTypeMappingLtz), want: TimestampTypeMappingLtz},
-		{input: string(TimestampTypeMappingNtz), want: TimestampTypeMappingNtz},
-		{input: string(TimestampTypeMappingTz), want: TimestampTypeMappingTz},
+		{input: string(TimestampTypeMappingTimestampLtz), want: TimestampTypeMappingTimestampLtz},
+		{input: string(TimestampTypeMappingTimestampNtz), want: TimestampTypeMappingTimestampNtz},
+		{input: string(TimestampTypeMappingTimestampTz), want: TimestampTypeMappingTimestampTz},
 	}
 
 	invalid := []test{

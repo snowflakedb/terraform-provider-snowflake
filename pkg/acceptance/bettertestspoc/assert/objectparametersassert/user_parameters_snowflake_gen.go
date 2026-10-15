@@ -1081,7 +1081,7 @@ func (u *UserParametersAssert) HasDefaultClientSessionKeepAliveHeartbeatFrequenc
 }
 
 func (u *UserParametersAssert) HasDefaultClientTimestampTypeMappingValueExplicit() *UserParametersAssert {
-	return u.HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingLtz)
+	return u.HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingTimestampLtz)
 }
 
 func (u *UserParametersAssert) HasDefaultDateInputFormatValueExplicit() *UserParametersAssert {
@@ -1109,11 +1109,11 @@ func (u *UserParametersAssert) HasDefaultErrorOnNondeterministicUpdateValueExpli
 }
 
 func (u *UserParametersAssert) HasDefaultGeographyOutputFormatValueExplicit() *UserParametersAssert {
-	return u.HasGeographyOutputFormat(sdk.GeographyOutputFormatGeoJSON)
+	return u.HasGeographyOutputFormat(sdk.GeographyOutputFormatGeojson)
 }
 
 func (u *UserParametersAssert) HasDefaultGeometryOutputFormatValueExplicit() *UserParametersAssert {
-	return u.HasGeometryOutputFormat(sdk.GeometryOutputFormatGeoJSON)
+	return u.HasGeometryOutputFormat(sdk.GeometryOutputFormatGeojson)
 }
 
 func (u *UserParametersAssert) HasDefaultJdbcTreatDecimalAsIntValueExplicit() *UserParametersAssert {
@@ -1225,7 +1225,7 @@ func (u *UserParametersAssert) HasDefaultTimestampOutputFormatValueExplicit() *U
 }
 
 func (u *UserParametersAssert) HasDefaultTimestampTypeMappingValueExplicit() *UserParametersAssert {
-	return u.HasTimestampTypeMapping(sdk.TimestampTypeMappingNtz)
+	return u.HasTimestampTypeMapping(sdk.TimestampTypeMappingTimestampNtz)
 }
 
 func (u *UserParametersAssert) HasDefaultTimestampTzOutputFormatValueExplicit() *UserParametersAssert {

@@ -134,11 +134,6 @@ func (s *AccountSetRequest) WithParameters(parameters AccountParametersRequest) 
 	return s
 }
 
-func (s *AccountSetRequest) WithLegacyParameters(legacyParameters AccountLevelParametersRequest) *AccountSetRequest {
-	s.LegacyParameters = &legacyParameters
-	return s
-}
-
 func (s *AccountSetRequest) WithResourceMonitor(resourceMonitor AccountObjectIdentifier) *AccountSetRequest {
 	s.ResourceMonitor = &resourceMonitor
 	return s
@@ -1204,31 +1199,6 @@ func (s *AccountParametersRequest) SetParameterFromRaw(key string, value string)
 	}
 }
 
-func NewAccountLevelParametersRequest() *AccountLevelParametersRequest {
-	s := AccountLevelParametersRequest{}
-	return &s
-}
-
-func (s *AccountLevelParametersRequest) WithAccountParameters(accountParameters LegacyAccountParameters) *AccountLevelParametersRequest {
-	s.AccountParameters = &accountParameters
-	return s
-}
-
-func (s *AccountLevelParametersRequest) WithSessionParameters(sessionParameters SessionParameters) *AccountLevelParametersRequest {
-	s.SessionParameters = &sessionParameters
-	return s
-}
-
-func (s *AccountLevelParametersRequest) WithObjectParameters(objectParameters ObjectParameters) *AccountLevelParametersRequest {
-	s.ObjectParameters = &objectParameters
-	return s
-}
-
-func (s *AccountLevelParametersRequest) WithUserParameters(userParameters UserParameters) *AccountLevelParametersRequest {
-	s.UserParameters = &userParameters
-	return s
-}
-
 func NewAccountSessionPolicySetRequest() *AccountSessionPolicySetRequest {
 	s := AccountSessionPolicySetRequest{}
 	return &s
@@ -1286,11 +1256,6 @@ func NewAccountUnsetRequest() *AccountUnsetRequest {
 
 func (s *AccountUnsetRequest) WithParameters(parameters AccountParametersUnsetRequest) *AccountUnsetRequest {
 	s.Parameters = &parameters
-	return s
-}
-
-func (s *AccountUnsetRequest) WithLegacyParameters(legacyParameters AccountLevelParametersUnsetRequest) *AccountUnsetRequest {
-	s.LegacyParameters = &legacyParameters
 	return s
 }
 
@@ -2348,31 +2313,6 @@ func (s *AccountParametersUnsetRequest) UnsetParameterFromRaw(key string) error 
 		return ErrParameterNotSupported
 	}
 	return nil
-}
-
-func NewAccountLevelParametersUnsetRequest() *AccountLevelParametersUnsetRequest {
-	s := AccountLevelParametersUnsetRequest{}
-	return &s
-}
-
-func (s *AccountLevelParametersUnsetRequest) WithAccountParameters(accountParameters LegacyAccountParametersUnset) *AccountLevelParametersUnsetRequest {
-	s.AccountParameters = &accountParameters
-	return s
-}
-
-func (s *AccountLevelParametersUnsetRequest) WithSessionParameters(sessionParameters SessionParametersUnset) *AccountLevelParametersUnsetRequest {
-	s.SessionParameters = &sessionParameters
-	return s
-}
-
-func (s *AccountLevelParametersUnsetRequest) WithObjectParameters(objectParameters ObjectParametersUnset) *AccountLevelParametersUnsetRequest {
-	s.ObjectParameters = &objectParameters
-	return s
-}
-
-func (s *AccountLevelParametersUnsetRequest) WithUserParameters(userParameters UserParametersUnset) *AccountLevelParametersUnsetRequest {
-	s.UserParameters = &userParameters
-	return s
 }
 
 func NewAccountAuthenticationPolicyUnsetRequest() *AccountAuthenticationPolicyUnsetRequest {

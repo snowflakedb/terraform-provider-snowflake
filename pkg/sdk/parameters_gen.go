@@ -9,8 +9,6 @@ import (
 type Parameters interface {
 	SetAccountParameter(ctx context.Context, parameter AccountParameter, value string) error
 	UnsetAccountParameter(ctx context.Context, parameter AccountParameter) error
-	SetSessionParameterOnAccount(ctx context.Context, parameter SessionParameter, value string) error
-	SetSessionParameterOnUser(ctx context.Context, userID AccountObjectIdentifier, parameter SessionParameter, value string) error
 	SetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter, value string) error
 	SetObjectParameterOnObject(ctx context.Context, object Object, parameter ObjectParameter, value string) error
 	UnsetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter) error

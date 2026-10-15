@@ -14,6 +14,9 @@ type Enum struct {
 	NamePlural string
 	Values     []string
 	Aliases    map[string][]string
+	// explicitNames maps a SQL value to a constant suffix supplied by WithValue.
+	// The suffix is concatenated as-is, without SnakeCaseToCamel.
+	explicitNames map[string]string
 }
 
 func NewEnum(name, namePlural string, values ...string) *Enum {
@@ -23,6 +26,36 @@ func NewEnum(name, namePlural string, values ...string) *Enum {
 		Values:     values,
 		Aliases:    make(map[string][]string),
 	}
+}
+
+// WithValue appends an enum value whose Go constant suffix is fieldName.
+// The suffix is concatenated as-is (Enum name + fieldName), skipping SnakeCaseToCamel.
+// Use this when the SQL value cannot produce the desired constant name, including the empty string.
+func (e *Enum) WithValue(fieldName, value string) *Enum {
+	if fieldName == "" {
+		log.Panicf("WithValue: field name must not be empty for enum %s", e.Name)
+	}
+	if slices.Contains(e.Values, value) {
+		log.Panicf("WithValue: value %q is already a declared enum value in %s; declared values: %v", value, e.Name, e.Values)
+	}
+	constantName := e.Name + fieldName
+	for _, existing := range e.Values {
+		if e.valueName(existing) == constantName {
+			log.Panicf("WithValue: constant name %s is already used by value %q in enum %s", constantName, existing, e.Name)
+		}
+	}
+	if e.explicitNames == nil {
+		e.explicitNames = make(map[string]string)
+	}
+	e.explicitNames[value] = fieldName
+	e.Values = append(e.Values, value)
+	return e
+}
+
+// WithEmptyValue appends an enum value whose SQL form is the empty string.
+// fieldName is the constant suffix passed through to WithValue.
+func (e *Enum) WithEmptyValue(fieldName string) *Enum {
+	return e.WithValue(fieldName, "")
 }
 
 // WithAliases adds aliases for a canonical enum value.
@@ -81,6 +114,9 @@ func (e *Enum) KindPtr() string {
 // valueName returns the constant name for a given enum value.
 // E.g. for type ProgrammaticAccessTokenStatus and value "ACTIVE_VALUE" -> "ProgrammaticAccessTokenStatusActiveValue".
 func (e *Enum) valueName(value string) string {
+	if fieldName, ok := e.explicitNames[value]; ok {
+		return e.Name + fieldName
+	}
 	value = strings.ReplaceAll(value, " ", "_")
 	value = strings.ReplaceAll(value, "-", "_")
 	return e.Name + genhelpers.SnakeCaseToCamel(value)

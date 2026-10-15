@@ -33,31 +33,6 @@ func (opts *AccountSet) additionalValidations() error {
 	return errors.Join(errs...)
 }
 
-func (opts *AccountLevelParameters) additionalValidations() error {
-	var errs []error
-	if valueSet(opts.AccountParameters) {
-		if err := opts.AccountParameters.validate(); err != nil {
-			errs = append(errs, err)
-		}
-	}
-	if valueSet(opts.SessionParameters) {
-		if err := opts.SessionParameters.validate(); err != nil {
-			errs = append(errs, err)
-		}
-	}
-	if valueSet(opts.ObjectParameters) {
-		if err := opts.ObjectParameters.validate(); err != nil {
-			errs = append(errs, err)
-		}
-	}
-	if valueSet(opts.UserParameters) {
-		if err := opts.UserParameters.validate(); err != nil {
-			errs = append(errs, err)
-		}
-	}
-	return errors.Join(errs...)
-}
-
 func (opts *AccountUnset) additionalValidations() error {
 	return nil
 }
