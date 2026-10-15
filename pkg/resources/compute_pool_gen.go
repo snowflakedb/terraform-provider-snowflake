@@ -47,7 +47,7 @@ func ImportComputePool(ctx context.Context, d *tfschema.ResourceData, meta any) 
 }
 
 func CreateComputePool(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := computePoolParseIdFromConfigExt(d)
+	id, err := computePoolParseIdFromConfig(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -120,6 +120,10 @@ func UpdateComputePool(ctx context.Context, d *tfschema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 	return ReadComputePoolFunc(false)(ctx, d, meta)
+}
+
+func computePoolParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
+	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
 }
 
 func computePoolNewCreateRequest(d *tfschema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateComputePoolRequest, error) {

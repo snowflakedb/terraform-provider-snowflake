@@ -203,6 +203,7 @@ var ComputePool = ssot.Object{
 		ssot.WithSdk(ssot.SdkShow(), ssot.SdkDescribe()),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
+		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithNewCreateRequest(ssot.Generated()),
 		ssot.WithApplyCreateOptionals(ssot.Generated()),
 	},

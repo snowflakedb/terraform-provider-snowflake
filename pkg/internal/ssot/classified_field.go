@@ -17,7 +17,8 @@ type ClassifiedField struct {
 	genhelpers.SdkValueType
 }
 
-// IdentityFields returns the required name fields for obj.IdType.
+// IdentityFields returns the required name fields for obj.IdType,
+// in New<IdType> argument order.
 func IdentityFields(obj Object) []ClassifiedField {
 	name := stringField("name", true)
 	database := stringField("database", true)

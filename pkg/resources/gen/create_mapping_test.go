@@ -4,17 +4,26 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_ComputePoolCreateMappings_renderCreateFuncs(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.ComputePool}, nil, nil)
+	require.True(t, model.Hooks.ParseIdFromConfig.Generate)
 	require.True(t, model.Hooks.NewCreateRequest.Generate)
 	require.True(t, model.Hooks.ApplyCreateOptionals.Generate)
 	require.False(t, model.Hooks.ApplySetUnset.Generate)
+	require.Equal(t, []string{"name"}, model.IdConfigFields())
 	require.Equal(t, "for_application", model.Attributes[0].Name)
 	require.Equal(t, "accountObjectIdentifierAttributeCreateBuilder", model.Attributes[0].CreateOptionalCall.Helper)
+
+	require.Equal(t, "id, err := computePoolParseIdFromConfig(d)\n", renderTemplate(t, "parseIdFromConfig", model))
+	require.Equal(t, `func computePoolParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
+	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
+}
+`, renderTemplate(t, "generatedParseIdFromConfig", model))
 
 	require.Equal(t, "req, err := computePoolNewCreateRequest(d, id)\n", renderTemplate(t, "newCreateRequest", model))
 	require.Equal(t, `if err := computePoolApplyCreateOptionals(d, req); err != nil {
@@ -48,8 +57,10 @@ func Test_ComputePoolCreateMappings_renderCreateFuncs(t *testing.T) {
 
 func Test_SchemaCreateMappings_stayExt(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.Schema}, nil, nil)
+	require.False(t, model.Hooks.ParseIdFromConfig.Generate)
 	require.False(t, model.Hooks.NewCreateRequest.Generate)
 	require.False(t, model.Hooks.ApplyCreateOptionals.Generate)
+	require.Equal(t, "id, err := schemaParseIdFromConfigExt(d)\n", renderTemplate(t, "parseIdFromConfig", model))
 	require.Equal(t, "req, err := schemaNewCreateRequestExt(d, id)\n", renderTemplate(t, "newCreateRequest", model))
 	require.Equal(t, `if err := schemaApplyCreateOptionalsExt(d, req); err != nil {
 		return diag.FromErr(err)
@@ -59,6 +70,32 @@ func Test_SchemaCreateMappings_stayExt(t *testing.T) {
 		require.Nil(t, attr.CreateConstructorArg)
 		require.Nil(t, attr.CreateOptionalCall)
 	}
+}
+
+func Test_ParseIdFromConfig_databaseAndSchemaIdentifiers(t *testing.T) {
+	database := parseIdModel("Schema", "DatabaseObjectIdentifier")
+	require.Equal(t, []string{"database", "name"}, database.IdConfigFields())
+	require.Equal(t, `func schemaParseIdFromConfig(d *tfschema.ResourceData) (sdk.DatabaseObjectIdentifier, error) {
+	return sdk.NewDatabaseObjectIdentifier(d.Get("database").(string), d.Get("name").(string)), nil
+}
+`, renderTemplate(t, "generatedParseIdFromConfig", database))
+
+	nested := parseIdModel("Service", "SchemaObjectIdentifier")
+	require.Equal(t, []string{"database", "schema", "name"}, nested.IdConfigFields())
+	require.Equal(t, `func serviceParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
+	return sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string)), nil
+}
+`, renderTemplate(t, "generatedParseIdFromConfig", nested))
+}
+
+func parseIdModel(name, idType string) ResourceModel {
+	return ModelFromInputObject(ResourceObject{Object: ssot.Object{
+		Name:   name,
+		IdType: idType,
+		ResourceHooks: []ssot.ResourceHookOption{
+			ssot.WithParseIdFromConfig(ssot.Generated()),
+		},
+	}}, nil, nil)
 }
 
 func renderTemplate(t *testing.T, name string, model ResourceModel) string {

@@ -1,0 +1,4 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
+func {{ .Prefix }}ParseIdFromConfig(d *tfschema.ResourceData) (sdk.{{ .IdType }}, error) {
+	return sdk.New{{ .IdType }}({{ range $i, $field := .IdConfigFields }}{{ if $i }}, {{ end }}d.Get("{{ $field }}").(string){{ end }}), nil
+}

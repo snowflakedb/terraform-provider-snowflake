@@ -57,10 +57,6 @@ type computePoolAlterRequestsExt struct {
 	unset *sdk.ComputePoolUnsetRequest
 }
 
-func computePoolParseIdFromConfigExt(d *schema.ResourceData) (sdk.AccountObjectIdentifier, error) {
-	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
-}
-
 func computePoolParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
 	return sdk.ParseAccountObjectIdentifier(id)
 }

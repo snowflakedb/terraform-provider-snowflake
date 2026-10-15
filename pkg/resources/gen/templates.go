@@ -31,6 +31,9 @@ var (
 	//go:embed templates/sub_templates/parse_id_from_config.tmpl
 	parseIdFromConfigTemplateContent string
 
+	//go:embed templates/sub_templates/generated_parse_id_from_config.tmpl
+	generatedParseIdFromConfigTemplateContent string
+
 	//go:embed templates/sub_templates/before_create.tmpl
 	beforeCreateTemplateContent string
 
@@ -151,6 +154,7 @@ func init() {
 	subTemplates, _ = subTemplates.New("constructor").Parse(constructorTemplateContent)
 	subTemplates, _ = subTemplates.New("parseId").Parse(parseIdTemplateContent)
 	subTemplates, _ = subTemplates.New("parseIdFromConfig").Parse(parseIdFromConfigTemplateContent)
+	subTemplates, _ = subTemplates.New("generatedParseIdFromConfig").Parse(generatedParseIdFromConfigTemplateContent)
 	subTemplates, _ = subTemplates.New("beforeCreate").Parse(beforeCreateTemplateContent)
 	subTemplates, _ = subTemplates.New("newCreateRequest").Parse(newCreateRequestTemplateContent)
 	subTemplates, _ = subTemplates.New("generatedNewCreateRequest").Parse(generatedNewCreateRequestTemplateContent)

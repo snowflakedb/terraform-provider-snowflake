@@ -86,6 +86,10 @@ func Update{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) 
 {{ template "alterUnsetInSdk" . -}}
 	return Read{{ .Name }}Func(false)(ctx, d, meta)
 }
+{{- if .Hooks.ParseIdFromConfig.Generate }}
+
+{{ template "generatedParseIdFromConfig" . }}
+{{- end }}
 {{- if .Hooks.NewCreateRequest.Generate }}
 
 {{ template "generatedNewCreateRequest" . }}

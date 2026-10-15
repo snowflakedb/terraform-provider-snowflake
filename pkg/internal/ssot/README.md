@@ -30,7 +30,9 @@ Identity (`Name`, `IdType`, ...) is separate from `Attributes`.
 - `CreateMapping` - the create helper from `pkg/resources/resource_helpers_create.go` used by a generated
   `ApplyCreateOptionals`. Use a `HelperMapping` constant (`StringAttributeCreateBuilder`, ...) or
   `ListValueCreate("<mapperFunc>")`. A required attribute with no mapping is a `NewCreate<Object>Request` constructor
-  argument (int or enum only).
+  argument (int or enum only). The resource identifier is not an attribute. A generated `ParseIdFromConfig` builds it
+  from `IdType`: `name` for an account object, `database` and `name` for a database object, and `database`, `schema`,
+  and `name` for a schema object.
 - `StoredAsText` - the db column is text, and the plain kind stays the semantic type. For a bool, the paired-struct
   generator calls `BoolFromText`. A bool without the mark is still db `bool`. Other generators ignore the mark.
   See [PairedStructs](../../sdk/generator/README.md#pairedstructs).

@@ -3,6 +3,7 @@ package gen
 import (
 	"fmt"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 )
 
@@ -16,6 +17,14 @@ type CreateConstructorArg struct {
 type CreateOptionalCall struct {
 	Helper string
 	Target string
+}
+
+// IdConfigFields are the config keys for a generated ParseIdFromConfig, in New<IdType> argument order.
+// Account objects use name. Database objects also use database. Schema objects also use schema.
+func (m ResourceModel) IdConfigFields() []string {
+	return collections.Map(ssot.IdentityFields(ssot.Object{Name: m.Name, IdType: m.IdType}), func(field ssot.ClassifiedField) string {
+		return field.Name
+	})
 }
 
 func attachCreateMappings(objectName string, src []ssot.Attribute, dst []ResourceAttribute) {
