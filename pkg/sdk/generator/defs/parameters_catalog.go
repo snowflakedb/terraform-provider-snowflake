@@ -541,7 +541,7 @@ var (
 		Kind:         g.KindOfT[sdkcommons.GeographyOutputFormat](),
 		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Display format for [GEOGRAPHY values](https://docs.snowflake.com/en/sql-reference/data-types-geospatial.html#label-data-types-geography).",
-		DefaultValue: "sdk.GeographyOutputFormatGeojson",
+		DefaultValue: "sdk.GeographyOutputFormatGeoJson",
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	GeometryOutputFormat = parameterdefs.ParameterDef{
@@ -549,7 +549,7 @@ var (
 		Kind:         g.KindOfT[sdkcommons.GeometryOutputFormat](),
 		Levels:       append(slices.Clone(onUser), parameterdefs.ParameterLevelTask),
 		Description:  "Display format for [GEOMETRY values](https://docs.snowflake.com/en/sql-reference/data-types-geospatial.html#label-data-types-geometry).",
-		DefaultValue: "sdk.GeometryOutputFormatGeojson",
+		DefaultValue: "sdk.GeometryOutputFormatGeoJson",
 		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	HybridTableLockTimeout = parameterdefs.ParameterDef{

@@ -2542,7 +2542,7 @@ func ToDefaultNullOrdering(s string) (DefaultNullOrdering, error) {
 type GeographyOutputFormat string
 
 const (
-	GeographyOutputFormatGeojson GeographyOutputFormat = "GeoJSON"
+	GeographyOutputFormatGeoJson GeographyOutputFormat = "GeoJSON"
 	GeographyOutputFormatWkt     GeographyOutputFormat = "WKT"
 	GeographyOutputFormatWkb     GeographyOutputFormat = "WKB"
 	GeographyOutputFormatEwkt    GeographyOutputFormat = "EWKT"
@@ -2550,7 +2550,7 @@ const (
 )
 
 var AllGeographyOutputFormats = []GeographyOutputFormat{
-	GeographyOutputFormatGeojson,
+	GeographyOutputFormatGeoJson,
 	GeographyOutputFormatWkt,
 	GeographyOutputFormatWkb,
 	GeographyOutputFormatEwkt,
@@ -2560,8 +2560,8 @@ var AllGeographyOutputFormats = []GeographyOutputFormat{
 func ToGeographyOutputFormat(s string) (GeographyOutputFormat, error) {
 	s = strings.ToUpper(s)
 	switch s {
-	case strings.ToUpper(string(GeographyOutputFormatGeojson)):
-		return GeographyOutputFormatGeojson, nil
+	case strings.ToUpper(string(GeographyOutputFormatGeoJson)):
+		return GeographyOutputFormatGeoJson, nil
 	case strings.ToUpper(string(GeographyOutputFormatWkt)):
 		return GeographyOutputFormatWkt, nil
 	case strings.ToUpper(string(GeographyOutputFormatWkb)):
@@ -2578,7 +2578,7 @@ func ToGeographyOutputFormat(s string) (GeographyOutputFormat, error) {
 type GeometryOutputFormat string
 
 const (
-	GeometryOutputFormatGeojson GeometryOutputFormat = "GeoJSON"
+	GeometryOutputFormatGeoJson GeometryOutputFormat = "GeoJSON"
 	GeometryOutputFormatWkt     GeometryOutputFormat = "WKT"
 	GeometryOutputFormatWkb     GeometryOutputFormat = "WKB"
 	GeometryOutputFormatEwkt    GeometryOutputFormat = "EWKT"
@@ -2586,7 +2586,7 @@ const (
 )
 
 var AllGeometryOutputFormats = []GeometryOutputFormat{
-	GeometryOutputFormatGeojson,
+	GeometryOutputFormatGeoJson,
 	GeometryOutputFormatWkt,
 	GeometryOutputFormatWkb,
 	GeometryOutputFormatEwkt,
@@ -2596,8 +2596,8 @@ var AllGeometryOutputFormats = []GeometryOutputFormat{
 func ToGeometryOutputFormat(s string) (GeometryOutputFormat, error) {
 	s = strings.ToUpper(s)
 	switch s {
-	case strings.ToUpper(string(GeometryOutputFormatGeojson)):
-		return GeometryOutputFormatGeojson, nil
+	case strings.ToUpper(string(GeometryOutputFormatGeoJson)):
+		return GeometryOutputFormatGeoJson, nil
 	case strings.ToUpper(string(GeometryOutputFormatWkt)):
 		return GeometryOutputFormatWkt, nil
 	case strings.ToUpper(string(GeometryOutputFormatWkb)):

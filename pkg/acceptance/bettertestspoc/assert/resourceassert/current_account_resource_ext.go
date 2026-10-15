@@ -68,8 +68,8 @@ func (c *CurrentAccountResourceAssert) HasAllDefaultParameters() *CurrentAccount
 		HasEventTableString(sdk.NewSchemaObjectIdentifier("snowflake", "telemetry", "events").FullyQualifiedName()).
 		HasExternalOauthAddPrivilegedRolesToBlockedListString("true").
 		HasExternalVolumeEmpty().
-		HasGeographyOutputFormatString(string(sdk.GeographyOutputFormatGeojson)).
-		HasGeometryOutputFormatString(string(sdk.GeometryOutputFormatGeojson)).
+		HasGeographyOutputFormatString(string(sdk.GeographyOutputFormatGeoJson)).
+		HasGeometryOutputFormatString(string(sdk.GeometryOutputFormatGeoJson)).
 		HasHybridTableLockTimeoutString("3600").
 		HasIcebergVersionDefaultString("2").
 		HasInitialReplicationSizeLimitInTbString("10.0").

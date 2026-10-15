@@ -42,8 +42,8 @@ func (u *TaskResourceParametersAssert) HasAllDefaults() *TaskResourceParametersA
 		HasEnableUnloadPhysicalTypeOptimization(true).
 		HasErrorOnNondeterministicMerge(true).
 		HasErrorOnNondeterministicUpdate(false).
-		HasGeographyOutputFormat(sdk.GeographyOutputFormatGeojson).
-		HasGeometryOutputFormat(sdk.GeometryOutputFormatGeojson).
+		HasGeographyOutputFormat(sdk.GeographyOutputFormatGeoJson).
+		HasGeometryOutputFormat(sdk.GeometryOutputFormatGeoJson).
 		HasJdbcTreatTimestampNtzAsUtc(false).
 		HasJdbcUseSessionTimezone(true).
 		HasJsonIndent(2).

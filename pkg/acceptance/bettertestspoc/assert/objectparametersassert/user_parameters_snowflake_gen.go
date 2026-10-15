@@ -1273,11 +1273,11 @@ func (u *UserParametersAssert) HasDefaultErrorOnNondeterministicUpdateValueExpli
 }
 
 func (u *UserParametersAssert) HasDefaultGeographyOutputFormatValueExplicit() *UserParametersAssert {
-	return u.HasGeographyOutputFormat(sdk.GeographyOutputFormatGeojson)
+	return u.HasGeographyOutputFormat(sdk.GeographyOutputFormatGeoJson)
 }
 
 func (u *UserParametersAssert) HasDefaultGeometryOutputFormatValueExplicit() *UserParametersAssert {
-	return u.HasGeometryOutputFormat(sdk.GeometryOutputFormatGeojson)
+	return u.HasGeometryOutputFormat(sdk.GeometryOutputFormatGeoJson)
 }
 
 func (u *UserParametersAssert) HasDefaultHybridTableLockTimeoutValueExplicit() *UserParametersAssert {

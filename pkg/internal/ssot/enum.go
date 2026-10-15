@@ -113,13 +113,28 @@ func (e *Enum) KindPtr() string {
 
 // valueName returns the constant name for a given enum value.
 // E.g. for type ProgrammaticAccessTokenStatus and value "ACTIVE_VALUE" -> "ProgrammaticAccessTokenStatusActiveValue".
+// A lowercase-to-uppercase boundary is split first, so "GeoJSON" becomes "GeoJson" while the SQL value stays "GeoJSON".
 func (e *Enum) valueName(value string) string {
 	if fieldName, ok := e.explicitNames[value]; ok {
 		return e.Name + fieldName
 	}
 	value = strings.ReplaceAll(value, " ", "_")
 	value = strings.ReplaceAll(value, "-", "_")
+	value = splitCamelBoundary(value)
 	return e.Name + genhelpers.SnakeCaseToCamel(value)
+}
+
+// splitCamelBoundary inserts an underscore between a lowercase letter and a following uppercase letter.
+func splitCamelBoundary(value string) string {
+	var b strings.Builder
+	b.Grow(len(value))
+	for i := 0; i < len(value); i++ {
+		if i > 0 && value[i-1] >= 'a' && value[i-1] <= 'z' && value[i] >= 'A' && value[i] <= 'Z' {
+			b.WriteByte('_')
+		}
+		b.WriteByte(value[i])
+	}
+	return b.String()
 }
 
 // ValueRepresentations returns all enum values with their Go names, values, and aliases used in the template.

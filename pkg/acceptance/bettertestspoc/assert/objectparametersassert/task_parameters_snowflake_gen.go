@@ -1136,11 +1136,11 @@ func (t *TaskParametersAssert) HasDefaultErrorOnNondeterministicUpdateValueExpli
 }
 
 func (t *TaskParametersAssert) HasDefaultGeographyOutputFormatValueExplicit() *TaskParametersAssert {
-	return t.HasGeographyOutputFormat(sdk.GeographyOutputFormatGeojson)
+	return t.HasGeographyOutputFormat(sdk.GeographyOutputFormatGeoJson)
 }
 
 func (t *TaskParametersAssert) HasDefaultGeometryOutputFormatValueExplicit() *TaskParametersAssert {
-	return t.HasGeometryOutputFormat(sdk.GeometryOutputFormatGeojson)
+	return t.HasGeometryOutputFormat(sdk.GeometryOutputFormatGeoJson)
 }
 
 func (t *TaskParametersAssert) HasDefaultJdbcTreatTimestampNtzAsUtcValueExplicit() *TaskParametersAssert {

@@ -1301,8 +1301,8 @@ func TestAcc_User_ParameterValidationsAndDiffSuppressions(t *testing.T) {
 	userModel := model.User("w", id.Name()).
 		WithBinaryInputFormat(strings.ToLower(string(sdk.BinaryInputFormatHex))).
 		WithBinaryOutputFormat(strings.ToLower(string(sdk.BinaryOutputFormatHex))).
-		WithGeographyOutputFormat(strings.ToLower(string(sdk.GeographyOutputFormatGeojson))).
-		WithGeometryOutputFormat(strings.ToLower(string(sdk.GeometryOutputFormatGeojson))).
+		WithGeographyOutputFormat(strings.ToLower(string(sdk.GeographyOutputFormatGeoJson))).
+		WithGeometryOutputFormat(strings.ToLower(string(sdk.GeometryOutputFormatGeoJson))).
 		WithLogLevel(strings.ToLower(string(sdk.LogLevelInfo))).
 		WithLogEventLevel(strings.ToLower(string(sdk.LogLevelInfo))).
 		WithTimestampTypeMapping(strings.ToLower(string(sdk.TimestampTypeMappingTimestampNtz))).
@@ -1322,8 +1322,8 @@ func TestAcc_User_ParameterValidationsAndDiffSuppressions(t *testing.T) {
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasBinaryInputFormatString(string(sdk.BinaryInputFormatHex)).
 						HasBinaryOutputFormatString(string(sdk.BinaryOutputFormatHex)).
-						HasGeographyOutputFormatString(string(sdk.GeographyOutputFormatGeojson)).
-						HasGeometryOutputFormatString(string(sdk.GeometryOutputFormatGeojson)).
+						HasGeographyOutputFormatString(string(sdk.GeographyOutputFormatGeoJson)).
+						HasGeometryOutputFormatString(string(sdk.GeometryOutputFormatGeoJson)).
 						HasLogLevelString(string(sdk.LogLevelInfo)).
 						HasLogEventLevelString(string(sdk.LogLevelInfo)).
 						HasTimestampTypeMappingString(string(sdk.TimestampTypeMappingTimestampNtz)).

@@ -680,10 +680,10 @@ func Test_User_ToGeographyOutputFormat(t *testing.T) {
 
 	valid := []test{
 		// case insensitive.
-		{input: "geojson", want: GeographyOutputFormatGeojson},
+		{input: "geojson", want: GeographyOutputFormatGeoJson},
 
 		// Supported Values
-		{input: string(GeographyOutputFormatGeojson), want: GeographyOutputFormatGeojson},
+		{input: string(GeographyOutputFormatGeoJson), want: GeographyOutputFormatGeoJson},
 		{input: string(GeographyOutputFormatWkt), want: GeographyOutputFormatWkt},
 		{input: string(GeographyOutputFormatWkb), want: GeographyOutputFormatWkb},
 		{input: string(GeographyOutputFormatEwkt), want: GeographyOutputFormatEwkt},
@@ -723,10 +723,10 @@ func Test_User_ToGeometryOutputFormat(t *testing.T) {
 
 	valid := []test{
 		// case insensitive.
-		{input: "geojson", want: GeometryOutputFormatGeojson},
+		{input: "geojson", want: GeometryOutputFormatGeoJson},
 
 		// Supported Values
-		{input: string(GeometryOutputFormatGeojson), want: GeometryOutputFormatGeojson},
+		{input: string(GeometryOutputFormatGeoJson), want: GeometryOutputFormatGeoJson},
 		{input: string(GeometryOutputFormatWkt), want: GeometryOutputFormatWkt},
 		{input: string(GeometryOutputFormatWkb), want: GeometryOutputFormatWkb},
 		{input: string(GeometryOutputFormatEwkt), want: GeometryOutputFormatEwkt},

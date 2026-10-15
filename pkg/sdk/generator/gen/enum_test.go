@@ -50,6 +50,14 @@ func TestEnum_ValueRepresentations(t *testing.T) {
 				{Name: "SizeXxlarge", Value: "XXLARGE", Aliases: []string{"X2LARGE", "2X-LARGE"}},
 			},
 		},
+		{
+			name: "mixed-case value",
+			enum: NewEnum("GeographyOutputFormat", "GeographyOutputFormats", "GeoJSON", "WKT"),
+			expectedValueRepresentations: []EnumValueRepresentation{
+				{Name: "GeographyOutputFormatGeoJson", Value: "GeoJSON", Aliases: nil},
+				{Name: "GeographyOutputFormatWkt", Value: "WKT", Aliases: nil},
+			},
+		},
 	}
 
 	for _, tt := range tests {

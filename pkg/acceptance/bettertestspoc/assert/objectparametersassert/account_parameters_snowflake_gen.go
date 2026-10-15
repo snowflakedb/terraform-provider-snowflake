@@ -2721,11 +2721,11 @@ func (a *AccountParametersAssert) HasDefaultExternalVolumeValueExplicit() *Accou
 }
 
 func (a *AccountParametersAssert) HasDefaultGeographyOutputFormatValueExplicit() *AccountParametersAssert {
-	return a.HasGeographyOutputFormat(sdk.GeographyOutputFormatGeojson)
+	return a.HasGeographyOutputFormat(sdk.GeographyOutputFormatGeoJson)
 }
 
 func (a *AccountParametersAssert) HasDefaultGeometryOutputFormatValueExplicit() *AccountParametersAssert {
-	return a.HasGeometryOutputFormat(sdk.GeometryOutputFormatGeojson)
+	return a.HasGeometryOutputFormat(sdk.GeometryOutputFormatGeoJson)
 }
 
 func (a *AccountParametersAssert) HasDefaultInitialReplicationSizeLimitInTbValueExplicit() *AccountParametersAssert {
