@@ -27,6 +27,21 @@ func Map[T any, R any](collection []T, mapper func(T) R) []R {
 	return result
 }
 
+// UniqueBy returns the items with duplicates removed, keeping the first occurrence of each key in the original order.
+func UniqueBy[T any, K comparable](collection []T, key func(T) K) []T {
+	seen := make(map[K]struct{}, len(collection))
+	result := make([]T, 0, len(collection))
+	for _, item := range collection {
+		k := key(item)
+		if _, ok := seen[k]; ok {
+			continue
+		}
+		seen[k] = struct{}{}
+		result = append(result, item)
+	}
+	return result
+}
+
 func Filter[T any](collection []T, condition func(T) bool) []T {
 	result := make([]T, 0)
 	for _, o := range collection {

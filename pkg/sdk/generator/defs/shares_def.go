@@ -14,9 +14,10 @@ var sharePairs = g.StructPair("shareRow", "Share").
 	Text("owner_account").
 	Text("name").
 	AccountObjectIdentifier("database_name", g.WithPlainFieldName("DatabaseName")).
-	AccountIdentifierArray("to").
+	Field("to", "string", "[]AccountIdentifier", g.WithManualConvert()).
 	Text("owner").
-	Text("comment")
+	Text("comment").
+	PlainOnlyField("ToTotal", "int")
 
 var shareInfoPairs = g.StructPair("shareDetailsRow", "ShareInfo").
 	PlainField("kind", "ObjectType", g.WithManualConvert()).
@@ -117,4 +118,9 @@ var sharesDef = g.NewInterface(
 	"DescribeConsumer returns the share contents for a consumer (inbound) share.",
 	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.ExternalObjectIdentifier]())},
 	"[]ShareInfo", "error",
+).WithCustomInterfaceMethod(
+	"ShowTargetAccounts",
+	"ShowTargetAccounts returns all target accounts of an outbound share from SNOWFLAKE.ACCOUNT_USAGE.SHARES, because SHOW SHARES lists at most three of them.",
+	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+	"[]AccountIdentifier", "error",
 ).WithEnums(shareKindEnumDef)

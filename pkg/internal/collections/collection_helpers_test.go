@@ -64,6 +64,17 @@ func Test_Map(t *testing.T) {
 	})
 }
 
+func Test_UniqueBy(t *testing.T) {
+	t.Run("keeps the first occurrence of each key in order", func(t *testing.T) {
+		result := UniqueBy([]string{"a", "B", "A", "c", "b"}, strings.ToUpper)
+		require.Equal(t, []string{"a", "B", "c"}, result)
+	})
+
+	t.Run("empty collection", func(t *testing.T) {
+		require.Empty(t, UniqueBy([]string{}, strings.ToUpper))
+	})
+}
+
 func Test_Filter(t *testing.T) {
 	stringSlice := []string{"1", "22", "333"}
 

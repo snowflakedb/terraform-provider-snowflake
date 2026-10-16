@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"slices"
 	"strings"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -173,10 +175,25 @@ func ReadShare(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 	if err := d.Set("comment", share.Comment); err != nil {
 		return diag.FromErr(err)
 	}
-	accounts := make([]string, len(share.To))
-	for i, accountIdentifier := range share.To {
-		accounts[i] = accountIdentifier.Name()
+	recipients := share.To
+	var diags diag.Diagnostics
+	// SHOW SHARES lists at most three recipients and reports the rest only as "... (N TOTAL)".
+	if share.ToTotal > len(share.To) {
+		targetAccounts, err := client.Shares.ShowTargetAccounts(ctx, id)
+		if err != nil {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  fmt.Sprintf("Share %s has %d recipients but SHOW SHARES lists only %d", d.Id(), share.ToTotal, len(share.To)),
+				Detail: "The full list is read from SNOWFLAKE.ACCOUNT_USAGE.SHARES, which failed (the role needs SELECT on that view, for example through IMPORTED PRIVILEGES on the SNOWFLAKE database). " +
+					"Recipients that are not listed are missing from the state and planned as additions. Error: " + err.Error(),
+			})
+		} else {
+			// ACCOUNT_USAGE.SHARES can be up to 3 hours behind; SHOW SHARES is real time, so a recipient added since the
+			// view was last refreshed may be among the listed three but not in the view yet.
+			recipients = collections.UniqueBy(append(slices.Clone(share.To), targetAccounts...), sdk.AccountIdentifier.FullyQualifiedName)
+		}
 	}
+	accounts := collections.Map(recipients, sdk.AccountIdentifier.Name)
 
 	currentAccount := d.Get("accounts")
 	if currentAccount != nil {
@@ -186,10 +203,10 @@ func ReadShare(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 		accounts = reorderStringList(currentAccounts, accounts)
 	}
 	if err := d.Set("accounts", accounts); err != nil {
-		return diag.FromErr(err)
+		return append(diags, diag.FromErr(err)...)
 	}
 
-	return diag.FromErr(err)
+	return diags
 }
 
 func accountIdentifiersFromSlice(accounts []string) []sdk.AccountIdentifier {

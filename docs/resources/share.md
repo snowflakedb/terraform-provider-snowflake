@@ -15,6 +15,8 @@ The provider automatically:
 4. Revokes the privileges and drops the temporary database
 This process is fully automated during the creation.
 
+-> **Note** `SHOW SHARES` lists at most three accounts of a share. For a share with more than three accounts, the provider reads the full list from `SNOWFLAKE.ACCOUNT_USAGE.SHARES`, so the role used by the provider needs `SELECT` on that view (for example through `IMPORTED PRIVILEGES` on the `SNOWFLAKE` database). That view can be up to 3 hours behind, so for up to 3 hours after accounts are added or removed outside the three listed by `SHOW SHARES`, a plan can still show them as changes; applying it does not alter the share. Without the privilege, the provider reports a warning and only the listed accounts are known.
+
 # snowflake_share (Resource)
 
 

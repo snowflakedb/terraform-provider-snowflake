@@ -47,6 +47,14 @@ provider "snowflake" {
 
 No configuration changes are required for existing configurations.
 
+### *(bug fix)* `snowflake_share` reads every account of a share with more than three accounts
+
+`SHOW SHARES` lists at most three accounts in its `to` column and appends `... (N TOTAL)` for the rest. Since v2.19.0, reading a [`snowflake_share`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/share) with more than three accounts failed to parse that column and set `accounts` to an empty list, so `terraform plan` proposed adding every configured account on every run.
+
+The provider now reads the `... (N TOTAL)` marker as a count instead of an account. For a share with more than three accounts, it reads the full list from `SNOWFLAKE.ACCOUNT_USAGE.SHARES` and combines it with the accounts `SHOW SHARES` lists. That view can be up to 3 hours behind, so for up to 3 hours after a change to the accounts, a plan can still show it.
+
+To read the full list, the role used by the provider needs `SELECT` on `SNOWFLAKE.ACCOUNT_USAGE.SHARES` (for example through `IMPORTED PRIVILEGES` on the `SNOWFLAKE` database). Without it, the provider reports a warning and only the accounts listed by `SHOW SHARES` are known. This resource is still in preview and will be reworked in the future.
+
 ## v2.22.0 ➞ v2.22.1
 
 ### *(bug fix)* `snowflake_pipe` reads SNS topic ARNs from every AWS partition

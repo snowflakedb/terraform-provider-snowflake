@@ -20,6 +20,8 @@ type Shares interface {
 	DescribeProvider(ctx context.Context, id AccountObjectIdentifier) ([]ShareInfo, error)
 	// DescribeConsumer returns the share contents for a consumer (inbound) share.
 	DescribeConsumer(ctx context.Context, id ExternalObjectIdentifier) ([]ShareInfo, error)
+	// ShowTargetAccounts returns all target accounts of an outbound share from SNOWFLAKE.ACCOUNT_USAGE.SHARES, because SHOW SHARES lists at most three of them.
+	ShowTargetAccounts(ctx context.Context, id AccountObjectIdentifier) ([]AccountIdentifier, error)
 }
 
 // CreateShareOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-share.
@@ -100,6 +102,7 @@ type Share struct {
 	To           []AccountIdentifier
 	Owner        string
 	Comment      string
+	ToTotal      int
 }
 
 func (v *Share) ID() AccountObjectIdentifier {
