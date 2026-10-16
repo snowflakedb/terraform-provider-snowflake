@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -68,7 +69,7 @@ func CreateSchema(ctx context.Context, d *tfschema.ResourceData, meta any) diag.
 		return diag.FromErr(err)
 	}
 
-	if diags := schemaApplyParametersCreateExt(d, req); diags != nil {
+	if diags := schemaApplyParametersCreate(d, req); diags != nil {
 		return diags
 	}
 
@@ -94,15 +95,15 @@ func ReadSchemaFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 
 		// Describe is best-effort: log + skip Set, do not fail Read. Uses SHOW object's id.
 		schemaDetails, describeErr := schemaDescribeInSdkExt(ctx, meta, schema.ID())
-		rawSchemaParameters, err := schemaShowParametersInSdkExt(ctx, meta, id)
+		rawSchemaParameters, err := meta.(*provider.Context).Client.Schemas.ShowParameters(ctx, id)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		schemaParameters, err := schemaParametersDetailsFromRawExt(rawSchemaParameters)
+		schemaParameters, err := sdk.ToSchemaParametersDetails(rawSchemaParameters)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if diags := schemaSetParametersFieldsExt(d, schemaParameters); diags != nil {
+		if diags := schemaSetParametersFields(d, schemaParameters); diags != nil {
 			return diags
 		}
 		if err = schemaHandleExternalChangesExt(d, schema, withExternalChangesMarking); err != nil {
@@ -145,7 +146,7 @@ func UpdateSchema(ctx context.Context, d *tfschema.ResourceData, meta any) diag.
 		d.Partial(true)
 		return diag.FromErr(err)
 	}
-	if diags := schemaApplyParametersChangesExt(d, setUnset); diags != nil {
+	if diags := schemaApplyParametersChanges(d, setUnset.set, setUnset.unset); diags != nil {
 		d.Partial(true)
 		return diags
 	}

@@ -3,10 +3,15 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -33,7 +38,115 @@ var (
 		func(p ssot.ParameterDef) string { return p.FieldName() },
 	)
 	schemaParametersCustomDiff = ParametersCustomDiffFromTypedParameters(
-		schemaParametersProviderExt,
-		schemaParameterDiffFunctionsExt,
+		schemaParametersProvider,
+		schemaParameterDiffFunctions,
 	)
 )
+
+func schemaParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) (*sdk.SchemaParametersDetails, error) {
+	id, err := schemaParseIdExt(d.Id())
+	if err != nil {
+		return nil, err
+	}
+	return meta.(*provider.Context).Client.Schemas.ShowParametersDetails(ctx, id)
+}
+
+func schemaParameterDiffFunctions(parameters *sdk.SchemaParametersDetails) []tfschema.CustomizeDiffFunc {
+	return []tfschema.CustomizeDiffFunc{
+		IdentifierTypedParameterValueComputedIf(ssotdefs.Catalog.FieldName(), parameters.Catalog, sdk.ParameterTypeSchema),
+		IntTypedParameterValueComputedIf(ssotdefs.DataRetentionTimeInDays.FieldName(), parameters.DataRetentionTimeInDays, sdk.ParameterTypeSchema),
+		StringAllowEmptyTypedParameterValueComputedIf(ssotdefs.DefaultDdlCollation.FieldName(), parameters.DefaultDdlCollation, sdk.ParameterTypeSchema),
+		StringTypedParameterValueComputedIf(ssotdefs.DefaultNotebookComputePoolCpu.FieldName(), parameters.DefaultNotebookComputePoolCpu, sdk.ParameterTypeSchema),
+		StringTypedParameterValueComputedIf(ssotdefs.DefaultNotebookComputePoolGpu.FieldName(), parameters.DefaultNotebookComputePoolGpu, sdk.ParameterTypeSchema),
+		BoolTypedParameterValueComputedIf(ssotdefs.EnableConsoleOutput.FieldName(), parameters.EnableConsoleOutput, sdk.ParameterTypeSchema),
+		IdentifierTypedParameterValueComputedIf(ssotdefs.ExternalVolume.FieldName(), parameters.ExternalVolume, sdk.ParameterTypeSchema),
+		StringTypedParameterValueComputedIf(ssotdefs.LogEventLevel.FieldName(), parameters.LogEventLevel, sdk.ParameterTypeSchema),
+		StringTypedParameterValueComputedIf(ssotdefs.LogLevel.FieldName(), parameters.LogLevel, sdk.ParameterTypeSchema),
+		IntTypedParameterValueComputedIf(ssotdefs.MaxDataExtensionTimeInDays.FieldName(), parameters.MaxDataExtensionTimeInDays, sdk.ParameterTypeSchema),
+		BoolTypedParameterValueComputedIf(ssotdefs.PipeExecutionPaused.FieldName(), parameters.PipeExecutionPaused, sdk.ParameterTypeSchema),
+		BoolTypedParameterValueComputedIf(ssotdefs.QuotedIdentifiersIgnoreCase.FieldName(), parameters.QuotedIdentifiersIgnoreCase, sdk.ParameterTypeSchema),
+		BoolTypedParameterValueComputedIf(ssotdefs.ReplaceInvalidCharacters.FieldName(), parameters.ReplaceInvalidCharacters, sdk.ParameterTypeSchema),
+		StringTypedParameterValueComputedIf(ssotdefs.StorageSerializationPolicy.FieldName(), parameters.StorageSerializationPolicy, sdk.ParameterTypeSchema),
+		IntTypedParameterValueComputedIf(ssotdefs.SuspendTaskAfterNumFailures.FieldName(), parameters.SuspendTaskAfterNumFailures, sdk.ParameterTypeSchema),
+		IntTypedParameterValueComputedIf(ssotdefs.TaskAutoRetryAttempts.FieldName(), parameters.TaskAutoRetryAttempts, sdk.ParameterTypeSchema),
+		StringTypedParameterValueComputedIf(ssotdefs.TraceLevel.FieldName(), parameters.TraceLevel, sdk.ParameterTypeSchema),
+		StringTypedParameterValueComputedIf(ssotdefs.UserTaskManagedInitialWarehouseSize.FieldName(), parameters.UserTaskManagedInitialWarehouseSize, sdk.ParameterTypeSchema),
+		IntTypedParameterValueComputedIf(ssotdefs.UserTaskMinimumTriggerIntervalInSeconds.FieldName(), parameters.UserTaskMinimumTriggerIntervalInSeconds, sdk.ParameterTypeSchema),
+		IntTypedParameterValueComputedIf(ssotdefs.UserTaskTimeoutMs.FieldName(), parameters.UserTaskTimeoutMs, sdk.ParameterTypeSchema),
+	}
+}
+
+func schemaApplyParametersCreate(d *tfschema.ResourceData, req *sdk.CreateSchemaRequest) diag.Diagnostics {
+	return JoinDiags(
+		handleParameterCreateWithMapping(d, ssotdefs.Catalog.FieldName(), &req.Catalog, stringToAccountObjectIdentifier),
+		handleParameterCreate(d, ssotdefs.DataRetentionTimeInDays.FieldName(), &req.DataRetentionTimeInDays),
+		handleParameterCreateWithMapping(d, ssotdefs.DefaultDdlCollation.FieldName(), &req.DefaultDdlCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
+		handleParameterCreate(d, ssotdefs.DefaultNotebookComputePoolCpu.FieldName(), &req.DefaultNotebookComputePoolCpu),
+		handleParameterCreate(d, ssotdefs.DefaultNotebookComputePoolGpu.FieldName(), &req.DefaultNotebookComputePoolGpu),
+		handleParameterCreate(d, ssotdefs.EnableConsoleOutput.FieldName(), &req.EnableConsoleOutput),
+		handleParameterCreateWithMapping(d, ssotdefs.ExternalVolume.FieldName(), &req.ExternalVolume, stringToAccountObjectIdentifier),
+		handleParameterCreateWithMapping(d, ssotdefs.LogEventLevel.FieldName(), &req.LogEventLevel, sdk.ToLogLevel),
+		handleParameterCreateWithMapping(d, ssotdefs.LogLevel.FieldName(), &req.LogLevel, sdk.ToLogLevel),
+		handleParameterCreate(d, ssotdefs.MaxDataExtensionTimeInDays.FieldName(), &req.MaxDataExtensionTimeInDays),
+		handleParameterCreate(d, ssotdefs.PipeExecutionPaused.FieldName(), &req.PipeExecutionPaused),
+		handleParameterCreate(d, ssotdefs.QuotedIdentifiersIgnoreCase.FieldName(), &req.QuotedIdentifiersIgnoreCase),
+		handleParameterCreate(d, ssotdefs.ReplaceInvalidCharacters.FieldName(), &req.ReplaceInvalidCharacters),
+		handleParameterCreateWithMapping(d, ssotdefs.StorageSerializationPolicy.FieldName(), &req.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
+		handleParameterCreate(d, ssotdefs.SuspendTaskAfterNumFailures.FieldName(), &req.SuspendTaskAfterNumFailures),
+		handleParameterCreate(d, ssotdefs.TaskAutoRetryAttempts.FieldName(), &req.TaskAutoRetryAttempts),
+		handleParameterCreateWithMapping(d, ssotdefs.TraceLevel.FieldName(), &req.TraceLevel, sdk.ToTraceLevel),
+		handleParameterCreateWithMapping(d, ssotdefs.UserTaskManagedInitialWarehouseSize.FieldName(), &req.UserTaskManagedInitialWarehouseSize, sdk.ToWarehouseSize),
+		handleParameterCreate(d, ssotdefs.UserTaskMinimumTriggerIntervalInSeconds.FieldName(), &req.UserTaskMinimumTriggerIntervalInSeconds),
+		handleParameterCreate(d, ssotdefs.UserTaskTimeoutMs.FieldName(), &req.UserTaskTimeoutMs),
+	)
+}
+
+func schemaApplyParametersChanges(d *tfschema.ResourceData, set *sdk.SchemaSetRequest, unset *sdk.SchemaUnsetRequest) diag.Diagnostics {
+	return JoinDiags(
+		handleParameterUpdateWithMapping(d, ssotdefs.Catalog.FieldName(), &set.Catalog, &unset.Catalog, stringToAccountObjectIdentifier),
+		handleParameterUpdate(d, ssotdefs.DataRetentionTimeInDays.FieldName(), &set.DataRetentionTimeInDays, &unset.DataRetentionTimeInDays),
+		handleParameterUpdateWithMapping(d, ssotdefs.DefaultDdlCollation.FieldName(), &set.DefaultDdlCollation, &unset.DefaultDdlCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
+		handleParameterUpdate(d, ssotdefs.DefaultNotebookComputePoolCpu.FieldName(), &set.DefaultNotebookComputePoolCpu, &unset.DefaultNotebookComputePoolCpu),
+		handleParameterUpdate(d, ssotdefs.DefaultNotebookComputePoolGpu.FieldName(), &set.DefaultNotebookComputePoolGpu, &unset.DefaultNotebookComputePoolGpu),
+		handleParameterUpdate(d, ssotdefs.EnableConsoleOutput.FieldName(), &set.EnableConsoleOutput, &unset.EnableConsoleOutput),
+		handleParameterUpdateWithMapping(d, ssotdefs.ExternalVolume.FieldName(), &set.ExternalVolume, &unset.ExternalVolume, stringToAccountObjectIdentifier),
+		handleParameterUpdateWithMapping(d, ssotdefs.LogEventLevel.FieldName(), &set.LogEventLevel, &unset.LogEventLevel, sdk.ToLogLevel),
+		handleParameterUpdateWithMapping(d, ssotdefs.LogLevel.FieldName(), &set.LogLevel, &unset.LogLevel, sdk.ToLogLevel),
+		handleParameterUpdate(d, ssotdefs.MaxDataExtensionTimeInDays.FieldName(), &set.MaxDataExtensionTimeInDays, &unset.MaxDataExtensionTimeInDays),
+		handleParameterUpdate(d, ssotdefs.PipeExecutionPaused.FieldName(), &set.PipeExecutionPaused, &unset.PipeExecutionPaused),
+		handleParameterUpdate(d, ssotdefs.QuotedIdentifiersIgnoreCase.FieldName(), &set.QuotedIdentifiersIgnoreCase, &unset.QuotedIdentifiersIgnoreCase),
+		handleParameterUpdate(d, ssotdefs.ReplaceInvalidCharacters.FieldName(), &set.ReplaceInvalidCharacters, &unset.ReplaceInvalidCharacters),
+		handleParameterUpdateWithMapping(d, ssotdefs.StorageSerializationPolicy.FieldName(), &set.StorageSerializationPolicy, &unset.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
+		handleParameterUpdate(d, ssotdefs.SuspendTaskAfterNumFailures.FieldName(), &set.SuspendTaskAfterNumFailures, &unset.SuspendTaskAfterNumFailures),
+		handleParameterUpdate(d, ssotdefs.TaskAutoRetryAttempts.FieldName(), &set.TaskAutoRetryAttempts, &unset.TaskAutoRetryAttempts),
+		handleParameterUpdateWithMapping(d, ssotdefs.TraceLevel.FieldName(), &set.TraceLevel, &unset.TraceLevel, sdk.ToTraceLevel),
+		handleParameterUpdateWithMapping(d, ssotdefs.UserTaskManagedInitialWarehouseSize.FieldName(), &set.UserTaskManagedInitialWarehouseSize, &unset.UserTaskManagedInitialWarehouseSize, sdk.ToWarehouseSize),
+		handleParameterUpdate(d, ssotdefs.UserTaskMinimumTriggerIntervalInSeconds.FieldName(), &set.UserTaskMinimumTriggerIntervalInSeconds, &unset.UserTaskMinimumTriggerIntervalInSeconds),
+		handleParameterUpdate(d, ssotdefs.UserTaskTimeoutMs.FieldName(), &set.UserTaskTimeoutMs, &unset.UserTaskTimeoutMs),
+	)
+}
+
+func schemaSetParametersFields(d *tfschema.ResourceData, parameters *sdk.SchemaParametersDetails) diag.Diagnostics {
+	return JoinDiags(
+		setResourceData(d, ssotdefs.Catalog.FieldName(), parameters.Catalog.Value.FullyQualifiedName()),
+		setResourceData(d, ssotdefs.DataRetentionTimeInDays.FieldName(), parameters.DataRetentionTimeInDays.Value),
+		setResourceData(d, ssotdefs.DefaultDdlCollation.FieldName(), parameters.DefaultDdlCollation.Value),
+		setResourceData(d, ssotdefs.DefaultNotebookComputePoolCpu.FieldName(), parameters.DefaultNotebookComputePoolCpu.Value),
+		setResourceData(d, ssotdefs.DefaultNotebookComputePoolGpu.FieldName(), parameters.DefaultNotebookComputePoolGpu.Value),
+		setResourceData(d, ssotdefs.EnableConsoleOutput.FieldName(), parameters.EnableConsoleOutput.Value),
+		setResourceData(d, ssotdefs.ExternalVolume.FieldName(), parameters.ExternalVolume.Value.FullyQualifiedName()),
+		setResourceData(d, ssotdefs.LogEventLevel.FieldName(), parameters.LogEventLevel.Value),
+		setResourceData(d, ssotdefs.LogLevel.FieldName(), parameters.LogLevel.Value),
+		setResourceData(d, ssotdefs.MaxDataExtensionTimeInDays.FieldName(), parameters.MaxDataExtensionTimeInDays.Value),
+		setResourceData(d, ssotdefs.PipeExecutionPaused.FieldName(), parameters.PipeExecutionPaused.Value),
+		setResourceData(d, ssotdefs.QuotedIdentifiersIgnoreCase.FieldName(), parameters.QuotedIdentifiersIgnoreCase.Value),
+		setResourceData(d, ssotdefs.ReplaceInvalidCharacters.FieldName(), parameters.ReplaceInvalidCharacters.Value),
+		setResourceData(d, ssotdefs.StorageSerializationPolicy.FieldName(), parameters.StorageSerializationPolicy.Value),
+		setResourceData(d, ssotdefs.SuspendTaskAfterNumFailures.FieldName(), parameters.SuspendTaskAfterNumFailures.Value),
+		setResourceData(d, ssotdefs.TaskAutoRetryAttempts.FieldName(), parameters.TaskAutoRetryAttempts.Value),
+		setResourceData(d, ssotdefs.TraceLevel.FieldName(), parameters.TraceLevel.Value),
+		setResourceData(d, ssotdefs.UserTaskManagedInitialWarehouseSize.FieldName(), parameters.UserTaskManagedInitialWarehouseSize.Value),
+		setResourceData(d, ssotdefs.UserTaskMinimumTriggerIntervalInSeconds.FieldName(), parameters.UserTaskMinimumTriggerIntervalInSeconds.Value),
+		setResourceData(d, ssotdefs.UserTaskTimeoutMs.FieldName(), parameters.UserTaskTimeoutMs.Value),
+	)
+}

@@ -1,6 +1,10 @@
 package ssot
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
+)
 
 // ParameterLevel identifies a catalog consumer set used by ParameterDefsForLevel. It is not
 // the level returned by Snowflake from SHOW PARAMETERS.
@@ -57,6 +61,14 @@ type ParameterDef struct {
 	DefaultLevel string
 }
 
+// FieldName is the Terraform attribute name: the SQL name in lowercase.
 func (p ParameterDef) FieldName() string {
 	return strings.ToLower(p.SqlName)
+}
+
+// StructFieldName is the exported SDK struct field name. It uses the same English
+// title casing as the SDK generator, so TIMESTAMP_DAY_IS_ALWAYS_24H is
+// TimestampDayIsAlways24H and UNSUPPORTED_DDL_ACTION is UnsupportedDdlAction.
+func (p ParameterDef) StructFieldName() string {
+	return genhelpers.SqlToGoName(p.SqlName, true)
 }

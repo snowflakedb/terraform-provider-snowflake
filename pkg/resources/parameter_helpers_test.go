@@ -89,7 +89,7 @@ func TestHandleSchemaParameterRead(t *testing.T) {
 	}
 	d := schema.TestResourceDataRaw(t, schemaParametersAttributesSchema, state)
 
-	diags := schemaSetParametersFieldsExt(d, &sdk.SchemaParametersDetails{
+	diags := schemaSetParametersFields(d, &sdk.SchemaParametersDetails{
 		ExternalVolume:          sdk.TypedParameter[sdk.AccountObjectIdentifier]{Value: sdk.NewAccountObjectIdentifier("external_volume")},
 		Catalog:                 sdk.TypedParameter[sdk.AccountObjectIdentifier]{},
 		DataRetentionTimeInDays: sdk.TypedParameter[int]{Value: 7},

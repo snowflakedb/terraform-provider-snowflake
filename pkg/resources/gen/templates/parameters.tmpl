@@ -36,10 +36,58 @@ var (
 {{- end }}
 {{- if .Hooks.ParametersCustomDiff.Generate }}
 	{{ .Prefix }}ParametersCustomDiff = ParametersCustomDiffFromTypedParameters(
-		{{ .Prefix }}ParametersProviderExt,
-		{{ .Prefix }}ParameterDiffFunctionsExt,
+		{{ .Prefix }}ParametersProvider,
+		{{ .Prefix }}ParameterDiffFunctions,
 	)
 {{- else if .Hooks.ParametersCustomDiff.Present }}
 	{{ .Prefix }}ParametersCustomDiff = {{ .Prefix }}ParametersCustomDiffExt
 {{- end }}
 )
+{{- if .Hooks.ParametersCustomDiff.Generate }}
+
+func {{ .Prefix }}ParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) (*sdk.{{ .Name }}ParametersDetails, error) {
+	id, err := {{ .Prefix }}ParseIdExt(d.Id())
+	if err != nil {
+		return nil, err
+	}
+	return meta.(*provider.Context).Client.{{ .NamePlural }}.ShowParametersDetails(ctx, id)
+}
+
+func {{ .Prefix }}ParameterDiffFunctions(parameters *sdk.{{ .Name }}ParametersDetails) []tfschema.CustomizeDiffFunc {
+	return []tfschema.CustomizeDiffFunc{
+{{- range .ParameterHooks }}
+		{{ .DiffFunc }}(ssotdefs.{{ .Parameter.StructFieldName }}.FieldName(), parameters.{{ .Parameter.StructFieldName }}, sdk.ParameterType{{ $.ParameterSnowflakeType }}),
+{{- end }}
+	}
+}
+{{- end }}
+{{- if .Hooks.ApplyParametersCreate.Generate }}
+
+func {{ .Prefix }}ApplyParametersCreate(d *tfschema.ResourceData, req *sdk.Create{{ .Name }}Request) diag.Diagnostics {
+	return JoinDiags(
+{{- range .ParameterHooks }}
+		handleParameterCreate{{ if .NeedsMapping }}WithMapping{{ end }}(d, ssotdefs.{{ .Parameter.StructFieldName }}.FieldName(), &req.{{ .Parameter.StructFieldName }}{{ if .NeedsMapping }}, {{ .Mapper }}{{ end }}),
+{{- end }}
+	)
+}
+{{- end }}
+{{- if .Hooks.ApplyParametersChanges.Generate }}
+
+func {{ .Prefix }}ApplyParametersChanges(d *tfschema.ResourceData, set *sdk.{{ .Name }}SetRequest, unset *sdk.{{ .Name }}UnsetRequest) diag.Diagnostics {
+	return JoinDiags(
+{{- range .ParameterHooks }}
+		handleParameterUpdate{{ if .NeedsMapping }}WithMapping{{ end }}(d, ssotdefs.{{ .Parameter.StructFieldName }}.FieldName(), &set.{{ .Parameter.StructFieldName }}, &unset.{{ .Parameter.StructFieldName }}{{ if .NeedsMapping }}, {{ .Mapper }}{{ end }}),
+{{- end }}
+	)
+}
+{{- end }}
+{{- if .Hooks.SetParametersFields.Generate }}
+
+func {{ .Prefix }}SetParametersFields(d *tfschema.ResourceData, parameters *sdk.{{ .Name }}ParametersDetails) diag.Diagnostics {
+	return JoinDiags(
+{{- range .ParameterHooks }}
+		setResourceData(d, ssotdefs.{{ .Parameter.StructFieldName }}.FieldName(), {{ .Read }}),
+{{- end }}
+	)
+}
+{{- end }}

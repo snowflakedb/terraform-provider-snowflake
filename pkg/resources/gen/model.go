@@ -1,10 +1,13 @@
 package gen
 
 import (
+	"fmt"
 	"log"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 )
 
 type ResourceModel struct {
@@ -15,12 +18,27 @@ type ResourceModel struct {
 	HasPartialOnUpdate                  bool
 	AdditionalDescribeOutputDescription string
 	IdType                              string
+	ParameterSnowflakeType              string
 	IdentityNameForceNew                bool
 	AdditionalIdentityNameDescription   string
 	Attributes                          []ResourceAttribute
 	AttributesModification              bool
 	Hooks                               ssot.ResourceHooks
 	*genhelpers.PreambleModel
+}
+
+// ParameterHooks returns the catalog parameters for this object's parameter level, in catalog order.
+func (m ResourceModel) ParameterHooks() []ParameterHookModel {
+	level := ssot.ParameterLevel(strings.ToUpper(genhelpers.ToSnakeCase(m.Name)))
+	if m.Hooks.ParametersCustomDiff.Generate && m.ParameterSnowflakeType == "" {
+		panic(fmt.Sprintf("%s: ParameterSnowflakeType is required to generate parameter custom diff", m.Name))
+	}
+	parameters := ssotdefs.ParameterDefsForLevel(level)
+	hooks := make([]ParameterHookModel, 0, len(parameters))
+	for _, parameter := range parameters {
+		hooks = append(hooks, newParameterHookModel(parameter))
+	}
+	return hooks
 }
 
 func (m ResourceModel) Prefix() string {
@@ -50,6 +68,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		HasPartialOnUpdate:                  input.HasPartialOnUpdate,
 		AdditionalDescribeOutputDescription: input.AdditionalDescribeOutputDescription,
 		IdType:                              input.IdType,
+		ParameterSnowflakeType:              input.ParameterSnowflakeType,
 		IdentityNameForceNew:                input.IdentityNameForceNew,
 		AdditionalIdentityNameDescription:   input.AdditionalIdentityNameDescription,
 		Attributes:                          attributes,

@@ -8,14 +8,17 @@ type Object struct {
 	HasPartialOnUpdate                  bool
 	AdditionalDescribeOutputDescription string
 	IdType                              string
-	IdentityNameForceNew                bool
-	AdditionalIdentityNameDescription   string
-	Attributes                          []Attribute
-	AttributesModification              bool
-	ResourceHooks                       []ResourceHookOption
-	Generators                          []GeneratorOption
-	Show                                OutputSpec
-	Describe                            OutputSpec
+	// ParameterSnowflakeType corresponds to the sdk.ParameterType suffix Snowflake reports for this
+	// object's parameters ("Schema" emits sdk.ParameterTypeSchema).
+	ParameterSnowflakeType            string
+	IdentityNameForceNew              bool
+	AdditionalIdentityNameDescription string
+	Attributes                        []Attribute
+	AttributesModification            bool
+	ResourceHooks                     []ResourceHookOption
+	Generators                        []GeneratorOption
+	Show                              OutputSpec
+	Describe                          OutputSpec
 }
 
 func (d Object) ObjectName() string { return d.Name }
