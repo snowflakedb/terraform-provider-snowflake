@@ -334,8 +334,28 @@ func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey(expected string) *Lega
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKeyWo(expected string) *LegacyServiceUserResourceAssert {
+	l.StringValueSet("rsa_public_key_wo", expected)
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKeyWoVersion(expected int) *LegacyServiceUserResourceAssert {
+	l.IntValueSet("rsa_public_key_wo_version", expected)
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2(expected string) *LegacyServiceUserResourceAssert {
 	l.StringValueSet("rsa_public_key_2", expected)
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2Wo(expected string) *LegacyServiceUserResourceAssert {
+	l.StringValueSet("rsa_public_key_2_wo", expected)
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2WoVersion(expected int) *LegacyServiceUserResourceAssert {
+	l.IntValueSet("rsa_public_key_2_wo_version", expected)
 	return l
 }
 
@@ -768,8 +788,28 @@ func (l *LegacyServiceUserResourceAssert) HasRsaPublicKeyString(expected string)
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKeyWoString(expected string) *LegacyServiceUserResourceAssert {
+	l.ValueSet("rsa_public_key_wo", expected)
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKeyWoVersionString(expected string) *LegacyServiceUserResourceAssert {
+	l.ValueSet("rsa_public_key_wo_version", expected)
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2String(expected string) *LegacyServiceUserResourceAssert {
 	l.ValueSet("rsa_public_key_2", expected)
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2WoString(expected string) *LegacyServiceUserResourceAssert {
+	l.ValueSet("rsa_public_key_2_wo", expected)
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2WoVersionString(expected string) *LegacyServiceUserResourceAssert {
+	l.ValueSet("rsa_public_key_2_wo_version", expected)
 	return l
 }
 
@@ -1202,8 +1242,28 @@ func (l *LegacyServiceUserResourceAssert) HasNoRsaPublicKey() *LegacyServiceUser
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasNoRsaPublicKeyWo() *LegacyServiceUserResourceAssert {
+	l.ValueNotSet("rsa_public_key_wo")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasNoRsaPublicKeyWoVersion() *LegacyServiceUserResourceAssert {
+	l.ValueNotSet("rsa_public_key_wo_version")
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasNoRsaPublicKey2() *LegacyServiceUserResourceAssert {
 	l.ValueNotSet("rsa_public_key_2")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasNoRsaPublicKey2Wo() *LegacyServiceUserResourceAssert {
+	l.ValueNotSet("rsa_public_key_2_wo")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasNoRsaPublicKey2WoVersion() *LegacyServiceUserResourceAssert {
+	l.ValueNotSet("rsa_public_key_2_wo_version")
 	return l
 }
 
@@ -1636,8 +1696,28 @@ func (l *LegacyServiceUserResourceAssert) HasRsaPublicKeyEmpty() *LegacyServiceU
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKeyWoEmpty() *LegacyServiceUserResourceAssert {
+	l.ValueSet("rsa_public_key_wo", "")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKeyWoVersionEmpty() *LegacyServiceUserResourceAssert {
+	l.ValueSet("rsa_public_key_wo_version", "")
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2Empty() *LegacyServiceUserResourceAssert {
 	l.ValueSet("rsa_public_key_2", "")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2WoEmpty() *LegacyServiceUserResourceAssert {
+	l.ValueSet("rsa_public_key_2_wo", "")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2WoVersionEmpty() *LegacyServiceUserResourceAssert {
+	l.ValueSet("rsa_public_key_2_wo_version", "")
 	return l
 }
 
@@ -2070,8 +2150,28 @@ func (l *LegacyServiceUserResourceAssert) HasRsaPublicKeyNotEmpty() *LegacyServi
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKeyWoNotEmpty() *LegacyServiceUserResourceAssert {
+	l.ValuePresent("rsa_public_key_wo")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKeyWoVersionNotEmpty() *LegacyServiceUserResourceAssert {
+	l.ValuePresent("rsa_public_key_wo_version")
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2NotEmpty() *LegacyServiceUserResourceAssert {
 	l.ValuePresent("rsa_public_key_2")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2WoNotEmpty() *LegacyServiceUserResourceAssert {
+	l.ValuePresent("rsa_public_key_2_wo")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2WoVersionNotEmpty() *LegacyServiceUserResourceAssert {
+	l.ValuePresent("rsa_public_key_2_wo_version")
 	return l
 }
 

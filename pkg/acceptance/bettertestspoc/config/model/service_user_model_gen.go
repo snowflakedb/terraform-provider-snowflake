@@ -70,7 +70,11 @@ type ServiceUserModel struct {
 	QuotedIdentifiersIgnoreCase              tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
 	RowsPerResultset                         tfconfig.Variable `json:"rows_per_resultset,omitempty"`
 	RsaPublicKey                             tfconfig.Variable `json:"rsa_public_key,omitempty"`
+	RsaPublicKeyWo                           tfconfig.Variable `json:"rsa_public_key_wo,omitempty"`
+	RsaPublicKeyWoVersion                    tfconfig.Variable `json:"rsa_public_key_wo_version,omitempty"`
 	RsaPublicKey2                            tfconfig.Variable `json:"rsa_public_key_2,omitempty"`
+	RsaPublicKey2Wo                          tfconfig.Variable `json:"rsa_public_key_2_wo,omitempty"`
+	RsaPublicKey2WoVersion                   tfconfig.Variable `json:"rsa_public_key_2_wo_version,omitempty"`
 	S3StageVpceDnsName                       tfconfig.Variable `json:"s3_stage_vpce_dns_name,omitempty"`
 	SearchPath                               tfconfig.Variable `json:"search_path,omitempty"`
 	SimulatedDataSharingConsumer             tfconfig.Variable `json:"simulated_data_sharing_consumer,omitempty"`
@@ -453,6 +457,26 @@ func (s *ServiceUserModel) WithRsaPublicKey(rsaPublicKey string) *ServiceUserMod
 
 func (s *ServiceUserModel) WithRsaPublicKey2(rsaPublicKey2 string) *ServiceUserModel {
 	s.RsaPublicKey2 = config.MultilineWrapperVariable(rsaPublicKey2)
+	return s
+}
+
+func (s *ServiceUserModel) WithRsaPublicKey2Wo(rsaPublicKey2Wo string) *ServiceUserModel {
+	s.RsaPublicKey2Wo = config.MultilineWrapperVariable(rsaPublicKey2Wo)
+	return s
+}
+
+func (s *ServiceUserModel) WithRsaPublicKey2WoVersion(rsaPublicKey2WoVersion int) *ServiceUserModel {
+	s.RsaPublicKey2WoVersion = tfconfig.IntegerVariable(rsaPublicKey2WoVersion)
+	return s
+}
+
+func (s *ServiceUserModel) WithRsaPublicKeyWo(rsaPublicKeyWo string) *ServiceUserModel {
+	s.RsaPublicKeyWo = config.MultilineWrapperVariable(rsaPublicKeyWo)
+	return s
+}
+
+func (s *ServiceUserModel) WithRsaPublicKeyWoVersion(rsaPublicKeyWoVersion int) *ServiceUserModel {
+	s.RsaPublicKeyWoVersion = tfconfig.IntegerVariable(rsaPublicKeyWoVersion)
 	return s
 }
 
@@ -882,6 +906,26 @@ func (s *ServiceUserModel) WithRsaPublicKeyValue(value tfconfig.Variable) *Servi
 
 func (s *ServiceUserModel) WithRsaPublicKey2Value(value tfconfig.Variable) *ServiceUserModel {
 	s.RsaPublicKey2 = value
+	return s
+}
+
+func (s *ServiceUserModel) WithRsaPublicKey2WoValue(value tfconfig.Variable) *ServiceUserModel {
+	s.RsaPublicKey2Wo = value
+	return s
+}
+
+func (s *ServiceUserModel) WithRsaPublicKey2WoVersionValue(value tfconfig.Variable) *ServiceUserModel {
+	s.RsaPublicKey2WoVersion = value
+	return s
+}
+
+func (s *ServiceUserModel) WithRsaPublicKeyWoValue(value tfconfig.Variable) *ServiceUserModel {
+	s.RsaPublicKeyWo = value
+	return s
+}
+
+func (s *ServiceUserModel) WithRsaPublicKeyWoVersionValue(value tfconfig.Variable) *ServiceUserModel {
+	s.RsaPublicKeyWoVersion = value
 	return s
 }
 

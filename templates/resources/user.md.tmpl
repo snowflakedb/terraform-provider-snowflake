@@ -21,6 +21,8 @@ description: |-
 
 -> **Note** External changes to `days_to_expiry`, `mins_to_unlock`, and `mins_to_bypass_mfa` are not currently handled by the provider (because the value changes continuously on Snowflake side after setting it).
 
+-> **Note** The RSA public keys can be set with the [write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral/write-only) `rsa_public_key_wo` and `rsa_public_key_2_wo` fields (requires Terraform 1.11 or later). Their values are never saved in the Terraform plan or state, so they can be fed from an ephemeral resource, like `tls_private_key`. Because Terraform can not see a write-only value, it can not detect changes to it either: the key is sent to Snowflake only when the accompanying `rsa_public_key_wo_version` (or `rsa_public_key_2_wo_version`) field changes, so increment it whenever you want to rotate the key. Each write-only field conflicts with its regular counterpart, and requires its version field to be set. Note that after importing a user, the version field is empty, so the first apply pushes the key again.
+
 # {{.Name}} ({{.Type}})
 
 {{ .Description | trimspace }}

@@ -72,7 +72,11 @@ type LegacyServiceUserModel struct {
 	QuotedIdentifiersIgnoreCase              tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
 	RowsPerResultset                         tfconfig.Variable `json:"rows_per_resultset,omitempty"`
 	RsaPublicKey                             tfconfig.Variable `json:"rsa_public_key,omitempty"`
+	RsaPublicKeyWo                           tfconfig.Variable `json:"rsa_public_key_wo,omitempty"`
+	RsaPublicKeyWoVersion                    tfconfig.Variable `json:"rsa_public_key_wo_version,omitempty"`
 	RsaPublicKey2                            tfconfig.Variable `json:"rsa_public_key_2,omitempty"`
+	RsaPublicKey2Wo                          tfconfig.Variable `json:"rsa_public_key_2_wo,omitempty"`
+	RsaPublicKey2WoVersion                   tfconfig.Variable `json:"rsa_public_key_2_wo_version,omitempty"`
 	S3StageVpceDnsName                       tfconfig.Variable `json:"s3_stage_vpce_dns_name,omitempty"`
 	SearchPath                               tfconfig.Variable `json:"search_path,omitempty"`
 	SimulatedDataSharingConsumer             tfconfig.Variable `json:"simulated_data_sharing_consumer,omitempty"`
@@ -465,6 +469,26 @@ func (l *LegacyServiceUserModel) WithRsaPublicKey(rsaPublicKey string) *LegacySe
 
 func (l *LegacyServiceUserModel) WithRsaPublicKey2(rsaPublicKey2 string) *LegacyServiceUserModel {
 	l.RsaPublicKey2 = config.MultilineWrapperVariable(rsaPublicKey2)
+	return l
+}
+
+func (l *LegacyServiceUserModel) WithRsaPublicKey2Wo(rsaPublicKey2Wo string) *LegacyServiceUserModel {
+	l.RsaPublicKey2Wo = config.MultilineWrapperVariable(rsaPublicKey2Wo)
+	return l
+}
+
+func (l *LegacyServiceUserModel) WithRsaPublicKey2WoVersion(rsaPublicKey2WoVersion int) *LegacyServiceUserModel {
+	l.RsaPublicKey2WoVersion = tfconfig.IntegerVariable(rsaPublicKey2WoVersion)
+	return l
+}
+
+func (l *LegacyServiceUserModel) WithRsaPublicKeyWo(rsaPublicKeyWo string) *LegacyServiceUserModel {
+	l.RsaPublicKeyWo = config.MultilineWrapperVariable(rsaPublicKeyWo)
+	return l
+}
+
+func (l *LegacyServiceUserModel) WithRsaPublicKeyWoVersion(rsaPublicKeyWoVersion int) *LegacyServiceUserModel {
+	l.RsaPublicKeyWoVersion = tfconfig.IntegerVariable(rsaPublicKeyWoVersion)
 	return l
 }
 
@@ -904,6 +928,26 @@ func (l *LegacyServiceUserModel) WithRsaPublicKeyValue(value tfconfig.Variable) 
 
 func (l *LegacyServiceUserModel) WithRsaPublicKey2Value(value tfconfig.Variable) *LegacyServiceUserModel {
 	l.RsaPublicKey2 = value
+	return l
+}
+
+func (l *LegacyServiceUserModel) WithRsaPublicKey2WoValue(value tfconfig.Variable) *LegacyServiceUserModel {
+	l.RsaPublicKey2Wo = value
+	return l
+}
+
+func (l *LegacyServiceUserModel) WithRsaPublicKey2WoVersionValue(value tfconfig.Variable) *LegacyServiceUserModel {
+	l.RsaPublicKey2WoVersion = value
+	return l
+}
+
+func (l *LegacyServiceUserModel) WithRsaPublicKeyWoValue(value tfconfig.Variable) *LegacyServiceUserModel {
+	l.RsaPublicKeyWo = value
+	return l
+}
+
+func (l *LegacyServiceUserModel) WithRsaPublicKeyWoVersionValue(value tfconfig.Variable) *LegacyServiceUserModel {
+	l.RsaPublicKeyWoVersion = value
 	return l
 }
 

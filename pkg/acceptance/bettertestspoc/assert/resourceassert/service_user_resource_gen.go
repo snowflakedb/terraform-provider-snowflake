@@ -324,8 +324,28 @@ func (s *ServiceUserResourceAssert) HasRsaPublicKey(expected string) *ServiceUse
 	return s
 }
 
+func (s *ServiceUserResourceAssert) HasRsaPublicKeyWo(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("rsa_public_key_wo", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKeyWoVersion(expected int) *ServiceUserResourceAssert {
+	s.IntValueSet("rsa_public_key_wo_version", expected)
+	return s
+}
+
 func (s *ServiceUserResourceAssert) HasRsaPublicKey2(expected string) *ServiceUserResourceAssert {
 	s.StringValueSet("rsa_public_key_2", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKey2Wo(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("rsa_public_key_2_wo", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKey2WoVersion(expected int) *ServiceUserResourceAssert {
+	s.IntValueSet("rsa_public_key_2_wo_version", expected)
 	return s
 }
 
@@ -748,8 +768,28 @@ func (s *ServiceUserResourceAssert) HasRsaPublicKeyString(expected string) *Serv
 	return s
 }
 
+func (s *ServiceUserResourceAssert) HasRsaPublicKeyWoString(expected string) *ServiceUserResourceAssert {
+	s.ValueSet("rsa_public_key_wo", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKeyWoVersionString(expected string) *ServiceUserResourceAssert {
+	s.ValueSet("rsa_public_key_wo_version", expected)
+	return s
+}
+
 func (s *ServiceUserResourceAssert) HasRsaPublicKey2String(expected string) *ServiceUserResourceAssert {
 	s.ValueSet("rsa_public_key_2", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKey2WoString(expected string) *ServiceUserResourceAssert {
+	s.ValueSet("rsa_public_key_2_wo", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKey2WoVersionString(expected string) *ServiceUserResourceAssert {
+	s.ValueSet("rsa_public_key_2_wo_version", expected)
 	return s
 }
 
@@ -1172,8 +1212,28 @@ func (s *ServiceUserResourceAssert) HasNoRsaPublicKey() *ServiceUserResourceAsse
 	return s
 }
 
+func (s *ServiceUserResourceAssert) HasNoRsaPublicKeyWo() *ServiceUserResourceAssert {
+	s.ValueNotSet("rsa_public_key_wo")
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasNoRsaPublicKeyWoVersion() *ServiceUserResourceAssert {
+	s.ValueNotSet("rsa_public_key_wo_version")
+	return s
+}
+
 func (s *ServiceUserResourceAssert) HasNoRsaPublicKey2() *ServiceUserResourceAssert {
 	s.ValueNotSet("rsa_public_key_2")
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasNoRsaPublicKey2Wo() *ServiceUserResourceAssert {
+	s.ValueNotSet("rsa_public_key_2_wo")
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasNoRsaPublicKey2WoVersion() *ServiceUserResourceAssert {
+	s.ValueNotSet("rsa_public_key_2_wo_version")
 	return s
 }
 
@@ -1596,8 +1656,28 @@ func (s *ServiceUserResourceAssert) HasRsaPublicKeyEmpty() *ServiceUserResourceA
 	return s
 }
 
+func (s *ServiceUserResourceAssert) HasRsaPublicKeyWoEmpty() *ServiceUserResourceAssert {
+	s.ValueSet("rsa_public_key_wo", "")
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKeyWoVersionEmpty() *ServiceUserResourceAssert {
+	s.ValueSet("rsa_public_key_wo_version", "")
+	return s
+}
+
 func (s *ServiceUserResourceAssert) HasRsaPublicKey2Empty() *ServiceUserResourceAssert {
 	s.ValueSet("rsa_public_key_2", "")
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKey2WoEmpty() *ServiceUserResourceAssert {
+	s.ValueSet("rsa_public_key_2_wo", "")
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKey2WoVersionEmpty() *ServiceUserResourceAssert {
+	s.ValueSet("rsa_public_key_2_wo_version", "")
 	return s
 }
 
@@ -2020,8 +2100,28 @@ func (s *ServiceUserResourceAssert) HasRsaPublicKeyNotEmpty() *ServiceUserResour
 	return s
 }
 
+func (s *ServiceUserResourceAssert) HasRsaPublicKeyWoNotEmpty() *ServiceUserResourceAssert {
+	s.ValuePresent("rsa_public_key_wo")
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKeyWoVersionNotEmpty() *ServiceUserResourceAssert {
+	s.ValuePresent("rsa_public_key_wo_version")
+	return s
+}
+
 func (s *ServiceUserResourceAssert) HasRsaPublicKey2NotEmpty() *ServiceUserResourceAssert {
 	s.ValuePresent("rsa_public_key_2")
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKey2WoNotEmpty() *ServiceUserResourceAssert {
+	s.ValuePresent("rsa_public_key_2_wo")
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKey2WoVersionNotEmpty() *ServiceUserResourceAssert {
+	s.ValuePresent("rsa_public_key_2_wo_version")
 	return s
 }
 

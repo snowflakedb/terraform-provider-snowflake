@@ -76,7 +76,11 @@ type UserModel struct {
 	QuotedIdentifiersIgnoreCase              tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
 	RowsPerResultset                         tfconfig.Variable `json:"rows_per_resultset,omitempty"`
 	RsaPublicKey                             tfconfig.Variable `json:"rsa_public_key,omitempty"`
+	RsaPublicKeyWo                           tfconfig.Variable `json:"rsa_public_key_wo,omitempty"`
+	RsaPublicKeyWoVersion                    tfconfig.Variable `json:"rsa_public_key_wo_version,omitempty"`
 	RsaPublicKey2                            tfconfig.Variable `json:"rsa_public_key_2,omitempty"`
+	RsaPublicKey2Wo                          tfconfig.Variable `json:"rsa_public_key_2_wo,omitempty"`
+	RsaPublicKey2WoVersion                   tfconfig.Variable `json:"rsa_public_key_2_wo_version,omitempty"`
 	S3StageVpceDnsName                       tfconfig.Variable `json:"s3_stage_vpce_dns_name,omitempty"`
 	SearchPath                               tfconfig.Variable `json:"search_path,omitempty"`
 	SimulatedDataSharingConsumer             tfconfig.Variable `json:"simulated_data_sharing_consumer,omitempty"`
@@ -492,6 +496,26 @@ func (u *UserModel) WithRsaPublicKey(rsaPublicKey string) *UserModel {
 
 func (u *UserModel) WithRsaPublicKey2(rsaPublicKey2 string) *UserModel {
 	u.RsaPublicKey2 = config.MultilineWrapperVariable(rsaPublicKey2)
+	return u
+}
+
+func (u *UserModel) WithRsaPublicKey2Wo(rsaPublicKey2Wo string) *UserModel {
+	u.RsaPublicKey2Wo = config.MultilineWrapperVariable(rsaPublicKey2Wo)
+	return u
+}
+
+func (u *UserModel) WithRsaPublicKey2WoVersion(rsaPublicKey2WoVersion int) *UserModel {
+	u.RsaPublicKey2WoVersion = tfconfig.IntegerVariable(rsaPublicKey2WoVersion)
+	return u
+}
+
+func (u *UserModel) WithRsaPublicKeyWo(rsaPublicKeyWo string) *UserModel {
+	u.RsaPublicKeyWo = config.MultilineWrapperVariable(rsaPublicKeyWo)
+	return u
+}
+
+func (u *UserModel) WithRsaPublicKeyWoVersion(rsaPublicKeyWoVersion int) *UserModel {
+	u.RsaPublicKeyWoVersion = tfconfig.IntegerVariable(rsaPublicKeyWoVersion)
 	return u
 }
 
@@ -951,6 +975,26 @@ func (u *UserModel) WithRsaPublicKeyValue(value tfconfig.Variable) *UserModel {
 
 func (u *UserModel) WithRsaPublicKey2Value(value tfconfig.Variable) *UserModel {
 	u.RsaPublicKey2 = value
+	return u
+}
+
+func (u *UserModel) WithRsaPublicKey2WoValue(value tfconfig.Variable) *UserModel {
+	u.RsaPublicKey2Wo = value
+	return u
+}
+
+func (u *UserModel) WithRsaPublicKey2WoVersionValue(value tfconfig.Variable) *UserModel {
+	u.RsaPublicKey2WoVersion = value
+	return u
+}
+
+func (u *UserModel) WithRsaPublicKeyWoValue(value tfconfig.Variable) *UserModel {
+	u.RsaPublicKeyWo = value
+	return u
+}
+
+func (u *UserModel) WithRsaPublicKeyWoVersionValue(value tfconfig.Variable) *UserModel {
+	u.RsaPublicKeyWoVersion = value
 	return u
 }
 

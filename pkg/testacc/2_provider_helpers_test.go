@@ -39,6 +39,16 @@ func ExternalProviderWithExactVersion(version string) map[string]resource.Extern
 	}
 }
 
+// ExternalTlsProvider returns the hashicorp/tls provider, used to test assigning ephemeral values to write-only fields.
+// It has to be set together with ProtoV6ProviderFactories, because the Snowflake provider is still needed in such tests.
+func ExternalTlsProvider() map[string]resource.ExternalProvider {
+	return map[string]resource.ExternalProvider{
+		"tls": {
+			Source: "hashicorp/tls",
+		},
+	}
+}
+
 func setConfigPathEnv(t *testing.T, configName string) {
 	t.Helper()
 	home, err := os.UserHomeDir()

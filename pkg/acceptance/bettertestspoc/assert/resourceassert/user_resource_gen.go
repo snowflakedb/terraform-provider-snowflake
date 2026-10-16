@@ -357,8 +357,28 @@ func (u *UserResourceAssert) HasRsaPublicKey(expected string) *UserResourceAsser
 	return u
 }
 
+func (u *UserResourceAssert) HasRsaPublicKeyWo(expected string) *UserResourceAssert {
+	u.StringValueSet("rsa_public_key_wo", expected)
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKeyWoVersion(expected int) *UserResourceAssert {
+	u.IntValueSet("rsa_public_key_wo_version", expected)
+	return u
+}
+
 func (u *UserResourceAssert) HasRsaPublicKey2(expected string) *UserResourceAssert {
 	u.StringValueSet("rsa_public_key_2", expected)
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKey2Wo(expected string) *UserResourceAssert {
+	u.StringValueSet("rsa_public_key_2_wo", expected)
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKey2WoVersion(expected int) *UserResourceAssert {
+	u.IntValueSet("rsa_public_key_2_wo_version", expected)
 	return u
 }
 
@@ -816,8 +836,28 @@ func (u *UserResourceAssert) HasRsaPublicKeyString(expected string) *UserResourc
 	return u
 }
 
+func (u *UserResourceAssert) HasRsaPublicKeyWoString(expected string) *UserResourceAssert {
+	u.ValueSet("rsa_public_key_wo", expected)
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKeyWoVersionString(expected string) *UserResourceAssert {
+	u.ValueSet("rsa_public_key_wo_version", expected)
+	return u
+}
+
 func (u *UserResourceAssert) HasRsaPublicKey2String(expected string) *UserResourceAssert {
 	u.ValueSet("rsa_public_key_2", expected)
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKey2WoString(expected string) *UserResourceAssert {
+	u.ValueSet("rsa_public_key_2_wo", expected)
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKey2WoVersionString(expected string) *UserResourceAssert {
+	u.ValueSet("rsa_public_key_2_wo_version", expected)
 	return u
 }
 
@@ -1275,8 +1315,28 @@ func (u *UserResourceAssert) HasNoRsaPublicKey() *UserResourceAssert {
 	return u
 }
 
+func (u *UserResourceAssert) HasNoRsaPublicKeyWo() *UserResourceAssert {
+	u.ValueNotSet("rsa_public_key_wo")
+	return u
+}
+
+func (u *UserResourceAssert) HasNoRsaPublicKeyWoVersion() *UserResourceAssert {
+	u.ValueNotSet("rsa_public_key_wo_version")
+	return u
+}
+
 func (u *UserResourceAssert) HasNoRsaPublicKey2() *UserResourceAssert {
 	u.ValueNotSet("rsa_public_key_2")
+	return u
+}
+
+func (u *UserResourceAssert) HasNoRsaPublicKey2Wo() *UserResourceAssert {
+	u.ValueNotSet("rsa_public_key_2_wo")
+	return u
+}
+
+func (u *UserResourceAssert) HasNoRsaPublicKey2WoVersion() *UserResourceAssert {
+	u.ValueNotSet("rsa_public_key_2_wo_version")
 	return u
 }
 
@@ -1729,8 +1789,28 @@ func (u *UserResourceAssert) HasRsaPublicKeyEmpty() *UserResourceAssert {
 	return u
 }
 
+func (u *UserResourceAssert) HasRsaPublicKeyWoEmpty() *UserResourceAssert {
+	u.ValueSet("rsa_public_key_wo", "")
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKeyWoVersionEmpty() *UserResourceAssert {
+	u.ValueSet("rsa_public_key_wo_version", "")
+	return u
+}
+
 func (u *UserResourceAssert) HasRsaPublicKey2Empty() *UserResourceAssert {
 	u.ValueSet("rsa_public_key_2", "")
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKey2WoEmpty() *UserResourceAssert {
+	u.ValueSet("rsa_public_key_2_wo", "")
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKey2WoVersionEmpty() *UserResourceAssert {
+	u.ValueSet("rsa_public_key_2_wo_version", "")
 	return u
 }
 
@@ -2188,8 +2268,28 @@ func (u *UserResourceAssert) HasRsaPublicKeyNotEmpty() *UserResourceAssert {
 	return u
 }
 
+func (u *UserResourceAssert) HasRsaPublicKeyWoNotEmpty() *UserResourceAssert {
+	u.ValuePresent("rsa_public_key_wo")
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKeyWoVersionNotEmpty() *UserResourceAssert {
+	u.ValuePresent("rsa_public_key_wo_version")
+	return u
+}
+
 func (u *UserResourceAssert) HasRsaPublicKey2NotEmpty() *UserResourceAssert {
 	u.ValuePresent("rsa_public_key_2")
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKey2WoNotEmpty() *UserResourceAssert {
+	u.ValuePresent("rsa_public_key_2_wo")
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKey2WoVersionNotEmpty() *UserResourceAssert {
+	u.ValuePresent("rsa_public_key_2_wo_version")
 	return u
 }
 

@@ -57,3 +57,11 @@ func (u *UserResourceAssert) HasAllDefaults(userId sdk.AccountObjectIdentifier, 
 		HasDisableMfaString(r.BooleanDefault).
 		HasFullyQualifiedNameString(userId.FullyQualifiedName())
 }
+
+func (u *UserResourceAssert) HasRsaPublicKeyNotInState() *UserResourceAssert {
+	return u.HasRsaPublicKeyEmpty()
+}
+
+func (u *UserResourceAssert) HasRsaPublicKey2NotInState() *UserResourceAssert {
+	return u.HasRsaPublicKey2Empty()
+}
