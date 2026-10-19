@@ -31,6 +31,35 @@ func TestParameterHooks_schemaTemplateMatchesHandWrittenMappings(t *testing.T) {
 	require.Contains(t, got, "IntTypedParameterValueComputedIf(ssotdefs.DataRetentionTimeInDays.FieldName(), parameters.DataRetentionTimeInDays, sdk.ParameterTypeSchema),")
 	require.Contains(t, got, "BoolTypedParameterValueComputedIf(ssotdefs.EnableConsoleOutput.FieldName(), parameters.EnableConsoleOutput, sdk.ParameterTypeSchema),")
 	require.Contains(t, got, "StringAllowEmptyTypedParameterValueComputedIf(ssotdefs.DefaultDdlCollation.FieldName(), parameters.DefaultDdlCollation, sdk.ParameterTypeSchema),")
+	require.Contains(t, got, "schemaParseIdExt(d.Id())")
+}
+
+func TestParameterHooks_customDiffUsesConfiguredParseId(t *testing.T) {
+	model := ResourceModel{
+		Name:       "Schema",
+		NamePlural: "Schemas",
+		Hooks: ssot.DefaultResourceExtHooks(
+			ssot.WithParametersCustomDiff(ssot.Generated()),
+			ssot.WithParseId(ssot.Generated()),
+		),
+	}
+	var rendered bytes.Buffer
+	require.NoError(t, ParametersTemplate.Execute(&rendered, model))
+
+	require.Contains(t, rendered.String(), "schemaParseId(d.Id())")
+	require.NotContains(t, rendered.String(), "schemaParseIdExt(d.Id())")
+}
+
+func TestParameterHooks_parametersOutputSetRetainsExtCall(t *testing.T) {
+	model := ResourceModel{
+		Name:  "Widget",
+		Hooks: ssot.DefaultResourceExtHooks(ssot.WithParametersOutputSet(ssot.ExtCall())),
+	}
+	var rendered bytes.Buffer
+	require.NoError(t, LifecycleTemplate.Execute(&rendered, model))
+
+	require.Contains(t, rendered.String(), "widgetParametersOutputSetExt(d, rawWidgetParameters, meta),")
+	require.NotContains(t, rendered.String(), "schemas.WidgetParametersToSchema")
 }
 
 func TestParameterHookModel_fragments(t *testing.T) {

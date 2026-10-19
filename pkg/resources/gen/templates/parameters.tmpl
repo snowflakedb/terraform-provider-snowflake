@@ -46,7 +46,7 @@ var (
 {{- if .Hooks.ParametersCustomDiff.Generate }}
 
 func {{ .Prefix }}ParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) (*sdk.{{ .Name }}ParametersDetails, error) {
-	id, err := {{ .Prefix }}ParseIdExt(d.Id())
+	id, err := {{ .ParseIdFunc }}(d.Id())
 	if err != nil {
 		return nil, err
 	}

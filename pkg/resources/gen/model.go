@@ -38,6 +38,13 @@ func (m ResourceModel) Prefix() string {
 	return genhelpers.FirstLetterLowercase(m.Name)
 }
 
+func (m ResourceModel) ParseIdFunc() string {
+	if m.Hooks.ParseId.Generate {
+		return m.Prefix() + "ParseId"
+	}
+	return m.Prefix() + "ParseIdExt"
+}
+
 func (m ResourceModel) HasCreateOptionalCalls() bool {
 	for _, attr := range m.Attributes {
 		if attr.CreateOptionalCall != nil {
