@@ -9,7 +9,7 @@ import (
 
 // ShowPairedStructs builds a SHOW field chain from Columns by calling PairedStructs methods.
 // The db row name is the unexported plural plus "Row". The plain name is the object name.
-// The query struct, filtering, and description mapping stay in the def.
+// This function builds the field chain only.
 func ShowPairedStructs(obj ssot.Object) *PairedStructs {
 	if obj.Name == "" || obj.NamePlural == "" {
 		panic(fmt.Sprintf("object %q needs Name and NamePlural to build the SHOW paired struct", obj.Name))
@@ -19,7 +19,7 @@ func ShowPairedStructs(obj ssot.Object) *PairedStructs {
 
 // DescribePairedStructs builds a DESCRIBE field chain from Columns by calling PairedStructs methods.
 // The db row name is the unexported object name plus "DescRow". The plain name is the object name plus "Details".
-// The query struct, filtering, and description mapping stay in the def.
+// This function builds the field chain only.
 func DescribePairedStructs(obj ssot.Object) *PairedStructs {
 	if obj.Name == "" {
 		panic(fmt.Sprintf("object %q needs Name to build the DESCRIBE paired struct", obj.Name))

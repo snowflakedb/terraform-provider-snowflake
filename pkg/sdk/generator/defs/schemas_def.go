@@ -100,30 +100,9 @@ var schemasDef = g.NewInterface(
 		SQL("SCHEMA").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperationWithPairedStructs(
-	"https://docs.snowflake.com/en/sql-reference/sql/show-schemas",
-	g.ShowPairedStructs(ssotdefs.Schema),
-	g.NewQueryStruct("ShowSchemas").
-		Show().
-		Terse().
-		SQL("SCHEMAS").
-		OptionalSQL("HISTORY").
-		OptionalLike().
-		OptionalExtendedIn().
-		OptionalStartsWith().
-		OptionalLimit(),
-	g.ShowByIDExtendedInFiltering,
-	g.ShowByIDLikeFiltering,
-).DescribeOperationWithPairedStructs(
-	g.DescriptionMappingKindSlice,
-	"https://docs.snowflake.com/en/sql-reference/sql/desc-schema",
-	g.DescribePairedStructs(ssotdefs.Schema),
-	g.NewQueryStruct("DescribeSchema").
-		Describe().
-		SQL("SCHEMA").
-		Name().
-		WithValidation(g.ValidIdentifier, "name"),
-).ShowParameters("DatabaseObjectIdentifier").
+).ShowOperationFromObject(ssotdefs.Schema).
+	DescribeOperationFromObject(ssotdefs.Schema).
+	ShowParameters("DatabaseObjectIdentifier").
 	ShowParametersDetails(schemaParameters...).
 	WithCustomInterfaceMethod(
 		"Use", "Use is based on https://docs.snowflake.com/en/sql-reference/sql/use-schema",

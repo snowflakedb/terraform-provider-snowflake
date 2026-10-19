@@ -81,25 +81,8 @@ var computePoolsDef = g.NewInterface(
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
 	g.WithDropSafelyHook(),
-).ShowOperationWithPairedStructs(
-	"https://docs.snowflake.com/en/sql-reference/sql/show-compute-pools",
-	g.ShowPairedStructs(ssotdefs.ComputePool),
-	g.NewQueryStruct("ShowComputePools").
-		Show().
-		SQL("COMPUTE POOLS").
-		OptionalLike().
-		OptionalStartsWith().
-		OptionalLimitFrom(),
-).DescribeOperationWithPairedStructs(
-	g.DescriptionMappingKindSingleValue,
-	"https://docs.snowflake.com/en/sql-reference/sql/desc-compute-pool",
-	g.DescribePairedStructs(ssotdefs.ComputePool),
-	g.NewQueryStruct("DescComputePool").
-		Describe().
-		SQL("COMPUTE POOL").
-		Name().
-		WithValidation(g.ValidIdentifier, "name"),
-).
+).ShowOperationFromObject(ssotdefs.ComputePool).
+	DescribeOperationFromObject(ssotdefs.ComputePool).
 	WithEnums(
 		ssotdefs.ComputePoolState,
 		ssotdefs.ComputePoolInstanceFamily,

@@ -200,7 +200,14 @@ var ComputePool = ssot.Object{
 		ssot.WithResourceAssert(),
 		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
 		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
-		ssot.WithSdk(ssot.SdkShow(), ssot.SdkDescribe()),
+		ssot.WithSdk(
+			ssot.SdkShow(
+				ssot.SdkShowOptionalLike(),
+				ssot.SdkShowOptionalStartsWith(),
+				ssot.SdkShowOptionalLimitFrom(),
+			),
+			ssot.SdkDescribe(),
+		),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),

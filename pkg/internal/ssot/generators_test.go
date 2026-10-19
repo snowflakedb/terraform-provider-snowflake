@@ -61,6 +61,42 @@ func Test_ObjectGenerators_options(t *testing.T) {
 	g = ObjectGenerators(WithSdk(SdkDescribe()))
 	require.Equal(t, Generators{Sdk: SdkGenerator{Describe: true}}, g)
 
+	g = ObjectGenerators(WithSdk(SdkShow(
+		SdkShowDoc("https://show"),
+		SdkShowSql("THINGS"),
+		SdkShowTerse(),
+		SdkShowOptionalSql("HISTORY", "FUTURE"),
+		SdkShowOptionalLike(),
+		SdkShowOptionalExtendedIn(),
+		SdkShowOptionalStartsWith(),
+		SdkShowOptionalLimitFrom(),
+		SdkShowOptionalLimit(),
+		SdkShowByIDFiltering(SdkShowByIDExtendedIn, SdkShowByIDLike),
+	), SdkDescribe(
+		SdkDescribeDoc("https://desc"),
+		SdkDescribeSql("THING"),
+		SdkDescribeMapping(SdkDescriptionMappingSlice),
+		SdkDescribeQueryStructName("DescThing"),
+	)))
+	require.Equal(t, Generators{Sdk: SdkGenerator{
+		Show:                    true,
+		Describe:                true,
+		ShowDoc:                 "https://show",
+		ShowSql:                 "THINGS",
+		ShowTerse:               true,
+		ShowOptionalSql:         []string{"HISTORY", "FUTURE"},
+		ShowOptionalLike:        true,
+		ShowOptionalExtendedIn:  true,
+		ShowOptionalStartsWith:  true,
+		ShowOptionalLimitFrom:   true,
+		ShowOptionalLimit:       true,
+		ShowByIDFiltering:       []SdkShowByIDFilteringKind{SdkShowByIDExtendedIn, SdkShowByIDLike},
+		DescribeDoc:             "https://desc",
+		DescribeSql:             "THING",
+		DescribeMapping:         SdkDescriptionMappingSlice,
+		DescribeQueryStructName: "DescThing",
+	}}, g)
+
 	g = ObjectGenerators(WithSdk())
 	require.Equal(t, Generators{}, g)
 

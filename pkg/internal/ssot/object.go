@@ -21,4 +21,4 @@ type Object struct {
 	Describe                          OutputSpec
 }
 
-func (d Object) ObjectName() string { return d.Name }
+func (obj Object) ObjectName() string { return obj.Name }

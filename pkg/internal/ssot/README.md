@@ -166,8 +166,10 @@ Until a piece has moved, do not assume it is already in ssot:
 - An object absent from `All()` still enters through the generator's old list.
 - Parameters are not `Attributes` yet. A model builder or resource assertion that needs them still joins
   `ParameterDefsForLevel`.
-- SDK defs still own the query struct, ShowByID filtering, `DescriptionMappingKind`, and every operation that is not the
-  paired-struct field chain. CREATE, ALTER, DROP, and parameters are not generated from `Columns`.
+- When `SdkShow()` or `SdkDescribe()` is on, that Show or Describe method comes from the option. The query struct,
+  ShowByID filtering, and `DescriptionMappingKind` are part of it. An object with the setting off keeps the handwritten
+  call. CREATE, ALTER, DROP, parameters, and every other operation stay in the SDK def. They are not generated from
+  `Columns`.
 - `SkipFields`, `ManualFields`, `TypeOverrides`, and `UsedAsListEntry` have no ssot equivalent yet.
 - `ResourceHooks` do not yet generate the whole lifecycle, the SDK calls, or the mapping. A missing step stays an ext
   call, or panics through `Unimplemented`, until that hook is implemented. See [Resource generator](#resource-generator).
@@ -251,8 +253,8 @@ The skip is not permission to leave the object on the list forever. A repeated s
 `ResourceAssertionModels` and `ModelBuilderModels` skip a reflected name and do not panic on a repeated ssot name. A
 repeat for an object that ssot does not emit stays. Do not delete it.
 
-SDK paired structs have no second object list. The SDK def calls `ShowPairedStructs` / `DescribePairedStructs` when the
-setting is on, and keeps the handwritten field chain when it is off.
+SDK paired structs have no second object list. The SDK def calls `ShowOperationFromObject` / `DescribeOperationFromObject`
+when the setting is on, and keeps the handwritten Show or Describe call when it is off.
 
 ### Parameters
 
@@ -262,7 +264,8 @@ Parameter types live in [parameter.go](parameter.go). Catalog entries live in [d
 
 ### Later
 
-The SDK field chain can come from `Columns` when `SdkShow()` or `SdkDescribe()` is passed to `WithSdk()`. The def keeps
-the query struct, ShowByID filtering, and `DescriptionMappingKind`. A handwritten field chain is still the source when
-the matching setting is off; keep that chain in sync with `Columns`.
+The SDK field chain comes from `Columns` when `SdkShow()` or `SdkDescribe()` is passed to `WithSdk()`. That option also
+supplies the Show or Describe method: the query struct, ShowByID filtering, and `DescriptionMappingKind`. A handwritten
+field chain, and a handwritten Show or Describe call, are still the source when the matching setting is off. Keep that
+chain in sync with `Columns`.
 See [PairedStructs](../../sdk/generator/README.md#pairedstructs).

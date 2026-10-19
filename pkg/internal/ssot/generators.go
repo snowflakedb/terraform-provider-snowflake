@@ -8,6 +8,23 @@ type SchemaGenerator struct {
 type SdkGenerator struct {
 	Show     bool
 	Describe bool
+
+	ShowDoc                string
+	ShowSql                string
+	ShowTerse              bool
+	ShowOptionalSql        []string
+	ShowOptionalLike       bool
+	ShowOptionalExtendedIn bool
+	ShowOptionalStartsWith bool
+	ShowOptionalLimitFrom  bool
+	ShowOptionalLimit      bool
+	ShowByIDFiltering      []SdkShowByIDFilteringKind
+	ShowQueryStructName    string
+
+	DescribeDoc             string
+	DescribeSql             string
+	DescribeMapping         SdkDescriptionMapping
+	DescribeQueryStructName string
 }
 
 type ModelGenerator struct {
@@ -60,12 +77,26 @@ func WithSchema(opts ...SchemaOption) GeneratorOption {
 
 type SdkOption func(*SdkGenerator)
 
-func SdkShow() SdkOption {
-	return func(s *SdkGenerator) { s.Show = true }
+type SdkShowOption func(*SdkGenerator)
+
+type SdkDescribeOption func(*SdkGenerator)
+
+func SdkShow(opts ...SdkShowOption) SdkOption {
+	return func(s *SdkGenerator) {
+		s.Show = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
 }
 
-func SdkDescribe() SdkOption {
-	return func(s *SdkGenerator) { s.Describe = true }
+func SdkDescribe(opts ...SdkDescribeOption) SdkOption {
+	return func(s *SdkGenerator) {
+		s.Describe = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
 }
 
 func WithSdk(opts ...SdkOption) GeneratorOption {

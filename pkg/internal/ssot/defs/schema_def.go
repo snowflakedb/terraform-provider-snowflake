@@ -67,7 +67,21 @@ var Schema = ssot.Object{
 			ssot.ObjectAssertShow(),
 			ssot.ObjectAssertDescribe(ssot.WithNoIdentifiableObject()),
 		),
-		ssot.WithSdk(ssot.SdkShow(), ssot.SdkDescribe()),
+		ssot.WithSdk(
+			ssot.SdkShow(
+				ssot.SdkShowTerse(),
+				ssot.SdkShowOptionalSql("HISTORY"),
+				ssot.SdkShowOptionalLike(),
+				ssot.SdkShowOptionalExtendedIn(),
+				ssot.SdkShowOptionalStartsWith(),
+				ssot.SdkShowOptionalLimit(),
+				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDExtendedIn, ssot.SdkShowByIDLike),
+			),
+			ssot.SdkDescribe(
+				ssot.SdkDescribeMapping(ssot.SdkDescriptionMappingSlice),
+				ssot.SdkDescribeQueryStructName("DescribeSchema"),
+			),
+		),
 	},
 	Attributes: []ssot.Attribute{
 		SchemaAttrs.WithManagedAccess,

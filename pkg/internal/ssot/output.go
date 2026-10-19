@@ -9,20 +9,20 @@ type OutputSpec struct {
 	Columns []*Attribute
 }
 
-func (o Object) ShowOutputKeys() []string {
-	return outputKeys(o.Show.Columns)
+func (obj Object) ShowOutputKeys() []string {
+	return outputKeys(obj.Show.Columns)
 }
 
-func (o Object) DescribeOutputKeys() []string {
-	return outputKeys(o.Describe.Columns)
+func (obj Object) DescribeOutputKeys() []string {
+	return outputKeys(obj.Describe.Columns)
 }
 
-func (o Object) ShowOutputAttributes() []*Attribute {
-	return o.Show.Columns
+func (obj Object) ShowOutputAttributes() []*Attribute {
+	return obj.Show.Columns
 }
 
-func (o Object) DescribeOutputAttributes() []*Attribute {
-	return o.Describe.Columns
+func (obj Object) DescribeOutputAttributes() []*Attribute {
+	return obj.Describe.Columns
 }
 
 func outputKeys(attrs []*Attribute) []string {
