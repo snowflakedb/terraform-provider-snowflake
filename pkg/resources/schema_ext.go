@@ -151,7 +151,7 @@ func schemaSetConfigFieldsExt(d *schema.ResourceData, s *sdk.Schema) error {
 	return d.Set("comment", s.Comment)
 }
 
-func schemaSetDescribeOutputExt(d *schema.ResourceData, id sdk.DatabaseObjectIdentifier, details []sdk.SchemaDetails, describeErr error) error {
+func schemaSetDescribeOutputExt(d *schema.ResourceData, id sdk.DatabaseObjectIdentifier, details []sdk.SchemaDetails, describeErr error, _ bool) error {
 	if describeErr != nil {
 		log.Printf("[DEBUG] describing schema: %s, err: %s", id.FullyQualifiedName(), describeErr)
 		return nil
@@ -296,7 +296,7 @@ func schemaDescribeInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObject
 	return client.Schemas.Describe(ctx, id)
 }
 
-func schemaAlterSetInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObjectIdentifier, reqs *schemaAlterRequestsExt) error {
+func schemaAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.DatabaseObjectIdentifier, reqs *schemaAlterRequestsExt) error {
 	if *reqs.set != *sdk.NewSchemaSetRequest() {
 		client := meta.(*provider.Context).Client
 		return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithSet(*reqs.set))

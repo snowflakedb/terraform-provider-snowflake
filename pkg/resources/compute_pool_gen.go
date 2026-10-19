@@ -113,7 +113,7 @@ func UpdateComputePool(ctx context.Context, d *tfschema.ResourceData, meta any) 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := computePoolAlterSetInSdkExt(ctx, meta, id, setUnset); err != nil {
+	if err := computePoolAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := computePoolAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {

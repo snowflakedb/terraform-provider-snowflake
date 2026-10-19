@@ -2,7 +2,7 @@
 {{- if .Hooks.AlterSetInSdk.Generate -}}
 {{ Unimplemented "AlterSetInSdk" }}
 {{- else if .Hooks.AlterSetInSdk.Present -}}
-	if err := {{ .Prefix }}AlterSetInSdkExt(ctx, meta, id, setUnset); err != nil {
+	if err := {{ .Prefix }}AlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
 {{- if .HasPartialOnUpdate }}
 		d.Partial(true)
 {{- end }}

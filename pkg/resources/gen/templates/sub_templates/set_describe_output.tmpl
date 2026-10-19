@@ -2,5 +2,5 @@
 {{- if .Hooks.SetDescribeOutput.Generate -}}
 {{ Unimplemented "SetDescribeOutput" }}
 {{- else if .Hooks.SetDescribeOutput.Present -}}
-			{{ .Prefix }}SetDescribeOutputExt(d, id, {{ .Prefix }}Details, describeErr),
+			{{ .Prefix }}SetDescribeOutputExt(d, id, {{ .Prefix }}Details, {{ if .DescribeFailRead }}nil{{ else }}describeErr{{ end }}, withExternalChangesMarking),
 {{ end -}}

@@ -144,7 +144,7 @@ func computePoolDescribeInSdkExt(ctx context.Context, meta any, id sdk.AccountOb
 	return client.ComputePools.Describe(ctx, id)
 }
 
-func computePoolAlterSetInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier, reqs *computePoolAlterRequestsExt) error {
+func computePoolAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *computePoolAlterRequestsExt) error {
 	if reflect.DeepEqual(*reqs.set, *sdk.NewComputePoolSetRequest()) {
 		return nil
 	}

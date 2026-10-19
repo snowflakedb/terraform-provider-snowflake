@@ -115,7 +115,7 @@ func ReadSchemaFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 		}
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.SchemaToSchema(schema)}),
-			schemaSetDescribeOutputExt(d, id, schemaDetails, describeErr),
+			schemaSetDescribeOutputExt(d, id, schemaDetails, describeErr, withExternalChangesMarking),
 			d.Set(ParametersAttributeName, []map[string]any{schemas.SchemaParametersToSchema(rawSchemaParameters, meta.(*provider.Context))}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			schemaSetConfigFieldsExt(d, schema),
@@ -150,7 +150,7 @@ func UpdateSchema(ctx context.Context, d *tfschema.ResourceData, meta any) diag.
 		d.Partial(true)
 		return diags
 	}
-	if err := schemaAlterSetInSdkExt(ctx, meta, id, setUnset); err != nil {
+	if err := schemaAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
 		d.Partial(true)
 		return diag.FromErr(err)
 	}
