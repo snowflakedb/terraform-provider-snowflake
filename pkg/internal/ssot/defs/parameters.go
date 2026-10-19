@@ -712,10 +712,12 @@ var (
 		Description: "It enables/disables re-encryption of table data with new keys on a yearly basis to provide additional levels of data protection ([more details](https://docs.snowflake.com/en/sql-reference/parameters#periodic-data-rekeying)).",
 	}
 	PipeExecutionPaused = ssot.ParameterDef{
-		SqlName:     "PIPE_EXECUTION_PAUSED",
-		Kind:        string(ssot.AttrBool),
-		Levels:      ssot.ObjectLevels(ssot.ParameterLevelSchema),
-		Description: "Specifies whether to pause a running pipe, primarily in preparation for transferring ownership of the pipe to a different role.",
+		SqlName:      "PIPE_EXECUTION_PAUSED",
+		Kind:         string(ssot.AttrBool),
+		Levels:       ssot.ObjectLevels(ssot.ParameterLevelSchema),
+		Description:  "Specifies whether to pause a running pipe, primarily in preparation for transferring ownership of the pipe to a different role.",
+		DefaultValue: "false",
+		DefaultLevel: parameterTypeSnowflakeDefault,
 	}
 	PreventLoadFromInlineUrl = ssot.ParameterDef{
 		SqlName: "PREVENT_LOAD_FROM_INLINE_URL",

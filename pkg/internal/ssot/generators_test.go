@@ -100,6 +100,12 @@ func Test_ObjectGenerators_options(t *testing.T) {
 	g = ObjectGenerators(WithSdk())
 	require.Equal(t, Generators{}, g)
 
+	g = ObjectGenerators(WithObjectParametersAssert())
+	require.Equal(t, Generators{ObjectParametersAssert: ObjectParametersAssertGenerator{Enabled: true}}, g)
+
+	g = ObjectGenerators(WithResourceParametersAssert())
+	require.Equal(t, Generators{ResourceParametersAssert: ResourceParametersAssertGenerator{Enabled: true}}, g)
+
 	g = ObjectGenerators()
 	require.Equal(t, Generators{}, g)
 }

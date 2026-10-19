@@ -82,6 +82,8 @@ var Schema = ssot.Object{
 				ssot.SdkDescribeQueryStructName("DescribeSchema"),
 			),
 		),
+		ssot.WithObjectParametersAssert(),
+		ssot.WithResourceParametersAssert(),
 	},
 	Attributes: []ssot.Attribute{
 		SchemaAttrs.WithManagedAccess,

@@ -3,7 +3,6 @@ package gen
 import (
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
@@ -29,7 +28,7 @@ type ResourceModel struct {
 
 // ParameterHooks returns the catalog parameters for this object's parameter level, in catalog order.
 func (m ResourceModel) ParameterHooks() []ParameterHookModel {
-	level := ssot.ParameterLevel(strings.ToUpper(genhelpers.ToSnakeCase(m.Name)))
+	level := ssot.Object{Name: m.Name}.ParameterLevel()
 	if m.Hooks.ParametersCustomDiff.Generate && m.ParameterSnowflakeType == "" {
 		panic(fmt.Sprintf("%s: ParameterSnowflakeType is required to generate parameter custom diff", m.Name))
 	}

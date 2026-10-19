@@ -1,5 +1,11 @@
 package ssot
 
+import (
+	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
+)
+
 type Object struct {
 	Name                                string
 	NamePlural                          string
@@ -22,3 +28,8 @@ type Object struct {
 }
 
 func (obj Object) ObjectName() string { return obj.Name }
+
+// ParameterLevel is the catalog consumer level for this object (Schema is ParameterLevelSchema).
+func (obj Object) ParameterLevel() ParameterLevel {
+	return ParameterLevel(strings.ToUpper(genhelpers.ToSnakeCase(obj.Name)))
+}

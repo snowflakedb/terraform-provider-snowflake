@@ -5,7 +5,7 @@ import `pkg/sdk` or any meaningful logic package.
 
 Generators consume ssot; they do not all consume `defs.All()` the same way. Resource generation uses every object in
 `All()`. SHOW/DESCRIBE schema generation, resource config model builders, resource assertions, resource show output
-assertions, Snowflake object assertions, and SDK paired structs are opt-in per object ([Generators](#generators)). More
+assertions, Snowflake object assertions, object and resource parameters assertions, and SDK paired structs are opt-in per object ([Generators](#generators)). More
 generators will follow. Ultimately, all the generators should default to using ssot and `defs.All()`.
 
 ### Object
@@ -89,6 +89,15 @@ enable nothing.
   `bool`. `ObjectAssertDescribe(WithNoIdentifiableObject())` suppresses the fetch constructor when `Describe` returns a
   slice and the row has no `ID()`. `WithNoIdentifiableObject()` is a setting of object-assertion describe, not its own
   generator.
+- `WithObjectParametersAssert()` - Snowflake object parameters assertions (
+  `make generate-snowflake-object-parameters-assertions`).
+  See [that section](../../acceptance/bettertestspoc/README.md#adding-new-snowflake-object-parameters-assertions).
+  Parameters come from the [catalog](defs/parameters.go) entries for the object's `ParameterLevel()`, not from
+  `Attributes`. Constants are `sdk.<Name>Parameter`.
+- `WithResourceParametersAssert()` - resource parameters assertions (`make generate-resource-parameters-assertions`).
+  See [that section](../../acceptance/bettertestspoc/README.md#adding-new-resource-parameters-assertions).
+  Parameters come from the same catalog entries, and constants are `sdk.<Name>Parameter`. The two switches are
+  independent. Leave the handwritten entry while only one of them is opted in.
 - `WithSdk(SdkShow(), SdkDescribe())` - SDK paired structs (`make generate-sdk`).
   See [PairedStructs](../../sdk/generator/README.md#pairedstructs). Fields come
   from [SHOW and DESCRIBE](#show-and-describe) `Columns`, not from `Attributes`. `OptionalInDb` is live for the mapped

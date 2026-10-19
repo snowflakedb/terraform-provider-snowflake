@@ -87,9 +87,9 @@ func (u *UserShowOutputAssert) HasNameAndLoginName(expected string) *UserShowOut
 ```
 
 ### Adding new resource parameters assertions
-Resource parameters assertions can be generated automatically. For object `abc` do the following:
-- add object you want to generate to `allObjectsParameters` slice in the `assert/objectparametersassert/gen/object_parameters_def.go`
-- to add custom (not generated assertions) create file `warehouse_resource_parameters_ext.go` in the `assert/resourceparametersassert` package. Example would be:
+Resource parameters assertions can be generated automatically. Inputs are merged the same way as [Snowflake object parameters assertions](#adding-new-snowflake-object-parameters-assertions), filtered by `WithResourceParametersAssert()` ([ssot generators](../../internal/ssot/README.md#generators)). For an object that stays hand-written, add it to `allObjectsParameters`. A name that is both hand-written and opted in for this generator is taken from ssot. Leave the hand-written entry while object parameters assertions still use that name. Remove it when both generators take the name from ssot.
+
+To add custom (not generated) assertions create file `warehouse_resource_parameters_ext.go` in the `assert/resourceparametersassert` package. Example would be:
 ```go
 func (w *WarehouseResourceParametersAssert) HasDefaultMaxConcurrencyLevel() *WarehouseResourceParametersAssert {
 	return w.
@@ -138,8 +138,8 @@ func (w *WarehouseDescribeAssert) HasStateOneOf(expected ...sdk.WarehouseState) 
 ```
 
 ### Adding new Snowflake object parameters assertions
-Snowflake object parameters assertions can be generated automatically. For object `abc` do the following:
-- add object you want to generate to `allObjectsParameters` slice in the `assert/objectparametersassert/gen/object_parameters_def.go`
+Snowflake object parameters assertions can be generated automatically. Inputs are merged in [SnowflakeObjectParametersForAssertions](assert/objectparametersassert/gen/ssot_object_parameters_plugs.go). Resource parameters assertions use [SnowflakeResourceParametersForAssertions](assert/objectparametersassert/gen/ssot_object_parameters_plugs.go) and opt in separately. For object `abc` do the following:
+- either opt the ssot object in with `WithObjectParametersAssert()` ([ssot generators](../../internal/ssot/README.md#generators)), so parameters come from the catalog, or add it to `allObjectsParameters` slice in the `assert/objectparametersassert/gen/object_parameters_def.go`. A name that is both hand-written and opted in for this generator is taken from ssot. Leave the hand-written entry while resource parameters assertions still use that name. Remove it when both generators take the name from ssot.
 - make sure that test helper method `acc.TestClient().Parameter.ShowAbcParameters` exists in `/pkg/acceptance/helpers/parameter_client.go`
 - to add custom (not generated) assertions create file `abc_parameters_snowflake_ext.go` in the `objectparametersassert` package. Example would be:
 ```go

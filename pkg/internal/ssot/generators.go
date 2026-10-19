@@ -46,13 +46,27 @@ type ObjectAssertGenerator struct {
 	NoIdentifiableObject bool
 }
 
+// ObjectParametersAssertGenerator emits Snowflake object parameter assertions from the parameter catalog.
+// Constants are sdk.<Name>Parameter.
+type ObjectParametersAssertGenerator struct {
+	Enabled bool
+}
+
+// ResourceParametersAssertGenerator emits resource parameter assertions from the parameter catalog.
+// Constants are sdk.<Name>Parameter.
+type ResourceParametersAssertGenerator struct {
+	Enabled bool
+}
+
 type Generators struct {
-	Schema           SchemaGenerator
-	Sdk              SdkGenerator
-	Model            ModelGenerator
-	ResourceAssert   ResourceAssertGenerator
-	ShowOutputAssert ShowOutputAssertGenerator
-	ObjectAssert     ObjectAssertGenerator
+	Schema                   SchemaGenerator
+	Sdk                      SdkGenerator
+	Model                    ModelGenerator
+	ResourceAssert           ResourceAssertGenerator
+	ShowOutputAssert         ShowOutputAssertGenerator
+	ObjectAssert             ObjectAssertGenerator
+	ObjectParametersAssert   ObjectParametersAssertGenerator
+	ResourceParametersAssert ResourceParametersAssertGenerator
 }
 
 type GeneratorOption func(*Generators)
@@ -172,6 +186,28 @@ func WithObjectAssert(opts ...ObjectAssertOption) GeneratorOption {
 	return func(g *Generators) {
 		for _, opt := range opts {
 			opt(&g.ObjectAssert)
+		}
+	}
+}
+
+type ObjectParametersAssertOption func(*ObjectParametersAssertGenerator)
+
+func WithObjectParametersAssert(opts ...ObjectParametersAssertOption) GeneratorOption {
+	return func(g *Generators) {
+		g.ObjectParametersAssert.Enabled = true
+		for _, opt := range opts {
+			opt(&g.ObjectParametersAssert)
+		}
+	}
+}
+
+type ResourceParametersAssertOption func(*ResourceParametersAssertGenerator)
+
+func WithResourceParametersAssert(opts ...ResourceParametersAssertOption) GeneratorOption {
+	return func(g *Generators) {
+		g.ResourceParametersAssert.Enabled = true
+		for _, opt := range opts {
+			opt(&g.ResourceParametersAssert)
 		}
 	}
 }
