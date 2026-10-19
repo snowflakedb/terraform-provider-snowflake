@@ -120,7 +120,7 @@ func UpdateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := authenticationPolicyAlterSetInSdkExt(ctx, meta, id, setUnset); err != nil {
+	if err := authenticationPolicyAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := authenticationPolicyAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {

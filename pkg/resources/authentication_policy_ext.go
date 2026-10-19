@@ -299,7 +299,7 @@ func authenticationPolicyDescribeInSdkExt(ctx context.Context, meta any, id sdk.
 	return sdk.AuthenticationPolicyDetails(authenticationPolicyDescriptionsRaw), nil
 }
 
-func authenticationPolicyAlterSetInSdkExt(ctx context.Context, meta any, id sdk.SchemaObjectIdentifier, reqs *authenticationPolicyAlterRequestsExt) error {
+func authenticationPolicyAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier, reqs *authenticationPolicyAlterRequestsExt) error {
 	set := reqs.set
 	if !reflect.DeepEqual(*set, *sdk.NewAuthenticationPolicySetRequest()) {
 		client := meta.(*provider.Context).Client
