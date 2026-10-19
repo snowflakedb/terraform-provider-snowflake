@@ -117,6 +117,40 @@ func TestParameterSchema_AllCatalogKindsAreHandled(t *testing.T) {
 	}
 }
 
+func TestParameterSchemaFromDefinition_matchesCatalogBackedSchema(t *testing.T) {
+	testCases := []struct {
+		parameter ssot.ParameterDef
+		valid     any
+		invalid   any
+	}{
+		{parameter: defs.DataRetentionTimeInDays, valid: 0, invalid: -1},
+		{parameter: defs.LogLevel, valid: "INFO", invalid: "INVALID"},
+		{parameter: defs.InitialReplicationSizeLimitInTb, valid: "9.9", invalid: "not-a-float"},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.parameter.SqlName, func(t *testing.T) {
+			fromCatalog := parameterSchema(tt.parameter)
+			fromGeneratedDefinition := parameterSchemaFromDefinition(parameterSchemaDefinition{
+				sqlName:     tt.parameter.SqlName,
+				kind:        tt.parameter.Kind,
+				description: tt.parameter.Description,
+			})
+
+			require.Equal(t, fromCatalog.Type, fromGeneratedDefinition.Type)
+			require.Equal(t, fromCatalog.Description, fromGeneratedDefinition.Description)
+			require.Equal(t, fromCatalog.Optional, fromGeneratedDefinition.Optional)
+			require.Equal(t, fromCatalog.Computed, fromGeneratedDefinition.Computed)
+			require.Equal(t, fromCatalog.ValidateDiagFunc == nil, fromGeneratedDefinition.ValidateDiagFunc == nil)
+			require.Equal(t, fromCatalog.DiffSuppressFunc == nil, fromGeneratedDefinition.DiffSuppressFunc == nil)
+
+			path := cty.IndexStringPath(tt.parameter.FieldName())
+			require.Equal(t, fromCatalog.ValidateDiagFunc(tt.valid, path), fromGeneratedDefinition.ValidateDiagFunc(tt.valid, path))
+			require.Equal(t, fromCatalog.ValidateDiagFunc(tt.invalid, path), fromGeneratedDefinition.ValidateDiagFunc(tt.invalid, path))
+		})
+	}
+}
+
 func TestParameterSchema_PanicsForUnhandledKind(t *testing.T) {
 	require.PanicsWithValue(
 		t,

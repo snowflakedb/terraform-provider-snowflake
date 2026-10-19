@@ -2,13 +2,15 @@
 
 var (
 {{- if .Hooks.ParametersAttributesSchema.Generate }}
-	{{ .Prefix }}ParametersAttributesSchema = func() map[string]*tfschema.Schema {
-		m := make(map[string]*tfschema.Schema)
-		for _, p := range ssotdefs.ParameterDefsForLevel(ssot.ParameterLevel{{ .Name }}) {
-			m[p.FieldName()] = parameterSchema(p)
+	{{ .Prefix }}ParametersAttributesSchema = map[string]*tfschema.Schema{
+{{- range .ParameterHooks }}
+		{{ printf "%q" .Parameter.FieldName }}: parameterSchemaFromDefinition(parameterSchemaDefinition{
+			sqlName:     {{ printf "%q" .Parameter.SqlName }},
+			kind:        {{ printf "%q" .Parameter.Kind }},
+			description: {{ printf "%q" .Parameter.Description }},
+		}),
+{{- end }}
 		}
-		return m
-	}()
 {{- else if .Hooks.ParametersAttributesSchema.Present }}
 	{{ .Prefix }}ParametersAttributesSchema = {{ .Prefix }}ParametersAttributesSchemaExt
 {{- end }}
@@ -27,10 +29,11 @@ var (
 	{{ .Prefix }}ParametersOutputSchema = {{ .Prefix }}ParametersOutputSchemaExt
 {{- end }}
 {{- if .Hooks.ParametersFieldNames.Generate }}
-	{{ .Prefix }}ParametersFieldNames = collections.Map(
-		ssotdefs.ParameterDefsForLevel(ssot.ParameterLevel{{ .Name }}),
-		func(p ssot.ParameterDef) string { return p.FieldName() },
-	)
+	{{ .Prefix }}ParametersFieldNames = []string{
+{{- range .ParameterHooks }}
+		{{ printf "%q" .Parameter.FieldName }},
+{{- end }}
+	}
 {{- else if .Hooks.ParametersFieldNames.Present }}
 	{{ .Prefix }}ParametersFieldNames = {{ .Prefix }}ParametersFieldNamesExt
 {{- end }}
@@ -56,7 +59,7 @@ func {{ .Prefix }}ParametersProvider(ctx context.Context, d ResourceIdProvider, 
 func {{ .Prefix }}ParameterDiffFunctions(parameters *sdk.{{ .Name }}ParametersDetails) []tfschema.CustomizeDiffFunc {
 	return []tfschema.CustomizeDiffFunc{
 {{- range .ParameterHooks }}
-		{{ .DiffFunc }}(ssotdefs.{{ .Parameter.StructFieldName }}.FieldName(), parameters.{{ .Parameter.StructFieldName }}, sdk.ParameterType{{ $.Name }}),
+		{{ .DiffFunc }}({{ printf "%q" .Parameter.FieldName }}, parameters.{{ .Parameter.StructFieldName }}, sdk.ParameterType{{ $.Name }}),
 {{- end }}
 	}
 }
@@ -66,7 +69,7 @@ func {{ .Prefix }}ParameterDiffFunctions(parameters *sdk.{{ .Name }}ParametersDe
 func {{ .Prefix }}ApplyParametersCreate(d *tfschema.ResourceData, req *sdk.Create{{ .Name }}Request) diag.Diagnostics {
 	return JoinDiags(
 {{- range .ParameterHooks }}
-		handleParameterCreate{{ if .NeedsMapping }}WithMapping{{ end }}(d, ssotdefs.{{ .Parameter.StructFieldName }}.FieldName(), &req.{{ .Parameter.StructFieldName }}{{ if .NeedsMapping }}, {{ .Mapper }}{{ end }}),
+		handleParameterCreate{{ if .NeedsMapping }}WithMapping{{ end }}(d, {{ printf "%q" .Parameter.FieldName }}, &req.{{ .Parameter.StructFieldName }}{{ if .NeedsMapping }}, {{ .Mapper }}{{ end }}),
 {{- end }}
 	)
 }
@@ -76,7 +79,7 @@ func {{ .Prefix }}ApplyParametersCreate(d *tfschema.ResourceData, req *sdk.Creat
 func {{ .Prefix }}ApplyParametersChanges(d *tfschema.ResourceData, set *sdk.{{ .Name }}SetRequest, unset *sdk.{{ .Name }}UnsetRequest) diag.Diagnostics {
 	return JoinDiags(
 {{- range .ParameterHooks }}
-		handleParameterUpdate{{ if .NeedsMapping }}WithMapping{{ end }}(d, ssotdefs.{{ .Parameter.StructFieldName }}.FieldName(), &set.{{ .Parameter.StructFieldName }}, &unset.{{ .Parameter.StructFieldName }}{{ if .NeedsMapping }}, {{ .Mapper }}{{ end }}),
+		handleParameterUpdate{{ if .NeedsMapping }}WithMapping{{ end }}(d, {{ printf "%q" .Parameter.FieldName }}, &set.{{ .Parameter.StructFieldName }}, &unset.{{ .Parameter.StructFieldName }}{{ if .NeedsMapping }}, {{ .Mapper }}{{ end }}),
 {{- end }}
 	)
 }
@@ -86,7 +89,7 @@ func {{ .Prefix }}ApplyParametersChanges(d *tfschema.ResourceData, set *sdk.{{ .
 func {{ .Prefix }}SetParametersFields(d *tfschema.ResourceData, parameters *sdk.{{ .Name }}ParametersDetails) diag.Diagnostics {
 	return JoinDiags(
 {{- range .ParameterHooks }}
-		setResourceData(d, ssotdefs.{{ .Parameter.StructFieldName }}.FieldName(), {{ .Read }}),
+		setResourceData(d, {{ printf "%q" .Parameter.FieldName }}, {{ .Read }}),
 {{- end }}
 	)
 }

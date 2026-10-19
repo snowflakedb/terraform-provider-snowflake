@@ -55,6 +55,12 @@ var primitiveParameterValueTypes = map[string]schema.ValueType{
 
 type parameterSchemaModifier func(*schema.Schema)
 
+type parameterSchemaDefinition struct {
+	sqlName     string
+	kind        string
+	description string
+}
+
 func withIntAtLeast(minimum int) parameterSchemaModifier {
 	return func(s *schema.Schema) {
 		s.ValidateDiagFunc = validation.ToDiagFunc(validation.IntAtLeast(minimum))
@@ -129,20 +135,32 @@ func buildParameterSchemaModifiers() map[string][]parameterSchemaModifier {
 
 // parameterSchema derives a resource schema entry from a catalog parameter.
 func parameterSchema(p ssot.ParameterDef) *schema.Schema {
-	return parameterSchemaWithModifiers(p, true)
+	return parameterSchemaFromDefinition(parameterSchemaDefinition{
+		sqlName:     p.SqlName,
+		kind:        p.Kind,
+		description: p.Description,
+	})
 }
 
 func parameterSchemaWithoutModifiers(p ssot.ParameterDef) *schema.Schema {
-	return parameterSchemaWithModifiers(p, false)
+	return parameterSchemaFromDefinitionWithModifiers(parameterSchemaDefinition{
+		sqlName:     p.SqlName,
+		kind:        p.Kind,
+		description: p.Description,
+	}, false)
 }
 
-func parameterSchemaWithModifiers(p ssot.ParameterDef, applyModifiers bool) *schema.Schema {
-	valueType, isPrimitive := primitiveParameterValueTypes[p.Kind]
-	enumMetadata, isEnum := enumParameterValidators[p.Kind]
-	identifierValidator, isIdentifier := identifierParameterValidators[p.Kind]
+func parameterSchemaFromDefinition(p parameterSchemaDefinition) *schema.Schema {
+	return parameterSchemaFromDefinitionWithModifiers(p, true)
+}
+
+func parameterSchemaFromDefinitionWithModifiers(p parameterSchemaDefinition, applyModifiers bool) *schema.Schema {
+	valueType, isPrimitive := primitiveParameterValueTypes[p.kind]
+	enumMetadata, isEnum := enumParameterValidators[p.kind]
+	identifierValidator, isIdentifier := identifierParameterValidators[p.kind]
 
 	if !isPrimitive && !isEnum && !isIdentifier {
-		panic(fmt.Sprintf("parameter %s has unhandled kind %q; register it as a primitive, enum, or identifier kind", p.SqlName, p.Kind))
+		panic(fmt.Sprintf("parameter %s has unhandled kind %q; register it as a primitive, enum, or identifier kind", p.sqlName, p.kind))
 	}
 	if !isPrimitive {
 		valueType = schema.TypeString
@@ -150,7 +168,7 @@ func parameterSchemaWithModifiers(p ssot.ParameterDef, applyModifiers bool) *sch
 
 	s := &schema.Schema{
 		Type:        valueType,
-		Description: enrichWithReferenceToParameterDocs(p.SqlName, p.Description),
+		Description: enrichWithReferenceToParameterDocs(p.sqlName, p.description),
 		Optional:    true,
 		Computed:    true,
 	}
@@ -159,13 +177,13 @@ func parameterSchemaWithModifiers(p ssot.ParameterDef, applyModifiers bool) *sch
 	case isEnum:
 		s.ValidateDiagFunc = enumMetadata.validate
 		s.DiffSuppressFunc = enumMetadata.diffSuppress
-		s.Description = enrichWithReferenceToParameterDocs(p.SqlName, joinWithSpace(p.Description, enumMetadata.optionsDescription))
+		s.Description = enrichWithReferenceToParameterDocs(p.sqlName, joinWithSpace(p.description, enumMetadata.optionsDescription))
 	case isIdentifier:
 		s.ValidateDiagFunc = identifierValidator
 		s.DiffSuppressFunc = suppressIdentifierQuoting
 	}
 	if applyModifiers {
-		for _, modify := range parameterSchemaModifiers[p.SqlName] {
+		for _, modify := range parameterSchemaModifiers[p.sqlName] {
 			modify(s)
 		}
 	}
