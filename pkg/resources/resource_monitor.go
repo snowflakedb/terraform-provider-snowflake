@@ -289,7 +289,7 @@ func ReadResourceMonitor(withExternalChangesMarking bool) schema.ReadContextFunc
 			}
 		}
 
-		if err = setStateToValuesFromConfig(d, warehouseSchema, []string{
+		if err = setStateToValuesFromConfig(d, resourceMonitorSchema, []string{
 			"credit_quota",
 			"frequency",
 			"start_timestamp",
