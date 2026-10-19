@@ -54,11 +54,23 @@ func (m ResourceModel) HasCreateOptionalCalls() bool {
 	return false
 }
 
+func (m ResourceModel) HasUpdateCalls() bool {
+	for _, attr := range m.Attributes {
+		if attr.UpdateCall != nil {
+			return true
+		}
+	}
+	return false
+}
+
 func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleModel, _ *log.Logger) ResourceModel {
 	hooks := ssot.DefaultResourceExtHooks(input.ResourceHooks...)
 	attributes := applyResourceAttributeRules(input.Attributes)
 	if hooks.NewCreateRequest.Generate || hooks.ApplyCreateOptionals.Generate {
 		attachCreateMappings(input.Name, input.Attributes, attributes)
+	}
+	if hooks.ApplySetUnset.Generate {
+		attachUpdateMappings(input.Name, input.Attributes, attributes)
 	}
 	return ResourceModel{
 		Name:                                input.Name,

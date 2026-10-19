@@ -35,6 +35,7 @@ type Attribute struct {
 	ShowName              string
 	Readonly              bool
 	CreateMapping         CreateMapping
+	UpdateMapping         UpdateMapping
 }
 
 func (a Attribute) OutputKey() string {

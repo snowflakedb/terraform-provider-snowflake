@@ -14,7 +14,6 @@ func Test_ComputePoolCreateMappings_renderCreateFuncs(t *testing.T) {
 	require.True(t, model.Hooks.ParseIdFromConfig.Generate)
 	require.True(t, model.Hooks.NewCreateRequest.Generate)
 	require.True(t, model.Hooks.ApplyCreateOptionals.Generate)
-	require.False(t, model.Hooks.ApplySetUnset.Generate)
 	require.Equal(t, []string{"name"}, model.IdConfigFields())
 	require.Equal(t, "for_application", model.Attributes[0].Name)
 	require.Equal(t, "accountObjectIdentifierAttributeCreateBuilder", model.Attributes[0].CreateOptionalCall.Helper)
@@ -69,6 +68,7 @@ func Test_SchemaCreateMappings_stayExt(t *testing.T) {
 	for _, attr := range model.Attributes {
 		require.Nil(t, attr.CreateConstructorArg)
 		require.Nil(t, attr.CreateOptionalCall)
+		require.Nil(t, attr.UpdateCall)
 	}
 }
 

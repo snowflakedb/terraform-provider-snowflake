@@ -88,6 +88,9 @@ var (
 	//go:embed templates/sub_templates/apply_set_unset.tmpl
 	applySetUnsetTemplateContent string
 
+	//go:embed templates/sub_templates/generated_apply_set_unset.tmpl
+	generatedApplySetUnsetTemplateContent string
+
 	//go:embed templates/sub_templates/alter_set_in_sdk.tmpl
 	alterSetInSdkTemplateContent string
 
@@ -173,6 +176,7 @@ func init() {
 	subTemplates, _ = subTemplates.New("hierarchyRename").Parse(hierarchyRenameTemplateContent)
 	subTemplates, _ = subTemplates.New("beforeAlter").Parse(beforeAlterTemplateContent)
 	subTemplates, _ = subTemplates.New("applySetUnset").Parse(applySetUnsetTemplateContent)
+	subTemplates, _ = subTemplates.New("generatedApplySetUnset").Parse(generatedApplySetUnsetTemplateContent)
 	subTemplates, _ = subTemplates.New("alterSetInSdk").Parse(alterSetInSdkTemplateContent)
 	subTemplates, _ = subTemplates.New("alterUnsetInSdk").Parse(alterUnsetInSdkTemplateContent)
 	subTemplates, _ = subTemplates.New("setFieldsNotSetByRead").Parse(setFieldsNotSetByReadTemplateContent)

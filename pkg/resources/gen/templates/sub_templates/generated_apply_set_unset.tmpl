@@ -1,0 +1,13 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
+func {{ .Prefix }}ApplySetUnset(d *tfschema.ResourceData) (*{{ .Prefix }}AlterRequestsExt, error) {
+	set, unset := sdk.New{{ .Name }}SetRequest(), sdk.New{{ .Name }}UnsetRequest()
+{{- if .HasUpdateCalls }}
+	errs := errors.Join({{ range .Attributes }}{{ if .UpdateCall }}
+		{{ .UpdateCall.Helper }}(d, "{{ .Name }}", {{ .UpdateCall.Target }}),{{ end }}{{ end }}
+	)
+	if errs != nil {
+		return nil, errs
+	}
+{{- end }}
+	return &{{ .Prefix }}AlterRequestsExt{set: set, unset: unset}, nil
+}

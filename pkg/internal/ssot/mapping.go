@@ -56,3 +56,67 @@ func (m ListValueCreateMapping) CreateCall(objectName string, attr Attribute) Cr
 func ListValueCreate(mapper string) ListValueCreateMapping {
 	return ListValueCreateMapping{Mapper: mapper}
 }
+
+// UpdateMapping names the resource update helper for one attribute.
+// An attribute with a nil UpdateMapping is left out of set/unset.
+type UpdateMapping interface {
+	UpdateCall(objectName string, attr Attribute) UpdateCall
+}
+
+// UpdateCall is one generated ApplySetUnset call.
+// Target is the argument after the attribute key.
+type UpdateCall struct {
+	Helper string
+	Target string
+}
+
+// SetOnlyMapping is an update helper called with set.With<Field>.
+// The value is the helper function name.
+type SetOnlyMapping string
+
+func (m SetOnlyMapping) UpdateCall(_ string, attr Attribute) UpdateCall {
+	return UpdateCall{
+		Helper: string(m),
+		Target: "set.With" + genhelpers.SnakeCaseToCamel(attr.Name),
+	}
+}
+
+const IntAttributeUpdateSetOnlyBuilder SetOnlyMapping = "intAttributeUpdateSetOnlyBuilder"
+
+// SetUnsetMapping is an update helper called with set.With<Field>, unset.With<Field>.
+// The value is the helper function name.
+type SetUnsetMapping string
+
+func (m SetUnsetMapping) UpdateCall(_ string, attr Attribute) UpdateCall {
+	goName := genhelpers.SnakeCaseToCamel(attr.Name)
+	return UpdateCall{
+		Helper: string(m),
+		Target: fmt.Sprintf("set.With%s, unset.With%s", goName, goName),
+	}
+}
+
+const (
+	StringAttributeUpdateBuilder                SetUnsetMapping = "stringAttributeUpdateBuilder"
+	IntAttributeWithSpecialDefaultUpdateBuilder SetUnsetMapping = "intAttributeWithSpecialDefaultUpdateBuilder"
+	BooleanStringAttributeUpdateBuilder         SetUnsetMapping = "booleanStringAttributeUpdateBuilder"
+)
+
+// ListValueUpdateMapping is listValueUpdateBuilder with the name of the per-element mapper function.
+type ListValueUpdateMapping struct {
+	Mapper string
+}
+
+func (m ListValueUpdateMapping) UpdateCall(objectName string, attr Attribute) UpdateCall {
+	if m.Mapper == "" {
+		panic(fmt.Sprintf("object %q: attribute %q ListValueUpdate needs a mapper function", objectName, attr.Name))
+	}
+	goName := genhelpers.SnakeCaseToCamel(attr.Name)
+	return UpdateCall{
+		Helper: "listValueUpdateBuilder",
+		Target: fmt.Sprintf("set.With%s, unset.With%s, %s", goName, goName, m.Mapper),
+	}
+}
+
+func ListValueUpdate(mapper string) ListValueUpdateMapping {
+	return ListValueUpdateMapping{Mapper: mapper}
+}

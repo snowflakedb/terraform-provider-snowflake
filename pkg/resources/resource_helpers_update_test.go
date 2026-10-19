@@ -277,3 +277,154 @@ func Test_removeThenAddWithPlaceholder(t *testing.T) {
 		require.ErrorContains(t, err, "remove temp")
 	})
 }
+
+func Test_stringAttributeUpdateBuilder(t *testing.T) {
+	commentSchema := map[string]*schema.Schema{
+		"comment": {Type: schema.TypeString, Optional: true},
+	}
+
+	t.Run("sets the new value", func(t *testing.T) {
+		d := resourceDataWithPlan(t, commentSchema, map[string]string{"comment": "old"}, map[string]any{"comment": "new"})
+		var set *string
+		var unset bool
+		require.NoError(t, stringAttributeUpdateBuilder(d, "comment", func(v string) any {
+			set = &v
+			return nil
+		}, func(bool) any {
+			unset = true
+			return nil
+		}))
+		require.NotNil(t, set)
+		assert.Equal(t, "new", *set)
+		assert.False(t, unset)
+	})
+
+	t.Run("unsets a cleared value", func(t *testing.T) {
+		d := resourceDataWithPlan(t, commentSchema, map[string]string{"comment": "old"}, map[string]any{})
+		var set *string
+		var unset bool
+		require.NoError(t, stringAttributeUpdateBuilder(d, "comment", func(v string) any {
+			set = &v
+			return nil
+		}, func(bool) any {
+			unset = true
+			return nil
+		}))
+		assert.Nil(t, set)
+		assert.True(t, unset)
+	})
+
+	t.Run("leaves an unchanged value alone", func(t *testing.T) {
+		d := resourceDataWithPlan(t, commentSchema, map[string]string{"comment": "same"}, map[string]any{"comment": "same"})
+		called := false
+		require.NoError(t, stringAttributeUpdateBuilder(d, "comment", func(string) any {
+			called = true
+			return nil
+		}, func(bool) any {
+			called = true
+			return nil
+		}))
+		assert.False(t, called)
+	})
+}
+
+func Test_intAttributeUpdateSetOnlyBuilder(t *testing.T) {
+	nodesSchema := map[string]*schema.Schema{
+		"min_nodes": {Type: schema.TypeInt, Required: true},
+	}
+	d := resourceDataWithPlan(t, nodesSchema, map[string]string{"min_nodes": "1"}, map[string]any{"min_nodes": 2})
+	var set *int
+	require.NoError(t, intAttributeUpdateSetOnlyBuilder(d, "min_nodes", func(v int) any {
+		set = &v
+		return nil
+	}))
+	require.NotNil(t, set)
+	assert.Equal(t, 2, *set)
+}
+
+func Test_intAttributeWithSpecialDefaultUpdateBuilder(t *testing.T) {
+	secsSchema := map[string]*schema.Schema{
+		"auto_suspend_secs": {Type: schema.TypeInt, Optional: true, Default: IntDefault},
+	}
+	d := resourceDataWithPlan(t, secsSchema, map[string]string{"auto_suspend_secs": "60"}, map[string]any{"auto_suspend_secs": IntDefault})
+	var set *int
+	var unset bool
+	require.NoError(t, intAttributeWithSpecialDefaultUpdateBuilder(d, "auto_suspend_secs", func(v int) any {
+		set = &v
+		return nil
+	}, func(bool) any {
+		unset = true
+		return nil
+	}))
+	assert.Nil(t, set)
+	assert.True(t, unset)
+}
+
+func Test_booleanStringAttributeUpdateBuilder(t *testing.T) {
+	flagSchema := map[string]*schema.Schema{
+		"auto_resume": {Type: schema.TypeString, Optional: true, Default: BooleanDefault},
+	}
+	d := resourceDataWithPlan(t, flagSchema, map[string]string{"auto_resume": BooleanDefault}, map[string]any{"auto_resume": BooleanTrue})
+	var set *bool
+	require.NoError(t, booleanStringAttributeUpdateBuilder(d, "auto_resume", func(v bool) any {
+		set = &v
+		return nil
+	}, func(bool) any {
+		return nil
+	}))
+	require.NotNil(t, set)
+	assert.True(t, *set)
+}
+
+func Test_listValueUpdateBuilder(t *testing.T) {
+	listSchema := map[string]*schema.Schema{
+		"items": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+	}
+	mapItem := func(v any) (string, error) {
+		return v.(string), nil
+	}
+
+	t.Run("sets the mapped list", func(t *testing.T) {
+		d := resourceDataWithPlan(t, listSchema, map[string]string{
+			"items.#": "1",
+			"items.0": "old",
+		}, map[string]any{
+			"items": []any{"new"},
+		})
+		var set []string
+		var unset bool
+		require.NoError(t, listValueUpdateBuilder(d, "items", func(v []string) any {
+			set = v
+			return nil
+		}, func(bool) any {
+			unset = true
+			return nil
+		}, mapItem))
+		assert.Equal(t, []string{"new"}, set)
+		assert.False(t, unset)
+	})
+
+	t.Run("unsets an empty list", func(t *testing.T) {
+		d := resourceDataWithPlan(t, listSchema, map[string]string{
+			"items.#": "1",
+			"items.0": "old",
+		}, map[string]any{
+			"items": []any{},
+		})
+		var set []string
+		var unset bool
+		require.NoError(t, listValueUpdateBuilder(d, "items", func(v []string) any {
+			set = v
+			return nil
+		}, func(bool) any {
+			unset = true
+			return nil
+		}, mapItem))
+		assert.Nil(t, set)
+		assert.True(t, unset)
+	})
+}

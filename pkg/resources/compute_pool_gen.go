@@ -109,7 +109,7 @@ func UpdateComputePool(ctx context.Context, d *tfschema.ResourceData, meta any) 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	setUnset, err := computePoolApplySetUnsetExt(d)
+	setUnset, err := computePoolApplySetUnset(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -145,4 +145,20 @@ func computePoolApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.Crea
 		intAttributeWithSpecialDefaultCreateBuilder(d, "auto_suspend_secs", request.WithAutoSuspendSecs),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
+}
+
+func computePoolApplySetUnset(d *tfschema.ResourceData) (*computePoolAlterRequestsExt, error) {
+	set, unset := sdk.NewComputePoolSetRequest(), sdk.NewComputePoolUnsetRequest()
+	errs := errors.Join(
+		intAttributeUpdateSetOnlyBuilder(d, "min_nodes", set.WithMinNodes),
+		intAttributeUpdateSetOnlyBuilder(d, "max_nodes", set.WithMaxNodes),
+		listValueUpdateBuilder(d, "backup_instance_families", set.WithBackupInstanceFamilies, unset.WithBackupInstanceFamilies, toComputePoolBackupInstanceFamily),
+		booleanStringAttributeUpdateBuilder(d, "auto_resume", set.WithAutoResume, unset.WithAutoResume),
+		intAttributeWithSpecialDefaultUpdateBuilder(d, "auto_suspend_secs", set.WithAutoSuspendSecs, unset.WithAutoSuspendSecs),
+		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &computePoolAlterRequestsExt{set: set, unset: unset}, nil
 }

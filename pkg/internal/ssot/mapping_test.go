@@ -47,3 +47,24 @@ func Test_ConstructorGet(t *testing.T) {
 		Attribute{Name: "instance_family", Type: AttrEnum, Required: true}.ConstructorGet()
 	})
 }
+
+func Test_UpdateCall(t *testing.T) {
+	call := IntAttributeUpdateSetOnlyBuilder.UpdateCall("ComputePool", Attribute{Name: "min_nodes"})
+	require.Equal(t, UpdateCall{Helper: "intAttributeUpdateSetOnlyBuilder", Target: "set.WithMinNodes"}, call)
+
+	call = BooleanStringAttributeUpdateBuilder.UpdateCall("ComputePool", Attribute{Name: "auto_resume"})
+	require.Equal(t, UpdateCall{
+		Helper: "booleanStringAttributeUpdateBuilder",
+		Target: "set.WithAutoResume, unset.WithAutoResume",
+	}, call)
+
+	call = ListValueUpdate("toComputePoolBackupInstanceFamily").UpdateCall("ComputePool", Attribute{Name: "backup_instance_families"})
+	require.Equal(t, UpdateCall{
+		Helper: "listValueUpdateBuilder",
+		Target: "set.WithBackupInstanceFamilies, unset.WithBackupInstanceFamilies, toComputePoolBackupInstanceFamily",
+	}, call)
+
+	require.PanicsWithValue(t, `object "ComputePool": attribute "items" ListValueUpdate needs a mapper function`, func() {
+		ListValueUpdate("").UpdateCall("ComputePool", Attribute{Name: "items"})
+	})
+}

@@ -98,3 +98,7 @@ func Update{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) 
 
 {{ template "generatedApplyCreateOptionals" . }}
 {{- end }}
+{{- if .Hooks.ApplySetUnset.Generate }}
+
+{{ template "generatedApplySetUnset" . }}
+{{- end }}

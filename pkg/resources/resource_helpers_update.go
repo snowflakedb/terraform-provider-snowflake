@@ -22,6 +22,17 @@ func stringAttributeUpdate(d *schema.ResourceData, key string, setField **string
 	return nil
 }
 
+func stringAttributeUpdateBuilder[Set any, Unset any](d *schema.ResourceData, key string, setValue func(string) Set, unsetValue func(bool) Unset) error {
+	if d.HasChange(key) {
+		if v, ok := d.GetOk(key); ok {
+			setValue(v.(string))
+		} else {
+			unsetValue(true)
+		}
+	}
+	return nil
+}
+
 func stringAttributeUpdateSetOnlyNotEmpty(d *schema.ResourceData, key string, setField **string) error {
 	if d.HasChange(key) {
 		*setField = sdk.String(d.Get(key).(string))
@@ -56,12 +67,32 @@ func intAttributeUpdateSetOnly(d *schema.ResourceData, key string, setField **in
 	return nil
 }
 
+func intAttributeUpdateSetOnlyBuilder[Set any](d *schema.ResourceData, key string, setValue func(int) Set) error {
+	if d.HasChange(key) {
+		if v, ok := d.GetOk(key); ok {
+			setValue(v.(int))
+		}
+	}
+	return nil
+}
+
 func intAttributeWithSpecialDefaultUpdate(d *schema.ResourceData, key string, setField **int, unsetField **bool) error {
 	if d.HasChange(key) {
 		if v := d.Get(key).(int); v != IntDefault {
 			*setField = sdk.Int(v)
 		} else {
 			*unsetField = sdk.Bool(true)
+		}
+	}
+	return nil
+}
+
+func intAttributeWithSpecialDefaultUpdateBuilder[Set any, Unset any](d *schema.ResourceData, key string, setValue func(int) Set, unsetValue func(bool) Unset) error {
+	if d.HasChange(key) {
+		if v := d.Get(key).(int); v != IntDefault {
+			setValue(v)
+		} else {
+			unsetValue(true)
 		}
 	}
 	return nil
@@ -120,6 +151,21 @@ func booleanStringAttributeUpdate(d *schema.ResourceData, key string, setField *
 			*setField = sdk.Bool(parsed)
 		} else {
 			*unsetField = sdk.Bool(true)
+		}
+	}
+	return nil
+}
+
+func booleanStringAttributeUpdateBuilder[Set any, Unset any](d *schema.ResourceData, key string, setValue func(bool) Set, unsetValue func(bool) Unset) error {
+	if d.HasChange(key) {
+		if v := d.Get(key).(string); v != BooleanDefault {
+			parsed, err := booleanStringToBool(v)
+			if err != nil {
+				return err
+			}
+			setValue(parsed)
+		} else {
+			unsetValue(true)
 		}
 	}
 	return nil
@@ -295,7 +341,7 @@ func setValueUpdateFallback[T any](d *schema.ResourceData, key string, setField 
 	return nil
 }
 
-func listValueUpdate[T any](d *schema.ResourceData, key string, setField *[]T, unsetField **bool, mapper func(any) (T, error)) error {
+func listValueUpdateBuilder[T any, Set any, Unset any](d *schema.ResourceData, key string, setValue func([]T) Set, unsetValue func(bool) Unset, mapper func(any) (T, error)) error {
 	if d.HasChange(key) {
 		v := d.Get(key)
 		mappedValue, err := collections.MapErr(v.([]any), mapper)
@@ -304,9 +350,9 @@ func listValueUpdate[T any](d *schema.ResourceData, key string, setField *[]T, u
 		}
 
 		if len(mappedValue) > 0 {
-			*setField = mappedValue
+			setValue(mappedValue)
 		} else {
-			*unsetField = sdk.Bool(true)
+			unsetValue(true)
 		}
 	}
 	return nil
