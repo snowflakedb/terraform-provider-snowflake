@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"testing"
+	"time"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -657,6 +658,92 @@ func TestAcc_UserProgrammaticAccessToken_CompleteUseCase_Rotating(t *testing.T) 
 						HasRotatedTokenNameNotEmpty().
 						HasUserString(user.ID().Name()),
 					assertTokenNotRotated,
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_UserProgrammaticAccessToken_RotatingWithExpireRotatedTokenAfterHoursExceedingRemainingLifetime(t *testing.T) {
+	user, userCleanup := testClient().User.CreateUser(t)
+	t.Cleanup(userCleanup)
+
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	// Several days of lifetime, so a cap at the remaining hours is distinguishable from Snowflake's 24-hour default.
+	const daysToExpiry = 7
+
+	modelWithKeeper := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
+		WithDaysToExpiry(daysToExpiry).
+		WithKeeper("key1=value1")
+	modelRotated := model.UserProgrammaticAccessToken("test", id.Name(), user.ID().Name()).
+		WithDaysToExpiry(daysToExpiry).
+		WithKeeper("key2=value2").
+		WithExpireRotatedTokenAfterHours(daysToExpiry * 24 * 2)
+
+	var (
+		token             string
+		originalExpiresAt time.Time
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckUserProgrammaticAccessTokenDestroy(t),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelWithKeeper),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrWith(modelWithKeeper.ResourceReference(), "token", func(value string) error {
+						token = value
+						return nil
+					}),
+					resource.TestCheckResourceAttrWith(modelWithKeeper.ResourceReference(), "name", func(_ string) error {
+						shown := testClient().User.ShowProgrammaticAccessToken(t, user.ID(), id)
+						originalExpiresAt = shown.ExpiresAt
+						return nil
+					}),
+				),
+			},
+			// The configured grace period is twice the token lifetime, so the provider must cap it at the remaining whole hours.
+			{
+				Config: accconfig.FromModels(t, modelRotated),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelRotated.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectComputed(modelRotated.ResourceReference(), "token", true),
+						planchecks.ExpectComputed(modelRotated.ResourceReference(), "rotated_token_name", true),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.UserProgrammaticAccessTokenResource(t, modelRotated.ResourceReference()).
+						HasRotatedTokenNameNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttrWith(modelRotated.ResourceReference(), "token", func(value string) error {
+						if value == "" || value == token {
+							return fmt.Errorf("token was not rotated")
+						}
+						return nil
+					})),
+					assert.Check(resource.TestCheckResourceAttrWith(modelRotated.ResourceReference(), "rotated_token_name", func(value string) error {
+						if value == "" {
+							return fmt.Errorf("rotated_token_name is empty")
+						}
+						rotated := testClient().User.ShowProgrammaticAccessToken(t, user.ID(), sdk.NewAccountObjectIdentifier(value))
+						if rotated.Status != sdk.ProgrammaticAccessTokenStatusActive {
+							return fmt.Errorf("the rotated token is not active, status: %s", rotated.Status)
+						}
+						// Past the 24-hour default, and within about an hour of the original expiry (whole-hour truncation).
+						if !rotated.ExpiresAt.After(time.Now().Add(48 * time.Hour)) {
+							return fmt.Errorf("rotated token expires too soon (%s); expected it to keep roughly the original lifetime %s", rotated.ExpiresAt, originalExpiresAt)
+						}
+						if rotated.ExpiresAt.Before(originalExpiresAt.Add(-2 * time.Hour)) {
+							return fmt.Errorf("rotated token expires too early: got %s, original %s", rotated.ExpiresAt, originalExpiresAt)
+						}
+						return nil
+					})),
 				),
 			},
 		},

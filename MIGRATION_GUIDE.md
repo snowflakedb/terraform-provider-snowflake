@@ -47,6 +47,15 @@ provider "snowflake" {
 
 No configuration changes are required for existing configurations.
 
+### *(bug fix)* `snowflake_user_programmatic_access_token` caps `expire_rotated_token_after_hours` at the remaining lifetime
+
+Rotating a programmatic access token failed when `expire_rotated_token_after_hours` was higher than the hours left on the current secret. Snowflake rejects that value.
+
+On rotation, the provider now caps a positive value at the remaining whole hours and emits a warning during apply. A value equal to those remaining hours is sent unchanged. When less than one hour remains, a positive value is omitted so the existing secret keeps its current expiry instead of being revoked immediately. `0` still expires the current secret immediately.
+
+The configured value stays in state. Only the value sent to Snowflake is adjusted. No configuration changes are required.
+
+
 ## v2.22.0 ➞ v2.22.1
 
 ### *(bug fix)* `snowflake_pipe` reads SNS topic ARNs from every AWS partition
