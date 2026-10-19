@@ -3,160 +3,114 @@ package resources
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var catalogIntegrationObjectStorageSchema = func() map[string]*schema.Schema {
-	objectStorageSchema := map[string]*schema.Schema{
-		"table_format": {
-			Type:             schema.TypeString,
-			Required:         true,
-			ForceNew:         true,
-			Description:      "Specifies the table format. " + enumValuesDescription(sdk.AllCatalogIntegrationTableFormats),
-			DiffSuppressFunc: NormalizeAndCompare(sdk.ToCatalogIntegrationTableFormat),
-			ValidateDiagFunc: sdkValidation(sdk.ToCatalogIntegrationTableFormat),
-		},
-	}
-	return collections.MergeMaps(
-		catalogIntegrationCommonSchema(schemas.DescribeCatalogIntegrationObjectStorageDetailsSchema), objectStorageSchema,
-	)
-}()
+func CatalogIntegrationObjectStorage() *tfschema.Resource {
+	return &tfschema.Resource{
+		Schema:      catalogIntegrationObjectStorageSchema,
+		Description: catalogIntegrationObjectStorageDescriptionExt,
 
-func CatalogIntegrationObjectStorage() *schema.Resource {
-	return &schema.Resource{
-		CreateContext: TrackingCreateWrapper(resources.CatalogIntegrationObjectStorage, CreateCatalogIntegrationObjectStorage),
-		ReadContext:   TrackingReadWrapper(resources.CatalogIntegrationObjectStorage, ReadCatalogIntegrationObjectStorageFunc(true)),
-		UpdateContext: TrackingUpdateWrapper(resources.CatalogIntegrationObjectStorage, UpdateCatalogIntegrationObjectStorage),
-		DeleteContext: TrackingDeleteWrapper(resources.CatalogIntegrationObjectStorage, deleteCatalogIntegrationFunc()),
-		Description:   "Resource used to manage catalog integration objects for Apache Iceberg™ table files or Delta table files in object storage. For more information, check [catalog integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-object-storage).",
+		CreateContext: catalogIntegrationObjectStorageCreateExt,
+		ReadContext:   catalogIntegrationObjectStorageReadExt,
+		UpdateContext: catalogIntegrationObjectStorageUpdateExt,
+		DeleteContext: catalogIntegrationObjectStorageDeleteExt,
+		Importer:      catalogIntegrationObjectStorageImporterExt,
 
-		Schema: catalogIntegrationObjectStorageSchema,
-		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.CatalogIntegrationObjectStorage, ImportCatalogIntegrationObjectStorage),
-		},
-		Timeouts: defaultTimeouts,
-		CustomizeDiff: customdiff.All(
-			ComputedIfAnyAttributeChanged(catalogIntegrationObjectStorageSchema, ShowOutputAttributeName, "enabled", "comment"),
-			ComputedIfAnyAttributeChanged(catalogIntegrationObjectStorageSchema, DescribeOutputAttributeName, "enabled", "refresh_interval_seconds", "comment"),
-			RecreateWhenCatalogSourceChangedExternally(sdk.CatalogIntegrationCatalogSourceTypeObjectStore),
-		),
+		CustomizeDiff: catalogIntegrationObjectStorageCustomizeDiffExt,
+		Timeouts:      defaultTimeouts,
 	}
 }
 
-func ImportCatalogIntegrationObjectStorage(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+func ImportCatalogIntegrationObjectStorage(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
+	id, err := catalogIntegrationObjectStorageParseIdExt(d.Id())
 	if err != nil {
 		return nil, err
 	}
 
-	details, err := client.CatalogIntegrations.DescribeObjectStorageDetails(ctx, id)
+	catalogIntegrationObjectStorage, err := catalogIntegrationObjectStorageShowByIdInSdkExt(ctx, meta, id)
 	if err != nil {
 		return nil, err
 	}
-	if details.CatalogSource != sdk.CatalogIntegrationCatalogSourceTypeObjectStore {
-		return nil, fmt.Errorf("invalid catalog source type, expected %s, got %s", sdk.CatalogIntegrationCatalogSourceTypeObjectStore, details.CatalogSource)
-	}
 
-	return []*schema.ResourceData{d}, nil
+	if err := catalogIntegrationObjectStorageSetFieldsNotSetByReadExt(d, id, catalogIntegrationObjectStorage); err != nil {
+		return nil, err
+	}
+	return []*tfschema.ResourceData{d}, nil
 }
 
-func CreateCatalogIntegrationObjectStorage(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	name := d.Get("name").(string)
-	id, err := sdk.ParseAccountObjectIdentifier(name)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	enabled := d.Get("enabled").(bool)
-	tableFormat, err := sdk.ToCatalogIntegrationTableFormat(d.Get("table_format").(string))
+func CreateCatalogIntegrationObjectStorage(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	id, err := catalogIntegrationObjectStorageParseIdFromConfigExt(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	request := sdk.NewCreateCatalogIntegrationRequest(id, enabled)
-	objectStorageRequest := sdk.NewObjectStorageParamsRequest(tableFormat)
-	errs := errors.Join(
-		intAttributeCreateBuilder(d, "refresh_interval_seconds", request.WithRefreshIntervalSeconds),
-		stringAttributeCreateBuilder(d, "comment", request.WithComment),
-	)
-	if errs != nil {
-		return diag.FromErr(errs)
+	req, err := catalogIntegrationObjectStorageNewCreateRequestExt(d, id)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if err := client.CatalogIntegrations.Create(ctx, request.WithObjectStorageCatalogSourceParams(*objectStorageRequest)); err != nil {
-		return diag.FromErr(fmt.Errorf("error creating object storage catalog integration, err = %w", err))
+	if err := catalogIntegrationObjectStorageApplyCreateOptionalsExt(d, req); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if diags := catalogIntegrationObjectStorageCreateInSdkExt(ctx, meta, id, req); diags != nil {
+		return diags
 	}
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
 	return ReadCatalogIntegrationObjectStorageFunc(false)(ctx, d, meta)
 }
 
-func ReadCatalogIntegrationObjectStorageFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		client := meta.(*provider.Context).Client
-		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+func ReadCatalogIntegrationObjectStorageFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
+	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+		id, err := catalogIntegrationObjectStorageParseIdExt(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		s, err := client.CatalogIntegrations.ShowByIDSafely(ctx, id)
+		catalogIntegrationObjectStorage, diags := catalogIntegrationObjectStorageShowByIdSafelyInSdkExt(ctx, d, meta, id)
+		if diags != nil {
+			return diags
+		}
+		catalogIntegrationObjectStorageDetails, err := catalogIntegrationObjectStorageDescribeInSdkExt(ctx, meta, id)
 		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query object storage catalog integration. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("object storage catalog integration id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
 			return diag.FromErr(err)
 		}
-
-		details, err := client.CatalogIntegrations.DescribeObjectStorageDetails(ctx, id)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("could not describe object storage catalog integration (%s), err = %w", d.Id(), err))
-		}
-
-		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInFlatDescribe(
-				d,
-				outputMapping{"refresh_interval_seconds", "refresh_interval_seconds", details.RefreshIntervalSeconds, details.RefreshIntervalSeconds, nil},
-			); err != nil {
-				return diag.FromErr(err)
-			}
+		if err = catalogIntegrationObjectStorageHandleExternalChangesInDescribeExt(d, catalogIntegrationObjectStorageDetails, withExternalChangesMarking); err != nil {
+			return diag.FromErr(err)
 		}
 
 		errs := errors.Join(
-			d.Set("name", details.Id.Name()),
-			d.Set("enabled", details.Enabled),
-			// not reading refresh_interval_seconds on purpose (handled as external change to describe output)
-			d.Set("comment", details.Comment),
-			d.Set("catalog_source", string(details.CatalogSource)),
-			d.Set("table_format", string(details.TableFormat)),
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationObjectStorageToSchema(catalogIntegrationObjectStorage)}),
+			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CatalogIntegrationObjectStorageDetailsToSchema(catalogIntegrationObjectStorageDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationToSchema(s)}),
-			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CatalogIntegrationObjectStorageDetailsToSchema(details)}),
 		)
-
-		return diag.FromErr(errs)
+		if errs != nil {
+			return diag.FromErr(errs)
+		}
+		return nil
 	}
 }
 
-func UpdateCatalogIntegrationObjectStorage(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	if err := handleCatalogIntegrationUpdate(ctx, d, meta); err != nil {
+func UpdateCatalogIntegrationObjectStorage(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	id, err := catalogIntegrationObjectStorageParseIdExt(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	setUnset, err := catalogIntegrationObjectStorageApplySetUnsetExt(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err := catalogIntegrationObjectStorageAlterSetInSdkExt(ctx, meta, id, setUnset); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := catalogIntegrationObjectStorageAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
 		return diag.FromErr(err)
 	}
 	return ReadCatalogIntegrationObjectStorageFunc(false)(ctx, d, meta)
