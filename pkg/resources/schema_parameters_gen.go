@@ -80,7 +80,7 @@ func schemaApplyParametersCreate(d *tfschema.ResourceData, req *sdk.CreateSchema
 	return JoinDiags(
 		handleParameterCreateWithMapping(d, ssotdefs.Catalog.FieldName(), &req.Catalog, stringToAccountObjectIdentifier),
 		handleParameterCreate(d, ssotdefs.DataRetentionTimeInDays.FieldName(), &req.DataRetentionTimeInDays),
-		handleParameterCreateWithMapping(d, ssotdefs.DefaultDdlCollation.FieldName(), &req.DefaultDdlCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
+		handleParameterCreateWithMapping(d, ssotdefs.DefaultDdlCollation.FieldName(), &req.DefaultDdlCollation, stringToStringAllowEmpty),
 		handleParameterCreate(d, ssotdefs.DefaultNotebookComputePoolCpu.FieldName(), &req.DefaultNotebookComputePoolCpu),
 		handleParameterCreate(d, ssotdefs.DefaultNotebookComputePoolGpu.FieldName(), &req.DefaultNotebookComputePoolGpu),
 		handleParameterCreate(d, ssotdefs.EnableConsoleOutput.FieldName(), &req.EnableConsoleOutput),
@@ -105,7 +105,7 @@ func schemaApplyParametersChanges(d *tfschema.ResourceData, set *sdk.SchemaSetRe
 	return JoinDiags(
 		handleParameterUpdateWithMapping(d, ssotdefs.Catalog.FieldName(), &set.Catalog, &unset.Catalog, stringToAccountObjectIdentifier),
 		handleParameterUpdate(d, ssotdefs.DataRetentionTimeInDays.FieldName(), &set.DataRetentionTimeInDays, &unset.DataRetentionTimeInDays),
-		handleParameterUpdateWithMapping(d, ssotdefs.DefaultDdlCollation.FieldName(), &set.DefaultDdlCollation, &unset.DefaultDdlCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
+		handleParameterUpdateWithMapping(d, ssotdefs.DefaultDdlCollation.FieldName(), &set.DefaultDdlCollation, &unset.DefaultDdlCollation, stringToStringAllowEmpty),
 		handleParameterUpdate(d, ssotdefs.DefaultNotebookComputePoolCpu.FieldName(), &set.DefaultNotebookComputePoolCpu, &unset.DefaultNotebookComputePoolCpu),
 		handleParameterUpdate(d, ssotdefs.DefaultNotebookComputePoolGpu.FieldName(), &set.DefaultNotebookComputePoolGpu, &unset.DefaultNotebookComputePoolGpu),
 		handleParameterUpdate(d, ssotdefs.EnableConsoleOutput.FieldName(), &set.EnableConsoleOutput, &unset.EnableConsoleOutput),

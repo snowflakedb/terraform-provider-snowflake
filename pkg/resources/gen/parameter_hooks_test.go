@@ -11,10 +11,9 @@ import (
 
 func TestParameterHooks_schemaTemplateMatchesHandWrittenMappings(t *testing.T) {
 	model := ResourceModel{
-		Name:                   "Schema",
-		NamePlural:             "Schemas",
-		ParameterSnowflakeType: "Schema",
-		Hooks:                  ssot.DefaultResourceExtHooks(ssotdefs.Schema.ResourceHooks...),
+		Name:       "Schema",
+		NamePlural: "Schemas",
+		Hooks:      ssot.DefaultResourceExtHooks(ssotdefs.Schema.ResourceHooks...),
 	}
 	var rendered bytes.Buffer
 	require.NoError(t, ParametersTemplate.Execute(&rendered, model))
@@ -22,7 +21,7 @@ func TestParameterHooks_schemaTemplateMatchesHandWrittenMappings(t *testing.T) {
 
 	require.Contains(t, got, "handleParameterCreateWithMapping(d, ssotdefs.Catalog.FieldName(), &req.Catalog, stringToAccountObjectIdentifier),")
 	require.Contains(t, got, "handleParameterCreate(d, ssotdefs.DataRetentionTimeInDays.FieldName(), &req.DataRetentionTimeInDays),")
-	require.Contains(t, got, "handleParameterCreateWithMapping(d, ssotdefs.DefaultDdlCollation.FieldName(), &req.DefaultDdlCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),")
+	require.Contains(t, got, "handleParameterCreateWithMapping(d, ssotdefs.DefaultDdlCollation.FieldName(), &req.DefaultDdlCollation, stringToStringAllowEmpty),")
 	require.Contains(t, got, "sdk.ToLogLevel),")
 	require.Contains(t, got, "sdk.ToWarehouseSize),")
 	require.Contains(t, got, "handleParameterUpdateWithMapping(d, ssotdefs.Catalog.FieldName(), &set.Catalog, &unset.Catalog, stringToAccountObjectIdentifier),")
@@ -65,7 +64,7 @@ func TestParameterHookModel_fragments(t *testing.T) {
 			sqlName:      "DEFAULT_DDL_COLLATION",
 			kind:         "StringAllowEmpty",
 			needsMapping: true,
-			mapper:       "func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }",
+			mapper:       "stringToStringAllowEmpty",
 			read:         "parameters.DefaultDdlCollation.Value",
 			diffFunc:     "StringAllowEmptyTypedParameterValueComputedIf",
 		},

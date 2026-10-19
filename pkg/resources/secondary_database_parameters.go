@@ -14,7 +14,7 @@ func handleSecondaryDatabaseParametersCreate(d *schema.ResourceData, createOpts 
 		handleParameterCreateWithMapping(d, defs.ExternalVolume.FieldName(), &createOpts.ExternalVolume, stringToAccountObjectIdentifier),
 		handleParameterCreateWithMapping(d, defs.Catalog.FieldName(), &createOpts.Catalog, stringToAccountObjectIdentifier),
 		handleParameterCreate(d, defs.ReplaceInvalidCharacters.FieldName(), &createOpts.ReplaceInvalidCharacters),
-		handleParameterCreateWithMapping(d, defs.DefaultDdlCollation.FieldName(), &createOpts.DefaultDdlCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
+		handleParameterCreateWithMapping(d, defs.DefaultDdlCollation.FieldName(), &createOpts.DefaultDdlCollation, stringToStringAllowEmpty),
 		handleParameterCreate(d, defs.DefaultNotebookComputePoolCpu.FieldName(), &createOpts.DefaultNotebookComputePoolCpu),
 		handleParameterCreate(d, defs.DefaultNotebookComputePoolGpu.FieldName(), &createOpts.DefaultNotebookComputePoolGpu),
 		handleParameterCreateWithMapping(d, defs.StorageSerializationPolicy.FieldName(), &createOpts.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),

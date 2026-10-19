@@ -56,7 +56,7 @@ func {{ .Prefix }}ParametersProvider(ctx context.Context, d ResourceIdProvider, 
 func {{ .Prefix }}ParameterDiffFunctions(parameters *sdk.{{ .Name }}ParametersDetails) []tfschema.CustomizeDiffFunc {
 	return []tfschema.CustomizeDiffFunc{
 {{- range .ParameterHooks }}
-		{{ .DiffFunc }}(ssotdefs.{{ .Parameter.StructFieldName }}.FieldName(), parameters.{{ .Parameter.StructFieldName }}, sdk.ParameterType{{ $.ParameterSnowflakeType }}),
+		{{ .DiffFunc }}(ssotdefs.{{ .Parameter.StructFieldName }}.FieldName(), parameters.{{ .Parameter.StructFieldName }}, sdk.ParameterType{{ $.Name }}),
 {{- end }}
 	}
 }

@@ -54,7 +54,7 @@ func parameterValueConversion(parameter ssot.ParameterDef, classified ssot.Class
 	conversion := valueConversionFromClassified(classified)
 	switch parameter.Kind {
 	case "StringAllowEmpty":
-		conversion.DecodeFunc = "func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }"
+		conversion.DecodeFunc = "stringToStringAllowEmpty"
 	case string(ssot.AttrFloat):
 		conversion.DecodeFunc = "sdk.ToFloat64"
 		conversion.Encode = func(value string) string {

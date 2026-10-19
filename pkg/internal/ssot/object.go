@@ -14,22 +14,19 @@ type Object struct {
 	HasPartialOnUpdate                  bool
 	AdditionalDescribeOutputDescription string
 	IdType                              string
-	// ParameterSnowflakeType corresponds to the sdk.ParameterType suffix Snowflake reports for this
-	// object's parameters ("Schema" emits sdk.ParameterTypeSchema).
-	ParameterSnowflakeType            string
-	IdentityNameForceNew              bool
-	AdditionalIdentityNameDescription string
-	Attributes                        []Attribute
-	AttributesModification            bool
-	ResourceHooks                     []ResourceHookOption
-	Generators                        []GeneratorOption
-	Show                              OutputSpec
-	Describe                          OutputSpec
+	IdentityNameForceNew                bool
+	AdditionalIdentityNameDescription   string
+	Attributes                          []Attribute
+	AttributesModification              bool
+	ResourceHooks                       []ResourceHookOption
+	Generators                          []GeneratorOption
+	Show                                OutputSpec
+	Describe                            OutputSpec
 }
 
 func (obj Object) ObjectName() string { return obj.Name }
 
-// ParameterLevel is the catalog consumer level for this object (Schema is ParameterLevelSchema).
+// ParameterLevel is the catalog level for this object, derived from Name (Schema is ParameterLevelSchema).
 func (obj Object) ParameterLevel() ParameterLevel {
 	return ParameterLevel(strings.ToUpper(genhelpers.ToSnakeCase(obj.Name)))
 }

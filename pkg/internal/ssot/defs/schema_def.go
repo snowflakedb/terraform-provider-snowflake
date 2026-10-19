@@ -55,7 +55,6 @@ var Schema = ssot.Object{
 	HasPartialOnUpdate:                  true,
 	AdditionalDescribeOutputDescription: "In order to handle this output, one must grant sufficient privileges, e.g. [grant_ownership](./grant_ownership) on all objects in the schema.",
 	IdType:                              "DatabaseObjectIdentifier",
-	ParameterSnowflakeType:              "Schema",
 	AdditionalIdentityNameDescription:   "When the name is `PUBLIC`, during creation the provider checks if this schema has already been created and, in such case, `ALTER` is used to match the desired state.",
 	AttributesModification:              true,
 	Generators: []ssot.GeneratorOption{

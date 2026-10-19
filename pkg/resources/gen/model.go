@@ -1,7 +1,6 @@
 package gen
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
@@ -17,7 +16,6 @@ type ResourceModel struct {
 	HasPartialOnUpdate                  bool
 	AdditionalDescribeOutputDescription string
 	IdType                              string
-	ParameterSnowflakeType              string
 	IdentityNameForceNew                bool
 	AdditionalIdentityNameDescription   string
 	Attributes                          []ResourceAttribute
@@ -28,11 +26,7 @@ type ResourceModel struct {
 
 // ParameterHooks returns the catalog parameters for this object's parameter level, in catalog order.
 func (m ResourceModel) ParameterHooks() []ParameterHookModel {
-	level := ssot.Object{Name: m.Name}.ParameterLevel()
-	if m.Hooks.ParametersCustomDiff.Generate && m.ParameterSnowflakeType == "" {
-		panic(fmt.Sprintf("%s: ParameterSnowflakeType is required to generate parameter custom diff", m.Name))
-	}
-	parameters := ssotdefs.ParameterDefsForLevel(level)
+	parameters := ssotdefs.ParameterDefsForLevel(ssot.Object{Name: m.Name}.ParameterLevel())
 	hooks := make([]ParameterHookModel, 0, len(parameters))
 	for _, parameter := range parameters {
 		hooks = append(hooks, newParameterHookModel(parameter))
@@ -79,7 +73,6 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		HasPartialOnUpdate:                  input.HasPartialOnUpdate,
 		AdditionalDescribeOutputDescription: input.AdditionalDescribeOutputDescription,
 		IdType:                              input.IdType,
-		ParameterSnowflakeType:              input.ParameterSnowflakeType,
 		IdentityNameForceNew:                input.IdentityNameForceNew,
 		AdditionalIdentityNameDescription:   input.AdditionalIdentityNameDescription,
 		Attributes:                          attributes,
