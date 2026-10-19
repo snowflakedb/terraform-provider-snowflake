@@ -6,44 +6,45 @@ type ResourceHook struct {
 }
 
 type ResourceHooks struct {
-	ParseIdFromConfig          ResourceHook
-	ParseId                    ResourceHook
-	BeforeCreate               ResourceHook
-	NewCreateRequest           ResourceHook
-	ApplyCreateOptionals       ResourceHook
-	CreateInSdk                ResourceHook
-	ShowByIdSafelyInSdk        ResourceHook
-	DescribeInSdk              ResourceHook
-	HandleExternalChanges      ResourceHook
-	SetStateToValuesFromConfig ResourceHook
-	ShowOutputSet              ResourceHook
-	DescribeOutputSet          ResourceHook
-	SetDescribeOutput          ResourceHook
-	FqnSet                     ResourceHook
-	SetConfigFields            ResourceHook
-	HierarchyRename            ResourceHook
-	BeforeAlter                ResourceHook
-	ApplySetUnset              ResourceHook
-	AlterSetInSdk              ResourceHook
-	AlterUnsetInSdk            ResourceHook
-	SetFieldsNotSetByRead      ResourceHook
-	ShowByIdInSdk              ResourceHook
-	SchemaVersion              ResourceHook
-	IdentitySchema             ResourceHook
-	AttributesSchema           ResourceHook
-	FqnSchema                  ResourceHook
-	ShowOutputSchema           ResourceHook
-	DescribeOutputSchema       ResourceHook
-	ApplyParametersCreate      ResourceHook
-	ShowParametersInSdk        ResourceHook
-	ParametersDetailsFromRaw   ResourceHook
-	SetParametersFields        ResourceHook
-	ParametersOutputSet        ResourceHook
-	ApplyParametersChanges     ResourceHook
-	ParametersAttributesSchema ResourceHook
-	ParametersOutputSchema     ResourceHook
-	ParametersFieldNames       ResourceHook
-	ParametersCustomDiff       ResourceHook
+	ParseIdFromConfig               ResourceHook
+	ParseId                         ResourceHook
+	BeforeCreate                    ResourceHook
+	NewCreateRequest                ResourceHook
+	ApplyCreateOptionals            ResourceHook
+	CreateInSdk                     ResourceHook
+	ShowByIdSafelyInSdk             ResourceHook
+	DescribeInSdk                   ResourceHook
+	HandleExternalChanges           ResourceHook
+	HandleExternalChangesInDescribe ResourceHook
+	SetStateToValuesFromConfig      ResourceHook
+	ShowOutputSet                   ResourceHook
+	DescribeOutputSet               ResourceHook
+	SetDescribeOutput               ResourceHook
+	FqnSet                          ResourceHook
+	SetConfigFields                 ResourceHook
+	HierarchyRename                 ResourceHook
+	BeforeAlter                     ResourceHook
+	ApplySetUnset                   ResourceHook
+	AlterSetInSdk                   ResourceHook
+	AlterUnsetInSdk                 ResourceHook
+	SetFieldsNotSetByRead           ResourceHook
+	ShowByIdInSdk                   ResourceHook
+	SchemaVersion                   ResourceHook
+	IdentitySchema                  ResourceHook
+	AttributesSchema                ResourceHook
+	FqnSchema                       ResourceHook
+	ShowOutputSchema                ResourceHook
+	DescribeOutputSchema            ResourceHook
+	ApplyParametersCreate           ResourceHook
+	ShowParametersInSdk             ResourceHook
+	ParametersDetailsFromRaw        ResourceHook
+	SetParametersFields             ResourceHook
+	ParametersOutputSet             ResourceHook
+	ApplyParametersChanges          ResourceHook
+	ParametersAttributesSchema      ResourceHook
+	ParametersOutputSchema          ResourceHook
+	ParametersFieldNames            ResourceHook
+	ParametersCustomDiff            ResourceHook
 }
 
 type ResourceHookOption func(*ResourceHooks)
@@ -62,44 +63,45 @@ func Omitted() ResourceHook {
 
 func DefaultResourceExtHooks(opts ...ResourceHookOption) ResourceHooks {
 	h := ResourceHooks{
-		ParseIdFromConfig:          ExtCall(),
-		ParseId:                    ExtCall(),
-		BeforeCreate:               Omitted(),
-		NewCreateRequest:           ExtCall(),
-		ApplyCreateOptionals:       ExtCall(),
-		CreateInSdk:                ExtCall(),
-		ShowByIdSafelyInSdk:        ExtCall(),
-		DescribeInSdk:              ExtCall(),
-		HandleExternalChanges:      ExtCall(),
-		SetStateToValuesFromConfig: ExtCall(),
-		ShowOutputSet:              ExtCall(),
-		DescribeOutputSet:          ExtCall(),
-		SetDescribeOutput:          Omitted(),
-		FqnSet:                     ExtCall(),
-		SetConfigFields:            ExtCall(),
-		HierarchyRename:            Omitted(),
-		BeforeAlter:                Omitted(),
-		ApplySetUnset:              ExtCall(),
-		AlterSetInSdk:              ExtCall(),
-		AlterUnsetInSdk:            ExtCall(),
-		SetFieldsNotSetByRead:      ExtCall(),
-		ShowByIdInSdk:              ExtCall(),
-		SchemaVersion:              Omitted(),
-		IdentitySchema:             Generated(),
-		AttributesSchema:           Generated(),
-		FqnSchema:                  Generated(),
-		ShowOutputSchema:           Generated(),
-		DescribeOutputSchema:       Generated(),
-		ApplyParametersCreate:      Omitted(),
-		ShowParametersInSdk:        Omitted(),
-		ParametersDetailsFromRaw:   Omitted(),
-		SetParametersFields:        Omitted(),
-		ParametersOutputSet:        Omitted(),
-		ApplyParametersChanges:     Omitted(),
-		ParametersAttributesSchema: Omitted(),
-		ParametersOutputSchema:     Omitted(),
-		ParametersFieldNames:       Omitted(),
-		ParametersCustomDiff:       Omitted(),
+		ParseIdFromConfig:               ExtCall(),
+		ParseId:                         ExtCall(),
+		BeforeCreate:                    Omitted(),
+		NewCreateRequest:                ExtCall(),
+		ApplyCreateOptionals:            ExtCall(),
+		CreateInSdk:                     ExtCall(),
+		ShowByIdSafelyInSdk:             ExtCall(),
+		DescribeInSdk:                   ExtCall(),
+		HandleExternalChanges:           ExtCall(),
+		HandleExternalChangesInDescribe: Omitted(),
+		SetStateToValuesFromConfig:      ExtCall(),
+		ShowOutputSet:                   ExtCall(),
+		DescribeOutputSet:               ExtCall(),
+		SetDescribeOutput:               Omitted(),
+		FqnSet:                          ExtCall(),
+		SetConfigFields:                 ExtCall(),
+		HierarchyRename:                 Omitted(),
+		BeforeAlter:                     Omitted(),
+		ApplySetUnset:                   ExtCall(),
+		AlterSetInSdk:                   ExtCall(),
+		AlterUnsetInSdk:                 ExtCall(),
+		SetFieldsNotSetByRead:           ExtCall(),
+		ShowByIdInSdk:                   ExtCall(),
+		SchemaVersion:                   Omitted(),
+		IdentitySchema:                  Generated(),
+		AttributesSchema:                Generated(),
+		FqnSchema:                       Generated(),
+		ShowOutputSchema:                Generated(),
+		DescribeOutputSchema:            Generated(),
+		ApplyParametersCreate:           Omitted(),
+		ShowParametersInSdk:             Omitted(),
+		ParametersDetailsFromRaw:        Omitted(),
+		SetParametersFields:             Omitted(),
+		ParametersOutputSet:             Omitted(),
+		ApplyParametersChanges:          Omitted(),
+		ParametersAttributesSchema:      Omitted(),
+		ParametersOutputSchema:          Omitted(),
+		ParametersFieldNames:            Omitted(),
+		ParametersCustomDiff:            Omitted(),
 	}
 	for _, opt := range opts {
 		opt(&h)
@@ -141,6 +143,10 @@ func WithDescribeInSdk(h ResourceHook) ResourceHookOption {
 
 func WithHandleExternalChanges(h ResourceHook) ResourceHookOption {
 	return func(hooks *ResourceHooks) { hooks.HandleExternalChanges = h }
+}
+
+func WithHandleExternalChangesInDescribe(h ResourceHook) ResourceHookOption {
+	return func(hooks *ResourceHooks) { hooks.HandleExternalChangesInDescribe = h }
 }
 
 func WithSetStateToValuesFromConfig(h ResourceHook) ResourceHookOption {

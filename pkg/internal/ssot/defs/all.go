@@ -6,6 +6,7 @@ func All() []ssot.Object {
 	objs := []ssot.Object{
 		ComputePool,
 		Schema,
+		AuthenticationPolicy,
 	}
 	for _, obj := range objs {
 		ssot.ValidateObject(obj)

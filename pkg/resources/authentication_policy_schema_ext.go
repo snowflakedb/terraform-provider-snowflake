@@ -32,18 +32,41 @@ var authenticationPolicyIdentitySchemaExt = map[string]*schema.Schema{
 	},
 }
 
-var authenticationPolicyAttributesSchemaExt = map[string]*schema.Schema{
-	"authentication_methods": {
-		Type: schema.TypeSet,
-		Elem: &schema.Schema{
-			Type:             schema.TypeString,
-			ValidateDiagFunc: sdkValidation(sdk.ToAuthenticationMethodsOption),
+var authenticationPolicyDescribeOutputSchemaExt = map[string]*schema.Schema{
+	DescribeOutputAttributeName: {
+		Type:        schema.TypeList,
+		Computed:    true,
+		Description: "Outputs the result of `DESCRIBE AUTHENTICATION POLICY` for the given policy.",
+		Elem: &schema.Resource{
+			Schema: schemas.DescribeAuthenticationPolicyDescribeDetailsSchema,
 		},
-		Optional:         true,
-		DiffSuppressFunc: NormalizeAndCompareEnumsInSet("authentication_methods", sdk.ToAuthenticationMethodsOption),
-		Description:      fmt.Sprintf("A list of authentication methods that are allowed during login. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllAuthenticationMethodsOptions)),
 	},
-	"mfa_authentication_methods": {
+}
+
+// Nested blocks and the deprecated field have no SSOT attribute type.
+// Set diffs and the MFA enrollment special case are also applied here.
+func authenticationPolicyAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
+	s["authentication_methods"].DiffSuppressFunc = NormalizeAndCompareEnumsInSet("authentication_methods", sdk.ToAuthenticationMethodsOption)
+	s["client_types"].DiffSuppressFunc = NormalizeAndCompareEnumsInSet("client_types", sdk.ToClientTypesOption)
+	s["mfa_enrollment"].DiffSuppressFunc = SuppressIfAny(
+		NormalizeAndCompare(sdk.ToMfaEnrollmentOption),
+		// We need a custom diff because when this field is set to OPTIONAL, the value is returned as REQUIRED_PASSWORD_ONLY.
+		func(_, oldRaw, newRaw string, _ *schema.ResourceData) bool {
+			old, err := sdk.ToMfaEnrollmentReadOption(oldRaw)
+			if err != nil {
+				return false
+			}
+			new, err := sdk.ToMfaEnrollmentOption(newRaw)
+			if err != nil {
+				return false
+			}
+			return old == sdk.MfaEnrollmentReadOptionRequiredPasswordOnly && new == sdk.MfaEnrollmentOptionOptional
+		},
+	)
+	s["security_integrations"].Elem.(*schema.Schema).ValidateDiagFunc = IsValidIdentifier[sdk.AccountObjectIdentifier]()
+	s["security_integrations"].DiffSuppressFunc = NormalizeAndCompareIdentifiersInSet("security_integrations")
+
+	s["mfa_authentication_methods"] = &schema.Schema{
 		Type: schema.TypeSet,
 		Elem: &schema.Schema{
 			Type:             schema.TypeString,
@@ -53,42 +76,8 @@ var authenticationPolicyAttributesSchemaExt = map[string]*schema.Schema{
 		DiffSuppressFunc: ignoreAlwaysSuppressFunc,
 		Description:      fmt.Sprintf("A list of authentication methods that enforce multi-factor authentication (MFA) during login. Authentication methods not listed in this parameter do not prompt for multi-factor authentication. Allowed values are %s.", possibleValuesListed(sdk.AllMfaAuthenticationMethodsOptions)),
 		Deprecated:       "This field is deprecated and will be removed in the future. Currently, it has no effect. Use the new `enforce_mfa_on_external_authentication` field instead. Read our [BCR Migration Guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies) for more migration steps and more details.",
-	},
-	"mfa_enrollment": {
-		Type:     schema.TypeString,
-		Optional: true,
-		Description: fmt.Sprintf("Determines whether a user must enroll in multi-factor authentication. Valid values are (case-insensitive): %s. When REQUIRED is specified, Enforces users to enroll in MFA."+
-			" If this value is used, then the `client_types` parameter must include `snowflake_ui`, because Snowsight is the only place users can enroll in multi-factor authentication (MFA)."+
-			" Note that when you set this value to OPTIONAL, and your account setup forces users to enroll in MFA, then Snowflake may set quietly this value to `REQUIRED_PASSWORD_ONLY`, which may cause permadiff."+
-			" In this case, you may want to adjust this field value.", possibleValuesListed(sdk.AllMfaEnrollmentOptions)),
-		ValidateDiagFunc: sdkValidation(sdk.ToMfaEnrollmentOption),
-		DiffSuppressFunc: SuppressIfAny(
-			NormalizeAndCompare(sdk.ToMfaEnrollmentOption),
-			// We need a custom diff because when this field is set to OPTIONAL, the value is returned as REQUIRED_PASSWORD_ONLY.
-			func(_, oldRaw, newRaw string, _ *schema.ResourceData) bool {
-				old, err := sdk.ToMfaEnrollmentReadOption(oldRaw)
-				if err != nil {
-					return false
-				}
-				new, err := sdk.ToMfaEnrollmentOption(newRaw)
-				if err != nil {
-					return false
-				}
-				return old == sdk.MfaEnrollmentReadOptionRequiredPasswordOnly && new == sdk.MfaEnrollmentOptionOptional
-			},
-		),
-	},
-	"client_types": {
-		Type: schema.TypeSet,
-		Elem: &schema.Schema{
-			Type:             schema.TypeString,
-			ValidateDiagFunc: sdkValidation(sdk.ToClientTypesOption),
-		},
-		Optional:         true,
-		DiffSuppressFunc: NormalizeAndCompareEnumsInSet("client_types", sdk.ToClientTypesOption),
-		Description:      fmt.Sprintf("A list of clients that can authenticate with Snowflake. If a client tries to connect, and the client is not one of the valid `client_types`, then the login attempt fails. Valid values are (case-insensitive): %s. The `client_types` property of an authentication policy is a best effort method to block user logins based on specific clients. It should not be used as the sole control to establish a security boundary.", possibleValuesListed(sdk.AllClientTypesOptions)),
-	},
-	"client_policy": {
+	}
+	s["client_policy"] = &schema.Schema{
 		Type:        schema.TypeSet,
 		Optional:    true,
 		Description: "Allows to set policies per-client type. Only valid when `client_types` is empty, contains ALL, or contains DRIVERS.",
@@ -108,18 +97,8 @@ var authenticationPolicyAttributesSchemaExt = map[string]*schema.Schema{
 				},
 			},
 		},
-	},
-	"security_integrations": {
-		Type: schema.TypeSet,
-		Elem: &schema.Schema{
-			Type:             schema.TypeString,
-			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
-		},
-		DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("security_integrations"),
-		Optional:         true,
-		Description:      "A list of security integrations the authentication policy is associated with. This parameter has no effect when `saml` or `oauth` are not in the `authentication_methods` list. All values in the `security_integrations` list must be compatible with the values in the `authentication_methods` list. For example, if `security_integrations` contains a SAML security integration, and `authentication_methods` contains OAUTH, then you cannot create the authentication policy. To allow all security integrations use `ALL` as parameter.",
-	},
-	"mfa_policy": {
+	}
+	s["mfa_policy"] = &schema.Schema{
 		Type:     schema.TypeList,
 		MaxItems: 1,
 		Elem: &schema.Resource{
@@ -146,8 +125,8 @@ var authenticationPolicyAttributesSchemaExt = map[string]*schema.Schema{
 		},
 		Optional:    true,
 		Description: "Specifies the multi-factor authentication (MFA) methods that users can use as a second factor of authentication.",
-	},
-	"pat_policy": {
+	}
+	s["pat_policy"] = &schema.Schema{
 		Type:     schema.TypeList,
 		MaxItems: 1,
 		Elem: &schema.Resource{
@@ -186,8 +165,8 @@ var authenticationPolicyAttributesSchemaExt = map[string]*schema.Schema{
 		},
 		Optional:    true,
 		Description: "Specifies the policy for programmatic access tokens.",
-	},
-	"workload_identity_policy": {
+	}
+	s["workload_identity_policy"] = &schema.Schema{
 		Type:     schema.TypeList,
 		MaxItems: 1,
 		Elem: &schema.Resource{
@@ -229,32 +208,6 @@ var authenticationPolicyAttributesSchemaExt = map[string]*schema.Schema{
 		},
 		Optional:    true,
 		Description: "Specifies the policy for workload identity federation.",
-	},
-	"comment": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Specifies a comment for the authentication policy.",
-	},
-}
-
-var authenticationPolicyShowOutputSchemaExt = map[string]*schema.Schema{
-	ShowOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `SHOW AUTHENTICATION POLICIES` for the given policy.",
-		Elem: &schema.Resource{
-			Schema: schemas.ShowAuthenticationPolicySchema,
-		},
-	},
-}
-
-var authenticationPolicyDescribeOutputSchemaExt = map[string]*schema.Schema{
-	DescribeOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `DESCRIBE AUTHENTICATION POLICY` for the given policy.",
-		Elem: &schema.Resource{
-			Schema: schemas.DescribeAuthenticationPolicyDescribeDetailsSchema,
-		},
-	},
+	}
+	return s
 }

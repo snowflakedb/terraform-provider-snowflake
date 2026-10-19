@@ -21,6 +21,10 @@ var AuthenticationPolicyNames = []string{
 	"WORKLOAD_IDENTITY_POLICY",
 }
 
+func AuthenticationPolicyDetailsToSchema(details sdk.AuthenticationPolicyDetails) map[string]any {
+	return AuthenticationPolicyDescriptionsToSchema([]sdk.AuthenticationPolicyDescription(details))
+}
+
 func AuthenticationPolicyDescriptionsToSchema(authenticationPolicyDescription []sdk.AuthenticationPolicyDescription) map[string]any {
 	for _, property := range authenticationPolicyDescription {
 		if !slices.Contains(AuthenticationPolicyNames, property.Property) {
