@@ -44,11 +44,6 @@ var (
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-func catalogIntegrationAwsGlueParseIdFromConfigExt(d *schema.ResourceData) (sdk.AccountObjectIdentifier, error) {
-	name := d.Get("name").(string)
-	return sdk.ParseAccountObjectIdentifier(name)
-}
-
 func catalogIntegrationAwsGlueParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
 	return sdk.ParseAccountObjectIdentifier(id)
 }
@@ -79,13 +74,22 @@ type catalogIntegrationAwsGlueAlterRequestsExt struct {
 	set *sdk.CatalogIntegrationSetRequest
 }
 
-func catalogIntegrationAwsGlueHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.CatalogIntegrationAwsGlueDetails, withExternalChangesMarking bool) error {
+func catalogIntegrationAwsGlueHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.CatalogIntegrationAwsGlueDetails, withExternalChangesMarking bool) diag.Diagnostics {
 	if withExternalChangesMarking {
 		if err := handleExternalChangesToObjectInFlatDescribe(d, catalogIntegrationAwsGlueOutputMappingsExt(details)...); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
-	return catalogIntegrationAwsGlueSetConfigFieldsExt(d, details)
+	// refresh_interval_seconds and glue_region are not copied into config; drift is marked on describe output.
+	if err := errors.Join(
+		d.Set("catalog_source", string(details.CatalogSource)),
+		d.Set("glue_aws_role_arn", details.GlueAwsRoleArn),
+		d.Set("glue_catalog_id", details.GlueCatalogId),
+		d.Set("catalog_namespace", details.CatalogNamespace),
+	); err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
 }
 
 func catalogIntegrationAwsGlueOutputMappingsExt(details *sdk.CatalogIntegrationAwsGlueDetails) []outputMapping {
@@ -95,17 +99,11 @@ func catalogIntegrationAwsGlueOutputMappingsExt(details *sdk.CatalogIntegrationA
 	}
 }
 
-func catalogIntegrationAwsGlueSetConfigFieldsExt(d *schema.ResourceData, details *sdk.CatalogIntegrationAwsGlueDetails) error {
+func catalogIntegrationAwsGlueSetConfigFieldsExt(d *schema.ResourceData, catalogIntegration *sdk.CatalogIntegration) error {
 	return errors.Join(
-		d.Set("name", details.Id.Name()),
-		d.Set("enabled", details.Enabled),
-		// not reading refresh_interval_seconds on purpose (handled as external change to describe output)
-		d.Set("comment", details.Comment),
-		d.Set("catalog_source", string(details.CatalogSource)),
-		d.Set("glue_aws_role_arn", details.GlueAwsRoleArn),
-		d.Set("glue_catalog_id", details.GlueCatalogId),
-		// not reading glue_region on purpose (handled as external change to describe output)
-		d.Set("catalog_namespace", details.CatalogNamespace),
+		d.Set("name", catalogIntegration.Name),
+		d.Set("enabled", catalogIntegration.Enabled),
+		d.Set("comment", catalogIntegration.Comment),
 	)
 }
 
@@ -174,7 +172,7 @@ func catalogIntegrationAwsGlueShowByIdInSdkExt(ctx context.Context, meta any, id
 	return details, nil
 }
 
-func catalogIntegrationAwsGlueAlterSetInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier, reqs *catalogIntegrationAwsGlueAlterRequestsExt) error {
+func catalogIntegrationAwsGlueAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *catalogIntegrationAwsGlueAlterRequestsExt) error {
 	if reflect.DeepEqual(*reqs.set, *sdk.NewCatalogIntegrationSetRequest()) {
 		return nil
 	}
