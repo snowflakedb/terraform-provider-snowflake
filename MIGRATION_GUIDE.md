@@ -47,9 +47,15 @@ provider "snowflake" {
 
 No configuration changes are required for existing configurations.
 
-### *(new feature)* Write-only RSA public keys in user resources
+### *(new feature)* Opt-in experiment: write-only attributes
 
-We added the [write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral/write-only) `rsa_public_key_wo` and `rsa_public_key_2_wo` fields, together with their `rsa_public_key_wo_version` and `rsa_public_key_2_wo_version` version counters, to [`snowflake_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/user), [`snowflake_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user), and [`snowflake_legacy_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user). The values of the write-only fields are never saved in the Terraform plan or state, so they can be set from an ephemeral resource, like `tls_private_key`. They require Terraform 1.11 or later.
+We added the `WRITE_ONLY_ATTRIBUTES` opt-in experiment (`experimental_features_enabled = ["WRITE_ONLY_ATTRIBUTES"]`). It is the switch for write-only attributes. Later write-only attributes will use the same experiment.
+
+The first attributes behind it are the [write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral/write-only) `rsa_public_key_wo` and `rsa_public_key_2_wo` fields, together with their `rsa_public_key_wo_version` and `rsa_public_key_2_wo_version` version counters, on [`snowflake_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/user), [`snowflake_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user), and [`snowflake_legacy_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user).
+
+Without the experiment, using `rsa_public_key_wo`, `rsa_public_key_2_wo`, or their version fields results in an error.
+
+The values of the write-only fields are never saved in the Terraform plan or state, so they can be set from an ephemeral resource, like `tls_private_key`. They require Terraform 1.11 or later.
 
 Terraform can not see a write-only value, so it can not detect changes to it either. The key is sent to Snowflake only when the version field changes: increment it whenever you want to rotate the key. For the same reason, external changes to keys set this way are not detected.
 

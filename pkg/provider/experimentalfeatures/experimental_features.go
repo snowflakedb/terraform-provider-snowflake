@@ -34,6 +34,7 @@ const (
 	ProviderConfigurationAccountFallback ExperimentalFeature = "PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK"
 	AccountParameterCatalogWritePath     ExperimentalFeature = "ACCOUNT_PARAMETER_CATALOG_WRITE_PATH"
 	ObjectParameterParseOnSet            ExperimentalFeature = "OBJECT_PARAMETER_PARSE_ON_SET"
+	WriteOnlyAttributes                  ExperimentalFeature = "WRITE_ONLY_ATTRIBUTES"
 )
 
 type experimentalFeatureState string
@@ -250,6 +251,12 @@ var allExperiments = []Experiment{
 		"Changes how `snowflake_account_parameter` builds the SQL it sends for the `value` field of string-typed and identifier-typed parameters.",
 		"String-typed parameter values no longer need to be manually wrapped in single quotes within `value` — quoting is now handled internally. Identifier-typed parameters (e.g. referencing a network policy by name) require no `value` change, but are now sent as a quoted identifier instead of a single-quoted string literal.",
 		"This experiment is also the first step toward forward-compatible parameter support (new Snowflake parameters usable without a provider upgrade); for now it only changes how existing parameters are written. See the migration guide for a detailed, before/after view of the configuration changes: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#opt-in-experiment-internal-quoting-for-snowflake_account_parameter.",
+	),
+	NewOptInExperiment(
+		WriteOnlyAttributes,
+		"Enables write-only attributes. Their values are never saved in the Terraform plan or state, so they can be set from an ephemeral resource. They require Terraform 1.11 or later.",
+		"Currently supported by: `rsa_public_key_wo` and `rsa_public_key_2_wo`, with their `rsa_public_key_wo_version` and `rsa_public_key_2_wo_version` version counters, on `snowflake_user`, `snowflake_service_user`, and `snowflake_legacy_service_user`.",
+		"Without this experiment, using a write-only attribute that is behind it results in an error.",
 	),
 }
 
