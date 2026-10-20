@@ -108,18 +108,3 @@ func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoCatalogNamespac
 	c.ValueNotSet("catalog_namespace")
 	return c
 }
-
-func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoRestConfig() *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.ValueNotSet("rest_config")
-	return c
-}
-
-func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoOAuthRestAuthentication() *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.ValueNotSet("o_auth_rest_authentication")
-	return c
-}
-
-func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoSigV4RestAuthentication() *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.ValueNotSet("sig_v4_rest_authentication")
-	return c
-}
