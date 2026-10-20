@@ -215,6 +215,94 @@ func Test_sdkEnumSymbols(t *testing.T) {
 	require.Equal(t, "sdk.AllComputePoolInstanceFamilies", ctx.sdkEnumAll(attr))
 }
 
+func Test_applyResourceAttributeRules_createOnlyBoolIsNative(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:        "initially_suspended",
+		Type:        ssot.AttrBool,
+		CreateOnly:  true,
+		Description: "Specifies whether the warehouse is created initially in the ‘Suspended’ state.",
+	}, resourceAttributeRuleContext{})
+
+	require.Equal(t, SchemaTypeBool, got.TfType)
+	require.True(t, got.Optional)
+	require.Empty(t, got.DefaultExpr)
+	require.Empty(t, got.ValidateDiagExpr)
+	require.Equal(t, "IgnoreAfterCreation", got.DiffSuppressExpr)
+	require.Equal(t, `"Specifies whether the warehouse is created initially in the ‘Suspended’ state."`, got.DescriptionExpr)
+}
+
+func Test_applyResourceAttributeRules_intBetweenKeepsIntDefault(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:               "query_acceleration_max_scale_factor",
+		Type:               ssot.AttrInt,
+		Description:        "Specifies the maximum scale factor.",
+		Min:                new(0),
+		Max:                new(100),
+		SuppressShowChange: true,
+	}, resourceAttributeRuleContext{})
+
+	require.Equal(t, "validation.ToDiagFunc(validation.IntBetween(0, 100))", got.ValidateDiagExpr)
+	require.Equal(t, "IntDefault", got.DefaultExpr)
+	require.Equal(t, `IgnoreChangeToCurrentSnowflakeValueInShow("query_acceleration_max_scale_factor")`, got.DiffSuppressExpr)
+}
+
+func Test_applyResourceAttributeRules_enumNamePluralAndShowSuppress(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:                  "warehouse_type",
+		Type:                  ssot.AttrEnum,
+		Description:           "Specifies warehouse type.",
+		AdditionalDescription: "Warehouse needs to be suspended.",
+		Enum:                  ssot.NewEnum("WarehouseTypeUserSettable", "WarehouseTypesUserSettable", "STANDARD", "SNOWPARK-OPTIMIZED"),
+		ShowName:              "type",
+		SuppressShowChange:    true,
+	}, resourceAttributeRuleContext{})
+
+	require.Equal(t, "sdkValidation(sdk.ToWarehouseTypeUserSettable)", got.ValidateDiagExpr)
+	require.Equal(t, `SuppressIfAny(NormalizeAndCompare(sdk.ToWarehouseTypeUserSettable), IgnoreChangeToCurrentSnowflakeValueInShow("type"))`, got.DiffSuppressExpr)
+	require.Equal(t, `"Specifies warehouse type. " + enumValuesDescription(sdk.AllWarehouseTypesUserSettable) + " Warehouse needs to be suspended."`, got.DescriptionExpr)
+}
+
+func Test_applyResourceAttributeRules_enumAliasesUseStringList(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:        "warehouse_size",
+		Type:        ssot.AttrEnum,
+		Description: "Specifies the size of the virtual warehouse.",
+		Enum: ssot.NewEnum("WarehouseSize", "WarehouseSizes", "XSMALL").
+			WithAliases("XSMALL", "X-SMALL"),
+	}, resourceAttributeRuleContext{})
+
+	require.Equal(t, `"Specifies the size of the virtual warehouse. " + enumValuesDescription(sdk.AllWarehouseSizesString)`, got.DescriptionExpr)
+}
+
+func Test_applyResourceAttributeRules_identifierValidationRelatedResourceAndShowSuppress(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:               "resource_monitor",
+		Type:               ssot.AttrIdentifier,
+		Description:        "Specifies the name of a resource monitor that is explicitly assigned to the warehouse.",
+		RelatedResource:    &ssot.Object{Name: "ResourceMonitor"},
+		SuppressShowChange: true,
+		ConflictsWith:      []ssot.Attribute{{Name: "generation"}},
+	}, resourceAttributeRuleContext{IdType: "AccountObjectIdentifier"})
+
+	require.Equal(t, "IsValidIdentifier[sdk.AccountObjectIdentifier]()", got.ValidateDiagExpr)
+	require.Equal(t, `SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("resource_monitor"))`, got.DiffSuppressExpr)
+	require.Equal(t, `relatedResourceDescription("Specifies the name of a resource monitor that is explicitly assigned to the warehouse.", resources.ResourceMonitor)`, got.DescriptionExpr)
+	require.Equal(t, []string{"generation"}, got.ConflictsWith)
+}
+
+func Test_applyResourceAttributeRules_showSuppressOnPlainField(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:               "max_cluster_count",
+		Type:               ssot.AttrInt,
+		Min:                new(1),
+		SuppressShowChange: true,
+	}, resourceAttributeRuleContext{})
+
+	require.Equal(t, "validation.ToDiagFunc(validation.IntAtLeast(1))", got.ValidateDiagExpr)
+	require.Empty(t, got.DefaultExpr)
+	require.Equal(t, `IgnoreChangeToCurrentSnowflakeValueInShow("max_cluster_count")`, got.DiffSuppressExpr)
+}
+
 func Test_applyResourceAttributeRules_comment(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "comment",

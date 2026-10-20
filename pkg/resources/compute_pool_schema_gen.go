@@ -15,6 +15,7 @@ var computePoolAttributesSchema = computePoolAttributesModificationExt(map[strin
 		Type:             tfschema.TypeString,
 		Optional:         true,
 		ForceNew:         true,
+		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 		Description:      "Specifies the Snowflake Native App name.",
 	},

@@ -65,7 +65,7 @@ func (m ResourceModel) HasUpdateCalls() bool {
 
 func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleModel, _ *log.Logger) ResourceModel {
 	hooks := ssot.DefaultResourceExtHooks(input.ResourceHooks...)
-	attributes := applyResourceAttributeRules(input.Attributes)
+	attributes := applyResourceAttributeRules(input.IdType, input.Attributes)
 	if hooks.NewCreateRequest.Generate || hooks.ApplyCreateOptionals.Generate {
 		attachCreateMappings(input.Name, input.Attributes, attributes)
 	}

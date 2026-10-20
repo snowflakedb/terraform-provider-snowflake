@@ -69,6 +69,12 @@ func ToWarehouseGeneration(s string) (WarehouseGeneration, error) {
 	}
 }
 
+// AllWarehouseTypesUserSettable excludes ADAPTIVE and INTERACTIVE. Those types are separate resources.
+var AllWarehouseTypesUserSettable = []WarehouseType{
+	WarehouseTypeStandard,
+	WarehouseTypeSnowparkOptimized,
+}
+
 // ToWarehouseTypeUserSettable parses a warehouse type string, excluding ADAPTIVE
 // which is not settable through the standard warehouse resource.
 func ToWarehouseTypeUserSettable(s string) (WarehouseType, error) {

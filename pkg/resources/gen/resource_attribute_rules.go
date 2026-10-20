@@ -3,6 +3,7 @@ package gen
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
@@ -10,13 +11,17 @@ import (
 
 const (
 	RuleOptionalBoolIsBooleanString            = "optional_bool_is_boolean_string"
+	RuleCreateOnlyBoolIsNative                 = "create_only_bool_is_native"
 	RuleRequiredBoolIsNative                   = "required_bool_is_native"
 	RuleOptionalIntMinAllowsZeroUsesIntDefault = "optional_int_min_allows_zero_uses_int_default"
 	RuleIdentifierSuppressesQuoting            = "identifier_suppresses_quoting"
+	RuleIdentifierValidates                    = "identifier_validates"
+	RuleRelatedResourceDescription             = "related_resource_description"
 	RuleEnumValidates                          = "enum_validates"
 	RuleEnumDescriptionListsValues             = "enum_description_lists_values"
 	RuleEnumFieldNormalizes                    = "enum_field_normalizes"
 	RuleCollectionOfEnumNormalizes             = "collection_of_enum_normalizes"
+	RuleSuppressShowChange                     = "suppress_show_change"
 )
 
 // resourceAttributeRuleContext distinguishes a top-level attribute from a collection
@@ -24,6 +29,7 @@ const (
 // descriptions) can skip elems.
 type resourceAttributeRuleContext struct {
 	AsCollectionElem bool
+	IdType           string
 }
 
 type resourceAttributeRule struct {
@@ -37,14 +43,13 @@ type resourceAttributeRule struct {
 // When two rules could touch the same field they are disjoint in When.
 var resourceAttributeRules = []resourceAttributeRule{
 	{
-		// That is not always true, there are at least two groups of optional bool attributes that don't use this pattern:
-		// - Create-time-only flags, e.g. snowflake_warehouse.initially_suspended
-		// - Discriminator flags inside blocks (snowflake_session_policy.allowed_secondary_roles.0.all).
+		// CreateOnly opts out (native TypeBool). Discriminator flags inside blocks
+		// (snowflake_session_policy.allowed_secondary_roles.0.all) are still boolean strings.
 		// TODO [next PRs]: adjust the logic if needed with next objects migrations
 		Name:        RuleOptionalBoolIsBooleanString,
 		Description: "Optional bools use boolean-string chrome because TF TypeBool cannot distinguish unset from false.",
 		When: func(in ssot.Attribute, _ resourceAttributeRuleContext) bool {
-			return in.Type == ssot.AttrBool && !in.Required
+			return in.Type == ssot.AttrBool && !in.Required && !in.CreateOnly
 		},
 		Then: func(in ssot.Attribute, _ resourceAttributeRuleContext, out *ResourceAttribute) {
 			out.TfType = SchemaTypeString
@@ -53,6 +58,17 @@ var resourceAttributeRules = []resourceAttributeRule{
 			if !in.RawDescription && in.Description != "" {
 				out.DescriptionExpr = fmt.Sprintf("booleanStringFieldDescription(%s)", strconv.Quote(in.Description))
 			}
+		},
+	},
+	{
+		Name:        RuleCreateOnlyBoolIsNative,
+		Description: "Create-only optional bools stay native TypeBool and ignore changes after creation.",
+		When: func(in ssot.Attribute, ctx resourceAttributeRuleContext) bool {
+			return in.Type == ssot.AttrBool && !in.Required && in.CreateOnly && !ctx.AsCollectionElem
+		},
+		Then: func(_ ssot.Attribute, _ resourceAttributeRuleContext, out *ResourceAttribute) {
+			out.TfType = SchemaTypeBool
+			out.DiffSuppressExpr = "IgnoreAfterCreation"
 		},
 	},
 	{
@@ -83,6 +99,26 @@ var resourceAttributeRules = []resourceAttributeRule{
 		},
 		Then: func(_ ssot.Attribute, _ resourceAttributeRuleContext, out *ResourceAttribute) {
 			out.DiffSuppressExpr = "suppressIdentifierQuoting"
+		},
+	},
+	{
+		Name:        RuleIdentifierValidates,
+		Description: "Identifier attributes can validate with IsValidIdentifier for a concrete SDK identifier type.",
+		When: func(in ssot.Attribute, ctx resourceAttributeRuleContext) bool {
+			return in.Type == ssot.AttrIdentifier && !ctx.AsCollectionElem && ctx.IdType != ""
+		},
+		Then: func(_ ssot.Attribute, ctx resourceAttributeRuleContext, out *ResourceAttribute) {
+			out.ValidateDiagExpr = fmt.Sprintf("IsValidIdentifier[sdk.%s]()", ctx.IdType)
+		},
+	},
+	{
+		Name:        RuleRelatedResourceDescription,
+		Description: "Attributes that name another resource append a docs link via relatedResourceDescription.",
+		When: func(in ssot.Attribute, ctx resourceAttributeRuleContext) bool {
+			return in.RelatedResource != nil && in.RelatedResource.Name != "" && in.Description != "" && !ctx.AsCollectionElem
+		},
+		Then: func(in ssot.Attribute, _ resourceAttributeRuleContext, out *ResourceAttribute) {
+			out.DescriptionExpr = fmt.Sprintf("relatedResourceDescription(%s, resources.%s)", strconv.Quote(in.Description), in.RelatedResource.Name)
 		},
 	},
 	{
@@ -132,6 +168,16 @@ var resourceAttributeRules = []resourceAttributeRule{
 			out.DiffSuppressExpr = fmt.Sprintf("NormalizeAndCompare(%s)", ctx.sdkEnumTo(in))
 		},
 	},
+	{
+		Name:        RuleSuppressShowChange,
+		Description: "Fields that drift with SHOW compose IgnoreChangeToCurrentSnowflakeValueInShow onto the diff suppressor.",
+		When: func(in ssot.Attribute, ctx resourceAttributeRuleContext) bool {
+			return in.SuppressShowChange && !ctx.AsCollectionElem
+		},
+		Then: func(in ssot.Attribute, _ resourceAttributeRuleContext, out *ResourceAttribute) {
+			out.DiffSuppressExpr = composeShowDiffSuppress(out.DiffSuppressExpr, in.OutputKey())
+		},
+	},
 }
 
 func isCollection(in ssot.Attribute) bool {
@@ -165,12 +211,29 @@ func (ctx resourceAttributeRuleContext) sdkEnumAll(in ssot.Attribute) string {
 	if e == nil || e.NamePlural == "" {
 		return ""
 	}
-	return "sdk.All" + e.NamePlural
+	symbol := "sdk.All" + e.NamePlural
+	if e.HasAliases() {
+		symbol += "String"
+	}
+	return symbol
+}
+
+func composeShowDiffSuppress(existing, showKey string) string {
+	ignore := fmt.Sprintf("IgnoreChangeToCurrentSnowflakeValueInShow(%q)", showKey)
+	if existing == "" {
+		return ignore
+	}
+	const prefix = "SuppressIfAny("
+	if strings.HasPrefix(existing, prefix) && strings.HasSuffix(existing, ")") {
+		inner := existing[len(prefix) : len(existing)-1]
+		return fmt.Sprintf("SuppressIfAny(%s, %s)", inner, ignore)
+	}
+	return fmt.Sprintf("SuppressIfAny(%s, %s)", existing, ignore)
 }
 
 // applyResourceAttributeRules is the dedicated processing step from written Attribute intent to ResourceAttribute schema chrome.
-func applyResourceAttributeRules(in []ssot.Attribute) []ResourceAttribute {
-	ctx := resourceAttributeRuleContext{}
+func applyResourceAttributeRules(idType string, in []ssot.Attribute) []ResourceAttribute {
+	ctx := resourceAttributeRuleContext{IdType: idType}
 	return collections.Map(in, func(attr ssot.Attribute) ResourceAttribute { return resolveResourceAttribute(attr, ctx) })
 }
 
@@ -199,12 +262,18 @@ func resourceAttributeBaseline(in ssot.Attribute, ctx resourceAttributeRuleConte
 		out.Required = in.Required
 		out.Optional = !in.Required
 		out.ForceNew = in.ForceNew
+		out.ConflictsWith = collections.Map(in.ConflictsWith, func(attr ssot.Attribute) string { return attr.Name })
 	}
 	if in.Description != "" {
 		out.DescriptionExpr = strconv.Quote(in.Description)
 	}
-	if in.Min != nil {
+	switch {
+	case in.Min != nil && in.Max != nil:
+		out.ValidateDiagExpr = fmt.Sprintf("validation.ToDiagFunc(validation.IntBetween(%d, %d))", *in.Min, *in.Max)
+	case in.Min != nil:
 		out.ValidateDiagExpr = fmt.Sprintf("validation.ToDiagFunc(validation.IntAtLeast(%d))", *in.Min)
+	case in.Max != nil:
+		out.ValidateDiagExpr = fmt.Sprintf("validation.ToDiagFunc(validation.IntAtMost(%d))", *in.Max)
 	}
 	if in.Type == ssot.AttrEnum && in.Enum != nil {
 		out.EnumName = in.Enum.Name

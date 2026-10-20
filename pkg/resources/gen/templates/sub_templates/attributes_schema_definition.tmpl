@@ -26,6 +26,13 @@ var {{ .Prefix }}AttributesSchema = {{ if .AttributesModification }}{{ .Prefix }
 {{- if .DiffSuppressExpr }}
 		DiffSuppressFunc: {{ .DiffSuppressExpr }},
 {{- end }}
+{{- if .ConflictsWith }}
+		ConflictsWith: []string{
+{{- range .ConflictsWith }}
+			{{ printf "%q" . }},
+{{- end }}
+		},
+{{- end }}
 {{- if .DescriptionExpr }}
 		Description: {{ .DescriptionExpr }},
 {{- end }}

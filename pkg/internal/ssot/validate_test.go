@@ -40,6 +40,57 @@ func Test_ValidateObject_writableColumnNotInAttributes(t *testing.T) {
 	})
 }
 
+func Test_ValidateObject_conflictsWithUnknownAttribute(t *testing.T) {
+	require.PanicsWithValue(t, `object "Warehouse": attribute "resource_constraint" conflicts with unknown attribute "generation"`, func() {
+		ValidateObject(Object{
+			Name: "Warehouse",
+			Attributes: []Attribute{{
+				Name:          "resource_constraint",
+				ConflictsWith: []Attribute{{Name: "generation"}},
+			}},
+		})
+	})
+}
+
+func Test_ValidateObject_conflictsWithItself(t *testing.T) {
+	require.PanicsWithValue(t, `object "Warehouse": attribute "generation" conflicts with itself`, func() {
+		ValidateObject(Object{
+			Name: "Warehouse",
+			Attributes: []Attribute{{
+				Name:          "generation",
+				ConflictsWith: []Attribute{{Name: "generation"}},
+			}},
+		})
+	})
+}
+
+func Test_ValidateObject_conflictsWithKnownAttribute(t *testing.T) {
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name: "Warehouse",
+			Attributes: []Attribute{
+				{Name: "resource_constraint", ConflictsWith: []Attribute{{Name: "generation"}}},
+				{Name: "generation", ConflictsWith: []Attribute{{Name: "resource_constraint"}}},
+			},
+		})
+	})
+}
+
+func Test_ValidateObject_createOnlyMustBeOptionalBool(t *testing.T) {
+	require.PanicsWithValue(t, `object "Warehouse": CreateOnly attribute "auto_suspend" must be an optional bool`, func() {
+		ValidateObject(Object{
+			Name:       "Warehouse",
+			Attributes: []Attribute{{Name: "auto_suspend", Type: AttrInt, CreateOnly: true}},
+		})
+	})
+	require.PanicsWithValue(t, `object "Warehouse": CreateOnly attribute "initially_suspended" must be an optional bool`, func() {
+		ValidateObject(Object{
+			Name:       "Warehouse",
+			Attributes: []Attribute{{Name: "initially_suspended", Type: AttrBool, Required: true, CreateOnly: true}},
+		})
+	})
+}
+
 func Test_ValidateObject_duplicateOutputKey(t *testing.T) {
 	a := Attribute{Name: "for_application", ShowName: "application"}
 	b := Attribute{Name: "application"}

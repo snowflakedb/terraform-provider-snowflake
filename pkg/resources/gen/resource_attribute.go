@@ -22,6 +22,7 @@ type ResourceAttribute struct {
 	DefaultExpr          string
 	ValidateDiagExpr     string
 	DiffSuppressExpr     string
+	ConflictsWith        []string
 	Elem                 *ResourceAttribute
 	EnumName             string // SDK enum type name; empty when the attribute is not an enum
 	CreateConstructorArg *CreateConstructorArg

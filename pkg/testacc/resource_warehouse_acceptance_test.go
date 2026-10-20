@@ -805,6 +805,8 @@ func TestAcc_Warehouse_Validations(t *testing.T) {
 		WithMinClusterCount(0)
 	warehouseModelInvalidScalingPolicy := model.Warehouse("test", id.Name()).
 		WithScalingPolicy("unknown")
+	warehouseModelInvalidQueryAccelerationMaxScaleFactor := model.Warehouse("test", id.Name()).
+		WithQueryAccelerationMaxScaleFactor(101)
 	warehouseModelInvalidAutoResume := model.Warehouse("test", id.Name()).
 		WithAutoResume("other")
 	warehouseModelInvalidMaxConcurrencyLevel := model.Warehouse("test", id.Name()).
@@ -848,6 +850,11 @@ func TestAcc_Warehouse_Validations(t *testing.T) {
 				Config:      config.FromModels(t, warehouseModelInvalidScalingPolicy),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile("invalid scaling policy: UNKNOWN"),
+			},
+			{
+				Config:      config.FromModels(t, warehouseModelInvalidQueryAccelerationMaxScaleFactor),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected query_acceleration_max_scale_factor to be in the range \(0 - 100\), got 101`),
 			},
 			{
 				Config:      config.FromModels(t, warehouseModelInvalidAutoResume),
@@ -3335,6 +3342,53 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration_UpdatedExtern
 						HasType(sdk.WarehouseTypeStandard).
 						HasGeneration(sdk.WarehouseGenerationStandardGen2).
 						HasResourceConstraintEmpty(),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Warehouse_ScalingPolicy_CaseDrift(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	warehouseModel := model.Warehouse("test", id.Name()).
+		WithWarehouseTypeEnum(sdk.WarehouseTypeStandard).
+		WithScalingPolicyEnum(sdk.ScalingPolicyEconomy)
+	warehouseModelLower := model.Warehouse("test", id.Name()).
+		WithWarehouseTypeEnum(sdk.WarehouseTypeStandard).
+		WithScalingPolicy("economy")
+	ref := warehouseModel.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Warehouse),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, warehouseModel),
+				Check: assertThat(
+					t,
+					resourceassert.WarehouseResource(t, ref).
+						HasScalingPolicyString(string(sdk.ScalingPolicyEconomy)),
+					resourceshowoutputassert.WarehouseShowOutput(t, ref).
+						HasScalingPolicy(sdk.ScalingPolicyEconomy),
+				),
+			},
+			// economy and ECONOMY are the same policy. ToWarehouseType rejects ECONOMY, so this used to plan an update.
+			{
+				Config: accconfig.FromModels(t, warehouseModelLower),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.WarehouseResource(t, ref).
+						HasScalingPolicyString(string(sdk.ScalingPolicyEconomy)),
+					resourceshowoutputassert.WarehouseShowOutput(t, ref).
+						HasScalingPolicy(sdk.ScalingPolicyEconomy),
 				),
 			},
 		},

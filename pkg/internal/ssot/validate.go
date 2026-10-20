@@ -23,6 +23,19 @@ func ValidateObject(obj Object) {
 		seen[a.Name] = struct{}{}
 		attrs[a.Name] = struct{}{}
 	}
+	for _, a := range obj.Attributes {
+		if a.CreateOnly && (a.Type != AttrBool || a.Required) {
+			panic(fmt.Sprintf("object %q: CreateOnly attribute %q must be an optional bool", obj.Name, a.Name))
+		}
+		for _, other := range a.ConflictsWith {
+			if other.Name == a.Name {
+				panic(fmt.Sprintf("object %q: attribute %q conflicts with itself", obj.Name, a.Name))
+			}
+			if _, ok := attrs[other.Name]; !ok {
+				panic(fmt.Sprintf("object %q: attribute %q conflicts with unknown attribute %q", obj.Name, a.Name, other.Name))
+			}
+		}
+	}
 	validateColumnList(obj, "SHOW", obj.Show.Columns, attrs)
 	validateColumnList(obj, "DESCRIBE", obj.Describe.Columns, attrs)
 }
