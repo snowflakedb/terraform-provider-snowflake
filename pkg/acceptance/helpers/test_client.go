@@ -72,6 +72,7 @@ type TestClient struct {
 	PasswordPolicy               *PasswordPolicyClient
 	Pipe                         *PipeClient
 	PostgresInstance             *PostgresInstanceClient
+	PostgresMirror               *PostgresMirrorClient
 	Procedure                    *ProcedureClient
 	ProjectionPolicy             *ProjectionPolicyClient
 	PolicyReferences             *PolicyReferencesClient
@@ -184,6 +185,7 @@ func NewTestClient(
 		PasswordPolicy:               NewPasswordPolicyClient(context, idsGenerator),
 		Pipe:                         NewPipeClient(context, idsGenerator),
 		PostgresInstance:             NewPostgresInstanceClient(context, idsGenerator),
+		PostgresMirror:               NewPostgresMirrorClient(context),
 		Procedure:                    NewProcedureClient(context, idsGenerator),
 		ProjectionPolicy:             NewProjectionPolicyClient(context, idsGenerator),
 		PolicyReferences:             NewPolicyReferencesClient(context),

@@ -75,6 +75,9 @@ type Operation struct {
 	DropSafelyHook bool
 	// DropSafelyForce, when true, appends .WithForce(true) to the Drop request in the generated DropSafely implementation.
 	DropSafelyForce bool
+	// DropSafelySuppressed, when true, omits DropSafely from the generated interface and implementation.
+	// The object declares its own DropSafely with WithCustomInterfaceMethod and implements it in the _ext.go file.
+	DropSafelySuppressed bool
 	// RequestAdjust, when true, inserts a request.adjust() call in the generated impl before toOpts() is called.
 	// The adjust() method must be implemented manually on the request type in a _ext.go file.
 	RequestAdjust bool
@@ -285,6 +288,12 @@ func WithDropSafelyHook() DropOperationOption {
 // WithDropSafelyForce adds .WithForce(true) to the Drop request in the generated DropSafely implementation.
 func WithDropSafelyForce() DropOperationOption {
 	return func(op *Operation) { op.DropSafelyForce = true }
+}
+
+// WithDropSafelySuppressed skips the generated DropSafely, for objects that cannot be dropped safely with IF EXISTS
+// and the identifier alone.
+func WithDropSafelySuppressed() DropOperationOption {
+	return func(op *Operation) { op.DropSafelySuppressed = true }
 }
 
 func (i *Interface) DropOperation(doc string, queryStruct *QueryStruct, opts ...DropOperationOption) *Interface {

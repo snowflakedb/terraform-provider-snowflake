@@ -108,6 +108,7 @@ var (
 		sdk.OAuthRestAuthenticationDetails{},
 		sdk.OpenCatalogRestConfigDetails{},
 		sdk.PolicyReference{},
+		sdk.PostgresMirrorDetails{},
 		sdk.SigV4RestAuthenticationDetails{},
 		sdk.StorageLocationAzureDetails{},
 		sdk.StorageLocationGcsDetails{},

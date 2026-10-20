@@ -230,6 +230,7 @@ func mapNullString(_ **string, _ sql.NullString)                                
 func mapNullStringToNonNullableField(_ *string, _ sql.NullString)                        {}
 func mapNullStringWithMapping[T any](_ **T, _ sql.NullString, _ func(string) (T, error)) {}
 func mapNullInt(_ **int, _ sql.NullInt64)                                                {}
+func mapNullInt64(_ **int64, _ sql.NullInt64)                                            {}
 func mapNullBool(_ **bool, _ sql.NullBool)                                               {}
 func mapNullBoolToNonNullableField(_ *bool, _ sql.NullBool)                              {}
 func mapNullIntToNonNullableField(_ *int, _ sql.NullInt64)                               {}

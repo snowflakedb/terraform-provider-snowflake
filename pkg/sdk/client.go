@@ -75,6 +75,7 @@ type Client struct {
 	Pipes                        Pipes
 	PolicyReferences             PolicyReferences
 	PostgresInstances            PostgresInstances
+	PostgresMirrors              PostgresMirrors
 	Procedures                   Procedures
 	ResourceMonitors             ResourceMonitors
 	Roles                        Roles
@@ -223,6 +224,7 @@ func (c *Client) initialize() {
 	c.Pipes = &pipes{client: c}
 	c.PolicyReferences = &policyReferences{client: c}
 	c.PostgresInstances = &postgresInstances{client: c}
+	c.PostgresMirrors = &postgresMirrors{client: c}
 	c.Procedures = &procedures{client: c}
 	c.ReplicationFunctions = &replicationFunctions{client: c}
 	c.ResourceMonitors = &resourceMonitors{client: c}

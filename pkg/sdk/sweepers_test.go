@@ -2,6 +2,7 @@ package sdk_test
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random/acceptancetests"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random/integrationtests"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
@@ -92,6 +94,8 @@ func sweep(client *sdk.Client, suffix string, includePostgres bool) error {
 		nukeRoles(client, suffix),
 	}
 	if includePostgres {
+		// A mirror protects its target database from DROP DATABASE, so mirrors go before databases and Postgres instances.
+		sweepers = append([]func() error{nukePostgresMirrors(client, suffix)}, sweepers...)
 		sweepers = append(sweepers, nukePostgresInstances(client, suffix))
 	}
 	// All the sweepers are run, even if some of them fail; otherwise a single failure would leave the objects handled by the subsequent sweepers behind.
@@ -155,6 +159,17 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 	t.Run("unset account policy attachments", func(t *testing.T) {
 		for _, c := range allClients {
 			err := getAccountPolicyAttachmentsSweeper(c)()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep postgres mirrors", func(t *testing.T) {
+		for _, c := range allClients {
+			// Snowflake Postgres is not available for GCP.
+			if c == gcpClient {
+				continue
+			}
+			err := nukePostgresMirrors(c, "")()
 			assert.NoError(t, err)
 		}
 	})
@@ -786,11 +801,111 @@ func nukeUsers(client *sdk.Client, suffix string) func() error {
 	})
 }
 
+// postgresMirrorSweepRow is the LIST_MIRRORS subset this sweeper reads. The call is direct because
+// PostgresMirrors.List is not on the client. The procedure result has no creation time.
+type postgresMirrorSweepRow struct {
+	MirrorName     string         `db:"MIRROR_NAME"`
+	TargetDatabase sql.NullString `db:"TARGET_DATABASE"`
+}
+
+// postgresMirrorSweepDrop reports whether a mirror belongs to this sweep.
+// A suffix selects the current run, compared case-insensitively after PostgresMirrorNameSuffix.
+// An empty suffix selects leftovers whose target database is older than the stale period.
+// A missing creation time leaves the mirror in place.
+func postgresMirrorSweepDrop(name string, suffix string, targetCreatedOn *time.Time, now time.Time) bool {
+	if suffix != "" {
+		return strings.HasSuffix(strings.ToLower(name), strings.ToLower(suffix))
+	}
+	if targetCreatedOn == nil {
+		return false
+	}
+	return targetCreatedOn.Before(now.Add(stalePeriod))
+}
+
+func Test_postgresMirrorSweepDrop(t *testing.T) {
+	now := time.Date(2026, 10, 15, 12, 0, 0, 0, time.UTC)
+	stale := now.Add(stalePeriod).Add(-time.Minute)
+	fresh := now.Add(-time.Minute)
+
+	assert.True(t, postgresMirrorSweepDrop("abcit_suffix", "it_suffix", nil, now))
+	assert.True(t, postgresMirrorSweepDrop("ABCIT_SUFFIX", "it_suffix", nil, now))
+	assert.False(t, postgresMirrorSweepDrop("abcit_other", "it_suffix", nil, now))
+	assert.True(t, postgresMirrorSweepDrop("orders_it_old", "", &stale, now))
+	assert.False(t, postgresMirrorSweepDrop("orders_it_new", "", &fresh, now))
+	assert.False(t, postgresMirrorSweepDrop("orders_it_unknown", "", nil, now))
+}
+
+// nukePostgresMirrors drops mirrors left by tests, together with their target databases.
+func nukePostgresMirrors(client *sdk.Client, suffix string) func() error {
+	return func() error {
+		ctx := context.Background()
+		var rows []postgresMirrorSweepRow
+		err := client.QueryForTests(ctx, &rows, "CALL SNOWFLAKE.POSTGRES.LIST_MIRRORS()")
+		if err != nil {
+			// Accounts the mirror tests do not run on may lack the postgres_mirror_admin application role.
+			if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
+				log.Printf("[DEBUG] Skipping postgres mirrors, LIST_MIRRORS is not accessible: %v", err)
+				return nil
+			}
+			return fmt.Errorf("listing postgres mirrors ended with error, err = %w", err)
+		}
+
+		var createdOnByDatabase map[string]time.Time
+		if suffix == "" {
+			databases, showErr := client.Databases.Show(ctx, sdk.NewShowDatabaseRequest())
+			if showErr != nil {
+				return fmt.Errorf("showing databases for postgres mirror sweep ended with error, err = %w", showErr)
+			}
+			createdOnByDatabase = make(map[string]time.Time, len(databases))
+			for _, database := range databases {
+				createdOnByDatabase[strings.ToUpper(database.Name)] = database.CreatedOn
+			}
+		}
+
+		mirrorSuffix := ""
+		if suffix != "" {
+			mirrorSuffix = random.PostgresMirrorNameSuffix(suffix)
+			log.Printf("[DEBUG] Sweeping postgres mirrors with suffix %s", mirrorSuffix)
+		} else {
+			log.Printf("[DEBUG] Sweeping stale postgres mirrors")
+		}
+
+		var errs []error
+		for _, row := range rows {
+			var targetCreatedOn *time.Time
+			if suffix == "" {
+				if !row.TargetDatabase.Valid {
+					log.Printf("[DEBUG] Skipping postgres mirror %s, it has no target database", row.MirrorName)
+					continue
+				}
+				createdOn, ok := createdOnByDatabase[strings.ToUpper(row.TargetDatabase.String)]
+				if !ok {
+					log.Printf("[DEBUG] Skipping postgres mirror %s, target database %s has no creation time", row.MirrorName, row.TargetDatabase.String)
+					continue
+				}
+				targetCreatedOn = &createdOn
+			}
+			if !postgresMirrorSweepDrop(row.MirrorName, mirrorSuffix, targetCreatedOn, time.Now()) {
+				log.Printf("[DEBUG] Skipping postgres mirror %s", row.MirrorName)
+				continue
+			}
+
+			log.Printf("[DEBUG] Dropping postgres mirror %s", row.MirrorName)
+			dropErr := client.PostgresMirrors.DropSafely(ctx, sdk.NewDropPostgresMirrorRequest(*sdk.NewDropPostgresMirrorArgumentsRequest(row.MirrorName).WithDropTargetDatabase(true)))
+			if dropErr != nil {
+				errs = append(errs, fmt.Errorf("sweeping postgres mirror %s ended with error, err = %w", row.MirrorName, dropErr))
+			}
+		}
+		return errors.Join(errs...)
+	}
+}
+
 func nukePostgresInstances(client *sdk.Client, suffix string) func() error {
 	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.PostgresInstance]{
 		objectTypeName: "postgres instance",
-		// no postgres instances are protected for now
-		protectedNames: []string{},
+		protectedNames: []string{
+			"TF_PROVIDER_TESTS_POSTGRES_MIRROR_SOURCE",
+		},
 		show: func(ctx context.Context) ([]sdk.PostgresInstance, error) {
 			return client.PostgresInstances.Show(ctx, sdk.NewShowPostgresInstanceRequest())
 		},

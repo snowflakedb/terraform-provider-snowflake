@@ -35,6 +35,7 @@ type pairedStructExampleRow struct {
 	NextValue                    int            `db:"next_value"`
 	Port                         sql.NullInt64  `db:"port"`
 	RetryLimit                   sql.NullInt64  `db:"retry_limit"`
+	LargeCount                   sql.NullInt64  `db:"large_count"`
 	CreatedOn                    time.Time      `db:"created_on"`
 	UpdatedAt                    sql.NullTime   `db:"updated_at"`
 	Primary                      string         `db:"primary"`
@@ -69,6 +70,7 @@ type PairedStructExample struct {
 	NextValue                            int
 	Port                                 *int
 	RetryLimit                           int
+	LargeCount                           *int64
 	CreatedOn                            time.Time
 	UpdatedAt                            *time.Time
 	Primary                              ExternalObjectIdentifier
@@ -118,6 +120,7 @@ type pairedStructExampleDetailRow struct {
 	NextValue                    int            `db:"next_value"`
 	Port                         sql.NullInt64  `db:"port"`
 	RetryLimit                   sql.NullInt64  `db:"retry_limit"`
+	LargeCount                   sql.NullInt64  `db:"large_count"`
 	CreatedOn                    time.Time      `db:"created_on"`
 	UpdatedAt                    sql.NullTime   `db:"updated_at"`
 	Primary                      string         `db:"primary"`
@@ -152,6 +155,7 @@ type PairedStructExampleDetail struct {
 	NextValue                            int
 	Port                                 *int
 	RetryLimit                           int
+	LargeCount                           *int64
 	CreatedOn                            time.Time
 	UpdatedAt                            *time.Time
 	Primary                              ExternalObjectIdentifier

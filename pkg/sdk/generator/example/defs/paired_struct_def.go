@@ -31,6 +31,8 @@ func pairedStructExampleAllOptions(dbName, plainName string) *g.PairedStructs {
 		OptionalNumber("port").
 		// db sql.NullInt64, plain int — WithRequiredInPlain strips the pointer
 		OptionalNumber("retry_limit", g.WithRequiredInPlain()).
+		// db sql.NullInt64, plain *int64 — both nullable; keeps values above 32 bits
+		Field("large_count", "sql.NullInt64", "*int64").
 		// Both time.Time; auto-derived field names
 		Time("created_on").
 		// db sql.NullTime, plain *time.Time — both nullable; auto-derived field names

@@ -25,7 +25,9 @@ type {{ .Name }} interface {
 			{{- end }}
 		{{- else if eq .Name "Drop" }}
 			Drop(ctx context.Context, request *{{ .OptsField.DtoDecl }}) error
+			{{- if not .DropSafelySuppressed }}
 			DropSafely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) error
+			{{- end }}
 		{{- else if .InstanceMethodMapping }}
 			{{- if eq (instance_method_kind_deref .InstanceMethodKind) "slice" }}
 				{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .InstanceMethodMapping.To.Name }}, error)

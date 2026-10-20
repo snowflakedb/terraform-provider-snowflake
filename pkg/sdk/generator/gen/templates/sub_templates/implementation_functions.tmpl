@@ -86,6 +86,7 @@
             opts := request.toOpts()
             return validateAndExec(v.client, ctx, opts)
         }
+        {{- if not .DropSafelySuppressed }}
 
         func (v *{{ $impl }}) DropSafely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) error {
             {{- if .DropSafelyHook }}
@@ -95,6 +96,7 @@
             {{- end }}
             return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDrop{{ .ObjectInterface.NameSingular }}Request(id).WithIfExists(true){{ if .DropSafelyForce }}.WithForce(true){{ end }}) }, ctx, id)
         }
+        {{- end }}
     {{ else if .InstanceMethodMapping }}
         {{ if eq (instance_method_kind_deref .InstanceMethodKind) "slice" }}
             func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .InstanceMethodMapping.To.Name }}, error) {

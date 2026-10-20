@@ -529,6 +529,12 @@ var allStructs = []SdkObjectDef{
 		IsDataSourceOutput: true,
 	},
 	{
+		IdType:               "sdk.AccountObjectIdentifier",
+		ObjectStruct:         sdk.PostgresMirrorDetails{},
+		IsDataSourceOutput:   true,
+		NoIdentifiableObject: true,
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.PolicyReference{},
 		NoShowById:   true,

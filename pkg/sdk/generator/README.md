@@ -113,7 +113,7 @@ Additional example definitions covering specific generator features:
 - [paired_struct_def.go](example/defs/paired_struct_def.go) — all `PairedStructs` field methods and options (see [PairedStructs](#pairedstructs) below)
 - [to_opts_optional_example_def.go](example/defs/to_opts_optional_example_def.go) — `ListQueryStructField` with slice-of-structs toOpts, optional nested fields
 - [slice_validation_example_def.go](example/defs/slice_validation_example_def.go) — `validate()` for lists of objects: multiple `WithValidation`s on a slice, nested structs under a slice, N-deep nested `ListQueryStructField` (Items → SubItems → LeafItems)
-- [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) — `DropOperation` with `WithDropSafelyHook()` and `WithDropSafelyForce()` options
+- [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) — `DropOperation` with `WithDropSafelyHook()`, `WithDropSafelyForce()`, and `WithDropSafelySuppressed()` options
 - [instance_method_example_def.go](example/defs/instance_method_example_def.go) — `InstanceMethodOperation` and `InstanceMethodOperationScalar`
 - [enum_example_def.go](example/defs/enum_examples_def.go) — enum definitions with `Enum` and `OptionalEnum`
 
@@ -196,6 +196,8 @@ See `pkg/sdk/compute_pools_ext_test.go` and `pkg/sdk/functions_ext_test.go` for 
 
 - **`WithDropSafelyForce()`** — the generated `DropSafely` appends `.WithForce(true)` to the Drop request, so dependent objects are also removed.
 
+- **`WithDropSafelySuppressed()`** — no `DropSafely` is generated. Use it when the object cannot be dropped safely with `IF EXISTS` and the identifier alone (e.g. the drop is a procedure call that needs the whole request). Declare the replacement with `WithCustomInterfaceMethod("DropSafely", ...)` and implement it in a `_ext.go` file.
+
 Example usage:
 ```go
 // Calls v.dropSafelyHook(ctx, id) before dropping.
@@ -203,6 +205,10 @@ Example usage:
 
 // Appends .WithForce(true) to the Drop request.
 ).DropOperation("https://...", dropStruct, g.WithDropSafelyForce())
+
+// Generates no DropSafely; the custom one is implemented in the _ext.go file.
+).DropOperation("https://...", dropStruct, g.WithDropSafelySuppressed()).
+	WithCustomInterfaceMethod("DropSafely", "", []*g.MethodParameter{g.NewMethodParameter("request", "*DropXxxRequest")}, "error")
 ```
 
 See [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) for complete examples.
