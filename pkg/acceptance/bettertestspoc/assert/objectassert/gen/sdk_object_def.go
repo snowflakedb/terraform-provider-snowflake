@@ -58,6 +58,13 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.User{},
 	},
 	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.UserDetails{},
+		IsDataSourceOutput: true,
+		FromObjectIDExpr:   "sdk.NewAccountObjectIdentifier(userDetails.Name)",
+		SkipFields:         []string{"Password"},
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.View{},
 	},

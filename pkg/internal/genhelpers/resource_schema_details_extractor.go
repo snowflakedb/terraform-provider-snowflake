@@ -21,6 +21,7 @@ type SchemaAttribute struct {
 	AttributeType    schema.ValueType
 	AttributeSubType schema.ValueType
 	Required         bool
+	WriteOnly        bool
 }
 
 var preferredFrontOrdering = []string{"database", "schema", "name"}
@@ -59,6 +60,7 @@ func ExtractResourceSchemaDetails(name string, resourceSchema map[string]*schema
 			AttributeType:    s.Type,
 			AttributeSubType: subtype,
 			Required:         s.Required,
+			WriteOnly:        s.WriteOnly,
 		})
 	}
 

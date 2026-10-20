@@ -329,6 +329,16 @@ func (s *ServiceUserResourceAssert) HasRsaPublicKey2(expected string) *ServiceUs
 	return s
 }
 
+func (s *ServiceUserResourceAssert) HasRsaPublicKey2WoVersion(expected int) *ServiceUserResourceAssert {
+	s.IntValueSet("rsa_public_key_2_wo_version", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKeyWoVersion(expected int) *ServiceUserResourceAssert {
+	s.IntValueSet("rsa_public_key_wo_version", expected)
+	return s
+}
+
 func (s *ServiceUserResourceAssert) HasS3StageVpceDnsName(expected string) *ServiceUserResourceAssert {
 	s.StringValueSet("s3_stage_vpce_dns_name", expected)
 	return s
@@ -750,6 +760,16 @@ func (s *ServiceUserResourceAssert) HasRsaPublicKeyString(expected string) *Serv
 
 func (s *ServiceUserResourceAssert) HasRsaPublicKey2String(expected string) *ServiceUserResourceAssert {
 	s.ValueSet("rsa_public_key_2", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKey2WoVersionString(expected string) *ServiceUserResourceAssert {
+	s.ValueSet("rsa_public_key_2_wo_version", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKeyWoVersionString(expected string) *ServiceUserResourceAssert {
+	s.ValueSet("rsa_public_key_wo_version", expected)
 	return s
 }
 
@@ -1177,6 +1197,16 @@ func (s *ServiceUserResourceAssert) HasNoRsaPublicKey2() *ServiceUserResourceAss
 	return s
 }
 
+func (s *ServiceUserResourceAssert) HasNoRsaPublicKey2WoVersion() *ServiceUserResourceAssert {
+	s.ValueNotSet("rsa_public_key_2_wo_version")
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasNoRsaPublicKeyWoVersion() *ServiceUserResourceAssert {
+	s.ValueNotSet("rsa_public_key_wo_version")
+	return s
+}
+
 func (s *ServiceUserResourceAssert) HasNoS3StageVpceDnsName() *ServiceUserResourceAssert {
 	s.ValueNotSet("s3_stage_vpce_dns_name")
 	return s
@@ -1601,6 +1631,16 @@ func (s *ServiceUserResourceAssert) HasRsaPublicKey2Empty() *ServiceUserResource
 	return s
 }
 
+func (s *ServiceUserResourceAssert) HasRsaPublicKey2WoVersionEmpty() *ServiceUserResourceAssert {
+	s.ValueSet("rsa_public_key_2_wo_version", "")
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKeyWoVersionEmpty() *ServiceUserResourceAssert {
+	s.ValueSet("rsa_public_key_wo_version", "")
+	return s
+}
+
 func (s *ServiceUserResourceAssert) HasS3StageVpceDnsNameEmpty() *ServiceUserResourceAssert {
 	s.ValueSet("s3_stage_vpce_dns_name", "")
 	return s
@@ -2022,6 +2062,16 @@ func (s *ServiceUserResourceAssert) HasRsaPublicKeyNotEmpty() *ServiceUserResour
 
 func (s *ServiceUserResourceAssert) HasRsaPublicKey2NotEmpty() *ServiceUserResourceAssert {
 	s.ValuePresent("rsa_public_key_2")
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKey2WoVersionNotEmpty() *ServiceUserResourceAssert {
+	s.ValuePresent("rsa_public_key_2_wo_version")
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKeyWoVersionNotEmpty() *ServiceUserResourceAssert {
+	s.ValuePresent("rsa_public_key_wo_version")
 	return s
 }
 

@@ -2,9 +2,9 @@ package gen
 
 // TODO [SNOW-1501905]: extract all overrides to object definitions
 var multilineAttributesOverrides = map[string][]string{
-	"User":                             {"rsa_public_key", "rsa_public_key_2"},
-	"ServiceUser":                      {"rsa_public_key", "rsa_public_key_2"},
-	"LegacyServiceUser":                {"rsa_public_key", "rsa_public_key_2"},
+	"User":                             {"rsa_public_key", "rsa_public_key_wo", "rsa_public_key_2", "rsa_public_key_2_wo"},
+	"ServiceUser":                      {"rsa_public_key", "rsa_public_key_wo", "rsa_public_key_2", "rsa_public_key_2_wo"},
+	"LegacyServiceUser":                {"rsa_public_key", "rsa_public_key_wo", "rsa_public_key_2", "rsa_public_key_2_wo"},
 	"FunctionJava":                     {"function_definition"},
 	"FunctionJavascript":               {"function_definition"},
 	"FunctionPython":                   {"function_definition"},

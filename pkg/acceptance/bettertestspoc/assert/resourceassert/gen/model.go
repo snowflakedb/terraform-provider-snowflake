@@ -43,7 +43,7 @@ var excludedAttributeNames = []string{
 func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSchemaDetails, preamble *genhelpers.PreambleModel, _ *log.Logger) ResourceAssertionsModel {
 	attributes := make([]ResourceAttributeAssertionModel, 0)
 	for _, attr := range resourceSchemaDetails.Attributes {
-		if slices.Contains(excludedAttributeNames, attr.Name) {
+		if slices.Contains(excludedAttributeNames, attr.Name) || attr.WriteOnly {
 			continue
 		}
 

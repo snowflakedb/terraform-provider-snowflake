@@ -339,6 +339,16 @@ func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2(expected string) *Leg
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2WoVersion(expected int) *LegacyServiceUserResourceAssert {
+	l.IntValueSet("rsa_public_key_2_wo_version", expected)
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKeyWoVersion(expected int) *LegacyServiceUserResourceAssert {
+	l.IntValueSet("rsa_public_key_wo_version", expected)
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasS3StageVpceDnsName(expected string) *LegacyServiceUserResourceAssert {
 	l.StringValueSet("s3_stage_vpce_dns_name", expected)
 	return l
@@ -770,6 +780,16 @@ func (l *LegacyServiceUserResourceAssert) HasRsaPublicKeyString(expected string)
 
 func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2String(expected string) *LegacyServiceUserResourceAssert {
 	l.ValueSet("rsa_public_key_2", expected)
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2WoVersionString(expected string) *LegacyServiceUserResourceAssert {
+	l.ValueSet("rsa_public_key_2_wo_version", expected)
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKeyWoVersionString(expected string) *LegacyServiceUserResourceAssert {
+	l.ValueSet("rsa_public_key_wo_version", expected)
 	return l
 }
 
@@ -1207,6 +1227,16 @@ func (l *LegacyServiceUserResourceAssert) HasNoRsaPublicKey2() *LegacyServiceUse
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasNoRsaPublicKey2WoVersion() *LegacyServiceUserResourceAssert {
+	l.ValueNotSet("rsa_public_key_2_wo_version")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasNoRsaPublicKeyWoVersion() *LegacyServiceUserResourceAssert {
+	l.ValueNotSet("rsa_public_key_wo_version")
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasNoS3StageVpceDnsName() *LegacyServiceUserResourceAssert {
 	l.ValueNotSet("s3_stage_vpce_dns_name")
 	return l
@@ -1641,6 +1671,16 @@ func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2Empty() *LegacyService
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2WoVersionEmpty() *LegacyServiceUserResourceAssert {
+	l.ValueSet("rsa_public_key_2_wo_version", "")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKeyWoVersionEmpty() *LegacyServiceUserResourceAssert {
+	l.ValueSet("rsa_public_key_wo_version", "")
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasS3StageVpceDnsNameEmpty() *LegacyServiceUserResourceAssert {
 	l.ValueSet("s3_stage_vpce_dns_name", "")
 	return l
@@ -2072,6 +2112,16 @@ func (l *LegacyServiceUserResourceAssert) HasRsaPublicKeyNotEmpty() *LegacyServi
 
 func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2NotEmpty() *LegacyServiceUserResourceAssert {
 	l.ValuePresent("rsa_public_key_2")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKey2WoVersionNotEmpty() *LegacyServiceUserResourceAssert {
+	l.ValuePresent("rsa_public_key_2_wo_version")
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasRsaPublicKeyWoVersionNotEmpty() *LegacyServiceUserResourceAssert {
+	l.ValuePresent("rsa_public_key_wo_version")
 	return l
 }
 

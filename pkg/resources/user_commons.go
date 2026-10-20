@@ -170,7 +170,9 @@ var userExternalChangesAttributes = []string{
 	"default_secondary_roles_option",
 	"mins_to_bypass_mfa",
 	"rsa_public_key",
+	"rsa_public_key_wo_version",
 	"rsa_public_key_2",
+	"rsa_public_key_2_wo_version",
 	"comment",
 	"disable_mfa",
 }

@@ -47,6 +47,16 @@ provider "snowflake" {
 
 No configuration changes are required for existing configurations.
 
+### *(new feature)* Write-only RSA public keys in user resources
+
+We added the [write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral/write-only) `rsa_public_key_wo` and `rsa_public_key_2_wo` fields, together with their `rsa_public_key_wo_version` and `rsa_public_key_2_wo_version` version counters, to [`snowflake_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/user), [`snowflake_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user), and [`snowflake_legacy_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user). The values of the write-only fields are never saved in the Terraform plan or state, so they can be set from an ephemeral resource, like `tls_private_key`. They require Terraform 1.11 or later.
+
+Terraform can not see a write-only value, so it can not detect changes to it either. The key is sent to Snowflake only when the version field changes: increment it whenever you want to rotate the key. For the same reason, external changes to keys set this way are not detected.
+
+To move an existing key out of the state, replace `rsa_public_key` with `rsa_public_key_wo` and set `rsa_public_key_wo_version`. The next apply pushes the key to Snowflake again and removes it from the state. After importing a user, the version field is empty, so the first apply also pushes the key again.
+
+No configuration changes are required for existing configurations.
+
 ### *(bug fix)* `snowflake_user_programmatic_access_token` caps `expire_rotated_token_after_hours` at the remaining lifetime
 
 Rotating a programmatic access token failed when `expire_rotated_token_after_hours` was higher than the hours left on the current secret. Snowflake rejects that value.
@@ -54,9 +64,6 @@ Rotating a programmatic access token failed when `expire_rotated_token_after_hou
 On rotation, the provider now caps a positive value at the remaining whole hours and emits a warning during apply. A value equal to those remaining hours is sent unchanged. When less than one hour remains, a positive value is omitted so the existing secret keeps its current expiry instead of being revoked immediately. `0` still expires the current secret immediately.
 
 The configured value stays in state. Only the value sent to Snowflake is adjusted. No configuration changes are required.
-
-
-## v2.22.0 ➞ v2.22.1
 
 ### *(bug fix)* `snowflake_pipe` reads SNS topic ARNs from every AWS partition
 
