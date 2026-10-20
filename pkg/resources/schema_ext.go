@@ -25,13 +25,9 @@ import (
 // =============================================================================
 
 var (
-	schemaCreateExt = TrackingCreateWrapper(resources.Schema, CreateSchema)
-	schemaReadExt   = TrackingReadWrapper(resources.Schema, ReadSchemaFunc(true))
-	schemaUpdateExt = TrackingUpdateWrapper(resources.Schema, UpdateSchema)
-	schemaDeleteExt = TrackingDeleteWrapper(resources.Schema, ResourceDeleteContextFunc(
-		schemaParseIdExt,
-		schemaDropSafelyInSdkExt,
-	))
+	schemaCreateExt        = TrackingCreateWrapper(resources.Schema, CreateSchema)
+	schemaReadExt          = TrackingReadWrapper(resources.Schema, ReadSchemaFunc(true))
+	schemaUpdateExt        = TrackingUpdateWrapper(resources.Schema, UpdateSchema)
 	schemaDescriptionExt   = "Resource used to manage schema objects. For more information, check [schema documentation](https://docs.snowflake.com/en/sql-reference/sql/create-schema)."
 	schemaCustomizeDiffExt = TrackingCustomDiffWrapper(resources.Schema, customdiff.All(
 		TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
@@ -310,8 +306,4 @@ func schemaAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObje
 		return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithUnset(*reqs.unset))
 	}
 	return nil
-}
-
-func schemaDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.DatabaseObjectIdentifier] {
-	return client.Schemas.DropSafely
 }

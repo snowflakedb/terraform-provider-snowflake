@@ -15,4 +15,6 @@ func Test_DefaultResourceExtHooks_options(t *testing.T) {
 	require.Equal(t, Generated(), hooks.BeforeCreate)
 	require.Equal(t, Omitted(), hooks.FqnSet)
 	require.Equal(t, ExtCall(), hooks.ParseId)
+	require.Equal(t, Omitted(), hooks.DropSafelyInSdk)
+	require.Equal(t, Generated(), DefaultResourceExtHooks(WithDropSafelyInSdk(Generated())).DropSafelyInSdk)
 }

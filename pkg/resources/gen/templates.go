@@ -106,6 +106,12 @@ var (
 	//go:embed templates/sub_templates/show_by_id_in_sdk.tmpl
 	showByIdInSdkTemplateContent string
 
+	//go:embed templates/sub_templates/drop_safely_in_sdk.tmpl
+	dropSafelyInSdkTemplateContent string
+
+	//go:embed templates/sub_templates/generated_delete.tmpl
+	generatedDeleteTemplateContent string
+
 	//go:embed templates/sub_templates/identity_schema.tmpl
 	identitySchemaTemplateContent string
 
@@ -185,6 +191,8 @@ func init() {
 	subTemplates, _ = subTemplates.New("alterUnsetInSdk").Parse(alterUnsetInSdkTemplateContent)
 	subTemplates, _ = subTemplates.New("setFieldsNotSetByRead").Parse(setFieldsNotSetByReadTemplateContent)
 	subTemplates, _ = subTemplates.New("showByIdInSdk").Parse(showByIdInSdkTemplateContent)
+	subTemplates, _ = subTemplates.New("dropSafelyInSdk").Parse(dropSafelyInSdkTemplateContent)
+	subTemplates, _ = subTemplates.New("generatedDelete").Parse(generatedDeleteTemplateContent)
 	subTemplates, _ = subTemplates.New("identitySchema").Parse(identitySchemaTemplateContent)
 	subTemplates, _ = subTemplates.New("attributesSchema").Parse(attributesSchemaTemplateContent)
 	subTemplates, _ = subTemplates.New("attributesSchemaDefinition").Parse(attributesSchemaDefinitionTemplateContent)

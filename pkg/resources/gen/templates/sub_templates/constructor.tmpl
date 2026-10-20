@@ -5,7 +5,7 @@
 		CreateContext: {{ .Prefix }}CreateExt,
 		ReadContext:   {{ .Prefix }}ReadExt,
 		UpdateContext: {{ .Prefix }}UpdateExt,
-		DeleteContext: {{ .Prefix }}DeleteExt,
+{{ template "dropSafelyInSdk" . }}
 		Importer:      {{ .Prefix }}ImporterExt,
 
 		CustomizeDiff: {{ .Prefix }}CustomizeDiffExt,

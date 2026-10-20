@@ -129,5 +129,6 @@ var Schema = ssot.Object{
 		ssot.WithParametersOutputSchema(ssot.Generated()),
 		ssot.WithParametersFieldNames(ssot.Generated()),
 		ssot.WithParametersCustomDiff(ssot.Generated()),
+		ssot.WithDropSafelyInSdk(ssot.Generated()),
 	},
 }

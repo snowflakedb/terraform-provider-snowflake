@@ -135,7 +135,9 @@ opt-in.
 
 A subtemplate calls the ext function by default (`ExtCall`). Set that hook to `Generated` to take the step from the
 template. Until the subtemplate body is written, generation panics through `Unimplemented`. Each hook is switched on its
-own, with its `With` option. See [resource_hooks.go](resource_hooks.go).
+own, with its `With` option. See [resource_hooks.go](resource_hooks.go). `DropSafelyInSdk` defaults to omitted, which
+keeps `DeleteExt`. Set it to `Generated` to emit `Delete` and point `DeleteContext` at that function. `Delete` calls
+`ResourceDeleteContextFunc` with `sdk.Parse` plus the object `IdType`.
 
 Optional bools are boolean-strings on purpose (`applyResourceAttributeRules`
 in [resource_attribute_rules.go](../../resources/gen/resource_attribute_rules.go)): an optional bool is Terraform

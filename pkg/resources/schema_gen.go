@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -22,7 +23,7 @@ func Schema() *tfschema.Resource {
 		CreateContext: schemaCreateExt,
 		ReadContext:   schemaReadExt,
 		UpdateContext: schemaUpdateExt,
-		DeleteContext: schemaDeleteExt,
+		DeleteContext: TrackingDeleteWrapper(resources.Schema, DeleteSchema),
 		Importer:      schemaImporterExt,
 
 		CustomizeDiff:  schemaCustomizeDiffExt,
@@ -159,4 +160,13 @@ func UpdateSchema(ctx context.Context, d *tfschema.ResourceData, meta any) diag.
 		return diag.FromErr(err)
 	}
 	return ReadSchemaFunc(false)(ctx, d, meta)
+}
+
+func DeleteSchema(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	return ResourceDeleteContextFunc(
+		sdk.ParseDatabaseObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.DatabaseObjectIdentifier] {
+			return client.Schemas.DropSafely
+		},
+	)(ctx, d, meta)
 }

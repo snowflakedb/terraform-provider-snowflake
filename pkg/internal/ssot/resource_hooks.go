@@ -29,6 +29,7 @@ type ResourceHooks struct {
 	AlterUnsetInSdk                 ResourceHook
 	SetFieldsNotSetByRead           ResourceHook
 	ShowByIdInSdk                   ResourceHook
+	DropSafelyInSdk                 ResourceHook
 	SchemaVersion                   ResourceHook
 	IdentitySchema                  ResourceHook
 	AttributesSchema                ResourceHook
@@ -86,6 +87,7 @@ func DefaultResourceExtHooks(opts ...ResourceHookOption) ResourceHooks {
 		AlterUnsetInSdk:                 ExtCall(),
 		SetFieldsNotSetByRead:           ExtCall(),
 		ShowByIdInSdk:                   ExtCall(),
+		DropSafelyInSdk:                 Omitted(),
 		SchemaVersion:                   Omitted(),
 		IdentitySchema:                  Generated(),
 		AttributesSchema:                Generated(),
@@ -199,6 +201,10 @@ func WithSetFieldsNotSetByRead(h ResourceHook) ResourceHookOption {
 
 func WithShowByIdInSdk(h ResourceHook) ResourceHookOption {
 	return func(hooks *ResourceHooks) { hooks.ShowByIdInSdk = h }
+}
+
+func WithDropSafelyInSdk(h ResourceHook) ResourceHookOption {
+	return func(hooks *ResourceHooks) { hooks.DropSafelyInSdk = h }
 }
 
 func WithSchemaVersion(h ResourceHook) ResourceHookOption {

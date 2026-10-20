@@ -19,13 +19,9 @@ import (
 // =============================================================================
 
 var (
-	computePoolCreateExt = TrackingCreateWrapper(resources.ComputePool, CreateComputePool)
-	computePoolReadExt   = TrackingReadWrapper(resources.ComputePool, ReadComputePoolFunc(true))
-	computePoolUpdateExt = TrackingUpdateWrapper(resources.ComputePool, UpdateComputePool)
-	computePoolDeleteExt = TrackingDeleteWrapper(resources.ComputePool, ResourceDeleteContextFunc(
-		computePoolParseIdExt,
-		computePoolDropSafelyInSdkExt,
-	))
+	computePoolCreateExt      = TrackingCreateWrapper(resources.ComputePool, CreateComputePool)
+	computePoolReadExt        = TrackingReadWrapper(resources.ComputePool, ReadComputePoolFunc(true))
+	computePoolUpdateExt      = TrackingUpdateWrapper(resources.ComputePool, UpdateComputePool)
 	computePoolDescriptionExt = joinWithSpace(
 		"Resource used to manage compute pools. For more information, check [compute pools documentation](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool).",
 		"A compute pool is a collection of one or more virtual machine (VM) nodes on which Snowflake runs your Snowpark Container Services services (including job services).",
@@ -158,10 +154,6 @@ func computePoolAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.Account
 	}
 	client := meta.(*provider.Context).Client
 	return client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithUnset(*reqs.unset))
-}
-
-func computePoolDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
-	return client.ComputePools.DropSafely
 }
 
 // =============================================================================
