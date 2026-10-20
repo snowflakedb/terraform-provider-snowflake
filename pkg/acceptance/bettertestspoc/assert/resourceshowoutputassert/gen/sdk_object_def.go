@@ -77,6 +77,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.OpenflowDeploymentDetails{}):     {"OpenflowDeployments"},
 	normalized(sdk.OpenflowRuntimeDetails{}):        {"OpenflowRuntimes"},
 	normalized(sdk.PasswordPolicyDetails{}):         {"PasswordPolicies"},
+	normalized(sdk.SchemaDetails{}):                 {"Schemas"},
 	normalized(sdk.SessionPolicyDetails{}):          {"SessionPolicies"},
 	normalized(sdk.StorageIntegrationAllDetails{}):  {"StorageIntegrations"},
 	normalized(sdk.StorageLifecyclePolicyDetails{}): {"StorageLifecyclePolicies"},
