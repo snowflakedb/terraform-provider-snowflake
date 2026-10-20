@@ -85,7 +85,7 @@ func setAndUnsetAccountParametersTest(
 				WithDefaultNullOrdering(sdk.DefaultNullOrderingFirst).
 				WithDefaultStreamlitComputePool("SYSTEM_COMPUTE_POOL_GPU").
 				WithDefaultStreamlitNotebookWarehouse(warehouseId).
-				WithDisallowedSpcsWorkloadTypes("").
+				WithDisallowedSpcsWorkloadTypes(sdk.StringAllowEmpty{Value: ""}).
 				WithDisableUiDownloadButton(true).
 				WithDisableUserPrivilegeGrants(true).
 				WithEnableAutomaticSensitiveDataClassificationLog(false).

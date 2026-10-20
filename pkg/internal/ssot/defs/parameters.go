@@ -322,7 +322,7 @@ var (
 	}
 	DisallowedSpcsWorkloadTypes = ssot.ParameterDef{
 		SqlName:     "DISALLOWED_SPCS_WORKLOAD_TYPES",
-		Kind:        string(ssot.AttrString),
+		Kind:        "StringAllowEmpty",
 		Levels:      ssot.AccountLevels,
 		Description: "Used to specify the workload types that are disallowed in your account to deploy to Snowpark Container Services.",
 	}

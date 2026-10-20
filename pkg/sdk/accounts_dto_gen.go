@@ -95,7 +95,7 @@ type AccountParametersRequest struct {
 	DefaultStreamlitNotebookWarehouse                        *AccountObjectIdentifier
 	DisableUiDownloadButton                                  *bool
 	DisableUserPrivilegeGrants                               *bool
-	DisallowedSpcsWorkloadTypes                              *string
+	DisallowedSpcsWorkloadTypes                              *StringAllowEmpty
 	EnableAutomaticSensitiveDataClassificationLog            *bool
 	EnableBudgetEventLogging                                 *bool
 	EnableConsoleOutput                                      *bool

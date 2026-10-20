@@ -171,6 +171,12 @@ func TestSetParameterFromRaw(t *testing.T) {
 		require.Equal(t, setAccountSql(t, direct), sql)
 		require.Contains(t, sql, "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB = 9.9")
 		require.NotContains(t, sql, "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB = '9.9'")
+
+		wholeNumber := NewAccountParametersRequest()
+		require.NoError(t, wholeNumber.SetParameterFromRaw("INITIAL_REPLICATION_SIZE_LIMIT_IN_TB", "3.0"))
+		wholeNumberSql := setAccountSql(t, wholeNumber)
+		require.Contains(t, wholeNumberSql, "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB = 3.0")
+		require.NotRegexp(t, wholeNumberSql, `INITIAL_REPLICATION_SIZE_LIMIT_IN_TB = 3([^0-9.]|$)`)
 	})
 
 	t.Run("accepts a lowercase parameter name", func(t *testing.T) {
@@ -189,6 +195,17 @@ func TestSetParameterFromRaw(t *testing.T) {
 		sql, err := structToSQL(NewAlterAccountRequest().WithSet(*NewAccountSetRequest().WithParameters(*request)).toOpts())
 		require.NoError(t, err)
 		require.Contains(t, sql, "DEFAULT_DDL_COLLATION = ''")
+	})
+
+	t.Run("accepts an empty string for DISALLOWED_SPCS_WORKLOAD_TYPES", func(t *testing.T) {
+		request := NewAccountParametersRequest()
+		require.NoError(t, request.SetParameterFromRaw("DISALLOWED_SPCS_WORKLOAD_TYPES", ""))
+		require.NotNil(t, request.DisallowedSpcsWorkloadTypes)
+		require.Equal(t, "", request.DisallowedSpcsWorkloadTypes.Value)
+
+		sql, err := structToSQL(NewAlterAccountRequest().WithSet(*NewAccountSetRequest().WithParameters(*request)).toOpts())
+		require.NoError(t, err)
+		require.Contains(t, sql, "DISALLOWED_SPCS_WORKLOAD_TYPES = ''")
 	})
 }
 

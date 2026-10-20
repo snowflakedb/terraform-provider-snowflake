@@ -268,7 +268,7 @@ type AccountParameters struct {
 	DefaultStreamlitNotebookWarehouse                        *AccountObjectIdentifier          `ddl:"identifier,equals" sql:"DEFAULT_STREAMLIT_NOTEBOOK_WAREHOUSE"`
 	DisableUiDownloadButton                                  *bool                             `ddl:"parameter" sql:"DISABLE_UI_DOWNLOAD_BUTTON"`
 	DisableUserPrivilegeGrants                               *bool                             `ddl:"parameter" sql:"DISABLE_USER_PRIVILEGE_GRANTS"`
-	DisallowedSpcsWorkloadTypes                              *string                           `ddl:"parameter,single_quotes" sql:"DISALLOWED_SPCS_WORKLOAD_TYPES"`
+	DisallowedSpcsWorkloadTypes                              *StringAllowEmpty                 `ddl:"parameter" sql:"DISALLOWED_SPCS_WORKLOAD_TYPES"`
 	EnableAutomaticSensitiveDataClassificationLog            *bool                             `ddl:"parameter" sql:"ENABLE_AUTOMATIC_SENSITIVE_DATA_CLASSIFICATION_LOG"`
 	EnableBudgetEventLogging                                 *bool                             `ddl:"parameter" sql:"ENABLE_BUDGET_EVENT_LOGGING"`
 	EnableConsoleOutput                                      *bool                             `ddl:"parameter" sql:"ENABLE_CONSOLE_OUTPUT"`

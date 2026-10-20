@@ -394,7 +394,7 @@ func (s *AccountParametersRequest) WithDisableUserPrivilegeGrants(disableUserPri
 	return s
 }
 
-func (s *AccountParametersRequest) WithDisallowedSpcsWorkloadTypes(disallowedSpcsWorkloadTypes string) *AccountParametersRequest {
+func (s *AccountParametersRequest) WithDisallowedSpcsWorkloadTypes(disallowedSpcsWorkloadTypes StringAllowEmpty) *AccountParametersRequest {
 	s.DisallowedSpcsWorkloadTypes = &disallowedSpcsWorkloadTypes
 	return s
 }
@@ -991,7 +991,7 @@ func (s *AccountParametersRequest) SetParameterFromRaw(key string, value string)
 	case "DISABLE_USER_PRIVILEGE_GRANTS":
 		return assignParsedParameter(value, strconv.ParseBool, &s.DisableUserPrivilegeGrants)
 	case "DISALLOWED_SPCS_WORKLOAD_TYPES":
-		return assignParsedParameter(value, identityParse, &s.DisallowedSpcsWorkloadTypes)
+		return assignParsedParameter(value, ToStringAllowEmpty, &s.DisallowedSpcsWorkloadTypes)
 	case "ENABLE_AUTOMATIC_SENSITIVE_DATA_CLASSIFICATION_LOG":
 		return assignParsedParameter(value, strconv.ParseBool, &s.EnableAutomaticSensitiveDataClassificationLog)
 	case "ENABLE_BUDGET_EVENT_LOGGING":
