@@ -8,6 +8,7 @@ func All() []ssot.Object {
 		ExternalVolumeObject,
 		Schema,
 		AuthenticationPolicy,
+		Warehouse,
 	}
 	for _, obj := range objs {
 		ssot.ValidateObject(obj)

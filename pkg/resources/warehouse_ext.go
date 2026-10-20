@@ -32,7 +32,7 @@ var (
 	warehouseDescriptionExt   = "Resource used to manage warehouse objects. For more information, check [warehouse documentation](https://docs.snowflake.com/en/sql-reference/commands-warehouse)."
 	warehouseCustomizeDiffExt = TrackingCustomDiffWrapper(resources.Warehouse, customdiff.All(
 		ComputedIfAnyAttributeChanged(warehouseSchema, ShowOutputAttributeName, "name", "warehouse_type", "warehouse_size", "max_cluster_count", "min_cluster_count", "scaling_policy", "auto_suspend", "auto_resume", "resource_monitor", "comment", "enable_query_acceleration", "query_acceleration_max_scale_factor", "resource_constraint", "generation"),
-		ComputedIfAnyAttributeChanged(warehouseParametersSchema, ParametersAttributeName, "max_concurrency_level", "statement_queued_timeout_in_seconds", "statement_timeout_in_seconds"),
+		ComputedIfAnyAttributeChanged(warehouseParametersAttributesSchema, ParametersAttributeName, warehouseParametersFieldNames...),
 		ComputedIfAnyAttributeChanged(warehouseSchema, FullyQualifiedNameAttributeName, "name"),
 		customdiff.ForceNewIfChange("warehouse_size", func(_ context.Context, old, new, _ any) bool {
 			return old.(string) != "" && new.(string) == ""
@@ -299,7 +299,7 @@ func warehouseShowByIdInSdkExt(ctx context.Context, meta any, id sdk.AccountObje
 	return showWarehouseByID(ctx, meta.(*provider.Context), id)
 }
 
-func warehouseAlterSetInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseAlterRequestsExt) error {
+func warehouseAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseAlterRequestsExt) error {
 	if *reqs.set != *sdk.NewWarehouseSetRequest() {
 		client := meta.(*provider.Context).Client
 		return client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(id).WithSet(*reqs.set))
