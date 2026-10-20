@@ -81,26 +81,16 @@ var schemasDef = g.NewInterface(
 		WithValidation(g.ExactlyOneValueSet, "RenameTo", "SwapWith", "Set", "Unset", "SetTags", "UnsetTags", "EnableManagedAccess", "DisableManagedAccess").
 		WithValidation(g.ValidIdentifierIfSet, "RenameTo").
 		WithValidation(g.ValidIdentifierIfSet, "SwapWith"),
-).DropOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/drop-schema",
-	g.NewQueryStruct("DropSchema").
-		Drop().
-		SQL("SCHEMA").
-		IfExists().
-		Name().
-		OptionalSQL("CASCADE").
-		OptionalSQL("RESTRICT").
-		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ConflictingFields, "Cascade", "Restrict"),
-).CustomOperation(
-	"Undrop",
-	"https://docs.snowflake.com/en/sql-reference/sql/undrop-schema",
-	g.NewQueryStruct("UndropSchema").
-		SQL("UNDROP").
-		SQL("SCHEMA").
-		Name().
-		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperationFromObject(ssotdefs.Schema).
+).DropOperationFromObject(ssotdefs.Schema).
+	CustomOperation(
+		"Undrop",
+		"https://docs.snowflake.com/en/sql-reference/sql/undrop-schema",
+		g.NewQueryStruct("UndropSchema").
+			SQL("UNDROP").
+			SQL("SCHEMA").
+			Name().
+			WithValidation(g.ValidIdentifier, "name"),
+	).ShowOperationFromObject(ssotdefs.Schema).
 	DescribeOperationFromObject(ssotdefs.Schema).
 	ShowParameters("DatabaseObjectIdentifier").
 	ShowParametersDetails(schemaParameters...).

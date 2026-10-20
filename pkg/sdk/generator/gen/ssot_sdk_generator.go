@@ -102,3 +102,37 @@ func describeQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 		Name().
 		WithValidation(ValidIdentifier, "name")
 }
+
+// DropOperationFromObject adds DROP from obj.SdkConfig.
+// Clauses are emitted in a fixed order: Drop, SQL, IfExists, Name, ValidIdentifier.
+// SdkDropCascadeRestrict adds CASCADE, RESTRICT, and their conflict check after that.
+// DropSafely stays the template default unless a drop option sets the hook or force.
+func (i *Interface) DropOperationFromObject(obj ssot.Object) *Interface {
+	cfg := obj.SdkConfig()
+	if !cfg.Drop {
+		panic(fmt.Sprintf("object %q is not enabled for SDK DROP generation", obj.Name))
+	}
+	var opts []DropOperationOption
+	if cfg.DropSafelyHook {
+		opts = append(opts, WithDropSafelyHook())
+	}
+	if cfg.DropSafelyForce {
+		opts = append(opts, WithDropSafelyForce())
+	}
+	return i.DropOperation(cfg.DropDoc, dropQueryStructFromConfig(cfg), opts...)
+}
+
+func dropQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
+	q := NewQueryStruct(cfg.DropQueryStructName).
+		Drop().
+		SQL(cfg.DropSql).
+		IfExists().
+		Name().
+		WithValidation(ValidIdentifier, "name")
+	if cfg.DropCascadeRestrict {
+		q = q.OptionalSQL("CASCADE").
+			OptionalSQL("RESTRICT").
+			WithValidation(ConflictingFields, "Cascade", "Restrict")
+	}
+	return q
+}

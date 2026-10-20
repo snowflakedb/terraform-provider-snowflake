@@ -98,11 +98,14 @@ enable nothing.
   See [that section](../../acceptance/bettertestspoc/README.md#adding-new-resource-parameters-assertions).
   Parameters come from the same catalog entries, and constants are `sdk.<Name>Parameter`. The two switches are
   independent. Leave the handwritten entry while only one of them is opted in.
-- `WithSdk(SdkShow(), SdkDescribe())` - SDK paired structs (`make generate-sdk`).
-  See [PairedStructs](../../sdk/generator/README.md#pairedstructs). Fields come
+- `WithSdk(SdkShow(), SdkDescribe(), SdkDrop())` - SDK paired structs and DROP (`make generate-sdk`).
+  See [PairedStructs](../../sdk/generator/README.md#pairedstructs). Show and Describe fields come
   from [SHOW and DESCRIBE](#show-and-describe) `Columns`, not from `Attributes`. `OptionalInDb` is live for the mapped
   db and plain kinds. `StoredAsText` selects `BoolFromText` for a bool. A bool without the mark is still db `bool`.
-  Other generators ignore the mark. See [Attribute](#attribute).
+  Other generators ignore the mark. See [Attribute](#attribute). `SdkDrop()` builds DROP from `Name`: `DROP`, the
+  uppercase words, `IF EXISTS`, and the name. `SdkDropSafelyHook()`, `SdkDropSafelyForce()`, and
+  `SdkDropCascadeRestrict()` are settings of that call. `SdkDropCascadeRestrict()` adds optional `CASCADE` and
+  `RESTRICT` and marks those fields as conflicting. The hook body stays in the SDK ext file.
 
 Fill `Show` / `Describe` first; enable the matching SHOW or DESCRIBE setting when the lists are ready. Enabling SHOW or
 DESCRIBE schema generation, show output assertions, Snowflake object assertions, or SDK paired structs without `Columns`
@@ -147,13 +150,14 @@ nothing must not change generated files. Do not feed `All()` in as "generate eve
 Generators default to ssot and `All()` only once the definitions cover the objects. The calls are
 in [Generators](#generators).
 
-`SchemaShow`, `SchemaDescribe`, `SdkShow`, `SdkDescribe`, `ShowOutputShow`, `ShowOutputDescribe`, `ObjectAssertShow`,
-and `ObjectAssertDescribe` are not `GeneratorOption`. They cannot sit alone in `Generators`. A bare `WithSchema()`,
-`WithSdk()`, `WithShowOutputAssert()`, or `WithObjectAssert()` is not both. `ObjectAssertDescribe()` with no options
-sets `Describe` and leaves `NoIdentifiableObject` false. `WithModel()` and `WithResourceAssert()` take a variadic of
-`ModelOption` and `ResourceAssertOption`. No constructors exist for those option types. Zero options still sets
-`Enabled`. A later setting is another option on that call, not a new `Generators` entry. Consumers read the fields
-`Show`, `Describe`, `Enabled`, and `NoIdentifiableObject`.
+`SchemaShow`, `SchemaDescribe`, `SdkShow`, `SdkDescribe`, `SdkDrop`, `ShowOutputShow`, `ShowOutputDescribe`,
+`ObjectAssertShow`, and `ObjectAssertDescribe` are not `GeneratorOption`. They cannot sit alone in `Generators`. A bare
+`WithSchema()`, `WithSdk()`, `WithShowOutputAssert()`, or `WithObjectAssert()` enables nothing. `SdkDrop()` with no
+options still sets `Drop`. `ObjectAssertDescribe()` with no options sets `Describe` and leaves `NoIdentifiableObject`
+false. `WithModel()` and `WithResourceAssert()` take a variadic of `ModelOption` and `ResourceAssertOption`. No
+constructors exist for those option types. Zero options still sets `Enabled`. A later setting is another option on that
+call, not a new `Generators` entry. Consumers read the fields `Show`, `Describe`, `Drop`, `Enabled`, and
+`NoIdentifiableObject`.
 
 Do not apply resource-attribute classification. A SHOW bool is `bool`. A paired bool without `StoredAsText` is db
 `bool`.
@@ -181,8 +185,9 @@ Until a piece has moved, do not assume it is already in ssot:
   `ParameterDefsForLevel`.
 - When `SdkShow()` or `SdkDescribe()` is on, that Show or Describe method comes from the option. The query struct,
   ShowByID filtering, and `DescriptionMappingKind` are part of it. An object with the setting off keeps the handwritten
-  call. CREATE, ALTER, DROP, parameters, and every other operation stay in the SDK def. They are not generated from
-  `Columns`.
+  call. When `SdkDrop()` is on, that Drop method comes from the option. An object with the setting off keeps the
+  handwritten call. CREATE, ALTER, parameters, and every other operation stay in the SDK def. They are not generated
+  from `Columns`.
 - `SkipFields`, `ManualFields`, `TypeOverrides`, and `UsedAsListEntry` have no ssot equivalent yet.
 - `ResourceHooks` do not yet generate the whole lifecycle, the SDK calls, or the mapping. A missing step stays an ext
   call, or panics through `Unimplemented`, until that hook is implemented. See [Resource generator](#resource-generator).
@@ -266,8 +271,8 @@ The skip is not permission to leave the object on the list forever. A repeated s
 `ResourceAssertionModels` and `ModelBuilderModels` skip a reflected name and do not panic on a repeated ssot name. A
 repeat for an object that ssot does not emit stays. Do not delete it.
 
-SDK paired structs have no second object list. The SDK def calls `ShowOperationFromObject` / `DescribeOperationFromObject`
-when the setting is on, and keeps the handwritten Show or Describe call when it is off.
+SDK paired structs have no second object list. The SDK def calls `ShowOperationFromObject`, `DescribeOperationFromObject`,
+or `DropOperationFromObject` when that setting is on, and keeps the handwritten call when it is off.
 
 ### Parameters
 

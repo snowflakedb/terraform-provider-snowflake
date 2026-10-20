@@ -80,6 +80,7 @@ var Schema = ssot.Object{
 				ssot.SdkDescribeMapping(ssot.SdkDescriptionMappingSlice),
 				ssot.SdkDescribeQueryStructName("DescribeSchema"),
 			),
+			ssot.SdkDrop(ssot.SdkDropCascadeRestrict()),
 		),
 		ssot.WithObjectParametersAssert(),
 		ssot.WithResourceParametersAssert(),

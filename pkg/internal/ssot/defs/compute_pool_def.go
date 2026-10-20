@@ -213,6 +213,7 @@ var ComputePool = ssot.Object{
 				ssot.SdkShowOptionalLimitFrom(),
 			),
 			ssot.SdkDescribe(),
+			ssot.SdkDrop(ssot.SdkDropSafelyHook()),
 		),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{

@@ -190,7 +190,7 @@ See `pkg/sdk/compute_pools_ext_test.go` and `pkg/sdk/functions_ext_test.go` for 
 
 ### DropSafely options
 
-`DropOperation` accepts optional functional options that configure how the generated `DropSafely` method behaves:
+`DropOperation` accepts optional functional options that configure how the generated `DropSafely` method behaves. The same flags are `SdkDropSafelyHook()` and `SdkDropSafelyForce()` on [`SdkDrop()`](../../internal/ssot/README.md#generators). When `SdkDrop()` is on, `DropOperationFromObject` builds the method from `Name`. `SdkDropCascadeRestrict()` adds optional `CASCADE` and `RESTRICT` and marks those fields as conflicting. When `SdkDrop()` is off, the call stays in the def.
 
 - **`WithDropSafelyHook()`** — the generated `DropSafely` calls `v.dropSafelyHook(ctx, id)` before issuing the drop. Useful when a pre-drop side-effect is needed (e.g. revoking grants). The hook function must be implemented manually in a `_ext.go` file.
 

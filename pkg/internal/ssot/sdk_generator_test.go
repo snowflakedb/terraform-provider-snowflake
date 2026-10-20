@@ -57,11 +57,32 @@ func Test_SdkConfig_optionsWin(t *testing.T) {
 	require.Equal(t, "DescribeSchema", cfg.DescribeQueryStructName)
 }
 
+func Test_SdkConfig_dropDefaults(t *testing.T) {
+	obj := Object{
+		Name:       "ComputePool",
+		NamePlural: "ComputePools",
+		Generators: []GeneratorOption{WithSdk(SdkDrop(SdkDropSafelyHook()))},
+	}
+	require.Equal(t, SdkGenerator{
+		Drop:                true,
+		DropDoc:             "https://docs.snowflake.com/en/sql-reference/sql/drop-compute-pool",
+		DropSql:             "COMPUTE POOL",
+		DropQueryStructName: "DropComputePool",
+		DropSafelyHook:      true,
+	}, obj.SdkConfig())
+
+	raw := ObjectGenerators(obj.Generators...).Sdk
+	require.Equal(t, SdkGenerator{Drop: true, DropSafelyHook: true}, raw)
+}
+
 func Test_SdkConfig_panicsWithoutName(t *testing.T) {
 	require.Panics(t, func() {
 		Object{Generators: []GeneratorOption{WithSdk(SdkShow())}}.SdkConfig()
 	})
 	require.Panics(t, func() {
 		Object{Generators: []GeneratorOption{WithSdk(SdkDescribe())}}.SdkConfig()
+	})
+	require.Panics(t, func() {
+		Object{Generators: []GeneratorOption{WithSdk(SdkDrop())}}.SdkConfig()
 	})
 }

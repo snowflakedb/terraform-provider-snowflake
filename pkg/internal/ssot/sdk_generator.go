@@ -10,6 +10,7 @@ import (
 const (
 	showDocURLPrefix     = "https://docs.snowflake.com/en/sql-reference/sql/show-"
 	describeDocURLPrefix = "https://docs.snowflake.com/en/sql-reference/sql/desc-"
+	dropDocURLPrefix     = "https://docs.snowflake.com/en/sql-reference/sql/drop-"
 )
 
 // SdkShowByIDFilteringKind is one ShowByID filter, in call-argument order.
@@ -129,6 +130,18 @@ func (obj Object) SdkConfig() SdkGenerator {
 			cfg.DescribeMapping = SdkDescriptionMappingSingleValue
 		}
 	}
+	if cfg.Drop {
+		name := obj.nameForDrop()
+		if cfg.DropDoc == "" {
+			cfg.DropDoc = dropDocURLPrefix + docsObjectSlug(name)
+		}
+		if cfg.DropSql == "" {
+			cfg.DropSql = strings.ToUpper(genhelpers.CamelToWords(name))
+		}
+		if cfg.DropQueryStructName == "" {
+			cfg.DropQueryStructName = "Drop" + name
+		}
+	}
 	return cfg
 }
 
@@ -142,6 +155,13 @@ func (obj Object) namePluralForShow() string {
 func (obj Object) nameForDescribe() string {
 	if obj.Name == "" {
 		panic(fmt.Sprintf("object %q needs Name to build the DESCRIBE defaults", obj.Name))
+	}
+	return obj.Name
+}
+
+func (obj Object) nameForDrop() string {
+	if obj.Name == "" {
+		panic(fmt.Sprintf("object %q needs Name to build the DROP defaults", obj.Name))
 	}
 	return obj.Name
 }

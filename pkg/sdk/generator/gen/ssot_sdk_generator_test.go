@@ -220,6 +220,73 @@ func Test_ShowOperationFromObject_optionalSqlParts(t *testing.T) {
 	requireSameOperations(t, want, got)
 }
 
+func Test_DropOperationFromObject_matchesHandwrittenCall(t *testing.T) {
+	t.Run("compute pool", func(t *testing.T) {
+		obj := ssotdefs.ComputePool
+		got := NewInterface("ComputePools", "ComputePool", "AccountObjectIdentifier").DropOperationFromObject(obj)
+		want := NewInterface("ComputePools", "ComputePool", "AccountObjectIdentifier").DropOperation(
+			"https://docs.snowflake.com/en/sql-reference/sql/drop-compute-pool",
+			NewQueryStruct("DropComputePool").
+				Drop().
+				SQL("COMPUTE POOL").
+				IfExists().
+				Name().
+				WithValidation(ValidIdentifier, "name"),
+			WithDropSafelyHook(),
+		)
+		requireSameOperations(t, want, got)
+	})
+
+	t.Run("schema", func(t *testing.T) {
+		obj := ssotdefs.Schema
+		got := NewInterface("Schemas", "Schema", "DatabaseObjectIdentifier").DropOperationFromObject(obj)
+		want := NewInterface("Schemas", "Schema", "DatabaseObjectIdentifier").DropOperation(
+			"https://docs.snowflake.com/en/sql-reference/sql/drop-schema",
+			NewQueryStruct("DropSchema").
+				Drop().
+				SQL("SCHEMA").
+				IfExists().
+				Name().
+				WithValidation(ValidIdentifier, "name").
+				OptionalSQL("CASCADE").
+				OptionalSQL("RESTRICT").
+				WithValidation(ConflictingFields, "Cascade", "Restrict"),
+		)
+		requireSameOperations(t, want, got)
+	})
+}
+
+func Test_DropOperationFromObject_panics(t *testing.T) {
+	require.Panics(t, func() {
+		NewInterface("Fakes", "Fake", "AccountObjectIdentifier").
+			DropOperationFromObject(ssot.Object{Name: "Fake", NamePlural: "Fakes"})
+	})
+}
+
+func Test_DropOperationFromObject_force(t *testing.T) {
+	obj := dropMethodObject(ssot.SdkDrop(ssot.SdkDropSafelyForce()))
+	got := NewInterface("Fakes", "Fake", "AccountObjectIdentifier").DropOperationFromObject(obj)
+	want := NewInterface("Fakes", "Fake", "AccountObjectIdentifier").DropOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/drop-fake",
+		NewQueryStruct("DropFake").
+			Drop().
+			SQL("FAKE").
+			IfExists().
+			Name().
+			WithValidation(ValidIdentifier, "name"),
+		WithDropSafelyForce(),
+	)
+	requireSameOperations(t, want, got)
+}
+
+func dropMethodObject(opt ssot.SdkOption) ssot.Object {
+	return ssot.Object{
+		Name:       "Fake",
+		NamePlural: "Fakes",
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(opt)},
+	}
+}
+
 func showMethodObject(opt ssot.SdkOption, show, describe ssot.OutputSpec) ssot.Object {
 	return ssot.Object{
 		Name:       "Fake",

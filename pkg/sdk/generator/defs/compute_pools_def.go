@@ -72,16 +72,8 @@ var computePoolsDef = g.NewInterface(
 		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "Resume", "Suspend", "StopAll", "Set", "Unset", "SetTags", "UnsetTags"),
-).DropOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/drop-compute-pool",
-	g.NewQueryStruct("DropComputePool").
-		Drop().
-		SQL("COMPUTE POOL").
-		IfExists().
-		Name().
-		WithValidation(g.ValidIdentifier, "name"),
-	g.WithDropSafelyHook(),
-).ShowOperationFromObject(ssotdefs.ComputePool).
+).DropOperationFromObject(ssotdefs.ComputePool).
+	ShowOperationFromObject(ssotdefs.ComputePool).
 	DescribeOperationFromObject(ssotdefs.ComputePool).
 	WithEnums(
 		ssotdefs.ComputePoolState,

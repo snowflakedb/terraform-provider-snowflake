@@ -97,6 +97,18 @@ func Test_ObjectGenerators_options(t *testing.T) {
 		DescribeQueryStructName: "DescThing",
 	}}, g)
 
+	g = ObjectGenerators(WithSdk(SdkDrop(
+		SdkDropSafelyHook(),
+		SdkDropSafelyForce(),
+		SdkDropCascadeRestrict(),
+	)))
+	require.Equal(t, Generators{Sdk: SdkGenerator{
+		Drop:                true,
+		DropSafelyHook:      true,
+		DropSafelyForce:     true,
+		DropCascadeRestrict: true,
+	}}, g)
+
 	g = ObjectGenerators(WithSdk())
 	require.Equal(t, Generators{}, g)
 

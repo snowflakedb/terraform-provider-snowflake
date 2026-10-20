@@ -25,6 +25,14 @@ type SdkGenerator struct {
 	DescribeSql             string
 	DescribeMapping         SdkDescriptionMapping
 	DescribeQueryStructName string
+
+	Drop                bool
+	DropDoc             string
+	DropSql             string
+	DropQueryStructName string
+	DropSafelyHook      bool
+	DropSafelyForce     bool
+	DropCascadeRestrict bool
 }
 
 type ModelGenerator struct {
@@ -111,6 +119,30 @@ func SdkDescribe(opts ...SdkDescribeOption) SdkOption {
 			opt(s)
 		}
 	}
+}
+
+type SdkDropOption func(*SdkGenerator)
+
+func SdkDrop(opts ...SdkDropOption) SdkOption {
+	return func(s *SdkGenerator) {
+		s.Drop = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
+}
+
+func SdkDropSafelyHook() SdkDropOption {
+	return func(s *SdkGenerator) { s.DropSafelyHook = true }
+}
+
+func SdkDropSafelyForce() SdkDropOption {
+	return func(s *SdkGenerator) { s.DropSafelyForce = true }
+}
+
+// SdkDropCascadeRestrict adds optional CASCADE and RESTRICT, and marks them as conflicting.
+func SdkDropCascadeRestrict() SdkDropOption {
+	return func(s *SdkGenerator) { s.DropCascadeRestrict = true }
 }
 
 func WithSdk(opts ...SdkOption) GeneratorOption {
