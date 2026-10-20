@@ -741,7 +741,7 @@ func TestInt_TagsAssociations(t *testing.T) {
 		id := db.ID()
 
 		err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithSetTags(tags))
-		require.ErrorContains(t, err, "is a read-only secondary database and cannot be modified.")
+		require.ErrorContains(t, err, "is a read-only database and cannot be modified.")
 	})
 
 	databaseObjectTestCases := []struct {
