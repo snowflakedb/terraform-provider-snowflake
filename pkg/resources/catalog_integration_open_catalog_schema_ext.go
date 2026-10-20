@@ -7,51 +7,30 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-var catalogIntegrationOpenCatalogIdentitySchemaExt = map[string]*schema.Schema{
-	"name": {
-		Type:        schema.TypeString,
-		Required:    true,
-		ForceNew:    true,
-		Description: "Specifies the identifier (i.e. name) of the catalog integration; must be unique in your account.",
+// Snowflake describes every catalog integration with DESCRIBE CATALOG INTEGRATION.
+var catalogIntegrationOpenCatalogDescribeOutputSchemaExt = map[string]*schema.Schema{
+	DescribeOutputAttributeName: {
+		Type:        schema.TypeList,
+		Computed:    true,
+		Description: "Outputs the result of `DESCRIBE CATALOG INTEGRATION` for the given catalog integration.",
+		Elem: &schema.Resource{
+			Schema: schemas.DescribeCatalogIntegrationOpenCatalogDetailsSchema,
+		},
 	},
 }
 
-var catalogIntegrationOpenCatalogAttributesSchemaExt = map[string]*schema.Schema{
-	"enabled": {
-		Type:     schema.TypeBool,
-		Required: true,
-		Description: joinWithSpace("Specifies whether the catalog integration is available for use for Iceberg tables.",
-			"`true` allows users to create new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration function normally.",
-			"`false` prevents users from creating new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration cannot access the catalog in the table definition."),
-	},
-	"refresh_interval_seconds": {
-		Type:     schema.TypeInt,
-		Optional: true,
-		Description: joinWithSpace("Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh.",
-			"For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata."),
-		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("refresh_interval_seconds"),
-		ValidateFunc:     validation.IntAtLeast(1),
-	},
-	"comment": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Default:     "",
-		Description: "Specifies a comment for the catalog integration.",
-	},
-	"catalog_source": {
+// catalogIntegrationOpenCatalogAttributesModificationExt adds fields the generator does not emit.
+// rest_config and rest_authentication have no SSOT struct type. catalog_source is describe-only.
+func catalogIntegrationOpenCatalogAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
+	s["refresh_interval_seconds"].DiffSuppressFunc = IgnoreChangeToCurrentSnowflakeValueInDescribe("refresh_interval_seconds")
+	s["catalog_namespace"].ValidateFunc = validation.StringIsNotEmpty
+	s["catalog_source"] = &schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 		Description: joinWithSpace("Specifies the type of catalog source.",
 			"This field is used to detect when the catalog source was changed outside of Terraform and to recreate the resource when that happens."),
-	},
-	"catalog_namespace": {
-		Type:         schema.TypeString,
-		Optional:     true,
-		ForceNew:     true,
-		Description:  "Specifies the default Open Catalog namespace for all Iceberg tables that you associate with the catalog integration.",
-		ValidateFunc: validation.StringIsNotEmpty,
-	},
-	"rest_config": {
+	}
+	s["rest_config"] = &schema.Schema{
 		Type:        schema.TypeList,
 		Required:    true,
 		ForceNew:    true,
@@ -92,8 +71,8 @@ var catalogIntegrationOpenCatalogAttributesSchemaExt = map[string]*schema.Schema
 				},
 			},
 		},
-	},
-	"rest_authentication": {
+	}
+	s["rest_authentication"] = &schema.Schema{
 		Type:        schema.TypeList,
 		Required:    true,
 		MinItems:    1,
@@ -134,27 +113,6 @@ var catalogIntegrationOpenCatalogAttributesSchemaExt = map[string]*schema.Schema
 				},
 			},
 		},
-	},
-}
-
-var catalogIntegrationOpenCatalogShowOutputSchemaExt = map[string]*schema.Schema{
-	ShowOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `SHOW CATALOG INTEGRATIONS` for the given catalog integration.",
-		Elem: &schema.Resource{
-			Schema: schemas.ShowCatalogIntegrationSchema,
-		},
-	},
-}
-
-var catalogIntegrationOpenCatalogDescribeOutputSchemaExt = map[string]*schema.Schema{
-	DescribeOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `DESCRIBE CATALOG INTEGRATION` for the given catalog integration.",
-		Elem: &schema.Resource{
-			Schema: schemas.DescribeCatalogIntegrationOpenCatalogDetailsSchema,
-		},
-	},
+	}
+	return s
 }

@@ -19,21 +19,18 @@ import (
 // Constructor
 // =============================================================================
 
-var catalogIntegrationOpenCatalogCreateExt = TrackingCreateWrapper(resources.CatalogIntegrationOpenCatalog, CreateCatalogIntegrationOpenCatalog)
-
-var catalogIntegrationOpenCatalogReadExt = TrackingReadWrapper(resources.CatalogIntegrationOpenCatalog, ReadCatalogIntegrationOpenCatalogFunc(true))
-
-var catalogIntegrationOpenCatalogUpdateExt = TrackingUpdateWrapper(resources.CatalogIntegrationOpenCatalog, UpdateCatalogIntegrationOpenCatalog)
-
-var catalogIntegrationOpenCatalogDeleteExt = TrackingDeleteWrapper(resources.CatalogIntegrationOpenCatalog, ResourceDeleteContextFunc(catalogIntegrationOpenCatalogParseIdExt, catalogIntegrationOpenCatalogDropSafelyInSdkExt))
-
-var catalogIntegrationOpenCatalogDescriptionExt = "Resource used to manage catalog integration objects for Apache Iceberg™ tables that integrate with Snowflake Open Catalog. For more information, check [catalog integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-open-catalog)."
-
-var catalogIntegrationOpenCatalogCustomizeDiffExt = TrackingCustomDiffWrapper(resources.CatalogIntegrationOpenCatalog, customdiff.All(
-	ComputedIfAnyAttributeChanged(catalogIntegrationOpenCatalogSchema, ShowOutputAttributeName, "enabled", "comment"),
-	ComputedIfAnyAttributeChanged(catalogIntegrationOpenCatalogSchema, DescribeOutputAttributeName, "enabled", "refresh_interval_seconds", "comment"),
-	RecreateWhenCatalogSourceChangedExternally(sdk.CatalogIntegrationCatalogSourceTypePolaris),
-))
+var (
+	catalogIntegrationOpenCatalogCreateExt        = TrackingCreateWrapper(resources.CatalogIntegrationOpenCatalog, CreateCatalogIntegrationOpenCatalog)
+	catalogIntegrationOpenCatalogReadExt          = TrackingReadWrapper(resources.CatalogIntegrationOpenCatalog, ReadCatalogIntegrationOpenCatalogFunc(true))
+	catalogIntegrationOpenCatalogUpdateExt        = TrackingUpdateWrapper(resources.CatalogIntegrationOpenCatalog, UpdateCatalogIntegrationOpenCatalog)
+	catalogIntegrationOpenCatalogDeleteExt        = TrackingDeleteWrapper(resources.CatalogIntegrationOpenCatalog, ResourceDeleteContextFunc(catalogIntegrationOpenCatalogParseIdExt, catalogIntegrationOpenCatalogDropSafelyInSdkExt))
+	catalogIntegrationOpenCatalogDescriptionExt   = "Resource used to manage catalog integration objects for Apache Iceberg™ tables that integrate with Snowflake Open Catalog. For more information, check [catalog integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-open-catalog)."
+	catalogIntegrationOpenCatalogCustomizeDiffExt = TrackingCustomDiffWrapper(resources.CatalogIntegrationOpenCatalog, customdiff.All(
+		ComputedIfAnyAttributeChanged(catalogIntegrationOpenCatalogSchema, ShowOutputAttributeName, "enabled", "comment"),
+		ComputedIfAnyAttributeChanged(catalogIntegrationOpenCatalogSchema, DescribeOutputAttributeName, "enabled", "refresh_interval_seconds", "comment"),
+		RecreateWhenCatalogSourceChangedExternally(sdk.CatalogIntegrationCatalogSourceTypePolaris),
+	))
+)
 
 var catalogIntegrationOpenCatalogImporterExt = &schema.ResourceImporter{
 	StateContext: TrackingImportWrapper(resources.CatalogIntegrationOpenCatalog, ImportCatalogIntegrationOpenCatalog),
@@ -47,11 +44,6 @@ var catalogIntegrationOpenCatalogImporterExt = &schema.ResourceImporter{
 // set is the only alter payload. Catalog integration ALTER has no UNSET request type.
 type catalogIntegrationOpenCatalogAlterRequestsExt struct {
 	set *sdk.CatalogIntegrationSetRequest
-}
-
-func catalogIntegrationOpenCatalogParseIdFromConfigExt(d *schema.ResourceData) (sdk.AccountObjectIdentifier, error) {
-	name := d.Get("name").(string)
-	return sdk.ParseAccountObjectIdentifier(name)
 }
 
 func catalogIntegrationOpenCatalogParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
@@ -81,19 +73,22 @@ func catalogIntegrationOpenCatalogApplyCreateOptionalsExt(d *schema.ResourceData
 	)
 }
 
-func catalogIntegrationOpenCatalogHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.CatalogIntegrationOpenCatalogDetails, withExternalChangesMarking bool) error {
+func catalogIntegrationOpenCatalogHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.CatalogIntegrationOpenCatalogDetails, withExternalChangesMarking bool) diag.Diagnostics {
 	if withExternalChangesMarking {
 		if err := handleExternalChangesToObjectInFlatDescribe(
 			d,
 			catalogIntegrationOpenCatalogOutputMappingsExt(details)...,
 		); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if err := handleExternalChangesToNestedAttrs(d, details); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
-	return catalogIntegrationOpenCatalogSetConfigFieldsExt(d, details)
+	if err := catalogIntegrationOpenCatalogSetConfigFieldsExt(d, details); err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
 }
 
 func catalogIntegrationOpenCatalogOutputMappingsExt(details *sdk.CatalogIntegrationOpenCatalogDetails) []outputMapping {
@@ -110,7 +105,7 @@ func catalogIntegrationOpenCatalogSetConfigFieldsExt(d *schema.ResourceData, det
 		d.Set("comment", details.Comment),
 		d.Set("catalog_source", string(details.CatalogSource)),
 		d.Set("catalog_namespace", details.CatalogNamespace),
-		// not reading rest_config and rest_authentication on purpose
+		// not reading rest_config and rest_authentication on purpose (set on import)
 	)
 }
 
@@ -187,7 +182,7 @@ func catalogIntegrationOpenCatalogDescribeInSdkExt(ctx context.Context, meta any
 	return details, nil
 }
 
-func catalogIntegrationOpenCatalogAlterSetInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier, reqs *catalogIntegrationOpenCatalogAlterRequestsExt) error {
+func catalogIntegrationOpenCatalogAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *catalogIntegrationOpenCatalogAlterRequestsExt) error {
 	if reflect.DeepEqual(*reqs.set, *sdk.NewCatalogIntegrationSetRequest()) {
 		return nil
 	}

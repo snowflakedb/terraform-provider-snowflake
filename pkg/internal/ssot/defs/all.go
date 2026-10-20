@@ -8,6 +8,7 @@ func All() []ssot.Object {
 		ExternalVolumeObject,
 		Schema,
 		AuthenticationPolicy,
+		CatalogIntegrationOpenCatalog,
 		Warehouse,
 	}
 	for _, obj := range objs {
