@@ -49,11 +49,6 @@ type catalogIntegrationObjectStorageAlterRequestsExt struct {
 	set *sdk.CatalogIntegrationSetRequest
 }
 
-func catalogIntegrationObjectStorageParseIdFromConfigExt(d *schema.ResourceData) (sdk.AccountObjectIdentifier, error) {
-	name := d.Get("name").(string)
-	return sdk.ParseAccountObjectIdentifier(name)
-}
-
 func catalogIntegrationObjectStorageParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
 	return sdk.ParseAccountObjectIdentifier(id)
 }
@@ -77,13 +72,20 @@ func catalogIntegrationObjectStorageApplyCreateOptionalsExt(d *schema.ResourceDa
 	)
 }
 
-func catalogIntegrationObjectStorageHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.CatalogIntegrationObjectStorageDetails, withExternalChangesMarking bool) error {
+func catalogIntegrationObjectStorageHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.CatalogIntegrationObjectStorageDetails, withExternalChangesMarking bool) diag.Diagnostics {
 	if withExternalChangesMarking {
 		if err := handleExternalChangesToObjectInFlatDescribe(d, catalogIntegrationObjectStorageOutputMappingsExt(details)...); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
-	return catalogIntegrationObjectStorageSetConfigFieldsExt(d, details)
+	// refresh_interval_seconds is not copied into config; drift is marked on describe output.
+	if err := errors.Join(
+		d.Set("catalog_source", string(details.CatalogSource)),
+		d.Set("table_format", string(details.TableFormat)),
+	); err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
 }
 
 func catalogIntegrationObjectStorageOutputMappingsExt(details *sdk.CatalogIntegrationObjectStorageDetails) []outputMapping {
@@ -92,14 +94,11 @@ func catalogIntegrationObjectStorageOutputMappingsExt(details *sdk.CatalogIntegr
 	}
 }
 
-func catalogIntegrationObjectStorageSetConfigFieldsExt(d *schema.ResourceData, details *sdk.CatalogIntegrationObjectStorageDetails) error {
+func catalogIntegrationObjectStorageSetConfigFieldsExt(d *schema.ResourceData, catalogIntegration *sdk.CatalogIntegration) error {
 	return errors.Join(
-		d.Set("name", details.Id.Name()),
-		d.Set("enabled", details.Enabled),
-		// not reading refresh_interval_seconds on purpose (handled as external change to describe output)
-		d.Set("comment", details.Comment),
-		d.Set("catalog_source", string(details.CatalogSource)),
-		d.Set("table_format", string(details.TableFormat)),
+		d.Set("name", catalogIntegration.Name),
+		d.Set("enabled", catalogIntegration.Enabled),
+		d.Set("comment", catalogIntegration.Comment),
 	)
 }
 
@@ -168,7 +167,7 @@ func catalogIntegrationObjectStorageDescribeInSdkExt(ctx context.Context, meta a
 	return details, nil
 }
 
-func catalogIntegrationObjectStorageAlterSetInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier, reqs *catalogIntegrationObjectStorageAlterRequestsExt) error {
+func catalogIntegrationObjectStorageAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *catalogIntegrationObjectStorageAlterRequestsExt) error {
 	if !reflect.DeepEqual(*reqs.set, *sdk.NewCatalogIntegrationSetRequest()) {
 		client := meta.(*provider.Context).Client
 		req := sdk.NewAlterCatalogIntegrationRequest(id).WithSet(*reqs.set)

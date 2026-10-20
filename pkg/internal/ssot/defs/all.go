@@ -9,6 +9,7 @@ func All() []ssot.Object {
 		Schema,
 		AuthenticationPolicy,
 		CatalogIntegrationIcebergRest,
+		CatalogIntegrationObjectStorage,
 		CatalogIntegrationOpenCatalog,
 		Warehouse,
 	}
