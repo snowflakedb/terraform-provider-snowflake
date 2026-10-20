@@ -95,6 +95,12 @@ pre-push: terraform-version-check check-compilation generate-all mod fmt generat
 
 pre-push-check: terraform-version-check check-compilation generate-all-check mod-check fmt-check generate-docs-additional-files-check generate-issue-labels-check docs-check lint test-architecture ## Run checks before pushing a change (docs, fmt, mod, etc.)
 
+# Dependency graph: Makefile.pre-push-parallel.mk. Cap jobs with PRE_PUSH_JOBS=N.
+PRE_PUSH_JOBS ?=
+.PHONY: pre-push-parallel
+pre-push-parallel: ## Run pre-push steps in parallel, honoring the dependency graph.
+	$(MAKE) --no-print-directory -f Makefile.pre-push-parallel.mk -j$(PRE_PUSH_JOBS) pre-push-parallel-run
+
 sweep: ## destroy the whole architecture; USE ONLY FOR DEVELOPMENT ACCOUNTS
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
 	@echo "Are you sure? [y/n]" >&2
