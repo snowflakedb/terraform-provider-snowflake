@@ -62,13 +62,21 @@ type Attribute struct {
 	// The generator emits resources.<Name>. Nil means no link.
 	RelatedResource *Object
 	Tags            bool // optional TAG clause. Only valid on a CREATE list, not on Attributes.
+	Parameters      bool // parameter catalog spread. Valid on a CREATE, SET, or UNSET list, not on Attributes.
 }
 
 // Tags is the optional TAG clause. Put it on a CREATE list. It is not an Attributes entry.
 var Tags = &Attribute{Name: "tags", Tags: true}
 
+// Parameters is the parameter catalog spread. Put it on a CREATE, SET, or UNSET list. It is not an Attributes entry.
+var Parameters = &Attribute{Name: "parameters", Parameters: true}
+
 func (a *Attribute) IsTags() bool {
 	return a != nil && a.Tags
+}
+
+func (a *Attribute) IsParameters() bool {
+	return a != nil && a.Parameters
 }
 
 func (a Attribute) OutputKey() string {

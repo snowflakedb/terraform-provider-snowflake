@@ -107,17 +107,22 @@ enable nothing.
   uppercase words, `IF EXISTS`, and the name. `SdkDropSafelyHook()`, `SdkDropSafelyForce()`, and
   `SdkDropCascadeRestrict()` are settings of that call. `SdkDropCascadeRestrict()` adds optional `CASCADE` and
   `RESTRICT` and marks those fields as conflicting. The hook body stays in the SDK ext file. `SdkCreate()` builds
-  CREATE from `Name`: `CREATE`, the uppercase words, `OR REPLACE`, `IF NOT EXISTS`, and the name, then the `Create`
-  list. `SdkCreateWithoutOrReplace()` and `SdkCreateWithoutIfNotExists()` leave those clauses out. When both clauses are
+  CREATE from `Name`: `CREATE`, optional `OR REPLACE`, `Create.KeywordsBefore`, the uppercase words, `IF NOT EXISTS`,
+  and the name, then `Create.Clauses`. `SdkCreateWithoutOrReplace()` and `SdkCreateWithoutIfNotExists()` leave those
+  clauses out. When both clauses are
   present they are marked conflicting. `SdkCreateAdditionalValidations()` adds that validation call. `SdkAlter()` builds
-  ALTER from `Name`: `ALTER`, the uppercase words, `IF EXISTS`, and the name, then `SdkAlterActions`,
-  the `Set` list inside `SET`, the `Unset` list inside `UNSET`, `SET TAG`, and `UNSET TAG`.
-  `SdkAlterWithoutIfExists()`, `SdkAlterWithoutSet()`, `SdkAlterWithoutUnset()`, `SdkAlterWithoutSetTags()`,
-  `SdkAlterWithoutUnsetTags()`, and `SdkAlterWithoutExactlyOneValueSet()` leave those pieces out.
-  `SdkAlterSetAdditionalValidations()` marks the `SET` struct. `Create`, `Set`, and `Unset` are `[]*Attribute`, with the
-  same membership and order rules as `Columns`. [`Tags`](attribute.go) is the optional `TAG` clause and belongs on
-  `Create`. Clause shape is `CreateSql`, `SetSql`, and `UnsetSql` on [Attribute](attribute.go). When `SdkCreate()` or
-  `SdkAlter()` is off, that call stays in the def.
+  ALTER from `Name`: `ALTER`, the uppercase words, `IF EXISTS`, and the name, then [`Alter`](object.go) in list order.
+  `SdkAlterWithoutIfExists()` and `SdkAlterWithoutExactlyOneValueSet()` leave those pieces out.
+  `SdkAlterSetAdditionalValidations()` marks the `SET` struct. `SdkAlterSetList()` makes that `SET` a list with no
+  parentheses. Without it, `SET` is a keyword. `Create` is a [`CreateSpec`](object.go). `Alter` is an
+  [`AlterSpec`](object.go): action keywords, `RenameTo`, `SwapWith`, `SET`, `UNSET`, `SET TAG`, and `UNSET TAG` are
+  entries, so a keyword can follow the tag clauses. `RenameTo` and `SwapWith` use the object's `IdType` and get
+  `ValidIdentifierIfSet`. `Set` and `Unset` are the fields inside those blocks. [`Tags`](attribute.go) is the
+  optional `TAG` clause and belongs on `Create.Clauses`, not on `KeywordsBefore`. [`Parameters`](attribute.go) spreads
+  the parameter catalog for that object's level. CREATE and SET use `WithParameters`. UNSET uses `WithParametersUnset`.
+  An identifier parameter gets `ValidIdentifierIfSet` on CREATE and SET. Comment stays an attribute clause beside that
+  entry. Clause shape is `CreateSql`, `SetSql`,
+  and `UnsetSql` on [Attribute](attribute.go). When `SdkCreate()` or `SdkAlter()` is off, that call stays in the def.
 
 Fill `Show` / `Describe` first; enable the matching SHOW or DESCRIBE setting when the lists are ready. Enabling SHOW or
 DESCRIBE schema generation, show output assertions, Snowflake object assertions, or SDK paired structs without `Columns`
@@ -209,8 +214,10 @@ Until a piece has moved, do not assume it is already in ssot:
   call. When `SdkDrop()` is on, that Drop method comes from the option. An object with the setting off keeps the
   handwritten call. When `SdkCreate()` or `SdkAlter()` is on, that Create or Alter method comes from the option. An
   object with the setting off keeps the handwritten call. Clause shape is `CreateSql`, `SetSql`, and `UnsetSql`
-  ([Attribute](attribute.go)). `Create`, `Set`, and `Unset` are the statement order. Parameters and every other
-  operation stay in the SDK def. They are not generated from `Columns`.
+  ([Attribute](attribute.go)). `Create` is a [`CreateSpec`](object.go). `Set` and `Unset` are the statement order. A
+  `Parameters` entry spreads the catalog on that statement. `Alter` is the order of the ALTER blocks after the name.
+  Every other operation stays in the SDK def. They are not
+  generated from `Columns`.
 - `SkipFields`, `ManualFields`, `TypeOverrides`, and `UsedAsListEntry` have no ssot equivalent yet.
 - `ResourceHooks` do not yet generate the whole lifecycle, the SDK calls, or the mapping. A missing step stays an ext
   call, or panics through `Unimplemented`, until that hook is implemented. See [Resource generator](#resource-generator).
@@ -230,12 +237,13 @@ the enum type.
 - A list clause takes the item query struct name as a string. The item struct stays in the SDK def.
 - Create and set clauses are chosen by constructor. The attribute type does not pick one.
 - Unset is written per attribute. It is not a default bool keyword, with overrides to leave the field out or to unset by setting a value.
-- `SdkAlterActions` are emitted before `SET` and `UNSET`. Some objects place action keywords after those blocks.
 
 #### Why Show and Describe columns are explicit
 
-`Attributes` is the resource schema sequence. `Create`, `Set`, and `Unset` are the SQL field order for those
-statements. `OutputSpec.Columns` is membership and Snowflake order for one operation.
+`Attributes` is the resource schema sequence. `Create.KeywordsBefore` is the CREATE order between `OR REPLACE` and the
+object words. `Create.Clauses`, `Set`, and `Unset` are the SQL field order inside those statements. `Alter.Clauses` is the ALTER order
+after the name.
+`OutputSpec.Columns` is membership and Snowflake order for one operation.
 Presence in that slice is the only membership. The same `Attribute` var is pointed at from `Columns` so the snake_case
 name is not restated. `ShowName` is the output key when it differs from `Name`. `OutputKey()` is `ShowName` or `Name`.
 See [SHOW and DESCRIBE](#show-and-describe).

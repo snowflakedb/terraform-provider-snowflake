@@ -17,7 +17,13 @@ const (
 
 // appendSqlSequence adds list in slice order.
 // Tags emits optional TAG on CREATE. SET and UNSET reject tags.
+// Parameters spreads params: WithParameters on CREATE and SET, WithParametersUnset on UNSET.
 func (v *QueryStruct) appendSqlSequence(list []*ssot.Attribute, statement attributeSqlStatement) *QueryStruct {
+	return v.appendSqlSequenceParams(list, statement, nil)
+}
+
+func (v *QueryStruct) appendSqlSequenceParams(list []*ssot.Attribute, statement attributeSqlStatement, params []ssot.ParameterDef) *QueryStruct {
+	sawParameters := false
 	for _, field := range list {
 		if field == nil {
 			panic(fmt.Sprintf("%s field is empty", statementName(statement)))
@@ -27,6 +33,21 @@ func (v *QueryStruct) appendSqlSequence(list []*ssot.Attribute, statement attrib
 				panic(fmt.Sprintf("%s list contains tags", statementName(statement)))
 			}
 			v = v.OptionalTags()
+			continue
+		}
+		if field.IsParameters() {
+			if sawParameters {
+				panic(fmt.Sprintf("%s list contains parameters twice", statementName(statement)))
+			}
+			sawParameters = true
+			switch statement {
+			case attributeSqlCreate, attributeSqlSet:
+				v = v.WithParameters(params...)
+			case attributeSqlUnset:
+				v = v.WithParametersUnset(params...)
+			default:
+				panic(fmt.Sprintf("%s list contains parameters", statementName(statement)))
+			}
 			continue
 		}
 		clause := attributeClause(*field, statement)

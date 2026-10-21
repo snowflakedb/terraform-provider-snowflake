@@ -173,8 +173,110 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 		ValidateObject(Object{
 			Name:       "Pool",
 			Attributes: []Attribute{minNodes},
-			Create:     []*Attribute{&minNodes},
+			Create:     CreateSpec{Clauses: []*Attribute{&minNodes}},
 			Set:        []*Attribute{&minNodes},
+		})
+	})
+
+	transient := Attribute{Name: "is_transient", Type: AttrBool, CreateSql: BoolKeyword(Sql("TRANSIENT"))}
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name:       "Widget",
+			Attributes: []Attribute{transient, minNodes},
+			Create: CreateSpec{
+				KeywordsBefore: []*Attribute{&transient},
+				Clauses:        []*Attribute{&minNodes},
+			},
+			Set: []*Attribute{&minNodes},
+		})
+	})
+	require.PanicsWithValue(t, `object "Widget": KeywordsBefore list contains tags`, func() {
+		ValidateObject(Object{
+			Name:       "Widget",
+			Attributes: []Attribute{minNodes},
+			Create: CreateSpec{
+				KeywordsBefore: []*Attribute{Tags},
+				Clauses:        []*Attribute{&minNodes},
+			},
+			Set: []*Attribute{&minNodes},
+		})
+	})
+	comment := Attribute{
+		Name:      "comment",
+		Type:      AttrString,
+		CreateSql: StringParameter(),
+		SetSql:    StringParameter(),
+		UnsetSql:  BoolKeyword(),
+	}
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name:       "Widget",
+			Attributes: []Attribute{comment},
+			Create:     CreateSpec{Clauses: []*Attribute{Parameters, &comment}},
+			Set:        []*Attribute{Parameters, &comment},
+			Unset:      []*Attribute{Parameters, &comment},
+		})
+	})
+	require.PanicsWithValue(t, `object "Widget": parameters is not an attribute`, func() {
+		ValidateObject(Object{
+			Name:       "Widget",
+			Attributes: []Attribute{*Parameters},
+		})
+	})
+	require.PanicsWithValue(t, `object "Widget": KeywordsBefore list contains parameters`, func() {
+		ValidateObject(Object{
+			Name:       "Widget",
+			Attributes: []Attribute{comment},
+			Create:     CreateSpec{KeywordsBefore: []*Attribute{Parameters}, Clauses: []*Attribute{&comment}},
+		})
+	})
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name:  "Widget",
+			Alter: AlterSpec{Clauses: []AlterClause{AlterSet(), AlterUnsetTags(), AlterKeyword("ENABLE MANAGED ACCESS")}},
+		})
+	})
+	require.PanicsWithValue(t, `object "Widget": ALTER keyword is empty`, func() {
+		ValidateObject(Object{
+			Name:  "Widget",
+			Alter: AlterSpec{Clauses: []AlterClause{{Kind: AlterClauseKeyword}}},
+		})
+	})
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name:  "Widget",
+			Alter: AlterSpec{Clauses: []AlterClause{AlterRenameTo(), AlterSwapWith()}},
+		})
+	})
+	require.PanicsWithValue(t, `object "Widget": duplicate ALTER rename_to`, func() {
+		ValidateObject(Object{
+			Name:  "Widget",
+			Alter: AlterSpec{Clauses: []AlterClause{AlterRenameTo(), AlterRenameTo()}},
+		})
+	})
+	require.PanicsWithValue(t, `object "Widget": duplicate ALTER set`, func() {
+		ValidateObject(Object{
+			Name:  "Widget",
+			Alter: AlterSpec{Clauses: []AlterClause{AlterSet(), AlterSet()}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "Widget": parameters is not a SHOW column`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			Show: OutputSpec{Columns: []*Attribute{Parameters}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "Widget": duplicate CREATE field "min_nodes"`, func() {
+		ValidateObject(Object{
+			Name:       "Widget",
+			Attributes: []Attribute{minNodes},
+			Create: CreateSpec{
+				KeywordsBefore: []*Attribute{&minNodes},
+				Clauses:        []*Attribute{&minNodes},
+			},
+			Set: []*Attribute{&minNodes},
 		})
 	})
 

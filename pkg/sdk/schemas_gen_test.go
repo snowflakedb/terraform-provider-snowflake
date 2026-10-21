@@ -11,8 +11,8 @@ var schemasTestIdDatabaseObjectIdentifier = randomDatabaseObjectIdentifier()
 const (
 	case_Schemas_validation_Create_name_ValidIdentifier                   testCaseName = "validation_Create_name_ValidIdentifier"
 	case_Schemas_validation_Create_opts_ConflictingFields                 testCaseName = "validation_Create_opts_ConflictingFields"
-	case_Schemas_validation_Create_ExternalVolume_ValidIdentifierIfSet    testCaseName = "validation_Create_ExternalVolume_ValidIdentifierIfSet"
 	case_Schemas_validation_Create_Catalog_ValidIdentifierIfSet           testCaseName = "validation_Create_Catalog_ValidIdentifierIfSet"
+	case_Schemas_validation_Create_ExternalVolume_ValidIdentifierIfSet    testCaseName = "validation_Create_ExternalVolume_ValidIdentifierIfSet"
 	case_Schemas_validation_Create_Tag_ValidIdentifier                    testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_Schemas_sql_Create_basic                                         testCaseName = "sql_Create_basic"
 	case_Schemas_sql_Create_all                                           testCaseName = "sql_Create_all"
@@ -24,8 +24,8 @@ const (
 	case_Schemas_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_Schemas_validation_Alter_RenameTo_ValidIdentifierIfSet           testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
 	case_Schemas_validation_Alter_SwapWith_ValidIdentifierIfSet           testCaseName = "validation_Alter_SwapWith_ValidIdentifierIfSet"
-	case_Schemas_validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet testCaseName = "validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet"
 	case_Schemas_validation_Alter_Set_Catalog_ValidIdentifierIfSet        testCaseName = "validation_Alter_Set_Catalog_ValidIdentifierIfSet"
+	case_Schemas_validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet testCaseName = "validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet"
 	case_Schemas_validation_Alter_opts_Set_AtLeastOneValueSet             testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_Schemas_validation_Alter_opts_Unset_AtLeastOneValueSet           testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_Schemas_validation_Alter_SetTags_ValidIdentifier                 testCaseName = "validation_Alter_SetTags_ValidIdentifier"
@@ -89,17 +89,17 @@ var schemasTests = SchemasTestsContext{
 				},
 			},
 			validationCase[*CreateSchemaOptions]{
-				Name:        case_Schemas_validation_Create_ExternalVolume_ValidIdentifierIfSet,
-				ExpectedErr: errInvalidIdentifier("CreateSchemaOptions", "ExternalVolume"),
-				DefaultModify: func(opts *CreateSchemaOptions) {
-					opts.ExternalVolume = new(emptyAccountObjectIdentifier)
-				},
-			},
-			validationCase[*CreateSchemaOptions]{
 				Name:        case_Schemas_validation_Create_Catalog_ValidIdentifierIfSet,
 				ExpectedErr: errInvalidIdentifier("CreateSchemaOptions", "Catalog"),
 				DefaultModify: func(opts *CreateSchemaOptions) {
 					opts.Catalog = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*CreateSchemaOptions]{
+				Name:        case_Schemas_validation_Create_ExternalVolume_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("CreateSchemaOptions", "ExternalVolume"),
+				DefaultModify: func(opts *CreateSchemaOptions) {
+					opts.ExternalVolume = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*CreateSchemaOptions]{
@@ -203,19 +203,19 @@ var schemasTests = SchemasTestsContext{
 				},
 			},
 			validationCase[*AlterSchemaOptions]{
-				Name:        case_Schemas_validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet,
-				ExpectedErr: errInvalidIdentifier("AlterSchemaOptions.Set", "ExternalVolume"),
-				DefaultModify: func(opts *AlterSchemaOptions) {
-					opts.Set = &SchemaSet{}
-					opts.Set.ExternalVolume = new(emptyAccountObjectIdentifier)
-				},
-			},
-			validationCase[*AlterSchemaOptions]{
 				Name:        case_Schemas_validation_Alter_Set_Catalog_ValidIdentifierIfSet,
 				ExpectedErr: errInvalidIdentifier("AlterSchemaOptions.Set", "Catalog"),
 				DefaultModify: func(opts *AlterSchemaOptions) {
 					opts.Set = &SchemaSet{}
 					opts.Set.Catalog = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterSchemaOptions]{
+				Name:        case_Schemas_validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("AlterSchemaOptions.Set", "ExternalVolume"),
+				DefaultModify: func(opts *AlterSchemaOptions) {
+					opts.Set = &SchemaSet{}
+					opts.Set.ExternalVolume = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*AlterSchemaOptions]{

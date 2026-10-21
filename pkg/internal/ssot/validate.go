@@ -17,6 +17,9 @@ func ValidateObject(obj Object) {
 		if a.IsTags() {
 			panic(fmt.Sprintf("object %q: tags is not an attribute", obj.Name))
 		}
+		if a.IsParameters() {
+			panic(fmt.Sprintf("object %q: parameters is not an attribute", obj.Name))
+		}
 		if a.Name == "" {
 			panic(fmt.Sprintf("object %q: attribute has empty Name", obj.Name))
 		}
@@ -30,9 +33,10 @@ func ValidateObject(obj Object) {
 		attrs[a.Name] = struct{}{}
 		validateSqlClauses(obj, a)
 	}
-	validateSqlSequence(obj, "CREATE", obj.Create, attrs, func(attr Attribute) SqlClause { return attr.CreateSql })
+	validateCreateSpec(obj, attrs)
 	validateSqlSequence(obj, "SET", obj.Set, attrs, func(attr Attribute) SqlClause { return attr.SetSql })
 	validateSqlSequence(obj, "UNSET", obj.Unset, attrs, func(attr Attribute) SqlClause { return attr.UnsetSql })
+	validateAlterSpec(obj)
 	for _, a := range obj.Attributes {
 		if a.CreateOnly && (a.Type != AttrBool || a.Required) {
 			panic(fmt.Sprintf("object %q: CreateOnly attribute %q must be an optional bool", obj.Name, a.Name))
@@ -73,16 +77,69 @@ func validateSchemaStateUpgraders(obj Object) {
 	}
 }
 
+func validateCreateSpec(obj Object, attrs map[string]struct{}) {
+	seen := make(map[string]struct{})
+	clause := func(attr Attribute) SqlClause { return attr.CreateSql }
+	walkSqlSequence(obj, "KeywordsBefore", obj.Create.KeywordsBefore, attrs, clause, seen, false)
+	walkSqlSequence(obj, "CREATE", obj.Create.Clauses, attrs, clause, seen, true)
+	requirePresentClausesListed(obj, "CREATE", clause, seen)
+}
+
+func validateAlterSpec(obj Object) {
+	seen := make(map[AlterClauseKind]struct{})
+	for _, clause := range obj.Alter.Clauses {
+		switch clause.Kind {
+		case AlterClauseKeyword:
+			if clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: ALTER keyword is empty", obj.Name))
+			}
+		case AlterClauseRenameTo, AlterClauseSwapWith, AlterClauseSet, AlterClauseUnset, AlterClauseSetTags, AlterClauseUnsetTags:
+			if _, dup := seen[clause.Kind]; dup {
+				panic(fmt.Sprintf("object %q: duplicate ALTER %s", obj.Name, clause.Kind))
+			}
+			seen[clause.Kind] = struct{}{}
+		default:
+			panic(fmt.Sprintf("object %q: ALTER clause has kind %q", obj.Name, clause.Kind))
+		}
+	}
+}
+
 func validateSqlSequence(obj Object, statement string, list []*Attribute, attrs map[string]struct{}, clause func(Attribute) SqlClause) {
 	seen := make(map[string]struct{})
+	walkSqlSequence(obj, statement, list, attrs, clause, seen, statement == "CREATE")
+	requirePresentClausesListed(obj, statement, clause, seen)
+}
+
+func requirePresentClausesListed(obj Object, statement string, clause func(Attribute) SqlClause, seen map[string]struct{}) {
+	for _, attr := range obj.Attributes {
+		if !clause(attr).Present {
+			continue
+		}
+		if _, ok := seen[attr.Name]; !ok {
+			panic(fmt.Sprintf("object %q: attribute %q %s clause is not in the %s sequence", obj.Name, attr.Name, statement, statement))
+		}
+	}
+}
+
+func walkSqlSequence(obj Object, statement string, list []*Attribute, attrs map[string]struct{}, clause func(Attribute) SqlClause, seen map[string]struct{}, allowTags bool) {
 	for _, field := range list {
 		if field == nil {
 			panic(fmt.Sprintf("object %q: nil %s entry", obj.Name, statement))
 		}
 		if field.IsTags() {
-			if statement != "CREATE" {
+			if !allowTags {
 				panic(fmt.Sprintf("object %q: %s list contains tags", obj.Name, statement))
 			}
+			continue
+		}
+		if field.IsParameters() {
+			if statement != "CREATE" && statement != "SET" && statement != "UNSET" {
+				panic(fmt.Sprintf("object %q: %s list contains parameters", obj.Name, statement))
+			}
+			if _, dup := seen["parameters"]; dup {
+				panic(fmt.Sprintf("object %q: duplicate parameters in %s", obj.Name, statement))
+			}
+			seen["parameters"] = struct{}{}
 			continue
 		}
 		name := field.Name
@@ -95,14 +152,6 @@ func validateSqlSequence(obj Object, statement string, list []*Attribute, attrs 
 		seen[name] = struct{}{}
 		if !clause(*field).Present {
 			panic(fmt.Sprintf("object %q: attribute %q has no %s clause", obj.Name, name, statement))
-		}
-	}
-	for _, attr := range obj.Attributes {
-		if !clause(attr).Present {
-			continue
-		}
-		if _, ok := seen[attr.Name]; !ok {
-			panic(fmt.Sprintf("object %q: attribute %q %s clause is not in the %s sequence", obj.Name, attr.Name, statement, statement))
 		}
 	}
 }
@@ -155,6 +204,9 @@ func validateColumnList(obj Object, kind string, list []*Attribute, attrs map[st
 		}
 		if a.IsTags() {
 			panic(fmt.Sprintf("object %q: tags is not a %s column", obj.Name, kind))
+		}
+		if a.IsParameters() {
+			panic(fmt.Sprintf("object %q: parameters is not a %s column", obj.Name, kind))
 		}
 		if a.Name == "" {
 			panic(fmt.Sprintf("object %q: %s entry has empty Name", obj.Name, kind))

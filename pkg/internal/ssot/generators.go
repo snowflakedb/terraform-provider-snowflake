@@ -47,12 +47,8 @@ type SdkGenerator struct {
 	AlterSql                       string
 	AlterQueryStructName           string
 	AlterWithoutIfExists           bool
-	AlterActions                   []string
-	AlterWithoutSet                bool
+	AlterSetList                   bool
 	AlterSetAdditionalValidations  bool
-	AlterWithoutUnset              bool
-	AlterWithoutSetTags            bool
-	AlterWithoutUnsetTags          bool
 	AlterWithoutExactlyOneValueSet bool
 }
 
@@ -237,34 +233,15 @@ func SdkAlterWithoutIfExists() SdkAlterOption {
 	return func(s *SdkGenerator) { s.AlterWithoutIfExists = true }
 }
 
-// SdkAlterActions appends optional action keywords, in the given order, after the name.
-func SdkAlterActions(actions ...string) SdkAlterOption {
-	return func(s *SdkGenerator) { s.AlterActions = append(s.AlterActions, actions...) }
-}
-
-// SdkAlterWithoutSet leaves the SET wrapper out. ALTER includes it unless this option is set.
-func SdkAlterWithoutSet() SdkAlterOption {
-	return func(s *SdkGenerator) { s.AlterWithoutSet = true }
+// SdkAlterSetList makes SET a list with no parentheses. SET is a keyword unless this option is set.
+// TODO [next PRs]: Check why SET is a keyword for some objects and a list for others.
+func SdkAlterSetList() SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterSetList = true }
 }
 
 // SdkAlterSetAdditionalValidations marks the SET struct with additional validations.
 func SdkAlterSetAdditionalValidations() SdkAlterOption {
 	return func(s *SdkGenerator) { s.AlterSetAdditionalValidations = true }
-}
-
-// SdkAlterWithoutUnset leaves the UNSET wrapper out. ALTER includes it unless this option is set.
-func SdkAlterWithoutUnset() SdkAlterOption {
-	return func(s *SdkGenerator) { s.AlterWithoutUnset = true }
-}
-
-// SdkAlterWithoutSetTags leaves SET TAG out. ALTER includes it unless this option is set.
-func SdkAlterWithoutSetTags() SdkAlterOption {
-	return func(s *SdkGenerator) { s.AlterWithoutSetTags = true }
-}
-
-// SdkAlterWithoutUnsetTags leaves UNSET TAG out. ALTER includes it unless this option is set.
-func SdkAlterWithoutUnsetTags() SdkAlterOption {
-	return func(s *SdkGenerator) { s.AlterWithoutUnsetTags = true }
 }
 
 // SdkAlterWithoutExactlyOneValueSet leaves out the check that exactly one alter branch is set.

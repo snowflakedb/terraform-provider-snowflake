@@ -284,15 +284,20 @@ func Test_CreateAlterFromObject(t *testing.T) {
 	obj := ssot.Object{
 		Name:       "Widget",
 		Attributes: []ssot.Attribute{items, label, kind, count, target},
-		Create:     []*ssot.Attribute{&target, &count, &kind, ssot.Tags, &label, &items},
+		Create:     ssot.CreateSpec{Clauses: []*ssot.Attribute{&target, &count, &kind, ssot.Tags, &label, &items}},
 		Set:        []*ssot.Attribute{&items, &count, &label},
 		Unset:      []*ssot.Attribute{&label, &items},
+		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
+			ssot.AlterKeyword("RESUME"),
+			ssot.AlterKeyword("STOP ALL"),
+			ssot.AlterSet(),
+			ssot.AlterUnset(),
+			ssot.AlterSetTags(),
+			ssot.AlterUnsetTags(),
+		}},
 		Generators: []ssot.GeneratorOption{ssot.WithSdk(
 			ssot.SdkCreate(ssot.SdkCreateWithoutOrReplace(), ssot.SdkCreateAdditionalValidations()),
-			ssot.SdkAlter(
-				ssot.SdkAlterActions("RESUME", "STOP ALL"),
-				ssot.SdkAlterSetAdditionalValidations(),
-			),
+			ssot.SdkAlter(ssot.SdkAlterSetAdditionalValidations()),
 		)},
 	}
 	listItem := NewQueryStruct("WidgetItem").Enum("Value", family, KeywordOptions().SingleQuotes().Required())
@@ -372,7 +377,7 @@ func Test_CreateOperationFromObject_fakeObject(t *testing.T) {
 	obj := ssot.Object{
 		Name:       "Widget",
 		Attributes: []ssot.Attribute{comment, count},
-		Create:     []*ssot.Attribute{&count, &comment, ssot.Tags},
+		Create:     ssot.CreateSpec{Clauses: []*ssot.Attribute{&count, &comment, ssot.Tags}},
 		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate(
 			ssot.SdkCreateAdditionalValidations(),
 		))},
@@ -382,8 +387,8 @@ func Test_CreateOperationFromObject_fakeObject(t *testing.T) {
 		"https://docs.snowflake.com/en/sql-reference/sql/create-widget",
 		NewQueryStruct("CreateWidget").
 			Create().
-			SQL("WIDGET").
 			OrReplace().
+			SQL("WIDGET").
 			IfNotExists().
 			Name().
 			NumberAssignment("COUNT", ParameterOptions().Required()).
@@ -394,6 +399,261 @@ func Test_CreateOperationFromObject_fakeObject(t *testing.T) {
 			WithAdditionalValidations(),
 	)
 	requireSameOperations(t, want, got)
+}
+
+func Test_AlterOperationFromObject_setList(t *testing.T) {
+	label := ssot.Attribute{Name: "label", Type: ssot.AttrString, SetSql: ssot.StringParameter()}
+	obj := ssot.Object{
+		Name:       "Widget",
+		Attributes: []ssot.Attribute{label},
+		Set:        []*ssot.Attribute{&label},
+		Alter:      ssot.AlterSpec{Clauses: []ssot.AlterClause{ssot.AlterSet()}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter(
+			ssot.SdkAlterSetList(),
+			ssot.SdkAlterWithoutIfExists(),
+			ssot.SdkAlterWithoutExactlyOneValueSet(),
+		))},
+	}
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-widget",
+		NewQueryStruct("AlterWidget").
+			Alter().
+			SQL("WIDGET").
+			Name().
+			OptionalQueryStructField(
+				"Set",
+				NewQueryStruct("WidgetSet").
+					OptionalTextAssignment("LABEL", ParameterOptions().SingleQuotes()).
+					WithValidation(AtLeastOneValueSet, "Label"),
+				ListOptions().NoParentheses().SQL("SET"),
+			).
+			WithValidation(ValidIdentifier, "name"),
+	)
+	requireSameOperations(t, want, got)
+}
+
+func Test_CreateAlterFromObject_parameters(t *testing.T) {
+	orig := parametersForObject
+	t.Cleanup(func() { parametersForObject = orig })
+	params := []ssot.ParameterDef{
+		{SqlName: "DATA_RETENTION_TIME_IN_DAYS", Kind: string(ssot.AttrInt)},
+		{SqlName: "EXTERNAL_VOLUME", Kind: "AccountObjectIdentifier"},
+	}
+	parametersForObject = func(ssot.Object) []ssot.ParameterDef { return params }
+
+	comment := ssot.Attribute{
+		Name:      "comment",
+		Type:      ssot.AttrString,
+		CreateSql: ssot.StringParameter(),
+		SetSql:    ssot.StringParameter(),
+		UnsetSql:  ssot.BoolKeyword(),
+	}
+	obj := ssot.Object{
+		Name:       "Widget",
+		Attributes: []ssot.Attribute{comment},
+		Create:     ssot.CreateSpec{Clauses: []*ssot.Attribute{ssot.Parameters, &comment, ssot.Tags}},
+		Set:        []*ssot.Attribute{ssot.Parameters, &comment},
+		Unset:      []*ssot.Attribute{ssot.Parameters, &comment},
+		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
+			ssot.AlterSet(),
+			ssot.AlterUnset(),
+			ssot.AlterSetTags(),
+			ssot.AlterUnsetTags(),
+		}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate(), ssot.SdkAlter())},
+	}
+
+	t.Run("create", func(t *testing.T) {
+		got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
+		want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperation(
+			"https://docs.snowflake.com/en/sql-reference/sql/create-widget",
+			NewQueryStruct("CreateWidget").
+				Create().
+				OrReplace().
+				SQL("WIDGET").
+				IfNotExists().
+				Name().
+				WithParameters(params...).
+				OptionalTextAssignment("COMMENT", ParameterOptions().SingleQuotes()).
+				OptionalTags().
+				WithValidation(ValidIdentifier, "name").
+				WithValidation(ConflictingFields, "OrReplace", "IfNotExists").
+				WithValidation(ValidIdentifierIfSet, "ExternalVolume"),
+		)
+		requireSameOperations(t, want, got)
+	})
+
+	t.Run("alter", func(t *testing.T) {
+		got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(obj)
+		want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperation(
+			"https://docs.snowflake.com/en/sql-reference/sql/alter-widget",
+			NewQueryStruct("AlterWidget").
+				Alter().
+				SQL("WIDGET").
+				IfExists().
+				Name().
+				OptionalQueryStructField(
+					"Set",
+					NewQueryStruct("WidgetSet").
+						WithParameters(params...).
+						OptionalTextAssignment("COMMENT", ParameterOptions().SingleQuotes()).
+						WithValidation(ValidIdentifierIfSet, "ExternalVolume").
+						WithValidation(AtLeastOneValueSet, "DataRetentionTimeInDays", "ExternalVolume", "Comment"),
+					KeywordOptions().SQL("SET"),
+				).
+				OptionalQueryStructField(
+					"Unset",
+					NewQueryStruct("WidgetUnset").
+						WithParametersUnset(params...).
+						OptionalSQL("COMMENT").
+						WithValidation(AtLeastOneValueSet, "DataRetentionTimeInDays", "ExternalVolume", "Comment"),
+					ListOptions().NoParentheses().SQL("UNSET"),
+				).
+				OptionalSetTags().
+				OptionalUnsetTags().
+				WithValidation(ValidIdentifier, "name").
+				WithValidation(ExactlyOneValueSet, "Set", "Unset", "SetTags", "UnsetTags"),
+		)
+		requireSameOperations(t, want, got)
+	})
+}
+
+func Test_AlterOperationFromObject_clauseOrder(t *testing.T) {
+	label := ssot.Attribute{Name: "label", Type: ssot.AttrString, SetSql: ssot.StringParameter(), UnsetSql: ssot.BoolKeyword()}
+	obj := ssot.Object{
+		Name:       "Widget",
+		Attributes: []ssot.Attribute{label},
+		Set:        []*ssot.Attribute{&label},
+		Unset:      []*ssot.Attribute{&label},
+		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
+			ssot.AlterSet(),
+			ssot.AlterUnset(),
+			ssot.AlterSetTags(),
+			ssot.AlterUnsetTags(),
+			ssot.AlterKeyword("ENABLE MANAGED ACCESS"),
+			ssot.AlterKeyword("DISABLE MANAGED ACCESS"),
+		}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter(ssot.SdkAlterWithoutIfExists()))},
+	}
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-widget",
+		NewQueryStruct("AlterWidget").
+			Alter().
+			SQL("WIDGET").
+			Name().
+			OptionalQueryStructField(
+				"Set",
+				NewQueryStruct("WidgetSet").
+					OptionalTextAssignment("LABEL", ParameterOptions().SingleQuotes()).
+					WithValidation(AtLeastOneValueSet, "Label"),
+				KeywordOptions().SQL("SET"),
+			).
+			OptionalQueryStructField(
+				"Unset",
+				NewQueryStruct("WidgetUnset").
+					OptionalSQL("LABEL").
+					WithValidation(AtLeastOneValueSet, "Label"),
+				ListOptions().NoParentheses().SQL("UNSET"),
+			).
+			OptionalSetTags().
+			OptionalUnsetTags().
+			OptionalSQL("ENABLE MANAGED ACCESS").
+			OptionalSQL("DISABLE MANAGED ACCESS").
+			WithValidation(ValidIdentifier, "name").
+			WithValidation(ExactlyOneValueSet, "Set", "Unset", "SetTags", "UnsetTags", "EnableManagedAccess", "DisableManagedAccess"),
+	)
+	requireSameOperations(t, want, got)
+}
+
+func Test_AlterOperationFromObject_renameSwap(t *testing.T) {
+	label := ssot.Attribute{Name: "label", Type: ssot.AttrString, SetSql: ssot.StringParameter(), UnsetSql: ssot.BoolKeyword()}
+	obj := ssot.Object{
+		Name:       "Widget",
+		Attributes: []ssot.Attribute{label},
+		Set:        []*ssot.Attribute{&label},
+		Unset:      []*ssot.Attribute{&label},
+		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
+			ssot.AlterRenameTo(),
+			ssot.AlterSwapWith(),
+			ssot.AlterSet(),
+			ssot.AlterUnset(),
+			ssot.AlterSetTags(),
+			ssot.AlterUnsetTags(),
+			ssot.AlterKeyword("ENABLE MANAGED ACCESS"),
+			ssot.AlterKeyword("DISABLE MANAGED ACCESS"),
+		}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter(ssot.SdkAlterWithoutIfExists()))},
+	}
+	got := NewInterface("Widgets", "Widget", "DatabaseObjectIdentifier").AlterOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "DatabaseObjectIdentifier").AlterOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-widget",
+		NewQueryStruct("AlterWidget").
+			Alter().
+			SQL("WIDGET").
+			Name().
+			RenameTo().
+			Identifier("SwapWith", InterfaceIdentifierPointerKind, IdentifierOptions().SQL("SWAP WITH")).
+			OptionalQueryStructField(
+				"Set",
+				NewQueryStruct("WidgetSet").
+					OptionalTextAssignment("LABEL", ParameterOptions().SingleQuotes()).
+					WithValidation(AtLeastOneValueSet, "Label"),
+				KeywordOptions().SQL("SET"),
+			).
+			OptionalQueryStructField(
+				"Unset",
+				NewQueryStruct("WidgetUnset").
+					OptionalSQL("LABEL").
+					WithValidation(AtLeastOneValueSet, "Label"),
+				ListOptions().NoParentheses().SQL("UNSET"),
+			).
+			OptionalSetTags().
+			OptionalUnsetTags().
+			OptionalSQL("ENABLE MANAGED ACCESS").
+			OptionalSQL("DISABLE MANAGED ACCESS").
+			WithValidation(ValidIdentifier, "name").
+			WithValidation(ExactlyOneValueSet, "RenameTo", "SwapWith", "Set", "Unset", "SetTags", "UnsetTags", "EnableManagedAccess", "DisableManagedAccess").
+			WithValidation(ValidIdentifierIfSet, "RenameTo").
+			WithValidation(ValidIdentifierIfSet, "SwapWith"),
+	)
+	requireSameOperations(t, want, got)
+}
+
+func Test_CreateOperationFromObject_beforeObject(t *testing.T) {
+	transient := ssot.Attribute{Name: "is_transient", Type: ssot.AttrBool, CreateSql: ssot.BoolKeyword(ssot.Sql("TRANSIENT"))}
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString, CreateSql: ssot.StringParameter()}
+	obj := ssot.Object{
+		Name:       "Widget",
+		Attributes: []ssot.Attribute{comment, transient},
+		Create: ssot.CreateSpec{
+			KeywordsBefore: []*ssot.Attribute{&transient},
+			Clauses:        []*ssot.Attribute{&comment},
+		},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate())},
+	}
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/create-widget",
+		NewQueryStruct("CreateWidget").
+			Create().
+			OrReplace().
+			OptionalSQL("TRANSIENT").
+			SQL("WIDGET").
+			IfNotExists().
+			Name().
+			OptionalTextAssignment("COMMENT", ParameterOptions().SingleQuotes()).
+			WithValidation(ValidIdentifier, "name").
+			WithValidation(ConflictingFields, "OrReplace", "IfNotExists"),
+	)
+	requireSameOperations(t, want, got)
+
+	require.PanicsWithValue(t, "KeywordsBefore list contains tags", func() {
+		tagged := obj
+		tagged.Create.KeywordsBefore = []*ssot.Attribute{ssot.Tags}
+		NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(tagged)
+	})
 }
 
 func Test_CreateAlterFromObject_panics(t *testing.T) {

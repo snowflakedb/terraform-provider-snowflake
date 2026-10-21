@@ -228,7 +228,6 @@ var ComputePool = ssot.Object{
 				ssot.SdkCreateAdditionalValidations(),
 			),
 			ssot.SdkAlter(
-				ssot.SdkAlterActions("RESUME", "SUSPEND", "STOP ALL"),
 				ssot.SdkAlterSetAdditionalValidations(),
 			),
 		),
@@ -251,17 +250,19 @@ var ComputePool = ssot.Object{
 		ComputePoolAttrs.AutoSuspendSecs,
 		ComputePoolAttrs.Comment,
 	},
-	Create: []*ssot.Attribute{
-		&ComputePoolAttrs.ForApplication,
-		&ComputePoolAttrs.MinNodes,
-		&ComputePoolAttrs.MaxNodes,
-		&ComputePoolAttrs.InstanceFamily,
-		&ComputePoolAttrs.AutoResume,
-		&ComputePoolAttrs.InitiallySuspended,
-		&ComputePoolAttrs.AutoSuspendSecs,
-		ssot.Tags,
-		&ComputePoolAttrs.Comment,
-		&ComputePoolAttrs.BackupInstanceFamilies,
+	Create: ssot.CreateSpec{
+		Clauses: []*ssot.Attribute{
+			&ComputePoolAttrs.ForApplication,
+			&ComputePoolAttrs.MinNodes,
+			&ComputePoolAttrs.MaxNodes,
+			&ComputePoolAttrs.InstanceFamily,
+			&ComputePoolAttrs.AutoResume,
+			&ComputePoolAttrs.InitiallySuspended,
+			&ComputePoolAttrs.AutoSuspendSecs,
+			ssot.Tags,
+			&ComputePoolAttrs.Comment,
+			&ComputePoolAttrs.BackupInstanceFamilies,
+		},
 	},
 	Set: []*ssot.Attribute{
 		&ComputePoolAttrs.MinNodes,
@@ -277,6 +278,15 @@ var ComputePool = ssot.Object{
 		&ComputePoolAttrs.BackupInstanceFamilies,
 		&ComputePoolAttrs.Comment,
 	},
+	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
+		ssot.AlterKeyword("RESUME"),
+		ssot.AlterKeyword("SUSPEND"),
+		ssot.AlterKeyword("STOP ALL"),
+		ssot.AlterSet(),
+		ssot.AlterUnset(),
+		ssot.AlterSetTags(),
+		ssot.AlterUnsetTags(),
+	}},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{
 			&ComputePoolAttrs.Name,

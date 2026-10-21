@@ -5,7 +5,13 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 )
+
+// parametersForObject is the catalog a Parameters entry spreads. Tests replace it with a short list.
+var parametersForObject = func(obj ssot.Object) []ssot.ParameterDef {
+	return ssotdefs.ParameterDefsForLevel(obj.ParameterLevel())
+}
 
 // ShowOperationFromObject adds SHOW and ShowByID from obj.SdkConfig.
 // The field chain comes from ShowPairedStructs. Clauses are emitted in a fixed order:
@@ -139,7 +145,7 @@ func dropQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 }
 
 // CreateOperationFromObject adds CREATE from obj.SdkConfig.
-// Clauses are Create, SQL, optional OR REPLACE, optional IF NOT EXISTS, Name, then obj.Create, then ValidIdentifier.
+// Clauses are Create, optional OR REPLACE, Create.KeywordsBefore, SQL, optional IF NOT EXISTS, Name, then Create.Clauses, then ValidIdentifier.
 // helperStructs are query structs the attribute clauses name, such as a list item.
 func (i *Interface) CreateOperationFromObject(obj ssot.Object, helperStructs ...IntoField) *Interface {
 	cfg := obj.SdkConfig()
@@ -150,17 +156,28 @@ func (i *Interface) CreateOperationFromObject(obj ssot.Object, helperStructs ...
 }
 
 func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
-	q := NewQueryStruct(cfg.CreateQueryStructName).Create().SQL(cfg.CreateSql)
+	q := NewQueryStruct(cfg.CreateQueryStructName).Create()
 	if !cfg.CreateWithoutOrReplace {
 		q = q.OrReplace()
 	}
+	for _, field := range obj.Create.KeywordsBefore {
+		if field != nil && field.IsTags() {
+			panic("KeywordsBefore list contains tags")
+		}
+		if field != nil && field.IsParameters() {
+			panic("KeywordsBefore list contains parameters")
+		}
+	}
+	createParams := parametersForStatement(obj, obj.Create.Clauses)
+	q = q.appendSqlSequence(obj.Create.KeywordsBefore, attributeSqlCreate).SQL(cfg.CreateSql)
 	if !cfg.CreateWithoutIfNotExists {
 		q = q.IfNotExists()
 	}
-	q = q.Name().appendSqlSequence(obj.Create, attributeSqlCreate).WithValidation(ValidIdentifier, "name")
+	q = q.Name().appendSqlSequenceParams(obj.Create.Clauses, attributeSqlCreate, createParams).WithValidation(ValidIdentifier, "name")
 	if !cfg.CreateWithoutOrReplace && !cfg.CreateWithoutIfNotExists {
 		q = q.WithValidation(ConflictingFields, "OrReplace", "IfNotExists")
 	}
+	q = q.withIdentifierParameterValidations(createParams)
 	if cfg.CreateAdditionalValidations {
 		q = q.WithAdditionalValidations()
 	}
@@ -168,8 +185,9 @@ func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryS
 }
 
 // AlterOperationFromObject adds ALTER from obj.SdkConfig.
-// Clauses are Alter, SQL, optional IF EXISTS, Name, action keywords, optional SET, optional UNSET, optional tag clauses, ValidIdentifier.
+// Clauses are Alter, SQL, optional IF EXISTS, Name, then obj.Alter in order, then ValidIdentifier.
 // AtLeastOneValueSet on SET and UNSET lists the fields those structs contain.
+// ExactlyOneValueSet follows obj.Alter.
 func (i *Interface) AlterOperationFromObject(obj ssot.Object) *Interface {
 	cfg := obj.SdkConfig()
 	if !cfg.Alter {
@@ -184,57 +202,138 @@ func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QuerySt
 		q = q.IfExists()
 	}
 	q = q.Name()
-	// TODO [next PRs]: These keywords are emitted before SET and UNSET. That order matters, and some objects place action keywords after those blocks.
-	for _, action := range cfg.AlterActions {
-		q = q.OptionalSQL(action)
-	}
-	if !cfg.AlterWithoutSet {
-		setStruct := NewQueryStruct(obj.Name+"Set").appendSqlSequence(obj.Set, attributeSqlSet)
-		setFields := queryStructFieldNames(setStruct)
-		if cfg.AlterSetAdditionalValidations {
-			setStruct = setStruct.WithAdditionalValidations()
+	seen := make(map[ssot.AlterClauseKind]struct{})
+	for _, clause := range obj.Alter.Clauses {
+		switch clause.Kind {
+		case ssot.AlterClauseKeyword:
+			if clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: ALTER keyword is empty", obj.Name))
+			}
+			q = q.OptionalSQL(clause.SQL)
+		case ssot.AlterClauseRenameTo:
+			if _, dup := seen[clause.Kind]; dup {
+				panic(fmt.Sprintf("object %q: duplicate ALTER rename_to", obj.Name))
+			}
+			seen[clause.Kind] = struct{}{}
+			q = q.RenameTo()
+		case ssot.AlterClauseSwapWith:
+			if _, dup := seen[clause.Kind]; dup {
+				panic(fmt.Sprintf("object %q: duplicate ALTER swap_with", obj.Name))
+			}
+			seen[clause.Kind] = struct{}{}
+			q = q.Identifier("SwapWith", InterfaceIdentifierPointerKind, IdentifierOptions().SQL("SWAP WITH"))
+		case ssot.AlterClauseSet:
+			if _, dup := seen[clause.Kind]; dup {
+				panic(fmt.Sprintf("object %q: duplicate ALTER set", obj.Name))
+			}
+			seen[clause.Kind] = struct{}{}
+			q = appendAlterSet(q, obj, cfg)
+		case ssot.AlterClauseUnset:
+			if _, dup := seen[clause.Kind]; dup {
+				panic(fmt.Sprintf("object %q: duplicate ALTER unset", obj.Name))
+			}
+			seen[clause.Kind] = struct{}{}
+			q = appendAlterUnset(q, obj)
+		case ssot.AlterClauseSetTags:
+			if _, dup := seen[clause.Kind]; dup {
+				panic(fmt.Sprintf("object %q: duplicate ALTER set_tags", obj.Name))
+			}
+			seen[clause.Kind] = struct{}{}
+			q = q.OptionalSetTags()
+		case ssot.AlterClauseUnsetTags:
+			if _, dup := seen[clause.Kind]; dup {
+				panic(fmt.Sprintf("object %q: duplicate ALTER unset_tags", obj.Name))
+			}
+			seen[clause.Kind] = struct{}{}
+			q = q.OptionalUnsetTags()
+		default:
+			panic(fmt.Sprintf("object %q: ALTER clause has kind %q", obj.Name, clause.Kind))
 		}
-		setStruct = setStruct.WithValidation(AtLeastOneValueSet, setFields...)
-		q = q.OptionalQueryStructField("Set", setStruct, KeywordOptions().SQL("SET"))
-	}
-	if !cfg.AlterWithoutUnset {
-		unsetStruct := NewQueryStruct(obj.Name+"Unset").appendSqlSequence(obj.Unset, attributeSqlUnset)
-		unsetStruct = unsetStruct.WithValidation(AtLeastOneValueSet, queryStructFieldNames(unsetStruct)...)
-		q = q.OptionalQueryStructField("Unset", unsetStruct, ListOptions().NoParentheses().SQL("UNSET"))
-	}
-	if !cfg.AlterWithoutSetTags {
-		q = q.OptionalSetTags()
-	}
-	if !cfg.AlterWithoutUnsetTags {
-		q = q.OptionalUnsetTags()
 	}
 	q = q.WithValidation(ValidIdentifier, "name")
 	if !cfg.AlterWithoutExactlyOneValueSet {
-		q = q.WithValidation(ExactlyOneValueSet, alterExactlyOneFields(cfg)...)
+		q = q.WithValidation(ExactlyOneValueSet, alterExactlyOneFields(obj)...)
 	}
+	q = q.withAlterIdentifierValidations(obj)
 	return q
+}
+
+func appendAlterSet(q *QueryStruct, obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
+	setParams := parametersForStatement(obj, obj.Set)
+	setStruct := NewQueryStruct(obj.Name+"Set").appendSqlSequenceParams(obj.Set, attributeSqlSet, setParams)
+	setStruct = setStruct.withIdentifierParameterValidations(setParams)
+	if cfg.AlterSetAdditionalValidations {
+		setStruct = setStruct.WithAdditionalValidations()
+	}
+	setStruct = setStruct.WithValidation(AtLeastOneValueSet, queryStructFieldNames(setStruct)...)
+	var setOptions FieldTransformer = KeywordOptions().SQL("SET")
+	if cfg.AlterSetList {
+		setOptions = ListOptions().NoParentheses().SQL("SET")
+	}
+	return q.OptionalQueryStructField("Set", setStruct, setOptions)
+}
+
+func appendAlterUnset(q *QueryStruct, obj ssot.Object) *QueryStruct {
+	unsetParams := parametersForStatement(obj, obj.Unset)
+	unsetStruct := NewQueryStruct(obj.Name+"Unset").appendSqlSequenceParams(obj.Unset, attributeSqlUnset, unsetParams)
+	unsetStruct = unsetStruct.WithValidation(AtLeastOneValueSet, queryStructFieldNames(unsetStruct)...)
+	return q.OptionalQueryStructField("Unset", unsetStruct, ListOptions().NoParentheses().SQL("UNSET"))
+}
+
+func parametersForStatement(obj ssot.Object, list []*ssot.Attribute) []ssot.ParameterDef {
+	for _, field := range list {
+		if field != nil && field.IsParameters() {
+			return parametersForObject(obj)
+		}
+	}
+	return nil
+}
+
+func (v *QueryStruct) withIdentifierParameterValidations(params []ssot.ParameterDef) *QueryStruct {
+	for _, p := range params {
+		if _, err := ToObjectIdentifierKind(p.Kind); err != nil {
+			continue
+		}
+		v = v.WithValidation(ValidIdentifierIfSet, sqlToFieldName(p.SqlName, true))
+	}
+	return v
+}
+
+func (v *QueryStruct) withAlterIdentifierValidations(obj ssot.Object) *QueryStruct {
+	for _, clause := range obj.Alter.Clauses {
+		switch clause.Kind {
+		case ssot.AlterClauseRenameTo:
+			v = v.WithValidation(ValidIdentifierIfSet, "RenameTo")
+		case ssot.AlterClauseSwapWith:
+			v = v.WithValidation(ValidIdentifierIfSet, "SwapWith")
+		}
+	}
+	return v
 }
 
 func queryStructFieldNames(q *QueryStruct) []string {
 	return collections.Map(q.fields, func(field *Field) string { return field.Name })
 }
 
-func alterExactlyOneFields(cfg ssot.SdkGenerator) []string {
+func alterExactlyOneFields(obj ssot.Object) []string {
 	var fields []string
-	for _, action := range cfg.AlterActions {
-		fields = append(fields, sqlToFieldName(action, true))
-	}
-	if !cfg.AlterWithoutSet {
-		fields = append(fields, "Set")
-	}
-	if !cfg.AlterWithoutUnset {
-		fields = append(fields, "Unset")
-	}
-	if !cfg.AlterWithoutSetTags {
-		fields = append(fields, "SetTags")
-	}
-	if !cfg.AlterWithoutUnsetTags {
-		fields = append(fields, "UnsetTags")
+	for _, clause := range obj.Alter.Clauses {
+		switch clause.Kind {
+		case ssot.AlterClauseKeyword:
+			fields = append(fields, sqlToFieldName(clause.SQL, true))
+		case ssot.AlterClauseRenameTo:
+			fields = append(fields, "RenameTo")
+		case ssot.AlterClauseSwapWith:
+			fields = append(fields, "SwapWith")
+		case ssot.AlterClauseSet:
+			fields = append(fields, "Set")
+		case ssot.AlterClauseUnset:
+			fields = append(fields, "Unset")
+		case ssot.AlterClauseSetTags:
+			fields = append(fields, "SetTags")
+		case ssot.AlterClauseUnsetTags:
+			fields = append(fields, "UnsetTags")
+		}
 	}
 	return fields
 }

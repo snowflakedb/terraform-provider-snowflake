@@ -110,7 +110,7 @@ func Test_SdkConfig_createAlterDefaults(t *testing.T) {
 		Name: "ComputePool",
 		Generators: []GeneratorOption{WithSdk(
 			SdkCreate(SdkCreateWithoutOrReplace(), SdkCreateAdditionalValidations()),
-			SdkAlter(SdkAlterActions("RESUME")),
+			SdkAlter(),
 		)},
 	}
 	cfg := obj.SdkConfig()
@@ -123,7 +123,6 @@ func Test_SdkConfig_createAlterDefaults(t *testing.T) {
 	require.Equal(t, "https://docs.snowflake.com/en/sql-reference/sql/alter-compute-pool", cfg.AlterDoc)
 	require.Equal(t, "COMPUTE POOL", cfg.AlterSql)
 	require.Equal(t, "AlterComputePool", cfg.AlterQueryStructName)
-	require.Equal(t, []string{"RESUME"}, cfg.AlterActions)
 
 	overridden := Object{
 		Name: "ComputePool",
