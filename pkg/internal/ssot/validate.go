@@ -80,8 +80,8 @@ func validateSchemaStateUpgraders(obj Object) {
 func validateCreateSpec(obj Object, attrs map[string]struct{}) {
 	seen := make(map[string]struct{})
 	clause := func(attr Attribute) SqlClause { return attr.CreateSql }
-	walkSqlSequence(obj, "KeywordsBefore", obj.Create.KeywordsBefore, attrs, clause, seen, false)
-	walkSqlSequence(obj, "CREATE", obj.Create.Clauses, attrs, clause, seen, true)
+	walkSqlSequence(obj, "KeywordsBefore", obj.Create.KeywordsBefore, attrs, seen, false)
+	walkSqlSequence(obj, "CREATE", obj.Create.Clauses, attrs, seen, true)
 	requirePresentClausesListed(obj, "CREATE", clause, seen)
 }
 
@@ -106,7 +106,7 @@ func validateAlterSpec(obj Object) {
 
 func validateSqlSequence(obj Object, statement string, list []*Attribute, attrs map[string]struct{}, clause func(Attribute) SqlClause) {
 	seen := make(map[string]struct{})
-	walkSqlSequence(obj, statement, list, attrs, clause, seen, statement == "CREATE")
+	walkSqlSequence(obj, statement, list, attrs, seen, statement == "CREATE")
 	requirePresentClausesListed(obj, statement, clause, seen)
 }
 
@@ -121,7 +121,7 @@ func requirePresentClausesListed(obj Object, statement string, clause func(Attri
 	}
 }
 
-func walkSqlSequence(obj Object, statement string, list []*Attribute, attrs map[string]struct{}, clause func(Attribute) SqlClause, seen map[string]struct{}, allowTags bool) {
+func walkSqlSequence(obj Object, statement string, list []*Attribute, attrs map[string]struct{}, seen map[string]struct{}, allowTags bool) {
 	for _, field := range list {
 		if field == nil {
 			panic(fmt.Sprintf("object %q: nil %s entry", obj.Name, statement))
@@ -150,16 +150,34 @@ func walkSqlSequence(obj Object, statement string, list []*Attribute, attrs map[
 			panic(fmt.Sprintf("object %q: duplicate %s field %q", obj.Name, statement, name))
 		}
 		seen[name] = struct{}{}
-		if !clause(*field).Present {
-			panic(fmt.Sprintf("object %q: attribute %q has no %s clause", obj.Name, name, statement))
-		}
+		validateSqlClause(obj, *field, statement, field.EffectiveSqlClause(clauseUse(statement)))
+	}
+}
+
+func clauseUse(statement string) ClauseUse {
+	switch statement {
+	case "CREATE", "KeywordsBefore":
+		return ClauseCreate
+	case "SET":
+		return ClauseSet
+	case "UNSET":
+		return ClauseUnset
+	default:
+		panic(fmt.Sprintf("unknown sql statement %q", statement))
 	}
 }
 
 func validateSqlClauses(obj Object, attr Attribute) {
-	validateSqlClause(obj, attr, "CREATE", attr.CreateSql)
-	validateSqlClause(obj, attr, "SET", attr.SetSql)
-	validateSqlClause(obj, attr, "UNSET", attr.UnsetSql)
+	validateExplicitSqlClause(obj, attr, "CREATE", attr.CreateSql)
+	validateExplicitSqlClause(obj, attr, "SET", attr.SetSql)
+	validateExplicitSqlClause(obj, attr, "UNSET", attr.UnsetSql)
+}
+
+func validateExplicitSqlClause(obj Object, attr Attribute, statement string, clause SqlClause) {
+	if !clause.Present || clause.fromType {
+		return
+	}
+	validateSqlClause(obj, attr, statement, clause)
 }
 
 func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlClause) {

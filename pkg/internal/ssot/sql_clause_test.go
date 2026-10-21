@@ -64,6 +64,28 @@ func Test_SqlClause_identifierKeyword(t *testing.T) {
 	require.Equal(t, "FOR APPLICATION", clause.SQLText(attr))
 }
 
+func Test_EffectiveSqlClause_defaults(t *testing.T) {
+	count := Attribute{Name: "count", Type: AttrInt, Required: true}
+	require.Equal(t, IntParameter(), count.EffectiveSqlClause(ClauseCreate))
+	require.Equal(t, IntParameter(), count.EffectiveSqlClause(ClauseSet))
+	require.Equal(t, BoolKeyword(), count.EffectiveSqlClause(ClauseUnset))
+
+	label := Attribute{Name: "label", Type: AttrString}
+	require.Equal(t, StringParameter(), label.EffectiveSqlClause(ClauseCreate))
+	label.CreateSql = Clause(NoQuotes())
+	require.Equal(t, StringParameter(NoQuotes()), label.EffectiveSqlClause(ClauseCreate))
+
+	family := Attribute{Name: "family", Type: AttrEnum}
+	require.Equal(t, EnumParameter(), family.EffectiveSqlClause(ClauseCreate))
+
+	flag := Attribute{Name: "flag", Type: AttrBool, CreateSql: BoolKeyword(Sql("TRANSIENT"))}
+	require.Equal(t, BoolKeyword(Sql("TRANSIENT")), flag.EffectiveSqlClause(ClauseCreate))
+
+	limit := Attribute{Name: "limit", Type: AttrInt, UnsetSql: IntParameter()}
+	require.Equal(t, IntParameter(), limit.EffectiveSqlClause(ClauseUnset))
+	require.False(t, count.UnsetSql.Present)
+}
+
 func Test_SqlClause_optionOverridesDefault(t *testing.T) {
 	clause := StringParameter(NoQuotes())
 

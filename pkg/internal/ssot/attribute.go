@@ -79,7 +79,7 @@ func (a *Attribute) IsParameters() bool {
 	return a != nil && a.Parameters
 }
 
-func (a Attribute) OutputKey() string {
+func (a *Attribute) OutputKey() string {
 	if a.ShowName != "" {
 		return a.ShowName
 	}
@@ -88,7 +88,7 @@ func (a Attribute) OutputKey() string {
 
 // ConstructorGet is the d.Get expression for a required attribute with no CreateMapping.
 // The bool is false when the attribute is not a constructor argument.
-func (a Attribute) ConstructorGet() (string, bool) {
+func (a *Attribute) ConstructorGet() (string, bool) {
 	if a.CreateMapping != nil || !a.Required {
 		return "", false
 	}

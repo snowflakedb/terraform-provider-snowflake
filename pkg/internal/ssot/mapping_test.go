@@ -25,26 +25,32 @@ func Test_CreateCall(t *testing.T) {
 }
 
 func Test_ConstructorGet(t *testing.T) {
-	get, ok := Attribute{Name: "min_nodes", Type: AttrInt, Required: true}.ConstructorGet()
+	minNodes := Attribute{Name: "min_nodes", Type: AttrInt, Required: true}
+	get, ok := minNodes.ConstructorGet()
 	require.True(t, ok)
 	require.Equal(t, `d.Get("min_nodes").(int)`, get)
 
 	family := NewEnum("ComputePoolInstanceFamily", "ComputePoolInstanceFamilies", "CPU_X64_XS")
-	get, ok = Attribute{Name: "instance_family", Type: AttrEnum, Required: true, Enum: family}.ConstructorGet()
+	instanceFamily := Attribute{Name: "instance_family", Type: AttrEnum, Required: true, Enum: family}
+	get, ok = instanceFamily.ConstructorGet()
 	require.True(t, ok)
 	require.Equal(t, `d.Get("instance_family").(string)`, get)
 
-	_, ok = Attribute{Name: "comment", Type: AttrString}.ConstructorGet()
+	comment := Attribute{Name: "comment", Type: AttrString}
+	_, ok = comment.ConstructorGet()
 	require.False(t, ok)
 
-	_, ok = Attribute{Name: "comment", Type: AttrString, CreateMapping: StringAttributeCreateBuilder}.ConstructorGet()
+	mapped := Attribute{Name: "comment", Type: AttrString, CreateMapping: StringAttributeCreateBuilder}
+	_, ok = mapped.ConstructorGet()
 	require.False(t, ok)
 
 	require.PanicsWithValue(t, `required attribute "items" has no CreateMapping`, func() {
-		Attribute{Name: "items", Type: AttrList, Required: true}.ConstructorGet()
+		items := Attribute{Name: "items", Type: AttrList, Required: true}
+		items.ConstructorGet()
 	})
 	require.PanicsWithValue(t, `constructor attribute "instance_family" has no Enum`, func() {
-		Attribute{Name: "instance_family", Type: AttrEnum, Required: true}.ConstructorGet()
+		missingEnum := Attribute{Name: "instance_family", Type: AttrEnum, Required: true}
+		missingEnum.ConstructorGet()
 	})
 }
 

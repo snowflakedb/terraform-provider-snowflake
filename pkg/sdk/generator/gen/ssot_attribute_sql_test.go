@@ -180,3 +180,23 @@ func sqlClauseSequences() (create, set, unset []*ssot.Attribute) {
 	unset = []*ssot.Attribute{&limit, &auto, &comment, &status, &items}
 	return create, set, unset
 }
+
+func Test_appendSqlSequence_typeDefaults(t *testing.T) {
+	count := ssot.Attribute{Name: "count", Type: ssot.AttrInt, Required: true}
+	label := ssot.Attribute{Name: "label", Type: ssot.AttrString, CreateSql: ssot.Clause(ssot.NoQuotes())}
+	flag := ssot.Attribute{Name: "flag", Type: ssot.AttrBool, CreateSql: ssot.BoolKeyword(ssot.Sql("TRANSIENT"))}
+	limit := ssot.Attribute{Name: "limit", Type: ssot.AttrInt, UnsetSql: ssot.IntParameter()}
+
+	got := NewQueryStruct("clauses").appendSqlSequence([]*ssot.Attribute{&count, &label, &flag}, attributeSqlCreate)
+	want := NewQueryStruct("clauses").
+		NumberAssignment("COUNT", ParameterOptions().Required()).
+		OptionalTextAssignment("LABEL", ParameterOptions().NoQuotes()).
+		OptionalSQL("TRANSIENT")
+	require.Equal(t, want.fields, got.fields)
+
+	got = NewQueryStruct("clauses").appendSqlSequence([]*ssot.Attribute{&count, &limit}, attributeSqlUnset)
+	want = NewQueryStruct("clauses").
+		OptionalSQL("COUNT").
+		OptionalNumberAssignment("LIMIT", ParameterOptions())
+	require.Equal(t, want.fields, got.fields)
+}

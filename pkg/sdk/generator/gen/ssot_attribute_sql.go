@@ -75,11 +75,11 @@ func statementName(statement attributeSqlStatement) string {
 func attributeClause(attr ssot.Attribute, statement attributeSqlStatement) ssot.SqlClause {
 	switch statement {
 	case attributeSqlCreate:
-		return attr.CreateSql
+		return attr.EffectiveSqlClause(ssot.ClauseCreate)
 	case attributeSqlSet:
-		return attr.SetSql
+		return attr.EffectiveSqlClause(ssot.ClauseSet)
 	case attributeSqlUnset:
-		return attr.UnsetSql
+		return attr.EffectiveSqlClause(ssot.ClauseUnset)
 	default:
 		panic(fmt.Sprintf("attribute %q: unknown sql statement", attr.Name))
 	}

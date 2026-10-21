@@ -1,6 +1,9 @@
 package ssot
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 // SqlKind is the SQL clause shape: parameter, keyword, or identifier.
 type SqlKind string
@@ -34,14 +37,25 @@ const (
 	SqlEqualsNo SqlEquals = "no_equals"
 )
 
+// ClauseUse selects CreateSql, SetSql, or UnsetSql.
+type ClauseUse int
+
+const (
+	ClauseCreate ClauseUse = iota
+	ClauseSet
+	ClauseUnset
+)
+
 // SqlClause is one attribute's SQL in CREATE, SET, or UNSET.
-// A zero SqlClause is not present in that statement.
-// TODO [next PRs]: Default the create and set clause from the attribute type.
-// An enum uses EnumParameter, an int uses IntParameter, and the same for bool, string, list, and identifier.
-// Functional options override that default.
+// A zero SqlClause in that statement's list uses the type default.
+// Create and set default from the attribute type. Unset defaults to a bool keyword.
+// An explicit constructor replaces that default. Clause applies functional options on top of it.
+// A zero SqlClause outside the list is absent. Leave an attribute out of Unset to omit unset.
+// Set UnsetSql to a parameter clause to unset by setting a value.
 type SqlClause struct {
-	Present bool
-	Kind    SqlKind
+	Present  bool
+	fromType bool
+	Kind     SqlKind
 	// SQL is the clause text. Empty means the uppercase attribute Name.
 	SQL         string
 	Quotes      SqlQuotes
@@ -112,7 +126,6 @@ func ListParameter(itemStruct string, opts ...SqlClauseOption) SqlClause {
 }
 
 // BoolKeyword is a bare keyword.
-// TODO [next PRs]: Default unset to a bool keyword. Overrides leave the attribute out of unset, or unset it by setting a value.
 func BoolKeyword(opts ...SqlClauseOption) SqlClause {
 	return newClause(SqlKindKeyword, nil, opts)
 }
@@ -123,6 +136,91 @@ func IdentifierKeyword(idType string, opts ...SqlClauseOption) SqlClause {
 	return newClause(SqlKindIdentifier, func(c *SqlClause) {
 		c.IdType = idType
 	}, opts)
+}
+
+// Clause is the type default plus options.
+// On unset the default is a bool keyword, not the create and set parameter.
+func Clause(opts ...SqlClauseOption) SqlClause {
+	c := SqlClause{Present: true, fromType: true}
+	for _, opt := range opts {
+		opt(&c)
+	}
+	return c
+}
+
+// EffectiveSqlClause is the clause used for one statement list entry.
+// An explicit constructor wins. Clause overlays its options on the type default.
+// A zero clause uses that default. Call it for attributes that are in the list.
+func (a *Attribute) EffectiveSqlClause(use ClauseUse) SqlClause {
+	explicit := a.rawSqlClause(use)
+	if explicit.Present && !explicit.fromType {
+		return explicit
+	}
+	base := a.defaultSqlClause(use)
+	if !explicit.fromType {
+		return base
+	}
+	return overlaySqlClause(base, explicit)
+}
+
+func (a *Attribute) rawSqlClause(use ClauseUse) SqlClause {
+	switch use {
+	case ClauseCreate:
+		return a.CreateSql
+	case ClauseSet:
+		return a.SetSql
+	case ClauseUnset:
+		return a.UnsetSql
+	default:
+		panic(fmt.Sprintf("attribute %q: unknown sql clause", a.Name))
+	}
+}
+
+func (a *Attribute) defaultSqlClause(use ClauseUse) SqlClause {
+	if use == ClauseUnset {
+		return BoolKeyword()
+	}
+	switch a.Type {
+	case AttrInt:
+		return IntParameter()
+	case AttrBool:
+		return BoolParameter()
+	case AttrString:
+		return StringParameter()
+	case AttrEnum:
+		return EnumParameter()
+	case AttrList:
+		return ListParameter("")
+	case AttrIdentifier:
+		return IdentifierKeyword("")
+	default:
+		panic(fmt.Sprintf("attribute %q: no default SQL clause for type %q", a.Name, a.Type))
+	}
+}
+
+func overlaySqlClause(base, over SqlClause) SqlClause {
+	if over.SQL != "" {
+		base.SQL = over.SQL
+	}
+	if over.Quotes != "" {
+		base.Quotes = over.Quotes
+	}
+	if over.Parentheses != "" {
+		base.Parentheses = over.Parentheses
+	}
+	if over.Equals != "" {
+		base.Equals = over.Equals
+	}
+	if over.Required != nil {
+		base.Required = over.Required
+	}
+	if over.ItemStruct != "" {
+		base.ItemStruct = over.ItemStruct
+	}
+	if over.IdType != "" {
+		base.IdType = over.IdType
+	}
+	return base
 }
 
 func Sql(text string) SqlClauseOption {

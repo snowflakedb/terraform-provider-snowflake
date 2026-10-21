@@ -178,6 +178,27 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 		})
 	})
 
+	plain := Attribute{Name: "count", Type: AttrInt, Required: true}
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name:       "Widget",
+			Attributes: []Attribute{plain},
+			Create:     CreateSpec{Clauses: []*Attribute{&plain}},
+			Set:        []*Attribute{&plain},
+			Unset:      []*Attribute{&plain},
+		})
+	})
+	byValue := plain
+	byValue.UnsetSql = IntParameter()
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name:       "Widget",
+			Attributes: []Attribute{byValue},
+			Create:     CreateSpec{Clauses: []*Attribute{&byValue}},
+			Unset:      []*Attribute{&byValue},
+		})
+	})
+
 	transient := Attribute{Name: "is_transient", Type: AttrBool, CreateSql: BoolKeyword(Sql("TRANSIENT"))}
 	require.NotPanics(t, func() {
 		ValidateObject(Object{

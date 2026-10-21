@@ -122,7 +122,9 @@ enable nothing.
   the parameter catalog for that object's level. CREATE and SET use `WithParameters`. UNSET uses `WithParametersUnset`.
   An identifier parameter gets `ValidIdentifierIfSet` on CREATE and SET. Comment stays an attribute clause beside that
   entry. Clause shape is `CreateSql`, `SetSql`,
-  and `UnsetSql` on [Attribute](attribute.go). When `SdkCreate()` or `SdkAlter()` is off, that call stays in the def.
+  and `UnsetSql` on [Attribute](attribute.go). A zero create or set clause uses the attribute type. `Clause` applies
+  functional options on top of that default. A zero unset clause is a bool keyword. Leave the attribute out of `Unset`
+  to omit it, or set `UnsetSql` to a parameter clause to unset by setting a value. When `SdkCreate()` or `SdkAlter()` is off, that call stays in the def.
 
 Fill `Show` / `Describe` first; enable the matching SHOW or DESCRIBE setting when the lists are ready. Enabling SHOW or
 DESCRIBE schema generation, show output assertions, Snowflake object assertions, or SDK paired structs without `Columns`
@@ -213,7 +215,7 @@ Until a piece has moved, do not assume it is already in ssot:
   ShowByID filtering, and `DescriptionMappingKind` are part of it. An object with the setting off keeps the handwritten
   call. When `SdkDrop()` is on, that Drop method comes from the option. An object with the setting off keeps the
   handwritten call. When `SdkCreate()` or `SdkAlter()` is on, that Create or Alter method comes from the option. An
-  object with the setting off keeps the handwritten call. Clause shape is `CreateSql`, `SetSql`, and `UnsetSql`
+  object with the setting off keeps the handwritten call. A zero create or set clause uses the attribute type. A zero unset clause is a bool keyword. Clause shape is `CreateSql`, `SetSql`, and `UnsetSql`
   ([Attribute](attribute.go)). `Create` is a [`CreateSpec`](object.go). `Set` and `Unset` are the statement order. A
   `Parameters` entry spreads the catalog on that statement. `Alter` is the order of the ALTER blocks after the name.
   Every other operation stays in the SDK def. They are not
@@ -235,8 +237,6 @@ the enum type.
 #### Limitations
 
 - A list clause takes the item query struct name as a string. The item struct stays in the SDK def.
-- Create and set clauses are chosen by constructor. The attribute type does not pick one.
-- Unset is written per attribute. It is not a default bool keyword, with overrides to leave the field out or to unset by setting a value.
 
 #### Why Show and Describe columns are explicit
 
