@@ -184,7 +184,7 @@ var Warehouse = ssot.Object{
 		ssot.WithShowOutputSchema(ssot.ExtCall()),
 		ssot.WithIdentitySchema(ssot.ExtCall()),
 		ssot.WithHierarchyRename(ssot.ExtCall()),
-		ssot.WithSchemaVersion(ssot.ExtCall()),
+		ssot.WithStateUpgraders(ssot.Generated()),
 		ssot.WithApplyParametersCreate(ssot.Generated()),
 		ssot.WithShowParametersInSdk(ssot.Generated()),
 		ssot.WithParametersDetailsFromRaw(ssot.Generated()),
@@ -195,6 +195,10 @@ var Warehouse = ssot.Object{
 		ssot.WithParametersOutputSchema(ssot.Generated()),
 		ssot.WithParametersFieldNames(ssot.Generated()),
 		ssot.WithParametersCustomDiff(ssot.Generated()),
+	},
+	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
+		"v092WarehouseSizeStateUpgrader",
+		"v2_6_0_WarehouseResourceConstraintUpgrader",
 	},
 	Attributes: []ssot.Attribute{
 		WarehouseAttrs.WarehouseType,

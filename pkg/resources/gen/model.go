@@ -22,6 +22,7 @@ type ResourceModel struct {
 	AttributesModification              bool
 	ObjectType                          string
 	Hooks                               ssot.ResourceHooks
+	SchemaStateUpgraders                []ssot.StateUpgraderFunc
 	*genhelpers.PreambleModel
 }
 
@@ -87,6 +88,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		AttributesModification:              input.AttributesModification,
 		ObjectType:                          input.ObjectType(),
 		Hooks:                               hooks,
+		SchemaStateUpgraders:                input.SchemaStateUpgraders,
 		PreambleModel:                       preamble,
 	}
 }

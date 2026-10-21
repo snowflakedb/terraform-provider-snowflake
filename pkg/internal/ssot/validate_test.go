@@ -97,6 +97,71 @@ func Test_ValidateObject_createOnlyMustBeOptionalBool(t *testing.T) {
 	})
 }
 
+func Test_ValidateObject_schemaStateUpgraders(t *testing.T) {
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			SchemaStateUpgraders: []StateUpgraderFunc{
+				"v092WidgetStateUpgrader",
+				"v2_6_0_WidgetStateUpgrader",
+			},
+			ResourceHooks: []ResourceHookOption{
+				WithStateUpgraders(Generated()),
+			},
+		})
+	})
+}
+
+func Test_ValidateObject_schemaStateUpgradersEmptyEntry(t *testing.T) {
+	require.PanicsWithValue(t, `object "Widget": SchemaStateUpgraders entry is empty`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			SchemaStateUpgraders: []StateUpgraderFunc{
+				"",
+			},
+			ResourceHooks: []ResourceHookOption{
+				WithStateUpgraders(Generated()),
+			},
+		})
+	})
+}
+
+func Test_ValidateObject_schemaStateUpgradersNotAFunctionName(t *testing.T) {
+	require.PanicsWithValue(t, `object "Widget": SchemaStateUpgraders entry "not a func" is not a function name`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			SchemaStateUpgraders: []StateUpgraderFunc{
+				"not a func",
+			},
+			ResourceHooks: []ResourceHookOption{
+				WithStateUpgraders(Generated()),
+			},
+		})
+	})
+}
+
+func Test_ValidateObject_schemaStateUpgradersRequireGenerated(t *testing.T) {
+	require.PanicsWithValue(t, `object "Widget": SchemaStateUpgraders require WithStateUpgraders(Generated())`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			SchemaStateUpgraders: []StateUpgraderFunc{
+				"v092WidgetStateUpgrader",
+			},
+		})
+	})
+}
+
+func Test_ValidateObject_stateUpgradersGenerationNeedsFunctions(t *testing.T) {
+	require.PanicsWithValue(t, `object "Widget": WithStateUpgraders(Generated()) needs upgrade functions`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			ResourceHooks: []ResourceHookOption{
+				WithStateUpgraders(Generated()),
+			},
+		})
+	})
+}
+
 func Test_ValidateObject_sqlClause(t *testing.T) {
 	minNodes := Attribute{
 		Name:      "min_nodes",

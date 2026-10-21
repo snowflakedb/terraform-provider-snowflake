@@ -127,11 +127,14 @@ var AuthenticationPolicy = ssot.Object{
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 		ssot.WithHandleExternalChangesInDescribe(ssot.ExtCall()),
 		ssot.WithHierarchyRename(ssot.ExtCall()),
-		ssot.WithSchemaVersion(ssot.ExtCall()),
+		ssot.WithStateUpgraders(ssot.Generated()),
 		// database and schema are ForceNew. The identity template does not emit that yet.
 		ssot.WithIdentitySchema(ssot.ExtCall()),
 		// The describe elem schema is DescribeAuthenticationPolicyDescribeDetailsSchema.
 		ssot.WithDescribeOutputSchema(ssot.ExtCall()),
+	},
+	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
+		"v2_9_0_AuthenticationPolicyStateUpgrader",
 	},
 	Attributes: []ssot.Attribute{
 		AuthenticationPolicyAttrs.AuthenticationMethods,

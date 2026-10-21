@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -24,10 +25,17 @@ func ExternalVolume() *tfschema.Resource {
 		DeleteContext: externalVolumeDeleteExt,
 		Importer:      externalVolumeImporterExt,
 
-		CustomizeDiff:  externalVolumeCustomizeDiffExt,
-		Timeouts:       defaultTimeouts,
-		SchemaVersion:  externalVolumeSchemaVersionExt,
-		StateUpgraders: externalVolumeStateUpgradersExt,
+		CustomizeDiff: externalVolumeCustomizeDiffExt,
+		Timeouts:      defaultTimeouts,
+		SchemaVersion: 1,
+		// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
+		StateUpgraders: []tfschema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_14_0_ExternalVolumeStateUpgrader,
+			},
+		},
 	}
 }
 

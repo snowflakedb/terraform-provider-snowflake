@@ -52,6 +52,9 @@ var ExternalVolumeObject = ssot.Object{
 		ssot.WithApplyCreateOptionals(ssot.Generated()),
 		ssot.WithDescribeOutputSet(ssot.Omitted()),
 		ssot.WithSetDescribeOutput(ssot.ExtCall()),
-		ssot.WithSchemaVersion(ssot.ExtCall()),
+		ssot.WithStateUpgraders(ssot.Generated()),
+	},
+	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
+		"v2_14_0_ExternalVolumeStateUpgrader",
 	},
 }

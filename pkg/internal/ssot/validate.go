@@ -1,6 +1,9 @@
 package ssot
 
-import "fmt"
+import (
+	"fmt"
+	"go/token"
+)
 
 // TODO [next PRs]: replace panics with errors and handle them higher up;
 // genhelpers does not yet have a uniform way to surface generator validation failures.
@@ -48,6 +51,26 @@ func ValidateObject(obj Object) {
 	}
 	validateColumnList(obj, "SHOW", obj.Show.Columns, attrs)
 	validateColumnList(obj, "DESCRIBE", obj.Describe.Columns, attrs)
+	validateSchemaStateUpgraders(obj)
+}
+
+func validateSchemaStateUpgraders(obj Object) {
+	hooks := DefaultResourceExtHooks(obj.ResourceHooks...)
+	for _, upgrade := range obj.SchemaStateUpgraders {
+		name := string(upgrade)
+		if name == "" {
+			panic(fmt.Sprintf("object %q: SchemaStateUpgraders entry is empty", obj.Name))
+		}
+		if !token.IsIdentifier(name) || token.IsKeyword(name) {
+			panic(fmt.Sprintf("object %q: SchemaStateUpgraders entry %q is not a function name", obj.Name, name))
+		}
+	}
+	if len(obj.SchemaStateUpgraders) > 0 && !hooks.StateUpgraders.Generate {
+		panic(fmt.Sprintf("object %q: SchemaStateUpgraders require WithStateUpgraders(Generated())", obj.Name))
+	}
+	if hooks.StateUpgraders.Generate && len(obj.SchemaStateUpgraders) == 0 {
+		panic(fmt.Sprintf("object %q: WithStateUpgraders(Generated()) needs upgrade functions", obj.Name))
+	}
 }
 
 func validateSqlSequence(obj Object, statement string, list []*Attribute, attrs map[string]struct{}, clause func(Attribute) SqlClause) {

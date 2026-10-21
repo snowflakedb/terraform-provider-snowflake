@@ -118,7 +118,7 @@ var Schema = ssot.Object{
 		ssot.WithBeforeAlter(ssot.ExtCall()),
 		ssot.WithDescribeOutputSet(ssot.Omitted()),
 		ssot.WithSetDescribeOutput(ssot.ExtCall()),
-		ssot.WithSchemaVersion(ssot.ExtCall()),
+		ssot.WithStateUpgraders(ssot.Generated()),
 		ssot.WithApplyParametersCreate(ssot.Generated()),
 		ssot.WithShowParametersInSdk(ssot.Generated()),
 		ssot.WithParametersDetailsFromRaw(ssot.Generated()),
@@ -130,5 +130,9 @@ var Schema = ssot.Object{
 		ssot.WithParametersFieldNames(ssot.Generated()),
 		ssot.WithParametersCustomDiff(ssot.Generated()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
+	},
+	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
+		"v093SchemaStateUpgrader",
+		"migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName",
 	},
 }

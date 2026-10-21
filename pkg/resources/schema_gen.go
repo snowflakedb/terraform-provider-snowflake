@@ -11,6 +11,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -26,10 +27,22 @@ func Schema() *tfschema.Resource {
 		DeleteContext: TrackingDeleteWrapper(resources.Schema, DeleteSchema),
 		Importer:      schemaImporterExt,
 
-		CustomizeDiff:  schemaCustomizeDiffExt,
-		Timeouts:       defaultTimeouts,
-		SchemaVersion:  schemaSchemaVersionExt,
-		StateUpgraders: schemaStateUpgradersExt,
+		CustomizeDiff: schemaCustomizeDiffExt,
+		Timeouts:      defaultTimeouts,
+		SchemaVersion: 2,
+		// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
+		StateUpgraders: []tfschema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v093SchemaStateUpgrader,
+			},
+			{
+				Version: 1,
+				Type:    cty.EmptyObject,
+				Upgrade: migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName,
+			},
+		},
 	}
 }
 

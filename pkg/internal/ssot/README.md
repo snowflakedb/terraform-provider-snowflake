@@ -16,6 +16,7 @@ generators will follow. Ultimately, all the generators should default to using s
 - `Show` / `Describe` - output columns ([SHOW and DESCRIBE](#show-and-describe))
 - `Generators` - which generators may consume those lists ([Generators](#generators))
 - `ResourceHooks` - resource lifecycle/schema overrides (resource generator)
+- `SchemaStateUpgraders` - ordered upgrade function names ([Resource generator](#resource-generator))
 
 Identity (`Name`, `IdType`, ...) is separate from `Attributes`.
 
@@ -149,6 +150,12 @@ template. Until the subtemplate body is written, generation panics through `Unim
 own, with its `With` option. See [resource_hooks.go](resource_hooks.go). `DropSafelyInSdk` defaults to omitted, which
 keeps `DeleteExt`. Set it to `Generated` to emit `Delete` and point `DeleteContext` at that function. `Delete` calls
 `ResourceDeleteContextFunc` with `sdk.Parse` plus the object `IdType`.
+
+`SchemaStateUpgraders` on the object is an ordered list of upgrade function names. `WithStateUpgraders` is the
+`ResourceHook` for that list and for the schema version. `Generated` emits `SchemaVersion` as the length and one
+`StateUpgrader` per name. `Version` is the index. `Type` is `cty.EmptyObject`. The functions stay in package
+resources. `ExtCall` keeps the ext `SchemaVersion` and `StateUpgraders` pair. `ValidateObject` panics when
+`Generated` has no function names, so the template does not check the list.
 
 Optional bools are boolean-strings on purpose (`applyResourceAttributeRules`
 in [resource_attribute_rules.go](../../resources/gen/resource_attribute_rules.go)): an optional bool is Terraform
