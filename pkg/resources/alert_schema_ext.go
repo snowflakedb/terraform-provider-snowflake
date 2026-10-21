@@ -25,19 +25,11 @@ var alertIdentitySchemaExt = map[string]*schema.Schema{
 	},
 }
 
-var alertAttributesSchemaExt = map[string]*schema.Schema{
-	"comment": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Specifies a comment for the alert.",
-	},
-	"warehouse": {
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "The warehouse the alert will use.",
-		ForceNew:    true,
-	},
-	"alert_schedule": {
+func alertAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
+	s["condition"].DiffSuppressFunc = DiffSuppressStatement
+	s["action"].DiffSuppressFunc = DiffSuppressStatement
+
+	s["alert_schedule"] = &schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
 		MaxItems:    1,
@@ -73,25 +65,12 @@ var alertAttributesSchemaExt = map[string]*schema.Schema{
 				},
 			},
 		},
-	},
-	"condition": {
-		Type:             schema.TypeString,
-		Required:         true,
-		Description:      "The SQL statement that represents the condition for the alert. (SELECT, SHOW, CALL)",
-		ForceNew:         false,
-		DiffSuppressFunc: DiffSuppressStatement,
-	},
-	"action": {
-		Type:             schema.TypeString,
-		Required:         true,
-		Description:      "The SQL statement that should be executed if the condition returns one or more rows.",
-		ForceNew:         false,
-		DiffSuppressFunc: DiffSuppressStatement,
-	},
-	"enabled": {
+	}
+	s["enabled"] = &schema.Schema{
 		Type:        schema.TypeBool,
 		Optional:    true,
 		Default:     false,
 		Description: "Specifies if an alert should be 'started' (enabled) after creation or should remain 'suspended' (default).",
-	},
+	}
+	return s
 }

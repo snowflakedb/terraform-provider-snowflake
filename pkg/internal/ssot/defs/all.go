@@ -13,6 +13,7 @@ func All() []ssot.Object {
 		CatalogIntegrationObjectStorage,
 		CatalogIntegrationOpenCatalog,
 		Warehouse,
+		Alert,
 	}
 	for _, obj := range objs {
 		ssot.ValidateObject(obj)
