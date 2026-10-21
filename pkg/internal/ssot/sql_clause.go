@@ -190,12 +190,31 @@ func (a *Attribute) defaultSqlClause(use ClauseUse) SqlClause {
 	case AttrEnum:
 		return EnumParameter()
 	case AttrList:
+		if item := a.enumListItemName(); item != "" {
+			return ListParameter(item)
+		}
 		return ListParameter("")
 	case AttrIdentifier:
 		return IdentifierKeyword("")
 	default:
 		panic(fmt.Sprintf("attribute %q: no default SQL clause for type %q", a.Name, a.Type))
 	}
+}
+
+// EnumListItemName is the query struct for a list whose element is an enum.
+// The struct has one field, Value, a required single-quoted keyword of that enum.
+func EnumListItemName(enum *Enum) string {
+	if enum == nil || enum.Name == "" {
+		panic("enum list item needs an enum name")
+	}
+	return enum.Name + "ListItem"
+}
+
+func (a *Attribute) enumListItemName() string {
+	if a.Elem == nil || a.Elem.Type != AttrEnum || a.Elem.Enum == nil || a.Elem.Enum.Name == "" {
+		return ""
+	}
+	return EnumListItemName(a.Elem.Enum)
 }
 
 func overlaySqlClause(base, over SqlClause) SqlClause {

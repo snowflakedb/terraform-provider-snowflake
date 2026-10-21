@@ -124,7 +124,9 @@ enable nothing.
   entry. Clause shape is `CreateSql`, `SetSql`,
   and `UnsetSql` on [Attribute](attribute.go). A zero create or set clause uses the attribute type. `Clause` applies
   functional options on top of that default. A zero unset clause is a bool keyword. Leave the attribute out of `Unset`
-  to omit it, or set `UnsetSql` to a parameter clause to unset by setting a value. When `SdkCreate()` or `SdkAlter()` is off, that call stays in the def.
+  to omit it, or set `UnsetSql` to a parameter clause to unset by setting a value. A list whose element is an enum uses
+  an item query struct named after that enum, with `ListItem` appended. Its field is `Value`, a required single-quoted
+  keyword. When `SdkCreate()` or `SdkAlter()` is off, that call stays in the def.
 
 Fill `Show` / `Describe` first; enable the matching SHOW or DESCRIBE setting when the lists are ready. Enabling SHOW or
 DESCRIBE schema generation, show output assertions, Snowflake object assertions, or SDK paired structs without `Columns`
@@ -236,7 +238,8 @@ the enum type.
 
 #### Limitations
 
-- A list clause takes the item query struct name as a string. The item struct stays in the SDK def.
+- A list that is not a list of enums takes the item query struct name as a string. That struct stays in the SDK def.
+- A list of enums is built in the SDK generator: struct name `{Enum}ListItem`, field `Value`, required single-quoted keyword. ssot should hold that description, and the generator should only translate it into the query struct. Do that together with more complex list items, not for this enum case alone.
 
 #### Why Show and Describe columns are explicit
 

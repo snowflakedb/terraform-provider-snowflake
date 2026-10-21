@@ -66,7 +66,7 @@ func TestInt_ComputePools(t *testing.T) {
 			WithInitiallySuspended(true).
 			WithAutoSuspendSecs(6767).
 			WithComment(comment).
-			WithBackupInstanceFamilies([]sdk.ComputePoolBackupInstanceFamilyListItem{
+			WithBackupInstanceFamilies([]sdk.ComputePoolInstanceFamilyListItem{
 				{Value: sdk.ComputePoolInstanceFamilyCpuX64M},
 				{Value: sdk.ComputePoolInstanceFamilyCpuX64S},
 			})
@@ -122,7 +122,7 @@ func TestInt_ComputePools(t *testing.T) {
 				WithMaxNodes(5).
 				WithAutoResume(true).
 				WithAutoSuspendSecs(3600).
-				WithBackupInstanceFamilies([]sdk.ComputePoolBackupInstanceFamilyListItem{
+				WithBackupInstanceFamilies([]sdk.ComputePoolInstanceFamilyListItem{
 					{Value: sdk.ComputePoolInstanceFamilyCpuX64M},
 					{Value: sdk.ComputePoolInstanceFamilyCpuX64S},
 				}).
@@ -166,7 +166,7 @@ func TestInt_ComputePools(t *testing.T) {
 		request := sdk.NewCreateComputePoolRequest(id, 1, 2, sdk.ComputePoolInstanceFamilyCpuX64Xs).
 			WithAutoSuspendSecs(6767).
 			WithAutoResume(false).
-			WithBackupInstanceFamilies([]sdk.ComputePoolBackupInstanceFamilyListItem{
+			WithBackupInstanceFamilies([]sdk.ComputePoolInstanceFamilyListItem{
 				{Value: sdk.ComputePoolInstanceFamilyCpuX64S},
 			}).
 			WithComment(random.Comment())

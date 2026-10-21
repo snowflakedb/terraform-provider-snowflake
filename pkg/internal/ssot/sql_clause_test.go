@@ -86,6 +86,18 @@ func Test_EffectiveSqlClause_defaults(t *testing.T) {
 	require.False(t, count.UnsetSql.Present)
 }
 
+func Test_EnumListItemName(t *testing.T) {
+	family := NewEnum("WidgetFamily", "WidgetFamilies", "SMALL")
+	items := Attribute{
+		Name: "items",
+		Type: AttrList,
+		Elem: &Attribute{Type: AttrEnum, Enum: family},
+	}
+	require.Equal(t, "WidgetFamilyListItem", EnumListItemName(family))
+	require.Equal(t, ListParameter("WidgetFamilyListItem"), items.EffectiveSqlClause(ClauseCreate))
+	require.Equal(t, ListParameter("WidgetFamilyListItem"), items.EffectiveSqlClause(ClauseSet))
+}
+
 func Test_SqlClause_optionOverridesDefault(t *testing.T) {
 	clause := StringParameter(NoQuotes())
 

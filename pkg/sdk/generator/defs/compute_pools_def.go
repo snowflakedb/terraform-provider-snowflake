@@ -7,14 +7,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var ComputePoolBackupInstanceFamilyListItemDef = g.NewQueryStruct("ComputePoolBackupInstanceFamilyListItem").
-	Enum("Value", ssotdefs.ComputePoolInstanceFamily, g.KeywordOptions().SingleQuotes().Required())
-
 var computePoolsDef = g.NewInterface(
 	"ComputePools",
 	"ComputePool",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
-).CreateOperationFromObject(ssotdefs.ComputePool, ComputePoolBackupInstanceFamilyListItemDef).
+).CreateOperationFromObject(ssotdefs.ComputePool).
 	AlterOperationFromObject(ssotdefs.ComputePool).
 	DropOperationFromObject(ssotdefs.ComputePool).
 	ShowOperationFromObject(ssotdefs.ComputePool).

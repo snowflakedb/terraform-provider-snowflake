@@ -6,7 +6,7 @@ func init() {
 	tagId := NewAccountObjectIdentifier("tag1")
 	tagId2 := NewAccountObjectIdentifier("tag2")
 	setComment := "set-comment"
-	backupInstanceFamilies := []ComputePoolBackupInstanceFamilyListItem{
+	backupInstanceFamilies := []ComputePoolInstanceFamilyListItem{
 		{Value: ComputePoolInstanceFamilyCpuX64M},
 		{Value: ComputePoolInstanceFamilyCpuX64S},
 	}
@@ -61,7 +61,7 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_Create_backupInstanceFamilies_singleEntry",
 			func(opts *CreateComputePoolOptions) {
-				opts.BackupInstanceFamilies = []ComputePoolBackupInstanceFamilyListItem{{Value: ComputePoolInstanceFamilyCpuX64S}}
+				opts.BackupInstanceFamilies = []ComputePoolInstanceFamilyListItem{{Value: ComputePoolInstanceFamilyCpuX64S}}
 			},
 			"CREATE COMPUTE POOL %s MIN_NODES = 1 MAX_NODES = 3 INSTANCE_FAMILY = CPU_X64_XS BACKUP_INSTANCE_FAMILIES = ('CPU_X64_S')",
 			id.FullyQualifiedName(),

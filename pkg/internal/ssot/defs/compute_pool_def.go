@@ -141,9 +141,6 @@ var ComputePoolAttrs = struct {
 			Type: ssot.AttrEnum,
 			Enum: ComputePoolInstanceFamily,
 		},
-		// TODO [next PRs]: Define the item query struct in ssot and pass that definition to ListParameter, so the struct name is not a separate string.
-		CreateSql: ssot.ListParameter("ComputePoolBackupInstanceFamilyListItem"),
-		SetSql:    ssot.ListParameter("ComputePoolBackupInstanceFamilyListItem"),
 	},
 	AutoResume: ssot.Attribute{
 		Name:        "auto_resume",

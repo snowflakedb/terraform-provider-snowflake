@@ -290,7 +290,7 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 							WithMaxNodes(5).
 							WithAutoResume(true).
 							WithAutoSuspendSecs(3600).
-							WithBackupInstanceFamilies([]sdk.ComputePoolBackupInstanceFamilyListItem{
+							WithBackupInstanceFamilies([]sdk.ComputePoolInstanceFamilyListItem{
 								{Value: firstBackupFamily},
 								{Value: secondBackupFamily},
 							}).

@@ -146,13 +146,14 @@ func dropQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 
 // CreateOperationFromObject adds CREATE from obj.SdkConfig.
 // Clauses are Create, optional OR REPLACE, Create.KeywordsBefore, SQL, optional IF NOT EXISTS, Name, then Create.Clauses, then ValidIdentifier.
-// helperStructs are query structs the attribute clauses name, such as a list item.
+// helperStructs are query structs the attribute clauses name, other than an enum list item.
+// A list of enums adds its item query struct here. The struct name is the enum name plus ListItem, and its field is Value.
 func (i *Interface) CreateOperationFromObject(obj ssot.Object, helperStructs ...IntoField) *Interface {
 	cfg := obj.SdkConfig()
 	if !cfg.Create {
 		panic(fmt.Sprintf("object %q is not enabled for SDK CREATE generation", obj.Name))
 	}
-	return i.CreateOperation(cfg.CreateDoc, createQueryStructFromConfig(obj, cfg), helperStructs...)
+	return i.CreateOperation(cfg.CreateDoc, createQueryStructFromConfig(obj, cfg), append(helperStructs, enumListItemStructs(obj)...)...)
 }
 
 func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
@@ -193,7 +194,57 @@ func (i *Interface) AlterOperationFromObject(obj ssot.Object) *Interface {
 	if !cfg.Alter {
 		panic(fmt.Sprintf("object %q is not enabled for SDK ALTER generation", obj.Name))
 	}
-	return i.AlterOperation(cfg.AlterDoc, alterQueryStructFromConfig(obj, cfg))
+	return i.AlterOperation(cfg.AlterDoc, alterQueryStructFromConfig(obj, cfg)).withEnumListItems(obj)
+}
+
+func (i *Interface) withEnumListItems(obj ssot.Object) *Interface {
+	if len(i.Operations) == 0 {
+		return i
+	}
+	i.Operations[len(i.Operations)-1].withHelperStructs(enumListItemFields(obj)...)
+	return i
+}
+
+func enumListItemQueryStructs(obj ssot.Object) []*QueryStruct {
+	// TODO [next PRs]: Move this shape into ssot as a description (struct name, field Value, the enum, single quotes, required). This function should only translate that description into a query struct. Do that together with more complex list items, not for this enum case alone.
+	seen := map[string]struct{}{}
+	var out []*QueryStruct
+	add := func(list []*ssot.Attribute) {
+		for _, attr := range list {
+			if attr == nil || attr.Type != ssot.AttrList || attr.Elem == nil || attr.Elem.Type != ssot.AttrEnum || attr.Elem.Enum == nil {
+				continue
+			}
+			name := ssot.EnumListItemName(attr.Elem.Enum)
+			if _, ok := seen[name]; ok {
+				continue
+			}
+			seen[name] = struct{}{}
+			out = append(out, NewQueryStruct(name).Enum("Value", attr.Elem.Enum, KeywordOptions().SingleQuotes().Required()))
+		}
+	}
+	add(obj.Create.KeywordsBefore)
+	add(obj.Create.Clauses)
+	add(obj.Set)
+	add(obj.Unset)
+	return out
+}
+
+func enumListItemStructs(obj ssot.Object) []IntoField {
+	qs := enumListItemQueryStructs(obj)
+	out := make([]IntoField, len(qs))
+	for i := range qs {
+		out[i] = qs[i]
+	}
+	return out
+}
+
+func enumListItemFields(obj ssot.Object) []*Field {
+	qs := enumListItemQueryStructs(obj)
+	out := make([]*Field, len(qs))
+	for i := range qs {
+		out[i] = qs[i].IntoField()
+	}
+	return out
 }
 
 func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {

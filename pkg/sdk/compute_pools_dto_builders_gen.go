@@ -51,7 +51,7 @@ func (s *CreateComputePoolRequest) WithComment(comment string) *CreateComputePoo
 	return s
 }
 
-func (s *CreateComputePoolRequest) WithBackupInstanceFamilies(backupInstanceFamilies []ComputePoolBackupInstanceFamilyListItem) *CreateComputePoolRequest {
+func (s *CreateComputePoolRequest) WithBackupInstanceFamilies(backupInstanceFamilies []ComputePoolInstanceFamilyListItem) *CreateComputePoolRequest {
 	s.BackupInstanceFamilies = backupInstanceFamilies
 	return s
 }
@@ -129,7 +129,7 @@ func (s *ComputePoolSetRequest) WithAutoSuspendSecs(autoSuspendSecs int) *Comput
 	return s
 }
 
-func (s *ComputePoolSetRequest) WithBackupInstanceFamilies(backupInstanceFamilies []ComputePoolBackupInstanceFamilyListItem) *ComputePoolSetRequest {
+func (s *ComputePoolSetRequest) WithBackupInstanceFamilies(backupInstanceFamilies []ComputePoolInstanceFamilyListItem) *ComputePoolSetRequest {
 	s.BackupInstanceFamilies = backupInstanceFamilies
 	return s
 }

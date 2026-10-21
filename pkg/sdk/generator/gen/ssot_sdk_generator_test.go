@@ -656,6 +656,37 @@ func Test_CreateOperationFromObject_beforeObject(t *testing.T) {
 	})
 }
 
+func Test_CreateOperationFromObject_enumListItem(t *testing.T) {
+	family := ssot.NewEnum("WidgetFamily", "WidgetFamilies", "SMALL")
+	items := ssot.Attribute{
+		Name: "items",
+		Type: ssot.AttrList,
+		Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: family},
+	}
+	obj := ssot.Object{
+		Name:       "Widget",
+		Attributes: []ssot.Attribute{items},
+		Create:     ssot.CreateSpec{Clauses: []*ssot.Attribute{&items}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate(
+			ssot.SdkCreateWithoutOrReplace(),
+			ssot.SdkCreateWithoutIfNotExists(),
+		))},
+	}
+	item := NewQueryStruct("WidgetFamilyListItem").Enum("Value", family, KeywordOptions().SingleQuotes().Required())
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/create-widget",
+		NewQueryStruct("CreateWidget").
+			Create().
+			SQL("WIDGET").
+			Name().
+			ListAssignment("ITEMS", "WidgetFamilyListItem", ParameterOptions().Parentheses()).
+			WithValidation(ValidIdentifier, "name"),
+		item,
+	)
+	requireSameOperations(t, want, got)
+}
+
 func Test_CreateAlterFromObject_panics(t *testing.T) {
 	obj := ssot.Object{Name: "Widget", NamePlural: "Widgets"}
 	require.Panics(t, func() {
