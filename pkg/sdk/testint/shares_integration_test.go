@@ -47,6 +47,35 @@ func TestInt_SharesShow(t *testing.T) {
 	})
 }
 
+func TestInt_SharesShowTargetAccounts(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	shareTest, shareCleanup := testClientHelper().Share.CreateShare(t)
+	t.Cleanup(shareCleanup)
+
+	t.Cleanup(testClientHelper().Grant.GrantPrivilegeOnDatabaseToShare(t, testClientHelper().Ids.DatabaseId(), shareTest.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}))
+
+	account := secondaryTestClientHelper().Account.GetAccountIdentifier(t)
+	err := client.Shares.Alter(ctx, sdk.NewAlterShareRequest(shareTest.ID()).WithIfExists(true).WithAdd(sdk.ShareAddRequest{
+		Accounts:          []sdk.AccountIdentifier{account},
+		ShareRestrictions: sdk.Bool(false),
+	}))
+	require.NoError(t, err)
+
+	shares, err := client.Shares.Show(ctx, sdk.NewShowShareRequest().WithLike(sdk.Like{Pattern: sdk.String(shareTest.Name)}))
+	require.NoError(t, err)
+	require.Len(t, shares, 1)
+	assert.Equal(t, []sdk.AccountIdentifier{account}, shares[0].To)
+	assert.Zero(t, shares[0].ToTotal)
+
+	// SNOWFLAKE.ACCOUNT_USAGE.SHARES lags SHOW SHARES by up to 3 hours, so a share created here has no row yet.
+	// TODO(SNOW-1348347): add predefined share in our testing env so that we could test ShowTargetAccounts
+	accounts, err := client.Shares.ShowTargetAccounts(ctx, shareTest.ID())
+	require.NoError(t, err)
+	assert.Empty(t, accounts)
+}
+
 func TestInt_SharesCreate(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
@@ -63,6 +92,7 @@ func TestInt_SharesCreate(t *testing.T) {
 		assert.Len(t, shares, 1)
 		assert.Equal(t, id.Name(), shares[0].Name)
 		assert.Equal(t, "test comment", shares[0].Comment)
+		assert.Zero(t, shares[0].ToTotal)
 	})
 
 	t.Run("test no options", func(t *testing.T) {
@@ -121,6 +151,7 @@ func TestInt_SharesAlter(t *testing.T) {
 		assert.Len(t, shares, 1)
 		share := shares[0]
 		assert.Equal(t, accountsToAdd, share.To)
+		assert.Zero(t, share.ToTotal)
 
 		// now remove the account that was added.
 		err = client.Shares.Alter(ctx, sdk.NewAlterShareRequest(shareTest.ID()).WithIfExists(true).WithRemove(sdk.ShareRemoveRequest{
@@ -132,6 +163,7 @@ func TestInt_SharesAlter(t *testing.T) {
 		assert.Len(t, shares, 1)
 		share = shares[0]
 		assert.Empty(t, share.To)
+		assert.Zero(t, share.ToTotal)
 	})
 
 	t.Run("set accounts", func(t *testing.T) {
@@ -164,6 +196,7 @@ func TestInt_SharesAlter(t *testing.T) {
 		assert.Len(t, shares, 1)
 		share := shares[0]
 		assert.Equal(t, accountsToSet, share.To)
+		assert.Zero(t, share.ToTotal)
 	})
 
 	t.Run("set and unset comment", func(t *testing.T) {

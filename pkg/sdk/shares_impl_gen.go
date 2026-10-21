@@ -139,8 +139,8 @@ func (r shareRow) convert() (*Share, error) {
 	}
 	mapStringWithMapping(&result.Kind, r.Kind, ToShareKind)
 	mapStringWithMapping(&result.DatabaseName, r.DatabaseName, ParseAccountObjectIdentifier)
-	if ids, err := ParseCommaSeparatedAccountIdentifierArray(r.To); err == nil {
-		result.To = ids
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
 	}
 	return result, nil
 }
