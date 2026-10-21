@@ -11,7 +11,8 @@ import (
 
 const (
 	RuleOptionalBoolIsBooleanString            = "optional_bool_is_boolean_string"
-	RuleCreateOnlyBoolIsNative                 = "create_only_bool_is_native"
+	RuleCreateOnlyBoolIgnoresChanges           = "create_only_bool_ignores_changes"
+	RuleCreateOnlyNativeBoolIsNative           = "create_only_native_bool_is_native"
 	RuleRequiredBoolIsNative                   = "required_bool_is_native"
 	RuleOptionalIntMinAllowsZeroUsesIntDefault = "optional_int_min_allows_zero_uses_int_default"
 	RuleIdentifierSuppressesQuoting            = "identifier_suppresses_quoting"
@@ -43,13 +44,15 @@ type resourceAttributeRule struct {
 // When two rules could touch the same field they are disjoint in When.
 var resourceAttributeRules = []resourceAttributeRule{
 	{
-		// CreateOnly opts out (native TypeBool). Discriminator flags inside blocks
-		// (snowflake_session_policy.allowed_secondary_roles.0.all) are still boolean strings.
+		// NativeBool skips this rule. Create-only bools still use boolean strings, plus IgnoreAfterCreation.
+		// CreateOnly together with NativeBool is RuleCreateOnlyNativeBoolIsNative (warehouse initially_suspended).
+		// Discriminator flags inside blocks (snowflake_session_policy.allowed_secondary_roles.0.all)
+		// are still boolean strings.
 		// TODO [next PRs]: adjust the logic if needed with next objects migrations
 		Name:        RuleOptionalBoolIsBooleanString,
 		Description: "Optional bools use boolean-string chrome because TF TypeBool cannot distinguish unset from false.",
 		When: func(in ssot.Attribute, _ resourceAttributeRuleContext) bool {
-			return in.Type == ssot.AttrBool && !in.Required && !in.CreateOnly
+			return in.Type == ssot.AttrBool && !in.Required && !in.NativeBool
 		},
 		Then: func(in ssot.Attribute, _ resourceAttributeRuleContext, out *ResourceAttribute) {
 			out.TfType = SchemaTypeString
@@ -61,14 +64,25 @@ var resourceAttributeRules = []resourceAttributeRule{
 		},
 	},
 	{
-		Name:        RuleCreateOnlyBoolIsNative,
-		Description: "Create-only optional bools stay native TypeBool and ignore changes after creation.",
+		Name:        RuleCreateOnlyBoolIgnoresChanges,
+		Description: "Create-only optional bools ignore changes after creation.",
 		When: func(in ssot.Attribute, ctx resourceAttributeRuleContext) bool {
 			return in.Type == ssot.AttrBool && !in.Required && in.CreateOnly && !ctx.AsCollectionElem
 		},
 		Then: func(_ ssot.Attribute, _ resourceAttributeRuleContext, out *ResourceAttribute) {
-			out.TfType = SchemaTypeBool
 			out.DiffSuppressExpr = "IgnoreAfterCreation"
+		},
+	},
+	{
+		// Warehouse initially_suspended was native TypeBool because CreateOnly used to select that type.
+		// NativeBool marks the attributes that keep that schema.
+		Name:        RuleCreateOnlyNativeBoolIsNative,
+		Description: "Create-only optional bools with NativeBool stay native TypeBool.",
+		When: func(in ssot.Attribute, ctx resourceAttributeRuleContext) bool {
+			return in.Type == ssot.AttrBool && !in.Required && in.CreateOnly && in.NativeBool && !ctx.AsCollectionElem
+		},
+		Then: func(_ ssot.Attribute, _ resourceAttributeRuleContext, out *ResourceAttribute) {
+			out.TfType = SchemaTypeBool
 		},
 	},
 	{

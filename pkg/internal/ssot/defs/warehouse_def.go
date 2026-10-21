@@ -110,6 +110,7 @@ var WarehouseAttrs = struct {
 		Name:        "initially_suspended",
 		Type:        ssot.AttrBool,
 		CreateOnly:  true,
+		NativeBool:  true,
 		Description: "Specifies whether the warehouse is created initially in the ‘Suspended’ state.",
 	},
 	ResourceMonitor: ssot.Attribute{

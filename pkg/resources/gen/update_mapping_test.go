@@ -22,7 +22,7 @@ func Test_ComputePoolUpdateMappings_renderApplySetUnset(t *testing.T) {
 	errs := errors.Join(
 		intAttributeUpdateSetOnlyBuilder(d, "min_nodes", set.WithMinNodes),
 		intAttributeUpdateSetOnlyBuilder(d, "max_nodes", set.WithMaxNodes),
-		listValueUpdateBuilder(d, "backup_instance_families", set.WithBackupInstanceFamilies, unset.WithBackupInstanceFamilies, toComputePoolBackupInstanceFamily),
+		listValueUpdateBuilder(d, "backup_instance_families", set.WithBackupInstanceFamilies, unset.WithBackupInstanceFamilies, toComputePoolBackupInstanceFamilies),
 		booleanStringAttributeUpdateBuilder(d, "auto_resume", set.WithAutoResume, unset.WithAutoResume),
 		intAttributeWithSpecialDefaultUpdateBuilder(d, "auto_suspend_secs", set.WithAutoSuspendSecs, unset.WithAutoSuspendSecs),
 		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),

@@ -35,11 +35,15 @@ type Attribute struct {
 	StoredAsText          bool // the db column is text, and the plain kind stays the semantic type
 	ShowName              string
 	Readonly              bool
-	CreateMapping         CreateMapping
-	UpdateMapping         UpdateMapping
-	CreateSql             SqlClause // CREATE SQL clause. Zero is absent from that statement.
-	SetSql                SqlClause // SET SQL clause. Zero is absent from that statement.
-	UnsetSql              SqlClause // UNSET SQL clause. Zero is absent from that statement.
+	// CreateMapping overrides the create helper deduced from Type, the schema default, and CreateOnly.
+	// Nil means deduce one. A required attribute with a nil mapping is a create constructor argument.
+	CreateMapping CreateMapping
+	// UpdateMapping overrides the update helper deduced the same way.
+	// Nil means deduce one. ForceNew and CreateOnly attributes are left out of set/unset.
+	UpdateMapping UpdateMapping
+	CreateSql     SqlClause // CREATE SQL clause. Zero is absent from that statement.
+	SetSql        SqlClause // SET SQL clause. Zero is absent from that statement.
+	UnsetSql      SqlClause // UNSET SQL clause. Zero is absent from that statement.
 	// SuppressShowChange composes IgnoreChangeToCurrentSnowflakeValueInShow(OutputKey()) onto the diff suppressor.
 	// TODO [next PRs]: Replace this bool with an explicit SHOW, DESCRIBE, or none choice.
 	// Both outputs on an object do not imply SHOW. Some fields compare against DESCRIBE, some against neither,
@@ -47,9 +51,13 @@ type Attribute struct {
 	SuppressShowChange bool
 	// ConflictsWith names other attributes on the same object. The generator emits schema.ConflictsWith.
 	ConflictsWith []Attribute
-	// CreateOnly keeps an optional bool as native TypeBool with IgnoreAfterCreation.
-	// Optional bools otherwise become boolean strings.
+	// CreateOnly marks an optional bool that is applied only on create.
+	// The generator emits IgnoreAfterCreation and a create helper, not an update helper.
+	// The Terraform type stays a boolean string unless NativeBool is set.
 	CreateOnly bool
+	// NativeBool keeps an optional bool as Terraform TypeBool.
+	// Optional bools otherwise use boolean-string schema chrome, including create-only ones.
+	NativeBool bool
 	// RelatedResource is the SSOT object whose Terraform resource is linked from the description.
 	// The generator emits resources.<Name>. Nil means no link.
 	RelatedResource *Object

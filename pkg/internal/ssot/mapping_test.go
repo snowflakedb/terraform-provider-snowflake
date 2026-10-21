@@ -13,10 +13,10 @@ func Test_CreateCall(t *testing.T) {
 		Target: "request.WithForApplication",
 	}, call)
 
-	call = ListValueCreate("toComputePoolBackupInstanceFamily").CreateCall("ComputePool", Attribute{Name: "backup_instance_families"})
+	call = ListValueCreate("toComputePoolBackupInstanceFamilies").CreateCall("ComputePool", Attribute{Name: "backup_instance_families"})
 	require.Equal(t, CreateCall{
 		Helper: "listValueCreate",
-		Target: "&request.BackupInstanceFamilies, toComputePoolBackupInstanceFamily",
+		Target: "&request.BackupInstanceFamilies, toComputePoolBackupInstanceFamilies",
 	}, call)
 
 	require.PanicsWithValue(t, `object "ComputePool": attribute "items" ListValueCreate needs a mapper function`, func() {
@@ -58,10 +58,10 @@ func Test_UpdateCall(t *testing.T) {
 		Target: "set.WithAutoResume, unset.WithAutoResume",
 	}, call)
 
-	call = ListValueUpdate("toComputePoolBackupInstanceFamily").UpdateCall("ComputePool", Attribute{Name: "backup_instance_families"})
+	call = ListValueUpdate("toComputePoolBackupInstanceFamilies").UpdateCall("ComputePool", Attribute{Name: "backup_instance_families"})
 	require.Equal(t, UpdateCall{
 		Helper: "listValueUpdateBuilder",
-		Target: "set.WithBackupInstanceFamilies, unset.WithBackupInstanceFamilies, toComputePoolBackupInstanceFamily",
+		Target: "set.WithBackupInstanceFamilies, unset.WithBackupInstanceFamilies, toComputePoolBackupInstanceFamilies",
 	}, call)
 
 	require.PanicsWithValue(t, `object "ComputePool": attribute "items" ListValueUpdate needs a mapper function`, func() {

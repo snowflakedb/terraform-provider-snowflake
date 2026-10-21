@@ -89,6 +89,12 @@ func Test_ValidateObject_createOnlyMustBeOptionalBool(t *testing.T) {
 			Attributes: []Attribute{{Name: "initially_suspended", Type: AttrBool, Required: true, CreateOnly: true}},
 		})
 	})
+	require.PanicsWithValue(t, `object "Warehouse": NativeBool attribute "comment" must be a bool`, func() {
+		ValidateObject(Object{
+			Name:       "Warehouse",
+			Attributes: []Attribute{{Name: "comment", Type: AttrString, NativeBool: true}},
+		})
+	})
 }
 
 func Test_ValidateObject_sqlClause(t *testing.T) {

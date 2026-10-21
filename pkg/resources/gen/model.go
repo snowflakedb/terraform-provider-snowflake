@@ -68,7 +68,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 	hooks := ssot.DefaultResourceExtHooks(input.ResourceHooks...)
 	attributes := applyResourceAttributeRules(input.IdType, input.Attributes)
 	if hooks.NewCreateRequest.Generate || hooks.ApplyCreateOptionals.Generate {
-		attachCreateMappings(input.Name, input.Attributes, attributes)
+		attachCreateMappings(input.Name, input.IdType, input.Attributes, attributes)
 	}
 	if hooks.ApplySetUnset.Generate {
 		attachUpdateMappings(input.Name, input.Attributes, attributes)

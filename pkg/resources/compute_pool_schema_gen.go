@@ -60,6 +60,7 @@ var computePoolAttributesSchema = computePoolAttributesModificationExt(map[strin
 		Type:             tfschema.TypeString,
 		Optional:         true,
 		ValidateDiagFunc: validateBooleanString,
+		DiffSuppressFunc: IgnoreAfterCreation,
 		Description:      "Specifies whether the compute pool is created initially in the suspended state. This field is used only when creating a compute pool. Changes on this field are ignored after creation.",
 		Default:          BooleanDefault,
 	},

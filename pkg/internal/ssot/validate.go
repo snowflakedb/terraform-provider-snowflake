@@ -34,6 +34,9 @@ func ValidateObject(obj Object) {
 		if a.CreateOnly && (a.Type != AttrBool || a.Required) {
 			panic(fmt.Sprintf("object %q: CreateOnly attribute %q must be an optional bool", obj.Name, a.Name))
 		}
+		if a.NativeBool && a.Type != AttrBool {
+			panic(fmt.Sprintf("object %q: NativeBool attribute %q must be a bool", obj.Name, a.Name))
+		}
 		for _, other := range a.ConflictsWith {
 			if other.Name == a.Name {
 				panic(fmt.Sprintf("object %q: attribute %q conflicts with itself", obj.Name, a.Name))

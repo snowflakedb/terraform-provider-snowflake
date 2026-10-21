@@ -140,7 +140,7 @@ func computePoolNewCreateRequest(d *tfschema.ResourceData, id sdk.AccountObjectI
 func computePoolApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateComputePoolRequest) error {
 	return errors.Join(
 		accountObjectIdentifierAttributeCreateBuilder(d, "for_application", request.WithForApplication),
-		listValueCreate(d, "backup_instance_families", &request.BackupInstanceFamilies, toComputePoolBackupInstanceFamily),
+		listValueCreate(d, "backup_instance_families", &request.BackupInstanceFamilies, toComputePoolBackupInstanceFamilies),
 		booleanStringAttributeCreateBuilder(d, "auto_resume", request.WithAutoResume),
 		booleanStringAttributeCreateBuilder(d, "initially_suspended", request.WithInitiallySuspended),
 		intAttributeWithSpecialDefaultCreateBuilder(d, "auto_suspend_secs", request.WithAutoSuspendSecs),
@@ -153,7 +153,7 @@ func computePoolApplySetUnset(d *tfschema.ResourceData) (*computePoolAlterReques
 	errs := errors.Join(
 		intAttributeUpdateSetOnlyBuilder(d, "min_nodes", set.WithMinNodes),
 		intAttributeUpdateSetOnlyBuilder(d, "max_nodes", set.WithMaxNodes),
-		listValueUpdateBuilder(d, "backup_instance_families", set.WithBackupInstanceFamilies, unset.WithBackupInstanceFamilies, toComputePoolBackupInstanceFamily),
+		listValueUpdateBuilder(d, "backup_instance_families", set.WithBackupInstanceFamilies, unset.WithBackupInstanceFamilies, toComputePoolBackupInstanceFamilies),
 		booleanStringAttributeUpdateBuilder(d, "auto_resume", set.WithAutoResume, unset.WithAutoResume),
 		intAttributeWithSpecialDefaultUpdateBuilder(d, "auto_suspend_secs", set.WithAutoSuspendSecs, unset.WithAutoSuspendSecs),
 		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),

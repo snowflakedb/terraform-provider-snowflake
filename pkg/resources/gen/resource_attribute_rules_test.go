@@ -215,11 +215,29 @@ func Test_sdkEnumSymbols(t *testing.T) {
 	require.Equal(t, "sdk.AllComputePoolInstanceFamilies", ctx.sdkEnumAll(attr))
 }
 
-func Test_applyResourceAttributeRules_createOnlyBoolIsNative(t *testing.T) {
+func Test_applyResourceAttributeRules_createOnlyBoolIgnoresChanges(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:           "initially_suspended",
+		Type:           ssot.AttrBool,
+		CreateOnly:     true,
+		RawDescription: true,
+		Description:    "Specifies whether the compute pool is created initially in the suspended state.",
+	}, resourceAttributeRuleContext{})
+
+	require.Equal(t, SchemaTypeString, got.TfType)
+	require.True(t, got.Optional)
+	require.Equal(t, "BooleanDefault", got.DefaultExpr)
+	require.Equal(t, "validateBooleanString", got.ValidateDiagExpr)
+	require.Equal(t, "IgnoreAfterCreation", got.DiffSuppressExpr)
+	require.Equal(t, `"Specifies whether the compute pool is created initially in the suspended state."`, got.DescriptionExpr)
+}
+
+func Test_applyResourceAttributeRules_createOnlyNativeBoolIsNative(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "initially_suspended",
 		Type:        ssot.AttrBool,
 		CreateOnly:  true,
+		NativeBool:  true,
 		Description: "Specifies whether the warehouse is created initially in the ‘Suspended’ state.",
 	}, resourceAttributeRuleContext{})
 

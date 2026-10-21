@@ -44,7 +44,7 @@ func Test_ComputePoolCreateMappings_renderCreateFuncs(t *testing.T) {
 	require.Equal(t, `func computePoolApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateComputePoolRequest) error {
 	return errors.Join(
 		accountObjectIdentifierAttributeCreateBuilder(d, "for_application", request.WithForApplication),
-		listValueCreate(d, "backup_instance_families", &request.BackupInstanceFamilies, toComputePoolBackupInstanceFamily),
+		listValueCreate(d, "backup_instance_families", &request.BackupInstanceFamilies, toComputePoolBackupInstanceFamilies),
 		booleanStringAttributeCreateBuilder(d, "auto_resume", request.WithAutoResume),
 		booleanStringAttributeCreateBuilder(d, "initially_suspended", request.WithInitiallySuspended),
 		intAttributeWithSpecialDefaultCreateBuilder(d, "auto_suspend_secs", request.WithAutoSuspendSecs),
@@ -52,6 +52,10 @@ func Test_ComputePoolCreateMappings_renderCreateFuncs(t *testing.T) {
 	)
 }
 `, renderTemplate(t, "generatedApplyCreateOptionals", model))
+}
+
+func Test_listEnumMapperName(t *testing.T) {
+	require.Equal(t, "toComputePoolBackupInstanceFamilies", listEnumMapperName("ComputePool", defs.ComputePoolAttrs.BackupInstanceFamilies))
 }
 
 func Test_ExternalVolumeCreateMappings_renderCreateFuncs(t *testing.T) {

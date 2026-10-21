@@ -160,7 +160,7 @@ func computePoolAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.Account
 // Pre-existing mappers
 // =============================================================================
 
-func toComputePoolBackupInstanceFamily(value any) (sdk.ComputePoolBackupInstanceFamilyListItem, error) {
+func toComputePoolBackupInstanceFamilies(value any) (sdk.ComputePoolBackupInstanceFamilyListItem, error) {
 	instanceFamily, err := sdk.ToComputePoolInstanceFamily(value.(string))
 	if err != nil {
 		return sdk.ComputePoolBackupInstanceFamilyListItem{}, err
