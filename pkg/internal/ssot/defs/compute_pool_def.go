@@ -109,6 +109,7 @@ var ComputePoolAttrs = struct {
 		OptionalInDb:   true,
 		ShowName:       "application",
 		CreateMapping:  ssot.AccountObjectIdentifierAttributeCreateBuilder,
+		CreateSql:      ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Sql("FOR APPLICATION")),
 	},
 	MinNodes: ssot.Attribute{
 		Name:          "min_nodes",
@@ -117,6 +118,8 @@ var ComputePoolAttrs = struct {
 		Description:   "Specifies the minimum number of nodes for the compute pool.",
 		Min:           new(1),
 		UpdateMapping: ssot.IntAttributeUpdateSetOnlyBuilder,
+		CreateSql:     ssot.IntParameter(),
+		SetSql:        ssot.IntParameter(ssot.Optional()),
 	},
 	MaxNodes: ssot.Attribute{
 		Name:          "max_nodes",
@@ -125,6 +128,8 @@ var ComputePoolAttrs = struct {
 		Description:   "Specifies the maximum number of nodes for the compute pool.",
 		Min:           new(1),
 		UpdateMapping: ssot.IntAttributeUpdateSetOnlyBuilder,
+		CreateSql:     ssot.IntParameter(),
+		SetSql:        ssot.IntParameter(ssot.Optional()),
 	},
 	InstanceFamily: ssot.Attribute{
 		Name:                  "instance_family",
@@ -134,6 +139,7 @@ var ComputePoolAttrs = struct {
 		Description:           "Identifies the type of machine you want to provision for the nodes in the compute pool.",
 		AdditionalDescription: "Not all instance families are supported in all regions. Run `SHOW COMPUTE POOL INSTANCE FAMILIES` to see the list of supported instance families in your region.",
 		Enum:                  ComputePoolInstanceFamily,
+		CreateSql:             ssot.EnumParameter(),
 	},
 	BackupInstanceFamilies: ssot.Attribute{
 		Name:          "backup_instance_families",
@@ -145,6 +151,10 @@ var ComputePoolAttrs = struct {
 			Type: ssot.AttrEnum,
 			Enum: ComputePoolInstanceFamily,
 		},
+		// TODO [next PRs]: Define the item query struct in ssot and pass that definition to ListParameter, so the struct name is not a separate string.
+		CreateSql: ssot.ListParameter("ComputePoolBackupInstanceFamilyListItem"),
+		SetSql:    ssot.ListParameter("ComputePoolBackupInstanceFamilyListItem"),
+		UnsetSql:  ssot.BoolKeyword(),
 	},
 	AutoResume: ssot.Attribute{
 		Name:          "auto_resume",
@@ -152,6 +162,9 @@ var ComputePoolAttrs = struct {
 		Description:   "Specifies whether to automatically resume a compute pool when a service or job is submitted to it.",
 		CreateMapping: ssot.BooleanStringAttributeCreateBuilder,
 		UpdateMapping: ssot.BooleanStringAttributeUpdateBuilder,
+		CreateSql:     ssot.BoolParameter(),
+		SetSql:        ssot.BoolParameter(),
+		UnsetSql:      ssot.BoolKeyword(),
 	},
 	InitiallySuspended: ssot.Attribute{
 		Name:           "initially_suspended",
@@ -159,6 +172,7 @@ var ComputePoolAttrs = struct {
 		Description:    "Specifies whether the compute pool is created initially in the suspended state. This field is used only when creating a compute pool. Changes on this field are ignored after creation.",
 		RawDescription: true,
 		CreateMapping:  ssot.BooleanStringAttributeCreateBuilder,
+		CreateSql:      ssot.BoolParameter(),
 	},
 	AutoSuspendSecs: ssot.Attribute{
 		Name:          "auto_suspend_secs",
@@ -167,6 +181,9 @@ var ComputePoolAttrs = struct {
 		Min:           new(0),
 		CreateMapping: ssot.IntAttributeWithSpecialDefaultCreateBuilder,
 		UpdateMapping: ssot.IntAttributeWithSpecialDefaultUpdateBuilder,
+		CreateSql:     ssot.IntParameter(),
+		SetSql:        ssot.IntParameter(),
+		UnsetSql:      ssot.BoolKeyword(),
 	},
 	Comment: ssot.Attribute{
 		Name:           "comment",
@@ -176,6 +193,9 @@ var ComputePoolAttrs = struct {
 		OptionalInDb:   true,
 		CreateMapping:  ssot.StringAttributeCreateBuilder,
 		UpdateMapping:  ssot.StringAttributeUpdateBuilder,
+		CreateSql:      ssot.StringParameter(),
+		SetSql:         ssot.StringParameter(),
+		UnsetSql:       ssot.BoolKeyword(),
 	},
 	Name:          ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
 	State:         ssot.Attribute{Name: "state", Type: ssot.AttrEnum, Enum: ComputePoolState, Readonly: true},
@@ -214,6 +234,14 @@ var ComputePool = ssot.Object{
 			),
 			ssot.SdkDescribe(),
 			ssot.SdkDrop(ssot.SdkDropSafelyHook()),
+			ssot.SdkCreate(
+				ssot.SdkCreateWithoutOrReplace(),
+				ssot.SdkCreateAdditionalValidations(),
+			),
+			ssot.SdkAlter(
+				ssot.SdkAlterActions("RESUME", "SUSPEND", "STOP ALL"),
+				ssot.SdkAlterSetAdditionalValidations(),
+			),
 		),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
@@ -233,6 +261,32 @@ var ComputePool = ssot.Object{
 		ComputePoolAttrs.InitiallySuspended,
 		ComputePoolAttrs.AutoSuspendSecs,
 		ComputePoolAttrs.Comment,
+	},
+	Create: []*ssot.Attribute{
+		&ComputePoolAttrs.ForApplication,
+		&ComputePoolAttrs.MinNodes,
+		&ComputePoolAttrs.MaxNodes,
+		&ComputePoolAttrs.InstanceFamily,
+		&ComputePoolAttrs.AutoResume,
+		&ComputePoolAttrs.InitiallySuspended,
+		&ComputePoolAttrs.AutoSuspendSecs,
+		ssot.Tags,
+		&ComputePoolAttrs.Comment,
+		&ComputePoolAttrs.BackupInstanceFamilies,
+	},
+	Set: []*ssot.Attribute{
+		&ComputePoolAttrs.MinNodes,
+		&ComputePoolAttrs.MaxNodes,
+		&ComputePoolAttrs.AutoResume,
+		&ComputePoolAttrs.AutoSuspendSecs,
+		&ComputePoolAttrs.BackupInstanceFamilies,
+		&ComputePoolAttrs.Comment,
+	},
+	Unset: []*ssot.Attribute{
+		&ComputePoolAttrs.AutoResume,
+		&ComputePoolAttrs.AutoSuspendSecs,
+		&ComputePoolAttrs.BackupInstanceFamilies,
+		&ComputePoolAttrs.Comment,
 	},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{

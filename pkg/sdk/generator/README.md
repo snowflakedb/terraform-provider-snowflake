@@ -215,6 +215,14 @@ See [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) for co
 
 ---
 
+### CREATE and ALTER
+
+When `SdkCreate()` or `SdkAlter()` is passed to [`WithSdk()`](../../internal/ssot/README.md#generators), `CreateOperationFromObject` or `AlterOperationFromObject` builds that method from `Name`. An object with the setting off keeps the handwritten call. Clause shape is `CreateSql`, `SetSql`, and `UnsetSql` on [Attribute](../../internal/ssot/attribute.go). `Create`, `Set`, and `Unset` are the statement order. [`Tags`](../../internal/ssot/attribute.go) is the optional `TAG` clause on `Create`. Parameters stay in the SDK def.
+
+`SdkCreate()` includes `OR REPLACE` and `IF NOT EXISTS`. `SdkCreateWithoutOrReplace()` and `SdkCreateWithoutIfNotExists()` leave those clauses out. When both clauses are present they are marked conflicting. `SdkAlter()` includes `IF EXISTS`, the `Set` list inside `SET`, the `Unset` list inside `UNSET`, `SET TAG`, `UNSET TAG`, and the check that exactly one alter branch is set. `SdkAlterWithoutIfExists()`, `SdkAlterWithoutSet()`, `SdkAlterWithoutUnset()`, `SdkAlterWithoutSetTags()`, `SdkAlterWithoutUnsetTags()`, and `SdkAlterWithoutExactlyOneValueSet()` leave those pieces out. `SdkAlterActions` lists action keywords, in order, before `SET` and `UNSET`. `SdkAlterSetAdditionalValidations()` marks the `SET` struct. `SdkCreateAdditionalValidations()` adds that validation call.
+
+---
+
 ### PairedStructs
 
 `PairedStructs` is a single-definition approach for declaring both the database row struct (`dbStruct`) and the plain SDK struct (`plainStruct`) in one field-by-field chain. It replaces the older pattern of calling `ShowOperation`/`DescribeOperation` with separate `DbStruct` and `PlainStruct` builders.

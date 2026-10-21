@@ -75,6 +75,41 @@ func Test_SdkConfig_dropDefaults(t *testing.T) {
 	require.Equal(t, SdkGenerator{Drop: true, DropSafelyHook: true}, raw)
 }
 
+func Test_SdkConfig_createAlterDefaults(t *testing.T) {
+	obj := Object{
+		Name: "ComputePool",
+		Generators: []GeneratorOption{WithSdk(
+			SdkCreate(SdkCreateWithoutOrReplace(), SdkCreateAdditionalValidations()),
+			SdkAlter(SdkAlterActions("RESUME")),
+		)},
+	}
+	cfg := obj.SdkConfig()
+	require.Equal(t, "https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool", cfg.CreateDoc)
+	require.Equal(t, "COMPUTE POOL", cfg.CreateSql)
+	require.Equal(t, "CreateComputePool", cfg.CreateQueryStructName)
+	require.False(t, cfg.CreateWithoutIfNotExists)
+	require.True(t, cfg.CreateWithoutOrReplace)
+	require.False(t, cfg.AlterWithoutIfExists)
+	require.Equal(t, "https://docs.snowflake.com/en/sql-reference/sql/alter-compute-pool", cfg.AlterDoc)
+	require.Equal(t, "COMPUTE POOL", cfg.AlterSql)
+	require.Equal(t, "AlterComputePool", cfg.AlterQueryStructName)
+	require.Equal(t, []string{"RESUME"}, cfg.AlterActions)
+
+	overridden := Object{
+		Name: "ComputePool",
+		Generators: []GeneratorOption{WithSdk(
+			SdkCreate(SdkCreateDoc("https://custom/create"), SdkCreateSql("CUSTOM"), SdkCreateQueryStructName("MakePool")),
+			SdkAlter(SdkAlterDoc("https://custom/alter"), SdkAlterSql("CUSTOM"), SdkAlterQueryStructName("ChangePool")),
+		)},
+	}.SdkConfig()
+	require.Equal(t, "https://custom/create", overridden.CreateDoc)
+	require.Equal(t, "CUSTOM", overridden.CreateSql)
+	require.Equal(t, "MakePool", overridden.CreateQueryStructName)
+	require.Equal(t, "https://custom/alter", overridden.AlterDoc)
+	require.Equal(t, "CUSTOM", overridden.AlterSql)
+	require.Equal(t, "ChangePool", overridden.AlterQueryStructName)
+}
+
 func Test_SdkConfig_panicsWithoutName(t *testing.T) {
 	require.Panics(t, func() {
 		Object{Generators: []GeneratorOption{WithSdk(SdkShow())}}.SdkConfig()
@@ -84,5 +119,11 @@ func Test_SdkConfig_panicsWithoutName(t *testing.T) {
 	})
 	require.Panics(t, func() {
 		Object{Generators: []GeneratorOption{WithSdk(SdkDrop())}}.SdkConfig()
+	})
+	require.Panics(t, func() {
+		Object{Generators: []GeneratorOption{WithSdk(SdkCreate())}}.SdkConfig()
+	})
+	require.Panics(t, func() {
+		Object{Generators: []GeneratorOption{WithSdk(SdkAlter())}}.SdkConfig()
 	})
 }

@@ -33,6 +33,27 @@ type SdkGenerator struct {
 	DropSafelyHook      bool
 	DropSafelyForce     bool
 	DropCascadeRestrict bool
+
+	Create                      bool
+	CreateDoc                   string
+	CreateSql                   string
+	CreateQueryStructName       string
+	CreateWithoutIfNotExists    bool
+	CreateWithoutOrReplace      bool
+	CreateAdditionalValidations bool
+
+	Alter                          bool
+	AlterDoc                       string
+	AlterSql                       string
+	AlterQueryStructName           string
+	AlterWithoutIfExists           bool
+	AlterActions                   []string
+	AlterWithoutSet                bool
+	AlterSetAdditionalValidations  bool
+	AlterWithoutUnset              bool
+	AlterWithoutSetTags            bool
+	AlterWithoutUnsetTags          bool
+	AlterWithoutExactlyOneValueSet bool
 }
 
 type ModelGenerator struct {
@@ -143,6 +164,113 @@ func SdkDropSafelyForce() SdkDropOption {
 // SdkDropCascadeRestrict adds optional CASCADE and RESTRICT, and marks them as conflicting.
 func SdkDropCascadeRestrict() SdkDropOption {
 	return func(s *SdkGenerator) { s.DropCascadeRestrict = true }
+}
+
+type SdkCreateOption func(*SdkGenerator)
+
+func SdkCreate(opts ...SdkCreateOption) SdkOption {
+	return func(s *SdkGenerator) {
+		s.Create = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
+}
+
+// SdkCreateDoc overrides the default CREATE doc URL.
+func SdkCreateDoc(url string) SdkCreateOption {
+	return func(s *SdkGenerator) { s.CreateDoc = url }
+}
+
+// SdkCreateSql overrides the default CREATE command words.
+func SdkCreateSql(sql string) SdkCreateOption {
+	return func(s *SdkGenerator) { s.CreateSql = sql }
+}
+
+// SdkCreateQueryStructName overrides the default CREATE query struct name.
+func SdkCreateQueryStructName(name string) SdkCreateOption {
+	return func(s *SdkGenerator) { s.CreateQueryStructName = name }
+}
+
+// SdkCreateWithoutIfNotExists leaves IF NOT EXISTS out. CREATE includes it unless this option is set.
+func SdkCreateWithoutIfNotExists() SdkCreateOption {
+	return func(s *SdkGenerator) { s.CreateWithoutIfNotExists = true }
+}
+
+// SdkCreateWithoutOrReplace leaves OR REPLACE out. CREATE includes it unless this option is set.
+func SdkCreateWithoutOrReplace() SdkCreateOption {
+	return func(s *SdkGenerator) { s.CreateWithoutOrReplace = true }
+}
+
+func SdkCreateAdditionalValidations() SdkCreateOption {
+	return func(s *SdkGenerator) { s.CreateAdditionalValidations = true }
+}
+
+type SdkAlterOption func(*SdkGenerator)
+
+func SdkAlter(opts ...SdkAlterOption) SdkOption {
+	return func(s *SdkGenerator) {
+		s.Alter = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
+}
+
+// SdkAlterDoc overrides the default ALTER doc URL.
+func SdkAlterDoc(url string) SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterDoc = url }
+}
+
+// SdkAlterSql overrides the default ALTER command words.
+func SdkAlterSql(sql string) SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterSql = sql }
+}
+
+// SdkAlterQueryStructName overrides the default ALTER query struct name.
+func SdkAlterQueryStructName(name string) SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterQueryStructName = name }
+}
+
+// SdkAlterWithoutIfExists leaves IF EXISTS out. ALTER includes it unless this option is set.
+func SdkAlterWithoutIfExists() SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterWithoutIfExists = true }
+}
+
+// SdkAlterActions appends optional action keywords, in the given order, after the name.
+func SdkAlterActions(actions ...string) SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterActions = append(s.AlterActions, actions...) }
+}
+
+// SdkAlterWithoutSet leaves the SET wrapper out. ALTER includes it unless this option is set.
+func SdkAlterWithoutSet() SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterWithoutSet = true }
+}
+
+// SdkAlterSetAdditionalValidations marks the SET struct with additional validations.
+func SdkAlterSetAdditionalValidations() SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterSetAdditionalValidations = true }
+}
+
+// SdkAlterWithoutUnset leaves the UNSET wrapper out. ALTER includes it unless this option is set.
+func SdkAlterWithoutUnset() SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterWithoutUnset = true }
+}
+
+// SdkAlterWithoutSetTags leaves SET TAG out. ALTER includes it unless this option is set.
+func SdkAlterWithoutSetTags() SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterWithoutSetTags = true }
+}
+
+// SdkAlterWithoutUnsetTags leaves UNSET TAG out. ALTER includes it unless this option is set.
+func SdkAlterWithoutUnsetTags() SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterWithoutUnsetTags = true }
+}
+
+// SdkAlterWithoutExactlyOneValueSet leaves out the check that exactly one alter branch is set.
+// ALTER includes that check unless this option is set.
+func SdkAlterWithoutExactlyOneValueSet() SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterWithoutExactlyOneValueSet = true }
 }
 
 func WithSdk(opts ...SdkOption) GeneratorOption {

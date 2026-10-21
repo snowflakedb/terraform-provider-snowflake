@@ -22,6 +22,11 @@ type Object struct {
 	Generators                          []GeneratorOption
 	Show                                OutputSpec
 	Describe                            OutputSpec
+	// Create, Set, and Unset are the SQL field order for those statements.
+	// Presence in the slice is membership. The slice order is the order generation emits.
+	Create []*Attribute
+	Set    []*Attribute
+	Unset  []*Attribute
 }
 
 func (obj Object) ObjectName() string { return obj.Name }

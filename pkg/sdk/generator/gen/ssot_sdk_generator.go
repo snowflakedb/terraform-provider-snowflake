@@ -3,6 +3,7 @@ package gen
 import (
 	"fmt"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 )
 
@@ -135,4 +136,105 @@ func dropQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 			WithValidation(ConflictingFields, "Cascade", "Restrict")
 	}
 	return q
+}
+
+// CreateOperationFromObject adds CREATE from obj.SdkConfig.
+// Clauses are Create, SQL, optional OR REPLACE, optional IF NOT EXISTS, Name, then obj.Create, then ValidIdentifier.
+// helperStructs are query structs the attribute clauses name, such as a list item.
+func (i *Interface) CreateOperationFromObject(obj ssot.Object, helperStructs ...IntoField) *Interface {
+	cfg := obj.SdkConfig()
+	if !cfg.Create {
+		panic(fmt.Sprintf("object %q is not enabled for SDK CREATE generation", obj.Name))
+	}
+	return i.CreateOperation(cfg.CreateDoc, createQueryStructFromConfig(obj, cfg), helperStructs...)
+}
+
+func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
+	q := NewQueryStruct(cfg.CreateQueryStructName).Create().SQL(cfg.CreateSql)
+	if !cfg.CreateWithoutOrReplace {
+		q = q.OrReplace()
+	}
+	if !cfg.CreateWithoutIfNotExists {
+		q = q.IfNotExists()
+	}
+	q = q.Name().appendSqlSequence(obj.Create, attributeSqlCreate).WithValidation(ValidIdentifier, "name")
+	if !cfg.CreateWithoutOrReplace && !cfg.CreateWithoutIfNotExists {
+		q = q.WithValidation(ConflictingFields, "OrReplace", "IfNotExists")
+	}
+	if cfg.CreateAdditionalValidations {
+		q = q.WithAdditionalValidations()
+	}
+	return q
+}
+
+// AlterOperationFromObject adds ALTER from obj.SdkConfig.
+// Clauses are Alter, SQL, optional IF EXISTS, Name, action keywords, optional SET, optional UNSET, optional tag clauses, ValidIdentifier.
+// AtLeastOneValueSet on SET and UNSET lists the fields those structs contain.
+func (i *Interface) AlterOperationFromObject(obj ssot.Object) *Interface {
+	cfg := obj.SdkConfig()
+	if !cfg.Alter {
+		panic(fmt.Sprintf("object %q is not enabled for SDK ALTER generation", obj.Name))
+	}
+	return i.AlterOperation(cfg.AlterDoc, alterQueryStructFromConfig(obj, cfg))
+}
+
+func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
+	q := NewQueryStruct(cfg.AlterQueryStructName).Alter().SQL(cfg.AlterSql)
+	if !cfg.AlterWithoutIfExists {
+		q = q.IfExists()
+	}
+	q = q.Name()
+	// TODO [next PRs]: These keywords are emitted before SET and UNSET. That order matters, and some objects place action keywords after those blocks.
+	for _, action := range cfg.AlterActions {
+		q = q.OptionalSQL(action)
+	}
+	if !cfg.AlterWithoutSet {
+		setStruct := NewQueryStruct(obj.Name+"Set").appendSqlSequence(obj.Set, attributeSqlSet)
+		setFields := queryStructFieldNames(setStruct)
+		if cfg.AlterSetAdditionalValidations {
+			setStruct = setStruct.WithAdditionalValidations()
+		}
+		setStruct = setStruct.WithValidation(AtLeastOneValueSet, setFields...)
+		q = q.OptionalQueryStructField("Set", setStruct, KeywordOptions().SQL("SET"))
+	}
+	if !cfg.AlterWithoutUnset {
+		unsetStruct := NewQueryStruct(obj.Name+"Unset").appendSqlSequence(obj.Unset, attributeSqlUnset)
+		unsetStruct = unsetStruct.WithValidation(AtLeastOneValueSet, queryStructFieldNames(unsetStruct)...)
+		q = q.OptionalQueryStructField("Unset", unsetStruct, ListOptions().NoParentheses().SQL("UNSET"))
+	}
+	if !cfg.AlterWithoutSetTags {
+		q = q.OptionalSetTags()
+	}
+	if !cfg.AlterWithoutUnsetTags {
+		q = q.OptionalUnsetTags()
+	}
+	q = q.WithValidation(ValidIdentifier, "name")
+	if !cfg.AlterWithoutExactlyOneValueSet {
+		q = q.WithValidation(ExactlyOneValueSet, alterExactlyOneFields(cfg)...)
+	}
+	return q
+}
+
+func queryStructFieldNames(q *QueryStruct) []string {
+	return collections.Map(q.fields, func(field *Field) string { return field.Name })
+}
+
+func alterExactlyOneFields(cfg ssot.SdkGenerator) []string {
+	var fields []string
+	for _, action := range cfg.AlterActions {
+		fields = append(fields, sqlToFieldName(action, true))
+	}
+	if !cfg.AlterWithoutSet {
+		fields = append(fields, "Set")
+	}
+	if !cfg.AlterWithoutUnset {
+		fields = append(fields, "Unset")
+	}
+	if !cfg.AlterWithoutSetTags {
+		fields = append(fields, "SetTags")
+	}
+	if !cfg.AlterWithoutUnsetTags {
+		fields = append(fields, "UnsetTags")
+	}
+	return fields
 }

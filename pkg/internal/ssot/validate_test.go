@@ -91,6 +91,78 @@ func Test_ValidateObject_createOnlyMustBeOptionalBool(t *testing.T) {
 	})
 }
 
+func Test_ValidateObject_sqlClause(t *testing.T) {
+	minNodes := Attribute{
+		Name:      "min_nodes",
+		Type:      AttrInt,
+		CreateSql: IntParameter(),
+		SetSql:    IntParameter(Optional()),
+	}
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name:       "Pool",
+			Attributes: []Attribute{minNodes},
+			Create:     []*Attribute{&minNodes},
+			Set:        []*Attribute{&minNodes},
+		})
+	})
+
+	require.Panics(t, func() {
+		ValidateObject(Object{
+			Name: "Pool",
+			Attributes: []Attribute{{
+				Name:      "created_on",
+				Type:      AttrTime,
+				CreateSql: IntParameter(),
+			}},
+		})
+	})
+
+	require.Panics(t, func() {
+		ValidateObject(Object{
+			Name: "Pool",
+			Attributes: []Attribute{{
+				Name:      "comment",
+				Type:      AttrString,
+				CreateSql: IdentifierKeyword("AccountObjectIdentifier"),
+			}},
+		})
+	})
+
+	require.Panics(t, func() {
+		ValidateObject(Object{
+			Name: "Pool",
+			Attributes: []Attribute{{
+				Name:      "instance_family",
+				Type:      AttrEnum,
+				CreateSql: EnumParameter(),
+			}},
+		})
+	})
+
+	require.Panics(t, func() {
+		ValidateObject(Object{
+			Name: "Pool",
+			Attributes: []Attribute{{
+				Name:      "backup",
+				Type:      AttrList,
+				CreateSql: ListParameter(""),
+			}},
+		})
+	})
+
+	require.Panics(t, func() {
+		ValidateObject(Object{
+			Name: "Pool",
+			Attributes: []Attribute{{
+				Name:      "for_application",
+				Type:      AttrIdentifier,
+				CreateSql: IdentifierKeyword(""),
+			}},
+		})
+	})
+}
+
 func Test_ValidateObject_duplicateOutputKey(t *testing.T) {
 	a := Attribute{Name: "for_application", ShowName: "application"}
 	b := Attribute{Name: "application"}

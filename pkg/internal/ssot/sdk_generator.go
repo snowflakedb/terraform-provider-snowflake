@@ -11,6 +11,8 @@ const (
 	showDocURLPrefix     = "https://docs.snowflake.com/en/sql-reference/sql/show-"
 	describeDocURLPrefix = "https://docs.snowflake.com/en/sql-reference/sql/desc-"
 	dropDocURLPrefix     = "https://docs.snowflake.com/en/sql-reference/sql/drop-"
+	createDocURLPrefix   = "https://docs.snowflake.com/en/sql-reference/sql/create-"
+	alterDocURLPrefix    = "https://docs.snowflake.com/en/sql-reference/sql/alter-"
 )
 
 // SdkShowByIDFilteringKind is one ShowByID filter, in call-argument order.
@@ -142,6 +144,30 @@ func (obj Object) SdkConfig() SdkGenerator {
 			cfg.DropQueryStructName = "Drop" + name
 		}
 	}
+	if cfg.Create {
+		name := obj.nameForCreate()
+		if cfg.CreateDoc == "" {
+			cfg.CreateDoc = createDocURLPrefix + docsObjectSlug(name)
+		}
+		if cfg.CreateSql == "" {
+			cfg.CreateSql = strings.ToUpper(genhelpers.CamelToWords(name))
+		}
+		if cfg.CreateQueryStructName == "" {
+			cfg.CreateQueryStructName = "Create" + name
+		}
+	}
+	if cfg.Alter {
+		name := obj.nameForAlter()
+		if cfg.AlterDoc == "" {
+			cfg.AlterDoc = alterDocURLPrefix + docsObjectSlug(name)
+		}
+		if cfg.AlterSql == "" {
+			cfg.AlterSql = strings.ToUpper(genhelpers.CamelToWords(name))
+		}
+		if cfg.AlterQueryStructName == "" {
+			cfg.AlterQueryStructName = "Alter" + name
+		}
+	}
 	return cfg
 }
 
@@ -160,8 +186,20 @@ func (obj Object) nameForDescribe() string {
 }
 
 func (obj Object) nameForDrop() string {
+	return obj.singularName("DROP")
+}
+
+func (obj Object) nameForCreate() string {
+	return obj.singularName("CREATE")
+}
+
+func (obj Object) nameForAlter() string {
+	return obj.singularName("ALTER")
+}
+
+func (obj Object) singularName(statement string) string {
 	if obj.Name == "" {
-		panic(fmt.Sprintf("object %q needs Name to build the DROP defaults", obj.Name))
+		panic(fmt.Sprintf("object %q needs Name to build the %s defaults", obj.Name, statement))
 	}
 	return obj.Name
 }

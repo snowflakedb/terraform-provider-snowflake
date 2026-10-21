@@ -98,14 +98,25 @@ enable nothing.
   See [that section](../../acceptance/bettertestspoc/README.md#adding-new-resource-parameters-assertions).
   Parameters come from the same catalog entries, and constants are `sdk.<Name>Parameter`. The two switches are
   independent. Leave the handwritten entry while only one of them is opted in.
-- `WithSdk(SdkShow(), SdkDescribe(), SdkDrop())` - SDK paired structs and DROP (`make generate-sdk`).
+- `WithSdk(SdkShow(), SdkDescribe(), SdkDrop(), SdkCreate(), SdkAlter())` - SDK paired structs, DROP, CREATE, and ALTER (`make generate-sdk`).
   See [PairedStructs](../../sdk/generator/README.md#pairedstructs). Show and Describe fields come
   from [SHOW and DESCRIBE](#show-and-describe) `Columns`, not from `Attributes`. `OptionalInDb` is live for the mapped
   db and plain kinds. `StoredAsText` selects `BoolFromText` for a bool. A bool without the mark is still db `bool`.
   Other generators ignore the mark. See [Attribute](#attribute). `SdkDrop()` builds DROP from `Name`: `DROP`, the
   uppercase words, `IF EXISTS`, and the name. `SdkDropSafelyHook()`, `SdkDropSafelyForce()`, and
   `SdkDropCascadeRestrict()` are settings of that call. `SdkDropCascadeRestrict()` adds optional `CASCADE` and
-  `RESTRICT` and marks those fields as conflicting. The hook body stays in the SDK ext file.
+  `RESTRICT` and marks those fields as conflicting. The hook body stays in the SDK ext file. `SdkCreate()` builds
+  CREATE from `Name`: `CREATE`, the uppercase words, `OR REPLACE`, `IF NOT EXISTS`, and the name, then the `Create`
+  list. `SdkCreateWithoutOrReplace()` and `SdkCreateWithoutIfNotExists()` leave those clauses out. When both clauses are
+  present they are marked conflicting. `SdkCreateAdditionalValidations()` adds that validation call. `SdkAlter()` builds
+  ALTER from `Name`: `ALTER`, the uppercase words, `IF EXISTS`, and the name, then `SdkAlterActions`,
+  the `Set` list inside `SET`, the `Unset` list inside `UNSET`, `SET TAG`, and `UNSET TAG`.
+  `SdkAlterWithoutIfExists()`, `SdkAlterWithoutSet()`, `SdkAlterWithoutUnset()`, `SdkAlterWithoutSetTags()`,
+  `SdkAlterWithoutUnsetTags()`, and `SdkAlterWithoutExactlyOneValueSet()` leave those pieces out.
+  `SdkAlterSetAdditionalValidations()` marks the `SET` struct. `Create`, `Set`, and `Unset` are `[]*Attribute`, with the
+  same membership and order rules as `Columns`. [`Tags`](attribute.go) is the optional `TAG` clause and belongs on
+  `Create`. Clause shape is `CreateSql`, `SetSql`, and `UnsetSql` on [Attribute](attribute.go). When `SdkCreate()` or
+  `SdkAlter()` is off, that call stays in the def.
 
 Fill `Show` / `Describe` first; enable the matching SHOW or DESCRIBE setting when the lists are ready. Enabling SHOW or
 DESCRIBE schema generation, show output assertions, Snowflake object assertions, or SDK paired structs without `Columns`
@@ -152,14 +163,15 @@ nothing must not change generated files. Do not feed `All()` in as "generate eve
 Generators default to ssot and `All()` only once the definitions cover the objects. The calls are
 in [Generators](#generators).
 
-`SchemaShow`, `SchemaDescribe`, `SdkShow`, `SdkDescribe`, `SdkDrop`, `ShowOutputShow`, `ShowOutputDescribe`,
-`ObjectAssertShow`, and `ObjectAssertDescribe` are not `GeneratorOption`. They cannot sit alone in `Generators`. A bare
-`WithSchema()`, `WithSdk()`, `WithShowOutputAssert()`, or `WithObjectAssert()` enables nothing. `SdkDrop()` with no
-options still sets `Drop`. `ObjectAssertDescribe()` with no options sets `Describe` and leaves `NoIdentifiableObject`
+`SchemaShow`, `SchemaDescribe`, `SdkShow`, `SdkDescribe`, `SdkDrop`, `SdkCreate`, `SdkAlter`, `ShowOutputShow`,
+`ShowOutputDescribe`, `ObjectAssertShow`, and `ObjectAssertDescribe` are not `GeneratorOption`. They cannot sit alone in
+`Generators`. A bare `WithSchema()`, `WithSdk()`, `WithShowOutputAssert()`, or `WithObjectAssert()` enables nothing.
+`SdkDrop()` with no options still sets `Drop`. `SdkCreate()` with no options still sets `Create`. `SdkAlter()` with no
+options still sets `Alter`. `ObjectAssertDescribe()` with no options sets `Describe` and leaves `NoIdentifiableObject`
 false. `WithModel()` and `WithResourceAssert()` take a variadic of `ModelOption` and `ResourceAssertOption`. No
 constructors exist for those option types. Zero options still sets `Enabled`. A later setting is another option on that
-call, not a new `Generators` entry. Consumers read the fields `Show`, `Describe`, `Drop`, `Enabled`, and
-`NoIdentifiableObject`.
+call, not a new `Generators` entry. Consumers read the fields `Show`, `Describe`, `Drop`, `Create`, `Alter`, `Enabled`,
+and `NoIdentifiableObject`.
 
 Do not apply resource-attribute classification. A SHOW bool is `bool`. A paired bool without `StoredAsText` is db
 `bool`.
@@ -188,8 +200,10 @@ Until a piece has moved, do not assume it is already in ssot:
 - When `SdkShow()` or `SdkDescribe()` is on, that Show or Describe method comes from the option. The query struct,
   ShowByID filtering, and `DescriptionMappingKind` are part of it. An object with the setting off keeps the handwritten
   call. When `SdkDrop()` is on, that Drop method comes from the option. An object with the setting off keeps the
-  handwritten call. CREATE, ALTER, parameters, and every other operation stay in the SDK def. They are not generated
-  from `Columns`.
+  handwritten call. When `SdkCreate()` or `SdkAlter()` is on, that Create or Alter method comes from the option. An
+  object with the setting off keeps the handwritten call. Clause shape is `CreateSql`, `SetSql`, and `UnsetSql`
+  ([Attribute](attribute.go)). `Create`, `Set`, and `Unset` are the statement order. Parameters and every other
+  operation stay in the SDK def. They are not generated from `Columns`.
 - `SkipFields`, `ManualFields`, `TypeOverrides`, and `UsedAsListEntry` have no ssot equivalent yet.
 - `ResourceHooks` do not yet generate the whole lifecycle, the SDK calls, or the mapping. A missing step stays an ext
   call, or panics through `Unimplemented`, until that hook is implemented. See [Resource generator](#resource-generator).
@@ -204,9 +218,17 @@ A paired-field option that ssot does not map panics. There is no silent fallback
 with neither optional flag. Anything else panics. A list of enums is plain `[]string` in the SDK struct, not a slice of
 the enum type.
 
+#### Limitations
+
+- A list clause takes the item query struct name as a string. The item struct stays in the SDK def.
+- Create and set clauses are chosen by constructor. The attribute type does not pick one.
+- Unset is written per attribute. It is not a default bool keyword, with overrides to leave the field out or to unset by setting a value.
+- `SdkAlterActions` are emitted before `SET` and `UNSET`. Some objects place action keywords after those blocks.
+
 #### Why Show and Describe columns are explicit
 
-`Attributes` is the CREATE/ALTER sequence. `OutputSpec.Columns` is membership and Snowflake order for one operation.
+`Attributes` is the resource schema sequence. `Create`, `Set`, and `Unset` are the SQL field order for those
+statements. `OutputSpec.Columns` is membership and Snowflake order for one operation.
 Presence in that slice is the only membership. The same `Attribute` var is pointed at from `Columns` so the snake_case
 name is not restated. `ShowName` is the output key when it differs from `Name`. `OutputKey()` is `ShowName` or `Name`.
 See [SHOW and DESCRIBE](#show-and-describe).

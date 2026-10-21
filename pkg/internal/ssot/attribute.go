@@ -37,6 +37,9 @@ type Attribute struct {
 	Readonly              bool
 	CreateMapping         CreateMapping
 	UpdateMapping         UpdateMapping
+	CreateSql             SqlClause // CREATE SQL clause. Zero is absent from that statement.
+	SetSql                SqlClause // SET SQL clause. Zero is absent from that statement.
+	UnsetSql              SqlClause // UNSET SQL clause. Zero is absent from that statement.
 	// SuppressShowChange composes IgnoreChangeToCurrentSnowflakeValueInShow(OutputKey()) onto the diff suppressor.
 	// TODO [next PRs]: Replace this bool with an explicit SHOW, DESCRIBE, or none choice.
 	// Both outputs on an object do not imply SHOW. Some fields compare against DESCRIBE, some against neither,
@@ -50,6 +53,14 @@ type Attribute struct {
 	// RelatedResource is the SSOT object whose Terraform resource is linked from the description.
 	// The generator emits resources.<Name>. Nil means no link.
 	RelatedResource *Object
+	Tags            bool // optional TAG clause. Only valid on a CREATE list, not on Attributes.
+}
+
+// Tags is the optional TAG clause. Put it on a CREATE list. It is not an Attributes entry.
+var Tags = &Attribute{Name: "tags", Tags: true}
+
+func (a *Attribute) IsTags() bool {
+	return a != nil && a.Tags
 }
 
 func (a Attribute) OutputKey() string {
