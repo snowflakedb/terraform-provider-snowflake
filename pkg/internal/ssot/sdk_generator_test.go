@@ -75,6 +75,36 @@ func Test_SdkConfig_dropDefaults(t *testing.T) {
 	require.Equal(t, SdkGenerator{Drop: true, DropSafelyHook: true}, raw)
 }
 
+func Test_ObjectType_matchesSdkConfig(t *testing.T) {
+	computePool := Object{
+		Name:       "ComputePool",
+		NamePlural: "ComputePools",
+		Generators: []GeneratorOption{WithSdk(SdkShow(), SdkDescribe(), SdkCreate(), SdkAlter(), SdkDrop())},
+	}
+	require.Equal(t, "COMPUTE POOL", computePool.ObjectType())
+	cfg := computePool.SdkConfig()
+	require.Equal(t, computePool.ObjectType(), cfg.DescribeSql)
+	require.Equal(t, computePool.ObjectType(), cfg.CreateSql)
+	require.Equal(t, computePool.ObjectType(), cfg.AlterSql)
+	require.Equal(t, computePool.ObjectType(), cfg.DropSql)
+
+	overridden := Object{
+		Name: "CatalogIntegrationObjectStorage",
+		Generators: []GeneratorOption{WithSdk(
+			SdkDescribe(SdkDescribeSql("CATALOG INTEGRATION")),
+			SdkCreate(),
+			SdkAlter(),
+			SdkDrop(),
+		)},
+	}
+	require.Equal(t, "CATALOG INTEGRATION", overridden.ObjectType())
+	cfg = overridden.SdkConfig()
+	require.Equal(t, overridden.ObjectType(), cfg.DescribeSql)
+	require.Equal(t, overridden.ObjectType(), cfg.CreateSql)
+	require.Equal(t, overridden.ObjectType(), cfg.AlterSql)
+	require.Equal(t, overridden.ObjectType(), cfg.DropSql)
+}
+
 func Test_SdkConfig_createAlterDefaults(t *testing.T) {
 	obj := Object{
 		Name: "ComputePool",

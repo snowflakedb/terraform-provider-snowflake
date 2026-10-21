@@ -83,8 +83,8 @@ func SdkDescribeDoc(url string) SdkDescribeOption {
 	return func(s *SdkGenerator) { s.DescribeDoc = url }
 }
 
-// SdkDescribeSql overrides the default DESCRIBE command words.
-// The default is the uppercase words of Name, so ComputePool is COMPUTE POOL.
+// SdkDescribeSql overrides ObjectType.
+// CREATE, ALTER, DROP, and DESCRIBE use that value unless the statement sets its own SQL.
 func SdkDescribeSql(sql string) SdkDescribeOption {
 	return func(s *SdkGenerator) { s.DescribeSql = sql }
 }
@@ -123,7 +123,7 @@ func (obj Object) SdkConfig() SdkGenerator {
 			cfg.DescribeDoc = describeDocURLPrefix + docsObjectSlug(name)
 		}
 		if cfg.DescribeSql == "" {
-			cfg.DescribeSql = strings.ToUpper(genhelpers.CamelToWords(name))
+			cfg.DescribeSql = obj.ObjectType()
 		}
 		if cfg.DescribeQueryStructName == "" {
 			cfg.DescribeQueryStructName = "Desc" + name
@@ -138,7 +138,7 @@ func (obj Object) SdkConfig() SdkGenerator {
 			cfg.DropDoc = dropDocURLPrefix + docsObjectSlug(name)
 		}
 		if cfg.DropSql == "" {
-			cfg.DropSql = strings.ToUpper(genhelpers.CamelToWords(name))
+			cfg.DropSql = obj.ObjectType()
 		}
 		if cfg.DropQueryStructName == "" {
 			cfg.DropQueryStructName = "Drop" + name
@@ -150,7 +150,7 @@ func (obj Object) SdkConfig() SdkGenerator {
 			cfg.CreateDoc = createDocURLPrefix + docsObjectSlug(name)
 		}
 		if cfg.CreateSql == "" {
-			cfg.CreateSql = strings.ToUpper(genhelpers.CamelToWords(name))
+			cfg.CreateSql = obj.ObjectType()
 		}
 		if cfg.CreateQueryStructName == "" {
 			cfg.CreateQueryStructName = "Create" + name
@@ -162,7 +162,7 @@ func (obj Object) SdkConfig() SdkGenerator {
 			cfg.AlterDoc = alterDocURLPrefix + docsObjectSlug(name)
 		}
 		if cfg.AlterSql == "" {
-			cfg.AlterSql = strings.ToUpper(genhelpers.CamelToWords(name))
+			cfg.AlterSql = obj.ObjectType()
 		}
 		if cfg.AlterQueryStructName == "" {
 			cfg.AlterQueryStructName = "Alter" + name
@@ -176,6 +176,18 @@ func (obj Object) namePluralForShow() string {
 		panic(fmt.Sprintf("object %q needs NamePlural to build the SHOW defaults", obj.Name))
 	}
 	return obj.NamePlural
+}
+
+// ObjectType is the Snowflake SQL object type words, so ComputePool is COMPUTE POOL.
+// SdkDescribeSql overrides the default. The default is the uppercase words of Name.
+func (obj Object) ObjectType() string {
+	if sql := ObjectGenerators(obj.Generators...).Sdk.DescribeSql; sql != "" {
+		return sql
+	}
+	if obj.Name == "" {
+		panic(fmt.Sprintf("object %q needs Name to build the object type", obj.Name))
+	}
+	return strings.ToUpper(genhelpers.CamelToWords(obj.Name))
 }
 
 func (obj Object) nameForDescribe() string {

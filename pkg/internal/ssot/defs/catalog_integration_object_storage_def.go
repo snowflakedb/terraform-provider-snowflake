@@ -73,12 +73,12 @@ var CatalogIntegrationObjectStorage = ssot.Object{
 		// WithResourceAssert omitted. catalog_source is added in the schema ext, so the schema-based assert still emits it.
 		// ObjectAssertShow omitted. There is no sdk.CatalogIntegrationObjectStorage type.
 		// ObjectAssertDescribe omitted. The SDK list keeps DescribeObjectStorage on the catalog integration helper.
+		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant.
+		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"))),
 		ssot.WithShowOutputAssert(ssot.ShowOutputDescribe()),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
-		// Snowflake's command is DESCRIBE CATALOG INTEGRATION. The generated text would use the resource name.
-		ssot.WithDescribeOutputSchema(ssot.ExtCall()),
 		ssot.WithHandleExternalChangesInDescribe(ssot.ExtCall()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 		ssot.WithSetStateToValuesFromConfig(ssot.Omitted()),

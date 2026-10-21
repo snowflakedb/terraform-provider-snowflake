@@ -20,6 +20,7 @@ type ResourceModel struct {
 	AdditionalIdentityNameDescription   string
 	Attributes                          []ResourceAttribute
 	AttributesModification              bool
+	ObjectType                          string
 	Hooks                               ssot.ResourceHooks
 	*genhelpers.PreambleModel
 }
@@ -84,6 +85,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		AdditionalIdentityNameDescription:   input.AdditionalIdentityNameDescription,
 		Attributes:                          attributes,
 		AttributesModification:              input.AttributesModification,
+		ObjectType:                          input.ObjectType(),
 		Hooks:                               hooks,
 		PreambleModel:                       preamble,
 	}
