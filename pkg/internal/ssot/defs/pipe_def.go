@@ -59,8 +59,21 @@ var Pipe = ssot.Object{
 	Name:                   "Pipe",
 	NamePlural:             "Pipes",
 	IdType:                 "SchemaObjectIdentifier",
+	LegacyIdEncoding:       true,
 	AttributesModification: true,
+	// The importer is a passthrough (pipeImporterExt). With ShowByIdInSdk omitted, no Import function is generated.
+	// ApplyCreateOptionals and ApplySetUnset stay in the extension: aws_sns_topic_arn maps to WithAwsSnsTopic,
+	// auto_ingest has no create mapping, and integration is not part of SET/UNSET.
 	ResourceHooks: []ssot.ResourceHookOption{
+		ssot.WithParseIdFromConfig(ssot.Generated()),
+		ssot.WithNewCreateRequest(ssot.Generated()),
+		ssot.WithDescribeInSdk(ssot.Omitted()),
+		ssot.WithHandleExternalChanges(ssot.Omitted()),
+		ssot.WithSetStateToValuesFromConfig(ssot.Omitted()),
+		ssot.WithShowOutputSet(ssot.Omitted()),
+		ssot.WithDescribeOutputSet(ssot.Omitted()),
+		ssot.WithShowByIdInSdk(ssot.Omitted()),
+		ssot.WithSetFieldsNotSetByRead(ssot.Omitted()),
 		ssot.WithIdentitySchema(ssot.ExtCall()),
 		ssot.WithShowOutputSchema(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),

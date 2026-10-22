@@ -16,10 +16,6 @@ type ResourceObject struct {
 }
 
 var resourceGenerationSettings = map[string]*genhelpers.ObjectGenerationSettings{
-	// TODO [next PRs]: generate the pipe lifecycle and remove this entry.
-	"Pipe": {
-		AllowedGenerationParts: []genhelpers.GenerationPartNamer{PartSchema},
-	},
 	"Schema": {
 		AllowedGenerationParts: []genhelpers.GenerationPartNamer{PartDefault, PartSchema, PartParameters},
 		EnabledGenerationParts: []genhelpers.GenerationPartNamer{PartParameters},

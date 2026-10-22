@@ -44,16 +44,8 @@ type pipeAlterRequestsExt struct {
 	unset *sdk.PipeUnsetRequest
 }
 
-func pipeParseIdFromConfigExt(d *schema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
-	return sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string)), nil
-}
-
 func pipeParseIdExt(id string) (sdk.SchemaObjectIdentifier, error) {
 	return helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier](id)
-}
-
-func pipeNewCreateRequestExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier) (*sdk.CreatePipeRequest, error) {
-	return sdk.NewCreatePipeRequest(id, d.Get("copy_statement").(string)), nil
 }
 
 func pipeApplyCreateOptionalsExt(d *schema.ResourceData, req *sdk.CreatePipeRequest) error {
@@ -152,7 +144,7 @@ func pipeShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, met
 	return pipe, nil
 }
 
-func pipeAlterSetInSdkExt(ctx context.Context, meta any, id sdk.SchemaObjectIdentifier, reqs *pipeAlterRequestsExt) error {
+func pipeAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier, reqs *pipeAlterRequestsExt) error {
 	client := meta.(*provider.Context).Client
 	if !reflect.DeepEqual(reqs.set, sdk.NewPipeSetRequest()) {
 		if err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(id).WithSet(*reqs.set)); err != nil {
