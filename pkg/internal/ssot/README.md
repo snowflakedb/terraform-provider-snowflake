@@ -317,6 +317,9 @@ the enum type.
 
 - A list that is not a list of enums takes the item query struct name as a string. That struct stays in the SDK def.
 - A list of enums is built in the SDK generator: struct name `{Enum}ListItem`, field `Value`, required single-quoted keyword. ssot should hold that description, and the generator should only translate it into the query struct. Do that together with more complex list items, not for this enum case alone.
+- Computed fields, `Deprecated`, and an explicit schema `Default` are not attribute fields. `NativeBool`
+  keeps an optional bool as `TypeBool` and does not emit `Default`. `Min` and `Max` emit `ValidateDiagFunc`.
+  Chrome the generator does not emit stays in the attributes modification function.
 
 #### Why Show and Describe columns are explicit
 
