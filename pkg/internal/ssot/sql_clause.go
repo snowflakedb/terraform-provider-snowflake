@@ -30,11 +30,12 @@ const (
 	SqlParensNo  SqlParens = "no_parentheses"
 )
 
-// SqlEquals is the equals ddl tag. Zero means the equals sign stays.
+// SqlEquals is the equals ddl tag. Zero leaves the identifier default, which has no equals tag.
 type SqlEquals string
 
 const (
-	SqlEqualsNo SqlEquals = "no_equals"
+	SqlEqualsYes SqlEquals = "equals"
+	SqlEqualsNo  SqlEquals = "no_equals"
 )
 
 // ClauseUse selects CreateSql, SetSql, or UnsetSql.
@@ -260,6 +261,10 @@ func Parentheses() SqlClauseOption {
 
 func NoParentheses() SqlClauseOption {
 	return func(c *SqlClause) { c.Parentheses = SqlParensNo }
+}
+
+func Equals() SqlClauseOption {
+	return func(c *SqlClause) { c.Equals = SqlEqualsYes }
 }
 
 func NoEquals() SqlClauseOption {

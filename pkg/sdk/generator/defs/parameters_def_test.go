@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/stretchr/testify/require"
@@ -163,6 +164,13 @@ func TestParameterDefsForLevel(t *testing.T) {
 			"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS",
 			"STATEMENT_TIMEOUT_IN_SECONDS",
 		}, sqlNames(ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouseInteractive)))
+	})
+
+	t.Run("warehouse plus interactive is the interactive set in catalog order", func(t *testing.T) {
+		require.Equal(t,
+			ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouseInteractive),
+			ssotdefs.ParameterDefsForLevels(parameterdefs.ParameterLevelWarehouse, parameterdefs.ParameterLevelWarehouseInteractive),
+		)
 	})
 
 	t.Run("session level", func(t *testing.T) {

@@ -35,6 +35,7 @@ type Object struct {
 	// Create, Set, Unset, and Alter are the SQL field order for those statements.
 	// Presence in a slice is membership. The slice order is the order generation emits.
 	// Set and Unset are the fields inside those blocks. Alter is the order of the blocks and action keywords after the name.
+	// A field in those slices may be absent from Attributes when it is not a resource attribute.
 	Create CreateSpec
 	Set    []*Attribute
 	Unset  []*Attribute
@@ -45,6 +46,21 @@ type Object struct {
 	// CustomInterfaceMethods are interface declarations whose bodies stay in the SDK ext file.
 	// SdkCustomInterfaceMethods turns them on.
 	CustomInterfaceMethods []CustomInterfaceMethodSpec
+	// AlterAdditionalParametersForLevels adds parameters from these levels onto SET and UNSET.
+	// The union is emitted in catalog order. A name already in ParameterLevel() is kept once.
+	// CREATE stays ParameterLevel().
+	// TODO [next PRs]: Generate a dedicated ALTER for each object type. One statement that unions every type's parameters is the current shape.
+	AlterAdditionalParametersForLevels []ParameterLevel
+}
+
+// ParameterLevelsFor is the catalog levels a Parameters entry spreads, in order.
+// CREATE is ParameterLevel(). SET and UNSET append AlterAdditionalParametersForLevels.
+func (obj Object) ParameterLevelsFor(statement string) []ParameterLevel {
+	levels := []ParameterLevel{obj.ParameterLevel()}
+	if statement == "SET" || statement == "UNSET" {
+		levels = append(levels, obj.AlterAdditionalParametersForLevels...)
+	}
+	return levels
 }
 
 // AlterClauseKind is one entry in an ALTER statement after the name.
@@ -58,17 +74,36 @@ const (
 	AlterClauseUnset     AlterClauseKind = "unset"
 	AlterClauseSetTags   AlterClauseKind = "set_tags"
 	AlterClauseUnsetTags AlterClauseKind = "unset_tags"
+	AlterClauseList      AlterClauseKind = "list"
 )
 
-// AlterClause is one ALTER entry. Keyword uses SQL. The other kinds are the SET, UNSET, SET TAG, and UNSET TAG blocks.
+// AlterClause is one ALTER entry. Keyword and list use SQL. The other kinds are the SET, UNSET, SET TAG, and UNSET TAG blocks.
 type AlterClause struct {
 	Kind AlterClauseKind
 	SQL  string
+	// NotExactlyOne leaves a keyword out of ExactlyOneValueSet. It may accompany another action.
+	NotExactlyOne bool
+	// ListItem is the Go type of a list element, without a pointer.
+	ListItem string
 }
 
 // AlterKeyword is an optional action keyword, such as RESUME or ENABLE MANAGED ACCESS.
+// It is one branch of ExactlyOneValueSet.
 func AlterKeyword(sql string) AlterClause {
 	return AlterClause{Kind: AlterClauseKeyword, SQL: sql}
+}
+
+// AlterKeywordNotExactlyOne is an optional action keyword that may accompany another branch.
+// IF SUSPENDED is one: it can be set together with RESUME.
+func AlterKeywordNotExactlyOne(sql string) AlterClause {
+	return AlterClause{Kind: AlterClauseKeyword, SQL: sql, NotExactlyOne: true}
+}
+
+// AlterList is a list assignment after the name, such as ADD TABLES.
+// itemType is the element Go type, without a pointer. The clause uses parentheses and no equals.
+// It is one branch of ExactlyOneValueSet, and each element is a valid identifier.
+func AlterList(sql, itemType string) AlterClause {
+	return AlterClause{Kind: AlterClauseList, SQL: sql, ListItem: itemType}
 }
 
 // AlterRenameTo is RENAME TO. The identifier type is the object's IdType.

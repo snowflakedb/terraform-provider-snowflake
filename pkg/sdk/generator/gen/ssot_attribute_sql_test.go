@@ -53,6 +53,34 @@ func Test_appendAttributeSql(t *testing.T) {
 	})
 }
 
+func Test_appendAttributeSql_identifierEquals(t *testing.T) {
+	monitor := ssot.Attribute{
+		Name:      "resource_monitor",
+		Type:      ssot.AttrIdentifier,
+		CreateSql: ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Equals()),
+	}
+	got := NewQueryStruct("clauses").appendSqlSequence([]*ssot.Attribute{&monitor}, attributeSqlCreate)
+	want := NewQueryStruct("clauses").
+		OptionalIdentifier("ResourceMonitor", "AccountObjectIdentifier", IdentifierOptions().SQL("RESOURCE_MONITOR").Equals())
+	require.Equal(t, want.fields, got.fields)
+}
+
+func Test_appendAttributeSql_showEnum(t *testing.T) {
+	resourceEnum := ssot.NewEnum("WidgetTypeUserSettable", "WidgetTypesUserSettable", "STANDARD")
+	showEnum := ssot.NewEnum("WidgetType", "WidgetTypes", "STANDARD", "ADAPTIVE")
+	kind := ssot.Attribute{
+		Name:      "kind",
+		Type:      ssot.AttrEnum,
+		Enum:      resourceEnum,
+		ShowEnum:  showEnum,
+		CreateSql: ssot.EnumParameter(ssot.SingleQuotes()),
+	}
+	got := NewQueryStruct("clauses").appendSqlSequence([]*ssot.Attribute{&kind}, attributeSqlCreate)
+	want := NewQueryStruct("clauses").
+		OptionalEnumAssignment("KIND", showEnum, ParameterOptions().SingleQuotes())
+	require.Equal(t, want.fields, got.fields)
+}
+
 func Test_appendSqlSequence_order(t *testing.T) {
 	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString, CreateSql: ssot.StringParameter()}
 	count := ssot.Attribute{Name: "count", Type: ssot.AttrInt, Required: true, CreateSql: ssot.IntParameter()}

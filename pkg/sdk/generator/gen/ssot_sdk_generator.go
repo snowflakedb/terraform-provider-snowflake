@@ -8,10 +8,8 @@ import (
 	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 )
 
-// parametersForObject is the catalog a Parameters entry spreads. Tests replace it with a short list.
-var parametersForObject = func(obj ssot.Object) []ssot.ParameterDef {
-	return ssotdefs.ParameterDefsForLevel(obj.ParameterLevel())
-}
+// parametersForLevel is the catalog a Parameters entry spreads. Tests replace it with a short list.
+var parametersForLevel = ssotdefs.ParameterDefsForLevel
 
 // ShowOperationFromObject adds SHOW and ShowByID from obj.SdkConfig.
 // The field chain comes from ShowPairedStructs. Clauses are emitted in a fixed order:
@@ -171,7 +169,7 @@ func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryS
 			panic("KeywordsBefore list contains parameters")
 		}
 	}
-	createParams := parametersForStatement(obj, obj.Create.Clauses)
+	createParams := parametersForStatement(obj, obj.Create.Clauses, "CREATE")
 	q = q.appendSqlSequence(obj.Create.KeywordsBefore, attributeSqlCreate).SQL(cfg.CreateSql)
 	if !cfg.CreateWithoutIfNotExists {
 		q = q.IfNotExists()
@@ -286,7 +284,7 @@ func (i *Interface) ShowParametersDetailsFromObject(obj ssot.Object) *Interface 
 	if !obj.SdkConfig().ShowParametersDetails {
 		panic(fmt.Sprintf("object %q is not enabled for SDK ShowParametersDetails generation", obj.Name))
 	}
-	return i.ShowParametersDetails(parametersForObject(obj)...)
+	return i.ShowParametersDetails(parametersForLevel(obj.ParameterLevel())...)
 }
 
 // InterfaceFromObject builds one SDK interface from the operations whose flags are on.
@@ -617,6 +615,11 @@ func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QuerySt
 			}
 			seen[clause.Kind] = struct{}{}
 			q = q.OptionalUnsetTags()
+		case ssot.AlterClauseList:
+			if clause.SQL == "" || clause.ListItem == "" {
+				panic(fmt.Sprintf("object %q: ALTER list %q has no SQL or item type", obj.Name, clause.SQL))
+			}
+			q = q.ListAssignment(clause.SQL, clause.ListItem, ParameterOptions().Parentheses().NoEquals())
 		default:
 			panic(fmt.Sprintf("object %q: ALTER clause has kind %q", obj.Name, clause.Kind))
 		}
@@ -626,17 +629,25 @@ func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QuerySt
 		q = q.WithValidation(ExactlyOneValueSet, alterExactlyOneFields(obj)...)
 	}
 	q = q.withAlterIdentifierValidations(obj)
+	for _, clause := range obj.Alter.Clauses {
+		if clause.Kind == ssot.AlterClauseList {
+			q = q.WithValidation(ValidIdentifier, sqlToFieldName(clause.SQL, true))
+		}
+	}
+	if cfg.AlterAdditionalValidations {
+		q = q.WithAdditionalValidations()
+	}
 	return q
 }
 
 func appendAlterSet(q *QueryStruct, obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
-	setParams := parametersForStatement(obj, obj.Set)
+	setParams := parametersForStatement(obj, obj.Set, "SET")
 	setStruct := NewQueryStruct(obj.Name+"Set").appendSqlSequenceParams(obj.Set, attributeSqlSet, setParams)
 	setStruct = setStruct.withIdentifierParameterValidations(setParams)
+	setStruct = setStruct.WithValidation(AtLeastOneValueSet, atLeastOneFields(setStruct, setParams)...)
 	if cfg.AlterSetAdditionalValidations {
 		setStruct = setStruct.WithAdditionalValidations()
 	}
-	setStruct = setStruct.WithValidation(AtLeastOneValueSet, queryStructFieldNames(setStruct)...)
 	var setOptions FieldTransformer = KeywordOptions().SQL("SET")
 	if cfg.AlterSetList {
 		setOptions = ListOptions().NoParentheses().SQL("SET")
@@ -645,19 +656,50 @@ func appendAlterSet(q *QueryStruct, obj ssot.Object, cfg ssot.SdkGenerator) *Que
 }
 
 func appendAlterUnset(q *QueryStruct, obj ssot.Object) *QueryStruct {
-	unsetParams := parametersForStatement(obj, obj.Unset)
+	unsetParams := parametersForStatement(obj, obj.Unset, "UNSET")
 	unsetStruct := NewQueryStruct(obj.Name+"Unset").appendSqlSequenceParams(obj.Unset, attributeSqlUnset, unsetParams)
-	unsetStruct = unsetStruct.WithValidation(AtLeastOneValueSet, queryStructFieldNames(unsetStruct)...)
+	unsetStruct = unsetStruct.WithValidation(AtLeastOneValueSet, atLeastOneFields(unsetStruct, unsetParams)...)
 	return q.OptionalQueryStructField("Unset", unsetStruct, ListOptions().NoParentheses().SQL("UNSET"))
 }
 
-func parametersForStatement(obj ssot.Object, list []*ssot.Attribute) []ssot.ParameterDef {
+func parametersForStatement(obj ssot.Object, list []*ssot.Attribute, statement string) []ssot.ParameterDef {
 	for _, field := range list {
 		if field != nil && field.IsParameters() {
-			return parametersForObject(obj)
+			return parametersForLevels(obj.ParameterLevelsFor(statement))
 		}
 	}
 	return nil
+}
+
+// parametersForLevels is the union of levels in catalog order.
+// One level uses parametersForLevel so tests can replace that list.
+func parametersForLevels(levels []ssot.ParameterLevel) []ssot.ParameterDef {
+	if len(levels) == 1 {
+		return parametersForLevel(levels[0])
+	}
+	return ssotdefs.ParameterDefsForLevels(levels...)
+}
+
+// atLeastOneFields lists parameter fields first, then the other struct fields.
+// Struct order stays the statement order. The validation argument order does not.
+func atLeastOneFields(q *QueryStruct, params []ssot.ParameterDef) []string {
+	paramNames := make(map[string]struct{}, len(params))
+	fields := make([]string, 0, len(params)+len(q.fields))
+	for _, param := range params {
+		name := param.StructFieldName()
+		if _, ok := paramNames[name]; ok {
+			continue
+		}
+		paramNames[name] = struct{}{}
+		fields = append(fields, name)
+	}
+	for _, name := range queryStructFieldNames(q) {
+		if _, ok := paramNames[name]; ok {
+			continue
+		}
+		fields = append(fields, name)
+	}
+	return fields
 }
 
 func (v *QueryStruct) withIdentifierParameterValidations(params []ssot.ParameterDef) *QueryStruct {
@@ -691,6 +733,11 @@ func alterExactlyOneFields(obj ssot.Object) []string {
 	for _, clause := range obj.Alter.Clauses {
 		switch clause.Kind {
 		case ssot.AlterClauseKeyword:
+			if clause.NotExactlyOne {
+				continue
+			}
+			fields = append(fields, sqlToFieldName(clause.SQL, true))
+		case ssot.AlterClauseList:
 			fields = append(fields, sqlToFieldName(clause.SQL, true))
 		case ssot.AlterClauseRenameTo:
 			fields = append(fields, "RenameTo")

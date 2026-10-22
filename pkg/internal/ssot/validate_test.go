@@ -337,6 +337,37 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 			Alter: AlterSpec{Clauses: []AlterClause{AlterSet(), AlterSet()}},
 		})
 	})
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			Alter: AlterSpec{Clauses: []AlterClause{
+				AlterKeyword("RESUME"),
+				AlterKeywordNotExactlyOne("IF SUSPENDED"),
+				AlterList("ADD TABLES", "SchemaObjectIdentifier"),
+			}},
+		})
+	})
+	require.PanicsWithValue(t, `object "Widget": ALTER list "ADD TABLES" has no item type`, func() {
+		ValidateObject(Object{
+			Name:  "Widget",
+			Alter: AlterSpec{Clauses: []AlterClause{AlterList("ADD TABLES", "")}},
+		})
+	})
+	require.PanicsWithValue(t, `object "Widget": duplicate ALTER list "ADD TABLES"`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			Alter: AlterSpec{Clauses: []AlterClause{
+				AlterList("ADD TABLES", "SchemaObjectIdentifier"),
+				AlterList("ADD TABLES", "SchemaObjectIdentifier"),
+			}},
+		})
+	})
+	require.PanicsWithValue(t, `object "Widget": ALTER list "ADD TABLES" is an exactly-one branch`, func() {
+		ValidateObject(Object{
+			Name:  "Widget",
+			Alter: AlterSpec{Clauses: []AlterClause{{Kind: AlterClauseList, SQL: "ADD TABLES", ListItem: "SchemaObjectIdentifier", NotExactlyOne: true}}},
+		})
+	})
 
 	require.PanicsWithValue(t, `object "Widget": parameters is not a SHOW column`, func() {
 		ValidateObject(Object{
@@ -409,6 +440,17 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 				Type:      AttrIdentifier,
 				CreateSql: IdentifierKeyword(""),
 			}},
+		})
+	})
+}
+
+func Test_ValidateObject_sqlOnlyField(t *testing.T) {
+	wait := Attribute{Name: "wait_for_completion", Type: AttrBool}
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name:  "Widget",
+			Set:   []*Attribute{&wait},
+			Unset: []*Attribute{&wait},
 		})
 	})
 }

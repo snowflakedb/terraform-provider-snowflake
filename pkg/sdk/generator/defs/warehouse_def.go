@@ -1,24 +1,14 @@
 package defs
 
 import (
-	"slices"
-
 	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
 
 var warehouseParameters = ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouseInteractive)
-
-var warehouseParameterFieldNames = collections.Map(warehouseParameters, g.ParameterSqlToFieldName)
-
-// CREATE WAREHOUSE does not accept FALLBACK_WAREHOUSE.
-var warehouseCreateParameters = collections.Filter(warehouseParameters, func(p parameterdefs.ParameterDef) bool {
-	return p.SqlName != ssotdefs.FallbackWarehouse.SqlName
-})
 
 var warehouseTypeEnum = g.NewEnum(
 	"WarehouseType", "WarehouseTypes",
@@ -135,98 +125,32 @@ var warehouseInteractiveDef = warehouseShowAvailability(
 	Text("OwnerRoleType").
 	Field("Tables", "[]SchemaObjectIdentifier")
 
-var warehouseSetStruct = g.NewQueryStruct("WarehouseSet").
-	OptionalEnumAssignment("WAREHOUSE_TYPE", warehouseTypeEnum, g.ParameterOptions().SingleQuotes()).
-	OptionalEnumAssignment("WAREHOUSE_SIZE", warehouseSizeEnum, g.ParameterOptions().SingleQuotes()).
-	OptionalBooleanAssignment("WAIT_FOR_COMPLETION", nil).
-	OptionalNumberAssignment("MAX_CLUSTER_COUNT", g.ParameterOptions()).
-	OptionalNumberAssignment("MIN_CLUSTER_COUNT", g.ParameterOptions()).
-	OptionalEnumAssignment("SCALING_POLICY", scalingPolicyEnum, g.ParameterOptions().SingleQuotes()).
-	OptionalNumberAssignment("AUTO_SUSPEND", g.ParameterOptions()).
-	OptionalBooleanAssignment("AUTO_RESUME", nil).
-	OptionalIdentifier("ResourceMonitor", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RESOURCE_MONITOR").Equals()).
-	OptionalComment().
-	OptionalBooleanAssignment("ENABLE_QUERY_ACCELERATION", nil).
-	OptionalNumberAssignment("QUERY_ACCELERATION_MAX_SCALE_FACTOR", g.ParameterOptions()).
-	OptionalEnumAssignment("RESOURCE_CONSTRAINT", warehouseResourceConstraintEnum, g.ParameterOptions().SingleQuotes()).
-	WithField(g.OptionalEnumLegacy[sdkcommons.WarehouseGeneration]("Generation", g.ParameterOptions().SingleQuotes().SQL("GENERATION"))).
-	OptionalNumberAssignment("QUERY_THROUGHPUT_MULTIPLIER", g.ParameterOptions()).
-	OptionalEnumAssignment("MAX_QUERY_PERFORMANCE_LEVEL", maxQueryPerformanceLevelEnum, g.ParameterOptions().SingleQuotes()).
-	WithParameters(warehouseParameters...).
-	WithValidation(g.AtLeastOneValueSet, append(slices.Clone(warehouseParameterFieldNames), "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel")...).
-	WithAdditionalValidations()
-
-var warehouseUnsetStruct = g.NewQueryStruct("WarehouseUnset").
-	OptionalSQL("WAREHOUSE_TYPE").
-	OptionalSQL("WAIT_FOR_COMPLETION").
-	OptionalSQL("MAX_CLUSTER_COUNT").
-	OptionalSQL("MIN_CLUSTER_COUNT").
-	OptionalSQL("SCALING_POLICY").
-	OptionalSQL("AUTO_SUSPEND").
-	OptionalSQL("AUTO_RESUME").
-	OptionalSQL("RESOURCE_MONITOR").
-	OptionalSQL("COMMENT").
-	OptionalSQL("ENABLE_QUERY_ACCELERATION").
-	OptionalSQL("QUERY_ACCELERATION_MAX_SCALE_FACTOR").
-	OptionalSQL("RESOURCE_CONSTRAINT").
-	OptionalSQL("GENERATION").
-	OptionalSQL("QUERY_THROUGHPUT_MULTIPLIER").
-	OptionalSQL("MAX_QUERY_PERFORMANCE_LEVEL").
-	WithParametersUnset(warehouseParameters...).
-	WithValidation(g.AtLeastOneValueSet, append(slices.Clone(warehouseParameterFieldNames), "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel")...)
-
 var warehousesDef = g.NewInterface(
 	"Warehouses",
 	"Warehouse",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
-).CreateOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/create-warehouse",
-	g.NewQueryStruct("CreateWarehouse").
-		Create().
-		OrReplace().
-		SQL("WAREHOUSE").
-		IfNotExists().
-		Name().
-		OptionalEnumAssignment("WAREHOUSE_TYPE", warehouseTypeEnum, g.ParameterOptions().SingleQuotes()).
-		OptionalEnumAssignment("WAREHOUSE_SIZE", warehouseSizeEnum, g.ParameterOptions().SingleQuotes()).
-		OptionalNumberAssignment("MAX_CLUSTER_COUNT", g.ParameterOptions()).
-		OptionalNumberAssignment("MIN_CLUSTER_COUNT", g.ParameterOptions()).
-		OptionalEnumAssignment("SCALING_POLICY", scalingPolicyEnum, g.ParameterOptions().SingleQuotes()).
-		OptionalNumberAssignment("AUTO_SUSPEND", g.ParameterOptions()).
-		OptionalBooleanAssignment("AUTO_RESUME", nil).
-		OptionalBooleanAssignment("INITIALLY_SUSPENDED", nil).
-		OptionalIdentifier("ResourceMonitor", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RESOURCE_MONITOR").Equals()).
-		OptionalComment().
-		OptionalBooleanAssignment("ENABLE_QUERY_ACCELERATION", nil).
-		OptionalNumberAssignment("QUERY_ACCELERATION_MAX_SCALE_FACTOR", g.ParameterOptions()).
-		OptionalEnumAssignment("RESOURCE_CONSTRAINT", warehouseResourceConstraintEnum, g.ParameterOptions().SingleQuotes()).
-		WithField(g.OptionalEnumLegacy[sdkcommons.WarehouseGeneration]("Generation", g.ParameterOptions().SingleQuotes().SQL("GENERATION"))).
-		WithParameters(warehouseCreateParameters...).
-		OptionalTags().
-		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
-		WithAdditionalValidations(),
-).CustomOperation(
-	"CreateAdaptive",
-	"https://docs.snowflake.com/en/user-guide/warehouses-adaptive",
-	g.NewQueryStruct("CreateAdaptiveWarehouse").
-		Create().
-		OrReplace().
-		SQL("WAREHOUSE").
-		IfNotExists().
-		Name().
-		SQLWithCustomFieldName("warehouseType", "WAREHOUSE_TYPE = 'ADAPTIVE'").
-		OptionalComment().
-		OptionalEnumAssignment("MAX_QUERY_PERFORMANCE_LEVEL", maxQueryPerformanceLevelEnum, g.ParameterOptions().SingleQuotes()).
-		OptionalNumberAssignment("QUERY_THROUGHPUT_MULTIPLIER", g.ParameterOptions()).
-		OptionalIdentifier("ResourceMonitor", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RESOURCE_MONITOR").Equals()).
-		OptionalTags().
-		OptionalNumberAssignment("STATEMENT_QUEUED_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
-		OptionalNumberAssignment("STATEMENT_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
-		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
-		WithAdditionalValidations(),
-).CustomOperation(
+).CreateOperationFromObject(ssotdefs.Warehouse).
+	CustomOperation(
+		"CreateAdaptive",
+		"https://docs.snowflake.com/en/user-guide/warehouses-adaptive",
+		g.NewQueryStruct("CreateAdaptiveWarehouse").
+			Create().
+			OrReplace().
+			SQL("WAREHOUSE").
+			IfNotExists().
+			Name().
+			SQLWithCustomFieldName("warehouseType", "WAREHOUSE_TYPE = 'ADAPTIVE'").
+			OptionalComment().
+			OptionalEnumAssignment("MAX_QUERY_PERFORMANCE_LEVEL", maxQueryPerformanceLevelEnum, g.ParameterOptions().SingleQuotes()).
+			OptionalNumberAssignment("QUERY_THROUGHPUT_MULTIPLIER", g.ParameterOptions()).
+			OptionalIdentifier("ResourceMonitor", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RESOURCE_MONITOR").Equals()).
+			OptionalTags().
+			OptionalNumberAssignment("STATEMENT_QUEUED_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
+			OptionalNumberAssignment("STATEMENT_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
+			WithValidation(g.ValidIdentifier, "name").
+			WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
+			WithAdditionalValidations(),
+	).CustomOperation(
 	"CreateInteractive",
 	"https://docs.snowflake.com/en/user-guide/warehouses-interactive",
 	g.NewQueryStruct("CreateInteractiveWarehouse").
@@ -253,38 +177,9 @@ var warehousesDef = g.NewInterface(
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
 		WithValidation(g.ValidIdentifier, "Tables").
 		WithAdditionalValidations(),
-).AlterOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/alter-warehouse",
-	g.NewQueryStruct("AlterWarehouse").
-		Alter().
-		SQL("WAREHOUSE").
-		IfExists().
-		Name().
-		OptionalSQL("SUSPEND").
-		OptionalSQL("RESUME").
-		OptionalSQL("IF SUSPENDED").
-		OptionalSQL("ABORT ALL QUERIES").
-		RenameTo().
-		OptionalQueryStructField("Set", warehouseSetStruct, g.KeywordOptions().SQL("SET")).
-		OptionalQueryStructField("Unset", warehouseUnsetStruct, g.ListOptions().NoParentheses().SQL("UNSET")).
-		ListAssignment("ADD TABLES", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().Parentheses().NoEquals()).
-		ListAssignment("DROP TABLES", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().Parentheses().NoEquals()).
-		OptionalSetTags().
-		OptionalUnsetTags().
-		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "Suspend", "Resume", "AbortAllQueries", "RenameTo", "Set", "Unset", "AddTables", "DropTables", "SetTags", "UnsetTags").
-		WithValidation(g.ValidIdentifier, "AddTables").
-		WithValidation(g.ValidIdentifier, "DropTables").
-		WithAdditionalValidations(),
-).DropOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/drop-warehouse",
-	g.NewQueryStruct("DropWarehouse").
-		Drop().
-		SQL("WAREHOUSE").
-		IfExists().
-		Name().
-		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperationFromObject(ssotdefs.Warehouse).
+).AlterOperationFromObject(ssotdefs.Warehouse).
+	DropOperationFromObject(ssotdefs.Warehouse).
+	ShowOperationFromObject(ssotdefs.Warehouse).
 	DescribeOperationFromObject(ssotdefs.Warehouse, warehouseRegularDef, warehouseAdaptiveDef, warehouseInteractiveDef).
 	ShowParameters("AccountObjectIdentifier").
 	ShowParametersDetails(warehouseParameters...).

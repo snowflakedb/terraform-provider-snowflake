@@ -1264,8 +1264,15 @@ var AllParameters = []ssot.ParameterDef{
 
 // ParameterDefsForLevel returns the catalog entries assigned to a consumer level.
 func ParameterDefsForLevel(level ssot.ParameterLevel) []ssot.ParameterDef {
+	return ParameterDefsForLevels(level)
+}
+
+// ParameterDefsForLevels returns the catalog entries assigned to any of the levels, in catalog order.
+func ParameterDefsForLevels(levels ...ssot.ParameterLevel) []ssot.ParameterDef {
 	return collections.Filter(AllParameters, func(p ssot.ParameterDef) bool {
-		return slices.Contains(p.Levels, level)
+		return slices.ContainsFunc(levels, func(level ssot.ParameterLevel) bool {
+			return slices.Contains(p.Levels, level)
+		})
 	})
 }
 

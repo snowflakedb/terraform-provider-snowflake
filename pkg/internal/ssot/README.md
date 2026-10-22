@@ -136,11 +136,17 @@ enable nothing.
   `SdkAlterWithoutIfExists()` and `SdkAlterWithoutExactlyOneValueSet()` leave those pieces out.
   `SdkAlterSetAdditionalValidations()` marks the `SET` struct. `SdkAlterSetList()` makes that `SET` a list with no
   parentheses. Without it, `SET` is a keyword. `Create` is a [`CreateSpec`](object.go). `Alter` is an
-  [`AlterSpec`](object.go): action keywords, `RenameTo`, `SwapWith`, `SET`, `UNSET`, `SET TAG`, and `UNSET TAG` are
-  entries, so a keyword can follow the tag clauses. `RenameTo` and `SwapWith` use the object's `IdType` and get
-  `ValidIdentifierIfSet`. `Set` and `Unset` are the fields inside those blocks. [`Tags`](attribute.go) is the
+  [`AlterSpec`](object.go): action keywords, `RenameTo`, `SwapWith`, `SET`, `UNSET`, list assignments, `SET TAG`, and
+  `UNSET TAG` are entries, so a keyword can follow the tag clauses. `AlterKeywordNotExactlyOne` leaves a keyword out of
+  `ExactlyOneValueSet`. `AlterList` is a parentheses list with no equals, one exactly-one branch, and `ValidIdentifier`
+  on each element. `SdkAlterAdditionalValidations()` marks the ALTER query struct. `RenameTo` and `SwapWith` use the
+  object's `IdType` and get `ValidIdentifierIfSet`. `Set` and `Unset` are the fields inside those blocks. [`Tags`](attribute.go) is the
   optional `TAG` clause and belongs on `Create.Clauses`, not on `KeywordsBefore`. [`Parameters`](attribute.go) spreads
-  the parameter catalog for that object's level. CREATE and SET use `WithParameters`. UNSET uses `WithParametersUnset`.
+  the parameter catalog for `ParameterLevel()`. `AlterAdditionalParametersForLevels` adds parameters from more levels
+  onto SET and UNSET. The union is emitted in catalog order, and a name already present is kept once. CREATE does not
+  take those levels.
+  CREATE and SET use `WithParameters`. UNSET uses `WithParametersUnset`. `AtLeastOneValueSet` lists those parameter
+  fields first, then the other fields in the struct.
   An identifier parameter gets `ValidIdentifierIfSet` on CREATE and SET. Comment stays an attribute clause beside that
   entry. Clause shape is `CreateSql`, `SetSql`,
   and `UnsetSql` on [Attribute](attribute.go). A zero create or set clause uses the attribute type. `Clause` applies
@@ -300,7 +306,9 @@ Until a piece has moved, do not assume it is already in ssot:
   alias does not mean every enum is defined in ssot yet.
 
 These are the model, not missing coverage. Identity (`Name`, `IdType`, `IdentityNameForceNew`) is not an `Attribute`.
-A `Readonly` column must not sit on `Attributes`. A CREATE-only field is an `Attribute` and is absent from `Columns`.
+A `Readonly` column must not sit on `Attributes`. It may still appear in `Set` or `Unset` when that SHOW column is also
+an ALTER field. A field in `Create`, `Set`, or `Unset` may be absent from `Attributes` when it is not a resource
+attribute. A CREATE-only field is an `Attribute` and is absent from `Columns`.
 A paired-field option that ssot does not map panics. There is no silent fallback. `StoredAsText` is mapped for a bool
 with neither optional flag. Anything else panics. A list of enums is plain `[]string` in the SDK struct, not a slice of
 the enum type.

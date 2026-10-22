@@ -190,13 +190,31 @@ func validateCreateSpec(obj Object, attrs map[string]struct{}) {
 
 func validateAlterSpec(obj Object) {
 	seen := make(map[AlterClauseKind]struct{})
+	seenList := make(map[string]struct{})
 	for _, clause := range obj.Alter.Clauses {
 		switch clause.Kind {
 		case AlterClauseKeyword:
 			if clause.SQL == "" {
 				panic(fmt.Sprintf("object %q: ALTER keyword is empty", obj.Name))
 			}
+		case AlterClauseList:
+			if clause.NotExactlyOne {
+				panic(fmt.Sprintf("object %q: ALTER list %q is an exactly-one branch", obj.Name, clause.SQL))
+			}
+			if clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: ALTER list is empty", obj.Name))
+			}
+			if clause.ListItem == "" {
+				panic(fmt.Sprintf("object %q: ALTER list %q has no item type", obj.Name, clause.SQL))
+			}
+			if _, dup := seenList[clause.SQL]; dup {
+				panic(fmt.Sprintf("object %q: duplicate ALTER list %q", obj.Name, clause.SQL))
+			}
+			seenList[clause.SQL] = struct{}{}
 		case AlterClauseRenameTo, AlterClauseSwapWith, AlterClauseSet, AlterClauseUnset, AlterClauseSetTags, AlterClauseUnsetTags:
+			if clause.NotExactlyOne {
+				panic(fmt.Sprintf("object %q: ALTER %s cannot leave exactly-one", obj.Name, clause.Kind))
+			}
 			if _, dup := seen[clause.Kind]; dup {
 				panic(fmt.Sprintf("object %q: duplicate ALTER %s", obj.Name, clause.Kind))
 			}
@@ -339,13 +357,14 @@ func walkSqlSequence(obj Object, statement string, list []*Attribute, attrs map[
 			continue
 		}
 		name := field.Name
-		if _, ok := attrs[name]; !ok {
-			panic(fmt.Sprintf("object %q: %s field %q is not in Attributes", obj.Name, statement, name))
-		}
 		if _, dup := seen[name]; dup {
 			panic(fmt.Sprintf("object %q: duplicate %s field %q", obj.Name, statement, name))
 		}
 		seen[name] = struct{}{}
+		if _, ok := attrs[name]; !ok {
+			validateAttribute(obj, *field)
+			validateSqlClauses(obj, *field)
+		}
 		validateSqlClause(obj, *field, statement, field.EffectiveSqlClause(clauseUse(statement)))
 	}
 }
@@ -385,7 +404,7 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 		switch attr.Type {
 		case AttrInt, AttrBool, AttrString:
 		case AttrEnum:
-			if attr.Enum == nil || attr.Enum.Name == "" {
+			if enum := attr.ColumnEnum(); enum == nil || enum.Name == "" {
 				panic(fmt.Sprintf("object %q: attribute %q %s enum parameter has no Enum", obj.Name, attr.Name, statement))
 			}
 		case AttrList:

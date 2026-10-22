@@ -98,8 +98,14 @@ func (opts *AlterWarehouseOptions) validate() error {
 	if !exactlyOneValueSet(opts.Suspend, opts.Resume, opts.AbortAllQueries, opts.RenameTo, opts.Set, opts.Unset, opts.AddTables, opts.DropTables, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterWarehouseOptions", "Suspend", "Resume", "AbortAllQueries", "RenameTo", "Set", "Unset", "AddTables", "DropTables", "SetTags", "UnsetTags"))
 	}
+	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
+		errs = append(errs, errInvalidIdentifier("AlterWarehouseOptions", "RenameTo"))
+	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Set) {
+		if opts.Set.FallbackWarehouse != nil && !ValidObjectIdentifier(opts.Set.FallbackWarehouse) {
+			errs = append(errs, errInvalidIdentifier("AlterWarehouseOptions.Set", "FallbackWarehouse"))
+		}
 		if !anyValueSet(opts.Set.FallbackWarehouse, opts.Set.MaxConcurrencyLevel, opts.Set.StatementQueuedTimeoutInSeconds, opts.Set.StatementTimeoutInSeconds, opts.Set.WarehouseType, opts.Set.WarehouseSize, opts.Set.WaitForCompletion, opts.Set.MaxClusterCount, opts.Set.MinClusterCount, opts.Set.ScalingPolicy, opts.Set.AutoSuspend, opts.Set.AutoResume, opts.Set.ResourceMonitor, opts.Set.Comment, opts.Set.EnableQueryAcceleration, opts.Set.QueryAccelerationMaxScaleFactor, opts.Set.ResourceConstraint, opts.Set.Generation, opts.Set.QueryThroughputMultiplier, opts.Set.MaxQueryPerformanceLevel) {
 			errs = append(errs, errAtLeastOneOf("AlterWarehouseOptions.Set", "FallbackWarehouse", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel"))
 		}

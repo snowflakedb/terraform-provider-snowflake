@@ -33,7 +33,7 @@ type Attribute struct {
 	MaxItems       *int
 	RawDescription bool
 	Enum           *Enum
-	// ShowEnum is the SHOW/DESCRIBE enum when it differs from Enum.
+	// ShowEnum is the SHOW, DESCRIBE, and CREATE/SET enum when it differs from Enum.
 	// Empty uses Enum. Resource schema and model builders keep Enum.
 	ShowEnum *Enum
 	Elem     *Attribute
@@ -96,7 +96,7 @@ func (a *Attribute) OutputKey() string {
 	return a.Name
 }
 
-// ColumnEnum is the enum used for a SHOW or DESCRIBE column.
+// ColumnEnum is the enum used for a SHOW, DESCRIBE, or CREATE/SET column.
 func (a Attribute) ColumnEnum() *Enum {
 	if a.ShowEnum != nil {
 		return a.ShowEnum

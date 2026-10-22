@@ -52,6 +52,7 @@ type SdkGenerator struct {
 	AlterWithoutIfExists           bool
 	AlterSetList                   bool
 	AlterSetAdditionalValidations  bool
+	AlterAdditionalValidations     bool
 	AlterWithoutExactlyOneValueSet bool
 
 	CustomOperations       bool
@@ -265,6 +266,11 @@ func SdkAlterSetList() SdkAlterOption {
 // SdkAlterSetAdditionalValidations marks the SET struct with additional validations.
 func SdkAlterSetAdditionalValidations() SdkAlterOption {
 	return func(s *SdkGenerator) { s.AlterSetAdditionalValidations = true }
+}
+
+// SdkAlterAdditionalValidations marks the ALTER query struct with additional validations.
+func SdkAlterAdditionalValidations() SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterAdditionalValidations = true }
 }
 
 // SdkAlterWithoutExactlyOneValueSet leaves out the check that exactly one alter branch is set.

@@ -93,6 +93,7 @@ var WarehouseAttrs = struct {
 	QueryThroughputMultiplier       ssot.Attribute
 	Tables                          ssot.Attribute
 	Kind                            ssot.Attribute
+	WaitForCompletion               ssot.Attribute
 }{
 	WarehouseType: ssot.Attribute{
 		Name:                  "warehouse_type",
@@ -106,6 +107,8 @@ var WarehouseAttrs = struct {
 		ShowEnum:      WarehouseType,
 		ManualConvert: true,
 		DiffSuppress:  ssot.SuppressShow,
+		CreateSql:     ssot.Clause(ssot.SingleQuotes()),
+		SetSql:        ssot.Clause(ssot.SingleQuotes()),
 	},
 	WarehouseSize: ssot.Attribute{
 		Name:                  "warehouse_size",
@@ -117,6 +120,8 @@ var WarehouseAttrs = struct {
 		DiffSuppress:          ssot.SuppressShow,
 		OptionalInShow:        true,
 		OptionalInDb:          true,
+		CreateSql:             ssot.Clause(ssot.SingleQuotes()),
+		SetSql:                ssot.Clause(ssot.SingleQuotes()),
 	},
 	MaxClusterCount: ssot.Attribute{
 		Name:           "max_cluster_count",
@@ -144,6 +149,8 @@ var WarehouseAttrs = struct {
 		DiffSuppress:   ssot.SuppressShow,
 		OptionalInShow: true,
 		OptionalInDb:   true,
+		CreateSql:      ssot.Clause(ssot.SingleQuotes()),
+		SetSql:         ssot.Clause(ssot.SingleQuotes()),
 	},
 	AutoSuspend: ssot.Attribute{
 		Name:           "auto_suspend",
@@ -175,6 +182,8 @@ var WarehouseAttrs = struct {
 		CustomParser:    "ParseAccountObjectIdentifierExcludingExplicitNullString",
 		RelatedResource: &ResourceMonitor,
 		DiffSuppress:    ssot.SuppressShow,
+		CreateSql:       ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Equals()),
+		SetSql:          ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Equals()),
 	},
 	Comment: ssot.Attribute{
 		Name:        "comment",
@@ -209,6 +218,8 @@ var WarehouseAttrs = struct {
 		OptionalInShow:        true,
 		OptionalInDb:          true,
 		ManualConvert:         true,
+		CreateSql:             ssot.Clause(ssot.SingleQuotes()),
+		SetSql:                ssot.Clause(ssot.SingleQuotes()),
 	},
 	Generation: ssot.Attribute{
 		Name:                  "generation",
@@ -220,6 +231,14 @@ var WarehouseAttrs = struct {
 		OptionalInShow:        true,
 		OptionalInDb:          true,
 		ManualConvert:         true,
+		CreateSql:             ssot.Clause(ssot.SingleQuotes()),
+		SetSql:                ssot.Clause(ssot.SingleQuotes()),
+	},
+	// wait_for_completion is an ALTER SET field. It is not a resource attribute and not a SHOW column.
+	WaitForCompletion: ssot.Attribute{
+		Name:        "wait_for_completion",
+		Type:        ssot.AttrBool,
+		Description: "Specifies whether to wait until the warehouse finishes resizing before returning.",
 	},
 	Name:            ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
 	State:           ssot.Attribute{Name: "state", Type: ssot.AttrEnum, Enum: WarehouseState, Readonly: true, ManualConvert: true},
@@ -242,10 +261,14 @@ var WarehouseAttrs = struct {
 	Suspended:       ssot.Attribute{Name: "suspended", Type: ssot.AttrString, Readonly: true, SkipInSchema: true},
 	Uuid:            ssot.Attribute{Name: "uuid", Type: ssot.AttrString, Readonly: true, SkipInSchema: true},
 	OwnerRoleType:   ssot.Attribute{Name: "owner_role_type", Type: ssot.AttrString, Readonly: true, OptionalInDb: true},
+	// SHOW columns that ALTER SET also writes. They stay off Attributes, so they stay off the resource schema.
 	MaxQueryPerformanceLevel: ssot.Attribute{
 		Name: "max_query_performance_level", Type: ssot.AttrEnum, Enum: MaxQueryPerformanceLevel, Readonly: true, OptionalInShow: true, OptionalInDb: true,
+		SetSql: ssot.Clause(ssot.SingleQuotes()),
 	},
-	QueryThroughputMultiplier: ssot.Attribute{Name: "query_throughput_multiplier", Type: ssot.AttrInt, Readonly: true, OptionalInShow: true, OptionalInDb: true},
+	QueryThroughputMultiplier: ssot.Attribute{
+		Name: "query_throughput_multiplier", Type: ssot.AttrInt, Readonly: true, OptionalInShow: true, OptionalInDb: true,
+	},
 	Tables: ssot.Attribute{
 		Name: "tables", Type: ssot.AttrList, Readonly: true, OptionalInDb: true,
 		CustomParser: "ParseCommaSeparatedSchemaObjectIdentifierArray",
@@ -273,6 +296,9 @@ var Warehouse = ssot.Object{
 	Name:       "Warehouse",
 	NamePlural: "Warehouses",
 	IdType:     "AccountObjectIdentifier",
+	// CREATE WAREHOUSE does not accept FALLBACK_WAREHOUSE.
+	// Interactive warehouses add FALLBACK_WAREHOUSE on ALTER. CREATE stays the base warehouse catalog.
+	AlterAdditionalParametersForLevels: []ssot.ParameterLevel{ssot.ParameterLevelWarehouseInteractive},
 	Generators: []ssot.GeneratorOption{
 		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
 		ssot.WithModel(),
@@ -295,6 +321,12 @@ var Warehouse = ssot.Object{
 				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDLike),
 			),
 			ssot.SdkDescribe(ssot.SdkDescribeQueryStructName("DescribeWarehouse")),
+			ssot.SdkCreate(ssot.SdkCreateAdditionalValidations()),
+			ssot.SdkAlter(
+				ssot.SdkAlterSetAdditionalValidations(),
+				ssot.SdkAlterAdditionalValidations(),
+			),
+			ssot.SdkDrop(),
 		),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
@@ -337,6 +369,74 @@ var Warehouse = ssot.Object{
 		WarehouseAttrs.ResourceConstraint,
 		WarehouseAttrs.Generation,
 	},
+	Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{
+		&WarehouseAttrs.WarehouseType,
+		&WarehouseAttrs.WarehouseSize,
+		&WarehouseAttrs.MaxClusterCount,
+		&WarehouseAttrs.MinClusterCount,
+		&WarehouseAttrs.ScalingPolicy,
+		&WarehouseAttrs.AutoSuspend,
+		&WarehouseAttrs.AutoResume,
+		&WarehouseAttrs.InitiallySuspended,
+		&WarehouseAttrs.ResourceMonitor,
+		&WarehouseAttrs.Comment,
+		&WarehouseAttrs.EnableQueryAcceleration,
+		&WarehouseAttrs.QueryAccelerationMaxScaleFactor,
+		&WarehouseAttrs.ResourceConstraint,
+		&WarehouseAttrs.Generation,
+		ssot.Parameters,
+		ssot.Tags,
+	}},
+	Set: []*ssot.Attribute{
+		&WarehouseAttrs.WarehouseType,
+		&WarehouseAttrs.WarehouseSize,
+		&WarehouseAttrs.WaitForCompletion,
+		&WarehouseAttrs.MaxClusterCount,
+		&WarehouseAttrs.MinClusterCount,
+		&WarehouseAttrs.ScalingPolicy,
+		&WarehouseAttrs.AutoSuspend,
+		&WarehouseAttrs.AutoResume,
+		&WarehouseAttrs.ResourceMonitor,
+		&WarehouseAttrs.Comment,
+		&WarehouseAttrs.EnableQueryAcceleration,
+		&WarehouseAttrs.QueryAccelerationMaxScaleFactor,
+		&WarehouseAttrs.ResourceConstraint,
+		&WarehouseAttrs.Generation,
+		&WarehouseAttrs.QueryThroughputMultiplier,
+		&WarehouseAttrs.MaxQueryPerformanceLevel,
+		ssot.Parameters,
+	},
+	Unset: []*ssot.Attribute{
+		&WarehouseAttrs.WarehouseType,
+		&WarehouseAttrs.WaitForCompletion,
+		&WarehouseAttrs.MaxClusterCount,
+		&WarehouseAttrs.MinClusterCount,
+		&WarehouseAttrs.ScalingPolicy,
+		&WarehouseAttrs.AutoSuspend,
+		&WarehouseAttrs.AutoResume,
+		&WarehouseAttrs.ResourceMonitor,
+		&WarehouseAttrs.Comment,
+		&WarehouseAttrs.EnableQueryAcceleration,
+		&WarehouseAttrs.QueryAccelerationMaxScaleFactor,
+		&WarehouseAttrs.ResourceConstraint,
+		&WarehouseAttrs.Generation,
+		&WarehouseAttrs.QueryThroughputMultiplier,
+		&WarehouseAttrs.MaxQueryPerformanceLevel,
+		ssot.Parameters,
+	},
+	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
+		ssot.AlterKeyword("SUSPEND"),
+		ssot.AlterKeyword("RESUME"),
+		ssot.AlterKeywordNotExactlyOne("IF SUSPENDED"),
+		ssot.AlterKeyword("ABORT ALL QUERIES"),
+		ssot.AlterRenameTo(),
+		ssot.AlterSet(),
+		ssot.AlterUnset(),
+		ssot.AlterList("ADD TABLES", "SchemaObjectIdentifier"),
+		ssot.AlterList("DROP TABLES", "SchemaObjectIdentifier"),
+		ssot.AlterSetTags(),
+		ssot.AlterUnsetTags(),
+	}},
 	// Union of all SHOW WAREHOUSES columns (AllDetails analog).
 	// Keep omitted: actives / pendings / failed / suspended / uuid (Snowflake: internal use, will be removed).
 	Show: ssot.OutputSpec{

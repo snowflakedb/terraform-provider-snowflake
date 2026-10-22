@@ -130,13 +130,14 @@ func (v *QueryStruct) appendParameterClause(attr ssot.Attribute, clause ssot.Sql
 		}
 		return v.OptionalTextAssignment(sql, opts)
 	case ssot.AttrEnum:
-		if attr.Enum == nil || attr.Enum.Name == "" {
+		enum := attr.ColumnEnum()
+		if enum == nil || enum.Name == "" {
 			panic(fmt.Sprintf("attribute %q: enum parameter has no Enum", attr.Name))
 		}
 		if required {
-			return v.EnumAssignment(sql, attr.Enum, opts)
+			return v.EnumAssignment(sql, enum, opts)
 		}
-		return v.OptionalEnumAssignment(sql, attr.Enum, opts)
+		return v.OptionalEnumAssignment(sql, enum, opts)
 	case ssot.AttrList:
 		if clause.ItemStruct == "" {
 			panic(fmt.Sprintf("attribute %q: list parameter has no item struct", attr.Name))
@@ -217,6 +218,8 @@ func identifierOptionsFromClause(clause ssot.SqlClause, required bool) *Identifi
 	}
 	switch clause.Equals {
 	case "":
+	case ssot.SqlEqualsYes:
+		opts = opts.Equals()
 	case ssot.SqlEqualsNo:
 		opts = opts.NoEquals()
 	default:
