@@ -894,6 +894,81 @@ func Test_ShowParametersFromObject_panics(t *testing.T) {
 	})
 }
 
+func Test_InterfaceFromObject_enabledOperationsOnly(t *testing.T) {
+	obj := ssot.Object{
+		Name:       "Widget",
+		NamePlural: "Widgets",
+		IdType:     "AccountObjectIdentifier",
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDefineFromSsot(), ssot.SdkDrop())},
+	}
+	got := InterfaceFromObject(obj)
+	require.Equal(t, "Widgets", got.Name)
+	require.Equal(t, "Widget", got.NameSingular)
+	require.Equal(t, "AccountObjectIdentifier", got.IdentifierKind)
+	require.Len(t, got.Operations, 1)
+	require.Equal(t, "Drop", got.Operations[0].Name)
+	require.Empty(t, got.Enums)
+}
+
+func Test_SdkInterfacesFromSsot_uniquePluralAndFlag(t *testing.T) {
+	objects := []ssot.Object{
+		{
+			Name:       "VariantA",
+			NamePlural: "Family",
+			IdType:     "AccountObjectIdentifier",
+			Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe())},
+		},
+		{Name: "VariantB", NamePlural: "Family", IdType: "AccountObjectIdentifier"},
+		{
+			Name:       "Widget",
+			NamePlural: "Widgets",
+			IdType:     "AccountObjectIdentifier",
+			Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDefineFromSsot(), ssot.SdkDrop())},
+		},
+		{
+			Name:       "DescribedOnly",
+			NamePlural: "DescribedOnlys",
+			IdType:     "AccountObjectIdentifier",
+			Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe())},
+		},
+		{Name: "Quiet", NamePlural: "Quiets", IdType: "AccountObjectIdentifier"},
+	}
+	got := SdkInterfacesFromSsot(objects, nil)
+	require.Len(t, got, 1)
+	require.Equal(t, "Widgets", got[0].Name)
+}
+
+func Test_SdkInterfacesFromSsot_override(t *testing.T) {
+	objects := []ssot.Object{{
+		Name:       "Widget",
+		NamePlural: "Widgets",
+		IdType:     "AccountObjectIdentifier",
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDefineFromSsot(), ssot.SdkDrop())},
+	}}
+	got := SdkInterfacesFromSsot(objects, map[string]SdkInterfaceOverride{
+		"Widget": func(iface *Interface) {
+			iface.WithShowObjectType("WidgetAlias")
+		},
+	})
+	require.Equal(t, "WidgetAlias", got[0].ShowObjectTypeName)
+	require.Panics(t, func() {
+		SdkInterfacesFromSsot(objects, map[string]SdkInterfaceOverride{
+			"Missing": func(*Interface) {},
+		})
+	})
+}
+
+func Test_MergeSdkDefinitions_skipsOldNameSsotEmits(t *testing.T) {
+	old := []*Interface{{Name: "Widgets"}, {Name: "OldOnes"}}
+	fromSsot := []*Interface{{Name: "Widgets"}, {Name: "Fresh"}}
+	got := MergeSdkDefinitions(old, fromSsot)
+	names := make([]string, len(got))
+	for i, iface := range got {
+		names[i] = iface.Name
+	}
+	require.Equal(t, []string{"OldOnes", "Widgets", "Fresh"}, names)
+}
+
 func Test_CreateAlterFromObject_panics(t *testing.T) {
 	obj := ssot.Object{Name: "Widget", NamePlural: "Widgets"}
 	require.Panics(t, func() {

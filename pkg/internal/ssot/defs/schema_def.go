@@ -69,6 +69,7 @@ var Schema = ssot.Object{
 			ssot.ObjectAssertDescribe(ssot.WithNoIdentifiableObject()),
 		),
 		ssot.WithSdk(
+			ssot.SdkDefineFromSsot(),
 			ssot.SdkShow(
 				ssot.SdkShowTerse(),
 				ssot.SdkShowOptionalSql("HISTORY"),

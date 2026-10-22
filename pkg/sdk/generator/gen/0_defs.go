@@ -16,6 +16,22 @@ func GetSdkDefinitions() []*Interface {
 	return interfaces
 }
 
+// MergeSdkDefinitions keeps old interfaces whose names ssot does not emit, then appends the ssot interfaces.
+func MergeSdkDefinitions(old, fromSsot []*Interface) []*Interface {
+	plugged := make(map[string]struct{}, len(fromSsot))
+	for _, iface := range fromSsot {
+		plugged[iface.Name] = struct{}{}
+	}
+	merged := make([]*Interface, 0, len(old)+len(fromSsot))
+	for _, iface := range old {
+		if _, ok := plugged[iface.Name]; ok {
+			continue
+		}
+		merged = append(merged, iface)
+	}
+	return append(merged, fromSsot...)
+}
+
 // PrepareSdkDefinition prepares one definition on the worker that generates it.
 // It is the SDK generator's WithObjectPrepare hook.
 func PrepareSdkDefinition(definition *Interface, logger *log.Logger) {

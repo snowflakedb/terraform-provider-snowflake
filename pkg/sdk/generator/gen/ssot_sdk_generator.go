@@ -289,6 +289,133 @@ func (i *Interface) ShowParametersDetailsFromObject(obj ssot.Object) *Interface 
 	return i.ShowParametersDetails(parametersForObject(obj)...)
 }
 
+// InterfaceFromObject builds one SDK interface from the operations whose flags are on.
+// A flag that is off is absent. The existing FromObject helpers still panic if called while their flag is off.
+// Order is Create, Alter, Drop, Show, Describe, ShowParameters, ShowParametersDetails, custom operations, then custom interface methods.
+func InterfaceFromObject(obj ssot.Object) *Interface {
+	if obj.NamePlural == "" || obj.Name == "" || obj.IdType == "" {
+		panic(fmt.Sprintf("object %q needs NamePlural, Name, and IdType to build an SDK interface", obj.Name))
+	}
+	cfg := obj.SdkConfig()
+	iface := NewInterface(obj.NamePlural, obj.Name, obj.IdType)
+	if cfg.Create {
+		iface = iface.CreateOperationFromObject(obj)
+	}
+	if cfg.Alter {
+		iface = iface.AlterOperationFromObject(obj)
+	}
+	if cfg.Drop {
+		iface = iface.DropOperationFromObject(obj)
+	}
+	if cfg.Show {
+		iface = iface.ShowOperationFromObject(obj)
+	}
+	if cfg.Describe {
+		iface = iface.DescribeOperationFromObject(obj)
+	}
+	if cfg.ShowParameters {
+		iface = iface.ShowParametersFromObject(obj)
+	}
+	if cfg.ShowParametersDetails {
+		iface = iface.ShowParametersDetailsFromObject(obj)
+	}
+	if cfg.CustomOperations {
+		iface = iface.CustomOperationsFromObject(obj)
+	}
+	if cfg.CustomInterfaceMethods {
+		iface = iface.CustomInterfaceMethodsFromObject(obj)
+	}
+	if enums := referencedEnums(obj); len(enums) > 0 {
+		iface = iface.WithEnums(enums...)
+	}
+	return iface
+}
+
+// SdkInterfaceOverride changes one ssot-built SDK interface. The key is the ssot object Name.
+type SdkInterfaceOverride func(*Interface)
+
+// SdkInterfacesFromSsot builds SDK interfaces for objects that turn on SdkDefineFromSsot.
+// NamePlural must be unique in objects. A shared plural, such as the catalog integration variants, stays on the old def.
+// The interface contains the operation parts whose flags are on.
+// overrides is keyed by the ssot object Name. Each function receives the built interface and may add to it.
+// A key that does not match a built interface panics.
+func SdkInterfacesFromSsot(objects []ssot.Object, overrides map[string]SdkInterfaceOverride) []*Interface {
+	counts := make(map[string]int, len(objects))
+	for _, obj := range objects {
+		if obj.NamePlural == "" {
+			continue
+		}
+		counts[obj.NamePlural]++
+	}
+	applied := make(map[string]struct{}, len(overrides))
+	var out []*Interface
+	for _, obj := range objects {
+		if obj.NamePlural == "" || counts[obj.NamePlural] != 1 || !obj.SdkConfig().DefineFromSsot {
+			continue
+		}
+		iface := InterfaceFromObject(obj)
+		if override, ok := overrides[obj.Name]; ok {
+			override(iface)
+			applied[obj.Name] = struct{}{}
+		}
+		out = append(out, iface)
+	}
+	for name := range overrides {
+		if _, ok := applied[name]; !ok {
+			panic(fmt.Sprintf("sdk interface override %q did not match an ssot interface", name))
+		}
+	}
+	return out
+}
+
+// referencedEnums is the enums on the object's columns and attributes, first reference first.
+// SHOW columns come first so a readonly enum precedes an attribute enum that SHOW lists later.
+func referencedEnums(obj ssot.Object) []*ssot.Enum {
+	var out []*ssot.Enum
+	seen := map[*ssot.Enum]struct{}{}
+	addAttr := func(attr *ssot.Attribute) {
+		if attr == nil {
+			return
+		}
+		addEnum := func(enum *ssot.Enum) {
+			if enum == nil {
+				return
+			}
+			if _, ok := seen[enum]; ok {
+				return
+			}
+			seen[enum] = struct{}{}
+			out = append(out, enum)
+		}
+		addEnum(attr.Enum)
+		if attr.Elem != nil {
+			addEnum(attr.Elem.Enum)
+		}
+	}
+	addList := func(list []*ssot.Attribute) {
+		for _, attr := range list {
+			addAttr(attr)
+		}
+	}
+	addList(obj.Show.Columns)
+	addList(obj.Describe.Columns)
+	for i := range obj.Attributes {
+		addAttr(&obj.Attributes[i])
+	}
+	addList(obj.Create.KeywordsBefore)
+	addList(obj.Create.Clauses)
+	addList(obj.Set)
+	addList(obj.Unset)
+	for _, spec := range obj.CustomOperations {
+		for _, clause := range spec.Clauses {
+			if clause.Kind == ssot.CustomOperationClauseAttribute {
+				addAttr(clause.Attribute)
+			}
+		}
+	}
+	return out
+}
+
 func (i *Interface) customOperationFromSpec(obj ssot.Object, spec ssot.CustomOperationSpec) *Interface {
 	return i.CustomOperation(spec.Kind, obj.CustomOperationDoc(spec), customOperationQueryStruct(obj, spec))
 }

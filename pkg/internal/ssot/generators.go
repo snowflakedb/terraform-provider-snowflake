@@ -6,6 +6,9 @@ type SchemaGenerator struct {
 }
 
 type SdkGenerator struct {
+	// DefineFromSsot defines this object's SDK interface from this ssot object alone.
+	DefineFromSsot bool
+
 	Show     bool
 	Describe bool
 
@@ -128,6 +131,13 @@ func WithSchema(opts ...SchemaOption) GeneratorOption {
 }
 
 type SdkOption func(*SdkGenerator)
+
+// SdkDefineFromSsot defines this object's SDK interface from this ssot object alone.
+// The interface is built from the operation parts whose flags are on. A part whose flag is off is absent.
+// An object without this option stays on the handwritten SDK def.
+func SdkDefineFromSsot() SdkOption {
+	return func(s *SdkGenerator) { s.DefineFromSsot = true }
+}
 
 type SdkShowOption func(*SdkGenerator)
 

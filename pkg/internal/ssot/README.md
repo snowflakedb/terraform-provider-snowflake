@@ -160,7 +160,9 @@ enable nothing.
   declaration: an empty doc, `id` of `IdType`, and returns `[]*Parameter` and `error`. The body stays in the SDK ext
   file. `SdkShowParametersDetails()` emits `ShowParametersDetails` and the `{Name}ParametersDetails` struct. The fields
   come from `ParameterDefsForLevel` for the object's `ParameterLevel()`. The generated body calls `ShowParameters`.
-  When either setting is off, that call stays in the SDK def.
+  When either setting is off, that call stays in the SDK def. `SdkDefineFromSsot()` defines this object's SDK
+  interface from this ssot object alone. The interface contains the operation parts whose flags are on. An object
+  without it stays on the handwritten SDK def.
 
 Fill `Show` / `Describe` first; enable the matching SHOW or DESCRIBE setting when the lists are ready. Enabling SHOW or
 DESCRIBE schema generation, show output assertions, Snowflake object assertions, or SDK paired structs without `Columns`
@@ -380,8 +382,13 @@ The skip is not permission to leave the object on the list forever. A repeated s
 `ResourceAssertionModels` and `ModelBuilderModels` skip a reflected name and do not panic on a repeated ssot name. A
 repeat for an object that ssot does not emit stays. Do not delete it.
 
-SDK paired structs have no second object list. The SDK def calls `ShowOperationFromObject`, `DescribeOperationFromObject`,
-or `DropOperationFromObject` when that setting is on, and keeps the handwritten call when it is off.
+SDK interfaces come from two lists. The old list is the handwritten defs. ssot adds an interface when `SdkDefineFromSsot()`
+is on and `NamePlural` is unique in [`defs.All()`](defs/all.go). That option defines the interface from this ssot
+object alone. It contains the operation parts whose flags are on. A part whose flag is off is absent. The SDK generator may then change that
+interface through an override keyed by the ssot object `Name`. A shared `NamePlural`, such as the catalog
+integration variants, does not get its own interface. The merge skips an old name that ssot emits.
+`ShowOperationFromObject` and the other `FromObject` calls stay the translators for one operation. They panic when that
+operation's flag is off.
 
 ### Parameters
 

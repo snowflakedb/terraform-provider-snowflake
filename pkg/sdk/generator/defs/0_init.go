@@ -5,6 +5,8 @@ package defs
 import (
 	"fmt"
 
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 )
 
@@ -21,7 +23,6 @@ func init() {
 		backupPoliciesDef,
 		budgetsDef,
 		catalogIntegrationsDef,
-		computePoolsDef,
 		connectionsDef,
 		contextFunctionsDef,
 		cortexAgentsDef,
@@ -69,7 +70,6 @@ func init() {
 		rolesDef,
 		rowAccessPoliciesDef,
 		secretsDef,
-		schemasDef,
 		securityIntegrationsDef,
 		sessionsDef,
 		sharesDef,
@@ -93,6 +93,7 @@ func init() {
 		viewsDef,
 		warehousesDef,
 	)
+	gen.AllSdkObjectDefinitions = gen.MergeSdkDefinitions(gen.AllSdkObjectDefinitions, gen.SdkInterfacesFromSsot(ssotdefs.All(), sdkInterfaceOverrides))
 	fmt.Println("SDK object definitions:")
 	for _, def := range gen.AllSdkObjectDefinitions {
 		fmt.Printf(" - %s\n", def.Name)

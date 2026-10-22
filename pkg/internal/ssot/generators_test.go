@@ -142,6 +142,9 @@ func Test_ObjectGenerators_options(t *testing.T) {
 	g = ObjectGenerators(WithSdk(SdkShowParameters(), SdkShowParametersDetails()))
 	require.Equal(t, Generators{Sdk: SdkGenerator{ShowParameters: true, ShowParametersDetails: true}}, g)
 
+	g = ObjectGenerators(WithSdk(SdkDefineFromSsot()))
+	require.Equal(t, Generators{Sdk: SdkGenerator{DefineFromSsot: true}}, g)
+
 	g = ObjectGenerators(WithSdk())
 	require.Equal(t, Generators{}, g)
 
