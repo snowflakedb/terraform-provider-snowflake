@@ -101,6 +101,14 @@ The provider now treats a notification channel as an SNS topic when it contains 
 
 No configuration changes are required for pipes that use a commercial SNS ARN. After upgrading, refresh pipes whose notification channel is an SNS ARN in another AWS partition. If `aws_sns_topic_arn` is already set and matches the channel, the perpetual diff goes away. The attribute is ForceNew. If the configuration omits it, the next plan may propose replacing the pipe once the read fills the value; add the channel ARN to the configuration to keep the pipe. This resource is still in preview and will be reworked in the future.
 
+### *(bug fix)* `external_oauth_scope_delimiter` is managed only for `CUSTOM` external OAuth integrations
+
+Snowflake accepts `EXTERNAL_OAUTH_SCOPE_DELIMITER` only for `CUSTOM` external OAuth integrations. For other types, such as `AZURE`, Snowflake rejects the property on create and update but still returns its system-managed value from `DESCRIBE SECURITY INTEGRATION`. The provider previously copied that value into `external_oauth_scope_delimiter`, causing drift after import and encouraging configurations that Snowflake could not apply ([#5322](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5322)).
+
+The [`snowflake_external_oauth_integration`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_oauth_integration) resource now leaves `external_oauth_scope_delimiter` unset in state and omits it from SQL for every non-`CUSTOM` integration. The Snowflake-managed value remains available in `describe_output`.
+
+If a non-`CUSTOM` integration configures `external_oauth_scope_delimiter`, remove the field; the provider now returns an error explaining that it is supported only with `external_oauth_type = "CUSTOM"`. If you used `lifecycle.ignore_changes` for this field as a workaround, you can remove that entry after upgrading. `CUSTOM` integrations require no changes.
+
 ## v2.21.x ➞ v2.22.0
 
 ### *(new feature)* User-level parameters that Snowflake documents for Account, User, and Session

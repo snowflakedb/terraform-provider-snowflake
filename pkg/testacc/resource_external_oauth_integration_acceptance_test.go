@@ -19,6 +19,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -762,4 +763,213 @@ resource "snowflake_external_oauth_integration" "test" {
 	external_oauth_jws_keys_url                     = [ "https://example.com" ]
 }
 `, name, issuer)
+}
+
+func TestAcc_ExternalOauthIntegration_invalidScopeDelimiterSetForNonCustomType(t *testing.T) {
+	integrationModel := model.ExternalOauthSecurityIntegration(
+		"test",
+		"foo",
+		true,
+		random.String(),
+		string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress),
+		[]string{"foo"},
+		string(sdk.ExternalOauthSecurityIntegrationTypeOptionAzure),
+	).
+		WithComment("foo").
+		WithExternalOauthAllowedRoles(sdk.NewAccountObjectIdentifier("foo")).
+		WithExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)).
+		WithExternalOauthAudiences("foo").
+		WithExternalOauthJwsKeysUrls("foo").
+		WithExternalOauthScopeDelimiter(",").
+		WithExternalOauthScopeMappingAttribute("foo")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config:      accconfig.FromModels(t, integrationModel),
+				ExpectError: regexp.MustCompile("Error: external_oauth_scope_delimiter can only be set for external_oauth_type = CUSTOM"),
+			},
+		},
+	})
+}
+
+// TestAcc_ExternalOauthIntegration_invalidScopeDelimiterSetForNonCustomTypeOnUpdate
+// adds external_oauth_scope_delimiter on a later apply, after a non-CUSTOM integration
+// already exists, so the error comes from UpdateContextExternalOauthIntegration.
+func TestAcc_ExternalOauthIntegration_invalidScopeDelimiterSetForNonCustomTypeOnUpdate(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	tenantID := "11111111-1111-1111-1111-111111111111"
+	issuer := fmt.Sprintf("https://login.microsoftonline.com/%s/v2.0", tenantID)
+	jwsKeysURL := fmt.Sprintf("https://login.microsoftonline.com/%s/discovery/v2.0/keys", tenantID)
+
+	azure := model.ExternalOauthSecurityIntegration(
+		"test",
+		id.Name(),
+		true,
+		issuer,
+		string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionLoginName),
+		[]string{"upn"},
+		string(sdk.ExternalOauthSecurityIntegrationTypeOptionAzure),
+	).
+		WithExternalOauthJwsKeysUrls(jwsKeysURL).
+		WithExternalOauthAudiences("example-client-id").
+		WithExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable))
+
+	configWithoutDelimiter := accconfig.FromModels(t, azure)
+	configWithDelimiter := accconfig.FromModels(t, azure.WithExternalOauthScopeDelimiter(","))
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ExternalOauthSecurityIntegration),
+		Steps: []resource.TestStep{
+			{
+				Config: configWithoutDelimiter,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(azure.ResourceReference(), "id", id.Name()),
+				),
+			},
+			{
+				Config: configWithDelimiter,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(azure.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				ExpectError: regexp.MustCompile(`external_oauth_scope_delimiter can only be set for external_oauth_type = CUSTOM, got "AZURE"`),
+			},
+		},
+	})
+}
+
+// TestAcc_ExternalOauthIntegration_gh5322 follows the Azure import repro from
+// https://github.com/snowflakedb/terraform-provider-snowflake/issues/5322.
+// Provider v2.22.0 copies Snowflake's default EXTERNAL_OAUTH_SCOPE_DELIMITER into
+// state on import, so the next plan updates the resource and apply is rejected.
+// The current provider leaves that attribute unset for non-CUSTOM types, so
+// import is followed by an empty plan.
+func TestAcc_ExternalOauthIntegration_gh5322(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	tenantID := "11111111-1111-1111-1111-111111111111"
+	issuer := fmt.Sprintf("https://login.microsoftonline.com/%s/v2.0", tenantID)
+	jwsKeysURL := fmt.Sprintf("https://login.microsoftonline.com/%s/discovery/v2.0/keys", tenantID)
+
+	azure := model.ExternalOauthSecurityIntegration(
+		"test",
+		id.Name(),
+		true,
+		issuer,
+		string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionLoginName),
+		[]string{"upn"},
+		string(sdk.ExternalOauthSecurityIntegrationTypeOptionAzure),
+	).
+		WithExternalOauthJwsKeysUrls(jwsKeysURL).
+		WithExternalOauthAudiences("example-client-id").
+		WithExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable))
+
+	// The integration is created outside Terraform. terraform import cannot
+	// target an address that is already in state, and destroying state also
+	// drops the object, so each import is preceded by a create.
+	create := func() {
+		_, cleanup := testClient().SecurityIntegration.CreateExternalOauthWithRequest(t, sdk.NewCreateExternalOauthSecurityIntegrationRequest(
+			id,
+			true,
+			sdk.ExternalOauthSecurityIntegrationTypeOptionAzure,
+			issuer,
+			[]sdk.TokenUserMappingClaim{{Claim: "upn"}},
+			sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionLoginName,
+		).
+			WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: jwsKeysURL}}).
+			WithExternalOauthAudienceList(sdk.AudienceListRequest{AudienceList: []sdk.AudienceListItem{{Item: "example-client-id"}}}).
+			WithExternalOauthAnyRoleMode(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable))
+		t.Cleanup(cleanup)
+	}
+	create()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ExternalOauthSecurityIntegration),
+		Steps: []resource.TestStep{
+			{
+				// Initialize v2.22.0 and preserve its generated provider config
+				// without adding the integration to Terraform state.
+				ExternalProviders:  ExternalProviderWithExactVersion("2.22.0"),
+				Config:             accconfig.FromModels(t, azure),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				// v2.22.0 copies the Snowflake-managed delimiter into state.
+				// ImportStatePersist keeps that state for the next plan.
+				ExternalProviders:  ExternalProviderWithExactVersion("2.22.0"),
+				ResourceName:       azure.ResourceReference(),
+				ImportState:        true,
+				ImportStatePersist: true,
+				ImportStateId:      id.Name(),
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedExternalOauthSecurityIntegrationResource(t, id.Name()).
+						HasExternalOauthScopeDelimiter(","),
+				),
+			},
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.22.0"),
+				Config:            accconfig.FromModels(t, azure),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(azure.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.PrintPlanDetails(azure.ResourceReference(), "external_oauth_scope_delimiter"),
+					},
+				},
+				ExpectError: regexp.MustCompile(`invalid property 'EXTERNAL_OAUTH_SCOPE_DELIMITER'`),
+			},
+			{
+				// Clear Terraform state before importing with the current provider.
+				// Import cannot target a resource that is already in state, and this
+				// step also drops the integration.
+				ExternalProviders: ExternalProviderWithExactVersion("2.22.0"),
+				Config:            accconfig.FromModels(t, azure),
+				Destroy:           true,
+			},
+			{
+				PreConfig:                create,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, azure),
+				ResourceName:             azure.ResourceReference(),
+				ImportState:              true,
+				ImportStatePersist:       true,
+				ImportStateId:            id.Name(),
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedExternalOauthSecurityIntegrationResource(t, id.Name()).
+						HasNoExternalOauthScopeDelimiter(),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, azure),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(azure.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(t,
+					objectassert.SecurityIntegration(t, id).
+						HasName(id.Name()).
+						HasIntegrationType("EXTERNAL_OAUTH - AZURE").
+						HasEnabled(true),
+					resourceassert.ExternalOauthSecurityIntegrationResource(t, azure.ResourceReference()).
+						HasNoExternalOauthScopeDelimiter(),
+					resourceshowoutputassert.ExternalOauthSecurityIntegrationDescOutput(t, azure.ResourceReference()).
+						HasExternalOauthScopeDelimiter(","),
+				),
+			},
+		},
+	})
 }
