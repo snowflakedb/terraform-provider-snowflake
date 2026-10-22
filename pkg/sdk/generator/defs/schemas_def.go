@@ -5,10 +5,7 @@ import (
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
-
-var schemaParameters = ParameterDefsForLevel(parameterdefs.ParameterLevelSchema)
 
 var schemasDef = g.NewInterface(
 	"Schemas",
@@ -19,7 +16,7 @@ var schemasDef = g.NewInterface(
 	DropOperationFromObject(ssotdefs.Schema).
 	ShowOperationFromObject(ssotdefs.Schema).
 	DescribeOperationFromObject(ssotdefs.Schema).
-	ShowParameters("DatabaseObjectIdentifier").
-	ShowParametersDetails(schemaParameters...).
+	ShowParametersFromObject(ssotdefs.Schema).
+	ShowParametersDetailsFromObject(ssotdefs.Schema).
 	CustomOperationsFromObject(ssotdefs.Schema).
 	CustomInterfaceMethodsFromObject(ssotdefs.Schema)

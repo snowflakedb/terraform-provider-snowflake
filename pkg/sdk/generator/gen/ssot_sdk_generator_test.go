@@ -844,6 +844,56 @@ func Test_CustomInterfaceMethodsFromObject_panics(t *testing.T) {
 	})
 }
 
+func Test_ShowParametersFromObject_fakeObject(t *testing.T) {
+	orig := parametersForObject
+	t.Cleanup(func() { parametersForObject = orig })
+	parametersForObject = func(ssot.Object) []ssot.ParameterDef {
+		return []ssot.ParameterDef{
+			{SqlName: "DATA_RETENTION_TIME_IN_DAYS", Kind: "int"},
+			{SqlName: "LOG_LEVEL", Kind: "LogLevel"},
+		}
+	}
+	obj := ssot.Object{
+		Name:   "Widget",
+		IdType: "DatabaseObjectIdentifier",
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(
+			ssot.SdkShowParameters(),
+			ssot.SdkShowParametersDetails(),
+		)},
+	}
+	got := NewInterface("Widgets", "Widget", "DatabaseObjectIdentifier").
+		ShowParametersFromObject(obj).
+		ShowParametersDetailsFromObject(obj)
+	require.Equal(t, []*CustomInterfaceMethod{
+		{
+			Name:        "ShowParameters",
+			Parameters:  []*MethodParameter{NewMethodParameter("id", "DatabaseObjectIdentifier")},
+			ReturnTypes: []string{"[]*Parameter", "error"},
+		},
+		{
+			Name:        "ShowParametersDetails",
+			Parameters:  []*MethodParameter{NewMethodParameter("id", "DatabaseObjectIdentifier")},
+			ReturnTypes: []string{"*WidgetParametersDetails", "error"},
+		},
+	}, got.CustomMethods)
+	require.Equal(t, &ParametersDetailsConfig{
+		Fields: []ParameterDetailField{
+			{FieldName: "DataRetentionTimeInDays", Key: "DATA_RETENTION_TIME_IN_DAYS", GoType: "int", Parser: "strconv.Atoi"},
+			{FieldName: "LogLevel", Key: "LOG_LEVEL", GoType: "LogLevel", Parser: "ToLogLevel"},
+		},
+	}, got.ParametersDetails)
+}
+
+func Test_ShowParametersFromObject_panics(t *testing.T) {
+	obj := ssot.Object{Name: "Widget", IdType: "DatabaseObjectIdentifier"}
+	require.Panics(t, func() {
+		NewInterface("Widgets", "Widget", "DatabaseObjectIdentifier").ShowParametersFromObject(obj)
+	})
+	require.Panics(t, func() {
+		NewInterface("Widgets", "Widget", "DatabaseObjectIdentifier").ShowParametersDetailsFromObject(obj)
+	})
+}
+
 func Test_CreateAlterFromObject_panics(t *testing.T) {
 	obj := ssot.Object{Name: "Widget", NamePlural: "Widgets"}
 	require.Panics(t, func() {

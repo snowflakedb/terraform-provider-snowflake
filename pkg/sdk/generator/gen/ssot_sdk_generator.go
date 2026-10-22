@@ -270,6 +270,25 @@ func customInterfaceMethodParameters(obj ssot.Object, spec ssot.CustomInterfaceM
 	return params
 }
 
+// ShowParametersFromObject adds the ShowParameters declaration.
+// It is the custom interface method ShowParameters: empty doc, id of IdType, []*Parameter and error.
+// The body stays in the SDK ext file.
+func (i *Interface) ShowParametersFromObject(obj ssot.Object) *Interface {
+	if !obj.SdkConfig().ShowParameters {
+		panic(fmt.Sprintf("object %q is not enabled for SDK ShowParameters generation", obj.Name))
+	}
+	return i.ShowParameters(obj.IdType)
+}
+
+// ShowParametersDetailsFromObject adds ShowParametersDetails and the typed details struct.
+// The fields come from ParameterDefsForLevel for the object's level. The body is generated and calls ShowParameters.
+func (i *Interface) ShowParametersDetailsFromObject(obj ssot.Object) *Interface {
+	if !obj.SdkConfig().ShowParametersDetails {
+		panic(fmt.Sprintf("object %q is not enabled for SDK ShowParametersDetails generation", obj.Name))
+	}
+	return i.ShowParametersDetails(parametersForObject(obj)...)
+}
+
 func (i *Interface) customOperationFromSpec(obj ssot.Object, spec ssot.CustomOperationSpec) *Interface {
 	return i.CustomOperation(spec.Kind, obj.CustomOperationDoc(spec), customOperationQueryStruct(obj, spec))
 }

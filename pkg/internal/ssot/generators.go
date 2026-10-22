@@ -53,6 +53,8 @@ type SdkGenerator struct {
 
 	CustomOperations       bool
 	CustomInterfaceMethods bool
+	ShowParameters         bool
+	ShowParametersDetails  bool
 }
 
 type ModelGenerator struct {
@@ -273,6 +275,20 @@ func SdkCustomOperations() SdkOption {
 // The default doc is the method name, " is based on ", and the docs URL for that method and Name.
 func SdkCustomInterfaceMethods() SdkOption {
 	return func(s *SdkGenerator) { s.CustomInterfaceMethods = true }
+}
+
+// SdkShowParameters emits ShowParameters as an interface declaration.
+// The doc is empty. The parameter is id of IdType. The returns are []*Parameter and error.
+// The body stays in the SDK ext file.
+func SdkShowParameters() SdkOption {
+	return func(s *SdkGenerator) { s.ShowParameters = true }
+}
+
+// SdkShowParametersDetails emits the typed parameters-details struct and ShowParametersDetails.
+// The fields come from ParameterDefsForLevel for the object's ParameterLevel.
+// The struct name is Name plus ParametersDetails. The generated body calls ShowParameters.
+func SdkShowParametersDetails() SdkOption {
+	return func(s *SdkGenerator) { s.ShowParametersDetails = true }
 }
 
 func WithSdk(opts ...SdkOption) GeneratorOption {

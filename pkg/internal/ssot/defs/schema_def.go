@@ -87,6 +87,8 @@ var Schema = ssot.Object{
 			ssot.SdkAlter(ssot.SdkAlterSetList()),
 			ssot.SdkCustomOperations(),
 			ssot.SdkCustomInterfaceMethods(),
+			ssot.SdkShowParameters(),
+			ssot.SdkShowParametersDetails(),
 		),
 		ssot.WithObjectParametersAssert(),
 		ssot.WithResourceParametersAssert(),
