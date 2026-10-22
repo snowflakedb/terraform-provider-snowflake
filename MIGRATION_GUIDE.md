@@ -28,6 +28,20 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.22.x ➞ v2.23.0
 
+### *(bug fix)* Fixed task graph root resolution for quoted identifiers
+
+Previously, updating an existing child [`snowflake_task`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/task) during `terraform apply` could fail with:
+
+```text
+Error: object does not exist
+```
+
+This could happen when quoted names in a task graph caused the provider to look up the wrong predecessor while finding the root task. For example, `"Example staging".SCHEMA.ROOT` was incorrectly interpreted as `"Example staging"."SCHEMA"."SCHEMA.ROOT"`. It is now correctly interpreted as `"Example staging"."SCHEMA"."ROOT"`.
+
+The provider now reads predecessor identifiers from the task-relations metadata, which correctly preserves fully qualified names and their quoting when resolving task graph roots.
+
+No configuration or state changes are required. After upgrading, retry the failed operation with the same configuration.
+
 ### *(new feature)* `token_accessor.min_tls_version` provider configuration
 
 We added an optional `min_tls_version` field to the `token_accessor` block. It sets the minimum TLS version for the HTTP client that block uses to exchange a refresh token. If you want to set a minimum TLS version for the Snowflake driver connection, read the [driver documentation](https://pkg.go.dev/github.com/snowflakedb/gosnowflake/v2).
