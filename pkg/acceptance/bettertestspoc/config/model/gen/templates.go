@@ -34,9 +34,6 @@ var (
 		genhelpers.SnakeCaseToCamel,
 		genhelpers.RemoveForbiddenAttributeNameSuffix,
 		genhelpers.ShouldGenerateWithForAttributeType,
-		genhelpers.SdkMethodSuffix,
-		genhelpers.SdkValueMapper,
-		genhelpers.RunMapper,
 	)).Parse(buildersTemplateContent)
 
 	AllTemplates = []*template.Template{genhelpers.PreambleTemplate, DefinitionTemplate, MarshalJsonTemplate, BuildersTemplate}

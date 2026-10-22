@@ -108,3 +108,13 @@ func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasNoCatalogNamespac
 	c.ValueNotSet("catalog_namespace")
 	return c
 }
+
+func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasNoRestConfig() *CatalogIntegrationOpenCatalogDescribeOutputAssert {
+	c.ValueNotSet("rest_config")
+	return c
+}
+
+func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasNoRestAuthentication() *CatalogIntegrationOpenCatalogDescribeOutputAssert {
+	c.ValueNotSet("rest_authentication")
+	return c
+}

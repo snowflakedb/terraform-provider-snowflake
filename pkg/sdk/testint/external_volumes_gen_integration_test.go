@@ -108,7 +108,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			Name: "gcs_testing_storage_location_complete",
 			GCSStorageLocationParams: &sdk.GCSStorageLocationParamsRequest{
 				StorageBaseUrl: gcsBaseUrl,
-				Encryption: &sdk.ExternalVolumeGcsEncryptionRequest{
+				Encryption: &sdk.ExternalVolumeGCSEncryptionRequest{
 					EncryptionType: sdk.GCSEncryptionTypeGcsSseKms,
 					KmsKeyId:       &gcsKmsKeyId,
 				},
@@ -478,7 +478,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 
 		newComment := "comment"
 		req := sdk.NewAlterExternalVolumeRequest(id).WithSet(
-			*sdk.NewExternalVolumeSetRequest().WithComment(newComment),
+			*sdk.NewAlterExternalVolumeSetRequest().WithComment(newComment),
 		)
 
 		err := client.ExternalVolumes.Alter(ctx, req)
@@ -495,7 +495,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		t.Cleanup(cleanup)
 
 		req := sdk.NewAlterExternalVolumeRequest(id).WithSet(
-			*sdk.NewExternalVolumeSetRequest().WithAllowWrites(false),
+			*sdk.NewAlterExternalVolumeSetRequest().WithAllowWrites(false),
 		)
 
 		err := client.ExternalVolumes.Alter(ctx, req)
@@ -586,7 +586,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 					*sdk.NewGCSStorageLocationParamsRequest(
 						gcsLoc.GCSStorageLocationParams.StorageBaseUrl,
 					).WithEncryption(
-						*sdk.NewExternalVolumeGcsEncryptionRequest(gcsLoc.GCSStorageLocationParams.Encryption.EncryptionType).
+						*sdk.NewExternalVolumeGCSEncryptionRequest(gcsLoc.GCSStorageLocationParams.Encryption.EncryptionType).
 							WithKmsKeyId(*gcsLoc.GCSStorageLocationParams.Encryption.KmsKeyId),
 					),
 				),

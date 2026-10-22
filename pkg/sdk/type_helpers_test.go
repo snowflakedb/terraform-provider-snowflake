@@ -26,8 +26,8 @@ func TestToParameterType(t *testing.T) {
 		{Input: string(ParameterTypeTask), Expected: ParameterTypeTask},
 		{Input: string(ParameterTypeFunction), Expected: ParameterTypeFunction},
 		{Input: string(ParameterTypeProcedure), Expected: ParameterTypeProcedure},
-		{Name: "validation: incorrect parameter type", Input: "incorrect", Error: "invalid parameter type: INCORRECT"},
-		{Name: "validation: lower case input", Input: "account", Expected: ParameterTypeAccount},
+		{Name: "validation: incorrect parameter type", Input: "incorrect", Error: "invalid parameter type: incorrect"},
+		{Name: "validation: lower case input", Input: "account", Expected: ParameterType("account")},
 	}
 
 	for _, testCase := range testCases {

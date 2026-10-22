@@ -3,11 +3,9 @@
 package resourceassert
 
 import (
-	"strconv"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type SchemaResourceAssert struct {
@@ -49,11 +47,6 @@ func (s *SchemaResourceAssert) HasCatalog(expected string) *SchemaResourceAssert
 	return s
 }
 
-func (s *SchemaResourceAssert) HasCatalogSdk(expected sdk.AccountObjectIdentifier) *SchemaResourceAssert {
-	s.StringValueSet("catalog", expected.Name())
-	return s
-}
-
 func (s *SchemaResourceAssert) HasComment(expected string) *SchemaResourceAssert {
 	s.StringValueSet("comment", expected)
 	return s
@@ -89,11 +82,6 @@ func (s *SchemaResourceAssert) HasExternalVolume(expected string) *SchemaResourc
 	return s
 }
 
-func (s *SchemaResourceAssert) HasExternalVolumeSdk(expected sdk.AccountObjectIdentifier) *SchemaResourceAssert {
-	s.StringValueSet("external_volume", expected.Name())
-	return s
-}
-
 func (s *SchemaResourceAssert) HasFullyQualifiedName(expected string) *SchemaResourceAssert {
 	s.StringValueSet("fully_qualified_name", expected)
 	return s
@@ -104,28 +92,13 @@ func (s *SchemaResourceAssert) HasIsTransient(expected string) *SchemaResourceAs
 	return s
 }
 
-func (s *SchemaResourceAssert) HasIsTransientBool(expected bool) *SchemaResourceAssert {
-	s.StringValueSet("is_transient", strconv.FormatBool(expected))
-	return s
-}
-
 func (s *SchemaResourceAssert) HasLogEventLevel(expected string) *SchemaResourceAssert {
 	s.StringValueSet("log_event_level", expected)
 	return s
 }
 
-func (s *SchemaResourceAssert) HasLogEventLevelSdk(expected sdk.LogLevel) *SchemaResourceAssert {
-	s.StringValueSet("log_event_level", string(expected))
-	return s
-}
-
 func (s *SchemaResourceAssert) HasLogLevel(expected string) *SchemaResourceAssert {
 	s.StringValueSet("log_level", expected)
-	return s
-}
-
-func (s *SchemaResourceAssert) HasLogLevelSdk(expected sdk.LogLevel) *SchemaResourceAssert {
-	s.StringValueSet("log_level", string(expected))
 	return s
 }
 
@@ -154,11 +127,6 @@ func (s *SchemaResourceAssert) HasStorageSerializationPolicy(expected string) *S
 	return s
 }
 
-func (s *SchemaResourceAssert) HasStorageSerializationPolicySdk(expected sdk.StorageSerializationPolicy) *SchemaResourceAssert {
-	s.StringValueSet("storage_serialization_policy", string(expected))
-	return s
-}
-
 func (s *SchemaResourceAssert) HasSuspendTaskAfterNumFailures(expected int) *SchemaResourceAssert {
 	s.IntValueSet("suspend_task_after_num_failures", expected)
 	return s
@@ -174,18 +142,8 @@ func (s *SchemaResourceAssert) HasTraceLevel(expected string) *SchemaResourceAss
 	return s
 }
 
-func (s *SchemaResourceAssert) HasTraceLevelSdk(expected sdk.TraceLevel) *SchemaResourceAssert {
-	s.StringValueSet("trace_level", string(expected))
-	return s
-}
-
 func (s *SchemaResourceAssert) HasUserTaskManagedInitialWarehouseSize(expected string) *SchemaResourceAssert {
 	s.StringValueSet("user_task_managed_initial_warehouse_size", expected)
-	return s
-}
-
-func (s *SchemaResourceAssert) HasUserTaskManagedInitialWarehouseSizeSdk(expected sdk.WarehouseSize) *SchemaResourceAssert {
-	s.StringValueSet("user_task_managed_initial_warehouse_size", string(expected))
 	return s
 }
 
@@ -201,11 +159,6 @@ func (s *SchemaResourceAssert) HasUserTaskTimeoutMs(expected int) *SchemaResourc
 
 func (s *SchemaResourceAssert) HasWithManagedAccess(expected string) *SchemaResourceAssert {
 	s.StringValueSet("with_managed_access", expected)
-	return s
-}
-
-func (s *SchemaResourceAssert) HasWithManagedAccessBool(expected bool) *SchemaResourceAssert {
-	s.StringValueSet("with_managed_access", strconv.FormatBool(expected))
 	return s
 }
 

@@ -176,13 +176,3 @@ func (r describeMaskingPolicyDBRow) convert() (*MaskingPolicyDetails, error) {
 	}
 	return result, nil
 }
-
-func (v *maskingPolicies) DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*MaskingPolicyDetails, error) {
-	details, err := v.Describe(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	details.DatabaseName = id.DatabaseName()
-	details.SchemaName = id.SchemaName()
-	return details, nil
-}

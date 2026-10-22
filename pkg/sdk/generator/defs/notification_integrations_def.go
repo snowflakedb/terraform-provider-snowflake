@@ -86,9 +86,7 @@ var notificationIntegrationsDef = g.NewInterface(
 				"EmailParams",
 				g.NewQueryStruct("EmailParams").
 					SQLWithCustomFieldName("notificationType", "TYPE = EMAIL").
-					ListAssignment("ALLOWED_RECIPIENTS", "NotificationIntegrationAllowedRecipient", g.ParameterOptions().Parentheses()).
-					ListAssignment("DEFAULT_RECIPIENTS", "NotificationIntegrationAllowedRecipient", g.ParameterOptions().Parentheses()).
-					OptionalTextAssignment("DEFAULT_SUBJECT", g.ParameterOptions().SingleQuotes()),
+					ListAssignment("ALLOWED_RECIPIENTS", "NotificationIntegrationAllowedRecipient", g.ParameterOptions().Parentheses()),
 				g.KeywordOptions(),
 			).
 			OptionalQueryStructField(

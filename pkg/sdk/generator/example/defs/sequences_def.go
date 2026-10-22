@@ -29,22 +29,6 @@ func sequenceFields(dbName, plainName string) *g.PairedStructs {
 		Field("ordered", "string", "bool")
 }
 
-// sequenceDescribeFields is the DESCRIBE row. DESCRIBE does not return database_name or schema_name.
-// WithDescribeDetailsFromIdentifier copies those plain-only fields from the identifier, so convert does not call additionalConvert.
-func sequenceDescribeFields() *g.PairedStructs {
-	return g.StructPair("sequenceDetailRow", "SequenceDetail").
-		Text("created_on").
-		Text("name").
-		Number("next_value").
-		Number("interval").
-		Text("owner").
-		Text("owner_role_type").
-		Text("comment").
-		Field("ordered", "string", "bool").
-		PlainOnlyField("DatabaseName", "string").
-		PlainOnlyField("SchemaName", "string")
-}
-
 var SequencesDef = g.NewInterface(
 	"Sequences",
 	"Sequence",
@@ -94,25 +78,23 @@ var SequencesDef = g.NewInterface(
 ).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-sequence",
-	sequenceDescribeFields(),
+	sequenceFields("sequenceDetailRow", "SequenceDetail"),
 	g.NewQueryStruct("DescribeSequence").
 		Describe().
 		SQL("SEQUENCE").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).
-	WithDescribeDetailsFromIdentifier("SequenceDetail", []string{"DatabaseName", "SchemaName"}).
-	DropOperation(
-		"https://docs.snowflake.com/en/sql-reference/sql/drop-sequence",
-		g.NewQueryStruct("DropSequence").
-			Drop().
-			SQL("SEQUENCE").
-			IfExists().
-			Name().
-			OptionalQueryStructField(
-				"Constraint",
-				sequenceConstraint,
-				g.KeywordOptions(),
-			).
-			WithValidation(g.ValidIdentifier, "name"),
-	)
+).DropOperation(
+	"https://docs.snowflake.com/en/sql-reference/sql/drop-sequence",
+	g.NewQueryStruct("DropSequence").
+		Drop().
+		SQL("SEQUENCE").
+		IfExists().
+		Name().
+		OptionalQueryStructField(
+			"Constraint",
+			sequenceConstraint,
+			g.KeywordOptions(),
+		).
+		WithValidation(g.ValidIdentifier, "name"),
+)

@@ -24,7 +24,6 @@ type ResourceConfigBuilderAttributeModel struct {
 	VariableMethod string
 	MethodImport   string
 	OriginalType   schema.ValueType
-	genhelpers.SdkValueType
 }
 
 var excludedAttributeNames = []string{
@@ -34,9 +33,7 @@ var excludedAttributeNames = []string{
 	resources.ShowKeysOutputAttributeName,
 }
 
-func (m ResourceConfigBuilderModel) ObjectName() string { return m.Name }
-
-func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSchemaDetails, preamble *genhelpers.PreambleModel, logger *log.Logger) ResourceConfigBuilderModel {
+func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSchemaDetails, preamble *genhelpers.PreambleModel) ResourceConfigBuilderModel {
 	attributes := make([]ResourceConfigBuilderAttributeModel, 0)
 	for _, attr := range resourceSchemaDetails.Attributes {
 		if slices.Contains(excludedAttributeNames, attr.Name) {
@@ -78,7 +75,7 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 			// We only run it for the required attributes because the `With` methods are not yet generated; we don't need to set the `variableMethod`.
 			// For now, the `With` method for complex object will still need to be added to _ext file.
 			if attr.Required {
-				attributeType = handleAttributeTypeForListsAndSets(attr, resourceSchemaDetails.Name, logger)
+				attributeType = handleAttributeTypeForListsAndSets(attr, resourceSchemaDetails.Name)
 			}
 		}
 
@@ -104,7 +101,7 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 // For simple types it's handled seamlessly.
 // For complex types, we need to define override in complexListAttributesOverrides.
 // Also, we need to import package (usually sdk) containing the type representing the given object.
-func handleAttributeTypeForListsAndSets(attr genhelpers.SchemaAttribute, resourceName string, logger *log.Logger) string {
+func handleAttributeTypeForListsAndSets(attr genhelpers.SchemaAttribute, resourceName string) string {
 	var attributeType string
 	switch attr.AttributeSubType {
 	case schema.TypeBool:
@@ -114,29 +111,29 @@ func handleAttributeTypeForListsAndSets(attr genhelpers.SchemaAttribute, resourc
 	case schema.TypeFloat:
 		attributeType = "[]float"
 	case schema.TypeString:
-		attributeType = handleListTypeOverrides(resourceName, attr.Name, logger)
+		attributeType = handleListTypeOverrides(resourceName, attr.Name)
 		if attributeType == "" {
 			attributeType = "[]string"
 		}
 	case schema.TypeMap:
-		attributeType = handleListTypeOverrides(resourceName, attr.Name, logger)
+		attributeType = handleListTypeOverrides(resourceName, attr.Name)
 	default:
-		logger.Printf("[WARN] Attribute's %s sub type could not be determined", attr.Name)
+		log.Printf("[WARN] Attribute's %s sub type could not be determined", attr.Name)
 	}
 	return attributeType
 }
 
 // TODO [SNOW-1501905]: handle attribute overriding in one place
-func handleListTypeOverrides(resourceName string, attrName string, logger *log.Logger) string {
+func handleListTypeOverrides(resourceName string, attrName string) string {
 	var attributeType string
 	if v, ok := complexListAttributesOverrides[resourceName]; ok {
 		if t, ok := v[attrName]; ok {
 			attributeType = "[]" + t
 		} else {
-			logger.Printf("[WARN] No complex list attribute override found for resource's %s attribute %s", resourceName, attrName)
+			log.Printf("[WARN] No complex list attribute override found for resource's %s attribute %s", resourceName, attrName)
 		}
 	} else {
-		logger.Printf("[WARN] No complex list attribute overrides found for resource %s", resourceName)
+		log.Printf("[WARN] No complex list attribute overrides found for resource %s", resourceName)
 	}
 	return attributeType
 }

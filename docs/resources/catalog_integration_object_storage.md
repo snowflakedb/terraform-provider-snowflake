@@ -40,12 +40,12 @@ resource "snowflake_catalog_integration_object_storage" "complete" {
 ### Required
 
 - `enabled` (Boolean) Specifies whether the catalog integration is available for use for Iceberg tables. `true` allows users to create new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration function normally. `false` prevents users from creating new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration cannot access the catalog in the table definition.
-- `name` (String) Specifies the identifier for the catalog integration object storage; must be unique for the account. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `name` (String) Specifies the identifier (i.e. name) of the catalog integration; must be unique in your account.
 - `table_format` (String) Specifies the table format. Valid values are (case-insensitive): `ICEBERG` | `DELTA`.
 
 ### Optional
 
-- `comment` (String) Specifies a comment for the catalog integration.
+- `comment` (String) (Default: ``) Specifies a comment for the catalog integration.
 - `refresh_interval_seconds` (Number) Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh. For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
@@ -55,7 +55,7 @@ resource "snowflake_catalog_integration_object_storage" "complete" {
 - `describe_output` (List of Object) Outputs the result of `DESCRIBE CATALOG INTEGRATION` for the given catalog integration. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
-- `show_output` (List of Object) Outputs the result of `SHOW CATALOG INTEGRATIONS` for the given catalog integration object storage. (see [below for nested schema](#nestedatt--show_output))
+- `show_output` (List of Object) Outputs the result of `SHOW CATALOG INTEGRATIONS` for the given catalog integration. (see [below for nested schema](#nestedatt--show_output))
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`

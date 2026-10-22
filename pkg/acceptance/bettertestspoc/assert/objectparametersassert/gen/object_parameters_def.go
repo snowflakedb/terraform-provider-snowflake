@@ -3,11 +3,11 @@ package gen
 import (
 	"slices"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvidentifiers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
 )
 
 type SnowflakeObjectParameters struct {
@@ -43,17 +43,39 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		Level:  sdk.ParameterTypeUser,
 		// Adjust defaults according to our testing environments: override NETWORK_POLICY underneath.
 		Parameters: append(
-			slices.DeleteFunc(snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelUser)), func(p SnowflakeParameter) bool {
+			slices.DeleteFunc(snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelUser)), func(p SnowflakeParameter) bool {
 				return p.ParameterName == string(sdk.UserParameterNetworkPolicy)
 			}),
 			SnowflakeParameter{ParameterName: string(sdk.UserParameterNetworkPolicy), ParameterType: "string", DefaultValue: testenvidentifiers.NetworkPolicy.Name(), DefaultLevel: "sdk.ParameterTypeAccount"},
 		),
 	},
 	{
+		Name:       "Warehouse",
+		IdType:     "sdk.AccountObjectIdentifier",
+		Level:      sdk.ParameterTypeWarehouse,
+		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouse)),
+	},
+	{
+		Name:                    "WarehouseAdaptive",
+		IdType:                  "sdk.AccountObjectIdentifier",
+		Level:                   sdk.ParameterTypeWarehouse,
+		ParameterConstantPrefix: "Warehouse",
+		ObjectTypeName:          "Warehouse",
+		Parameters:              snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouseAdaptive)),
+	},
+	{
+		Name:                    "WarehouseInteractive",
+		IdType:                  "sdk.AccountObjectIdentifier",
+		Level:                   sdk.ParameterTypeWarehouse,
+		ParameterConstantPrefix: "Warehouse",
+		ObjectTypeName:          "Warehouse",
+		Parameters:              snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouseInteractive)),
+	},
+	{
 		Name:       "Database",
 		IdType:     "sdk.AccountObjectIdentifier",
 		Level:      sdk.ParameterTypeDatabase,
-		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelDatabase)),
+		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelDatabase)),
 	},
 	{
 		Name:   "IcebergTable",
@@ -83,7 +105,7 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		Name:   "Task",
 		IdType: "sdk.SchemaObjectIdentifier",
 		Level:  sdk.ParameterTypeTask,
-		Parameters: append(snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelTask)), SnowflakeParameter{
+		Parameters: append(snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelTask)), SnowflakeParameter{
 			ParameterName: string(sdk.TaskParameterSearchPath), ParameterType: "string", DefaultValue: "$current, $public", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault",
 		}),
 	},
@@ -184,7 +206,7 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 			{ParameterName: string(sdk.AccountParameterBinaryOutputFormat), ParameterType: "sdk.BinaryOutputFormat", DefaultValue: "sdk.BinaryOutputFormatHex", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterCatalog), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterCatalogSync), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
-			{ParameterName: string(sdk.AccountParameterClientTimestampTypeMapping), ParameterType: "sdk.ClientTimestampTypeMapping", DefaultValue: "sdk.ClientTimestampTypeMappingTimestampLtz", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.AccountParameterClientTimestampTypeMapping), ParameterType: "sdk.ClientTimestampTypeMapping", DefaultValue: "sdk.ClientTimestampTypeMappingLtz", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterCortexCodeCliDailyEstCreditLimitPerUser), ParameterType: "int", DefaultValue: "-1", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterCortexCodeDesktopDailyEstCreditLimitPerUser), ParameterType: "int", DefaultValue: "-1", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterCortexCodeSnowsightDailyEstCreditLimitPerUser), ParameterType: "int", DefaultValue: "-1", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
@@ -203,8 +225,8 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 			{ParameterName: string(sdk.AccountParameterDefaultStreamlitNotebookWarehouse), ParameterType: "string", DefaultValue: "REGRESS", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterEventTable), ParameterType: "string", DefaultValue: "snowflake.telemetry.events", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterExternalVolume), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
-			{ParameterName: string(sdk.AccountParameterGeographyOutputFormat), ParameterType: "sdk.GeographyOutputFormat", DefaultValue: "sdk.GeographyOutputFormatGeoJson", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
-			{ParameterName: string(sdk.AccountParameterGeometryOutputFormat), ParameterType: "sdk.GeometryOutputFormat", DefaultValue: "sdk.GeometryOutputFormatGeoJson", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.AccountParameterGeographyOutputFormat), ParameterType: "sdk.GeographyOutputFormat", DefaultValue: "sdk.GeographyOutputFormatGeoJSON", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.AccountParameterGeometryOutputFormat), ParameterType: "sdk.GeometryOutputFormat", DefaultValue: "sdk.GeometryOutputFormatGeoJSON", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterInitialReplicationSizeLimitInTb), ParameterType: "string", DefaultValue: "10", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterListingAutoFulfillmentReplicationRefreshSchedule), ParameterType: "string", DefaultValue: "1440 MINUTE", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterLogLevel), ParameterType: "sdk.LogLevel", DefaultValue: "sdk.LogLevelOff", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
@@ -226,7 +248,7 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 			{ParameterName: string(sdk.AccountParameterTimestampLtzOutputFormat), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterTimestampNtzOutputFormat), ParameterType: "string", DefaultValue: "YYYY-MM-DD HH24:MI:SS.FF3", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterTimestampOutputFormat), ParameterType: "string", DefaultValue: "YYYY-MM-DD HH24:MI:SS.FF3 TZHTZM", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
-			{ParameterName: string(sdk.AccountParameterTimestampTypeMapping), ParameterType: "sdk.TimestampTypeMapping", DefaultValue: "sdk.TimestampTypeMappingTimestampNtz", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.AccountParameterTimestampTypeMapping), ParameterType: "sdk.TimestampTypeMapping", DefaultValue: "sdk.TimestampTypeMappingNtz", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterTimestampTzOutputFormat), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterTimezone), ParameterType: "string", DefaultValue: "America/Los_Angeles", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterTimeInputFormat), ParameterType: "string", DefaultValue: "AUTO", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
@@ -242,26 +264,54 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		Name:       "Function",
 		IdType:     "sdk.SchemaObjectIdentifierWithArguments",
 		Level:      sdk.ParameterTypeFunction,
-		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelFunction)),
+		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelFunction)),
 	},
 	{
 		Name:       "Procedure",
 		IdType:     "sdk.SchemaObjectIdentifierWithArguments",
 		Level:      sdk.ParameterTypeProcedure,
-		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelProcedure)),
+		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelProcedure)),
 	},
 	{
 		Name:       "Service",
 		IdType:     "sdk.SchemaObjectIdentifier",
 		Level:      sdk.ParameterTypeService,
-		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelService)),
+		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelService)),
 	},
 	{
 		Name:                    "HybridTable",
 		IdType:                  "sdk.SchemaObjectIdentifier",
 		Level:                   sdk.ParameterTypeObject,
 		ParameterConstantPrefix: "Object",
-		Parameters:              snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelHybridTable)),
+		Parameters:              snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelHybridTable)),
+	},
+	{
+		Name:                    "Schema",
+		IdType:                  "sdk.DatabaseObjectIdentifier",
+		Level:                   sdk.ParameterTypeObject,
+		ParameterConstantPrefix: "Object",
+		Parameters: []SnowflakeParameter{
+			{ParameterName: string(sdk.ObjectParameterCatalog), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterDataRetentionTimeInDays), ParameterType: "int", DefaultValue: "1", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterDefaultDdlCollation), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterDefaultNotebookComputePoolCpu), ParameterType: "string", DefaultValue: "SYSTEM_COMPUTE_POOL_CPU", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterDefaultNotebookComputePoolGpu), ParameterType: "string", DefaultValue: "SYSTEM_COMPUTE_POOL_GPU", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterEnableConsoleOutput), ParameterType: "bool", DefaultValue: "false", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterExternalVolume), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterLogEventLevel), ParameterType: "sdk.LogLevel", DefaultValue: "sdk.LogLevelOff", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterLogLevel), ParameterType: "sdk.LogLevel", DefaultValue: "sdk.LogLevelOff", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterMaxDataExtensionTimeInDays), ParameterType: "int", DefaultValue: "14", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterPipeExecutionPaused), ParameterType: "bool", DefaultValue: "false", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterQuotedIdentifiersIgnoreCase), ParameterType: "bool", DefaultValue: "false", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterReplaceInvalidCharacters), ParameterType: "bool", DefaultValue: "false", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterStorageSerializationPolicy), ParameterType: "sdk.StorageSerializationPolicy", DefaultValue: "sdk.StorageSerializationPolicyOptimized", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterSuspendTaskAfterNumFailures), ParameterType: "int", DefaultValue: "10", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterTaskAutoRetryAttempts), ParameterType: "int", DefaultValue: "0", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterTraceLevel), ParameterType: "sdk.TraceLevel", DefaultValue: "sdk.TraceLevelOff", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterUserTaskManagedInitialWarehouseSize), ParameterType: "sdk.WarehouseSize", DefaultValue: `sdk.WarehouseSize("Medium")`, DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterUserTaskMinimumTriggerIntervalInSeconds), ParameterType: "int", DefaultValue: "30", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterUserTaskTimeoutMs), ParameterType: "int", DefaultValue: "3600000", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+		},
 	},
 	{
 		Name:   "OpenflowDeployment",
@@ -271,11 +321,11 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		// down, so what a deployment reports before anything is set differs between accounts and only
 		// the level tells the two apart. Assert HasEventTable and HasEventTableLevel rather than the
 		// generated defaults assertions.
-		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelOpenflowDeployment)),
+		Parameters: snowflakeParameters(defs.ParameterDefsForLevel(parameterdefs.ParameterLevelOpenflowDeployment)),
 	},
 }
 
-func snowflakeParameters(parameters []ssot.ParameterDef) []SnowflakeParameter {
+func snowflakeParameters(parameters []parameterdefs.ParameterDef) []SnowflakeParameter {
 	out := make([]SnowflakeParameter, 0, len(parameters))
 	for _, parameter := range parameters {
 		out = append(out, SnowflakeParameter{

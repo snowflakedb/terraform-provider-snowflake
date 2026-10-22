@@ -28,7 +28,6 @@ func init() {
 	unsetTagId1 := randomSchemaObjectIdentifier()
 	unsetTagId2 := randomSchemaObjectIdentifier()
 	alterPassword := random.Password()
-	profilerStageId := randomSchemaObjectIdentifier()
 
 	usersTests.Create.
 		withExpectedSqlf(
@@ -154,22 +153,6 @@ func init() {
 			"sql_Create_orReplace",
 			func(opts *CreateUserOptions) { opts.OrReplace = new(true) },
 			`CREATE OR REPLACE USER %s`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Create_newUserParameters",
-			func(opts *CreateUserOptions) {
-				opts.ActivePythonProfiler = new(ActivePythonProfilerMemory)
-				opts.ClientEnableLogInfoStatementParameters = new(true)
-				opts.ClientMetadataUseSessionDatabase = new(true)
-				opts.CsvTimestampFormat = new("YYYY-MM-DD")
-				opts.EnableGetDdlUseDataTypeAlias = new(true)
-				opts.HybridTableLockTimeout = new(3599)
-				opts.JsTreatIntegerAsBigint = new(true)
-				opts.PythonProfilerModules = new("module1, module2")
-				opts.PythonProfilerTargetStage = &profilerStageId
-			},
-			`CREATE USER %s ACTIVE_PYTHON_PROFILER = 'MEMORY' CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS = true CLIENT_METADATA_USE_SESSION_DATABASE = true CSV_TIMESTAMP_FORMAT = 'YYYY-MM-DD' ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS = true HYBRID_TABLE_LOCK_TIMEOUT = 3599 JS_TREAT_INTEGER_AS_BIGINT = true PYTHON_PROFILER_MODULES = 'module1, module2' PYTHON_PROFILER_TARGET_STAGE = %s`,
-			id.FullyQualifiedName(), profilerStageId.FullyQualifiedName(),
 		)
 
 	usersTests.Alter.
@@ -432,69 +415,6 @@ func init() {
 			},
 			`ALTER USER %s SET WORKLOAD_IDENTITY = (TYPE = %s ISSUER = '%s' SUBJECT = '%s' OIDC_AUDIENCE_LIST = ('https://accounts.google.com/o/oauth2/auth'))`, id.FullyQualifiedName(), WIFTypeOidc, "https://accounts.google.com", "system:serviceaccount:service_account_namespace:service_account_name",
 		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Set_ActivePythonProfiler",
-			func(opts *AlterUserOptions) {
-				opts.Set = &UserSet{ActivePythonProfiler: new(ActivePythonProfilerMemory)}
-			},
-			`ALTER USER %s SET ACTIVE_PYTHON_PROFILER = 'MEMORY'`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Set_ClientEnableLogInfoStatementParameters",
-			func(opts *AlterUserOptions) {
-				opts.Set = &UserSet{ClientEnableLogInfoStatementParameters: new(true)}
-			},
-			`ALTER USER %s SET CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS = true`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Set_ClientMetadataUseSessionDatabase",
-			func(opts *AlterUserOptions) {
-				opts.Set = &UserSet{ClientMetadataUseSessionDatabase: new(true)}
-			},
-			`ALTER USER %s SET CLIENT_METADATA_USE_SESSION_DATABASE = true`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Set_CsvTimestampFormat",
-			func(opts *AlterUserOptions) {
-				opts.Set = &UserSet{CsvTimestampFormat: new("YYYY-MM-DD")}
-			},
-			`ALTER USER %s SET CSV_TIMESTAMP_FORMAT = 'YYYY-MM-DD'`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Set_EnableGetDdlUseDataTypeAlias",
-			func(opts *AlterUserOptions) {
-				opts.Set = &UserSet{EnableGetDdlUseDataTypeAlias: new(true)}
-			},
-			`ALTER USER %s SET ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS = true`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Set_HybridTableLockTimeout",
-			func(opts *AlterUserOptions) {
-				opts.Set = &UserSet{HybridTableLockTimeout: new(3599)}
-			},
-			`ALTER USER %s SET HYBRID_TABLE_LOCK_TIMEOUT = 3599`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Set_JsTreatIntegerAsBigint",
-			func(opts *AlterUserOptions) {
-				opts.Set = &UserSet{JsTreatIntegerAsBigint: new(true)}
-			},
-			`ALTER USER %s SET JS_TREAT_INTEGER_AS_BIGINT = true`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Set_PythonProfilerModules",
-			func(opts *AlterUserOptions) {
-				opts.Set = &UserSet{PythonProfilerModules: new("module1, module2")}
-			},
-			`ALTER USER %s SET PYTHON_PROFILER_MODULES = 'module1, module2'`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Set_PythonProfilerTargetStage",
-			func(opts *AlterUserOptions) {
-				opts.Set = &UserSet{PythonProfilerTargetStage: &profilerStageId}
-			},
-			`ALTER USER %s SET PYTHON_PROFILER_TARGET_STAGE = %s`, id.FullyQualifiedName(), profilerStageId.FullyQualifiedName(),
-		).
 		withModifyAndExpectedSqlf(
 			case_Users_sql_Alter_Unset,
 			func(opts *AlterUserOptions) {
@@ -535,55 +455,6 @@ func init() {
 				opts.Unset = &UserUnset{ObjectProperties: &UserObjectPropertiesUnset{WorkloadIdentity: new(true)}}
 			},
 			`ALTER USER %s UNSET WORKLOAD_IDENTITY`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Unset_ActivePythonProfiler",
-			func(opts *AlterUserOptions) { opts.Unset = &UserUnset{ActivePythonProfiler: new(true)} },
-			`ALTER USER %s UNSET ACTIVE_PYTHON_PROFILER`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Unset_ClientEnableLogInfoStatementParameters",
-			func(opts *AlterUserOptions) {
-				opts.Unset = &UserUnset{ClientEnableLogInfoStatementParameters: new(true)}
-			},
-			`ALTER USER %s UNSET CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Unset_ClientMetadataUseSessionDatabase",
-			func(opts *AlterUserOptions) {
-				opts.Unset = &UserUnset{ClientMetadataUseSessionDatabase: new(true)}
-			},
-			`ALTER USER %s UNSET CLIENT_METADATA_USE_SESSION_DATABASE`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Unset_CsvTimestampFormat",
-			func(opts *AlterUserOptions) { opts.Unset = &UserUnset{CsvTimestampFormat: new(true)} },
-			`ALTER USER %s UNSET CSV_TIMESTAMP_FORMAT`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Unset_EnableGetDdlUseDataTypeAlias",
-			func(opts *AlterUserOptions) { opts.Unset = &UserUnset{EnableGetDdlUseDataTypeAlias: new(true)} },
-			`ALTER USER %s UNSET ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Unset_HybridTableLockTimeout",
-			func(opts *AlterUserOptions) { opts.Unset = &UserUnset{HybridTableLockTimeout: new(true)} },
-			`ALTER USER %s UNSET HYBRID_TABLE_LOCK_TIMEOUT`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Unset_JsTreatIntegerAsBigint",
-			func(opts *AlterUserOptions) { opts.Unset = &UserUnset{JsTreatIntegerAsBigint: new(true)} },
-			`ALTER USER %s UNSET JS_TREAT_INTEGER_AS_BIGINT`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Unset_PythonProfilerModules",
-			func(opts *AlterUserOptions) { opts.Unset = &UserUnset{PythonProfilerModules: new(true)} },
-			`ALTER USER %s UNSET PYTHON_PROFILER_MODULES`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Unset_PythonProfilerTargetStage",
-			func(opts *AlterUserOptions) { opts.Unset = &UserUnset{PythonProfilerTargetStage: new(true)} },
-			`ALTER USER %s UNSET PYTHON_PROFILER_TARGET_STAGE`, id.FullyQualifiedName(),
 		)
 
 	usersTests.Drop.
@@ -680,14 +551,14 @@ func Test_User_ToGeographyOutputFormat(t *testing.T) {
 
 	valid := []test{
 		// case insensitive.
-		{input: "geojson", want: GeographyOutputFormatGeoJson},
+		{input: "geojson", want: GeographyOutputFormatGeoJSON},
 
 		// Supported Values
-		{input: string(GeographyOutputFormatGeoJson), want: GeographyOutputFormatGeoJson},
-		{input: string(GeographyOutputFormatWkt), want: GeographyOutputFormatWkt},
-		{input: string(GeographyOutputFormatWkb), want: GeographyOutputFormatWkb},
-		{input: string(GeographyOutputFormatEwkt), want: GeographyOutputFormatEwkt},
-		{input: string(GeographyOutputFormatEwkb), want: GeographyOutputFormatEwkb},
+		{input: string(GeographyOutputFormatGeoJSON), want: GeographyOutputFormatGeoJSON},
+		{input: string(GeographyOutputFormatWKT), want: GeographyOutputFormatWKT},
+		{input: string(GeographyOutputFormatWKB), want: GeographyOutputFormatWKB},
+		{input: string(GeographyOutputFormatEWKT), want: GeographyOutputFormatEWKT},
+		{input: string(GeographyOutputFormatEWKB), want: GeographyOutputFormatEWKB},
 	}
 
 	invalid := []test{
@@ -723,14 +594,14 @@ func Test_User_ToGeometryOutputFormat(t *testing.T) {
 
 	valid := []test{
 		// case insensitive.
-		{input: "geojson", want: GeometryOutputFormatGeoJson},
+		{input: "geojson", want: GeometryOutputFormatGeoJSON},
 
 		// Supported Values
-		{input: string(GeometryOutputFormatGeoJson), want: GeometryOutputFormatGeoJson},
-		{input: string(GeometryOutputFormatWkt), want: GeometryOutputFormatWkt},
-		{input: string(GeometryOutputFormatWkb), want: GeometryOutputFormatWkb},
-		{input: string(GeometryOutputFormatEwkt), want: GeometryOutputFormatEwkt},
-		{input: string(GeometryOutputFormatEwkb), want: GeometryOutputFormatEwkb},
+		{input: string(GeometryOutputFormatGeoJSON), want: GeometryOutputFormatGeoJSON},
+		{input: string(GeometryOutputFormatWKT), want: GeometryOutputFormatWKT},
+		{input: string(GeometryOutputFormatWKB), want: GeometryOutputFormatWKB},
+		{input: string(GeometryOutputFormatEWKT), want: GeometryOutputFormatEWKT},
+		{input: string(GeometryOutputFormatEWKB), want: GeometryOutputFormatEWKB},
 	}
 
 	invalid := []test{
@@ -771,7 +642,7 @@ func Test_User_ToBinaryInputFormat(t *testing.T) {
 		// Supported Values
 		{input: string(BinaryInputFormatHex), want: BinaryInputFormatHex},
 		{input: string(BinaryInputFormatBase64), want: BinaryInputFormatBase64},
-		{input: string(BinaryInputFormatUtf8), want: BinaryInputFormatUtf8},
+		{input: string(BinaryInputFormatUTF8), want: BinaryInputFormatUTF8},
 	}
 
 	invalid := []test{
@@ -847,11 +718,11 @@ func Test_User_ToClientTimestampTypeMapping(t *testing.T) {
 
 	valid := []test{
 		// case insensitive.
-		{input: "timestamp_ltz", want: ClientTimestampTypeMappingTimestampLtz},
+		{input: "timestamp_ltz", want: ClientTimestampTypeMappingLtz},
 
 		// Supported Values
-		{input: string(ClientTimestampTypeMappingTimestampLtz), want: ClientTimestampTypeMappingTimestampLtz},
-		{input: string(ClientTimestampTypeMappingTimestampNtz), want: ClientTimestampTypeMappingTimestampNtz},
+		{input: string(ClientTimestampTypeMappingLtz), want: ClientTimestampTypeMappingLtz},
+		{input: string(ClientTimestampTypeMappingNtz), want: ClientTimestampTypeMappingNtz},
 	}
 
 	invalid := []test{
@@ -887,12 +758,12 @@ func Test_User_ToTimestampTypeMapping(t *testing.T) {
 
 	valid := []test{
 		// case insensitive.
-		{input: "timestamp_ltz", want: TimestampTypeMappingTimestampLtz},
+		{input: "timestamp_ltz", want: TimestampTypeMappingLtz},
 
 		// Supported Values
-		{input: string(TimestampTypeMappingTimestampLtz), want: TimestampTypeMappingTimestampLtz},
-		{input: string(TimestampTypeMappingTimestampNtz), want: TimestampTypeMappingTimestampNtz},
-		{input: string(TimestampTypeMappingTimestampTz), want: TimestampTypeMappingTimestampTz},
+		{input: string(TimestampTypeMappingLtz), want: TimestampTypeMappingLtz},
+		{input: string(TimestampTypeMappingNtz), want: TimestampTypeMappingNtz},
+		{input: string(TimestampTypeMappingTz), want: TimestampTypeMappingTz},
 	}
 
 	invalid := []test{

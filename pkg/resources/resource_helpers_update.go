@@ -1,11 +1,6 @@
 package resources
 
 import (
-	"context"
-	"errors"
-	"reflect"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,17 +12,6 @@ func stringAttributeUpdate(d *schema.ResourceData, key string, setField **string
 			*setField = sdk.String(v.(string))
 		} else {
 			*unsetField = sdk.Bool(true)
-		}
-	}
-	return nil
-}
-
-func stringAttributeUpdateBuilder[Set any, Unset any](d *schema.ResourceData, key string, setValue func(string) Set, unsetValue func(bool) Unset) error {
-	if d.HasChange(key) {
-		if v, ok := d.GetOk(key); ok {
-			setValue(v.(string))
-		} else {
-			unsetValue(true)
 		}
 	}
 	return nil
@@ -67,43 +51,12 @@ func intAttributeUpdateSetOnly(d *schema.ResourceData, key string, setField **in
 	return nil
 }
 
-func intAttributeUpdateBuilder[Set any, Unset any](d *schema.ResourceData, key string, setValue func(int) Set, unsetValue func(bool) Unset) error {
-	if d.HasChange(key) {
-		if v, ok := d.GetOk(key); ok {
-			setValue(v.(int))
-		} else {
-			unsetValue(true)
-		}
-	}
-	return nil
-}
-
-func intAttributeUpdateSetOnlyBuilder[Set any](d *schema.ResourceData, key string, setValue func(int) Set) error {
-	if d.HasChange(key) {
-		if v, ok := d.GetOk(key); ok {
-			setValue(v.(int))
-		}
-	}
-	return nil
-}
-
 func intAttributeWithSpecialDefaultUpdate(d *schema.ResourceData, key string, setField **int, unsetField **bool) error {
 	if d.HasChange(key) {
 		if v := d.Get(key).(int); v != IntDefault {
 			*setField = sdk.Int(v)
 		} else {
 			*unsetField = sdk.Bool(true)
-		}
-	}
-	return nil
-}
-
-func intAttributeWithSpecialDefaultUpdateBuilder[Set any, Unset any](d *schema.ResourceData, key string, setValue func(int) Set, unsetValue func(bool) Unset) error {
-	if d.HasChange(key) {
-		if v := d.Get(key).(int); v != IntDefault {
-			setValue(v)
-		} else {
-			unsetValue(true)
 		}
 	}
 	return nil
@@ -152,13 +105,6 @@ func booleanAttributeUpdateSetOnly(d *schema.ResourceData, key string, setField 
 	return nil
 }
 
-func booleanAttributeUpdateSetOnlyBuilder[Set any](d *schema.ResourceData, key string, setValue func(bool) Set) error {
-	if d.HasChange(key) {
-		setValue(d.Get(key).(bool))
-	}
-	return nil
-}
-
 func booleanStringAttributeUpdate(d *schema.ResourceData, key string, setField **bool, unsetField **bool) error {
 	if d.HasChange(key) {
 		if v := d.Get(key).(string); v != BooleanDefault {
@@ -169,21 +115,6 @@ func booleanStringAttributeUpdate(d *schema.ResourceData, key string, setField *
 			*setField = sdk.Bool(parsed)
 		} else {
 			*unsetField = sdk.Bool(true)
-		}
-	}
-	return nil
-}
-
-func booleanStringAttributeUpdateBuilder[Set any, Unset any](d *schema.ResourceData, key string, setValue func(bool) Set, unsetValue func(bool) Unset) error {
-	if d.HasChange(key) {
-		if v := d.Get(key).(string); v != BooleanDefault {
-			parsed, err := booleanStringToBool(v)
-			if err != nil {
-				return err
-			}
-			setValue(parsed)
-		} else {
-			unsetValue(true)
 		}
 	}
 	return nil
@@ -308,27 +239,6 @@ func attributeMappedValueUpdate[T, R any](d *schema.ResourceData, key string, se
 	return nil
 }
 
-// singleBlockAttributeUpdate unsets a MaxItems=1 list block when it is removed.
-// While the block is present, fill applies the existing attribute update helpers to nested fields at "<key>.0.".
-// The block is set only when fill changes the request.
-func singleBlockAttributeUpdate[T any](d *schema.ResourceData, key string, setField **T, unsetField **bool, fill func(*schema.ResourceData, string, *T) error) error {
-	if !d.HasChange(key) {
-		return nil
-	}
-	if _, ok := d.GetOk(key); !ok {
-		*unsetField = new(true)
-		return nil
-	}
-	req := new(T)
-	if err := fill(d, key+".0.", req); err != nil {
-		return err
-	}
-	if !reflect.DeepEqual(req, new(T)) {
-		*setField = req
-	}
-	return nil
-}
-
 func setValueUpdate[T any](d *schema.ResourceData, key string, setField *[]T, unsetField **bool, mapper func(any) (T, error)) error {
 	if d.HasChange(key) {
 		v := d.Get(key)
@@ -346,20 +256,7 @@ func setValueUpdate[T any](d *schema.ResourceData, key string, setField *[]T, un
 	return nil
 }
 
-// setValueUpdateFallback reuses setValueUpdate. Clearing a set assigns fallback
-// (for example ALL) instead of unsetting the attribute.
-func setValueUpdateFallback[T any](d *schema.ResourceData, key string, setField *[]T, mapper func(any) (T, error), fallback []T) error {
-	var unset *bool
-	if err := setValueUpdate(d, key, setField, &unset, mapper); err != nil {
-		return err
-	}
-	if unset != nil {
-		*setField = fallback
-	}
-	return nil
-}
-
-func listValueUpdateBuilder[T any, Set any, Unset any](d *schema.ResourceData, key string, setValue func([]T) Set, unsetValue func(bool) Unset, mapper func(any) (T, error)) error {
+func listValueUpdate[T any](d *schema.ResourceData, key string, setField *[]T, unsetField **bool, mapper func(any) (T, error)) error {
 	if d.HasChange(key) {
 		v := d.Get(key)
 		mappedValue, err := collections.MapErr(v.([]any), mapper)
@@ -368,23 +265,10 @@ func listValueUpdateBuilder[T any, Set any, Unset any](d *schema.ResourceData, k
 		}
 
 		if len(mappedValue) > 0 {
-			setValue(mappedValue)
+			*setField = mappedValue
 		} else {
-			unsetValue(true)
+			*unsetField = sdk.Bool(true)
 		}
-	}
-	return nil
-}
-
-// attributeMappedValueUpdateSetOnlyAlways maps the current value whenever the attribute changed,
-// including values GetOk treats as empty. There is no unset.
-func attributeMappedValueUpdateSetOnlyAlways[T, R any](d *schema.ResourceData, key string, setField **R, mapper func(T) (R, error)) error {
-	if d.HasChange(key) {
-		mappedValue, err := mapper(d.Get(key).(T))
-		if err != nil {
-			return err
-		}
-		*setField = sdk.Pointer(mappedValue)
 	}
 	return nil
 }
@@ -469,27 +353,6 @@ func attributeMappedValueUpdateSetOnlyFallbackNested[R any](d *schema.ResourceDa
 	return nil
 }
 
-// renameAccountLevelResource renames an account-level object when name changed.
-// The new identifier is the name attribute.
-// On success the Terraform ID is set with EncodeResourceIdentifier and the new identifier is returned.
-// When name is unchanged, id is returned unchanged.
-func renameAccountLevelResource(
-	ctx context.Context,
-	d *schema.ResourceData,
-	id sdk.AccountObjectIdentifier,
-	rename func(context.Context, sdk.AccountObjectIdentifier, sdk.AccountObjectIdentifier) error,
-) (sdk.AccountObjectIdentifier, error) {
-	if !d.HasChange("name") {
-		return id, nil
-	}
-	target := sdk.NewAccountObjectIdentifier(d.Get("name").(string))
-	if err := rename(ctx, id, target); err != nil {
-		return id, err
-	}
-	d.SetId(helpers.EncodeResourceIdentifier(target))
-	return target, nil
-}
-
 func attributeMappedValueUpdateIf[T, R any](d *schema.ResourceData, key string, setField **R, unsetField **bool, condition func(T) bool, mapper func(T) (R, error)) error {
 	if d.HasChange(key) {
 		v := d.Get(key)
@@ -501,37 +364,6 @@ func attributeMappedValueUpdateIf[T, R any](d *schema.ResourceData, key string, 
 			*setField = sdk.Pointer(mappedValue)
 		} else {
 			*unsetField = sdk.Bool(true)
-		}
-	}
-	return nil
-}
-
-// removeThenAddWithPlaceholder adds a temporary item, applies removeThenAdd, and removes the
-// temporary item even when the update fails. Use this when every existing item is replaced
-// and the object requires at least one item at all times.
-func removeThenAddWithPlaceholder[T any](placeholder T, removed, added []T, remove, add func(T) error) (err error) {
-	if err := add(placeholder); err != nil {
-		return err
-	}
-	defer func() {
-		err = errors.Join(err, remove(placeholder))
-	}()
-
-	return removeThenAdd(removed, added, remove, add)
-}
-
-// removeThenAdd removes items before adding replacements, so a replacement can reuse a name
-// that must stay unique. len(removed) must leave at least one existing item when the object
-// requires a minimum of one; otherwise use removeThenAddWithPlaceholder.
-func removeThenAdd[T any](removed, added []T, remove, add func(T) error) error {
-	for _, item := range removed {
-		if err := remove(item); err != nil {
-			return err
-		}
-	}
-	for _, item := range added {
-		if err := add(item); err != nil {
-			return err
 		}
 	}
 	return nil

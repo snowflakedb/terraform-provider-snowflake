@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -14,7 +14,7 @@ import (
 var accountParametersSchema = make(map[string]*schema.Schema)
 
 func init() {
-	for _, p := range defs.ParameterDefsForLevel(ssot.ParameterLevelAccount) {
+	for _, p := range defs.ParameterDefsForLevel(parameterdefs.ParameterLevelAccount) {
 		accountParametersSchema[p.FieldName()] = parameterSchema(p)
 	}
 }
@@ -56,7 +56,7 @@ func handleAccountParametersCreate(d *schema.ResourceData, parameters *sdk.Accou
 		handleParameterCreate(d, defs.DateInputFormat.FieldName(), &parameters.DateInputFormat),
 		handleParameterCreate(d, defs.DateOutputFormat.FieldName(), &parameters.DateOutputFormat),
 		handleParameterCreate(d, defs.DefaultDbtVersion.FieldName(), &parameters.DefaultDbtVersion),
-		handleParameterCreateWithMapping(d, defs.DefaultDdlCollation.FieldName(), &parameters.DefaultDdlCollation, stringToStringAllowEmpty),
+		handleParameterCreateWithMapping(d, defs.DefaultDdlCollation.FieldName(), &parameters.DefaultDdlCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
 		handleParameterCreate(d, defs.DefaultNotebookComputePoolCpu.FieldName(), &parameters.DefaultNotebookComputePoolCpu),
 		handleParameterCreate(d, defs.DefaultNotebookComputePoolGpu.FieldName(), &parameters.DefaultNotebookComputePoolGpu),
 		handleParameterCreateWithMapping(d, defs.DefaultNullOrdering.FieldName(), &parameters.DefaultNullOrdering, sdk.ToDefaultNullOrdering),
@@ -64,7 +64,7 @@ func handleAccountParametersCreate(d *schema.ResourceData, parameters *sdk.Accou
 		handleParameterCreateWithMapping(d, defs.DefaultStreamlitNotebookWarehouse.FieldName(), &parameters.DefaultStreamlitNotebookWarehouse, stringToAccountObjectIdentifier),
 		handleParameterCreate(d, defs.DisableUiDownloadButton.FieldName(), &parameters.DisableUiDownloadButton),
 		handleParameterCreate(d, defs.DisableUserPrivilegeGrants.FieldName(), &parameters.DisableUserPrivilegeGrants),
-		handleParameterCreateWithMapping(d, defs.DisallowedSpcsWorkloadTypes.FieldName(), &parameters.DisallowedSpcsWorkloadTypes, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
+		handleParameterCreate(d, defs.DisallowedSpcsWorkloadTypes.FieldName(), &parameters.DisallowedSpcsWorkloadTypes),
 		handleParameterCreate(d, defs.EnableAutomaticSensitiveDataClassificationLog.FieldName(), &parameters.EnableAutomaticSensitiveDataClassificationLog),
 		handleParameterCreate(d, defs.EnableBudgetEventLogging.FieldName(), &parameters.EnableBudgetEventLogging),
 		handleParameterCreate(d, defs.EnableCortexAnalyst.FieldName(), &parameters.EnableCortexAnalyst),
@@ -203,7 +203,7 @@ func handleAccountParametersUpdate(d *schema.ResourceData, set *sdk.AccountParam
 		handleParameterUpdate(d, defs.DateInputFormat.FieldName(), &set.DateInputFormat, &unset.DateInputFormat),
 		handleParameterUpdate(d, defs.DateOutputFormat.FieldName(), &set.DateOutputFormat, &unset.DateOutputFormat),
 		handleParameterUpdate(d, defs.DefaultDbtVersion.FieldName(), &set.DefaultDbtVersion, &unset.DefaultDbtVersion),
-		handleParameterUpdateWithMapping(d, defs.DefaultDdlCollation.FieldName(), &set.DefaultDdlCollation, &unset.DefaultDdlCollation, stringToStringAllowEmpty),
+		handleParameterUpdateWithMapping(d, defs.DefaultDdlCollation.FieldName(), &set.DefaultDdlCollation, &unset.DefaultDdlCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
 		handleParameterUpdate(d, defs.DefaultNotebookComputePoolCpu.FieldName(), &set.DefaultNotebookComputePoolCpu, &unset.DefaultNotebookComputePoolCpu),
 		handleParameterUpdate(d, defs.DefaultNotebookComputePoolGpu.FieldName(), &set.DefaultNotebookComputePoolGpu, &unset.DefaultNotebookComputePoolGpu),
 		handleParameterUpdateWithMapping(d, defs.DefaultNullOrdering.FieldName(), &set.DefaultNullOrdering, &unset.DefaultNullOrdering, sdk.ToDefaultNullOrdering),
@@ -211,7 +211,7 @@ func handleAccountParametersUpdate(d *schema.ResourceData, set *sdk.AccountParam
 		handleParameterUpdateWithMapping(d, defs.DefaultStreamlitNotebookWarehouse.FieldName(), &set.DefaultStreamlitNotebookWarehouse, &unset.DefaultStreamlitNotebookWarehouse, stringToAccountObjectIdentifier),
 		handleParameterUpdate(d, defs.DisableUiDownloadButton.FieldName(), &set.DisableUiDownloadButton, &unset.DisableUiDownloadButton),
 		handleParameterUpdate(d, defs.DisableUserPrivilegeGrants.FieldName(), &set.DisableUserPrivilegeGrants, &unset.DisableUserPrivilegeGrants),
-		handleParameterUpdateWithMapping(d, defs.DisallowedSpcsWorkloadTypes.FieldName(), &set.DisallowedSpcsWorkloadTypes, &unset.DisallowedSpcsWorkloadTypes, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
+		handleParameterUpdate(d, defs.DisallowedSpcsWorkloadTypes.FieldName(), &set.DisallowedSpcsWorkloadTypes, &unset.DisallowedSpcsWorkloadTypes),
 		handleParameterUpdate(d, defs.EnableAutomaticSensitiveDataClassificationLog.FieldName(), &set.EnableAutomaticSensitiveDataClassificationLog, &unset.EnableAutomaticSensitiveDataClassificationLog),
 		handleParameterUpdate(d, defs.EnableBudgetEventLogging.FieldName(), &set.EnableBudgetEventLogging, &unset.EnableBudgetEventLogging),
 		handleParameterUpdate(d, defs.EnableCortexAnalyst.FieldName(), &set.EnableCortexAnalyst, &unset.EnableCortexAnalyst),
@@ -502,7 +502,7 @@ func accountParameterDiffFunctions(parameters *sdk.AccountParametersDetails) []s
 		StringTypedParameterValueComputedIf(defs.DateInputFormat.FieldName(), parameters.DateInputFormat, sdk.ParameterTypeAccount),
 		StringTypedParameterValueComputedIf(defs.DateOutputFormat.FieldName(), parameters.DateOutputFormat, sdk.ParameterTypeAccount),
 		StringTypedParameterValueComputedIf(defs.DefaultDbtVersion.FieldName(), parameters.DefaultDbtVersion, sdk.ParameterTypeAccount),
-		StringAllowEmptyTypedParameterValueComputedIf(defs.DefaultDdlCollation.FieldName(), parameters.DefaultDdlCollation, sdk.ParameterTypeAccount),
+		StringTypedParameterValueComputedIf(defs.DefaultDdlCollation.FieldName(), parameters.DefaultDdlCollation, sdk.ParameterTypeAccount),
 		StringTypedParameterValueComputedIf(defs.DefaultNotebookComputePoolCpu.FieldName(), parameters.DefaultNotebookComputePoolCpu, sdk.ParameterTypeAccount),
 		StringTypedParameterValueComputedIf(defs.DefaultNotebookComputePoolGpu.FieldName(), parameters.DefaultNotebookComputePoolGpu, sdk.ParameterTypeAccount),
 		StringTypedParameterValueComputedIf(defs.DefaultNullOrdering.FieldName(), parameters.DefaultNullOrdering, sdk.ParameterTypeAccount),
@@ -510,7 +510,7 @@ func accountParameterDiffFunctions(parameters *sdk.AccountParametersDetails) []s
 		IdentifierTypedParameterValueComputedIf(defs.DefaultStreamlitNotebookWarehouse.FieldName(), parameters.DefaultStreamlitNotebookWarehouse, sdk.ParameterTypeAccount),
 		BoolTypedParameterValueComputedIf(defs.DisableUiDownloadButton.FieldName(), parameters.DisableUiDownloadButton, sdk.ParameterTypeAccount),
 		BoolTypedParameterValueComputedIf(defs.DisableUserPrivilegeGrants.FieldName(), parameters.DisableUserPrivilegeGrants, sdk.ParameterTypeAccount),
-		StringAllowEmptyTypedParameterValueComputedIf(defs.DisallowedSpcsWorkloadTypes.FieldName(), parameters.DisallowedSpcsWorkloadTypes, sdk.ParameterTypeAccount),
+		StringTypedParameterValueComputedIf(defs.DisallowedSpcsWorkloadTypes.FieldName(), parameters.DisallowedSpcsWorkloadTypes, sdk.ParameterTypeAccount),
 		BoolTypedParameterValueComputedIf(defs.EnableAutomaticSensitiveDataClassificationLog.FieldName(), parameters.EnableAutomaticSensitiveDataClassificationLog, sdk.ParameterTypeAccount),
 		BoolTypedParameterValueComputedIf(defs.EnableBudgetEventLogging.FieldName(), parameters.EnableBudgetEventLogging, sdk.ParameterTypeAccount),
 		BoolTypedParameterValueComputedIf(defs.EnableCortexAnalyst.FieldName(), parameters.EnableCortexAnalyst, sdk.ParameterTypeAccount),

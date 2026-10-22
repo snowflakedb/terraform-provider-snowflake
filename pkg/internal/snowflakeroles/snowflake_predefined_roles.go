@@ -17,7 +17,4 @@ var (
 	OktaProvisioner        = sdk.NewAccountObjectIdentifier("OKTA_PROVISIONER")
 	AadProvisioner         = sdk.NewAccountObjectIdentifier("AAD_PROVISIONER")
 	GenericScimProvisioner = sdk.NewAccountObjectIdentifier("GENERIC_SCIM_PROVISIONER")
-
-	// InteractiveBenchmarkRole is a Snowflake-managed system role. Ownership cannot be transferred.
-	InteractiveBenchmarkRole = sdk.NewAccountObjectIdentifier("SNOWFLAKE_INTERACTIVE_BENCHMARK_ROLE")
 )

@@ -7,14 +7,15 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
 type CatalogIntegrationObjectStorageModel struct {
 	Name                   tfconfig.Variable `json:"name,omitempty"`
+	CatalogSource          tfconfig.Variable `json:"catalog_source,omitempty"`
 	Comment                tfconfig.Variable `json:"comment,omitempty"`
 	Enabled                tfconfig.Variable `json:"enabled,omitempty"`
+	FullyQualifiedName     tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	RefreshIntervalSeconds tfconfig.Variable `json:"refresh_interval_seconds,omitempty"`
 	TableFormat            tfconfig.Variable `json:"table_format,omitempty"`
 
@@ -93,6 +94,11 @@ func (c *CatalogIntegrationObjectStorageModel) WithName(name string) *CatalogInt
 	return c
 }
 
+func (c *CatalogIntegrationObjectStorageModel) WithCatalogSource(catalogSource string) *CatalogIntegrationObjectStorageModel {
+	c.CatalogSource = tfconfig.StringVariable(catalogSource)
+	return c
+}
+
 func (c *CatalogIntegrationObjectStorageModel) WithComment(comment string) *CatalogIntegrationObjectStorageModel {
 	c.Comment = tfconfig.StringVariable(comment)
 	return c
@@ -100,6 +106,11 @@ func (c *CatalogIntegrationObjectStorageModel) WithComment(comment string) *Cata
 
 func (c *CatalogIntegrationObjectStorageModel) WithEnabled(enabled bool) *CatalogIntegrationObjectStorageModel {
 	c.Enabled = tfconfig.BoolVariable(enabled)
+	return c
+}
+
+func (c *CatalogIntegrationObjectStorageModel) WithFullyQualifiedName(fullyQualifiedName string) *CatalogIntegrationObjectStorageModel {
+	c.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return c
 }
 
@@ -113,17 +124,17 @@ func (c *CatalogIntegrationObjectStorageModel) WithTableFormat(tableFormat strin
 	return c
 }
 
-func (c *CatalogIntegrationObjectStorageModel) WithTableFormatSdk(tableFormat sdk.CatalogIntegrationTableFormat) *CatalogIntegrationObjectStorageModel {
-	c.TableFormat = tfconfig.StringVariable(string(tableFormat))
-	return c
-}
-
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
 
 func (c *CatalogIntegrationObjectStorageModel) WithNameValue(value tfconfig.Variable) *CatalogIntegrationObjectStorageModel {
 	c.Name = value
+	return c
+}
+
+func (c *CatalogIntegrationObjectStorageModel) WithCatalogSourceValue(value tfconfig.Variable) *CatalogIntegrationObjectStorageModel {
+	c.CatalogSource = value
 	return c
 }
 
@@ -134,6 +145,11 @@ func (c *CatalogIntegrationObjectStorageModel) WithCommentValue(value tfconfig.V
 
 func (c *CatalogIntegrationObjectStorageModel) WithEnabledValue(value tfconfig.Variable) *CatalogIntegrationObjectStorageModel {
 	c.Enabled = value
+	return c
+}
+
+func (c *CatalogIntegrationObjectStorageModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *CatalogIntegrationObjectStorageModel {
+	c.FullyQualifiedName = value
 	return c
 }
 

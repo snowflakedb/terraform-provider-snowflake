@@ -1,8 +1,6 @@
 package gen
 
 import (
-	"fmt"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -36,8 +34,6 @@ type ShowResultSchemaDetails struct {
 	ManualFields    []string
 	TypeOverrides   map[string]schema.ValueType
 	UsedAsListEntry bool
-	// SdkType overrides StructDetails.Name as the mapped Go type. The schema variable stays StructDetails.Name.
-	SdkType string
 	genhelpers.StructDetails
 }
 
@@ -49,6 +45,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.ApplicationRole{}},
 	{ObjectStruct: sdk.Application{}},
 	{ObjectStruct: sdk.AuthenticationPolicy{}, ManualFields: []string{"target_scopes"}},
+	{ObjectStruct: sdk.CatalogIntegration{}},
+	{ObjectStruct: sdk.ComputePool{}},
 	{ObjectStruct: sdk.Connection{}},
 	{ObjectStruct: sdk.CortexAgent{}, ManualFields: []string{"profile"}},
 	{ObjectStruct: sdk.DatabaseRole{}},
@@ -59,6 +57,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	// SkipFields `arguments`: unused TypeInvalid (`[]sdk.DataType`). Un-skip with native DataType slices.
 	{ObjectStruct: sdk.ExternalFunction{}, SkipFields: []string{"arguments"}},
 	{ObjectStruct: sdk.ExternalTable{}},
+	{ObjectStruct: sdk.ExternalVolume{}},
 	// SkipFields unused TypeInvalid: `object_types` / `allowed_integration_types` (enum slices).
 	{ObjectStruct: sdk.FailoverGroup{}, SkipFields: []string{"object_types", "allowed_integration_types"}},
 	{ObjectStruct: sdk.FileFormat{}},
@@ -99,6 +98,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.ResourceMonitor{}, SkipFields: []string{"notify_at", "notify_users"}, ManualFields: []string{"suspend_immediately_at"}},
 	{ObjectStruct: sdk.Role{}},
 	{ObjectStruct: sdk.RowAccessPolicy{}},
+	{ObjectStruct: sdk.Schema{}},
 	{ObjectStruct: sdk.Secret{}, TypeOverrides: map[string]schema.ValueType{"oauth_scopes": schema.TypeSet}},
 	{ObjectStruct: sdk.SecurityIntegration{}},
 	{ObjectStruct: sdk.SemanticView{}},
@@ -117,6 +117,11 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.User{}},
 	{ObjectStruct: sdk.ProgrammaticAccessToken{}},
 	{ObjectStruct: sdk.View{}},
+	// Union of all SHOW WAREHOUSES columns (AllDetails analog).
+	// Keep omitted: actives / pendings / failed / suspended / uuid (Snowflake: internal use, will be removed).
+	{ObjectStruct: sdk.Warehouse{}, SkipFields: []string{"actives", "pendings", "failed", "suspended", "uuid"}},
+	{ObjectStruct: sdk.WarehouseAdaptive{}},
+	{ObjectStruct: sdk.WarehouseInteractive{}},
 	{ObjectStruct: sdk.WarehouseRegular{}},
 	{ObjectStruct: sdk.AlertDetails{}, IsDescribe: true},
 	// Nested DescribePropertyListSchema in ext (today’s public describe_output).
@@ -128,7 +133,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"parent_integration", "auth_type", "comment",
 	}},
 	// SkipFields `id` is the SDK identifier (public schema has no `id`).
-	// ManualFields: api_key is Sensitive; api_provider needs strings.ToLower - neither can be generated.
+	// ManualFields: api_key is Sensitive; api_provider needs strings.ToLower — neither can be generated.
 	// TODO [next PRs]: drop prefixes/scopes/certs from ManualFields once MapToSchemaField maps []string.
 	{ObjectStruct: sdk.ApiIntegrationAllDetails{}, IsDescribe: true, SkipFields: []string{"id"}, ManualFields: []string{
 		"api_key", "api_provider", "allowed_prefixes", "blocked_prefixes", "oauth_allowed_scopes", "tls_trusted_certificates",
@@ -161,15 +166,23 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"api_key", "api_provider", "allowed_prefixes", "blocked_prefixes",
 	}},
 	// TypeString of each property .Value (today’s public describe_output).
+	{ObjectStruct: sdk.AuthenticationPolicyDescribeDetails{}, IsDescribe: true},
 	// Property-row list entry (same pattern as SecurityIntegrationProperty / NetworkPolicyProperty).
-	{ObjectStruct: sdk.AuthenticationPolicyProperty{}, UsedAsListEntry: true},
+	{ObjectStruct: sdk.AuthenticationPolicyDescription{}, UsedAsListEntry: true},
+	// ManualFields uses generator snake_case (OAuth → o_auth, SigV4 → sig_v4); ext re-adds public oauth_* / sigv4_* keys.
+	{ObjectStruct: sdk.CatalogIntegrationAllDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "o_auth_rest_authentication", "bearer_rest_authentication", "sig_v4_rest_authentication"}},
+	{ObjectStruct: sdk.CatalogIntegrationAwsGlueDetails{}, IsDescribe: true},
+	// ManualFields uses generator snake_case (OAuth → o_auth, SigV4 → sig_v4); ext re-adds public oauth_* / sigv4_* keys.
+	{ObjectStruct: sdk.CatalogIntegrationIcebergRestDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "o_auth_rest_authentication", "bearer_rest_authentication", "sig_v4_rest_authentication"}},
+	{ObjectStruct: sdk.CatalogIntegrationObjectStorageDetails{}, IsDescribe: true},
+	{ObjectStruct: sdk.CatalogIntegrationOpenCatalogDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "rest_authentication"}},
+	{ObjectStruct: sdk.ComputePoolDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.CortexAgentDetails{}, IsDescribe: true, ManualFields: []string{"profile"}},
 	{ObjectStruct: sdk.CortexSearchServiceDetails{}, IsDescribe: true},
 	// Public describe_output Elem is the row (created_on / name / kind). DatabaseDetails is a Rows wrapper; list helper in ext.
 	{ObjectStruct: sdk.DatabaseDetailsRow{}, IsDescribe: true},
 	{ObjectStruct: sdk.DynamicTableDetails{}, IsDescribe: true},
-	// database_name and schema_name are copied from the identifier by DescribeDetails. DESCRIBE does not return them.
-	{ObjectStruct: sdk.EventTableDetails{}, IsDescribe: true, SkipFields: []string{"database_name", "schema_name"}},
+	{ObjectStruct: sdk.EventTableDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.ExternalAccessIntegrationDetails{}, IsDescribe: true, ManualFields: []string{"allowed_network_rules", "allowed_api_authentication_integrations", "allowed_authentication_secrets"}},
 	// Nested DescribePropertyListSchema in ext (today’s public describe_output).
 	// ManualFields `external_oauth_rsa_public_key2` is ToSnakeCase of ExternalOauthRsaPublicKey2;
@@ -182,6 +195,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"external_oauth_allowed_roles_list", "external_oauth_audience_list", "external_oauth_token_user_mapping_claim",
 		"external_oauth_snowflake_user_mapping_attribute", "external_oauth_scope_delimiter", "comment",
 	}},
+	// SkipFields `id` is the SDK identifier (public schema has no `id`); nested storage_locations is ManualFields.
+	{ObjectStruct: sdk.ExternalVolumeDetails{}, IsDescribe: true, SkipFields: []string{"id"}, ManualFields: []string{"storage_locations"}},
 	// ManualFields nested type-specific structs (public schema is a flat union of per-type keys; nested mapping in ext).
 	{ObjectStruct: sdk.FileFormatAllDetails{}, IsDescribe: true, ManualFields: []string{"csv", "json", "avro", "orc", "parquet", "xml"}},
 	{ObjectStruct: sdk.FileFormatAvro{}, IsDescribe: true},
@@ -200,8 +215,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.IcebergTableDetails{}, IsDescribe: true, SkipFields: []string{"data_type_raw"}, ManualFields: []string{"type"}},
 	{ObjectStruct: sdk.ListingDetails{}, IsDescribe: true},
 	// ManualFields `signature` stays ext (slice of structs)
-	// database_name and schema_name are copied from the identifier by DescribeDetails. DESCRIBE does not return them.
-	{ObjectStruct: sdk.MaskingPolicyDetails{}, IsDescribe: true, SkipFields: []string{"database_name", "schema_name"}, ManualFields: []string{"signature"}},
+	{ObjectStruct: sdk.MaskingPolicyDetails{}, IsDescribe: true, ManualFields: []string{"signature"}},
 	{ObjectStruct: sdk.MaterializedViewDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.McpServerDetails{}, IsDescribe: true},
 	// TypeString of each property .Value (today’s public describe_output).
@@ -252,8 +266,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"snowpark_version",
 	}},
 	// ManualFields `signature` stays ext (slice of structs). `return_type` is string (not datatypes.DataType) so it generates natively.
-	// database_name and schema_name are copied from the identifier by DescribeDetails. DESCRIBE does not return them.
-	{ObjectStruct: sdk.RowAccessPolicyDescription{}, IsDescribe: true, SkipFields: []string{"database_name", "schema_name"}, ManualFields: []string{"signature"}},
+	{ObjectStruct: sdk.RowAccessPolicyDescription{}, IsDescribe: true, ManualFields: []string{"signature"}},
 	// Nested DescribePropertyListSchema in ext (today’s public describe_output).
 	// TODO [v3]: flatten to typed scalars (enabled.0.value → enabled) via a details
 	// struct + DescribeSaml2Details parse (API/storage-integration analog); native TypeList of the property row is not the end state.
@@ -264,6 +277,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"saml2_snowflake_acs_url", "saml2_snowflake_metadata", "saml2_digest_methods_used",
 		"saml2_signature_methods_used", "allowed_user_domains", "allowed_email_patterns", "comment",
 	}},
+	{ObjectStruct: sdk.SchemaDetails{}, IsDescribe: true},
 	// Nested DescribePropertyListSchema in ext (today’s public describe_output).
 	// TODO [v3]: flatten to typed scalars (enabled.0.value → enabled) via a details
 	// struct + DescribeScimDetails parse (API/storage-integration analog); native TypeList of the property row is not the end state.
@@ -276,7 +290,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.SessionPolicyDetails{}, IsDescribe: true},
 	// Nested directory_table / file_format / location / privatelink in ext (public key privatelink, not private_link).
 	// Keep omitted: id (SDK identifier), credentials (secret).
-	// TODO [next PRs]: first move only - generated schemas are empty (every public key is nested/slice).
+	// TODO [next PRs]: first move only — generated schemas are empty (every public key is nested/slice).
 	// Native slices/nested structs should drop from ManualFields and shrink the ext. Same pattern for API variant DESCRIBE.
 	{ObjectStruct: sdk.StageAws{}, IsDescribe: true, ManualFields: []string{
 		"file_format_name", "file_format_csv", "file_format_json", "file_format_avro", "file_format_orc", "file_format_parquet", "file_format_xml",
@@ -310,47 +324,29 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	// Property-row list entry (same pattern as SecurityIntegrationProperty). Nested DescribeStorageIntegrationDetailsSchema stays the name-keyed consumer.
 	{ObjectStruct: sdk.StorageIntegrationProperty{}, UsedAsListEntry: true},
 	// ManualFields `signature` stays ext (slice of structs)
-	// ManualFields `signature` stays ext (slice of structs). database_name and schema_name stay in the schema; DescribeDetails copies them from the identifier.
 	{ObjectStruct: sdk.StorageLifecyclePolicyDetails{}, IsDescribe: true, ManualFields: []string{"signature"}},
 	// ManualFields `root_location` (ParseRootLocation rewrite) and []string TypeSets.
-	// database_name and schema_name are copied from the identifier by DescribeDetails. DESCRIBE does not return them.
-	{ObjectStruct: sdk.StreamlitDetail{}, IsDescribe: true, SkipFields: []string{"database_name", "schema_name"}, ManualFields: []string{"root_location", "user_packages", "import_urls", "external_access_integrations"}},
+	{ObjectStruct: sdk.StreamlitDetail{}, IsDescribe: true, ManualFields: []string{"root_location", "user_packages", "import_urls", "external_access_integrations"}},
 	// ManualFields `check`: SDK is *bool; public describe_output is TypeString.
 	{ObjectStruct: sdk.TableColumnDetails{}, IsDescribe: true, ManualFields: []string{"check"}},
 	// Keep omitted: password (secret).
 	{ObjectStruct: sdk.UserDetails{}, IsDescribe: true, SkipFields: []string{"password"}},
 	// ManualFields `check`: SDK is *bool; public describe_output is TypeString.
 	{ObjectStruct: sdk.ViewDetails{}, IsDescribe: true, ManualFields: []string{"check"}},
+	{ObjectStruct: sdk.WarehouseDetails{}, IsDescribe: true},
 }
 
 func GetShowResultSchemaDetails() []ShowResultSchemaDetails {
-	ssotDetails := ssotShowResultSchemaDetails()
-	plugged := make(map[string]struct{}, len(ssotDetails))
-	for _, details := range ssotDetails {
-		plugged[details.Name] = struct{}{}
-	}
-	allDetails := make([]ShowResultSchemaDetails, 0, len(SdkShowResultStructs)+len(ssotDetails))
-	for _, d := range SdkShowResultStructs {
-		extracted := genhelpers.ExtractStructDetails(d.ObjectStruct)
-		if _, ok := plugged[extracted.Name]; ok {
-			continue
-		}
-		allDetails = append(allDetails, ShowResultSchemaDetails{
+	allDetails := make([]ShowResultSchemaDetails, len(SdkShowResultStructs))
+	for idx, d := range SdkShowResultStructs {
+		allDetails[idx] = ShowResultSchemaDetails{
 			IsDescribe:      d.IsDescribe,
 			SkipFields:      d.SkipFields,
 			ManualFields:    d.ManualFields,
 			TypeOverrides:   d.TypeOverrides,
 			UsedAsListEntry: d.UsedAsListEntry,
-			StructDetails:   extracted,
-		})
-	}
-	allDetails = append(allDetails, ssotDetails...)
-	seen := make(map[string]struct{}, len(allDetails))
-	for _, details := range allDetails {
-		if _, dup := seen[details.Name]; dup {
-			panic(fmt.Sprintf("duplicate SHOW/DESCRIBE schema object name %q", details.Name))
+			StructDetails:   genhelpers.ExtractStructDetails(d.ObjectStruct),
 		}
-		seen[details.Name] = struct{}{}
 	}
 	return allDetails
 }

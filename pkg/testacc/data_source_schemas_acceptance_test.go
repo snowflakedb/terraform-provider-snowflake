@@ -185,10 +185,10 @@ func TestAcc_Schemas_CompleteUseCase(t *testing.T) {
 					resourceparametersassert.SchemasDatasourceParameters(t, schemasModel.DatasourceReference()).
 						HasAllDefaultParameters(),
 
-					resourceshowoutputassert.SchemasDatasourceDescribeOutput(t, schemasModel.DatasourceReference()).
-						HasCreatedOnNotEmpty().
-						HasNameNotEmpty().
-						HasKind("VIEW"),
+					assert.Check(resource.TestCheckResourceAttr(schemasModel.DatasourceReference(), "schemas.0.describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttrSet(schemasModel.DatasourceReference(), "schemas.0.describe_output.0.created_on")),
+					assert.Check(resource.TestCheckResourceAttrSet(schemasModel.DatasourceReference(), "schemas.0.describe_output.0.name")),
+					assert.Check(resource.TestCheckResourceAttr(schemasModel.DatasourceReference(), "schemas.0.describe_output.0.kind", "VIEW")),
 				),
 			},
 		},

@@ -57,7 +57,7 @@ func TestInt_PipeStatus(t *testing.T) {
 	stage, stageCleanup := testClientHelper().Stage.CreateStageInSchema(t, schema.ID())
 	t.Cleanup(stageCleanup)
 
-	copyStatement := testClientHelper().Pipe.CopyStatement(t, table, stage)
+	copyStatement := createPipeCopyStatement(t, table, stage)
 	pipe, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, copyStatement)
 	t.Cleanup(pipeCleanup)
 
@@ -98,7 +98,7 @@ func TestInt_PipeForceResume(t *testing.T) {
 	stage, stageCleanup := testClientHelper().Stage.CreateStageInSchema(t, schema.ID())
 	t.Cleanup(stageCleanup)
 
-	copyStatement := testClientHelper().Pipe.CopyStatement(t, table, stage)
+	copyStatement := createPipeCopyStatement(t, table, stage)
 	pipe, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, copyStatement)
 	t.Cleanup(pipeCleanup)
 

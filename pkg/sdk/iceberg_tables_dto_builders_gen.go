@@ -1545,9 +1545,9 @@ func (s *IcebergTableSetPropertiesRequest) SetParameterFromRaw(key string, value
 	case "EXTERNAL_VOLUME":
 		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.ExternalVolume)
 	case "ICEBERG_MERGE_ON_READ_BEHAVIOR":
-		return assignParsedEnumParameter(value, ToIcebergTableIcebergMergeOnReadBehavior, &s.IcebergMergeOnReadBehavior)
+		return assignParsedParameter(value, ToIcebergTableIcebergMergeOnReadBehavior, &s.IcebergMergeOnReadBehavior)
 	case "LOG_EVENT_LEVEL":
-		return assignParsedEnumParameter(value, ToLogLevel, &s.LogEventLevel)
+		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
 	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":
 		return assignParsedParameter(value, strconv.Atoi, &s.MaxDataExtensionTimeInDays)
 	case "OPTIMIZE_DATA_LAYOUT":
@@ -1557,9 +1557,9 @@ func (s *IcebergTableSetPropertiesRequest) SetParameterFromRaw(key string, value
 	case "REPLACE_INVALID_CHARACTERS":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ReplaceInvalidCharacters)
 	case "STORAGE_SERIALIZATION_POLICY":
-		return assignParsedEnumParameter(value, ToStorageSerializationPolicy, &s.StorageSerializationPolicy)
+		return assignParsedParameter(value, ToStorageSerializationPolicy, &s.StorageSerializationPolicy)
 	case "TARGET_FILE_SIZE":
-		return assignParsedEnumParameter(value, ToIcebergTableTargetFileSize, &s.TargetFileSize)
+		return assignParsedParameter(value, ToIcebergTableTargetFileSize, &s.TargetFileSize)
 	default:
 		return ErrParameterNotSupported
 	}

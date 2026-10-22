@@ -45,9 +45,10 @@ func TestInt_IcebergTables(t *testing.T) {
 
 	deltaBaseLocation := "delta_lake_test_table"
 
-	catalogForDeltaLakeId, catalogForDeltaLakeCleanup := testClientHelper().CatalogIntegration.CreateObjectStorageFunc(
+	catalogForDeltaLakeId, catalogForDeltaLakeCleanup := testClientHelper().CatalogIntegration.CreateFunc(
 		t,
-		sdk.NewCreateObjectStorageCatalogIntegrationRequest(testClientHelper().Ids.RandomAccountObjectIdentifier(), sdk.CatalogIntegrationTableFormatDelta, true),
+		sdk.NewCreateCatalogIntegrationRequest(testClientHelper().Ids.RandomAccountObjectIdentifier(), true).
+			WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(sdk.CatalogIntegrationTableFormatDelta)),
 	)
 	t.Cleanup(catalogForDeltaLakeCleanup)
 

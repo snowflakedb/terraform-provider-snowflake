@@ -19,12 +19,14 @@ func (s *AuthenticationPolicyResourceAssert) HasClientTypesEnum(expected ...sdk.
 	})...)
 }
 
-func (s *AuthenticationPolicyResourceAssert) HasClientPolicyEntries(entries ...sdk.AuthenticationPolicyClientPolicyRequest) *AuthenticationPolicyResourceAssert {
+func (s *AuthenticationPolicyResourceAssert) HasClientPolicyEntries(entries ...sdk.AuthenticationPolicyClientPolicyEntry) *AuthenticationPolicyResourceAssert {
 	s.CollectionLength("client_policy", len(entries))
 
 	for i, e := range entries {
 		s.StringValueSet(fmt.Sprintf("client_policy.%d.client_type", i), string(e.ClientType))
-		s.StringValueSet(fmt.Sprintf("client_policy.%d.minimum_version", i), e.Params.MinimumVersion)
+		if e.Params != nil && e.Params.MinimumVersion != nil {
+			s.StringValueSet(fmt.Sprintf("client_policy.%d.minimum_version", i), *e.Params.MinimumVersion)
+		}
 	}
 
 	return s

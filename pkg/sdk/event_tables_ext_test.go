@@ -22,7 +22,7 @@ func init() {
 				opts.DataRetentionTimeInDays = new(1)
 				opts.MaxDataExtensionTimeInDays = new(2)
 				opts.ChangeTracking = new(true)
-				opts.DefaultDdlCollation = new(StringAllowEmpty{Value: "en_US"})
+				opts.DefaultDdlCollation = new("en_US")
 				opts.Comment = new("test")
 				opts.RowAccessPolicy = &TableRowAccessPolicyLegacy{
 					Name: rowAccessPolicyId,
@@ -37,14 +37,6 @@ func init() {
 			},
 			`CREATE EVENT TABLE IF NOT EXISTS %s CLUSTER BY (a, b) DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 2 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en_US' COMMENT = 'test' ROW ACCESS POLICY %s ON (c1, c2) TAG (%s = 'v1')`,
 			id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName(), tagId.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Create_emptyDefaultDdlCollation",
-			func(opts *CreateEventTableOptions) {
-				opts.DefaultDdlCollation = new(StringAllowEmpty{Value: ""})
-			},
-			`CREATE EVENT TABLE %s DEFAULT_DDL_COLLATION = ''`,
-			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Create_emptyClusterBy",

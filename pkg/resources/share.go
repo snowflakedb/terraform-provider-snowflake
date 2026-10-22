@@ -3,19 +3,48 @@ package resources
 import (
 	"context"
 	"fmt"
-	"slices"
+	"log"
 	"strings"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+var shareSchema = map[string]*schema.Schema{
+	"name": {
+		Type:             schema.TypeString,
+		Required:         true,
+		Description:      "Specifies the identifier for the share; must be unique for the account in which the share is created.",
+		ForceNew:         true,
+		DiffSuppressFunc: suppressIdentifierQuoting,
+	},
+	"comment": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specifies a comment for the managed account.",
+	},
+	"accounts": {
+		// Changed from Set to List to use DiffSuppressFunc: https://github.com/hashicorp/terraform-plugin-sdk/issues/160
+		Type: schema.TypeList,
+		Elem: &schema.Schema{
+			Type:             schema.TypeString,
+			ValidateDiagFunc: IsValidAccountIdentifier(),
+		},
+		Optional: true,
+		Description: "A list of accounts to be added to the share. Values should not be the account locator, but " +
+			"in the form of 'organization_name.account_name",
+		DiffSuppressFunc: ignoreCaseSuppressFunc,
+	},
+	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
+}
 
 func Share() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
@@ -71,6 +100,64 @@ func CreateShare(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	return ReadShare(ctx, d, meta)
 }
 
+func setShareAccounts(ctx context.Context, client *sdk.Client, shareID sdk.AccountObjectIdentifier, accounts []sdk.AccountIdentifier) error {
+	// There is a race condition where error accounts cannot be added to a
+	// share until after a database is added to the share. Since a database
+	// grant is dependent on the share itself, this is a hack to get the
+	// thing working.
+
+	// 1. Create new temporary DB
+	tempName := fmt.Sprintf("TEMP_%v_%d", shareID.Name(), time.Now().Unix())
+	tempDatabaseID := sdk.NewAccountObjectIdentifier(tempName)
+	err := client.Databases.Create(ctx, sdk.NewCreateDatabaseRequest(tempDatabaseID))
+	if err != nil {
+		return fmt.Errorf("error creating temporary DB %v err = %w", tempName, err)
+	}
+	defer func() {
+		// drop the temporary DB during cleanup
+		err = client.Databases.Drop(ctx, sdk.NewDropDatabaseRequest(tempDatabaseID))
+		if err != nil {
+			log.Printf("[WARN] error dropping temporary DB %v err = %v", tempName, err)
+		}
+	}()
+	// 2. Create temporary DB grant to the share
+	// USAGE can only be granted to one database - granting USAGE on the temp db here
+	// conflicts (and errors) with having a database already shared (i.e. when you
+	// already have a share and are just adding or removing accounts). Instead, use
+	// USAGE and REFERENCE_USAGE which is intended for multi-database sharing as per Snowflake
+	// documentation here:
+	// https://docs.snowflake.com/en/sql-reference/sql/grant-privilege-share.html#usage-notes
+	// Note however that USAGE will be granted automatically on the temp db for the
+	// case where the main db doesn't already exist, so it will need to be revoked
+	// before deleting the temp db. Where USAGE hasn't been already granted it is not
+	// an error to revoke it, so it's ok to just do the revoke every time.
+	err = client.Grants.GrantPrivilegeToShare(ctx, sdk.NewGrantPrivilegeToShareRequest(shareID).
+		WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage, sdk.ObjectPrivilegeReferenceUsage}).
+		WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(tempDatabaseID)))
+	if err != nil {
+		return fmt.Errorf("error granting privilege to share (%v) err = %w", shareID.Name(), err)
+	}
+	defer func() {
+		// revoke the REFERENCE_USAGE privilege during cleanup
+		err = client.Grants.RevokePrivilegeFromShare(ctx, sdk.NewRevokePrivilegeFromShareRequest(shareID).
+			WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeReferenceUsage}).
+			WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(tempDatabaseID)))
+		if err != nil {
+			log.Printf("[WARN] error revoking privilege from share (%v) err = %v", shareID.Name(), err)
+		}
+		// revoke the maybe automatically granted USAGE privilege during cleanup
+		err = client.Grants.RevokePrivilegeFromShare(ctx, sdk.NewRevokePrivilegeFromShareRequest(shareID).
+			WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).
+			WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(tempDatabaseID)))
+		if err != nil {
+			log.Printf("[WARN] error revoking privilege from share (%v) err = %v", shareID.Name(), err)
+		}
+	}()
+	// 3. Add accounts to the share
+	err = client.Shares.Alter(ctx, sdk.NewAlterShareRequest(shareID).WithAdd(sdk.ShareAddRequest{Accounts: accounts}))
+	return err
+}
+
 // ReadShare implements schema.ReadFunc.
 func ReadShare(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
@@ -86,32 +173,10 @@ func ReadShare(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 	if err := d.Set("comment", share.Comment); err != nil {
 		return diag.FromErr(err)
 	}
-	recipients := share.To
-	var diags diag.Diagnostics
-	// SHOW SHARES lists at most three recipients and reports the rest only as "... (N TOTAL)".
-	if share.ToTotal > len(share.To) {
-		targetAccounts, err := client.Shares.ShowTargetAccounts(ctx, id)
-		if err != nil {
-			diags = append(diags, diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  fmt.Sprintf("Share %s has %d recipients but SHOW SHARES lists only %d", d.Id(), share.ToTotal, len(share.To)),
-				Detail: "The full list is read from SNOWFLAKE.ACCOUNT_USAGE.SHARES, which failed (the role needs SELECT on that view, for example through IMPORTED PRIVILEGES on the SNOWFLAKE database). " +
-					"Recipients that are not listed are missing from the state and planned as additions. Error: " + err.Error(),
-			})
-		} else {
-			// ACCOUNT_USAGE.SHARES can be up to 3 hours behind; SHOW SHARES is real time, so a recipient added since the
-			// view was last refreshed may be among the listed three but not in the view yet.
-			// CompactFunc only collapses adjacent duplicates, so sort by fully qualified name first.
-			recipients = append(slices.Clone(share.To), targetAccounts...)
-			slices.SortFunc(recipients, func(a, b sdk.AccountIdentifier) int {
-				return strings.Compare(a.FullyQualifiedName(), b.FullyQualifiedName())
-			})
-			recipients = slices.CompactFunc(recipients, func(a, b sdk.AccountIdentifier) bool {
-				return a.FullyQualifiedName() == b.FullyQualifiedName()
-			})
-		}
+	accounts := make([]string, len(share.To))
+	for i, accountIdentifier := range share.To {
+		accounts[i] = accountIdentifier.Name()
 	}
-	accounts := collections.Map(recipients, sdk.AccountIdentifier.Name)
 
 	currentAccount := d.Get("accounts")
 	if currentAccount != nil {
@@ -121,10 +186,21 @@ func ReadShare(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 		accounts = reorderStringList(currentAccounts, accounts)
 	}
 	if err := d.Set("accounts", accounts); err != nil {
-		return append(diags, diag.FromErr(err)...)
+		return diag.FromErr(err)
 	}
 
-	return diags
+	return diag.FromErr(err)
+}
+
+func accountIdentifiersFromSlice(accounts []string) []sdk.AccountIdentifier {
+	accountIdentifiers := make([]sdk.AccountIdentifier, len(accounts))
+	for i, account := range accounts {
+		parts := strings.Split(account, ".")
+		orgName := parts[0]
+		accountName := parts[1]
+		accountIdentifiers[i] = sdk.NewAccountIdentifier(orgName, accountName)
+	}
+	return accountIdentifiers
 }
 
 // UpdateShare implements schema.UpdateFunc.

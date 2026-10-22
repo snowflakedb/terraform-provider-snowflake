@@ -18,15 +18,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -41,24 +37,24 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 	samlIntegration, cleanupSamlIntegration := testClient().SecurityIntegration.CreateSaml2(t)
 	t.Cleanup(cleanupSamlIntegration)
 
-	completeModelClientPolicy := []sdk.AuthenticationPolicyClientPolicyRequest{
+	completeModelClientPolicy := []sdk.AuthenticationPolicyClientPolicyEntry{
 		{
 			ClientType: sdk.ClientPolicyDriverTypeGoDriver,
-			Params:     sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "1.14.1"},
+			Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("1.14.1")},
 		},
 		{
 			ClientType: sdk.ClientPolicyDriverTypeJdbcDriver,
-			Params:     sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "3.25.0"},
+			Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("3.25.0")},
 		},
 	}
-	differentModelClientPolicy := []sdk.AuthenticationPolicyClientPolicyRequest{
+	differentModelClientPolicy := []sdk.AuthenticationPolicyClientPolicyEntry{
 		{
 			ClientType: sdk.ClientPolicyDriverTypeGoDriver,
-			Params:     sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "1.14.1"},
+			Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("1.14.1")},
 		},
 		{
 			ClientType: sdk.ClientPolicyDriverTypeJdbcDriver,
-			Params:     sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "4.0.0"},
+			Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("4.0.0")},
 		},
 	}
 
@@ -74,9 +70,9 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 		WithMfaPolicy(
 			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
 				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionAll).
-				WithAllowedMethods([]sdk.MfaPolicyAllowedMethodsOptionListItem{
-					{Value: sdk.MfaPolicyAllowedMethodsOptionPasskey},
-					{Value: sdk.MfaPolicyAllowedMethodsOptionDuo},
+				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
+					{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey},
+					{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
 				}),
 		).
 		WithPatPolicy(
@@ -88,8 +84,8 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 		).
 		WithWorkloadIdentityPolicy(
 			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-				WithAllowedProviders([]sdk.AllowedProviderOptionListItem{
-					{Value: sdk.AllowedProviderOptionAll},
+				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
+					{Provider: sdk.AllowedProviderOptionAll},
 				}).
 				WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
 					{Value: "111122223333"},
@@ -112,8 +108,8 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 		WithMfaPolicy(
 			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
 				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionNone).
-				WithAllowedMethods([]sdk.MfaPolicyAllowedMethodsOptionListItem{
-					{Value: sdk.MfaPolicyAllowedMethodsOptionTotp},
+				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
+					{Method: sdk.MfaPolicyAllowedMethodsOptionTotp},
 				}),
 		).
 		WithPatPolicy(
@@ -125,8 +121,8 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 		).
 		WithWorkloadIdentityPolicy(
 			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-				WithAllowedProviders([]sdk.AllowedProviderOptionListItem{
-					{Value: sdk.AllowedProviderOptionAzure},
+				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
+					{Provider: sdk.AllowedProviderOptionAzure},
 				}).
 				WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
 					{Value: "444455556666"},
@@ -140,12 +136,9 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 		).
 		WithSecurityIntegrations(samlIntegration.ID().Name()).
 		WithClientPolicy(differentModelClientPolicy...)
-	completeWithDifferentValuesRef := completeModelWithDifferentValues.ResourceReference()
-
-	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
 
 	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -153,8 +146,7 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create with empty optionals
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, basicModel),
+				Config: accconfig.FromModels(t, basicModel),
 				Check: assertThat(
 					t,
 					resourceassert.AuthenticationPolicyResource(t, basicModel.ResourceReference()).
@@ -191,18 +183,38 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.client_policy", "{}")),
 				),
 			},
-			// import - without optionals, permissive mode
+			// import - without optionals
 			{
-				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
-				Config:                   accconfig.FromModels(t, providerModelImportPermissiveMode, basicModel),
-				ResourceName:             basicModel.ResourceReference(),
-				ImportState:              true,
-				ImportStateKind:          resource.ImportBlockWithID,
+				Config:       accconfig.FromModels(t, basicModel),
+				ResourceName: basicModel.ResourceReference(),
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					resourceassert.ImportedAuthenticationPolicyResource(t, helpers.EncodeResourceIdentifier(id)).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasCommentString("").
+						HasAuthenticationMethodsEnum(sdk.AuthenticationMethodsOptionAll).
+						HasMfaEnrollmentString(testClient().SnowflakeDefaults.DefaultMfaEnrollment(t)).
+						HasClientTypesEnum(sdk.ClientTypesOptionAll).
+						HasSecurityIntegrations("ALL"),
+					resourceshowoutputassert.ImportedAuthenticationPolicyShowOutput(t, helpers.EncodeResourceIdentifier(id)).
+						HasCreatedOnNotEmpty().
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasKind(string(sdk.PolicyKindAuthenticationPolicy)).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasComment("").
+						HasOwnerRoleType("ROLE").
+						HasOptions("").
+						HasNoTargetScopes(),
+				),
 			},
 			// set optionals
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, completeModel),
+				Config: accconfig.FromModels(t, completeModel),
 				Check: assertThat(
 					t, resourceassert.AuthenticationPolicyResource(t, completeModel.ResourceReference()).
 						HasNameString(id.Name()).
@@ -241,8 +253,7 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 			},
 			// alter
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, completeModelWithDifferentValues),
+				Config: accconfig.FromModels(t, completeModelWithDifferentValues),
 				Check: assertThat(
 					t,
 					resourceassert.AuthenticationPolicyResource(t, completeModelWithDifferentValues.ResourceReference()).
@@ -282,53 +293,18 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 			},
 			// change externally
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					testClient().AuthenticationPolicy.Alter(t, sdk.NewAlterAuthenticationPolicyRequest(id2).WithSet(
 						*sdk.NewAuthenticationPolicySetRequest().
 							WithComment(random.Comment()).
-							WithAuthenticationMethods([]sdk.AuthenticationMethodsOptionListItem{{Value: sdk.AuthenticationMethodsOptionPassword}}).
+							WithAuthenticationMethods([]sdk.AuthenticationMethods{{Method: sdk.AuthenticationMethodsOptionPassword}}).
 							WithMfaEnrollment(sdk.MfaEnrollmentOptionRequired).
-							WithClientTypes([]sdk.ClientTypesOptionListItem{{Value: sdk.ClientTypesOptionSnowflakeUi}, {Value: sdk.ClientTypesOptionDrivers}}).
-							WithSecurityIntegrations(*sdk.NewAuthenticationPolicySecurityIntegrationsOptionRequest().WithAll(true)).
-							WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
-								WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionAll).
-								WithAllowedMethods([]sdk.MfaPolicyAllowedMethodsOptionListItem{{Value: sdk.MfaPolicyAllowedMethodsOptionPasskey}}),
-							).
-							WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
-								WithDefaultExpiryInDays(5).
-								WithMaxExpiryInDays(50).
-								WithRequireRoleRestrictionForServiceUsers(false).
-								WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionNotEnforced),
-							).
-							WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-								WithAllowedProviders([]sdk.AllowedProviderOptionListItem{{Value: sdk.AllowedProviderOptionAws}}).
-								WithAllowedAwsAccounts([]sdk.StringListItemWrapper{{Value: "111122223333"}}).
-								WithAllowedAzureIssuers([]sdk.StringListItemWrapper{{Value: "https://login.microsoftonline.com/tenantid/v2.0"}}).
-								WithAllowedOidcIssuers([]sdk.StringListItemWrapper{{Value: "https://example.com"}}),
-							).
-							WithClientPolicy([]sdk.AuthenticationPolicyClientPolicyRequest{{
-								ClientType: sdk.ClientPolicyDriverTypeGoDriver,
-								Params:     sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "1.15.0"},
-							}}),
+							WithClientTypes([]sdk.ClientTypes{{ClientType: sdk.ClientTypesOptionSnowflakeUi}, {ClientType: sdk.ClientTypesOptionDrivers}}).
+							WithSecurityIntegrations(*sdk.NewSecurityIntegrationsOptionRequest().WithAll(true)),
+						// Changes to mfa_policy, pat_policy, workload_identity_policy, client_policy are not detected.
 					))
 				},
 				Config: accconfig.FromModels(t, completeModelWithDifferentValues),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(completeWithDifferentValuesRef, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(completeWithDifferentValuesRef, "mfa_policy.0.enforce_mfa_on_external_authentication", tfjson.ActionUpdate, new(string(sdk.EnforceMfaOnExternalAuthenticationOptionAll)), new(string(sdk.EnforceMfaOnExternalAuthenticationOptionNone))),
-						planchecks.ExpectChange(completeWithDifferentValuesRef, "mfa_policy.0.allowed_methods.0", tfjson.ActionUpdate, new(string(sdk.MfaPolicyAllowedMethodsOptionPasskey)), new(string(sdk.MfaPolicyAllowedMethodsOptionTotp))),
-						planchecks.ExpectChange(completeWithDifferentValuesRef, "pat_policy.0.default_expiry_in_days", tfjson.ActionUpdate, new("5"), new("2")),
-						planchecks.ExpectChange(completeWithDifferentValuesRef, "pat_policy.0.max_expiry_in_days", tfjson.ActionUpdate, new("50"), new("40")),
-						planchecks.ExpectChange(completeWithDifferentValuesRef, "pat_policy.0.require_role_restriction_for_service_users", tfjson.ActionUpdate, new(r.BooleanFalse), new(r.BooleanTrue)),
-						planchecks.ExpectChange(completeWithDifferentValuesRef, "pat_policy.0.network_policy_evaluation", tfjson.ActionUpdate, new(string(sdk.NetworkPolicyEvaluationOptionNotEnforced)), new(string(sdk.NetworkPolicyEvaluationOptionEnforcedNotRequired))),
-						planchecks.ExpectChange(completeWithDifferentValuesRef, "workload_identity_policy.0.allowed_providers.0", tfjson.ActionUpdate, new(string(sdk.AllowedProviderOptionAws)), new(string(sdk.AllowedProviderOptionAzure))),
-						planchecks.ExpectChange(completeWithDifferentValuesRef, "workload_identity_policy.0.allowed_aws_accounts.0", tfjson.ActionUpdate, new("111122223333"), new("444455556666")),
-						planchecks.ExpectChange(completeWithDifferentValuesRef, "workload_identity_policy.0.allowed_azure_issuers.0", tfjson.ActionUpdate, new("https://login.microsoftonline.com/tenantid/v2.0"), new("https://login.microsoftonline.com/tenantid/v3.0")),
-						planchecks.ExpectChange(completeWithDifferentValuesRef, "workload_identity_policy.0.allowed_oidc_issuers.0", tfjson.ActionUpdate, new("https://example.com"), new("https://example2.com")),
-					},
-				},
 				Check: assertThat(
 					t, resourceassert.AuthenticationPolicyResource(t, completeModelWithDifferentValues.ResourceReference()).
 						HasNameString(id2.Name()).
@@ -367,8 +343,7 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 			},
 			// unset
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, basicModelWithDifferentName),
+				Config: accconfig.FromModels(t, basicModelWithDifferentName),
 				Check: assertThat(
 					t, resourceassert.AuthenticationPolicyResource(t, basicModelWithDifferentName.ResourceReference()).
 						HasNameString(id2.Name()).
@@ -411,14 +386,14 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 func TestAcc_AuthenticationPolicy_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
-	completeModelClientPolicy := []sdk.AuthenticationPolicyClientPolicyRequest{
+	completeModelClientPolicy := []sdk.AuthenticationPolicyClientPolicyEntry{
 		{
 			ClientType: sdk.ClientPolicyDriverTypeGoDriver,
-			Params:     sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "1.14.1"},
+			Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("1.14.1")},
 		},
 		{
 			ClientType: sdk.ClientPolicyDriverTypeJdbcDriver,
-			Params:     sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "3.25.0"},
+			Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("3.25.0")},
 		},
 	}
 
@@ -430,9 +405,9 @@ func TestAcc_AuthenticationPolicy_CompleteUseCase(t *testing.T) {
 		WithMfaPolicy(
 			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
 				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionAll).
-				WithAllowedMethods([]sdk.MfaPolicyAllowedMethodsOptionListItem{
-					{Value: sdk.MfaPolicyAllowedMethodsOptionPasskey},
-					{Value: sdk.MfaPolicyAllowedMethodsOptionDuo},
+				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
+					{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey},
+					{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
 				}),
 		).
 		WithPatPolicy(
@@ -444,8 +419,8 @@ func TestAcc_AuthenticationPolicy_CompleteUseCase(t *testing.T) {
 		).
 		WithWorkloadIdentityPolicy(
 			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-				WithAllowedProviders([]sdk.AllowedProviderOptionListItem{
-					{Value: sdk.AllowedProviderOptionAll},
+				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
+					{Provider: sdk.AllowedProviderOptionAll},
 				}).
 				WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
 					{Value: "111122223333"},
@@ -460,19 +435,15 @@ func TestAcc_AuthenticationPolicy_CompleteUseCase(t *testing.T) {
 		WithComment(comment).
 		WithClientPolicy(completeModelClientPolicy...)
 
-	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
-
 	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.AuthenticationPolicy),
 		Steps: []resource.TestStep{
-			// create
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, completeModel),
+				Config: accconfig.FromModels(t, completeModel),
 				Check: assertThat(
 					t,
 					resourceassert.AuthenticationPolicyResource(t, completeModel.ResourceReference()).
@@ -508,13 +479,10 @@ func TestAcc_AuthenticationPolicy_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.client_policy", "{JDBC_DRIVER={MINIMUM_VERSION=3.25.0}, GO_DRIVER={MINIMUM_VERSION=1.14.1}}")),
 				),
 			},
-			// import - complete
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, completeModel),
-				ResourceName:             completeModel.ResourceReference(),
-				ImportState:              true,
-				ImportStateVerify:        true,
+				Config:       accconfig.FromModels(t, completeModel),
+				ResourceName: completeModel.ResourceReference(),
+				ImportState:  true,
 				ImportStateCheck: assertThatImport(
 					t,
 					resourceassert.ImportedAuthenticationPolicyResource(t, helpers.EncodeResourceIdentifier(id)).
@@ -543,83 +511,6 @@ func TestAcc_AuthenticationPolicy_CompleteUseCase(t *testing.T) {
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.client_types", "[DRIVERS, SNOWFLAKE_UI]")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.security_integrations", "[ALL]")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.mfa_enrollment", string(sdk.MfaEnrollmentReadOptionRequired))),
-				),
-			},
-			// import - complete, permissive mode
-			// TODO(next-prs): add suppressors for the authentication_methods, client_types, and security_integrations sets
-			// and the mfa_policy, pat_policy, and workload_identity_policy blocks, then expect an empty plan.
-			{
-				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
-				Config:                   accconfig.FromModels(t, providerModelImportPermissiveMode, completeModel),
-				ResourceName:             completeModel.ResourceReference(),
-				ImportState:              true,
-				ImportStateKind:          resource.ImportBlockWithID,
-				ExpectNonEmptyPlan:       true,
-				ImportPlanChecks: resource.ImportPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(completeModel.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
-			},
-		},
-	})
-}
-
-func TestAcc_AuthenticationPolicy_BasicUseCase_Import(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-	resourceId := helpers.EncodeResourceIdentifier(id)
-	defaultMfaEnrollment := testClient().SnowflakeDefaults.DefaultMfaEnrollment(t)
-
-	basicModel := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name())
-	ref := basicModel.ResourceReference()
-
-	_, cleanup := testClient().AuthenticationPolicy.CreateWithOptions(t, id, sdk.NewCreateAuthenticationPolicyRequest(id))
-	t.Cleanup(cleanup)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.AuthenticationPolicy),
-		Steps: []resource.TestStep{
-			// Import - without optionals
-			{
-				Config:             accconfig.FromModels(t, basicModel),
-				ResourceName:       ref,
-				ImportState:        true,
-				ImportStateId:      resourceId,
-				ImportStatePersist: true,
-			},
-			// Expect empty plan after the plan after import is applied
-			{
-				Config: accconfig.FromModels(t, basicModel),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(ref, "authentication_methods", tfjson.ActionUpdate, new("[ALL]"), new("[]")),
-						planchecks.ExpectChange(ref, "mfa_enrollment", tfjson.ActionUpdate, new(defaultMfaEnrollment), nil),
-						planchecks.ExpectChange(ref, "client_types", tfjson.ActionUpdate, new("[ALL]"), new("[]")),
-						planchecks.ExpectChange(ref, "security_integrations", tfjson.ActionUpdate, new("[ALL]"), new("[]")),
-						planchecks.ExpectChange(ref, "client_policy", tfjson.ActionUpdate, new("[]"), new("[]")),
-						planchecks.ExpectChange(ref, "mfa_policy", tfjson.ActionUpdate, new("[map[allowed_methods:[ALL] enforce_mfa_on_external_authentication:NONE]]"), new("[]")),
-						planchecks.ExpectChange(ref, "pat_policy", tfjson.ActionUpdate, new("[map[default_expiry_in_days:15 max_expiry_in_days:365 network_policy_evaluation:ENFORCED_REQUIRED require_role_restriction_for_service_users:true]]"), new("[]")),
-						planchecks.ExpectChange(ref, "workload_identity_policy", tfjson.ActionUpdate, new("[map[allowed_aws_accounts:[ALL] allowed_azure_issuers:[ALL] allowed_oidc_issuers:[ALL] allowed_providers:[ALL]]]"), new("[]")),
-					},
-					PostApplyPostRefresh: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
-				Check: assertThat(
-					t,
-					resourceassert.AuthenticationPolicyResource(t, ref).
-						HasAuthenticationMethodsEmpty().
-						HasMfaEnrollmentEmpty().
-						HasClientTypesEmpty().
-						HasSecurityIntegrationsEmpty(),
-					assert.Check(resource.TestCheckResourceAttr(ref, "mfa_policy.#", "0")),
-					assert.Check(resource.TestCheckResourceAttr(ref, "pat_policy.#", "0")),
-					assert.Check(resource.TestCheckResourceAttr(ref, "workload_identity_policy.#", "0")),
 				),
 			},
 		},
@@ -663,15 +554,15 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 		WithMfaPolicy(
 			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
 				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionNone).
-				WithAllowedMethods([]sdk.MfaPolicyAllowedMethodsOptionListItem{
-					{Value: sdk.MfaPolicyAllowedMethodsOptionTotp},
-					{Value: sdk.MfaPolicyAllowedMethodsOptionDuo},
+				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
+					{Method: sdk.MfaPolicyAllowedMethodsOptionTotp},
+					{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
 				}),
 		).
 		WithWorkloadIdentityPolicy(
 			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-				WithAllowedProviders([]sdk.AllowedProviderOptionListItem{
-					{Value: sdk.AllowedProviderOptionAzure},
+				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
+					{Provider: sdk.AllowedProviderOptionAzure},
 				}).
 				WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
 					{Value: "111111111111"}, {Value: "222222222222"},
@@ -691,8 +582,8 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 		).
 		WithWorkloadIdentityPolicy(
 			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-				WithAllowedProviders([]sdk.AllowedProviderOptionListItem{
-					{Value: sdk.AllowedProviderOptionAzure},
+				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
+					{Provider: sdk.AllowedProviderOptionAzure},
 				}),
 		)
 
@@ -700,15 +591,15 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 		WithMfaPolicy(
 			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
 				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionNone).
-				WithAllowedMethods([]sdk.MfaPolicyAllowedMethodsOptionListItem{
-					{Value: sdk.MfaPolicyAllowedMethodsOptionDuo},
-					{Value: sdk.MfaPolicyAllowedMethodsOptionTotp},
+				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
+					{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
+					{Method: sdk.MfaPolicyAllowedMethodsOptionTotp},
 				}),
 		).
 		WithWorkloadIdentityPolicy(
 			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-				WithAllowedProviders([]sdk.AllowedProviderOptionListItem{
-					{Value: sdk.AllowedProviderOptionAzure},
+				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
+					{Provider: sdk.AllowedProviderOptionAzure},
 				}).
 				WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
 					{Value: "222222222222"}, {Value: "111111111111"},
@@ -899,8 +790,8 @@ func TestAcc_AuthenticationPolicy_Validations(t *testing.T) {
 	modelInvalidAllowedMethods := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithMfaPolicy(
 			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
-				WithAllowedMethods([]sdk.MfaPolicyAllowedMethodsOptionListItem{
-					{Value: "invalid"},
+				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
+					{Method: "invalid"},
 				}),
 		)
 	modelInvalidDefaultExpiryInDays := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
@@ -921,8 +812,8 @@ func TestAcc_AuthenticationPolicy_Validations(t *testing.T) {
 	modelInvalidAllowedProviders := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithWorkloadIdentityPolicy(
 			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-				WithAllowedProviders([]sdk.AllowedProviderOptionListItem{
-					{Value: "invalid"},
+				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
+					{Provider: "invalid"},
 				}),
 		)
 	modelInvalidClientPolicyDriverType := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
@@ -936,9 +827,9 @@ func TestAcc_AuthenticationPolicy_Validations(t *testing.T) {
 	modelClientPolicyIncompatibleClientTypes := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithClientTypes(sdk.ClientTypesOptionSnowflakeUi).
 		WithClientPolicy(
-			sdk.AuthenticationPolicyClientPolicyRequest{
+			sdk.AuthenticationPolicyClientPolicyEntry{
 				ClientType: sdk.ClientPolicyDriverTypeGoDriver,
-				Params:     sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "1.0.0"},
+				Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("1.0.0")},
 			},
 		)
 

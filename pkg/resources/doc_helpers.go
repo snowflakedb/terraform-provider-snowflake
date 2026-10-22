@@ -118,11 +118,3 @@ func snowflakeDocumentationLink(url string) string {
 func doubleDollarQuotesDescription() string {
 	return "The provider wraps it in `$$` by default, so be aware of that while referencing the argument in the spec definition. Using `$$` in this field is disallowed."
 }
-
-func writeOnlyFieldDescription(description string, versionFieldName string) string {
-	return fmt.Sprintf("%s The value of this field is never saved in the Terraform plan or state, so it can be set from an ephemeral resource. Requires Terraform 1.11 or later. Because Terraform can not detect changes to a write-only value, changes to this field are applied only when `%[2]s` changes. External changes for this field won't be detected; to push the value from your configuration to Snowflake again, increment `%[2]s`. Conflicts with the non-write-only variant of this field.", description, versionFieldName)
-}
-
-func writeOnlyVersionFieldDescription(writeOnlyFieldName string) string {
-	return fmt.Sprintf("Version counter for `%[1]s`. Because Terraform can not detect changes to a write-only value, increment this field to push the current value of `%[1]s` to Snowflake. Removing both fields unsets the value.", writeOnlyFieldName)
-}

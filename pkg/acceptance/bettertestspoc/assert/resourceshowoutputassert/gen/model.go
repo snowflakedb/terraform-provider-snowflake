@@ -1,7 +1,6 @@
 package gen
 
 import (
-	"log"
 	"slices"
 	"strings"
 
@@ -26,7 +25,7 @@ type ResourceShowOutputAssertionModel struct {
 	SkipGeneration   bool
 }
 
-func ModelFromSdkObjectDetails(sdkObject SdkObjectShowOutputDetails, preamble *genhelpers.PreambleModel, _ *log.Logger) ResourceShowOutputAssertionsModel {
+func ModelFromSdkObjectDetails(sdkObject SdkObjectShowOutputDetails, preamble *genhelpers.PreambleModel) ResourceShowOutputAssertionsModel {
 	attributes := make([]ResourceShowOutputAssertionModel, len(sdkObject.Fields))
 	for idx, field := range sdkObject.Fields {
 		attr := MapToResourceShowOutputAssertion(field)

@@ -1112,7 +1112,7 @@ func (t *TaskParametersAssert) HasDefaultClientSessionKeepAliveHeartbeatFrequenc
 }
 
 func (t *TaskParametersAssert) HasDefaultClientTimestampTypeMappingValueExplicit() *TaskParametersAssert {
-	return t.HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingTimestampLtz)
+	return t.HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingLtz)
 }
 
 func (t *TaskParametersAssert) HasDefaultDateInputFormatValueExplicit() *TaskParametersAssert {
@@ -1136,11 +1136,11 @@ func (t *TaskParametersAssert) HasDefaultErrorOnNondeterministicUpdateValueExpli
 }
 
 func (t *TaskParametersAssert) HasDefaultGeographyOutputFormatValueExplicit() *TaskParametersAssert {
-	return t.HasGeographyOutputFormat(sdk.GeographyOutputFormatGeoJson)
+	return t.HasGeographyOutputFormat(sdk.GeographyOutputFormatGeoJSON)
 }
 
 func (t *TaskParametersAssert) HasDefaultGeometryOutputFormatValueExplicit() *TaskParametersAssert {
-	return t.HasGeometryOutputFormat(sdk.GeometryOutputFormatGeoJson)
+	return t.HasGeometryOutputFormat(sdk.GeometryOutputFormatGeoJSON)
 }
 
 func (t *TaskParametersAssert) HasDefaultJdbcTreatTimestampNtzAsUtcValueExplicit() *TaskParametersAssert {
@@ -1252,7 +1252,7 @@ func (t *TaskParametersAssert) HasDefaultTimestampOutputFormatValueExplicit() *T
 }
 
 func (t *TaskParametersAssert) HasDefaultTimestampTypeMappingValueExplicit() *TaskParametersAssert {
-	return t.HasTimestampTypeMapping(sdk.TimestampTypeMappingTimestampNtz)
+	return t.HasTimestampTypeMapping(sdk.TimestampTypeMappingNtz)
 }
 
 func (t *TaskParametersAssert) HasDefaultTimestampTzOutputFormatValueExplicit() *TaskParametersAssert {

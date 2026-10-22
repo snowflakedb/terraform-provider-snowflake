@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type WarehouseAdaptiveResourceAssert struct {
@@ -53,11 +52,6 @@ func (w *WarehouseAdaptiveResourceAssert) HasMaxQueryPerformanceLevel(expected s
 	return w
 }
 
-func (w *WarehouseAdaptiveResourceAssert) HasMaxQueryPerformanceLevelSdk(expected sdk.MaxQueryPerformanceLevel) *WarehouseAdaptiveResourceAssert {
-	w.StringValueSet("max_query_performance_level", string(expected))
-	return w
-}
-
 func (w *WarehouseAdaptiveResourceAssert) HasQueryThroughputMultiplier(expected int) *WarehouseAdaptiveResourceAssert {
 	w.IntValueSet("query_throughput_multiplier", expected)
 	return w
@@ -65,11 +59,6 @@ func (w *WarehouseAdaptiveResourceAssert) HasQueryThroughputMultiplier(expected 
 
 func (w *WarehouseAdaptiveResourceAssert) HasResourceMonitor(expected string) *WarehouseAdaptiveResourceAssert {
 	w.StringValueSet("resource_monitor", expected)
-	return w
-}
-
-func (w *WarehouseAdaptiveResourceAssert) HasResourceMonitorSdk(expected sdk.AccountObjectIdentifier) *WarehouseAdaptiveResourceAssert {
-	w.StringValueSet("resource_monitor", expected.Name())
 	return w
 }
 

@@ -43,10 +43,10 @@ func (opts *AlterComputePoolOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterComputePoolOptions", "Resume", "Suspend", "StopAll", "Set", "Unset", "SetTags", "UnsetTags"))
 	}
 	if valueSet(opts.Set) {
+		errs = append(errs, opts.Set.additionalValidations())
 		if !anyValueSet(opts.Set.MinNodes, opts.Set.MaxNodes, opts.Set.AutoResume, opts.Set.AutoSuspendSecs, opts.Set.BackupInstanceFamilies, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterComputePoolOptions.Set", "MinNodes", "MaxNodes", "AutoResume", "AutoSuspendSecs", "BackupInstanceFamilies", "Comment"))
 		}
-		errs = append(errs, opts.Set.additionalValidations())
 	}
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.AutoResume, opts.Unset.AutoSuspendSecs, opts.Unset.BackupInstanceFamilies, opts.Unset.Comment) {

@@ -19,7 +19,7 @@ func TestInt_ComputePools(t *testing.T) {
 
 	t.Run("create - basic", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewCreateComputePoolRequest(id, 1, 2, sdk.ComputePoolInstanceFamilyCpuX64Xs)
+		request := sdk.NewCreateComputePoolRequest(id, 1, 2, sdk.ComputePoolInstanceFamilyCpuX64XS)
 
 		err := client.ComputePools.Create(ctx, request)
 		require.NoError(t, err)
@@ -34,7 +34,7 @@ func TestInt_ComputePools(t *testing.T) {
 				HasState(sdk.ComputePoolStateStarting).
 				HasMinNodes(1).
 				HasMaxNodes(2).
-				HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64Xs).
+				HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64XS).
 				HasNumServices(0).
 				HasNumJobs(0).
 				HasAutoSuspendSecs(3600).
@@ -60,13 +60,13 @@ func TestInt_ComputePools(t *testing.T) {
 		t.Cleanup(applicationCleanup)
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		comment := random.Comment()
-		request := sdk.NewCreateComputePoolRequest(id, 1, 2, sdk.ComputePoolInstanceFamilyCpuX64Xs).
+		request := sdk.NewCreateComputePoolRequest(id, 1, 2, sdk.ComputePoolInstanceFamilyCpuX64XS).
 			WithForApplication(application.ID()).
 			WithAutoResume(true).
 			WithInitiallySuspended(true).
 			WithAutoSuspendSecs(6767).
 			WithComment(comment).
-			WithBackupInstanceFamilies([]sdk.ComputePoolInstanceFamilyListItem{
+			WithBackupInstanceFamilies([]sdk.ComputePoolBackupInstanceFamilyListItem{
 				{Value: sdk.ComputePoolInstanceFamilyCpuX64M},
 				{Value: sdk.ComputePoolInstanceFamilyCpuX64S},
 			})
@@ -84,7 +84,7 @@ func TestInt_ComputePools(t *testing.T) {
 				HasState(sdk.ComputePoolStateSuspended).
 				HasMinNodes(1).
 				HasMaxNodes(2).
-				HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64Xs).
+				HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64XS).
 				HasNumServices(0).
 				HasNumJobs(0).
 				HasAutoSuspendSecs(6767).
@@ -108,7 +108,7 @@ func TestInt_ComputePools(t *testing.T) {
 
 	t.Run("alter: set", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewCreateComputePoolRequest(id, 1, 2, sdk.ComputePoolInstanceFamilyCpuX64Xs).
+		request := sdk.NewCreateComputePoolRequest(id, 1, 2, sdk.ComputePoolInstanceFamilyCpuX64XS).
 			WithAutoSuspendSecs(6767).
 			WithAutoResume(false)
 
@@ -122,7 +122,7 @@ func TestInt_ComputePools(t *testing.T) {
 				WithMaxNodes(5).
 				WithAutoResume(true).
 				WithAutoSuspendSecs(3600).
-				WithBackupInstanceFamilies([]sdk.ComputePoolInstanceFamilyListItem{
+				WithBackupInstanceFamilies([]sdk.ComputePoolBackupInstanceFamilyListItem{
 					{Value: sdk.ComputePoolInstanceFamilyCpuX64M},
 					{Value: sdk.ComputePoolInstanceFamilyCpuX64S},
 				}).
@@ -139,7 +139,7 @@ func TestInt_ComputePools(t *testing.T) {
 				HasState(sdk.ComputePoolStateStarting).
 				HasMinNodes(4).
 				HasMaxNodes(5).
-				HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64Xs).
+				HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64XS).
 				HasNumServices(0).
 				HasNumJobs(0).
 				HasAutoSuspendSecs(3600).
@@ -163,10 +163,10 @@ func TestInt_ComputePools(t *testing.T) {
 
 	t.Run("alter: unset", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewCreateComputePoolRequest(id, 1, 2, sdk.ComputePoolInstanceFamilyCpuX64Xs).
+		request := sdk.NewCreateComputePoolRequest(id, 1, 2, sdk.ComputePoolInstanceFamilyCpuX64XS).
 			WithAutoSuspendSecs(6767).
 			WithAutoResume(false).
-			WithBackupInstanceFamilies([]sdk.ComputePoolInstanceFamilyListItem{
+			WithBackupInstanceFamilies([]sdk.ComputePoolBackupInstanceFamilyListItem{
 				{Value: sdk.ComputePoolInstanceFamilyCpuX64S},
 			}).
 			WithComment(random.Comment())
@@ -192,7 +192,7 @@ func TestInt_ComputePools(t *testing.T) {
 				HasState(sdk.ComputePoolStateStarting).
 				HasMinNodes(1).
 				HasMaxNodes(2).
-				HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64Xs).
+				HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64XS).
 				HasNumServices(0).
 				HasNumJobs(0).
 				HasAutoSuspendSecs(3600).
@@ -213,7 +213,7 @@ func TestInt_ComputePools(t *testing.T) {
 
 	t.Run("alter: suspend", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewCreateComputePoolRequest(id, 1, 2, sdk.ComputePoolInstanceFamilyCpuX64Xs).
+		request := sdk.NewCreateComputePoolRequest(id, 1, 2, sdk.ComputePoolInstanceFamilyCpuX64XS).
 			WithInitiallySuspended(false)
 
 		computePool, cleanup := testClientHelper().ComputePool.CreateWithRequest(t, request)
@@ -239,7 +239,7 @@ func TestInt_ComputePools(t *testing.T) {
 
 	t.Run("alter: resume", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewCreateComputePoolRequest(id, 1, 2, sdk.ComputePoolInstanceFamilyCpuX64Xs).
+		request := sdk.NewCreateComputePoolRequest(id, 1, 2, sdk.ComputePoolInstanceFamilyCpuX64XS).
 			WithInitiallySuspended(true)
 
 		computePool, cleanup := testClientHelper().ComputePool.CreateWithRequest(t, request)
@@ -286,7 +286,7 @@ func TestInt_ComputePools(t *testing.T) {
 				HasState(sdk.ComputePoolStateStarting).
 				HasMinNodes(1).
 				HasMaxNodes(1).
-				HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64Xs).
+				HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64XS).
 				HasNumServices(0).
 				HasNumJobs(0).
 				HasAutoSuspendSecs(3600).
@@ -321,7 +321,7 @@ func TestInt_ComputePools(t *testing.T) {
 				HasState(sdk.ComputePoolStateStarting).
 				HasMinNodes(1).
 				HasMaxNodes(1).
-				HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64Xs).
+				HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64XS).
 				HasNumServices(0).
 				HasNumJobs(0).
 				HasAutoSuspendSecs(3600).

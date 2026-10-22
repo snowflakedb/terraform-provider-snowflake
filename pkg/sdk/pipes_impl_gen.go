@@ -9,9 +9,9 @@ import (
 )
 
 var (
-	_ Pipes                       = (*pipes)(nil)
-	_ convertibleRow[Pipe]        = new(pipeDBRow)
-	_ convertibleRow[PipeDetails] = new(pipeDetailRow)
+	_ Pipes                      = (*pipes)(nil)
+	_ convertibleRow[Pipe]       = new(pipeDBRow)
+	_ convertibleRow[PipeDetail] = new(pipeDetailRow)
 )
 
 type pipes struct {
@@ -61,7 +61,7 @@ func (v *pipes) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
-func (v *pipes) Describe(ctx context.Context, id SchemaObjectIdentifier) (*PipeDetails, error) {
+func (v *pipes) Describe(ctx context.Context, id SchemaObjectIdentifier) (*PipeDetail, error) {
 	opts := &DescribePipeOptions{
 		name: id,
 	}
@@ -159,8 +159,8 @@ func (r *DescribePipeRequest) toOpts() *DescribePipeOptions {
 	return opts
 }
 
-func (r pipeDetailRow) convert() (*PipeDetails, error) {
-	result := &PipeDetails{
+func (r pipeDetailRow) convert() (*PipeDetail, error) {
+	result := &PipeDetail{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
 		DatabaseName: r.DatabaseName,

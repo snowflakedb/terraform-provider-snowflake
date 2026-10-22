@@ -126,13 +126,10 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 				ResourceName:      storageIntegrationAwsModelNoAttributes.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
-				// use_privatelink_endpoint is ignored because it's not set in the config ("default"),
-				// while import writes the Snowflake value.
-				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
 				ImportStateCheck: assertThatImport(
 					t,
 					resourceassert.ImportedStorageIntegrationAwsResource(t, id.Name()).
-						HasUsePrivatelinkEndpointString(r.BooleanFalse),
+						HasUsePrivatelinkEndpointString(r.BooleanDefault),
 				),
 			},
 			{
@@ -236,13 +233,16 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 				ResourceName:      storageIntegrationAwsAllAttributesChanged.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
+				// use_privatelink_endpoint is ignored because IMPORT_BOOLEAN_DEFAULT
+				// (enabled by default) writes "default" while the config has an explicit value.
 				ImportStateVerifyIgnore: []string{
+					"use_privatelink_endpoint",
 					"storage_aws_external_id",
 				},
 				ImportStateCheck: assertThatImport(
 					t,
 					resourceassert.ImportedStorageIntegrationAwsResource(t, id.Name()).
-						HasUsePrivatelinkEndpointString(r.BooleanTrue),
+						HasUsePrivatelinkEndpointString(r.BooleanDefault),
 				),
 			},
 			// CHANGE PROP EXTERNALLY
@@ -397,12 +397,14 @@ func TestAcc_StorageIntegrationAws_CompleteUseCase(t *testing.T) {
 				ResourceName:      complete.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
+				// use_privatelink_endpoint is ignored because import sets it to "default" while the
+				// configuration has an explicit value.
 				// storage_aws_external_id is not read into state (only handled as an external DESCRIBE change)
-				ImportStateVerifyIgnore: []string{"storage_aws_external_id"},
+				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint", "storage_aws_external_id"},
 				ImportStateCheck: assertThatImport(
 					t,
 					resourceassert.ImportedStorageIntegrationAwsResource(t, id.Name()).
-						HasUsePrivatelinkEndpointString(r.BooleanTrue),
+						HasUsePrivatelinkEndpointString(r.BooleanDefault),
 				),
 			},
 		},
@@ -474,16 +476,11 @@ func TestAcc_StorageIntegrationAws_Import(t *testing.T) {
 				ImportStateId:      completeId.FullyQualifiedName(),
 				ImportStatePersist: true,
 			},
-			// The basic config omits use_privatelink_endpoint, so the plan resets it to the Snowflake default; the complete config matches Snowflake
+			// Expect empty plan
 			{
 				Config: config.FromModels(t, basicStorageIntegrationAwsModel, completeStorageIntegrationAwsModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(basicRef, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(basicRef, "use_privatelink_endpoint", tfjson.ActionUpdate, sdk.String(r.BooleanFalse), sdk.String(r.BooleanDefault)),
-						plancheck.ExpectResourceAction(completeRef, plancheck.ResourceActionNoop),
-					},
-					PostApplyPostRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
 					},
 				},

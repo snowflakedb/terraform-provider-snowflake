@@ -73,9 +73,9 @@ resource "snowflake_pipe" "pipe_with_stage_change_trigger" {
 ### Required
 
 - `copy_statement` (String) Specifies the copy statement for the pipe.
-- `database` (String) The database in which to create the pipe. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
-- `name` (String) Specifies the identifier for the pipe; must be unique for the schema in which the pipe is created. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
-- `schema` (String) The schema in which to create the pipe. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `database` (String) The database in which to create the pipe.
+- `name` (String) Specifies the identifier for the pipe; must be unique for the database and schema in which the pipe is created.
+- `schema` (String) The schema in which to create the pipe.
 
 ### Optional
 

@@ -18,16 +18,6 @@ import (
 // TODO [SNOW-1348325,SNOW-1501905]: Add this parameter to SDK
 const ReplicableWithFailoverGroups = "REPLICABLE_WITH_FAILOVER_GROUPS"
 
-func alterObjectParameter(parseOnSetEnabled bool, catalog func() (bool, error), legacy func() error) error {
-	if parseOnSetEnabled {
-		handled, err := catalog()
-		if err != nil || handled {
-			return err
-		}
-	}
-	return legacy()
-}
-
 var objectParameterSchema = map[string]*schema.Schema{
 	"key": {
 		Type:        schema.TypeString,
@@ -102,8 +92,7 @@ func ObjectParameter() *schema.Resource {
 
 // CreateObjectParameter implements schema.CreateFunc.
 func CreateObjectParameter(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	providerCtx := meta.(*provider.Context)
-	client := providerCtx.Client
+	client := meta.(*provider.Context).Client
 	key := d.Get("key").(string)
 	value := d.Get("value").(string)
 
@@ -123,29 +112,16 @@ func CreateObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 	}
 
 	onAccount := d.Get("on_account").(bool)
-	parseOnSetEnabled := providerCtx.Experiments.IsEnabled(experimentalfeatures.ObjectParameterParseOnSet)
 	if onAccount {
-		if err := alterObjectParameter(
-			parseOnSetEnabled,
-			func() (bool, error) {
-				return client.Parameters.SetObjectParameterOnAccountViaCatalog(ctx, parameter, value)
-			},
-			func() error {
-				return client.Parameters.SetObjectParameterOnAccount(ctx, parameter, value)
-			},
-		); err != nil {
+		err := client.Parameters.SetObjectParameterOnAccount(ctx, parameter, value)
+		if err != nil {
 			return diag.FromErr(fmt.Errorf("error creating object parameter err = %w", err))
 		}
-	} else if err := alterObjectParameter(
-		parseOnSetEnabled,
-		func() (bool, error) {
-			return client.Parameters.SetObjectParameterOnObjectViaCatalog(ctx, o, parameter, value)
-		},
-		func() error {
-			return client.Parameters.SetObjectParameterOnObject(ctx, o, parameter, value)
-		},
-	); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting object parameter err = %w", err))
+	} else {
+		err := client.Parameters.SetObjectParameterOnObject(ctx, o, parameter, value)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error setting object parameter err = %w", err))
+		}
 	}
 
 	var id string
@@ -224,20 +200,11 @@ func DeleteObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 
 	key := d.Get("key").(string)
 	onAccount := d.Get("on_account").(bool)
-	parseOnSetEnabled := providerCtx.Experiments.IsEnabled(experimentalfeatures.ObjectParameterParseOnSet)
 
 	if onAccount {
-		objectParameter := sdk.ObjectParameter(key)
 		if providerCtx.Experiments.IsEnabled(experimentalfeatures.ObjectParameterUnsetOnDelete) {
-			if err := alterObjectParameter(
-				parseOnSetEnabled,
-				func() (bool, error) {
-					return client.Parameters.UnsetObjectParameterOnAccountViaCatalog(ctx, objectParameter)
-				},
-				func() error {
-					return client.Parameters.UnsetObjectParameterOnAccount(ctx, objectParameter)
-				},
-			); err != nil {
+			err := client.Parameters.UnsetObjectParameterOnAccount(ctx, sdk.ObjectParameter(key))
+			if err != nil {
 				return diag.FromErr(fmt.Errorf("error unsetting account parameter err = %w", err))
 			}
 		} else {
@@ -246,15 +213,8 @@ func DeleteObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 				return diag.FromErr(err)
 			}
 			defaultValue := defaultParameter.Default
-			if err := alterObjectParameter(
-				parseOnSetEnabled,
-				func() (bool, error) {
-					return client.Parameters.SetObjectParameterOnAccountViaCatalog(ctx, objectParameter, defaultValue)
-				},
-				func() error {
-					return client.Parameters.SetAccountParameter(ctx, sdk.AccountParameter(key), defaultValue)
-				},
-			); err != nil {
+			err = client.Parameters.SetAccountParameter(ctx, sdk.AccountParameter(key), defaultValue)
+			if err != nil {
 				return diag.FromErr(fmt.Errorf("error resetting account parameter err = %w", err))
 			}
 		}
@@ -272,20 +232,13 @@ func DeleteObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 			Name:       sdk.NewObjectIdentifierFromFullyQualifiedName(fullyQualifierObjectIdentifier),
 		}
 
-		objectParameter := sdk.ObjectParameter(key)
 		if providerCtx.Experiments.IsEnabled(experimentalfeatures.ObjectParameterUnsetOnDelete) {
-			if err := alterObjectParameter(
-				parseOnSetEnabled,
-				func() (bool, error) {
-					return client.Parameters.UnsetObjectParameterOnObjectViaCatalog(ctx, o, objectParameter)
-				},
-				func() error {
-					return client.Parameters.UnsetObjectParameterOnObject(ctx, o, objectParameter)
-				},
-			); err != nil {
+			err = client.Parameters.UnsetObjectParameterOnObject(ctx, o, sdk.ObjectParameter(key))
+			if err != nil {
 				return diag.FromErr(fmt.Errorf("error unsetting object parameter err = %w", err))
 			}
 		} else {
+			objectParameter := sdk.ObjectParameter(key)
 			defaultParameter, err := client.Parameters.ShowObjectParameter(ctx, objectParameter, o)
 			if err != nil {
 				return diag.FromErr(err)
@@ -295,15 +248,8 @@ func DeleteObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 			if key == ReplicableWithFailoverGroups {
 				defaultValue = "YES"
 			}
-			if err := alterObjectParameter(
-				parseOnSetEnabled,
-				func() (bool, error) {
-					return client.Parameters.SetObjectParameterOnObjectViaCatalog(ctx, o, objectParameter, defaultValue)
-				},
-				func() error {
-					return client.Parameters.SetObjectParameterOnObject(ctx, o, objectParameter, defaultValue)
-				},
-			); err != nil {
+			err = client.Parameters.SetObjectParameterOnObject(ctx, o, objectParameter, defaultValue)
+			if err != nil {
 				return diag.FromErr(fmt.Errorf("error resetting object parameter err = %w", err))
 			}
 		}

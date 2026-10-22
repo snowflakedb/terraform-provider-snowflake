@@ -1,6 +1,6 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
 {{- if .Hooks.NewCreateRequest.Generate -}}
-	req, err := {{ .Prefix }}NewCreateRequest(d, id)
-{{ else if .Hooks.NewCreateRequest.Present -}}
+{{ Unimplemented "NewCreateRequest" }}
+{{- else if .Hooks.NewCreateRequest.Present -}}
 	req, err := {{ .Prefix }}NewCreateRequestExt(d, id)
 {{ end -}}

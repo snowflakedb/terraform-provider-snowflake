@@ -8,8 +8,8 @@ import (
 )
 
 // HasAllDefaultsForEnvironment is an environment-aware variant of HasAllDefaults.
-// Non-prod accounts report STATEMENT_TIMEOUT_IN_SECONDS at ACCOUNT level. The value
-// is still the catalog default.
+// It replaces HasAllDefaults() in tests that run on preprod, where STATEMENT_TIMEOUT_IN_SECONDS
+// is set at ACCOUNT level rather than the Snowflake default level.
 func (w *WarehouseParametersAssert) HasAllDefaultsForEnvironment(t *testing.T, defaults *helpers.SnowflakeDefaultsClient) *WarehouseParametersAssert {
 	t.Helper()
 	return w.

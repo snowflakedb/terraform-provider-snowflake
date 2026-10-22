@@ -1,6 +1,8 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
-{{- if or .Hooks.HandleExternalChanges.Generate .Hooks.HandleExternalChanges.Present -}}
-		if err = {{ .Prefix }}HandleExternalChanges{{ if not .Hooks.HandleExternalChanges.Generate }}Ext{{ end }}(d, {{ .Prefix }}, withExternalChangesMarking); err != nil {
+{{- if .Hooks.HandleExternalChanges.Generate -}}
+{{ Unimplemented "HandleExternalChanges" }}
+{{- else if .Hooks.HandleExternalChanges.Present -}}
+		if err = {{ .Prefix }}HandleExternalChangesExt(d, {{ .Prefix }}, withExternalChangesMarking); err != nil {
 			return diag.FromErr(err)
 		}
 {{ end -}}

@@ -5,7 +5,6 @@ package testacc
 import (
 	"fmt"
 	"regexp"
-	"strconv"
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -18,17 +17,13 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
-	"github.com/stretchr/testify/require"
 )
 
 func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
@@ -76,11 +71,11 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			HasCommentEmpty().
 			HasNoMaxQueryPerformanceLevel().
 			HasQueryThroughputMultiplierString(r.IntDefaultString).
-			HasResourceMonitorEmpty().
+			HasNoResourceMonitor().
 			HasStatementQueuedTimeoutInSeconds(0).
 			HasStatementTimeoutInSeconds(172800).
 			HasFullyQualifiedNameString(warehouseId.FullyQualifiedName()),
-		resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
+		resourceshowoutputassert.WarehouseShowOutput(t, ref).
 			HasName(warehouseId.Name()).
 			HasType(sdk.WarehouseTypeAdaptive).
 			HasStateNotEmpty().
@@ -99,7 +94,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			HasResourceMonitorString(resourceMonitor.ID().Name()).
 			HasStatementQueuedTimeoutInSeconds(300).
 			HasStatementTimeoutInSeconds(86400),
-		resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
+		resourceshowoutputassert.WarehouseShowOutput(t, ref).
 			HasName(warehouseId.Name()).
 			HasType(sdk.WarehouseTypeAdaptive).
 			HasComment(comment).
@@ -116,7 +111,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			HasStatementQueuedTimeoutInSeconds(600).
 			HasStatementTimeoutInSeconds(43200).
 			HasFullyQualifiedNameString(newWarehouseId.FullyQualifiedName()),
-		resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
+		resourceshowoutputassert.WarehouseShowOutput(t, ref).
 			HasName(newWarehouseId.Name()).
 			HasType(sdk.WarehouseTypeAdaptive).
 			HasComment(newComment).
@@ -133,17 +128,15 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			HasStatementQueuedTimeoutInSeconds(0).
 			HasStatementTimeoutInSeconds(172800).
 			HasFullyQualifiedNameString(newWarehouseId.FullyQualifiedName()),
-		resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
+		resourceshowoutputassert.WarehouseShowOutput(t, ref).
 			HasName(newWarehouseId.Name()).
 			HasCommentEmpty().
 			HasResourceMonitorEmpty().
 			HasQueryThroughputMultiplier(2),
 	}
 
-	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
-
 	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: adaptiveWarehouseProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -151,40 +144,47 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create with only required fields
 			{
-				ProtoV6ProviderFactories: adaptiveWarehouseProviderFactory,
-				Config:                   accconfig.FromModels(t, warehouseModel),
-				Check:                    assertThat(t, basicAssertions...),
+				Config: accconfig.FromModels(t, warehouseModel),
+				Check:  assertThat(t, basicAssertions...),
 			},
-			// import - without optionals, permissive mode
+			// import after minimal config
 			{
-				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
-				Config:                   accconfig.FromModels(t, providerModelImportPermissiveMode, warehouseModel),
-				ResourceName:             warehouseModel.ResourceReference(),
-				ImportState:              true,
-				ImportStateKind:          resource.ImportBlockWithID,
+				ResourceName:      warehouseModel.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"max_query_performance_level",
+					"query_throughput_multiplier",
+					"resource_monitor", // TODO (next PR): For now, it's skipped because SDK assumes it's always set. To be followed up with.
+					"show_output.0.running",
+				},
 			},
 			// set query_throughput_multiplier to 0 (explicit value, distinct from IntDefault sentinel -1)
 			{
-				ProtoV6ProviderFactories: adaptiveWarehouseProviderFactory,
-				Config:                   accconfig.FromModels(t, warehouseModelWithZeroMultiplier),
+				Config: accconfig.FromModels(t, warehouseModelWithZeroMultiplier),
 				Check: assertThat(
 					t,
 					resourceassert.WarehouseAdaptiveResource(t, ref).
 						HasQueryThroughputMultiplier(0),
-					resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
+					resourceshowoutputassert.WarehouseShowOutput(t, ref).
 						HasQueryThroughputMultiplier(0),
 				),
 			},
 			// set all optional fields
 			{
-				ProtoV6ProviderFactories: adaptiveWarehouseProviderFactory,
-				Config:                   accconfig.FromModels(t, warehouseModelWithOptionals),
-				Check:                    assertThat(t, withOptionalsAssertions...),
+				Config: accconfig.FromModels(t, warehouseModelWithOptionals),
+				Check:  assertThat(t, withOptionalsAssertions...),
+			},
+			// import after setting optional fields
+			{
+				ResourceName:            warehouseModelWithOptionals.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"show_output.0.running"},
 			},
 			// rename and update fields
 			{
-				ProtoV6ProviderFactories: adaptiveWarehouseProviderFactory,
-				Config:                   accconfig.FromModels(t, warehouseModelUpdated),
+				Config: accconfig.FromModels(t, warehouseModelUpdated),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -201,8 +201,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			},
 			// detect external changes to multiple fields
 			{
-				ProtoV6ProviderFactories: adaptiveWarehouseProviderFactory,
-				Config:                   accconfig.FromModels(t, warehouseModelUpdated),
+				Config: accconfig.FromModels(t, warehouseModelUpdated),
 				PreConfig: func() {
 					testClient().Warehouse.DropWarehouseFunc(t, newWarehouseId)()
 					testClient().Warehouse.CreateAdaptiveWithRequest(
@@ -230,8 +229,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			},
 			// unset optional fields back to defaults
 			{
-				ProtoV6ProviderFactories: adaptiveWarehouseProviderFactory,
-				Config:                   accconfig.FromModels(t, warehouseModelRenamedMinimal),
+				Config: accconfig.FromModels(t, warehouseModelRenamedMinimal),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -264,10 +262,8 @@ func TestAcc_WarehouseAdaptive_CompleteUseCase(t *testing.T) {
 		WithStatementQueuedTimeoutInSeconds(300).
 		WithStatementTimeoutInSeconds(86400)
 
-	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
-
 	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: adaptiveWarehouseProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -275,8 +271,7 @@ func TestAcc_WarehouseAdaptive_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create with all fields set
 			{
-				ProtoV6ProviderFactories: adaptiveWarehouseProviderFactory,
-				Config:                   accconfig.FromModels(t, warehouseModelComplete),
+				Config: accconfig.FromModels(t, warehouseModelComplete),
 				Check: assertThat(
 					t,
 					resourceassert.WarehouseAdaptiveResource(t, warehouseModelComplete.ResourceReference()).
@@ -288,7 +283,7 @@ func TestAcc_WarehouseAdaptive_CompleteUseCase(t *testing.T) {
 						HasStatementQueuedTimeoutInSeconds(300).
 						HasStatementTimeoutInSeconds(86400).
 						HasFullyQualifiedNameString(warehouseId.FullyQualifiedName()),
-					resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, warehouseModelComplete.ResourceReference()).
+					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModelComplete.ResourceReference()).
 						HasName(warehouseId.Name()).
 						HasType(sdk.WarehouseTypeAdaptive).
 						HasComment(comment).
@@ -302,95 +297,10 @@ func TestAcc_WarehouseAdaptive_CompleteUseCase(t *testing.T) {
 			},
 			// import and verify state matches
 			{
-				ProtoV6ProviderFactories: adaptiveWarehouseProviderFactory,
-				ResourceName:             warehouseModelComplete.ResourceReference(),
-				ImportState:              true,
-				ImportStateVerify:        true,
-				ImportStateVerifyIgnore:  []string{"show_output.0.running"},
-			},
-			// import - complete, permissive mode
-			{
-				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
-				Config:                   accconfig.FromModels(t, providerModelImportPermissiveMode, warehouseModelComplete),
-				ResourceName:             warehouseModelComplete.ResourceReference(),
-				ImportState:              true,
-				ImportStateKind:          resource.ImportBlockWithID,
-			},
-		},
-	})
-}
-
-func TestAcc_WarehouseAdaptive_BasicUseCase_Import(t *testing.T) {
-	id := testClient().Ids.RandomAccountObjectIdentifier()
-	resourceId := helpers.EncodeResourceIdentifier(id)
-
-	basicModel := model.WarehouseAdaptiveWithId(id)
-	ref := basicModel.ResourceReference()
-
-	_, cleanup := testClient().Warehouse.CreateAdaptiveWithRequest(t, sdk.NewCreateAdaptiveWarehouseRequest(id))
-	t.Cleanup(cleanup)
-
-	warehouse, err := testClient().Warehouse.ShowByIDAdaptive(t, id)
-	require.NoError(t, err)
-	require.NotNil(t, warehouse.MaxQueryPerformanceLevel)
-	require.NotNil(t, warehouse.QueryThroughputMultiplier)
-	maxQueryPerformanceLevel := string(*warehouse.MaxQueryPerformanceLevel)
-	queryThroughputMultiplier := *warehouse.QueryThroughputMultiplier
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: adaptiveWarehouseProviderFactory,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.WarehouseAdaptive),
-		Steps: []resource.TestStep{
-			// Import - without optionals
-			{
-				Config:             accconfig.FromModels(t, basicModel),
-				ResourceName:       ref,
-				ImportState:        true,
-				ImportStateId:      resourceId,
-				ImportStatePersist: true,
-				ImportStateCheck: assertThatImport(
-					t,
-					resourceassert.ImportedWarehouseAdaptiveResource(t, resourceId).
-						HasName(id.Name()).
-						HasFullyQualifiedName(id.FullyQualifiedName()).
-						HasWarehouseType(string(sdk.WarehouseTypeAdaptive)).
-						HasCommentEmpty().
-						HasMaxQueryPerformanceLevel(maxQueryPerformanceLevel).
-						HasQueryThroughputMultiplier(queryThroughputMultiplier).
-						HasResourceMonitorEmpty().
-						HasStatementQueuedTimeoutInSeconds(0).
-						HasStatementTimeoutInSeconds(172800),
-				),
-			},
-			// Expect empty plan after the plan after import is applied
-			{
-				Config: accconfig.FromModels(t, basicModel),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(ref, "max_query_performance_level", tfjson.ActionUpdate, new(maxQueryPerformanceLevel), nil),
-						planchecks.ExpectChange(ref, "query_throughput_multiplier", tfjson.ActionUpdate, new(strconv.Itoa(queryThroughputMultiplier)), new(r.IntDefaultString)),
-					},
-					PostApplyPostRefresh: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
-				Check: assertThat(
-					t,
-					resourceassert.WarehouseAdaptiveResource(t, ref).
-						HasName(id.Name()).
-						HasFullyQualifiedName(id.FullyQualifiedName()).
-						HasWarehouseType(string(sdk.WarehouseTypeAdaptive)).
-						HasCommentEmpty().
-						HasMaxQueryPerformanceLevelEmpty().
-						HasQueryThroughputMultiplier(r.IntDefault).
-						HasResourceMonitorEmpty().
-						HasStatementQueuedTimeoutInSeconds(0).
-						HasStatementTimeoutInSeconds(172800),
-				),
+				ResourceName:            warehouseModelComplete.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"show_output.0.running"},
 			},
 		},
 	})
@@ -489,13 +399,12 @@ import {
 					resourceassert.WarehouseAdaptiveResource(t, adaptiveRef).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeAdaptive)).
 						HasMaxQueryPerformanceLevelString(string(sdk.MaxQueryPerformanceLevelLarge)),
-					resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, adaptiveRef).
-						HasType(sdk.WarehouseTypeAdaptive).
-						HasState(sdk.WarehouseStateEnabled),
-					objectassert.WarehouseAdaptive(t, id).
+					resourceshowoutputassert.WarehouseShowOutput(t, adaptiveRef).
 						HasType(sdk.WarehouseTypeAdaptive).
 						HasState(sdk.WarehouseStateEnabled),
 					objectassert.Warehouse(t, id).
+						HasType(sdk.WarehouseTypeAdaptive).
+						HasState(sdk.WarehouseStateEnabled).
 						HasNoSize(),
 				),
 			},
@@ -558,7 +467,7 @@ func TestAcc_WarehouseAdaptive_ExternalTypeChange(t *testing.T) {
 					t,
 					resourceassert.WarehouseAdaptiveResource(t, ref).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeAdaptive)),
-					resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
+					resourceshowoutputassert.WarehouseShowOutput(t, ref).
 						HasType(sdk.WarehouseTypeAdaptive),
 				),
 			},
@@ -577,7 +486,7 @@ func TestAcc_WarehouseAdaptive_ExternalTypeChange(t *testing.T) {
 					t,
 					resourceassert.WarehouseAdaptiveResource(t, ref).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeAdaptive)),
-					resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
+					resourceshowoutputassert.WarehouseShowOutput(t, ref).
 						HasType(sdk.WarehouseTypeAdaptive),
 				),
 			},
@@ -594,7 +503,7 @@ func TestAcc_WarehouseAdaptive_ExternalTypeChangeToInteractive(t *testing.T) {
 	assertions := []assert.TestCheckFuncProvider{
 		resourceassert.WarehouseAdaptiveResource(t, ref).
 			HasWarehouseType(string(sdk.WarehouseTypeAdaptive)),
-		resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
+		resourceshowoutputassert.WarehouseShowOutput(t, ref).
 			HasType(sdk.WarehouseTypeAdaptive),
 	}
 

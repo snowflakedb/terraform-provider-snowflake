@@ -1,7 +1,6 @@
 package gen
 
 import (
-	"log"
 	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
@@ -16,8 +15,6 @@ type ResourceAssertionsModel struct {
 	*genhelpers.PreambleModel
 }
 
-func (m ResourceAssertionsModel) ObjectName() string { return m.Name }
-
 type ResourceAttributeAssertionModel struct {
 	Name         string
 	IsCollection bool
@@ -29,8 +26,6 @@ type ResourceAttributeAssertionModel struct {
 	ExpectedType                 string
 	AssertionCreator             string
 	ShouldGenerateTypedAssertion bool
-
-	genhelpers.SdkValueType
 }
 
 var excludedAttributeNames = []string{
@@ -40,10 +35,10 @@ var excludedAttributeNames = []string{
 	resources.ShowKeysOutputAttributeName,
 }
 
-func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSchemaDetails, preamble *genhelpers.PreambleModel, _ *log.Logger) ResourceAssertionsModel {
+func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSchemaDetails, preamble *genhelpers.PreambleModel) ResourceAssertionsModel {
 	attributes := make([]ResourceAttributeAssertionModel, 0)
 	for _, attr := range resourceSchemaDetails.Attributes {
-		if slices.Contains(excludedAttributeNames, attr.Name) || attr.WriteOnly {
+		if slices.Contains(excludedAttributeNames, attr.Name) {
 			continue
 		}
 

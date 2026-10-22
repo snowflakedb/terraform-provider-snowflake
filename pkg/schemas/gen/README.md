@@ -5,20 +5,10 @@ easier to just generate all the needed schemas and mappers.
 
 ### Description
 
-File [generate.go](../generate.go) invokes the generation logic from [main.go](./main/main.go). Inputs come from two
-sources, merged in `GetShowResultSchemaDetails`:
-
-- **SDK structs (default).** Entries in `SdkShowResultStructs` ([sdk_show_result_structs.go](./sdk_show_result_structs.go)) - SHOW
-  structs plus struct DESCRIBE (`IsDescribe`) and property-row list entries (`UsedAsListEntry`). Fields are extracted
-  by reflect over `pkg/sdk` types.
-- **ssot (opt-in).** Objects with `WithSchema(SchemaShow(), SchemaDescribe())` ([ssot generators](../../../internal/ssot/README.md#generators)). `SchemaShow()` and `SchemaDescribe()` are settings of that entry.
-  Fields come from `Show` / `Describe` `Columns` ([ssot SHOW and DESCRIBE](../../../internal/ssot/README.md#show-and-describe)).
-  `defs.All()` is not fed in automatically. Objects stay on the SDK-struct path until they opt in. Opting in removes the struct from `SdkShowResultStructs` in the same change. There is no skip.
-
-Filter names stay `sdk.<Type>` (including the `sdk.` prefix), so `--filter-object-names=sdk.User` and
-`--filter-object-names=sdk.ComputePool` / `sdk.ComputePoolDetails` still work. Duplicate names after the merge panic.
-
-After successful generation all objects will have:
+File [generate.go](../generate.go) invokes the generation logic from [main.go](./main/main.go). By default, all
+definitions in `SdkShowResultStructs` ([sdk_show_result_structs.go](./sdk_show_result_structs.go)) are used — SHOW
+structs plus struct DESCRIBE (`IsDescribe`) and property-row list entries (`UsedAsListEntry`). After successful
+generation all SDK objects will have:
 
 - show output schema that can be used in the resource/datasource (e.g. [user_gen](../user_gen.go))
 - describe output schema when `IsDescribe` is set (`DescribeXSchema` in `{snake}_desc_gen.go`, `_details` suffix trimmed)
@@ -82,15 +72,11 @@ Given SDK struct field can be mapped to the generated schema depending on its ty
 
 ##### Changing the SDK object's show output
 
-If the object is still on the SDK-struct path, change the show output struct in the SDK, then:
+If you change the show output struct in the SDK:
 
 1. Check if you don't introduce a type that is unsupported (check [supported types](#supported-types)
    and [known limitations](#known-limitations)).
 2. Run generation according to [instructions](#invoking-the-generation).
-
-If the object is plugged from ssot, change `Show` / `Describe` `Columns` ([ssot SHOW and DESCRIBE](../../../internal/ssot/README.md#show-and-describe))
-instead of relying on reflect. `ToSchema` still compiles against `*sdk.<Type>` / `*sdk.<Type>Details` from SDK paired
-structs until [ssot later work](../../../internal/ssot/README.md#later). `SchemaShow(SchemaShowFromBase())` maps `*sdk.<VariantOf.Name>` when every variant is one row of the base SHOW type. The schema variable stays `Show<Variant>Schema`.
 
 ##### Adding a new object to the SDK
 
@@ -104,23 +90,6 @@ structs until [ssot later work](../../../internal/ssot/README.md#later). `Schema
 2. Check if you don't introduce a type that is unsupported (check [supported types](#supported-types)
    and [known limitations](#known-limitations)).
 3. Run generation according to [instructions](#invoking-the-generation).
-
-##### Opting in an ssot object
-
-Fill `Show` / `Describe` and enable generator parts as in the [ssot README](../../../internal/ssot/README.md#generators).
-Then, in this generator:
-
-1. Remove the matching `{ObjectStruct: sdk.<Name>{}}` and `{ObjectStruct: sdk.<Name>Details{}, IsDescribe: true}` from
-   `SdkShowResultStructs` (the merge panics on duplicates).
-2. Run generation according to [instructions](#invoking-the-generation). The adapter synthesizes `genhelpers.Field`
-   values for `MapToSchemaField` (`OptionalInShow` prefixes `*`; `OptionalInDb` does not -
-   [ssot OptionalInShow vs OptionalInDb](../../../internal/ssot/README.md#optionalinshow-vs-optionalindb)).
-
-`SkipFields` has an ssot equivalent: the `SkipInSchema` attribute mark ([ssot Attribute](../../internal/ssot/README.md#attribute)).
-`ManualFields` has an ssot equivalent too, but as a generator option rather than an attribute mark:
-`SchemaShowManualFields` / `SchemaDescribeManualFields` ([ssot Generators](../../internal/ssot/README.md#generators)).
-`TypeOverrides` / `UsedAsListEntry` are not yet used in ssot definitions but might be used later. They stay on the
-SDK-struct path for now.
 
 ### Next steps
 

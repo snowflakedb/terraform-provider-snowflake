@@ -90,9 +90,6 @@ To create a new generator:
     - `--enable-generation-part-names <name1>,<name2>,...` allowing to force-enable optional (disabled-by-default)
       generation parts for all objects during a run
     - `--verbose` allowing to see the all the additional debug logs
-    - `--parallelism <n>` setting how many objects are generated at once after filtering; `1` (the flag default) keeps
-      sequential generation. `--dry-run` ignores this flag and stays sequential. The `generate-all` leaf recipes pass
-      `GENERATOR_PARALLELISM` (default `5`) as this flag; a `--parallelism` later in `SF_TF_GENERATOR_ARGS` wins
 
 ### Next steps
 
@@ -169,8 +166,8 @@ Never edit `*_gen.go` files. Changes belong in definition files or `*_ext.go` ex
 | `generate-datasource-model-builders`              | `pkg/acceptance/bettertestspoc/config/datasourcemodel/*_gen.go`          | **Enforced** |
 | `generate-provider-model-builders`                | `pkg/acceptance/bettertestspoc/config/providermodel/*_gen.go`            | **Enforced** |
 
-**Enforced** - regeneration is idempotent; verified in CI by `make pre-push-check`.
-**Converging** - still being cleaned up; `*_gen.go` files may contain manual edits; treat with care.
+**Enforced** — regeneration is idempotent; verified in CI by `make pre-push-check`.
+**Converging** — still being cleaned up; `*_gen.go` files may contain manual edits; treat with care.
 
 Aggregate targets: `generate-all-config-model-builders` (all model builders),
 `generate-all-assertions-and-config-models` (all assertions + model builders), `make pre-push` (everything +
@@ -178,7 +175,7 @@ formatting + linting + docs).
 
 ### When to Regenerate
 
-Always scope to the object you changed - avoid regenerating everything unless preparing a PR.
+Always scope to the object you changed — avoid regenerating everything unless preparing a PR.
 
 | After this change…                                    | Scoped command                                                                                                                                                                              |
 |-------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -189,7 +186,7 @@ Always scope to the object you changed - avoid regenerating everything unless pr
 | Before pushing any PR                                 | `make pre-push`                                                                                                                                                                             |
 
 > **Multi-PR note:** Each PR only needs its own generators. Do not run resource assertion or model builder generators in
-> an SDK-only PR - those belong in the resource PR.
+> an SDK-only PR — those belong in the resource PR.
 
 ### CLI Flags
 
@@ -199,30 +196,19 @@ All genhelpers-based generators accept flags via `SF_TF_GENERATOR_ARGS`:
 make generate-<target> SF_TF_GENERATOR_ARGS='<flags>'
 ```
 
-| Flag                                  | Purpose                                                                                                                                    |
-|---------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
-| `--dry-run`                           | Print output to stdout, write nothing                                                                                                      |
-| `-h` / `--help`                       | List valid object names, generation parts, and flags                                                                                       |
-| `--filter-object-names=A,B`           | Only generate for listed objects (case-sensitive)                                                                                          |
-| `--exclude-object-names=A,B`          | Skip listed objects                                                                                                                        |
-| `--filter-generation-part-names=A,B`  | Only run listed generation parts                                                                                                           |
-| `--exclude-generation-part-names=A,B` | Exclude listed generation parts                                                                                                            |
-| `--verbose`                           | Print additional debug output                                                                                                              |
-| `--parallelism=<n>`                   | Objects generated at once after filtering; flag default 1, `make` passes `GENERATOR_PARALLELISM` (default 5). `--dry-run` stays sequential |
+| Flag                                  | Purpose                                              |
+|---------------------------------------|------------------------------------------------------|
+| `--dry-run`                           | Print output to stdout, write nothing                |
+| `-h` / `--help`                       | List valid object names, generation parts, and flags |
+| `--filter-object-names=A,B`           | Only generate for listed objects (case-sensitive)    |
+| `--exclude-object-names=A,B`          | Skip listed objects                                  |
+| `--filter-generation-part-names=A,B`  | Only run listed generation parts                     |
+| `--exclude-generation-part-names=A,B` | Exclude listed generation parts                      |
+| `--verbose`                           | Print additional debug output                        |
 
 Run `make generate-<target> SF_TF_GENERATOR_ARGS='-h'` to discover valid object names for any generator.
 
 > **Note:** `generate-issue-labels` is a standalone tool and does not support `SF_TF_GENERATOR_ARGS`.
-
-### Parallel execution
-
-With `--parallelism` greater than 1, each worker generates one object and writes that object's files. Parts of one object still run in order on that worker, and each object still writes its own paths, so generated file bytes stay stable. `errors.Join` reports failures in completion order.
-
-Each object gets its own logger, prefixed with the object name. An optional prepare hook runs once on that logger before the model provider, and the model provider receives the same logger. The SDK generator uses the hook for `PrepareSdkDefinition`, which is where definition preparation logs. Those calls write into one buffer for the whole object. After every object has finished, the buffers are written to the process logger in filtered-list order, one `log.Output` call per object, so a parallel worker cannot split one object's lines. An empty buffer writes nothing. Calls to the global `log` package are not part of the batch. Definition builders that run at init, and panics, still use that package. `--verbose` callbacks run before this hook, so they see objects that have not been prepared.
-
-### Parallel execution follow-ups
-
-`--dry-run` still uses the sequential print path. It writes each object's header and rendered source straight to stdout, and it ignores `--parallelism`, because a parallel print would interleave those streams. The follow-up is to render every object into its own buffer (headers included), then write those buffers to stdout in input order. After that, dry-run can use the worker pool too.
 
 ### Troubleshooting
 

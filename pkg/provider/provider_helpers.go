@@ -2,7 +2,6 @@ package provider
 
 import (
 	"crypto/rsa"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -57,74 +56,14 @@ type GetRefreshTokenResponseBody struct {
 	ExpiresIn   int    `json:"expires_in"`
 }
 
-// minTLSVersion is the minimum TLS version for the HTTP client that
-// token_accessor uses to exchange a refresh token. The Snowflake driver
-// connection is separate: gosnowflake reads SNOWFLAKE_MIN_TLS_VERSION itself,
-// and the provider does not set that variable.
-type minTLSVersion string
-
-const (
-	minTLSVersion12 minTLSVersion = "1.2"
-	minTLSVersion13 minTLSVersion = "1.3"
-)
-
-// allMinTLSVersionsString lists each canonical value followed by its aliases, matching All*String slices in the SDK.
-var allMinTLSVersionsString = []string{
-	string(minTLSVersion12),
-	string(minTLSVersion13),
-}
-
-// toMinTLSVersion accepts the canonical values and their aliases (case-insensitive, trimmed).
-// Aliases map back to the canonical value. Empty leaves the minimum unset.
-func toMinTLSVersion(value string) (minTLSVersion, error) {
-	s := strings.ToLower(strings.TrimSpace(value))
-	if s == "" {
-		return "", nil
-	}
-	switch s {
-	// "tls" prefix because driver allows it.
-	case string(minTLSVersion12), "tlsv1.2", "v1.2":
-		return minTLSVersion12, nil
-	case string(minTLSVersion13), "tlsv1.3", "v1.3":
-		return minTLSVersion13, nil
-	default:
-		return "", fmt.Errorf("invalid min tls version: %s", value)
-	}
-}
-
-func (v minTLSVersion) goConst() uint16 {
-	switch v {
-	case minTLSVersion12:
-		return tls.VersionTLS12
-	case minTLSVersion13:
-		return tls.VersionTLS13
-	default:
-		return 0
-	}
-}
-
-// oauthRefreshHTTPClient builds the client used to exchange a refresh token.
-// An unset version keeps the default client.
-func oauthRefreshHTTPClient(version minTLSVersion) *http.Client {
-	if version == "" {
-		return &http.Client{}
-	}
-	return &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{MinVersion: version.goConst()},
-		},
-	}
-}
-
 func GetAccessTokenWithRefreshToken(
 	tokenEndPoint string,
 	clientID string,
 	clientSecret string,
 	refreshToken string,
 	redirectURI string,
-	minTLS minTLSVersion,
 ) (string, error) {
-	client := oauthRefreshHTTPClient(minTLS)
+	client := &http.Client{}
 
 	data := url.Values{}
 	data.Set("grant_type", "refresh_token")

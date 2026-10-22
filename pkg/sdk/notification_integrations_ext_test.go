@@ -37,13 +37,9 @@ func init() {
 					{Email: email},
 					{Email: otherEmail},
 				}
-				opts.EmailParams.DefaultRecipients = []NotificationIntegrationAllowedRecipient{
-					{Email: email},
-				}
-				opts.EmailParams.DefaultSubject = new("Snowflake Email Notification")
 			},
-			"CREATE NOTIFICATION INTEGRATION IF NOT EXISTS %s ENABLED = true TYPE = EMAIL ALLOWED_RECIPIENTS = ('%s', '%s') DEFAULT_RECIPIENTS = ('%s') DEFAULT_SUBJECT = 'Snowflake Email Notification' COMMENT = 'some comment'",
-			id.FullyQualifiedName(), email, otherEmail, email,
+			"CREATE NOTIFICATION INTEGRATION IF NOT EXISTS %s ENABLED = true TYPE = EMAIL ALLOWED_RECIPIENTS = ('%s', '%s') COMMENT = 'some comment'",
+			id.FullyQualifiedName(), email, otherEmail,
 		)
 
 	notificationIntegrationsTests.Create.

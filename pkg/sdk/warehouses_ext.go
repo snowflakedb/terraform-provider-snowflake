@@ -45,10 +45,28 @@ const (
 	MaxQueryPerformanceLevelX4Large  = MaxQueryPerformanceLevelX4large
 )
 
-// AllWarehouseTypesUserSettable excludes ADAPTIVE and INTERACTIVE. Those types are separate resources.
-var AllWarehouseTypesUserSettable = []WarehouseType{
-	WarehouseTypeStandard,
-	WarehouseTypeSnowparkOptimized,
+// WarehouseGeneration is kept manual because its values ("1", "2") produce non-descriptive generated names.
+type WarehouseGeneration string
+
+const (
+	WarehouseGenerationStandardGen1 WarehouseGeneration = "1"
+	WarehouseGenerationStandardGen2 WarehouseGeneration = "2"
+)
+
+var AllWarehouseGenerations = []string{
+	string(WarehouseGenerationStandardGen1),
+	string(WarehouseGenerationStandardGen2),
+}
+
+func ToWarehouseGeneration(s string) (WarehouseGeneration, error) {
+	switch s {
+	case "1":
+		return WarehouseGenerationStandardGen1, nil
+	case "2":
+		return WarehouseGenerationStandardGen2, nil
+	default:
+		return "", fmt.Errorf("invalid generation: %s", s)
+	}
 }
 
 // ToWarehouseTypeUserSettable parses a warehouse type string, excluding ADAPTIVE
@@ -145,88 +163,59 @@ func (v *warehouses) ShowParameters(ctx context.Context, id AccountObjectIdentif
 	})
 }
 
-// AlterWithSuspend suspends around changes Snowflake rejects on a running warehouse:
-// STANDARD/SNOWPARK-OPTIMIZED type changes and interactive resizes. ADAPTIVE conversion is online.
+// AlterWithSuspend wraps Alter with automatic suspend/resume for changes that Snowflake refuses to
+// apply to a running warehouse. Changing the warehouse type requires a suspended warehouse for any
+// warehouse, and an interactive warehouse additionally cannot be resized while running. In both
+// cases the warehouse is suspended before the alter and resumed afterwards.
 func (v *warehouses) AlterWithSuspend(ctx context.Context, request *AlterWarehouseRequest) error {
-	// UNSET, including WAREHOUSE_TYPE, does not require suspension. Skip SHOW for
-	// unrelated updates too, preserving IF EXISTS when the warehouse is absent.
-	if request.Set == nil || (request.Set.WarehouseType == nil && request.Set.WarehouseSize == nil) {
+	changesType := request.Set != nil && request.Set.WarehouseType != nil
+	changesSize := request.Set != nil && request.Set.WarehouseSize != nil
+	if !changesType && !changesSize {
 		return v.Alter(ctx, request)
 	}
+	becomesAdaptive := changesType && *request.Set.WarehouseType == WarehouseTypeAdaptive
 
 	warehouse, err := v.ShowByID(ctx, request.name)
 	if err != nil {
 		return err
 	}
 
-	if alterNeedsSuspendedWarehouse(request.Set, warehouse) {
-		cleanup, err := v.suspendStartedWarehouse(ctx, request.name)
-		defer cleanup()
+	// A type change always needs a suspended warehouse; a size change needs it only for interactive
+	// warehouses (regular warehouses resize live).
+	mustSuspend := changesType || (changesSize && warehouse.IsInteractiveWarehouse())
+	if mustSuspend && warehouse.State == WarehouseStateStarted {
+		err := v.Alter(ctx, NewAlterWarehouseRequest(request.name).WithSuspend(true))
 		if err != nil {
 			return err
 		}
+		// Adaptive warehouses reject RESUME; the alter leaves them in the ENABLED state and ready to serve queries.
+		if !becomesAdaptive {
+			defer func() {
+				err := v.Alter(ctx, NewAlterWarehouseRequest(request.name).WithResume(true).WithIfSuspended(true))
+				if err != nil {
+					log.Printf("[DEBUG] error occurred during warehouse resumption, err=%v", err)
+				}
+			}()
+		}
+
+		// needed to make sure that warehouse is suspended
+		var warehouseSuspensionErrs []error
+		err = util.Retry(5, 1*time.Second, func() (error, bool) {
+			warehouse, err = v.ShowByID(ctx, request.name)
+			if err != nil {
+				warehouseSuspensionErrs = append(warehouseSuspensionErrs, err)
+				return nil, false
+			}
+			if warehouse.State != WarehouseStateSuspended {
+				return nil, false
+			}
+			return nil, true
+		})
+		if err != nil {
+			return fmt.Errorf("warehouse suspension failed, err: %w, original errors: %w", err, errors.Join(warehouseSuspensionErrs...))
+		}
 	}
 	return v.Alter(ctx, request)
-}
-
-// alterNeedsSuspendedWarehouse reports whether this SET requires a suspended warehouse.
-func alterNeedsSuspendedWarehouse(set *WarehouseSetRequest, warehouse *Warehouse) bool {
-	changesType := set.WarehouseType != nil
-	becomesAdaptive := changesType && *set.WarehouseType == WarehouseTypeAdaptive
-	changesSize := set.WarehouseSize != nil
-	return (changesType && !becomesAdaptive) || (changesSize && warehouse.IsInteractiveWarehouse())
-}
-
-func (v *warehouses) AlterInteractiveWithSuspend(ctx context.Context, request *AlterInteractiveWarehouseRequest) error {
-	changesSize := request.Set != nil && request.Set.WarehouseSize != nil
-	if !changesSize {
-		return v.AlterInteractive(ctx, request)
-	}
-	cleanup, err := v.suspendStartedWarehouse(ctx, request.name)
-	defer cleanup()
-	if err != nil {
-		return err
-	}
-	return v.AlterInteractive(ctx, request)
-}
-
-// suspendStartedWarehouse suspends id if started. The returned cleanup resumes it and is never nil.
-// Callers must run the cleanup even when an error is returned.
-func (v *warehouses) suspendStartedWarehouse(ctx context.Context, id AccountObjectIdentifier) (func(), error) {
-	noop := func() {}
-	warehouse, err := v.ShowByID(ctx, id)
-	if err != nil {
-		return noop, err
-	}
-	if warehouse.State != WarehouseStateStarted {
-		return noop, nil
-	}
-	err = v.Alter(ctx, NewAlterWarehouseRequest(id).WithSuspend(true))
-	if err != nil {
-		return noop, err
-	}
-	cleanup := func() {
-		err := v.Alter(ctx, NewAlterWarehouseRequest(id).WithResume(true).WithIfSuspended(true))
-		if err != nil {
-			log.Printf("[DEBUG] error occurred during warehouse resumption, err=%v", err)
-		}
-	}
-	var warehouseSuspensionErrs []error
-	err = util.Retry(5, 1*time.Second, func() (error, bool) {
-		warehouse, err = v.ShowByID(ctx, id)
-		if err != nil {
-			warehouseSuspensionErrs = append(warehouseSuspensionErrs, err)
-			return nil, false
-		}
-		if warehouse.State != WarehouseStateSuspended {
-			return nil, false
-		}
-		return nil, true
-	})
-	if err != nil {
-		return cleanup, fmt.Errorf("warehouse suspension failed, err: %w, original errors: %w", err, errors.Join(warehouseSuspensionErrs...))
-	}
-	return cleanup, nil
 }
 
 // CreateInteractivePreservingSession wraps CreateInteractive to work around a known Snowflake behavior:
@@ -279,7 +268,7 @@ func (v *warehouses) clearSessionWarehouse(ctx context.Context) error {
 }
 
 // additionalConvert handles manual field conversions that the generator cannot express.
-func (r warehousesRow) additionalConvert(wh *Warehouse) error {
+func (r warehouseDBRow) additionalConvert(wh *Warehouse) error {
 	// State and Type - simple casts from string
 	wh.State = WarehouseState(r.State)
 	wh.Type = WarehouseType(r.Type)
@@ -407,24 +396,9 @@ func (v *WarehouseSet) additionalValidations() error {
 			errs = append(errs, fmt.Errorf("QueryAccelerationMaxScaleFactor must be between 0 and 100"))
 		}
 	}
-	return JoinErrors(errs...)
-}
-
-func (v *WarehouseAdaptiveSet) additionalValidations() error {
-	var errs []error
 	if v.QueryThroughputMultiplier != nil {
 		if ok := validateIntGreaterThanOrEqual(*v.QueryThroughputMultiplier, 0); !ok {
 			errs = append(errs, fmt.Errorf("QueryThroughputMultiplier must be greater than or equal to 0"))
-		}
-	}
-	return JoinErrors(errs...)
-}
-
-func (v *WarehouseInteractiveSet) additionalValidations() error {
-	var errs []error
-	if v.AutoSuspend != nil {
-		if ok := validateIntGreaterThanOrEqual(*v.AutoSuspend, 0); !ok {
-			errs = append(errs, fmt.Errorf("AutoSuspend must be greater than or equal to 0"))
 		}
 	}
 	return JoinErrors(errs...)
@@ -452,14 +426,112 @@ func (v *WarehouseRegular) ID() AccountObjectIdentifier {
 	return NewAccountObjectIdentifier(v.Name)
 }
 
-func (v *WarehouseDetails) ID() AccountObjectIdentifier {
-	return NewAccountObjectIdentifier(v.Name)
-}
-
 func (v *WarehouseAdaptive) ID() AccountObjectIdentifier {
 	return NewAccountObjectIdentifier(v.Name)
 }
 
 func (v *WarehouseInteractive) ID() AccountObjectIdentifier {
 	return NewAccountObjectIdentifier(v.Name)
+}
+
+// AsRegular projects the SHOW row onto STANDARD / SNOWPARK-OPTIMIZED columns.
+func (w *Warehouse) AsRegular() *WarehouseRegular {
+	if w == nil {
+		return nil
+	}
+	return &WarehouseRegular{
+		Name:                            w.Name,
+		State:                           w.State,
+		Type:                            w.Type,
+		Size:                            w.Size,
+		MinClusterCount:                 w.MinClusterCount,
+		MaxClusterCount:                 w.MaxClusterCount,
+		StartedClusters:                 w.StartedClusters,
+		Running:                         w.Running,
+		Queued:                          w.Queued,
+		IsDefault:                       w.IsDefault,
+		IsCurrent:                       w.IsCurrent,
+		AutoSuspend:                     w.AutoSuspend,
+		AutoResume:                      w.AutoResume,
+		Available:                       w.Available,
+		Provisioning:                    w.Provisioning,
+		Quiescing:                       w.Quiescing,
+		Other:                           w.Other,
+		CreatedOn:                       w.CreatedOn,
+		ResumedOn:                       w.ResumedOn,
+		UpdatedOn:                       w.UpdatedOn,
+		Owner:                           w.Owner,
+		Comment:                         w.Comment,
+		EnableQueryAcceleration:         w.EnableQueryAcceleration,
+		QueryAccelerationMaxScaleFactor: w.QueryAccelerationMaxScaleFactor,
+		ResourceMonitor:                 w.ResourceMonitor,
+		ScalingPolicy:                   w.ScalingPolicy,
+		OwnerRoleType:                   w.OwnerRoleType,
+		ResourceConstraint:              w.ResourceConstraint,
+		Generation:                      w.Generation,
+	}
+}
+
+// AsAdaptive projects the SHOW row onto adaptive-warehouse columns.
+func (w *Warehouse) AsAdaptive() *WarehouseAdaptive {
+	if w == nil {
+		return nil
+	}
+	return &WarehouseAdaptive{
+		Name:                      w.Name,
+		State:                     w.State,
+		Type:                      w.Type,
+		Running:                   w.Running,
+		Queued:                    w.Queued,
+		IsDefault:                 w.IsDefault,
+		IsCurrent:                 w.IsCurrent,
+		AutoResume:                w.AutoResume,
+		Available:                 w.Available,
+		Provisioning:              w.Provisioning,
+		Quiescing:                 w.Quiescing,
+		Other:                     w.Other,
+		CreatedOn:                 w.CreatedOn,
+		ResumedOn:                 w.ResumedOn,
+		UpdatedOn:                 w.UpdatedOn,
+		Owner:                     w.Owner,
+		Comment:                   w.Comment,
+		ResourceMonitor:           w.ResourceMonitor,
+		OwnerRoleType:             w.OwnerRoleType,
+		MaxQueryPerformanceLevel:  w.MaxQueryPerformanceLevel,
+		QueryThroughputMultiplier: w.QueryThroughputMultiplier,
+	}
+}
+
+// AsInteractive projects the SHOW row onto interactive-warehouse columns.
+func (w *Warehouse) AsInteractive() *WarehouseInteractive {
+	if w == nil {
+		return nil
+	}
+	return &WarehouseInteractive{
+		Name:            w.Name,
+		State:           w.State,
+		Type:            w.Type,
+		Size:            w.Size,
+		MinClusterCount: w.MinClusterCount,
+		MaxClusterCount: w.MaxClusterCount,
+		StartedClusters: w.StartedClusters,
+		Running:         w.Running,
+		Queued:          w.Queued,
+		IsDefault:       w.IsDefault,
+		IsCurrent:       w.IsCurrent,
+		AutoSuspend:     w.AutoSuspend,
+		AutoResume:      w.AutoResume,
+		Available:       w.Available,
+		Provisioning:    w.Provisioning,
+		Quiescing:       w.Quiescing,
+		Other:           w.Other,
+		CreatedOn:       w.CreatedOn,
+		ResumedOn:       w.ResumedOn,
+		UpdatedOn:       w.UpdatedOn,
+		Owner:           w.Owner,
+		Comment:         w.Comment,
+		ResourceMonitor: w.ResourceMonitor,
+		OwnerRoleType:   w.OwnerRoleType,
+		Tables:          w.Tables,
+	}
 }

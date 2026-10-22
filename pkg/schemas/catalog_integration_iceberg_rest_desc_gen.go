@@ -42,9 +42,9 @@ var DescribeCatalogIntegrationIcebergRestDetailsSchema = mergeSchema(map[string]
 		Computed: true,
 	},
 	// rest_config: manual addition and mapping is needed
-	// oauth_rest_authentication: manual addition and mapping is needed
+	// o_auth_rest_authentication: manual addition and mapping is needed
 	// bearer_rest_authentication: manual addition and mapping is needed
-	// sigv4_rest_authentication: manual addition and mapping is needed
+	// sig_v4_rest_authentication: manual addition and mapping is needed
 }, catalogIntegrationIcebergRestDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeCatalogIntegrationIcebergRestDetailsSchema
@@ -59,9 +59,9 @@ func CatalogIntegrationIcebergRestDetailsToSchema(catalogIntegrationIcebergRestD
 	catalogIntegrationIcebergRestDetailsSchema["comment"] = catalogIntegrationIcebergRestDetails.Comment
 	catalogIntegrationIcebergRestDetailsSchema["catalog_namespace"] = catalogIntegrationIcebergRestDetails.CatalogNamespace
 	// rest_config: manual addition and mapping is needed
-	// oauth_rest_authentication: manual addition and mapping is needed
+	// o_auth_rest_authentication: manual addition and mapping is needed
 	// bearer_rest_authentication: manual addition and mapping is needed
-	// sigv4_rest_authentication: manual addition and mapping is needed
+	// sig_v4_rest_authentication: manual addition and mapping is needed
 	catalogIntegrationIcebergRestDetailsToSchemaMapper{}.additionalToSchema(catalogIntegrationIcebergRestDetails, catalogIntegrationIcebergRestDetailsSchema)
 	return catalogIntegrationIcebergRestDetailsSchema
 }

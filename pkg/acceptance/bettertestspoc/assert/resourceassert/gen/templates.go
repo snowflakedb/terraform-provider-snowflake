@@ -19,9 +19,6 @@ var (
 		genhelpers.FirstLetterLowercase,
 		genhelpers.FirstLetter,
 		genhelpers.SnakeCaseToCamel,
-		genhelpers.SdkMethodSuffix,
-		genhelpers.SdkValueMapper,
-		genhelpers.RunMapper,
 	)).Parse(assertionsTemplateContent)
 
 	AllTemplates = []*template.Template{genhelpers.PreambleTemplate, DefinitionTemplate, AssertionsTemplate}

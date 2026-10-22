@@ -67,7 +67,7 @@ func (s *CreateTableRequest) WithChangeTracking(changeTracking bool) *CreateTabl
 	return s
 }
 
-func (s *CreateTableRequest) WithDefaultDdlCollation(defaultDdlCollation StringAllowEmpty) *CreateTableRequest {
+func (s *CreateTableRequest) WithDefaultDdlCollation(defaultDdlCollation string) *CreateTableRequest {
 	s.DefaultDdlCollation = &defaultDdlCollation
 	return s
 }
@@ -1133,7 +1133,7 @@ func (s *TableSetRequest) WithChangeTracking(changeTracking bool) *TableSetReque
 	return s
 }
 
-func (s *TableSetRequest) WithDefaultDdlCollation(defaultDdlCollation StringAllowEmpty) *TableSetRequest {
+func (s *TableSetRequest) WithDefaultDdlCollation(defaultDdlCollation string) *TableSetRequest {
 	s.DefaultDdlCollation = &defaultDdlCollation
 	return s
 }

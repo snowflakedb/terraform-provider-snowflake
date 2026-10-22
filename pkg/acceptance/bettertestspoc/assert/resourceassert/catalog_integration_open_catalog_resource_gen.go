@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type CatalogIntegrationOpenCatalogResourceAssert struct {
@@ -48,11 +47,6 @@ func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCatalogSource(expected 
 	return c
 }
 
-func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCatalogSourceSdk(expected sdk.CatalogIntegrationCatalogSourceType) *CatalogIntegrationOpenCatalogResourceAssert {
-	c.StringValueSet("catalog_source", string(expected))
-	return c
-}
-
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasComment(expected string) *CatalogIntegrationOpenCatalogResourceAssert {
 	c.StringValueSet("comment", expected)
 	return c
@@ -73,9 +67,9 @@ func (c *CatalogIntegrationOpenCatalogResourceAssert) HasRefreshIntervalSeconds(
 	return c
 }
 
-// typed assert for "rest_authentication" (type: List) is not currently supported
+// typed assert for "rest_authentication" (type: List, subtype: Map) is not currently supported
 
-// typed assert for "rest_config" (type: List) is not currently supported
+// typed assert for "rest_config" (type: List, subtype: Map) is not currently supported
 
 ///////////////////////////////////
 // Attribute value string checks //

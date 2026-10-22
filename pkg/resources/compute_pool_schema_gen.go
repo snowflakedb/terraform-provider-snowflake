@@ -10,13 +10,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-var computePoolAttributesSchema = map[string]*tfschema.Schema{
+var computePoolAttributesSchema = computePoolAttributesModificationExt(map[string]*tfschema.Schema{
 	"for_application": {
 		Type:             tfschema.TypeString,
 		Optional:         true,
 		ForceNew:         true,
-		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
-		DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("application")),
+		DiffSuppressFunc: suppressIdentifierQuoting,
 		Description:      "Specifies the Snowflake Native App name.",
 	},
 	"min_nodes": {
@@ -53,7 +52,6 @@ var computePoolAttributesSchema = map[string]*tfschema.Schema{
 		Type:             tfschema.TypeString,
 		Optional:         true,
 		ValidateDiagFunc: validateBooleanString,
-		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("auto_resume"),
 		Description:      booleanStringFieldDescription("Specifies whether to automatically resume a compute pool when a service or job is submitted to it."),
 		Default:          BooleanDefault,
 	},
@@ -61,7 +59,6 @@ var computePoolAttributesSchema = map[string]*tfschema.Schema{
 		Type:             tfschema.TypeString,
 		Optional:         true,
 		ValidateDiagFunc: validateBooleanString,
-		DiffSuppressFunc: IgnoreAfterCreation,
 		Description:      "Specifies whether the compute pool is created initially in the suspended state. This field is used only when creating a compute pool. Changes on this field are ignored after creation.",
 		Default:          BooleanDefault,
 	},
@@ -69,7 +66,6 @@ var computePoolAttributesSchema = map[string]*tfschema.Schema{
 		Type:             tfschema.TypeInt,
 		Optional:         true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
-		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("auto_suspend_secs"),
 		Description:      "Number of seconds of inactivity after which you want Snowflake to automatically suspend the compute pool.",
 		Default:          IntDefault,
 	},
@@ -78,7 +74,7 @@ var computePoolAttributesSchema = map[string]*tfschema.Schema{
 		Optional:    true,
 		Description: "Specifies a comment for the compute pool.",
 	},
-}
+})
 
 var computePoolSchema = collections.MergeMaps(
 	map[string]*tfschema.Schema{

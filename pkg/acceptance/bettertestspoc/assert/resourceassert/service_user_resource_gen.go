@@ -42,11 +42,6 @@ func (s *ServiceUserResourceAssert) HasAbortDetachedQuery(expected bool) *Servic
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasActivePythonProfiler(expected string) *ServiceUserResourceAssert {
-	s.StringValueSet("active_python_profiler", expected)
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasAutocommit(expected bool) *ServiceUserResourceAssert {
 	s.BoolValueSet("autocommit", expected)
 	return s
@@ -62,11 +57,6 @@ func (s *ServiceUserResourceAssert) HasBinaryOutputFormat(expected string) *Serv
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasClientEnableLogInfoStatementParameters(expected bool) *ServiceUserResourceAssert {
-	s.BoolValueSet("client_enable_log_info_statement_parameters", expected)
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasClientMemoryLimit(expected int) *ServiceUserResourceAssert {
 	s.IntValueSet("client_memory_limit", expected)
 	return s
@@ -74,11 +64,6 @@ func (s *ServiceUserResourceAssert) HasClientMemoryLimit(expected int) *ServiceU
 
 func (s *ServiceUserResourceAssert) HasClientMetadataRequestUseConnectionCtx(expected bool) *ServiceUserResourceAssert {
 	s.BoolValueSet("client_metadata_request_use_connection_ctx", expected)
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasClientMetadataUseSessionDatabase(expected bool) *ServiceUserResourceAssert {
-	s.BoolValueSet("client_metadata_use_session_database", expected)
 	return s
 }
 
@@ -114,11 +99,6 @@ func (s *ServiceUserResourceAssert) HasClientTimestampTypeMapping(expected strin
 
 func (s *ServiceUserResourceAssert) HasComment(expected string) *ServiceUserResourceAssert {
 	s.StringValueSet("comment", expected)
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasCsvTimestampFormat(expected string) *ServiceUserResourceAssert {
-	s.StringValueSet("csv_timestamp_format", expected)
 	return s
 }
 
@@ -174,11 +154,6 @@ func (s *ServiceUserResourceAssert) HasEmail(expected string) *ServiceUserResour
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasEnableGetDdlUseDataTypeAlias(expected bool) *ServiceUserResourceAssert {
-	s.BoolValueSet("enable_get_ddl_use_data_type_alias", expected)
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasEnableUnloadPhysicalTypeOptimization(expected bool) *ServiceUserResourceAssert {
 	s.BoolValueSet("enable_unload_physical_type_optimization", expected)
 	return s
@@ -214,11 +189,6 @@ func (s *ServiceUserResourceAssert) HasGeometryOutputFormat(expected string) *Se
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasHybridTableLockTimeout(expected int) *ServiceUserResourceAssert {
-	s.IntValueSet("hybrid_table_lock_timeout", expected)
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasJdbcTreatDecimalAsInt(expected bool) *ServiceUserResourceAssert {
 	s.BoolValueSet("jdbc_treat_decimal_as_int", expected)
 	return s
@@ -231,11 +201,6 @@ func (s *ServiceUserResourceAssert) HasJdbcTreatTimestampNtzAsUtc(expected bool)
 
 func (s *ServiceUserResourceAssert) HasJdbcUseSessionTimezone(expected bool) *ServiceUserResourceAssert {
 	s.BoolValueSet("jdbc_use_session_timezone", expected)
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasJsTreatIntegerAsBigint(expected bool) *ServiceUserResourceAssert {
-	s.BoolValueSet("js_treat_integer_as_bigint", expected)
 	return s
 }
 
@@ -294,16 +259,6 @@ func (s *ServiceUserResourceAssert) HasPreventUnloadToInternalStages(expected bo
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasPythonProfilerModules(expected string) *ServiceUserResourceAssert {
-	s.StringValueSet("python_profiler_modules", expected)
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasPythonProfilerTargetStage(expected string) *ServiceUserResourceAssert {
-	s.StringValueSet("python_profiler_target_stage", expected)
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasQueryTag(expected string) *ServiceUserResourceAssert {
 	s.StringValueSet("query_tag", expected)
 	return s
@@ -326,16 +281,6 @@ func (s *ServiceUserResourceAssert) HasRsaPublicKey(expected string) *ServiceUse
 
 func (s *ServiceUserResourceAssert) HasRsaPublicKey2(expected string) *ServiceUserResourceAssert {
 	s.StringValueSet("rsa_public_key_2", expected)
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasRsaPublicKey2WoVersion(expected int) *ServiceUserResourceAssert {
-	s.IntValueSet("rsa_public_key_2_wo_version", expected)
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasRsaPublicKeyWoVersion(expected int) *ServiceUserResourceAssert {
-	s.IntValueSet("rsa_public_key_wo_version", expected)
 	return s
 }
 
@@ -478,11 +423,6 @@ func (s *ServiceUserResourceAssert) HasAbortDetachedQueryString(expected string)
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasActivePythonProfilerString(expected string) *ServiceUserResourceAssert {
-	s.ValueSet("active_python_profiler", expected)
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasAutocommitString(expected string) *ServiceUserResourceAssert {
 	s.ValueSet("autocommit", expected)
 	return s
@@ -498,11 +438,6 @@ func (s *ServiceUserResourceAssert) HasBinaryOutputFormatString(expected string)
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasClientEnableLogInfoStatementParametersString(expected string) *ServiceUserResourceAssert {
-	s.ValueSet("client_enable_log_info_statement_parameters", expected)
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasClientMemoryLimitString(expected string) *ServiceUserResourceAssert {
 	s.ValueSet("client_memory_limit", expected)
 	return s
@@ -510,11 +445,6 @@ func (s *ServiceUserResourceAssert) HasClientMemoryLimitString(expected string) 
 
 func (s *ServiceUserResourceAssert) HasClientMetadataRequestUseConnectionCtxString(expected string) *ServiceUserResourceAssert {
 	s.ValueSet("client_metadata_request_use_connection_ctx", expected)
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasClientMetadataUseSessionDatabaseString(expected string) *ServiceUserResourceAssert {
-	s.ValueSet("client_metadata_use_session_database", expected)
 	return s
 }
 
@@ -550,11 +480,6 @@ func (s *ServiceUserResourceAssert) HasClientTimestampTypeMappingString(expected
 
 func (s *ServiceUserResourceAssert) HasCommentString(expected string) *ServiceUserResourceAssert {
 	s.ValueSet("comment", expected)
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasCsvTimestampFormatString(expected string) *ServiceUserResourceAssert {
-	s.ValueSet("csv_timestamp_format", expected)
 	return s
 }
 
@@ -608,11 +533,6 @@ func (s *ServiceUserResourceAssert) HasEmailString(expected string) *ServiceUser
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasEnableGetDdlUseDataTypeAliasString(expected string) *ServiceUserResourceAssert {
-	s.ValueSet("enable_get_ddl_use_data_type_alias", expected)
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasEnableUnloadPhysicalTypeOptimizationString(expected string) *ServiceUserResourceAssert {
 	s.ValueSet("enable_unload_physical_type_optimization", expected)
 	return s
@@ -648,11 +568,6 @@ func (s *ServiceUserResourceAssert) HasGeometryOutputFormatString(expected strin
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasHybridTableLockTimeoutString(expected string) *ServiceUserResourceAssert {
-	s.ValueSet("hybrid_table_lock_timeout", expected)
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasJdbcTreatDecimalAsIntString(expected string) *ServiceUserResourceAssert {
 	s.ValueSet("jdbc_treat_decimal_as_int", expected)
 	return s
@@ -665,11 +580,6 @@ func (s *ServiceUserResourceAssert) HasJdbcTreatTimestampNtzAsUtcString(expected
 
 func (s *ServiceUserResourceAssert) HasJdbcUseSessionTimezoneString(expected string) *ServiceUserResourceAssert {
 	s.ValueSet("jdbc_use_session_timezone", expected)
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasJsTreatIntegerAsBigintString(expected string) *ServiceUserResourceAssert {
-	s.ValueSet("js_treat_integer_as_bigint", expected)
 	return s
 }
 
@@ -728,16 +638,6 @@ func (s *ServiceUserResourceAssert) HasPreventUnloadToInternalStagesString(expec
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasPythonProfilerModulesString(expected string) *ServiceUserResourceAssert {
-	s.ValueSet("python_profiler_modules", expected)
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasPythonProfilerTargetStageString(expected string) *ServiceUserResourceAssert {
-	s.ValueSet("python_profiler_target_stage", expected)
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasQueryTagString(expected string) *ServiceUserResourceAssert {
 	s.ValueSet("query_tag", expected)
 	return s
@@ -760,16 +660,6 @@ func (s *ServiceUserResourceAssert) HasRsaPublicKeyString(expected string) *Serv
 
 func (s *ServiceUserResourceAssert) HasRsaPublicKey2String(expected string) *ServiceUserResourceAssert {
 	s.ValueSet("rsa_public_key_2", expected)
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasRsaPublicKey2WoVersionString(expected string) *ServiceUserResourceAssert {
-	s.ValueSet("rsa_public_key_2_wo_version", expected)
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasRsaPublicKeyWoVersionString(expected string) *ServiceUserResourceAssert {
-	s.ValueSet("rsa_public_key_wo_version", expected)
 	return s
 }
 
@@ -912,11 +802,6 @@ func (s *ServiceUserResourceAssert) HasNoAbortDetachedQuery() *ServiceUserResour
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasNoActivePythonProfiler() *ServiceUserResourceAssert {
-	s.ValueNotSet("active_python_profiler")
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasNoAutocommit() *ServiceUserResourceAssert {
 	s.ValueNotSet("autocommit")
 	return s
@@ -932,11 +817,6 @@ func (s *ServiceUserResourceAssert) HasNoBinaryOutputFormat() *ServiceUserResour
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasNoClientEnableLogInfoStatementParameters() *ServiceUserResourceAssert {
-	s.ValueNotSet("client_enable_log_info_statement_parameters")
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasNoClientMemoryLimit() *ServiceUserResourceAssert {
 	s.ValueNotSet("client_memory_limit")
 	return s
@@ -944,11 +824,6 @@ func (s *ServiceUserResourceAssert) HasNoClientMemoryLimit() *ServiceUserResourc
 
 func (s *ServiceUserResourceAssert) HasNoClientMetadataRequestUseConnectionCtx() *ServiceUserResourceAssert {
 	s.ValueNotSet("client_metadata_request_use_connection_ctx")
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasNoClientMetadataUseSessionDatabase() *ServiceUserResourceAssert {
-	s.ValueNotSet("client_metadata_use_session_database")
 	return s
 }
 
@@ -984,11 +859,6 @@ func (s *ServiceUserResourceAssert) HasNoClientTimestampTypeMapping() *ServiceUs
 
 func (s *ServiceUserResourceAssert) HasNoComment() *ServiceUserResourceAssert {
 	s.ValueNotSet("comment")
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasNoCsvTimestampFormat() *ServiceUserResourceAssert {
-	s.ValueNotSet("csv_timestamp_format")
 	return s
 }
 
@@ -1042,11 +912,6 @@ func (s *ServiceUserResourceAssert) HasNoEmail() *ServiceUserResourceAssert {
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasNoEnableGetDdlUseDataTypeAlias() *ServiceUserResourceAssert {
-	s.ValueNotSet("enable_get_ddl_use_data_type_alias")
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasNoEnableUnloadPhysicalTypeOptimization() *ServiceUserResourceAssert {
 	s.ValueNotSet("enable_unload_physical_type_optimization")
 	return s
@@ -1082,11 +947,6 @@ func (s *ServiceUserResourceAssert) HasNoGeometryOutputFormat() *ServiceUserReso
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasNoHybridTableLockTimeout() *ServiceUserResourceAssert {
-	s.ValueNotSet("hybrid_table_lock_timeout")
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasNoJdbcTreatDecimalAsInt() *ServiceUserResourceAssert {
 	s.ValueNotSet("jdbc_treat_decimal_as_int")
 	return s
@@ -1099,11 +959,6 @@ func (s *ServiceUserResourceAssert) HasNoJdbcTreatTimestampNtzAsUtc() *ServiceUs
 
 func (s *ServiceUserResourceAssert) HasNoJdbcUseSessionTimezone() *ServiceUserResourceAssert {
 	s.ValueNotSet("jdbc_use_session_timezone")
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasNoJsTreatIntegerAsBigint() *ServiceUserResourceAssert {
-	s.ValueNotSet("js_treat_integer_as_bigint")
 	return s
 }
 
@@ -1162,16 +1017,6 @@ func (s *ServiceUserResourceAssert) HasNoPreventUnloadToInternalStages() *Servic
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasNoPythonProfilerModules() *ServiceUserResourceAssert {
-	s.ValueNotSet("python_profiler_modules")
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasNoPythonProfilerTargetStage() *ServiceUserResourceAssert {
-	s.ValueNotSet("python_profiler_target_stage")
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasNoQueryTag() *ServiceUserResourceAssert {
 	s.ValueNotSet("query_tag")
 	return s
@@ -1194,16 +1039,6 @@ func (s *ServiceUserResourceAssert) HasNoRsaPublicKey() *ServiceUserResourceAsse
 
 func (s *ServiceUserResourceAssert) HasNoRsaPublicKey2() *ServiceUserResourceAssert {
 	s.ValueNotSet("rsa_public_key_2")
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasNoRsaPublicKey2WoVersion() *ServiceUserResourceAssert {
-	s.ValueNotSet("rsa_public_key_2_wo_version")
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasNoRsaPublicKeyWoVersion() *ServiceUserResourceAssert {
-	s.ValueNotSet("rsa_public_key_wo_version")
 	return s
 }
 
@@ -1341,11 +1176,6 @@ func (s *ServiceUserResourceAssert) HasAbortDetachedQueryEmpty() *ServiceUserRes
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasActivePythonProfilerEmpty() *ServiceUserResourceAssert {
-	s.ValueSet("active_python_profiler", "")
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasAutocommitEmpty() *ServiceUserResourceAssert {
 	s.ValueSet("autocommit", "")
 	return s
@@ -1361,11 +1191,6 @@ func (s *ServiceUserResourceAssert) HasBinaryOutputFormatEmpty() *ServiceUserRes
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasClientEnableLogInfoStatementParametersEmpty() *ServiceUserResourceAssert {
-	s.ValueSet("client_enable_log_info_statement_parameters", "")
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasClientMemoryLimitEmpty() *ServiceUserResourceAssert {
 	s.ValueSet("client_memory_limit", "")
 	return s
@@ -1373,11 +1198,6 @@ func (s *ServiceUserResourceAssert) HasClientMemoryLimitEmpty() *ServiceUserReso
 
 func (s *ServiceUserResourceAssert) HasClientMetadataRequestUseConnectionCtxEmpty() *ServiceUserResourceAssert {
 	s.ValueSet("client_metadata_request_use_connection_ctx", "")
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasClientMetadataUseSessionDatabaseEmpty() *ServiceUserResourceAssert {
-	s.ValueSet("client_metadata_use_session_database", "")
 	return s
 }
 
@@ -1413,11 +1233,6 @@ func (s *ServiceUserResourceAssert) HasClientTimestampTypeMappingEmpty() *Servic
 
 func (s *ServiceUserResourceAssert) HasCommentEmpty() *ServiceUserResourceAssert {
 	s.ValueSet("comment", "")
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasCsvTimestampFormatEmpty() *ServiceUserResourceAssert {
-	s.ValueSet("csv_timestamp_format", "")
 	return s
 }
 
@@ -1476,11 +1291,6 @@ func (s *ServiceUserResourceAssert) HasEmailEmpty() *ServiceUserResourceAssert {
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasEnableGetDdlUseDataTypeAliasEmpty() *ServiceUserResourceAssert {
-	s.ValueSet("enable_get_ddl_use_data_type_alias", "")
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasEnableUnloadPhysicalTypeOptimizationEmpty() *ServiceUserResourceAssert {
 	s.ValueSet("enable_unload_physical_type_optimization", "")
 	return s
@@ -1516,11 +1326,6 @@ func (s *ServiceUserResourceAssert) HasGeometryOutputFormatEmpty() *ServiceUserR
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasHybridTableLockTimeoutEmpty() *ServiceUserResourceAssert {
-	s.ValueSet("hybrid_table_lock_timeout", "")
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasJdbcTreatDecimalAsIntEmpty() *ServiceUserResourceAssert {
 	s.ValueSet("jdbc_treat_decimal_as_int", "")
 	return s
@@ -1533,11 +1338,6 @@ func (s *ServiceUserResourceAssert) HasJdbcTreatTimestampNtzAsUtcEmpty() *Servic
 
 func (s *ServiceUserResourceAssert) HasJdbcUseSessionTimezoneEmpty() *ServiceUserResourceAssert {
 	s.ValueSet("jdbc_use_session_timezone", "")
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasJsTreatIntegerAsBigintEmpty() *ServiceUserResourceAssert {
-	s.ValueSet("js_treat_integer_as_bigint", "")
 	return s
 }
 
@@ -1596,16 +1396,6 @@ func (s *ServiceUserResourceAssert) HasPreventUnloadToInternalStagesEmpty() *Ser
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasPythonProfilerModulesEmpty() *ServiceUserResourceAssert {
-	s.ValueSet("python_profiler_modules", "")
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasPythonProfilerTargetStageEmpty() *ServiceUserResourceAssert {
-	s.ValueSet("python_profiler_target_stage", "")
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasQueryTagEmpty() *ServiceUserResourceAssert {
 	s.ValueSet("query_tag", "")
 	return s
@@ -1628,16 +1418,6 @@ func (s *ServiceUserResourceAssert) HasRsaPublicKeyEmpty() *ServiceUserResourceA
 
 func (s *ServiceUserResourceAssert) HasRsaPublicKey2Empty() *ServiceUserResourceAssert {
 	s.ValueSet("rsa_public_key_2", "")
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasRsaPublicKey2WoVersionEmpty() *ServiceUserResourceAssert {
-	s.ValueSet("rsa_public_key_2_wo_version", "")
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasRsaPublicKeyWoVersionEmpty() *ServiceUserResourceAssert {
-	s.ValueSet("rsa_public_key_wo_version", "")
 	return s
 }
 
@@ -1780,11 +1560,6 @@ func (s *ServiceUserResourceAssert) HasAbortDetachedQueryNotEmpty() *ServiceUser
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasActivePythonProfilerNotEmpty() *ServiceUserResourceAssert {
-	s.ValuePresent("active_python_profiler")
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasAutocommitNotEmpty() *ServiceUserResourceAssert {
 	s.ValuePresent("autocommit")
 	return s
@@ -1800,11 +1575,6 @@ func (s *ServiceUserResourceAssert) HasBinaryOutputFormatNotEmpty() *ServiceUser
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasClientEnableLogInfoStatementParametersNotEmpty() *ServiceUserResourceAssert {
-	s.ValuePresent("client_enable_log_info_statement_parameters")
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasClientMemoryLimitNotEmpty() *ServiceUserResourceAssert {
 	s.ValuePresent("client_memory_limit")
 	return s
@@ -1812,11 +1582,6 @@ func (s *ServiceUserResourceAssert) HasClientMemoryLimitNotEmpty() *ServiceUserR
 
 func (s *ServiceUserResourceAssert) HasClientMetadataRequestUseConnectionCtxNotEmpty() *ServiceUserResourceAssert {
 	s.ValuePresent("client_metadata_request_use_connection_ctx")
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasClientMetadataUseSessionDatabaseNotEmpty() *ServiceUserResourceAssert {
-	s.ValuePresent("client_metadata_use_session_database")
 	return s
 }
 
@@ -1852,11 +1617,6 @@ func (s *ServiceUserResourceAssert) HasClientTimestampTypeMappingNotEmpty() *Ser
 
 func (s *ServiceUserResourceAssert) HasCommentNotEmpty() *ServiceUserResourceAssert {
 	s.ValuePresent("comment")
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasCsvTimestampFormatNotEmpty() *ServiceUserResourceAssert {
-	s.ValuePresent("csv_timestamp_format")
 	return s
 }
 
@@ -1910,11 +1670,6 @@ func (s *ServiceUserResourceAssert) HasEmailNotEmpty() *ServiceUserResourceAsser
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasEnableGetDdlUseDataTypeAliasNotEmpty() *ServiceUserResourceAssert {
-	s.ValuePresent("enable_get_ddl_use_data_type_alias")
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasEnableUnloadPhysicalTypeOptimizationNotEmpty() *ServiceUserResourceAssert {
 	s.ValuePresent("enable_unload_physical_type_optimization")
 	return s
@@ -1950,11 +1705,6 @@ func (s *ServiceUserResourceAssert) HasGeometryOutputFormatNotEmpty() *ServiceUs
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasHybridTableLockTimeoutNotEmpty() *ServiceUserResourceAssert {
-	s.ValuePresent("hybrid_table_lock_timeout")
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasJdbcTreatDecimalAsIntNotEmpty() *ServiceUserResourceAssert {
 	s.ValuePresent("jdbc_treat_decimal_as_int")
 	return s
@@ -1967,11 +1717,6 @@ func (s *ServiceUserResourceAssert) HasJdbcTreatTimestampNtzAsUtcNotEmpty() *Ser
 
 func (s *ServiceUserResourceAssert) HasJdbcUseSessionTimezoneNotEmpty() *ServiceUserResourceAssert {
 	s.ValuePresent("jdbc_use_session_timezone")
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasJsTreatIntegerAsBigintNotEmpty() *ServiceUserResourceAssert {
-	s.ValuePresent("js_treat_integer_as_bigint")
 	return s
 }
 
@@ -2030,16 +1775,6 @@ func (s *ServiceUserResourceAssert) HasPreventUnloadToInternalStagesNotEmpty() *
 	return s
 }
 
-func (s *ServiceUserResourceAssert) HasPythonProfilerModulesNotEmpty() *ServiceUserResourceAssert {
-	s.ValuePresent("python_profiler_modules")
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasPythonProfilerTargetStageNotEmpty() *ServiceUserResourceAssert {
-	s.ValuePresent("python_profiler_target_stage")
-	return s
-}
-
 func (s *ServiceUserResourceAssert) HasQueryTagNotEmpty() *ServiceUserResourceAssert {
 	s.ValuePresent("query_tag")
 	return s
@@ -2062,16 +1797,6 @@ func (s *ServiceUserResourceAssert) HasRsaPublicKeyNotEmpty() *ServiceUserResour
 
 func (s *ServiceUserResourceAssert) HasRsaPublicKey2NotEmpty() *ServiceUserResourceAssert {
 	s.ValuePresent("rsa_public_key_2")
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasRsaPublicKey2WoVersionNotEmpty() *ServiceUserResourceAssert {
-	s.ValuePresent("rsa_public_key_2_wo_version")
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasRsaPublicKeyWoVersionNotEmpty() *ServiceUserResourceAssert {
-	s.ValuePresent("rsa_public_key_wo_version")
 	return s
 }
 

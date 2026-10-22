@@ -533,43 +533,30 @@ func (v *grants) Show(ctx context.Context, request *ShowGrantsRequest) ([]Grant,
 	for i, grant := range resultList {
 		// SHOW GRANTS OF DATABASE ROLE requires a special handling:
 		// - it returns no account name, so for other SHOW GRANTS types it needs to be skipped
-		// - it returns database objects without the database prefix (see parseGranteeNameOfDatabaseRole)
+		// - it returns fully qualified name for database objects
 		granteeNameRaw := dbRows[i].GranteeName
-		if !(valueSet(opts.Of) && valueSet(opts.Of.DatabaseRole)) {
+		if !(valueSet(opts.Of) && valueSet(opts.Of.DatabaseRole)) { //nolint:gocritic
 			granteeName := granteeNameRaw
 			if grant.GrantedTo == ObjectTypeShare {
 				granteeName = normalizeShareGranteeName(granteeName, v.client.GetAccountLocator())
 			}
 			resultList[i].GranteeName = NewAccountObjectIdentifier(granteeName)
-		} else {
-			granteeName, err := parseGranteeNameOfDatabaseRole(opts.Of.DatabaseRole, grant.GrantedTo, granteeNameRaw, v.client.GetAccountLocator())
+		} else if !slices.Contains([]ObjectType{ObjectTypeRole, ObjectTypeShare, ObjectTypeUser, ObjectTypeApplication}, grant.GrantedTo) {
+			// A database role can only be granted within the same database, so the missing prefix comes from the queried role.
+			id, err := ParseAccountObjectIdentifier(granteeNameRaw)
 			if err != nil {
 				return nil, err
 			}
-			resultList[i].GranteeName = granteeName
+			resultList[i].GranteeName = NewDatabaseObjectIdentifier(opts.Of.DatabaseRole.DatabaseName(), id.Name())
+		} else if grant.GrantedTo == ObjectTypeShare {
+			resultList[i].GranteeName = NewAccountObjectIdentifier(normalizeShareGranteeName(granteeNameRaw, v.client.GetAccountLocator()))
+		} else if grant.GrantedTo == ObjectTypeUser {
+			resultList[i].GranteeName = NewAccountObjectIdentifier(strings.TrimPrefix(granteeNameRaw, "USER$"))
+		} else {
+			resultList[i].GranteeName = NewAccountObjectIdentifier(granteeNameRaw)
 		}
 	}
 	return resultList, nil
-}
-
-// parseGranteeNameOfDatabaseRole parses the grantee name of a single SHOW GRANTS OF DATABASE ROLE row.
-func parseGranteeNameOfDatabaseRole(databaseRoleId DatabaseObjectIdentifier, grantedTo ObjectType, granteeNameRaw string, accountLocator string) (ObjectIdentifier, error) {
-	switch {
-	case !slices.Contains([]ObjectType{ObjectTypeRole, ObjectTypeShare, ObjectTypeUser, ObjectTypeApplication}, grantedTo):
-		// A database role can only be granted within the same database, so the missing prefix comes from the queried role.
-		// This also covers APPLICATION ROLE grantees of SNOWFLAKE.* database roles (e.g. APP_PUBLIC), whose application is the SNOWFLAKE database itself.
-		id, err := ParseAccountObjectIdentifier(granteeNameRaw)
-		if err != nil {
-			return nil, err
-		}
-		return NewDatabaseObjectIdentifier(databaseRoleId.DatabaseName(), id.Name()), nil
-	case grantedTo == ObjectTypeShare:
-		return NewAccountObjectIdentifier(normalizeShareGranteeName(granteeNameRaw, accountLocator)), nil
-	case grantedTo == ObjectTypeUser:
-		return NewAccountObjectIdentifier(strings.TrimPrefix(granteeNameRaw, "USER$")), nil
-	default:
-		return NewAccountObjectIdentifier(granteeNameRaw), nil
-	}
 }
 
 // SQLKey renders the exact SHOW GRANTS statement that Show would execute for this request, so it can

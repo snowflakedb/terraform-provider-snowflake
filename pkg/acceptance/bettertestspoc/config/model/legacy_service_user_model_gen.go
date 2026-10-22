@@ -13,14 +13,11 @@ import (
 type LegacyServiceUserModel struct {
 	Name                                     tfconfig.Variable `json:"name,omitempty"`
 	AbortDetachedQuery                       tfconfig.Variable `json:"abort_detached_query,omitempty"`
-	ActivePythonProfiler                     tfconfig.Variable `json:"active_python_profiler,omitempty"`
 	Autocommit                               tfconfig.Variable `json:"autocommit,omitempty"`
 	BinaryInputFormat                        tfconfig.Variable `json:"binary_input_format,omitempty"`
 	BinaryOutputFormat                       tfconfig.Variable `json:"binary_output_format,omitempty"`
-	ClientEnableLogInfoStatementParameters   tfconfig.Variable `json:"client_enable_log_info_statement_parameters,omitempty"`
 	ClientMemoryLimit                        tfconfig.Variable `json:"client_memory_limit,omitempty"`
 	ClientMetadataRequestUseConnectionCtx    tfconfig.Variable `json:"client_metadata_request_use_connection_ctx,omitempty"`
-	ClientMetadataUseSessionDatabase         tfconfig.Variable `json:"client_metadata_use_session_database,omitempty"`
 	ClientPrefetchThreads                    tfconfig.Variable `json:"client_prefetch_threads,omitempty"`
 	ClientResultChunkSize                    tfconfig.Variable `json:"client_result_chunk_size,omitempty"`
 	ClientResultColumnCaseInsensitive        tfconfig.Variable `json:"client_result_column_case_insensitive,omitempty"`
@@ -28,7 +25,6 @@ type LegacyServiceUserModel struct {
 	ClientSessionKeepAliveHeartbeatFrequency tfconfig.Variable `json:"client_session_keep_alive_heartbeat_frequency,omitempty"`
 	ClientTimestampTypeMapping               tfconfig.Variable `json:"client_timestamp_type_mapping,omitempty"`
 	Comment                                  tfconfig.Variable `json:"comment,omitempty"`
-	CsvTimestampFormat                       tfconfig.Variable `json:"csv_timestamp_format,omitempty"`
 	DateInputFormat                          tfconfig.Variable `json:"date_input_format,omitempty"`
 	DateOutputFormat                         tfconfig.Variable `json:"date_output_format,omitempty"`
 	DaysToExpiry                             tfconfig.Variable `json:"days_to_expiry,omitempty"`
@@ -40,7 +36,6 @@ type LegacyServiceUserModel struct {
 	Disabled                                 tfconfig.Variable `json:"disabled,omitempty"`
 	DisplayName                              tfconfig.Variable `json:"display_name,omitempty"`
 	Email                                    tfconfig.Variable `json:"email,omitempty"`
-	EnableGetDdlUseDataTypeAlias             tfconfig.Variable `json:"enable_get_ddl_use_data_type_alias,omitempty"`
 	EnableUnloadPhysicalTypeOptimization     tfconfig.Variable `json:"enable_unload_physical_type_optimization,omitempty"`
 	EnableUnredactedQuerySyntaxError         tfconfig.Variable `json:"enable_unredacted_query_syntax_error,omitempty"`
 	ErrorOnNondeterministicMerge             tfconfig.Variable `json:"error_on_nondeterministic_merge,omitempty"`
@@ -48,11 +43,9 @@ type LegacyServiceUserModel struct {
 	FullyQualifiedName                       tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	GeographyOutputFormat                    tfconfig.Variable `json:"geography_output_format,omitempty"`
 	GeometryOutputFormat                     tfconfig.Variable `json:"geometry_output_format,omitempty"`
-	HybridTableLockTimeout                   tfconfig.Variable `json:"hybrid_table_lock_timeout,omitempty"`
 	JdbcTreatDecimalAsInt                    tfconfig.Variable `json:"jdbc_treat_decimal_as_int,omitempty"`
 	JdbcTreatTimestampNtzAsUtc               tfconfig.Variable `json:"jdbc_treat_timestamp_ntz_as_utc,omitempty"`
 	JdbcUseSessionTimezone                   tfconfig.Variable `json:"jdbc_use_session_timezone,omitempty"`
-	JsTreatIntegerAsBigint                   tfconfig.Variable `json:"js_treat_integer_as_bigint,omitempty"`
 	JsonIndent                               tfconfig.Variable `json:"json_indent,omitempty"`
 	LockTimeout                              tfconfig.Variable `json:"lock_timeout,omitempty"`
 	LogEventLevel                            tfconfig.Variable `json:"log_event_level,omitempty"`
@@ -66,17 +59,11 @@ type LegacyServiceUserModel struct {
 	OdbcTreatDecimalAsInt                    tfconfig.Variable `json:"odbc_treat_decimal_as_int,omitempty"`
 	Password                                 tfconfig.Variable `json:"password,omitempty"`
 	PreventUnloadToInternalStages            tfconfig.Variable `json:"prevent_unload_to_internal_stages,omitempty"`
-	PythonProfilerModules                    tfconfig.Variable `json:"python_profiler_modules,omitempty"`
-	PythonProfilerTargetStage                tfconfig.Variable `json:"python_profiler_target_stage,omitempty"`
 	QueryTag                                 tfconfig.Variable `json:"query_tag,omitempty"`
 	QuotedIdentifiersIgnoreCase              tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
 	RowsPerResultset                         tfconfig.Variable `json:"rows_per_resultset,omitempty"`
 	RsaPublicKey                             tfconfig.Variable `json:"rsa_public_key,omitempty"`
 	RsaPublicKey2                            tfconfig.Variable `json:"rsa_public_key_2,omitempty"`
-	RsaPublicKey2Wo                          tfconfig.Variable `json:"rsa_public_key_2_wo,omitempty"`
-	RsaPublicKey2WoVersion                   tfconfig.Variable `json:"rsa_public_key_2_wo_version,omitempty"`
-	RsaPublicKeyWo                           tfconfig.Variable `json:"rsa_public_key_wo,omitempty"`
-	RsaPublicKeyWoVersion                    tfconfig.Variable `json:"rsa_public_key_wo_version,omitempty"`
 	S3StageVpceDnsName                       tfconfig.Variable `json:"s3_stage_vpce_dns_name,omitempty"`
 	SearchPath                               tfconfig.Variable `json:"search_path,omitempty"`
 	SimulatedDataSharingConsumer             tfconfig.Variable `json:"simulated_data_sharing_consumer,omitempty"`
@@ -175,11 +162,6 @@ func (l *LegacyServiceUserModel) WithAbortDetachedQuery(abortDetachedQuery bool)
 	return l
 }
 
-func (l *LegacyServiceUserModel) WithActivePythonProfiler(activePythonProfiler string) *LegacyServiceUserModel {
-	l.ActivePythonProfiler = tfconfig.StringVariable(activePythonProfiler)
-	return l
-}
-
 func (l *LegacyServiceUserModel) WithAutocommit(autocommit bool) *LegacyServiceUserModel {
 	l.Autocommit = tfconfig.BoolVariable(autocommit)
 	return l
@@ -195,11 +177,6 @@ func (l *LegacyServiceUserModel) WithBinaryOutputFormat(binaryOutputFormat strin
 	return l
 }
 
-func (l *LegacyServiceUserModel) WithClientEnableLogInfoStatementParameters(clientEnableLogInfoStatementParameters bool) *LegacyServiceUserModel {
-	l.ClientEnableLogInfoStatementParameters = tfconfig.BoolVariable(clientEnableLogInfoStatementParameters)
-	return l
-}
-
 func (l *LegacyServiceUserModel) WithClientMemoryLimit(clientMemoryLimit int) *LegacyServiceUserModel {
 	l.ClientMemoryLimit = tfconfig.IntegerVariable(clientMemoryLimit)
 	return l
@@ -207,11 +184,6 @@ func (l *LegacyServiceUserModel) WithClientMemoryLimit(clientMemoryLimit int) *L
 
 func (l *LegacyServiceUserModel) WithClientMetadataRequestUseConnectionCtx(clientMetadataRequestUseConnectionCtx bool) *LegacyServiceUserModel {
 	l.ClientMetadataRequestUseConnectionCtx = tfconfig.BoolVariable(clientMetadataRequestUseConnectionCtx)
-	return l
-}
-
-func (l *LegacyServiceUserModel) WithClientMetadataUseSessionDatabase(clientMetadataUseSessionDatabase bool) *LegacyServiceUserModel {
-	l.ClientMetadataUseSessionDatabase = tfconfig.BoolVariable(clientMetadataUseSessionDatabase)
 	return l
 }
 
@@ -247,11 +219,6 @@ func (l *LegacyServiceUserModel) WithClientTimestampTypeMapping(clientTimestampT
 
 func (l *LegacyServiceUserModel) WithComment(comment string) *LegacyServiceUserModel {
 	l.Comment = tfconfig.StringVariable(comment)
-	return l
-}
-
-func (l *LegacyServiceUserModel) WithCsvTimestampFormat(csvTimestampFormat string) *LegacyServiceUserModel {
-	l.CsvTimestampFormat = tfconfig.StringVariable(csvTimestampFormat)
 	return l
 }
 
@@ -307,11 +274,6 @@ func (l *LegacyServiceUserModel) WithEmail(email string) *LegacyServiceUserModel
 	return l
 }
 
-func (l *LegacyServiceUserModel) WithEnableGetDdlUseDataTypeAlias(enableGetDdlUseDataTypeAlias bool) *LegacyServiceUserModel {
-	l.EnableGetDdlUseDataTypeAlias = tfconfig.BoolVariable(enableGetDdlUseDataTypeAlias)
-	return l
-}
-
 func (l *LegacyServiceUserModel) WithEnableUnloadPhysicalTypeOptimization(enableUnloadPhysicalTypeOptimization bool) *LegacyServiceUserModel {
 	l.EnableUnloadPhysicalTypeOptimization = tfconfig.BoolVariable(enableUnloadPhysicalTypeOptimization)
 	return l
@@ -347,11 +309,6 @@ func (l *LegacyServiceUserModel) WithGeometryOutputFormat(geometryOutputFormat s
 	return l
 }
 
-func (l *LegacyServiceUserModel) WithHybridTableLockTimeout(hybridTableLockTimeout int) *LegacyServiceUserModel {
-	l.HybridTableLockTimeout = tfconfig.IntegerVariable(hybridTableLockTimeout)
-	return l
-}
-
 func (l *LegacyServiceUserModel) WithJdbcTreatDecimalAsInt(jdbcTreatDecimalAsInt bool) *LegacyServiceUserModel {
 	l.JdbcTreatDecimalAsInt = tfconfig.BoolVariable(jdbcTreatDecimalAsInt)
 	return l
@@ -364,11 +321,6 @@ func (l *LegacyServiceUserModel) WithJdbcTreatTimestampNtzAsUtc(jdbcTreatTimesta
 
 func (l *LegacyServiceUserModel) WithJdbcUseSessionTimezone(jdbcUseSessionTimezone bool) *LegacyServiceUserModel {
 	l.JdbcUseSessionTimezone = tfconfig.BoolVariable(jdbcUseSessionTimezone)
-	return l
-}
-
-func (l *LegacyServiceUserModel) WithJsTreatIntegerAsBigint(jsTreatIntegerAsBigint bool) *LegacyServiceUserModel {
-	l.JsTreatIntegerAsBigint = tfconfig.BoolVariable(jsTreatIntegerAsBigint)
 	return l
 }
 
@@ -437,16 +389,6 @@ func (l *LegacyServiceUserModel) WithPreventUnloadToInternalStages(preventUnload
 	return l
 }
 
-func (l *LegacyServiceUserModel) WithPythonProfilerModules(pythonProfilerModules string) *LegacyServiceUserModel {
-	l.PythonProfilerModules = tfconfig.StringVariable(pythonProfilerModules)
-	return l
-}
-
-func (l *LegacyServiceUserModel) WithPythonProfilerTargetStage(pythonProfilerTargetStage string) *LegacyServiceUserModel {
-	l.PythonProfilerTargetStage = tfconfig.StringVariable(pythonProfilerTargetStage)
-	return l
-}
-
 func (l *LegacyServiceUserModel) WithQueryTag(queryTag string) *LegacyServiceUserModel {
 	l.QueryTag = tfconfig.StringVariable(queryTag)
 	return l
@@ -469,26 +411,6 @@ func (l *LegacyServiceUserModel) WithRsaPublicKey(rsaPublicKey string) *LegacySe
 
 func (l *LegacyServiceUserModel) WithRsaPublicKey2(rsaPublicKey2 string) *LegacyServiceUserModel {
 	l.RsaPublicKey2 = config.MultilineWrapperVariable(rsaPublicKey2)
-	return l
-}
-
-func (l *LegacyServiceUserModel) WithRsaPublicKey2Wo(rsaPublicKey2Wo string) *LegacyServiceUserModel {
-	l.RsaPublicKey2Wo = config.MultilineWrapperVariable(rsaPublicKey2Wo)
-	return l
-}
-
-func (l *LegacyServiceUserModel) WithRsaPublicKey2WoVersion(rsaPublicKey2WoVersion int) *LegacyServiceUserModel {
-	l.RsaPublicKey2WoVersion = tfconfig.IntegerVariable(rsaPublicKey2WoVersion)
-	return l
-}
-
-func (l *LegacyServiceUserModel) WithRsaPublicKeyWo(rsaPublicKeyWo string) *LegacyServiceUserModel {
-	l.RsaPublicKeyWo = config.MultilineWrapperVariable(rsaPublicKeyWo)
-	return l
-}
-
-func (l *LegacyServiceUserModel) WithRsaPublicKeyWoVersion(rsaPublicKeyWoVersion int) *LegacyServiceUserModel {
-	l.RsaPublicKeyWoVersion = tfconfig.IntegerVariable(rsaPublicKeyWoVersion)
 	return l
 }
 
@@ -631,11 +553,6 @@ func (l *LegacyServiceUserModel) WithAbortDetachedQueryValue(value tfconfig.Vari
 	return l
 }
 
-func (l *LegacyServiceUserModel) WithActivePythonProfilerValue(value tfconfig.Variable) *LegacyServiceUserModel {
-	l.ActivePythonProfiler = value
-	return l
-}
-
 func (l *LegacyServiceUserModel) WithAutocommitValue(value tfconfig.Variable) *LegacyServiceUserModel {
 	l.Autocommit = value
 	return l
@@ -651,11 +568,6 @@ func (l *LegacyServiceUserModel) WithBinaryOutputFormatValue(value tfconfig.Vari
 	return l
 }
 
-func (l *LegacyServiceUserModel) WithClientEnableLogInfoStatementParametersValue(value tfconfig.Variable) *LegacyServiceUserModel {
-	l.ClientEnableLogInfoStatementParameters = value
-	return l
-}
-
 func (l *LegacyServiceUserModel) WithClientMemoryLimitValue(value tfconfig.Variable) *LegacyServiceUserModel {
 	l.ClientMemoryLimit = value
 	return l
@@ -663,11 +575,6 @@ func (l *LegacyServiceUserModel) WithClientMemoryLimitValue(value tfconfig.Varia
 
 func (l *LegacyServiceUserModel) WithClientMetadataRequestUseConnectionCtxValue(value tfconfig.Variable) *LegacyServiceUserModel {
 	l.ClientMetadataRequestUseConnectionCtx = value
-	return l
-}
-
-func (l *LegacyServiceUserModel) WithClientMetadataUseSessionDatabaseValue(value tfconfig.Variable) *LegacyServiceUserModel {
-	l.ClientMetadataUseSessionDatabase = value
 	return l
 }
 
@@ -703,11 +610,6 @@ func (l *LegacyServiceUserModel) WithClientTimestampTypeMappingValue(value tfcon
 
 func (l *LegacyServiceUserModel) WithCommentValue(value tfconfig.Variable) *LegacyServiceUserModel {
 	l.Comment = value
-	return l
-}
-
-func (l *LegacyServiceUserModel) WithCsvTimestampFormatValue(value tfconfig.Variable) *LegacyServiceUserModel {
-	l.CsvTimestampFormat = value
 	return l
 }
 
@@ -766,11 +668,6 @@ func (l *LegacyServiceUserModel) WithEmailValue(value tfconfig.Variable) *Legacy
 	return l
 }
 
-func (l *LegacyServiceUserModel) WithEnableGetDdlUseDataTypeAliasValue(value tfconfig.Variable) *LegacyServiceUserModel {
-	l.EnableGetDdlUseDataTypeAlias = value
-	return l
-}
-
 func (l *LegacyServiceUserModel) WithEnableUnloadPhysicalTypeOptimizationValue(value tfconfig.Variable) *LegacyServiceUserModel {
 	l.EnableUnloadPhysicalTypeOptimization = value
 	return l
@@ -806,11 +703,6 @@ func (l *LegacyServiceUserModel) WithGeometryOutputFormatValue(value tfconfig.Va
 	return l
 }
 
-func (l *LegacyServiceUserModel) WithHybridTableLockTimeoutValue(value tfconfig.Variable) *LegacyServiceUserModel {
-	l.HybridTableLockTimeout = value
-	return l
-}
-
 func (l *LegacyServiceUserModel) WithJdbcTreatDecimalAsIntValue(value tfconfig.Variable) *LegacyServiceUserModel {
 	l.JdbcTreatDecimalAsInt = value
 	return l
@@ -823,11 +715,6 @@ func (l *LegacyServiceUserModel) WithJdbcTreatTimestampNtzAsUtcValue(value tfcon
 
 func (l *LegacyServiceUserModel) WithJdbcUseSessionTimezoneValue(value tfconfig.Variable) *LegacyServiceUserModel {
 	l.JdbcUseSessionTimezone = value
-	return l
-}
-
-func (l *LegacyServiceUserModel) WithJsTreatIntegerAsBigintValue(value tfconfig.Variable) *LegacyServiceUserModel {
-	l.JsTreatIntegerAsBigint = value
 	return l
 }
 
@@ -896,16 +783,6 @@ func (l *LegacyServiceUserModel) WithPreventUnloadToInternalStagesValue(value tf
 	return l
 }
 
-func (l *LegacyServiceUserModel) WithPythonProfilerModulesValue(value tfconfig.Variable) *LegacyServiceUserModel {
-	l.PythonProfilerModules = value
-	return l
-}
-
-func (l *LegacyServiceUserModel) WithPythonProfilerTargetStageValue(value tfconfig.Variable) *LegacyServiceUserModel {
-	l.PythonProfilerTargetStage = value
-	return l
-}
-
 func (l *LegacyServiceUserModel) WithQueryTagValue(value tfconfig.Variable) *LegacyServiceUserModel {
 	l.QueryTag = value
 	return l
@@ -928,26 +805,6 @@ func (l *LegacyServiceUserModel) WithRsaPublicKeyValue(value tfconfig.Variable) 
 
 func (l *LegacyServiceUserModel) WithRsaPublicKey2Value(value tfconfig.Variable) *LegacyServiceUserModel {
 	l.RsaPublicKey2 = value
-	return l
-}
-
-func (l *LegacyServiceUserModel) WithRsaPublicKey2WoValue(value tfconfig.Variable) *LegacyServiceUserModel {
-	l.RsaPublicKey2Wo = value
-	return l
-}
-
-func (l *LegacyServiceUserModel) WithRsaPublicKey2WoVersionValue(value tfconfig.Variable) *LegacyServiceUserModel {
-	l.RsaPublicKey2WoVersion = value
-	return l
-}
-
-func (l *LegacyServiceUserModel) WithRsaPublicKeyWoValue(value tfconfig.Variable) *LegacyServiceUserModel {
-	l.RsaPublicKeyWo = value
-	return l
-}
-
-func (l *LegacyServiceUserModel) WithRsaPublicKeyWoVersionValue(value tfconfig.Variable) *LegacyServiceUserModel {
-	l.RsaPublicKeyWoVersion = value
 	return l
 }
 

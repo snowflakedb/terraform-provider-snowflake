@@ -5,7 +5,6 @@ func {{ .Name }}() *tfschema.Resource {
 {{ template "constructor" . }}
 	}
 }
-{{- if .Hooks.ShowByIdInSdk.Present }}
 
 func Import{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
 {{ template "parseId" . -}}
@@ -17,13 +16,10 @@ func Import{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) 
 	if err != nil {
 		return nil, err
 	}
-{{ if .Hooks.SetFieldsNotSetByRead.Present }}
-	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
-{{ end -}}
+
 {{ template "setFieldsNotSetByRead" . -}}
 	return []*tfschema.ResourceData{d}, nil
 }
-{{- end }}
 
 func Create{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
 {{ template "parseIdFromConfig" . -}}
@@ -41,8 +37,8 @@ func Create{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) 
 {{ template "applyParametersCreate" . }}
 {{ template "createInSdk" . }}
 
-	d.SetId({{ if .LegacyIdEncoding }}helpers.EncodeSnowflakeID(id){{ else }}helpers.EncodeResourceIdentifier(id){{ end }})
-{{ template "afterCreate" . }}
+	d.SetId(helpers.EncodeResourceIdentifier(id))
+	return Read{{ .Name }}Func(false)(ctx, d, meta)
 }
 
 func Read{{ .Name }}Func(withExternalChangesMarking bool) tfschema.ReadContextFunc {
@@ -52,16 +48,15 @@ func Read{{ .Name }}Func(withExternalChangesMarking bool) tfschema.ReadContextFu
 			return diag.FromErr(err)
 		}
 
-{{ if and .Hooks.HandleExternalChangesInDescribe.Present .Hooks.DescribeInSdk.Present -}}
-		var diags diag.Diagnostics
-{{ end -}}
 {{ template "showByIdSafelyInSdk" . -}}
+		if diags != nil {
+			return diags
+		}
 {{ template "describeInSdk" . -}}
 {{ template "showParametersInSdk" . -}}
 {{ template "parametersDetailsFromRaw" . -}}
 {{ template "setParametersFields" . -}}
 {{ template "handleExternalChanges" . }}
-{{ template "handleExternalChangesInDescribe" . }}
 {{ template "setStateToValuesFromConfig" . -}}
 		errs := errors.Join(
 {{ template "showOutputSet" . -}}
@@ -72,21 +67,12 @@ func Read{{ .Name }}Func(withExternalChangesMarking bool) tfschema.ReadContextFu
 {{ template "setConfigFields" . }}
 		)
 		if errs != nil {
-{{ if and .Hooks.HandleExternalChangesInDescribe.Present .Hooks.DescribeInSdk.Present -}}
-			return append(diags, diag.FromErr(errs)...)
-{{ else -}}
 			return diag.FromErr(errs)
-{{ end }}
 		}
-{{ if and .Hooks.HandleExternalChangesInDescribe.Present .Hooks.DescribeInSdk.Present -}}
-		return diags
-{{ else -}}
 		return nil
-{{ end }}
 	}
 }
 
-{{- if .RequiresUpdate }}
 func Update{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
 {{ template "parseId" . -}}
 	if err != nil {
@@ -98,54 +84,5 @@ func Update{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) 
 {{ template "applyParametersChanges" . -}}
 {{ template "alterSetInSdk" . -}}
 {{ template "alterUnsetInSdk" . -}}
-{{ template "afterAlter" . }}
+	return Read{{ .Name }}Func(false)(ctx, d, meta)
 }
-{{- end }}
-{{- if .Hooks.CustomizeDiff.Generate }}
-
-var {{ .Prefix }}CustomizeDiff = TrackingCustomDiffWrapper(resources.{{ .Name }}, customdiff.All(
-{{- range .CustomDiffCalls }}
-	{{ . }},
-{{- end }}
-))
-{{- end }}
-{{- if .Hooks.ParseIdFromConfig.Generate }}
-
-{{ template "generatedParseIdFromConfig" . }}
-{{- end }}
-{{- if .Hooks.ParseId.Generate }}
-
-{{ template "generatedParseId" . }}
-{{- end }}
-{{- if .Hooks.NewCreateRequest.Generate }}
-
-{{ template "generatedCreateRequest" .CreateRequestFunc }}
-{{- end }}
-{{- if .Hooks.ApplyCreateOptionals.Generate }}
-
-{{ template "generatedApplyCreateOptionals" . }}
-{{- range .CreateBlockFuncs }}
-
-{{ template "generatedCreateRequest" . }}
-{{- end }}
-{{- end }}
-{{- if .Hooks.ApplySetUnset.Generate }}
-
-{{ template "generatedApplySetUnset" . }}
-{{- end }}
-{{- if .Hooks.HandleExternalChanges.Generate }}
-
-{{ template "generatedHandleExternalChanges" . }}
-{{- end }}
-{{- if and .Hooks.HandleExternalChangesInDescribe.Generate .Hooks.DescribeInSdk.Present }}
-
-{{ template "generatedHandleExternalChangesInDescribe" . }}
-{{- end }}
-{{- if .Hooks.DropSafelyInSdk.Generate }}
-
-{{ template "generatedDelete" . }}
-{{- end }}
-{{- if .Hooks.SetConfigFields.Generate }}
-
-{{ template "generatedSetConfigFields" . }}
-{{- end }}

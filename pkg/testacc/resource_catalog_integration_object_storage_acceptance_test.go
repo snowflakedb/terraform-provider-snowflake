@@ -17,10 +17,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -159,10 +157,8 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 			HasComment(""),
 	}
 
-	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
-
 	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -170,7 +166,6 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -179,17 +174,15 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, basicAssertions...),
 			},
-			// Import - permissive mode
+			// Import
 			{
-				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
-				Config:                   config.FromModels(t, providerModelImportPermissiveMode, basic),
-				ResourceName:             ref,
-				ImportState:              true,
-				ImportStateKind:          resource.ImportBlockWithID,
+				Config:            config.FromModels(t, basic),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			// Change alterable props
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -200,7 +193,6 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 			},
 			// Unset
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -211,7 +203,6 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 			},
 			// Destroy
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroy),
@@ -222,7 +213,6 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 			},
 			// Create with all attributes
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -231,9 +221,16 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, allAttributes),
 				Check:  assertThat(t, completeAssertions...),
 			},
+			// Import
+			{
+				Config:                  config.FromModels(t, allAttributes),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"refresh_interval_seconds"},
+			},
 			// Change alterable props externally
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					alterRequest := sdk.NewAlterCatalogIntegrationRequest(id).WithSet(
 						*sdk.NewCatalogIntegrationSetRequest().
@@ -259,7 +256,6 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 			},
 			// Change force new "table_format" prop
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -270,11 +266,11 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 			},
 			// Change force new "table_format" prop externally
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
-					createRequest := sdk.NewCreateObjectStorageCatalogIntegrationRequest(id, sdk.CatalogIntegrationTableFormatDelta, false).
-						WithOrReplace(true)
-					testClient().CatalogIntegration.CreateObjectStorageFunc(t, createRequest)
+					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+						WithOrReplace(true).
+						WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(sdk.CatalogIntegrationTableFormatDelta))
+					testClient().CatalogIntegration.CreateFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -288,11 +284,11 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 			},
 			// Change "catalog_source" externally
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
-					createRequest := sdk.NewCreateAwsGlueCatalogIntegrationRequest(id, "arn:aws:iam::123456789012:role/sqsAccess", random.NumericN(15), false).
-						WithOrReplace(true)
-					testClient().CatalogIntegration.CreateAwsGlueFunc(t, createRequest)
+					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+						WithOrReplace(true).
+						WithAwsGlueCatalogSourceParams(*sdk.NewAwsGlueParamsRequest("arn:aws:iam::123456789012:role/sqsAccess", random.NumericN(15)))
+					testClient().CatalogIntegration.CreateFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -357,10 +353,8 @@ func TestAcc_CatalogIntegrationObjectStorage_CompleteUseCase(t *testing.T) {
 			HasComment(comment),
 	}
 
-	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
-
 	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -368,7 +362,6 @@ func TestAcc_CatalogIntegrationObjectStorage_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create - with all optionals (including optional force-new fields)
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -377,70 +370,17 @@ func TestAcc_CatalogIntegrationObjectStorage_CompleteUseCase(t *testing.T) {
 				Config: config.FromModels(t, complete),
 				Check:  assertThat(t, completeAssertions...),
 			},
-			// Import - with all optionals
+			// Import - with all optionals.
+			// refresh_interval_seconds is not read back into state on purpose (handled as an external
+			// change against DESCRIBE output), so import cannot round-trip the configured value.
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, complete),
-				ResourceName:             ref,
-				ImportState:              true,
-				ImportStateVerify:        true,
-			},
-			// Import - with all optionals, permissive mode
-			{
-				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
-				Config:                   config.FromModels(t, providerModelImportPermissiveMode, complete),
-				ResourceName:             ref,
-				ImportState:              true,
-				ImportStateKind:          resource.ImportBlockWithID,
-			},
-		},
-	})
-}
-
-func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase_Import(t *testing.T) {
-	id := testClient().Ids.RandomAccountObjectIdentifier()
-
-	tableFormat := sdk.CatalogIntegrationTableFormatDelta
-	refreshIntervalSeconds := random.IntRange(31, 86400)
-
-	basicModel := model.CatalogIntegrationObjectStorage("t", id.Name(), false, string(tableFormat))
-	ref := basicModel.ResourceReference()
-
-	_, cleanup := testClient().CatalogIntegration.CreateObjectStorageFunc(t, sdk.NewCreateObjectStorageCatalogIntegrationRequest(id, tableFormat, false).
-		WithRefreshIntervalSeconds(refreshIntervalSeconds))
-	t.Cleanup(cleanup)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.CatalogIntegrationObjectStorage),
-		Steps: []resource.TestStep{
-			// Import - without optionals
-			{
-				Config:             config.FromModels(t, basicModel),
-				ResourceName:       ref,
-				ImportState:        true,
-				ImportStateId:      id.FullyQualifiedName(),
-				ImportStatePersist: true,
-			},
-			// Expect empty plan after the plan after import is applied
-			{
-				Config: config.FromModels(t, basicModel),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(ref, "refresh_interval_seconds", tfjson.ActionUpdate, new(strconv.Itoa(refreshIntervalSeconds)), nil),
-					},
-					PostApplyPostRefresh: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
+				Config:            config.FromModels(t, complete),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"refresh_interval_seconds",
 				},
-				Check: assertThat(t,
-					resourceassert.CatalogIntegrationObjectStorageResource(t, ref).
-						HasRefreshIntervalSeconds(0),
-				),
 			},
 		},
 	})
@@ -482,8 +422,9 @@ func TestAcc_CatalogIntegrationObjectStorage_ImportValidation(t *testing.T) {
 	t.Cleanup(notificationIntegrationCleanup)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	catalogIntegrationAwsGlue, catalogIntegrationAwsGlueCleanup := testClient().CatalogIntegration.CreateAwsGlueFunc(t,
-		sdk.NewCreateAwsGlueCatalogIntegrationRequest(id, "arn:aws:iam::123456789012:role/sqsAccess", random.NumericN(15), false))
+	catalogIntegrationAwsGlue, catalogIntegrationAwsGlueCleanup := testClient().CatalogIntegration.CreateFunc(t,
+		sdk.NewCreateCatalogIntegrationRequest(id, false).
+			WithAwsGlueCatalogSourceParams(*sdk.NewAwsGlueParamsRequest("arn:aws:iam::123456789012:role/sqsAccess", random.NumericN(15))))
 	t.Cleanup(catalogIntegrationAwsGlueCleanup)
 
 	tableFormat := string(sdk.CatalogIntegrationTableFormatDelta)
@@ -540,10 +481,11 @@ func TestAcc_CatalogIntegrationObjectStorage_Import(t *testing.T) {
 			{
 				PreConfig: func() {
 					tableFormatEnum, _ := sdk.ToCatalogIntegrationTableFormat(tableFormat)
-					createRequest := sdk.NewCreateObjectStorageCatalogIntegrationRequest(id, tableFormatEnum, false).
+					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
 						WithRefreshIntervalSeconds(refreshIntervalSeconds).
-						WithComment(comment)
-					testClient().CatalogIntegration.CreateObjectStorageFunc(t, createRequest)
+						WithComment(comment).
+						WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(tableFormatEnum))
+					testClient().CatalogIntegration.CreateFunc(t, createRequest)
 				},
 				Config:             config.FromModels(t, allAttributes),
 				ResourceName:       ref,

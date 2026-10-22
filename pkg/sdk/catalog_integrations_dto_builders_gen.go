@@ -2,278 +2,222 @@
 
 package sdk
 
-func NewCreateAwsGlueCatalogIntegrationRequest(
+func NewCreateCatalogIntegrationRequest(
 	name AccountObjectIdentifier,
-	glueAwsRoleArn string,
-	glueCatalogId string,
 	enabled bool,
-) *CreateAwsGlueCatalogIntegrationRequest {
-	s := CreateAwsGlueCatalogIntegrationRequest{}
+) *CreateCatalogIntegrationRequest {
+	s := CreateCatalogIntegrationRequest{}
 	s.name = name
-	s.GlueAwsRoleArn = glueAwsRoleArn
-	s.GlueCatalogId = glueCatalogId
 	s.Enabled = enabled
 	return &s
 }
 
-func (s *CreateAwsGlueCatalogIntegrationRequest) WithOrReplace(orReplace bool) *CreateAwsGlueCatalogIntegrationRequest {
+func (s *CreateCatalogIntegrationRequest) WithOrReplace(orReplace bool) *CreateCatalogIntegrationRequest {
 	s.OrReplace = &orReplace
 	return s
 }
 
-func (s *CreateAwsGlueCatalogIntegrationRequest) WithIfNotExists(ifNotExists bool) *CreateAwsGlueCatalogIntegrationRequest {
+func (s *CreateCatalogIntegrationRequest) WithIfNotExists(ifNotExists bool) *CreateCatalogIntegrationRequest {
 	s.IfNotExists = &ifNotExists
 	return s
 }
 
-func (s *CreateAwsGlueCatalogIntegrationRequest) WithGlueRegion(glueRegion string) *CreateAwsGlueCatalogIntegrationRequest {
+func (s *CreateCatalogIntegrationRequest) WithAwsGlueCatalogSourceParams(awsGlueCatalogSourceParams AwsGlueParamsRequest) *CreateCatalogIntegrationRequest {
+	s.AwsGlueCatalogSourceParams = &awsGlueCatalogSourceParams
+	return s
+}
+
+func (s *CreateCatalogIntegrationRequest) WithObjectStorageCatalogSourceParams(objectStorageCatalogSourceParams ObjectStorageParamsRequest) *CreateCatalogIntegrationRequest {
+	s.ObjectStorageCatalogSourceParams = &objectStorageCatalogSourceParams
+	return s
+}
+
+func (s *CreateCatalogIntegrationRequest) WithOpenCatalogCatalogSourceParams(openCatalogCatalogSourceParams OpenCatalogParamsRequest) *CreateCatalogIntegrationRequest {
+	s.OpenCatalogCatalogSourceParams = &openCatalogCatalogSourceParams
+	return s
+}
+
+func (s *CreateCatalogIntegrationRequest) WithIcebergRestCatalogSourceParams(icebergRestCatalogSourceParams IcebergRestParamsRequest) *CreateCatalogIntegrationRequest {
+	s.IcebergRestCatalogSourceParams = &icebergRestCatalogSourceParams
+	return s
+}
+
+func (s *CreateCatalogIntegrationRequest) WithRefreshIntervalSeconds(refreshIntervalSeconds int) *CreateCatalogIntegrationRequest {
+	s.RefreshIntervalSeconds = &refreshIntervalSeconds
+	return s
+}
+
+func (s *CreateCatalogIntegrationRequest) WithComment(comment string) *CreateCatalogIntegrationRequest {
+	s.Comment = &comment
+	return s
+}
+
+func NewAwsGlueParamsRequest(
+	glueAwsRoleArn string,
+	glueCatalogId string,
+) *AwsGlueParamsRequest {
+	s := AwsGlueParamsRequest{}
+	s.GlueAwsRoleArn = glueAwsRoleArn
+	s.GlueCatalogId = glueCatalogId
+	return &s
+}
+
+func (s *AwsGlueParamsRequest) WithGlueRegion(glueRegion string) *AwsGlueParamsRequest {
 	s.GlueRegion = &glueRegion
 	return s
 }
 
-func (s *CreateAwsGlueCatalogIntegrationRequest) WithCatalogNamespace(catalogNamespace string) *CreateAwsGlueCatalogIntegrationRequest {
+func (s *AwsGlueParamsRequest) WithCatalogNamespace(catalogNamespace string) *AwsGlueParamsRequest {
 	s.CatalogNamespace = &catalogNamespace
 	return s
 }
 
-func (s *CreateAwsGlueCatalogIntegrationRequest) WithRefreshIntervalSeconds(refreshIntervalSeconds int) *CreateAwsGlueCatalogIntegrationRequest {
-	s.RefreshIntervalSeconds = &refreshIntervalSeconds
-	return s
-}
-
-func (s *CreateAwsGlueCatalogIntegrationRequest) WithComment(comment string) *CreateAwsGlueCatalogIntegrationRequest {
-	s.Comment = &comment
-	return s
-}
-
-func NewCreateIcebergRestCatalogIntegrationRequest(
-	name AccountObjectIdentifier,
-	restConfig CatalogIntegrationIcebergRestRestConfigRequest,
-	enabled bool,
-) *CreateIcebergRestCatalogIntegrationRequest {
-	s := CreateIcebergRestCatalogIntegrationRequest{}
-	s.name = name
-	s.RestConfig = restConfig
-	s.Enabled = enabled
-	return &s
-}
-
-func (s *CreateIcebergRestCatalogIntegrationRequest) WithOrReplace(orReplace bool) *CreateIcebergRestCatalogIntegrationRequest {
-	s.OrReplace = &orReplace
-	return s
-}
-
-func (s *CreateIcebergRestCatalogIntegrationRequest) WithIfNotExists(ifNotExists bool) *CreateIcebergRestCatalogIntegrationRequest {
-	s.IfNotExists = &ifNotExists
-	return s
-}
-
-func (s *CreateIcebergRestCatalogIntegrationRequest) WithCatalogNamespace(catalogNamespace string) *CreateIcebergRestCatalogIntegrationRequest {
-	s.CatalogNamespace = &catalogNamespace
-	return s
-}
-
-func (s *CreateIcebergRestCatalogIntegrationRequest) WithOAuthRestAuthentication(oAuthRestAuthentication CatalogIntegrationIcebergRestOauthRestAuthenticationRequest) *CreateIcebergRestCatalogIntegrationRequest {
-	s.OAuthRestAuthentication = &oAuthRestAuthentication
-	return s
-}
-
-func (s *CreateIcebergRestCatalogIntegrationRequest) WithBearerRestAuthentication(bearerRestAuthentication CatalogIntegrationIcebergRestBearerRestAuthenticationRequest) *CreateIcebergRestCatalogIntegrationRequest {
-	s.BearerRestAuthentication = &bearerRestAuthentication
-	return s
-}
-
-func (s *CreateIcebergRestCatalogIntegrationRequest) WithSigV4RestAuthentication(sigV4RestAuthentication CatalogIntegrationIcebergRestSigv4RestAuthenticationRequest) *CreateIcebergRestCatalogIntegrationRequest {
-	s.SigV4RestAuthentication = &sigV4RestAuthentication
-	return s
-}
-
-func (s *CreateIcebergRestCatalogIntegrationRequest) WithRefreshIntervalSeconds(refreshIntervalSeconds int) *CreateIcebergRestCatalogIntegrationRequest {
-	s.RefreshIntervalSeconds = &refreshIntervalSeconds
-	return s
-}
-
-func (s *CreateIcebergRestCatalogIntegrationRequest) WithComment(comment string) *CreateIcebergRestCatalogIntegrationRequest {
-	s.Comment = &comment
-	return s
-}
-
-func NewCatalogIntegrationIcebergRestRestConfigRequest(
-	catalogUri string,
-) *CatalogIntegrationIcebergRestRestConfigRequest {
-	s := CatalogIntegrationIcebergRestRestConfigRequest{}
-	s.CatalogUri = catalogUri
-	return &s
-}
-
-func (s *CatalogIntegrationIcebergRestRestConfigRequest) WithPrefix(prefix string) *CatalogIntegrationIcebergRestRestConfigRequest {
-	s.Prefix = &prefix
-	return s
-}
-
-func (s *CatalogIntegrationIcebergRestRestConfigRequest) WithCatalogName(catalogName string) *CatalogIntegrationIcebergRestRestConfigRequest {
-	s.CatalogName = &catalogName
-	return s
-}
-
-func (s *CatalogIntegrationIcebergRestRestConfigRequest) WithCatalogApiType(catalogApiType CatalogIntegrationCatalogApiType) *CatalogIntegrationIcebergRestRestConfigRequest {
-	s.CatalogApiType = &catalogApiType
-	return s
-}
-
-func (s *CatalogIntegrationIcebergRestRestConfigRequest) WithAccessDelegationMode(accessDelegationMode CatalogIntegrationAccessDelegationMode) *CatalogIntegrationIcebergRestRestConfigRequest {
-	s.AccessDelegationMode = &accessDelegationMode
-	return s
-}
-
-func NewCatalogIntegrationIcebergRestOauthRestAuthenticationRequest(
-	oauthClientId string,
-	oauthClientSecret string,
-	oauthAllowedScopes []StringListItemWrapper,
-) *CatalogIntegrationIcebergRestOauthRestAuthenticationRequest {
-	s := CatalogIntegrationIcebergRestOauthRestAuthenticationRequest{}
-	s.OauthClientId = oauthClientId
-	s.OauthClientSecret = oauthClientSecret
-	s.OauthAllowedScopes = oauthAllowedScopes
-	return &s
-}
-
-func (s *CatalogIntegrationIcebergRestOauthRestAuthenticationRequest) WithOauthTokenUri(oauthTokenUri string) *CatalogIntegrationIcebergRestOauthRestAuthenticationRequest {
-	s.OauthTokenUri = &oauthTokenUri
-	return s
-}
-
-func NewCatalogIntegrationIcebergRestBearerRestAuthenticationRequest(
-	bearerToken string,
-) *CatalogIntegrationIcebergRestBearerRestAuthenticationRequest {
-	s := CatalogIntegrationIcebergRestBearerRestAuthenticationRequest{}
-	s.BearerToken = bearerToken
-	return &s
-}
-
-func NewCatalogIntegrationIcebergRestSigv4RestAuthenticationRequest(
-	sigv4IamRole string,
-) *CatalogIntegrationIcebergRestSigv4RestAuthenticationRequest {
-	s := CatalogIntegrationIcebergRestSigv4RestAuthenticationRequest{}
-	s.Sigv4IamRole = sigv4IamRole
-	return &s
-}
-
-func (s *CatalogIntegrationIcebergRestSigv4RestAuthenticationRequest) WithSigv4SigningRegion(sigv4SigningRegion string) *CatalogIntegrationIcebergRestSigv4RestAuthenticationRequest {
-	s.Sigv4SigningRegion = &sigv4SigningRegion
-	return s
-}
-
-func (s *CatalogIntegrationIcebergRestSigv4RestAuthenticationRequest) WithSigv4ExternalId(sigv4ExternalId string) *CatalogIntegrationIcebergRestSigv4RestAuthenticationRequest {
-	s.Sigv4ExternalId = &sigv4ExternalId
-	return s
-}
-
-func NewCreateObjectStorageCatalogIntegrationRequest(
-	name AccountObjectIdentifier,
+func NewObjectStorageParamsRequest(
 	tableFormat CatalogIntegrationTableFormat,
-	enabled bool,
-) *CreateObjectStorageCatalogIntegrationRequest {
-	s := CreateObjectStorageCatalogIntegrationRequest{}
-	s.name = name
+) *ObjectStorageParamsRequest {
+	s := ObjectStorageParamsRequest{}
 	s.TableFormat = tableFormat
-	s.Enabled = enabled
 	return &s
 }
 
-func (s *CreateObjectStorageCatalogIntegrationRequest) WithOrReplace(orReplace bool) *CreateObjectStorageCatalogIntegrationRequest {
-	s.OrReplace = &orReplace
-	return s
-}
-
-func (s *CreateObjectStorageCatalogIntegrationRequest) WithIfNotExists(ifNotExists bool) *CreateObjectStorageCatalogIntegrationRequest {
-	s.IfNotExists = &ifNotExists
-	return s
-}
-
-func (s *CreateObjectStorageCatalogIntegrationRequest) WithRefreshIntervalSeconds(refreshIntervalSeconds int) *CreateObjectStorageCatalogIntegrationRequest {
-	s.RefreshIntervalSeconds = &refreshIntervalSeconds
-	return s
-}
-
-func (s *CreateObjectStorageCatalogIntegrationRequest) WithComment(comment string) *CreateObjectStorageCatalogIntegrationRequest {
-	s.Comment = &comment
-	return s
-}
-
-func NewCreateOpenCatalogCatalogIntegrationRequest(
-	name AccountObjectIdentifier,
-	restConfig CatalogIntegrationOpenCatalogRestConfigRequest,
-	restAuthentication CatalogIntegrationOpenCatalogRestAuthenticationRequest,
-	enabled bool,
-) *CreateOpenCatalogCatalogIntegrationRequest {
-	s := CreateOpenCatalogCatalogIntegrationRequest{}
-	s.name = name
-	s.RestConfig = restConfig
-	s.RestAuthentication = restAuthentication
-	s.Enabled = enabled
+func NewOpenCatalogParamsRequest() *OpenCatalogParamsRequest {
+	s := OpenCatalogParamsRequest{}
 	return &s
 }
 
-func (s *CreateOpenCatalogCatalogIntegrationRequest) WithOrReplace(orReplace bool) *CreateOpenCatalogCatalogIntegrationRequest {
-	s.OrReplace = &orReplace
-	return s
-}
-
-func (s *CreateOpenCatalogCatalogIntegrationRequest) WithIfNotExists(ifNotExists bool) *CreateOpenCatalogCatalogIntegrationRequest {
-	s.IfNotExists = &ifNotExists
-	return s
-}
-
-func (s *CreateOpenCatalogCatalogIntegrationRequest) WithCatalogNamespace(catalogNamespace string) *CreateOpenCatalogCatalogIntegrationRequest {
+func (s *OpenCatalogParamsRequest) WithCatalogNamespace(catalogNamespace string) *OpenCatalogParamsRequest {
 	s.CatalogNamespace = &catalogNamespace
 	return s
 }
 
-func (s *CreateOpenCatalogCatalogIntegrationRequest) WithRefreshIntervalSeconds(refreshIntervalSeconds int) *CreateOpenCatalogCatalogIntegrationRequest {
-	s.RefreshIntervalSeconds = &refreshIntervalSeconds
+func (s *OpenCatalogParamsRequest) WithRestConfig(restConfig OpenCatalogRestConfigRequest) *OpenCatalogParamsRequest {
+	s.RestConfig = restConfig
 	return s
 }
 
-func (s *CreateOpenCatalogCatalogIntegrationRequest) WithComment(comment string) *CreateOpenCatalogCatalogIntegrationRequest {
-	s.Comment = &comment
+func (s *OpenCatalogParamsRequest) WithRestAuthentication(restAuthentication OAuthRestAuthenticationRequest) *OpenCatalogParamsRequest {
+	s.RestAuthentication = restAuthentication
 	return s
 }
 
-func NewCatalogIntegrationOpenCatalogRestConfigRequest(
+func NewOpenCatalogRestConfigRequest(
 	catalogUri string,
 	catalogName string,
-) *CatalogIntegrationOpenCatalogRestConfigRequest {
-	s := CatalogIntegrationOpenCatalogRestConfigRequest{}
+) *OpenCatalogRestConfigRequest {
+	s := OpenCatalogRestConfigRequest{}
 	s.CatalogUri = catalogUri
 	s.CatalogName = catalogName
 	return &s
 }
 
-func (s *CatalogIntegrationOpenCatalogRestConfigRequest) WithCatalogApiType(catalogApiType CatalogIntegrationCatalogApiType) *CatalogIntegrationOpenCatalogRestConfigRequest {
+func (s *OpenCatalogRestConfigRequest) WithCatalogApiType(catalogApiType CatalogIntegrationCatalogApiType) *OpenCatalogRestConfigRequest {
 	s.CatalogApiType = &catalogApiType
 	return s
 }
 
-func (s *CatalogIntegrationOpenCatalogRestConfigRequest) WithAccessDelegationMode(accessDelegationMode CatalogIntegrationAccessDelegationMode) *CatalogIntegrationOpenCatalogRestConfigRequest {
+func (s *OpenCatalogRestConfigRequest) WithAccessDelegationMode(accessDelegationMode CatalogIntegrationAccessDelegationMode) *OpenCatalogRestConfigRequest {
 	s.AccessDelegationMode = &accessDelegationMode
 	return s
 }
 
-func NewCatalogIntegrationOpenCatalogRestAuthenticationRequest(
+func NewOAuthRestAuthenticationRequest(
 	oauthClientId string,
 	oauthClientSecret string,
 	oauthAllowedScopes []StringListItemWrapper,
-) *CatalogIntegrationOpenCatalogRestAuthenticationRequest {
-	s := CatalogIntegrationOpenCatalogRestAuthenticationRequest{}
+) *OAuthRestAuthenticationRequest {
+	s := OAuthRestAuthenticationRequest{}
 	s.OauthClientId = oauthClientId
 	s.OauthClientSecret = oauthClientSecret
 	s.OauthAllowedScopes = oauthAllowedScopes
 	return &s
 }
 
-func (s *CatalogIntegrationOpenCatalogRestAuthenticationRequest) WithOauthTokenUri(oauthTokenUri string) *CatalogIntegrationOpenCatalogRestAuthenticationRequest {
+func (s *OAuthRestAuthenticationRequest) WithOauthTokenUri(oauthTokenUri string) *OAuthRestAuthenticationRequest {
 	s.OauthTokenUri = &oauthTokenUri
+	return s
+}
+
+func NewIcebergRestParamsRequest() *IcebergRestParamsRequest {
+	s := IcebergRestParamsRequest{}
+	return &s
+}
+
+func (s *IcebergRestParamsRequest) WithCatalogNamespace(catalogNamespace string) *IcebergRestParamsRequest {
+	s.CatalogNamespace = &catalogNamespace
+	return s
+}
+
+func (s *IcebergRestParamsRequest) WithRestConfig(restConfig IcebergRestRestConfigRequest) *IcebergRestParamsRequest {
+	s.RestConfig = restConfig
+	return s
+}
+
+func (s *IcebergRestParamsRequest) WithOAuthRestAuthentication(oAuthRestAuthentication OAuthRestAuthenticationRequest) *IcebergRestParamsRequest {
+	s.OAuthRestAuthentication = &oAuthRestAuthentication
+	return s
+}
+
+func (s *IcebergRestParamsRequest) WithBearerRestAuthentication(bearerRestAuthentication BearerRestAuthenticationRequest) *IcebergRestParamsRequest {
+	s.BearerRestAuthentication = &bearerRestAuthentication
+	return s
+}
+
+func (s *IcebergRestParamsRequest) WithSigV4RestAuthentication(sigV4RestAuthentication SigV4RestAuthenticationRequest) *IcebergRestParamsRequest {
+	s.SigV4RestAuthentication = &sigV4RestAuthentication
+	return s
+}
+
+func NewIcebergRestRestConfigRequest(
+	catalogUri string,
+) *IcebergRestRestConfigRequest {
+	s := IcebergRestRestConfigRequest{}
+	s.CatalogUri = catalogUri
+	return &s
+}
+
+func (s *IcebergRestRestConfigRequest) WithPrefix(prefix string) *IcebergRestRestConfigRequest {
+	s.Prefix = &prefix
+	return s
+}
+
+func (s *IcebergRestRestConfigRequest) WithCatalogName(catalogName string) *IcebergRestRestConfigRequest {
+	s.CatalogName = &catalogName
+	return s
+}
+
+func (s *IcebergRestRestConfigRequest) WithCatalogApiType(catalogApiType CatalogIntegrationCatalogApiType) *IcebergRestRestConfigRequest {
+	s.CatalogApiType = &catalogApiType
+	return s
+}
+
+func (s *IcebergRestRestConfigRequest) WithAccessDelegationMode(accessDelegationMode CatalogIntegrationAccessDelegationMode) *IcebergRestRestConfigRequest {
+	s.AccessDelegationMode = &accessDelegationMode
+	return s
+}
+
+func NewBearerRestAuthenticationRequest(
+	bearerToken string,
+) *BearerRestAuthenticationRequest {
+	s := BearerRestAuthenticationRequest{}
+	s.BearerToken = bearerToken
+	return &s
+}
+
+func NewSigV4RestAuthenticationRequest(
+	sigv4IamRole string,
+) *SigV4RestAuthenticationRequest {
+	s := SigV4RestAuthenticationRequest{}
+	s.Sigv4IamRole = sigv4IamRole
+	return &s
+}
+
+func (s *SigV4RestAuthenticationRequest) WithSigv4SigningRegion(sigv4SigningRegion string) *SigV4RestAuthenticationRequest {
+	s.Sigv4SigningRegion = &sigv4SigningRegion
+	return s
+}
+
+func (s *SigV4RestAuthenticationRequest) WithSigv4ExternalId(sigv4ExternalId string) *SigV4RestAuthenticationRequest {
+	s.Sigv4ExternalId = &sigv4ExternalId
 	return s
 }
 
@@ -310,12 +254,12 @@ func NewCatalogIntegrationSetRequest() *CatalogIntegrationSetRequest {
 	return &s
 }
 
-func (s *CatalogIntegrationSetRequest) WithSetOAuthRestAuthentication(setOAuthRestAuthentication CatalogIntegrationSetOauthRestAuthenticationRequest) *CatalogIntegrationSetRequest {
+func (s *CatalogIntegrationSetRequest) WithSetOAuthRestAuthentication(setOAuthRestAuthentication SetOAuthRestAuthenticationRequest) *CatalogIntegrationSetRequest {
 	s.SetOAuthRestAuthentication = &setOAuthRestAuthentication
 	return s
 }
 
-func (s *CatalogIntegrationSetRequest) WithSetBearerRestAuthentication(setBearerRestAuthentication CatalogIntegrationSetBearerRestAuthenticationRequest) *CatalogIntegrationSetRequest {
+func (s *CatalogIntegrationSetRequest) WithSetBearerRestAuthentication(setBearerRestAuthentication SetBearerRestAuthenticationRequest) *CatalogIntegrationSetRequest {
 	s.SetBearerRestAuthentication = &setBearerRestAuthentication
 	return s
 }
@@ -335,18 +279,18 @@ func (s *CatalogIntegrationSetRequest) WithComment(comment StringAllowEmpty) *Ca
 	return s
 }
 
-func NewCatalogIntegrationSetOauthRestAuthenticationRequest(
+func NewSetOAuthRestAuthenticationRequest(
 	oauthClientSecret string,
-) *CatalogIntegrationSetOauthRestAuthenticationRequest {
-	s := CatalogIntegrationSetOauthRestAuthenticationRequest{}
+) *SetOAuthRestAuthenticationRequest {
+	s := SetOAuthRestAuthenticationRequest{}
 	s.OauthClientSecret = oauthClientSecret
 	return &s
 }
 
-func NewCatalogIntegrationSetBearerRestAuthenticationRequest(
+func NewSetBearerRestAuthenticationRequest(
 	bearerToken string,
-) *CatalogIntegrationSetBearerRestAuthenticationRequest {
-	s := CatalogIntegrationSetBearerRestAuthenticationRequest{}
+) *SetBearerRestAuthenticationRequest {
+	s := SetBearerRestAuthenticationRequest{}
 	s.BearerToken = bearerToken
 	return &s
 }

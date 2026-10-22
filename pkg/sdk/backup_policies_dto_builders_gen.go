@@ -63,13 +63,13 @@ func (s *AlterBackupPolicyRequest) WithSet(set BackupPolicySetRequest) *AlterBac
 	return s
 }
 
-func (s *AlterBackupPolicyRequest) WithUnset(unset BackupPolicyUnsetRequest) *AlterBackupPolicyRequest {
-	s.Unset = &unset
+func (s *AlterBackupPolicyRequest) WithSetTags(setTags []TagAssociation) *AlterBackupPolicyRequest {
+	s.SetTags = setTags
 	return s
 }
 
-func (s *AlterBackupPolicyRequest) WithSetTags(setTags []TagAssociation) *AlterBackupPolicyRequest {
-	s.SetTags = setTags
+func (s *AlterBackupPolicyRequest) WithUnset(unset BackupPolicyUnsetRequest) *AlterBackupPolicyRequest {
+	s.Unset = &unset
 	return s
 }
 
@@ -83,11 +83,6 @@ func NewBackupPolicySetRequest() *BackupPolicySetRequest {
 	return &s
 }
 
-func (s *BackupPolicySetRequest) WithComment(comment string) *BackupPolicySetRequest {
-	s.Comment = &comment
-	return s
-}
-
 func (s *BackupPolicySetRequest) WithSchedule(schedule string) *BackupPolicySetRequest {
 	s.Schedule = &schedule
 	return s
@@ -98,14 +93,14 @@ func (s *BackupPolicySetRequest) WithExpireAfterDays(expireAfterDays int) *Backu
 	return s
 }
 
+func (s *BackupPolicySetRequest) WithComment(comment string) *BackupPolicySetRequest {
+	s.Comment = &comment
+	return s
+}
+
 func NewBackupPolicyUnsetRequest() *BackupPolicyUnsetRequest {
 	s := BackupPolicyUnsetRequest{}
 	return &s
-}
-
-func (s *BackupPolicyUnsetRequest) WithComment(comment bool) *BackupPolicyUnsetRequest {
-	s.Comment = &comment
-	return s
 }
 
 func (s *BackupPolicyUnsetRequest) WithSchedule(schedule bool) *BackupPolicyUnsetRequest {
@@ -115,6 +110,11 @@ func (s *BackupPolicyUnsetRequest) WithSchedule(schedule bool) *BackupPolicyUnse
 
 func (s *BackupPolicyUnsetRequest) WithExpireAfterDays(expireAfterDays bool) *BackupPolicyUnsetRequest {
 	s.ExpireAfterDays = &expireAfterDays
+	return s
+}
+
+func (s *BackupPolicyUnsetRequest) WithComment(comment bool) *BackupPolicyUnsetRequest {
+	s.Comment = &comment
 	return s
 }
 

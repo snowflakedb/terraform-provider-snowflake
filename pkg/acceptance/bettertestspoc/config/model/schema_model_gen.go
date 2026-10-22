@@ -4,11 +4,9 @@ package model
 
 import (
 	"encoding/json"
-	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
@@ -23,6 +21,7 @@ type SchemaModel struct {
 	DefaultNotebookComputePoolGpu           tfconfig.Variable `json:"default_notebook_compute_pool_gpu,omitempty"`
 	EnableConsoleOutput                     tfconfig.Variable `json:"enable_console_output,omitempty"`
 	ExternalVolume                          tfconfig.Variable `json:"external_volume,omitempty"`
+	FullyQualifiedName                      tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	IsTransient                             tfconfig.Variable `json:"is_transient,omitempty"`
 	LogEventLevel                           tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                                tfconfig.Variable `json:"log_level,omitempty"`
@@ -120,11 +119,6 @@ func (s *SchemaModel) WithCatalog(catalog string) *SchemaModel {
 	return s
 }
 
-func (s *SchemaModel) WithCatalogSdk(catalog sdk.AccountObjectIdentifier) *SchemaModel {
-	s.Catalog = tfconfig.StringVariable(catalog.Name())
-	return s
-}
-
 func (s *SchemaModel) WithComment(comment string) *SchemaModel {
 	s.Comment = tfconfig.StringVariable(comment)
 	return s
@@ -160,8 +154,8 @@ func (s *SchemaModel) WithExternalVolume(externalVolume string) *SchemaModel {
 	return s
 }
 
-func (s *SchemaModel) WithExternalVolumeSdk(externalVolume sdk.AccountObjectIdentifier) *SchemaModel {
-	s.ExternalVolume = tfconfig.StringVariable(externalVolume.Name())
+func (s *SchemaModel) WithFullyQualifiedName(fullyQualifiedName string) *SchemaModel {
+	s.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return s
 }
 
@@ -170,28 +164,13 @@ func (s *SchemaModel) WithIsTransient(isTransient string) *SchemaModel {
 	return s
 }
 
-func (s *SchemaModel) WithIsTransientBool(isTransient bool) *SchemaModel {
-	s.IsTransient = tfconfig.StringVariable(strconv.FormatBool(isTransient))
-	return s
-}
-
 func (s *SchemaModel) WithLogEventLevel(logEventLevel string) *SchemaModel {
 	s.LogEventLevel = tfconfig.StringVariable(logEventLevel)
 	return s
 }
 
-func (s *SchemaModel) WithLogEventLevelSdk(logEventLevel sdk.LogLevel) *SchemaModel {
-	s.LogEventLevel = tfconfig.StringVariable(string(logEventLevel))
-	return s
-}
-
 func (s *SchemaModel) WithLogLevel(logLevel string) *SchemaModel {
 	s.LogLevel = tfconfig.StringVariable(logLevel)
-	return s
-}
-
-func (s *SchemaModel) WithLogLevelSdk(logLevel sdk.LogLevel) *SchemaModel {
-	s.LogLevel = tfconfig.StringVariable(string(logLevel))
 	return s
 }
 
@@ -220,11 +199,6 @@ func (s *SchemaModel) WithStorageSerializationPolicy(storageSerializationPolicy 
 	return s
 }
 
-func (s *SchemaModel) WithStorageSerializationPolicySdk(storageSerializationPolicy sdk.StorageSerializationPolicy) *SchemaModel {
-	s.StorageSerializationPolicy = tfconfig.StringVariable(string(storageSerializationPolicy))
-	return s
-}
-
 func (s *SchemaModel) WithSuspendTaskAfterNumFailures(suspendTaskAfterNumFailures int) *SchemaModel {
 	s.SuspendTaskAfterNumFailures = tfconfig.IntegerVariable(suspendTaskAfterNumFailures)
 	return s
@@ -240,18 +214,8 @@ func (s *SchemaModel) WithTraceLevel(traceLevel string) *SchemaModel {
 	return s
 }
 
-func (s *SchemaModel) WithTraceLevelSdk(traceLevel sdk.TraceLevel) *SchemaModel {
-	s.TraceLevel = tfconfig.StringVariable(string(traceLevel))
-	return s
-}
-
 func (s *SchemaModel) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize string) *SchemaModel {
 	s.UserTaskManagedInitialWarehouseSize = tfconfig.StringVariable(userTaskManagedInitialWarehouseSize)
-	return s
-}
-
-func (s *SchemaModel) WithUserTaskManagedInitialWarehouseSizeSdk(userTaskManagedInitialWarehouseSize sdk.WarehouseSize) *SchemaModel {
-	s.UserTaskManagedInitialWarehouseSize = tfconfig.StringVariable(string(userTaskManagedInitialWarehouseSize))
 	return s
 }
 
@@ -267,11 +231,6 @@ func (s *SchemaModel) WithUserTaskTimeoutMs(userTaskTimeoutMs int) *SchemaModel 
 
 func (s *SchemaModel) WithWithManagedAccess(withManagedAccess string) *SchemaModel {
 	s.WithManagedAccess = tfconfig.StringVariable(withManagedAccess)
-	return s
-}
-
-func (s *SchemaModel) WithWithManagedAccessBool(withManagedAccess bool) *SchemaModel {
-	s.WithManagedAccess = tfconfig.StringVariable(strconv.FormatBool(withManagedAccess))
 	return s
 }
 
@@ -326,6 +285,11 @@ func (s *SchemaModel) WithEnableConsoleOutputValue(value tfconfig.Variable) *Sch
 
 func (s *SchemaModel) WithExternalVolumeValue(value tfconfig.Variable) *SchemaModel {
 	s.ExternalVolume = value
+	return s
+}
+
+func (s *SchemaModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *SchemaModel {
+	s.FullyQualifiedName = value
 	return s
 }
 

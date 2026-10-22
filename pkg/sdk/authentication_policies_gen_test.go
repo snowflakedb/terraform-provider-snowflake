@@ -7,18 +7,18 @@ import (
 )
 
 func init() {
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[AuthenticationPolicyTargetScope]{"AuthenticationPolicyTargetScope", AllAuthenticationPolicyTargetScopes, ToAuthenticationPolicyTargetScope})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[AuthenticationMethodsOption]{"AuthenticationMethodsOption", AllAuthenticationMethodsOptions, ToAuthenticationMethodsOption})
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaEnrollmentOption]{"MfaEnrollmentOption", AllMfaEnrollmentOptions, ToMfaEnrollmentOption})
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ClientTypesOption]{"ClientTypesOption", AllClientTypesOptions, ToClientTypesOption})
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ClientPolicyDriverType]{"ClientPolicyDriverType", AllClientPolicyDriverTypes, ToClientPolicyDriverType})
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[EnforceMfaOnExternalAuthenticationOption]{"EnforceMfaOnExternalAuthenticationOption", AllEnforceMfaOnExternalAuthenticationOptions, ToEnforceMfaOnExternalAuthenticationOption})
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaPolicyAllowedMethodsOption]{"MfaPolicyAllowedMethodsOption", AllMfaPolicyAllowedMethodsOptions, ToMfaPolicyAllowedMethodsOption})
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[NetworkPolicyEvaluationOption]{"NetworkPolicyEvaluationOption", AllNetworkPolicyEvaluationOptions, ToNetworkPolicyEvaluationOption})
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[AllowedProviderOption]{"AllowedProviderOption", AllAllowedProviderOptions, ToAllowedProviderOption})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaAuthenticationMethodsOption]{"MfaAuthenticationMethodsOption", AllMfaAuthenticationMethodsOptions, ToMfaAuthenticationMethodsOption})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaAuthenticationMethodsReadOption]{"MfaAuthenticationMethodsReadOption", AllMfaAuthenticationMethodsReadOptions, ToMfaAuthenticationMethodsReadOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaEnrollmentOption]{"MfaEnrollmentOption", AllMfaEnrollmentOptions, ToMfaEnrollmentOption})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaEnrollmentReadOption]{"MfaEnrollmentReadOption", AllMfaEnrollmentReadOptions, ToMfaEnrollmentReadOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ClientTypesOption]{"ClientTypesOption", AllClientTypesOptions, ToClientTypesOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ClientPolicyDriverType]{"ClientPolicyDriverType", AllClientPolicyDriverTypes, ToClientPolicyDriverType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[AllowedProviderOption]{"AllowedProviderOption", AllAllowedProviderOptions, ToAllowedProviderOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[NetworkPolicyEvaluationOption]{"NetworkPolicyEvaluationOption", AllNetworkPolicyEvaluationOptions, ToNetworkPolicyEvaluationOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaPolicyAllowedMethodsOption]{"MfaPolicyAllowedMethodsOption", AllMfaPolicyAllowedMethodsOptions, ToMfaPolicyAllowedMethodsOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[EnforceMfaOnExternalAuthenticationOption]{"EnforceMfaOnExternalAuthenticationOption", AllEnforceMfaOnExternalAuthenticationOptions, ToEnforceMfaOnExternalAuthenticationOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[AuthenticationPolicyTargetScope]{"AuthenticationPolicyTargetScope", AllAuthenticationPolicyTargetScopes, ToAuthenticationPolicyTargetScope})
 }
 
 var authenticationPoliciesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
@@ -90,10 +90,10 @@ var authenticationPoliciesTests = AuthenticationPoliciesTestsContext{
 			},
 			validationCase[*CreateAuthenticationPolicyOptions]{
 				Name:        case_AuthenticationPolicies_validation_Create_opts_ConflictingFields,
-				ExpectedErr: errOneOf("CreateAuthenticationPolicyOptions", "OrReplace", "IfNotExists"),
+				ExpectedErr: errOneOf("CreateAuthenticationPolicyOptions", "IfNotExists", "OrReplace"),
 				DefaultModify: func(opts *CreateAuthenticationPolicyOptions) {
-					opts.OrReplace = new(true)
 					opts.IfNotExists = new(true)
+					opts.OrReplace = new(true)
 				},
 			},
 			validationCase[*CreateAuthenticationPolicyOptions]{
@@ -109,7 +109,7 @@ var authenticationPoliciesTests = AuthenticationPoliciesTestsContext{
 				Name:        case_AuthenticationPolicies_validation_Create_opts_SecurityIntegrations_ExactlyOneValueSet_NoneSet,
 				ExpectedErr: errExactlyOneOf("CreateAuthenticationPolicyOptions.SecurityIntegrations", "All", "SecurityIntegrations"),
 				DefaultModify: func(opts *CreateAuthenticationPolicyOptions) {
-					opts.SecurityIntegrations = &AuthenticationPolicySecurityIntegrationsOption{}
+					opts.SecurityIntegrations = &SecurityIntegrationsOption{}
 					opts.SecurityIntegrations.All = nil
 					opts.SecurityIntegrations.SecurityIntegrations = nil
 				},
@@ -122,7 +122,7 @@ var authenticationPoliciesTests = AuthenticationPoliciesTestsContext{
 				Name:        case_AuthenticationPolicies_validation_Create_SecurityIntegrations_SecurityIntegrations_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("CreateAuthenticationPolicyOptions.SecurityIntegrations.SecurityIntegrations[0]", "SecurityIntegrations"),
 				DefaultModify: func(opts *CreateAuthenticationPolicyOptions) {
-					opts.SecurityIntegrations = &AuthenticationPolicySecurityIntegrationsOption{}
+					opts.SecurityIntegrations = &SecurityIntegrationsOption{}
 					opts.SecurityIntegrations.SecurityIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
@@ -200,18 +200,18 @@ var authenticationPoliciesTests = AuthenticationPoliciesTestsContext{
 			},
 			validationCase[*AlterAuthenticationPolicyOptions]{
 				Name:        case_AuthenticationPolicies_validation_Alter_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set", "AuthenticationMethods", "MfaEnrollment", "MfaPolicy", "ClientTypes", "ClientPolicy", "SecurityIntegrations", "PatPolicy", "WorkloadIdentityPolicy", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set", "AuthenticationMethods", "MfaEnrollment", "ClientTypes", "ClientPolicy", "SecurityIntegrations", "Comment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"),
 				DefaultModify: func(opts *AlterAuthenticationPolicyOptions) {
 					opts.Set = &AuthenticationPolicySet{}
 					opts.Set.AuthenticationMethods = nil
 					opts.Set.MfaEnrollment = nil
-					opts.Set.MfaPolicy = nil
 					opts.Set.ClientTypes = nil
 					opts.Set.ClientPolicy = nil
 					opts.Set.SecurityIntegrations = nil
+					opts.Set.Comment = nil
+					opts.Set.MfaPolicy = nil
 					opts.Set.PatPolicy = nil
 					opts.Set.WorkloadIdentityPolicy = nil
-					opts.Set.Comment = nil
 				},
 			},
 			validationCase[*AlterAuthenticationPolicyOptions]{
@@ -229,7 +229,7 @@ var authenticationPoliciesTests = AuthenticationPoliciesTestsContext{
 				ExpectedErr: errExactlyOneOf("AlterAuthenticationPolicyOptions.Set.SecurityIntegrations", "All", "SecurityIntegrations"),
 				DefaultModify: func(opts *AlterAuthenticationPolicyOptions) {
 					opts.Set = &AuthenticationPolicySet{}
-					opts.Set.SecurityIntegrations = &AuthenticationPolicySecurityIntegrationsOption{}
+					opts.Set.SecurityIntegrations = &SecurityIntegrationsOption{}
 					opts.Set.SecurityIntegrations.All = nil
 					opts.Set.SecurityIntegrations.SecurityIntegrations = nil
 				},
@@ -243,7 +243,7 @@ var authenticationPoliciesTests = AuthenticationPoliciesTestsContext{
 				ExpectedErr: errInvalidIdentifier("AlterAuthenticationPolicyOptions.Set.SecurityIntegrations.SecurityIntegrations[0]", "SecurityIntegrations"),
 				DefaultModify: func(opts *AlterAuthenticationPolicyOptions) {
 					opts.Set = &AuthenticationPolicySet{}
-					opts.Set.SecurityIntegrations = &AuthenticationPolicySecurityIntegrationsOption{}
+					opts.Set.SecurityIntegrations = &SecurityIntegrationsOption{}
 					opts.Set.SecurityIntegrations.SecurityIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
@@ -273,18 +273,18 @@ var authenticationPoliciesTests = AuthenticationPoliciesTestsContext{
 			},
 			validationCase[*AlterAuthenticationPolicyOptions]{
 				Name:        case_AuthenticationPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterAuthenticationPolicyOptions.Unset", "ClientTypes", "ClientPolicy", "AuthenticationMethods", "SecurityIntegrations", "MfaEnrollment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterAuthenticationPolicyOptions.Unset", "ClientTypes", "ClientPolicy", "AuthenticationMethods", "Comment", "SecurityIntegrations", "MfaEnrollment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"),
 				DefaultModify: func(opts *AlterAuthenticationPolicyOptions) {
 					opts.Unset = &AuthenticationPolicyUnset{}
 					opts.Unset.ClientTypes = nil
 					opts.Unset.ClientPolicy = nil
 					opts.Unset.AuthenticationMethods = nil
+					opts.Unset.Comment = nil
 					opts.Unset.SecurityIntegrations = nil
 					opts.Unset.MfaEnrollment = nil
 					opts.Unset.MfaPolicy = nil
 					opts.Unset.PatPolicy = nil
 					opts.Unset.WorkloadIdentityPolicy = nil
-					opts.Unset.Comment = nil
 				},
 			},
 		).

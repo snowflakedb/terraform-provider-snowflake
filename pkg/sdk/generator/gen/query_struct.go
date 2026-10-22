@@ -13,8 +13,6 @@ type QueryStruct struct {
 	sharedToOpts    bool
 	setParameters   []ParameterField
 	unsetParameters []ParameterField
-	// owner is the ssot object name that the statement struct belongs to. It prefixes the names of nested structs.
-	owner string
 }
 
 func NewQueryStruct(name string) *QueryStruct {

@@ -8,7 +8,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (c *CatalogIntegrationOpenCatalogModel) WithRestConfig(restConfig []sdk.CatalogIntegrationOpenCatalogRestConfigRequest) *CatalogIntegrationOpenCatalogModel {
+func (c *CatalogIntegrationOpenCatalogModel) WithRestConfig(restConfig []sdk.OpenCatalogRestConfigRequest) *CatalogIntegrationOpenCatalogModel {
 	if len(restConfig) == 0 {
 		return c
 	}
@@ -27,11 +27,11 @@ func (c *CatalogIntegrationOpenCatalogModel) WithRestConfig(restConfig []sdk.Cat
 	return c
 }
 
-func (c *CatalogIntegrationOpenCatalogModel) WithRestAuthentication(restAuthentication []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest) *CatalogIntegrationOpenCatalogModel {
+func (c *CatalogIntegrationOpenCatalogModel) WithRestAuthentication(restAuthentication []sdk.OAuthRestAuthenticationRequest) *CatalogIntegrationOpenCatalogModel {
 	return c.withRestAuthentication(restAuthentication, "")
 }
 
-func (c *CatalogIntegrationOpenCatalogModel) withRestAuthentication(restAuthentication []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest, oauthClientSecretVariableName string) *CatalogIntegrationOpenCatalogModel {
+func (c *CatalogIntegrationOpenCatalogModel) withRestAuthentication(restAuthentication []sdk.OAuthRestAuthenticationRequest, oauthClientSecretVariableName string) *CatalogIntegrationOpenCatalogModel {
 	if len(restAuthentication) == 0 {
 		return c
 	}
@@ -62,8 +62,8 @@ func CatalogIntegrationOpenCatalogVar(
 	resourceName string,
 	name string,
 	enabled bool,
-	restAuthentication []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest,
-	restConfig []sdk.CatalogIntegrationOpenCatalogRestConfigRequest,
+	restAuthentication []sdk.OAuthRestAuthenticationRequest,
+	restConfig []sdk.OpenCatalogRestConfigRequest,
 	oauthClientSecretVariableName string,
 ) *CatalogIntegrationOpenCatalogModel {
 	c := &CatalogIntegrationOpenCatalogModel{ResourceModelMeta: config.Meta(resourceName, resources.CatalogIntegrationOpenCatalog)}

@@ -28,16 +28,9 @@ It aims to be more readable than using `Config:` with hardcoded string or `Confi
 
 ## How it works
 ### Adding new resource assertions
-Resource assertions can be generated automatically. Inputs are merged in [ResourceAssertionModels](assert/resourceassert/gen/ssot_assert_plugs.go):
-
-- **Resource schema (default).** `allResourceSchemaDefs` in [resource_schema_def.go](assert/resourceassert/gen/resource_schema_def.go), reflected from `resources.X().Schema`. Model builders use this same list. Leave an entry while model builders still reflect that name. Remove it when both generators take the name from ssot.
-- **ssot (opt-in).** Objects with `WithResourceAssert()` ([ssot generators](../../internal/ssot/README.md#generators)). Fields come from `Attributes` and identity ([ssot attribute](../../internal/ssot/README.md#attribute)), not from SHOW/DESCRIBE [columns](../../internal/ssot/README.md#show-and-describe). `defs.All()` is not fed in automatically. `fully_qualified_name` is emitted. Parameter fields still come from `ParameterDefsForLevel` until those definitions move to ssot.
-
-Filter names are the resource name (`--filter-object-names=ComputePool,Schema`). A name that is both reflected and opted in is taken from ssot.
-
-The storage-type `Has` method stays (`HasInstanceFamily(string)`, `HasAutoResume(string)`). When ssot has a richer Go type, an extra method is generated beside it (`HasInstanceFamilySdk`, `HasAutoResumeBool`). `HasXString`, `HasNoX`, `HasXEmpty`, and `HasXNotEmpty` stay.
-
-For an object that stays on the resource schema, add it to `allResourceSchemaDefs`. To add custom (not generated) assertions create file `abc_resource_ext.go` in the `assert/resourceassert` package. Example would be:
+Resource assertions can be generated automatically. For object `abc` do the following:
+- add object you want to generate to `allStructs` slice in the `assert/resourceassert/gen/resource_schema_def.go`
+- to add custom (not generated assertions) create file `abc_resource_ext.go` in the `assert/resourceassert` package. Example would be:
 ```go
 func (w *WarehouseResourceAssert) HasDefaultMaxConcurrencyLevel() *WarehouseResourceAssert {
     w.AddAssertion(assert.ValueSet("max_concurrency_level", "8"))
@@ -49,22 +42,15 @@ func (w *WarehouseResourceAssert) HasDefaultMaxConcurrencyLevel() *WarehouseReso
 The generated resource assertions are available in the `assert/resourceassert/gen` package.
 The generated assertions provide a set of methods that can be used to assert the state of the resource.
 Here's a short description of every generated assertion:
-- HasX methods check that a field is set with the provided value. When the object is opted into ssot, a richer Go type also gets `HasXBool` or `HasXSdk` beside that method. See [Adding new resource assertions](#adding-new-resource-assertions).
+- HasX methods check that a field is set with the provided value.
 - HasNoX methods check that a field is not set (not present in state or is empty in case of lists/sets).
 - HasXEmpty methods are generated only for string type fields and are checking if a given field is set to empty string.
 - HasXNotEmpty methods check that a field is set with any value.
 
 ### Adding new resource show output assertions
-Resource show output assertions can be generated automatically. Inputs are merged in [ShowOutputAssertionDetails](assert/resourceshowoutputassert/gen/ssot_show_output_plugs.go):
-
-- **SDK structs (default).** `GetFilteredSdkObjectDetails` reflects `allStructs` in [sdk_object_def.go](assert/objectassert/gen/sdk_object_def.go). Snowflake object assertions read the same slice. Leave an entry while object assertions still reflect that name. Remove it when both generators take the name from ssot.
-- **ssot (opt-in).** Objects with `WithShowOutputAssert(ShowOutputShow(), ShowOutputDescribe())` ([ssot generators](../../internal/ssot/README.md#generators)). `ShowOutputShow()` and `ShowOutputDescribe()` are settings of that entry. Fields come from `Columns` ([SHOW and DESCRIBE](../../internal/ssot/README.md#show-and-describe)), not from `Attributes`. `ShowOutputShow(ShowOutputShowSkipFields(&attrs.Tables))` copies `SkipFields` from the old def. The argument is the same `*Attribute` that sits in `Show.Columns`. `defs.All()` is not fed in automatically.
-
-Filter names stay `sdk.<Type>` (`--filter-object-names=sdk.ComputePool,sdk.ComputePoolDetails,sdk.Schema`). A name that is both reflected and opted in is taken from ssot. The merge skips that reflected name. A repeated ssot `ObjectName()` panics.
-
-Datasource constructors stay on `dataSourceMappingNormalized`. A slice does not get `Has`; that method stays in the ext file.
-
-For an object that stays on the SDK struct, add it to `allStructs`. To add custom (not generated) assertions create file `abc_show_output_ext.go` in the `assert/resourceshowoutputassert` package. Example would be:
+Resource show output assertions can be generated automatically. For object `abc` do the following:
+- add object you want to generate to `allStructs` slice in the `assert/objectassert/gen/sdk_object_def.go`
+- to add custom (not generated assertions) create file `abc_show_output_ext.go` in the `assert/resourceshowoutputassert` package. Example would be:
 ```go
 func (u *UserShowOutputAssert) HasNameAndLoginName(expected string) *UserShowOutputAssert {
 	return u.
@@ -74,9 +60,9 @@ func (u *UserShowOutputAssert) HasNameAndLoginName(expected string) *UserShowOut
 ```
 
 ### Adding new resource describe output assertions
-Resource describe output assertions use the same merge as [show output assertions](#adding-new-resource-show-output-assertions). Opt in by passing `ShowOutputDescribe()` to `WithShowOutputAssert()`. `IsDataSourceOutput` stays the describe flag. `ShowOutputDescribe(ShowOutputDescribeSkipFields(&attrs.Password))` copies describe `SkipFields`. The argument is the same `*Attribute` that sits in `Describe.Columns`. For an object that stays on the SDK struct:
+Resource describe output assertions can be generated automatically. For object `abc` do the following:
 - add object you want to generate to `allStructs` slice in the `assert/objectassert/gen/sdk_object_def.go`
-  - remember to mark the struct with `IsDataSourceOutput: true` in the `sdkObjectDef` definition
+  - remember to mark the struct with `IsDescribeOutput: true` in the `sdkObjectDef` definition
 - to add custom (not generated assertions) create file `abc_desc_output_ext.go` in the `assert/resourceshowoutputassert` package. Example would be:
 ```go
 func (u *UserShowOutputAssert) HasNameAndLoginName(expected string) *UserShowOutputAssert {
@@ -87,9 +73,9 @@ func (u *UserShowOutputAssert) HasNameAndLoginName(expected string) *UserShowOut
 ```
 
 ### Adding new resource parameters assertions
-Resource parameters assertions can be generated automatically. Inputs are merged the same way as [Snowflake object parameters assertions](#adding-new-snowflake-object-parameters-assertions), filtered by `WithResourceParametersAssert()` ([ssot generators](../../internal/ssot/README.md#generators)). For an object that stays hand-written, add it to `allObjectsParameters`. A name that is both hand-written and opted in for this generator is taken from ssot. Leave the hand-written entry while object parameters assertions still use that name. Remove it when both generators take the name from ssot.
-
-To add custom (not generated) assertions create file `warehouse_resource_parameters_ext.go` in the `assert/resourceparametersassert` package. Example would be:
+Resource parameters assertions can be generated automatically. For object `abc` do the following:
+- add object you want to generate to `allObjectsParameters` slice in the `assert/objectparametersassert/gen/object_parameters_def.go`
+- to add custom (not generated assertions) create file `warehouse_resource_parameters_ext.go` in the `assert/resourceparametersassert` package. Example would be:
 ```go
 func (w *WarehouseResourceParametersAssert) HasDefaultMaxConcurrencyLevel() *WarehouseResourceParametersAssert {
 	return w.
@@ -99,14 +85,9 @@ func (w *WarehouseResourceParametersAssert) HasDefaultMaxConcurrencyLevel() *War
 ```
 
 ### Adding new Snowflake object assertions
-Snowflake object assertions can be generated automatically. Inputs are merged in [SnowflakeObjectAssertionDetails](assert/objectassert/gen/ssot_object_assert_plugs.go):
-
-- **SDK structs (default).** `GetSdkObjectDetails` reflects `allStructs` in [sdk_object_def.go](assert/objectassert/gen/sdk_object_def.go). Show output assertions read the same slice. Leave an entry while show output still reflects that name. Remove it when both generators take the name from ssot.
-- **ssot (opt-in).** Objects with `WithObjectAssert(ObjectAssertShow(), ObjectAssertDescribe())` ([ssot generators](../../internal/ssot/README.md#generators)). `ObjectAssertShow()` and `ObjectAssertDescribe()` are settings of that entry. Fields come from `Columns` ([SHOW and DESCRIBE](../../internal/ssot/README.md#show-and-describe)), not from `Attributes`. `StoredAsText` is ignored. A bool stays `bool`. `ObjectAssertShow(ObjectAssertShowSkipFields(&attrs.Tables))` copies `SkipFields` from the old def. The argument is the same `*Attribute` that sits in `Show.Columns`. `defs.All()` is not fed in automatically.
-
-Filter names stay `sdk.<Type>` (`--filter-object-names=sdk.ComputePool,sdk.ComputePoolDetails,sdk.Schema`). A name that is both reflected and opted in is taken from ssot. The merge skips that reflected name. A repeated ssot `ObjectName()` panics.
-
-For an object that stays on the SDK struct, add it to `allStructs`. To add custom (not generated) assertions create file `abc_snowflake_ext.go` in the `objectassert` package. Example would be:
+Snowflake object assertions can be generated automatically. For object `abc` do the following:
+- add object you want to generate to `allStructs` slice in the `assert/objectassert/gen/sdk_object_def.go`
+- to add custom (not generated assertions) create file `abc_snowflake_ext.go` in the `objectassert` package. Example would be:
 ```go
 func (w *WarehouseAssert) HasStateOneOf(expected ...sdk.WarehouseState) *WarehouseAssert {
     w.assertions = append(w.assertions, func(t *testing.T, o *sdk.Warehouse) error {
@@ -121,8 +102,8 @@ func (w *WarehouseAssert) HasStateOneOf(expected ...sdk.WarehouseState) *Warehou
 ```
 
 ### Adding new Snowflake object assertions based on the describe output
-Describe object assertions use the same merge as [Snowflake object assertions](#adding-new-snowflake-object-assertions). Opt in by passing `ObjectAssertDescribe()` to `WithObjectAssert()`. `IsDataSourceOutput` stays the describe flag. `ObjectAssertDescribe(WithNoIdentifiableObject())` is for a describe result that is a slice of rows with no `ID()`; the generated file then has `FromObject` only. `ObjectAssertDescribe(ObjectAssertDescribeSkipFields(&attrs.Password))` copies describe `SkipFields`. The argument is the same `*Attribute` that sits in `Describe.Columns`. `ObjectAssertDescribe(ObjectAssertDescribeMethod("DescribeDetails"))` fetches through `testClient.<Object>.<method>` when the helper is not `Describe`. `ObjectAssertDescribe(ObjectAssertDescribeFromBase("DescribeAwsGlue"))` fetches through `testClient.<VariantOf.Name>.<method>`. The details type stays `sdk.<Object>Details`. Those are settings of object-assertion describe, not their own generators. Show output does not emit `sdk.<Name>Details` unless `ShowOutputDescribe()` is passed to `WithShowOutputAssert()`, so do not leave that name in `allStructs` when show output describe is off. For an object that stays on the SDK struct:
-- add object you want to generate to `allStructs` slice in the `assert/objectassert/gen/sdk_object_def.go`, with `IsDataSourceOutput: true`. Set `NoIdentifiableObject: true` when the row has no `ID()`.
+Usually the Snowflake object assertions are based on Show command output. If you would like to introduce a similar assertion for Describe command output, for an object named `abc`, do the following:
+- add object you want to generate to `allStructs` slice in the `assert/objectassert/gen/sdk_object_def.go` (remember to fill `IsDescribeOutput` field in the struct definition)
 - to add custom (not generated assertions) create file `abc_desc_snowflake_ext.go` in the `objectassert` package. Example would be:
 ```go
 func (w *WarehouseDescribeAssert) HasStateOneOf(expected ...sdk.WarehouseState) *WarehouseDescribeAssert {
@@ -138,8 +119,8 @@ func (w *WarehouseDescribeAssert) HasStateOneOf(expected ...sdk.WarehouseState) 
 ```
 
 ### Adding new Snowflake object parameters assertions
-Snowflake object parameters assertions can be generated automatically. Inputs are merged in [SnowflakeObjectParametersForAssertions](assert/objectparametersassert/gen/ssot_object_parameters_plugs.go). Resource parameters assertions use [SnowflakeResourceParametersForAssertions](assert/objectparametersassert/gen/ssot_object_parameters_plugs.go) and opt in separately. For object `abc` do the following:
-- either opt the ssot object in with `WithObjectParametersAssert()` ([ssot generators](../../internal/ssot/README.md#generators)), so parameters come from the catalog, or add it to `allObjectsParameters` slice in the `assert/objectparametersassert/gen/object_parameters_def.go`. A name that is both hand-written and opted in for this generator is taken from ssot. Leave the hand-written entry while resource parameters assertions still use that name. Remove it when both generators take the name from ssot.
+Snowflake object parameters assertions can be generated automatically. For object `abc` do the following:
+- add object you want to generate to `allObjectsParameters` slice in the `assert/objectparametersassert/gen/object_parameters_def.go`
 - make sure that test helper method `acc.TestClient().Parameter.ShowAbcParameters` exists in `/pkg/acceptance/helpers/parameter_client.go`
 - to add custom (not generated) assertions create file `abc_parameters_snowflake_ext.go` in the `objectparametersassert` package. Example would be:
 ```go
@@ -151,16 +132,9 @@ func (w *WarehouseParametersAssert) HasDefaultMaxConcurrencyLevel() *WarehousePa
 ```
 
 ### Adding new resource config model builders
-Resource config model builders can be generated automatically. Inputs are merged in [ModelBuilderModels](config/model/gen/ssot_model_plugs.go):
-
-- **Resource schema (default).** `allResourceSchemaDefs` in [resource_schema_def.go](assert/resourceassert/gen/resource_schema_def.go), reflected from `resources.X().Schema`. Resource assertions use this same list. Leave an entry while resource assertions still reflect that name. Remove it when both generators take the name from ssot.
-- **ssot (opt-in).** Objects with `WithModel()` ([ssot generators](../../internal/ssot/README.md#generators)). Fields come from `Attributes` and identity ([ssot attribute](../../internal/ssot/README.md#attribute)), not from SHOW/DESCRIBE [columns](../../internal/ssot/README.md#show-and-describe). `defs.All()` is not fed in automatically. `fully_qualified_name` is not emitted. Parameter fields still come from `ParameterDefsForLevel` until those definitions move to ssot.
-
-Filter names are the resource name (`--filter-object-names=ComputePool,Schema`). A name that is both reflected and opted in is taken from ssot.
-
-The storage-type `With` method stays (`WithInstanceFamily(string)`, `WithAutoResume(string)`). When ssot has a richer Go type, an extra method is generated beside it (`WithInstanceFamilySdk`, `WithAutoResumeBool`). `WithXValue` stays. Constructors keep the storage types.
-
-For an object that stays on the resource schema, add it to `allResourceSchemaDefs`. To add custom (not generated) config builder methods create file `warehouse_model_ext` in the `config/model` package. Example would be:
+Resource config model builders can be generated automatically. For object `abc` do the following:
+- add object you want to generate to `allResourceSchemaDefs` slice in the `assert/resourceassert/gen/resource_schema_def.go`
+- to add custom (not generated) config builder methods create file `warehouse_model_ext` in the `config/model` package. Example would be:
 ```go
 func BasicAbcModel(
 	name string,

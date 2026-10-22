@@ -44,7 +44,7 @@ var authenticationPoliciesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE AUTHENTICATION POLICY.",
 					Elem: &schema.Resource{
-						Schema: schemas.DescribeAuthenticationPolicyDetailsSchema,
+						Schema: schemas.DescribeAuthenticationPolicyDescribeDetailsSchema,
 					},
 				},
 			},

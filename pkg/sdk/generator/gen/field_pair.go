@@ -234,7 +234,7 @@ func (fp FieldPair) AssignmentKind() AssignmentKind {
 
 	case "sql.NullInt64":
 		switch fp.PlainKind {
-		case "*int", "*int64":
+		case "*int":
 			return AssignmentKindNullableToNullable
 		case "int":
 			return AssignmentKindNullableToRequired
@@ -262,9 +262,6 @@ var nullTypeBaseNames = map[string]string{
 
 // NullMapFunc returns the mapNullX helper function name for nullable field pairs.
 func (fp FieldPair) NullMapFunc() string {
-	if fp.DbKind == "sql.NullInt64" && fp.PlainKind == "*int64" {
-		return "mapNullInt64"
-	}
 	if base, ok := nullTypeBaseNames[fp.DbKind]; ok {
 		return "mapNull" + base
 	}

@@ -95,13 +95,10 @@ var maskingPoliciesDef = g.NewInterface(
 			Text("name").
 			Field("signature", "string", "[]TableColumnSignature", g.WithCustomParser("ParseTableColumnSignature")).
 			DataType("return_type").
-			Text("body").
-			PlainOnlyField("DatabaseName", "string").
-			PlainOnlyField("SchemaName", "string"),
+			Text("body"),
 		g.NewQueryStruct("DescribeMaskingPolicy").
 			Describe().
 			SQL("MASKING POLICY").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
-	).
-	WithDescribeDetailsFromIdentifier("MaskingPolicyDetails", []string{"DatabaseName", "SchemaName"})
+	)

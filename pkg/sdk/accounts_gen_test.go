@@ -28,6 +28,7 @@ const (
 	case_Accounts_validation_Alter_opts_Unset_ExactlyOneValueSet_NoneSet                  testCaseName = "validation_Alter_opts_Unset_ExactlyOneValueSet_NoneSet"
 	case_Accounts_validation_Alter_opts_Unset_ExactlyOneValueSet_MoreThanOneSet           testCaseName = "validation_Alter_opts_Unset_ExactlyOneValueSet_MoreThanOneSet"
 	case_Accounts_validation_Alter_opts_Unset_Parameters_AtLeastOneValueSet               testCaseName = "validation_Alter_opts_Unset_Parameters_AtLeastOneValueSet"
+	case_Accounts_validation_Alter_opts_Unset_LegacyParameters_AtLeastOneValueSet         testCaseName = "validation_Alter_opts_Unset_LegacyParameters_AtLeastOneValueSet"
 	case_Accounts_validation_Alter_opts_Unset_AuthenticationPolicyUnset_ConflictingFields testCaseName = "validation_Alter_opts_Unset_AuthenticationPolicyUnset_ConflictingFields"
 	case_Accounts_validation_Alter_opts_Unset_SessionPolicyUnset_ConflictingFields        testCaseName = "validation_Alter_opts_Unset_SessionPolicyUnset_ConflictingFields"
 	case_Accounts_validation_Alter_SetTag_ValidIdentifier                                 testCaseName = "validation_Alter_SetTag_ValidIdentifier"
@@ -128,10 +129,11 @@ var accountsTests = AccountsTestsContext{
 			},
 			validationCase[*AlterAccountOptions]{
 				Name:        case_Accounts_validation_Alter_opts_Set_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterAccountOptions.Set", "Parameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicySet", "AuthenticationPolicySet", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity"),
+				ExpectedErr: errExactlyOneOf("AlterAccountOptions.Set", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicySet", "AuthenticationPolicySet", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity"),
 				DefaultModify: func(opts *AlterAccountOptions) {
 					opts.Set = &AccountSet{}
 					opts.Set.Parameters = nil
+					opts.Set.LegacyParameters = nil
 					opts.Set.ResourceMonitor = nil
 					opts.Set.PackagesPolicy = nil
 					opts.Set.PasswordPolicy = nil
@@ -144,11 +146,11 @@ var accountsTests = AccountsTestsContext{
 			},
 			validationCase[*AlterAccountOptions]{
 				Name:        case_Accounts_validation_Alter_opts_Set_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("AlterAccountOptions.Set", "Parameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicySet", "AuthenticationPolicySet", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity"),
+				ExpectedErr: errExactlyOneOf("AlterAccountOptions.Set", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicySet", "AuthenticationPolicySet", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity"),
 				DefaultModify: func(opts *AlterAccountOptions) {
 					opts.Set = &AccountSet{}
 					opts.Set.Parameters = &AccountParameters{}
-					opts.Set.ResourceMonitor = new(randomAccountObjectIdentifier())
+					opts.Set.LegacyParameters = &AccountLevelParameters{}
 				},
 			},
 			validationCase[*AlterAccountOptions]{
@@ -325,10 +327,11 @@ var accountsTests = AccountsTestsContext{
 			},
 			validationCase[*AlterAccountOptions]{
 				Name:        case_Accounts_validation_Alter_opts_Unset_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterAccountOptions.Unset", "Parameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicyUnset", "AuthenticationPolicyUnset", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity"),
+				ExpectedErr: errExactlyOneOf("AlterAccountOptions.Unset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicyUnset", "AuthenticationPolicyUnset", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity"),
 				DefaultModify: func(opts *AlterAccountOptions) {
 					opts.Unset = &AccountUnset{}
 					opts.Unset.Parameters = nil
+					opts.Unset.LegacyParameters = nil
 					opts.Unset.PackagesPolicy = nil
 					opts.Unset.PasswordPolicy = nil
 					opts.Unset.SessionPolicyUnset = nil
@@ -340,11 +343,11 @@ var accountsTests = AccountsTestsContext{
 			},
 			validationCase[*AlterAccountOptions]{
 				Name:        case_Accounts_validation_Alter_opts_Unset_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("AlterAccountOptions.Unset", "Parameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicyUnset", "AuthenticationPolicyUnset", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity"),
+				ExpectedErr: errExactlyOneOf("AlterAccountOptions.Unset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicyUnset", "AuthenticationPolicyUnset", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity"),
 				DefaultModify: func(opts *AlterAccountOptions) {
 					opts.Unset = &AccountUnset{}
 					opts.Unset.Parameters = &AccountParametersUnset{}
-					opts.Unset.PackagesPolicy = new(true)
+					opts.Unset.LegacyParameters = &AccountLevelParametersUnset{}
 				},
 			},
 			validationCase[*AlterAccountOptions]{
@@ -497,6 +500,18 @@ var accountsTests = AccountsTestsContext{
 					opts.Unset.Parameters.UserTaskTimeoutMs = nil
 					opts.Unset.Parameters.WeekOfYearPolicy = nil
 					opts.Unset.Parameters.WeekStart = nil
+				},
+			},
+			validationCase[*AlterAccountOptions]{
+				Name:        case_Accounts_validation_Alter_opts_Unset_LegacyParameters_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterAccountOptions.Unset.LegacyParameters", "AccountParameters", "SessionParameters", "ObjectParameters", "UserParameters"),
+				DefaultModify: func(opts *AlterAccountOptions) {
+					opts.Unset = &AccountUnset{}
+					opts.Unset.LegacyParameters = &AccountLevelParametersUnset{}
+					opts.Unset.LegacyParameters.AccountParameters = nil
+					opts.Unset.LegacyParameters.SessionParameters = nil
+					opts.Unset.LegacyParameters.ObjectParameters = nil
+					opts.Unset.LegacyParameters.UserParameters = nil
 				},
 			},
 			validationCase[*AlterAccountOptions]{

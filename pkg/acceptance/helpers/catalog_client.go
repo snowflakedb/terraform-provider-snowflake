@@ -31,31 +31,25 @@ func (c *CatalogIntegrationClient) client() sdk.CatalogIntegrations {
 
 func (c *CatalogIntegrationClient) Create(t *testing.T) (sdk.AccountObjectIdentifier, func()) {
 	t.Helper()
-	return c.CreateObjectStorageFunc(t, sdk.NewCreateObjectStorageCatalogIntegrationRequest(c.ids.RandomAccountObjectIdentifier(), sdk.CatalogIntegrationTableFormatIceberg, true))
+	ctx := context.Background()
+	id := c.ids.RandomAccountObjectIdentifier()
+
+	err := c.client().Create(ctx, sdk.NewCreateCatalogIntegrationRequest(id, true).
+		WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(sdk.CatalogIntegrationTableFormatIceberg)))
+	require.NoError(t, err)
+
+	return id, c.DropFunc(t, id)
 }
 
-func (c *CatalogIntegrationClient) CreateAwsGlueFunc(t *testing.T, request *sdk.CreateAwsGlueCatalogIntegrationRequest) (sdk.AccountObjectIdentifier, func()) {
+func (c *CatalogIntegrationClient) CreateFunc(t *testing.T, request *sdk.CreateCatalogIntegrationRequest) (sdk.AccountObjectIdentifier, func()) {
 	t.Helper()
-	require.NoError(t, c.client().CreateAwsGlue(context.Background(), request))
-	return request.GetName(), c.DropFunc(t, request.GetName())
-}
+	ctx := context.Background()
+	id := request.GetName()
 
-func (c *CatalogIntegrationClient) CreateIcebergRestFunc(t *testing.T, request *sdk.CreateIcebergRestCatalogIntegrationRequest) (sdk.AccountObjectIdentifier, func()) {
-	t.Helper()
-	require.NoError(t, c.client().CreateIcebergRest(context.Background(), request))
-	return request.GetName(), c.DropFunc(t, request.GetName())
-}
+	err := c.client().Create(ctx, request)
+	require.NoError(t, err)
 
-func (c *CatalogIntegrationClient) CreateObjectStorageFunc(t *testing.T, request *sdk.CreateObjectStorageCatalogIntegrationRequest) (sdk.AccountObjectIdentifier, func()) {
-	t.Helper()
-	require.NoError(t, c.client().CreateObjectStorage(context.Background(), request))
-	return request.GetName(), c.DropFunc(t, request.GetName())
-}
-
-func (c *CatalogIntegrationClient) CreateOpenCatalogFunc(t *testing.T, request *sdk.CreateOpenCatalogCatalogIntegrationRequest) (sdk.AccountObjectIdentifier, func()) {
-	t.Helper()
-	require.NoError(t, c.client().CreateOpenCatalog(context.Background(), request))
-	return request.GetName(), c.DropFunc(t, request.GetName())
+	return id, c.DropFunc(t, id)
 }
 
 func (c *CatalogIntegrationClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
@@ -113,7 +107,7 @@ func (c *CatalogIntegrationClient) DescribeIcebergRest(t *testing.T, id sdk.Acco
 	return c.client().DescribeIcebergRestDetails(ctx, id)
 }
 
-func (c *CatalogIntegrationClient) DescribeDetails(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.CatalogIntegrationDetails, error) {
+func (c *CatalogIntegrationClient) DescribeDetails(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.CatalogIntegrationAllDetails, error) {
 	t.Helper()
 	ctx := context.Background()
 	return c.client().DescribeDetails(ctx, id)

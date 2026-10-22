@@ -58,6 +58,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiAuthenticationIntegrationWithJwtBearer().Schema,
 	},
 	{
+		name:   "Alert",
+		schema: resources.Alert().Schema,
+	},
+	{
 		name:   "ApiIntegrationAmazonApiGateway",
 		schema: resources.ApiIntegrationAmazonApiGateway().Schema,
 	},
@@ -96,6 +100,26 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "AuthenticationPolicy",
 		schema: resources.AuthenticationPolicy().Schema,
+	},
+	{
+		name:   "CatalogIntegrationAwsGlue",
+		schema: resources.CatalogIntegrationAwsGlue().Schema,
+	},
+	{
+		name:   "CatalogIntegrationObjectStorage",
+		schema: resources.CatalogIntegrationObjectStorage().Schema,
+	},
+	{
+		name:   "CatalogIntegrationOpenCatalog",
+		schema: resources.CatalogIntegrationOpenCatalog().Schema,
+	},
+	{
+		name:   "CatalogIntegrationIcebergRest",
+		schema: resources.CatalogIntegrationIcebergRest().Schema,
+	},
+	{
+		name:   "ComputePool",
+		schema: resources.ComputePool().Schema,
 	},
 	{
 		name:   "CortexAgent",
@@ -144,6 +168,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "ExternalS3CompatibleStage",
 		schema: resources.ExternalS3CompatibleStage().Schema,
+	},
+	{
+		name:   "ExternalVolume",
+		schema: resources.ExternalVolume().Schema,
 	},
 	{
 		name:   "ExternalOauthSecurityIntegration",
@@ -274,8 +302,8 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.Notebook().Schema,
 	},
 	{
-		name:   "ObjectParameter",
-		schema: resources.ObjectParameter().Schema,
+		name:   "Pipe",
+		schema: resources.Pipe().Schema,
 	},
 	{
 		name:   "OauthIntegrationForCustomClients",
@@ -348,6 +376,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "Saml2SecurityIntegration",
 		schema: resources.SAML2Integration().Schema,
+	},
+	{
+		name:   "Schema",
+		schema: resources.Schema().Schema,
 	},
 	{
 		name:   "ScimSecurityIntegration",
@@ -484,6 +516,18 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "View",
 		schema: resources.View().Schema,
+	},
+	{
+		name:   "Warehouse",
+		schema: resources.Warehouse().Schema,
+	},
+	{
+		name:   "WarehouseAdaptive",
+		schema: resources.WarehouseAdaptive().Schema,
+	},
+	{
+		name:   "WarehouseInteractive",
+		schema: resources.WarehouseInteractive().Schema,
 	},
 	{
 		name:   "GrantPrivilegesToAccountRole",

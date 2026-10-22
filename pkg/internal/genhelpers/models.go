@@ -77,31 +77,3 @@ type defaultGenerationPartName string
 func (d defaultGenerationPartName) GenerationPartName() string { return string(d) }
 
 const DefaultGenerationPart defaultGenerationPartName = "default"
-
-// SdkValueType is the richer Go type generated beside the Terraform storage type.
-// SdkType is empty for schema-reflected fields. SdkKind is "bool", "enum", or "identifier" when SdkType is set.
-type SdkValueType struct {
-	SdkType string
-	SdkKind string
-}
-
-// SdkMethodSuffix names the extra method that takes the real Go type.
-// The storage-type method stays. Go cannot overload it, so the real-type method needs its own suffix: Bool for a Go bool, Sdk for an SDK type.
-func SdkMethodSuffix(sdkType string) string {
-	if sdkType == "bool" {
-		return "Bool"
-	}
-	return "Sdk"
-}
-
-// SdkValueMapper selects the mapper that stores a richer value as the Terraform string.
-func SdkValueMapper(kind string) Mapper {
-	switch kind {
-	case "bool":
-		return FormatBool
-	case "identifier":
-		return Name
-	default:
-		return CastToString
-	}
-}

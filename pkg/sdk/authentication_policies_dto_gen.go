@@ -14,12 +14,12 @@ type CreateAuthenticationPolicyRequest struct {
 	OrReplace              *bool
 	IfNotExists            *bool
 	name                   SchemaObjectIdentifier // required
-	AuthenticationMethods  []AuthenticationMethodsOptionListItem
+	AuthenticationMethods  []AuthenticationMethods
 	MfaEnrollment          *MfaEnrollmentOption
 	MfaPolicy              *AuthenticationPolicyMfaPolicyRequest
-	ClientTypes            []ClientTypesOptionListItem
-	ClientPolicy           []AuthenticationPolicyClientPolicyRequest
-	SecurityIntegrations   *AuthenticationPolicySecurityIntegrationsOptionRequest
+	ClientTypes            []ClientTypes
+	ClientPolicy           []AuthenticationPolicyClientPolicyEntry
+	SecurityIntegrations   *SecurityIntegrationsOptionRequest
 	PatPolicy              *AuthenticationPolicyPatPolicyRequest
 	WorkloadIdentityPolicy *AuthenticationPolicyWorkloadIdentityPolicyRequest
 	Comment                *string
@@ -27,19 +27,10 @@ type CreateAuthenticationPolicyRequest struct {
 
 type AuthenticationPolicyMfaPolicyRequest struct {
 	EnforceMfaOnExternalAuthentication *EnforceMfaOnExternalAuthenticationOption
-	AllowedMethods                     []MfaPolicyAllowedMethodsOptionListItem
+	AllowedMethods                     []AuthenticationPolicyMfaPolicyListItem
 }
 
-type AuthenticationPolicyClientPolicyRequest struct {
-	ClientType ClientPolicyDriverType                        // required
-	Params     AuthenticationPolicyClientPolicyParamsRequest // required
-}
-
-type AuthenticationPolicyClientPolicyParamsRequest struct {
-	MinimumVersion string // required
-}
-
-type AuthenticationPolicySecurityIntegrationsOptionRequest struct {
+type SecurityIntegrationsOptionRequest struct {
 	All                  *bool
 	SecurityIntegrations []AccountObjectIdentifier
 }
@@ -52,7 +43,7 @@ type AuthenticationPolicyPatPolicyRequest struct {
 }
 
 type AuthenticationPolicyWorkloadIdentityPolicyRequest struct {
-	AllowedProviders    []AllowedProviderOptionListItem
+	AllowedProviders    []AuthenticationPolicyAllowedProviderListItem
 	AllowedAwsAccounts  []StringListItemWrapper
 	AllowedAzureIssuers []StringListItemWrapper
 	AllowedOidcIssuers  []StringListItemWrapper
@@ -67,12 +58,12 @@ type AlterAuthenticationPolicyRequest struct {
 }
 
 type AuthenticationPolicySetRequest struct {
-	AuthenticationMethods  []AuthenticationMethodsOptionListItem
+	AuthenticationMethods  []AuthenticationMethods
 	MfaEnrollment          *MfaEnrollmentOption
 	MfaPolicy              *AuthenticationPolicyMfaPolicyRequest
-	ClientTypes            []ClientTypesOptionListItem
-	ClientPolicy           []AuthenticationPolicyClientPolicyRequest
-	SecurityIntegrations   *AuthenticationPolicySecurityIntegrationsOptionRequest
+	ClientTypes            []ClientTypes
+	ClientPolicy           []AuthenticationPolicyClientPolicyEntry
+	SecurityIntegrations   *SecurityIntegrationsOptionRequest
 	PatPolicy              *AuthenticationPolicyPatPolicyRequest
 	WorkloadIdentityPolicy *AuthenticationPolicyWorkloadIdentityPolicyRequest
 	Comment                *string

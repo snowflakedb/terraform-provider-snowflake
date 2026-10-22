@@ -9,9 +9,9 @@ import (
 )
 
 var (
-	_ Shares                       = (*shares)(nil)
-	_ convertibleRow[Share]        = new(sharesRow)
-	_ convertibleRow[ShareDetails] = new(shareDescRow)
+	_ Shares                    = (*shares)(nil)
+	_ convertibleRow[Share]     = new(shareRow)
+	_ convertibleRow[ShareInfo] = new(shareDetailsRow)
 )
 
 type shares struct {
@@ -39,11 +39,11 @@ func (v *shares) DropSafely(ctx context.Context, id AccountObjectIdentifier) err
 
 func (v *shares) Show(ctx context.Context, request *ShowShareRequest) ([]Share, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[sharesRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[shareRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[sharesRow, Share](dbRows)
+	return convertRows[shareRow, Share](dbRows)
 }
 
 func (v *shares) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Share, error) {
@@ -60,24 +60,22 @@ func (v *shares) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier)
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
-func (v *shares) Describe(ctx context.Context, id AccountObjectIdentifier) ([]ShareDetails, error) {
+func (v *shares) Describe(ctx context.Context, id AccountObjectIdentifier) ([]ShareInfo, error) {
 	opts := &DescribeShareOptions{
 		name: id,
 	}
-	rows, err := validateAndQuery[shareDescRow](v.client, ctx, opts)
+	rows, err := validateAndQuery[shareDetailsRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[shareDescRow, ShareDetails](rows)
+	return convertRows[shareDetailsRow, ShareInfo](rows)
 }
 
 func (r *CreateShareRequest) toOpts() *CreateShareOptions {
 	opts := &CreateShareOptions{
-		OrReplace:         r.OrReplace,
-		IfNotExists:       r.IfNotExists,
-		name:              r.name,
-		SecureObjectsOnly: r.SecureObjectsOnly,
-		Comment:           r.Comment,
+		OrReplace: r.OrReplace,
+		name:      r.name,
+		Comment:   r.Comment,
 	}
 	return opts
 }
@@ -131,20 +129,18 @@ func (r *ShowShareRequest) toOpts() *ShowShareOptions {
 	return opts
 }
 
-func (r sharesRow) convert() (*Share, error) {
+func (r shareRow) convert() (*Share, error) {
 	result := &Share{
-		CreatedOn:         r.CreatedOn,
-		OwnerAccount:      r.OwnerAccount,
-		Name:              r.Name,
-		Owner:             r.Owner,
-		Comment:           r.Comment,
-		ListingGlobalName: r.ListingGlobalName,
-		SecureObjectsOnly: r.SecureObjectsOnly,
+		CreatedOn:    r.CreatedOn,
+		OwnerAccount: r.OwnerAccount,
+		Name:         r.Name,
+		Owner:        r.Owner,
+		Comment:      r.Comment,
 	}
 	mapStringWithMapping(&result.Kind, r.Kind, ToShareKind)
 	mapStringWithMapping(&result.DatabaseName, r.DatabaseName, ParseAccountObjectIdentifier)
-	if err := r.additionalConvert(result); err != nil {
-		return nil, err
+	if ids, err := ParseCommaSeparatedAccountIdentifierArray(r.To); err == nil {
+		result.To = ids
 	}
 	return result, nil
 }
@@ -156,8 +152,8 @@ func (r *DescribeShareRequest) toOpts() *DescribeShareOptions {
 	return opts
 }
 
-func (r shareDescRow) convert() (*ShareDetails, error) {
-	result := &ShareDetails{
+func (r shareDetailsRow) convert() (*ShareInfo, error) {
+	result := &ShareInfo{
 		SharedOn: r.SharedOn,
 	}
 	if err := r.additionalConvert(result); err != nil {

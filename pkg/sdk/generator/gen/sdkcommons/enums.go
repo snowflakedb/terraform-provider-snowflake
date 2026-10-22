@@ -12,6 +12,7 @@ type (
 	WarehouseGeneration                                      string
 	WarehouseSize                                            string
 	AutoEventLogging                                         string
+	ComputePoolInstanceFamily                                string
 	DataType                                                 string
 	ImageRepositoryEncryptionType                            string
 	LogLevel                                                 string

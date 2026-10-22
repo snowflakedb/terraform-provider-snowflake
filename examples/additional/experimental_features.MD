@@ -34,24 +34,6 @@ When enabled, the three possible states in Snowflake for allowed values will be 
 
 Otherwise, the `no_allowed_values` field will be ignored (explicit changes will cause updates, but without any effect) and the `allowed_values` field will follow the old behavior: `nil` (any value is allowed; only available whenever tag resource is created without `allowed_values`), `empty` (no value is allowed; always set when updating from filled `allowed_values` set to empty one or completely removed from config), `set` (all values defined in `allowed_values` are allowed).
 
-#### IMPORT_BOOLEAN_DEFAULT
-This experiment is deprecated in favor of `IMPORT_PERMISSIVE_MODE`. Resources are migrated to `IMPORT_PERMISSIVE_MODE` gradually; when all of them are migrated, this experiment will be discontinued.
-
-Changes import behavior for boolean fields using the special `"default"` value.
-
-When enabled, boolean fields using the special `"default"` value are set to `"default"` during import instead of the actual Snowflake value (e.g., `"false"`). This prevents unavoidable diffs on every plan after import.
-
-Note: this is supported on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`), stream resources (`snowflake_stream_on_table` and `snowflake_stream_on_view`), and storage integration resources (`snowflake_storage_integration_aws` and `snowflake_storage_integration_azure`).
-
-#### IMPORT_PERMISSIVE_MODE
-Switches imports to the permissive mode.
-
-By default, imports use the enforcing mode: the plan after import shows a change for every attribute that the configuration omits but that has a value in Snowflake. Applying that plan resets these attributes to their Snowflake defaults.
-
-When enabled, the provider accepts the values the object already has for the attributes that the configuration omits, so the plan after import shows no change for them. This applies only to the import itself: external changes made after the import are detected as usual.
-
-Note: this is currently supported only on the `snowflake_authentication_policy`, `snowflake_catalog_integration_aws_glue`, `snowflake_catalog_integration_iceberg_rest`, `snowflake_catalog_integration_object_storage`, `snowflake_catalog_integration_open_catalog`, `snowflake_compute_pool`, `snowflake_warehouse`, `snowflake_warehouse_adaptive`, and `snowflake_warehouse_interactive` resources.
-
 #### GRANT_ACCOUNT_ROLE_SHOW_CACHING
 Enables per-plan in-memory caching of `SHOW GRANTS OF ROLE` results for the `snowflake_grant_account_role` resource.
 
@@ -103,17 +85,6 @@ Without this experiment, deleting the resource fetches the parameter's default v
 
 When enabled, the parameter is properly unset, allowing the inherited value from the higher hierarchy level to take effect.
 
-#### OBJECT_PARAMETER_PARSE_ON_SET
-Changes how `snowflake_object_parameter` handles the `value` field for covered parameters.
-
-Without this experiment, `value` is sent as a raw SQL token. You supply any quoting, and a value that does not match the parameter is not checked by the provider.
-
-With this experiment, covered parameters are parsed with the same rules as the typed SDK fields. A value that does not match the parameter fails in the provider. String values are quoted by the provider, so a configuration such as `DEFAULT_DDL_COLLATION = "en-ci-upper"` is stored as written. Identifier parameters stay a bare name in configuration. Numeric and boolean values need no quoting either way.
-
-Covered today: account-level (`on_account = true`) parameters and Database, Schema, Warehouse, User, Task, Service, Hybrid Table, and Iceberg Table. Account-level parameters already parse values this way. A parameter or object type that is not covered yet keeps the previous behavior, including Function and Procedure, because this resource does not capture argument types. An enum value the catalog does not recognize is logged and also keeps the previous behavior.
-
-See the migration guide for a detailed view: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#opt-in-experiment-parse-snowflake_object_parameter-values-on-set.
-
 #### AUTHENTICATOR_EXPLICIT_ONLY
 Removes implicit authenticator derivation from other provider configuration fields.
 
@@ -134,13 +105,6 @@ Changes how `snowflake_account_parameter` builds the SQL it sends for the `value
 String-typed parameter values no longer need to be manually wrapped in single quotes within `value` — quoting is now handled internally. Identifier-typed parameters (e.g. referencing a network policy by name) require no `value` change, but are now sent as a quoted identifier instead of a single-quoted string literal.
 
 This experiment is also the first step toward forward-compatible parameter support (new Snowflake parameters usable without a provider upgrade); for now it only changes how existing parameters are written. See the migration guide for a detailed, before/after view of the configuration changes: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#opt-in-experiment-internal-quoting-for-snowflake_account_parameter.
-
-#### WRITE_ONLY_ATTRIBUTES
-Enables write-only attributes. Their values are never saved in the Terraform plan or state, so they can be set from an ephemeral resource. They require Terraform 1.11 or later.
-
-Currently supported by: `rsa_public_key_wo` and `rsa_public_key_2_wo`, with their `rsa_public_key_wo_version` and `rsa_public_key_2_wo_version` version counters, on `snowflake_user`, `snowflake_service_user`, and `snowflake_legacy_service_user`.
-
-Without this experiment, using a write-only attribute that is behind it results in an error.
 
 
 ### Experiments enabled by default
@@ -190,6 +154,17 @@ Enables import validation for the `snowflake_grant_privileges_to_account_role` r
 When enabled, importing a grant resource with a fixed set of privileges (`privileges` field) will validate that the specified privileges actually exist in Snowflake with the correct `with_grant_option` setting, and error immediately if they don't match.
 
 This feature works independently of the `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` flag.
+
+This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
+
+It will be promoted in v2.23.0 or v2.24.0.
+
+#### IMPORT_BOOLEAN_DEFAULT
+Changes import behavior for boolean fields using the special `"default"` value.
+
+When enabled, boolean fields using the special `"default"` value are set to `"default"` during import instead of the actual Snowflake value (e.g., `"false"`). This prevents unavoidable diffs on every plan after import.
+
+Note: this is supported on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`) and stream resources (`snowflake_stream_on_table` and `snowflake_stream_on_view`).
 
 This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
 

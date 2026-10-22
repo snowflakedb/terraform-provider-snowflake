@@ -1,8 +1,6 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
 {{- if .Hooks.CreateInSdk.Generate -}}
-	if err := meta.(*provider.Context).Client.{{ .NamePlural }}.Create(ctx, req); err != nil {
-		return diag.FromErr(err)
-	}
+{{ Unimplemented "CreateInSdk" }}
 {{- else if .Hooks.CreateInSdk.Present -}}
 	if diags := {{ .Prefix }}CreateInSdkExt(ctx, meta, id, req); diags != nil {
 		return diags

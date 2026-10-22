@@ -13,29 +13,19 @@ type Warehouses interface {
 	CreateAdaptive(ctx context.Context, request *CreateAdaptiveWarehouseRequest) error
 	CreateInteractive(ctx context.Context, request *CreateInteractiveWarehouseRequest) error
 	Alter(ctx context.Context, request *AlterWarehouseRequest) error
-	AlterAdaptive(ctx context.Context, request *AlterAdaptiveWarehouseRequest) error
-	AlterInteractive(ctx context.Context, request *AlterInteractiveWarehouseRequest) error
 	Drop(ctx context.Context, request *DropWarehouseRequest) error
 	DropSafely(ctx context.Context, id AccountObjectIdentifier) error
 	Show(ctx context.Context, request *ShowWarehouseRequest) ([]Warehouse, error)
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
-	ShowByIDRegular(ctx context.Context, id AccountObjectIdentifier) (*WarehouseRegular, error)
-	ShowByIDSafelyRegular(ctx context.Context, id AccountObjectIdentifier) (*WarehouseRegular, error)
-	ShowByIDAdaptive(ctx context.Context, id AccountObjectIdentifier) (*WarehouseAdaptive, error)
-	ShowByIDSafelyAdaptive(ctx context.Context, id AccountObjectIdentifier) (*WarehouseAdaptive, error)
-	ShowByIDInteractive(ctx context.Context, id AccountObjectIdentifier) (*WarehouseInteractive, error)
-	ShowByIDSafelyInteractive(ctx context.Context, id AccountObjectIdentifier) (*WarehouseInteractive, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) (*WarehouseDetails, error)
 	ShowParameters(ctx context.Context, id AccountObjectIdentifier) ([]*Parameter, error)
 	ShowParametersDetails(ctx context.Context, id AccountObjectIdentifier) (*WarehouseParametersDetails, error)
 	// ShowByIDExperimental is a show by id function with improved performance (using starts with and limit)
 	ShowByIDExperimental(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
 	ShowByIDExperimentalSafely(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
-	// AlterWithSuspend wraps Alter with automatic suspend/resume when changing between STANDARD and SNOWPARK-OPTIMIZED, or resizing an interactive warehouse
+	// AlterWithSuspend wraps Alter with automatic suspend/resume when changing warehouse type, or resizing an interactive warehouse
 	AlterWithSuspend(ctx context.Context, request *AlterWarehouseRequest) error
-	// AlterInteractiveWithSuspend wraps AlterInteractive and suspends a running interactive warehouse before changing its size
-	AlterInteractiveWithSuspend(ctx context.Context, request *AlterInteractiveWarehouseRequest) error
 	// CreateInteractivePreservingSession wraps CreateInteractive to work around a known Snowflake behavior: creating a warehouse implicitly switches the session to it, which for interactive warehouses (5 second statement timeout) can cause subsequent statements in the same session to time out. It restores whichever warehouse (or lack of one) was active in the session before creation
 	CreateInteractivePreservingSession(ctx context.Context, request *CreateInteractiveWarehouseRequest) error
 }
@@ -87,9 +77,9 @@ type CreateAdaptiveWarehouseOptions struct {
 	MaxQueryPerformanceLevel        *MaxQueryPerformanceLevel `ddl:"parameter,single_quotes" sql:"MAX_QUERY_PERFORMANCE_LEVEL"`
 	QueryThroughputMultiplier       *int                      `ddl:"parameter" sql:"QUERY_THROUGHPUT_MULTIPLIER"`
 	ResourceMonitor                 *AccountObjectIdentifier  `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
+	Tag                             []TagAssociation          `ddl:"keyword,parentheses" sql:"TAG"`
 	StatementQueuedTimeoutInSeconds *int                      `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
 	StatementTimeoutInSeconds       *int                      `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
-	Tag                             []TagAssociation          `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
 // CreateInteractiveWarehouseOptions is based on https://docs.snowflake.com/en/user-guide/warehouses-interactive.
@@ -108,10 +98,10 @@ type CreateInteractiveWarehouseOptions struct {
 	InitiallySuspended              *bool                    `ddl:"parameter" sql:"INITIALLY_SUSPENDED"`
 	ResourceMonitor                 *AccountObjectIdentifier `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
 	Comment                         *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	FallbackWarehouse               *AccountObjectIdentifier `ddl:"identifier,equals" sql:"FALLBACK_WAREHOUSE"`
 	MaxConcurrencyLevel             *int                     `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
 	StatementQueuedTimeoutInSeconds *int                     `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
 	StatementTimeoutInSeconds       *int                     `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+	FallbackWarehouse               *AccountObjectIdentifier `ddl:"identifier,equals" sql:"FALLBACK_WAREHOUSE"`
 	Tag                             []TagAssociation         `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
@@ -128,6 +118,8 @@ type AlterWarehouseOptions struct {
 	RenameTo        *AccountObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 	Set             *WarehouseSet            `ddl:"keyword" sql:"SET"`
 	Unset           *WarehouseUnset          `ddl:"list,no_parentheses" sql:"UNSET"`
+	AddTables       []SchemaObjectIdentifier `ddl:"parameter,parentheses,no_equals" sql:"ADD TABLES"`
+	DropTables      []SchemaObjectIdentifier `ddl:"parameter,parentheses,no_equals" sql:"DROP TABLES"`
 	SetTags         []TagAssociation         `ddl:"keyword" sql:"SET TAG"`
 	UnsetTags       []ObjectIdentifier       `ddl:"keyword" sql:"UNSET TAG"`
 }
@@ -147,6 +139,9 @@ type WarehouseSet struct {
 	QueryAccelerationMaxScaleFactor *int                         `ddl:"parameter" sql:"QUERY_ACCELERATION_MAX_SCALE_FACTOR"`
 	ResourceConstraint              *WarehouseResourceConstraint `ddl:"parameter,single_quotes" sql:"RESOURCE_CONSTRAINT"`
 	Generation                      *WarehouseGeneration         `ddl:"parameter,single_quotes" sql:"GENERATION"`
+	QueryThroughputMultiplier       *int                         `ddl:"parameter" sql:"QUERY_THROUGHPUT_MULTIPLIER"`
+	MaxQueryPerformanceLevel        *MaxQueryPerformanceLevel    `ddl:"parameter,single_quotes" sql:"MAX_QUERY_PERFORMANCE_LEVEL"`
+	FallbackWarehouse               *AccountObjectIdentifier     `ddl:"identifier,equals" sql:"FALLBACK_WAREHOUSE"`
 	MaxConcurrencyLevel             *int                         `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
 	StatementQueuedTimeoutInSeconds *int                         `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
 	StatementTimeoutInSeconds       *int                         `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
@@ -166,81 +161,8 @@ type WarehouseUnset struct {
 	QueryAccelerationMaxScaleFactor *bool `ddl:"keyword" sql:"QUERY_ACCELERATION_MAX_SCALE_FACTOR"`
 	ResourceConstraint              *bool `ddl:"keyword" sql:"RESOURCE_CONSTRAINT"`
 	Generation                      *bool `ddl:"keyword" sql:"GENERATION"`
-	MaxConcurrencyLevel             *bool `ddl:"keyword" sql:"MAX_CONCURRENCY_LEVEL"`
-	StatementQueuedTimeoutInSeconds *bool `ddl:"keyword" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
-	StatementTimeoutInSeconds       *bool `ddl:"keyword" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
-}
-
-// AlterAdaptiveWarehouseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-warehouse.
-type AlterAdaptiveWarehouseOptions struct {
-	alter     bool                     `ddl:"static" sql:"ALTER"`
-	warehouse bool                     `ddl:"static" sql:"WAREHOUSE"`
-	IfExists  *bool                    `ddl:"keyword" sql:"IF EXISTS"`
-	name      AccountObjectIdentifier  `ddl:"identifier"`
-	RenameTo  *AccountObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
-	Set       *WarehouseAdaptiveSet    `ddl:"keyword" sql:"SET"`
-	Unset     *WarehouseAdaptiveUnset  `ddl:"list,no_parentheses" sql:"UNSET"`
-	SetTags   []TagAssociation         `ddl:"keyword" sql:"SET TAG"`
-	UnsetTags []ObjectIdentifier       `ddl:"keyword" sql:"UNSET TAG"`
-}
-
-type WarehouseAdaptiveSet struct {
-	WarehouseType                   *WarehouseType            `ddl:"parameter,single_quotes" sql:"WAREHOUSE_TYPE"`
-	Comment                         *string                   `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	ResourceMonitor                 *AccountObjectIdentifier  `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
-	MaxQueryPerformanceLevel        *MaxQueryPerformanceLevel `ddl:"parameter,single_quotes" sql:"MAX_QUERY_PERFORMANCE_LEVEL"`
-	QueryThroughputMultiplier       *int                      `ddl:"parameter" sql:"QUERY_THROUGHPUT_MULTIPLIER"`
-	StatementQueuedTimeoutInSeconds *int                      `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
-	StatementTimeoutInSeconds       *int                      `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
-}
-
-type WarehouseAdaptiveUnset struct {
-	WarehouseType                   *bool `ddl:"keyword" sql:"WAREHOUSE_TYPE"`
-	Comment                         *bool `ddl:"keyword" sql:"COMMENT"`
-	ResourceMonitor                 *bool `ddl:"keyword" sql:"RESOURCE_MONITOR"`
-	MaxQueryPerformanceLevel        *bool `ddl:"keyword" sql:"MAX_QUERY_PERFORMANCE_LEVEL"`
 	QueryThroughputMultiplier       *bool `ddl:"keyword" sql:"QUERY_THROUGHPUT_MULTIPLIER"`
-	StatementQueuedTimeoutInSeconds *bool `ddl:"keyword" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
-	StatementTimeoutInSeconds       *bool `ddl:"keyword" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
-}
-
-// AlterInteractiveWarehouseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-warehouse.
-type AlterInteractiveWarehouseOptions struct {
-	alter      bool                       `ddl:"static" sql:"ALTER"`
-	warehouse  bool                       `ddl:"static" sql:"WAREHOUSE"`
-	IfExists   *bool                      `ddl:"keyword" sql:"IF EXISTS"`
-	name       AccountObjectIdentifier    `ddl:"identifier"`
-	RenameTo   *AccountObjectIdentifier   `ddl:"identifier" sql:"RENAME TO"`
-	Set        *WarehouseInteractiveSet   `ddl:"keyword" sql:"SET"`
-	Unset      *WarehouseInteractiveUnset `ddl:"list,no_parentheses" sql:"UNSET"`
-	AddTables  []SchemaObjectIdentifier   `ddl:"parameter,parentheses,no_equals" sql:"ADD TABLES"`
-	DropTables []SchemaObjectIdentifier   `ddl:"parameter,parentheses,no_equals" sql:"DROP TABLES"`
-	SetTags    []TagAssociation           `ddl:"keyword" sql:"SET TAG"`
-	UnsetTags  []ObjectIdentifier         `ddl:"keyword" sql:"UNSET TAG"`
-}
-
-type WarehouseInteractiveSet struct {
-	WarehouseSize                   *WarehouseSize           `ddl:"parameter,single_quotes" sql:"WAREHOUSE_SIZE"`
-	MaxClusterCount                 *int                     `ddl:"parameter" sql:"MAX_CLUSTER_COUNT"`
-	MinClusterCount                 *int                     `ddl:"parameter" sql:"MIN_CLUSTER_COUNT"`
-	AutoSuspend                     *int                     `ddl:"parameter" sql:"AUTO_SUSPEND"`
-	AutoResume                      *bool                    `ddl:"parameter" sql:"AUTO_RESUME"`
-	ResourceMonitor                 *AccountObjectIdentifier `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
-	Comment                         *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	FallbackWarehouse               *AccountObjectIdentifier `ddl:"identifier,equals" sql:"FALLBACK_WAREHOUSE"`
-	MaxConcurrencyLevel             *int                     `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
-	StatementQueuedTimeoutInSeconds *int                     `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
-	StatementTimeoutInSeconds       *int                     `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
-}
-
-type WarehouseInteractiveUnset struct {
-	WarehouseSize                   *bool `ddl:"keyword" sql:"WAREHOUSE_SIZE"`
-	MaxClusterCount                 *bool `ddl:"keyword" sql:"MAX_CLUSTER_COUNT"`
-	MinClusterCount                 *bool `ddl:"keyword" sql:"MIN_CLUSTER_COUNT"`
-	AutoSuspend                     *bool `ddl:"keyword" sql:"AUTO_SUSPEND"`
-	AutoResume                      *bool `ddl:"keyword" sql:"AUTO_RESUME"`
-	ResourceMonitor                 *bool `ddl:"keyword" sql:"RESOURCE_MONITOR"`
-	Comment                         *bool `ddl:"keyword" sql:"COMMENT"`
+	MaxQueryPerformanceLevel        *bool `ddl:"keyword" sql:"MAX_QUERY_PERFORMANCE_LEVEL"`
 	FallbackWarehouse               *bool `ddl:"keyword" sql:"FALLBACK_WAREHOUSE"`
 	MaxConcurrencyLevel             *bool `ddl:"keyword" sql:"MAX_CONCURRENCY_LEVEL"`
 	StatementQueuedTimeoutInSeconds *bool `ddl:"keyword" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
@@ -264,7 +186,7 @@ type ShowWarehouseOptions struct {
 	Limit      *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
 
-type warehousesRow struct {
+type warehouseDBRow struct {
 	Name                            string         `db:"name"`
 	State                           string         `db:"state"`
 	Type                            string         `db:"type"`
@@ -359,7 +281,7 @@ type DescribeWarehouseOptions struct {
 	name      AccountObjectIdentifier `ddl:"identifier"`
 }
 
-type warehouseDescRow struct {
+type warehouseDetailsRow struct {
 	CreatedOn time.Time `db:"created_on"`
 	Name      string    `db:"name"`
 	Kind      string    `db:"kind"`
@@ -453,103 +375,4 @@ type WarehouseInteractive struct {
 	ResourceMonitor AccountObjectIdentifier
 	OwnerRoleType   string
 	Tables          []SchemaObjectIdentifier
-}
-
-func (w *Warehouse) AsRegular() *WarehouseRegular {
-	if w == nil {
-		return nil
-	}
-	return &WarehouseRegular{
-		Name:                            w.Name,
-		State:                           w.State,
-		Type:                            w.Type,
-		Size:                            w.Size,
-		MinClusterCount:                 w.MinClusterCount,
-		MaxClusterCount:                 w.MaxClusterCount,
-		StartedClusters:                 w.StartedClusters,
-		Running:                         w.Running,
-		Queued:                          w.Queued,
-		IsDefault:                       w.IsDefault,
-		IsCurrent:                       w.IsCurrent,
-		AutoSuspend:                     w.AutoSuspend,
-		AutoResume:                      w.AutoResume,
-		Available:                       w.Available,
-		Provisioning:                    w.Provisioning,
-		Quiescing:                       w.Quiescing,
-		Other:                           w.Other,
-		CreatedOn:                       w.CreatedOn,
-		ResumedOn:                       w.ResumedOn,
-		UpdatedOn:                       w.UpdatedOn,
-		Owner:                           w.Owner,
-		Comment:                         w.Comment,
-		EnableQueryAcceleration:         w.EnableQueryAcceleration,
-		QueryAccelerationMaxScaleFactor: w.QueryAccelerationMaxScaleFactor,
-		ResourceMonitor:                 w.ResourceMonitor,
-		ScalingPolicy:                   w.ScalingPolicy,
-		OwnerRoleType:                   w.OwnerRoleType,
-		ResourceConstraint:              w.ResourceConstraint,
-		Generation:                      w.Generation,
-	}
-}
-
-func (w *Warehouse) AsAdaptive() *WarehouseAdaptive {
-	if w == nil {
-		return nil
-	}
-	return &WarehouseAdaptive{
-		Name:                      w.Name,
-		State:                     w.State,
-		Type:                      w.Type,
-		Running:                   w.Running,
-		Queued:                    w.Queued,
-		IsDefault:                 w.IsDefault,
-		IsCurrent:                 w.IsCurrent,
-		AutoResume:                w.AutoResume,
-		Available:                 w.Available,
-		Provisioning:              w.Provisioning,
-		Quiescing:                 w.Quiescing,
-		Other:                     w.Other,
-		CreatedOn:                 w.CreatedOn,
-		ResumedOn:                 w.ResumedOn,
-		UpdatedOn:                 w.UpdatedOn,
-		Owner:                     w.Owner,
-		Comment:                   w.Comment,
-		ResourceMonitor:           w.ResourceMonitor,
-		OwnerRoleType:             w.OwnerRoleType,
-		MaxQueryPerformanceLevel:  w.MaxQueryPerformanceLevel,
-		QueryThroughputMultiplier: w.QueryThroughputMultiplier,
-	}
-}
-
-func (w *Warehouse) AsInteractive() *WarehouseInteractive {
-	if w == nil {
-		return nil
-	}
-	return &WarehouseInteractive{
-		Name:            w.Name,
-		State:           w.State,
-		Type:            w.Type,
-		Size:            w.Size,
-		MinClusterCount: w.MinClusterCount,
-		MaxClusterCount: w.MaxClusterCount,
-		StartedClusters: w.StartedClusters,
-		Running:         w.Running,
-		Queued:          w.Queued,
-		IsDefault:       w.IsDefault,
-		IsCurrent:       w.IsCurrent,
-		AutoSuspend:     w.AutoSuspend,
-		AutoResume:      w.AutoResume,
-		Available:       w.Available,
-		Provisioning:    w.Provisioning,
-		Quiescing:       w.Quiescing,
-		Other:           w.Other,
-		CreatedOn:       w.CreatedOn,
-		ResumedOn:       w.ResumedOn,
-		UpdatedOn:       w.UpdatedOn,
-		Owner:           w.Owner,
-		Comment:         w.Comment,
-		ResourceMonitor: w.ResourceMonitor,
-		OwnerRoleType:   w.OwnerRoleType,
-		Tables:          w.Tables,
-	}
 }

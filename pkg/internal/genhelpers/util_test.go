@@ -67,12 +67,6 @@ func Test_ColumnOutput(t *testing.T) {
 	}
 }
 
-func TestSqlToGoName(t *testing.T) {
-	require.Equal(t, "TimestampDayIsAlways24H", SqlToGoName("TIMESTAMP_DAY_IS_ALWAYS_24H", true))
-	require.Equal(t, "UnsupportedDdlAction", SqlToGoName("UNSUPPORTED_DDL_ACTION", true))
-	require.Equal(t, "dataRetentionTimeInDays", SqlToGoName("DATA_RETENTION_TIME_IN_DAYS", false))
-}
-
 func Test_SnakeCaseToCamel(t *testing.T) {
 	type test struct {
 		input    string

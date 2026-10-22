@@ -15,8 +15,10 @@ type CatalogIntegrationIcebergRestModel struct {
 	Name                     tfconfig.Variable `json:"name,omitempty"`
 	BearerRestAuthentication tfconfig.Variable `json:"bearer_rest_authentication,omitempty"`
 	CatalogNamespace         tfconfig.Variable `json:"catalog_namespace,omitempty"`
+	CatalogSource            tfconfig.Variable `json:"catalog_source,omitempty"`
 	Comment                  tfconfig.Variable `json:"comment,omitempty"`
 	Enabled                  tfconfig.Variable `json:"enabled,omitempty"`
+	FullyQualifiedName       tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	OauthRestAuthentication  tfconfig.Variable `json:"oauth_rest_authentication,omitempty"`
 	RefreshIntervalSeconds   tfconfig.Variable `json:"refresh_interval_seconds,omitempty"`
 	RestConfig               tfconfig.Variable `json:"rest_config,omitempty"`
@@ -35,7 +37,7 @@ func CatalogIntegrationIcebergRest(
 	resourceName string,
 	name string,
 	enabled bool,
-	restConfig []sdk.CatalogIntegrationIcebergRestRestConfigRequest,
+	restConfig []sdk.IcebergRestRestConfigRequest,
 ) *CatalogIntegrationIcebergRestModel {
 	c := &CatalogIntegrationIcebergRestModel{ResourceModelMeta: config.Meta(resourceName, resources.CatalogIntegrationIcebergRest)}
 	c.WithName(name)
@@ -47,7 +49,7 @@ func CatalogIntegrationIcebergRest(
 func CatalogIntegrationIcebergRestWithDefaultMeta(
 	name string,
 	enabled bool,
-	restConfig []sdk.CatalogIntegrationIcebergRestRestConfigRequest,
+	restConfig []sdk.IcebergRestRestConfigRequest,
 ) *CatalogIntegrationIcebergRestModel {
 	c := &CatalogIntegrationIcebergRestModel{ResourceModelMeta: config.DefaultMeta(resources.CatalogIntegrationIcebergRest)}
 	c.WithName(name)
@@ -104,6 +106,11 @@ func (c *CatalogIntegrationIcebergRestModel) WithCatalogNamespace(catalogNamespa
 	return c
 }
 
+func (c *CatalogIntegrationIcebergRestModel) WithCatalogSource(catalogSource string) *CatalogIntegrationIcebergRestModel {
+	c.CatalogSource = tfconfig.StringVariable(catalogSource)
+	return c
+}
+
 func (c *CatalogIntegrationIcebergRestModel) WithComment(comment string) *CatalogIntegrationIcebergRestModel {
 	c.Comment = tfconfig.StringVariable(comment)
 	return c
@@ -111,6 +118,11 @@ func (c *CatalogIntegrationIcebergRestModel) WithComment(comment string) *Catalo
 
 func (c *CatalogIntegrationIcebergRestModel) WithEnabled(enabled bool) *CatalogIntegrationIcebergRestModel {
 	c.Enabled = tfconfig.BoolVariable(enabled)
+	return c
+}
+
+func (c *CatalogIntegrationIcebergRestModel) WithFullyQualifiedName(fullyQualifiedName string) *CatalogIntegrationIcebergRestModel {
+	c.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return c
 }
 
@@ -144,6 +156,11 @@ func (c *CatalogIntegrationIcebergRestModel) WithCatalogNamespaceValue(value tfc
 	return c
 }
 
+func (c *CatalogIntegrationIcebergRestModel) WithCatalogSourceValue(value tfconfig.Variable) *CatalogIntegrationIcebergRestModel {
+	c.CatalogSource = value
+	return c
+}
+
 func (c *CatalogIntegrationIcebergRestModel) WithCommentValue(value tfconfig.Variable) *CatalogIntegrationIcebergRestModel {
 	c.Comment = value
 	return c
@@ -151,6 +168,11 @@ func (c *CatalogIntegrationIcebergRestModel) WithCommentValue(value tfconfig.Var
 
 func (c *CatalogIntegrationIcebergRestModel) WithEnabledValue(value tfconfig.Variable) *CatalogIntegrationIcebergRestModel {
 	c.Enabled = value
+	return c
+}
+
+func (c *CatalogIntegrationIcebergRestModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *CatalogIntegrationIcebergRestModel {
+	c.FullyQualifiedName = value
 	return c
 }
 

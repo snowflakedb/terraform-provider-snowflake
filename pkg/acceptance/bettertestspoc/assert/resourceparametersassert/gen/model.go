@@ -1,7 +1,6 @@
 package gen
 
 import (
-	"log"
 	"strings"
 
 	objectparametersassertgen "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert/gen"
@@ -35,7 +34,7 @@ var dataSourceParametersMapping = map[string]string{
 	"WarehouseInteractive": "Warehouses",
 }
 
-func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters objectparametersassertgen.SnowflakeObjectParameters, preamble *genhelpers.PreambleModel, _ *log.Logger) ResourceParametersAssertionsModel {
+func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters objectparametersassertgen.SnowflakeObjectParameters, preamble *genhelpers.PreambleModel) ResourceParametersAssertionsModel {
 	parameters := make([]ResourceParameterAssertionModel, len(snowflakeObjectParameters.Parameters))
 	for idx, p := range snowflakeObjectParameters.Parameters {
 		// TODO [SNOW-1501905]: get a runtime name for the assertion creator

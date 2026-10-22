@@ -30,18 +30,6 @@ func (c *NotificationIntegrationClient) client() sdk.NotificationIntegrations {
 	return c.context.client.NotificationIntegrations
 }
 
-func (c *NotificationIntegrationClient) CreateWithAmazonPush(t *testing.T) (*sdk.NotificationIntegration, func()) {
-	t.Helper()
-	return c.CreateWithRequest(
-		t, sdk.NewCreateNotificationIntegrationRequest(c.ids.RandomAccountObjectIdentifier(), true).
-			WithPushNotificationParams(*sdk.NewPushNotificationParamsRequest().
-				WithAmazonPushParams(*sdk.NewAmazonPushParamsRequest(
-					"arn:aws:sns:us-east-2:123456789012:MyTopic",
-					"arn:aws:iam::000000000001:/role/test",
-				))),
-	)
-}
-
 func (c *NotificationIntegrationClient) CreateWithGcpPubSub(t *testing.T) (*sdk.NotificationIntegration, func()) {
 	t.Helper()
 	return c.CreateWithRequest(
@@ -68,10 +56,7 @@ func (c *NotificationIntegrationClient) Create(t *testing.T) (*sdk.NotificationI
 	id := c.ids.RandomAccountObjectIdentifier()
 
 	request := sdk.NewCreateNotificationIntegrationRequest(id, true).
-		WithEmailParams(*sdk.NewEmailParamsRequest().
-			WithAllowedRecipients([]sdk.NotificationIntegrationAllowedRecipient{{Email: VerifiedEmail}}).
-			WithDefaultRecipients([]sdk.NotificationIntegrationAllowedRecipient{{Email: VerifiedEmail}}).
-			WithDefaultSubject("Snowflake Email Notification"))
+		WithEmailParams(*sdk.NewEmailParamsRequest().WithAllowedRecipients([]sdk.NotificationIntegrationAllowedRecipient{{Email: VerifiedEmail}}))
 
 	err := c.client().Create(ctx, request)
 	require.NoError(t, err)

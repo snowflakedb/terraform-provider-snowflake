@@ -1,22 +1,5 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
 {{- if .Hooks.IdentitySchema.Generate -}}
-{{- $words := CamelToWords .Name -}}
-{{- $unique := "" -}}
-{{- if eq .IdType "AccountObjectIdentifier" -}}
-{{- $unique = "account" -}}
-{{- else if eq .IdType "DatabaseObjectIdentifier" -}}
-{{- $unique = printf "database in which the %s is created" $words -}}
-{{- else if eq .IdType "SchemaObjectIdentifier" -}}
-{{- $unique = printf "schema in which the %s is created" $words -}}
-{{- else -}}
-{{- Unimplemented (printf "object %s: unsupported IdType %s" .Name .IdType) -}}
-{{- end -}}
-{{- $nameText := printf "Specifies the identifier for the %s; must be unique for the %s." $words $unique -}}
-{{- if .AdditionalIdentityNameDescription -}}
-{{- $nameText = printf "%s %s" $nameText .AdditionalIdentityNameDescription -}}
-{{- end -}}
-{{- $databaseText := printf "The database in which to create the %s." $words -}}
-{{- $schemaText := printf "The schema in which to create the %s." $words -}}
 	map[string]*tfschema.Schema{
 		"name": {
 			Type:     tfschema.TypeString,
@@ -24,17 +7,20 @@
 {{- if .IdentityNameForceNew }}
 			ForceNew: true,
 {{- end }}
-			Description: blocklistedCharactersFieldDescription({{ Quote $nameText }}),
+			Description: blocklistedCharactersFieldDescription("Specifies the identifier for the {{ CamelToWords .Name }}; must be unique for the {{ if eq .IdType "AccountObjectIdentifier" -}}
+account
+{{- else if eq .IdType "DatabaseObjectIdentifier" -}}
+database in which the {{ CamelToWords .Name }} is created
+{{- else if eq .IdType "SchemaObjectIdentifier" -}}
+schema in which the {{ CamelToWords .Name }} is created
+{{- end }}.{{ if .AdditionalIdentityNameDescription }} {{ .AdditionalIdentityNameDescription }}{{ end }}"),
 			DiffSuppressFunc: suppressIdentifierQuoting,
 		},
 {{- if or (eq .IdType "DatabaseObjectIdentifier") (eq .IdType "SchemaObjectIdentifier") }}
 		"database": {
 			Type:             tfschema.TypeString,
 			Required:         true,
-{{- if .IdentityHierarchyForceNew }}
-			ForceNew:         true,
-{{- end }}
-			Description: blocklistedCharactersFieldDescription({{ Quote $databaseText }}),
+			Description:      blocklistedCharactersFieldDescription("The database in which to create the {{ CamelToWords .Name }}."),
 			DiffSuppressFunc: suppressIdentifierQuoting,
 		},
 {{- end }}
@@ -42,10 +28,7 @@
 		"schema": {
 			Type:             tfschema.TypeString,
 			Required:         true,
-{{- if .IdentityHierarchyForceNew }}
-			ForceNew:         true,
-{{- end }}
-			Description: blocklistedCharactersFieldDescription({{ Quote $schemaText }}),
+			Description:      blocklistedCharactersFieldDescription("The schema in which to create the {{ CamelToWords .Name }}."),
 			DiffSuppressFunc: suppressIdentifierQuoting,
 		},
 {{- end }}

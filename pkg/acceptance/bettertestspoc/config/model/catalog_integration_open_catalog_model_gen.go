@@ -14,8 +14,10 @@ import (
 type CatalogIntegrationOpenCatalogModel struct {
 	Name                   tfconfig.Variable `json:"name,omitempty"`
 	CatalogNamespace       tfconfig.Variable `json:"catalog_namespace,omitempty"`
+	CatalogSource          tfconfig.Variable `json:"catalog_source,omitempty"`
 	Comment                tfconfig.Variable `json:"comment,omitempty"`
 	Enabled                tfconfig.Variable `json:"enabled,omitempty"`
+	FullyQualifiedName     tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	RefreshIntervalSeconds tfconfig.Variable `json:"refresh_interval_seconds,omitempty"`
 	RestAuthentication     tfconfig.Variable `json:"rest_authentication,omitempty"`
 	RestConfig             tfconfig.Variable `json:"rest_config,omitempty"`
@@ -33,8 +35,8 @@ func CatalogIntegrationOpenCatalog(
 	resourceName string,
 	name string,
 	enabled bool,
-	restAuthentication []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest,
-	restConfig []sdk.CatalogIntegrationOpenCatalogRestConfigRequest,
+	restAuthentication []sdk.OAuthRestAuthenticationRequest,
+	restConfig []sdk.OpenCatalogRestConfigRequest,
 ) *CatalogIntegrationOpenCatalogModel {
 	c := &CatalogIntegrationOpenCatalogModel{ResourceModelMeta: config.Meta(resourceName, resources.CatalogIntegrationOpenCatalog)}
 	c.WithName(name)
@@ -47,8 +49,8 @@ func CatalogIntegrationOpenCatalog(
 func CatalogIntegrationOpenCatalogWithDefaultMeta(
 	name string,
 	enabled bool,
-	restAuthentication []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest,
-	restConfig []sdk.CatalogIntegrationOpenCatalogRestConfigRequest,
+	restAuthentication []sdk.OAuthRestAuthenticationRequest,
+	restConfig []sdk.OpenCatalogRestConfigRequest,
 ) *CatalogIntegrationOpenCatalogModel {
 	c := &CatalogIntegrationOpenCatalogModel{ResourceModelMeta: config.DefaultMeta(resources.CatalogIntegrationOpenCatalog)}
 	c.WithName(name)
@@ -104,6 +106,11 @@ func (c *CatalogIntegrationOpenCatalogModel) WithCatalogNamespace(catalogNamespa
 	return c
 }
 
+func (c *CatalogIntegrationOpenCatalogModel) WithCatalogSource(catalogSource string) *CatalogIntegrationOpenCatalogModel {
+	c.CatalogSource = tfconfig.StringVariable(catalogSource)
+	return c
+}
+
 func (c *CatalogIntegrationOpenCatalogModel) WithComment(comment string) *CatalogIntegrationOpenCatalogModel {
 	c.Comment = tfconfig.StringVariable(comment)
 	return c
@@ -111,6 +118,11 @@ func (c *CatalogIntegrationOpenCatalogModel) WithComment(comment string) *Catalo
 
 func (c *CatalogIntegrationOpenCatalogModel) WithEnabled(enabled bool) *CatalogIntegrationOpenCatalogModel {
 	c.Enabled = tfconfig.BoolVariable(enabled)
+	return c
+}
+
+func (c *CatalogIntegrationOpenCatalogModel) WithFullyQualifiedName(fullyQualifiedName string) *CatalogIntegrationOpenCatalogModel {
+	c.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return c
 }
 
@@ -137,6 +149,11 @@ func (c *CatalogIntegrationOpenCatalogModel) WithCatalogNamespaceValue(value tfc
 	return c
 }
 
+func (c *CatalogIntegrationOpenCatalogModel) WithCatalogSourceValue(value tfconfig.Variable) *CatalogIntegrationOpenCatalogModel {
+	c.CatalogSource = value
+	return c
+}
+
 func (c *CatalogIntegrationOpenCatalogModel) WithCommentValue(value tfconfig.Variable) *CatalogIntegrationOpenCatalogModel {
 	c.Comment = value
 	return c
@@ -144,6 +161,11 @@ func (c *CatalogIntegrationOpenCatalogModel) WithCommentValue(value tfconfig.Var
 
 func (c *CatalogIntegrationOpenCatalogModel) WithEnabledValue(value tfconfig.Variable) *CatalogIntegrationOpenCatalogModel {
 	c.Enabled = value
+	return c
+}
+
+func (c *CatalogIntegrationOpenCatalogModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *CatalogIntegrationOpenCatalogModel {
+	c.FullyQualifiedName = value
 	return c
 }
 

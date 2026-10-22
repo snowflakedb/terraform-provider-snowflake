@@ -17,206 +17,111 @@ func init() {
 var catalogIntegrationsTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 
 const (
-	case_CatalogIntegrations_validation_CreateAwsGlue_name_ValidIdentifier                       testCaseName = "validation_CreateAwsGlue_name_ValidIdentifier"
-	case_CatalogIntegrations_validation_CreateAwsGlue_opts_ConflictingFields                     testCaseName = "validation_CreateAwsGlue_opts_ConflictingFields"
-	case_CatalogIntegrations_sql_CreateAwsGlue_basic                                             testCaseName = "sql_CreateAwsGlue_basic"
-	case_CatalogIntegrations_sql_CreateAwsGlue_all                                               testCaseName = "sql_CreateAwsGlue_all"
-	case_CatalogIntegrations_validation_CreateIcebergRest_name_ValidIdentifier                   testCaseName = "validation_CreateIcebergRest_name_ValidIdentifier"
-	case_CatalogIntegrations_validation_CreateIcebergRest_opts_ConflictingFields                 testCaseName = "validation_CreateIcebergRest_opts_ConflictingFields"
-	case_CatalogIntegrations_validation_CreateIcebergRest_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_CreateIcebergRest_opts_ExactlyOneValueSet_NoneSet"
-	case_CatalogIntegrations_validation_CreateIcebergRest_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_CreateIcebergRest_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_CatalogIntegrations_sql_CreateIcebergRest_basic                                         testCaseName = "sql_CreateIcebergRest_basic"
-	case_CatalogIntegrations_sql_CreateIcebergRest_all                                           testCaseName = "sql_CreateIcebergRest_all"
-	case_CatalogIntegrations_validation_CreateObjectStorage_name_ValidIdentifier                 testCaseName = "validation_CreateObjectStorage_name_ValidIdentifier"
-	case_CatalogIntegrations_validation_CreateObjectStorage_opts_ConflictingFields               testCaseName = "validation_CreateObjectStorage_opts_ConflictingFields"
-	case_CatalogIntegrations_sql_CreateObjectStorage_basic                                       testCaseName = "sql_CreateObjectStorage_basic"
-	case_CatalogIntegrations_sql_CreateObjectStorage_all                                         testCaseName = "sql_CreateObjectStorage_all"
-	case_CatalogIntegrations_validation_CreateOpenCatalog_name_ValidIdentifier                   testCaseName = "validation_CreateOpenCatalog_name_ValidIdentifier"
-	case_CatalogIntegrations_validation_CreateOpenCatalog_opts_ConflictingFields                 testCaseName = "validation_CreateOpenCatalog_opts_ConflictingFields"
-	case_CatalogIntegrations_sql_CreateOpenCatalog_basic                                         testCaseName = "sql_CreateOpenCatalog_basic"
-	case_CatalogIntegrations_sql_CreateOpenCatalog_all                                           testCaseName = "sql_CreateOpenCatalog_all"
-	case_CatalogIntegrations_validation_Alter_name_ValidIdentifier                               testCaseName = "validation_Alter_name_ValidIdentifier"
-	case_CatalogIntegrations_validation_Alter_opts_ExactlyOneValueSet_NoneSet                    testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_CatalogIntegrations_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet             testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_CatalogIntegrations_validation_Alter_opts_Set_ConflictingFields                         testCaseName = "validation_Alter_opts_Set_ConflictingFields"
-	case_CatalogIntegrations_validation_Alter_opts_Set_AtLeastOneValueSet                        testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
-	case_CatalogIntegrations_validation_Alter_SetTags_ValidIdentifier                            testCaseName = "validation_Alter_SetTags_ValidIdentifier"
-	case_CatalogIntegrations_sql_Alter_Set                                                       testCaseName = "sql_Alter_Set"
-	case_CatalogIntegrations_sql_Alter_SetTags                                                   testCaseName = "sql_Alter_SetTags"
-	case_CatalogIntegrations_sql_Alter_UnsetTags                                                 testCaseName = "sql_Alter_UnsetTags"
-	case_CatalogIntegrations_validation_Drop_name_ValidIdentifier                                testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_CatalogIntegrations_sql_Drop_basic                                                      testCaseName = "sql_Drop_basic"
-	case_CatalogIntegrations_sql_Drop_all                                                        testCaseName = "sql_Drop_all"
-	case_CatalogIntegrations_sql_Show_basic                                                      testCaseName = "sql_Show_basic"
-	case_CatalogIntegrations_sql_Show_all                                                        testCaseName = "sql_Show_all"
-	case_CatalogIntegrations_sql_Show_Like                                                       testCaseName = "sql_Show_Like"
-	case_CatalogIntegrations_validation_Describe_name_ValidIdentifier                            testCaseName = "validation_Describe_name_ValidIdentifier"
-	case_CatalogIntegrations_sql_Describe_basic                                                  testCaseName = "sql_Describe_basic"
+	case_CatalogIntegrations_validation_Create_name_ValidIdentifier                                                  testCaseName = "validation_Create_name_ValidIdentifier"
+	case_CatalogIntegrations_validation_Create_opts_ConflictingFields                                                testCaseName = "validation_Create_opts_ConflictingFields"
+	case_CatalogIntegrations_validation_Create_opts_ExactlyOneValueSet_NoneSet                                       testCaseName = "validation_Create_opts_ExactlyOneValueSet_NoneSet"
+	case_CatalogIntegrations_validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet                                testCaseName = "validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_CatalogIntegrations_validation_Create_opts_IcebergRestCatalogSourceParams_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Create_opts_IcebergRestCatalogSourceParams_ExactlyOneValueSet_NoneSet"
+	case_CatalogIntegrations_validation_Create_opts_IcebergRestCatalogSourceParams_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Create_opts_IcebergRestCatalogSourceParams_ExactlyOneValueSet_MoreThanOneSet"
+	case_CatalogIntegrations_sql_Create_basic                                                                        testCaseName = "sql_Create_basic"
+	case_CatalogIntegrations_sql_Create_all                                                                          testCaseName = "sql_Create_all"
+	case_CatalogIntegrations_validation_Alter_name_ValidIdentifier                                                   testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_CatalogIntegrations_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_CatalogIntegrations_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                 testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_CatalogIntegrations_validation_Alter_opts_Set_ConflictingFields                                             testCaseName = "validation_Alter_opts_Set_ConflictingFields"
+	case_CatalogIntegrations_validation_Alter_opts_Set_AtLeastOneValueSet                                            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_CatalogIntegrations_validation_Alter_SetTags_ValidIdentifier                                                testCaseName = "validation_Alter_SetTags_ValidIdentifier"
+	case_CatalogIntegrations_sql_Alter_Set                                                                           testCaseName = "sql_Alter_Set"
+	case_CatalogIntegrations_sql_Alter_SetTags                                                                       testCaseName = "sql_Alter_SetTags"
+	case_CatalogIntegrations_sql_Alter_UnsetTags                                                                     testCaseName = "sql_Alter_UnsetTags"
+	case_CatalogIntegrations_validation_Drop_name_ValidIdentifier                                                    testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_CatalogIntegrations_sql_Drop_basic                                                                          testCaseName = "sql_Drop_basic"
+	case_CatalogIntegrations_sql_Drop_all                                                                            testCaseName = "sql_Drop_all"
+	case_CatalogIntegrations_sql_Show_basic                                                                          testCaseName = "sql_Show_basic"
+	case_CatalogIntegrations_sql_Show_all                                                                            testCaseName = "sql_Show_all"
+	case_CatalogIntegrations_sql_Show_Like                                                                           testCaseName = "sql_Show_Like"
+	case_CatalogIntegrations_validation_Describe_name_ValidIdentifier                                                testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_CatalogIntegrations_sql_Describe_basic                                                                      testCaseName = "sql_Describe_basic"
 )
 
 type CatalogIntegrationsTestsContext struct {
-	CreateAwsGlue       *sdkTestCtx[*CreateAwsGlueCatalogIntegrationOptions]
-	CreateIcebergRest   *sdkTestCtx[*CreateIcebergRestCatalogIntegrationOptions]
-	CreateObjectStorage *sdkTestCtx[*CreateObjectStorageCatalogIntegrationOptions]
-	CreateOpenCatalog   *sdkTestCtx[*CreateOpenCatalogCatalogIntegrationOptions]
-	Alter               *sdkTestCtx[*AlterCatalogIntegrationOptions]
-	Drop                *sdkTestCtx[*DropCatalogIntegrationOptions]
-	Show                *sdkTestCtx[*ShowCatalogIntegrationOptions]
-	Describe            *sdkTestCtx[*DescribeCatalogIntegrationOptions]
+	Create   *sdkTestCtx[*CreateCatalogIntegrationOptions]
+	Alter    *sdkTestCtx[*AlterCatalogIntegrationOptions]
+	Drop     *sdkTestCtx[*DropCatalogIntegrationOptions]
+	Show     *sdkTestCtx[*ShowCatalogIntegrationOptions]
+	Describe *sdkTestCtx[*DescribeCatalogIntegrationOptions]
 }
 
 var catalogIntegrationsTests = CatalogIntegrationsTestsContext{
-	CreateAwsGlue: newSdkTestCtx[*CreateAwsGlueCatalogIntegrationOptions](
-		"CatalogIntegrations", "CreateAwsGlue",
+	Create: newSdkTestCtx[*CreateCatalogIntegrationOptions](
+		"CatalogIntegrations", "Create",
 	).
-		withDefaultOpts(func() *CreateAwsGlueCatalogIntegrationOptions {
-			return &CreateAwsGlueCatalogIntegrationOptions{
+		withDefaultOpts(func() *CreateCatalogIntegrationOptions {
+			return &CreateCatalogIntegrationOptions{
 				name: catalogIntegrationsTestIdAccountObjectIdentifier,
 			}
 		}).
 		withValidationCases(
-			validationCase[*CreateAwsGlueCatalogIntegrationOptions]{
-				Name:        case_CatalogIntegrations_validation_CreateAwsGlue_name_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("CreateAwsGlueCatalogIntegrationOptions", "name"),
-				DefaultModify: func(opts *CreateAwsGlueCatalogIntegrationOptions) {
+			validationCase[*CreateCatalogIntegrationOptions]{
+				Name:        case_CatalogIntegrations_validation_Create_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateCatalogIntegrationOptions", "name"),
+				DefaultModify: func(opts *CreateCatalogIntegrationOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
 			},
-			validationCase[*CreateAwsGlueCatalogIntegrationOptions]{
-				Name:        case_CatalogIntegrations_validation_CreateAwsGlue_opts_ConflictingFields,
-				ExpectedErr: errOneOf("CreateAwsGlueCatalogIntegrationOptions", "OrReplace", "IfNotExists"),
-				DefaultModify: func(opts *CreateAwsGlueCatalogIntegrationOptions) {
-					opts.OrReplace = new(true)
+			validationCase[*CreateCatalogIntegrationOptions]{
+				Name:        case_CatalogIntegrations_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateCatalogIntegrationOptions", "IfNotExists", "OrReplace"),
+				DefaultModify: func(opts *CreateCatalogIntegrationOptions) {
 					opts.IfNotExists = new(true)
+					opts.OrReplace = new(true)
+				},
+			},
+			validationCase[*CreateCatalogIntegrationOptions]{
+				Name:        case_CatalogIntegrations_validation_Create_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateCatalogIntegrationOptions", "AwsGlueCatalogSourceParams", "ObjectStorageCatalogSourceParams", "OpenCatalogCatalogSourceParams", "IcebergRestCatalogSourceParams"),
+				DefaultModify: func(opts *CreateCatalogIntegrationOptions) {
+					opts.AwsGlueCatalogSourceParams = nil
+					opts.ObjectStorageCatalogSourceParams = nil
+					opts.OpenCatalogCatalogSourceParams = nil
+					opts.IcebergRestCatalogSourceParams = nil
+				},
+			},
+			validationCase[*CreateCatalogIntegrationOptions]{
+				Name:        case_CatalogIntegrations_validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateCatalogIntegrationOptions", "AwsGlueCatalogSourceParams", "ObjectStorageCatalogSourceParams", "OpenCatalogCatalogSourceParams", "IcebergRestCatalogSourceParams"),
+				DefaultModify: func(opts *CreateCatalogIntegrationOptions) {
+					opts.AwsGlueCatalogSourceParams = &AwsGlueParams{}
+					opts.ObjectStorageCatalogSourceParams = &ObjectStorageParams{}
+				},
+			},
+			validationCase[*CreateCatalogIntegrationOptions]{
+				Name:        case_CatalogIntegrations_validation_Create_opts_IcebergRestCatalogSourceParams_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateCatalogIntegrationOptions.IcebergRestCatalogSourceParams", "OAuthRestAuthentication", "BearerRestAuthentication", "SigV4RestAuthentication"),
+				DefaultModify: func(opts *CreateCatalogIntegrationOptions) {
+					opts.IcebergRestCatalogSourceParams = &IcebergRestParams{}
+					opts.IcebergRestCatalogSourceParams.OAuthRestAuthentication = nil
+					opts.IcebergRestCatalogSourceParams.BearerRestAuthentication = nil
+					opts.IcebergRestCatalogSourceParams.SigV4RestAuthentication = nil
+				},
+			},
+			validationCase[*CreateCatalogIntegrationOptions]{
+				Name:        case_CatalogIntegrations_validation_Create_opts_IcebergRestCatalogSourceParams_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateCatalogIntegrationOptions.IcebergRestCatalogSourceParams", "OAuthRestAuthentication", "BearerRestAuthentication", "SigV4RestAuthentication"),
+				DefaultModify: func(opts *CreateCatalogIntegrationOptions) {
+					opts.IcebergRestCatalogSourceParams = &IcebergRestParams{}
+					opts.IcebergRestCatalogSourceParams.OAuthRestAuthentication = &OAuthRestAuthentication{}
+					opts.IcebergRestCatalogSourceParams.BearerRestAuthentication = &BearerRestAuthentication{}
 				},
 			},
 		).
 		withSqlCases(
-			sqlCase[*CreateAwsGlueCatalogIntegrationOptions]{
-				Name:           case_CatalogIntegrations_sql_CreateAwsGlue_basic,
+			sqlCase[*CreateCatalogIntegrationOptions]{
+				Name:           case_CatalogIntegrations_sql_Create_basic,
 				NoModifyNeeded: true,
 			},
-			sqlCase[*CreateAwsGlueCatalogIntegrationOptions]{
-				Name: case_CatalogIntegrations_sql_CreateAwsGlue_all,
-			},
-		),
-	CreateIcebergRest: newSdkTestCtx[*CreateIcebergRestCatalogIntegrationOptions](
-		"CatalogIntegrations", "CreateIcebergRest",
-	).
-		withDefaultOpts(func() *CreateIcebergRestCatalogIntegrationOptions {
-			return &CreateIcebergRestCatalogIntegrationOptions{
-				name: catalogIntegrationsTestIdAccountObjectIdentifier,
-			}
-		}).
-		withValidationCases(
-			validationCase[*CreateIcebergRestCatalogIntegrationOptions]{
-				Name:        case_CatalogIntegrations_validation_CreateIcebergRest_name_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("CreateIcebergRestCatalogIntegrationOptions", "name"),
-				DefaultModify: func(opts *CreateIcebergRestCatalogIntegrationOptions) {
-					opts.name = emptyAccountObjectIdentifier
-				},
-			},
-			validationCase[*CreateIcebergRestCatalogIntegrationOptions]{
-				Name:        case_CatalogIntegrations_validation_CreateIcebergRest_opts_ConflictingFields,
-				ExpectedErr: errOneOf("CreateIcebergRestCatalogIntegrationOptions", "OrReplace", "IfNotExists"),
-				DefaultModify: func(opts *CreateIcebergRestCatalogIntegrationOptions) {
-					opts.OrReplace = new(true)
-					opts.IfNotExists = new(true)
-				},
-			},
-			validationCase[*CreateIcebergRestCatalogIntegrationOptions]{
-				Name:        case_CatalogIntegrations_validation_CreateIcebergRest_opts_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateIcebergRestCatalogIntegrationOptions", "OAuthRestAuthentication", "BearerRestAuthentication", "SigV4RestAuthentication"),
-				DefaultModify: func(opts *CreateIcebergRestCatalogIntegrationOptions) {
-					opts.OAuthRestAuthentication = nil
-					opts.BearerRestAuthentication = nil
-					opts.SigV4RestAuthentication = nil
-				},
-			},
-			validationCase[*CreateIcebergRestCatalogIntegrationOptions]{
-				Name:        case_CatalogIntegrations_validation_CreateIcebergRest_opts_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateIcebergRestCatalogIntegrationOptions", "OAuthRestAuthentication", "BearerRestAuthentication", "SigV4RestAuthentication"),
-				DefaultModify: func(opts *CreateIcebergRestCatalogIntegrationOptions) {
-					opts.OAuthRestAuthentication = &CatalogIntegrationIcebergRestOauthRestAuthentication{}
-					opts.BearerRestAuthentication = &CatalogIntegrationIcebergRestBearerRestAuthentication{}
-				},
-			},
-		).
-		withSqlCases(
-			sqlCase[*CreateIcebergRestCatalogIntegrationOptions]{
-				Name:           case_CatalogIntegrations_sql_CreateIcebergRest_basic,
-				NoModifyNeeded: true,
-			},
-			sqlCase[*CreateIcebergRestCatalogIntegrationOptions]{
-				Name: case_CatalogIntegrations_sql_CreateIcebergRest_all,
-			},
-		),
-	CreateObjectStorage: newSdkTestCtx[*CreateObjectStorageCatalogIntegrationOptions](
-		"CatalogIntegrations", "CreateObjectStorage",
-	).
-		withDefaultOpts(func() *CreateObjectStorageCatalogIntegrationOptions {
-			return &CreateObjectStorageCatalogIntegrationOptions{
-				name: catalogIntegrationsTestIdAccountObjectIdentifier,
-			}
-		}).
-		withValidationCases(
-			validationCase[*CreateObjectStorageCatalogIntegrationOptions]{
-				Name:        case_CatalogIntegrations_validation_CreateObjectStorage_name_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("CreateObjectStorageCatalogIntegrationOptions", "name"),
-				DefaultModify: func(opts *CreateObjectStorageCatalogIntegrationOptions) {
-					opts.name = emptyAccountObjectIdentifier
-				},
-			},
-			validationCase[*CreateObjectStorageCatalogIntegrationOptions]{
-				Name:        case_CatalogIntegrations_validation_CreateObjectStorage_opts_ConflictingFields,
-				ExpectedErr: errOneOf("CreateObjectStorageCatalogIntegrationOptions", "OrReplace", "IfNotExists"),
-				DefaultModify: func(opts *CreateObjectStorageCatalogIntegrationOptions) {
-					opts.OrReplace = new(true)
-					opts.IfNotExists = new(true)
-				},
-			},
-		).
-		withSqlCases(
-			sqlCase[*CreateObjectStorageCatalogIntegrationOptions]{
-				Name:           case_CatalogIntegrations_sql_CreateObjectStorage_basic,
-				NoModifyNeeded: true,
-			},
-			sqlCase[*CreateObjectStorageCatalogIntegrationOptions]{
-				Name: case_CatalogIntegrations_sql_CreateObjectStorage_all,
-			},
-		),
-	CreateOpenCatalog: newSdkTestCtx[*CreateOpenCatalogCatalogIntegrationOptions](
-		"CatalogIntegrations", "CreateOpenCatalog",
-	).
-		withDefaultOpts(func() *CreateOpenCatalogCatalogIntegrationOptions {
-			return &CreateOpenCatalogCatalogIntegrationOptions{
-				name: catalogIntegrationsTestIdAccountObjectIdentifier,
-			}
-		}).
-		withValidationCases(
-			validationCase[*CreateOpenCatalogCatalogIntegrationOptions]{
-				Name:        case_CatalogIntegrations_validation_CreateOpenCatalog_name_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("CreateOpenCatalogCatalogIntegrationOptions", "name"),
-				DefaultModify: func(opts *CreateOpenCatalogCatalogIntegrationOptions) {
-					opts.name = emptyAccountObjectIdentifier
-				},
-			},
-			validationCase[*CreateOpenCatalogCatalogIntegrationOptions]{
-				Name:        case_CatalogIntegrations_validation_CreateOpenCatalog_opts_ConflictingFields,
-				ExpectedErr: errOneOf("CreateOpenCatalogCatalogIntegrationOptions", "OrReplace", "IfNotExists"),
-				DefaultModify: func(opts *CreateOpenCatalogCatalogIntegrationOptions) {
-					opts.OrReplace = new(true)
-					opts.IfNotExists = new(true)
-				},
-			},
-		).
-		withSqlCases(
-			sqlCase[*CreateOpenCatalogCatalogIntegrationOptions]{
-				Name:           case_CatalogIntegrations_sql_CreateOpenCatalog_basic,
-				NoModifyNeeded: true,
-			},
-			sqlCase[*CreateOpenCatalogCatalogIntegrationOptions]{
-				Name: case_CatalogIntegrations_sql_CreateOpenCatalog_all,
+			sqlCase[*CreateCatalogIntegrationOptions]{
+				Name: case_CatalogIntegrations_sql_Create_all,
 			},
 		),
 	Alter: newSdkTestCtx[*AlterCatalogIntegrationOptions](
@@ -253,8 +158,8 @@ var catalogIntegrationsTests = CatalogIntegrationsTestsContext{
 				ExpectedErr: errOneOf("AlterCatalogIntegrationOptions.Set", "SetOAuthRestAuthentication", "SetBearerRestAuthentication"),
 				DefaultModify: func(opts *AlterCatalogIntegrationOptions) {
 					opts.Set = &CatalogIntegrationSet{}
-					opts.Set.SetOAuthRestAuthentication = &CatalogIntegrationSetOauthRestAuthentication{}
-					opts.Set.SetBearerRestAuthentication = &CatalogIntegrationSetBearerRestAuthentication{}
+					opts.Set.SetOAuthRestAuthentication = &SetOAuthRestAuthentication{}
+					opts.Set.SetBearerRestAuthentication = &SetBearerRestAuthentication{}
 				},
 			},
 			validationCase[*AlterCatalogIntegrationOptions]{
@@ -358,24 +263,9 @@ var catalogIntegrationsTests = CatalogIntegrationsTestsContext{
 		),
 }
 
-func TestCatalogIntegrations_CreateAwsGlue(t *testing.T) {
-	catalogIntegrationsTests.CreateAwsGlue.RunValidationCases(t)
-	catalogIntegrationsTests.CreateAwsGlue.RunSqlCases(t)
-}
-
-func TestCatalogIntegrations_CreateIcebergRest(t *testing.T) {
-	catalogIntegrationsTests.CreateIcebergRest.RunValidationCases(t)
-	catalogIntegrationsTests.CreateIcebergRest.RunSqlCases(t)
-}
-
-func TestCatalogIntegrations_CreateObjectStorage(t *testing.T) {
-	catalogIntegrationsTests.CreateObjectStorage.RunValidationCases(t)
-	catalogIntegrationsTests.CreateObjectStorage.RunSqlCases(t)
-}
-
-func TestCatalogIntegrations_CreateOpenCatalog(t *testing.T) {
-	catalogIntegrationsTests.CreateOpenCatalog.RunValidationCases(t)
-	catalogIntegrationsTests.CreateOpenCatalog.RunSqlCases(t)
+func TestCatalogIntegrations_Create(t *testing.T) {
+	catalogIntegrationsTests.Create.RunValidationCases(t)
+	catalogIntegrationsTests.Create.RunSqlCases(t)
 }
 
 func TestCatalogIntegrations_Alter(t *testing.T) {

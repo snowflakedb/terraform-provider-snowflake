@@ -14,17 +14,17 @@ func TestInt_AlterSession(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 	err := client.Sessions.Alter(ctx, sdk.NewAlterSessionRequest().WithSet(sdk.SessionSetRequest{
-		SessionParameters: &sdk.SessionParametersRequest{
+		SessionParameters: &sdk.SessionParameters{
 			AbortDetachedQuery:    sdk.Bool(true),
 			Autocommit:            sdk.Bool(true),
-			GeographyOutputFormat: sdk.Pointer(sdk.GeographyOutputFormatGeoJson),
+			GeographyOutputFormat: sdk.Pointer(sdk.GeographyOutputFormatGeoJSON),
 			WeekOfYearPolicy:      sdk.Int(1),
 		},
 	}))
 	require.NoError(t, err)
 	cleanup := func() {
 		err := client.Sessions.Alter(ctx, sdk.NewAlterSessionRequest().WithUnset(sdk.SessionUnsetRequest{
-			SessionParametersUnset: &sdk.SessionParametersUnsetRequest{
+			SessionParametersUnset: &sdk.SessionParametersUnset{
 				AbortDetachedQuery:    sdk.Bool(true),
 				Autocommit:            sdk.Bool(true),
 				GeographyOutputFormat: sdk.Bool(true),
@@ -43,7 +43,7 @@ func TestInt_AlterSession(t *testing.T) {
 	assert.Equal(t, "true", parameter.Value)
 	parameter, err = client.Parameters.ShowSessionParameter(ctx, sdk.SessionParameterGeographyOutputFormat)
 	require.NoError(t, err)
-	assert.Equal(t, string(sdk.GeographyOutputFormatGeoJson), parameter.Value)
+	assert.Equal(t, string(sdk.GeographyOutputFormatGeoJSON), parameter.Value)
 	parameter, err = client.Parameters.ShowSessionParameter(ctx, sdk.SessionParameterWeekOfYearPolicy)
 	require.NoError(t, err)
 	assert.Equal(t, "1", parameter.Value)

@@ -58,8 +58,6 @@ type AzurePushParamsRequest struct {
 
 type EmailParamsRequest struct {
 	AllowedRecipients []NotificationIntegrationAllowedRecipient
-	DefaultRecipients []NotificationIntegrationAllowedRecipient
-	DefaultSubject    *string
 }
 
 type WebhookParamsRequest struct {

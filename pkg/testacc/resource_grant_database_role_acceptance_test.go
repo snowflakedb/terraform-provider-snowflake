@@ -5,7 +5,6 @@ package testacc
 import (
 	"fmt"
 	"regexp"
-	"slices"
 	"strings"
 	"testing"
 
@@ -20,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
-	"github.com/stretchr/testify/require"
 )
 
 func TestAcc_GrantDatabaseRole_BasicUseCase_DatabaseRole(t *testing.T) {
@@ -489,56 +487,6 @@ func TestAcc_GrantDatabaseRole_handleGrantsToApplication(t *testing.T) {
 						HasParentRoleNameString(parentRole.ID().Name()),
 					assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "id", fmt.Sprintf(`%v|ROLE|%v`, databaseRole.ID().FullyQualifiedName(), parentRole.ID().FullyQualifiedName()))),
 				),
-			},
-		},
-	})
-}
-
-// proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/5323 is fixed
-func TestAcc_GrantDatabaseRole_issue5323(t *testing.T) {
-	// Since BCR-2437, SNOWFLAKE.CORTEX_USER is also granted to the Snowflake-managed SNOWFLAKE.APP_PUBLIC application role.
-	// A test cannot create such a grantee (GRANT DATABASE ROLE has no TO APPLICATION ROLE variant), so the test relies on this one.
-	cortexUserId := sdk.NewDatabaseObjectIdentifier("SNOWFLAKE", "CORTEX_USER")
-	grants, err := testClient().Grant.ShowGrantsOfDatabaseRole(t, cortexUserId)
-	require.NoError(t, err)
-	require.True(t, slices.ContainsFunc(grants, func(grant sdk.Grant) bool { return grant.GrantedTo == sdk.ObjectTypeApplicationRole }),
-		"expected an APPLICATION ROLE grantee of %s (BCR-2437)", cortexUserId.FullyQualifiedName())
-
-	role, roleCleanup := testClient().Role.CreateRole(t)
-	t.Cleanup(roleCleanup)
-
-	grantModel := model.GrantDatabaseRole("test", cortexUserId.FullyQualifiedName()).
-		WithParentRoleName(role.ID().Name())
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckGrantDatabaseRoleDestroy(t),
-		Steps: []resource.TestStep{
-			// Provider before the fix (v2.19.0): the APPLICATION ROLE grantee aborts Grants.Show, so the resource is dropped right after apply.
-			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.19.0"),
-				Config:            accconfig.FromModels(t, grantModel),
-				ExpectError:       regexp.MustCompile("Error: Provider produced inconsistent result after apply"),
-			},
-			{
-				Config: accconfig.FromModels(t, grantModel),
-				Check: assertThat(
-					t,
-					resourceassert.GrantDatabaseRoleResource(t, grantModel.ResourceReference()).
-						HasDatabaseRoleNameString(cortexUserId.FullyQualifiedName()).
-						HasParentRoleNameString(role.ID().Name()),
-					assert.Check(resource.TestCheckResourceAttr(grantModel.ResourceReference(), "id", fmt.Sprintf(`%v|ROLE|%v`, cortexUserId.FullyQualifiedName(), role.ID().FullyQualifiedName()))),
-				),
-			},
-			// test import
-			{
-				Config:            accconfig.FromModels(t, grantModel),
-				ResourceName:      grantModel.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})

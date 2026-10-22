@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -159,7 +160,11 @@ func (r computePoolsRow) convert() (*ComputePool, error) {
 		IsExclusive:     r.IsExclusive,
 	}
 	mapStringWithMapping(&result.State, r.State, ToComputePoolState)
-	mapStringWithMapping(&result.InstanceFamily, r.InstanceFamily, ToComputePoolInstanceFamily)
+	if v, err := ToComputePoolInstanceFamily(r.InstanceFamily); err != nil {
+		return nil, fmt.Errorf("parsing compute pool instance family: %w", err)
+	} else {
+		result.InstanceFamily = v
+	}
 	mapNullString(&result.Comment, r.Comment)
 	mapNullStringWithMapping(&result.Application, r.Application, ParseAccountObjectIdentifier)
 	result.BackupInstanceFamilies = ParseCommaSeparatedStringArray(r.BackupInstanceFamilies, false)
@@ -194,7 +199,11 @@ func (r computePoolDescRow) convert() (*ComputePoolDetails, error) {
 		StatusMessage:   r.StatusMessage,
 	}
 	mapStringWithMapping(&result.State, r.State, ToComputePoolState)
-	mapStringWithMapping(&result.InstanceFamily, r.InstanceFamily, ToComputePoolInstanceFamily)
+	if v, err := ToComputePoolInstanceFamily(r.InstanceFamily); err != nil {
+		return nil, fmt.Errorf("parsing compute pool instance family: %w", err)
+	} else {
+		result.InstanceFamily = v
+	}
 	mapNullString(&result.Comment, r.Comment)
 	mapNullStringWithMapping(&result.Application, r.Application, ParseAccountObjectIdentifier)
 	result.BackupInstanceFamilies = ParseCommaSeparatedStringArray(r.BackupInstanceFamilies, false)

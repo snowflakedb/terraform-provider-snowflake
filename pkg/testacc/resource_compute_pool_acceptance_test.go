@@ -14,10 +14,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
@@ -58,10 +56,8 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 		WithInitiallySuspended("true").
 		WithForApplication(application.ID().FullyQualifiedName())
 
-	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
-
 	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -69,8 +65,7 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create with empty optionals
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, modelBasic),
+				Config: accconfig.FromModels(t, modelBasic),
 				Check: assertThat(
 					t,
 					resourceassert.ComputePoolResource(t, modelBasic.ResourceReference()).
@@ -133,10 +128,9 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 			},
 			// import - without optionals
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, modelBasic),
-				ResourceName:             modelBasic.ResourceReference(),
-				ImportState:              true,
+				Config:       accconfig.FromModels(t, modelBasic),
+				ResourceName: modelBasic.ResourceReference(),
+				ImportState:  true,
 				ImportStateCheck: assertThatImport(
 					t,
 					resourceassert.ImportedComputePoolResource(t, helpers.EncodeResourceIdentifier(id)).
@@ -144,7 +138,7 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 						HasAutoResumeString("true").
 						HasAutoSuspendSecsString("3600").
 						HasCommentString("").
-						HasForApplication("").
+						HasNoForApplication().
 						HasNoInitiallySuspended().
 						HasInstanceFamilyString(string(sdk.ComputePoolInstanceFamilyCpuX64S)).
 						HasMaxNodesString("2").
@@ -194,18 +188,9 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 						HasStatusMessage("Compute pool is starting for last 0 minutes"),
 				),
 			},
-			// import - without optionals, permissive mode
-			{
-				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
-				Config:                   accconfig.FromModels(t, providerModelImportPermissiveMode, modelBasic),
-				ResourceName:             modelBasic.ResourceReference(),
-				ImportState:              true,
-				ImportStateKind:          resource.ImportBlockWithID,
-			},
 			// set optionals
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, modelComplete),
+				Config: accconfig.FromModels(t, modelComplete),
 				Check: assertThat(
 					t,
 					resourceassert.ComputePoolResource(t, modelComplete.ResourceReference()).
@@ -245,17 +230,15 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 			},
 			// import - complete
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, modelComplete),
-				ResourceName:             modelComplete.ResourceReference(),
-				ImportState:              true,
-				ImportStateVerify:        true,
-				ImportStateVerifyIgnore:  []string{"initially_suspended"},
+				Config:                  accconfig.FromModels(t, modelComplete),
+				ResourceName:            modelComplete.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"initially_suspended"},
 			},
 			// alter
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, modelCompleteWithDifferentValues),
+				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
@@ -300,7 +283,6 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 			},
 			// change externally
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					testClient().ComputePool.Alter(t, sdk.NewAlterComputePoolRequest(id).WithSet(
 						*sdk.NewComputePoolSetRequest().
@@ -308,7 +290,7 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 							WithMaxNodes(5).
 							WithAutoResume(true).
 							WithAutoSuspendSecs(3600).
-							WithBackupInstanceFamilies([]sdk.ComputePoolInstanceFamilyListItem{
+							WithBackupInstanceFamilies([]sdk.ComputePoolBackupInstanceFamilyListItem{
 								{Value: firstBackupFamily},
 								{Value: secondBackupFamily},
 							}).
@@ -355,7 +337,6 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 			},
 			// ignore_after_creation does not cause plans
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionNoop),
@@ -375,8 +356,7 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 			},
 			// unset
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, modelBasicWithApp),
+				Config: accconfig.FromModels(t, modelBasicWithApp),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(modelBasicWithApp.ResourceReference(), plancheck.ResourceActionUpdate),
@@ -421,7 +401,6 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 			},
 			// forcenew - instance family
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentInstanceFamily.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
@@ -484,26 +463,15 @@ func TestAcc_ComputePool_CompleteUseCase(t *testing.T) {
 		WithBackupInstanceFamilies(firstBackupFamily, secondBackupFamily).
 		WithComment(comment)
 
-	modelCompleteWithApplicationName := model.ComputePool("test", id.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64S), 2, 1).
-		WithForApplication(application.ID().Name()).
-		WithAutoResume("true").
-		WithInitiallySuspended("true").
-		WithAutoSuspendSecs(6767).
-		WithBackupInstanceFamilies(firstBackupFamily, secondBackupFamily).
-		WithComment(comment)
-
-	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
-
 	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.ComputePool),
 		Steps: []resource.TestStep{
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, modelComplete),
+				Config: accconfig.FromModels(t, modelComplete),
 				Check: assertThat(
 					t,
 					resourceassert.ComputePoolResource(t, modelComplete.ResourceReference()).
@@ -565,20 +533,11 @@ func TestAcc_ComputePool_CompleteUseCase(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, modelComplete),
-				ResourceName:             modelComplete.ResourceReference(),
-				ImportState:              true,
-				ImportStateVerify:        true,
-				ImportStateVerifyIgnore:  []string{"initially_suspended"},
-			},
-			// import - permissive mode
-			{
-				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
-				Config:                   accconfig.FromModels(t, providerModelImportPermissiveMode, modelCompleteWithApplicationName),
-				ResourceName:             modelCompleteWithApplicationName.ResourceReference(),
-				ImportState:              true,
-				ImportStateKind:          resource.ImportBlockWithID,
+				Config:                  accconfig.FromModels(t, modelComplete),
+				ResourceName:            modelComplete.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"initially_suspended"},
 			},
 		},
 	})

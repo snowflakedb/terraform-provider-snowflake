@@ -298,13 +298,6 @@ func GetProviderSchema() map[string]*schema.Schema {
 						Sensitive:   true,
 						DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.TokenAccessorRedirectUri, nil),
 					},
-					"min_tls_version": {
-						Type:             schema.TypeString,
-						Description:      envNameFieldDescription(fmt.Sprintf("Specifies the minimum TLS version for the HTTP client this block uses to exchange a refresh token. The Snowflake driver connection uses `%s`, which the driver reads itself. Valid options are: %v. The value is case-insensitive. This does not handle driver connections. If you want to set a minimum TLS version for the Snowflake driver connection, read the [driver documentation](https://pkg.go.dev/github.com/snowflakedb/gosnowflake/v2).", snowflakeenvs.MinTLSVersion, docs.PossibleValuesListed(allMinTLSVersionsString)), snowflakeenvs.TokenAccessorMinTLSVersion),
-						Optional:         true,
-						DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.TokenAccessorMinTLSVersion, nil),
-						ValidateDiagFunc: validators.NormalizeValidation(toMinTLSVersion),
-					},
 				},
 			},
 		},
@@ -429,7 +422,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 				Type:             schema.TypeString,
 				ValidateDiagFunc: validators.StringInSlice(experimentalfeatures.AcceptedInDisabledExperimentalFeatureNames, true),
 			},
-			Description: fmt.Sprintf("A list of experimental features to disable. Use this to opt out of experiments that are enabled by default (current default behavior, not preview features). This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Experiments you can disable are: %v. Promoted and discontinued experiment names are still accepted as no-ops. Opt-in experiment names are accepted with a warning: opt-in experiments are disabled unless listed in `experimental_features_enabled`, so they don't need to be listed here.", docs.PossibleValuesListed(experimentalfeatures.EnabledByDefaultExperimentalFeatureNames)),
+			Description: fmt.Sprintf("A list of experimental features to disable. Use this to opt out of experiments that are enabled by default (current default behavior, not preview features). This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Experiments you can disable are: %v. Promoted and discontinued experiment names are still accepted as no-ops.", docs.PossibleValuesListed(experimentalfeatures.EnabledByDefaultExperimentalFeatureNames)),
 		},
 		"skip_toml_file_permission_verification": {
 			Type:        schema.TypeBool,
@@ -636,8 +629,6 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_api_integration_git_repository_token":                         resources.ApiIntegrationGitRepositoryToken(),
 		"snowflake_api_integration_google_cloud_api_gateway":                     resources.ApiIntegrationGoogleCloudApiGateway(),
 		"snowflake_authentication_policy":                                        resources.AuthenticationPolicy(),
-		"snowflake_backup_policy":                                                resources.BackupPolicy(),
-		"snowflake_code_bundle":                                                  resources.CodeBundle(),
 		"snowflake_catalog_integration_aws_glue":                                 resources.CatalogIntegrationAwsGlue(),
 		"snowflake_catalog_integration_object_storage":                           resources.CatalogIntegrationObjectStorage(),
 		"snowflake_catalog_integration_open_catalog":                             resources.CatalogIntegrationOpenCatalog(),
@@ -775,9 +766,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_alerts":                             datasources.Alerts(),
 		"snowflake_api_integrations":                   datasources.ApiIntegrations(),
 		"snowflake_authentication_policies":            datasources.AuthenticationPolicies(),
-		"snowflake_backup_policies":                    datasources.BackupPolicies(),
 		"snowflake_catalog_integrations":               datasources.CatalogIntegrations(),
-		"snowflake_code_bundles":                       datasources.CodeBundles(),
 		"snowflake_compute_pools":                      datasources.ComputePools(),
 		"snowflake_connections":                        datasources.Connections(),
 		"snowflake_cortex_agents":                      datasources.CortexAgents(),
@@ -1173,12 +1162,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData, experiments experiment
 			clientID := tokenAccessor["client_id"].(string)
 			clientSecret := tokenAccessor["client_secret"].(string)
 			redirectURI := tokenAccessor["redirect_uri"].(string)
-			minTLSValue, _ := tokenAccessor["min_tls_version"].(string)
-			minTLS, err := toMinTLSVersion(minTLSValue)
-			if err != nil {
-				return nil, diag.FromErr(err)
-			}
-			accessToken, err := GetAccessTokenWithRefreshToken(tokenEndpoint, clientID, clientSecret, refreshToken, redirectURI, minTLS)
+			accessToken, err := GetAccessTokenWithRefreshToken(tokenEndpoint, clientID, clientSecret, refreshToken, redirectURI)
 			if err != nil {
 				return nil, diag.FromErr(fmt.Errorf("could not retrieve access token from refresh token, err = %w", err))
 			}

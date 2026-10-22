@@ -23,7 +23,7 @@ func main() {
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"),
-		gen.SnowflakeObjectAssertionDetails,
+		gen.GetSdkObjectDetails,
 		gen.ModelFromSdkObjectDetails,
 		getFilename,
 		gen.AllTemplates,

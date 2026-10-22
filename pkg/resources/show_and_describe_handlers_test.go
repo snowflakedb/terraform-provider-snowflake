@@ -3,70 +3,10 @@ package resources
 import (
 	"testing"
 
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func Test_setStateToValuesFromConfig_sets(t *testing.T) {
-	testCases := []struct {
-		name     string
-		field    string
-		config   cty.Value
-		initial  []any
-		expected []any
-	}{
-		{
-			name:     "integer triggers",
-			field:    "notify_triggers",
-			config:   cty.SetVal([]cty.Value{cty.NumberIntVal(100), cty.NumberIntVal(110)}),
-			initial:  []any{50},
-			expected: []any{100, 110},
-		},
-		{
-			name:     "empty integer triggers",
-			field:    "notify_triggers",
-			config:   cty.SetValEmpty(cty.Number),
-			initial:  []any{50},
-			expected: []any{},
-		},
-		{
-			name:     "omitted integer triggers preserve state",
-			field:    "notify_triggers",
-			config:   cty.NullVal(cty.Set(cty.Number)),
-			initial:  []any{50},
-			expected: []any{50},
-		},
-		{
-			name:     "string users",
-			field:    "notify_users",
-			config:   cty.SetVal([]cty.Value{cty.StringVal("TEST_CI_SERVICE_USER")}),
-			initial:  []any{"OLD_USER"},
-			expected: []any{"TEST_CI_SERVICE_USER"},
-		},
-		{
-			name:     "empty string users",
-			field:    "notify_users",
-			config:   cty.SetValEmpty(cty.String),
-			initial:  []any{"OLD_USER"},
-			expected: []any{},
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			d := ResourceMonitor().Data(&terraform.InstanceState{
-				RawConfig: cty.ObjectVal(map[string]cty.Value{tc.field: tc.config}),
-			})
-			require.NoError(t, d.Set(tc.field, tc.initial))
-
-			require.NoError(t, setStateToValuesFromConfig(d, resourceMonitorSchema, []string{tc.field}))
-			assert.ElementsMatch(t, tc.expected, d.Get(tc.field).(*schema.Set).List())
-		})
-	}
-}
 
 func Test_sliceAwareDeepEqual(t *testing.T) {
 	var nilStringSlice []string

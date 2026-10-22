@@ -43,7 +43,7 @@ var pipePairs = g.StructPair("pipeDBRow", "Pipe").
 	OptionalText("owner_role_type", g.WithRequiredInPlain()).
 	OptionalText("invalid_reason", g.WithRequiredInPlain())
 
-var pipeDetailPairs = g.StructPair("pipeDetailRow", "PipeDetails").
+var pipeDetailPairs = g.StructPair("pipeDetailRow", "PipeDetail").
 	Text("created_on").
 	Text("name").
 	Text("database_name").

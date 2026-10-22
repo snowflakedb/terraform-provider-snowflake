@@ -61,12 +61,6 @@ func (c *AuthenticationPolicyClient) DropFunc(t *testing.T, id sdk.SchemaObjectI
 	}
 }
 
-func (c *AuthenticationPolicyClient) DescribeDetails(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.AuthenticationPolicyDetails, error) {
-	t.Helper()
-	ctx := context.Background()
-	return c.client().DescribeDetails(ctx, id)
-}
-
 func (c *AuthenticationPolicyClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.AuthenticationPolicy, error) {
 	t.Helper()
 	ctx := context.Background()

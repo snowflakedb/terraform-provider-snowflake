@@ -31,6 +31,17 @@ func ExternalVolumeDetailsFromObject(t *testing.T, externalVolumeDetails *sdk.Ex
 	}
 }
 
+func (e *ExternalVolumeDetailsAssert) HasId(expected sdk.AccountObjectIdentifier) *ExternalVolumeDetailsAssert {
+	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeDetails) error {
+		t.Helper()
+		if o.Id.FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected id: %v; got: %v", expected.FullyQualifiedName(), o.Id.FullyQualifiedName())
+		}
+		return nil
+	})
+	return e
+}
+
 func (e *ExternalVolumeDetailsAssert) HasStorageLocationsWith(subAsserts ...*ExternalVolumeStorageLocationDetailsAssert) *ExternalVolumeDetailsAssert {
 	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeDetails) error {
 		if len(o.StorageLocations) != len(subAsserts) {

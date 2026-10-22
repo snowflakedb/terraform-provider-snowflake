@@ -26,9 +26,10 @@ import (
 
 func deltaLakeCatalog(t *testing.T) (sdk.AccountObjectIdentifier, func()) {
 	t.Helper()
-	return testClient().CatalogIntegration.CreateObjectStorageFunc(
+	return testClient().CatalogIntegration.CreateFunc(
 		t,
-		sdk.NewCreateObjectStorageCatalogIntegrationRequest(testClient().Ids.RandomAccountObjectIdentifier(), sdk.CatalogIntegrationTableFormatDelta, true),
+		sdk.NewCreateCatalogIntegrationRequest(testClient().Ids.RandomAccountObjectIdentifier(), true).
+			WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(sdk.CatalogIntegrationTableFormatDelta)),
 	)
 }
 

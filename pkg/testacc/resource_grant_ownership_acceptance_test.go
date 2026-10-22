@@ -15,6 +15,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -304,6 +305,11 @@ func TestAcc_GrantOwnership_OnObject_Table_ToDatabaseRole(t *testing.T) {
 }
 
 func TestAcc_GrantOwnership_BasicUseCase_OnObject_ProcedureWithArguments_ToAccountRole(t *testing.T) {
+	// TODO(SNOW-3954877): unskip or remove after enabling 2026_07 BCR bundle on preprod
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() != testenvs.SnowflakeProdEnvironment {
+		t.Skip("Skipped on preprod until the 2026_07 BCR bundle is enabled (SNOW-3954877)")
+	}
+
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 
@@ -324,13 +330,6 @@ func TestAcc_GrantOwnership_BasicUseCase_OnObject_ProcedureWithArguments_ToAccou
 		WithOnObject(sdk.ObjectTypeProcedure, procedureId.FullyQualifiedName()).
 		WithDependsOn(accountRoleModel.ResourceReference(), procedureModel.ResourceReference())
 
-	// TODO(SNOW-4275685): Update this once the issue is fixed.
-	currentRole := testClient().Context.CurrentRole(t)
-	usageGrantModel := model.GrantPrivilegesToAccountRole("usage", currentRole.Name()).
-		WithSchemaObjectPrivileges(sdk.SchemaObjectPrivilegeUsage).
-		WithOnSchemaObjectObject(sdk.ObjectTypeProcedure, procedureId.FullyQualifiedName()).
-		WithDependsOn(grantModel.ResourceReference())
-
 	resourceName := "snowflake_grant_ownership.test"
 
 	resource.Test(t, resource.TestCase{
@@ -340,7 +339,7 @@ func TestAcc_GrantOwnership_BasicUseCase_OnObject_ProcedureWithArguments_ToAccou
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: accconfig.FromModels(t, accountRoleModel, schemaModel, procedureModel, grantModel, usageGrantModel),
+				Config: accconfig.FromModels(t, accountRoleModel, schemaModel, procedureModel, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleId.Name()),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", string(sdk.ObjectTypeProcedure)),
@@ -350,7 +349,7 @@ func TestAcc_GrantOwnership_BasicUseCase_OnObject_ProcedureWithArguments_ToAccou
 				),
 			},
 			{
-				Config:            accconfig.FromModels(t, accountRoleModel, schemaModel, procedureModel, grantModel, usageGrantModel),
+				Config:            accconfig.FromModels(t, accountRoleModel, schemaModel, procedureModel, grantModel),
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,

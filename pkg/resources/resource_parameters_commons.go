@@ -80,10 +80,6 @@ func stringToAccountObjectIdentifier(value string) (sdk.AccountObjectIdentifier,
 	return sdk.NewAccountObjectIdentifier(value), nil
 }
 
-func stringToStringAllowEmpty(value string) (sdk.StringAllowEmpty, error) {
-	return sdk.StringAllowEmpty{Value: value}, nil
-}
-
 func stringToStringEnumProvider[T ~string](mapper func(string) (T, error)) func(value string) (T, error) {
 	return func(value string) (T, error) {
 		return mapper(value)

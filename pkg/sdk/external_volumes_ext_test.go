@@ -44,7 +44,7 @@ func init() {
 		Name: "gcs_complete",
 		GCSStorageLocationParams: &GCSStorageLocationParams{
 			StorageBaseUrl: "gcs://my-bucket/path",
-			Encryption: &ExternalVolumeGcsEncryption{
+			Encryption: &ExternalVolumeGCSEncryption{
 				EncryptionType: GCSEncryptionTypeGcsSseKms,
 				KmsKeyId:       new("1234abcd-12ab-34cd-56ef-1234567890ab"),
 			},
@@ -178,7 +178,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_ExternalVolumes_sql_Alter_Set,
 			func(opts *AlterExternalVolumeOptions) {
-				opts.Set = &ExternalVolumeSet{AllowWrites: new(true), Comment: new("some comment")}
+				opts.Set = &AlterExternalVolumeSet{AllowWrites: new(true), Comment: new("some comment")}
 			},
 			`ALTER EXTERNAL VOLUME %s SET ALLOW_WRITES = true COMMENT = 'some comment'`,
 			id.FullyQualifiedName(),
@@ -192,7 +192,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_ExternalVolumes_sql_Alter_UpdateStorageLocation,
 			func(opts *AlterExternalVolumeOptions) {
-				opts.UpdateStorageLocation = &ExternalVolumeUpdateStorageLocation{
+				opts.UpdateStorageLocation = &AlterExternalVolumeUpdateStorageLocation{
 					StorageLocation: "some_location",
 					Credentials: ExternalVolumeUpdateCredentials{ //nolint:gosec // AWS example credentials
 						AwsKeyId:     "AKIAIOSFODNN7EXAMPLE",
@@ -325,7 +325,7 @@ func Test_GetStorageLocationStorageProvider(t *testing.T) {
 				Name: "gcsTest",
 				GCSStorageLocationParams: &GCSStorageLocationParams{
 					StorageBaseUrl: gcsStorageBaseUrl,
-					Encryption: &ExternalVolumeGcsEncryption{
+					Encryption: &ExternalVolumeGCSEncryption{
 						EncryptionType: GCSEncryptionTypeGcsSseKms,
 						KmsKeyId:       &gcsEncryptionKmsKeyId,
 					},
@@ -437,7 +437,7 @@ func Test_CopySentinelStorageLocation(t *testing.T) {
 
 	gcsStorageLocationA := GCSStorageLocationParams{
 		StorageBaseUrl: gcsStorageBaseUrl,
-		Encryption: &ExternalVolumeGcsEncryption{
+		Encryption: &ExternalVolumeGCSEncryption{
 			EncryptionType: GCSEncryptionTypeGcsSseKms,
 			KmsKeyId:       &gcsEncryptionKmsKeyId,
 		},
@@ -949,25 +949,25 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 			Name: "Volume with s3 storage location that has no comment set (in this case describe doesn't contain a comment property)",
 			DescribeOutput: []ExternalVolumeProperty{
 				{
-					ParentProperty:  "",
-					Property:        "ALLOW_WRITES",
-					PropertyType:    "Boolean",
-					PropertyValue:   allowWritesTrue,
-					PropertyDefault: "true",
+					Parent:  "",
+					Name:    "ALLOW_WRITES",
+					Type:    "Boolean",
+					Value:   allowWritesTrue,
+					Default: "true",
 				},
 				{
-					ParentProperty:  "STORAGE_LOCATIONS",
-					Property:        "STORAGE_LOCATION_1",
-					PropertyType:    "String",
-					PropertyValue:   s3StorageLocationSseKmsEncryption,
-					PropertyDefault: "",
+					Parent:  "STORAGE_LOCATIONS",
+					Name:    "STORAGE_LOCATION_1",
+					Type:    "String",
+					Value:   s3StorageLocationSseKmsEncryption,
+					Default: "",
 				},
 				{
-					ParentProperty:  "STORAGE_LOCATIONS",
-					Property:        "ACTIVE",
-					PropertyType:    "String",
-					PropertyValue:   s3StorageLocationName,
-					PropertyDefault: "",
+					Parent:  "STORAGE_LOCATIONS",
+					Name:    "ACTIVE",
+					Type:    "String",
+					Value:   s3StorageLocationName,
+					Default: "",
 				},
 			},
 			ParsedDescribeOutput: ExternalVolumeDetails{
@@ -1041,18 +1041,18 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 			Name: "Volume with no allow writes",
 			DescribeOutput: []ExternalVolumeProperty{
 				{
-					ParentProperty:  "STORAGE_LOCATIONS",
-					Property:        "STORAGE_LOCATION_1",
-					PropertyType:    "String",
-					PropertyValue:   s3StorageLocationSseKmsEncryption,
-					PropertyDefault: "",
+					Parent:  "STORAGE_LOCATIONS",
+					Name:    "STORAGE_LOCATION_1",
+					Type:    "String",
+					Value:   s3StorageLocationSseKmsEncryption,
+					Default: "",
 				},
 				{
-					ParentProperty:  "STORAGE_LOCATIONS",
-					Property:        "ACTIVE",
-					PropertyType:    "String",
-					PropertyValue:   s3StorageLocationName,
-					PropertyDefault: "",
+					Parent:  "STORAGE_LOCATIONS",
+					Name:    "ACTIVE",
+					Type:    "String",
+					Value:   s3StorageLocationName,
+					Default: "",
 				},
 			},
 		},
@@ -1078,36 +1078,36 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 func GenerateParseExternalVolumeDescribedInput(comment string, allowWrites string, storageLocations []string, active string) []ExternalVolumeProperty {
 	storageLocationProperties := make([]ExternalVolumeProperty, len(storageLocations))
 	allowWritesProperty := ExternalVolumeProperty{
-		ParentProperty:  "",
-		Property:        "ALLOW_WRITES",
-		PropertyType:    "Boolean",
-		PropertyValue:   allowWrites,
-		PropertyDefault: "true",
+		Parent:  "",
+		Name:    "ALLOW_WRITES",
+		Type:    "Boolean",
+		Value:   allowWrites,
+		Default: "true",
 	}
 
 	commentProperty := ExternalVolumeProperty{
-		ParentProperty:  "",
-		Property:        "COMMENT",
-		PropertyType:    "String",
-		PropertyValue:   comment,
-		PropertyDefault: "",
+		Parent:  "",
+		Name:    "COMMENT",
+		Type:    "String",
+		Value:   comment,
+		Default: "",
 	}
 
 	activeProperty := ExternalVolumeProperty{
-		ParentProperty:  "STORAGE_LOCATIONS",
-		Property:        "ACTIVE",
-		PropertyType:    "String",
-		PropertyValue:   active,
-		PropertyDefault: "",
+		Parent:  "STORAGE_LOCATIONS",
+		Name:    "ACTIVE",
+		Type:    "String",
+		Value:   active,
+		Default: "",
 	}
 
 	for i, property := range storageLocations {
 		storageLocationProperties[i] = ExternalVolumeProperty{
-			ParentProperty:  "STORAGE_LOCATIONS",
-			Property:        fmt.Sprintf("STORAGE_LOCATION_%s", strconv.Itoa(i+1)),
-			PropertyType:    "String",
-			PropertyValue:   property,
-			PropertyDefault: "",
+			Parent:  "STORAGE_LOCATIONS",
+			Name:    fmt.Sprintf("STORAGE_LOCATION_%s", strconv.Itoa(i+1)),
+			Type:    "String",
+			Value:   property,
+			Default: "",
 		}
 	}
 

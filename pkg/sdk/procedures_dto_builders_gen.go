@@ -586,13 +586,13 @@ func (s *ProcedureSetRequest) SetParameterFromRaw(key string, value string) erro
 	case "ENABLE_CONSOLE_OUTPUT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
 	case "LOG_EVENT_LEVEL":
-		return assignParsedEnumParameter(value, ToLogLevel, &s.LogEventLevel)
+		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
 	case "LOG_LEVEL":
-		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
 	case "METRIC_LEVEL":
-		return assignParsedEnumParameter(value, ToMetricLevel, &s.MetricLevel)
+		return assignParsedParameter(value, ToMetricLevel, &s.MetricLevel)
 	case "TRACE_LEVEL":
-		return assignParsedEnumParameter(value, ToTraceLevel, &s.TraceLevel)
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
 	default:
 		return ErrParameterNotSupported
 	}

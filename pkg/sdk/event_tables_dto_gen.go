@@ -18,7 +18,7 @@ type CreateEventTableRequest struct {
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
 	ChangeTracking             *bool
-	DefaultDdlCollation        *StringAllowEmpty
+	DefaultDdlCollation        *string
 	CopyGrants                 *bool
 	Comment                    *string
 	RowAccessPolicy            *TableRowAccessPolicyLegacy

@@ -5,11 +5,10 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -19,18 +18,13 @@ var (
 	sharedDatabaseParametersSchema = make(map[string]*schema.Schema)
 )
 
-var databaseParameterFieldNames = collections.Map(
-	defs.ParameterDefsForLevel(ssot.ParameterLevelDatabase),
-	func(p ssot.ParameterDef) string { return p.FieldName() },
-)
-
 var sharedDatabaseNotApplicableParameters = []string{
 	defs.DataRetentionTimeInDays.SqlName,
 	defs.MaxDataExtensionTimeInDays.SqlName,
 }
 
 func init() {
-	for _, p := range defs.ParameterDefsForLevel(ssot.ParameterLevelDatabase) {
+	for _, p := range defs.ParameterDefsForLevel(parameterdefs.ParameterLevelDatabase) {
 		databaseParametersSchema[p.FieldName()] = parameterSchema(p)
 
 		if !slices.Contains(sharedDatabaseNotApplicableParameters, p.SqlName) {
@@ -48,7 +42,7 @@ func handleDatabaseParametersCreate(d *schema.ResourceData, createOpts *sdk.Crea
 		handleParameterCreateWithMapping(d, defs.ExternalVolume.FieldName(), &createOpts.ExternalVolume, stringToAccountObjectIdentifier),
 		handleParameterCreateWithMapping(d, defs.Catalog.FieldName(), &createOpts.Catalog, stringToAccountObjectIdentifier),
 		handleParameterCreate(d, defs.ReplaceInvalidCharacters.FieldName(), &createOpts.ReplaceInvalidCharacters),
-		handleParameterCreateWithMapping(d, defs.DefaultDdlCollation.FieldName(), &createOpts.DefaultDdlCollation, stringToStringAllowEmpty),
+		handleParameterCreateWithMapping(d, defs.DefaultDdlCollation.FieldName(), &createOpts.DefaultDdlCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
 		handleParameterCreate(d, defs.DefaultNotebookComputePoolCpu.FieldName(), &createOpts.DefaultNotebookComputePoolCpu),
 		handleParameterCreate(d, defs.DefaultNotebookComputePoolGpu.FieldName(), &createOpts.DefaultNotebookComputePoolGpu),
 		handleParameterCreateWithMapping(d, defs.StorageSerializationPolicy.FieldName(), &createOpts.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
@@ -72,7 +66,7 @@ func handleDatabaseParametersUpdate(d *schema.ResourceData, set *sdk.DatabaseSet
 		handleParameterUpdateWithMapping(d, defs.ExternalVolume.FieldName(), &set.ExternalVolume, &unset.ExternalVolume, stringToAccountObjectIdentifier),
 		handleParameterUpdateWithMapping(d, defs.Catalog.FieldName(), &set.Catalog, &unset.Catalog, stringToAccountObjectIdentifier),
 		handleParameterUpdate(d, defs.ReplaceInvalidCharacters.FieldName(), &set.ReplaceInvalidCharacters, &unset.ReplaceInvalidCharacters),
-		handleParameterUpdateWithMapping(d, defs.DefaultDdlCollation.FieldName(), &set.DefaultDdlCollation, &unset.DefaultDdlCollation, stringToStringAllowEmpty),
+		handleParameterUpdateWithMapping(d, defs.DefaultDdlCollation.FieldName(), &set.DefaultDdlCollation, &unset.DefaultDdlCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
 		handleParameterUpdate(d, defs.DefaultNotebookComputePoolCpu.FieldName(), &set.DefaultNotebookComputePoolCpu, &unset.DefaultNotebookComputePoolCpu),
 		handleParameterUpdate(d, defs.DefaultNotebookComputePoolGpu.FieldName(), &set.DefaultNotebookComputePoolGpu, &unset.DefaultNotebookComputePoolGpu),
 		handleParameterUpdateWithMapping(d, defs.StorageSerializationPolicy.FieldName(), &set.StorageSerializationPolicy, &unset.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
@@ -147,7 +141,7 @@ func databaseParameterDiffFunctions(parameters *sdk.DatabaseParametersDetails) [
 	return []schema.CustomizeDiffFunc{
 		IdentifierTypedParameterValueComputedIf(defs.Catalog.FieldName(), parameters.Catalog, sdk.ParameterTypeDatabase),
 		IntTypedParameterValueComputedIf(defs.DataRetentionTimeInDays.FieldName(), parameters.DataRetentionTimeInDays, sdk.ParameterTypeDatabase),
-		StringAllowEmptyTypedParameterValueComputedIf(defs.DefaultDdlCollation.FieldName(), parameters.DefaultDdlCollation, sdk.ParameterTypeDatabase),
+		StringTypedParameterValueComputedIf(defs.DefaultDdlCollation.FieldName(), parameters.DefaultDdlCollation, sdk.ParameterTypeDatabase),
 		StringTypedParameterValueComputedIf(defs.DefaultNotebookComputePoolCpu.FieldName(), parameters.DefaultNotebookComputePoolCpu, sdk.ParameterTypeDatabase),
 		StringTypedParameterValueComputedIf(defs.DefaultNotebookComputePoolGpu.FieldName(), parameters.DefaultNotebookComputePoolGpu, sdk.ParameterTypeDatabase),
 		BoolTypedParameterValueComputedIf(defs.EnableConsoleOutput.FieldName(), parameters.EnableConsoleOutput, sdk.ParameterTypeDatabase),

@@ -45,10 +45,6 @@ var (
 	// ErrParameterNotSupported signals that the given parameter is not natively supported in the SDK.
 	// It is distinct from a parse error, which means the parameter is supported but the value is invalid.
 	ErrParameterNotSupported = NewError("parameter not supported on this object")
-
-	// ErrEnumValueNotSupported signals that an enum parser does not recognize a value.
-	// Callers may use it to distinguish enum conversion failures from other parse errors.
-	ErrEnumValueNotSupported = NewError("enum value not supported")
 )
 
 type IntErrType string

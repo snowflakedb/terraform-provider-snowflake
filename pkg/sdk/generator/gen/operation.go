@@ -75,9 +75,6 @@ type Operation struct {
 	DropSafelyHook bool
 	// DropSafelyForce, when true, appends .WithForce(true) to the Drop request in the generated DropSafely implementation.
 	DropSafelyForce bool
-	// DropSafelySuppressed, when true, omits DropSafely from the generated interface and implementation.
-	// The object declares its own DropSafely with WithCustomInterfaceMethod and implements it in the _ext.go file.
-	DropSafelySuppressed bool
 	// RequestAdjust, when true, inserts a request.adjust() call in the generated impl before toOpts() is called.
 	// The adjust() method must be implemented manually on the request type in a _ext.go file.
 	RequestAdjust bool
@@ -110,11 +107,8 @@ type Mapping struct {
 	// SkipConvert is set by preprocessDefinition when another Mapping with the same From.Name has
 	// already been scheduled for emission in the same interface. Guards and convert bodies are suppressed.
 	SkipConvert bool
-	// AdditionalConvert enforces the additional conversion invocation (for cases where we have plain only field without manual conversion for any other field).
-	// preprocessDefinition clears it when DescribeDetails copies every plain-only field from the identifier.
+	// AdditionalConvert enforces the additional conversion invocation (for cases where we have plain only field without manual conversion for any other field)
 	AdditionalConvert bool
-	// PlainOnlyFields are plain struct fields with no db column, in definition order.
-	PlainOnlyFields []string
 }
 
 // AddFieldPairs converts the paired field definitions into a slice of FieldPair values used in conversion generation.
@@ -122,7 +116,6 @@ func (m *Mapping) AddFieldPairs(p *PairedStructs) {
 	pairs := make([]FieldPair, 0, len(p.fields))
 	for _, f := range p.fields {
 		if f.plainOnly {
-			m.PlainOnlyFields = append(m.PlainOnlyFields, f.resolvedPlainFieldName())
 			m.AdditionalConvert = true
 			continue
 		}
@@ -292,12 +285,6 @@ func WithDropSafelyHook() DropOperationOption {
 // WithDropSafelyForce adds .WithForce(true) to the Drop request in the generated DropSafely implementation.
 func WithDropSafelyForce() DropOperationOption {
 	return func(op *Operation) { op.DropSafelyForce = true }
-}
-
-// WithDropSafelySuppressed skips the generated DropSafely, for objects that cannot be dropped safely with IF EXISTS
-// and the identifier alone.
-func WithDropSafelySuppressed() DropOperationOption {
-	return func(op *Operation) { op.DropSafelySuppressed = true }
 }
 
 func (i *Interface) DropOperation(doc string, queryStruct *QueryStruct, opts ...DropOperationOption) *Interface {

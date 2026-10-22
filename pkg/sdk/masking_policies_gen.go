@@ -19,8 +19,6 @@ type MaskingPolicies interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*MaskingPolicy, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*MaskingPolicy, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*MaskingPolicyDetails, error)
-	// DescribeDetails calls Describe and sets database and schema from the identifier. DESCRIBE does not return those columns.
-	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*MaskingPolicyDetails, error)
 }
 
 // CreateMaskingPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-masking-policy.
@@ -123,14 +121,8 @@ type describeMaskingPolicyDBRow struct {
 }
 
 type MaskingPolicyDetails struct {
-	Name         string
-	Signature    []TableColumnSignature
-	ReturnType   datatypes.DataType
-	Body         string
-	DatabaseName string
-	SchemaName   string
-}
-
-func (v *MaskingPolicyDetails) ID() SchemaObjectIdentifier {
-	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
+	Name       string
+	Signature  []TableColumnSignature
+	ReturnType datatypes.DataType
+	Body       string
 }

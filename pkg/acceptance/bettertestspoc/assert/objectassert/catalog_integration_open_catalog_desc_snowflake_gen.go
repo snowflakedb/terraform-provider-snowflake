@@ -130,7 +130,7 @@ func (c *CatalogIntegrationOpenCatalogDetailsAssert) HasCatalogNamespaceNotEmpty
 	return c
 }
 
-func (c *CatalogIntegrationOpenCatalogDetailsAssert) HasRestConfigWith(subAssert *CatalogIntegrationOpenCatalogRestConfigDetailsAssert) *CatalogIntegrationOpenCatalogDetailsAssert {
+func (c *CatalogIntegrationOpenCatalogDetailsAssert) HasRestConfigWith(subAssert *OpenCatalogRestConfigDetailsAssert) *CatalogIntegrationOpenCatalogDetailsAssert {
 	for _, assertion := range subAssert.GetAssertions() {
 		assertion := assertion
 		c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationOpenCatalogDetails) error {
@@ -143,7 +143,7 @@ func (c *CatalogIntegrationOpenCatalogDetailsAssert) HasRestConfigWith(subAssert
 	return c
 }
 
-func (c *CatalogIntegrationOpenCatalogDetailsAssert) HasRestAuthenticationWith(subAssert *CatalogIntegrationOpenCatalogRestAuthenticationDetailsAssert) *CatalogIntegrationOpenCatalogDetailsAssert {
+func (c *CatalogIntegrationOpenCatalogDetailsAssert) HasRestAuthenticationWith(subAssert *OAuthRestAuthenticationDetailsAssert) *CatalogIntegrationOpenCatalogDetailsAssert {
 	for _, assertion := range subAssert.GetAssertions() {
 		assertion := assertion
 		c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationOpenCatalogDetails) error {

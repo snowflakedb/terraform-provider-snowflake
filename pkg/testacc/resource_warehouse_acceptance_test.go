@@ -28,7 +28,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -45,8 +44,8 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 	warehouseId2 := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 	newComment := random.Comment()
-	statementTimeoutDefault := 172800
-	statementTimeoutDefaultString := "172800"
+
+	autoSuspendDefault := testClient().SnowflakeDefaults.DefaultAutoSuspend(t)
 
 	warehouseModel := model.Warehouse("test", warehouseId.Name()).WithComment(comment)
 	warehouseModelRenamed := model.BasicWarehouseModel(warehouseId2, comment)
@@ -54,7 +53,7 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 	warehouseModelRenamedFullWithParameters := model.WarehouseSnowflakeDefaultWithoutParameters(warehouseId2, comment).
 		WithMaxConcurrencyLevel(8).
 		WithStatementQueuedTimeoutInSeconds(0).
-		WithStatementTimeoutInSeconds(statementTimeoutDefault)
+		WithStatementTimeoutInSeconds(172800)
 	warehouseModelRenamedFull := model.BasicWarehouseModel(warehouseId2, newComment).
 		WithWarehouseTypeEnum(sdk.WarehouseTypeSnowparkOptimized).
 		WithResourceConstraintEnum(sdk.WarehouseResourceConstraintMemory16X).
@@ -88,10 +87,8 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 		WithStatementQueuedTimeoutInSeconds(5).
 		WithStatementTimeoutInSeconds(86400)
 
-	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
-
 	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -99,8 +96,7 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create with only required fields present in config
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, warehouseModel),
+				Config: config.FromModels(t, warehouseModel),
 				Check: assertThat(
 					t,
 					resourceassert.WarehouseResource(t, warehouseModel.ResourceReference()).
@@ -113,23 +109,26 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 						HasAutoSuspendString(r.IntDefaultString).
 						HasAutoResumeString(r.BooleanDefault).
 						HasNoInitiallySuspended().
-						HasResourceMonitorEmpty().
+						HasNoResourceMonitor().
 						HasCommentString(comment).
 						HasEnableQueryAccelerationString(r.BooleanDefault).
 						HasQueryAccelerationMaxScaleFactorString(r.IntDefaultString).
 						HasMaxConcurrencyLevelString("8").
 						HasStatementQueuedTimeoutInSecondsString("0").
-						HasStatementTimeoutInSecondsString(statementTimeoutDefaultString).
+						HasStatementTimeoutInSecondsString("172800").
 						// alternatively extensions possible:
 						HasDefaultMaxConcurrencyLevel().
-						HasDefaultStatementQueuedTimeoutInSeconds(),
+						HasDefaultStatementQueuedTimeoutInSeconds().
+						HasDefaultStatementTimeoutInSeconds().
+						// alternatively extension possible
+						HasAllDefault(),
 					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModel.ResourceReference()).
 						HasType(sdk.WarehouseTypeStandard).
 						HasSize(sdk.WarehouseSizeXSmall).
 						HasMaxClusterCount(1).
 						HasMinClusterCount(1).
 						HasScalingPolicy(sdk.ScalingPolicyStandard).
-						HasAutoSuspend(600).
+						HasAutoSuspend(autoSuspendDefault).
 						HasAutoResume(true).
 						HasResourceMonitor(sdk.AccountObjectIdentifier{}).
 						HasComment(comment).
@@ -138,7 +137,7 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 					resourceparametersassert.WarehouseResourceParameters(t, warehouseModel.ResourceReference()).
 						HasMaxConcurrencyLevel(8).
 						HasStatementQueuedTimeoutInSeconds(0).
-						HasStatementTimeoutInSeconds(statementTimeoutDefault).
+						HasStatementTimeoutInSeconds(172800).
 						// alternatively extensions possible:
 						HasDefaultMaxConcurrencyLevel().
 						HasDefaultStatementQueuedTimeoutInSeconds().
@@ -151,7 +150,7 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 						HasMaxClusterCount(1).
 						HasMinClusterCount(1).
 						HasScalingPolicy(sdk.ScalingPolicyStandard).
-						HasAutoSuspend(600).
+						HasAutoSuspend(autoSuspendDefault).
 						HasAutoResume(true).
 						HasResourceMonitor(sdk.AccountObjectIdentifier{}).
 						HasComment(comment).
@@ -165,18 +164,60 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(warehouseModel.ResourceReference(), "fully_qualified_name", warehouseId.FullyQualifiedName())),
 				),
 			},
-			// import - without optionals, permissive mode
+			// IMPORT after empty config (in this method, most of the attributes will be filled with the defaults acquired from Snowflake)
 			{
-				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
-				Config:                   accconfig.FromModels(t, providerModelImportPermissiveMode, warehouseModel),
-				ResourceName:             warehouseModel.ResourceReference(),
-				ImportState:              true,
-				ImportStateKind:          resource.ImportBlockWithID,
+				ResourceName: warehouseModel.ResourceReference(),
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(warehouseId), "name", warehouseId.Name())),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(warehouseId), "fully_qualified_name", warehouseId.FullyQualifiedName())),
+					resourceassert.ImportedWarehouseResource(t, helpers.EncodeResourceIdentifier(warehouseId)).
+						HasNameString(warehouseId.Name()).
+						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
+						HasWarehouseSizeString(string(sdk.WarehouseSizeXSmall)).
+						HasMaxClusterCountString("1").
+						HasMinClusterCountString("1").
+						HasScalingPolicyString(string(sdk.ScalingPolicyStandard)).
+						HasAutoSuspendString(strconv.Itoa(autoSuspendDefault)).
+						HasAutoResumeString("true").
+						HasResourceMonitorString("").
+						HasCommentString(comment).
+						HasEnableQueryAccelerationString("true").
+						HasQueryAccelerationMaxScaleFactorString(strconv.Itoa(8)).
+						HasDefaultMaxConcurrencyLevel().
+						HasDefaultStatementQueuedTimeoutInSeconds().
+						HasDefaultStatementTimeoutInSeconds(),
+					resourceshowoutputassert.ImportedWarehouseShowOutput(t, helpers.EncodeResourceIdentifier(warehouseId)),
+					resourceparametersassert.ImportedWarehouseResourceParameters(t, helpers.EncodeResourceIdentifier(warehouseId)).
+						HasMaxConcurrencyLevel(8).
+						HasMaxConcurrencyLevelLevel("").
+						HasStatementQueuedTimeoutInSeconds(0).
+						HasStatementQueuedTimeoutInSecondsLevel("").
+						HasStatementTimeoutInSeconds(172800).
+						HasStatementTimeoutInSecondsLevel(testClient().SnowflakeDefaults.DefaultStatementTimeoutInSecondsLevel(t)),
+					objectassert.Warehouse(t, warehouseId).
+						HasName(warehouseId.Name()).
+						HasState(sdk.WarehouseStateStarted).
+						HasType(sdk.WarehouseTypeStandard).
+						HasSize(sdk.WarehouseSizeXSmall).
+						HasMaxClusterCount(1).
+						HasMinClusterCount(1).
+						HasScalingPolicy(sdk.ScalingPolicyStandard).
+						HasAutoSuspend(autoSuspendDefault).
+						HasAutoResume(true).
+						HasResourceMonitor(sdk.AccountObjectIdentifier{}).
+						HasComment(comment).
+						HasEnableQueryAcceleration(true).
+						HasQueryAccelerationMaxScaleFactor(8),
+					objectparametersassert.WarehouseParameters(t, warehouseId).
+						HasAllDefaultsForEnvironment(t, testClient().SnowflakeDefaults).
+						HasAllDefaultsExplicit(),
+				),
 			},
 			// RENAME
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, warehouseModelRenamed),
+				Config: config.FromModels(t, warehouseModelRenamed),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(warehouseModelRenamed.ResourceReference(), plancheck.ResourceActionUpdate),
@@ -189,8 +230,7 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 			},
 			// Change config but use defaults for every attribute (but not the parameters) - expect no changes (because these are already SF values)
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, warehouseModelRenamedFullWithoutParameters),
+				Config: config.FromModels(t, warehouseModelRenamedFullWithoutParameters),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelRenamedFullWithoutParameters.ResourceReference(), "warehouse_type", "warehouse_size", "max_cluster_count", "min_cluster_count", "scaling_policy", "auto_suspend", "auto_resume", "enable_query_acceleration", "query_acceleration_max_scale_factor", "max_concurrency_level", "statement_queued_timeout_in_seconds", "statement_timeout_in_seconds", r.ShowOutputAttributeName),
@@ -200,8 +240,7 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 			},
 			// add parameters - update expected (different level even with same values)
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, warehouseModelRenamedFullWithParameters),
+				Config: config.FromModels(t, warehouseModelRenamedFullWithParameters),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelRenamedFullWithParameters.ResourceReference(), "warehouse_type", "warehouse_size", "max_cluster_count", "min_cluster_count", "scaling_policy", "auto_suspend", "auto_resume", "enable_query_acceleration", "query_acceleration_max_scale_factor", "max_concurrency_level", "statement_queued_timeout_in_seconds", "statement_timeout_in_seconds", r.ShowOutputAttributeName),
@@ -219,10 +258,10 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "max_cluster_count", "1"),
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "min_cluster_count", "1"),
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "scaling_policy", string(sdk.ScalingPolicyStandard)),
-					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "auto_suspend", "600"),
+					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "auto_suspend", strconv.Itoa(autoSuspendDefault)),
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "auto_resume", "true"),
 					resource.TestCheckNoResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "initially_suspended"),
-					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "resource_monitor", ""),
+					resource.TestCheckNoResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "resource_monitor"),
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "comment", comment),
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "enable_query_acceleration", "true"),
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "query_acceleration_max_scale_factor", strconv.Itoa(8)),
@@ -230,7 +269,7 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 					// parameters have the same values...
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "max_concurrency_level", "8"),
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "statement_queued_timeout_in_seconds", "0"),
-					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "statement_timeout_in_seconds", statementTimeoutDefaultString),
+					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "statement_timeout_in_seconds", "172800"),
 
 					// ... but are set on different level
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "parameters.#", "1"),
@@ -238,14 +277,13 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "parameters.0.max_concurrency_level.0.level", string(sdk.ParameterTypeWarehouse)),
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "parameters.0.statement_queued_timeout_in_seconds.0.value", "0"),
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "parameters.0.statement_queued_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
-					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "parameters.0.statement_timeout_in_seconds.0.value", statementTimeoutDefaultString),
+					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "parameters.0.statement_timeout_in_seconds.0.value", "172800"),
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "parameters.0.statement_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
 				),
 			},
 			// CHANGE PROPERTIES (normal and parameters)
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, warehouseModelRenamedFull),
+				Config: config.FromModels(t, warehouseModelRenamedFull),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelRenamedFull.ResourceReference(), "warehouse_type", "warehouse_size", "max_cluster_count", "min_cluster_count", "scaling_policy", "auto_suspend", "auto_resume", "enable_query_acceleration", "query_acceleration_max_scale_factor", "max_concurrency_level", "statement_queued_timeout_in_seconds", "statement_timeout_in_seconds", r.ShowOutputAttributeName),
@@ -255,14 +293,14 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "max_cluster_count", tfjson.ActionUpdate, sdk.String("1"), sdk.String("4")),
 						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "min_cluster_count", tfjson.ActionUpdate, sdk.String("1"), sdk.String("2")),
 						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "scaling_policy", tfjson.ActionUpdate, sdk.String(string(sdk.ScalingPolicyStandard)), sdk.String(string(sdk.ScalingPolicyEconomy))),
-						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "auto_suspend", tfjson.ActionUpdate, sdk.String("600"), sdk.String("1200")),
+						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "auto_suspend", tfjson.ActionUpdate, sdk.String(strconv.Itoa(autoSuspendDefault)), sdk.String("1200")),
 						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "auto_resume", tfjson.ActionUpdate, sdk.String("true"), sdk.String("false")),
 						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "enable_query_acceleration", tfjson.ActionUpdate, sdk.String("true"), sdk.String("false")),
 						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "query_acceleration_max_scale_factor", tfjson.ActionUpdate, sdk.String(strconv.Itoa(8)), sdk.String("4")),
 
 						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "max_concurrency_level", tfjson.ActionUpdate, sdk.String("8"), sdk.String("4")),
 						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "statement_queued_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("0"), sdk.String("5")),
-						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String(statementTimeoutDefaultString), sdk.String("86400")),
+						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("172800"), sdk.String("86400")),
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
@@ -294,8 +332,7 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 			},
 			// change resource monitor - wrap in quotes (no change expected)
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, warehouseModelRenamedFullResourceMonitorInQuotes),
+				Config: config.FromModels(t, warehouseModelRenamedFullResourceMonitorInQuotes),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -304,9 +341,8 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 			},
 			// CHANGE max_concurrency_level EXTERNALLY (proves https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2318)
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, warehouseModelRenamedFull),
-				PreConfig:                func() { testClient().Warehouse.UpdateMaxConcurrencyLevel(t, warehouseId2, 10) },
+				Config:    config.FromModels(t, warehouseModelRenamedFull),
+				PreConfig: func() { testClient().Warehouse.UpdateMaxConcurrencyLevel(t, warehouseId2, 10) },
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.ExpectDrift(warehouseModelRenamedFull.ResourceReference(), "max_concurrency_level", sdk.String("4"), sdk.String("10")),
@@ -322,109 +358,9 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 			},
 			// IMPORT
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				ResourceName:             warehouseModelRenamedFull.ResourceReference(),
-				ImportState:              true,
-				ImportStateVerify:        true,
-			},
-			// import - complete, permissive mode
-			{
-				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
-				Config:                   accconfig.FromModels(t, providerModelImportPermissiveMode, warehouseModelRenamedFull),
-				ResourceName:             warehouseModelRenamedFull.ResourceReference(),
-				ImportState:              true,
-				ImportStateKind:          resource.ImportBlockWithID,
-			},
-		},
-	})
-}
-
-func TestAcc_Warehouse_BasicUseCase_Import(t *testing.T) {
-	id := testClient().Ids.RandomAccountObjectIdentifier()
-	resourceId := helpers.EncodeResourceIdentifier(id)
-	statementTimeoutDefault := 172800
-	statementTimeoutDefaultString := "172800"
-
-	basicModel := model.Warehouse("test", id.Name())
-	ref := basicModel.ResourceReference()
-
-	warehouse, cleanup := testClient().Warehouse.CreateWarehouseWithRequest(t, sdk.NewCreateWarehouseRequest(id))
-	t.Cleanup(cleanup)
-
-	var generation *string
-	if warehouse.Generation != nil {
-		generation = new(string(*warehouse.Generation))
-	}
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.Warehouse),
-		Steps: []resource.TestStep{
-			// Import - without optionals
-			{
-				Config:             config.FromModels(t, basicModel),
-				ResourceName:       ref,
-				ImportState:        true,
-				ImportStateId:      resourceId,
-				ImportStatePersist: true,
-				ImportStateCheck: assertThatImport(
-					t,
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(resourceId, "fully_qualified_name", id.FullyQualifiedName())),
-					resourceassert.ImportedWarehouseResource(t, resourceId).
-						HasNameString(id.Name()).
-						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
-						HasWarehouseSizeString(string(sdk.WarehouseSizeXSmall)).
-						HasMaxClusterCountString("1").
-						HasMinClusterCountString("1").
-						HasScalingPolicyString(string(sdk.ScalingPolicyStandard)).
-						HasAutoSuspendString("600").
-						HasAutoResumeString("true").
-						HasResourceMonitorString("").
-						HasCommentString("").
-						HasEnableQueryAccelerationString("true").
-						HasQueryAccelerationMaxScaleFactorString(strconv.Itoa(8)).
-						HasDefaultMaxConcurrencyLevel().
-						HasDefaultStatementQueuedTimeoutInSeconds().
-						HasStatementTimeoutInSecondsString(statementTimeoutDefaultString),
-					resourceshowoutputassert.ImportedWarehouseShowOutput(t, resourceId),
-					resourceparametersassert.ImportedWarehouseResourceParameters(t, resourceId).
-						HasMaxConcurrencyLevel(8).
-						HasMaxConcurrencyLevelLevel("").
-						HasStatementQueuedTimeoutInSeconds(0).
-						HasStatementQueuedTimeoutInSecondsLevel("").
-						HasStatementTimeoutInSeconds(statementTimeoutDefault).
-						HasStatementTimeoutInSecondsLevel(testClient().SnowflakeDefaults.DefaultStatementTimeoutInSecondsLevel(t)),
-				),
-			},
-			// Expect empty plan after the plan after import is applied
-			{
-				Config: config.FromModels(t, basicModel),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
-						planchecks.ExpectChange(ref, "warehouse_type", tfjson.ActionDelete, new(string(sdk.WarehouseTypeStandard)), nil),
-						planchecks.ExpectChange(ref, "warehouse_size", tfjson.ActionDelete, new(string(sdk.WarehouseSizeXSmall)), nil),
-						planchecks.ExpectChange(ref, "max_cluster_count", tfjson.ActionDelete, new("1"), nil),
-						planchecks.ExpectChange(ref, "min_cluster_count", tfjson.ActionDelete, new("1"), nil),
-						planchecks.ExpectChange(ref, "scaling_policy", tfjson.ActionDelete, new(string(sdk.ScalingPolicyStandard)), nil),
-						planchecks.ExpectChange(ref, "auto_suspend", tfjson.ActionDelete, new("600"), new(r.IntDefaultString)),
-						planchecks.ExpectChange(ref, "auto_resume", tfjson.ActionDelete, new("true"), new(r.BooleanDefault)),
-						planchecks.ExpectChange(ref, "enable_query_acceleration", tfjson.ActionDelete, new("true"), new(r.BooleanDefault)),
-						planchecks.ExpectChange(ref, "query_acceleration_max_scale_factor", tfjson.ActionDelete, new("8"), new(r.IntDefaultString)),
-						planchecks.ExpectChange(ref, "resource_constraint", tfjson.ActionDelete, nil, nil),
-						planchecks.ExpectChange(ref, "generation", tfjson.ActionDelete, generation, nil),
-					},
-					PostApplyPostRefresh: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
-				Check: assertThat(
-					t,
-					resourceassert.WarehouseResource(t, ref).HasName(id.Name()).HasAllDefault(),
-				),
+				ResourceName:      warehouseModelRenamedFull.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -463,7 +399,7 @@ func TestAcc_Warehouse_AddResourceMonitorAfterCreate(t *testing.T) {
 				Config: config.FromModels(t, warehouseModelStep1),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModelStep1.ResourceReference(), "name", warehouseId.Name()),
-					resource.TestCheckResourceAttr(warehouseModelStep1.ResourceReference(), "resource_monitor", ""),
+					resource.TestCheckNoResourceAttr(warehouseModelStep1.ResourceReference(), "resource_monitor"),
 				),
 			},
 			// Step 2: add a Terraform-managed resource_monitor referenced by its fully_qualified_name.
@@ -472,7 +408,7 @@ func TestAcc_Warehouse_AddResourceMonitorAfterCreate(t *testing.T) {
 				Config: config.FromModels(t, monitorModel, warehouseModelStep2),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModelStep2.ResourceReference(), "name", warehouseId.Name()),
-					resource.TestCheckResourceAttr(warehouseModelStep2.ResourceReference(), "resource_monitor", resourceMonitorId.Name()),
+					resource.TestCheckResourceAttr(warehouseModelStep2.ResourceReference(), "resource_monitor", resourceMonitorId.FullyQualifiedName()),
 				),
 			},
 		},
@@ -869,8 +805,6 @@ func TestAcc_Warehouse_Validations(t *testing.T) {
 		WithMinClusterCount(0)
 	warehouseModelInvalidScalingPolicy := model.Warehouse("test", id.Name()).
 		WithScalingPolicy("unknown")
-	warehouseModelInvalidQueryAccelerationMaxScaleFactor := model.Warehouse("test", id.Name()).
-		WithQueryAccelerationMaxScaleFactor(101)
 	warehouseModelInvalidAutoResume := model.Warehouse("test", id.Name()).
 		WithAutoResume("other")
 	warehouseModelInvalidMaxConcurrencyLevel := model.Warehouse("test", id.Name()).
@@ -916,11 +850,6 @@ func TestAcc_Warehouse_Validations(t *testing.T) {
 				ExpectError: regexp.MustCompile("invalid scaling policy: UNKNOWN"),
 			},
 			{
-				Config:      config.FromModels(t, warehouseModelInvalidQueryAccelerationMaxScaleFactor),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`expected query_acceleration_max_scale_factor to be in the range \(0 - 100\), got 101`),
-			},
-			{
 				Config:      config.FromModels(t, warehouseModelInvalidAutoResume),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected \[\{\{} auto_resume}] to be one of \["true" "false"], got other`),
@@ -933,7 +862,7 @@ func TestAcc_Warehouse_Validations(t *testing.T) {
 			{
 				Config:      config.FromModels(t, warehouseModelInvalidGeneration),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid warehouse generation: unknown`),
+				ExpectError: regexp.MustCompile(`invalid generation: unknown`),
 			},
 			{
 				Config:      config.FromModels(t, warehouseModelInvalidResourceConstraint),
@@ -3406,53 +3335,6 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration_UpdatedExtern
 						HasType(sdk.WarehouseTypeStandard).
 						HasGeneration(sdk.WarehouseGenerationStandardGen2).
 						HasResourceConstraintEmpty(),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_Warehouse_ScalingPolicy_CaseDrift(t *testing.T) {
-	id := testClient().Ids.RandomAccountObjectIdentifier()
-	warehouseModel := model.Warehouse("test", id.Name()).
-		WithWarehouseTypeEnum(sdk.WarehouseTypeStandard).
-		WithScalingPolicyEnum(sdk.ScalingPolicyEconomy)
-	warehouseModelLower := model.Warehouse("test", id.Name()).
-		WithWarehouseTypeEnum(sdk.WarehouseTypeStandard).
-		WithScalingPolicy("economy")
-	ref := warehouseModel.ResourceReference()
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.Warehouse),
-		Steps: []resource.TestStep{
-			{
-				Config: accconfig.FromModels(t, warehouseModel),
-				Check: assertThat(
-					t,
-					resourceassert.WarehouseResource(t, ref).
-						HasScalingPolicyString(string(sdk.ScalingPolicyEconomy)),
-					resourceshowoutputassert.WarehouseShowOutput(t, ref).
-						HasScalingPolicy(sdk.ScalingPolicyEconomy),
-				),
-			},
-			// economy and ECONOMY are the same policy. ToWarehouseType rejects ECONOMY, so this used to plan an update.
-			{
-				Config: accconfig.FromModels(t, warehouseModelLower),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
-					},
-				},
-				Check: assertThat(
-					t,
-					resourceassert.WarehouseResource(t, ref).
-						HasScalingPolicyString(string(sdk.ScalingPolicyEconomy)),
-					resourceshowoutputassert.WarehouseShowOutput(t, ref).
-						HasScalingPolicy(sdk.ScalingPolicyEconomy),
 				),
 			},
 		},

@@ -4,16 +4,10 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
-
-// applicationPackageVersionTimeout matches the 30-minute listing acceptance timeout.
-// ADD VERSION has no provider resource deadline of its own. context.Background() let
-// one preprod call run until the suite timer fired.
-const applicationPackageVersionTimeout = 30 * time.Minute
 
 type ApplicationPackageClient struct {
 	context *TestClientContext
@@ -71,8 +65,7 @@ func (c *ApplicationPackageClient) DropApplicationPackageFunc(t *testing.T, id s
 
 func (c *ApplicationPackageClient) AddApplicationPackageVersion(t *testing.T, id sdk.AccountObjectIdentifier, stageId sdk.SchemaObjectIdentifier, versionName string) {
 	t.Helper()
-	ctx, cancel := context.WithTimeout(context.Background(), applicationPackageVersionTimeout)
-	defer cancel()
+	ctx := context.Background()
 
 	using := "@" + stageId.FullyQualifiedName()
 
@@ -82,8 +75,7 @@ func (c *ApplicationPackageClient) AddApplicationPackageVersion(t *testing.T, id
 
 func (c *ApplicationPackageClient) SetDefaultReleaseDirective(t *testing.T, id sdk.AccountObjectIdentifier, version string) {
 	t.Helper()
-	ctx, cancel := context.WithTimeout(context.Background(), applicationPackageVersionTimeout)
-	defer cancel()
+	ctx := context.Background()
 
 	err := c.client().Alter(ctx, sdk.NewAlterApplicationPackageRequest(id).WithSetDefaultReleaseDirective(
 		*sdk.NewSetDefaultReleaseDirectiveRequest(version, 0),
@@ -107,8 +99,7 @@ type ApplicationPackageVersion struct {
 
 func (c *ApplicationPackageClient) RegisterVersion(t *testing.T, id sdk.AccountObjectIdentifier, stageId sdk.SchemaObjectIdentifier, versionName string) {
 	t.Helper()
-	ctx, cancel := context.WithTimeout(context.Background(), applicationPackageVersionTimeout)
-	defer cancel()
+	ctx := context.Background()
 
 	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`ALTER APPLICATION PACKAGE %s REGISTER VERSION %s USING '@%s'`, id.FullyQualifiedName(), versionName, stageId.FullyQualifiedName()))
 	require.NoError(t, err)

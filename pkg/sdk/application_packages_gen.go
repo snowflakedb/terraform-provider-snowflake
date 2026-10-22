@@ -26,7 +26,7 @@ type CreateApplicationPackageOptions struct {
 	name                       AccountObjectIdentifier `ddl:"identifier"`
 	DataRetentionTimeInDays    *int                    `ddl:"parameter,no_quotes" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	MaxDataExtensionTimeInDays *int                    `ddl:"parameter,no_quotes" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	DefaultDdlCollation        *StringAllowEmpty       `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
+	DefaultDdlCollation        *string                 `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
 	Comment                    *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	Distribution               *Distribution           `ddl:"parameter" sql:"DISTRIBUTION"`
 	Tag                        []TagAssociation        `ddl:"keyword,parentheses" sql:"TAG"`
@@ -52,11 +52,11 @@ type AlterApplicationPackageOptions struct {
 }
 
 type ApplicationPackageSet struct {
-	DataRetentionTimeInDays    *int              `ddl:"parameter,no_quotes" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays *int              `ddl:"parameter,no_quotes" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	DefaultDdlCollation        *StringAllowEmpty `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
-	Comment                    *string           `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	Distribution               *Distribution     `ddl:"parameter" sql:"DISTRIBUTION"`
+	DataRetentionTimeInDays    *int          `ddl:"parameter,no_quotes" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *int          `ddl:"parameter,no_quotes" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	DefaultDdlCollation        *string       `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
+	Comment                    *string       `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Distribution               *Distribution `ddl:"parameter" sql:"DISTRIBUTION"`
 }
 
 type ApplicationPackageUnset struct {

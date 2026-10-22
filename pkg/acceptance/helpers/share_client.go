@@ -57,13 +57,6 @@ func (c *ShareClient) DropShareFunc(t *testing.T, id sdk.AccountObjectIdentifier
 	}
 }
 
-func (c *ShareClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.Share, error) {
-	t.Helper()
-	ctx := context.Background()
-
-	return c.client().ShowByID(ctx, id)
-}
-
 func (c *ShareClient) SetAccountOnShare(t *testing.T, accountId sdk.AccountIdentifier, shareId sdk.AccountObjectIdentifier) {
 	t.Helper()
 	ctx := context.Background()

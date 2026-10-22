@@ -131,11 +131,11 @@ func (s *CreateForJavaFunctionRequest) SetParameterFromRaw(key string, value str
 	case "ENABLE_CONSOLE_OUTPUT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
 	case "LOG_LEVEL":
-		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
 	case "METRIC_LEVEL":
-		return assignParsedEnumParameter(value, ToMetricLevel, &s.MetricLevel)
+		return assignParsedParameter(value, ToMetricLevel, &s.MetricLevel)
 	case "TRACE_LEVEL":
-		return assignParsedEnumParameter(value, ToTraceLevel, &s.TraceLevel)
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
 	default:
 		return ErrParameterNotSupported
 	}
@@ -321,11 +321,11 @@ func (s *CreateForJavascriptFunctionRequest) SetParameterFromRaw(key string, val
 	case "ENABLE_CONSOLE_OUTPUT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
 	case "LOG_LEVEL":
-		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
 	case "METRIC_LEVEL":
-		return assignParsedEnumParameter(value, ToMetricLevel, &s.MetricLevel)
+		return assignParsedParameter(value, ToMetricLevel, &s.MetricLevel)
 	case "TRACE_LEVEL":
-		return assignParsedEnumParameter(value, ToTraceLevel, &s.TraceLevel)
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
 	default:
 		return ErrParameterNotSupported
 	}
@@ -450,11 +450,11 @@ func (s *CreateForPythonFunctionRequest) SetParameterFromRaw(key string, value s
 	case "ENABLE_CONSOLE_OUTPUT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
 	case "LOG_LEVEL":
-		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
 	case "METRIC_LEVEL":
-		return assignParsedEnumParameter(value, ToMetricLevel, &s.MetricLevel)
+		return assignParsedParameter(value, ToMetricLevel, &s.MetricLevel)
 	case "TRACE_LEVEL":
-		return assignParsedEnumParameter(value, ToTraceLevel, &s.TraceLevel)
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
 	default:
 		return ErrParameterNotSupported
 	}
@@ -584,11 +584,11 @@ func (s *CreateForScalaFunctionRequest) SetParameterFromRaw(key string, value st
 	case "ENABLE_CONSOLE_OUTPUT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
 	case "LOG_LEVEL":
-		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
 	case "METRIC_LEVEL":
-		return assignParsedEnumParameter(value, ToMetricLevel, &s.MetricLevel)
+		return assignParsedParameter(value, ToMetricLevel, &s.MetricLevel)
 	case "TRACE_LEVEL":
-		return assignParsedEnumParameter(value, ToTraceLevel, &s.TraceLevel)
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
 	default:
 		return ErrParameterNotSupported
 	}
@@ -681,11 +681,11 @@ func (s *CreateForSQLFunctionRequest) SetParameterFromRaw(key string, value stri
 	case "ENABLE_CONSOLE_OUTPUT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
 	case "LOG_LEVEL":
-		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
 	case "METRIC_LEVEL":
-		return assignParsedEnumParameter(value, ToMetricLevel, &s.MetricLevel)
+		return assignParsedParameter(value, ToMetricLevel, &s.MetricLevel)
 	case "TRACE_LEVEL":
-		return assignParsedEnumParameter(value, ToTraceLevel, &s.TraceLevel)
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
 	default:
 		return ErrParameterNotSupported
 	}
@@ -789,13 +789,13 @@ func (s *FunctionSetRequest) SetParameterFromRaw(key string, value string) error
 	case "ENABLE_CONSOLE_OUTPUT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.EnableConsoleOutput)
 	case "LOG_EVENT_LEVEL":
-		return assignParsedEnumParameter(value, ToLogLevel, &s.LogEventLevel)
+		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
 	case "LOG_LEVEL":
-		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
 	case "METRIC_LEVEL":
-		return assignParsedEnumParameter(value, ToMetricLevel, &s.MetricLevel)
+		return assignParsedParameter(value, ToMetricLevel, &s.MetricLevel)
 	case "TRACE_LEVEL":
-		return assignParsedEnumParameter(value, ToTraceLevel, &s.TraceLevel)
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
 	default:
 		return ErrParameterNotSupported
 	}

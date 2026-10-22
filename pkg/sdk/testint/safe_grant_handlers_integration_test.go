@@ -207,7 +207,7 @@ func TestInt_SafeRevokeOnAllPipesWithMissingRole(t *testing.T) {
 	stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
 	t.Cleanup(stageCleanup)
 
-	copyStatement := testClientHelper().Pipe.CopyStatement(t, table, stage)
+	copyStatement := createPipeCopyStatement(t, table, stage)
 
 	_, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, copyStatement)
 	t.Cleanup(pipeCleanup)
@@ -577,7 +577,7 @@ func TestInt_SafeRevokePrivilegesFromDatabaseRole_AllPipesWithMissingRole(t *tes
 	stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
 	t.Cleanup(stageCleanup)
 
-	copyStatement := testClientHelper().Pipe.CopyStatement(t, table, stage)
+	copyStatement := createPipeCopyStatement(t, table, stage)
 
 	_, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, copyStatement)
 	t.Cleanup(pipeCleanup)

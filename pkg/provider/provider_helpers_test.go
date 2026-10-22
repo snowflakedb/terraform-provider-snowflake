@@ -1,8 +1,6 @@
 package provider
 
 import (
-	"crypto/tls"
-	"net/http"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
@@ -11,54 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func Test_toMinTLSVersion(t *testing.T) {
-	valid := []struct {
-		name  string
-		input string
-		want  minTLSVersion
-	}{
-		{name: "unset", input: "", want: ""},
-		{name: "empty", input: "   ", want: ""},
-		{name: "1.2", input: "1.2", want: minTLSVersion12},
-		{name: "1.3", input: "1.3", want: minTLSVersion13},
-		{name: "TLSv1.2", input: "  TLSv1.2  ", want: minTLSVersion12},
-		{name: "TLSv1.3", input: "tlsv1.3", want: minTLSVersion13},
-	}
-
-	for _, tc := range valid {
-		t.Run(tc.name, func(t *testing.T) {
-			got, err := toMinTLSVersion(tc.input)
-			require.NoError(t, err)
-			assert.Equal(t, tc.want, got)
-		})
-	}
-
-	t.Run("invalid", func(t *testing.T) {
-		got, err := toMinTLSVersion("1.0")
-		require.ErrorContains(t, err, "invalid min tls version: 1.0")
-		assert.Empty(t, got)
-	})
-}
-
-func Test_oauthRefreshHTTPClient(t *testing.T) {
-	versionOf := func(t *testing.T, client *http.Client) uint16 {
-		t.Helper()
-		require.NotNil(t, client.Transport)
-		transport, ok := client.Transport.(*http.Transport)
-		require.True(t, ok)
-		require.NotNil(t, transport.TLSClientConfig)
-		return transport.TLSClientConfig.MinVersion
-	}
-
-	t.Run("1.2", func(t *testing.T) {
-		assert.Equal(t, uint16(tls.VersionTLS12), versionOf(t, oauthRefreshHTTPClient(minTLSVersion12)))
-	})
-
-	t.Run("1.3", func(t *testing.T) {
-		assert.Equal(t, uint16(tls.VersionTLS13), versionOf(t, oauthRefreshHTTPClient(minTLSVersion13)))
-	})
-}
 
 func Test_Provider_toProtocol(t *testing.T) {
 	type test struct {

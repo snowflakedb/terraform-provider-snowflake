@@ -23,14 +23,14 @@ func (u *UserResourceParametersAssert) HasAllDefaults() *UserResourceParametersA
 		HasClientResultColumnCaseInsensitive(false).
 		HasClientSessionKeepAlive(false).
 		HasClientSessionKeepAliveHeartbeatFrequency(3600).
-		HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingTimestampLtz).
+		HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingLtz).
 		HasDateInputFormat("AUTO").
 		HasDateOutputFormat("YYYY-MM-DD").
 		HasEnableUnloadPhysicalTypeOptimization(true).
 		HasErrorOnNondeterministicMerge(true).
 		HasErrorOnNondeterministicUpdate(false).
-		HasGeographyOutputFormat(sdk.GeographyOutputFormatGeoJson).
-		HasGeometryOutputFormat(sdk.GeometryOutputFormatGeoJson).
+		HasGeographyOutputFormat(sdk.GeographyOutputFormatGeoJSON).
+		HasGeometryOutputFormat(sdk.GeometryOutputFormatGeoJSON).
 		HasJdbcTreatDecimalAsInt(true).
 		HasJdbcTreatTimestampNtzAsUtc(false).
 		HasJdbcUseSessionTimezone(true).
@@ -54,7 +54,7 @@ func (u *UserResourceParametersAssert) HasAllDefaults() *UserResourceParametersA
 		HasTimestampLtzOutputFormat("").
 		HasTimestampNtzOutputFormat("YYYY-MM-DD HH24:MI:SS.FF3").
 		HasTimestampOutputFormat("YYYY-MM-DD HH24:MI:SS.FF3 TZHTZM").
-		HasTimestampTypeMapping(sdk.TimestampTypeMappingTimestampNtz).
+		HasTimestampTypeMapping(sdk.TimestampTypeMappingNtz).
 		HasTimestampTzOutputFormat("").
 		HasTimezone("America/Los_Angeles").
 		HasTimeInputFormat("AUTO").

@@ -1,6 +1,0 @@
-{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
-{{- if .Hooks.DropSafelyInSdk.Generate -}}
-		DeleteContext: {{ if .PreviewFeature }}PreviewFeatureDeleteContextWrapper(string(previewfeatures.{{ .Name }}Resource), {{ end }}TrackingDeleteWrapper(resources.{{ .Name }}, Delete{{ .Name }}){{ if .PreviewFeature }}){{ end }},
-{{- else -}}
-		DeleteContext: {{ .Prefix }}DeleteExt,
-{{- end -}}

@@ -15,16 +15,6 @@ func (s *CreateShareRequest) WithOrReplace(orReplace bool) *CreateShareRequest {
 	return s
 }
 
-func (s *CreateShareRequest) WithIfNotExists(ifNotExists bool) *CreateShareRequest {
-	s.IfNotExists = &ifNotExists
-	return s
-}
-
-func (s *CreateShareRequest) WithSecureObjectsOnly(secureObjectsOnly bool) *CreateShareRequest {
-	s.SecureObjectsOnly = &secureObjectsOnly
-	return s
-}
-
 func (s *CreateShareRequest) WithComment(comment string) *CreateShareRequest {
 	s.Comment = &comment
 	return s

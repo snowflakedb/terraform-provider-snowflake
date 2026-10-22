@@ -39,7 +39,7 @@ var catalogIntegrationsSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE CATALOG INTEGRATION.",
 					Elem: &schema.Resource{
-						Schema: schemas.DescribeCatalogIntegrationDetailsSchema,
+						Schema: schemas.DescribeCatalogIntegrationAllDetailsSchema,
 					},
 				},
 			},
@@ -75,7 +75,7 @@ func ReadCatalogIntegrations(ctx context.Context, d *schema.ResourceData, meta a
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			catalogIntegrationDetails = []map[string]any{schemas.CatalogIntegrationDetailsToSchema(describeResult)}
+			catalogIntegrationDetails = []map[string]any{schemas.CatalogIntegrationAllDetailsToSchema(describeResult)}
 		}
 		flattenedCatalogIntegrations[i] = map[string]any{
 			resources.ShowOutputAttributeName:     []map[string]any{schemas.CatalogIntegrationToSchema(&catalogIntegration)},

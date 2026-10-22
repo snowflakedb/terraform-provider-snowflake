@@ -15,24 +15,20 @@ type Shares interface {
 	Show(ctx context.Context, request *ShowShareRequest) ([]Share, error)
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Share, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Share, error)
-	Describe(ctx context.Context, id AccountObjectIdentifier) ([]ShareDetails, error)
+	Describe(ctx context.Context, id AccountObjectIdentifier) ([]ShareInfo, error)
 	// DescribeProvider returns the share contents for a provider (outbound) share.
-	DescribeProvider(ctx context.Context, id AccountObjectIdentifier) ([]ShareDetails, error)
+	DescribeProvider(ctx context.Context, id AccountObjectIdentifier) ([]ShareInfo, error)
 	// DescribeConsumer returns the share contents for a consumer (inbound) share.
-	DescribeConsumer(ctx context.Context, id ExternalObjectIdentifier) ([]ShareDetails, error)
-	// ShowTargetAccounts returns all target accounts of an outbound share from SNOWFLAKE.ACCOUNT_USAGE.SHARES, because SHOW SHARES lists at most three of them.
-	ShowTargetAccounts(ctx context.Context, id AccountObjectIdentifier) ([]AccountIdentifier, error)
+	DescribeConsumer(ctx context.Context, id ExternalObjectIdentifier) ([]ShareInfo, error)
 }
 
 // CreateShareOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-share.
 type CreateShareOptions struct {
-	create            bool                    `ddl:"static" sql:"CREATE"`
-	OrReplace         *bool                   `ddl:"keyword" sql:"OR REPLACE"`
-	share             bool                    `ddl:"static" sql:"SHARE"`
-	IfNotExists       *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name              AccountObjectIdentifier `ddl:"identifier"`
-	SecureObjectsOnly *bool                   `ddl:"parameter" sql:"SECURE_OBJECTS_ONLY"`
-	Comment           *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	create    bool                    `ddl:"static" sql:"CREATE"`
+	OrReplace *bool                   `ddl:"keyword" sql:"OR REPLACE"`
+	share     bool                    `ddl:"static" sql:"SHARE"`
+	name      AccountObjectIdentifier `ddl:"identifier"`
+	Comment   *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 // AlterShareOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-share.
@@ -44,7 +40,7 @@ type AlterShareOptions struct {
 	Add       *ShareAdd               `ddl:"keyword" sql:"ADD"`
 	Remove    *ShareRemove            `ddl:"keyword" sql:"REMOVE"`
 	Set       *ShareSet               `ddl:"keyword" sql:"SET"`
-	Unset     *ShareUnset             `ddl:"list,no_parentheses" sql:"UNSET"`
+	Unset     *ShareUnset             `ddl:"keyword" sql:"UNSET"`
 	SetTags   []TagAssociation        `ddl:"keyword" sql:"SET TAG"`
 	UnsetTags []ObjectIdentifier      `ddl:"keyword" sql:"UNSET TAG"`
 }
@@ -84,31 +80,26 @@ type ShowShareOptions struct {
 	Limit      *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
 
-type sharesRow struct {
-	CreatedOn         time.Time `db:"created_on"`
-	Kind              string    `db:"kind"`
-	OwnerAccount      string    `db:"owner_account"`
-	Name              string    `db:"name"`
-	DatabaseName      string    `db:"database_name"`
-	To                string    `db:"to"`
-	Owner             string    `db:"owner"`
-	Comment           string    `db:"comment"`
-	ListingGlobalName string    `db:"listing_global_name"`
-	SecureObjectsOnly string    `db:"secure_objects_only"`
+type shareRow struct {
+	CreatedOn    time.Time `db:"created_on"`
+	Kind         string    `db:"kind"`
+	OwnerAccount string    `db:"owner_account"`
+	Name         string    `db:"name"`
+	DatabaseName string    `db:"database_name"`
+	To           string    `db:"to"`
+	Owner        string    `db:"owner"`
+	Comment      string    `db:"comment"`
 }
 
 type Share struct {
-	CreatedOn         time.Time
-	Kind              ShareKind
-	OwnerAccount      string
-	Name              string
-	DatabaseName      AccountObjectIdentifier
-	To                []AccountIdentifier
-	Owner             string
-	Comment           string
-	ListingGlobalName string
-	SecureObjectsOnly string
-	ToTotal           int
+	CreatedOn    time.Time
+	Kind         ShareKind
+	OwnerAccount string
+	Name         string
+	DatabaseName AccountObjectIdentifier
+	To           []AccountIdentifier
+	Owner        string
+	Comment      string
 }
 
 func (v *Share) ID() AccountObjectIdentifier {
@@ -126,13 +117,13 @@ type DescribeShareOptions struct {
 	name     ObjectIdentifier `ddl:"identifier"`
 }
 
-type shareDescRow struct {
+type shareDetailsRow struct {
 	Kind     string    `db:"kind"`
 	Name     string    `db:"name"`
 	SharedOn time.Time `db:"shared_on"`
 }
 
-type ShareDetails struct {
+type ShareInfo struct {
 	Kind     ObjectType
 	Name     ObjectIdentifier
 	SharedOn time.Time

@@ -4,7 +4,6 @@ package testint
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 	"time"
 
@@ -257,16 +256,10 @@ func TestInt_Warehouses(t *testing.T) {
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
 		assertThatObject(
-			t, objectassert.WarehouseAdaptive(t, id).
+			t, objectassert.Warehouse(t, id).
 				HasName(id.Name()).
 				HasType(sdk.WarehouseTypeAdaptive).
 				HasComment("").
-				HasAutoResume(true).
-				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
-				HasQueryThroughputMultiplier(2),
-		)
-		assertThatObject(
-			t, objectassert.Warehouse(t, id).
 				HasNoSize().
 				HasNoGeneration().
 				HasNoResourceConstraint().
@@ -274,8 +267,11 @@ func TestInt_Warehouses(t *testing.T) {
 				HasNoMinClusterCount().
 				HasNoScalingPolicy().
 				HasNoAutoSuspend().
+				HasAutoResume(true).
 				HasNoEnableQueryAcceleration().
-				HasNoQueryAccelerationMaxScaleFactor(),
+				HasNoQueryAccelerationMaxScaleFactor().
+				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
+				HasQueryThroughputMultiplier(2),
 		)
 		assertThatObject(
 			t, objectparametersassert.WarehouseParameters(t, id).
@@ -298,17 +294,10 @@ func TestInt_Warehouses(t *testing.T) {
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
 		assertThatObject(
-			t, objectassert.WarehouseAdaptive(t, id).
+			t, objectassert.Warehouse(t, id).
 				HasName(id.Name()).
 				HasType(sdk.WarehouseTypeAdaptive).
 				HasComment("test adaptive warehouse").
-				HasAutoResume(true).
-				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
-				HasQueryThroughputMultiplier(22).
-				HasResourceMonitor(resourceMonitor.ID()),
-		)
-		assertThatObject(
-			t, objectassert.Warehouse(t, id).
 				HasNoSize().
 				HasNoGeneration().
 				HasNoResourceConstraint().
@@ -316,8 +305,12 @@ func TestInt_Warehouses(t *testing.T) {
 				HasNoMinClusterCount().
 				HasNoScalingPolicy().
 				HasNoAutoSuspend().
+				HasAutoResume(true).
 				HasNoEnableQueryAcceleration().
-				HasNoQueryAccelerationMaxScaleFactor(),
+				HasNoQueryAccelerationMaxScaleFactor().
+				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
+				HasQueryThroughputMultiplier(22).
+				HasResourceMonitor(resourceMonitor.ID()),
 		)
 		assertThatObject(
 			t, objectparametersassert.WarehouseParameters(t, id).
@@ -416,32 +409,6 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Nil(t, warehouseAfterUnset.QueryThroughputMultiplier)
 	})
 
-	t.Run("alter adaptive: convert a started warehouse through the adaptive request", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithRequest(
-			t, sdk.NewCreateWarehouseRequest(id).
-				WithWarehouseSize(sdk.WarehouseSizeMedium),
-		)
-		t.Cleanup(warehouseCleanup)
-
-		condition := warehouseCondition(warehouse.ID(), func(r *sdk.Warehouse) bool {
-			return r.State == sdk.WarehouseStateStarted && r.Type == sdk.WarehouseTypeStandard
-		})
-		require.Eventually(t, condition, 5*time.Second, time.Second)
-
-		// Path snowflake_warehouse_adaptive takes when adopting a standard warehouse.
-		err := client.Warehouses.AlterAdaptive(ctx, sdk.NewAlterAdaptiveWarehouseRequest(warehouse.ID()).
-			WithSet(*sdk.NewWarehouseAdaptiveSetRequest().WithWarehouseType(sdk.WarehouseTypeAdaptive)))
-		require.NoError(t, err)
-		assert.Zero(t, countSuspendIssued(t, warehouse.ID()), "conversion to ADAPTIVE must not suspend the warehouse")
-
-		assertThatObject(
-			t, objectassert.WarehouseAdaptive(t, warehouse.ID()).
-				HasType(sdk.WarehouseTypeAdaptive).
-				HasState(sdk.WarehouseStateEnabled),
-		)
-	})
-
 	t.Run("alter adaptive: change warehouse type", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithRequest(
@@ -456,24 +423,16 @@ func TestInt_Warehouses(t *testing.T) {
 		})
 		require.Eventually(t, condition, 5*time.Second, time.Second)
 
-		// Standard to adaptive is online; the started warehouse must not be suspended.
+		// Change warehouse type from standard to adaptive
 		err := client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
 			WithSet(*sdk.NewWarehouseSetRequest().WithWarehouseType(sdk.WarehouseTypeAdaptive)))
 		require.NoError(t, err)
-		assert.Zero(t, countSuspendIssued(t, warehouse.ID()), "conversion to ADAPTIVE must not suspend the warehouse")
 
 		assertThatObject(
-			t, objectassert.WarehouseAdaptive(t, warehouse.ID()).
-				HasType(sdk.WarehouseTypeAdaptive).
-				// adaptive warehouses have no suspended/started lifecycle
-				HasState(sdk.WarehouseStateEnabled).
-				HasAutoResume(true).
-				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelLarge).
-				// Snowflake does not guarantee a specific default (SNOW-3687301).
-				HasQueryThroughputMultiplierSet(),
-		)
-		assertThatObject(
 			t, objectassert.Warehouse(t, warehouse.ID()).
+				HasType(sdk.WarehouseTypeAdaptive).
+				// the previously suspended warehouse does not stay suspended - adaptive warehouses have no such state
+				HasState(sdk.WarehouseStateEnabled).
 				HasNoSize().
 				HasNoGeneration().
 				HasNoResourceConstraint().
@@ -481,8 +440,12 @@ func TestInt_Warehouses(t *testing.T) {
 				HasNoMinClusterCount().
 				HasNoScalingPolicy().
 				HasNoAutoSuspend().
+				HasAutoResume(true).
 				HasNoEnableQueryAcceleration().
-				HasNoQueryAccelerationMaxScaleFactor(),
+				HasNoQueryAccelerationMaxScaleFactor().
+				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelLarge).
+				// Snowflake does not guarantee a specific default (SNOW-3687301).
+				HasQueryThroughputMultiplierSet(),
 		)
 
 		// Change warehouse type back from adaptive to standard
@@ -514,7 +477,7 @@ func TestInt_Warehouses(t *testing.T) {
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateAdaptive(t)
 		t.Cleanup(warehouseCleanup)
 
-		assertThatObject(t, objectassert.WarehouseAdaptive(t, warehouse.ID()).HasState(sdk.WarehouseStateEnabled))
+		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).HasState(sdk.WarehouseStateEnabled))
 
 		err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).WithSuspend(true))
 		require.ErrorContains(t, err, "Invalid operation Command not supported on an Adaptive Warehouse.")
@@ -525,7 +488,7 @@ func TestInt_Warehouses(t *testing.T) {
 		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).WithResume(true).WithIfSuspended(true))
 		require.ErrorContains(t, err, "Invalid operation Command not supported on an Adaptive Warehouse.")
 
-		assertThatObject(t, objectassert.WarehouseAdaptive(t, warehouse.ID()).HasState(sdk.WarehouseStateEnabled))
+		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).HasState(sdk.WarehouseStateEnabled))
 	})
 
 	t.Run("alter adaptive: set and unset all adaptive params", func(t *testing.T) {
@@ -535,7 +498,7 @@ func TestInt_Warehouses(t *testing.T) {
 		emptyId := sdk.NewAccountObjectIdentifier("")
 
 		assertThatObject(
-			t, objectassert.WarehouseAdaptive(t, warehouse.ID()).
+			t, objectassert.Warehouse(t, warehouse.ID()).
 				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
 				HasQueryThroughputMultiplier(2).
 				HasResourceMonitor(emptyId),
@@ -546,8 +509,8 @@ func TestInt_Warehouses(t *testing.T) {
 				HasStatementTimeoutInSeconds(172800),
 		)
 
-		err := client.Warehouses.AlterAdaptive(ctx, sdk.NewAlterAdaptiveWarehouseRequest(warehouse.ID()).
-			WithSet(*sdk.NewWarehouseAdaptiveSetRequest().
+		err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithSet(*sdk.NewWarehouseSetRequest().
 				WithMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXSmall).
 				WithQueryThroughputMultiplier(5).
 				WithResourceMonitor(resourceMonitor.ID()).
@@ -556,7 +519,7 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(
-			t, objectassert.WarehouseAdaptive(t, warehouse.ID()).
+			t, objectassert.Warehouse(t, warehouse.ID()).
 				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXSmall).
 				HasQueryThroughputMultiplier(5).
 				HasResourceMonitor(resourceMonitor.ID()),
@@ -567,8 +530,8 @@ func TestInt_Warehouses(t *testing.T) {
 				HasStatementTimeoutInSeconds(200),
 		)
 
-		err = client.Warehouses.AlterAdaptive(ctx, sdk.NewAlterAdaptiveWarehouseRequest(warehouse.ID()).
-			WithUnset(*sdk.NewWarehouseAdaptiveUnsetRequest().
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithUnset(*sdk.NewWarehouseUnsetRequest().
 				WithMaxQueryPerformanceLevel(true).
 				WithQueryThroughputMultiplier(true).
 				WithResourceMonitor(true).
@@ -577,7 +540,7 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(
-			t, objectassert.WarehouseAdaptive(t, warehouse.ID()).
+			t, objectassert.Warehouse(t, warehouse.ID()).
 				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
 				HasQueryThroughputMultiplier(2).
 				HasResourceMonitor(emptyId),
@@ -646,26 +609,18 @@ func TestInt_Warehouses(t *testing.T) {
 			WithSet(*sdk.NewWarehouseSetRequest().WithWarehouseType(sdk.WarehouseTypeSnowparkOptimized)))
 		require.NoError(t, err)
 
-		// Setting the type suspends and resumes the warehouse. Wait until it is started again
-		// so a suspend issued by the unset shows up in query history.
-		condition = warehouseCondition(warehouse.ID(), func(r *sdk.Warehouse) bool {
-			return r.State == sdk.WarehouseStateStarted && r.Type == sdk.WarehouseTypeSnowparkOptimized
-		})
-		require.Eventually(t, condition, 10*time.Second, time.Second)
+		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		assert.Equal(t, sdk.WarehouseTypeSnowparkOptimized, returnedWarehouse.Type)
+		assert.Contains(t, []any{sdk.WarehouseStateStarted, sdk.WarehouseStateResuming}, returnedWarehouse.State)
 
-		suspendsBeforeUnset := countSuspendIssued(t, warehouse.ID())
-		require.Positive(t, suspendsBeforeUnset, "setting the type is expected to suspend the warehouse")
-
-		err = client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
 			WithUnset(*sdk.NewWarehouseUnsetRequest().WithWarehouseType(true)))
 		require.NoError(t, err)
 
-		assert.Equal(t, suspendsBeforeUnset, countSuspendIssued(t, warehouse.ID()), "unsetting the type must not suspend the warehouse")
-
-		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
+		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
 		require.NoError(t, err)
 		assert.Equal(t, sdk.WarehouseTypeStandard, returnedWarehouse.Type)
-		assert.Contains(t, []any{sdk.WarehouseStateStarted, sdk.WarehouseStateResuming}, returnedWarehouse.State)
 	})
 
 	t.Run("alter: set and unset warehouse type with suspended warehouse", func(t *testing.T) {
@@ -1175,7 +1130,7 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
 		assertThatObject(
-			t, objectassert.WarehouseInteractive(t, id).
+			t, objectassert.Warehouse(t, id).
 				HasName(id.Name()).
 				HasType(sdk.WarehouseTypeInteractive).
 				HasComment("").
@@ -1184,17 +1139,14 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 				HasMinClusterCount(1).
 				HasAutoSuspend(86400).
 				HasAutoResume(true).
-				HasTables(),
-		)
-		assertThatObject(
-			t, objectassert.Warehouse(t, id).
 				HasScalingPolicy(sdk.ScalingPolicyStandard).
 				HasEnableQueryAcceleration(false).
 				HasQueryAccelerationMaxScaleFactor(8).
 				HasNoResourceConstraint().
 				HasNoGeneration().
 				HasNoMaxQueryPerformanceLevel().
-				HasNoQueryThroughputMultiplier(),
+				HasNoQueryThroughputMultiplier().
+				HasTables(),
 		)
 		assertThatObject(
 			t, objectparametersassert.WarehouseInteractiveParameters(t, id).
@@ -1227,7 +1179,7 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
 		assertThatObject(
-			t, objectassert.WarehouseInteractive(t, id).
+			t, objectassert.Warehouse(t, id).
 				HasName(id.Name()).
 				HasType(sdk.WarehouseTypeInteractive).
 				HasComment("interactive warehouse").
@@ -1236,17 +1188,14 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 				HasMinClusterCount(1).
 				HasAutoSuspend(86400).
 				HasAutoResume(true).
-				HasTables(table1.ID(), table2.ID()),
-		)
-		assertThatObject(
-			t, objectassert.Warehouse(t, id).
 				HasScalingPolicy(sdk.ScalingPolicyStandard).
 				HasEnableQueryAcceleration(false).
 				HasQueryAccelerationMaxScaleFactor(8).
 				HasNoResourceConstraint().
 				HasNoGeneration().
 				HasNoMaxQueryPerformanceLevel().
-				HasNoQueryThroughputMultiplier(),
+				HasNoQueryThroughputMultiplier().
+				HasTables(table1.ID(), table2.ID()),
 		)
 		assertThatObject(
 			t, objectparametersassert.WarehouseInteractiveParameters(t, id).
@@ -1273,13 +1222,13 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
-		err = client.Warehouses.AlterInteractive(ctx, sdk.NewAlterInteractiveWarehouseRequest(id).WithAddTables([]sdk.SchemaObjectIdentifier{table2.ID()}))
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithAddTables([]sdk.SchemaObjectIdentifier{table2.ID()}))
 		require.NoError(t, err)
-		assertThatObject(t, objectassert.WarehouseInteractive(t, id).HasTables(table1.ID(), table2.ID()))
+		assertThatObject(t, objectassert.Warehouse(t, id).HasTables(table1.ID(), table2.ID()))
 
-		err = client.Warehouses.AlterInteractive(ctx, sdk.NewAlterInteractiveWarehouseRequest(id).WithDropTables([]sdk.SchemaObjectIdentifier{table1.ID()}))
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithDropTables([]sdk.SchemaObjectIdentifier{table1.ID()}))
 		require.NoError(t, err)
-		assertThatObject(t, objectassert.WarehouseInteractive(t, id).HasTables(table2.ID()))
+		assertThatObject(t, objectassert.Warehouse(t, id).HasTables(table2.ID()))
 	})
 
 	t.Run("alter: set and unset fallback warehouse", func(t *testing.T) {
@@ -1291,8 +1240,8 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
-		err = client.Warehouses.AlterInteractive(ctx, sdk.NewAlterInteractiveWarehouseRequest(id).
-			WithSet(*sdk.NewWarehouseInteractiveSetRequest().WithFallbackWarehouse(fallback.ID())))
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).
+			WithSet(*sdk.NewWarehouseSetRequest().WithFallbackWarehouse(fallback.ID())))
 		require.NoError(t, err)
 
 		assertThatObject(
@@ -1300,8 +1249,8 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 				HasFallbackWarehouse(fallback.ID().Name()),
 		)
 
-		err = client.Warehouses.AlterInteractive(ctx, sdk.NewAlterInteractiveWarehouseRequest(id).
-			WithUnset(*sdk.NewWarehouseInteractiveUnsetRequest().WithFallbackWarehouse(true)))
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).
+			WithUnset(*sdk.NewWarehouseUnsetRequest().WithFallbackWarehouse(true)))
 		require.NoError(t, err)
 
 		assertThatObject(
@@ -1328,7 +1277,7 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 			require.NoError(t, err)
 		})
 
-		assertThatObject(t, objectassert.WarehouseInteractive(t, id).HasType(sdk.WarehouseTypeInteractive))
+		assertThatObject(t, objectassert.Warehouse(t, id).HasType(sdk.WarehouseTypeInteractive))
 
 		current, err := client.ContextFunctions.CurrentWarehouse(ctx)
 		require.NoError(t, err)
@@ -1360,7 +1309,7 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 			require.NoError(t, err)
 		})
 
-		assertThatObject(t, objectassert.WarehouseInteractive(t, id).HasType(sdk.WarehouseTypeInteractive))
+		assertThatObject(t, objectassert.Warehouse(t, id).HasType(sdk.WarehouseTypeInteractive))
 
 		current, err = client.ContextFunctions.CurrentWarehouse(ctx)
 		require.NoError(t, err)
@@ -1377,23 +1326,6 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 			WithSet(*sdk.NewWarehouseSetRequest().WithWarehouseType(sdk.WarehouseTypeAdaptive)))
 		require.ErrorContains(t, err, "invalid property 'WAREHOUSE_TYPE cannot be changed on interactive warehouses' for 'WAREHOUSE'")
 
-		assertThatObject(t, objectassert.WarehouseInteractive(t, id).HasType(sdk.WarehouseTypeInteractive))
+		assertThatObject(t, objectassert.Warehouse(t, id).HasType(sdk.WarehouseTypeInteractive))
 	})
-}
-
-// warehouseQueryHistoryLimit is large enough to keep the statements of a single test in the window
-// even when other integration tests run in parallel.
-const warehouseQueryHistoryLimit = 1000
-
-// countSuspendIssued returns how many suspensions of the given warehouse are in the recent query history.
-func countSuspendIssued(t *testing.T, id sdk.AccountObjectIdentifier) int {
-	t.Helper()
-	suspendSQL := fmt.Sprintf("ALTER WAREHOUSE %s SUSPEND", id.FullyQualifiedName())
-	count := 0
-	for _, query := range testClientHelper().InformationSchema.GetQueryHistory(t, warehouseQueryHistoryLimit) {
-		if strings.Contains(query.QueryText, suspendSQL) {
-			count++
-		}
-	}
-	return count
 }

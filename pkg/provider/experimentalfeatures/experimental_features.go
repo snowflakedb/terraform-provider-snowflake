@@ -21,7 +21,6 @@ const (
 	ParametersReducedOutput              ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
 	TagsAllowEmptyAllowedValues          ExperimentalFeature = "TAGS_ALLOW_EMPTY_ALLOWED_VALUES"
 	ImportBooleanDefault                 ExperimentalFeature = "IMPORT_BOOLEAN_DEFAULT"
-	ImportPermissiveMode                 ExperimentalFeature = "IMPORT_PERMISSIVE_MODE"
 	GrantsSafeDestroy                    ExperimentalFeature = "GRANTS_SAFE_DESTROY"
 	TagAssociationSafeDestroy            ExperimentalFeature = "TAG_ASSOCIATION_SAFE_DESTROY"
 	GrantAccountRoleSafePublicRole       ExperimentalFeature = "GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE"
@@ -34,8 +33,6 @@ const (
 	AuthenticatorExplicitOnly            ExperimentalFeature = "AUTHENTICATOR_EXPLICIT_ONLY"
 	ProviderConfigurationAccountFallback ExperimentalFeature = "PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK"
 	AccountParameterCatalogWritePath     ExperimentalFeature = "ACCOUNT_PARAMETER_CATALOG_WRITE_PATH"
-	ObjectParameterParseOnSet            ExperimentalFeature = "OBJECT_PARAMETER_PARSE_ON_SET"
-	WriteOnlyAttributes                  ExperimentalFeature = "WRITE_ONLY_ATTRIBUTES"
 )
 
 type experimentalFeatureState string
@@ -153,19 +150,12 @@ var allExperiments = []Experiment{
 		"When enabled, the three possible states in Snowflake for allowed values will be supported: `nil` (any value is allowed; whenever `allowed_values` are empty), `empty` (no value is allowed; handled by the `no_allowed_values` field), and `set` (all values defined in `allowed_values` are allowed).",
 		"Otherwise, the `no_allowed_values` field will be ignored (explicit changes will cause updates, but without any effect) and the `allowed_values` field will follow the old behavior: `nil` (any value is allowed; only available whenever tag resource is created without `allowed_values`), `empty` (no value is allowed; always set when updating from filled `allowed_values` set to empty one or completely removed from config), `set` (all values defined in `allowed_values` are allowed).",
 	),
-	NewOptInExperiment(
+	NewEnabledByDefaultExperiment(
 		ImportBooleanDefault,
-		fmt.Sprintf("This experiment is deprecated in favor of `%s`. Resources are migrated to `%s` gradually; when all of them are migrated, this experiment will be discontinued.", ImportPermissiveMode, ImportPermissiveMode),
+		[]string{"v2.23.0", "v2.24.0"},
 		"Changes import behavior for boolean fields using the special `\"default\"` value.",
 		"When enabled, boolean fields using the special `\"default\"` value are set to `\"default\"` during import instead of the actual Snowflake value (e.g., `\"false\"`). This prevents unavoidable diffs on every plan after import.",
-		"Note: this is supported on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`), stream resources (`snowflake_stream_on_table` and `snowflake_stream_on_view`), and storage integration resources (`snowflake_storage_integration_aws` and `snowflake_storage_integration_azure`).",
-	),
-	NewOptInExperiment(
-		ImportPermissiveMode,
-		"Switches imports to the permissive mode.",
-		"By default, imports use the enforcing mode: the plan after import shows a change for every attribute that the configuration omits but that has a value in Snowflake. Applying that plan resets these attributes to their Snowflake defaults.",
-		"When enabled, the provider accepts the values the object already has for the attributes that the configuration omits, so the plan after import shows no change for them. This applies only to the import itself: external changes made after the import are detected as usual.",
-		"Note: this is currently supported only on the `snowflake_authentication_policy`, `snowflake_catalog_integration_aws_glue`, `snowflake_catalog_integration_iceberg_rest`, `snowflake_catalog_integration_object_storage`, `snowflake_catalog_integration_open_catalog`, `snowflake_compute_pool`, `snowflake_warehouse`, `snowflake_warehouse_adaptive`, and `snowflake_warehouse_interactive` resources.",
+		"Note: this is supported on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`) and stream resources (`snowflake_stream_on_table` and `snowflake_stream_on_view`).",
 	),
 	NewEnabledByDefaultExperiment(
 		GrantsSafeDestroy,
@@ -235,14 +225,6 @@ var allExperiments = []Experiment{
 		"When enabled, the parameter is properly unset, allowing the inherited value from the higher hierarchy level to take effect.",
 	),
 	NewOptInExperiment(
-		ObjectParameterParseOnSet,
-		"Changes how `snowflake_object_parameter` handles the `value` field for covered parameters.",
-		"Without this experiment, `value` is sent as a raw SQL token. You supply any quoting, and a value that does not match the parameter is not checked by the provider.",
-		"With this experiment, covered parameters are parsed with the same rules as the typed SDK fields. A value that does not match the parameter fails in the provider. String values are quoted by the provider, so a configuration such as `DEFAULT_DDL_COLLATION = \"en-ci-upper\"` is stored as written. Identifier parameters stay a bare name in configuration. Numeric and boolean values need no quoting either way.",
-		"Covered today: account-level (`on_account = true`) parameters and Database, Schema, Warehouse, User, Task, Service, Hybrid Table, and Iceberg Table. Account-level parameters already parse values this way. A parameter or object type that is not covered yet keeps the previous behavior, including Function and Procedure, because this resource does not capture argument types. An enum value the catalog does not recognize is logged and also keeps the previous behavior.",
-		"See the migration guide for a detailed view: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#opt-in-experiment-parse-snowflake_object_parameter-values-on-set.",
-	),
-	NewOptInExperiment(
 		AuthenticatorExplicitOnly,
 		"Removes implicit authenticator derivation from other provider configuration fields.",
 		"Without this experiment, the provider automatically sets the authenticator to `OAUTH` when the `token` or `token_accessor` field is configured, even if `authenticator` is not explicitly set. This implicit behavior can be confusing and will be removed in v3.",
@@ -259,12 +241,6 @@ var allExperiments = []Experiment{
 		"Changes how `snowflake_account_parameter` builds the SQL it sends for the `value` field of string-typed and identifier-typed parameters.",
 		"String-typed parameter values no longer need to be manually wrapped in single quotes within `value` — quoting is now handled internally. Identifier-typed parameters (e.g. referencing a network policy by name) require no `value` change, but are now sent as a quoted identifier instead of a single-quoted string literal.",
 		"This experiment is also the first step toward forward-compatible parameter support (new Snowflake parameters usable without a provider upgrade); for now it only changes how existing parameters are written. See the migration guide for a detailed, before/after view of the configuration changes: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#opt-in-experiment-internal-quoting-for-snowflake_account_parameter.",
-	),
-	NewOptInExperiment(
-		WriteOnlyAttributes,
-		"Enables write-only attributes. Their values are never saved in the Terraform plan or state, so they can be set from an ephemeral resource. They require Terraform 1.11 or later.",
-		"Currently supported by: `rsa_public_key_wo` and `rsa_public_key_2_wo`, with their `rsa_public_key_wo_version` and `rsa_public_key_2_wo_version` version counters, on `snowflake_user`, `snowflake_service_user`, and `snowflake_legacy_service_user`.",
-		"Without this experiment, using a write-only attribute that is behind it results in an error.",
 	),
 }
 
@@ -300,7 +276,9 @@ var (
 	EnabledByDefaultExperiments   = collections.Filter(allExperiments, filterByStateFuncProvider(ExperimentalFeatureStateEnabledByDefault))
 	PromotedExperiments           = collections.Filter(allExperiments, filterByStateFuncProvider(ExperimentalFeatureStatePromoted))
 	DiscontinuedExperiments       = collections.Filter(allExperiments, filterByStateFuncProvider(ExperimentalFeatureStateDiscontinued))
-	acceptedInDisabledExperiments = allExperiments
+	acceptedInDisabledExperiments = collections.Filter(allExperiments, func(e Experiment) bool {
+		return e.state != ExperimentalFeatureStateOptIn
+	})
 )
 
 var (

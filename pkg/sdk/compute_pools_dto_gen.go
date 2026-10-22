@@ -22,7 +22,7 @@ type CreateComputePoolRequest struct {
 	AutoSuspendSecs        *int
 	Tag                    []TagAssociation
 	Comment                *string
-	BackupInstanceFamilies []ComputePoolInstanceFamilyListItem
+	BackupInstanceFamilies []ComputePoolBackupInstanceFamilyListItem
 }
 
 type AlterComputePoolRequest struct {
@@ -42,7 +42,7 @@ type ComputePoolSetRequest struct {
 	MaxNodes               *int
 	AutoResume             *bool
 	AutoSuspendSecs        *int
-	BackupInstanceFamilies []ComputePoolInstanceFamilyListItem
+	BackupInstanceFamilies []ComputePoolBackupInstanceFamilyListItem
 	Comment                *string
 }
 

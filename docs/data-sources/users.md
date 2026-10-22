@@ -177,35 +177,28 @@ Read-Only:
 Read-Only:
 
 - `abort_detached_query` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--abort_detached_query))
-- `active_python_profiler` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--active_python_profiler))
 - `autocommit` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--autocommit))
 - `binary_input_format` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--binary_input_format))
 - `binary_output_format` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--binary_output_format))
-- `client_enable_log_info_statement_parameters` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--client_enable_log_info_statement_parameters))
 - `client_memory_limit` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--client_memory_limit))
 - `client_metadata_request_use_connection_ctx` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--client_metadata_request_use_connection_ctx))
-- `client_metadata_use_session_database` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--client_metadata_use_session_database))
 - `client_prefetch_threads` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--client_prefetch_threads))
 - `client_result_chunk_size` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--client_result_chunk_size))
 - `client_result_column_case_insensitive` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--client_result_column_case_insensitive))
 - `client_session_keep_alive` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--client_session_keep_alive))
 - `client_session_keep_alive_heartbeat_frequency` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--client_session_keep_alive_heartbeat_frequency))
 - `client_timestamp_type_mapping` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--client_timestamp_type_mapping))
-- `csv_timestamp_format` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--csv_timestamp_format))
 - `date_input_format` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--date_input_format))
 - `date_output_format` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--date_output_format))
-- `enable_get_ddl_use_data_type_alias` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--enable_get_ddl_use_data_type_alias))
 - `enable_unload_physical_type_optimization` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--enable_unload_physical_type_optimization))
 - `enable_unredacted_query_syntax_error` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--enable_unredacted_query_syntax_error))
 - `error_on_nondeterministic_merge` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--error_on_nondeterministic_merge))
 - `error_on_nondeterministic_update` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--error_on_nondeterministic_update))
 - `geography_output_format` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--geography_output_format))
 - `geometry_output_format` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--geometry_output_format))
-- `hybrid_table_lock_timeout` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--hybrid_table_lock_timeout))
 - `jdbc_treat_decimal_as_int` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--jdbc_treat_decimal_as_int))
 - `jdbc_treat_timestamp_ntz_as_utc` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--jdbc_treat_timestamp_ntz_as_utc))
 - `jdbc_use_session_timezone` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--jdbc_use_session_timezone))
-- `js_treat_integer_as_bigint` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--js_treat_integer_as_bigint))
 - `json_indent` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--json_indent))
 - `lock_timeout` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--lock_timeout))
 - `log_event_level` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--log_event_level))
@@ -215,8 +208,6 @@ Read-Only:
 - `noorder_sequence_as_default` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--noorder_sequence_as_default))
 - `odbc_treat_decimal_as_int` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--odbc_treat_decimal_as_int))
 - `prevent_unload_to_internal_stages` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--prevent_unload_to_internal_stages))
-- `python_profiler_modules` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--python_profiler_modules))
-- `python_profiler_target_stage` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--python_profiler_target_stage))
 - `query_tag` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--query_tag))
 - `quoted_identifiers_ignore_case` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--quoted_identifiers_ignore_case))
 - `rows_per_resultset` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--rows_per_resultset))
@@ -247,18 +238,6 @@ Read-Only:
 
 <a id="nestedobjatt--users--parameters--abort_detached_query"></a>
 ### Nested Schema for `users.parameters.abort_detached_query`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--users--parameters--active_python_profiler"></a>
-### Nested Schema for `users.parameters.active_python_profiler`
 
 Read-Only:
 
@@ -305,18 +284,6 @@ Read-Only:
 - `value` (String)
 
 
-<a id="nestedobjatt--users--parameters--client_enable_log_info_statement_parameters"></a>
-### Nested Schema for `users.parameters.client_enable_log_info_statement_parameters`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
 <a id="nestedobjatt--users--parameters--client_memory_limit"></a>
 ### Nested Schema for `users.parameters.client_memory_limit`
 
@@ -331,18 +298,6 @@ Read-Only:
 
 <a id="nestedobjatt--users--parameters--client_metadata_request_use_connection_ctx"></a>
 ### Nested Schema for `users.parameters.client_metadata_request_use_connection_ctx`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--users--parameters--client_metadata_use_session_database"></a>
-### Nested Schema for `users.parameters.client_metadata_use_session_database`
 
 Read-Only:
 
@@ -425,18 +380,6 @@ Read-Only:
 - `value` (String)
 
 
-<a id="nestedobjatt--users--parameters--csv_timestamp_format"></a>
-### Nested Schema for `users.parameters.csv_timestamp_format`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
 <a id="nestedobjatt--users--parameters--date_input_format"></a>
 ### Nested Schema for `users.parameters.date_input_format`
 
@@ -451,18 +394,6 @@ Read-Only:
 
 <a id="nestedobjatt--users--parameters--date_output_format"></a>
 ### Nested Schema for `users.parameters.date_output_format`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--users--parameters--enable_get_ddl_use_data_type_alias"></a>
-### Nested Schema for `users.parameters.enable_get_ddl_use_data_type_alias`
 
 Read-Only:
 
@@ -545,18 +476,6 @@ Read-Only:
 - `value` (String)
 
 
-<a id="nestedobjatt--users--parameters--hybrid_table_lock_timeout"></a>
-### Nested Schema for `users.parameters.hybrid_table_lock_timeout`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
 <a id="nestedobjatt--users--parameters--jdbc_treat_decimal_as_int"></a>
 ### Nested Schema for `users.parameters.jdbc_treat_decimal_as_int`
 
@@ -583,18 +502,6 @@ Read-Only:
 
 <a id="nestedobjatt--users--parameters--jdbc_use_session_timezone"></a>
 ### Nested Schema for `users.parameters.jdbc_use_session_timezone`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--users--parameters--js_treat_integer_as_bigint"></a>
-### Nested Schema for `users.parameters.js_treat_integer_as_bigint`
 
 Read-Only:
 
@@ -703,30 +610,6 @@ Read-Only:
 
 <a id="nestedobjatt--users--parameters--prevent_unload_to_internal_stages"></a>
 ### Nested Schema for `users.parameters.prevent_unload_to_internal_stages`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--users--parameters--python_profiler_modules"></a>
-### Nested Schema for `users.parameters.python_profiler_modules`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--users--parameters--python_profiler_target_stage"></a>
-### Nested Schema for `users.parameters.python_profiler_target_stage`
 
 Read-Only:
 

@@ -3,6 +3,8 @@
 package main
 
 import (
+	resourceassertgen "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert/gen"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model/gen"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
@@ -18,16 +20,15 @@ func main() {
 			WithImport("encoding/json").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config").
-			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk").
 			WithNamedImport("tfconfig", "github.com/hashicorp/terraform-plugin-testing/config"),
-		gen.ModelBuilderModels,
-		gen.WithPreamble,
+		resourceassertgen.GetResourceSchemaDetails,
+		gen.ModelFromResourceSchemaDetails,
 		getFilename,
 		gen.AllTemplates,
 	).
 		RunAndHandleOsReturn()
 }
 
-func getFilename(_ gen.ResourceConfigBuilderModel, model gen.ResourceConfigBuilderModel) string {
+func getFilename(_ genhelpers.ResourceSchemaDetails, model gen.ResourceConfigBuilderModel) string {
 	return genhelpers.ToSnakeCase(model.Name) + "_model" + "_gen.go"
 }

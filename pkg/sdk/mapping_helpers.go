@@ -101,13 +101,6 @@ func mapNullInt(intField **int, sqlValue sql.NullInt64) {
 	}
 }
 
-func mapNullInt64(intField **int64, sqlValue sql.NullInt64) {
-	if sqlValue.Valid {
-		v := sqlValue.Int64
-		*intField = &v
-	}
-}
-
 func mapNullBool(boolField **bool, sqlValue sql.NullBool) {
 	if sqlValue.Valid {
 		*boolField = &sqlValue.Bool

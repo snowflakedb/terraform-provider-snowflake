@@ -4,8 +4,6 @@
 - [snowflake_account_password_policy_attachment](./docs/resources/account_password_policy_attachment)
 - [snowflake_alert](./docs/resources/alert)
 - [snowflake_api_integration](./docs/resources/api_integration)
-- [snowflake_backup_policy](./docs/resources/backup_policy)
-- [snowflake_code_bundle](./docs/resources/code_bundle)
 - [snowflake_cortex_search_service](./docs/resources/cortex_search_service)
 - [snowflake_dynamic_table](./docs/resources/dynamic_table)
 - [snowflake_email_notification_integration](./docs/resources/email_notification_integration)

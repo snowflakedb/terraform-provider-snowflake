@@ -16,20 +16,21 @@ var (
 )
 
 const (
-	case_Sessions_validation_Alter_opts_ExactlyOneValueSet_NoneSet                      testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_Sessions_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet               testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Sessions_validation_Alter_opts_Unset_SessionParametersUnset_AtLeastOneValueSet testCaseName = "validation_Alter_opts_Unset_SessionParametersUnset_AtLeastOneValueSet"
-	case_Sessions_sql_Alter_Set                                                         testCaseName = "sql_Alter_Set"
-	case_Sessions_sql_Alter_Unset                                                       testCaseName = "sql_Alter_Unset"
-	case_Sessions_validation_UseWarehouse_name_ValidIdentifier                          testCaseName = "validation_UseWarehouse_name_ValidIdentifier"
-	case_Sessions_sql_UseWarehouse_basic                                                testCaseName = "sql_UseWarehouse_basic"
-	case_Sessions_validation_UseDatabase_name_ValidIdentifier                           testCaseName = "validation_UseDatabase_name_ValidIdentifier"
-	case_Sessions_sql_UseDatabase_basic                                                 testCaseName = "sql_UseDatabase_basic"
-	case_Sessions_validation_UseSchema_name_ValidIdentifier                             testCaseName = "validation_UseSchema_name_ValidIdentifier"
-	case_Sessions_sql_UseSchema_basic                                                   testCaseName = "sql_UseSchema_basic"
-	case_Sessions_validation_UseRole_name_ValidIdentifier                               testCaseName = "validation_UseRole_name_ValidIdentifier"
-	case_Sessions_sql_UseRole_basic                                                     testCaseName = "sql_UseRole_basic"
-	case_Sessions_sql_UseSecondaryRoles_basic                                           testCaseName = "sql_UseSecondaryRoles_basic"
+	case_Sessions_validation_Alter_opts_ExactlyOneValueSet_NoneSet            testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Sessions_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet     testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Sessions_validation_Alter_Set_SessionParameters_ValidateValue        testCaseName = "validation_Alter_Set_SessionParameters_ValidateValue"
+	case_Sessions_validation_Alter_Unset_SessionParametersUnset_ValidateValue testCaseName = "validation_Alter_Unset_SessionParametersUnset_ValidateValue"
+	case_Sessions_sql_Alter_Set                                               testCaseName = "sql_Alter_Set"
+	case_Sessions_sql_Alter_Unset                                             testCaseName = "sql_Alter_Unset"
+	case_Sessions_validation_UseWarehouse_name_ValidIdentifier                testCaseName = "validation_UseWarehouse_name_ValidIdentifier"
+	case_Sessions_sql_UseWarehouse_basic                                      testCaseName = "sql_UseWarehouse_basic"
+	case_Sessions_validation_UseDatabase_name_ValidIdentifier                 testCaseName = "validation_UseDatabase_name_ValidIdentifier"
+	case_Sessions_sql_UseDatabase_basic                                       testCaseName = "sql_UseDatabase_basic"
+	case_Sessions_validation_UseSchema_name_ValidIdentifier                   testCaseName = "validation_UseSchema_name_ValidIdentifier"
+	case_Sessions_sql_UseSchema_basic                                         testCaseName = "sql_UseSchema_basic"
+	case_Sessions_validation_UseRole_name_ValidIdentifier                     testCaseName = "validation_UseRole_name_ValidIdentifier"
+	case_Sessions_sql_UseRole_basic                                           testCaseName = "sql_UseRole_basic"
+	case_Sessions_sql_UseSecondaryRoles_basic                                 testCaseName = "sql_UseSecondaryRoles_basic"
 )
 
 type SessionsTestsContext struct {
@@ -66,77 +67,10 @@ var sessionsTests = SessionsTestsContext{
 				},
 			},
 			validationCase[*AlterSessionOptions]{
-				Name:        case_Sessions_validation_Alter_opts_Unset_SessionParametersUnset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterSessionOptions.Unset.SessionParametersUnset", "AbortDetachedQuery", "ActivePythonProfiler", "Autocommit", "BinaryInputFormat", "BinaryOutputFormat", "ClientEnableLogInfoStatementParameters", "ClientMemoryLimit", "ClientMetadataRequestUseConnectionCtx", "ClientMetadataUseSessionDatabase", "ClientPrefetchThreads", "ClientResultChunkSize", "ClientResultColumnCaseInsensitive", "ClientSessionKeepAlive", "ClientSessionKeepAliveHeartbeatFrequency", "ClientTimestampTypeMapping", "CsvTimestampFormat", "DateInputFormat", "DateOutputFormat", "EnableGetDdlUseDataTypeAlias", "EnableUnloadPhysicalTypeOptimization", "ErrorOnNondeterministicMerge", "ErrorOnNondeterministicUpdate", "GeographyOutputFormat", "GeometryOutputFormat", "HybridTableLockTimeout", "JdbcTreatDecimalAsInt", "JdbcTreatTimestampNtzAsUtc", "JdbcUseSessionTimezone", "JsTreatIntegerAsBigint", "JsonIndent", "LockTimeout", "LogEventLevel", "LogLevel", "MultiStatementCount", "NoorderSequenceAsDefault", "OdbcTreatDecimalAsInt", "PythonProfilerModules", "PythonProfilerTargetStage", "QueryTag", "QuotedIdentifiersIgnoreCase", "RowsPerResultset", "S3StageVpceDnsName", "SearchPath", "SimulatedDataSharingConsumer", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "StrictJsonOutput", "TimeInputFormat", "TimeOutputFormat", "TimestampDayIsAlways24H", "TimestampInputFormat", "TimestampLtzOutputFormat", "TimestampNtzOutputFormat", "TimestampOutputFormat", "TimestampTypeMapping", "TimestampTzOutputFormat", "Timezone", "TraceLevel", "TransactionAbortOnError", "TransactionDefaultIsolationLevel", "TwoDigitCenturyStart", "UnsupportedDdlAction", "UseCachedResult", "WeekOfYearPolicy", "WeekStart"),
-				DefaultModify: func(opts *AlterSessionOptions) {
-					opts.Unset = &SessionUnset{}
-					opts.Unset.SessionParametersUnset = &SessionParametersUnset{}
-					opts.Unset.SessionParametersUnset.AbortDetachedQuery = nil
-					opts.Unset.SessionParametersUnset.ActivePythonProfiler = nil
-					opts.Unset.SessionParametersUnset.Autocommit = nil
-					opts.Unset.SessionParametersUnset.BinaryInputFormat = nil
-					opts.Unset.SessionParametersUnset.BinaryOutputFormat = nil
-					opts.Unset.SessionParametersUnset.ClientEnableLogInfoStatementParameters = nil
-					opts.Unset.SessionParametersUnset.ClientMemoryLimit = nil
-					opts.Unset.SessionParametersUnset.ClientMetadataRequestUseConnectionCtx = nil
-					opts.Unset.SessionParametersUnset.ClientMetadataUseSessionDatabase = nil
-					opts.Unset.SessionParametersUnset.ClientPrefetchThreads = nil
-					opts.Unset.SessionParametersUnset.ClientResultChunkSize = nil
-					opts.Unset.SessionParametersUnset.ClientResultColumnCaseInsensitive = nil
-					opts.Unset.SessionParametersUnset.ClientSessionKeepAlive = nil
-					opts.Unset.SessionParametersUnset.ClientSessionKeepAliveHeartbeatFrequency = nil
-					opts.Unset.SessionParametersUnset.ClientTimestampTypeMapping = nil
-					opts.Unset.SessionParametersUnset.CsvTimestampFormat = nil
-					opts.Unset.SessionParametersUnset.DateInputFormat = nil
-					opts.Unset.SessionParametersUnset.DateOutputFormat = nil
-					opts.Unset.SessionParametersUnset.EnableGetDdlUseDataTypeAlias = nil
-					opts.Unset.SessionParametersUnset.EnableUnloadPhysicalTypeOptimization = nil
-					opts.Unset.SessionParametersUnset.ErrorOnNondeterministicMerge = nil
-					opts.Unset.SessionParametersUnset.ErrorOnNondeterministicUpdate = nil
-					opts.Unset.SessionParametersUnset.GeographyOutputFormat = nil
-					opts.Unset.SessionParametersUnset.GeometryOutputFormat = nil
-					opts.Unset.SessionParametersUnset.HybridTableLockTimeout = nil
-					opts.Unset.SessionParametersUnset.JdbcTreatDecimalAsInt = nil
-					opts.Unset.SessionParametersUnset.JdbcTreatTimestampNtzAsUtc = nil
-					opts.Unset.SessionParametersUnset.JdbcUseSessionTimezone = nil
-					opts.Unset.SessionParametersUnset.JsTreatIntegerAsBigint = nil
-					opts.Unset.SessionParametersUnset.JsonIndent = nil
-					opts.Unset.SessionParametersUnset.LockTimeout = nil
-					opts.Unset.SessionParametersUnset.LogEventLevel = nil
-					opts.Unset.SessionParametersUnset.LogLevel = nil
-					opts.Unset.SessionParametersUnset.MultiStatementCount = nil
-					opts.Unset.SessionParametersUnset.NoorderSequenceAsDefault = nil
-					opts.Unset.SessionParametersUnset.OdbcTreatDecimalAsInt = nil
-					opts.Unset.SessionParametersUnset.PythonProfilerModules = nil
-					opts.Unset.SessionParametersUnset.PythonProfilerTargetStage = nil
-					opts.Unset.SessionParametersUnset.QueryTag = nil
-					opts.Unset.SessionParametersUnset.QuotedIdentifiersIgnoreCase = nil
-					opts.Unset.SessionParametersUnset.RowsPerResultset = nil
-					opts.Unset.SessionParametersUnset.S3StageVpceDnsName = nil
-					opts.Unset.SessionParametersUnset.SearchPath = nil
-					opts.Unset.SessionParametersUnset.SimulatedDataSharingConsumer = nil
-					opts.Unset.SessionParametersUnset.StatementQueuedTimeoutInSeconds = nil
-					opts.Unset.SessionParametersUnset.StatementTimeoutInSeconds = nil
-					opts.Unset.SessionParametersUnset.StrictJsonOutput = nil
-					opts.Unset.SessionParametersUnset.TimeInputFormat = nil
-					opts.Unset.SessionParametersUnset.TimeOutputFormat = nil
-					opts.Unset.SessionParametersUnset.TimestampDayIsAlways24H = nil
-					opts.Unset.SessionParametersUnset.TimestampInputFormat = nil
-					opts.Unset.SessionParametersUnset.TimestampLtzOutputFormat = nil
-					opts.Unset.SessionParametersUnset.TimestampNtzOutputFormat = nil
-					opts.Unset.SessionParametersUnset.TimestampOutputFormat = nil
-					opts.Unset.SessionParametersUnset.TimestampTypeMapping = nil
-					opts.Unset.SessionParametersUnset.TimestampTzOutputFormat = nil
-					opts.Unset.SessionParametersUnset.Timezone = nil
-					opts.Unset.SessionParametersUnset.TraceLevel = nil
-					opts.Unset.SessionParametersUnset.TransactionAbortOnError = nil
-					opts.Unset.SessionParametersUnset.TransactionDefaultIsolationLevel = nil
-					opts.Unset.SessionParametersUnset.TwoDigitCenturyStart = nil
-					opts.Unset.SessionParametersUnset.UnsupportedDdlAction = nil
-					opts.Unset.SessionParametersUnset.UseCachedResult = nil
-					opts.Unset.SessionParametersUnset.WeekOfYearPolicy = nil
-					opts.Unset.SessionParametersUnset.WeekStart = nil
-				},
+				Name: case_Sessions_validation_Alter_Set_SessionParameters_ValidateValue,
+			},
+			validationCase[*AlterSessionOptions]{
+				Name: case_Sessions_validation_Alter_Unset_SessionParametersUnset_ValidateValue,
 			},
 		).
 		withSqlCases(

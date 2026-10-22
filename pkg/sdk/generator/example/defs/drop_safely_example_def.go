@@ -41,27 +41,3 @@ var DropSafelyForceExampleDef = g.NewInterface(
 			WithValidation(g.ValidIdentifier, "name"),
 		g.WithDropSafelyForce(),
 	)
-
-// DropSafelySuppressedExampleDef demonstrates DropOperation with WithDropSafelySuppressed.
-// No DropSafely is generated; the one declared with WithCustomInterfaceMethod is implemented in the _ext.go file.
-var DropSafelySuppressedExampleDef = g.NewInterface(
-	"DropSafelySuppressedExamples",
-	"DropSafelySuppressedExample",
-	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
-).WithAllowedGenerationParts(g.PartDefault, g.PartImpl, g.PartDto, g.PartDtoBuilders, g.PartValidations).
-	DropOperation(
-		"https://example.com",
-		g.NewQueryStruct("DropDropSafelySuppressedExample").
-			Drop().
-			SQL("WHATEVER").
-			Name().
-			OptionalSQL("CASCADE").
-			WithValidation(g.ValidIdentifier, "name"),
-		g.WithDropSafelySuppressed(),
-	).
-	WithCustomInterfaceMethod(
-		"DropSafely",
-		"",
-		[]*g.MethodParameter{g.NewMethodParameter("request", "*DropDropSafelySuppressedExampleRequest")},
-		"error",
-	)

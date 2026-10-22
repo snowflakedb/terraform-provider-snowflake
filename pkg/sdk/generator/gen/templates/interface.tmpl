@@ -15,11 +15,6 @@ type {{ .Name }} interface {
 		{{- else if eq .Name "ShowByID" }}
 			{{ .Name }}(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.ShowObjectName }}, error)
 			{{ .Name }}Safely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.ShowObjectName }}, error)
-			{{- $idKind := .ObjectInterface.IdentifierKind }}
-			{{- range .ObjectInterface.ShowByIDProjections }}
-			ShowByID{{ .Suffix }}(ctx context.Context, id {{ $idKind }}) (*{{ .Target }}, error)
-			ShowByIDSafely{{ .Suffix }}(ctx context.Context, id {{ $idKind }}) (*{{ .Target }}, error)
-			{{- end }}
 		{{- else if and (eq .Name "Describe") .DescribeMapping }}
 			{{- if .DescribeKind }}
 				{{- if eq (describe_mapping_deref .DescribeKind) "single_value" }}
@@ -30,9 +25,7 @@ type {{ .Name }} interface {
 			{{- end }}
 		{{- else if eq .Name "Drop" }}
 			Drop(ctx context.Context, request *{{ .OptsField.DtoDecl }}) error
-			{{- if not .DropSafelySuppressed }}
 			DropSafely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) error
-			{{- end }}
 		{{- else if .InstanceMethodMapping }}
 			{{- if eq (instance_method_kind_deref .InstanceMethodKind) "slice" }}
 				{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .InstanceMethodMapping.To.Name }}, error)

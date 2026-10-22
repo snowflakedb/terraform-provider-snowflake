@@ -208,13 +208,3 @@ func (r *AlterEventTableRequest) toOpts() *AlterEventTableOptions {
 	}
 	return opts
 }
-
-func (v *eventTables) DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*EventTableDetails, error) {
-	details, err := v.Describe(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	details.DatabaseName = id.DatabaseName()
-	details.SchemaName = id.SchemaName()
-	return details, nil
-}

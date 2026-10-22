@@ -26,7 +26,7 @@ func (c *CurrentOrganizationAccountModel) WithAllParametersSetToPredefinedValues
 		WithClientResultColumnCaseInsensitive(true).
 		WithClientSessionKeepAlive(true).
 		WithClientSessionKeepAliveHeartbeatFrequency(3599).
-		WithClientTimestampTypeMapping(string(sdk.ClientTimestampTypeMappingTimestampNtz)).
+		WithClientTimestampTypeMapping(string(sdk.ClientTimestampTypeMappingNtz)).
 		WithCortexEnabledCrossRegion("ANY_REGION").
 		WithCsvTimestampFormat("YYYY-MM-DD").
 		WithDataMetricSchedule("60 MINUTES").
@@ -66,8 +66,8 @@ func (c *CurrentOrganizationAccountModel) WithAllParametersSetToPredefinedValues
 		WithEventTable(eventTableId.FullyQualifiedName()).
 		WithExternalOauthAddPrivilegedRolesToBlockedList(false).
 		WithExternalVolume(externalVolumeId.Name()).
-		WithGeographyOutputFormat(string(sdk.GeographyOutputFormatWkt)).
-		WithGeometryOutputFormat(string(sdk.GeometryOutputFormatWkt)).
+		WithGeographyOutputFormat(string(sdk.GeographyOutputFormatWKT)).
+		WithGeometryOutputFormat(string(sdk.GeometryOutputFormatWKT)).
 		WithHybridTableLockTimeout(3599).
 		WithIcebergVersionDefault(2).
 		WithInitialReplicationSizeLimitInTb("9.9").
@@ -118,7 +118,7 @@ func (c *CurrentOrganizationAccountModel) WithAllParametersSetToPredefinedValues
 		WithTimestampLtzOutputFormat("YYYY-MM-DD").
 		WithTimestampNtzOutputFormat("YYYY-MM-DD").
 		WithTimestampOutputFormat("YYYY-MM-DD").
-		WithTimestampTypeMapping(string(sdk.TimestampTypeMappingTimestampLtz)).
+		WithTimestampTypeMapping(string(sdk.TimestampTypeMappingLtz)).
 		WithTimestampTzOutputFormat("YYYY-MM-DD").
 		WithTimezone("Europe/London").
 		WithTimeInputFormat("YYYY-MM-DD").

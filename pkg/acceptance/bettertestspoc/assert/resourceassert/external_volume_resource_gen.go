@@ -3,7 +3,6 @@
 package resourceassert
 
 import (
-	"strconv"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -43,11 +42,6 @@ func (e *ExternalVolumeResourceAssert) HasAllowWrites(expected string) *External
 	return e
 }
 
-func (e *ExternalVolumeResourceAssert) HasAllowWritesBool(expected bool) *ExternalVolumeResourceAssert {
-	e.StringValueSet("allow_writes", strconv.FormatBool(expected))
-	return e
-}
-
 func (e *ExternalVolumeResourceAssert) HasComment(expected string) *ExternalVolumeResourceAssert {
 	e.StringValueSet("comment", expected)
 	return e
@@ -58,7 +52,7 @@ func (e *ExternalVolumeResourceAssert) HasFullyQualifiedName(expected string) *E
 	return e
 }
 
-// typed assert for "storage_location" (type: List) is not currently supported
+// typed assert for "storage_location" (type: List, subtype: Map) is not currently supported
 
 ///////////////////////////////////
 // Attribute value string checks //

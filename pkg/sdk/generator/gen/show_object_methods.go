@@ -26,7 +26,7 @@ var idTypeParts map[objectIdentifierKind][]string = map[objectIdentifierKind][]s
 }
 
 // TODO [SNOW-2324252]: do we need to search for this struct? Maybe we can have it more easily?
-func CheckRequiredFieldsForIdMethod(structName string, helperStructs []*Field, idKind objectIdentifierKind, logger *log.Logger) bool {
+func CheckRequiredFieldsForIdMethod(structName string, helperStructs []*Field, idKind objectIdentifierKind) bool {
 	if requiredFields, ok := idTypeParts[idKind]; ok {
 		for _, field := range helperStructs {
 			if field.Name == structName {
@@ -34,32 +34,7 @@ func CheckRequiredFieldsForIdMethod(structName string, helperStructs []*Field, i
 			}
 		}
 	}
-	logger.Printf("[WARN] no required fields mapping defined for identifier %s", idKind)
-	return false
-}
-
-// describeIDPartsAreStrings reports whether the struct has every identifier part as a plain string.
-// A pointer field stays hand-written, because ID() passes the fields straight into the constructor.
-func describeIDPartsAreStrings(structName string, helperStructs []*Field, idKind objectIdentifierKind) bool {
-	required, ok := idTypeParts[idKind]
-	if !ok {
-		return false
-	}
-	for _, field := range helperStructs {
-		if field.Name != structName {
-			continue
-		}
-		kinds := make(map[string]string, len(field.Fields))
-		for _, child := range field.Fields {
-			kinds[child.Name] = child.Kind
-		}
-		for _, name := range required {
-			if kinds[name] != "string" {
-				return false
-			}
-		}
-		return true
-	}
+	log.Printf("[WARN] no required fields mapping defined for identifier %s", idKind)
 	return false
 }
 

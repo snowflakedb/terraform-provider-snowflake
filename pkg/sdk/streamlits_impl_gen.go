@@ -173,13 +173,3 @@ func (r streamlitsDetailRow) convert() (*StreamlitDetail, error) {
 	}
 	return result, nil
 }
-
-func (v *streamlits) DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*StreamlitDetail, error) {
-	details, err := v.Describe(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	details.DatabaseName = id.DatabaseName()
-	details.SchemaName = id.SchemaName()
-	return details, nil
-}

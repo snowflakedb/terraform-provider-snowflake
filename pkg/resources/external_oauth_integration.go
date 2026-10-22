@@ -216,9 +216,7 @@ func ImportExternalOauthIntegration(ctx context.Context, d *schema.ResourceData,
 	if err = d.Set("enabled", integration.Enabled); err != nil {
 		return nil, err
 	}
-	integrationType := ""
 	if oauthType, err := integration.SubType(); err == nil {
-		integrationType = oauthType
 		if err = d.Set("external_oauth_type", oauthType); err != nil {
 			return nil, err
 		}
@@ -296,12 +294,8 @@ func ImportExternalOauthIntegration(ctx context.Context, d *schema.ResourceData,
 	if prop, err := collections.FindFirst(integrationProperties, func(property sdk.SecurityIntegrationProperty) bool {
 		return property.Name == "EXTERNAL_OAUTH_SCOPE_DELIMITER"
 	}); err == nil {
-		// EXTERNAL_OAUTH_SCOPE_DELIMITER can only be set for CUSTOM integrations;
-		// for other types Snowflake manages the value itself, so leave it unset in state (ref #5322).
-		if integrationType == string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom) {
-			if err = d.Set("external_oauth_scope_delimiter", prop.Value); err != nil {
-				return nil, err
-			}
+		if err = d.Set("external_oauth_scope_delimiter", prop.Value); err != nil {
+			return nil, err
 		}
 	}
 	if prop, err := collections.FindFirst(integrationProperties, func(property sdk.SecurityIntegrationProperty) bool { return property.Name == "COMMENT" }); err == nil {
@@ -323,13 +317,6 @@ func CreateContextExternalOauthIntegration(ctx context.Context, d *schema.Resour
 	integrationType, err := sdk.ToExternalOauthSecurityIntegrationTypeOption(integrationTypeRaw)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-
-	// EXTERNAL_OAUTH_SCOPE_DELIMITER can only be set for CUSTOM integrations (ref #5322);
-	// fail early with a clear error instead of silently ignoring the configured value.
-	if _, ok := d.GetOk("external_oauth_scope_delimiter"); ok &&
-		integrationType != sdk.ExternalOauthSecurityIntegrationTypeOptionCustom {
-		return diag.FromErr(fmt.Errorf("external_oauth_scope_delimiter can only be set for external_oauth_type = CUSTOM, got %q", integrationTypeRaw))
 	}
 	externalOauthSnowflakeUserMappingAttribute, err := sdk.ToExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption(externalOauthSnowflakeUserMappingAttributeRaw)
 	if err != nil {
@@ -592,21 +579,6 @@ func UpdateContextExternalOauthIntegration(ctx context.Context, d *schema.Resour
 
 	set, unset := sdk.NewExternalOauthIntegrationSetRequest(), sdk.NewExternalOauthIntegrationUnsetRequest()
 
-	// EXTERNAL_OAUTH_SCOPE_DELIMITER can only be set for CUSTOM integrations (ref #5322).
-	isCustomOauthType := false
-	if v, ok := d.GetOk("external_oauth_type"); ok {
-		integrationType, err := sdk.ToExternalOauthSecurityIntegrationTypeOption(v.(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		isCustomOauthType = integrationType == sdk.ExternalOauthSecurityIntegrationTypeOptionCustom
-	}
-
-	// Fail early when the user configures a scope delimiter for a non-CUSTOM integration (ref #5322).
-	if _, ok := d.GetOk("external_oauth_scope_delimiter"); !isCustomOauthType && ok {
-		return diag.FromErr(fmt.Errorf("external_oauth_scope_delimiter can only be set for external_oauth_type = CUSTOM, got %q", d.Get("external_oauth_type").(string)))
-	}
-
 	errs := errors.Join(
 		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
 	)
@@ -697,9 +669,7 @@ func UpdateContextExternalOauthIntegration(ctx context.Context, d *schema.Resour
 		// else: force new
 	}
 
-	// For non-CUSTOM integrations EXTERNAL_OAUTH_SCOPE_DELIMITER is managed by Snowflake,
-	// so never include it in ALTER statements (ref #5322).
-	if isCustomOauthType && d.HasChange("external_oauth_scope_delimiter") {
+	if d.HasChange("external_oauth_scope_delimiter") {
 		if v, ok := d.GetOk("external_oauth_scope_delimiter"); ok {
 			set.WithExternalOauthScopeDelimiter(v.(string))
 		} else {

@@ -20,9 +20,6 @@ func (opts *CreateShareOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreateShareOptions", "name"))
 	}
-	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
-		errs = append(errs, errOneOf("CreateShareOptions", "OrReplace", "IfNotExists"))
-	}
 	return JoinErrors(errs...)
 }
 
@@ -74,8 +71,8 @@ func (opts *AlterShareOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterShareOptions.Unset", "Comment"))
+		if !exactlyOneValueSet(opts.Unset.Comment) {
+			errs = append(errs, errExactlyOneOf("AlterShareOptions.Unset", "Comment"))
 		}
 	}
 	if valueSet(opts.SetTags) {

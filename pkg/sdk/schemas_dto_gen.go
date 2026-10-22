@@ -4,12 +4,12 @@ package sdk
 
 var (
 	_ optionsProvider[CreateSchemaOptions]   = new(CreateSchemaRequest)
+	_ optionsProvider[CloneSchemaOptions]    = new(CloneSchemaRequest)
 	_ optionsProvider[AlterSchemaOptions]    = new(AlterSchemaRequest)
 	_ optionsProvider[DropSchemaOptions]     = new(DropSchemaRequest)
+	_ optionsProvider[UndropSchemaOptions]   = new(UndropSchemaRequest)
 	_ optionsProvider[ShowSchemaOptions]     = new(ShowSchemaRequest)
 	_ optionsProvider[DescribeSchemaOptions] = new(DescribeSchemaRequest)
-	_ optionsProvider[CloneSchemaOptions]    = new(CloneSchemaRequest)
-	_ optionsProvider[UndropSchemaOptions]   = new(UndropSchemaRequest)
 )
 
 type CreateSchemaRequest struct {
@@ -40,6 +40,14 @@ type CreateSchemaRequest struct {
 	UserTaskTimeoutMs                       *int
 	Comment                                 *string
 	Tag                                     []TagAssociation
+}
+
+type CloneSchemaRequest struct {
+	OrReplace   *bool
+	Transient   *bool
+	IfNotExists *bool
+	name        DatabaseObjectIdentifier // required
+	Clone       Clone
 }
 
 type AlterSchemaRequest struct {
@@ -110,6 +118,10 @@ type DropSchemaRequest struct {
 	Restrict *bool
 }
 
+type UndropSchemaRequest struct {
+	name DatabaseObjectIdentifier // required
+}
+
 type ShowSchemaRequest struct {
 	Terse      *bool
 	History    *bool
@@ -120,17 +132,5 @@ type ShowSchemaRequest struct {
 }
 
 type DescribeSchemaRequest struct {
-	name DatabaseObjectIdentifier // required
-}
-
-type CloneSchemaRequest struct {
-	OrReplace   *bool
-	Transient   *bool
-	IfNotExists *bool
-	name        DatabaseObjectIdentifier // required
-	Clone       Clone
-}
-
-type UndropSchemaRequest struct {
 	name DatabaseObjectIdentifier // required
 }

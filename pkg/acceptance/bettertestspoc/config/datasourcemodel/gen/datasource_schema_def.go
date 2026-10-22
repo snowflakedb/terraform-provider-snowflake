@@ -39,16 +39,8 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.AuthenticationPolicies().Schema,
 	},
 	{
-		name:   "BackupPolicies",
-		schema: datasources.BackupPolicies().Schema,
-	},
-	{
 		name:   "CatalogIntegrations",
 		schema: datasources.CatalogIntegrations().Schema,
-	},
-	{
-		name:   "CodeBundles",
-		schema: datasources.CodeBundles().Schema,
 	},
 	{
 		name:   "Connections",
@@ -161,10 +153,6 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "Procedures",
 		schema: datasources.Procedures().Schema,
-	},
-	{
-		name:   "ProjectionPolicies",
-		schema: datasources.ProjectionPolicies().Schema,
 	},
 	{
 		name:   "ResourceMonitors",

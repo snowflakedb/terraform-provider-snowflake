@@ -4,26 +4,15 @@
 
 		CreateContext: {{ .Prefix }}CreateExt,
 		ReadContext:   {{ .Prefix }}ReadExt,
-{{ if .RequiresUpdate }}		UpdateContext: {{ .Prefix }}UpdateExt,
-{{ end -}}
-{{ template "dropSafelyInSdk" . }}
+		UpdateContext: {{ .Prefix }}UpdateExt,
+		DeleteContext: {{ .Prefix }}DeleteExt,
 		Importer:      {{ .Prefix }}ImporterExt,
 
-		CustomizeDiff: {{ .Prefix }}CustomizeDiff{{ if not .Hooks.CustomizeDiff.Generate }}Ext{{ end }},
+		CustomizeDiff: {{ .Prefix }}CustomizeDiffExt,
 		Timeouts:      defaultTimeouts,
-{{- if .Hooks.StateUpgraders.Generate }}
-		SchemaVersion: {{ len .SchemaStateUpgraders }},
-		// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
-		StateUpgraders: []tfschema.StateUpgrader{
-{{- range $version, $upgrade := .SchemaStateUpgraders }}
-			{
-				Version: {{ $version }},
-				Type:    cty.EmptyObject,
-				Upgrade: {{ $upgrade }},
-			},
-{{- end }}
-		},
-{{- else if .Hooks.StateUpgraders.Present }}
+{{- if .Hooks.SchemaVersion.Generate }}
+{{ Unimplemented "SchemaVersion" }}
+{{- else if .Hooks.SchemaVersion.Present }}
 		SchemaVersion:  {{ .Prefix }}SchemaVersionExt,
 		StateUpgraders: {{ .Prefix }}StateUpgradersExt,
 {{- end }}

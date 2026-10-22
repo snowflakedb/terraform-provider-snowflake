@@ -913,7 +913,7 @@ func TestInt_Table(t *testing.T) {
 				WithDataRetentionTimeInDays(30).
 				WithMaxDataExtensionTimeInDays(90).
 				WithChangeTracking(false).
-				WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "us"}).
+				WithDefaultDdlCollation("us").
 				WithComment(comment))
 
 		err = client.Tables.Alter(ctx, alterRequest)

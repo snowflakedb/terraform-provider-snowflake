@@ -71,7 +71,7 @@ var eventTablesDef = g.NewInterface(
 		OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
 		OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
 		OptionalBooleanAssignment("CHANGE_TRACKING", g.ParameterOptions()).
-		OptionalAssignment("DEFAULT_DDL_COLLATION", g.KindOfT[sdkcommons.StringAllowEmpty](), g.ParameterOptions()).
+		OptionalTextAssignment("DEFAULT_DDL_COLLATION", g.ParameterOptions().SingleQuotes()).
 		OptionalSQL("COPY GRANTS").
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 		PredefinedQueryStructField("RowAccessPolicy", "*TableRowAccessPolicyLegacy", g.KeywordOptions()).
@@ -104,26 +104,22 @@ var eventTablesDef = g.NewInterface(
 	g.StructPair("eventTableDetailsRow", "EventTableDetails").
 		Text("name").
 		Text("kind").
-		Text("comment").
-		PlainOnlyField("DatabaseName", "string").
-		PlainOnlyField("SchemaName", "string"),
+		Text("comment"),
 	g.NewQueryStruct("DescribeEventTable").
 		Describe().
 		SQL("EVENT TABLE").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).
-	WithDescribeDetailsFromIdentifier("EventTableDetails", []string{"DatabaseName", "SchemaName"}).
-	DropOperation(
-		"https://docs.snowflake.com/en/sql-reference/sql/drop-table",
-		g.NewQueryStruct("DropEventTable").
-			Drop().
-			SQL("TABLE").
-			IfExists().
-			Name().
-			OptionalSQL("RESTRICT"). // CASCADE or RESTRICT, and CASCADE for Default
-			WithValidation(g.ValidIdentifier, "name"),
-	).AlterOperation(
+).DropOperation(
+	"https://docs.snowflake.com/en/sql-reference/sql/drop-table",
+	g.NewQueryStruct("DropEventTable").
+		Drop().
+		SQL("TABLE").
+		IfExists().
+		Name().
+		OptionalSQL("RESTRICT"). // CASCADE or RESTRICT, and CASCADE for Default
+		WithValidation(g.ValidIdentifier, "name"),
+).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-table-event-table",
 	g.NewQueryStruct("AlterEventTable").
 		Alter().

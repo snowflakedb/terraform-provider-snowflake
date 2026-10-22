@@ -3,9 +3,9 @@ package resources
 import (
 	"fmt"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -55,12 +55,6 @@ var primitiveParameterValueTypes = map[string]schema.ValueType{
 
 type parameterSchemaModifier func(*schema.Schema)
 
-type parameterSchemaDefinition struct {
-	sqlName     string
-	kind        string
-	description string
-}
-
 func withIntAtLeast(minimum int) parameterSchemaModifier {
 	return func(s *schema.Schema) {
 		s.ValidateDiagFunc = validation.ToDiagFunc(validation.IntAtLeast(minimum))
@@ -91,7 +85,7 @@ var parameterSchemaModifiers = buildParameterSchemaModifiers()
 
 func buildParameterSchemaModifiers() map[string][]parameterSchemaModifier {
 	result := make(map[string][]parameterSchemaModifier)
-	register := func(modifier parameterSchemaModifier, parameters ...ssot.ParameterDef) {
+	register := func(modifier parameterSchemaModifier, parameters ...parameterdefs.ParameterDef) {
 		for _, parameter := range parameters {
 			result[parameter.SqlName] = append(result[parameter.SqlName], modifier)
 		}
@@ -134,33 +128,21 @@ func buildParameterSchemaModifiers() map[string][]parameterSchemaModifier {
 }
 
 // parameterSchema derives a resource schema entry from a catalog parameter.
-func parameterSchema(p ssot.ParameterDef) *schema.Schema {
-	return parameterSchemaFromDefinition(parameterSchemaDefinition{
-		sqlName:     p.SqlName,
-		kind:        p.Kind,
-		description: p.Description,
-	})
+func parameterSchema(p parameterdefs.ParameterDef) *schema.Schema {
+	return parameterSchemaWithModifiers(p, true)
 }
 
-func parameterSchemaWithoutModifiers(p ssot.ParameterDef) *schema.Schema {
-	return parameterSchemaFromDefinitionWithModifiers(parameterSchemaDefinition{
-		sqlName:     p.SqlName,
-		kind:        p.Kind,
-		description: p.Description,
-	}, false)
+func parameterSchemaWithoutModifiers(p parameterdefs.ParameterDef) *schema.Schema {
+	return parameterSchemaWithModifiers(p, false)
 }
 
-func parameterSchemaFromDefinition(p parameterSchemaDefinition) *schema.Schema {
-	return parameterSchemaFromDefinitionWithModifiers(p, true)
-}
-
-func parameterSchemaFromDefinitionWithModifiers(p parameterSchemaDefinition, applyModifiers bool) *schema.Schema {
-	valueType, isPrimitive := primitiveParameterValueTypes[p.kind]
-	enumMetadata, isEnum := enumParameterValidators[p.kind]
-	identifierValidator, isIdentifier := identifierParameterValidators[p.kind]
+func parameterSchemaWithModifiers(p parameterdefs.ParameterDef, applyModifiers bool) *schema.Schema {
+	valueType, isPrimitive := primitiveParameterValueTypes[p.Kind]
+	enumMetadata, isEnum := enumParameterValidators[p.Kind]
+	identifierValidator, isIdentifier := identifierParameterValidators[p.Kind]
 
 	if !isPrimitive && !isEnum && !isIdentifier {
-		panic(fmt.Sprintf("parameter %s has unhandled kind %q; register it as a primitive, enum, or identifier kind", p.sqlName, p.kind))
+		panic(fmt.Sprintf("parameter %s has unhandled kind %q; register it as a primitive, enum, or identifier kind", p.SqlName, p.Kind))
 	}
 	if !isPrimitive {
 		valueType = schema.TypeString
@@ -168,7 +150,7 @@ func parameterSchemaFromDefinitionWithModifiers(p parameterSchemaDefinition, app
 
 	s := &schema.Schema{
 		Type:        valueType,
-		Description: enrichWithReferenceToParameterDocs(p.sqlName, p.description),
+		Description: enrichWithReferenceToParameterDocs(p.SqlName, p.Description),
 		Optional:    true,
 		Computed:    true,
 	}
@@ -177,13 +159,13 @@ func parameterSchemaFromDefinitionWithModifiers(p parameterSchemaDefinition, app
 	case isEnum:
 		s.ValidateDiagFunc = enumMetadata.validate
 		s.DiffSuppressFunc = enumMetadata.diffSuppress
-		s.Description = enrichWithReferenceToParameterDocs(p.sqlName, joinWithSpace(p.description, enumMetadata.optionsDescription))
+		s.Description = enrichWithReferenceToParameterDocs(p.SqlName, joinWithSpace(p.Description, enumMetadata.optionsDescription))
 	case isIdentifier:
 		s.ValidateDiagFunc = identifierValidator
 		s.DiffSuppressFunc = suppressIdentifierQuoting
 	}
 	if applyModifiers {
-		for _, modify := range parameterSchemaModifiers[p.sqlName] {
+		for _, modify := range parameterSchemaModifiers[p.SqlName] {
 			modify(s)
 		}
 	}

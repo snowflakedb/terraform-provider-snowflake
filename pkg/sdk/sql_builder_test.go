@@ -392,13 +392,6 @@ func TestQuoteModifier(t *testing.T) {
 		assert.Equal(t, `example`, result)
 	})
 
-	t.Run("whole-number floats keep one fractional digit", func(t *testing.T) {
-		assert.Equal(t, "3.0", NoQuotes.Modify(3.0))
-		assert.Equal(t, "0.0", NoQuotes.Modify(0.0))
-		assert.Equal(t, "9.9", NoQuotes.Modify(9.9))
-		assert.Equal(t, "33.333", NoQuotes.Modify(33.333))
-	})
-
 	t.Run("test single quotes modifier", func(t *testing.T) {
 		result := SingleQuotes.Modify("example")
 		assert.Equal(t, `'example'`, result)

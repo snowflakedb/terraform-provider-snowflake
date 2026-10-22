@@ -1137,7 +1137,7 @@ func TestAcc_Schema_EmptyParameterAsDefaultValue(t *testing.T) {
 						HasDefaultDdlCollationLevel(sdk.ParameterTypeSchema),
 				),
 			},
-			// Set it back, then replace the non-empty value with "" in one step.
+			// We set it back to demonstrate that going from set value straight to empty string won't work (an intermediate step with null value is required).
 			{
 				Config: accconfig.FromModels(t, parameterSet),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -1148,21 +1148,12 @@ func TestAcc_Schema_EmptyParameterAsDefaultValue(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, parameterSetToEmptyString),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(parameterSetToEmptyString.ResourceReference(), plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation", tfjson.ActionUpdate, sdk.String("en_nz"), nil),
-					},
-				},
-				Check: assertThat(
-					t,
-					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "database", id.DatabaseName())),
-					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation", "")),
-					objectparametersassert.SchemaParameters(t, id).
-						HasDefaultDdlCollation("").
-						HasDefaultDdlCollationLevel(sdk.ParameterTypeSchema),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "database", id.DatabaseName()),
+					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "name", id.Name()),
+					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "default_ddl_collation", "en_nz"),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

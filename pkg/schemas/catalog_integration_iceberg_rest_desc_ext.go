@@ -93,23 +93,23 @@ func (catalogIntegrationIcebergRestDetailsToSchemaMapper) additionalToSchema(src
 			"access_delegation_mode": string(src.RestConfig.AccessDelegationMode),
 		},
 	}
-	if src.OauthRestAuthentication != nil {
+	if src.OAuthRestAuthentication != nil {
 		dst["oauth_rest_authentication"] = []map[string]any{
 			{
-				"oauth_token_uri":      src.OauthRestAuthentication.OauthTokenUri,
-				"oauth_client_id":      src.OauthRestAuthentication.OauthClientId,
-				"oauth_allowed_scopes": src.OauthRestAuthentication.OauthAllowedScopes,
+				"oauth_token_uri":      src.OAuthRestAuthentication.OauthTokenUri,
+				"oauth_client_id":      src.OAuthRestAuthentication.OauthClientId,
+				"oauth_allowed_scopes": src.OAuthRestAuthentication.OauthAllowedScopes,
 			},
 		}
 	} else {
 		dst["oauth_rest_authentication"] = []map[string]any{}
 	}
 	dst["bearer_rest_authentication"] = []map[string]any{}
-	if src.Sigv4RestAuthentication != nil {
+	if src.SigV4RestAuthentication != nil {
 		dst["sigv4_rest_authentication"] = []map[string]any{
 			{
-				"sigv4_iam_role":       src.Sigv4RestAuthentication.Sigv4IamRole,
-				"sigv4_signing_region": src.Sigv4RestAuthentication.Sigv4SigningRegion,
+				"sigv4_iam_role":       src.SigV4RestAuthentication.Sigv4IamRole,
+				"sigv4_signing_region": src.SigV4RestAuthentication.Sigv4SigningRegion,
 			},
 		}
 	} else {

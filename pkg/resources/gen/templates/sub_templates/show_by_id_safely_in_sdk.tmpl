@@ -1,22 +1,6 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
 {{- if .Hooks.ShowByIdSafelyInSdk.Generate -}}
-		{{ .Prefix }}, err := meta.(*provider.Context).Client.{{ .NamePlural }}.ShowByIDSafely(ctx, id)
-		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query {{ CamelToWords .Name }}. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("{{ FirstLetterUppercase (CamelToWords .Name) }} id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
-		}
-{{ else if .Hooks.ShowByIdSafelyInSdk.Present -}}
+{{ Unimplemented "ShowByIdSafelyInSdk" }}
+{{- else if .Hooks.ShowByIdSafelyInSdk.Present -}}
 		{{ .Prefix }}, diags := {{ .Prefix }}ShowByIdSafelyInSdkExt(ctx, d, meta, id)
-		if diags != nil {
-			return diags
-		}
 {{ end -}}

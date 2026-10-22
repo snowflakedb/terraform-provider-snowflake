@@ -111,30 +111,21 @@ func deleteCatalogIntegrationFunc() schema.DeleteContextFunc {
 	)
 }
 
-func parseOpenCatalogRestAuthentication(d *schema.ResourceData, prefix string) (sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest, error) {
-	req := sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest(
-		d.Get(prefix+"oauth_client_id").(string),
-		d.Get(prefix+"oauth_client_secret").(string),
-		parseOAuthAllowedScopes(d, prefix),
-	)
-	err := stringAttributeCreateBuilder(d, prefix+"oauth_token_uri", req.WithOauthTokenUri)
-	return *req, err
-}
-
-func parseIcebergRestOAuthRestAuthentication(d *schema.ResourceData, prefix string) (sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationRequest, error) {
-	req := sdk.NewCatalogIntegrationIcebergRestOauthRestAuthenticationRequest(
-		d.Get(prefix+"oauth_client_id").(string),
-		d.Get(prefix+"oauth_client_secret").(string),
-		parseOAuthAllowedScopes(d, prefix),
-	)
-	err := stringAttributeCreateBuilder(d, prefix+"oauth_token_uri", req.WithOauthTokenUri)
-	return *req, err
-}
-
-func parseOAuthAllowedScopes(d *schema.ResourceData, prefix string) []sdk.StringListItemWrapper {
-	return collections.Map(expandStringList(d.Get(prefix+"oauth_allowed_scopes").([]any)), func(v string) sdk.StringListItemWrapper {
+func buildOAuthRestAuthenticationRequest(d *schema.ResourceData, attrName string) (sdk.OAuthRestAuthenticationRequest, error) {
+	v := d.Get(attrName).([]any)
+	block := v[0].(map[string]any)
+	oauthClientId := block["oauth_client_id"].(string)
+	oauthClientSecret := block["oauth_client_secret"].(string)
+	scopesRaw := expandStringList(block["oauth_allowed_scopes"].([]any))
+	scopes := collections.Map(scopesRaw, func(v string) sdk.StringListItemWrapper {
 		return sdk.StringListItemWrapper{Value: v}
 	})
+	req := sdk.NewOAuthRestAuthenticationRequest(oauthClientId, oauthClientSecret, scopes)
+
+	if v, ok := block["oauth_token_uri"].(string); ok && v != "" {
+		req = req.WithOauthTokenUri(v)
+	}
+	return *req, nil
 }
 
 func handleExternalChangesToOAuthRestAuthentication(d *schema.ResourceData, attrName, oAuthTokenUri, oAuthClientId string, oAuthAllowedScopes []string) error {

@@ -75,7 +75,6 @@ const (
 	ObjectTypeNetworkRule            ObjectType = "NETWORK RULE"
 	ObjectTypeNotebook               ObjectType = "NOTEBOOK"
 	ObjectTypeNotebookProject        ObjectType = "NOTEBOOK PROJECT"
-	ObjectTypeCodeBundle             ObjectType = "CODE BUNDLE"
 	ObjectTypePackagesPolicy         ObjectType = "PACKAGES POLICY"
 	ObjectTypeComputePool            ObjectType = "COMPUTE POOL"
 	ObjectTypePostgresInstance       ObjectType = "POSTGRES INSTANCE"
@@ -199,7 +198,6 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeNetworkRule,
 	ObjectTypeNotebook,
 	ObjectTypeNotebookProject,
-	ObjectTypeCodeBundle,
 	ObjectTypePackagesPolicy,
 	ObjectTypeComputePool,
 	ObjectTypePostgresInstance,
@@ -321,7 +319,6 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeNetworkRule:                 PluralObjectTypeNetworkRules,
 		ObjectTypeNotebook:                    PluralObjectTypeNotebooks,
 		ObjectTypeNotebookProject:             PluralObjectTypeNotebookProjects,
-		ObjectTypeCodeBundle:                  PluralObjectTypeCodeBundles,
 		ObjectTypePackagesPolicy:              PluralObjectTypePackagesPolicies,
 		ObjectTypeComputePool:                 PluralObjectTypeComputePool,
 		ObjectTypePostgresInstance:            PluralObjectTypePostgresInstances,
@@ -457,7 +454,6 @@ const (
 	PluralObjectTypeNetworkRules                 PluralObjectType = "NETWORK RULES"
 	PluralObjectTypeNotebooks                    PluralObjectType = "NOTEBOOKS"
 	PluralObjectTypeNotebookProjects             PluralObjectType = "NOTEBOOK PROJECTS"
-	PluralObjectTypeCodeBundles                  PluralObjectType = "CODE BUNDLES"
 	PluralObjectTypePackagesPolicies             PluralObjectType = "PACKAGES POLICIES"
 	PluralObjectTypeComputePool                  PluralObjectType = "COMPUTE POOLS"
 	PluralObjectTypePostgresInstances            PluralObjectType = "POSTGRES INSTANCES"

@@ -15,8 +15,6 @@ type Sequences interface {
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*SequenceDetail, error)
 	Drop(ctx context.Context, request *DropSequenceRequest) error
 	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
-	// DescribeDetails calls Describe and sets database and schema from the identifier. DESCRIBE does not return those columns.
-	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*SequenceDetail, error)
 }
 
 // CreateSequenceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-sequence.
@@ -101,6 +99,8 @@ type DescribeSequenceOptions struct {
 type sequenceDetailRow struct {
 	CreatedOn     string `db:"created_on"`
 	Name          string `db:"name"`
+	SchemaName    string `db:"schema_name"`
+	DatabaseName  string `db:"database_name"`
 	NextValue     int    `db:"next_value"`
 	Interval      int    `db:"interval"`
 	Owner         string `db:"owner"`
@@ -112,18 +112,14 @@ type sequenceDetailRow struct {
 type SequenceDetail struct {
 	CreatedOn     string
 	Name          string
+	SchemaName    string
+	DatabaseName  string
 	NextValue     int
 	Interval      int
 	Owner         string
 	OwnerRoleType string
 	Comment       string
 	Ordered       bool
-	DatabaseName  string
-	SchemaName    string
-}
-
-func (v *SequenceDetail) ID() SchemaObjectIdentifier {
-	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
 }
 
 // DropSequenceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-sequence.

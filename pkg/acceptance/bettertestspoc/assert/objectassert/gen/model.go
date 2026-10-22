@@ -1,7 +1,6 @@
 package gen
 
 import (
-	"log"
 	"slices"
 	"strings"
 
@@ -19,7 +18,6 @@ type SnowflakeObjectAssertionsModel struct {
 	NoIdentifiableObject bool
 	ShowByParentId       *genhelpers.ShowByParentIdDef
 	DescribeOverride     *genhelpers.DescribeOverrideDef
-	ShowProjection       *genhelpers.ShowProjectionDef
 	FromObjectIDExpr     string
 	NestedAssertFields   []string
 	Fields               []SnowflakeObjectFieldAssertion
@@ -91,7 +89,7 @@ func (m SnowflakeObjectAssertionsModel) PlaceholderIdentifier() string {
 	}
 }
 
-func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *genhelpers.PreambleModel, _ *log.Logger) SnowflakeObjectAssertionsModel {
+func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *genhelpers.PreambleModel) SnowflakeObjectAssertionsModel {
 	name, _ := strings.CutPrefix(sdkObject.Name, "sdk.")
 	fields := make([]SnowflakeObjectFieldAssertion, len(sdkObject.Fields))
 	for idx, field := range sdkObject.Fields {
@@ -109,14 +107,10 @@ func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *
 	if sdkObject.ObjectTypeName != "" {
 		objectTypeName = sdkObject.ObjectTypeName
 	}
-	sdkType := sdkObject.Name
-	if sdkObject.SdkType != "" {
-		sdkType = sdkObject.SdkType
-	}
 
 	return SnowflakeObjectAssertionsModel{
 		Name:                 name,
-		SdkType:              sdkType,
+		SdkType:              sdkObject.Name,
 		IdType:               sdkObject.IdType,
 		IsDataSourceOutput:   sdkObject.IsDataSourceOutput,
 		IsSubStruct:          sdkObject.IsSubStruct,
@@ -125,7 +119,6 @@ func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *
 		NoIdentifiableObject: sdkObject.NoIdentifiableObject,
 		ShowByParentId:       sdkObject.ShowByParentId,
 		DescribeOverride:     sdkObject.DescribeOverride,
-		ShowProjection:       sdkObject.ShowProjection,
 		FromObjectIDExpr:     sdkObject.FromObjectIDExpr,
 		Fields:               fields,
 		NestedAssertFields:   sdkObject.NestedAssertFields,

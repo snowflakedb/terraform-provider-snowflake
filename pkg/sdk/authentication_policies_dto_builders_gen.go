@@ -20,7 +20,7 @@ func (s *CreateAuthenticationPolicyRequest) WithIfNotExists(ifNotExists bool) *C
 	return s
 }
 
-func (s *CreateAuthenticationPolicyRequest) WithAuthenticationMethods(authenticationMethods []AuthenticationMethodsOptionListItem) *CreateAuthenticationPolicyRequest {
+func (s *CreateAuthenticationPolicyRequest) WithAuthenticationMethods(authenticationMethods []AuthenticationMethods) *CreateAuthenticationPolicyRequest {
 	s.AuthenticationMethods = authenticationMethods
 	return s
 }
@@ -35,17 +35,17 @@ func (s *CreateAuthenticationPolicyRequest) WithMfaPolicy(mfaPolicy Authenticati
 	return s
 }
 
-func (s *CreateAuthenticationPolicyRequest) WithClientTypes(clientTypes []ClientTypesOptionListItem) *CreateAuthenticationPolicyRequest {
+func (s *CreateAuthenticationPolicyRequest) WithClientTypes(clientTypes []ClientTypes) *CreateAuthenticationPolicyRequest {
 	s.ClientTypes = clientTypes
 	return s
 }
 
-func (s *CreateAuthenticationPolicyRequest) WithClientPolicy(clientPolicy []AuthenticationPolicyClientPolicyRequest) *CreateAuthenticationPolicyRequest {
+func (s *CreateAuthenticationPolicyRequest) WithClientPolicy(clientPolicy []AuthenticationPolicyClientPolicyEntry) *CreateAuthenticationPolicyRequest {
 	s.ClientPolicy = clientPolicy
 	return s
 }
 
-func (s *CreateAuthenticationPolicyRequest) WithSecurityIntegrations(securityIntegrations AuthenticationPolicySecurityIntegrationsOptionRequest) *CreateAuthenticationPolicyRequest {
+func (s *CreateAuthenticationPolicyRequest) WithSecurityIntegrations(securityIntegrations SecurityIntegrationsOptionRequest) *CreateAuthenticationPolicyRequest {
 	s.SecurityIntegrations = &securityIntegrations
 	return s
 }
@@ -75,40 +75,22 @@ func (s *AuthenticationPolicyMfaPolicyRequest) WithEnforceMfaOnExternalAuthentic
 	return s
 }
 
-func (s *AuthenticationPolicyMfaPolicyRequest) WithAllowedMethods(allowedMethods []MfaPolicyAllowedMethodsOptionListItem) *AuthenticationPolicyMfaPolicyRequest {
+func (s *AuthenticationPolicyMfaPolicyRequest) WithAllowedMethods(allowedMethods []AuthenticationPolicyMfaPolicyListItem) *AuthenticationPolicyMfaPolicyRequest {
 	s.AllowedMethods = allowedMethods
 	return s
 }
 
-func NewAuthenticationPolicyClientPolicyRequest(
-	clientType ClientPolicyDriverType,
-	params AuthenticationPolicyClientPolicyParamsRequest,
-) *AuthenticationPolicyClientPolicyRequest {
-	s := AuthenticationPolicyClientPolicyRequest{}
-	s.ClientType = clientType
-	s.Params = params
+func NewSecurityIntegrationsOptionRequest() *SecurityIntegrationsOptionRequest {
+	s := SecurityIntegrationsOptionRequest{}
 	return &s
 }
 
-func NewAuthenticationPolicyClientPolicyParamsRequest(
-	minimumVersion string,
-) *AuthenticationPolicyClientPolicyParamsRequest {
-	s := AuthenticationPolicyClientPolicyParamsRequest{}
-	s.MinimumVersion = minimumVersion
-	return &s
-}
-
-func NewAuthenticationPolicySecurityIntegrationsOptionRequest() *AuthenticationPolicySecurityIntegrationsOptionRequest {
-	s := AuthenticationPolicySecurityIntegrationsOptionRequest{}
-	return &s
-}
-
-func (s *AuthenticationPolicySecurityIntegrationsOptionRequest) WithAll(all bool) *AuthenticationPolicySecurityIntegrationsOptionRequest {
+func (s *SecurityIntegrationsOptionRequest) WithAll(all bool) *SecurityIntegrationsOptionRequest {
 	s.All = &all
 	return s
 }
 
-func (s *AuthenticationPolicySecurityIntegrationsOptionRequest) WithSecurityIntegrations(securityIntegrations []AccountObjectIdentifier) *AuthenticationPolicySecurityIntegrationsOptionRequest {
+func (s *SecurityIntegrationsOptionRequest) WithSecurityIntegrations(securityIntegrations []AccountObjectIdentifier) *SecurityIntegrationsOptionRequest {
 	s.SecurityIntegrations = securityIntegrations
 	return s
 }
@@ -143,7 +125,7 @@ func NewAuthenticationPolicyWorkloadIdentityPolicyRequest() *AuthenticationPolic
 	return &s
 }
 
-func (s *AuthenticationPolicyWorkloadIdentityPolicyRequest) WithAllowedProviders(allowedProviders []AllowedProviderOptionListItem) *AuthenticationPolicyWorkloadIdentityPolicyRequest {
+func (s *AuthenticationPolicyWorkloadIdentityPolicyRequest) WithAllowedProviders(allowedProviders []AuthenticationPolicyAllowedProviderListItem) *AuthenticationPolicyWorkloadIdentityPolicyRequest {
 	s.AllowedProviders = allowedProviders
 	return s
 }
@@ -196,7 +178,7 @@ func NewAuthenticationPolicySetRequest() *AuthenticationPolicySetRequest {
 	return &s
 }
 
-func (s *AuthenticationPolicySetRequest) WithAuthenticationMethods(authenticationMethods []AuthenticationMethodsOptionListItem) *AuthenticationPolicySetRequest {
+func (s *AuthenticationPolicySetRequest) WithAuthenticationMethods(authenticationMethods []AuthenticationMethods) *AuthenticationPolicySetRequest {
 	s.AuthenticationMethods = authenticationMethods
 	return s
 }
@@ -211,17 +193,17 @@ func (s *AuthenticationPolicySetRequest) WithMfaPolicy(mfaPolicy AuthenticationP
 	return s
 }
 
-func (s *AuthenticationPolicySetRequest) WithClientTypes(clientTypes []ClientTypesOptionListItem) *AuthenticationPolicySetRequest {
+func (s *AuthenticationPolicySetRequest) WithClientTypes(clientTypes []ClientTypes) *AuthenticationPolicySetRequest {
 	s.ClientTypes = clientTypes
 	return s
 }
 
-func (s *AuthenticationPolicySetRequest) WithClientPolicy(clientPolicy []AuthenticationPolicyClientPolicyRequest) *AuthenticationPolicySetRequest {
+func (s *AuthenticationPolicySetRequest) WithClientPolicy(clientPolicy []AuthenticationPolicyClientPolicyEntry) *AuthenticationPolicySetRequest {
 	s.ClientPolicy = clientPolicy
 	return s
 }
 
-func (s *AuthenticationPolicySetRequest) WithSecurityIntegrations(securityIntegrations AuthenticationPolicySecurityIntegrationsOptionRequest) *AuthenticationPolicySetRequest {
+func (s *AuthenticationPolicySetRequest) WithSecurityIntegrations(securityIntegrations SecurityIntegrationsOptionRequest) *AuthenticationPolicySetRequest {
 	s.SecurityIntegrations = &securityIntegrations
 	return s
 }

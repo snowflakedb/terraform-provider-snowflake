@@ -29,7 +29,7 @@ func (w *WarehouseResourceAssert) HasAllDefault() *WarehouseResourceAssert {
 		HasAutoSuspendString(r.IntDefaultString).
 		HasAutoResumeString(r.BooleanDefault).
 		HasNoInitiallySuspended().
-		HasResourceMonitorEmpty().
+		HasNoResourceMonitor().
 		HasEnableQueryAccelerationString(r.BooleanDefault).
 		HasQueryAccelerationMaxScaleFactorString(r.IntDefaultString).
 		HasDefaultMaxConcurrencyLevel().

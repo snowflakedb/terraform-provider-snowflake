@@ -40,7 +40,6 @@ var (
 		ObjectTypePipe,
 		ObjectTypeMaskingPolicy,
 		ObjectTypePasswordPolicy,
-		ObjectTypeProjectionPolicy,
 		ObjectTypeRowAccessPolicy,
 		ObjectTypeSessionPolicy,
 		ObjectTypeStorageLifecyclePolicy,

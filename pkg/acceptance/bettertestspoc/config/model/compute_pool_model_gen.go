@@ -4,11 +4,9 @@ package model
 
 import (
 	"encoding/json"
-	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
@@ -19,6 +17,7 @@ type ComputePoolModel struct {
 	BackupInstanceFamilies tfconfig.Variable `json:"backup_instance_families,omitempty"`
 	Comment                tfconfig.Variable `json:"comment,omitempty"`
 	ForApplication         tfconfig.Variable `json:"for_application,omitempty"`
+	FullyQualifiedName     tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	InitiallySuspended     tfconfig.Variable `json:"initially_suspended,omitempty"`
 	InstanceFamily         tfconfig.Variable `json:"instance_family,omitempty"`
 	MaxNodes               tfconfig.Variable `json:"max_nodes,omitempty"`
@@ -108,11 +107,6 @@ func (c *ComputePoolModel) WithAutoResume(autoResume string) *ComputePoolModel {
 	return c
 }
 
-func (c *ComputePoolModel) WithAutoResumeBool(autoResume bool) *ComputePoolModel {
-	c.AutoResume = tfconfig.StringVariable(strconv.FormatBool(autoResume))
-	return c
-}
-
 func (c *ComputePoolModel) WithAutoSuspendSecs(autoSuspendSecs int) *ComputePoolModel {
 	c.AutoSuspendSecs = tfconfig.IntegerVariable(autoSuspendSecs)
 	return c
@@ -130,8 +124,8 @@ func (c *ComputePoolModel) WithForApplication(forApplication string) *ComputePoo
 	return c
 }
 
-func (c *ComputePoolModel) WithForApplicationSdk(forApplication sdk.AccountObjectIdentifier) *ComputePoolModel {
-	c.ForApplication = tfconfig.StringVariable(forApplication.Name())
+func (c *ComputePoolModel) WithFullyQualifiedName(fullyQualifiedName string) *ComputePoolModel {
+	c.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return c
 }
 
@@ -140,18 +134,8 @@ func (c *ComputePoolModel) WithInitiallySuspended(initiallySuspended string) *Co
 	return c
 }
 
-func (c *ComputePoolModel) WithInitiallySuspendedBool(initiallySuspended bool) *ComputePoolModel {
-	c.InitiallySuspended = tfconfig.StringVariable(strconv.FormatBool(initiallySuspended))
-	return c
-}
-
 func (c *ComputePoolModel) WithInstanceFamily(instanceFamily string) *ComputePoolModel {
 	c.InstanceFamily = tfconfig.StringVariable(instanceFamily)
-	return c
-}
-
-func (c *ComputePoolModel) WithInstanceFamilySdk(instanceFamily sdk.ComputePoolInstanceFamily) *ComputePoolModel {
-	c.InstanceFamily = tfconfig.StringVariable(string(instanceFamily))
 	return c
 }
 
@@ -196,6 +180,11 @@ func (c *ComputePoolModel) WithCommentValue(value tfconfig.Variable) *ComputePoo
 
 func (c *ComputePoolModel) WithForApplicationValue(value tfconfig.Variable) *ComputePoolModel {
 	c.ForApplication = value
+	return c
+}
+
+func (c *ComputePoolModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *ComputePoolModel {
+	c.FullyQualifiedName = value
 	return c
 }
 

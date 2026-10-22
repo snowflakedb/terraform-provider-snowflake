@@ -112,13 +112,10 @@ var streamlitsDef = g.NewInterface(
 		StringList("user_packages").
 		StringList("import_urls").
 		StringList("external_access_integrations", g.WithManualConvert()).
-		Text("external_access_secrets").
-		PlainOnlyField("DatabaseName", "string").
-		PlainOnlyField("SchemaName", "string"),
+		Text("external_access_secrets"),
 	g.NewQueryStruct("DescribeStreamlit").
 		Describe().
 		SQL("STREAMLIT").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).
-	WithDescribeDetailsFromIdentifier("StreamlitDetail", []string{"DatabaseName", "SchemaName"})
+)

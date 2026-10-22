@@ -88,14 +88,6 @@ var databaseSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Description: "Specifies a comment for the database.",
 	},
-	ParametersAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `SHOW PARAMETERS IN DATABASE` for the given object.",
-		Elem: &schema.Resource{
-			Schema: schemas.ShowDatabaseParametersSchema,
-		},
-	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
@@ -122,7 +114,6 @@ func Database() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Database, customdiff.All(
 			ComputedIfAnyAttributeChanged(databaseSchema, FullyQualifiedNameAttributeName, "name"),
-			ComputedIfAnyAttributeChanged(databaseParametersSchema, ParametersAttributeName, databaseParameterFieldNames...),
 			databaseParametersCustomDiff,
 		)),
 
@@ -460,11 +451,6 @@ func ReadDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		}
 	}
 
-	rawDatabaseParameters, err := client.Databases.ShowParameters(ctx, id)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	databaseParameters, err := client.Databases.ShowParametersDetails(ctx, id)
 	if err != nil {
 		return diag.FromErr(err)
@@ -472,10 +458,6 @@ func ReadDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 
 	if diags := handleDatabaseParameterRead(d, databaseParameters); diags != nil {
 		return diags
-	}
-
-	if err = d.Set(ParametersAttributeName, []map[string]any{schemas.DatabaseParametersToSchema(rawDatabaseParameters, meta.(*provider.Context))}); err != nil {
-		return diag.FromErr(err)
 	}
 
 	return nil

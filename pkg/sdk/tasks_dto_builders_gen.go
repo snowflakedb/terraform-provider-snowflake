@@ -389,9 +389,9 @@ func (s *CreateTaskRequest) SetParameterFromRaw(key string, value string) error 
 	case "AUTOCOMMIT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.Autocommit)
 	case "BINARY_INPUT_FORMAT":
-		return assignParsedEnumParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
+		return assignParsedParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
 	case "BINARY_OUTPUT_FORMAT":
-		return assignParsedEnumParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
+		return assignParsedParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
 	case "CLIENT_MEMORY_LIMIT":
 		return assignParsedParameter(value, strconv.Atoi, &s.ClientMemoryLimit)
 	case "CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX":
@@ -407,7 +407,7 @@ func (s *CreateTaskRequest) SetParameterFromRaw(key string, value string) error 
 	case "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY":
 		return assignParsedParameter(value, strconv.Atoi, &s.ClientSessionKeepAliveHeartbeatFrequency)
 	case "CLIENT_TIMESTAMP_TYPE_MAPPING":
-		return assignParsedEnumParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
+		return assignParsedParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
 	case "DATE_INPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.DateInputFormat)
 	case "DATE_OUTPUT_FORMAT":
@@ -419,9 +419,9 @@ func (s *CreateTaskRequest) SetParameterFromRaw(key string, value string) error 
 	case "ERROR_ON_NONDETERMINISTIC_UPDATE":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ErrorOnNondeterministicUpdate)
 	case "GEOGRAPHY_OUTPUT_FORMAT":
-		return assignParsedEnumParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
+		return assignParsedParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
 	case "GEOMETRY_OUTPUT_FORMAT":
-		return assignParsedEnumParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
+		return assignParsedParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
 	case "JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC":
 		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcTreatTimestampNtzAsUtc)
 	case "JDBC_USE_SESSION_TIMEZONE":
@@ -431,9 +431,9 @@ func (s *CreateTaskRequest) SetParameterFromRaw(key string, value string) error 
 	case "LOCK_TIMEOUT":
 		return assignParsedParameter(value, strconv.Atoi, &s.LockTimeout)
 	case "LOG_EVENT_LEVEL":
-		return assignParsedEnumParameter(value, ToLogLevel, &s.LogEventLevel)
+		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
 	case "LOG_LEVEL":
-		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
 	case "MULTI_STATEMENT_COUNT":
 		return assignParsedParameter(value, strconv.Atoi, &s.MultiStatementCount)
 	case "NOORDER_SEQUENCE_AS_DEFAULT":
@@ -449,9 +449,9 @@ func (s *CreateTaskRequest) SetParameterFromRaw(key string, value string) error 
 	case "S3_STAGE_VPCE_DNS_NAME":
 		return assignParsedParameter(value, identityParse, &s.S3StageVpceDnsName)
 	case "SERVERLESS_TASK_MAX_STATEMENT_SIZE":
-		return assignParsedEnumParameter(value, ToWarehouseSize, &s.ServerlessTaskMaxStatementSize)
+		return assignParsedParameter(value, ToWarehouseSize, &s.ServerlessTaskMaxStatementSize)
 	case "SERVERLESS_TASK_MIN_STATEMENT_SIZE":
-		return assignParsedEnumParameter(value, ToWarehouseSize, &s.ServerlessTaskMinStatementSize)
+		return assignParsedParameter(value, ToWarehouseSize, &s.ServerlessTaskMinStatementSize)
 	case "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS":
 		return assignParsedParameter(value, strconv.Atoi, &s.StatementQueuedTimeoutInSeconds)
 	case "STATEMENT_TIMEOUT_IN_SECONDS":
@@ -477,21 +477,21 @@ func (s *CreateTaskRequest) SetParameterFromRaw(key string, value string) error 
 	case "TIMESTAMP_OUTPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.TimestampOutputFormat)
 	case "TIMESTAMP_TYPE_MAPPING":
-		return assignParsedEnumParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
+		return assignParsedParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
 	case "TIMESTAMP_TZ_OUTPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.TimestampTzOutputFormat)
 	case "TIMEZONE":
 		return assignParsedParameter(value, identityParse, &s.Timezone)
 	case "TRACE_LEVEL":
-		return assignParsedEnumParameter(value, ToTraceLevel, &s.TraceLevel)
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
 	case "TRANSACTION_ABORT_ON_ERROR":
 		return assignParsedParameter(value, strconv.ParseBool, &s.TransactionAbortOnError)
 	case "TRANSACTION_DEFAULT_ISOLATION_LEVEL":
-		return assignParsedEnumParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
+		return assignParsedParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
 	case "TWO_DIGIT_CENTURY_START":
 		return assignParsedParameter(value, strconv.Atoi, &s.TwoDigitCenturyStart)
 	case "UNSUPPORTED_DDL_ACTION":
-		return assignParsedEnumParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
+		return assignParsedParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
 	case "USE_CACHED_RESULT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.UseCachedResult)
 	case "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS":
@@ -884,9 +884,9 @@ func (s *CreateOrAlterTaskRequest) SetParameterFromRaw(key string, value string)
 	case "AUTOCOMMIT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.Autocommit)
 	case "BINARY_INPUT_FORMAT":
-		return assignParsedEnumParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
+		return assignParsedParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
 	case "BINARY_OUTPUT_FORMAT":
-		return assignParsedEnumParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
+		return assignParsedParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
 	case "CLIENT_MEMORY_LIMIT":
 		return assignParsedParameter(value, strconv.Atoi, &s.ClientMemoryLimit)
 	case "CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX":
@@ -902,7 +902,7 @@ func (s *CreateOrAlterTaskRequest) SetParameterFromRaw(key string, value string)
 	case "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY":
 		return assignParsedParameter(value, strconv.Atoi, &s.ClientSessionKeepAliveHeartbeatFrequency)
 	case "CLIENT_TIMESTAMP_TYPE_MAPPING":
-		return assignParsedEnumParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
+		return assignParsedParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
 	case "DATE_INPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.DateInputFormat)
 	case "DATE_OUTPUT_FORMAT":
@@ -914,9 +914,9 @@ func (s *CreateOrAlterTaskRequest) SetParameterFromRaw(key string, value string)
 	case "ERROR_ON_NONDETERMINISTIC_UPDATE":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ErrorOnNondeterministicUpdate)
 	case "GEOGRAPHY_OUTPUT_FORMAT":
-		return assignParsedEnumParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
+		return assignParsedParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
 	case "GEOMETRY_OUTPUT_FORMAT":
-		return assignParsedEnumParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
+		return assignParsedParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
 	case "JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC":
 		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcTreatTimestampNtzAsUtc)
 	case "JDBC_USE_SESSION_TIMEZONE":
@@ -926,9 +926,9 @@ func (s *CreateOrAlterTaskRequest) SetParameterFromRaw(key string, value string)
 	case "LOCK_TIMEOUT":
 		return assignParsedParameter(value, strconv.Atoi, &s.LockTimeout)
 	case "LOG_EVENT_LEVEL":
-		return assignParsedEnumParameter(value, ToLogLevel, &s.LogEventLevel)
+		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
 	case "LOG_LEVEL":
-		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
 	case "MULTI_STATEMENT_COUNT":
 		return assignParsedParameter(value, strconv.Atoi, &s.MultiStatementCount)
 	case "NOORDER_SEQUENCE_AS_DEFAULT":
@@ -944,9 +944,9 @@ func (s *CreateOrAlterTaskRequest) SetParameterFromRaw(key string, value string)
 	case "S3_STAGE_VPCE_DNS_NAME":
 		return assignParsedParameter(value, identityParse, &s.S3StageVpceDnsName)
 	case "SERVERLESS_TASK_MAX_STATEMENT_SIZE":
-		return assignParsedEnumParameter(value, ToWarehouseSize, &s.ServerlessTaskMaxStatementSize)
+		return assignParsedParameter(value, ToWarehouseSize, &s.ServerlessTaskMaxStatementSize)
 	case "SERVERLESS_TASK_MIN_STATEMENT_SIZE":
-		return assignParsedEnumParameter(value, ToWarehouseSize, &s.ServerlessTaskMinStatementSize)
+		return assignParsedParameter(value, ToWarehouseSize, &s.ServerlessTaskMinStatementSize)
 	case "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS":
 		return assignParsedParameter(value, strconv.Atoi, &s.StatementQueuedTimeoutInSeconds)
 	case "STATEMENT_TIMEOUT_IN_SECONDS":
@@ -972,21 +972,21 @@ func (s *CreateOrAlterTaskRequest) SetParameterFromRaw(key string, value string)
 	case "TIMESTAMP_OUTPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.TimestampOutputFormat)
 	case "TIMESTAMP_TYPE_MAPPING":
-		return assignParsedEnumParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
+		return assignParsedParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
 	case "TIMESTAMP_TZ_OUTPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.TimestampTzOutputFormat)
 	case "TIMEZONE":
 		return assignParsedParameter(value, identityParse, &s.Timezone)
 	case "TRACE_LEVEL":
-		return assignParsedEnumParameter(value, ToTraceLevel, &s.TraceLevel)
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
 	case "TRANSACTION_ABORT_ON_ERROR":
 		return assignParsedParameter(value, strconv.ParseBool, &s.TransactionAbortOnError)
 	case "TRANSACTION_DEFAULT_ISOLATION_LEVEL":
-		return assignParsedEnumParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
+		return assignParsedParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
 	case "TWO_DIGIT_CENTURY_START":
 		return assignParsedParameter(value, strconv.Atoi, &s.TwoDigitCenturyStart)
 	case "UNSUPPORTED_DDL_ACTION":
-		return assignParsedEnumParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
+		return assignParsedParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
 	case "USE_CACHED_RESULT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.UseCachedResult)
 	case "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS":
@@ -1457,9 +1457,9 @@ func (s *TaskSetRequest) SetParameterFromRaw(key string, value string) error {
 	case "AUTOCOMMIT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.Autocommit)
 	case "BINARY_INPUT_FORMAT":
-		return assignParsedEnumParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
+		return assignParsedParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
 	case "BINARY_OUTPUT_FORMAT":
-		return assignParsedEnumParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
+		return assignParsedParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
 	case "CLIENT_MEMORY_LIMIT":
 		return assignParsedParameter(value, strconv.Atoi, &s.ClientMemoryLimit)
 	case "CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX":
@@ -1475,7 +1475,7 @@ func (s *TaskSetRequest) SetParameterFromRaw(key string, value string) error {
 	case "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY":
 		return assignParsedParameter(value, strconv.Atoi, &s.ClientSessionKeepAliveHeartbeatFrequency)
 	case "CLIENT_TIMESTAMP_TYPE_MAPPING":
-		return assignParsedEnumParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
+		return assignParsedParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
 	case "DATE_INPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.DateInputFormat)
 	case "DATE_OUTPUT_FORMAT":
@@ -1487,9 +1487,9 @@ func (s *TaskSetRequest) SetParameterFromRaw(key string, value string) error {
 	case "ERROR_ON_NONDETERMINISTIC_UPDATE":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ErrorOnNondeterministicUpdate)
 	case "GEOGRAPHY_OUTPUT_FORMAT":
-		return assignParsedEnumParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
+		return assignParsedParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
 	case "GEOMETRY_OUTPUT_FORMAT":
-		return assignParsedEnumParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
+		return assignParsedParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
 	case "JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC":
 		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcTreatTimestampNtzAsUtc)
 	case "JDBC_USE_SESSION_TIMEZONE":
@@ -1499,9 +1499,9 @@ func (s *TaskSetRequest) SetParameterFromRaw(key string, value string) error {
 	case "LOCK_TIMEOUT":
 		return assignParsedParameter(value, strconv.Atoi, &s.LockTimeout)
 	case "LOG_EVENT_LEVEL":
-		return assignParsedEnumParameter(value, ToLogLevel, &s.LogEventLevel)
+		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
 	case "LOG_LEVEL":
-		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
+		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
 	case "MULTI_STATEMENT_COUNT":
 		return assignParsedParameter(value, strconv.Atoi, &s.MultiStatementCount)
 	case "NOORDER_SEQUENCE_AS_DEFAULT":
@@ -1517,9 +1517,9 @@ func (s *TaskSetRequest) SetParameterFromRaw(key string, value string) error {
 	case "S3_STAGE_VPCE_DNS_NAME":
 		return assignParsedParameter(value, identityParse, &s.S3StageVpceDnsName)
 	case "SERVERLESS_TASK_MAX_STATEMENT_SIZE":
-		return assignParsedEnumParameter(value, ToWarehouseSize, &s.ServerlessTaskMaxStatementSize)
+		return assignParsedParameter(value, ToWarehouseSize, &s.ServerlessTaskMaxStatementSize)
 	case "SERVERLESS_TASK_MIN_STATEMENT_SIZE":
-		return assignParsedEnumParameter(value, ToWarehouseSize, &s.ServerlessTaskMinStatementSize)
+		return assignParsedParameter(value, ToWarehouseSize, &s.ServerlessTaskMinStatementSize)
 	case "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS":
 		return assignParsedParameter(value, strconv.Atoi, &s.StatementQueuedTimeoutInSeconds)
 	case "STATEMENT_TIMEOUT_IN_SECONDS":
@@ -1545,25 +1545,25 @@ func (s *TaskSetRequest) SetParameterFromRaw(key string, value string) error {
 	case "TIMESTAMP_OUTPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.TimestampOutputFormat)
 	case "TIMESTAMP_TYPE_MAPPING":
-		return assignParsedEnumParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
+		return assignParsedParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
 	case "TIMESTAMP_TZ_OUTPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.TimestampTzOutputFormat)
 	case "TIMEZONE":
 		return assignParsedParameter(value, identityParse, &s.Timezone)
 	case "TRACE_LEVEL":
-		return assignParsedEnumParameter(value, ToTraceLevel, &s.TraceLevel)
+		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
 	case "TRANSACTION_ABORT_ON_ERROR":
 		return assignParsedParameter(value, strconv.ParseBool, &s.TransactionAbortOnError)
 	case "TRANSACTION_DEFAULT_ISOLATION_LEVEL":
-		return assignParsedEnumParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
+		return assignParsedParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
 	case "TWO_DIGIT_CENTURY_START":
 		return assignParsedParameter(value, strconv.Atoi, &s.TwoDigitCenturyStart)
 	case "UNSUPPORTED_DDL_ACTION":
-		return assignParsedEnumParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
+		return assignParsedParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
 	case "USE_CACHED_RESULT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.UseCachedResult)
 	case "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE":
-		return assignParsedEnumParameter(value, ToWarehouseSize, &s.UserTaskManagedInitialWarehouseSize)
+		return assignParsedParameter(value, ToWarehouseSize, &s.UserTaskManagedInitialWarehouseSize)
 	case "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS":
 		return assignParsedParameter(value, strconv.Atoi, &s.UserTaskMinimumTriggerIntervalInSeconds)
 	case "USER_TASK_TIMEOUT_MS":

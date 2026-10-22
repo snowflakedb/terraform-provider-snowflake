@@ -5,7 +5,6 @@ package testacc
 import (
 	"context"
 	"regexp"
-	"strconv"
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -17,12 +16,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -32,6 +29,12 @@ import (
 )
 
 func TestAcc_WarehouseInteractive_BasicUseCase(t *testing.T) {
+	// TODO(SNOW-3925919): Unskip when can be run on the preprod env
+	// Error: error setting interactive warehouse properties: 000630 (57014): Statement reached its statement or warehouse timeout of 5 second(s) and was canceled.
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() != testenvs.SnowflakeProdEnvironment {
+		t.Skip("Skipping for non-prod Snowflake environments")
+	}
+
 	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
@@ -64,7 +67,7 @@ func TestAcc_WarehouseInteractive_BasicUseCase(t *testing.T) {
 			HasAutoSuspendString(r.IntDefaultString).
 			HasCommentEmpty().
 			HasFullyQualifiedNameString(warehouseId.FullyQualifiedName()),
-		resourceshowoutputassert.WarehouseInteractiveShowOutput(t, ref).
+		resourceshowoutputassert.WarehouseShowOutput(t, ref).
 			HasName(warehouseId.Name()).
 			HasStateNotEmpty(),
 	}
@@ -78,15 +81,13 @@ func TestAcc_WarehouseInteractive_BasicUseCase(t *testing.T) {
 			HasAutoResumeString(r.BooleanFalse).
 			HasCommentString(comment).
 			HasMaxConcurrencyLevel(8),
-		resourceshowoutputassert.WarehouseInteractiveShowOutput(t, ref).
+		resourceshowoutputassert.WarehouseShowOutput(t, ref).
 			HasName(warehouseId.Name()).
 			HasComment(comment),
 	}
 
-	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
-
 	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: interactiveWarehouseProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -94,22 +95,23 @@ func TestAcc_WarehouseInteractive_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create with only required fields
 			{
-				ProtoV6ProviderFactories: interactiveWarehouseProviderFactory,
-				Config:                   accconfig.FromModels(t, basic),
-				Check:                    assertThat(t, basicAssertions...),
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, basicAssertions...),
 			},
-			// import - without optionals, permissive mode
+			// import after minimal config.
+			// Optional fields left out of config are reconciled from SHOW during the import Read, so
+			// they will not match the minimal state and are ignored here (same pattern as the adaptive resource).
+			// show_output carries volatile runtime counters (running, queued, ...) that can change between
+			// apply and import, so it is not verified here (it is asserted in the create/update steps).
 			{
-				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
-				Config:                   accconfig.FromModels(t, providerModelImportPermissiveMode, basic),
-				ResourceName:             ref,
-				ImportState:              true,
-				ImportStateKind:          resource.ImportBlockWithID,
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"warehouse_size", "auto_suspend", "max_cluster_count", "min_cluster_count", "auto_resume", "show_output"},
 			},
 			// set all optional fields
 			{
-				ProtoV6ProviderFactories: interactiveWarehouseProviderFactory,
-				Config:                   accconfig.FromModels(t, withOptionals),
+				Config: accconfig.FromModels(t, withOptionals),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -117,10 +119,17 @@ func TestAcc_WarehouseInteractive_BasicUseCase(t *testing.T) {
 				},
 				Check: assertThat(t, withOptionalsAssertions...),
 			},
+			// import after setting optional fields. warehouse_size is not in config, so it is reconciled
+			// from SHOW on import and ignored here, as is the volatile show_output.
+			{
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"warehouse_size", "show_output"},
+			},
 			// unset all optional fields
 			{
-				ProtoV6ProviderFactories: interactiveWarehouseProviderFactory,
-				Config:                   accconfig.FromModels(t, basic),
+				Config: accconfig.FromModels(t, basic),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -130,7 +139,6 @@ func TestAcc_WarehouseInteractive_BasicUseCase(t *testing.T) {
 			},
 			// change "warehouse_type" externally
 			{
-				ProtoV6ProviderFactories: interactiveWarehouseProviderFactory,
 				PreConfig: func() {
 					testClient().Warehouse.CreateWarehouseWithRequest(t,
 						sdk.NewCreateWarehouseRequest(warehouseId).WithOrReplace(true))
@@ -179,10 +187,8 @@ func TestAcc_WarehouseInteractive_CompleteUseCase(t *testing.T) {
 
 	ref := complete.ResourceReference()
 
-	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
-
 	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: interactiveWarehouseProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -190,8 +196,7 @@ func TestAcc_WarehouseInteractive_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create with all fields set
 			{
-				ProtoV6ProviderFactories: interactiveWarehouseProviderFactory,
-				Config:                   accconfig.FromModels(t, complete),
+				Config: accconfig.FromModels(t, complete),
 				Check: assertThat(
 					t,
 					resourceassert.WarehouseInteractiveResource(t, ref).
@@ -210,7 +215,7 @@ func TestAcc_WarehouseInteractive_CompleteUseCase(t *testing.T) {
 						HasStatementTimeoutInSeconds(4).
 						HasTables(table.ID().FullyQualifiedName()).
 						HasFullyQualifiedNameString(warehouseId.FullyQualifiedName()),
-					resourceshowoutputassert.WarehouseInteractiveShowOutput(t, ref).
+					resourceshowoutputassert.WarehouseShowOutput(t, ref).
 						HasName(warehouseId.Name()).
 						HasComment(comment).
 						HasStateNotEmpty(),
@@ -220,118 +225,10 @@ func TestAcc_WarehouseInteractive_CompleteUseCase(t *testing.T) {
 			// initially_suspended is a create-only field that is not read back from Snowflake, and show_output
 			// carries volatile runtime counters, so both are ignored here.
 			{
-				ProtoV6ProviderFactories: interactiveWarehouseProviderFactory,
-				ResourceName:             ref,
-				ImportState:              true,
-				ImportStateVerify:        true,
-				ImportStateVerifyIgnore:  []string{"initially_suspended", "show_output"},
-			},
-			// import - complete, permissive mode
-			{
-				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
-				Config:                   accconfig.FromModels(t, providerModelImportPermissiveMode, complete),
-				ResourceName:             ref,
-				ImportState:              true,
-				ImportStateKind:          resource.ImportBlockWithID,
-			},
-		},
-	})
-}
-
-func TestAcc_WarehouseInteractive_BasicUseCase_Import(t *testing.T) {
-	id := testClient().Ids.RandomAccountObjectIdentifier()
-	resourceId := helpers.EncodeResourceIdentifier(id)
-
-	basicModel := model.WarehouseInteractiveWithId(id)
-	ref := basicModel.ResourceReference()
-
-	_, cleanup := testClient().Warehouse.CreateInteractiveWithRequest(t, sdk.NewCreateInteractiveWarehouseRequest(id))
-	t.Cleanup(cleanup)
-
-	warehouse, err := testClient().Warehouse.ShowByIDInteractive(t, id)
-	require.NoError(t, err)
-	require.NotNil(t, warehouse.Size)
-	require.NotNil(t, warehouse.MaxClusterCount)
-	require.NotNil(t, warehouse.MinClusterCount)
-	require.NotNil(t, warehouse.AutoSuspend)
-	warehouseSize := string(*warehouse.Size)
-	maxClusterCount := *warehouse.MaxClusterCount
-	minClusterCount := *warehouse.MinClusterCount
-	autoSuspend := *warehouse.AutoSuspend
-	autoResume := strconv.FormatBool(warehouse.AutoResume)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: interactiveWarehouseProviderFactory,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.WarehouseInteractive),
-		Steps: []resource.TestStep{
-			// Import - without optionals
-			{
-				Config:             accconfig.FromModels(t, basicModel),
-				ResourceName:       ref,
-				ImportState:        true,
-				ImportStateId:      resourceId,
-				ImportStatePersist: true,
-				ImportStateCheck: assertThatImport(
-					t,
-					resourceassert.ImportedWarehouseInteractiveResource(t, resourceId).
-						HasName(id.Name()).
-						HasFullyQualifiedName(id.FullyQualifiedName()).
-						HasWarehouseType(string(sdk.WarehouseTypeInteractive)).
-						HasWarehouseSize(warehouseSize).
-						HasMaxClusterCount(maxClusterCount).
-						HasMinClusterCount(minClusterCount).
-						HasAutoSuspend(autoSuspend).
-						HasAutoResume(autoResume).
-						HasNoInitiallySuspended().
-						HasResourceMonitorEmpty().
-						HasCommentEmpty().
-						HasTables().
-						HasFallbackWarehouseEmpty().
-						HasMaxConcurrencyLevel(8).
-						HasStatementQueuedTimeoutInSeconds(0).
-						HasStatementTimeoutInSeconds(5),
-				),
-			},
-			// Expect empty plan after the plan after import is applied.
-			// Removing warehouse_size from the config forces a replacement.
-			{
-				Config: accconfig.FromModels(t, basicModel),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
-						planchecks.ExpectChange(ref, "warehouse_size", tfjson.ActionDelete, new(warehouseSize), nil),
-						planchecks.ExpectChange(ref, "max_cluster_count", tfjson.ActionDelete, new(strconv.Itoa(maxClusterCount)), nil),
-						planchecks.ExpectChange(ref, "min_cluster_count", tfjson.ActionDelete, new(strconv.Itoa(minClusterCount)), nil),
-						planchecks.ExpectChange(ref, "auto_suspend", tfjson.ActionDelete, new(strconv.Itoa(autoSuspend)), new(r.IntDefaultString)),
-						planchecks.ExpectChange(ref, "auto_resume", tfjson.ActionDelete, new(autoResume), new(r.BooleanDefault)),
-					},
-					PostApplyPostRefresh: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
-				Check: assertThat(
-					t,
-					resourceassert.WarehouseInteractiveResource(t, ref).
-						HasName(id.Name()).
-						HasFullyQualifiedName(id.FullyQualifiedName()).
-						HasWarehouseType(string(sdk.WarehouseTypeInteractive)).
-						HasNoWarehouseSize().
-						HasNoMaxClusterCount().
-						HasNoMinClusterCount().
-						HasAutoSuspend(r.IntDefault).
-						HasAutoResume(r.BooleanDefault).
-						HasNoInitiallySuspended().
-						HasResourceMonitorEmpty().
-						HasCommentEmpty().
-						HasTables().
-						HasFallbackWarehouseEmpty().
-						HasMaxConcurrencyLevel(8).
-						HasStatementQueuedTimeoutInSeconds(0).
-						HasStatementTimeoutInSeconds(5),
-				),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"initially_suspended", "show_output"},
 			},
 		},
 	})

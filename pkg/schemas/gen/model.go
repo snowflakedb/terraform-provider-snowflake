@@ -2,7 +2,6 @@ package gen
 
 import (
 	"fmt"
-	"log"
 	"slices"
 	"strings"
 
@@ -28,7 +27,7 @@ func (m ShowResultSchemaModel) Filename() string {
 	return snake + "_gen.go"
 }
 
-func ModelFromStructDetails(sdkStruct ShowResultSchemaDetails, preamble *genhelpers.PreambleModel, _ *log.Logger) ShowResultSchemaModel {
+func ModelFromStructDetails(sdkStruct ShowResultSchemaDetails, preamble *genhelpers.PreambleModel) ShowResultSchemaModel {
 	if sdkStruct.IsDescribe && sdkStruct.UsedAsListEntry {
 		panic(fmt.Sprintf("%s: IsDescribe and UsedAsListEntry are mutually exclusive", sdkStruct.Name))
 	}
@@ -76,13 +75,9 @@ func ModelFromStructDetails(sdkStruct ShowResultSchemaDetails, preamble *genhelp
 		panic(fmt.Sprintf("TypeOverrides for %s contain unknown schema keys: %s", sdkStruct.Name, strings.Join(unmatched, ", ")))
 	}
 
-	sdkType := sdkStruct.Name
-	if sdkStruct.SdkType != "" {
-		sdkType = sdkStruct.SdkType
-	}
 	return ShowResultSchemaModel{
 		Name:              name,
-		SdkType:           sdkType,
+		SdkType:           sdkStruct.Name,
 		IsDescribe:        sdkStruct.IsDescribe,
 		UsedAsListEntry:   sdkStruct.UsedAsListEntry,
 		AdditionalMapping: len(sdkStruct.ManualFields) > 0,

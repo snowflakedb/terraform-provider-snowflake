@@ -7,46 +7,6 @@ import (
 	"strings"
 )
 
-type WarehouseState string
-
-const (
-	WarehouseStateSuspended  WarehouseState = "SUSPENDED"
-	WarehouseStateSuspending WarehouseState = "SUSPENDING"
-	WarehouseStateStarted    WarehouseState = "STARTED"
-	WarehouseStateResizing   WarehouseState = "RESIZING"
-	WarehouseStateResuming   WarehouseState = "RESUMING"
-	WarehouseStateEnabled    WarehouseState = "ENABLED"
-)
-
-var AllWarehouseStates = []WarehouseState{
-	WarehouseStateSuspended,
-	WarehouseStateSuspending,
-	WarehouseStateStarted,
-	WarehouseStateResizing,
-	WarehouseStateResuming,
-	WarehouseStateEnabled,
-}
-
-func ToWarehouseState(s string) (WarehouseState, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(WarehouseStateSuspended):
-		return WarehouseStateSuspended, nil
-	case string(WarehouseStateSuspending):
-		return WarehouseStateSuspending, nil
-	case string(WarehouseStateStarted):
-		return WarehouseStateStarted, nil
-	case string(WarehouseStateResizing):
-		return WarehouseStateResizing, nil
-	case string(WarehouseStateResuming):
-		return WarehouseStateResuming, nil
-	case string(WarehouseStateEnabled):
-		return WarehouseStateEnabled, nil
-	default:
-		return "", fmt.Errorf("invalid warehouse state: %s", s)
-	}
-}
-
 type WarehouseType string
 
 const (
@@ -221,30 +181,6 @@ func ToWarehouseResourceConstraint(s string) (WarehouseResourceConstraint, error
 	}
 }
 
-type WarehouseGeneration string
-
-const (
-	WarehouseGenerationStandardGen1 WarehouseGeneration = "1"
-	WarehouseGenerationStandardGen2 WarehouseGeneration = "2"
-)
-
-var AllWarehouseGenerations = []WarehouseGeneration{
-	WarehouseGenerationStandardGen1,
-	WarehouseGenerationStandardGen2,
-}
-
-func ToWarehouseGeneration(s string) (WarehouseGeneration, error) {
-	s = strings.ToLower(s)
-	switch s {
-	case string(WarehouseGenerationStandardGen1):
-		return WarehouseGenerationStandardGen1, nil
-	case string(WarehouseGenerationStandardGen2):
-		return WarehouseGenerationStandardGen2, nil
-	default:
-		return "", fmt.Errorf("invalid warehouse generation: %s", s)
-	}
-}
-
 type MaxQueryPerformanceLevel string
 
 const (
@@ -306,5 +242,45 @@ func ToMaxQueryPerformanceLevel(s string) (MaxQueryPerformanceLevel, error) {
 		return MaxQueryPerformanceLevelX4large, nil
 	default:
 		return "", fmt.Errorf("invalid max query performance level: %s", s)
+	}
+}
+
+type WarehouseState string
+
+const (
+	WarehouseStateSuspended  WarehouseState = "SUSPENDED"
+	WarehouseStateSuspending WarehouseState = "SUSPENDING"
+	WarehouseStateStarted    WarehouseState = "STARTED"
+	WarehouseStateResizing   WarehouseState = "RESIZING"
+	WarehouseStateResuming   WarehouseState = "RESUMING"
+	WarehouseStateEnabled    WarehouseState = "ENABLED"
+)
+
+var AllWarehouseStates = []WarehouseState{
+	WarehouseStateSuspended,
+	WarehouseStateSuspending,
+	WarehouseStateStarted,
+	WarehouseStateResizing,
+	WarehouseStateResuming,
+	WarehouseStateEnabled,
+}
+
+func ToWarehouseState(s string) (WarehouseState, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(WarehouseStateSuspended):
+		return WarehouseStateSuspended, nil
+	case string(WarehouseStateSuspending):
+		return WarehouseStateSuspending, nil
+	case string(WarehouseStateStarted):
+		return WarehouseStateStarted, nil
+	case string(WarehouseStateResizing):
+		return WarehouseStateResizing, nil
+	case string(WarehouseStateResuming):
+		return WarehouseStateResuming, nil
+	case string(WarehouseStateEnabled):
+		return WarehouseStateEnabled, nil
+	default:
+		return "", fmt.Errorf("invalid warehouse state: %s", s)
 	}
 }

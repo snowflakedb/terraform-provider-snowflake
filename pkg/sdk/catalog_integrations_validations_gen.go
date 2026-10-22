@@ -5,71 +5,31 @@ package sdk
 import "fmt"
 
 var (
-	_ validatable = new(CreateAwsGlueCatalogIntegrationOptions)
-	_ validatable = new(CreateIcebergRestCatalogIntegrationOptions)
-	_ validatable = new(CreateObjectStorageCatalogIntegrationOptions)
-	_ validatable = new(CreateOpenCatalogCatalogIntegrationOptions)
+	_ validatable = new(CreateCatalogIntegrationOptions)
 	_ validatable = new(AlterCatalogIntegrationOptions)
 	_ validatable = new(DropCatalogIntegrationOptions)
 	_ validatable = new(ShowCatalogIntegrationOptions)
 	_ validatable = new(DescribeCatalogIntegrationOptions)
 )
 
-func (opts *CreateAwsGlueCatalogIntegrationOptions) validate() error {
+func (opts *CreateCatalogIntegrationOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, errInvalidIdentifier("CreateAwsGlueCatalogIntegrationOptions", "name"))
+		errs = append(errs, errInvalidIdentifier("CreateCatalogIntegrationOptions", "name"))
 	}
-	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
-		errs = append(errs, errOneOf("CreateAwsGlueCatalogIntegrationOptions", "OrReplace", "IfNotExists"))
+	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
+		errs = append(errs, errOneOf("CreateCatalogIntegrationOptions", "IfNotExists", "OrReplace"))
 	}
-	return JoinErrors(errs...)
-}
-
-func (opts *CreateIcebergRestCatalogIntegrationOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
+	if !exactlyOneValueSet(opts.AwsGlueCatalogSourceParams, opts.ObjectStorageCatalogSourceParams, opts.OpenCatalogCatalogSourceParams, opts.IcebergRestCatalogSourceParams) {
+		errs = append(errs, errExactlyOneOf("CreateCatalogIntegrationOptions", "AwsGlueCatalogSourceParams", "ObjectStorageCatalogSourceParams", "OpenCatalogCatalogSourceParams", "IcebergRestCatalogSourceParams"))
 	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, errInvalidIdentifier("CreateIcebergRestCatalogIntegrationOptions", "name"))
-	}
-	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
-		errs = append(errs, errOneOf("CreateIcebergRestCatalogIntegrationOptions", "OrReplace", "IfNotExists"))
-	}
-	if !exactlyOneValueSet(opts.OAuthRestAuthentication, opts.BearerRestAuthentication, opts.SigV4RestAuthentication) {
-		errs = append(errs, errExactlyOneOf("CreateIcebergRestCatalogIntegrationOptions", "OAuthRestAuthentication", "BearerRestAuthentication", "SigV4RestAuthentication"))
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *CreateObjectStorageCatalogIntegrationOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, errInvalidIdentifier("CreateObjectStorageCatalogIntegrationOptions", "name"))
-	}
-	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
-		errs = append(errs, errOneOf("CreateObjectStorageCatalogIntegrationOptions", "OrReplace", "IfNotExists"))
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *CreateOpenCatalogCatalogIntegrationOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, errInvalidIdentifier("CreateOpenCatalogCatalogIntegrationOptions", "name"))
-	}
-	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
-		errs = append(errs, errOneOf("CreateOpenCatalogCatalogIntegrationOptions", "OrReplace", "IfNotExists"))
+	if valueSet(opts.IcebergRestCatalogSourceParams) {
+		if !exactlyOneValueSet(opts.IcebergRestCatalogSourceParams.OAuthRestAuthentication, opts.IcebergRestCatalogSourceParams.BearerRestAuthentication, opts.IcebergRestCatalogSourceParams.SigV4RestAuthentication) {
+			errs = append(errs, errExactlyOneOf("CreateCatalogIntegrationOptions.IcebergRestCatalogSourceParams", "OAuthRestAuthentication", "BearerRestAuthentication", "SigV4RestAuthentication"))
+		}
 	}
 	return JoinErrors(errs...)
 }

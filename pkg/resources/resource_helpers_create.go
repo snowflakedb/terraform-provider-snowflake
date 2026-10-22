@@ -1,8 +1,6 @@
 package resources
 
 import (
-	"fmt"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -197,66 +195,6 @@ func attributeMappedValueCreateBuilderNested[MappedType any, RequestBuilder any]
 	return nil
 }
 
-// singleBlockAttributeCreate parses a MaxItems=1 list block when it is set.
-// parse receives the nested prefix "<key>.0." and reads fields with the existing attribute helpers.
-func singleBlockAttributeCreate[Value any, RequestBuilder any](d *schema.ResourceData, key string, setValue func(Value) RequestBuilder, parse func(*schema.ResourceData, string) (Value, error)) error {
-	if _, ok := d.GetOk(key); !ok {
-		return nil
-	}
-	value, err := parse(d, key+".0.")
-	if err != nil {
-		return err
-	}
-	setValue(value)
-	return nil
-}
-
-// listBlockAttributeCreate parses a TypeList of nested blocks into createField.
-// parse receives the nested prefix "<key>.<index>." and reads fields with the existing attribute helpers.
-// An empty list leaves createField untouched.
-func listBlockAttributeCreate[T any](d *schema.ResourceData, key string, createField *[]T, mapper func(*schema.ResourceData, string) (T, error)) error {
-	count := d.Get(key + ".#").(int)
-	if count == 0 {
-		return nil
-	}
-	values := make([]T, count)
-	for i := range count {
-		value, err := mapper(d, fmt.Sprintf("%s.%d.", key, i))
-		if err != nil {
-			return err
-		}
-		values[i] = value
-	}
-	*createField = values
-	return nil
-}
-
-// setValueCreate maps each element of a schema.Set attribute and assigns the mapped slice when the
-// attribute is set. An absent or empty set leaves createField untouched.
-func setValueCreate[T any](d *schema.ResourceData, key string, createField *[]T, mapper func(any) (T, error)) error {
-	if v, ok := d.GetOk(key); ok {
-		mappedValue, err := collections.MapErr(v.(*schema.Set).List(), mapper)
-		if err != nil {
-			return err
-		}
-		*createField = mappedValue
-	}
-	return nil
-}
-
-// listValueCreate maps each element of a TypeList attribute and assigns the mapped slice when the
-// attribute is set. An absent list leaves createField untouched.
-func listValueCreate[T any](d *schema.ResourceData, key string, createField *[]T, mapper func(any) (T, error)) error {
-	if v, ok := d.GetOk(key); ok {
-		mappedValue, err := collections.MapErr(v.([]any), mapper)
-		if err != nil {
-			return err
-		}
-		*createField = mappedValue
-	}
-	return nil
-}
-
 // setMappedValueCreateBuilder maps each element of a schema.Set attribute and passes the mapped
 // slice to setValue when the attribute is set. An absent or empty set leaves the request unchanged.
 func setMappedValueCreateBuilder[T any, RequestBuilder any](d *schema.ResourceData, key string, setValue func([]T) RequestBuilder, mapper func(any) (T, error)) error {
@@ -268,22 +206,6 @@ func setMappedValueCreateBuilder[T any, RequestBuilder any](d *schema.ResourceDa
 		setValue(mappedValue)
 	}
 	return nil
-}
-
-// listObjects maps a list of nested objects. raw must be a []any whose elements are map[string]any.
-func listObjects[T any](raw any, mapper func(map[string]any) (T, error)) ([]T, error) {
-	list, ok := raw.([]any)
-	if !ok {
-		return nil, fmt.Errorf("expected list of objects, got %T", raw)
-	}
-	return collections.MapErr(list, func(item any) (T, error) {
-		block, ok := item.(map[string]any)
-		if !ok {
-			var zero T
-			return zero, fmt.Errorf("expected object, got %T", item)
-		}
-		return mapper(block)
-	})
 }
 
 func copyGrantsAttributeCreate(d *schema.ResourceData, isOrReplace bool, orReplaceField, copyGrantsField **bool) error {

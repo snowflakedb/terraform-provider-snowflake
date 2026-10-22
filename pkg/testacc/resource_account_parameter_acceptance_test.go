@@ -24,7 +24,7 @@ func TestAcc_AccountParameter_BasicUseCase(t *testing.T) {
 		defaultLevel sdk.ParameterType
 	}{
 		{sdk.AccountParameterAllowIdToken, "true", sdk.ParameterTypeSnowflakeDefault},
-		{sdk.AccountParameterPreventLoadFromInlineUrl, "true", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterPreventLoadFromInlineURL, "true", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterRequireStorageIntegrationForStageCreation, "true", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterInitialReplicationSizeLimitInTb, "3.0", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterCsvTimestampFormat, "YYYY-MM-DD", sdk.ParameterTypeSnowflakeDefault},

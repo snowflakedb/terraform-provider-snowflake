@@ -104,11 +104,11 @@ func (t *TaskResourceAssert) HasDefaultServerlessTaskMinStatementSize() *TaskRes
 }
 
 func (t *TaskResourceAssert) HasDefaultServerlessTaskMaxStatementSize() *TaskResourceAssert {
-	t.ValueSet("serverless_task_max_statement_size", string(sdk.WarehouseSizeXXLarge))
+	t.ValueSet("serverless_task_max_statement_size", "X2Large")
 	return t
 }
 
 func (t *TaskResourceAssert) HasDefaultUserTaskManagedInitialWarehouseSize() *TaskResourceAssert {
-	t.ValueSet("user_task_managed_initial_warehouse_size", string(sdk.WarehouseSizeMedium))
+	t.ValueSet("user_task_managed_initial_warehouse_size", "Medium")
 	return t
 }

@@ -3,11 +3,9 @@
 package resourceassert
 
 import (
-	"strconv"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type ComputePoolResourceAssert struct {
@@ -44,11 +42,6 @@ func (c *ComputePoolResourceAssert) HasAutoResume(expected string) *ComputePoolR
 	return c
 }
 
-func (c *ComputePoolResourceAssert) HasAutoResumeBool(expected bool) *ComputePoolResourceAssert {
-	c.StringValueSet("auto_resume", strconv.FormatBool(expected))
-	return c
-}
-
 func (c *ComputePoolResourceAssert) HasAutoSuspendSecs(expected int) *ComputePoolResourceAssert {
 	c.IntValueSet("auto_suspend_secs", expected)
 	return c
@@ -69,11 +62,6 @@ func (c *ComputePoolResourceAssert) HasForApplication(expected string) *ComputeP
 	return c
 }
 
-func (c *ComputePoolResourceAssert) HasForApplicationSdk(expected sdk.AccountObjectIdentifier) *ComputePoolResourceAssert {
-	c.StringValueSet("for_application", expected.Name())
-	return c
-}
-
 func (c *ComputePoolResourceAssert) HasFullyQualifiedName(expected string) *ComputePoolResourceAssert {
 	c.StringValueSet("fully_qualified_name", expected)
 	return c
@@ -84,18 +72,8 @@ func (c *ComputePoolResourceAssert) HasInitiallySuspended(expected string) *Comp
 	return c
 }
 
-func (c *ComputePoolResourceAssert) HasInitiallySuspendedBool(expected bool) *ComputePoolResourceAssert {
-	c.StringValueSet("initially_suspended", strconv.FormatBool(expected))
-	return c
-}
-
 func (c *ComputePoolResourceAssert) HasInstanceFamily(expected string) *ComputePoolResourceAssert {
 	c.StringValueSet("instance_family", expected)
-	return c
-}
-
-func (c *ComputePoolResourceAssert) HasInstanceFamilySdk(expected sdk.ComputePoolInstanceFamily) *ComputePoolResourceAssert {
-	c.StringValueSet("instance_family", string(expected))
 	return c
 }
 

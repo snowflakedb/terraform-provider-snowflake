@@ -198,6 +198,26 @@ func init() {
 
 	accountsTests.Alter.
 		withAdditionalSqlCasef(
+			"sql_Alter_Set_LegacyParameters",
+			func(opts *AlterAccountOptions) {
+				opts.Set = &AccountSet{
+					LegacyParameters: &AccountLevelParameters{
+						AccountParameters: &LegacyAccountParameters{
+							ClientEncryptionKeySize:       new(128),
+							PreventUnloadToInternalStages: new(true),
+						},
+						SessionParameters: &SessionParameters{
+							JsonIndent: new(16),
+						},
+						ObjectParameters: &ObjectParameters{
+							MaxDataExtensionTimeInDays: new(30),
+						},
+					},
+				}
+			},
+			`ALTER ACCOUNT SET CLIENT_ENCRYPTION_KEY_SIZE = 128, PREVENT_UNLOAD_TO_INTERNAL_STAGES = true, JSON_INDENT = 16, MAX_DATA_EXTENSION_TIME_IN_DAYS = 30`,
+		).
+		withAdditionalSqlCasef(
 			"sql_Alter_Set_FeaturePolicy",
 			func(opts *AlterAccountOptions) {
 				opts.Set = &AccountSet{FeaturePolicySet: &AccountFeaturePolicySet{FeaturePolicy: &policyId}}
@@ -338,7 +358,7 @@ func init() {
 						ClientResultColumnCaseInsensitive:                new(true),
 						ClientSessionKeepAlive:                           new(true),
 						ClientSessionKeepAliveHeartbeatFrequency:         new(3599),
-						ClientTimestampTypeMapping:                       new(ClientTimestampTypeMappingTimestampNtz),
+						ClientTimestampTypeMapping:                       new(ClientTimestampTypeMappingNtz),
 						CortexEnabledCrossRegion:                         new("ANY_REGION"),
 						CortexModelsAllowlist:                            new("All"),
 						CsvTimestampFormat:                               new("YYYY-MM-DD"),
@@ -368,8 +388,8 @@ func init() {
 						EventTable:                                       new(eventTableId),
 						ExternalOauthAddPrivilegedRolesToBlockedList:     new(false),
 						ExternalVolume:                                   new(externalVolumeId),
-						GeographyOutputFormat:                            new(GeographyOutputFormatWkt),
-						GeometryOutputFormat:                             new(GeometryOutputFormatWkt),
+						GeographyOutputFormat:                            new(GeographyOutputFormatWKT),
+						GeometryOutputFormat:                             new(GeometryOutputFormatWKT),
 						HybridTableLockTimeout:                           new(3599),
 						InitialReplicationSizeLimitInTb:                  new(9.9),
 						JdbcTreatDecimalAsInt:                            new(false),
@@ -418,7 +438,7 @@ func init() {
 						TimestampLtzOutputFormat:                         new("YYYY-MM-DD"),
 						TimestampNtzOutputFormat:                         new("YYYY-MM-DD"),
 						TimestampOutputFormat:                            new("YYYY-MM-DD"),
-						TimestampTypeMapping:                             new(TimestampTypeMappingTimestampLtz),
+						TimestampTypeMapping:                             new(TimestampTypeMappingLtz),
 						TimestampTzOutputFormat:                          new("YYYY-MM-DD"),
 						Timezone:                                         new("Europe/London"),
 						TimeInputFormat:                                  new("YYYY-MM-DD"),
@@ -453,6 +473,27 @@ func init() {
 				opts.Drop = &AccountDrop{OldOrganizationUrl: new(true)}
 			},
 			`ALTER ACCOUNT %s DROP OLD ORGANIZATION URL`, id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_Unset_LegacyParameters",
+			func(opts *AlterAccountOptions) {
+				opts.Unset = &AccountUnset{
+					LegacyParameters: &AccountLevelParametersUnset{
+						AccountParameters: &LegacyAccountParametersUnset{
+							InitialReplicationSizeLimitInTB: new(true),
+							SSOLoginPage:                    new(true),
+						},
+						SessionParameters: &SessionParametersUnset{
+							SimulatedDataSharingConsumer: new(true),
+							Timezone:                     new(true),
+						},
+						ObjectParameters: &ObjectParametersUnset{
+							DefaultDDLCollation: new(true),
+						},
+					},
+				}
+			},
+			`ALTER ACCOUNT UNSET INITIAL_REPLICATION_SIZE_LIMIT_IN_TB, SSO_LOGIN_PAGE, SIMULATED_DATA_SHARING_CONSUMER, TIMEZONE, DEFAULT_DDL_COLLATION`,
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_Unset_ConsumptionBillingEntity",

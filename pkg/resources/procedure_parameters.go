@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -14,7 +14,7 @@ import (
 var procedureParametersSchema = make(map[string]*schema.Schema)
 
 func init() {
-	for _, p := range defs.ParameterDefsForLevel(ssot.ParameterLevelProcedure) {
+	for _, p := range defs.ParameterDefsForLevel(parameterdefs.ParameterLevelProcedure) {
 		procedureParametersSchema[p.FieldName()] = parameterSchema(p)
 	}
 }

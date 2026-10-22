@@ -8,7 +8,6 @@ import (
 
 func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ComputePoolState]{"ComputePoolState", AllComputePoolStates, ToComputePoolState})
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ComputePoolInstanceFamily]{"ComputePoolInstanceFamily", AllComputePoolInstanceFamilies, ToComputePoolInstanceFamily})
 }
 
 var computePoolsTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()

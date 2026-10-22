@@ -29,11 +29,10 @@ var icebergTableFromRestSchema = collections.MergeMaps(
 			Description:  "Specifies the name of the table as it appears in the external catalog.",
 		},
 		"catalog_namespace": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			ForceNew:         true,
-			DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("catalog_namespace"),
-			Description:      "Specifies the namespace (or database) in the external catalog that the table belongs to. If not specified, the catalog integration's default namespace is used.",
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: "Specifies the namespace (or database) in the external catalog that the table belongs to. If not specified, the catalog integration's default namespace is used.",
 		},
 		"path_layout": icebergTablePathLayoutSchema(),
 		"auto_refresh": {

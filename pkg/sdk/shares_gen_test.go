@@ -17,7 +17,6 @@ var (
 
 const (
 	case_Shares_validation_Create_name_ValidIdentifier                  testCaseName = "validation_Create_name_ValidIdentifier"
-	case_Shares_validation_Create_opts_ConflictingFields                testCaseName = "validation_Create_opts_ConflictingFields"
 	case_Shares_sql_Create_basic                                        testCaseName = "sql_Create_basic"
 	case_Shares_sql_Create_all                                          testCaseName = "sql_Create_all"
 	case_Shares_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
@@ -29,7 +28,7 @@ const (
 	case_Shares_validation_Alter_Remove_Accounts_ValidIdentifier        testCaseName = "validation_Alter_Remove_Accounts_ValidIdentifier"
 	case_Shares_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_Shares_validation_Alter_Set_Accounts_ValidIdentifier           testCaseName = "validation_Alter_Set_Accounts_ValidIdentifier"
-	case_Shares_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Shares_validation_Alter_opts_Unset_ExactlyOneValueSet_NoneSet  testCaseName = "validation_Alter_opts_Unset_ExactlyOneValueSet_NoneSet"
 	case_Shares_validation_Alter_SetTags_ValidIdentifier                testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_Shares_sql_Alter_Add                                           testCaseName = "sql_Alter_Add"
 	case_Shares_sql_Alter_Remove                                        testCaseName = "sql_Alter_Remove"
@@ -72,14 +71,6 @@ var sharesTests = SharesTestsContext{
 				ExpectedErr: errInvalidIdentifier("CreateShareOptions", "name"),
 				DefaultModify: func(opts *CreateShareOptions) {
 					opts.name = emptyAccountObjectIdentifier
-				},
-			},
-			validationCase[*CreateShareOptions]{
-				Name:        case_Shares_validation_Create_opts_ConflictingFields,
-				ExpectedErr: errOneOf("CreateShareOptions", "OrReplace", "IfNotExists"),
-				DefaultModify: func(opts *CreateShareOptions) {
-					opts.OrReplace = new(true)
-					opts.IfNotExists = new(true)
 				},
 			},
 		).
@@ -178,8 +169,8 @@ var sharesTests = SharesTestsContext{
 				},
 			},
 			validationCase[*AlterShareOptions]{
-				Name:        case_Shares_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterShareOptions.Unset", "Comment"),
+				Name:        case_Shares_validation_Alter_opts_Unset_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterShareOptions.Unset", "Comment"),
 				DefaultModify: func(opts *AlterShareOptions) {
 					opts.Unset = &ShareUnset{}
 					opts.Unset.Comment = nil

@@ -89,8 +89,6 @@ type AzurePushParams struct {
 type EmailParams struct {
 	notificationType  bool                                      `ddl:"static" sql:"TYPE = EMAIL"`
 	AllowedRecipients []NotificationIntegrationAllowedRecipient `ddl:"parameter,parentheses" sql:"ALLOWED_RECIPIENTS"`
-	DefaultRecipients []NotificationIntegrationAllowedRecipient `ddl:"parameter,parentheses" sql:"DEFAULT_RECIPIENTS"`
-	DefaultSubject    *string                                   `ddl:"parameter,single_quotes" sql:"DEFAULT_SUBJECT"`
 }
 
 type WebhookParams struct {

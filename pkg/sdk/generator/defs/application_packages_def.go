@@ -40,7 +40,7 @@ var applicationPackageAddPatchForVersion = g.NewQueryStruct("AddPatchForVersion"
 var applicationPackageSet = g.NewQueryStruct("ApplicationPackageSet").
 	OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions().NoQuotes()).
 	OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions().NoQuotes()).
-	OptionalAssignment("DEFAULT_DDL_COLLATION", g.KindOfT[sdkcommons.StringAllowEmpty](), g.ParameterOptions()).
+	OptionalTextAssignment("DEFAULT_DDL_COLLATION", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 	PredefinedQueryStructField("Distribution", "*Distribution", g.ParameterOptions().SQL("DISTRIBUTION"))
 
@@ -65,7 +65,7 @@ var applicationPackagesDef = g.NewInterface(
 		Name().
 		OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions().NoQuotes()).
 		OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions().NoQuotes()).
-		OptionalAssignment("DEFAULT_DDL_COLLATION", g.KindOfT[sdkcommons.StringAllowEmpty](), g.ParameterOptions()).
+		OptionalTextAssignment("DEFAULT_DDL_COLLATION", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 		PredefinedQueryStructField("Distribution", "*Distribution", g.ParameterOptions().SQL("DISTRIBUTION")).
 		OptionalTags().

@@ -1,12 +1,18 @@
 package sdk
 
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
+
 func init() {
 	id := computePoolsTestIdAccountObjectIdentifier
 	appId := randomAccountObjectIdentifier()
 	tagId := NewAccountObjectIdentifier("tag1")
 	tagId2 := NewAccountObjectIdentifier("tag2")
 	setComment := "set-comment"
-	backupInstanceFamilies := []ComputePoolInstanceFamilyListItem{
+	backupInstanceFamilies := []ComputePoolBackupInstanceFamilyListItem{
 		{Value: ComputePoolInstanceFamilyCpuX64M},
 		{Value: ComputePoolInstanceFamilyCpuX64S},
 	}
@@ -17,7 +23,7 @@ func init() {
 				name:           id,
 				MinNodes:       1,
 				MaxNodes:       3,
-				InstanceFamily: ComputePoolInstanceFamilyCpuX64Xs,
+				InstanceFamily: ComputePoolInstanceFamilyCpuX64XS,
 			}
 		}).
 		withAdditionalValidationCase(
@@ -61,7 +67,7 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_Create_backupInstanceFamilies_singleEntry",
 			func(opts *CreateComputePoolOptions) {
-				opts.BackupInstanceFamilies = []ComputePoolInstanceFamilyListItem{{Value: ComputePoolInstanceFamilyCpuX64S}}
+				opts.BackupInstanceFamilies = []ComputePoolBackupInstanceFamilyListItem{{Value: ComputePoolInstanceFamilyCpuX64S}}
 			},
 			"CREATE COMPUTE POOL %s MIN_NODES = 1 MAX_NODES = 3 INSTANCE_FAMILY = CPU_X64_XS BACKUP_INSTANCE_FAMILIES = ('CPU_X64_S')",
 			id.FullyQualifiedName(),
@@ -203,4 +209,79 @@ func init() {
 	computePoolsTests.Describe.
 		withExpectedSqlf(case_ComputePools_sql_Describe_basic,
 			"DESCRIBE COMPUTE POOL %s", id.FullyQualifiedName())
+}
+
+func Test_ComputePool_ToComputePoolInstanceFamily(t *testing.T) {
+	type test struct {
+		input string
+		want  ComputePoolInstanceFamily
+	}
+
+	valid := []test{
+		{input: "cpu_x64_xs", want: ComputePoolInstanceFamilyCpuX64XS},
+		{input: "CPU_X64_XS", want: ComputePoolInstanceFamilyCpuX64XS},
+		{input: "CPU_X64_S", want: ComputePoolInstanceFamilyCpuX64S},
+		{input: "CPU_X64_M", want: ComputePoolInstanceFamilyCpuX64M},
+		{input: "CPU_X64_L", want: ComputePoolInstanceFamilyCpuX64L},
+		{input: "HIGHMEM_X64_S", want: ComputePoolInstanceFamilyHighMemX64S},
+		{input: "HIGHMEM_X64_M", want: ComputePoolInstanceFamilyHighMemX64M},
+		{input: "HIGHMEM_X64_L", want: ComputePoolInstanceFamilyHighMemX64L},
+		{input: "HIGHMEM_X64_SL", want: ComputePoolInstanceFamilyHighMemX64SL},
+		{input: "GPU_NV_S", want: ComputePoolInstanceFamilyGpuNvS},
+		{input: "GPU_NV_M", want: ComputePoolInstanceFamilyGpuNvM},
+		{input: "GPU_NV_L", want: ComputePoolInstanceFamilyGpuNvL},
+		{input: "GPU_NV_XS", want: ComputePoolInstanceFamilyGpuNvXS},
+		{input: "GPU_NV_SM", want: ComputePoolInstanceFamilyGpuNvSM},
+		{input: "GPU_NV_2M", want: ComputePoolInstanceFamilyGpuNv2M},
+		{input: "GPU_NV_3M", want: ComputePoolInstanceFamilyGpuNv3M},
+		{input: "GPU_NV_SL", want: ComputePoolInstanceFamilyGpuNvSL},
+		{input: "GEN_ARM_G1_2", want: ComputePoolInstanceFamilyGenArmG1_2},
+		{input: "GEN_ARM_G1_4", want: ComputePoolInstanceFamilyGenArmG1_4},
+		{input: "GEN_ARM_G1_8", want: ComputePoolInstanceFamilyGenArmG1_8},
+		{input: "GEN_ARM_G1_16", want: ComputePoolInstanceFamilyGenArmG1_16},
+		{input: "GEN_ARM_G1_32", want: ComputePoolInstanceFamilyGenArmG1_32},
+		{input: "GEN_X64_G2_2", want: ComputePoolInstanceFamilyGenX64G2_2},
+		{input: "GEN_X64_G2_4", want: ComputePoolInstanceFamilyGenX64G2_4},
+		{input: "GEN_X64_G2_8", want: ComputePoolInstanceFamilyGenX64G2_8},
+		{input: "GEN_X64_G2_16", want: ComputePoolInstanceFamilyGenX64G2_16},
+		{input: "GEN_X64_G2_32", want: ComputePoolInstanceFamilyGenX64G2_32},
+		{input: "MEM_X64_G2_8", want: ComputePoolInstanceFamilyMemX64G2_8},
+		{input: "MEM_X64_G2_32", want: ComputePoolInstanceFamilyMemX64G2_32},
+		{input: "MEM_X64_G2_64", want: ComputePoolInstanceFamilyMemX64G2_64},
+		{input: "MEM_X64_G2_96", want: ComputePoolInstanceFamilyMemX64G2_96},
+		{input: "MEM_X64_G2_192", want: ComputePoolInstanceFamilyMemX64G2_192},
+		{input: "GPU_L40S_G1_8", want: ComputePoolInstanceFamilyGpuL40SG1_8},
+		{input: "GPU_L40S_G1_16", want: ComputePoolInstanceFamilyGpuL40SG1_16},
+		{input: "GPU_L40S_G1_48", want: ComputePoolInstanceFamilyGpuL40SG1_48},
+		{input: "GPU_L40S_G1_192", want: ComputePoolInstanceFamilyGpuL40SG1_192},
+		{input: "GPU_R6K_G1_8", want: ComputePoolInstanceFamilyGpuR6KG1_8},
+		{input: "GPU_R6K_G1_16", want: ComputePoolInstanceFamilyGpuR6KG1_16},
+		{input: "GPU_R6K_G1_32", want: ComputePoolInstanceFamilyGpuR6KG1_32},
+		{input: "GPU_R6K_G1_48", want: ComputePoolInstanceFamilyGpuR6KG1_48},
+		{input: "GPU_R6K_G1_96", want: ComputePoolInstanceFamilyGpuR6KG1_96},
+		{input: "GPU_R6K_G1_192", want: ComputePoolInstanceFamilyGpuR6KG1_192},
+		{input: "GPU_A100_G1_12", want: ComputePoolInstanceFamilyGpuA100G1_12},
+		{input: "GPU_A100_G1_48", want: ComputePoolInstanceFamilyGpuA100G1_48},
+	}
+
+	invalid := []test{
+		{input: ""},
+		{input: "foo"},
+		{input: "cpux64xs"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToComputePoolInstanceFamily(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToComputePoolInstanceFamily(tc.input)
+			require.Error(t, err)
+		})
+	}
 }

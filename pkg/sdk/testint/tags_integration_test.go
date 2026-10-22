@@ -741,7 +741,7 @@ func TestInt_TagsAssociations(t *testing.T) {
 		id := db.ID()
 
 		err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithSetTags(tags))
-		require.ErrorContains(t, err, "is a read-only database and cannot be modified.")
+		require.ErrorContains(t, err, "is a read-only secondary database and cannot be modified.")
 	})
 
 	databaseObjectTestCases := []struct {
@@ -946,22 +946,6 @@ func TestInt_TagsAssociations(t *testing.T) {
 			},
 			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
 				return client.StorageLifecyclePolicies.Alter(ctx, sdk.NewAlterStorageLifecyclePolicyRequest(id).WithUnsetTags(tags))
-			},
-		},
-		{
-			name:       "ProjectionPolicy",
-			objectType: sdk.ObjectTypeProjectionPolicy,
-			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {
-				id, cleanup := testClientHelper().ProjectionPolicy.CreateProjectionPolicy(t)
-				policy, err := client.ProjectionPolicies.ShowByID(ctx, id)
-				require.NoError(t, err)
-				return policy, cleanup
-			},
-			setTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.TagAssociation) error {
-				return client.ProjectionPolicies.Alter(ctx, sdk.NewAlterProjectionPolicyRequest(id).WithSetTags(tags))
-			},
-			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.ProjectionPolicies.Alter(ctx, sdk.NewAlterProjectionPolicyRequest(id).WithUnsetTags(tags))
 			},
 		},
 		{

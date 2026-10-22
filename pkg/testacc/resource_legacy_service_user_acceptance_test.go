@@ -283,7 +283,7 @@ func TestAcc_LegacyServiceUser_CompleteUseCase_AllParameters(t *testing.T) {
 	userModelWithAllParametersSet := model.LegacyServiceUser("u", userId.Name()).
 		WithAbortDetachedQuery(true).
 		WithAutocommit(false).
-		WithBinaryInputFormatEnum(sdk.BinaryInputFormatUtf8).
+		WithBinaryInputFormatEnum(sdk.BinaryInputFormatUTF8).
 		WithBinaryOutputFormatEnum(sdk.BinaryOutputFormatBase64).
 		WithClientMemoryLimit(1024).
 		WithClientMetadataRequestUseConnectionCtx(true).
@@ -292,14 +292,14 @@ func TestAcc_LegacyServiceUser_CompleteUseCase_AllParameters(t *testing.T) {
 		WithClientResultColumnCaseInsensitive(true).
 		WithClientSessionKeepAlive(true).
 		WithClientSessionKeepAliveHeartbeatFrequency(2400).
-		WithClientTimestampTypeMappingEnum(sdk.ClientTimestampTypeMappingTimestampNtz).
+		WithClientTimestampTypeMappingEnum(sdk.ClientTimestampTypeMappingNtz).
 		WithDateInputFormat("YYYY-MM-DD").
 		WithDateOutputFormat("YY-MM-DD").
 		WithEnableUnloadPhysicalTypeOptimization(false).
 		WithErrorOnNondeterministicMerge(false).
 		WithErrorOnNondeterministicUpdate(true).
-		WithGeographyOutputFormatEnum(sdk.GeographyOutputFormatWkb).
-		WithGeometryOutputFormatEnum(sdk.GeometryOutputFormatWkb).
+		WithGeographyOutputFormatEnum(sdk.GeographyOutputFormatWKB).
+		WithGeometryOutputFormatEnum(sdk.GeometryOutputFormatWKB).
 		WithJdbcTreatDecimalAsInt(false).
 		WithJdbcTreatTimestampNtzAsUtc(true).
 		WithJdbcUseSessionTimezone(false).
@@ -324,7 +324,7 @@ func TestAcc_LegacyServiceUser_CompleteUseCase_AllParameters(t *testing.T) {
 		WithTimestampLtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 		WithTimestampNtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 		WithTimestampOutputFormat("YYYY-MM-DD HH24:MI:SS").
-		WithTimestampTypeMappingEnum(sdk.TimestampTypeMappingTimestampLtz).
+		WithTimestampTypeMappingEnum(sdk.TimestampTypeMappingLtz).
 		WithTimestampTzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 		WithTimezone("Europe/Warsaw").
 		WithTimeInputFormat("HH24:MI").
@@ -378,7 +378,7 @@ func TestAcc_LegacyServiceUser_CompleteUseCase_AllParameters(t *testing.T) {
 					objectparametersassert.UserParameters(t, userId).
 						HasAbortDetachedQuery(true).
 						HasAutocommit(false).
-						HasBinaryInputFormat(sdk.BinaryInputFormatUtf8).
+						HasBinaryInputFormat(sdk.BinaryInputFormatUTF8).
 						HasBinaryOutputFormat(sdk.BinaryOutputFormatBase64).
 						HasClientMemoryLimit(1024).
 						HasClientMetadataRequestUseConnectionCtx(true).
@@ -387,14 +387,14 @@ func TestAcc_LegacyServiceUser_CompleteUseCase_AllParameters(t *testing.T) {
 						HasClientResultColumnCaseInsensitive(true).
 						HasClientSessionKeepAlive(true).
 						HasClientSessionKeepAliveHeartbeatFrequency(2400).
-						HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingTimestampNtz).
+						HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingNtz).
 						HasDateInputFormat("YYYY-MM-DD").
 						HasDateOutputFormat("YY-MM-DD").
 						HasEnableUnloadPhysicalTypeOptimization(false).
 						HasErrorOnNondeterministicMerge(false).
 						HasErrorOnNondeterministicUpdate(true).
-						HasGeographyOutputFormat(sdk.GeographyOutputFormatWkb).
-						HasGeometryOutputFormat(sdk.GeometryOutputFormatWkb).
+						HasGeographyOutputFormat(sdk.GeographyOutputFormatWKB).
+						HasGeometryOutputFormat(sdk.GeometryOutputFormatWKB).
 						HasJdbcTreatDecimalAsInt(false).
 						HasJdbcTreatTimestampNtzAsUtc(true).
 						HasJdbcUseSessionTimezone(false).
@@ -419,7 +419,7 @@ func TestAcc_LegacyServiceUser_CompleteUseCase_AllParameters(t *testing.T) {
 						HasTimestampLtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 						HasTimestampNtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 						HasTimestampOutputFormat("YYYY-MM-DD HH24:MI:SS").
-						HasTimestampTypeMapping(sdk.TimestampTypeMappingTimestampLtz).
+						HasTimestampTypeMapping(sdk.TimestampTypeMappingLtz).
 						HasTimestampTzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 						HasTimezone("Europe/Warsaw").
 						HasTimeInputFormat("HH24:MI").
@@ -438,7 +438,7 @@ func TestAcc_LegacyServiceUser_CompleteUseCase_AllParameters(t *testing.T) {
 					resourceparametersassert.UserResourceParameters(t, userModelWithAllParametersSet.ResourceReference()).
 						HasAbortDetachedQuery(true).
 						HasAutocommit(false).
-						HasBinaryInputFormat(sdk.BinaryInputFormatUtf8).
+						HasBinaryInputFormat(sdk.BinaryInputFormatUTF8).
 						HasBinaryOutputFormat(sdk.BinaryOutputFormatBase64).
 						HasClientMemoryLimit(1024).
 						HasClientMetadataRequestUseConnectionCtx(true).
@@ -447,14 +447,14 @@ func TestAcc_LegacyServiceUser_CompleteUseCase_AllParameters(t *testing.T) {
 						HasClientResultColumnCaseInsensitive(true).
 						HasClientSessionKeepAlive(true).
 						HasClientSessionKeepAliveHeartbeatFrequency(2400).
-						HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingTimestampNtz).
+						HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingNtz).
 						HasDateInputFormat("YYYY-MM-DD").
 						HasDateOutputFormat("YY-MM-DD").
 						HasEnableUnloadPhysicalTypeOptimization(false).
 						HasErrorOnNondeterministicMerge(false).
 						HasErrorOnNondeterministicUpdate(true).
-						HasGeographyOutputFormat(sdk.GeographyOutputFormatWkb).
-						HasGeometryOutputFormat(sdk.GeometryOutputFormatWkb).
+						HasGeographyOutputFormat(sdk.GeographyOutputFormatWKB).
+						HasGeometryOutputFormat(sdk.GeometryOutputFormatWKB).
 						HasJdbcTreatDecimalAsInt(false).
 						HasJdbcTreatTimestampNtzAsUtc(true).
 						HasJdbcUseSessionTimezone(false).
@@ -479,7 +479,7 @@ func TestAcc_LegacyServiceUser_CompleteUseCase_AllParameters(t *testing.T) {
 						HasTimestampLtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 						HasTimestampNtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 						HasTimestampOutputFormat("YYYY-MM-DD HH24:MI:SS").
-						HasTimestampTypeMapping(sdk.TimestampTypeMappingTimestampLtz).
+						HasTimestampTypeMapping(sdk.TimestampTypeMappingLtz).
 						HasTimestampTzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 						HasTimezone("Europe/Warsaw").
 						HasTimeInputFormat("HH24:MI").
@@ -506,7 +506,7 @@ func TestAcc_LegacyServiceUser_CompleteUseCase_AllParameters(t *testing.T) {
 					resourceparametersassert.ImportedUserResourceParameters(t, userId.Name()).
 						HasAbortDetachedQuery(true).
 						HasAutocommit(false).
-						HasBinaryInputFormat(sdk.BinaryInputFormatUtf8).
+						HasBinaryInputFormat(sdk.BinaryInputFormatUTF8).
 						HasBinaryOutputFormat(sdk.BinaryOutputFormatBase64).
 						HasClientMemoryLimit(1024).
 						HasClientMetadataRequestUseConnectionCtx(true).
@@ -515,14 +515,14 @@ func TestAcc_LegacyServiceUser_CompleteUseCase_AllParameters(t *testing.T) {
 						HasClientResultColumnCaseInsensitive(true).
 						HasClientSessionKeepAlive(true).
 						HasClientSessionKeepAliveHeartbeatFrequency(2400).
-						HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingTimestampNtz).
+						HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingNtz).
 						HasDateInputFormat("YYYY-MM-DD").
 						HasDateOutputFormat("YY-MM-DD").
 						HasEnableUnloadPhysicalTypeOptimization(false).
 						HasErrorOnNondeterministicMerge(false).
 						HasErrorOnNondeterministicUpdate(true).
-						HasGeographyOutputFormat(sdk.GeographyOutputFormatWkb).
-						HasGeometryOutputFormat(sdk.GeometryOutputFormatWkb).
+						HasGeographyOutputFormat(sdk.GeographyOutputFormatWKB).
+						HasGeometryOutputFormat(sdk.GeometryOutputFormatWKB).
 						HasJdbcTreatDecimalAsInt(false).
 						HasJdbcTreatTimestampNtzAsUtc(true).
 						HasJdbcUseSessionTimezone(false).
@@ -547,7 +547,7 @@ func TestAcc_LegacyServiceUser_CompleteUseCase_AllParameters(t *testing.T) {
 						HasTimestampLtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 						HasTimestampNtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 						HasTimestampOutputFormat("YYYY-MM-DD HH24:MI:SS").
-						HasTimestampTypeMapping(sdk.TimestampTypeMappingTimestampLtz).
+						HasTimestampTypeMapping(sdk.TimestampTypeMappingLtz).
 						HasTimestampTzOutputFormat("YYYY-MM-DD HH24:MI:SS").
 						HasTimezone("Europe/Warsaw").
 						HasTimeInputFormat("HH24:MI").

@@ -17,8 +17,6 @@ description: |-
 
 -> **Note** External changes to `days_to_expiry`, `mins_to_unlock`, and `mins_to_bypass_mfa` are not currently handled by the provider (because the value changes continuously on Snowflake side after setting it).
 
--> **Note** The RSA public keys can be set with the [write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral/write-only) `rsa_public_key_wo` and `rsa_public_key_2_wo` fields (requires Terraform 1.11 or later). Their values are never saved in the Terraform plan or state, so they can be fed from an ephemeral resource, like `tls_private_key`. Because Terraform can not see a write-only value, it can not detect changes to it either: the key is sent to Snowflake only when the accompanying `rsa_public_key_wo_version` (or `rsa_public_key_2_wo_version`) field changes, so increment it whenever you want to rotate the key. For the same reason, external changes to the keys set this way are not detected; to push the key from your configuration to Snowflake again, increment the version field. Each write-only field conflicts with its regular counterpart, and requires its version field to be set. Note that after importing a user, the version field is empty, so the first apply pushes the key again.
-
 # snowflake_user (Resource)
 
 Resource used to manage user objects. For more information, check [user documentation](https://docs.snowflake.com/en/sql-reference/commands-user-role#user-management).
@@ -168,17 +166,12 @@ variable "last_name" {
 
 ### Optional
 
-> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
-
 - `abort_detached_query` (Boolean) Specifies the action that Snowflake performs for in-progress queries if connectivity is lost due to abrupt termination of a session (e.g. network outage, browser termination, service interruption). For more information, check [ABORT_DETACHED_QUERY docs](https://docs.snowflake.com/en/sql-reference/parameters#abort-detached-query).
-- `active_python_profiler` (String) Sets the profiler to use for the session when [profiling Python handler code](https://docs.snowflake.com/en/developer-guide/stored-procedure/python/procedure-python-profiler). Valid values are (case-insensitive): `LINE` | `MEMORY`. For more information, check [ACTIVE_PYTHON_PROFILER docs](https://docs.snowflake.com/en/sql-reference/parameters#active-python-profiler).
 - `autocommit` (Boolean) Specifies whether autocommit is enabled for the session. Autocommit determines whether a DML statement, when executed without an active transaction, is automatically committed after the statement successfully completes. For more information, see [Transactions](https://docs.snowflake.com/en/sql-reference/transactions). For more information, check [AUTOCOMMIT docs](https://docs.snowflake.com/en/sql-reference/parameters#autocommit).
 - `binary_input_format` (String) The format of VARCHAR values passed as input to VARCHAR-to-BINARY conversion functions. For more information, see [Binary input and output](https://docs.snowflake.com/en/sql-reference/binary-input-output). Valid values are (case-insensitive): `HEX` | `BASE64` | `UTF8`. For more information, check [BINARY_INPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#binary-input-format).
 - `binary_output_format` (String) The format for VARCHAR values returned as output by BINARY-to-VARCHAR conversion functions. For more information, see [Binary input and output](https://docs.snowflake.com/en/sql-reference/binary-input-output). Valid values are (case-insensitive): `HEX` | `BASE64`. For more information, check [BINARY_OUTPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#binary-output-format).
-- `client_enable_log_info_statement_parameters` (Boolean) Enables users to log the data values bound to [PreparedStatements](https://docs.snowflake.com/en/developer-guide/jdbc/jdbc-api.html#label-jdbc-api-preparedstatement). For more information, check [CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS docs](https://docs.snowflake.com/en/sql-reference/parameters#client-enable-log-info-statement-parameters).
 - `client_memory_limit` (Number) Parameter that specifies the maximum amount of memory the JDBC driver or ODBC driver should use for the result set from queries (in MB). For more information, check [CLIENT_MEMORY_LIMIT docs](https://docs.snowflake.com/en/sql-reference/parameters#client-memory-limit).
 - `client_metadata_request_use_connection_ctx` (Boolean) For specific ODBC functions and JDBC methods, this parameter can change the default search scope from all databases/schemas to the current database/schema. The narrower search typically returns fewer rows and executes more quickly. For more information, check [CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX docs](https://docs.snowflake.com/en/sql-reference/parameters#client-metadata-request-use-connection-ctx).
-- `client_metadata_use_session_database` (Boolean) For specific ODBC functions and JDBC methods, this parameter can change the default search scope from all databases to the current database. The narrower search typically returns fewer rows and executes more quickly ([more details on the usage](https://docs.snowflake.com/en/sql-reference/parameters#client-metadata-use-session-database)). For more information, check [CLIENT_METADATA_USE_SESSION_DATABASE docs](https://docs.snowflake.com/en/sql-reference/parameters#client-metadata-use-session-database).
 - `client_prefetch_threads` (Number) Parameter that specifies the number of threads used by the client to pre-fetch large result sets. The driver will attempt to honor the parameter value, but defines the minimum and maximum values (depending on your system’s resources) to improve performance. For more information, check [CLIENT_PREFETCH_THREADS docs](https://docs.snowflake.com/en/sql-reference/parameters#client-prefetch-threads).
 - `client_result_chunk_size` (Number) Parameter that specifies the maximum size of each set (or chunk) of query results to download (in MB). The JDBC driver downloads query results in chunks. For more information, check [CLIENT_RESULT_CHUNK_SIZE docs](https://docs.snowflake.com/en/sql-reference/parameters#client-result-chunk-size).
 - `client_result_column_case_insensitive` (Boolean) Parameter that indicates whether to match column name case-insensitively in ResultSet.get* methods in JDBC. For more information, check [CLIENT_RESULT_COLUMN_CASE_INSENSITIVE docs](https://docs.snowflake.com/en/sql-reference/parameters#client-result-column-case-insensitive).
@@ -186,7 +179,6 @@ variable "last_name" {
 - `client_session_keep_alive_heartbeat_frequency` (Number) Number of seconds in-between client attempts to update the token for the session. For more information, check [CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY docs](https://docs.snowflake.com/en/sql-reference/parameters#client-session-keep-alive-heartbeat-frequency).
 - `client_timestamp_type_mapping` (String) Specifies the [TIMESTAMP_* variation](https://docs.snowflake.com/en/sql-reference/data-types-datetime.html#label-datatypes-timestamp-variations) to use when binding timestamp variables for JDBC or ODBC applications that use the bind API to load data. Valid values are (case-insensitive): `TIMESTAMP_LTZ` | `TIMESTAMP_NTZ`. For more information, check [CLIENT_TIMESTAMP_TYPE_MAPPING docs](https://docs.snowflake.com/en/sql-reference/parameters#client-timestamp-type-mapping).
 - `comment` (String) Specifies a comment for the user.
-- `csv_timestamp_format` (String) Specifies the format for TIMESTAMP values in CSV files downloaded from Snowsight. If this parameter is not set, [TIMESTAMP_LTZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-ltz-output-format) will be used for TIMESTAMP_LTZ values, [TIMESTAMP_TZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-tz-output-format) will be used for TIMESTAMP_TZ and [TIMESTAMP_NTZ_OUTPUT_FORMAT](https://docs.snowflake.com/en/sql-reference/parameters#label-timestamp-ntz-output-format) for TIMESTAMP_NTZ values. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output) or [Download your query results](https://docs.snowflake.com/en/user-guide/ui-snowsight-query.html#label-snowsight-download-query-results). For more information, check [CSV_TIMESTAMP_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#csv-timestamp-format).
 - `date_input_format` (String) Specifies the input format for the DATE data type. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output). For more information, check [DATE_INPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#date-input-format).
 - `date_output_format` (String) Specifies the display format for the DATE data type. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output). For more information, check [DATE_OUTPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#date-output-format).
 - `days_to_expiry` (Number) Specifies the number of days after which the user status is set to `Expired` and the user is no longer allowed to log in. This is useful for defining temporary users (i.e. users who should only have access to Snowflake for a limited time period). In general, you should not set this property for [account administrators](https://docs.snowflake.com/en/user-guide/security-access-control-considerations.html#label-accountadmin-users) (i.e. users with the `ACCOUNTADMIN` role) because Snowflake locks them out when they become `Expired`. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
@@ -198,7 +190,6 @@ variable "last_name" {
 - `disabled` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether the user is disabled, which prevents logging in and aborts all the currently-running queries for the user. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `display_name` (String) Name displayed for the user in the Snowflake web interface.
 - `email` (String, Sensitive) Email address for the user.
-- `enable_get_ddl_use_data_type_alias` (Boolean) Specifies whether the output returned by the GET_DDL function contains data type synonyms specified in the original DDL statement. Data type synonyms are also called data type aliases. For more information, check [ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS docs](https://docs.snowflake.com/en/sql-reference/parameters#enable-get-ddl-use-data-type-alias).
 - `enable_unload_physical_type_optimization` (Boolean) Specifies whether to set the schema for unloaded Parquet files based on the logical column data types (i.e. the types in the unload SQL query or source table) or on the unloaded column values (i.e. the smallest data types and precision that support the values in the output columns of the unload SQL statement or source table). For more information, check [ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION docs](https://docs.snowflake.com/en/sql-reference/parameters#enable-unload-physical-type-optimization).
 - `enable_unredacted_query_syntax_error` (Boolean) Controls whether query text is redacted if a SQL query fails due to a syntax or parsing error. If FALSE, the content of a failed query is redacted in the views, pages, and functions that provide a query history. Only users with a role that is granted or inherits the AUDIT privilege can set the ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR parameter. When using the ALTER USER command to set the parameter to TRUE for a particular user, modify the user that you want to see the query text, not the user who executed the query (if those are different users). For more information, check [ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR docs](https://docs.snowflake.com/en/sql-reference/parameters#enable-unredacted-query-syntax-error).
 - `error_on_nondeterministic_merge` (Boolean) Specifies whether to return an error when the [MERGE](https://docs.snowflake.com/en/sql-reference/sql/merge) command is used to update or delete a target row that joins multiple source rows and the system cannot determine the action to perform on the target row. For more information, check [ERROR_ON_NONDETERMINISTIC_MERGE docs](https://docs.snowflake.com/en/sql-reference/parameters#error-on-nondeterministic-merge).
@@ -206,11 +197,9 @@ variable "last_name" {
 - `first_name` (String, Sensitive) First name of the user.
 - `geography_output_format` (String) Display format for [GEOGRAPHY values](https://docs.snowflake.com/en/sql-reference/data-types-geospatial.html#label-data-types-geography). Valid values are (case-insensitive): `GeoJSON` | `WKT` | `WKB` | `EWKT` | `EWKB`. For more information, check [GEOGRAPHY_OUTPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#geography-output-format).
 - `geometry_output_format` (String) Display format for [GEOMETRY values](https://docs.snowflake.com/en/sql-reference/data-types-geospatial.html#label-data-types-geometry). Valid values are (case-insensitive): `GeoJSON` | `WKT` | `WKB` | `EWKT` | `EWKB`. For more information, check [GEOMETRY_OUTPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#geometry-output-format).
-- `hybrid_table_lock_timeout` (Number) Number of seconds to wait while trying to acquire row-level locks on a hybrid table, before timing out and aborting the statement. For more information, check [HYBRID_TABLE_LOCK_TIMEOUT docs](https://docs.snowflake.com/en/sql-reference/parameters#hybrid-table-lock-timeout).
 - `jdbc_treat_decimal_as_int` (Boolean) Specifies how JDBC processes columns that have a scale of zero (0). For more information, check [JDBC_TREAT_DECIMAL_AS_INT docs](https://docs.snowflake.com/en/sql-reference/parameters#jdbc-treat-decimal-as-int).
 - `jdbc_treat_timestamp_ntz_as_utc` (Boolean) Specifies how JDBC processes TIMESTAMP_NTZ values ([more details](https://docs.snowflake.com/en/sql-reference/parameters#jdbc-treat-timestamp-ntz-as-utc)). For more information, check [JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC docs](https://docs.snowflake.com/en/sql-reference/parameters#jdbc-treat-timestamp-ntz-as-utc).
 - `jdbc_use_session_timezone` (Boolean) Specifies whether the JDBC Driver uses the time zone of the JVM or the time zone of the session (specified by the [TIMEZONE](https://docs.snowflake.com/en/sql-reference/parameters#label-timezone) parameter) for the getDate(), getTime(), and getTimestamp() methods of the ResultSet class. For more information, check [JDBC_USE_SESSION_TIMEZONE docs](https://docs.snowflake.com/en/sql-reference/parameters#jdbc-use-session-timezone).
-- `js_treat_integer_as_bigint` (Boolean) Specifies how the Snowflake Node.js Driver processes numeric columns that have a scale of zero (0), for example INTEGER or NUMBER(p, 0). For more information, check [JS_TREAT_INTEGER_AS_BIGINT docs](https://docs.snowflake.com/en/sql-reference/parameters#js-treat-integer-as-bigint).
 - `json_indent` (Number) Specifies the number of blank spaces to indent each new element in JSON output in the session. Also specifies whether to insert newline characters after each element. For more information, check [JSON_INDENT docs](https://docs.snowflake.com/en/sql-reference/parameters#json-indent).
 - `last_name` (String, Sensitive) Last name of the user.
 - `lock_timeout` (Number) Number of seconds to wait while trying to lock a resource, before timing out and aborting the statement. For more information, check [LOCK_TIMEOUT docs](https://docs.snowflake.com/en/sql-reference/parameters#lock-timeout).
@@ -227,17 +216,11 @@ variable "last_name" {
 - `odbc_treat_decimal_as_int` (Boolean) Specifies how ODBC processes columns that have a scale of zero (0). For more information, check [ODBC_TREAT_DECIMAL_AS_INT docs](https://docs.snowflake.com/en/sql-reference/parameters#odbc-treat-decimal-as-int).
 - `password` (String, Sensitive) Password for the user. **WARNING:** this will put the password in the terraform state file. Use carefully. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
 - `prevent_unload_to_internal_stages` (Boolean) Specifies whether to prevent data unload operations to internal (Snowflake) stages using [COPY INTO location](https://docs.snowflake.com/en/sql-reference/sql/copy-into-location) statements. For more information, check [PREVENT_UNLOAD_TO_INTERNAL_STAGES docs](https://docs.snowflake.com/en/sql-reference/parameters#prevent-unload-to-internal-stages).
-- `python_profiler_modules` (String) Specifies the list of Python modules to include in a report when [profiling Python handler code](https://docs.snowflake.com/en/developer-guide/stored-procedure/python/procedure-python-profiler). For more information, check [PYTHON_PROFILER_MODULES docs](https://docs.snowflake.com/en/sql-reference/parameters#python-profiler-modules).
-- `python_profiler_target_stage` (String) Specifies the fully-qualified name of the stage in which to save a report when [profiling Python handler code](https://docs.snowflake.com/en/developer-guide/stored-procedure/python/procedure-python-profiler). For more information, check [PYTHON_PROFILER_TARGET_STAGE docs](https://docs.snowflake.com/en/sql-reference/parameters#python-profiler-target-stage).
 - `query_tag` (String) Optional string that can be used to tag queries and other SQL statements executed within a session. The tags are displayed in the output of the [QUERY_HISTORY, QUERY_HISTORY_BY_*](https://docs.snowflake.com/en/sql-reference/functions/query_history) functions. For more information, check [QUERY_TAG docs](https://docs.snowflake.com/en/sql-reference/parameters#query-tag).
 - `quoted_identifiers_ignore_case` (Boolean) If true, the case of quoted identifiers is ignored. For more information, check [QUOTED_IDENTIFIERS_IGNORE_CASE docs](https://docs.snowflake.com/en/sql-reference/parameters#quoted-identifiers-ignore-case).
 - `rows_per_resultset` (Number) Specifies the maximum number of rows returned in a result set. A value of 0 specifies no maximum. For more information, check [ROWS_PER_RESULTSET docs](https://docs.snowflake.com/en/sql-reference/parameters#rows-per-resultset).
 - `rsa_public_key` (String) Specifies the user’s RSA public key; used for key-pair authentication. Must be on 1 line without header and trailer.
 - `rsa_public_key_2` (String) Specifies the user’s second RSA public key; used to rotate the public and private keys for key-pair authentication based on an expiration schedule set by your organization. Must be on 1 line without header and trailer.
-- `rsa_public_key_2_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Specifies the user’s second RSA public key; used to rotate the public and private keys for key-pair authentication based on an expiration schedule set by your organization. Must be on 1 line without header and trailer. The value of this field is never saved in the Terraform plan or state, so it can be set from an ephemeral resource. Requires Terraform 1.11 or later. Because Terraform can not detect changes to a write-only value, changes to this field are applied only when `rsa_public_key_2_wo_version` changes. External changes for this field won't be detected; to push the value from your configuration to Snowflake again, increment `rsa_public_key_2_wo_version`. Conflicts with the non-write-only variant of this field. This field can be only used when `WRITE_ONLY_ATTRIBUTES` option is specified in provider block in the [`experimental_features_enabled`](../#experimental_features_enabled-1) field.
-- `rsa_public_key_2_wo_version` (Number) Version counter for `rsa_public_key_2_wo`. Because Terraform can not detect changes to a write-only value, increment this field to push the current value of `rsa_public_key_2_wo` to Snowflake. Removing both fields unsets the value. This field can be only used when `WRITE_ONLY_ATTRIBUTES` option is specified in provider block in the [`experimental_features_enabled`](../#experimental_features_enabled-1) field.
-- `rsa_public_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Specifies the user’s RSA public key; used for key-pair authentication. Must be on 1 line without header and trailer. The value of this field is never saved in the Terraform plan or state, so it can be set from an ephemeral resource. Requires Terraform 1.11 or later. Because Terraform can not detect changes to a write-only value, changes to this field are applied only when `rsa_public_key_wo_version` changes. External changes for this field won't be detected; to push the value from your configuration to Snowflake again, increment `rsa_public_key_wo_version`. Conflicts with the non-write-only variant of this field. This field can be only used when `WRITE_ONLY_ATTRIBUTES` option is specified in provider block in the [`experimental_features_enabled`](../#experimental_features_enabled-1) field.
-- `rsa_public_key_wo_version` (Number) Version counter for `rsa_public_key_wo`. Because Terraform can not detect changes to a write-only value, increment this field to push the current value of `rsa_public_key_wo` to Snowflake. Removing both fields unsets the value. This field can be only used when `WRITE_ONLY_ATTRIBUTES` option is specified in provider block in the [`experimental_features_enabled`](../#experimental_features_enabled-1) field.
 - `s3_stage_vpce_dns_name` (String) Specifies the DNS name of an Amazon S3 interface endpoint. Requests sent to the internal stage of an account via [AWS PrivateLink for Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/privatelink-interface-endpoints.html) use this endpoint to connect. For more information, see [Accessing Internal stages with dedicated interface endpoints](https://docs.snowflake.com/en/user-guide/private-internal-stages-aws.html#label-aws-privatelink-internal-stage-network-isolation). For more information, check [S3_STAGE_VPCE_DNS_NAME docs](https://docs.snowflake.com/en/sql-reference/parameters#s3-stage-vpce-dns-name).
 - `search_path` (String) Specifies the path to search to resolve unqualified object names in queries. For more information, see [Name resolution in queries](https://docs.snowflake.com/en/sql-reference/name-resolution.html#label-object-name-resolution-search-path). Comma-separated list of identifiers. An identifier can be a fully or partially qualified schema name. For more information, check [SEARCH_PATH docs](https://docs.snowflake.com/en/sql-reference/parameters#search-path).
 - `simulated_data_sharing_consumer` (String) Specifies the name of a consumer account to simulate for testing/validating shared data, particularly shared secure views. When this parameter is set in a session, shared views return rows as if executed in the specified consumer account rather than the provider account. For more information, check [SIMULATED_DATA_SHARING_CONSUMER docs](https://docs.snowflake.com/en/sql-reference/parameters#simulated-data-sharing-consumer).
@@ -289,35 +272,28 @@ Optional:
 Read-Only:
 
 - `abort_detached_query` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--abort_detached_query))
-- `active_python_profiler` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--active_python_profiler))
 - `autocommit` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--autocommit))
 - `binary_input_format` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--binary_input_format))
 - `binary_output_format` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--binary_output_format))
-- `client_enable_log_info_statement_parameters` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--client_enable_log_info_statement_parameters))
 - `client_memory_limit` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--client_memory_limit))
 - `client_metadata_request_use_connection_ctx` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--client_metadata_request_use_connection_ctx))
-- `client_metadata_use_session_database` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--client_metadata_use_session_database))
 - `client_prefetch_threads` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--client_prefetch_threads))
 - `client_result_chunk_size` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--client_result_chunk_size))
 - `client_result_column_case_insensitive` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--client_result_column_case_insensitive))
 - `client_session_keep_alive` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--client_session_keep_alive))
 - `client_session_keep_alive_heartbeat_frequency` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--client_session_keep_alive_heartbeat_frequency))
 - `client_timestamp_type_mapping` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--client_timestamp_type_mapping))
-- `csv_timestamp_format` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--csv_timestamp_format))
 - `date_input_format` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--date_input_format))
 - `date_output_format` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--date_output_format))
-- `enable_get_ddl_use_data_type_alias` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--enable_get_ddl_use_data_type_alias))
 - `enable_unload_physical_type_optimization` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--enable_unload_physical_type_optimization))
 - `enable_unredacted_query_syntax_error` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--enable_unredacted_query_syntax_error))
 - `error_on_nondeterministic_merge` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--error_on_nondeterministic_merge))
 - `error_on_nondeterministic_update` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--error_on_nondeterministic_update))
 - `geography_output_format` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--geography_output_format))
 - `geometry_output_format` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--geometry_output_format))
-- `hybrid_table_lock_timeout` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--hybrid_table_lock_timeout))
 - `jdbc_treat_decimal_as_int` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--jdbc_treat_decimal_as_int))
 - `jdbc_treat_timestamp_ntz_as_utc` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--jdbc_treat_timestamp_ntz_as_utc))
 - `jdbc_use_session_timezone` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--jdbc_use_session_timezone))
-- `js_treat_integer_as_bigint` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--js_treat_integer_as_bigint))
 - `json_indent` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--json_indent))
 - `lock_timeout` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--lock_timeout))
 - `log_event_level` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--log_event_level))
@@ -327,8 +303,6 @@ Read-Only:
 - `noorder_sequence_as_default` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--noorder_sequence_as_default))
 - `odbc_treat_decimal_as_int` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--odbc_treat_decimal_as_int))
 - `prevent_unload_to_internal_stages` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--prevent_unload_to_internal_stages))
-- `python_profiler_modules` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--python_profiler_modules))
-- `python_profiler_target_stage` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--python_profiler_target_stage))
 - `query_tag` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--query_tag))
 - `quoted_identifiers_ignore_case` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--quoted_identifiers_ignore_case))
 - `rows_per_resultset` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--rows_per_resultset))
@@ -359,18 +333,6 @@ Read-Only:
 
 <a id="nestedobjatt--parameters--abort_detached_query"></a>
 ### Nested Schema for `parameters.abort_detached_query`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--parameters--active_python_profiler"></a>
-### Nested Schema for `parameters.active_python_profiler`
 
 Read-Only:
 
@@ -417,18 +379,6 @@ Read-Only:
 - `value` (String)
 
 
-<a id="nestedobjatt--parameters--client_enable_log_info_statement_parameters"></a>
-### Nested Schema for `parameters.client_enable_log_info_statement_parameters`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
 <a id="nestedobjatt--parameters--client_memory_limit"></a>
 ### Nested Schema for `parameters.client_memory_limit`
 
@@ -443,18 +393,6 @@ Read-Only:
 
 <a id="nestedobjatt--parameters--client_metadata_request_use_connection_ctx"></a>
 ### Nested Schema for `parameters.client_metadata_request_use_connection_ctx`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--parameters--client_metadata_use_session_database"></a>
-### Nested Schema for `parameters.client_metadata_use_session_database`
 
 Read-Only:
 
@@ -537,18 +475,6 @@ Read-Only:
 - `value` (String)
 
 
-<a id="nestedobjatt--parameters--csv_timestamp_format"></a>
-### Nested Schema for `parameters.csv_timestamp_format`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
 <a id="nestedobjatt--parameters--date_input_format"></a>
 ### Nested Schema for `parameters.date_input_format`
 
@@ -563,18 +489,6 @@ Read-Only:
 
 <a id="nestedobjatt--parameters--date_output_format"></a>
 ### Nested Schema for `parameters.date_output_format`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--parameters--enable_get_ddl_use_data_type_alias"></a>
-### Nested Schema for `parameters.enable_get_ddl_use_data_type_alias`
 
 Read-Only:
 
@@ -657,18 +571,6 @@ Read-Only:
 - `value` (String)
 
 
-<a id="nestedobjatt--parameters--hybrid_table_lock_timeout"></a>
-### Nested Schema for `parameters.hybrid_table_lock_timeout`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
 <a id="nestedobjatt--parameters--jdbc_treat_decimal_as_int"></a>
 ### Nested Schema for `parameters.jdbc_treat_decimal_as_int`
 
@@ -695,18 +597,6 @@ Read-Only:
 
 <a id="nestedobjatt--parameters--jdbc_use_session_timezone"></a>
 ### Nested Schema for `parameters.jdbc_use_session_timezone`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--parameters--js_treat_integer_as_bigint"></a>
-### Nested Schema for `parameters.js_treat_integer_as_bigint`
 
 Read-Only:
 
@@ -815,30 +705,6 @@ Read-Only:
 
 <a id="nestedobjatt--parameters--prevent_unload_to_internal_stages"></a>
 ### Nested Schema for `parameters.prevent_unload_to_internal_stages`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--parameters--python_profiler_modules"></a>
-### Nested Schema for `parameters.python_profiler_modules`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--parameters--python_profiler_target_stage"></a>
-### Nested Schema for `parameters.python_profiler_target_stage`
 
 Read-Only:
 

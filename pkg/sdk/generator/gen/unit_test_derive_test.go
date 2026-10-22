@@ -1,7 +1,6 @@
 package gen_test
 
 import (
-	"log"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
@@ -27,7 +26,7 @@ func structFieldWithChildren(kind string) *gen.Field {
 // buildTree wires Parent pointers through root's subtree (mirrors the generator's own setParent call in 0_defs.go)
 // so Path/IndexedPath/AncestorsFromRoot behave the same way they do on real definitions.
 func buildTree(root *gen.Field) *gen.Field {
-	gen.SetParent(root, log.Default())
+	gen.SetParent(root)
 	return root
 }
 
@@ -1115,7 +1114,7 @@ func Test_RelocateIdentifierElementSliceValidations(t *testing.T) {
 			{Name: "OrReplace", Kind: "*bool"},
 			{Name: "IfNotExists", Kind: "*bool"},
 		}}
-		gen.SetParent(root, log.Default())
+		gen.SetParent(root)
 		gen.RelocateIdentifierElementSliceValidations(root)
 
 		require.Equal(t, []*gen.Validation{
@@ -1132,7 +1131,7 @@ func Test_RelocateIdentifierElementSliceValidations(t *testing.T) {
 		root.Validations = []*gen.Validation{
 			gen.NewValidation(gen.ValidIdentifier, "Columns"),
 		}
-		gen.SetParent(root, log.Default())
+		gen.SetParent(root)
 		gen.RelocateIdentifierElementSliceValidations(root)
 
 		require.Equal(t, []*gen.Validation{
@@ -1147,7 +1146,7 @@ func Test_RelocateIdentifierElementSliceValidations(t *testing.T) {
 		}, Fields: []gen.Field{
 			{Name: "Values", Kind: "[]string"},
 		}}
-		gen.SetParent(root, log.Default())
+		gen.SetParent(root)
 		gen.RelocateIdentifierElementSliceValidations(root)
 
 		require.Equal(t, []*gen.Validation{
@@ -1164,7 +1163,7 @@ func Test_RelocateIdentifierElementSliceValidations(t *testing.T) {
 				{Name: "ExternalAccessIntegrations", Kind: "[]AccountObjectIdentifier"},
 			}},
 		}}
-		gen.SetParent(root, log.Default())
+		gen.SetParent(root)
 		gen.RelocateIdentifierElementSliceValidations(root)
 
 		require.Empty(t, root.Fields[0].Validations)
@@ -1181,7 +1180,7 @@ func Test_RelocateIdentifierElementSliceValidations(t *testing.T) {
 			{Name: "name", Kind: "SchemaObjectIdentifier"},
 			{Name: "Tag", Kind: "[]TagAssociation"},
 		}}
-		gen.SetParent(root, log.Default())
+		gen.SetParent(root)
 		gen.RelocateIdentifierElementSliceValidations(root)
 
 		require.Equal(t, []*gen.Validation{
