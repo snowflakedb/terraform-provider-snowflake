@@ -40,6 +40,7 @@ func ValidateObject(obj Object) {
 	validateSqlSequence(obj, "UNSET", obj.Unset, attrs, func(attr Attribute) SqlClause { return attr.UnsetSql })
 	validateAlterSpec(obj)
 	validateCustomOperations(obj, attrs)
+	validateCustomInterfaceMethods(obj)
 	for _, a := range obj.Attributes {
 		if a.CreateOnly && (a.Type != AttrBool || a.Required) {
 			panic(fmt.Sprintf("object %q: CreateOnly attribute %q must be an optional bool", obj.Name, a.Name))
@@ -131,6 +132,34 @@ func validateAlterSpec(obj Object) {
 			seen[clause.Kind] = struct{}{}
 		default:
 			panic(fmt.Sprintf("object %q: ALTER clause has kind %q", obj.Name, clause.Kind))
+		}
+	}
+}
+
+// TODO [next PRs]: CustomOperationsFromObject and CustomInterfaceMethodsFromObject repeat these
+// checks. make generate-sdk does not call ValidateObject, and the generator tests call the emitters
+// on a fake object without it. Share one checker and delete the copies. See that TODO.
+
+func validateCustomInterfaceMethods(obj Object) {
+	seen := make(map[string]struct{})
+	for _, spec := range obj.CustomInterfaceMethods {
+		if spec.Name == "" {
+			panic(fmt.Sprintf("object %q: custom interface method name is empty", obj.Name))
+		}
+		if _, dup := seen[spec.Name]; dup {
+			panic(fmt.Sprintf("object %q: duplicate custom interface method %q", obj.Name, spec.Name))
+		}
+		seen[spec.Name] = struct{}{}
+		if spec.Parameters == nil && obj.IdType == "" {
+			panic(fmt.Sprintf("object %q: custom interface method %q needs IdType", obj.Name, spec.Name))
+		}
+		for _, param := range spec.Parameters {
+			if param.Name == "" {
+				panic(fmt.Sprintf("object %q: custom interface method %q parameter name is empty", obj.Name, spec.Name))
+			}
+			if param.Kind == "" && obj.IdType == "" {
+				panic(fmt.Sprintf("object %q: custom interface method %q parameter %q needs a type", obj.Name, spec.Name, param.Name))
+			}
 		}
 	}
 }

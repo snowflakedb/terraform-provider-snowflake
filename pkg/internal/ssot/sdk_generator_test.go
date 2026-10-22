@@ -158,6 +158,9 @@ func Test_SdkConfig_panicsWithoutName(t *testing.T) {
 	require.Panics(t, func() {
 		Object{Generators: []GeneratorOption{WithSdk(SdkCustomOperations())}}.SdkConfig()
 	})
+	require.Panics(t, func() {
+		Object{Generators: []GeneratorOption{WithSdk(SdkCustomInterfaceMethods())}}.SdkConfig()
+	})
 }
 
 func Test_SdkConfig_customOperations(t *testing.T) {
@@ -185,4 +188,22 @@ func Test_SdkConfig_customOperations(t *testing.T) {
 			CustomOperations: []CustomOperationSpec{{}},
 		}.SdkConfig()
 	})
+}
+
+func Test_SdkConfig_customInterfaceMethods(t *testing.T) {
+	obj := Object{
+		Name:       "Fake",
+		IdType:     "DatabaseObjectIdentifier",
+		Generators: []GeneratorOption{WithSdk(SdkCustomInterfaceMethods())},
+		CustomInterfaceMethods: []CustomInterfaceMethodSpec{{
+			Name: "Use",
+		}},
+	}
+	require.True(t, obj.SdkConfig().CustomInterfaceMethods)
+	require.Equal(t, SdkGenerator{CustomInterfaceMethods: true}, ObjectGenerators(obj.Generators...).Sdk)
+	require.Equal(t, "Use is based on https://docs.snowflake.com/en/sql-reference/sql/use-fake", obj.CustomInterfaceMethodDoc(obj.CustomInterfaceMethods[0]))
+	require.Equal(t, "Use is based on https://custom/use", obj.CustomInterfaceMethodDoc(CustomInterfaceMethodSpec{
+		Name: "Use",
+		Doc:  "Use is based on https://custom/use",
+	}))
 }

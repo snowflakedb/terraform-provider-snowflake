@@ -151,7 +151,12 @@ enable nothing.
   [`CustomOperations`](custom_operation.go) from one call, in slice order. Place that call after the dedicated operation
   methods and before custom interface methods. The generated interface lists every operation, then the custom interface
   methods, so a custom operation stays with the operations. Reordering in the generated SDK is expected while objects
-  are aligned. When the setting is off, the custom operation stays in the SDK def.
+  are aligned. When the setting is off, the custom operation stays in the SDK def. `SdkCustomInterfaceMethods()` emits
+  [`CustomInterfaceMethods`](custom_interface_method.go) from one call, in slice order. Each entry is an interface
+  declaration. The body stays in the SDK ext file. `ctx` is always first and is not listed. A nil parameter slice is
+  `id` of `IdType`. A non-nil slice is the parameter list. An empty parameter `Kind` uses `IdType`. An empty return
+  slice is `error`. An empty doc is the method name, " is based on ", and the docs URL for that method and `Name`.
+  When the setting is off, the method stays in the SDK def.
 
 Fill `Show` / `Describe` first; enable the matching SHOW or DESCRIBE setting when the lists are ready. Enabling SHOW or
 DESCRIBE schema generation, show output assertions, Snowflake object assertions, or SDK paired structs without `Columns`
@@ -246,6 +251,7 @@ Rules for CREATE and ALTER. The calls are in [Generators](#generators).
 - The SDK generator calls the existing query-struct builders (`NumberAssignment`, `OptionalSQL`, `ListAssignment`, and the rest). It does not record a Go type on the clause, and it does not build `ddl` tags.
 - Clauses Snowflake statements usually accept are on unless the object opts out: `OR REPLACE`, `IF NOT EXISTS`, `IF EXISTS`, `SET`, `UNSET`, `SET TAG`, `UNSET TAG`, and the exactly-one alter check. `SET` is a keyword. `SdkAlterSetList` opts into `list,no_parentheses`.
 - A custom operation is an entry on [`CustomOperations`](custom_operation.go). `SdkCustomOperations()` emits that slice from one call, in slice order. Clone and undrop are custom operations. Generating CREATE or ALTER does not take them over. Place that call after the dedicated operation methods and before custom interface methods. The generated interface lists every operation, then the custom interface methods, so a custom operation stays with the operations. Reordering in the generated SDK is expected while objects are aligned.
+- A custom interface method is an entry on [`CustomInterfaceMethods`](custom_interface_method.go). `SdkCustomInterfaceMethods()` emits that slice from one call, in slice order. The declaration is generated. The body stays in the SDK ext file. `ctx` is always first and is not listed. A nil parameter slice is `id` of `IdType`. A non-nil slice is the parameter list, and an empty parameter `Kind` uses `IdType`. An empty return slice is `error`. An empty doc is the method name, " is based on ", and the docs URL for that method and `Name`. `Use` sets only the name. A method with another parameter list, return list, or comment sets those fields. When the setting is off, the method stays in the SDK def.
 - One generator fits every object. When an object's statement does not match the current emission, extend the spec.
 - A repeated generated name has one spelling. An enum list item is `{Enum}ListItem` with the field `Value`. Rename the SDK type to that spelling. The definition does not pass the struct name or the field name.
 
@@ -269,7 +275,9 @@ Until a piece has moved, do not assume it is already in ssot:
   ([Attribute](attribute.go)). `Create` is a [`CreateSpec`](object.go). `Set` and `Unset` are the statement order. A
   `Parameters` entry spreads the catalog on that statement. `Alter` is the order of the ALTER blocks after the name.
   When `SdkCustomOperations()` is on, those operations come from `CustomOperations` and are emitted together. When it is
-  off, they stay in the SDK def. Every other operation stays in the SDK def. They are not
+  off, they stay in the SDK def. When `SdkCustomInterfaceMethods()` is on, those declarations come from
+  `CustomInterfaceMethods`. The body stays in the SDK ext file. When it is off, the method stays in the SDK def. Every
+  other operation stays in the SDK def. They are not
   generated from `Columns`.
 - Schema `SkipFields`, `ManualFields`, `TypeOverrides`, and `UsedAsListEntry` have no ssot equivalent yet. Object-assertion
   `SkipFields` is `ObjectAssertShowSkipFields` and `ObjectAssertDescribeSkipFields`. Show-output `SkipFields` is

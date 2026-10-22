@@ -86,6 +86,7 @@ var Schema = ssot.Object{
 			ssot.SdkCreate(),
 			ssot.SdkAlter(ssot.SdkAlterSetList()),
 			ssot.SdkCustomOperations(),
+			ssot.SdkCustomInterfaceMethods(),
 		),
 		ssot.WithObjectParametersAssert(),
 		ssot.WithResourceParametersAssert(),
@@ -145,6 +146,9 @@ var Schema = ssot.Object{
 				ssot.CustomName(),
 			},
 		},
+	},
+	CustomInterfaceMethods: []ssot.CustomInterfaceMethodSpec{
+		{Name: "Use"},
 	},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{

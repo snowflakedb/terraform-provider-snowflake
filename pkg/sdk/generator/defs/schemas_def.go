@@ -22,8 +22,4 @@ var schemasDef = g.NewInterface(
 	ShowParameters("DatabaseObjectIdentifier").
 	ShowParametersDetails(schemaParameters...).
 	CustomOperationsFromObject(ssotdefs.Schema).
-	WithCustomInterfaceMethod(
-		"Use", "Use is based on https://docs.snowflake.com/en/sql-reference/sql/use-schema",
-		[]*g.MethodParameter{g.NewMethodParameter("id", "DatabaseObjectIdentifier")},
-		"error",
-	)
+	CustomInterfaceMethodsFromObject(ssotdefs.Schema)

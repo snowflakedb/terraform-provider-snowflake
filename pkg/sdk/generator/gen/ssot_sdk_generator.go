@@ -187,6 +187,14 @@ func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryS
 	return q
 }
 
+// TODO [next PRs]: Delete the repeated definition checks in CustomOperationsFromObject,
+// CustomInterfaceMethodsFromObject, customInterfaceMethodParameters, and Object.SdkConfig.
+// ValidateObject already rejects an empty name, a duplicate name, a missing IdType, and a parameter
+// with no type. The copies exist because make generate-sdk does not call ValidateObject. It reads the
+// object directly. The generator tests also call these emitters on a fake object without ValidateObject.
+// Run ValidateObject from SDK generation, or share one checker, and delete the copies. Keep the opt-in
+// panic in the emitter. That checks whether the call is enabled, not whether the spec is well formed.
+
 // CustomOperationsFromObject adds each custom operation from obj.CustomOperations, in slice order.
 // The operations are emitted together at this call. Clause order is the emission order.
 // The query struct name is the kind plus Name.
@@ -211,6 +219,55 @@ func requireCustomOperations(obj ssot.Object) {
 	if !obj.SdkConfig().CustomOperations {
 		panic(fmt.Sprintf("object %q is not enabled for SDK custom operation generation", obj.Name))
 	}
+}
+
+// CustomInterfaceMethodsFromObject adds each custom interface method from obj.CustomInterfaceMethods, in slice order.
+// The declaration is generated. The body stays in the SDK ext file.
+// A nil parameter list is id of IdType. An empty return list is error.
+func (i *Interface) CustomInterfaceMethodsFromObject(obj ssot.Object) *Interface {
+	if !obj.SdkConfig().CustomInterfaceMethods {
+		panic(fmt.Sprintf("object %q is not enabled for SDK custom interface method generation", obj.Name))
+	}
+	seen := make(map[string]struct{})
+	for _, spec := range obj.CustomInterfaceMethods {
+		if spec.Name == "" {
+			panic(fmt.Sprintf("object %q: custom interface method name is empty", obj.Name))
+		}
+		if _, dup := seen[spec.Name]; dup {
+			panic(fmt.Sprintf("object %q: duplicate custom interface method %q", obj.Name, spec.Name))
+		}
+		seen[spec.Name] = struct{}{}
+		returns := spec.Returns
+		if len(returns) == 0 {
+			returns = []string{"error"}
+		}
+		i = i.WithCustomInterfaceMethod(spec.Name, obj.CustomInterfaceMethodDoc(spec), customInterfaceMethodParameters(obj, spec), returns...)
+	}
+	return i
+}
+
+func customInterfaceMethodParameters(obj ssot.Object, spec ssot.CustomInterfaceMethodSpec) []*MethodParameter {
+	if spec.Parameters == nil {
+		if obj.IdType == "" {
+			panic(fmt.Sprintf("object %q: custom interface method %q needs IdType", obj.Name, spec.Name))
+		}
+		return []*MethodParameter{NewMethodParameter("id", obj.IdType)}
+	}
+	params := make([]*MethodParameter, len(spec.Parameters))
+	for i, param := range spec.Parameters {
+		if param.Name == "" {
+			panic(fmt.Sprintf("object %q: custom interface method %q parameter name is empty", obj.Name, spec.Name))
+		}
+		kind := param.Kind
+		if kind == "" {
+			kind = obj.IdType
+		}
+		if kind == "" {
+			panic(fmt.Sprintf("object %q: custom interface method %q parameter %q needs a type", obj.Name, spec.Name, param.Name))
+		}
+		params[i] = NewMethodParameter(param.Name, kind)
+	}
+	return params
 }
 
 func (i *Interface) customOperationFromSpec(obj ssot.Object, spec ssot.CustomOperationSpec) *Interface {

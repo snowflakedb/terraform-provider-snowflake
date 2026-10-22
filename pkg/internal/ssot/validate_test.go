@@ -459,6 +459,25 @@ func Test_ValidateObject_customOperations(t *testing.T) {
 	require.Panics(t, func() { ValidateObject(duplicated) })
 }
 
+func Test_ValidateObject_customInterfaceMethods(t *testing.T) {
+	valid := Object{
+		Name:   "Fake",
+		IdType: "DatabaseObjectIdentifier",
+		CustomInterfaceMethods: []CustomInterfaceMethodSpec{{
+			Name: "Use",
+		}},
+	}
+	require.NotPanics(t, func() { ValidateObject(valid) })
+
+	missingID := valid
+	missingID.IdType = ""
+	require.Panics(t, func() { ValidateObject(missingID) })
+
+	duplicated := valid
+	duplicated.CustomInterfaceMethods = append(duplicated.CustomInterfaceMethods, CustomInterfaceMethodSpec{Name: "Use"})
+	require.Panics(t, func() { ValidateObject(duplicated) })
+}
+
 func Test_ValidateObject_duplicateOutputKey(t *testing.T) {
 	a := Attribute{Name: "for_application", ShowName: "application"}
 	b := Attribute{Name: "application"}

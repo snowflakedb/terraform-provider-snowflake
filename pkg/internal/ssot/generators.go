@@ -51,7 +51,8 @@ type SdkGenerator struct {
 	AlterSetAdditionalValidations  bool
 	AlterWithoutExactlyOneValueSet bool
 
-	CustomOperations bool
+	CustomOperations       bool
+	CustomInterfaceMethods bool
 }
 
 type ModelGenerator struct {
@@ -265,6 +266,13 @@ func SdkAlterWithoutExactlyOneValueSet() SdkAlterOption {
 // The doc URL is the kind slug, a hyphen, and the name slug, unless the spec sets Doc.
 func SdkCustomOperations() SdkOption {
 	return func(s *SdkGenerator) { s.CustomOperations = true }
+}
+
+// SdkCustomInterfaceMethods emits Object.CustomInterfaceMethods. Each entry is one interface declaration.
+// The body stays in the SDK ext file. The default signature is id of IdType and a return of error.
+// The default doc is the method name, " is based on ", and the docs URL for that method and Name.
+func SdkCustomInterfaceMethods() SdkOption {
+	return func(s *SdkGenerator) { s.CustomInterfaceMethods = true }
 }
 
 func WithSdk(opts ...SdkOption) GeneratorOption {

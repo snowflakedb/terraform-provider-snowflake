@@ -170,6 +170,8 @@ func (obj Object) SdkConfig() SdkGenerator {
 			cfg.AlterQueryStructName = "Alter" + name
 		}
 	}
+	// TODO [next PRs]: These empty-name loops repeat ValidateObject. The SDK emitter copies them too
+	// because make generate-sdk does not call ValidateObject. See CustomOperationsFromObject.
 	if cfg.CustomOperations {
 		obj.singularName("custom operation")
 		for _, spec := range obj.CustomOperations {
@@ -178,7 +180,28 @@ func (obj Object) SdkConfig() SdkGenerator {
 			}
 		}
 	}
+	if cfg.CustomInterfaceMethods {
+		obj.singularName("custom interface method")
+		for _, spec := range obj.CustomInterfaceMethods {
+			if spec.Name == "" {
+				panic(fmt.Sprintf("object %q: custom interface method name is empty", obj.Name))
+			}
+		}
+	}
 	return cfg
+}
+
+// CustomInterfaceMethodDoc is the comment emitted on the interface method.
+// An explicit Doc wins. Otherwise it is "{Name} is based on" the docs URL for the method and the object.
+func (obj Object) CustomInterfaceMethodDoc(spec CustomInterfaceMethodSpec) string {
+	if spec.Doc != "" {
+		return spec.Doc
+	}
+	if spec.Name == "" {
+		panic(fmt.Sprintf("object %q: custom interface method name is empty", obj.Name))
+	}
+	name := obj.singularName("custom interface method")
+	return spec.Name + " is based on " + customOperationDocURLPrefix + docsObjectSlug(spec.Name) + "-" + docsObjectSlug(name)
 }
 
 // CustomOperationDoc is the operation doc URL.

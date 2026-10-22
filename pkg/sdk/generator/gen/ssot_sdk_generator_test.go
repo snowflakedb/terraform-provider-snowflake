@@ -794,6 +794,56 @@ func Test_CustomOperationsFromObject_panics(t *testing.T) {
 	})
 }
 
+func Test_CustomInterfaceMethodsFromObject_fakeObject(t *testing.T) {
+	obj := ssot.Object{
+		Name:       "Fake",
+		IdType:     "DatabaseObjectIdentifier",
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCustomInterfaceMethods())},
+		CustomInterfaceMethods: []ssot.CustomInterfaceMethodSpec{{
+			Name: "Use",
+		}},
+	}
+	got := NewInterface("Fakes", "Fake", "DatabaseObjectIdentifier").CustomInterfaceMethodsFromObject(obj)
+	require.Equal(t, []*CustomInterfaceMethod{{
+		Name:        "Use",
+		Doc:         "Use is based on https://docs.snowflake.com/en/sql-reference/sql/use-fake",
+		Parameters:  []*MethodParameter{NewMethodParameter("id", "DatabaseObjectIdentifier")},
+		ReturnTypes: []string{"error"},
+	}}, got.CustomMethods)
+
+	overridden := obj
+	overridden.CustomInterfaceMethods = []ssot.CustomInterfaceMethodSpec{{
+		Name: "Use",
+		Doc:  "Use is based on https://custom/use",
+		Parameters: []ssot.CustomInterfaceMethodParameter{{
+			Name: "request",
+			Kind: "*UseFakeRequest",
+		}},
+		Returns: []string{"bool", "error"},
+	}}
+	got = NewInterface("Fakes", "Fake", "DatabaseObjectIdentifier").CustomInterfaceMethodsFromObject(overridden)
+	require.Equal(t, []*CustomInterfaceMethod{{
+		Name:        "Use",
+		Doc:         "Use is based on https://custom/use",
+		Parameters:  []*MethodParameter{NewMethodParameter("request", "*UseFakeRequest")},
+		ReturnTypes: []string{"bool", "error"},
+	}}, got.CustomMethods)
+}
+
+func Test_CustomInterfaceMethodsFromObject_panics(t *testing.T) {
+	require.Panics(t, func() {
+		NewInterface("Fakes", "Fake", "DatabaseObjectIdentifier").
+			CustomInterfaceMethodsFromObject(ssot.Object{Name: "Fake"})
+	})
+	require.Panics(t, func() {
+		NewInterface("Fakes", "Fake", "DatabaseObjectIdentifier").CustomInterfaceMethodsFromObject(ssot.Object{
+			Name:                   "Fake",
+			Generators:             []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCustomInterfaceMethods())},
+			CustomInterfaceMethods: []ssot.CustomInterfaceMethodSpec{{Name: "Use"}},
+		})
+	})
+}
+
 func Test_CreateAlterFromObject_panics(t *testing.T) {
 	obj := ssot.Object{Name: "Widget", NamePlural: "Widgets"}
 	require.Panics(t, func() {

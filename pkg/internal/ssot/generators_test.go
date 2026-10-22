@@ -136,6 +136,9 @@ func Test_ObjectGenerators_options(t *testing.T) {
 	g = ObjectGenerators(WithSdk(SdkCustomOperations()))
 	require.Equal(t, Generators{Sdk: SdkGenerator{CustomOperations: true}}, g)
 
+	g = ObjectGenerators(WithSdk(SdkCustomInterfaceMethods()))
+	require.Equal(t, Generators{Sdk: SdkGenerator{CustomInterfaceMethods: true}}, g)
+
 	g = ObjectGenerators(WithSdk())
 	require.Equal(t, Generators{}, g)
 

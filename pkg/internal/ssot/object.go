@@ -42,6 +42,9 @@ type Object struct {
 	// CustomOperations are operations other than CREATE and ALTER.
 	// Clause order is the emission order. SdkCustomOperations turns them on.
 	CustomOperations []CustomOperationSpec
+	// CustomInterfaceMethods are interface declarations whose bodies stay in the SDK ext file.
+	// SdkCustomInterfaceMethods turns them on.
+	CustomInterfaceMethods []CustomInterfaceMethodSpec
 }
 
 // AlterClauseKind is one entry in an ALTER statement after the name.
