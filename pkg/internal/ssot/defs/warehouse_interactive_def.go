@@ -73,6 +73,7 @@ var WarehouseInteractiveAttrs = struct {
 	ResourceMonitor: ssot.Attribute{
 		Name:            "resource_monitor",
 		Type:            ssot.AttrIdentifier,
+		IdentifierType:  "AccountObjectIdentifier",
 		Description:     "Specifies the name of a resource monitor that is explicitly assigned to the interactive warehouse.",
 		RelatedResource: &ResourceMonitor,
 		DiffSuppress:    ssot.SuppressShow,
@@ -87,7 +88,8 @@ var WarehouseInteractiveAttrs = struct {
 		Type:        ssot.AttrSet,
 		Description: "Specifies the fully qualified names of the tables associated with the interactive warehouse. Changes are applied incrementally (ADD TABLES / DROP TABLES) rather than by full re-association.",
 		Elem: &ssot.Attribute{
-			Type: ssot.AttrIdentifier,
+			Type:           ssot.AttrIdentifier,
+			IdentifierType: "SchemaObjectIdentifier",
 		},
 	},
 	// Computed in Terraform. The generator emits Optional; AttributesModificationExt clears it.
