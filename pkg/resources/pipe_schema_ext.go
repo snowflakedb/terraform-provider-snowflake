@@ -25,50 +25,18 @@ var pipeIdentitySchemaExt = map[string]*schema.Schema{
 	},
 }
 
-var pipeAttributesSchemaExt = map[string]*schema.Schema{
-	"comment": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Specifies a comment for the pipe.",
-	},
-	"copy_statement": {
-		Type:             schema.TypeString,
-		Required:         true,
-		ForceNew:         true,
-		Description:      "Specifies the copy statement for the pipe.",
-		DiffSuppressFunc: pipeCopyStatementDiffSuppress,
-	},
-	"auto_ingest": {
-		Type:        schema.TypeBool,
-		Optional:    true,
-		Default:     false,
-		ForceNew:    true,
-		Description: "Specifies a auto_ingest param for the pipe.",
-	},
-	"aws_sns_topic_arn": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		ForceNew:    true,
-		Description: "Specifies the Amazon Resource Name (ARN) for the SNS topic for your S3 bucket.",
-	},
-	"integration": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Specifies an integration for the pipe.",
-	},
-	"notification_channel": {
+func pipeAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
+	s["copy_statement"].DiffSuppressFunc = pipeCopyStatementDiffSuppress
+	s["auto_ingest"].Default = false
+	s["notification_channel"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Computed:    true,
 		Description: "Amazon Resource Name of the Amazon SQS queue for the stage named in the DEFINITION column.",
-	},
-	"owner": {
+	}
+	s["owner"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Computed:    true,
 		Description: "Name of the role that owns the pipe.",
-	},
-	"error_integration": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Specifies the name of the notification integration used for error notifications.",
-	},
+	}
+	return s
 }

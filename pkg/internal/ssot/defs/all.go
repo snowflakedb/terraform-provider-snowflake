@@ -16,6 +16,7 @@ func All() []ssot.Object {
 		WarehouseAdaptive,
 		WarehouseInteractive,
 		Alert,
+		Pipe,
 	}
 	for _, obj := range objs {
 		ssot.ValidateObject(obj)
