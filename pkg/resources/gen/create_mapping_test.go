@@ -112,6 +112,34 @@ func Test_ParseIdFromConfig_databaseAndSchemaIdentifiers(t *testing.T) {
 `, renderTemplate(t, "generatedParseIdFromConfig", nested))
 }
 
+func Test_attachCreateMappings_skipsNested(t *testing.T) {
+	src := []ssot.Attribute{{
+		Name:          "client_policy",
+		Type:          ssot.AttrSet,
+		Required:      true,
+		CreateMapping: ssot.StringAttributeCreateBuilder,
+		Children: []ssot.Attribute{{
+			Name:          "client_type",
+			Type:          ssot.AttrString,
+			Required:      true,
+			CreateMapping: ssot.StringAttributeCreateBuilder,
+			Children: []ssot.Attribute{{
+				Name:          "version",
+				Type:          ssot.AttrString,
+				CreateMapping: ssot.StringAttributeCreateBuilder,
+			}},
+		}},
+	}}
+	dst := applyResourceAttributeRules("SchemaObjectIdentifier", src)
+	require.NotPanics(t, func() {
+		attachCreateMappings("AuthenticationPolicy", "SchemaObjectIdentifier", src, dst)
+	})
+	require.Nil(t, dst[0].CreateConstructorArg)
+	require.Nil(t, dst[0].CreateOptionalCall)
+	require.Nil(t, dst[0].Children[0].CreateOptionalCall)
+	require.Nil(t, dst[0].Children[0].Children[0].CreateOptionalCall)
+}
+
 func parseIdModel(name, idType string) ResourceModel {
 	return ModelFromInputObject(ResourceObject{Object: ssot.Object{
 		Name:   name,

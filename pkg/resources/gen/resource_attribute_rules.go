@@ -280,6 +280,13 @@ func resolveResourceAttribute(in ssot.Attribute, ctx resourceAttributeRuleContex
 		elem := resolveResourceAttribute(*in.Elem, elemCtx)
 		out.Elem = &elem
 	}
+	if len(in.Children) > 0 {
+		nestedCtx := ctx
+		nestedCtx.IdType = ""
+		out.Children = collections.Map(in.Children, func(child ssot.Attribute) ResourceAttribute {
+			return resolveResourceAttribute(child, nestedCtx)
+		})
+	}
 	return out
 }
 
@@ -292,6 +299,8 @@ func resourceAttributeBaseline(in ssot.Attribute, ctx resourceAttributeRuleConte
 		out.Required = in.Required
 		out.Optional = !in.Required
 		out.ForceNew = in.ForceNew
+		out.MinItems = in.MinItems
+		out.MaxItems = in.MaxItems
 		out.ConflictsWith = collections.Map(in.ConflictsWith, func(attr ssot.Attribute) string { return attr.Name })
 	}
 	if in.Description != "" {

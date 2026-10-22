@@ -43,8 +43,8 @@ var authenticationPolicyDescribeOutputSchemaExt = map[string]*schema.Schema{
 	},
 }
 
-// Nested blocks and the deprecated field have no SSOT attribute type.
-// Set diffs and the MFA enrollment special case are also applied here.
+// Deeper nested blocks and the deprecated field have no SSOT attribute type.
+// client_policy is generated. Set diffs and the MFA enrollment special case are also applied here.
 func authenticationPolicyAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
 	s["authentication_methods"].DiffSuppressFunc = NormalizeAndCompareEnumsInSet("authentication_methods", sdk.ToAuthenticationMethodsOption)
 	s["client_types"].DiffSuppressFunc = NormalizeAndCompareEnumsInSet("client_types", sdk.ToClientTypesOption)
@@ -76,27 +76,6 @@ func authenticationPolicyAttributesModificationExt(s map[string]*schema.Schema) 
 		DiffSuppressFunc: ignoreAlwaysSuppressFunc,
 		Description:      fmt.Sprintf("A list of authentication methods that enforce multi-factor authentication (MFA) during login. Authentication methods not listed in this parameter do not prompt for multi-factor authentication. Allowed values are %s.", possibleValuesListed(sdk.AllMfaAuthenticationMethodsOptions)),
 		Deprecated:       "This field is deprecated and will be removed in the future. Currently, it has no effect. Use the new `enforce_mfa_on_external_authentication` field instead. Read our [BCR Migration Guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies) for more migration steps and more details.",
-	}
-	s["client_policy"] = &schema.Schema{
-		Type:        schema.TypeSet,
-		Optional:    true,
-		Description: "Allows to set policies per-client type. Only valid when `client_types` is empty, contains ALL, or contains DRIVERS.",
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"client_type": {
-					Type:             schema.TypeString,
-					Required:         true,
-					Description:      fmt.Sprintf("The client or driver type. Valid values (case-insensitive): %s.", possibleValuesListed(sdk.AllClientPolicyDriverTypes)),
-					ValidateDiagFunc: sdkValidation(sdk.ToClientPolicyDriverType),
-					DiffSuppressFunc: NormalizeAndCompare(sdk.ToClientPolicyDriverType),
-				},
-				"minimum_version": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "Minimum allowed version for this client/driver type (e.g. '1.14.1').",
-				},
-			},
-		},
 	}
 	s["mfa_policy"] = &schema.Schema{
 		Type:     schema.TypeList,

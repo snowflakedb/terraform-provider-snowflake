@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
@@ -406,4 +407,176 @@ func Test_applyResourceAttributeRules_comment(t *testing.T) {
 	require.Empty(t, got.DefaultExpr)
 	require.Empty(t, got.ValidateDiagExpr)
 	require.Empty(t, got.DiffSuppressExpr)
+}
+
+func Test_applyResourceAttributeRules_nestedBlocksRecurse(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:        "outer",
+		Type:        ssot.AttrSet,
+		Description: "Outer block.",
+		Children: []ssot.Attribute{{
+			Name:     "inner",
+			Type:     ssot.AttrList,
+			Required: true,
+			Children: []ssot.Attribute{{
+				Name:        "leaf",
+				Type:        ssot.AttrEnum,
+				Required:    true,
+				Description: "A leaf.",
+				Enum:        defs.ComputePoolInstanceFamily,
+			}, {
+				Name: "target",
+				Type: ssot.AttrIdentifier,
+			}},
+		}},
+	}, resourceAttributeRuleContext{IdType: "SchemaObjectIdentifier"})
+
+	require.Equal(t, SchemaTypeSet, got.TfType)
+	require.True(t, got.Optional)
+	require.Equal(t, `"Outer block."`, got.DescriptionExpr)
+	require.Nil(t, got.Elem)
+	require.Len(t, got.Children, 1)
+
+	inner := got.Children[0]
+	require.Equal(t, "inner", inner.Name)
+	require.Equal(t, SchemaTypeList, inner.TfType)
+	require.True(t, inner.Required)
+	require.False(t, inner.Optional)
+	require.Len(t, inner.Children, 2)
+
+	leaf := inner.Children[0]
+	require.Equal(t, "leaf", leaf.Name)
+	require.Equal(t, SchemaTypeString, leaf.TfType)
+	require.True(t, leaf.Required)
+	require.Equal(t, "ComputePoolInstanceFamily", leaf.EnumName)
+	require.Equal(t, "sdkValidation(sdk.ToComputePoolInstanceFamily)", leaf.ValidateDiagExpr)
+	require.Equal(t, "SuppressIfAny(NormalizeAndCompare(sdk.ToComputePoolInstanceFamily))", leaf.DiffSuppressExpr)
+	require.Equal(t, `"A leaf. " + enumValuesDescription(sdk.AllComputePoolInstanceFamilies)`, leaf.DescriptionExpr)
+
+	target := inner.Children[1]
+	require.Equal(t, "suppressIdentifierQuoting", target.DiffSuppressExpr)
+	require.Empty(t, target.ValidateDiagExpr)
+
+	model := ModelFromInputObject(ResourceObject{Object: ssot.Object{
+		Name:       "Widget",
+		Attributes: []ssot.Attribute{gotSourceNested()},
+	}}, nil, nil)
+	var b strings.Builder
+	require.NoError(t, SchemaTemplate.ExecuteTemplate(&b, "attributesSchemaDefinition", model))
+	rendered := b.String()
+	require.Equal(t, 2, strings.Count(rendered, "&tfschema.Resource{"))
+	require.Contains(t, rendered, `"outer"`)
+	require.Contains(t, rendered, `"inner"`)
+	require.Contains(t, rendered, `"leaf"`)
+}
+
+func gotSourceNested() ssot.Attribute {
+	return ssot.Attribute{
+		Name: "outer",
+		Type: ssot.AttrSet,
+		Children: []ssot.Attribute{{
+			Name: "inner",
+			Type: ssot.AttrList,
+			Children: []ssot.Attribute{{
+				Name: "leaf",
+				Type: ssot.AttrString,
+			}},
+		}},
+	}
+}
+
+func Test_applyResourceAttributeRules_nestedBlock(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:        "client_policy",
+		Type:        ssot.AttrSet,
+		Description: "Allows to set policies per-client type.",
+		Children: []ssot.Attribute{
+			{
+				Name:        "client_type",
+				Type:        ssot.AttrEnum,
+				Required:    true,
+				Description: "The client or driver type.",
+				Enum:        defs.ClientPolicyDriverType,
+			},
+			{
+				Name:        "target",
+				Type:        ssot.AttrIdentifier,
+				Description: "An identifier inside the block.",
+			},
+			{
+				Name:        "minimum_version",
+				Type:        ssot.AttrString,
+				Required:    true,
+				Description: "Minimum allowed version.",
+			},
+		},
+	}, resourceAttributeRuleContext{IdType: "SchemaObjectIdentifier"})
+
+	require.Equal(t, SchemaTypeSet, got.TfType)
+	require.True(t, got.Optional)
+	require.Nil(t, got.Elem)
+	require.Len(t, got.Children, 3)
+
+	clientType := got.Children[0]
+	require.Equal(t, "client_type", clientType.Name)
+	require.True(t, clientType.Required)
+	require.False(t, clientType.Optional)
+	require.Equal(t, "ClientPolicyDriverType", clientType.EnumName)
+	require.Equal(t, "sdkValidation(sdk.ToClientPolicyDriverType)", clientType.ValidateDiagExpr)
+	require.Equal(t, "SuppressIfAny(NormalizeAndCompare(sdk.ToClientPolicyDriverType))", clientType.DiffSuppressExpr)
+	require.Equal(t, `"The client or driver type. " + enumValuesDescription(sdk.AllClientPolicyDriverTypes)`, clientType.DescriptionExpr)
+
+	target := got.Children[1]
+	require.Equal(t, "suppressIdentifierQuoting", target.DiffSuppressExpr)
+	require.Empty(t, target.ValidateDiagExpr)
+
+	version := got.Children[2]
+	require.True(t, version.Required)
+	require.Equal(t, `"Minimum allowed version."`, version.DescriptionExpr)
+}
+
+func Test_applyResourceAttributeRules_listOfBlocksAllowsMultipleItems(t *testing.T) {
+	attr := ssot.Attribute{
+		Name:        "storage_location",
+		Type:        ssot.AttrList,
+		Required:    true,
+		MinItems:    new(1),
+		Description: "List of named cloud storage locations.",
+		Children: []ssot.Attribute{
+			{Name: "storage_location_name", Type: ssot.AttrString, Required: true, Description: "Name of the storage location."},
+			{Name: "storage_base_url", Type: ssot.AttrString, Required: true, Description: "Specifies the base URL."},
+			{Name: "storage_aws_role_arn", Type: ssot.AttrString, Description: "Specifies the role ARN."},
+			{Name: "allowed_locations", Type: ssot.AttrList, MinItems: new(1), Description: "Extra locations.", Elem: &ssot.Attribute{Type: ssot.AttrString}},
+		},
+	}
+	got := resolveResourceAttribute(attr, resourceAttributeRuleContext{})
+
+	require.Equal(t, SchemaTypeList, got.TfType)
+	require.True(t, got.Required)
+	require.False(t, got.Optional)
+	require.NotNil(t, got.MinItems)
+	require.Equal(t, 1, *got.MinItems)
+	require.Nil(t, got.MaxItems)
+	require.Len(t, got.Children, 4)
+	require.NotNil(t, got.Children[3].MinItems)
+	require.Equal(t, 1, *got.Children[3].MinItems)
+	require.Equal(t, SchemaTypeList, got.Children[3].TfType)
+	require.Equal(t, SchemaTypeString, got.Children[3].Elem.TfType)
+
+	model := ModelFromInputObject(ResourceObject{Object: ssot.Object{
+		Name:       "ExternalVolume",
+		Attributes: []ssot.Attribute{attr},
+	}}, nil, nil)
+	var b strings.Builder
+	require.NoError(t, SchemaTemplate.ExecuteTemplate(&b, "attributesSchemaDefinition", model))
+	rendered := b.String()
+	require.Contains(t, rendered, "MinItems: 1,")
+	require.Equal(t, 2, strings.Count(rendered, "MinItems: 1,"))
+	require.NotContains(t, rendered, "MaxItems:")
+	require.Contains(t, rendered, `"storage_location_name"`)
+	require.Contains(t, rendered, `"storage_base_url"`)
+	require.Contains(t, rendered, `"storage_aws_role_arn"`)
+	require.Contains(t, rendered, `"allowed_locations"`)
+	require.Equal(t, 1, strings.Count(rendered, "&tfschema.Resource{"))
+	require.Contains(t, rendered, "&tfschema.Schema{")
 }

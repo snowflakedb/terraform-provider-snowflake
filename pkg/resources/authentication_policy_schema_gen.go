@@ -37,6 +37,27 @@ var authenticationPolicyAttributesSchema = authenticationPolicyAttributesModific
 		DiffSuppressFunc: NormalizeAndCompare(sdk.ToClientTypesOption),
 		Description:      "A list of clients that can authenticate with Snowflake. If a client tries to connect, and the client is not one of the valid `client_types`, then the login attempt fails. " + enumValuesDescription(sdk.AllClientTypesOptions) + " The `client_types` property of an authentication policy is a best effort method to block user logins based on specific clients. It should not be used as the sole control to establish a security boundary.",
 	},
+	"client_policy": {
+		Type:     tfschema.TypeSet,
+		Optional: true,
+		Elem: &tfschema.Resource{
+			Schema: map[string]*tfschema.Schema{
+				"client_type": {
+					Type:             tfschema.TypeString,
+					Required:         true,
+					ValidateDiagFunc: sdkValidation(sdk.ToClientPolicyDriverType),
+					DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToClientPolicyDriverType)),
+					Description:      "The client or driver type. " + enumValuesDescription(sdk.AllClientPolicyDriverTypes),
+				},
+				"minimum_version": {
+					Type:        tfschema.TypeString,
+					Required:    true,
+					Description: "Minimum allowed version for this client/driver type (e.g. '1.14.1').",
+				},
+			},
+		},
+		Description: "Allows to set policies per-client type. Only valid when `client_types` is empty, contains ALL, or contains DRIVERS.",
+	},
 	"security_integrations": {
 		Type:     tfschema.TypeSet,
 		Optional: true,

@@ -22,22 +22,31 @@ var AuthenticationPolicyTargetScope = ssot.NewEnum(
 	"ACCOUNT", "PERSON_USERS", "SERVICE_USERS",
 )
 
+var ClientPolicyDriverType = ssot.NewEnum(
+	"ClientPolicyDriverType", "ClientPolicyDriverTypes",
+	"JDBC_DRIVER", "ODBC_DRIVER", "PYTHON_DRIVER", "JAVASCRIPT_DRIVER",
+	"C_DRIVER", "GO_DRIVER", "PHP_DRIVER", "DOTNET_DRIVER",
+	"SQL_API", "SNOWPIPE_STREAMING_CLIENT_SDK", "PY_CORE",
+	"SPROC_PYTHON", "PYTHON_SNOWPARK", "SQL_ALCHEMY", "SNOWPARK", "SNOWFLAKE_CLIENT",
+)
+
 // AuthenticationPolicyAttrs holds reusable Authentication Policy fields so SHOW and DESCRIBE
 // Columns can point at the same definitions instead of restating names.
 //
-// Omitted from Attributes because SSOT has no nested block type:
+// Still handwritten in the schema ext:
 //   - mfa_authentication_methods: deprecated schema field; it is not a CREATE/ALTER column.
-//   - client_policy: set of {client_type, minimum_version}.
 //   - mfa_policy: single block of an enum and a set of enums.
 //   - pat_policy: single block of ints, a bool, and an enum.
 //   - workload_identity_policy: single block of sets.
 //
-// Those nested fields are also omitted from DESCRIBE Columns. A writable column must be in
-// Attributes, and the raw DESCRIBE property strings are not a separate attribute.
+// client_policy is a set of {client_type, minimum_version}. Those omitted fields are also
+// omitted from DESCRIBE Columns. A writable column must be in Attributes, and the raw
+// DESCRIBE property strings are not a separate attribute.
 var AuthenticationPolicyAttrs = struct {
 	AuthenticationMethods ssot.Attribute
 	MfaEnrollment         ssot.Attribute
 	ClientTypes           ssot.Attribute
+	ClientPolicy          ssot.Attribute
 	SecurityIntegrations  ssot.Attribute
 	Comment               ssot.Attribute
 	CreatedOn             ssot.Attribute
@@ -78,6 +87,26 @@ var AuthenticationPolicyAttrs = struct {
 		Elem: &ssot.Attribute{
 			Type: ssot.AttrEnum,
 			Enum: ClientTypesOption,
+		},
+	},
+	ClientPolicy: ssot.Attribute{
+		Name:        "client_policy",
+		Type:        ssot.AttrSet,
+		Description: "Allows to set policies per-client type. Only valid when `client_types` is empty, contains ALL, or contains DRIVERS.",
+		Children: []ssot.Attribute{
+			{
+				Name:        "client_type",
+				Type:        ssot.AttrEnum,
+				Required:    true,
+				Description: "The client or driver type.",
+				Enum:        ClientPolicyDriverType,
+			},
+			{
+				Name:        "minimum_version",
+				Type:        ssot.AttrString,
+				Required:    true,
+				Description: "Minimum allowed version for this client/driver type (e.g. '1.14.1').",
+			},
 		},
 	},
 	SecurityIntegrations: ssot.Attribute{
@@ -141,6 +170,7 @@ var AuthenticationPolicy = ssot.Object{
 		AuthenticationPolicyAttrs.AuthenticationMethods,
 		AuthenticationPolicyAttrs.MfaEnrollment,
 		AuthenticationPolicyAttrs.ClientTypes,
+		AuthenticationPolicyAttrs.ClientPolicy,
 		AuthenticationPolicyAttrs.SecurityIntegrations,
 		AuthenticationPolicyAttrs.Comment,
 	},

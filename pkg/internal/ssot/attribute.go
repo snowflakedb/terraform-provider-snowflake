@@ -27,12 +27,19 @@ type Attribute struct {
 	ForceNew              bool
 	Min                   *int
 	Max                   *int
-	RawDescription        bool
-	Enum                  *Enum
+	// MinItems and MaxItems are Terraform list or set bounds. Nil means unset.
+	// A list with MinItems and no MaxItems holds multiple items, as storage_location does.
+	MinItems       *int
+	MaxItems       *int
+	RawDescription bool
+	Enum           *Enum
 	// ShowEnum is the SHOW/DESCRIBE enum when it differs from Enum.
 	// Empty uses Enum. Resource schema and model builders keep Enum.
-	ShowEnum       *Enum
-	Elem           *Attribute
+	ShowEnum *Enum
+	Elem     *Attribute
+	// Children is the named fields of a list or set block. Elem stays a scalar collection element.
+	// A nested field may itself be a block. Create and alter generation skips a nested attribute and every field under it.
+	Children       []Attribute
 	OptionalInShow bool // SHOW/DESCRIBE SDK field is a pointer; drives schema ToSchema nil-guards
 	OptionalInDb   bool // DB row is nullable; live for the SDK paired-struct db and plain kinds
 	StoredAsText   bool // the db column is text, and the plain kind stays the semantic type

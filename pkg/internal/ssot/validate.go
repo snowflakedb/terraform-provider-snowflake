@@ -31,6 +31,8 @@ func ValidateObject(obj Object) {
 		}
 		seen[a.Name] = struct{}{}
 		attrs[a.Name] = struct{}{}
+		validateCollectionBounds(obj, a)
+		validateNestedAttribute(obj, a)
 		validateAttribute(obj, a)
 		validateSqlClauses(obj, a)
 		validateAttributeOptions(obj.Name, a, false)
@@ -57,8 +59,9 @@ func ValidateObject(obj Object) {
 			}
 		}
 	}
-	validateColumnList(obj, "SHOW", obj.Show.Columns, attrs)
-	validateColumnList(obj, "DESCRIBE", obj.Describe.Columns, attrs)
+	nested := nestedAttributeNames(obj)
+	validateColumnList(obj, "SHOW", obj.Show.Columns, attrs, nested)
+	validateColumnList(obj, "DESCRIBE", obj.Describe.Columns, attrs, nested)
 	g := ObjectGenerators(obj.Generators...)
 	validateGeneratorSkips(obj, "object-assertion", "SHOW", g.ObjectAssert.Show, obj.Show.Columns, g.ObjectAssert.ShowSkipFields)
 	validateGeneratorSkips(obj, "object-assertion", "DESCRIBE", g.ObjectAssert.Describe, obj.Describe.Columns, g.ObjectAssert.DescribeSkipFields)
@@ -88,6 +91,9 @@ func validateAttribute(obj Object, a Attribute) {
 	if a.Elem != nil {
 		validateAttribute(obj, *a.Elem)
 	}
+	for _, child := range a.Children {
+		validateAttribute(obj, child)
+	}
 }
 
 func validateSchemaStateUpgraders(obj Object) {
@@ -106,6 +112,71 @@ func validateSchemaStateUpgraders(obj Object) {
 	}
 	if hooks.StateUpgraders.Generate && len(obj.SchemaStateUpgraders) == 0 {
 		panic(fmt.Sprintf("object %q: WithStateUpgraders(Generated()) needs upgrade functions", obj.Name))
+	}
+}
+
+func validateNestedAttribute(obj Object, attr Attribute) {
+	if len(attr.Children) == 0 {
+		return
+	}
+	if attr.Type != AttrList && attr.Type != AttrSet {
+		panic(fmt.Sprintf("object %q: attribute %q Nested requires a list or set", obj.Name, attr.Name))
+	}
+	if attr.Elem != nil {
+		panic(fmt.Sprintf("object %q: attribute %q has both Elem and Nested", obj.Name, attr.Name))
+	}
+	if statement, ok := sqlClauseStatement(attr); ok {
+		panic(fmt.Sprintf("object %q: attribute %q has a %s clause and Nested", obj.Name, attr.Name, statement))
+	}
+	seen := make(map[string]struct{}, len(attr.Children))
+	for _, child := range attr.Children {
+		if child.Name == "" {
+			panic(fmt.Sprintf("object %q: attribute %q has a nested attribute with empty Name", obj.Name, attr.Name))
+		}
+		if _, dup := seen[child.Name]; dup {
+			panic(fmt.Sprintf("object %q: attribute %q has duplicate nested attribute %q", obj.Name, attr.Name, child.Name))
+		}
+		seen[child.Name] = struct{}{}
+		if statement, ok := sqlClauseStatement(child); ok {
+			panic(fmt.Sprintf("object %q: nested attribute %q.%q has a %s clause", obj.Name, attr.Name, child.Name, statement))
+		}
+		validateCollectionBounds(obj, child)
+		validateNestedAttribute(obj, child)
+	}
+}
+
+func validateCollectionBounds(obj Object, attr Attribute) {
+	if attr.MinItems == nil && attr.MaxItems == nil {
+		return
+	}
+	if attr.Type != AttrList && attr.Type != AttrSet {
+		panic(fmt.Sprintf("object %q: attribute %q item bounds require a list or set", obj.Name, attr.Name))
+	}
+	if attr.MinItems != nil && attr.MaxItems != nil && *attr.MinItems > *attr.MaxItems {
+		panic(fmt.Sprintf("object %q: attribute %q MinItems %d is greater than MaxItems %d", obj.Name, attr.Name, *attr.MinItems, *attr.MaxItems))
+	}
+}
+
+func nestedAttributeNames(obj Object) map[string]struct{} {
+	names := make(map[string]struct{})
+	for _, attr := range obj.Attributes {
+		if len(attr.Children) > 0 {
+			names[attr.Name] = struct{}{}
+		}
+	}
+	return names
+}
+
+func sqlClauseStatement(attr Attribute) (string, bool) {
+	switch {
+	case attr.CreateSql.Present:
+		return "CREATE", true
+	case attr.SetSql.Present:
+		return "SET", true
+	case attr.UnsetSql.Present:
+		return "UNSET", true
+	default:
+		return "", false
 	}
 }
 
@@ -360,7 +431,7 @@ func validateAttributeOptions(objectName string, attr Attribute, asElem bool) {
 	}
 }
 
-func validateColumnList(obj Object, kind string, list []*Attribute, attrs map[string]struct{}) {
+func validateColumnList(obj Object, kind string, list []*Attribute, attrs map[string]struct{}, nested map[string]struct{}) {
 	seenKey := make(map[string]struct{})
 	seenName := make(map[string]struct{})
 	for _, a := range list {
@@ -389,6 +460,10 @@ func validateColumnList(obj Object, kind string, list []*Attribute, attrs map[st
 		}
 		if _, dup := seenName[a.Name]; dup {
 			panic(fmt.Sprintf("object %q: duplicate %s attribute %q", obj.Name, kind, a.Name))
+		}
+		// TODO (next PRs): Support nested attributes.
+		if _, nestedAttr := nested[a.Name]; nestedAttr || len(a.Children) > 0 {
+			panic(fmt.Sprintf("object %q: nested attribute %q is not a %s column", obj.Name, a.Name, kind))
 		}
 		seenKey[key] = struct{}{}
 		seenName[a.Name] = struct{}{}

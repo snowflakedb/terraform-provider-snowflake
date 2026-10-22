@@ -413,6 +413,142 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 	})
 }
 
+func Test_ValidateObject_nestedAttribute(t *testing.T) {
+	leaf := Attribute{Name: "leaf", Type: AttrString}
+	inner := Attribute{Name: "inner", Type: AttrList, Children: []Attribute{leaf}}
+	outer := Attribute{Name: "outer", Type: AttrSet, Children: []Attribute{inner}}
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name:       "Widget",
+			Attributes: []Attribute{outer},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "Widget": attribute "label" Nested requires a list or set`, func() {
+		ValidateObject(Object{
+			Name:       "Widget",
+			Attributes: []Attribute{{Name: "label", Type: AttrString, Children: []Attribute{leaf}}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "Widget": attribute "items" has both Elem and Nested`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			Attributes: []Attribute{{
+				Name:     "items",
+				Type:     AttrSet,
+				Elem:     &Attribute{Type: AttrString},
+				Children: []Attribute{leaf},
+			}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "Widget": attribute "outer" has duplicate nested attribute "inner"`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			Attributes: []Attribute{{
+				Name:     "outer",
+				Type:     AttrSet,
+				Children: []Attribute{inner, {Name: "inner", Type: AttrString}},
+			}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "Widget": nested attribute "outer"."inner" has a CREATE clause`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			Attributes: []Attribute{{
+				Name: "outer",
+				Type: AttrSet,
+				Children: []Attribute{{
+					Name:      "inner",
+					Type:      AttrString,
+					CreateSql: StringParameter(),
+				}},
+			}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "Widget": nested attribute "inner"."leaf" has a SET clause`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			Attributes: []Attribute{{
+				Name: "outer",
+				Type: AttrSet,
+				Children: []Attribute{{
+					Name: "inner",
+					Type: AttrList,
+					Children: []Attribute{{
+						Name:   "leaf",
+						Type:   AttrString,
+						SetSql: StringParameter(),
+					}},
+				}},
+			}},
+		})
+	})
+
+	column := outer
+	require.PanicsWithValue(t, `object "Widget": nested attribute "outer" is not a SHOW column`, func() {
+		ValidateObject(Object{
+			Name:       "Widget",
+			Attributes: []Attribute{outer},
+			Show:       OutputSpec{Columns: []*Attribute{&column}},
+		})
+	})
+}
+
+func Test_ValidateObject_collectionItemBounds(t *testing.T) {
+	locations := Attribute{
+		Name:     "storage_location",
+		Type:     AttrList,
+		Required: true,
+		MinItems: new(1),
+		Children: []Attribute{
+			{Name: "storage_location_name", Type: AttrString, Required: true},
+			{Name: "storage_base_url", Type: AttrString, Required: true},
+			{Name: "allowed_locations", Type: AttrList, MinItems: new(1), Elem: &Attribute{Type: AttrString}},
+		},
+	}
+	require.NotPanics(t, func() {
+		ValidateObject(Object{Name: "ExternalVolume", Attributes: []Attribute{locations}})
+	})
+
+	require.PanicsWithValue(t, `object "ExternalVolume": attribute "comment" item bounds require a list or set`, func() {
+		ValidateObject(Object{
+			Name:       "ExternalVolume",
+			Attributes: []Attribute{{Name: "comment", Type: AttrString, MinItems: new(1)}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "ExternalVolume": attribute "storage_location" MinItems 2 is greater than MaxItems 1`, func() {
+		ValidateObject(Object{
+			Name: "ExternalVolume",
+			Attributes: []Attribute{{
+				Name:     "storage_location",
+				Type:     AttrList,
+				MinItems: new(2),
+				MaxItems: new(1),
+			}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "ExternalVolume": attribute "storage_base_url" item bounds require a list or set`, func() {
+		ValidateObject(Object{
+			Name: "ExternalVolume",
+			Attributes: []Attribute{{
+				Name: "storage_location",
+				Type: AttrSet,
+				Children: []Attribute{{
+					Name:     "storage_base_url",
+					Type:     AttrString,
+					MinItems: new(1),
+				}},
+			}},
+		})
+	})
+}
+
 func Test_ValidateObject_customOperations(t *testing.T) {
 	transient := Attribute{Name: "is_transient", Type: AttrBool, CreateSql: BoolKeyword(Sql("TRANSIENT"))}
 	valid := Object{

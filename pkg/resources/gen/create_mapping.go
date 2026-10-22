@@ -33,6 +33,10 @@ func attachCreateMappings(objectName, idType string, src []ssot.Attribute, dst [
 		panic(fmt.Sprintf("object %q: %d source attributes and %d resource attributes", objectName, len(src), len(dst)))
 	}
 	for i := range src {
+		// TODO (next PRs): Support nested attributes.
+		if len(src[i].Children) > 0 {
+			continue
+		}
 		if get, ok := src[i].ConstructorGet(); ok {
 			dst[i].CreateConstructorArg = &CreateConstructorArg{Get: get}
 			continue

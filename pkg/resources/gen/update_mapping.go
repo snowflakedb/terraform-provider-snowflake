@@ -18,6 +18,10 @@ func attachUpdateMappings(objectName string, src []ssot.Attribute, dst []Resourc
 		panic(fmt.Sprintf("object %q: %d source attributes and %d resource attributes", objectName, len(src), len(dst)))
 	}
 	for i := range src {
+		// TODO (next PRs): Support nested attributes.
+		if len(src[i].Children) > 0 {
+			continue
+		}
 		call, ok := updateCallFor(objectName, src[i], dst[i])
 		if !ok {
 			continue

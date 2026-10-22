@@ -3,6 +3,7 @@ package gen
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/stretchr/testify/require"
 )
@@ -33,6 +34,23 @@ func Test_ComputePoolUpdateMappings_renderApplySetUnset(t *testing.T) {
 	return &computePoolAlterRequestsExt{set: set, unset: unset}, nil
 }
 `, renderTemplate(t, "generatedApplySetUnset", model))
+}
+
+func Test_attachUpdateMappings_skipsNested(t *testing.T) {
+	src := []ssot.Attribute{{
+		Name:          "client_policy",
+		Type:          ssot.AttrSet,
+		UpdateMapping: ssot.StringAttributeUpdateBuilder,
+		Children: []ssot.Attribute{{
+			Name:          "minimum_version",
+			Type:          ssot.AttrString,
+			UpdateMapping: ssot.StringAttributeUpdateBuilder,
+		}},
+	}}
+	dst := applyResourceAttributeRules("", src)
+	attachUpdateMappings("AuthenticationPolicy", src, dst)
+	require.Nil(t, dst[0].UpdateCall)
+	require.Nil(t, dst[0].Children[0].UpdateCall)
 }
 
 func Test_SchemaUpdateMappings_stayExt(t *testing.T) {
