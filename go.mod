@@ -1,6 +1,6 @@
 module github.com/Snowflake-Labs/terraform-provider-snowflake
 
-go 1.26.4
+go 1.26.10
 
 require (
 	github.com/brianvoe/gofakeit/v6 v6.28.0

@@ -85,11 +85,11 @@ lint-fix: ## Run linters and formatters. If linters or formatters support autofi
 	./bin/golangci-lint run -v --fix
 
 mod: ## add missing and remove unused modules
-	go mod tidy -compat=1.26.4
+	go mod tidy -compat=1.26.10
 
 mod-check: ## check if there are any missing/unused modules
 	# -diff causes a non-zero exit status to be returned if changes to go.mod or go.sum are detected (source: https://go.dev/ref/mod#go-mod-tidy)
-	go mod tidy -compat=1.26.4 -diff
+	go mod tidy -compat=1.26.10 -diff
 
 pre-push: terraform-version-check check-compilation generate-all mod fmt generate-docs-additional-files generate-issue-labels docs lint-fix test-architecture ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
 
