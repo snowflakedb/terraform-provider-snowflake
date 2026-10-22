@@ -44,11 +44,7 @@ type Attribute struct {
 	CreateSql     SqlClause // CREATE SQL clause. Zero is absent from that statement.
 	SetSql        SqlClause // SET SQL clause. Zero is absent from that statement.
 	UnsetSql      SqlClause // UNSET SQL clause. Zero is absent from that statement.
-	// SuppressShowChange composes IgnoreChangeToCurrentSnowflakeValueInShow(OutputKey()) onto the diff suppressor.
-	// TODO [next PRs]: Replace this bool with an explicit SHOW, DESCRIBE, or none choice.
-	// Both outputs on an object do not imply SHOW. Some fields compare against DESCRIBE, some against neither,
-	// and some need a mapping when the output column is not the attribute name.
-	SuppressShowChange bool
+	DiffSuppress  DiffSuppress
 	// ConflictsWith names other attributes on the same object. The generator emits schema.ConflictsWith.
 	ConflictsWith []Attribute
 	// CreateOnly marks an optional bool that is applied only on create.

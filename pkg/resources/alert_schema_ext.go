@@ -26,9 +26,6 @@ var alertIdentitySchemaExt = map[string]*schema.Schema{
 }
 
 func alertAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
-	s["condition"].DiffSuppressFunc = DiffSuppressStatement
-	s["action"].DiffSuppressFunc = DiffSuppressStatement
-
 	s["alert_schedule"] = &schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
@@ -69,7 +66,6 @@ func alertAttributesModificationExt(s map[string]*schema.Schema) map[string]*sch
 	s["enabled"] = &schema.Schema{
 		Type:        schema.TypeBool,
 		Optional:    true,
-		Default:     false,
 		Description: "Specifies if an alert should be 'started' (enabled) after creation or should remain 'suspended' (default).",
 	}
 	return s

@@ -32,6 +32,7 @@ func ValidateObject(obj Object) {
 		seen[a.Name] = struct{}{}
 		attrs[a.Name] = struct{}{}
 		validateSqlClauses(obj, a)
+		validateAttributeOptions(obj.Name, a, false)
 	}
 	validateCreateSpec(obj, attrs)
 	validateSqlSequence(obj, "SET", obj.Set, attrs, func(attr Attribute) SqlClause { return attr.SetSql })
@@ -210,6 +211,28 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 		}
 	default:
 		panic(fmt.Sprintf("object %q: attribute %q %s has sql kind %q", obj.Name, attr.Name, statement, clause.Kind))
+	}
+}
+
+func validateAttributeOptions(objectName string, attr Attribute, asElem bool) {
+	if attr.DiffSuppress != nil {
+		for _, suppress := range attr.DiffSuppress.Suppressors() {
+			switch suppress.Kind {
+			case SuppressStatement:
+				if attr.Type != AttrString || suppress.Key != "" {
+					panic(fmt.Sprintf("object %q: invalid statement suppression for attribute %q", objectName, attr.Name))
+				}
+			case SuppressShow, SuppressDescribe:
+				if asElem {
+					panic(fmt.Sprintf("object %q: output suppression on collection elem %q", objectName, attr.Name))
+				}
+			default:
+				panic(fmt.Sprintf("object %q: unknown suppression %q for attribute %q", objectName, suppress.Kind, attr.Name))
+			}
+		}
+	}
+	if attr.Elem != nil {
+		validateAttributeOptions(objectName, *attr.Elem, true)
 	}
 }
 

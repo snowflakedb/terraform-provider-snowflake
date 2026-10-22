@@ -41,6 +41,12 @@ Identity (`Name`, `IdType`, ...) is separate from `Attributes`.
 - `StoredAsText` - the db column is text, and the plain kind stays the semantic type. For a bool, the paired-struct
   generator calls `BoolFromText`. A bool without the mark is still db `bool`. Other generators ignore the mark.
   See [PairedStructs](../../sdk/generator/README.md#pairedstructs).
+- `DiffSuppress` - a suppressor composed with inferred identifier and enum normalization. Set it directly to
+  `ssot.SuppressShow`, `ssot.SuppressDescribe`, or `ssot.SuppressStatement`; combine them with
+  `ssot.SuppressIfAny(ssot.SuppressStatement, ssot.SuppressDescribe)`. Nested combinations are flattened, and nil
+  means no configured suppression. Output suppressors use `OutputKey()` unless a leaf supplies an override, e.g.
+  `ssot.SuppressDescribe.WithKey("definition")`. Output strategies apply to fields, not collection elems.
+  Statement suppression uses the resource's `DiffSuppressStatement` helper for strings, including string elems.
 
 Def files keep attributes as vars (`ComputePoolAttrs`) so `Columns` can point at them instead of restating snake_case
 strings.

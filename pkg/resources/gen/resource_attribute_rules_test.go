@@ -46,6 +46,20 @@ func Test_applyResourceAttributeRules_optionalBoolRawDescription(t *testing.T) {
 	require.Equal(t, `"Specifies whether the compute pool is created initially in the suspended state."`, got.DescriptionExpr)
 }
 
+func Test_applyResourceAttributeRules_sqlStatementNormalizes(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:         "condition",
+		Type:         ssot.AttrString,
+		Required:     true,
+		Description:  "The SQL statement.",
+		DiffSuppress: ssot.SuppressStatement,
+	}, resourceAttributeRuleContext{})
+
+	require.Equal(t, SchemaTypeString, got.TfType)
+	require.Equal(t, "DiffSuppressStatement", got.DiffSuppressExpr)
+	require.Equal(t, `"The SQL statement."`, got.DescriptionExpr)
+}
+
 func Test_applyResourceAttributeRules_requiredBoolIsNative(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "enabled",
@@ -75,6 +89,11 @@ func Test_applyResourceAttributeRules_optionalIntMinAllowsZeroUsesIntDefault(t *
 }
 
 func Test_applyResourceAttributeRules_optionalIntWithoutZeroMinHasNoIntDefault(t *testing.T) {
+	t.Run("min zero", func(t *testing.T) {
+		got := resolveResourceAttribute(ssot.Attribute{Name: "count", Type: ssot.AttrInt, Min: new(0)}, resourceAttributeRuleContext{})
+		require.Equal(t, "IntDefault", got.DefaultExpr)
+		require.Equal(t, "validation.ToDiagFunc(validation.IntAtLeast(0))", got.ValidateDiagExpr)
+	})
 	t.Run("no min", func(t *testing.T) {
 		got := resolveResourceAttribute(ssot.Attribute{Name: "n", Type: ssot.AttrInt}, resourceAttributeRuleContext{})
 		require.Empty(t, got.DefaultExpr)
@@ -251,12 +270,12 @@ func Test_applyResourceAttributeRules_createOnlyNativeBoolIsNative(t *testing.T)
 
 func Test_applyResourceAttributeRules_intBetweenKeepsIntDefault(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
-		Name:               "query_acceleration_max_scale_factor",
-		Type:               ssot.AttrInt,
-		Description:        "Specifies the maximum scale factor.",
-		Min:                new(0),
-		Max:                new(100),
-		SuppressShowChange: true,
+		Name:         "query_acceleration_max_scale_factor",
+		Type:         ssot.AttrInt,
+		Description:  "Specifies the maximum scale factor.",
+		Min:          new(0),
+		Max:          new(100),
+		DiffSuppress: ssot.SuppressShow,
 	}, resourceAttributeRuleContext{})
 
 	require.Equal(t, "validation.ToDiagFunc(validation.IntBetween(0, 100))", got.ValidateDiagExpr)
@@ -272,7 +291,7 @@ func Test_applyResourceAttributeRules_enumNamePluralAndShowSuppress(t *testing.T
 		AdditionalDescription: "Warehouse needs to be suspended.",
 		Enum:                  ssot.NewEnum("WarehouseTypeUserSettable", "WarehouseTypesUserSettable", "STANDARD", "SNOWPARK-OPTIMIZED"),
 		ShowName:              "type",
-		SuppressShowChange:    true,
+		DiffSuppress:          ssot.SuppressShow,
 	}, resourceAttributeRuleContext{})
 
 	require.Equal(t, "sdkValidation(sdk.ToWarehouseTypeUserSettable)", got.ValidateDiagExpr)
@@ -294,12 +313,12 @@ func Test_applyResourceAttributeRules_enumAliasesUseStringList(t *testing.T) {
 
 func Test_applyResourceAttributeRules_identifierValidationRelatedResourceAndShowSuppress(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
-		Name:               "resource_monitor",
-		Type:               ssot.AttrIdentifier,
-		Description:        "Specifies the name of a resource monitor that is explicitly assigned to the warehouse.",
-		RelatedResource:    &ssot.Object{Name: "ResourceMonitor"},
-		SuppressShowChange: true,
-		ConflictsWith:      []ssot.Attribute{{Name: "generation"}},
+		Name:            "resource_monitor",
+		Type:            ssot.AttrIdentifier,
+		Description:     "Specifies the name of a resource monitor that is explicitly assigned to the warehouse.",
+		RelatedResource: &ssot.Object{Name: "ResourceMonitor"},
+		DiffSuppress:    ssot.SuppressShow,
+		ConflictsWith:   []ssot.Attribute{{Name: "generation"}},
 	}, resourceAttributeRuleContext{IdType: "AccountObjectIdentifier"})
 
 	require.Equal(t, "IsValidIdentifier[sdk.AccountObjectIdentifier]()", got.ValidateDiagExpr)
@@ -310,15 +329,53 @@ func Test_applyResourceAttributeRules_identifierValidationRelatedResourceAndShow
 
 func Test_applyResourceAttributeRules_showSuppressOnPlainField(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
-		Name:               "max_cluster_count",
-		Type:               ssot.AttrInt,
-		Min:                new(1),
-		SuppressShowChange: true,
+		Name:         "max_cluster_count",
+		Type:         ssot.AttrInt,
+		Min:          new(1),
+		DiffSuppress: ssot.SuppressShow,
 	}, resourceAttributeRuleContext{})
 
 	require.Equal(t, "validation.ToDiagFunc(validation.IntAtLeast(1))", got.ValidateDiagExpr)
 	require.Empty(t, got.DefaultExpr)
 	require.Equal(t, `IgnoreChangeToCurrentSnowflakeValueInShow("max_cluster_count")`, got.DiffSuppressExpr)
+}
+
+func Test_applyResourceAttributeRules_diffSuppressComposition(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name: "condition", Type: ssot.AttrString,
+		DiffSuppress: ssot.SuppressIfAny(ssot.SuppressStatement, ssot.SuppressDescribe.WithKey("definition")),
+	}, resourceAttributeRuleContext{})
+	require.Equal(t, `SuppressIfAny(DiffSuppressStatement, IgnoreChangeToCurrentSnowflakeValueInDescribe("definition"))`, got.DiffSuppressExpr)
+	got = resolveResourceAttribute(ssot.Attribute{
+		Name: "mode", Type: ssot.AttrEnum, Enum: ssot.NewEnum("Mode", "Modes", "A"), ShowName: "output_mode",
+		DiffSuppress: ssot.SuppressIfAny(ssot.SuppressShow, ssot.SuppressDescribe),
+	}, resourceAttributeRuleContext{})
+	require.Equal(t, `SuppressIfAny(NormalizeAndCompare(sdk.ToMode), IgnoreChangeToCurrentSnowflakeValueInShow("output_mode"), IgnoreChangeToCurrentSnowflakeValueInDescribe("output_mode"))`, got.DiffSuppressExpr)
+}
+
+func Test_applyResourceAttributeRules_composableSuppressors(t *testing.T) {
+	for _, testCase := range []struct {
+		name       string
+		suppressor ssot.DiffSuppress
+		expression string
+	}{
+		{name: "none"},
+		{name: "empty composition", suppressor: ssot.SuppressIfAny()},
+		{name: "describe", suppressor: ssot.SuppressDescribe, expression: `IgnoreChangeToCurrentSnowflakeValueInDescribe("output_mode")`},
+		{name: "key override", suppressor: ssot.SuppressShow.WithKey("other"), expression: `IgnoreChangeToCurrentSnowflakeValueInShow("other")`},
+		{
+			name:       "nested composition",
+			suppressor: ssot.SuppressIfAny(ssot.SuppressStatement, ssot.SuppressIfAny(ssot.SuppressShow, nil, ssot.SuppressDescribe.WithKey("definition"))),
+			expression: `SuppressIfAny(DiffSuppressStatement, IgnoreChangeToCurrentSnowflakeValueInShow("output_mode"), IgnoreChangeToCurrentSnowflakeValueInDescribe("definition"))`,
+		},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			got := resolveResourceAttribute(ssot.Attribute{
+				Name: "mode", Type: ssot.AttrString, ShowName: "output_mode", DiffSuppress: testCase.suppressor,
+			}, resourceAttributeRuleContext{})
+			require.Equal(t, testCase.expression, got.DiffSuppressExpr)
+		})
+	}
 }
 
 func Test_applyResourceAttributeRules_comment(t *testing.T) {

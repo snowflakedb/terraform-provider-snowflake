@@ -368,3 +368,45 @@ func Test_ValidateObject_duplicateOutputKey(t *testing.T) {
 		})
 	})
 }
+
+func Test_ValidateObject_diffSuppressStrategies(t *testing.T) {
+	for _, attr := range []Attribute{
+		{Name: "text", Type: AttrString, DiffSuppress: DiffSuppressKind("unknown")},
+		{Name: "text", Type: AttrString, DiffSuppress: SuppressStatement.WithKey("other")},
+		{Name: "list", Type: AttrList, Elem: &Attribute{Type: AttrString, DiffSuppress: SuppressShow}},
+	} {
+		require.Panics(t, func() { ValidateObject(Object{Name: "Test", Attributes: []Attribute{attr}}) })
+	}
+}
+
+func Test_ValidateObject_diffSuppressComposition(t *testing.T) {
+	for _, attr := range []Attribute{
+		{Name: "text", Type: AttrString, DiffSuppress: SuppressIfAny(SuppressStatement, SuppressDescribe.WithKey("definition"))},
+		{Name: "text", Type: AttrString, DiffSuppress: SuppressIfAny()},
+		{Name: "list", Type: AttrList, Elem: &Attribute{Type: AttrString, DiffSuppress: SuppressStatement}},
+	} {
+		require.NotPanics(t, func() { ValidateObject(Object{Name: "Test", Attributes: []Attribute{attr}}) })
+	}
+	for _, attr := range []Attribute{
+		{Name: "text", Type: AttrString, DiffSuppress: SuppressIfAny(SuppressShow, DiffSuppressKind("unknown"))},
+		{Name: "count", Type: AttrInt, DiffSuppress: SuppressIfAny(SuppressShow, SuppressStatement)},
+		{Name: "list", Type: AttrList, Elem: &Attribute{Type: AttrString, DiffSuppress: SuppressIfAny(SuppressStatement, SuppressIfAny(SuppressDescribe))}},
+	} {
+		require.Panics(t, func() { ValidateObject(Object{Name: "Test", Attributes: []Attribute{attr}}) })
+	}
+}
+
+func Test_ValidateObject_sqlStatement(t *testing.T) {
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name:       "Alert",
+			Attributes: []Attribute{{Name: "condition", Type: AttrString, DiffSuppress: SuppressStatement}},
+		})
+	})
+	require.PanicsWithValue(t, `object "Alert": invalid statement suppression for attribute "interval"`, func() {
+		ValidateObject(Object{
+			Name:       "Alert",
+			Attributes: []Attribute{{Name: "interval", Type: AttrInt, DiffSuppress: SuppressStatement}},
+		})
+	})
+}

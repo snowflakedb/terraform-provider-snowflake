@@ -21,14 +21,16 @@ var alertAttributesSchema = alertAttributesModificationExt(map[string]*tfschema.
 		Description: "The warehouse the alert will use.",
 	},
 	"condition": {
-		Type:        tfschema.TypeString,
-		Required:    true,
-		Description: "The SQL statement that represents the condition for the alert. (SELECT, SHOW, CALL)",
+		Type:             tfschema.TypeString,
+		Required:         true,
+		DiffSuppressFunc: DiffSuppressStatement,
+		Description:      "The SQL statement that represents the condition for the alert. (SELECT, SHOW, CALL)",
 	},
 	"action": {
-		Type:        tfschema.TypeString,
-		Required:    true,
-		Description: "The SQL statement that should be executed if the condition returns one or more rows.",
+		Type:             tfschema.TypeString,
+		Required:         true,
+		DiffSuppressFunc: DiffSuppressStatement,
+		Description:      "The SQL statement that should be executed if the condition returns one or more rows.",
 	},
 })
 

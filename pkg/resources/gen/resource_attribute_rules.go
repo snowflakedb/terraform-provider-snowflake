@@ -22,7 +22,7 @@ const (
 	RuleEnumDescriptionListsValues             = "enum_description_lists_values"
 	RuleEnumFieldNormalizes                    = "enum_field_normalizes"
 	RuleCollectionOfEnumNormalizes             = "collection_of_enum_normalizes"
-	RuleSuppressShowChange                     = "suppress_show_change"
+	RuleConfiguredDiffSuppress                 = "configured_diff_suppress"
 )
 
 // resourceAttributeRuleContext distinguishes a top-level attribute from a collection
@@ -183,13 +183,30 @@ var resourceAttributeRules = []resourceAttributeRule{
 		},
 	},
 	{
-		Name:        RuleSuppressShowChange,
-		Description: "Fields that drift with SHOW compose IgnoreChangeToCurrentSnowflakeValueInShow onto the diff suppressor.",
-		When: func(in ssot.Attribute, ctx resourceAttributeRuleContext) bool {
-			return in.SuppressShowChange && !ctx.AsCollectionElem
+		Name:        RuleConfiguredDiffSuppress,
+		Description: "Configured suppressors compose with inferred normalization.",
+		When: func(in ssot.Attribute, _ resourceAttributeRuleContext) bool {
+			return in.DiffSuppress != nil
 		},
 		Then: func(in ssot.Attribute, _ resourceAttributeRuleContext, out *ResourceAttribute) {
-			out.DiffSuppressExpr = composeShowDiffSuppress(out.DiffSuppressExpr, in.OutputKey())
+			for _, suppress := range in.DiffSuppress.Suppressors() {
+				key := suppress.Key
+				if key == "" {
+					key = in.OutputKey()
+				}
+				var expression string
+				switch suppress.Kind {
+				case ssot.SuppressStatement:
+					expression = "DiffSuppressStatement"
+				case ssot.SuppressShow:
+					expression = fmt.Sprintf("IgnoreChangeToCurrentSnowflakeValueInShow(%q)", key)
+				case ssot.SuppressDescribe:
+					expression = fmt.Sprintf("IgnoreChangeToCurrentSnowflakeValueInDescribe(%q)", key)
+				default:
+					panic(fmt.Sprintf("unknown diff suppression %q", suppress.Kind))
+				}
+				out.DiffSuppressExpr = composeDiffSuppress(out.DiffSuppressExpr, expression)
+			}
 		},
 	},
 }
@@ -232,8 +249,7 @@ func (ctx resourceAttributeRuleContext) sdkEnumAll(in ssot.Attribute) string {
 	return symbol
 }
 
-func composeShowDiffSuppress(existing, showKey string) string {
-	ignore := fmt.Sprintf("IgnoreChangeToCurrentSnowflakeValueInShow(%q)", showKey)
+func composeDiffSuppress(existing, ignore string) string {
 	if existing == "" {
 		return ignore
 	}

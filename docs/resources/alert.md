@@ -50,7 +50,7 @@ resource "snowflake_alert" "alert" {
 
 - `alert_schedule` (Block List, Max: 1) The schedule for periodically running an alert. (see [below for nested schema](#nestedblock--alert_schedule))
 - `comment` (String) Specifies a comment for the alert.
-- `enabled` (Boolean) (Default: `false`) Specifies if an alert should be 'started' (enabled) after creation or should remain 'suspended' (default).
+- `enabled` (Boolean) Specifies if an alert should be 'started' (enabled) after creation or should remain 'suspended' (default).
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only

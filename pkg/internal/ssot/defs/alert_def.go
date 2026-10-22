@@ -4,9 +4,8 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 
 // AlertAttrs holds reusable alert fields.
 //
-// Omitted from Attributes and added in alertAttributesModificationExt:
-//   - alert_schedule: a nested block (cron or interval). Attribute has no nested block shape.
-//   - enabled: an optional native bool with Default false. Optional bools become boolean strings.
+// Omitted from Attributes:
+//   - alert_schedule and enabled: the nested schedule block and native optional bool are added in alertAttributesModificationExt.
 //
 // warehouse stays a string: the resource never suppressed identifier quoting on it.
 // The resource has no show_output and no describe_output.
@@ -30,16 +29,18 @@ var AlertAttrs = struct {
 		Description: "The warehouse the alert will use.",
 	},
 	Condition: ssot.Attribute{
-		Name:        "condition",
-		Type:        ssot.AttrString,
-		Required:    true,
-		Description: "The SQL statement that represents the condition for the alert. (SELECT, SHOW, CALL)",
+		Name:         "condition",
+		Type:         ssot.AttrString,
+		Required:     true,
+		Description:  "The SQL statement that represents the condition for the alert. (SELECT, SHOW, CALL)",
+		DiffSuppress: ssot.SuppressStatement,
 	},
 	Action: ssot.Attribute{
-		Name:        "action",
-		Type:        ssot.AttrString,
-		Required:    true,
-		Description: "The SQL statement that should be executed if the condition returns one or more rows.",
+		Name:         "action",
+		Type:         ssot.AttrString,
+		Required:     true,
+		Description:  "The SQL statement that should be executed if the condition returns one or more rows.",
+		DiffSuppress: ssot.SuppressStatement,
 	},
 }
 
