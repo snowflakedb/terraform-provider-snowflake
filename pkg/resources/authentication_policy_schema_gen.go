@@ -7,6 +7,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var authenticationPolicyAttributesSchema = authenticationPolicyAttributesModificationExt(map[string]*tfschema.Schema{
@@ -57,6 +58,113 @@ var authenticationPolicyAttributesSchema = authenticationPolicyAttributesModific
 			},
 		},
 		Description: "Allows to set policies per-client type. Only valid when `client_types` is empty, contains ALL, or contains DRIVERS.",
+	},
+	"mfa_policy": {
+		Type:     tfschema.TypeList,
+		Optional: true,
+		MaxItems: 1,
+		Elem: &tfschema.Resource{
+			Schema: map[string]*tfschema.Schema{
+				"enforce_mfa_on_external_authentication": {
+					Type:             tfschema.TypeString,
+					Optional:         true,
+					ValidateDiagFunc: sdkValidation(sdk.ToEnforceMfaOnExternalAuthenticationOption),
+					DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToEnforceMfaOnExternalAuthenticationOption)),
+					Description:      "Determines whether multi-factor authentication (MFA) is enforced on external authentication. " + enumValuesDescription(sdk.AllEnforceMfaOnExternalAuthenticationOptions),
+				},
+				"allowed_methods": {
+					Type:     tfschema.TypeSet,
+					Optional: true,
+					Elem: &tfschema.Schema{
+						Type:             tfschema.TypeString,
+						ValidateDiagFunc: sdkValidation(sdk.ToMfaPolicyAllowedMethodsOption),
+					},
+					DiffSuppressFunc: NormalizeAndCompare(sdk.ToMfaPolicyAllowedMethodsOption),
+					Description:      "Specifies the allowed methods for the MFA policy. " + enumValuesDescription(sdk.AllMfaPolicyAllowedMethodsOptions),
+				},
+			},
+		},
+		Description: "Specifies the multi-factor authentication (MFA) methods that users can use as a second factor of authentication.",
+	},
+	"pat_policy": {
+		Type:     tfschema.TypeList,
+		Optional: true,
+		MaxItems: 1,
+		Elem: &tfschema.Resource{
+			Schema: map[string]*tfschema.Schema{
+				"default_expiry_in_days": {
+					Type:             tfschema.TypeInt,
+					Optional:         true,
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+					Description:      "Specifies the default expiration time (in days) for a programmatic access token.",
+				},
+				"max_expiry_in_days": {
+					Type:             tfschema.TypeInt,
+					Optional:         true,
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+					Description:      "Specifies the maximum number of days that can be set for the expiration time for a programmatic access token.",
+				},
+				"require_role_restriction_for_service_users": {
+					Type:             tfschema.TypeString,
+					Optional:         true,
+					ValidateDiagFunc: validateBooleanString,
+					Description:      booleanStringFieldDescription("If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role."),
+					Default:          BooleanDefault,
+				},
+				"network_policy_evaluation": {
+					Type:             tfschema.TypeString,
+					Optional:         true,
+					ValidateDiagFunc: sdkValidation(sdk.ToNetworkPolicyEvaluationOption),
+					DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToNetworkPolicyEvaluationOption)),
+					Description:      "Specifies the network policy evaluation for the PAT. " + enumValuesDescription(sdk.AllNetworkPolicyEvaluationOptions),
+				},
+			},
+		},
+		Description: "Specifies the policy for programmatic access tokens.",
+	},
+	"workload_identity_policy": {
+		Type:     tfschema.TypeList,
+		Optional: true,
+		MaxItems: 1,
+		Elem: &tfschema.Resource{
+			Schema: map[string]*tfschema.Schema{
+				"allowed_providers": {
+					Type:     tfschema.TypeSet,
+					Optional: true,
+					Elem: &tfschema.Schema{
+						Type:             tfschema.TypeString,
+						ValidateDiagFunc: sdkValidation(sdk.ToAllowedProviderOption),
+					},
+					DiffSuppressFunc: NormalizeAndCompare(sdk.ToAllowedProviderOption),
+					Description:      "Specifies the allowed providers for the workload identity policy. " + enumValuesDescription(sdk.AllAllowedProviderOptions),
+				},
+				"allowed_aws_accounts": {
+					Type:     tfschema.TypeSet,
+					Optional: true,
+					Elem: &tfschema.Schema{
+						Type: tfschema.TypeString,
+					},
+					Description: "Specifies the list of AWS account IDs allowed by the authentication policy during workload identity authentication of type `AWS`.",
+				},
+				"allowed_azure_issuers": {
+					Type:     tfschema.TypeSet,
+					Optional: true,
+					Elem: &tfschema.Schema{
+						Type: tfschema.TypeString,
+					},
+					Description: "Specifies the list of Azure Entra ID issuers allowed by the authentication policy during workload identity authentication of type `AZURE`.",
+				},
+				"allowed_oidc_issuers": {
+					Type:     tfschema.TypeSet,
+					Optional: true,
+					Elem: &tfschema.Schema{
+						Type: tfschema.TypeString,
+					},
+					Description: "Specifies the list of OIDC issuers allowed by the authentication policy during workload identity authentication of type `OIDC`.",
+				},
+			},
+		},
+		Description: "Specifies the policy for workload identity federation.",
 	},
 	"security_integrations": {
 		Type:     tfschema.TypeSet,

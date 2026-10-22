@@ -4,16 +4,18 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 
 // AlertAttrs holds reusable alert fields.
 //
-// Omitted from Attributes:
-//   - alert_schedule and enabled: the nested schedule block and native optional bool are added in alertAttributesModificationExt.
+// alert_schedule is a nested block. ConflictsWith paths stay in the schema ext because
+// the generator emits the sibling name, and Terraform needs the resource path.
+// enabled stays in the ext: an optional native bool. Optional bools become boolean strings.
 //
 // warehouse stays a string: the resource never suppressed identifier quoting on it.
 // The resource has no show_output and no describe_output.
 var AlertAttrs = struct {
-	Comment   ssot.Attribute
-	Warehouse ssot.Attribute
-	Condition ssot.Attribute
-	Action    ssot.Attribute
+	Comment       ssot.Attribute
+	Warehouse     ssot.Attribute
+	Condition     ssot.Attribute
+	Action        ssot.Attribute
+	AlertSchedule ssot.Attribute
 }{
 	Comment: ssot.Attribute{
 		Name:          "comment",
@@ -41,6 +43,40 @@ var AlertAttrs = struct {
 		Required:     true,
 		Description:  "The SQL statement that should be executed if the condition returns one or more rows.",
 		DiffSuppress: ssot.SuppressStatement,
+	},
+	AlertSchedule: ssot.Attribute{
+		Name:        "alert_schedule",
+		Type:        ssot.AttrList,
+		MaxItems:    new(1),
+		Description: "The schedule for periodically running an alert.",
+		Children: []ssot.Attribute{
+			{
+				Name:     "cron",
+				Type:     ssot.AttrList,
+				MaxItems: new(1),
+				Description: "Specifies the cron expression for the alert. The cron expression must be in the following format: \"minute hour day-of-month month day-of-week\". " +
+					"The following values are supported: minute: 0-59 hour: 0-23 day-of-month: 1-31 month: 1-12 day-of-week: 0-6 (0 is Sunday)",
+				Children: []ssot.Attribute{
+					{
+						Name:        "expression",
+						Type:        ssot.AttrString,
+						Required:    true,
+						Description: "Specifies the cron expression for the alert. The cron expression must be in the following format: \"minute hour day-of-month month day-of-week\". The following values are supported: minute: 0-59 hour: 0-23 day-of-month: 1-31 month: 1-12 day-of-week: 0-6 (0 is Sunday)",
+					},
+					{
+						Name:        "time_zone",
+						Type:        ssot.AttrString,
+						Required:    true,
+						Description: "Specifies the time zone for alert refresh.",
+					},
+				},
+			},
+			{
+				Name:        "interval",
+				Type:        ssot.AttrInt,
+				Description: "Specifies the interval in minutes for the alert schedule. The interval must be greater than 0 and less than 1440 (24 hours).",
+			},
+		},
 	},
 }
 
@@ -74,5 +110,6 @@ var Alert = ssot.Object{
 		AlertAttrs.Warehouse,
 		AlertAttrs.Condition,
 		AlertAttrs.Action,
+		AlertAttrs.AlertSchedule,
 	},
 }

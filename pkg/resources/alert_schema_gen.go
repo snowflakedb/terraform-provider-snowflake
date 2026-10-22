@@ -32,6 +32,41 @@ var alertAttributesSchema = alertAttributesModificationExt(map[string]*tfschema.
 		DiffSuppressFunc: DiffSuppressStatement,
 		Description:      "The SQL statement that should be executed if the condition returns one or more rows.",
 	},
+	"alert_schedule": {
+		Type:     tfschema.TypeList,
+		Optional: true,
+		MaxItems: 1,
+		Elem: &tfschema.Resource{
+			Schema: map[string]*tfschema.Schema{
+				"cron": {
+					Type:     tfschema.TypeList,
+					Optional: true,
+					MaxItems: 1,
+					Elem: &tfschema.Resource{
+						Schema: map[string]*tfschema.Schema{
+							"expression": {
+								Type:        tfschema.TypeString,
+								Required:    true,
+								Description: "Specifies the cron expression for the alert. The cron expression must be in the following format: \"minute hour day-of-month month day-of-week\". The following values are supported: minute: 0-59 hour: 0-23 day-of-month: 1-31 month: 1-12 day-of-week: 0-6 (0 is Sunday)",
+							},
+							"time_zone": {
+								Type:        tfschema.TypeString,
+								Required:    true,
+								Description: "Specifies the time zone for alert refresh.",
+							},
+						},
+					},
+					Description: "Specifies the cron expression for the alert. The cron expression must be in the following format: \"minute hour day-of-month month day-of-week\". The following values are supported: minute: 0-59 hour: 0-23 day-of-month: 1-31 month: 1-12 day-of-week: 0-6 (0 is Sunday)",
+				},
+				"interval": {
+					Type:        tfschema.TypeInt,
+					Optional:    true,
+					Description: "Specifies the interval in minutes for the alert schedule. The interval must be greater than 0 and less than 1440 (24 hours).",
+				},
+			},
+		},
+		Description: "The schedule for periodically running an alert.",
+	},
 })
 
 var alertSchema = collections.MergeMaps(

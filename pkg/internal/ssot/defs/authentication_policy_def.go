@@ -30,34 +30,54 @@ var ClientPolicyDriverType = ssot.NewEnum(
 	"SPROC_PYTHON", "PYTHON_SNOWPARK", "SQL_ALCHEMY", "SNOWPARK", "SNOWFLAKE_CLIENT",
 )
 
+var EnforceMfaOnExternalAuthenticationOption = ssot.NewEnum(
+	"EnforceMfaOnExternalAuthenticationOption", "EnforceMfaOnExternalAuthenticationOptions",
+	"ALL", "NONE",
+)
+
+var MfaPolicyAllowedMethodsOption = ssot.NewEnum(
+	"MfaPolicyAllowedMethodsOption", "MfaPolicyAllowedMethodsOptions",
+	"ALL", "PASSKEY", "TOTP", "OTP", "DUO",
+)
+
+var NetworkPolicyEvaluationOption = ssot.NewEnum(
+	"NetworkPolicyEvaluationOption", "NetworkPolicyEvaluationOptions",
+	"ENFORCED_REQUIRED", "ENFORCED_NOT_REQUIRED", "NOT_ENFORCED",
+)
+
+var AllowedProviderOption = ssot.NewEnum(
+	"AllowedProviderOption", "AllowedProviderOptions",
+	"ALL", "AWS", "AZURE", "GCP", "OIDC",
+)
+
 // AuthenticationPolicyAttrs holds reusable Authentication Policy fields so SHOW and DESCRIBE
 // Columns can point at the same definitions instead of restating names.
 //
-// Still handwritten in the schema ext:
-//   - mfa_authentication_methods: deprecated schema field; it is not a CREATE/ALTER column.
-//   - mfa_policy: single block of an enum and a set of enums.
-//   - pat_policy: single block of ints, a bool, and an enum.
-//   - workload_identity_policy: single block of sets.
+// mfa_authentication_methods stays in the schema ext. It is a deprecated set, not a nested block.
+// The nested blocks below are generated. The ext still sets AtLeastOneOf and keeps the
+// case-sensitive wording on allowed_methods and allowed_providers.
 //
-// client_policy is a set of {client_type, minimum_version}. Those omitted fields are also
-// omitted from DESCRIBE Columns. A writable column must be in Attributes, and the raw
-// DESCRIBE property strings are not a separate attribute.
+// Those blocks are omitted from DESCRIBE Columns. A writable column must be in Attributes,
+// and the raw DESCRIBE property strings are not a separate attribute.
 var AuthenticationPolicyAttrs = struct {
-	AuthenticationMethods ssot.Attribute
-	MfaEnrollment         ssot.Attribute
-	ClientTypes           ssot.Attribute
-	ClientPolicy          ssot.Attribute
-	SecurityIntegrations  ssot.Attribute
-	Comment               ssot.Attribute
-	CreatedOn             ssot.Attribute
-	Name                  ssot.Attribute
-	DatabaseName          ssot.Attribute
-	SchemaName            ssot.Attribute
-	Kind                  ssot.Attribute
-	Owner                 ssot.Attribute
-	OwnerRoleType         ssot.Attribute
-	Options               ssot.Attribute
-	TargetScopes          ssot.Attribute
+	AuthenticationMethods  ssot.Attribute
+	MfaEnrollment          ssot.Attribute
+	ClientTypes            ssot.Attribute
+	ClientPolicy           ssot.Attribute
+	MfaPolicy              ssot.Attribute
+	PatPolicy              ssot.Attribute
+	WorkloadIdentityPolicy ssot.Attribute
+	SecurityIntegrations   ssot.Attribute
+	Comment                ssot.Attribute
+	CreatedOn              ssot.Attribute
+	Name                   ssot.Attribute
+	DatabaseName           ssot.Attribute
+	SchemaName             ssot.Attribute
+	Kind                   ssot.Attribute
+	Owner                  ssot.Attribute
+	OwnerRoleType          ssot.Attribute
+	Options                ssot.Attribute
+	TargetScopes           ssot.Attribute
 }{
 	AuthenticationMethods: ssot.Attribute{
 		Name:        "authentication_methods",
@@ -106,6 +126,95 @@ var AuthenticationPolicyAttrs = struct {
 				Type:        ssot.AttrString,
 				Required:    true,
 				Description: "Minimum allowed version for this client/driver type (e.g. '1.14.1').",
+			},
+		},
+	},
+	MfaPolicy: ssot.Attribute{
+		Name:        "mfa_policy",
+		Type:        ssot.AttrList,
+		MaxItems:    new(1),
+		Description: "Specifies the multi-factor authentication (MFA) methods that users can use as a second factor of authentication.",
+		Children: []ssot.Attribute{
+			{
+				Name:        "enforce_mfa_on_external_authentication",
+				Type:        ssot.AttrEnum,
+				Description: "Determines whether multi-factor authentication (MFA) is enforced on external authentication.",
+				Enum:        EnforceMfaOnExternalAuthenticationOption,
+			},
+			{
+				Name:        "allowed_methods",
+				Type:        ssot.AttrSet,
+				Description: "Specifies the allowed methods for the MFA policy.",
+				Elem: &ssot.Attribute{
+					Type: ssot.AttrEnum,
+					Enum: MfaPolicyAllowedMethodsOption,
+				},
+			},
+		},
+	},
+	PatPolicy: ssot.Attribute{
+		Name:        "pat_policy",
+		Type:        ssot.AttrList,
+		MaxItems:    new(1),
+		Description: "Specifies the policy for programmatic access tokens.",
+		Children: []ssot.Attribute{
+			{
+				Name:        "default_expiry_in_days",
+				Type:        ssot.AttrInt,
+				Description: "Specifies the default expiration time (in days) for a programmatic access token.",
+				Min:         new(1),
+			},
+			{
+				Name:        "max_expiry_in_days",
+				Type:        ssot.AttrInt,
+				Description: "Specifies the maximum number of days that can be set for the expiration time for a programmatic access token.",
+				Min:         new(1),
+			},
+			{
+				Name:        "require_role_restriction_for_service_users",
+				Type:        ssot.AttrBool,
+				Description: "If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role.",
+			},
+			{
+				Name:        "network_policy_evaluation",
+				Type:        ssot.AttrEnum,
+				Description: "Specifies the network policy evaluation for the PAT.",
+				Enum:        NetworkPolicyEvaluationOption,
+			},
+		},
+	},
+	WorkloadIdentityPolicy: ssot.Attribute{
+		Name:        "workload_identity_policy",
+		Type:        ssot.AttrList,
+		MaxItems:    new(1),
+		Description: "Specifies the policy for workload identity federation.",
+		Children: []ssot.Attribute{
+			{
+				Name:        "allowed_providers",
+				Type:        ssot.AttrSet,
+				Description: "Specifies the allowed providers for the workload identity policy.",
+				Elem: &ssot.Attribute{
+					Type: ssot.AttrEnum,
+					Enum: AllowedProviderOption,
+				},
+			},
+			{
+				Name:        "allowed_aws_accounts",
+				Type:        ssot.AttrSet,
+				Description: "Specifies the list of AWS account IDs allowed by the authentication policy during workload identity authentication of type `AWS`.",
+				Elem:        &ssot.Attribute{Type: ssot.AttrString},
+			},
+			{
+				Name:        "allowed_azure_issuers",
+				Type:        ssot.AttrSet,
+				Description: "Specifies the list of Azure Entra ID issuers allowed by the authentication policy during workload identity authentication of type `AZURE`.",
+				Elem:        &ssot.Attribute{Type: ssot.AttrString},
+			},
+			{
+				Name:        "allowed_oidc_issuers",
+				Type:        ssot.AttrSet,
+				Description: "Specifies the list of OIDC issuers allowed by the authentication policy during workload identity authentication of type `OIDC`.",
+				Elem:        &ssot.Attribute{Type: ssot.AttrString},
 			},
 		},
 	},
@@ -171,6 +280,9 @@ var AuthenticationPolicy = ssot.Object{
 		AuthenticationPolicyAttrs.MfaEnrollment,
 		AuthenticationPolicyAttrs.ClientTypes,
 		AuthenticationPolicyAttrs.ClientPolicy,
+		AuthenticationPolicyAttrs.MfaPolicy,
+		AuthenticationPolicyAttrs.PatPolicy,
+		AuthenticationPolicyAttrs.WorkloadIdentityPolicy,
 		AuthenticationPolicyAttrs.SecurityIntegrations,
 		AuthenticationPolicyAttrs.Comment,
 	},

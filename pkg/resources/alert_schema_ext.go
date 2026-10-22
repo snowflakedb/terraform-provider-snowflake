@@ -26,43 +26,10 @@ var alertIdentitySchemaExt = map[string]*schema.Schema{
 }
 
 func alertAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
-	s["alert_schedule"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		MaxItems:    1,
-		Description: "The schedule for periodically running an alert.",
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"cron": {
-					Type:          schema.TypeList,
-					Optional:      true,
-					MaxItems:      1,
-					ConflictsWith: []string{"alert_schedule.interval"},
-					Description:   "Specifies the cron expression for the alert. The cron expression must be in the following format: \"minute hour day-of-month month day-of-week\". The following values are supported: minute: 0-59 hour: 0-23 day-of-month: 1-31 month: 1-12 day-of-week: 0-6 (0 is Sunday)",
-					Elem: &schema.Resource{
-						Schema: map[string]*schema.Schema{
-							"expression": {
-								Type:        schema.TypeString,
-								Required:    true,
-								Description: "Specifies the cron expression for the alert. The cron expression must be in the following format: \"minute hour day-of-month month day-of-week\". The following values are supported: minute: 0-59 hour: 0-23 day-of-month: 1-31 month: 1-12 day-of-week: 0-6 (0 is Sunday)",
-							},
-							"time_zone": {
-								Type:        schema.TypeString,
-								Required:    true,
-								Description: "Specifies the time zone for alert refresh.",
-							},
-						},
-					},
-				},
-				"interval": {
-					Type:          schema.TypeInt,
-					Optional:      true,
-					ConflictsWith: []string{"alert_schedule.cron"},
-					Description:   "Specifies the interval in minutes for the alert schedule. The interval must be greater than 0 and less than 1440 (24 hours).",
-				},
-			},
-		},
-	}
+	schedule := s["alert_schedule"].Elem.(*schema.Resource).Schema
+	// ConflictsWith is a path from the resource root. The generator emits the sibling name.
+	schedule["cron"].ConflictsWith = []string{"alert_schedule.interval"}
+	schedule["interval"].ConflictsWith = []string{"alert_schedule.cron"}
 	s["enabled"] = &schema.Schema{
 		Type:        schema.TypeBool,
 		Optional:    true,

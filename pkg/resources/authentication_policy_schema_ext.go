@@ -6,7 +6,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var authenticationPolicyIdentitySchemaExt = map[string]*schema.Schema{
@@ -43,8 +42,8 @@ var authenticationPolicyDescribeOutputSchemaExt = map[string]*schema.Schema{
 	},
 }
 
-// Deeper nested blocks and the deprecated field have no SSOT attribute type.
-// client_policy is generated. Set diffs and the MFA enrollment special case are also applied here.
+// Nested blocks are generated. This keeps the deprecated set, AtLeastOneOf, and the
+// case-sensitive wording on nested enum sets. Set diffs and the MFA enrollment special case are also applied here.
 func authenticationPolicyAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
 	s["authentication_methods"].DiffSuppressFunc = NormalizeAndCompareEnumsInSet("authentication_methods", sdk.ToAuthenticationMethodsOption)
 	s["client_types"].DiffSuppressFunc = NormalizeAndCompareEnumsInSet("client_types", sdk.ToClientTypesOption)
@@ -77,116 +76,28 @@ func authenticationPolicyAttributesModificationExt(s map[string]*schema.Schema) 
 		Description:      fmt.Sprintf("A list of authentication methods that enforce multi-factor authentication (MFA) during login. Authentication methods not listed in this parameter do not prompt for multi-factor authentication. Allowed values are %s.", possibleValuesListed(sdk.AllMfaAuthenticationMethodsOptions)),
 		Deprecated:       "This field is deprecated and will be removed in the future. Currently, it has no effect. Use the new `enforce_mfa_on_external_authentication` field instead. Read our [BCR Migration Guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies) for more migration steps and more details.",
 	}
-	s["mfa_policy"] = &schema.Schema{
-		Type:     schema.TypeList,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"enforce_mfa_on_external_authentication": {
-					Type:             schema.TypeString,
-					Optional:         true,
-					Description:      fmt.Sprintf("Determines whether multi-factor authentication (MFA) is enforced on external authentication. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllEnforceMfaOnExternalAuthenticationOptions)),
-					ValidateDiagFunc: sdkValidation(sdk.ToEnforceMfaOnExternalAuthenticationOption),
-					DiffSuppressFunc: NormalizeAndCompare(sdk.ToEnforceMfaOnExternalAuthenticationOption),
-					AtLeastOneOf:     []string{"mfa_policy.0.enforce_mfa_on_external_authentication", "mfa_policy.0.allowed_methods"},
-				},
-				"allowed_methods": {
-					Type:        schema.TypeSet,
-					Optional:    true,
-					Description: fmt.Sprintf("Specifies the allowed methods for the MFA policy. Valid values are: %s. These values are case-sensitive due to Terraform limitations (it's a nested field). Prefer using uppercased values.", possibleValuesListed(sdk.AllMfaPolicyAllowedMethodsOptions)),
-					Elem: &schema.Schema{
-						Type:             schema.TypeString,
-						ValidateDiagFunc: sdkValidation(sdk.ToMfaPolicyAllowedMethodsOption),
-					},
-					AtLeastOneOf: []string{"mfa_policy.0.enforce_mfa_on_external_authentication", "mfa_policy.0.allowed_methods"},
-				},
-			},
-		},
-		Optional:    true,
-		Description: "Specifies the multi-factor authentication (MFA) methods that users can use as a second factor of authentication.",
+	mfaAtLeastOneOf := []string{"mfa_policy.0.enforce_mfa_on_external_authentication", "mfa_policy.0.allowed_methods"}
+	mfa := s["mfa_policy"].Elem.(*schema.Resource).Schema
+	mfa["enforce_mfa_on_external_authentication"].AtLeastOneOf = mfaAtLeastOneOf
+	mfa["allowed_methods"].AtLeastOneOf = mfaAtLeastOneOf
+	// Nested enum sets stay case-sensitive. The generator would normalize them.
+	mfa["allowed_methods"].DiffSuppressFunc = nil
+	mfa["allowed_methods"].Description = fmt.Sprintf("Specifies the allowed methods for the MFA policy. Valid values are: %s. These values are case-sensitive due to Terraform limitations (it's a nested field). Prefer using uppercased values.", possibleValuesListed(sdk.AllMfaPolicyAllowedMethodsOptions))
+
+	patAtLeastOneOf := []string{
+		"pat_policy.0.default_expiry_in_days",
+		"pat_policy.0.max_expiry_in_days",
+		"pat_policy.0.require_role_restriction_for_service_users",
+		"pat_policy.0.network_policy_evaluation",
 	}
-	s["pat_policy"] = &schema.Schema{
-		Type:     schema.TypeList,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"default_expiry_in_days": {
-					Type:             schema.TypeInt,
-					Optional:         true,
-					Description:      "Specifies the default expiration time (in days) for a programmatic access token.",
-					AtLeastOneOf:     []string{"pat_policy.0.default_expiry_in_days", "pat_policy.0.max_expiry_in_days", "pat_policy.0.require_role_restriction_for_service_users", "pat_policy.0.network_policy_evaluation"},
-					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
-				},
-				"max_expiry_in_days": {
-					Type:             schema.TypeInt,
-					Optional:         true,
-					Description:      "Specifies the maximum number of days that can be set for the expiration time for a programmatic access token.",
-					AtLeastOneOf:     []string{"pat_policy.0.default_expiry_in_days", "pat_policy.0.max_expiry_in_days", "pat_policy.0.require_role_restriction_for_service_users", "pat_policy.0.network_policy_evaluation"},
-					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
-				},
-				"require_role_restriction_for_service_users": {
-					Type:             schema.TypeString,
-					Optional:         true,
-					Description:      booleanStringFieldDescription("If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role."),
-					AtLeastOneOf:     []string{"pat_policy.0.default_expiry_in_days", "pat_policy.0.max_expiry_in_days", "pat_policy.0.require_role_restriction_for_service_users", "pat_policy.0.network_policy_evaluation"},
-					Default:          BooleanDefault,
-					ValidateDiagFunc: validateBooleanString,
-				},
-				"network_policy_evaluation": {
-					Type:             schema.TypeString,
-					Optional:         true,
-					ValidateDiagFunc: sdkValidation(sdk.ToNetworkPolicyEvaluationOption),
-					DiffSuppressFunc: NormalizeAndCompare(sdk.ToNetworkPolicyEvaluationOption),
-					Description:      fmt.Sprintf("Specifies the network policy evaluation for the PAT. Valid values are: %s.", possibleValuesListed(sdk.AllNetworkPolicyEvaluationOptions)),
-					AtLeastOneOf:     []string{"pat_policy.0.default_expiry_in_days", "pat_policy.0.max_expiry_in_days", "pat_policy.0.require_role_restriction_for_service_users", "pat_policy.0.network_policy_evaluation"},
-				},
-			},
-		},
-		Optional:    true,
-		Description: "Specifies the policy for programmatic access tokens.",
+	pat := s["pat_policy"].Elem.(*schema.Resource).Schema
+	for _, name := range []string{"default_expiry_in_days", "max_expiry_in_days", "require_role_restriction_for_service_users", "network_policy_evaluation"} {
+		pat[name].AtLeastOneOf = patAtLeastOneOf
 	}
-	s["workload_identity_policy"] = &schema.Schema{
-		Type:     schema.TypeList,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"allowed_providers": {
-					Type:     schema.TypeSet,
-					Optional: true,
-					Elem: &schema.Schema{
-						Type:             schema.TypeString,
-						ValidateDiagFunc: sdkValidation(sdk.ToAllowedProviderOption),
-					},
-					Description: fmt.Sprintf("Specifies the allowed providers for the workload identity policy. Valid values are: %s. These values are case-sensitive due to Terraform limitations (it's a nested field). Prefer using uppercased values.", possibleValuesListed(sdk.AllAllowedProviderOptions)),
-				},
-				"allowed_aws_accounts": {
-					Type:     schema.TypeSet,
-					Optional: true,
-					Elem: &schema.Schema{
-						Type: schema.TypeString,
-					},
-					Description: "Specifies the list of AWS account IDs allowed by the authentication policy during workload identity authentication of type `AWS`.",
-				},
-				"allowed_azure_issuers": {
-					Type:     schema.TypeSet,
-					Optional: true,
-					Elem: &schema.Schema{
-						Type: schema.TypeString,
-					},
-					Description: "Specifies the list of Azure Entra ID issuers allowed by the authentication policy during workload identity authentication of type `AZURE`.",
-				},
-				"allowed_oidc_issuers": {
-					Type:     schema.TypeSet,
-					Optional: true,
-					Elem: &schema.Schema{
-						Type: schema.TypeString,
-					},
-					Description: "Specifies the list of OIDC issuers allowed by the authentication policy during workload identity authentication of type `OIDC`.",
-				},
-			},
-		},
-		Optional:    true,
-		Description: "Specifies the policy for workload identity federation.",
-	}
+	pat["network_policy_evaluation"].Description = fmt.Sprintf("Specifies the network policy evaluation for the PAT. Valid values are: %s.", possibleValuesListed(sdk.AllNetworkPolicyEvaluationOptions))
+
+	providers := s["workload_identity_policy"].Elem.(*schema.Resource).Schema["allowed_providers"]
+	providers.DiffSuppressFunc = nil
+	providers.Description = fmt.Sprintf("Specifies the allowed providers for the workload identity policy. Valid values are: %s. These values are case-sensitive due to Terraform limitations (it's a nested field). Prefer using uppercased values.", possibleValuesListed(sdk.AllAllowedProviderOptions))
 	return s
 }

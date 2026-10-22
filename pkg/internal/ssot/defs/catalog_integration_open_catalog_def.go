@@ -12,15 +12,28 @@ var CatalogIntegrationTableFormat = ssot.NewEnum(
 	"ICEBERG", "DELTA",
 )
 
+var CatalogIntegrationCatalogApiType = ssot.NewEnum(
+	"CatalogIntegrationCatalogApiType", "CatalogIntegrationCatalogApiTypes",
+	"PUBLIC", "PRIVATE", "AWS_API_GATEWAY", "AWS_PRIVATE_API_GATEWAY", "AWS_GLUE", "AWS_PRIVATE_GLUE",
+)
+
+var CatalogIntegrationAccessDelegationMode = ssot.NewEnum(
+	"CatalogIntegrationAccessDelegationMode", "CatalogIntegrationAccessDelegationModes",
+	"VENDED_CREDENTIALS", "EXTERNAL_VOLUME_CREDENTIALS",
+)
+
 // CatalogIntegrationOpenCatalogAttrs holds reusable Open Catalog integration fields so SHOW
 // and DESCRIBE Columns can point at the same definitions instead of restating names.
 //
-// rest_config and rest_authentication stay in the schema ext. Those nested blocks have no SSOT struct type.
+// rest_config and rest_authentication are nested blocks. Sensitive fields, empty-string checks,
+// and describe diff suppressors stay in the schema ext.
 var CatalogIntegrationOpenCatalogAttrs = struct {
 	Enabled                ssot.Attribute
 	RefreshIntervalSeconds ssot.Attribute
 	Comment                ssot.Attribute
 	CatalogNamespace       ssot.Attribute
+	RestConfig             ssot.Attribute
+	RestAuthentication     ssot.Attribute
 	Id                     ssot.Attribute
 	CatalogSource          ssot.Attribute
 	TableFormat            ssot.Attribute
@@ -58,6 +71,83 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 		ForceNew:    true,
 		Description: "Specifies the default Open Catalog namespace for all Iceberg tables that you associate with the catalog integration.",
 	},
+	RestConfig: ssot.Attribute{
+		Name:        "rest_config",
+		Type:        ssot.AttrList,
+		Required:    true,
+		ForceNew:    true,
+		MinItems:    new(1),
+		MaxItems:    new(1),
+		Description: "Specifies information about the Open Catalog account and catalog name.",
+		Children: []ssot.Attribute{
+			{
+				Name:        "catalog_uri",
+				Type:        ssot.AttrString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Specifies Open Catalog account URL.",
+			},
+			{
+				Name:        "catalog_name",
+				Type:        ssot.AttrString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Specifies the name of the catalog to use in Open Catalog.",
+			},
+			{
+				Name:        "catalog_api_type",
+				Type:        ssot.AttrEnum,
+				ForceNew:    true,
+				Description: "Specifies how Snowflake connects to Open Catalog.",
+				Enum:        CatalogIntegrationCatalogApiType,
+			},
+			{
+				Name:        "access_delegation_mode",
+				Type:        ssot.AttrEnum,
+				ForceNew:    true,
+				Description: "Specifies the access delegation mode for accessing Iceberg table files in your external cloud storage.",
+				Enum:        CatalogIntegrationAccessDelegationMode,
+			},
+		},
+	},
+	RestAuthentication: ssot.Attribute{
+		Name:        "rest_authentication",
+		Type:        ssot.AttrList,
+		Required:    true,
+		MinItems:    new(1),
+		MaxItems:    new(1),
+		Description: "Specifies authentication details that Snowflake uses to connect to Open Catalog.",
+		Children: []ssot.Attribute{
+			{
+				Name:        "oauth_token_uri",
+				Type:        ssot.AttrString,
+				ForceNew:    true,
+				Description: "Specifies URL for the third-party identity provider. If not specified, Snowflake assumes the remote catalog provider is the identity provider.",
+			},
+			{
+				Name:        "oauth_client_id",
+				Type:        ssot.AttrString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Specifies the client ID of the OAuth2 credential associated with your Open Catalog service connection.",
+			},
+			{
+				Name:        "oauth_client_secret",
+				Type:        ssot.AttrString,
+				Required:    true,
+				Description: "Specifies the secret of the OAuth2 credential associated with your Open Catalog service connection.",
+			},
+			{
+				Name:        "oauth_allowed_scopes",
+				Type:        ssot.AttrList,
+				Required:    true,
+				ForceNew:    true,
+				MinItems:    new(1),
+				Description: "Specifies one or more scopes for the OAuth token.",
+				Elem:        &ssot.Attribute{Type: ssot.AttrString},
+			},
+		},
+	},
 	Id: ssot.Attribute{Name: "id", Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier", Readonly: true},
 	CatalogSource: ssot.Attribute{
 		Name:        "catalog_source",
@@ -84,7 +174,7 @@ var CatalogIntegrationOpenCatalog = ssot.Object{
 		// ShowOutputShow omitted. SHOW rows are sdk.CatalogIntegration, so tests use CatalogIntegrationShowOutput.
 		// WithSchema omitted. SHOW is the shared CatalogIntegration schema alias in the ext.
 		// DESCRIBE stays on the SDK schema list until ManualFields exist in SSOT.
-		// WithModel omitted. rest_config and rest_authentication are nested blocks, which the model generator cannot emit.
+		// WithModel omitted. The model generator cannot emit setters for nested blocks.
 		// WithResourceAssert omitted. catalog_source is added in the schema ext, so the schema-based assert still emits it.
 		// ObjectAssertShow omitted. There is no sdk.CatalogIntegrationOpenCatalog type.
 		// ObjectAssertDescribe omitted. The SDK list keeps DescribeOpenCatalog and the nested rest asserts.
@@ -106,6 +196,8 @@ var CatalogIntegrationOpenCatalog = ssot.Object{
 		CatalogIntegrationOpenCatalogAttrs.RefreshIntervalSeconds,
 		CatalogIntegrationOpenCatalogAttrs.Comment,
 		CatalogIntegrationOpenCatalogAttrs.CatalogNamespace,
+		CatalogIntegrationOpenCatalogAttrs.RestConfig,
+		CatalogIntegrationOpenCatalogAttrs.RestAuthentication,
 	},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{

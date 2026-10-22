@@ -5,6 +5,7 @@ package resources
 import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -31,6 +32,134 @@ var catalogIntegrationIcebergRestAttributesSchema = catalogIntegrationIcebergRes
 		Optional:    true,
 		ForceNew:    true,
 		Description: "Specifies the default namespace for all Iceberg tables that you associate with the catalog integration.",
+	},
+	"rest_config": {
+		Type:     tfschema.TypeList,
+		Required: true,
+		ForceNew: true,
+		MinItems: 1,
+		MaxItems: 1,
+		Elem: &tfschema.Resource{
+			Schema: map[string]*tfschema.Schema{
+				"catalog_uri": {
+					Type:        tfschema.TypeString,
+					Required:    true,
+					ForceNew:    true,
+					Description: "Specifies the endpoint URL for the catalog REST API.",
+				},
+				"prefix": {
+					Type:        tfschema.TypeString,
+					Optional:    true,
+					ForceNew:    true,
+					Description: "Specifies an optional prefix appended to all API routes.",
+				},
+				"catalog_name": {
+					Type:        tfschema.TypeString,
+					Optional:    true,
+					ForceNew:    true,
+					Description: "Specifies the catalog or identifier to request from your remote catalog service.",
+				},
+				"catalog_api_type": {
+					Type:             tfschema.TypeString,
+					Optional:         true,
+					ForceNew:         true,
+					ValidateDiagFunc: sdkValidation(sdk.ToCatalogIntegrationCatalogApiType),
+					DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationCatalogApiType)),
+					Description:      "Specifies the connection type for the catalog API. " + enumValuesDescription(sdk.AllCatalogIntegrationCatalogApiTypes),
+				},
+				"access_delegation_mode": {
+					Type:             tfschema.TypeString,
+					Optional:         true,
+					ForceNew:         true,
+					ValidateDiagFunc: sdkValidation(sdk.ToCatalogIntegrationAccessDelegationMode),
+					DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationAccessDelegationMode)),
+					Description:      "Specifies the access delegation mode for accessing Iceberg table files in your external cloud storage. " + enumValuesDescription(sdk.AllCatalogIntegrationAccessDelegationModes),
+				},
+			},
+		},
+		Description: "Specifies information about REST configuration.",
+	},
+	"oauth_rest_authentication": {
+		Type:     tfschema.TypeList,
+		Optional: true,
+		ForceNew: true,
+		MaxItems: 1,
+		Elem: &tfschema.Resource{
+			Schema: map[string]*tfschema.Schema{
+				"oauth_token_uri": {
+					Type:        tfschema.TypeString,
+					Optional:    true,
+					ForceNew:    true,
+					Description: "Specifies URL for the third-party identity provider. If not specified, Snowflake assumes the remote catalog provider is the identity provider.",
+				},
+				"oauth_client_id": {
+					Type:        tfschema.TypeString,
+					Required:    true,
+					ForceNew:    true,
+					Description: "Specifies the client ID of the OAuth2 credential.",
+				},
+				"oauth_client_secret": {
+					Type:        tfschema.TypeString,
+					Required:    true,
+					Description: "Specifies the secret of the OAuth2 credential.",
+				},
+				"oauth_allowed_scopes": {
+					Type:     tfschema.TypeList,
+					Required: true,
+					ForceNew: true,
+					MinItems: 1,
+					Elem: &tfschema.Schema{
+						Type: tfschema.TypeString,
+					},
+					Description: "Specifies one or more scopes for the OAuth token.",
+				},
+			},
+		},
+		Description: "Specifies OAuth as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
+	},
+	"bearer_rest_authentication": {
+		Type:     tfschema.TypeList,
+		Optional: true,
+		MaxItems: 1,
+		Elem: &tfschema.Resource{
+			Schema: map[string]*tfschema.Schema{
+				"bearer_token": {
+					Type:        tfschema.TypeString,
+					Required:    true,
+					Description: "The bearer token for the identity provider.",
+				},
+			},
+		},
+		Description: "Specifies a bearer token as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
+	},
+	"sigv4_rest_authentication": {
+		Type:     tfschema.TypeList,
+		Optional: true,
+		ForceNew: true,
+		MaxItems: 1,
+		Elem: &tfschema.Resource{
+			Schema: map[string]*tfschema.Schema{
+				"sigv4_iam_role": {
+					Type:        tfschema.TypeString,
+					Required:    true,
+					ForceNew:    true,
+					Description: "Specifies the Amazon Resource Name (ARN) for an IAM role that has permission to access your REST API in API Gateway.",
+				},
+				"sigv4_signing_region": {
+					Type:        tfschema.TypeString,
+					Optional:    true,
+					ForceNew:    true,
+					Description: "Specifies the AWS Region associated with your API in API Gateway. If you don’t specify this parameter, Snowflake uses the region in which your Snowflake account is deployed.",
+				},
+				"sigv4_external_id": {
+					Type:        tfschema.TypeString,
+					Optional:    true,
+					ForceNew:    true,
+					Description: "Specifies an external ID that Snowflake uses to establish a trust relationship with AWS. If you don’t specify this parameter, Snowflake automatically generates a unique external ID when you create a catalog integration.",
+				},
+			},
+		},
+		Description: "Specifies Signature Version 4 as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
 	},
 })
 

@@ -5,6 +5,7 @@ package resources
 import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -31,6 +32,84 @@ var catalogIntegrationOpenCatalogAttributesSchema = catalogIntegrationOpenCatalo
 		Optional:    true,
 		ForceNew:    true,
 		Description: "Specifies the default Open Catalog namespace for all Iceberg tables that you associate with the catalog integration.",
+	},
+	"rest_config": {
+		Type:     tfschema.TypeList,
+		Required: true,
+		ForceNew: true,
+		MinItems: 1,
+		MaxItems: 1,
+		Elem: &tfschema.Resource{
+			Schema: map[string]*tfschema.Schema{
+				"catalog_uri": {
+					Type:        tfschema.TypeString,
+					Required:    true,
+					ForceNew:    true,
+					Description: "Specifies Open Catalog account URL.",
+				},
+				"catalog_name": {
+					Type:        tfschema.TypeString,
+					Required:    true,
+					ForceNew:    true,
+					Description: "Specifies the name of the catalog to use in Open Catalog.",
+				},
+				"catalog_api_type": {
+					Type:             tfschema.TypeString,
+					Optional:         true,
+					ForceNew:         true,
+					ValidateDiagFunc: sdkValidation(sdk.ToCatalogIntegrationCatalogApiType),
+					DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationCatalogApiType)),
+					Description:      "Specifies how Snowflake connects to Open Catalog. " + enumValuesDescription(sdk.AllCatalogIntegrationCatalogApiTypes),
+				},
+				"access_delegation_mode": {
+					Type:             tfschema.TypeString,
+					Optional:         true,
+					ForceNew:         true,
+					ValidateDiagFunc: sdkValidation(sdk.ToCatalogIntegrationAccessDelegationMode),
+					DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationAccessDelegationMode)),
+					Description:      "Specifies the access delegation mode for accessing Iceberg table files in your external cloud storage. " + enumValuesDescription(sdk.AllCatalogIntegrationAccessDelegationModes),
+				},
+			},
+		},
+		Description: "Specifies information about the Open Catalog account and catalog name.",
+	},
+	"rest_authentication": {
+		Type:     tfschema.TypeList,
+		Required: true,
+		MinItems: 1,
+		MaxItems: 1,
+		Elem: &tfschema.Resource{
+			Schema: map[string]*tfschema.Schema{
+				"oauth_token_uri": {
+					Type:        tfschema.TypeString,
+					Optional:    true,
+					ForceNew:    true,
+					Description: "Specifies URL for the third-party identity provider. If not specified, Snowflake assumes the remote catalog provider is the identity provider.",
+				},
+				"oauth_client_id": {
+					Type:        tfschema.TypeString,
+					Required:    true,
+					ForceNew:    true,
+					Description: "Specifies the client ID of the OAuth2 credential associated with your Open Catalog service connection.",
+				},
+				"oauth_client_secret": {
+					Type:        tfschema.TypeString,
+					Required:    true,
+					Description: "Specifies the secret of the OAuth2 credential associated with your Open Catalog service connection.",
+				},
+				"oauth_allowed_scopes": {
+					Type:     tfschema.TypeList,
+					Required: true,
+					ForceNew: true,
+					MinItems: 1,
+					Elem: &tfschema.Schema{
+						Type: tfschema.TypeString,
+					},
+					Description: "Specifies one or more scopes for the OAuth token.",
+				},
+			},
+		},
+		Description: "Specifies authentication details that Snowflake uses to connect to Open Catalog.",
 	},
 })
 

@@ -20,7 +20,8 @@ var catalogIntegrationOpenCatalogDescribeOutputSchemaExt = map[string]*schema.Sc
 }
 
 // catalogIntegrationOpenCatalogAttributesModificationExt adds fields the generator does not emit.
-// rest_config and rest_authentication have no SSOT struct type. catalog_source is describe-only.
+// Nested blocks are generated. Sensitive fields, empty-string checks, and describe diffs stay here.
+// catalog_source is describe-only.
 func catalogIntegrationOpenCatalogAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
 	s["refresh_interval_seconds"].DiffSuppressFunc = IgnoreChangeToCurrentSnowflakeValueInDescribe("refresh_interval_seconds")
 	s["catalog_namespace"].ValidateFunc = validation.StringIsNotEmpty
@@ -30,89 +31,19 @@ func catalogIntegrationOpenCatalogAttributesModificationExt(s map[string]*schema
 		Description: joinWithSpace("Specifies the type of catalog source.",
 			"This field is used to detect when the catalog source was changed outside of Terraform and to recreate the resource when that happens."),
 	}
-	s["rest_config"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Required:    true,
-		ForceNew:    true,
-		MinItems:    1,
-		MaxItems:    1,
-		Description: "Specifies information about the Open Catalog account and catalog name.",
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"catalog_uri": {
-					Type:         schema.TypeString,
-					Required:     true,
-					ForceNew:     true,
-					Description:  "Specifies Open Catalog account URL.",
-					ValidateFunc: validation.StringIsNotEmpty,
-				},
-				"catalog_name": {
-					Type:         schema.TypeString,
-					Required:     true,
-					ForceNew:     true,
-					Description:  "Specifies the name of the catalog to use in Open Catalog.",
-					ValidateFunc: validation.StringIsNotEmpty,
-				},
-				"catalog_api_type": {
-					Type:             schema.TypeString,
-					Optional:         true,
-					ForceNew:         true,
-					Description:      "Specifies how Snowflake connects to Open Catalog. " + enumValuesDescription(sdk.AllCatalogIntegrationCatalogApiTypes),
-					DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationCatalogApiType), IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.catalog_api_type")),
-					ValidateDiagFunc: sdkValidation(sdk.ToCatalogIntegrationCatalogApiType),
-				},
-				"access_delegation_mode": {
-					Type:             schema.TypeString,
-					Optional:         true,
-					ForceNew:         true,
-					Description:      "Specifies the access delegation mode for accessing Iceberg table files in your external cloud storage. " + enumValuesDescription(sdk.AllCatalogIntegrationAccessDelegationModes),
-					DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationAccessDelegationMode), IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.access_delegation_mode")),
-					ValidateDiagFunc: sdkValidation(sdk.ToCatalogIntegrationAccessDelegationMode),
-				},
-			},
-		},
-	}
-	s["rest_authentication"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Required:    true,
-		MinItems:    1,
-		MaxItems:    1,
-		Description: "Specifies authentication details that Snowflake uses to connect to Open Catalog.",
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"oauth_token_uri": {
-					Type:             schema.TypeString,
-					Optional:         true,
-					ForceNew:         true,
-					Description:      "Specifies URL for the third-party identity provider. If not specified, Snowflake assumes the remote catalog provider is the identity provider.",
-					DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_authentication.0.oauth_token_uri"),
-					ValidateFunc:     validation.StringIsNotEmpty,
-				},
-				"oauth_client_id": {
-					Type:         schema.TypeString,
-					Required:     true,
-					ForceNew:     true,
-					Sensitive:    true,
-					Description:  "Specifies the client ID of the OAuth2 credential associated with your Open Catalog service connection.",
-					ValidateFunc: validation.StringIsNotEmpty,
-				},
-				"oauth_client_secret": {
-					Type:         schema.TypeString,
-					Required:     true,
-					Sensitive:    true,
-					Description:  externalChangesNotDetectedFieldDescription("Specifies the secret of the OAuth2 credential associated with your Open Catalog service connection."),
-					ValidateFunc: validation.StringIsNotEmpty,
-				},
-				"oauth_allowed_scopes": {
-					Type:        schema.TypeList,
-					Required:    true,
-					ForceNew:    true,
-					MinItems:    1,
-					Description: "Specifies one or more scopes for the OAuth token.",
-					Elem:        &schema.Schema{Type: schema.TypeString},
-				},
-			},
-		},
-	}
+	restConfig := s["rest_config"].Elem.(*schema.Resource).Schema
+	restConfig["catalog_uri"].ValidateFunc = validation.StringIsNotEmpty
+	restConfig["catalog_name"].ValidateFunc = validation.StringIsNotEmpty
+	restConfig["catalog_api_type"].DiffSuppressFunc = SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationCatalogApiType), IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.catalog_api_type"))
+	restConfig["access_delegation_mode"].DiffSuppressFunc = SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationAccessDelegationMode), IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.access_delegation_mode"))
+
+	restAuth := s["rest_authentication"].Elem.(*schema.Resource).Schema
+	restAuth["oauth_token_uri"].ValidateFunc = validation.StringIsNotEmpty
+	restAuth["oauth_token_uri"].DiffSuppressFunc = IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_authentication.0.oauth_token_uri")
+	restAuth["oauth_client_id"].ValidateFunc = validation.StringIsNotEmpty
+	restAuth["oauth_client_id"].Sensitive = true
+	restAuth["oauth_client_secret"].ValidateFunc = validation.StringIsNotEmpty
+	restAuth["oauth_client_secret"].Sensitive = true
+	restAuth["oauth_client_secret"].Description = externalChangesNotDetectedFieldDescription("Specifies the secret of the OAuth2 credential associated with your Open Catalog service connection.")
 	return s
 }

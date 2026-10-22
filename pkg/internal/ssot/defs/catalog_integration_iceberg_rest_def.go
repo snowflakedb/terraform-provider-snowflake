@@ -5,20 +5,24 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 // CatalogIntegrationIcebergRestAttrs holds reusable Iceberg REST catalog integration fields
 // so SHOW and DESCRIBE Columns can point at the same definitions instead of restating names.
 //
-// rest_config, oauth_rest_authentication, bearer_rest_authentication, and
-// sigv4_rest_authentication stay in the schema ext. Those nested blocks have no SSOT struct type.
+// rest_config and the authentication blocks are nested. Sensitive fields, empty-string checks,
+// ExactlyOneOf, and describe diff suppressors stay in the schema ext.
 var CatalogIntegrationIcebergRestAttrs = struct {
-	Enabled                ssot.Attribute
-	RefreshIntervalSeconds ssot.Attribute
-	Comment                ssot.Attribute
-	CatalogNamespace       ssot.Attribute
-	Id                     ssot.Attribute
-	CatalogSource          ssot.Attribute
-	TableFormat            ssot.Attribute
-	Name                   ssot.Attribute
-	Type                   ssot.Attribute
-	Category               ssot.Attribute
-	CreatedOn              ssot.Attribute
+	Enabled                  ssot.Attribute
+	RefreshIntervalSeconds   ssot.Attribute
+	Comment                  ssot.Attribute
+	CatalogNamespace         ssot.Attribute
+	RestConfig               ssot.Attribute
+	OauthRestAuthentication  ssot.Attribute
+	BearerRestAuthentication ssot.Attribute
+	Sigv4RestAuthentication  ssot.Attribute
+	Id                       ssot.Attribute
+	CatalogSource            ssot.Attribute
+	TableFormat              ssot.Attribute
+	Name                     ssot.Attribute
+	Type                     ssot.Attribute
+	Category                 ssot.Attribute
+	CreatedOn                ssot.Attribute
 }{
 	Enabled: ssot.Attribute{
 		Name:     "enabled",
@@ -49,6 +53,129 @@ var CatalogIntegrationIcebergRestAttrs = struct {
 		ForceNew:    true,
 		Description: "Specifies the default namespace for all Iceberg tables that you associate with the catalog integration.",
 	},
+	RestConfig: ssot.Attribute{
+		Name:        "rest_config",
+		Type:        ssot.AttrList,
+		Required:    true,
+		ForceNew:    true,
+		MinItems:    new(1),
+		MaxItems:    new(1),
+		Description: "Specifies information about REST configuration.",
+		Children: []ssot.Attribute{
+			{
+				Name:        "catalog_uri",
+				Type:        ssot.AttrString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Specifies the endpoint URL for the catalog REST API.",
+			},
+			{
+				Name:        "prefix",
+				Type:        ssot.AttrString,
+				ForceNew:    true,
+				Description: "Specifies an optional prefix appended to all API routes.",
+			},
+			{
+				Name:        "catalog_name",
+				Type:        ssot.AttrString,
+				ForceNew:    true,
+				Description: "Specifies the catalog or identifier to request from your remote catalog service.",
+			},
+			{
+				Name:        "catalog_api_type",
+				Type:        ssot.AttrEnum,
+				ForceNew:    true,
+				Description: "Specifies the connection type for the catalog API.",
+				Enum:        CatalogIntegrationCatalogApiType,
+			},
+			{
+				Name:        "access_delegation_mode",
+				Type:        ssot.AttrEnum,
+				ForceNew:    true,
+				Description: "Specifies the access delegation mode for accessing Iceberg table files in your external cloud storage.",
+				Enum:        CatalogIntegrationAccessDelegationMode,
+			},
+		},
+	},
+	OauthRestAuthentication: ssot.Attribute{
+		Name:        "oauth_rest_authentication",
+		Type:        ssot.AttrList,
+		ForceNew:    true,
+		MaxItems:    new(1),
+		Description: "Specifies OAuth as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
+		Children: []ssot.Attribute{
+			{
+				Name:        "oauth_token_uri",
+				Type:        ssot.AttrString,
+				ForceNew:    true,
+				Description: "Specifies URL for the third-party identity provider. If not specified, Snowflake assumes the remote catalog provider is the identity provider.",
+			},
+			{
+				Name:        "oauth_client_id",
+				Type:        ssot.AttrString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Specifies the client ID of the OAuth2 credential.",
+			},
+			{
+				Name:        "oauth_client_secret",
+				Type:        ssot.AttrString,
+				Required:    true,
+				Description: "Specifies the secret of the OAuth2 credential.",
+			},
+			{
+				Name:        "oauth_allowed_scopes",
+				Type:        ssot.AttrList,
+				Required:    true,
+				ForceNew:    true,
+				MinItems:    new(1),
+				Description: "Specifies one or more scopes for the OAuth token.",
+				Elem:        &ssot.Attribute{Type: ssot.AttrString},
+			},
+		},
+	},
+	BearerRestAuthentication: ssot.Attribute{
+		Name:        "bearer_rest_authentication",
+		Type:        ssot.AttrList,
+		MaxItems:    new(1),
+		Description: "Specifies a bearer token as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
+		Children: []ssot.Attribute{
+			{
+				Name:        "bearer_token",
+				Type:        ssot.AttrString,
+				Required:    true,
+				Description: "The bearer token for the identity provider.",
+			},
+		},
+	},
+	Sigv4RestAuthentication: ssot.Attribute{
+		Name:        "sigv4_rest_authentication",
+		Type:        ssot.AttrList,
+		ForceNew:    true,
+		MaxItems:    new(1),
+		Description: "Specifies Signature Version 4 as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
+		Children: []ssot.Attribute{
+			{
+				Name:        "sigv4_iam_role",
+				Type:        ssot.AttrString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Specifies the Amazon Resource Name (ARN) for an IAM role that has permission to access your REST API in API Gateway.",
+			},
+			{
+				Name:        "sigv4_signing_region",
+				Type:        ssot.AttrString,
+				ForceNew:    true,
+				Description: "Specifies the AWS Region associated with your API in API Gateway. If you don’t specify this parameter, Snowflake uses the region in which your Snowflake account is deployed.",
+			},
+			{
+				Name:        "sigv4_external_id",
+				Type:        ssot.AttrString,
+				ForceNew:    true,
+				Description: "Specifies an external ID that Snowflake uses to establish a trust relationship with AWS. If you don’t specify this parameter, Snowflake automatically generates a unique external ID when you create a catalog integration.",
+			},
+		},
+	},
 	Id: ssot.Attribute{Name: "id", Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier", Readonly: true},
 	CatalogSource: ssot.Attribute{
 		Name:        "catalog_source",
@@ -75,7 +202,7 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 		// ShowOutputShow omitted. SHOW rows are sdk.CatalogIntegration, so tests use CatalogIntegrationShowOutput.
 		// WithSchema omitted. SHOW is the shared CatalogIntegration schema alias in the ext.
 		// DESCRIBE stays on the SDK schema list until ManualFields exist in SSOT.
-		// WithModel omitted. rest_config and the rest authentication blocks are nested, which the model generator cannot emit.
+		// WithModel omitted. The model generator cannot emit setters for nested blocks.
 		// WithResourceAssert omitted. catalog_source is added in the schema ext, so the schema-based assert still emits it.
 		// ObjectAssertShow omitted. There is no sdk.CatalogIntegrationIcebergRest type.
 		// ObjectAssertDescribe omitted. The SDK list keeps DescribeIcebergRest and the nested rest asserts.
@@ -94,6 +221,10 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 		CatalogIntegrationIcebergRestAttrs.RefreshIntervalSeconds,
 		CatalogIntegrationIcebergRestAttrs.Comment,
 		CatalogIntegrationIcebergRestAttrs.CatalogNamespace,
+		CatalogIntegrationIcebergRestAttrs.RestConfig,
+		CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication,
+		CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication,
+		CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication,
 	},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{
