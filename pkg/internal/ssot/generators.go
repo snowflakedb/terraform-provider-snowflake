@@ -50,6 +50,8 @@ type SdkGenerator struct {
 	AlterSetList                   bool
 	AlterSetAdditionalValidations  bool
 	AlterWithoutExactlyOneValueSet bool
+
+	CustomOperations bool
 }
 
 type ModelGenerator struct {
@@ -248,6 +250,13 @@ func SdkAlterSetAdditionalValidations() SdkAlterOption {
 // ALTER includes that check unless this option is set.
 func SdkAlterWithoutExactlyOneValueSet() SdkAlterOption {
 	return func(s *SdkGenerator) { s.AlterWithoutExactlyOneValueSet = true }
+}
+
+// SdkCustomOperations emits Object.CustomOperations. Each entry is one custom operation.
+// The query struct name is the kind plus Name. The object words are the uppercase words of Name.
+// The doc URL is the kind slug, a hyphen, and the name slug, unless the spec sets Doc.
+func SdkCustomOperations() SdkOption {
+	return func(s *SdkGenerator) { s.CustomOperations = true }
 }
 
 func WithSdk(opts ...SdkOption) GeneratorOption {

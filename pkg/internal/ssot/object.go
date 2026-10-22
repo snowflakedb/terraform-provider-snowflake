@@ -38,6 +38,9 @@ type Object struct {
 	Set    []*Attribute
 	Unset  []*Attribute
 	Alter  AlterSpec
+	// CustomOperations are operations other than CREATE and ALTER.
+	// Clause order is the emission order. SdkCustomOperations turns them on.
+	CustomOperations []CustomOperationSpec
 }
 
 // AlterClauseKind is one entry in an ALTER statement after the name.

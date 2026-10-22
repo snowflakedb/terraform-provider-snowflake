@@ -192,34 +192,6 @@ func (s *CreateSchemaRequest) SetParameterFromRaw(key string, value string) erro
 	}
 }
 
-func NewCloneSchemaRequest(
-	name DatabaseObjectIdentifier,
-) *CloneSchemaRequest {
-	s := CloneSchemaRequest{}
-	s.name = name
-	return &s
-}
-
-func (s *CloneSchemaRequest) WithOrReplace(orReplace bool) *CloneSchemaRequest {
-	s.OrReplace = &orReplace
-	return s
-}
-
-func (s *CloneSchemaRequest) WithTransient(transient bool) *CloneSchemaRequest {
-	s.Transient = &transient
-	return s
-}
-
-func (s *CloneSchemaRequest) WithIfNotExists(ifNotExists bool) *CloneSchemaRequest {
-	s.IfNotExists = &ifNotExists
-	return s
-}
-
-func (s *CloneSchemaRequest) WithClone(clone Clone) *CloneSchemaRequest {
-	s.Clone = clone
-	return s
-}
-
 func NewAlterSchemaRequest(
 	name DatabaseObjectIdentifier,
 ) *AlterSchemaRequest {
@@ -611,14 +583,6 @@ func (s *DropSchemaRequest) WithRestrict(restrict bool) *DropSchemaRequest {
 	return s
 }
 
-func NewUndropSchemaRequest(
-	name DatabaseObjectIdentifier,
-) *UndropSchemaRequest {
-	s := UndropSchemaRequest{}
-	s.name = name
-	return &s
-}
-
 func NewShowSchemaRequest() *ShowSchemaRequest {
 	s := ShowSchemaRequest{}
 	return &s
@@ -658,6 +622,42 @@ func NewDescribeSchemaRequest(
 	name DatabaseObjectIdentifier,
 ) *DescribeSchemaRequest {
 	s := DescribeSchemaRequest{}
+	s.name = name
+	return &s
+}
+
+func NewCloneSchemaRequest(
+	name DatabaseObjectIdentifier,
+) *CloneSchemaRequest {
+	s := CloneSchemaRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *CloneSchemaRequest) WithOrReplace(orReplace bool) *CloneSchemaRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CloneSchemaRequest) WithTransient(transient bool) *CloneSchemaRequest {
+	s.Transient = &transient
+	return s
+}
+
+func (s *CloneSchemaRequest) WithIfNotExists(ifNotExists bool) *CloneSchemaRequest {
+	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *CloneSchemaRequest) WithClone(clone Clone) *CloneSchemaRequest {
+	s.Clone = clone
+	return s
+}
+
+func NewUndropSchemaRequest(
+	name DatabaseObjectIdentifier,
+) *UndropSchemaRequest {
+	s := UndropSchemaRequest{}
 	s.name = name
 	return &s
 }

@@ -6,12 +6,12 @@ import "fmt"
 
 var (
 	_ validatable = new(CreateSchemaOptions)
-	_ validatable = new(CloneSchemaOptions)
 	_ validatable = new(AlterSchemaOptions)
 	_ validatable = new(DropSchemaOptions)
-	_ validatable = new(UndropSchemaOptions)
 	_ validatable = new(ShowSchemaOptions)
 	_ validatable = new(DescribeSchemaOptions)
+	_ validatable = new(CloneSchemaOptions)
+	_ validatable = new(UndropSchemaOptions)
 )
 
 func (opts *CreateSchemaOptions) validate() error {
@@ -38,21 +38,6 @@ func (opts *CreateSchemaOptions) validate() error {
 			}
 		}
 	}
-	return JoinErrors(errs...)
-}
-
-func (opts *CloneSchemaOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, errInvalidIdentifier("CloneSchemaOptions", "name"))
-	}
-	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
-		errs = append(errs, errOneOf("CloneSchemaOptions", "OrReplace", "IfNotExists"))
-	}
-	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
 }
 
@@ -113,17 +98,6 @@ func (opts *DropSchemaOptions) validate() error {
 	return JoinErrors(errs...)
 }
 
-func (opts *UndropSchemaOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, errInvalidIdentifier("UndropSchemaOptions", "name"))
-	}
-	return JoinErrors(errs...)
-}
-
 func (opts *ShowSchemaOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
@@ -139,6 +113,32 @@ func (opts *DescribeSchemaOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("DescribeSchemaOptions", "name"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CloneSchemaOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("CloneSchemaOptions", "name"))
+	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CloneSchemaOptions", "OrReplace", "IfNotExists"))
+	}
+	errs = append(errs, opts.additionalValidations())
+	return JoinErrors(errs...)
+}
+
+func (opts *UndropSchemaOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("UndropSchemaOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

@@ -139,7 +139,11 @@ enable nothing.
   functional options on top of that default. A zero unset clause is a bool keyword. Leave the attribute out of `Unset`
   to omit it, or set `UnsetSql` to a parameter clause to unset by setting a value. A list whose element is an enum uses
   an item query struct named after that enum, with `ListItem` appended. Its field is `Value`, a required single-quoted
-  keyword. When `SdkCreate()` or `SdkAlter()` is off, that call stays in the def.
+  keyword. When `SdkCreate()` or `SdkAlter()` is off, that call stays in the def. `SdkCustomOperations()` emits
+  [`CustomOperations`](custom_operation.go) from one call, in slice order. Place that call after the dedicated operation
+  methods and before custom interface methods. The generated interface lists every operation, then the custom interface
+  methods, so a custom operation stays with the operations. Reordering in the generated SDK is expected while objects
+  are aligned. When the setting is off, the custom operation stays in the SDK def.
 
 Fill `Show` / `Describe` first; enable the matching SHOW or DESCRIBE setting when the lists are ready. Enabling SHOW or
 DESCRIBE schema generation, show output assertions, Snowflake object assertions, or SDK paired structs without `Columns`
@@ -210,9 +214,24 @@ SHOW/DESCRIBE pointer. `OptionalInDb` is the db row. `OptionalInDb` is unused by
 independent. See [OptionalInShow vs OptionalInDb](#optionalinshow-vs-optionalindb).
 
 An unmapped kind panics. Do not guess a mapping. Tests build a fake `ssot.Object`. They do not walk `defs.All()` to
-assert which live objects are opted in.
+assert which live objects are opted in. Tests of clause shape, emission, and validation use that fake object. They do
+not assert those paths against a live definition such as Compute Pool or Schema.
 
 The old path for an object that is not opted in stays byte-identical. Do not edit `*_gen.go`.
+
+#### Statement model
+
+Rules for CREATE and ALTER. The calls are in [Generators](#generators).
+
+- Order is membership in a slice, and the slice order is the emission order. SHOW and DESCRIBE use `Columns`. CREATE uses [`CreateSpec`](object.go). ALTER uses [`AlterSpec`](object.go). `Set` and `Unset` are the fields inside those blocks.
+- A new position or switch on a statement is a field of that statement's spec. `KeywordsBefore` is the CREATE field for clauses between `OR REPLACE` and the object words.
+- `KeywordsBefore` holds attributes. `TRANSIENT` is the `is_transient` attribute. An alter keyword that is not an attribute, such as `RESUME` or `STOP ALL`, is an `AlterKeyword` entry on `Alter.Clauses`.
+- A SQL constructor does not take an `Attribute`. Set the clause on the attribute. `ValidateObject` checks it while walking the object.
+- The SDK generator calls the existing query-struct builders (`NumberAssignment`, `OptionalSQL`, `ListAssignment`, and the rest). It does not record a Go type on the clause, and it does not build `ddl` tags.
+- Clauses Snowflake statements usually accept are on unless the object opts out: `OR REPLACE`, `IF NOT EXISTS`, `IF EXISTS`, `SET`, `UNSET`, `SET TAG`, `UNSET TAG`, and the exactly-one alter check. `SET` is a keyword. `SdkAlterSetList` opts into `list,no_parentheses`.
+- A custom operation is an entry on [`CustomOperations`](custom_operation.go). `SdkCustomOperations()` emits that slice from one call, in slice order. Clone and undrop are custom operations. Generating CREATE or ALTER does not take them over. Place that call after the dedicated operation methods and before custom interface methods. The generated interface lists every operation, then the custom interface methods, so a custom operation stays with the operations. Reordering in the generated SDK is expected while objects are aligned.
+- One generator fits every object. When an object's statement does not match the current emission, extend the spec.
+- A repeated generated name has one spelling. An enum list item is `{Enum}ListItem` with the field `Value`. Rename the SDK type to that spelling. The definition does not pass the struct name or the field name.
 
 #### Incremental coverage
 
@@ -233,7 +252,8 @@ Until a piece has moved, do not assume it is already in ssot:
   object with the setting off keeps the handwritten call. A zero create or set clause uses the attribute type. A zero unset clause is a bool keyword. Clause shape is `CreateSql`, `SetSql`, and `UnsetSql`
   ([Attribute](attribute.go)). `Create` is a [`CreateSpec`](object.go). `Set` and `Unset` are the statement order. A
   `Parameters` entry spreads the catalog on that statement. `Alter` is the order of the ALTER blocks after the name.
-  Every other operation stays in the SDK def. They are not
+  When `SdkCustomOperations()` is on, those operations come from `CustomOperations` and are emitted together. When it is
+  off, they stay in the SDK def. Every other operation stays in the SDK def. They are not
   generated from `Columns`.
 - `SkipFields`, `ManualFields`, `TypeOverrides`, and `UsedAsListEntry` have no ssot equivalent yet.
 - `ResourceHooks` do not yet generate the whole lifecycle, the SDK calls, or the mapping. A missing step stays an ext

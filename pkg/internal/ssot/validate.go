@@ -38,6 +38,7 @@ func ValidateObject(obj Object) {
 	validateSqlSequence(obj, "SET", obj.Set, attrs, func(attr Attribute) SqlClause { return attr.SetSql })
 	validateSqlSequence(obj, "UNSET", obj.Unset, attrs, func(attr Attribute) SqlClause { return attr.UnsetSql })
 	validateAlterSpec(obj)
+	validateCustomOperations(obj, attrs)
 	for _, a := range obj.Attributes {
 		if a.CreateOnly && (a.Type != AttrBool || a.Required) {
 			panic(fmt.Sprintf("object %q: CreateOnly attribute %q must be an optional bool", obj.Name, a.Name))
@@ -101,6 +102,71 @@ func validateAlterSpec(obj Object) {
 			seen[clause.Kind] = struct{}{}
 		default:
 			panic(fmt.Sprintf("object %q: ALTER clause has kind %q", obj.Name, clause.Kind))
+		}
+	}
+}
+
+func validateCustomOperations(obj Object, attrs map[string]struct{}) {
+	seenKind := make(map[string]struct{})
+	for _, spec := range obj.CustomOperations {
+		if spec.Kind == "" {
+			panic(fmt.Sprintf("object %q: custom operation kind is empty", obj.Name))
+		}
+		if _, dup := seenKind[spec.Kind]; dup {
+			panic(fmt.Sprintf("object %q: duplicate custom operation %q", obj.Name, spec.Kind))
+		}
+		seenKind[spec.Kind] = struct{}{}
+		validateCustomOperationClauses(obj, spec, attrs)
+	}
+}
+
+func validateCustomOperationClauses(obj Object, spec CustomOperationSpec, attrs map[string]struct{}) {
+	seen := make(map[CustomOperationClauseKind]struct{})
+	seenAttr := make(map[string]struct{})
+	seenPredefined := make(map[string]struct{})
+	singleton := func(kind CustomOperationClauseKind) {
+		if _, dup := seen[kind]; dup {
+			panic(fmt.Sprintf("object %q: custom operation %q has duplicate %s", obj.Name, spec.Kind, kind))
+		}
+		seen[kind] = struct{}{}
+	}
+	for _, clause := range spec.Clauses {
+		switch clause.Kind {
+		case CustomOperationClauseStaticSQL:
+			if clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: custom operation %q static SQL is empty", obj.Name, spec.Kind))
+			}
+		case CustomOperationClauseOrReplace, CustomOperationClauseIfNotExists, CustomOperationClauseObjectWords, CustomOperationClauseName:
+			singleton(clause.Kind)
+		case CustomOperationClauseAttribute:
+			if clause.Attribute == nil {
+				panic(fmt.Sprintf("object %q: custom operation %q attribute is empty", obj.Name, spec.Kind))
+			}
+			if clause.Attribute.IsTags() {
+				panic(fmt.Sprintf("object %q: custom operation %q attribute is tags", obj.Name, spec.Kind))
+			}
+			if clause.Attribute.IsParameters() {
+				panic(fmt.Sprintf("object %q: custom operation %q attribute is parameters", obj.Name, spec.Kind))
+			}
+			name := clause.Attribute.Name
+			if _, ok := attrs[name]; !ok {
+				panic(fmt.Sprintf("object %q: custom operation %q attribute %q is not in Attributes", obj.Name, spec.Kind, name))
+			}
+			if _, dup := seenAttr[name]; dup {
+				panic(fmt.Sprintf("object %q: custom operation %q has duplicate attribute %q", obj.Name, spec.Kind, name))
+			}
+			seenAttr[name] = struct{}{}
+			validateSqlClause(obj, *clause.Attribute, "CREATE", clause.Attribute.EffectiveSqlClause(ClauseCreate))
+		case CustomOperationClausePredefined:
+			if clause.Predefined == "" {
+				panic(fmt.Sprintf("object %q: custom operation %q predefined type is empty", obj.Name, spec.Kind))
+			}
+			if _, dup := seenPredefined[clause.Predefined]; dup {
+				panic(fmt.Sprintf("object %q: custom operation %q has duplicate predefined %q", obj.Name, spec.Kind, clause.Predefined))
+			}
+			seenPredefined[clause.Predefined] = struct{}{}
+		default:
+			panic(fmt.Sprintf("object %q: custom operation %q clause has kind %q", obj.Name, spec.Kind, clause.Kind))
 		}
 	}
 }

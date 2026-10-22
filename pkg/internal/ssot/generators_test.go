@@ -109,6 +109,9 @@ func Test_ObjectGenerators_options(t *testing.T) {
 		DropCascadeRestrict: true,
 	}}, g)
 
+	g = ObjectGenerators(WithSdk(SdkCustomOperations()))
+	require.Equal(t, Generators{Sdk: SdkGenerator{CustomOperations: true}}, g)
+
 	g = ObjectGenerators(WithSdk())
 	require.Equal(t, Generators{}, g)
 

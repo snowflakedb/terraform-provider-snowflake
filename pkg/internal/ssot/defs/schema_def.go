@@ -85,6 +85,7 @@ var Schema = ssot.Object{
 			ssot.SdkDrop(ssot.SdkDropCascadeRestrict()),
 			ssot.SdkCreate(),
 			ssot.SdkAlter(ssot.SdkAlterSetList()),
+			ssot.SdkCustomOperations(),
 		),
 		ssot.WithObjectParametersAssert(),
 		ssot.WithResourceParametersAssert(),
@@ -121,6 +122,30 @@ var Schema = ssot.Object{
 		ssot.AlterKeyword("ENABLE MANAGED ACCESS"),
 		ssot.AlterKeyword("DISABLE MANAGED ACCESS"),
 	}},
+	CustomOperations: []ssot.CustomOperationSpec{
+		{
+			Kind:                  "Clone",
+			Doc:                   "https://docs.snowflake.com/en/sql-reference/sql/create-schema",
+			AdditionalValidations: true,
+			Clauses: []ssot.CustomOperationClause{
+				ssot.CustomStaticSQL("CREATE"),
+				ssot.CustomOrReplace(),
+				ssot.CustomAttribute(&SchemaAttrs.IsTransient),
+				ssot.CustomObjectWords(),
+				ssot.CustomIfNotExists(),
+				ssot.CustomName(),
+				ssot.CustomPredefined("Clone"),
+			},
+		},
+		{
+			Kind: "Undrop",
+			Clauses: []ssot.CustomOperationClause{
+				ssot.CustomStaticSQL("UNDROP"),
+				ssot.CustomObjectWords(),
+				ssot.CustomName(),
+			},
+		},
+	},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{
 			&SchemaAttrs.CreatedOn,

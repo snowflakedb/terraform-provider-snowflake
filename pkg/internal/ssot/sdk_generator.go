@@ -13,6 +13,8 @@ const (
 	dropDocURLPrefix     = "https://docs.snowflake.com/en/sql-reference/sql/drop-"
 	createDocURLPrefix   = "https://docs.snowflake.com/en/sql-reference/sql/create-"
 	alterDocURLPrefix    = "https://docs.snowflake.com/en/sql-reference/sql/alter-"
+	// customOperationDocURLPrefix has no verb. The kind slug is the verb.
+	customOperationDocURLPrefix = "https://docs.snowflake.com/en/sql-reference/sql/"
 )
 
 // SdkShowByIDFilteringKind is one ShowByID filter, in call-argument order.
@@ -168,7 +170,41 @@ func (obj Object) SdkConfig() SdkGenerator {
 			cfg.AlterQueryStructName = "Alter" + name
 		}
 	}
+	if cfg.CustomOperations {
+		obj.singularName("custom operation")
+		for _, spec := range obj.CustomOperations {
+			if spec.Kind == "" {
+				panic(fmt.Sprintf("object %q: custom operation kind is empty", obj.Name))
+			}
+		}
+	}
 	return cfg
+}
+
+// CustomOperationDoc is the operation doc URL.
+// An explicit Doc wins. Otherwise it is the kind slug, a hyphen, and the name slug.
+func (obj Object) CustomOperationDoc(spec CustomOperationSpec) string {
+	if spec.Doc != "" {
+		return spec.Doc
+	}
+	if spec.Kind == "" {
+		panic(fmt.Sprintf("object %q: custom operation kind is empty", obj.Name))
+	}
+	name := obj.singularName("custom operation")
+	return customOperationDocURLPrefix + docsObjectSlug(spec.Kind) + "-" + docsObjectSlug(name)
+}
+
+// CustomOperationSQL is the uppercase words of Name.
+func (obj Object) CustomOperationSQL() string {
+	return strings.ToUpper(genhelpers.CamelToWords(obj.singularName("custom operation")))
+}
+
+// CustomOperationQueryStructName is the kind plus Name.
+func (obj Object) CustomOperationQueryStructName(kind string) string {
+	if kind == "" {
+		panic(fmt.Sprintf("object %q: custom operation kind is empty", obj.Name))
+	}
+	return kind + obj.singularName("custom operation")
 }
 
 func (obj Object) namePluralForShow() string {

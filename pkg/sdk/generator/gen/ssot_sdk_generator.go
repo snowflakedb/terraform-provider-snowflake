@@ -185,6 +185,121 @@ func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryS
 	return q
 }
 
+// CustomOperationsFromObject adds each custom operation from obj.CustomOperations, in slice order.
+// The operations are emitted together at this call. Clause order is the emission order.
+// The query struct name is the kind plus Name.
+// A name clause adds ValidIdentifier. OR REPLACE and IF NOT EXISTS together are marked conflicting.
+func (i *Interface) CustomOperationsFromObject(obj ssot.Object) *Interface {
+	requireCustomOperations(obj)
+	seenKind := make(map[string]struct{})
+	for _, spec := range obj.CustomOperations {
+		if spec.Kind == "" {
+			panic(fmt.Sprintf("object %q: custom operation kind is empty", obj.Name))
+		}
+		if _, dup := seenKind[spec.Kind]; dup {
+			panic(fmt.Sprintf("object %q: duplicate custom operation %q", obj.Name, spec.Kind))
+		}
+		seenKind[spec.Kind] = struct{}{}
+		i = i.customOperationFromSpec(obj, spec)
+	}
+	return i
+}
+
+func requireCustomOperations(obj ssot.Object) {
+	if !obj.SdkConfig().CustomOperations {
+		panic(fmt.Sprintf("object %q is not enabled for SDK custom operation generation", obj.Name))
+	}
+}
+
+func (i *Interface) customOperationFromSpec(obj ssot.Object, spec ssot.CustomOperationSpec) *Interface {
+	return i.CustomOperation(spec.Kind, obj.CustomOperationDoc(spec), customOperationQueryStruct(obj, spec))
+}
+
+func customOperationQueryStruct(obj ssot.Object, spec ssot.CustomOperationSpec) *QueryStruct {
+	q := NewQueryStruct(obj.CustomOperationQueryStructName(spec.Kind))
+	sawOrReplace := false
+	sawIfNotExists := false
+	sawName := false
+	seen := make(map[ssot.CustomOperationClauseKind]struct{})
+	seenAttr := make(map[string]struct{})
+	seenPredefined := make(map[string]struct{})
+	singleton := func(kind ssot.CustomOperationClauseKind) {
+		if _, dup := seen[kind]; dup {
+			panic(fmt.Sprintf("object %q: custom operation %q has duplicate %s", obj.Name, spec.Kind, kind))
+		}
+		seen[kind] = struct{}{}
+	}
+	for _, clause := range spec.Clauses {
+		switch clause.Kind {
+		case ssot.CustomOperationClauseStaticSQL:
+			if clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: custom operation %q static SQL is empty", obj.Name, spec.Kind))
+			}
+			q = q.SQL(clause.SQL)
+		case ssot.CustomOperationClauseOrReplace:
+			singleton(clause.Kind)
+			sawOrReplace = true
+			q = q.OrReplace()
+		case ssot.CustomOperationClauseIfNotExists:
+			singleton(clause.Kind)
+			sawIfNotExists = true
+			q = q.IfNotExists()
+		case ssot.CustomOperationClauseAttribute:
+			attr := customOperationAttribute(obj, spec, clause, seenAttr)
+			q = q.appendSqlSequence([]*ssot.Attribute{attr}, attributeSqlCreate)
+		case ssot.CustomOperationClauseObjectWords:
+			singleton(clause.Kind)
+			q = q.SQL(obj.CustomOperationSQL())
+		case ssot.CustomOperationClauseName:
+			singleton(clause.Kind)
+			sawName = true
+			q = q.Name()
+		case ssot.CustomOperationClausePredefined:
+			if clause.Predefined == "" {
+				panic(fmt.Sprintf("object %q: custom operation %q predefined type is empty", obj.Name, spec.Kind))
+			}
+			if _, dup := seenPredefined[clause.Predefined]; dup {
+				panic(fmt.Sprintf("object %q: custom operation %q has duplicate predefined %q", obj.Name, spec.Kind, clause.Predefined))
+			}
+			seenPredefined[clause.Predefined] = struct{}{}
+			q = q.PredefinedQueryStructField(clause.Predefined, clause.Predefined, KeywordOptions())
+		default:
+			panic(fmt.Sprintf("object %q: custom operation %q clause has kind %q", obj.Name, spec.Kind, clause.Kind))
+		}
+	}
+	if sawName {
+		q = q.WithValidation(ValidIdentifier, "name")
+	}
+	if sawOrReplace && sawIfNotExists {
+		q = q.WithValidation(ConflictingFields, "OrReplace", "IfNotExists")
+	}
+	if spec.AdditionalValidations {
+		q = q.WithAdditionalValidations()
+	}
+	return q
+}
+
+func customOperationAttribute(obj ssot.Object, spec ssot.CustomOperationSpec, clause ssot.CustomOperationClause, seenAttr map[string]struct{}) *ssot.Attribute {
+	if clause.Attribute == nil {
+		panic(fmt.Sprintf("object %q: custom operation %q attribute is empty", obj.Name, spec.Kind))
+	}
+	if clause.Attribute.IsTags() {
+		panic(fmt.Sprintf("object %q: custom operation %q attribute is tags", obj.Name, spec.Kind))
+	}
+	if clause.Attribute.IsParameters() {
+		panic(fmt.Sprintf("object %q: custom operation %q attribute is parameters", obj.Name, spec.Kind))
+	}
+	name := clause.Attribute.Name
+	if name == "" {
+		panic(fmt.Sprintf("object %q: custom operation %q attribute has empty Name", obj.Name, spec.Kind))
+	}
+	if _, dup := seenAttr[name]; dup {
+		panic(fmt.Sprintf("object %q: custom operation %q has duplicate attribute %q", obj.Name, spec.Kind, name))
+	}
+	seenAttr[name] = struct{}{}
+	return clause.Attribute
+}
+
 // AlterOperationFromObject adds ALTER from obj.SdkConfig.
 // Clauses are Alter, SQL, optional IF EXISTS, Name, then obj.Alter in order, then ValidIdentifier.
 // AtLeastOneValueSet on SET and UNSET lists the fields those structs contain.

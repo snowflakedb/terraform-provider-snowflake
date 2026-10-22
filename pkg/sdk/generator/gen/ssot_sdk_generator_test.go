@@ -687,6 +687,113 @@ func Test_CreateOperationFromObject_enumListItem(t *testing.T) {
 	requireSameOperations(t, want, got)
 }
 
+func Test_CustomOperationsFromObject_fakeObject(t *testing.T) {
+	transient := ssot.Attribute{
+		Name:      "is_transient",
+		Type:      ssot.AttrBool,
+		CreateSql: ssot.BoolKeyword(ssot.Sql("TRANSIENT")),
+	}
+	obj := ssot.Object{
+		Name:       "Fake",
+		IdType:     "DatabaseObjectIdentifier",
+		Attributes: []ssot.Attribute{transient},
+		Create:     ssot.CreateSpec{KeywordsBefore: []*ssot.Attribute{&transient}},
+		CustomOperations: []ssot.CustomOperationSpec{
+			{
+				Kind:                  "Clone",
+				Doc:                   "https://docs.snowflake.com/en/sql-reference/sql/create-fake",
+				AdditionalValidations: true,
+				Clauses: []ssot.CustomOperationClause{
+					ssot.CustomStaticSQL("CREATE"),
+					ssot.CustomOrReplace(),
+					ssot.CustomAttribute(&transient),
+					ssot.CustomObjectWords(),
+					ssot.CustomIfNotExists(),
+					ssot.CustomName(),
+					ssot.CustomPredefined("Clone"),
+				},
+			},
+			{
+				Kind: "Undrop",
+				Clauses: []ssot.CustomOperationClause{
+					ssot.CustomStaticSQL("UNDROP"),
+					ssot.CustomObjectWords(),
+					ssot.CustomName(),
+				},
+			},
+		},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCustomOperations())},
+	}
+	got := NewInterface("Fakes", "Fake", "DatabaseObjectIdentifier").CustomOperationsFromObject(obj)
+	want := NewInterface("Fakes", "Fake", "DatabaseObjectIdentifier").
+		CustomOperation(
+			"Clone",
+			"https://docs.snowflake.com/en/sql-reference/sql/create-fake",
+			NewQueryStruct("CloneFake").
+				Create().
+				OrReplace().
+				OptionalSQL("TRANSIENT").
+				SQL("FAKE").
+				IfNotExists().
+				Name().
+				PredefinedQueryStructField("Clone", "Clone", KeywordOptions()).
+				WithValidation(ValidIdentifier, "name").
+				WithValidation(ConflictingFields, "OrReplace", "IfNotExists").
+				WithAdditionalValidations(),
+		).
+		CustomOperation(
+			"Undrop",
+			"https://docs.snowflake.com/en/sql-reference/sql/undrop-fake",
+			NewQueryStruct("UndropFake").
+				SQL("UNDROP").
+				SQL("FAKE").
+				Name().
+				WithValidation(ValidIdentifier, "name"),
+		)
+	requireSameOperations(t, want, got)
+}
+
+func Test_CustomOperationsFromObject_panics(t *testing.T) {
+	transient := ssot.Attribute{
+		Name:      "is_transient",
+		Type:      ssot.AttrBool,
+		CreateSql: ssot.BoolKeyword(ssot.Sql("TRANSIENT")),
+	}
+	enabled := ssot.Object{
+		Name:       "Fake",
+		Attributes: []ssot.Attribute{transient},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCustomOperations())},
+	}
+	require.Panics(t, func() {
+		NewInterface("Fakes", "Fake", "DatabaseObjectIdentifier").
+			CustomOperationsFromObject(ssot.Object{Name: "Fake"})
+	})
+	require.Panics(t, func() {
+		bad := enabled
+		bad.CustomOperations = []ssot.CustomOperationSpec{{
+			Kind:    "Clone",
+			Clauses: []ssot.CustomOperationClause{ssot.CustomStaticSQL("")},
+		}}
+		NewInterface("Fakes", "Fake", "DatabaseObjectIdentifier").CustomOperationsFromObject(bad)
+	})
+	require.Panics(t, func() {
+		bad := enabled
+		bad.CustomOperations = []ssot.CustomOperationSpec{{
+			Kind:    "Clone",
+			Clauses: []ssot.CustomOperationClause{ssot.CustomAttribute(nil)},
+		}}
+		NewInterface("Fakes", "Fake", "DatabaseObjectIdentifier").CustomOperationsFromObject(bad)
+	})
+	require.Panics(t, func() {
+		bad := enabled
+		bad.CustomOperations = []ssot.CustomOperationSpec{{
+			Kind:    "Clone",
+			Clauses: []ssot.CustomOperationClause{{Kind: "nope"}},
+		}}
+		NewInterface("Fakes", "Fake", "DatabaseObjectIdentifier").CustomOperationsFromObject(bad)
+	})
+}
+
 func Test_CreateAlterFromObject_panics(t *testing.T) {
 	obj := ssot.Object{Name: "Widget", NamePlural: "Widgets"}
 	require.Panics(t, func() {

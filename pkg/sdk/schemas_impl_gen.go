@@ -25,11 +25,6 @@ func (v *schemas) Create(ctx context.Context, request *CreateSchemaRequest) erro
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *schemas) Clone(ctx context.Context, request *CloneSchemaRequest) error {
-	opts := request.toOpts()
-	return validateAndExec(v.client, ctx, opts)
-}
-
 func (v *schemas) Alter(ctx context.Context, request *AlterSchemaRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
@@ -42,11 +37,6 @@ func (v *schemas) Drop(ctx context.Context, request *DropSchemaRequest) error {
 
 func (v *schemas) DropSafely(ctx context.Context, id DatabaseObjectIdentifier) error {
 	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropSchemaRequest(id).WithIfExists(true)) }, ctx, id)
-}
-
-func (v *schemas) Undrop(ctx context.Context, request *UndropSchemaRequest) error {
-	opts := request.toOpts()
-	return validateAndExec(v.client, ctx, opts)
 }
 
 func (v *schemas) Show(ctx context.Context, request *ShowSchemaRequest) ([]Schema, error) {
@@ -84,6 +74,16 @@ func (v *schemas) Describe(ctx context.Context, id DatabaseObjectIdentifier) ([]
 	return convertRows[schemaDescRow, SchemaDetails](rows)
 }
 
+func (v *schemas) Clone(ctx context.Context, request *CloneSchemaRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *schemas) Undrop(ctx context.Context, request *UndropSchemaRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
 func (r *CreateSchemaRequest) toOpts() *CreateSchemaOptions {
 	opts := &CreateSchemaOptions{
 		OrReplace:                               r.OrReplace,
@@ -113,17 +113,6 @@ func (r *CreateSchemaRequest) toOpts() *CreateSchemaOptions {
 		UserTaskTimeoutMs:                       r.UserTaskTimeoutMs,
 		Comment:                                 r.Comment,
 		Tag:                                     r.Tag,
-	}
-	return opts
-}
-
-func (r *CloneSchemaRequest) toOpts() *CloneSchemaOptions {
-	opts := &CloneSchemaOptions{
-		OrReplace:   r.OrReplace,
-		Transient:   r.Transient,
-		IfNotExists: r.IfNotExists,
-		name:        r.name,
-		Clone:       r.Clone,
 	}
 	return opts
 }
@@ -202,13 +191,6 @@ func (r *DropSchemaRequest) toOpts() *DropSchemaOptions {
 	return opts
 }
 
-func (r *UndropSchemaRequest) toOpts() *UndropSchemaOptions {
-	opts := &UndropSchemaOptions{
-		name: r.name,
-	}
-	return opts
-}
-
 func (r *ShowSchemaRequest) toOpts() *ShowSchemaOptions {
 	opts := &ShowSchemaOptions{
 		Terse:      r.Terse,
@@ -252,6 +234,24 @@ func (r schemaDescRow) convert() (*SchemaDetails, error) {
 		Kind:      r.Kind,
 	}
 	return result, nil
+}
+
+func (r *CloneSchemaRequest) toOpts() *CloneSchemaOptions {
+	opts := &CloneSchemaOptions{
+		OrReplace:   r.OrReplace,
+		Transient:   r.Transient,
+		IfNotExists: r.IfNotExists,
+		name:        r.name,
+		Clone:       r.Clone,
+	}
+	return opts
+}
+
+func (r *UndropSchemaRequest) toOpts() *UndropSchemaOptions {
+	opts := &UndropSchemaOptions{
+		name: r.name,
+	}
+	return opts
 }
 
 func ToSchemaParametersDetails(params []*Parameter) (*SchemaParametersDetails, error) {

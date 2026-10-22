@@ -357,6 +357,52 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 	})
 }
 
+func Test_ValidateObject_customOperations(t *testing.T) {
+	transient := Attribute{Name: "is_transient", Type: AttrBool, CreateSql: BoolKeyword(Sql("TRANSIENT"))}
+	valid := Object{
+		Name:       "Fake",
+		Attributes: []Attribute{transient},
+		Create:     CreateSpec{KeywordsBefore: []*Attribute{&transient}},
+		CustomOperations: []CustomOperationSpec{
+			{
+				Kind:                  "Clone",
+				Doc:                   "https://docs.snowflake.com/en/sql-reference/sql/create-fake",
+				AdditionalValidations: true,
+				Clauses: []CustomOperationClause{
+					CustomStaticSQL("CREATE"),
+					CustomOrReplace(),
+					CustomAttribute(&transient),
+					CustomObjectWords(),
+					CustomIfNotExists(),
+					CustomName(),
+					CustomPredefined("Clone"),
+				},
+			},
+			{
+				Kind: "Undrop",
+				Clauses: []CustomOperationClause{
+					CustomStaticSQL("UNDROP"),
+					CustomObjectWords(),
+					CustomName(),
+				},
+			},
+		},
+	}
+	require.NotPanics(t, func() { ValidateObject(valid) })
+
+	missing := valid
+	other := Attribute{Name: "other", Type: AttrBool, CreateSql: BoolKeyword(Sql("OTHER"))}
+	missing.CustomOperations = []CustomOperationSpec{{
+		Kind:    "Clone",
+		Clauses: []CustomOperationClause{CustomAttribute(&other)},
+	}}
+	require.Panics(t, func() { ValidateObject(missing) })
+
+	duplicated := valid
+	duplicated.CustomOperations = append(duplicated.CustomOperations, CustomOperationSpec{Kind: "Clone"})
+	require.Panics(t, func() { ValidateObject(duplicated) })
+}
+
 func Test_ValidateObject_duplicateOutputKey(t *testing.T) {
 	a := Attribute{Name: "for_application", ShowName: "application"}
 	b := Attribute{Name: "application"}

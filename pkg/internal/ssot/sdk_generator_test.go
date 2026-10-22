@@ -155,4 +155,34 @@ func Test_SdkConfig_panicsWithoutName(t *testing.T) {
 	require.Panics(t, func() {
 		Object{Generators: []GeneratorOption{WithSdk(SdkAlter())}}.SdkConfig()
 	})
+	require.Panics(t, func() {
+		Object{Generators: []GeneratorOption{WithSdk(SdkCustomOperations())}}.SdkConfig()
+	})
+}
+
+func Test_SdkConfig_customOperations(t *testing.T) {
+	obj := Object{
+		Name:       "Fake",
+		Generators: []GeneratorOption{WithSdk(SdkCustomOperations())},
+		CustomOperations: []CustomOperationSpec{{
+			Kind: "Undrop",
+		}},
+	}
+	require.True(t, obj.SdkConfig().CustomOperations)
+	require.Equal(t, SdkGenerator{CustomOperations: true}, ObjectGenerators(obj.Generators...).Sdk)
+	require.Equal(t, "https://docs.snowflake.com/en/sql-reference/sql/undrop-fake", obj.CustomOperationDoc(obj.CustomOperations[0]))
+	require.Equal(t, "FAKE", obj.CustomOperationSQL())
+	require.Equal(t, "UndropFake", obj.CustomOperationQueryStructName("Undrop"))
+	require.Equal(t, "https://docs.snowflake.com/en/sql-reference/sql/create-fake", obj.CustomOperationDoc(CustomOperationSpec{
+		Kind: "Clone",
+		Doc:  "https://docs.snowflake.com/en/sql-reference/sql/create-fake",
+	}))
+
+	require.Panics(t, func() {
+		Object{
+			Name:             "Fake",
+			Generators:       []GeneratorOption{WithSdk(SdkCustomOperations())},
+			CustomOperations: []CustomOperationSpec{{}},
+		}.SdkConfig()
+	})
 }
