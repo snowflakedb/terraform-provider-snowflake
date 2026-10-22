@@ -8,6 +8,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -19,13 +20,9 @@ import (
 // =============================================================================
 
 var (
-	warehouseInteractiveCreateExt = TrackingCreateWrapper(resources.WarehouseInteractive, CreateWarehouseInteractive)
-	warehouseInteractiveReadExt   = TrackingReadWrapper(resources.WarehouseInteractive, ReadWarehouseInteractiveFunc(true))
-	warehouseInteractiveUpdateExt = TrackingUpdateWrapper(resources.WarehouseInteractive, UpdateWarehouseInteractive)
-	warehouseInteractiveDeleteExt = TrackingDeleteWrapper(resources.WarehouseInteractive, ResourceDeleteContextFunc(
-		warehouseInteractiveParseIdExt,
-		warehouseInteractiveDropSafelyInSdkExt,
-	))
+	warehouseInteractiveCreateExt        = TrackingCreateWrapper(resources.WarehouseInteractive, CreateWarehouseInteractive)
+	warehouseInteractiveReadExt          = TrackingReadWrapper(resources.WarehouseInteractive, ReadWarehouseInteractiveFunc(true))
+	warehouseInteractiveUpdateExt        = TrackingUpdateWrapper(resources.WarehouseInteractive, UpdateWarehouseInteractive)
 	warehouseInteractiveDescriptionExt   = "Resource used to manage interactive warehouse objects. Interactive warehouses are optimized for low-latency, high-concurrency queries against a defined set of tables. For more information, check [interactive warehouse documentation](https://docs.snowflake.com/en/user-guide/warehouses-interactive)."
 	warehouseInteractiveCustomizeDiffExt = TrackingCustomDiffWrapper(resources.WarehouseInteractive, customdiff.All(
 		ComputedIfAnyAttributeChanged(warehouseInteractiveSchema, ShowOutputAttributeName, "name", "warehouse_size", "max_cluster_count", "min_cluster_count", "auto_suspend", "auto_resume", "resource_monitor", "comment", "tables"),
@@ -130,6 +127,8 @@ func warehouseInteractiveSetConfigFieldsExt(d *schema.ResourceData, w *sdk.Wareh
 		d.Set("comment", w.Comment),
 		d.Set("warehouse_type", effectiveType),
 		d.Set("tables", tables),
+		// SHOW returns sdk.Warehouse. show_output uses the interactive projection.
+		d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseInteractiveToSchema(w.AsInteractive())}),
 	)
 }
 
@@ -273,10 +272,6 @@ func warehouseInteractiveAlterUnsetInSdkExt(ctx context.Context, meta any, id sd
 		}
 	}
 	return nil
-}
-
-func warehouseInteractiveDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
-	return client.Warehouses.DropSafely
 }
 
 // =============================================================================

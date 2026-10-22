@@ -28,6 +28,10 @@ var resourceGenerationSettings = map[string]*genhelpers.ObjectGenerationSettings
 		AllowedGenerationParts: []genhelpers.GenerationPartNamer{PartDefault, PartSchema, PartParameters},
 		EnabledGenerationParts: []genhelpers.GenerationPartNamer{PartParameters},
 	},
+	"WarehouseInteractive": {
+		AllowedGenerationParts: []genhelpers.GenerationPartNamer{PartDefault, PartSchema, PartParameters},
+		EnabledGenerationParts: []genhelpers.GenerationPartNamer{PartParameters},
+	},
 }
 
 func GetAllObjects() []ResourceObject {

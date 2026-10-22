@@ -14,6 +14,7 @@ func All() []ssot.Object {
 		CatalogIntegrationOpenCatalog,
 		Warehouse,
 		WarehouseAdaptive,
+		WarehouseInteractive,
 		Alert,
 	}
 	for _, obj := range objs {
