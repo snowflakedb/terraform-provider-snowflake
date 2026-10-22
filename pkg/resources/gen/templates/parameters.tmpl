@@ -48,7 +48,7 @@ var (
 )
 {{- if .Hooks.ParametersCustomDiff.Generate }}
 
-func {{ .Prefix }}ParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) (*sdk.{{ .Name }}ParametersDetails, error) {
+func {{ .Prefix }}ParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) (*sdk.{{ .EffectiveSdkParametersObjectName }}ParametersDetails, error) {
 	id, err := {{ .ParseIdFunc }}(d.Id())
 	if err != nil {
 		return nil, err
@@ -56,17 +56,17 @@ func {{ .Prefix }}ParametersProvider(ctx context.Context, d ResourceIdProvider, 
 	return meta.(*provider.Context).Client.{{ .NamePlural }}.ShowParametersDetails(ctx, id)
 }
 
-func {{ .Prefix }}ParameterDiffFunctions(parameters *sdk.{{ .Name }}ParametersDetails) []tfschema.CustomizeDiffFunc {
+func {{ .Prefix }}ParameterDiffFunctions(parameters *sdk.{{ .EffectiveSdkParametersObjectName }}ParametersDetails) []tfschema.CustomizeDiffFunc {
 	return []tfschema.CustomizeDiffFunc{
 {{- range .ParameterHooks }}
-		{{ .DiffFunc }}({{ printf "%q" .Parameter.FieldName }}, parameters.{{ .Parameter.StructFieldName }}, sdk.ParameterType{{ $.Name }}),
+		{{ .DiffFunc }}({{ printf "%q" .Parameter.FieldName }}, parameters.{{ .Parameter.StructFieldName }}, sdk.ParameterType{{ $.EffectiveSdkParametersObjectName }}),
 {{- end }}
 	}
 }
 {{- end }}
 {{- if .Hooks.ApplyParametersCreate.Generate }}
 
-func {{ .Prefix }}ApplyParametersCreate(d *tfschema.ResourceData, req *sdk.Create{{ .Name }}Request) diag.Diagnostics {
+func {{ .Prefix }}ApplyParametersCreate(d *tfschema.ResourceData, req *sdk.Create{{ .EffectiveSdkCreateRequestObjectName }}Request) diag.Diagnostics {
 	return JoinDiags(
 {{- range .ParameterHooks }}
 		handleParameterCreate{{ if .NeedsMapping }}WithMapping{{ end }}(d, {{ printf "%q" .Parameter.FieldName }}, &req.{{ .Parameter.StructFieldName }}{{ if .NeedsMapping }}, {{ .Mapper }}{{ end }}),
@@ -76,7 +76,7 @@ func {{ .Prefix }}ApplyParametersCreate(d *tfschema.ResourceData, req *sdk.Creat
 {{- end }}
 {{- if .Hooks.ApplyParametersChanges.Generate }}
 
-func {{ .Prefix }}ApplyParametersChanges(d *tfschema.ResourceData, set *sdk.{{ .Name }}SetRequest, unset *sdk.{{ .Name }}UnsetRequest) diag.Diagnostics {
+func {{ .Prefix }}ApplyParametersChanges(d *tfschema.ResourceData, set *sdk.{{ .EffectiveSdkParametersObjectName }}SetRequest, unset *sdk.{{ .EffectiveSdkParametersObjectName }}UnsetRequest) diag.Diagnostics {
 	return JoinDiags(
 {{- range .ParameterHooks }}
 		handleParameterUpdate{{ if .NeedsMapping }}WithMapping{{ end }}(d, {{ printf "%q" .Parameter.FieldName }}, &set.{{ .Parameter.StructFieldName }}, &unset.{{ .Parameter.StructFieldName }}{{ if .NeedsMapping }}, {{ .Mapper }}{{ end }}),
@@ -86,7 +86,7 @@ func {{ .Prefix }}ApplyParametersChanges(d *tfschema.ResourceData, set *sdk.{{ .
 {{- end }}
 {{- if .Hooks.SetParametersFields.Generate }}
 
-func {{ .Prefix }}SetParametersFields(d *tfschema.ResourceData, parameters *sdk.{{ .Name }}ParametersDetails) diag.Diagnostics {
+func {{ .Prefix }}SetParametersFields(d *tfschema.ResourceData, parameters *sdk.{{ .EffectiveSdkParametersObjectName }}ParametersDetails) diag.Diagnostics {
 	return JoinDiags(
 {{- range .ParameterHooks }}
 		setResourceData(d, {{ printf "%q" .Parameter.FieldName }}, {{ .Read }}),

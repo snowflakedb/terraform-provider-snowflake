@@ -22,6 +22,8 @@ type Object struct {
 	IdType                              string
 	IdentityNameForceNew                bool
 	AdditionalIdentityNameDescription   string
+	SdkCreateRequestObjectName          string  // SDK Create<Name>Request stem; defaults to Name
+	VariantOf                           *Object // Shares SDK parameter details, set/unset request, and ParameterType names with this object; catalog membership still uses Name
 	Attributes                          []Attribute
 	AttributesModification              bool
 	ResourceHooks                       []ResourceHookOption
@@ -96,6 +98,8 @@ type CreateSpec struct {
 func (obj Object) ObjectName() string { return obj.Name }
 
 // ParameterLevel is the catalog level for this object, derived from Name (Schema is ParameterLevelSchema).
+// VariantOf does not change this level. A variant that needs a different catalog level
+// will require an explicit SSOT parameter-level override.
 func (obj Object) ParameterLevel() ParameterLevel {
 	return ParameterLevel(strings.ToUpper(genhelpers.ToSnakeCase(obj.Name)))
 }

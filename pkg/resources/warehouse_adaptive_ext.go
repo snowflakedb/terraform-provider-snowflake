@@ -7,6 +7,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -18,13 +19,9 @@ import (
 // =============================================================================
 
 var (
-	warehouseAdaptiveCreateExt = TrackingCreateWrapper(resources.WarehouseAdaptive, CreateWarehouseAdaptive)
-	warehouseAdaptiveReadExt   = TrackingReadWrapper(resources.WarehouseAdaptive, ReadWarehouseAdaptiveFunc(true))
-	warehouseAdaptiveUpdateExt = TrackingUpdateWrapper(resources.WarehouseAdaptive, UpdateWarehouseAdaptive)
-	warehouseAdaptiveDeleteExt = TrackingDeleteWrapper(resources.WarehouseAdaptive, ResourceDeleteContextFunc(
-		warehouseAdaptiveParseIdExt,
-		warehouseAdaptiveDropSafelyInSdkExt,
-	))
+	warehouseAdaptiveCreateExt        = TrackingCreateWrapper(resources.WarehouseAdaptive, CreateWarehouseAdaptive)
+	warehouseAdaptiveReadExt          = TrackingReadWrapper(resources.WarehouseAdaptive, ReadWarehouseAdaptiveFunc(true))
+	warehouseAdaptiveUpdateExt        = TrackingUpdateWrapper(resources.WarehouseAdaptive, UpdateWarehouseAdaptive)
 	warehouseAdaptiveDescriptionExt   = "Resource used to manage adaptive warehouse objects. Adaptive Compute is a compute service focused on delivering strong performance with effortless operations. It replaces the fixed compute of the Standard Warehouse with a workload-aware one that adapts to your queries automatically. The system decides how to allocate resources for the best performance, eliminating the need for infrastructure tuning."
 	warehouseAdaptiveCustomizeDiffExt = TrackingCustomDiffWrapper(resources.WarehouseAdaptive, customdiff.All(
 		ComputedIfAnyAttributeChanged(warehouseAdaptiveSchema, ShowOutputAttributeName, "name", "comment", "max_query_performance_level", "query_throughput_multiplier", "resource_monitor"),
@@ -102,6 +99,8 @@ func warehouseAdaptiveSetConfigFieldsExt(d *schema.ResourceData, w *sdk.Warehous
 		d.Set("name", w.Name),
 		d.Set("comment", w.Comment),
 		d.Set("warehouse_type", string(w.Type)),
+		// SHOW returns sdk.Warehouse. show_output uses the adaptive projection.
+		d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseAdaptiveToSchema(w.AsAdaptive())}),
 	)
 }
 
@@ -204,8 +203,4 @@ func warehouseAdaptiveAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.A
 		}
 	}
 	return nil
-}
-
-func warehouseAdaptiveDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
-	return client.Warehouses.DropSafely
 }

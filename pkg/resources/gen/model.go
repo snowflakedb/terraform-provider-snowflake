@@ -18,6 +18,8 @@ type ResourceModel struct {
 	IdType                              string
 	IdentityNameForceNew                bool
 	AdditionalIdentityNameDescription   string
+	SdkCreateRequestObjectName          string
+	VariantOf                           *ssot.Object
 	Attributes                          []ResourceAttribute
 	AttributesModification              bool
 	ObjectType                          string
@@ -38,6 +40,20 @@ func (m ResourceModel) ParameterHooks() []ParameterHookModel {
 
 func (m ResourceModel) Prefix() string {
 	return genhelpers.FirstLetterLowercase(m.Name)
+}
+
+func (m ResourceModel) EffectiveSdkCreateRequestObjectName() string {
+	if m.SdkCreateRequestObjectName != "" {
+		return m.SdkCreateRequestObjectName
+	}
+	return m.Name
+}
+
+func (m ResourceModel) EffectiveSdkParametersObjectName() string {
+	if m.VariantOf != nil {
+		return m.VariantOf.Name
+	}
+	return m.Name
 }
 
 func (m ResourceModel) ParseIdFunc() string {
@@ -84,6 +100,8 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		IdType:                              input.IdType,
 		IdentityNameForceNew:                input.IdentityNameForceNew,
 		AdditionalIdentityNameDescription:   input.AdditionalIdentityNameDescription,
+		SdkCreateRequestObjectName:          input.SdkCreateRequestObjectName,
+		VariantOf:                           input.VariantOf,
 		Attributes:                          attributes,
 		AttributesModification:              input.AttributesModification,
 		ObjectType:                          input.ObjectType(),

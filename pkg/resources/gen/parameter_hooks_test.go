@@ -56,6 +56,63 @@ func TestParameterHooks_customDiffUsesConfiguredParseId(t *testing.T) {
 	require.NotContains(t, rendered.String(), "schemaParseIdExt(d.Id())")
 }
 
+func TestParameterHooks_variantUsesBaseSdkNames(t *testing.T) {
+	model := ModelFromInputObject(ResourceObject{Object: ssotdefs.WarehouseAdaptive}, nil, nil)
+
+	var parametersRendered bytes.Buffer
+	require.NoError(t, ParametersTemplate.Execute(&parametersRendered, model))
+	parameters := parametersRendered.String()
+	require.Contains(t, parameters, "*sdk.WarehouseParametersDetails")
+	require.Contains(t, parameters, "sdk.ParameterTypeWarehouse")
+	require.Contains(t, parameters, "*sdk.CreateAdaptiveWarehouseRequest")
+	require.Contains(t, parameters, "*sdk.WarehouseSetRequest")
+	require.Contains(t, parameters, "*sdk.WarehouseUnsetRequest")
+	require.NotContains(t, parameters, "sdk.WarehouseAdaptiveParametersDetails")
+	require.NotContains(t, parameters, "sdk.CreateWarehouseAdaptiveRequest")
+	// Sharing SDK types must not expose parameters from another variant's catalog scope.
+	require.NotContains(t, parameters, "fallback_warehouse")
+	require.NotContains(t, parameters, "FallbackWarehouse")
+
+	var lifecycleRendered bytes.Buffer
+	require.NoError(t, LifecycleTemplate.Execute(&lifecycleRendered, model))
+	require.Contains(t, lifecycleRendered.String(), "sdk.ToWarehouseParametersDetails(rawWarehouseAdaptiveParameters)")
+}
+
+func TestParameterHooks_nonVariantUsesOwnSdkNames(t *testing.T) {
+	model := ModelFromInputObject(ResourceObject{Object: ssotdefs.Warehouse}, nil, nil)
+	var rendered bytes.Buffer
+	require.NoError(t, ParametersTemplate.Execute(&rendered, model))
+	parameters := rendered.String()
+	require.Contains(t, parameters, "*sdk.WarehouseParametersDetails")
+	require.Contains(t, parameters, "sdk.ParameterTypeWarehouse")
+	require.Contains(t, parameters, "*sdk.CreateWarehouseRequest")
+	require.Contains(t, parameters, "*sdk.WarehouseSetRequest")
+	require.Contains(t, parameters, "*sdk.WarehouseUnsetRequest")
+}
+
+func TestParameterHooks_variantRetainsOwnCatalog(t *testing.T) {
+	model := ModelFromInputObject(ResourceObject{Object: ssot.Object{
+		Name:       "WarehouseInteractive",
+		NamePlural: "Warehouses",
+		IdType:     "AccountObjectIdentifier",
+		VariantOf:  &ssotdefs.Warehouse,
+		ResourceHooks: []ssot.ResourceHookOption{
+			ssot.WithParametersAttributesSchema(ssot.Generated()),
+			ssot.WithApplyParametersChanges(ssot.Generated()),
+			ssot.WithParametersCustomDiff(ssot.Generated()),
+		},
+	}}, nil, nil)
+	var rendered bytes.Buffer
+	require.NoError(t, ParametersTemplate.Execute(&rendered, model))
+	parameters := rendered.String()
+	// FALLBACK_WAREHOUSE belongs to the interactive variant, not the base warehouse.
+	require.Contains(t, parameters, `"fallback_warehouse": parameterSchemaFromDefinition(`)
+	require.Contains(t, parameters, `handleParameterUpdateWithMapping(d, "fallback_warehouse", &set.FallbackWarehouse, &unset.FallbackWarehouse, stringToAccountObjectIdentifier),`)
+	require.Contains(t, parameters, `IdentifierTypedParameterValueComputedIf("fallback_warehouse", parameters.FallbackWarehouse, sdk.ParameterTypeWarehouse),`)
+	require.Contains(t, parameters, "*sdk.WarehouseParametersDetails")
+	require.Contains(t, parameters, "*sdk.WarehouseSetRequest")
+}
+
 func TestParameterHooks_parametersOutputSetRetainsExtCall(t *testing.T) {
 	model := ResourceModel{
 		Name:  "Widget",

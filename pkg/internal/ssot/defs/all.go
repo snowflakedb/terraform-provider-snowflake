@@ -13,6 +13,7 @@ func All() []ssot.Object {
 		CatalogIntegrationObjectStorage,
 		CatalogIntegrationOpenCatalog,
 		Warehouse,
+		WarehouseAdaptive,
 		Alert,
 	}
 	for _, obj := range objs {

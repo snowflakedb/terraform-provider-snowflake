@@ -16,9 +16,16 @@ generators will follow. Ultimately, all the generators should default to using s
 - `Show` / `Describe` - output columns ([SHOW and DESCRIBE](#show-and-describe))
 - `Generators` - which generators may consume those lists ([Generators](#generators))
 - `ResourceHooks` - resource lifecycle/schema overrides (resource generator)
+- `SdkCreateRequestObjectName` - SDK CREATE request type-name stem when it differs from `Name`
+- `VariantOf` - base object whose SDK parameter details, SET/UNSET requests, and `ParameterType` names a variant shares; parameter catalog membership still comes from the variant's own `Name`
 - `SchemaStateUpgraders` - ordered upgrade function names ([Resource generator](#resource-generator))
 
 Identity (`Name`, `IdType`, ...) is separate from `Attributes`.
+
+`VariantOf` keeps SDK parameter naming simple because variants are expected to share their base object's SDK
+parameter types and usually the same parameter set. Different sets can already use a variant-specific catalog level
+derived from `Name`, as interactive warehouses do. If a variant needs a catalog level other than the one derived from
+its `Name`, extend SSOT with an explicit parameter-level override.
 
 ### Attribute
 

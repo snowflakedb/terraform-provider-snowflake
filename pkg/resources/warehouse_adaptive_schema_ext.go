@@ -1,13 +1,8 @@
 package resources
 
 import (
-	"fmt"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var warehouseAdaptiveIdentitySchemaExt = map[string]*schema.Schema{
@@ -19,38 +14,12 @@ var warehouseAdaptiveIdentitySchemaExt = map[string]*schema.Schema{
 	},
 }
 
-var warehouseAdaptiveAttributesSchemaExt = map[string]*schema.Schema{
-	"comment": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Specifies a comment for the adaptive warehouse.",
-	},
-	"warehouse_type": {
-		Type:        schema.TypeString,
-		Computed:    true,
-		Description: "Specifies the type for the adaptive warehouse. This field is used for checking external changes and recreating the resource if needed.",
-	},
-	"max_query_performance_level": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		ValidateDiagFunc: sdkValidation(sdk.ToMaxQueryPerformanceLevel),
-		DiffSuppressFunc: NormalizeAndCompare(sdk.ToMaxQueryPerformanceLevel),
-		Description:      fmt.Sprintf("Specifies the maximum query performance level for the adaptive warehouse. Determines the initial compute capacity. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllMaxQueryPerformanceLevels)),
-	},
-	"query_throughput_multiplier": {
-		Type:             schema.TypeInt,
-		Optional:         true,
-		Default:          IntDefault,
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
-		Description:      "Specifies the query throughput multiplier for the adaptive warehouse.",
-	},
-	"resource_monitor": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
-		DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("resource_monitor")),
-		Description:      relatedResourceDescription("Specifies the name of a resource monitor that is explicitly assigned to the adaptive warehouse.", resources.ResourceMonitor),
-	},
+// warehouseAdaptiveAttributesModificationExt marks warehouse_type computed.
+// The attribute generator emits Optional and has no Computed flag.
+func warehouseAdaptiveAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
+	s["warehouse_type"].Optional = false
+	s["warehouse_type"].Computed = true
+	return s
 }
 
 var warehouseAdaptiveShowOutputSchemaExt = map[string]*schema.Schema{
