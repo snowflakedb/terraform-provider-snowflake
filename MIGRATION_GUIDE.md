@@ -28,6 +28,20 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.22.x ➞ v2.23.0
 
+### *(bug fix)* `snowflake_resource_monitor` now saves configured values in state
+
+Previously, [`snowflake_resource_monitor`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/resource_monitor) left some optional fields empty in Terraform state when your configuration used the value Snowflake already had. A number could appear as `0`, and text could appear blank, although the value was present both in your configuration and in Snowflake. This affected:
+
+- `credit_quota`
+- `frequency`
+- `start_timestamp`
+- `end_timestamp`
+- `notify_triggers`
+- `suspend_trigger`
+- `suspend_immediate_trigger`
+
+The provider now saves these configured values in state. When they already match Snowflake, Snowflake is left unchanged. No configuration changes are required. After upgrading, the next `terraform plan` refreshes the resource monitor and the fields listed above show the configured values.
+
 ### *(bug fix)* Fixed task graph root resolution for quoted identifiers
 
 Previously, updating an existing child [`snowflake_task`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/task) during `terraform apply` could fail with:
