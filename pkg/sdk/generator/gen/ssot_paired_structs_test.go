@@ -20,6 +20,7 @@ func Test_PairedStructsFromColumns_matchesHandwrittenChain(t *testing.T) {
 	forApplication := ssot.Attribute{
 		Name:           "for_application",
 		Type:           ssot.AttrIdentifier,
+		IdentifierType: "AccountObjectIdentifier",
 		OptionalInShow: true,
 		OptionalInDb:   true,
 		ShowName:       "application",
@@ -158,34 +159,6 @@ func Test_PairedStructsFromColumns_panics(t *testing.T) {
 			},
 		},
 		{
-			name: "optional int",
-			call: func() {
-				minNodes := ssot.Attribute{Name: "min_nodes", Type: ssot.AttrInt, OptionalInDb: true}
-				ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &minNodes))
-			},
-		},
-		{
-			name: "optional bool",
-			call: func() {
-				autoResume := ssot.Attribute{Name: "auto_resume", Type: ssot.AttrBool, OptionalInShow: true, OptionalInDb: true}
-				ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &autoResume))
-			},
-		},
-		{
-			name: "optional bool with StoredAsText",
-			call: func() {
-				autoResume := ssot.Attribute{Name: "auto_resume", Type: ssot.AttrBool, OptionalInShow: true, OptionalInDb: true, StoredAsText: true}
-				ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &autoResume))
-			},
-		},
-		{
-			name: "optional enum",
-			call: func() {
-				stateAttr := ssot.Attribute{Name: "state", Type: ssot.AttrEnum, Enum: state, OptionalInDb: true}
-				ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &stateAttr))
-			},
-		},
-		{
 			name: "list whose element is not an enum",
 			call: func() {
 				names := ssot.Attribute{Name: "names", Type: ssot.AttrList, Elem: &ssot.Attribute{Type: ssot.AttrString}}
@@ -203,32 +176,49 @@ func Test_PairedStructsFromColumns_panics(t *testing.T) {
 				ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &families))
 			},
 		},
-		{
-			name: "identifier missing IdType",
-			call: func() {
-				application := ssot.Attribute{
-					Name:           "for_application",
-					Type:           ssot.AttrIdentifier,
-					OptionalInShow: true,
-					OptionalInDb:   true,
-					ShowName:       "application",
-				}
-				ShowPairedStructs(showPairedObject("", &application))
-			},
-		},
-		{
-			name: "enum missing Enum",
-			call: func() {
-				stateAttr := ssot.Attribute{Name: "state", Type: ssot.AttrEnum}
-				ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &stateAttr))
-			},
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			require.Panics(t, tt.call)
 		})
 	}
+}
+
+func Test_PairedStructsFromColumns_mapsWarehouseColumnShapes(t *testing.T) {
+	size := NewEnum("WarehouseSize", "WarehouseSizes", "XSMALL")
+	state := NewEnum("WarehouseState", "WarehouseStates", "STARTED")
+	optionalInt := ssot.Attribute{Name: "min_cluster_count", Type: ssot.AttrInt, OptionalInShow: true, OptionalInDb: true}
+	dbOnlyInt := ssot.Attribute{Name: "auto_suspend", Type: ssot.AttrInt, OptionalInDb: true}
+	optionalBool := ssot.Attribute{Name: "enable_query_acceleration", Type: ssot.AttrBool, OptionalInShow: true, OptionalInDb: true}
+	optionalBoolText := ssot.Attribute{Name: "flag", Type: ssot.AttrBool, OptionalInShow: true, OptionalInDb: true, StoredAsText: true}
+	optionalEnum := ssot.Attribute{Name: "size", Type: ssot.AttrEnum, Enum: size, OptionalInShow: true, OptionalInDb: true}
+	manualEnum := ssot.Attribute{Name: "state", Type: ssot.AttrEnum, Enum: state, ManualConvert: true}
+	manualOptionalEnum := ssot.Attribute{Name: "resource_constraint", Type: ssot.AttrEnum, Enum: size, OptionalInShow: true, OptionalInDb: true, ManualConvert: true}
+	available := ssot.Attribute{Name: "available", Type: ssot.AttrFloat}
+	monitor := ssot.Attribute{Name: "resource_monitor", Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier", CustomParser: "ParseAccountObjectIdentifierExcludingExplicitNullString"}
+	tables := ssot.Attribute{
+		Name:         "tables",
+		Type:         ssot.AttrList,
+		OptionalInDb: true,
+		CustomParser: "ParseCommaSeparatedSchemaObjectIdentifierArray",
+		Elem:         &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "SchemaObjectIdentifier"},
+	}
+
+	got := ShowPairedStructs(showPairedObject("AccountObjectIdentifier",
+		&optionalInt, &dbOnlyInt, &optionalBool, &optionalBoolText, &optionalEnum, &manualEnum, &manualOptionalEnum, &available, &monitor, &tables,
+	))
+	want := StructPair("fakesRow", "Fake").
+		OptionalNumber("min_cluster_count").
+		OptionalNumber("auto_suspend", WithRequiredInPlain()).
+		OptionalBool("enable_query_acceleration").
+		OptionalBoolFromText("flag").
+		OptionalEnum("size", size).
+		Field("state", "string", "WarehouseState", WithManualConvert()).
+		OptionalEnum("resource_constraint", size, WithManualConvert()).
+		Field("available", "string", "float64", WithManualConvert()).
+		Field("resource_monitor", "string", "AccountObjectIdentifier", WithCustomParser("ParseAccountObjectIdentifierExcludingExplicitNullString")).
+		Field("tables", "sql.NullString", "[]SchemaObjectIdentifier", WithCustomParser("ParseCommaSeparatedSchemaObjectIdentifierArray"))
+	require.Equal(t, want, got)
 }
 
 func showPairedObject(idType string, columns ...*ssot.Attribute) ssot.Object {

@@ -87,7 +87,7 @@ var CatalogIntegrationAwsGlueAttrs = struct {
 	Type:      ssot.Attribute{Name: "type", Type: ssot.AttrString, Readonly: true},
 	Category:  ssot.Attribute{Name: "category", Type: ssot.AttrString, Readonly: true},
 	CreatedOn: ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, Readonly: true},
-	Id:        ssot.Attribute{Name: "id", Type: ssot.AttrIdentifier, Readonly: true},
+	Id:        ssot.Attribute{Name: "id", Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier", Readonly: true},
 	CatalogSource: ssot.Attribute{
 		Name:        "catalog_source",
 		Type:        ssot.AttrEnum,

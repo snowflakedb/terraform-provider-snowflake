@@ -33,7 +33,8 @@ func (i *Interface) ShowOperationFromObject(obj ssot.Object) *Interface {
 // DescribeOperationFromObject adds DESCRIBE from obj.SdkConfig.
 // The field chain comes from DescribePairedStructs. The query struct is Describe, SQL,
 // Name, and ValidIdentifier on name.
-func (i *Interface) DescribeOperationFromObject(obj ssot.Object) *Interface {
+// helperStructs are extra query structs the describe operation names, such as a warehouse type variant.
+func (i *Interface) DescribeOperationFromObject(obj ssot.Object, helperStructs ...IntoField) *Interface {
 	cfg := obj.SdkConfig()
 	if !cfg.Describe {
 		panic(fmt.Sprintf("object %q is not enabled for SDK DESCRIBE generation", obj.Name))
@@ -43,6 +44,7 @@ func (i *Interface) DescribeOperationFromObject(obj ssot.Object) *Interface {
 		cfg.DescribeDoc,
 		DescribePairedStructs(obj),
 		describeQueryStructFromConfig(cfg),
+		helperStructs...,
 	)
 }
 

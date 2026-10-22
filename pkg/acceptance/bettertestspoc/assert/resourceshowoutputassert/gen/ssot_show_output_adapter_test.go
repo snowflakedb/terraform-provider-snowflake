@@ -55,6 +55,23 @@ func Test_ShowOutputAssertionsFromSsot_usesShowAndDescribeColumns(t *testing.T) 
 	require.Equal(t, []string{"ErrorCode"}, showOutputAssertionNames(desc))
 }
 
+func Test_showOutputDetailsFromSsot_passesSkipFields(t *testing.T) {
+	tables := ssot.Attribute{Name: "tables", Type: ssot.AttrString}
+	obj := ssot.Object{
+		Name:   "Widget",
+		IdType: "AccountObjectIdentifier",
+		Generators: []ssot.GeneratorOption{
+			ssot.WithShowOutputAssert(ssot.ShowOutputShow(ssot.ShowOutputShowSkipFields(&tables))),
+		},
+		Show: ssot.OutputSpec{Columns: []*ssot.Attribute{&tables}},
+	}
+
+	show := showOutputDetailsFromSsot(obj, false)
+	require.Equal(t, []string{"Tables"}, show.SkipFields)
+	model := ShowOutputAssertionsFromSsot(obj, false)
+	require.True(t, model.Attributes[0].SkipGeneration)
+}
+
 func Test_ShowOutputAssertionsFromSsot_refusesDisabledOrEmpty(t *testing.T) {
 	column := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
 	require.Panics(t, func() {

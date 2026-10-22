@@ -36,6 +36,16 @@ func Test_showResultSchemaDetailsFromSsot_usesShowAndDescribeColumns(t *testing.
 	}, showResultSchemaDetailsFromSsot(obj, true))
 }
 
+func Test_showResultSchemaDetailsFromSsot_collectsSchemaSkips(t *testing.T) {
+	actives := ssot.Attribute{Name: "actives", Type: ssot.AttrString, SkipInSchema: true}
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
+	obj := ssot.Object{Name: "Widget", Show: ssot.OutputSpec{Columns: []*ssot.Attribute{&name, &actives}}}
+
+	got := showResultSchemaDetailsFromSsot(obj, false)
+	require.Equal(t, []string{"actives"}, got.SkipFields)
+	require.Equal(t, []genhelpers.Field{ssot.ColumnField(obj, name), ssot.ColumnField(obj, actives)}, got.Fields)
+}
+
 func Test_showResultSchemaDetailsFromSsot_panicsOnNilColumn(t *testing.T) {
 	require.Panics(t, func() {
 		showResultSchemaDetailsFromSsot(ssot.Object{

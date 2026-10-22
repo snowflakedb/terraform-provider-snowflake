@@ -18,6 +18,7 @@ func main() {
 			WithImport("encoding/json").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config").
+			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk").
 			WithNamedImport("tfconfig", "github.com/hashicorp/terraform-plugin-testing/config"),
 		gen.ModelBuilderModels,
 		gen.WithPreamble,

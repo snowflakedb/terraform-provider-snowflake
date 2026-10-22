@@ -414,8 +414,8 @@ func Test_Warehouse_ToWarehouseTypeUserSettable(t *testing.T) {
 }
 
 func Test_Warehouse_Convert(t *testing.T) {
-	correctRow := func() warehouseDBRow {
-		return warehouseDBRow{
+	correctRow := func() warehousesRow {
+		return warehousesRow{
 			Size:      sql.NullString{String: string(WarehouseSizeXSmall), Valid: true},
 			Available: "100",
 		}

@@ -41,16 +41,30 @@ func objectAssertionDetailsFromSsot(obj ssot.Object, isDescribe bool) genhelpers
 		fields = append(fields, ssot.ColumnField(obj, *attr))
 	}
 	noIdentifiableObject := false
+	skip := objectAssertSkipNames(obj, g.ObjectAssert.ShowSkipFields)
 	if isDescribe {
 		noIdentifiableObject = g.ObjectAssert.NoIdentifiableObject
+		skip = objectAssertSkipNames(obj, g.ObjectAssert.DescribeSkipFields)
 	}
 	return genhelpers.SdkObjectDetails{
 		IdType:               "sdk." + obj.IdType,
 		IsDataSourceOutput:   isDescribe,
 		NoIdentifiableObject: noIdentifiableObject,
+		SkipFields:           skip,
 		StructDetails: genhelpers.StructDetails{
 			Name:   name,
 			Fields: fields,
 		},
 	}
+}
+
+func objectAssertSkipNames(obj ssot.Object, skipped []*ssot.Attribute) []string {
+	if len(skipped) == 0 {
+		return nil
+	}
+	names := make([]string, len(skipped))
+	for i, attr := range skipped {
+		names[i] = ssot.ColumnField(obj, *attr).Name
+	}
+	return names
 }

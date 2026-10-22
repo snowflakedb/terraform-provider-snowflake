@@ -34,6 +34,18 @@ func Test_ObjectGenerators_options(t *testing.T) {
 	g = ObjectGenerators(WithShowOutputAssert(ShowOutputDescribe()))
 	require.Equal(t, Generators{ShowOutputAssert: ShowOutputAssertGenerator{Describe: true}}, g)
 
+	tables := Attribute{Name: "tables"}
+	g = ObjectGenerators(WithShowOutputAssert(
+		ShowOutputShow(ShowOutputShowSkipFields(&tables)),
+		ShowOutputDescribe(ShowOutputDescribeSkipFields(&tables)),
+	))
+	require.Equal(t, Generators{ShowOutputAssert: ShowOutputAssertGenerator{
+		Show:               true,
+		Describe:           true,
+		ShowSkipFields:     []*Attribute{&tables},
+		DescribeSkipFields: []*Attribute{&tables},
+	}}, g)
+
 	g = ObjectGenerators(WithShowOutputAssert())
 	require.Equal(t, Generators{}, g)
 
@@ -48,6 +60,18 @@ func Test_ObjectGenerators_options(t *testing.T) {
 
 	g = ObjectGenerators(WithObjectAssert(ObjectAssertDescribe(WithNoIdentifiableObject())))
 	require.Equal(t, Generators{ObjectAssert: ObjectAssertGenerator{Describe: true, NoIdentifiableObject: true}}, g)
+
+	password := Attribute{Name: "password"}
+	g = ObjectGenerators(WithObjectAssert(
+		ObjectAssertShow(ObjectAssertShowSkipFields(&tables)),
+		ObjectAssertDescribe(ObjectAssertDescribeSkipFields(&password)),
+	))
+	require.Equal(t, Generators{ObjectAssert: ObjectAssertGenerator{
+		Show:               true,
+		Describe:           true,
+		ShowSkipFields:     []*Attribute{&tables},
+		DescribeSkipFields: []*Attribute{&password},
+	}}, g)
 
 	g = ObjectGenerators(WithObjectAssert())
 	require.Equal(t, Generators{}, g)

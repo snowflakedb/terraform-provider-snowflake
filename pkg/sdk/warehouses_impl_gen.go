@@ -13,8 +13,8 @@ import (
 
 var (
 	_ Warehouses                       = (*warehouses)(nil)
-	_ convertibleRow[Warehouse]        = new(warehouseDBRow)
-	_ convertibleRow[WarehouseDetails] = new(warehouseDetailsRow)
+	_ convertibleRow[Warehouse]        = new(warehousesRow)
+	_ convertibleRow[WarehouseDetails] = new(warehouseDescRow)
 )
 
 type warehouses struct {
@@ -52,11 +52,11 @@ func (v *warehouses) DropSafely(ctx context.Context, id AccountObjectIdentifier)
 
 func (v *warehouses) Show(ctx context.Context, request *ShowWarehouseRequest) ([]Warehouse, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[warehouseDBRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[warehousesRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[warehouseDBRow, Warehouse](dbRows)
+	return convertRows[warehousesRow, Warehouse](dbRows)
 }
 
 func (v *warehouses) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error) {
@@ -77,7 +77,7 @@ func (v *warehouses) Describe(ctx context.Context, id AccountObjectIdentifier) (
 	opts := &DescribeWarehouseOptions{
 		name: id,
 	}
-	result, err := validateAndQueryOne[warehouseDetailsRow](v.client, ctx, opts)
+	result, err := validateAndQueryOne[warehouseDescRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +231,7 @@ func (r *ShowWarehouseRequest) toOpts() *ShowWarehouseOptions {
 	return opts
 }
 
-func (r warehouseDBRow) convert() (*Warehouse, error) {
+func (r warehousesRow) convert() (*Warehouse, error) {
 	result := &Warehouse{
 		Name:       r.Name,
 		IsDefault:  r.IsDefault == "Y",
@@ -286,7 +286,7 @@ func (r *DescribeWarehouseRequest) toOpts() *DescribeWarehouseOptions {
 	return opts
 }
 
-func (r warehouseDetailsRow) convert() (*WarehouseDetails, error) {
+func (r warehouseDescRow) convert() (*WarehouseDetails, error) {
 	result := &WarehouseDetails{
 		CreatedOn: r.CreatedOn,
 		Name:      r.Name,

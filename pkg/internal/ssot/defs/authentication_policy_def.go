@@ -89,7 +89,8 @@ var AuthenticationPolicyAttrs = struct {
 			"For example, if `security_integrations` contains a SAML security integration, and `authentication_methods` contains OAUTH, then you cannot create the authentication policy. " +
 			"To allow all security integrations use `ALL` as parameter.",
 		Elem: &ssot.Attribute{
-			Type: ssot.AttrIdentifier,
+			Type:           ssot.AttrIdentifier,
+			IdentifierType: "AccountObjectIdentifier",
 		},
 	},
 	Comment: ssot.Attribute{

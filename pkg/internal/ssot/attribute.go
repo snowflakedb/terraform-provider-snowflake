@@ -29,12 +29,19 @@ type Attribute struct {
 	Max                   *int
 	RawDescription        bool
 	Enum                  *Enum
-	Elem                  *Attribute
-	OptionalInShow        bool // SHOW/DESCRIBE SDK field is a pointer; drives schema ToSchema nil-guards
-	OptionalInDb          bool // DB row is nullable; live for the SDK paired-struct db and plain kinds
-	StoredAsText          bool // the db column is text, and the plain kind stays the semantic type
-	ShowName              string
-	Readonly              bool
+	// ShowEnum is the SHOW/DESCRIBE enum when it differs from Enum.
+	// Empty uses Enum. Resource schema and model builders keep Enum.
+	ShowEnum       *Enum
+	Elem           *Attribute
+	OptionalInShow bool // SHOW/DESCRIBE SDK field is a pointer; drives schema ToSchema nil-guards
+	OptionalInDb   bool // DB row is nullable; live for the SDK paired-struct db and plain kinds
+	StoredAsText   bool // the db column is text, and the plain kind stays the semantic type
+	ManualConvert  bool // paired-struct convert() skips this column; ext additionalConvert fills it
+	CustomParser   string
+	SkipInSchema   bool   // column stays on the SDK struct and assertions, and is omitted from the public schema
+	IdentifierType string // identifier Go type without the sdk prefix; required when Type is AttrIdentifier
+	ShowName       string
+	Readonly       bool
 	// CreateMapping overrides the create helper deduced from Type, the schema default, and CreateOnly.
 	// Nil means deduce one. A required attribute with a nil mapping is a create constructor argument.
 	CreateMapping CreateMapping
@@ -80,6 +87,14 @@ func (a *Attribute) OutputKey() string {
 		return a.ShowName
 	}
 	return a.Name
+}
+
+// ColumnEnum is the enum used for a SHOW or DESCRIBE column.
+func (a Attribute) ColumnEnum() *Enum {
+	if a.ShowEnum != nil {
+		return a.ShowEnum
+	}
+	return a.Enum
 }
 
 // ConstructorGet is the d.Get expression for a required attribute with no CreateMapping.

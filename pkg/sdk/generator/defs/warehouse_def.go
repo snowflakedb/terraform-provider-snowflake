@@ -61,50 +61,6 @@ var warehouseStateEnum = g.NewEnum(
 	"SUSPENDED", "SUSPENDING", "STARTED", "RESIZING", "RESUMING", "ENABLED",
 )
 
-var warehousePairs = g.StructPair("warehouseDBRow", "Warehouse").
-	Text("name").
-	Field("state", "string", "WarehouseState", g.WithManualConvert()).
-	Field("type", "string", "WarehouseType", g.WithManualConvert()).
-	OptionalEnum("size", warehouseSizeEnum).
-	OptionalNumber("min_cluster_count").
-	OptionalNumber("max_cluster_count").
-	OptionalNumber("started_clusters").
-	OptionalNumber("running").
-	OptionalNumber("queued").
-	BoolFromText("is_default").
-	BoolFromText("is_current").
-	OptionalNumber("auto_suspend").
-	Bool("auto_resume").
-	Field("available", "string", "float64", g.WithManualConvert()).
-	Field("provisioning", "string", "float64", g.WithManualConvert()).
-	Field("quiescing", "string", "float64", g.WithManualConvert()).
-	Field("other", "string", "float64", g.WithManualConvert()).
-	Time("created_on").
-	Time("resumed_on").
-	Time("updated_on").
-	Text("owner").
-	Text("comment").
-	OptionalBool("enable_query_acceleration").
-	OptionalNumber("query_acceleration_max_scale_factor").
-	Field("resource_monitor", "string", "AccountObjectIdentifier", g.WithCustomParser("ParseAccountObjectIdentifierExcludingExplicitNullString")).
-	Text("actives").
-	Text("pendings").
-	Text("failed").
-	Text("suspended").
-	Text("uuid").
-	OptionalEnum("scaling_policy", scalingPolicyEnum).
-	OptionalText("owner_role_type", g.WithRequiredInPlain()).
-	OptionalEnum("resource_constraint", warehouseResourceConstraintEnum, g.WithManualConvert()).
-	Field("generation", "sql.NullString", "*WarehouseGeneration", g.WithManualConvert()).
-	OptionalEnum("max_query_performance_level", maxQueryPerformanceLevelEnum).
-	OptionalNumber("query_throughput_multiplier").
-	Field("tables", "sql.NullString", "[]SchemaObjectIdentifier", g.WithCustomParser("ParseCommaSeparatedSchemaObjectIdentifierArray"))
-
-var warehouseDetailsPairs = g.StructPair("warehouseDetailsRow", "WarehouseDetails").
-	Time("created_on").
-	Text("name").
-	Text("kind")
-
 func warehouseShowIdentity(ps *g.Plain) *g.Plain {
 	return ps.
 		Text("Name").
@@ -328,29 +284,9 @@ var warehousesDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperationWithPairedStructs(
-	"https://docs.snowflake.com/en/sql-reference/sql/show-warehouses",
-	warehousePairs,
-	g.NewQueryStruct("ShowWarehouses").
-		Show().
-		SQL("WAREHOUSES").
-		OptionalLike().
-		OptionalStartsWith().
-		OptionalLimitFrom(),
-	g.ShowByIDLikeFiltering,
-).DescribeOperationWithPairedStructs(
-	g.DescriptionMappingKindSingleValue,
-	"https://docs.snowflake.com/en/sql-reference/sql/desc-warehouse",
-	warehouseDetailsPairs,
-	g.NewQueryStruct("DescribeWarehouse").
-		Describe().
-		SQL("WAREHOUSE").
-		Name().
-		WithValidation(g.ValidIdentifier, "name"),
-	warehouseRegularDef,
-	warehouseAdaptiveDef,
-	warehouseInteractiveDef,
-).ShowParameters("AccountObjectIdentifier").
+).ShowOperationFromObject(ssotdefs.Warehouse).
+	DescribeOperationFromObject(ssotdefs.Warehouse, warehouseRegularDef, warehouseAdaptiveDef, warehouseInteractiveDef).
+	ShowParameters("AccountObjectIdentifier").
 	ShowParametersDetails(warehouseParameters...).
 	WithCustomInterfaceMethod(
 		"ShowByIDExperimental", "ShowByIDExperimental is a show by id function with improved performance (using starts with and limit)",

@@ -103,6 +103,7 @@ var ComputePoolAttrs = struct {
 	ForApplication: ssot.Attribute{
 		Name:           "for_application",
 		Type:           ssot.AttrIdentifier,
+		IdentifierType: "AccountObjectIdentifier",
 		ForceNew:       true,
 		Description:    "Specifies the Snowflake Native App name.",
 		OptionalInShow: true,

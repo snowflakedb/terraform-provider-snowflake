@@ -31,6 +31,7 @@ func ValidateObject(obj Object) {
 		}
 		seen[a.Name] = struct{}{}
 		attrs[a.Name] = struct{}{}
+		validateAttribute(obj, a)
 		validateSqlClauses(obj, a)
 		validateAttributeOptions(obj.Name, a, false)
 	}
@@ -57,7 +58,35 @@ func ValidateObject(obj Object) {
 	}
 	validateColumnList(obj, "SHOW", obj.Show.Columns, attrs)
 	validateColumnList(obj, "DESCRIBE", obj.Describe.Columns, attrs)
+	g := ObjectGenerators(obj.Generators...)
+	validateGeneratorSkips(obj, "object-assertion", "SHOW", g.ObjectAssert.Show, obj.Show.Columns, g.ObjectAssert.ShowSkipFields)
+	validateGeneratorSkips(obj, "object-assertion", "DESCRIBE", g.ObjectAssert.Describe, obj.Describe.Columns, g.ObjectAssert.DescribeSkipFields)
+	validateGeneratorSkips(obj, "show-output", "SHOW", g.ShowOutputAssert.Show, obj.Show.Columns, g.ShowOutputAssert.ShowSkipFields)
+	validateGeneratorSkips(obj, "show-output", "DESCRIBE", g.ShowOutputAssert.Describe, obj.Describe.Columns, g.ShowOutputAssert.DescribeSkipFields)
 	validateSchemaStateUpgraders(obj)
+}
+
+func validateAttribute(obj Object, a Attribute) {
+	if a.Type == AttrIdentifier && a.IdentifierType == "" {
+		name := a.Name
+		if name == "" {
+			name = "<elem>"
+		}
+		panic(fmt.Sprintf("object %q: identifier attribute %q has no IdentifierType", obj.Name, name))
+	}
+	if a.Type == AttrEnum {
+		enum := a.ColumnEnum()
+		if enum == nil || enum.Name == "" {
+			name := a.Name
+			if name == "" {
+				name = "<elem>"
+			}
+			panic(fmt.Sprintf("object %q: enum attribute %q has no Enum", obj.Name, name))
+		}
+	}
+	if a.Elem != nil {
+		validateAttribute(obj, *a.Elem)
+	}
 }
 
 func validateSchemaStateUpgraders(obj Object) {
@@ -334,5 +363,34 @@ func validateColumnList(obj Object, kind string, list []*Attribute, attrs map[st
 		}
 		seenKey[key] = struct{}{}
 		seenName[a.Name] = struct{}{}
+		validateAttribute(obj, *a)
+	}
+}
+
+func validateGeneratorSkips(obj Object, generator, kind string, enabled bool, columns []*Attribute, skipped []*Attribute) {
+	if len(skipped) == 0 {
+		return
+	}
+	if !enabled {
+		panic(fmt.Sprintf("object %q: %s %s skip fields are set while that side is off", obj.Name, kind, generator))
+	}
+	inColumns := make(map[*Attribute]struct{}, len(columns))
+	for _, col := range columns {
+		if col != nil {
+			inColumns[col] = struct{}{}
+		}
+	}
+	seen := make(map[*Attribute]struct{}, len(skipped))
+	for _, attr := range skipped {
+		if attr == nil {
+			panic(fmt.Sprintf("object %q: nil %s %s skip field", obj.Name, kind, generator))
+		}
+		if _, ok := inColumns[attr]; !ok {
+			panic(fmt.Sprintf("object %q: %s %s skip %q is not a %s column", obj.Name, kind, generator, attr.Name, kind))
+		}
+		if _, dup := seen[attr]; dup {
+			panic(fmt.Sprintf("object %q: duplicate %s %s skip %q", obj.Name, kind, generator, attr.Name))
+		}
+		seen[attr] = struct{}{}
 	}
 }

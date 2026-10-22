@@ -186,7 +186,7 @@ type ShowWarehouseOptions struct {
 	Limit      *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
 
-type warehouseDBRow struct {
+type warehousesRow struct {
 	Name                            string         `db:"name"`
 	State                           string         `db:"state"`
 	Type                            string         `db:"type"`
@@ -281,7 +281,7 @@ type DescribeWarehouseOptions struct {
 	name      AccountObjectIdentifier `ddl:"identifier"`
 }
 
-type warehouseDetailsRow struct {
+type warehouseDescRow struct {
 	CreatedOn time.Time `db:"created_on"`
 	Name      string    `db:"name"`
 	Kind      string    `db:"kind"`

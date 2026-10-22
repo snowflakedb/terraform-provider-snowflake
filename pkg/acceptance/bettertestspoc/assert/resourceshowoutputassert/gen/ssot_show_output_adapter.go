@@ -40,15 +40,31 @@ func showOutputDetailsFromSsot(obj ssot.Object, isDescribe bool) SdkObjectShowOu
 		}
 		fields = append(fields, ssot.ColumnField(obj, *attr))
 	}
+	skip := showOutputSkipNames(obj, g.ShowOutputAssert.ShowSkipFields)
+	if isDescribe {
+		skip = showOutputSkipNames(obj, g.ShowOutputAssert.DescribeSkipFields)
+	}
 	dataSource, _ := dataSourceMappingNormalized[name]
 	return SdkObjectShowOutputDetails{
 		dataSourceDef: &dataSource,
 		SdkObjectDetails: genhelpers.SdkObjectDetails{
 			IsDataSourceOutput: isDescribe,
+			SkipFields:         skip,
 			StructDetails: genhelpers.StructDetails{
 				Name:   name,
 				Fields: fields,
 			},
 		},
 	}
+}
+
+func showOutputSkipNames(obj ssot.Object, skipped []*ssot.Attribute) []string {
+	if len(skipped) == 0 {
+		return nil
+	}
+	names := make([]string, len(skipped))
+	for i, attr := range skipped {
+		names[i] = ssot.ColumnField(obj, *attr).Name
+	}
+	return names
 }

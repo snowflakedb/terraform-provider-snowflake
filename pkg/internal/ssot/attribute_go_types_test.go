@@ -25,6 +25,10 @@ func Test_AttributeGoTypes(t *testing.T) {
 	require.Equal(t, "bool", concrete)
 	require.Equal(t, "bool", underlying)
 
+	concrete, underlying = AttributeGoTypes(obj, Attribute{Name: "available", Type: AttrFloat})
+	require.Equal(t, "float64", concrete)
+	require.Equal(t, "float64", underlying)
+
 	concrete, underlying = AttributeGoTypes(obj, Attribute{Name: "is_default", Type: AttrBool, StoredAsText: true})
 	require.Equal(t, "bool", concrete)
 	require.Equal(t, "bool", underlying)
@@ -37,7 +41,7 @@ func Test_AttributeGoTypes(t *testing.T) {
 	require.Equal(t, "sdk.PoolState", concrete)
 	require.Equal(t, "string", underlying)
 
-	concrete, underlying = AttributeGoTypes(obj, Attribute{Name: "for_application", Type: AttrIdentifier})
+	concrete, underlying = AttributeGoTypes(obj, Attribute{Name: "for_application", Type: AttrIdentifier, IdentifierType: "AccountObjectIdentifier"})
 	require.Equal(t, "sdk.AccountObjectIdentifier", concrete)
 	require.Equal(t, "struct", underlying)
 
@@ -60,7 +64,7 @@ func Test_AttributeGoTypes(t *testing.T) {
 	concrete, underlying = AttributeGoTypes(schemaObj, Attribute{
 		Name: "refs",
 		Type: AttrList,
-		Elem: &Attribute{Type: AttrIdentifier},
+		Elem: &Attribute{Type: AttrIdentifier, IdentifierType: "SchemaObjectIdentifier"},
 	})
 	require.Equal(t, "[]sdk.SchemaObjectIdentifier", concrete)
 	require.Equal(t, "slice", underlying)
@@ -90,9 +94,9 @@ func Test_ColumnField_matchesExtractedStructField(t *testing.T) {
 	require.Equal(t, genhelpers.Field{Name: "State", ConcreteType: "*sdk.PoolState", UnderlyingType: "*string"},
 		ColumnField(obj, Attribute{Name: "state", Type: AttrEnum, Enum: stateEnum, OptionalInShow: true}))
 	require.Equal(t, genhelpers.Field{Name: "Application", ConcreteType: "*sdk.AccountObjectIdentifier", UnderlyingType: "*struct"},
-		ColumnField(obj, Attribute{Name: "for_application", Type: AttrIdentifier, OptionalInShow: true, ShowName: "application"}))
+		ColumnField(obj, Attribute{Name: "for_application", Type: AttrIdentifier, IdentifierType: "AccountObjectIdentifier", OptionalInShow: true, ShowName: "application"}))
 	require.Equal(t, genhelpers.Field{Name: "Owner", ConcreteType: "sdk.AccountObjectIdentifier", UnderlyingType: "struct"},
-		ColumnField(obj, Attribute{Name: "owner", Type: AttrIdentifier}))
+		ColumnField(obj, Attribute{Name: "owner", Type: AttrIdentifier, IdentifierType: "AccountObjectIdentifier"}))
 	require.Equal(t, genhelpers.Field{Name: "Names", ConcreteType: "[]string", UnderlyingType: "slice"},
 		ColumnField(obj, Attribute{Name: "names", Type: AttrSet, Elem: &Attribute{Type: AttrString}}))
 	require.Equal(t, genhelpers.Field{Name: "Names", ConcreteType: "[]string", UnderlyingType: "slice"},
@@ -100,24 +104,27 @@ func Test_ColumnField_matchesExtractedStructField(t *testing.T) {
 	require.Equal(t, genhelpers.Field{Name: "Counts", ConcreteType: "[]int", UnderlyingType: "slice"},
 		ColumnField(obj, Attribute{Name: "counts", Type: AttrList, Elem: &Attribute{Type: AttrInt}}))
 	require.Equal(t, genhelpers.Field{Name: "Refs", ConcreteType: "[]sdk.SchemaObjectIdentifier", UnderlyingType: "slice"},
-		ColumnField(schemaObj, Attribute{Name: "refs", Type: AttrList, Elem: &Attribute{Type: AttrIdentifier}}))
+		ColumnField(schemaObj, Attribute{Name: "refs", Type: AttrList, Elem: &Attribute{Type: AttrIdentifier, IdentifierType: "SchemaObjectIdentifier"}}))
 	require.Equal(t, genhelpers.Field{Name: "Names", ConcreteType: "*[]string", UnderlyingType: "*slice"},
 		ColumnField(obj, Attribute{Name: "names", Type: AttrList, OptionalInShow: true, Elem: &Attribute{Type: AttrString}}))
 	require.Equal(t, genhelpers.Field{Name: "DroppedOn", ConcreteType: "time.Time", UnderlyingType: "struct"},
 		ColumnField(obj, Attribute{Name: "dropped_on", Type: AttrTime, OptionalInDb: true}))
 	require.Equal(t, genhelpers.Field{Name: "IsDefault", ConcreteType: "bool", UnderlyingType: "bool"},
 		ColumnField(obj, Attribute{Name: "is_default", Type: AttrBool, StoredAsText: true}))
+	showEnum := NewEnum("WarehouseType", "WarehouseTypes", "STANDARD")
+	require.Equal(t, genhelpers.Field{Name: "Type", ConcreteType: "sdk.WarehouseType", UnderlyingType: "string"},
+		ColumnField(obj, Attribute{
+			Name:     "warehouse_type",
+			Type:     AttrEnum,
+			Enum:     NewEnum("WarehouseTypeUserSettable", "", "STANDARD"),
+			ShowName: "type",
+			ShowEnum: showEnum,
+		}))
 }
 
 func Test_AttributeGoTypes_panics(t *testing.T) {
 	obj := Object{Name: "Pool", IdType: "AccountObjectIdentifier"}
 
-	require.Panics(t, func() {
-		AttributeGoTypes(obj, Attribute{Name: "state", Type: AttrEnum})
-	})
-	require.Panics(t, func() {
-		AttributeGoTypes(Object{Name: "Pool"}, Attribute{Name: "owner", Type: AttrIdentifier})
-	})
 	require.Panics(t, func() {
 		AttributeGoTypes(obj, Attribute{Name: "names", Type: AttrList})
 	})

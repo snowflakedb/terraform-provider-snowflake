@@ -58,7 +58,7 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 		ForceNew:    true,
 		Description: "Specifies the default Open Catalog namespace for all Iceberg tables that you associate with the catalog integration.",
 	},
-	Id: ssot.Attribute{Name: "id", Type: ssot.AttrIdentifier, Readonly: true},
+	Id: ssot.Attribute{Name: "id", Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier", Readonly: true},
 	CatalogSource: ssot.Attribute{
 		Name:        "catalog_source",
 		Type:        ssot.AttrEnum,

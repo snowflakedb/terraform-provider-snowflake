@@ -17,6 +17,22 @@ type Enum struct {
 	// explicitNames maps a SQL value to a constant suffix supplied by WithValue.
 	// The suffix is concatenated as-is, without SnakeCaseToCamel.
 	explicitNames map[string]string
+	// SdkType is the sdk Go type when it differs from Name.
+	// Empty uses Name. Resource schema validation still calls sdk.To<Name>.
+	SdkType string
+}
+
+// WithSdkType sets the sdk Go type when Name is only the sdk.To<Name> parser suffix.
+func (e *Enum) WithSdkType(sdkType string) *Enum {
+	e.SdkType = sdkType
+	return e
+}
+
+func (e *Enum) sdkTypeName() string {
+	if e.SdkType != "" {
+		return e.SdkType
+	}
+	return e.Name
 }
 
 func NewEnum(name, namePlural string, values ...string) *Enum {

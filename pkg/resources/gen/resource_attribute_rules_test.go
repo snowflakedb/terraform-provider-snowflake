@@ -46,6 +46,21 @@ func Test_applyResourceAttributeRules_optionalBoolRawDescription(t *testing.T) {
 	require.Equal(t, `"Specifies whether the compute pool is created initially in the suspended state."`, got.DescriptionExpr)
 }
 
+func Test_applyResourceAttributeRules_nativeBoolStaysTypeBool(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:        "initially_suspended",
+		Type:        ssot.AttrBool,
+		NativeBool:  true,
+		Description: "Specifies whether the warehouse is created initially in the suspended state.",
+	}, resourceAttributeRuleContext{})
+
+	require.Equal(t, SchemaTypeBool, got.TfType)
+	require.True(t, got.Optional)
+	require.Empty(t, got.DefaultExpr)
+	require.Empty(t, got.ValidateDiagExpr)
+	require.Equal(t, `"Specifies whether the warehouse is created initially in the suspended state."`, got.DescriptionExpr)
+}
+
 func Test_applyResourceAttributeRules_sqlStatementNormalizes(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:         "condition",

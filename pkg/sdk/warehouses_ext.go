@@ -274,7 +274,7 @@ func (v *warehouses) clearSessionWarehouse(ctx context.Context) error {
 }
 
 // additionalConvert handles manual field conversions that the generator cannot express.
-func (r warehouseDBRow) additionalConvert(wh *Warehouse) error {
+func (r warehousesRow) additionalConvert(wh *Warehouse) error {
 	// State and Type - simple casts from string
 	wh.State = WarehouseState(r.State)
 	wh.Type = WarehouseType(r.Type)
@@ -429,6 +429,10 @@ func (w *Warehouse) IsInteractiveWarehouse() bool {
 }
 
 func (v *WarehouseRegular) ID() AccountObjectIdentifier {
+	return NewAccountObjectIdentifier(v.Name)
+}
+
+func (v *WarehouseDetails) ID() AccountObjectIdentifier {
 	return NewAccountObjectIdentifier(v.Name)
 }
 

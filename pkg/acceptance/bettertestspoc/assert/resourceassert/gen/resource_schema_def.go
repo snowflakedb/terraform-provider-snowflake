@@ -514,10 +514,6 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.View().Schema,
 	},
 	{
-		name:   "Warehouse",
-		schema: resources.Warehouse().Schema,
-	},
-	{
 		name:   "WarehouseAdaptive",
 		schema: resources.WarehouseAdaptive().Schema,
 	},

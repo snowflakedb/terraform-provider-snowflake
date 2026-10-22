@@ -117,9 +117,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.User{}},
 	{ObjectStruct: sdk.ProgrammaticAccessToken{}},
 	{ObjectStruct: sdk.View{}},
-	// Union of all SHOW WAREHOUSES columns (AllDetails analog).
-	// Keep omitted: actives / pendings / failed / suspended / uuid (Snowflake: internal use, will be removed).
-	{ObjectStruct: sdk.Warehouse{}, SkipFields: []string{"actives", "pendings", "failed", "suspended", "uuid"}},
 	{ObjectStruct: sdk.WarehouseAdaptive{}},
 	{ObjectStruct: sdk.WarehouseInteractive{}},
 	{ObjectStruct: sdk.WarehouseRegular{}},
@@ -331,20 +328,27 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.UserDetails{}, IsDescribe: true, SkipFields: []string{"password"}},
 	// ManualFields `check`: SDK is *bool; public describe_output is TypeString.
 	{ObjectStruct: sdk.ViewDetails{}, IsDescribe: true, ManualFields: []string{"check"}},
-	{ObjectStruct: sdk.WarehouseDetails{}, IsDescribe: true},
 }
 
 func GetShowResultSchemaDetails() []ShowResultSchemaDetails {
 	ssotDetails := ssotShowResultSchemaDetails()
+	plugged := make(map[string]struct{}, len(ssotDetails))
+	for _, details := range ssotDetails {
+		plugged[details.Name] = struct{}{}
+	}
 	allDetails := make([]ShowResultSchemaDetails, 0, len(SdkShowResultStructs)+len(ssotDetails))
 	for _, d := range SdkShowResultStructs {
+		extracted := genhelpers.ExtractStructDetails(d.ObjectStruct)
+		if _, ok := plugged[extracted.Name]; ok {
+			continue
+		}
 		allDetails = append(allDetails, ShowResultSchemaDetails{
 			IsDescribe:      d.IsDescribe,
 			SkipFields:      d.SkipFields,
 			ManualFields:    d.ManualFields,
 			TypeOverrides:   d.TypeOverrides,
 			UsedAsListEntry: d.UsedAsListEntry,
-			StructDetails:   genhelpers.ExtractStructDetails(d.ObjectStruct),
+			StructDetails:   extracted,
 		})
 	}
 	allDetails = append(allDetails, ssotDetails...)

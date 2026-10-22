@@ -16,18 +16,14 @@ func AttributeGoTypes(obj Object, attr Attribute) (concrete, underlying string) 
 		return "int", "int"
 	case AttrBool:
 		return "bool", "bool"
+	case AttrFloat:
+		return "float64", "float64"
 	case AttrTime:
 		return "time.Time", "struct"
 	case AttrIdentifier:
-		if obj.IdType == "" {
-			panic(fmt.Sprintf("object %q: identifier attribute %q has no IdType", obj.Name, attr.Name))
-		}
-		return "sdk." + obj.IdType, "struct"
+		return "sdk." + attr.IdentifierType, "struct"
 	case AttrEnum:
-		if attr.Enum == nil || attr.Enum.Name == "" {
-			panic(fmt.Sprintf("object %q: enum attribute %q has no Enum", obj.Name, attr.Name))
-		}
-		return "sdk." + attr.Enum.Name, "string"
+		return "sdk." + attr.ColumnEnum().Name, "string"
 	case AttrList, AttrSet:
 		if attr.Elem == nil {
 			panic(fmt.Sprintf("object %q: collection attribute %q has no Elem", obj.Name, attr.Name))

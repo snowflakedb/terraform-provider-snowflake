@@ -73,17 +73,25 @@ func appendPairedColumn(pairs *PairedStructs, obj ssot.Object, attr ssot.Attribu
 		}
 	case ssot.AttrInt:
 		if attr.OptionalInShow || attr.OptionalInDb {
-			panicPairedColumn(obj, attr, "an optional int has no paired struct mapping")
+			return pairs.OptionalNumber(key, plainRequiredOpt(attr)...)
 		}
 		return pairs.Number(key)
 	case ssot.AttrBool:
 		if attr.OptionalInShow || attr.OptionalInDb {
-			panicPairedColumn(obj, attr, "an optional bool has no paired struct mapping")
+			if attr.StoredAsText {
+				return pairs.OptionalBoolFromText(key, plainRequiredOpt(attr)...)
+			}
+			return pairs.OptionalBool(key, plainRequiredOpt(attr)...)
 		}
 		if attr.StoredAsText {
 			return pairs.BoolFromText(key)
 		}
 		return pairs.Bool(key)
+	case ssot.AttrFloat:
+		if attr.OptionalInShow || attr.OptionalInDb {
+			panicPairedColumn(obj, attr, "an optional float has no paired struct mapping")
+		}
+		return pairs.Field(key, "string", "float64", WithManualConvert())
 	case ssot.AttrTime:
 		switch {
 		case !attr.OptionalInShow && !attr.OptionalInDb:
@@ -94,22 +102,32 @@ func appendPairedColumn(pairs *PairedStructs, obj ssot.Object, attr ssot.Attribu
 			panicPairedColumn(obj, attr, "this time optionality has no paired struct mapping")
 		}
 	case ssot.AttrEnum:
+		enum := attr.ColumnEnum()
 		if attr.OptionalInShow || attr.OptionalInDb {
-			panicPairedColumn(obj, attr, "an optional enum has no paired struct mapping")
+			opts := plainRequiredOpt(attr)
+			if attr.ManualConvert {
+				opts = append(opts, WithManualConvert())
+			}
+			return pairs.OptionalEnum(key, enum, opts...)
 		}
-		if attr.Enum == nil {
-			panicPairedColumn(obj, attr, "enum has no Enum")
+		if attr.ManualConvert {
+			return pairs.Field(key, "string", enum.Kind(), WithManualConvert())
 		}
-		return pairs.Enum(key, attr.Enum)
+		return pairs.Enum(key, enum)
 	case ssot.AttrIdentifier:
+		kind := attr.IdentifierType
+		if attr.CustomParser != "" && !attr.OptionalInShow && !attr.OptionalInDb {
+			return pairs.Field(key, "string", kind, WithCustomParser(attr.CustomParser))
+		}
 		if !attr.OptionalInShow || !attr.OptionalInDb {
 			panicPairedColumn(obj, attr, "an identifier maps only when it is optional in SHOW and in the DB row")
 		}
-		if obj.IdType == "" {
-			panicPairedColumn(obj, attr, "identifier has no IdType")
-		}
-		return pairs.Field(key, "sql.NullString", "*"+obj.IdType, WithPlainFieldName(sqlToFieldName(key, true)))
+		return pairs.Field(key, "sql.NullString", "*"+kind, WithPlainFieldName(sqlToFieldName(key, true)))
 	case ssot.AttrList:
+		if attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier && attr.CustomParser != "" && !attr.OptionalInShow && attr.OptionalInDb {
+			kind := attr.Elem.IdentifierType
+			return pairs.Field(key, "sql.NullString", "[]"+kind, WithCustomParser(attr.CustomParser))
+		}
 		if attr.OptionalInShow || attr.OptionalInDb || attr.Elem == nil || attr.Elem.Type != ssot.AttrEnum {
 			panicPairedColumn(obj, attr, "only a list of enum maps to StringList")
 		}
@@ -120,6 +138,13 @@ func appendPairedColumn(pairs *PairedStructs, obj ssot.Object, attr ssot.Attribu
 		panicPairedColumn(obj, attr, fmt.Sprintf("type %q has no paired struct mapping", attr.Type))
 	}
 	return pairs
+}
+
+func plainRequiredOpt(attr ssot.Attribute) []PairedFieldOption {
+	if !attr.OptionalInShow && attr.OptionalInDb {
+		return []PairedFieldOption{WithRequiredInPlain()}
+	}
+	return nil
 }
 
 func panicPairedColumn(obj ssot.Object, attr ssot.Attribute, reason string) {

@@ -82,6 +82,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.StorageIntegrationAllDetails{}):  {"StorageIntegrations"},
 	normalized(sdk.StorageLifecyclePolicyDetails{}): {"StorageLifecyclePolicies"},
 	normalized(sdk.UserDetails{}):                   {"Users"},
+	normalized(sdk.WarehouseDetails{}):              {"Warehouses"},
 }
 
 type dataSourceDef struct {

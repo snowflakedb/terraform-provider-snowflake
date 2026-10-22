@@ -54,6 +54,39 @@ func Test_SnowflakeObjectAssertionsFromSsot_usesShowAndDescribeColumns(t *testin
 	require.Equal(t, []string{"ErrorCode"}, fieldAssertionNames(desc))
 }
 
+func Test_objectAssertionDetailsFromSsot_passesSkipFields(t *testing.T) {
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	tables := ssot.Attribute{Name: "tables", Type: ssot.AttrString}
+	password := ssot.Attribute{Name: "password", Type: ssot.AttrString}
+	obj := ssot.Object{
+		Name:   "Widget",
+		IdType: "AccountObjectIdentifier",
+		Generators: []ssot.GeneratorOption{
+			ssot.WithObjectAssert(
+				ssot.ObjectAssertShow(ssot.ObjectAssertShowSkipFields(&tables)),
+				ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeSkipFields(&password)),
+			),
+		},
+		Show:     ssot.OutputSpec{Columns: []*ssot.Attribute{&comment, &tables}},
+		Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&password}},
+	}
+
+	show := objectAssertionDetailsFromSsot(obj, false)
+	require.Equal(t, []string{"Tables"}, show.SkipFields)
+	require.Nil(t, objectAssertionDetailsFromSsot(ssot.Object{
+		Name:       "Widget",
+		IdType:     "AccountObjectIdentifier",
+		Generators: []ssot.GeneratorOption{ssot.WithObjectAssert(ssot.ObjectAssertShow())},
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+	}, false).SkipFields)
+
+	desc := objectAssertionDetailsFromSsot(obj, true)
+	require.Equal(t, []string{"Password"}, desc.SkipFields)
+	model := SnowflakeObjectAssertionsFromSsot(obj, false)
+	require.False(t, model.Fields[0].SkipGeneration)
+	require.True(t, model.Fields[1].SkipGeneration)
+}
+
 func Test_objectAssertionDetailsFromSsot_passesNoIdentifiableObject(t *testing.T) {
 	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
 	obj := ssot.Object{

@@ -46,6 +46,7 @@ var WarehouseAdaptiveAttrs = struct {
 	ResourceMonitor: ssot.Attribute{
 		Name:            "resource_monitor",
 		Type:            ssot.AttrIdentifier,
+		IdentifierType:  "AccountObjectIdentifier",
 		Description:     "Specifies the name of a resource monitor that is explicitly assigned to the adaptive warehouse.",
 		RelatedResource: &ResourceMonitor,
 		DiffSuppress:    ssot.SuppressShow,

@@ -3,11 +3,12 @@ package defs
 import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 
 // WarehouseTypeUserSettable excludes ADAPTIVE and INTERACTIVE. Those types are separate resources.
+// SdkType is WarehouseType: sdk.ToWarehouseTypeUserSettable returns that type.
 var WarehouseTypeUserSettable = ssot.NewEnum(
 	"WarehouseTypeUserSettable",
 	"WarehouseTypesUserSettable",
 	"STANDARD", "SNOWPARK-OPTIMIZED",
-)
+).WithSdkType("WarehouseType")
 
 var WarehouseSize = ssot.NewEnum(
 	"WarehouseSize", "WarehouseSizes",
@@ -35,9 +36,23 @@ var WarehouseGeneration = ssot.NewEnum(
 	"1", "2",
 )
 
+// WarehouseType is the SHOW type, including ADAPTIVE and INTERACTIVE.
+// WarehouseTypeUserSettable is the regular resource's writable enum.
+var WarehouseType = ssot.NewEnum(
+	"WarehouseType", "WarehouseTypes",
+	"STANDARD", "SNOWPARK-OPTIMIZED", "ADAPTIVE", "INTERACTIVE",
+)
+
+var WarehouseState = ssot.NewEnum(
+	"WarehouseState", "WarehouseStates",
+	"SUSPENDED", "SUSPENDING", "STARTED", "RESIZING", "RESUMING", "ENABLED",
+)
+
 // WarehouseAttrs holds reusable warehouse fields.
 //
+// initially_suspended is a create-only native bool (CreateOnly and NativeBool). It is not a SHOW column.
 // show_output stays on schemas.ShowWarehouseRegularSchema. The resource has no describe_output.
+// DESCRIBE columns match sdk.WarehouseDetails.
 var WarehouseAttrs = struct {
 	WarehouseType                   ssot.Attribute
 	WarehouseSize                   ssot.Attribute
@@ -53,15 +68,44 @@ var WarehouseAttrs = struct {
 	QueryAccelerationMaxScaleFactor ssot.Attribute
 	ResourceConstraint              ssot.Attribute
 	Generation                      ssot.Attribute
+	Name                            ssot.Attribute
+	State                           ssot.Attribute
+	StartedClusters                 ssot.Attribute
+	Running                         ssot.Attribute
+	Queued                          ssot.Attribute
+	IsDefault                       ssot.Attribute
+	IsCurrent                       ssot.Attribute
+	Available                       ssot.Attribute
+	Provisioning                    ssot.Attribute
+	Quiescing                       ssot.Attribute
+	Other                           ssot.Attribute
+	CreatedOn                       ssot.Attribute
+	ResumedOn                       ssot.Attribute
+	UpdatedOn                       ssot.Attribute
+	Owner                           ssot.Attribute
+	Actives                         ssot.Attribute
+	Pendings                        ssot.Attribute
+	Failed                          ssot.Attribute
+	Suspended                       ssot.Attribute
+	Uuid                            ssot.Attribute
+	OwnerRoleType                   ssot.Attribute
+	MaxQueryPerformanceLevel        ssot.Attribute
+	QueryThroughputMultiplier       ssot.Attribute
+	Tables                          ssot.Attribute
+	Kind                            ssot.Attribute
 }{
 	WarehouseType: ssot.Attribute{
 		Name:                  "warehouse_type",
 		Type:                  ssot.AttrEnum,
 		Description:           "Specifies warehouse type.",
 		AdditionalDescription: "Warehouse needs to be suspended to change its type. Provider will handle automatic suspension and resumption if needed.",
-		Enum:                  WarehouseTypeUserSettable,
-		ShowName:              "type",
-		DiffSuppress:          ssot.SuppressShow,
+		// Resource validation stays WarehouseTypeUserSettable (STANDARD, SNOWPARK-OPTIMIZED).
+		// SHOW type is WarehouseType, which also includes ADAPTIVE and INTERACTIVE.
+		Enum:          WarehouseTypeUserSettable,
+		ShowName:      "type",
+		ShowEnum:      WarehouseType,
+		ManualConvert: true,
+		DiffSuppress:  ssot.SuppressShow,
 	},
 	WarehouseSize: ssot.Attribute{
 		Name:                  "warehouse_size",
@@ -71,34 +115,44 @@ var WarehouseAttrs = struct {
 		Enum:                  WarehouseSize,
 		ShowName:              "size",
 		DiffSuppress:          ssot.SuppressShow,
+		OptionalInShow:        true,
+		OptionalInDb:          true,
 	},
 	MaxClusterCount: ssot.Attribute{
-		Name:         "max_cluster_count",
-		Type:         ssot.AttrInt,
-		Description:  "Specifies the maximum number of server clusters for the warehouse.",
-		Min:          new(1),
-		DiffSuppress: ssot.SuppressShow,
+		Name:           "max_cluster_count",
+		Type:           ssot.AttrInt,
+		Description:    "Specifies the maximum number of server clusters for the warehouse.",
+		Min:            new(1),
+		DiffSuppress:   ssot.SuppressShow,
+		OptionalInShow: true,
+		OptionalInDb:   true,
 	},
 	MinClusterCount: ssot.Attribute{
-		Name:         "min_cluster_count",
-		Type:         ssot.AttrInt,
-		Description:  "Specifies the minimum number of server clusters for the warehouse (only applies to multi-cluster warehouses).",
-		Min:          new(1),
-		DiffSuppress: ssot.SuppressShow,
+		Name:           "min_cluster_count",
+		Type:           ssot.AttrInt,
+		Description:    "Specifies the minimum number of server clusters for the warehouse (only applies to multi-cluster warehouses).",
+		Min:            new(1),
+		DiffSuppress:   ssot.SuppressShow,
+		OptionalInShow: true,
+		OptionalInDb:   true,
 	},
 	ScalingPolicy: ssot.Attribute{
-		Name:         "scaling_policy",
-		Type:         ssot.AttrEnum,
-		Description:  "Specifies the policy for automatically starting and shutting down clusters in a multi-cluster warehouse running in Auto-scale mode.",
-		Enum:         ScalingPolicy,
-		DiffSuppress: ssot.SuppressShow,
+		Name:           "scaling_policy",
+		Type:           ssot.AttrEnum,
+		Description:    "Specifies the policy for automatically starting and shutting down clusters in a multi-cluster warehouse running in Auto-scale mode.",
+		Enum:           ScalingPolicy,
+		DiffSuppress:   ssot.SuppressShow,
+		OptionalInShow: true,
+		OptionalInDb:   true,
 	},
 	AutoSuspend: ssot.Attribute{
-		Name:         "auto_suspend",
-		Type:         ssot.AttrInt,
-		Description:  "Specifies the number of seconds of inactivity after which a warehouse is automatically suspended.",
-		Min:          new(0),
-		DiffSuppress: ssot.SuppressShow,
+		Name:           "auto_suspend",
+		Type:           ssot.AttrInt,
+		Description:    "Specifies the number of seconds of inactivity after which a warehouse is automatically suspended.",
+		Min:            new(0),
+		DiffSuppress:   ssot.SuppressShow,
+		OptionalInShow: true,
+		OptionalInDb:   true,
 	},
 	AutoResume: ssot.Attribute{
 		Name:         "auto_resume",
@@ -116,7 +170,9 @@ var WarehouseAttrs = struct {
 	ResourceMonitor: ssot.Attribute{
 		Name:            "resource_monitor",
 		Type:            ssot.AttrIdentifier,
+		IdentifierType:  "AccountObjectIdentifier",
 		Description:     "Specifies the name of a resource monitor that is explicitly assigned to the warehouse.",
+		CustomParser:    "ParseAccountObjectIdentifierExcludingExplicitNullString",
 		RelatedResource: &ResourceMonitor,
 		DiffSuppress:    ssot.SuppressShow,
 	},
@@ -126,18 +182,22 @@ var WarehouseAttrs = struct {
 		Description: "Specifies a comment for the warehouse.",
 	},
 	EnableQueryAcceleration: ssot.Attribute{
-		Name:         "enable_query_acceleration",
-		Type:         ssot.AttrBool,
-		Description:  "Specifies whether to enable the query acceleration service for queries that rely on this warehouse for compute resources.",
-		DiffSuppress: ssot.SuppressShow,
+		Name:           "enable_query_acceleration",
+		Type:           ssot.AttrBool,
+		Description:    "Specifies whether to enable the query acceleration service for queries that rely on this warehouse for compute resources.",
+		DiffSuppress:   ssot.SuppressShow,
+		OptionalInShow: true,
+		OptionalInDb:   true,
 	},
 	QueryAccelerationMaxScaleFactor: ssot.Attribute{
-		Name:         "query_acceleration_max_scale_factor",
-		Type:         ssot.AttrInt,
-		Description:  "Specifies the maximum scale factor for leasing compute resources for query acceleration. The scale factor is used as a multiplier based on warehouse size.",
-		Min:          new(0),
-		Max:          new(100),
-		DiffSuppress: ssot.SuppressShow,
+		Name:           "query_acceleration_max_scale_factor",
+		Type:           ssot.AttrInt,
+		Description:    "Specifies the maximum scale factor for leasing compute resources for query acceleration. The scale factor is used as a multiplier based on warehouse size.",
+		Min:            new(0),
+		Max:            new(100),
+		DiffSuppress:   ssot.SuppressShow,
+		OptionalInShow: true,
+		OptionalInDb:   true,
 	},
 	ResourceConstraint: ssot.Attribute{
 		Name:                  "resource_constraint",
@@ -146,6 +206,9 @@ var WarehouseAttrs = struct {
 		AdditionalDescription: "Gen2 warehouses are not available in all regions. Please consult the [Snowflake Gen2 Region Availability documentation](https://docs.snowflake.com/en/user-guide/warehouses-gen2#region-availability) prior to configuration.",
 		Enum:                  WarehouseResourceConstraint,
 		DiffSuppress:          ssot.SuppressShow,
+		OptionalInShow:        true,
+		OptionalInDb:          true,
+		ManualConvert:         true,
 	},
 	Generation: ssot.Attribute{
 		Name:                  "generation",
@@ -154,7 +217,41 @@ var WarehouseAttrs = struct {
 		AdditionalDescription: "Gen2 warehouses are not available in all regions. Please consult the [Snowflake Gen2 Region Availability documentation](https://docs.snowflake.com/en/user-guide/warehouses-gen2#region-availability) prior to configuration.",
 		Enum:                  WarehouseGeneration,
 		DiffSuppress:          ssot.SuppressShow,
+		OptionalInShow:        true,
+		OptionalInDb:          true,
+		ManualConvert:         true,
 	},
+	Name:            ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
+	State:           ssot.Attribute{Name: "state", Type: ssot.AttrEnum, Enum: WarehouseState, Readonly: true, ManualConvert: true},
+	StartedClusters: ssot.Attribute{Name: "started_clusters", Type: ssot.AttrInt, Readonly: true, OptionalInShow: true, OptionalInDb: true},
+	Running:         ssot.Attribute{Name: "running", Type: ssot.AttrInt, Readonly: true, OptionalInShow: true, OptionalInDb: true},
+	Queued:          ssot.Attribute{Name: "queued", Type: ssot.AttrInt, Readonly: true, OptionalInShow: true, OptionalInDb: true},
+	IsDefault:       ssot.Attribute{Name: "is_default", Type: ssot.AttrBool, StoredAsText: true, Readonly: true},
+	IsCurrent:       ssot.Attribute{Name: "is_current", Type: ssot.AttrBool, StoredAsText: true, Readonly: true},
+	Available:       ssot.Attribute{Name: "available", Type: ssot.AttrFloat, Readonly: true},
+	Provisioning:    ssot.Attribute{Name: "provisioning", Type: ssot.AttrFloat, Readonly: true},
+	Quiescing:       ssot.Attribute{Name: "quiescing", Type: ssot.AttrFloat, Readonly: true},
+	Other:           ssot.Attribute{Name: "other", Type: ssot.AttrFloat, Readonly: true},
+	CreatedOn:       ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, Readonly: true},
+	ResumedOn:       ssot.Attribute{Name: "resumed_on", Type: ssot.AttrTime, Readonly: true},
+	UpdatedOn:       ssot.Attribute{Name: "updated_on", Type: ssot.AttrTime, Readonly: true},
+	Owner:           ssot.Attribute{Name: "owner", Type: ssot.AttrString, Readonly: true},
+	Actives:         ssot.Attribute{Name: "actives", Type: ssot.AttrString, Readonly: true, SkipInSchema: true},
+	Pendings:        ssot.Attribute{Name: "pendings", Type: ssot.AttrString, Readonly: true, SkipInSchema: true},
+	Failed:          ssot.Attribute{Name: "failed", Type: ssot.AttrString, Readonly: true, SkipInSchema: true},
+	Suspended:       ssot.Attribute{Name: "suspended", Type: ssot.AttrString, Readonly: true, SkipInSchema: true},
+	Uuid:            ssot.Attribute{Name: "uuid", Type: ssot.AttrString, Readonly: true, SkipInSchema: true},
+	OwnerRoleType:   ssot.Attribute{Name: "owner_role_type", Type: ssot.AttrString, Readonly: true, OptionalInDb: true},
+	MaxQueryPerformanceLevel: ssot.Attribute{
+		Name: "max_query_performance_level", Type: ssot.AttrEnum, Enum: MaxQueryPerformanceLevel, Readonly: true, OptionalInShow: true, OptionalInDb: true,
+	},
+	QueryThroughputMultiplier: ssot.Attribute{Name: "query_throughput_multiplier", Type: ssot.AttrInt, Readonly: true, OptionalInShow: true, OptionalInDb: true},
+	Tables: ssot.Attribute{
+		Name: "tables", Type: ssot.AttrList, Readonly: true, OptionalInDb: true,
+		CustomParser: "ParseCommaSeparatedSchemaObjectIdentifierArray",
+		Elem:         &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "SchemaObjectIdentifier"},
+	},
+	Kind: ssot.Attribute{Name: "kind", Type: ssot.AttrString, Readonly: true},
 }
 
 // ConflictsWith is assigned here. The two attributes reference each other, so setting it inside the
@@ -176,6 +273,30 @@ var Warehouse = ssot.Object{
 	Name:       "Warehouse",
 	NamePlural: "Warehouses",
 	IdType:     "AccountObjectIdentifier",
+	Generators: []ssot.GeneratorOption{
+		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
+		ssot.WithModel(),
+		ssot.WithResourceAssert(),
+		ssot.WithShowOutputAssert(
+			ssot.ShowOutputShow(ssot.ShowOutputShowSkipFields(&WarehouseAttrs.Tables)),
+			ssot.ShowOutputDescribe(),
+		),
+		ssot.WithObjectAssert(
+			ssot.ObjectAssertShow(ssot.ObjectAssertShowSkipFields(&WarehouseAttrs.Tables)),
+			ssot.ObjectAssertDescribe(),
+		),
+		ssot.WithObjectParametersAssert(),
+		ssot.WithResourceParametersAssert(),
+		ssot.WithSdk(
+			ssot.SdkShow(
+				ssot.SdkShowOptionalLike(),
+				ssot.SdkShowOptionalStartsWith(),
+				ssot.SdkShowOptionalLimitFrom(),
+				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDLike),
+			),
+			ssot.SdkDescribe(ssot.SdkDescribeQueryStructName("DescribeWarehouse")),
+		),
+	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithDescribeInSdk(ssot.Omitted()),
 		ssot.WithDescribeOutputSet(ssot.Omitted()),
@@ -215,5 +336,55 @@ var Warehouse = ssot.Object{
 		WarehouseAttrs.QueryAccelerationMaxScaleFactor,
 		WarehouseAttrs.ResourceConstraint,
 		WarehouseAttrs.Generation,
+	},
+	// Union of all SHOW WAREHOUSES columns (AllDetails analog).
+	// Keep omitted: actives / pendings / failed / suspended / uuid (Snowflake: internal use, will be removed).
+	Show: ssot.OutputSpec{
+		Columns: []*ssot.Attribute{
+			&WarehouseAttrs.Name,
+			&WarehouseAttrs.State,
+			&WarehouseAttrs.WarehouseType,
+			&WarehouseAttrs.WarehouseSize,
+			&WarehouseAttrs.MinClusterCount,
+			&WarehouseAttrs.MaxClusterCount,
+			&WarehouseAttrs.StartedClusters,
+			&WarehouseAttrs.Running,
+			&WarehouseAttrs.Queued,
+			&WarehouseAttrs.IsDefault,
+			&WarehouseAttrs.IsCurrent,
+			&WarehouseAttrs.AutoSuspend,
+			&WarehouseAttrs.AutoResume,
+			&WarehouseAttrs.Available,
+			&WarehouseAttrs.Provisioning,
+			&WarehouseAttrs.Quiescing,
+			&WarehouseAttrs.Other,
+			&WarehouseAttrs.CreatedOn,
+			&WarehouseAttrs.ResumedOn,
+			&WarehouseAttrs.UpdatedOn,
+			&WarehouseAttrs.Owner,
+			&WarehouseAttrs.Comment,
+			&WarehouseAttrs.EnableQueryAcceleration,
+			&WarehouseAttrs.QueryAccelerationMaxScaleFactor,
+			&WarehouseAttrs.ResourceMonitor,
+			&WarehouseAttrs.Actives,
+			&WarehouseAttrs.Pendings,
+			&WarehouseAttrs.Failed,
+			&WarehouseAttrs.Suspended,
+			&WarehouseAttrs.Uuid,
+			&WarehouseAttrs.ScalingPolicy,
+			&WarehouseAttrs.OwnerRoleType,
+			&WarehouseAttrs.ResourceConstraint,
+			&WarehouseAttrs.Generation,
+			&WarehouseAttrs.MaxQueryPerformanceLevel,
+			&WarehouseAttrs.QueryThroughputMultiplier,
+			&WarehouseAttrs.Tables,
+		},
+	},
+	Describe: ssot.OutputSpec{
+		Columns: []*ssot.Attribute{
+			&WarehouseAttrs.CreatedOn,
+			&WarehouseAttrs.Name,
+			&WarehouseAttrs.Kind,
+		},
 	},
 }

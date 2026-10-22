@@ -70,11 +70,6 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.Warehouse{},
-		SkipFields:   []string{"Tables"},
-	},
-	{
-		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.ResourceMonitor{},
 	},
 	{

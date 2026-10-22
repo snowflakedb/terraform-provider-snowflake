@@ -41,29 +41,23 @@ func ClassifyAttribute(obj Object, attr Attribute) ClassifiedField {
 	case AttrInt:
 		return ClassifiedField{Name: attr.Name, Storage: AttrInt, Required: attr.Required}
 	case AttrBool:
-		if attr.Required {
-			return ClassifiedField{Name: attr.Name, Storage: AttrBool, Required: true}
+		if attr.Required || attr.NativeBool {
+			return ClassifiedField{Name: attr.Name, Storage: AttrBool, Required: attr.Required}
 		}
 		return ClassifiedField{Name: attr.Name, Storage: AttrString, SdkValueType: genhelpers.SdkValueType{SdkType: "bool", SdkKind: "bool"}}
 	case AttrEnum:
-		if attr.Enum == nil || attr.Enum.Name == "" {
-			panic(fmt.Sprintf("object %q: enum attribute %q has no Enum", obj.Name, attr.Name))
-		}
 		return ClassifiedField{
 			Name:         attr.Name,
 			Storage:      AttrString,
 			Required:     attr.Required,
-			SdkValueType: genhelpers.SdkValueType{SdkType: "sdk." + attr.Enum.Name, SdkKind: "enum"},
+			SdkValueType: genhelpers.SdkValueType{SdkType: "sdk." + attr.Enum.sdkTypeName(), SdkKind: "enum"},
 		}
 	case AttrIdentifier:
-		if obj.IdType == "" {
-			panic(fmt.Sprintf("object %q: identifier attribute %q has no IdType", obj.Name, attr.Name))
-		}
 		return ClassifiedField{
 			Name:         attr.Name,
 			Storage:      AttrString,
 			Required:     attr.Required,
-			SdkValueType: genhelpers.SdkValueType{SdkType: "sdk." + obj.IdType, SdkKind: "identifier"},
+			SdkValueType: genhelpers.SdkValueType{SdkType: "sdk." + attr.IdentifierType, SdkKind: "identifier"},
 		}
 	case AttrString:
 		return stringField(attr.Name, attr.Required)

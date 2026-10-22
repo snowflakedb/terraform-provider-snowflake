@@ -65,12 +65,20 @@ type ResourceAssertGenerator struct {
 type ShowOutputAssertGenerator struct {
 	Show     bool
 	Describe bool
+	// ShowSkipFields and DescribeSkipFields are the same *Attribute pointers that sit in Columns.
+	// The column stays in Columns. Has* is not generated.
+	ShowSkipFields     []*Attribute
+	DescribeSkipFields []*Attribute
 }
 
 type ObjectAssertGenerator struct {
 	Show                 bool
 	Describe             bool
 	NoIdentifiableObject bool
+	// ShowSkipFields and DescribeSkipFields are the same *Attribute pointers that sit in Columns.
+	// The column stays in Columns. Has* is not generated.
+	ShowSkipFields     []*Attribute
+	DescribeSkipFields []*Attribute
 }
 
 // ObjectParametersAssertGenerator emits Snowflake object parameter assertions from the parameter catalog.
@@ -291,12 +299,38 @@ func WithResourceAssert(opts ...ResourceAssertOption) GeneratorOption {
 
 type ShowOutputAssertOption func(*ShowOutputAssertGenerator)
 
-func ShowOutputShow() ShowOutputAssertOption {
-	return func(s *ShowOutputAssertGenerator) { s.Show = true }
+type ShowOutputShowOption func(*ShowOutputAssertGenerator)
+
+type ShowOutputDescribeOption func(*ShowOutputAssertGenerator)
+
+func ShowOutputShow(opts ...ShowOutputShowOption) ShowOutputAssertOption {
+	return func(s *ShowOutputAssertGenerator) {
+		s.Show = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
 }
 
-func ShowOutputDescribe() ShowOutputAssertOption {
-	return func(s *ShowOutputAssertGenerator) { s.Describe = true }
+// ShowOutputShowSkipFields copies SkipFields from the old show output def.
+// Each argument is the *Attribute already listed in Show.Columns.
+func ShowOutputShowSkipFields(attrs ...*Attribute) ShowOutputShowOption {
+	return func(s *ShowOutputAssertGenerator) { s.ShowSkipFields = append(s.ShowSkipFields, attrs...) }
+}
+
+func ShowOutputDescribe(opts ...ShowOutputDescribeOption) ShowOutputAssertOption {
+	return func(s *ShowOutputAssertGenerator) {
+		s.Describe = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
+}
+
+// ShowOutputDescribeSkipFields copies SkipFields from the old describe show-output def.
+// Each argument is the *Attribute already listed in Describe.Columns.
+func ShowOutputDescribeSkipFields(attrs ...*Attribute) ShowOutputDescribeOption {
+	return func(s *ShowOutputAssertGenerator) { s.DescribeSkipFields = append(s.DescribeSkipFields, attrs...) }
 }
 
 func WithShowOutputAssert(opts ...ShowOutputAssertOption) GeneratorOption {
@@ -309,10 +343,23 @@ func WithShowOutputAssert(opts ...ShowOutputAssertOption) GeneratorOption {
 
 type ObjectAssertOption func(*ObjectAssertGenerator)
 
+type ObjectAssertShowOption func(*ObjectAssertGenerator)
+
 type ObjectAssertDescribeOption func(*ObjectAssertGenerator)
 
-func ObjectAssertShow() ObjectAssertOption {
-	return func(a *ObjectAssertGenerator) { a.Show = true }
+func ObjectAssertShow(opts ...ObjectAssertShowOption) ObjectAssertOption {
+	return func(a *ObjectAssertGenerator) {
+		a.Show = true
+		for _, opt := range opts {
+			opt(a)
+		}
+	}
+}
+
+// ObjectAssertShowSkipFields copies SkipFields from the old show object-assertion def.
+// Each argument is the *Attribute already listed in Show.Columns.
+func ObjectAssertShowSkipFields(attrs ...*Attribute) ObjectAssertShowOption {
+	return func(a *ObjectAssertGenerator) { a.ShowSkipFields = append(a.ShowSkipFields, attrs...) }
 }
 
 func ObjectAssertDescribe(opts ...ObjectAssertDescribeOption) ObjectAssertOption {
@@ -326,6 +373,12 @@ func ObjectAssertDescribe(opts ...ObjectAssertDescribeOption) ObjectAssertOption
 
 func WithNoIdentifiableObject() ObjectAssertDescribeOption {
 	return func(a *ObjectAssertGenerator) { a.NoIdentifiableObject = true }
+}
+
+// ObjectAssertDescribeSkipFields copies SkipFields from the old describe object-assertion def.
+// Each argument is the *Attribute already listed in Describe.Columns.
+func ObjectAssertDescribeSkipFields(attrs ...*Attribute) ObjectAssertDescribeOption {
+	return func(a *ObjectAssertGenerator) { a.DescribeSkipFields = append(a.DescribeSkipFields, attrs...) }
 }
 
 func WithObjectAssert(opts ...ObjectAssertOption) GeneratorOption {

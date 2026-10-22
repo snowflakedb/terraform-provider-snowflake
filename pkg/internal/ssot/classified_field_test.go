@@ -27,6 +27,11 @@ func Test_ClassifyAttribute_storageAndSdkType(t *testing.T) {
 	require.Equal(t, "bool", optionalBool.SdkType)
 	require.Equal(t, "bool", optionalBool.SdkKind)
 
+	nativeBool := ClassifyAttribute(obj, Attribute{Name: "initially_suspended", Type: AttrBool, NativeBool: true})
+	require.Equal(t, AttrBool, nativeBool.Storage)
+	require.Empty(t, nativeBool.SdkType)
+	require.False(t, nativeBool.Required)
+
 	requiredBool := ClassifyAttribute(obj, Attribute{Name: "enabled", Type: AttrBool, Required: true})
 	require.Equal(t, AttrBool, requiredBool.Storage)
 	require.Empty(t, requiredBool.SdkType)
@@ -36,7 +41,11 @@ func Test_ClassifyAttribute_storageAndSdkType(t *testing.T) {
 	require.Equal(t, "sdk.PoolFamily", enumField.SdkType)
 	require.Equal(t, "enum", enumField.SdkKind)
 
-	identifier := ClassifyAttribute(obj, Attribute{Name: "for_application", Type: AttrIdentifier})
+	narrow := NewEnum("WarehouseTypeUserSettable", "", "STANDARD").WithSdkType("WarehouseType")
+	narrowField := ClassifyAttribute(obj, Attribute{Name: "warehouse_type", Type: AttrEnum, Enum: narrow})
+	require.Equal(t, "sdk.WarehouseType", narrowField.SdkType)
+
+	identifier := ClassifyAttribute(obj, Attribute{Name: "for_application", Type: AttrIdentifier, IdentifierType: "AccountObjectIdentifier"})
 	require.Equal(t, "sdk.AccountObjectIdentifier", identifier.SdkType)
 	require.Equal(t, "identifier", identifier.SdkKind)
 

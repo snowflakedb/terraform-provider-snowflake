@@ -40,6 +40,30 @@ func Test_ValidateObject_writableColumnNotInAttributes(t *testing.T) {
 	})
 }
 
+func Test_ValidateObject_identifierRequiresType(t *testing.T) {
+	owner := Attribute{Name: "owner", Type: AttrIdentifier}
+	require.Panics(t, func() {
+		ValidateObject(Object{
+			Name:       "Pool",
+			Attributes: []Attribute{owner},
+		})
+	})
+	refs := Attribute{Name: "refs", Type: AttrList, Elem: &Attribute{Type: AttrIdentifier}}
+	require.Panics(t, func() {
+		ValidateObject(Object{
+			Name:       "Pool",
+			Attributes: []Attribute{refs},
+		})
+	})
+	state := Attribute{Name: "state", Type: AttrEnum, Readonly: true}
+	require.Panics(t, func() {
+		ValidateObject(Object{
+			Name: "Pool",
+			Show: OutputSpec{Columns: []*Attribute{&state}},
+		})
+	})
+}
+
 func Test_ValidateObject_conflictsWithUnknownAttribute(t *testing.T) {
 	require.PanicsWithValue(t, `object "Warehouse": attribute "resource_constraint" conflicts with unknown attribute "generation"`, func() {
 		ValidateObject(Object{
@@ -48,6 +72,38 @@ func Test_ValidateObject_conflictsWithUnknownAttribute(t *testing.T) {
 				Name:          "resource_constraint",
 				ConflictsWith: []Attribute{{Name: "generation"}},
 			}},
+		})
+	})
+}
+
+func Test_ValidateObject_objectAssertSkipMustBeColumn(t *testing.T) {
+	tables := Attribute{Name: "tables", Type: AttrString, Readonly: true}
+	other := Attribute{Name: "other", Type: AttrString, Readonly: true}
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name: "Warehouse",
+			Generators: []GeneratorOption{
+				WithObjectAssert(ObjectAssertShow(ObjectAssertShowSkipFields(&tables))),
+			},
+			Show: OutputSpec{Columns: []*Attribute{&tables}},
+		})
+	})
+	require.Panics(t, func() {
+		ValidateObject(Object{
+			Name: "Warehouse",
+			Generators: []GeneratorOption{
+				WithObjectAssert(ObjectAssertShow(ObjectAssertShowSkipFields(&other))),
+			},
+			Show: OutputSpec{Columns: []*Attribute{&tables}},
+		})
+	})
+	require.Panics(t, func() {
+		ValidateObject(Object{
+			Name: "Warehouse",
+			Generators: []GeneratorOption{
+				WithObjectAssert(ObjectAssertDescribe(ObjectAssertDescribeSkipFields(&tables))),
+			},
+			Show: OutputSpec{Columns: []*Attribute{&tables}},
 		})
 	})
 }

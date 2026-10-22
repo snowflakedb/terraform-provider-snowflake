@@ -45,6 +45,7 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   `ApplySetUnset`. Use a `SetOnlyMapping` constant (`IntAttributeUpdateSetOnlyBuilder`), a `SetUnsetMapping` constant
   (`StringAttributeUpdateBuilder`, ...), or `ListValueUpdate("<mapperFunc>")`. An attribute with no mapping is left out
   of set/unset.
+- `NativeBool` - an optional bool stays Terraform `TypeBool`. Without the mark, an optional bool is a boolean string.
 - `StoredAsText` - the db column is text, and the plain kind stays the semantic type. For a bool, the paired-struct
   generator calls `BoolFromText`. A bool without the mark is still db `bool`. Other generators ignore the mark.
   See [PairedStructs](../../sdk/generator/README.md#pairedstructs).
@@ -96,13 +97,18 @@ enable nothing.
   `make generate-resource-show-output-assertions`).
   See [that section](../../acceptance/bettertestspoc/README.md#adding-new-resource-show-output-assertions). Fields come
   from [SHOW and DESCRIBE](#show-and-describe) `Columns`, not from `Attributes`.
+  `ShowOutputShow(ShowOutputShowSkipFields(&attrs.Tables))` copies `SkipFields` from the old show def. The argument is
+  the same `*Attribute` that sits in `Show.Columns`. The column stays in `Columns`, and `Has*` is not generated.
+  `ShowOutputDescribe(ShowOutputDescribeSkipFields(&attrs.Password))` is the describe-side copy.
 - `WithObjectAssert(ObjectAssertShow(), ObjectAssertDescribe())` - Snowflake object assertions (
   `make generate-snowflake-object-assertions`).
   See [that section](../../acceptance/bettertestspoc/README.md#adding-new-snowflake-object-assertions). Fields come
   from [SHOW and DESCRIBE](#show-and-describe) `Columns`, not from `Attributes`. `StoredAsText` is ignored. A bool stays
-  `bool`. `ObjectAssertDescribe(WithNoIdentifiableObject())` suppresses the fetch constructor when `Describe` returns a
-  slice and the row has no `ID()`. `WithNoIdentifiableObject()` is a setting of object-assertion describe, not its own
-  generator.
+  `bool`. `ObjectAssertShow(ObjectAssertShowSkipFields(&attrs.Tables))` copies `SkipFields` from the old show def. The
+  argument is the same `*Attribute` that sits in `Show.Columns`. The column stays in `Columns`, and `Has*` is not
+  generated. `ObjectAssertDescribe(ObjectAssertDescribeSkipFields(&attrs.Password))` is the describe-side copy.
+  `ObjectAssertDescribe(WithNoIdentifiableObject())` suppresses the fetch constructor when `Describe` returns a
+  slice and the row has no `ID()`. These are settings of object-assertion show or describe, not their own generators.
 - `WithObjectParametersAssert()` - Snowflake object parameters assertions (
   `make generate-snowflake-object-parameters-assertions`).
   See [that section](../../acceptance/bettertestspoc/README.md#adding-new-snowflake-object-parameters-assertions).
@@ -200,11 +206,14 @@ in [Generators](#generators).
 `ShowOutputDescribe`, `ObjectAssertShow`, and `ObjectAssertDescribe` are not `GeneratorOption`. They cannot sit alone in
 `Generators`. A bare `WithSchema()`, `WithSdk()`, `WithShowOutputAssert()`, or `WithObjectAssert()` enables nothing.
 `SdkDrop()` with no options still sets `Drop`. `SdkCreate()` with no options still sets `Create`. `SdkAlter()` with no
-options still sets `Alter`. `ObjectAssertDescribe()` with no options sets `Describe` and leaves `NoIdentifiableObject`
-false. `WithModel()` and `WithResourceAssert()` take a variadic of `ModelOption` and `ResourceAssertOption`. No
-constructors exist for those option types. Zero options still sets `Enabled`. A later setting is another option on that
-call, not a new `Generators` entry. Consumers read the fields `Show`, `Describe`, `Drop`, `Create`, `Alter`, `Enabled`,
-and `NoIdentifiableObject`.
+options still sets `Alter`. `ShowOutputShow()` with no options sets `Show` and leaves `ShowSkipFields` nil.
+`ShowOutputDescribe()` with no options sets `Describe` and leaves `DescribeSkipFields` nil. `ObjectAssertShow()` with no
+options sets `Show` and leaves `ShowSkipFields` nil. `ObjectAssertDescribe()` with no options sets `Describe` and leaves
+`NoIdentifiableObject` false and `DescribeSkipFields` nil. `WithModel()` and `WithResourceAssert()` take a variadic of
+`ModelOption` and `ResourceAssertOption`. No constructors exist for those option types. Zero options still sets
+`Enabled`. A later setting is another option on that call, not a new `Generators` entry. Consumers read the fields
+`Show`, `Describe`, `Drop`, `Create`, `Alter`, `Enabled`, `NoIdentifiableObject`, `ShowSkipFields`, and
+`DescribeSkipFields`.
 
 Do not apply resource-attribute classification. A SHOW bool is `bool`. A paired bool without `StoredAsText` is db
 `bool`.
@@ -255,7 +264,9 @@ Until a piece has moved, do not assume it is already in ssot:
   When `SdkCustomOperations()` is on, those operations come from `CustomOperations` and are emitted together. When it is
   off, they stay in the SDK def. Every other operation stays in the SDK def. They are not
   generated from `Columns`.
-- `SkipFields`, `ManualFields`, `TypeOverrides`, and `UsedAsListEntry` have no ssot equivalent yet.
+- Schema `SkipFields`, `ManualFields`, `TypeOverrides`, and `UsedAsListEntry` have no ssot equivalent yet. Object-assertion
+  `SkipFields` is `ObjectAssertShowSkipFields` and `ObjectAssertDescribeSkipFields`. Show-output `SkipFields` is
+  `ShowOutputShowSkipFields` and `ShowOutputDescribeSkipFields`.
 - `ResourceHooks` do not yet generate the whole lifecycle, the SDK calls, or the mapping. A missing step stays an ext
   call, or panics through `Unimplemented`, until that hook is implemented. See [Resource generator](#resource-generator).
 - Datasource model builders, provider model builders, resource parameter assertions, and Snowflake object parameter
