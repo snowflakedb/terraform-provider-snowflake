@@ -5,6 +5,7 @@ func {{ .Name }}() *tfschema.Resource {
 {{ template "constructor" . }}
 	}
 }
+{{- if .Hooks.ShowByIdInSdk.Present }}
 
 func Import{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
 {{ template "parseId" . -}}
@@ -20,6 +21,7 @@ func Import{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) 
 {{ template "setFieldsNotSetByRead" . -}}
 	return []*tfschema.ResourceData{d}, nil
 }
+{{- end }}
 
 func Create{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
 {{ template "parseIdFromConfig" . -}}
@@ -37,8 +39,8 @@ func Create{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) 
 {{ template "applyParametersCreate" . }}
 {{ template "createInSdk" . }}
 
-	d.SetId(helpers.EncodeResourceIdentifier(id))
-	return Read{{ .Name }}Func(false)(ctx, d, meta)
+	d.SetId({{ if .LegacyIdEncoding }}helpers.EncodeSnowflakeID(id){{ else }}helpers.EncodeResourceIdentifier(id){{ end }})
+{{ template "afterCreate" . }}
 }
 
 func Read{{ .Name }}Func(withExternalChangesMarking bool) tfschema.ReadContextFunc {
@@ -93,7 +95,7 @@ func Update{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) 
 {{ template "applyParametersChanges" . -}}
 {{ template "alterSetInSdk" . -}}
 {{ template "alterUnsetInSdk" . -}}
-	return Read{{ .Name }}Func(false)(ctx, d, meta)
+{{ template "afterAlter" . }}
 }
 {{- if .Hooks.ParseIdFromConfig.Generate }}
 

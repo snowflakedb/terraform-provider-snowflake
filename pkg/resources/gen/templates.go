@@ -52,6 +52,12 @@ var (
 	//go:embed templates/sub_templates/create_in_sdk.tmpl
 	createInSdkTemplateContent string
 
+	//go:embed templates/sub_templates/after_create.tmpl
+	afterCreateTemplateContent string
+
+	//go:embed templates/sub_templates/after_alter.tmpl
+	afterAlterTemplateContent string
+
 	//go:embed templates/sub_templates/show_by_id_safely_in_sdk.tmpl
 	showByIdSafelyInSdkTemplateContent string
 
@@ -173,6 +179,8 @@ func init() {
 	subTemplates, _ = subTemplates.New("applyCreateOptionals").Parse(applyCreateOptionalsTemplateContent)
 	subTemplates, _ = subTemplates.New("generatedApplyCreateOptionals").Parse(generatedApplyCreateOptionalsTemplateContent)
 	subTemplates, _ = subTemplates.New("createInSdk").Parse(createInSdkTemplateContent)
+	subTemplates, _ = subTemplates.New("afterCreate").Parse(afterCreateTemplateContent)
+	subTemplates, _ = subTemplates.New("afterAlter").Parse(afterAlterTemplateContent)
 	subTemplates, _ = subTemplates.New("showByIdSafelyInSdk").Parse(showByIdSafelyInSdkTemplateContent)
 	subTemplates, _ = subTemplates.New("describeInSdk").Parse(describeInSdkTemplateContent)
 	subTemplates, _ = subTemplates.New("handleExternalChanges").Parse(handleExternalChangesTemplateContent)

@@ -49,10 +49,6 @@ type alertAlterRequestsExt struct {
 	modifyAction    *string
 }
 
-func alertParseIdFromConfigExt(d *schema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
-	return sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string)), nil
-}
-
 func alertParseIdExt(id string) (sdk.SchemaObjectIdentifier, error) {
 	return helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier](id)
 }
@@ -63,12 +59,6 @@ func alertNewCreateRequestExt(d *schema.ResourceData, id sdk.SchemaObjectIdentif
 	condition := d.Get("condition").(string)
 	action := d.Get("action").(string)
 	return sdk.NewCreateAlertRequest(id, warehouse, alertSchedule, sdk.NewAlertConditionFromString(condition), action), nil
-}
-
-func alertApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.CreateAlertRequest) error {
-	return errors.Join(
-		stringAttributeCreateBuilder(d, "comment", request.WithComment),
-	)
 }
 
 func alertSetConfigFieldsExt(d *schema.ResourceData, alert *sdk.Alert) error {

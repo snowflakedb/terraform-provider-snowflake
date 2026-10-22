@@ -20,6 +20,7 @@ type Object struct {
 	HasPartialOnUpdate                  bool
 	AdditionalDescribeOutputDescription string
 	IdType                              string
+	LegacyIdEncoding                    bool // Keeps the pipe-delimited resource id (db|schema|name) that older resources store.
 	IdentityNameForceNew                bool
 	AdditionalIdentityNameDescription   string
 	SdkCreateRequestObjectName          string  // SDK Create<Name>Request stem; defaults to Name

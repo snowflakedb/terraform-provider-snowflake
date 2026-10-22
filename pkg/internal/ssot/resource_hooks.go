@@ -12,6 +12,7 @@ type ResourceHooks struct {
 	NewCreateRequest                ResourceHook
 	ApplyCreateOptionals            ResourceHook
 	CreateInSdk                     ResourceHook
+	AfterCreate                     ResourceHook
 	ShowByIdSafelyInSdk             ResourceHook
 	DescribeInSdk                   ResourceHook
 	HandleExternalChanges           ResourceHook
@@ -27,6 +28,7 @@ type ResourceHooks struct {
 	ApplySetUnset                   ResourceHook
 	AlterSetInSdk                   ResourceHook
 	AlterUnsetInSdk                 ResourceHook
+	AfterAlter                      ResourceHook
 	SetFieldsNotSetByRead           ResourceHook
 	ShowByIdInSdk                   ResourceHook
 	DropSafelyInSdk                 ResourceHook
@@ -70,6 +72,7 @@ func DefaultResourceExtHooks(opts ...ResourceHookOption) ResourceHooks {
 		NewCreateRequest:                ExtCall(),
 		ApplyCreateOptionals:            ExtCall(),
 		CreateInSdk:                     ExtCall(),
+		AfterCreate:                     Omitted(),
 		ShowByIdSafelyInSdk:             ExtCall(),
 		DescribeInSdk:                   ExtCall(),
 		HandleExternalChanges:           ExtCall(),
@@ -85,6 +88,7 @@ func DefaultResourceExtHooks(opts ...ResourceHookOption) ResourceHooks {
 		ApplySetUnset:                   ExtCall(),
 		AlterSetInSdk:                   ExtCall(),
 		AlterUnsetInSdk:                 ExtCall(),
+		AfterAlter:                      Omitted(),
 		SetFieldsNotSetByRead:           ExtCall(),
 		ShowByIdInSdk:                   ExtCall(),
 		DropSafelyInSdk:                 Omitted(),
@@ -133,6 +137,10 @@ func WithApplyCreateOptionals(h ResourceHook) ResourceHookOption {
 
 func WithCreateInSdk(h ResourceHook) ResourceHookOption {
 	return func(hooks *ResourceHooks) { hooks.CreateInSdk = h }
+}
+
+func WithAfterCreate(h ResourceHook) ResourceHookOption {
+	return func(hooks *ResourceHooks) { hooks.AfterCreate = h }
 }
 
 func WithShowByIdSafelyInSdk(h ResourceHook) ResourceHookOption {
@@ -193,6 +201,10 @@ func WithAlterSetInSdk(h ResourceHook) ResourceHookOption {
 
 func WithAlterUnsetInSdk(h ResourceHook) ResourceHookOption {
 	return func(hooks *ResourceHooks) { hooks.AlterUnsetInSdk = h }
+}
+
+func WithAfterAlter(h ResourceHook) ResourceHookOption {
+	return func(hooks *ResourceHooks) { hooks.AfterAlter = h }
 }
 
 func WithSetFieldsNotSetByRead(h ResourceHook) ResourceHookOption {

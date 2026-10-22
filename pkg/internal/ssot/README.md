@@ -20,7 +20,9 @@ generators will follow. Ultimately, all the generators should default to using s
 - `VariantOf` - base object whose SDK parameter details, SET/UNSET requests, and `ParameterType` names a variant shares; parameter catalog membership still comes from the variant's own `Name`
 - `SchemaStateUpgraders` - ordered upgrade function names ([Resource generator](#resource-generator))
 
-Identity (`Name`, `IdType`, ...) is separate from `Attributes`.
+Identity (`Name`, `IdType`, ...) is separate from `Attributes`. `LegacyIdEncoding` keeps the pipe-delimited resource id
+(`db|schema|name`, `helpers.EncodeSnowflakeID`) that older resources store. The generated Create calls it instead of
+`helpers.EncodeResourceIdentifier`. Parsing that id stays in the `ParseId` ext.
 
 `VariantOf` keeps SDK parameter naming simple because variants are expected to share their base object's SDK
 parameter types and usually the same parameter set. Different sets can already use a variant-specific catalog level
@@ -182,6 +184,11 @@ template. Until the subtemplate body is written, generation panics through `Unim
 own, with its `With` option. See [resource_hooks.go](resource_hooks.go). `DropSafelyInSdk` defaults to omitted, which
 keeps `DeleteExt`. Set it to `Generated` to emit `Delete` and point `DeleteContext` at that function. `Delete` calls
 `ResourceDeleteContextFunc` with `sdk.Parse` plus the object `IdType`.
+
+`AfterCreate` and `AfterAlter` are `Omitted` by default. They run after `SetId` and after the alters, and their
+diagnostics (usually warnings) are added to the final Read. Use them for a step that must not drop the object from
+state when it fails, such as resuming a created object. `Import<Name>` is generated only when `ShowByIdInSdk` is
+present. A resource with a passthrough importer omits it.
 
 `SchemaStateUpgraders` on the object is an ordered list of upgrade function names. `WithStateUpgraders` is the
 `ResourceHook` for that list and for the schema version. `Generated` emits `SchemaVersion` as the length and one

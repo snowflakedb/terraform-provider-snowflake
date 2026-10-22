@@ -16,6 +16,7 @@ type ResourceModel struct {
 	HasPartialOnUpdate                  bool
 	AdditionalDescribeOutputDescription string
 	IdType                              string
+	LegacyIdEncoding                    bool
 	IdentityNameForceNew                bool
 	AdditionalIdentityNameDescription   string
 	SdkCreateRequestObjectName          string
@@ -98,6 +99,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		HasPartialOnUpdate:                  input.HasPartialOnUpdate,
 		AdditionalDescribeOutputDescription: input.AdditionalDescribeOutputDescription,
 		IdType:                              input.IdType,
+		LegacyIdEncoding:                    input.LegacyIdEncoding,
 		IdentityNameForceNew:                input.IdentityNameForceNew,
 		AdditionalIdentityNameDescription:   input.AdditionalIdentityNameDescription,
 		SdkCreateRequestObjectName:          input.SdkCreateRequestObjectName,

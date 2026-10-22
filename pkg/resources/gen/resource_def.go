@@ -16,11 +16,6 @@ type ResourceObject struct {
 }
 
 var resourceGenerationSettings = map[string]*genhelpers.ObjectGenerationSettings{
-	// TODO [next PRs]: generate the alert lifecycle and remove this entry. The template cannot keep the legacy
-	// pipe-delimited id or return resume/suspend warnings after create and alter yet, so alert.go stays handwritten.
-	"Alert": {
-		AllowedGenerationParts: []genhelpers.GenerationPartNamer{PartSchema},
-	},
 	"Schema": {
 		AllowedGenerationParts: []genhelpers.GenerationPartNamer{PartDefault, PartSchema, PartParameters},
 		EnabledGenerationParts: []genhelpers.GenerationPartNamer{PartParameters},
