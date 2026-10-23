@@ -42,14 +42,24 @@ func objectAssertionDetailsFromSsot(obj ssot.Object, isDescribe bool) genhelpers
 	}
 	noIdentifiableObject := false
 	skip := objectAssertSkipNames(obj, g.ObjectAssert.ShowSkipFields)
+	var projection *genhelpers.ShowProjectionDef
+	objectTypeName := ""
 	if isDescribe {
 		noIdentifiableObject = g.ObjectAssert.NoIdentifiableObject
 		skip = objectAssertSkipNames(obj, g.ObjectAssert.DescribeSkipFields)
+	} else if fromBase, ok := obj.ShowFromBase(); ok {
+		projection = &genhelpers.ShowProjectionDef{
+			ClientName: fromBase.ClientName,
+			Method:     fromBase.Method,
+		}
+		objectTypeName = fromBase.ClientName
 	}
 	return genhelpers.SdkObjectDetails{
 		IdType:               "sdk." + obj.IdType,
 		IsDataSourceOutput:   isDescribe,
+		ObjectTypeName:       objectTypeName,
 		NoIdentifiableObject: noIdentifiableObject,
+		ShowProjection:       projection,
 		SkipFields:           skip,
 		StructDetails: genhelpers.StructDetails{
 			Name:   name,

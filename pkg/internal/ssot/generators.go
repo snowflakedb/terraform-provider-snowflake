@@ -1,5 +1,7 @@
 package ssot
 
+import "fmt"
+
 type SchemaGenerator struct {
 	Show     bool
 	Describe bool
@@ -86,6 +88,10 @@ type ObjectAssertGenerator struct {
 	// The column stays in Columns. Has* is not generated.
 	ShowSkipFields     []*Attribute
 	DescribeSkipFields []*Attribute
+	// ShowProjection is the method on the VariantOf row, such as AsAdaptive.
+	// The fetch is testClient.<VariantOf.Name>.Show, then that method.
+	// The object type constant is sdk.ObjectType<VariantOf.Name>.
+	ShowProjection string
 }
 
 // ObjectParametersAssertGenerator emits Snowflake object parameter assertions from the parameter catalog.
@@ -400,6 +406,33 @@ func ObjectAssertShow(opts ...ObjectAssertShowOption) ObjectAssertOption {
 // Each argument is the *Attribute already listed in Show.Columns.
 func ObjectAssertShowSkipFields(attrs ...*Attribute) ObjectAssertShowOption {
 	return func(a *ObjectAssertGenerator) { a.ShowSkipFields = append(a.ShowSkipFields, attrs...) }
+}
+
+// ObjectAssertShowFromBase projects the VariantOf SHOW row with projection, such as AsAdaptive.
+// The client name is VariantOf.Name, returned by Object.ShowFromBase.
+func ObjectAssertShowFromBase(projection string) ObjectAssertShowOption {
+	return func(a *ObjectAssertGenerator) {
+		a.ShowProjection = projection
+	}
+}
+
+// ShowFromBase is the SHOW fetch for a variant object assertion.
+// ClientName is VariantOf.Name. Method is the ObjectAssertShowFromBase argument.
+type ShowFromBase struct {
+	ClientName string
+	Method     string
+}
+
+// ShowFromBase returns the resolved SHOW projection. ok is false when ObjectAssertShowFromBase is not set.
+func (obj Object) ShowFromBase() (ShowFromBase, bool) {
+	method := ObjectGenerators(obj.Generators...).ObjectAssert.ShowProjection
+	if method == "" {
+		return ShowFromBase{}, false
+	}
+	if obj.VariantOf == nil || obj.VariantOf.Name == "" {
+		panic(fmt.Sprintf("object %q: object assertion show projection %q requires VariantOf", obj.Name, method))
+	}
+	return ShowFromBase{ClientName: obj.VariantOf.Name, Method: method}, true
 }
 
 func ObjectAssertDescribe(opts ...ObjectAssertDescribeOption) ObjectAssertOption {

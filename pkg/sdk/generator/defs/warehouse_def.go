@@ -36,9 +36,10 @@ func warehouseShowAvailability(ps *g.Plain) *g.Plain {
 		Text("Comment")
 }
 
-// SHOW projections for type-specific Terraform schemas. SHOW WAREHOUSES is one row type;
-// Show() still returns []Warehouse. These structs are in-memory subsets (storage-integration
-// AllDetails analog). Regular covers STANDARD and SNOWPARK-OPTIMIZED SHOW columns.
+// SHOW projections for type-specific Terraform schemas. SHOW WAREHOUSES is one row type.
+// TODO [next PRs]: Show should return the variant rows (WarehouseRegular, WarehouseAdaptive, WarehouseInteractive),
+// the way Describe already does. Show() still returns []Warehouse, so callers project with AsRegular, AsAdaptive, and AsInteractive.
+// Regular covers STANDARD and SNOWPARK-OPTIMIZED SHOW columns.
 var warehouseRegularDef = warehouseShowAvailability(
 	warehouseShowLoad(
 		warehouseShowIdentity(g.PlainStruct("WarehouseRegular")).

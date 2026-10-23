@@ -19,6 +19,7 @@ type SnowflakeObjectAssertionsModel struct {
 	NoIdentifiableObject bool
 	ShowByParentId       *genhelpers.ShowByParentIdDef
 	DescribeOverride     *genhelpers.DescribeOverrideDef
+	ShowProjection       *genhelpers.ShowProjectionDef
 	FromObjectIDExpr     string
 	NestedAssertFields   []string
 	Fields               []SnowflakeObjectFieldAssertion
@@ -120,6 +121,7 @@ func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *
 		NoIdentifiableObject: sdkObject.NoIdentifiableObject,
 		ShowByParentId:       sdkObject.ShowByParentId,
 		DescribeOverride:     sdkObject.DescribeOverride,
+		ShowProjection:       sdkObject.ShowProjection,
 		FromObjectIDExpr:     sdkObject.FromObjectIDExpr,
 		Fields:               fields,
 		NestedAssertFields:   sdkObject.NestedAssertFields,

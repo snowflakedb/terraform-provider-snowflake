@@ -37,7 +37,17 @@ func {{ .Name }}(t *testing.T, id {{ .IdType }}) *{{ $assertName }} {
             {{- end }}
         {{- else }}
         assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType{{ .ObjectTypeName }}, id, func(testClient *helpers.TestClient) assert.ObjectProvider[{{ .SdkType }}, {{ .IdType }}] {
+            {{- if .ShowProjection }}
+            return func(t *testing.T, id {{ .IdType }}) (*{{ .SdkType }}, error) {
+                base, err := testClient.{{ .ShowProjection.ClientName }}.Show(t, id)
+                if err != nil {
+                    return nil, err
+                }
+                return base.{{ .ShowProjection.Method }}(), nil
+            }
+            {{- else }}
             return testClient.{{ .Name }}.Show
+            {{- end }}
         {{- end }}
         }),
     }

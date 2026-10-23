@@ -40,7 +40,22 @@ func Test_objectParametersFromSsot_schema(t *testing.T) {
 	require.Equal(t, "Schema", objectAssertions.Name)
 	require.Equal(t, "sdk.DatabaseObjectIdentifier", objectAssertions.IdType)
 	require.Empty(t, objectAssertions.ParameterConstantPrefix)
+	require.Empty(t, objectAssertions.ObjectTypeName)
 	require.Len(t, objectAssertions.Parameters, len(defs.ParameterDefsForLevel(ssot.ParameterLevelSchema)))
+}
+
+func Test_objectParametersFromSsot_variantUsesBaseNames(t *testing.T) {
+	base := ssot.Object{Name: "Warehouse"}
+	obj := ssot.Object{
+		Name:       "WarehouseAdaptive",
+		IdType:     "AccountObjectIdentifier",
+		VariantOf:  &base,
+		Generators: []ssot.GeneratorOption{ssot.WithObjectParametersAssert()},
+	}
+	got := objectParametersFromSsot(obj, true)
+	require.Equal(t, "WarehouseAdaptive", got.Name)
+	require.Equal(t, "Warehouse", got.ParameterConstantPrefix)
+	require.Equal(t, "Warehouse", got.ObjectTypeName)
 }
 
 func Test_objectParametersFromSsot_panicsWhenNotEnabled(t *testing.T) {

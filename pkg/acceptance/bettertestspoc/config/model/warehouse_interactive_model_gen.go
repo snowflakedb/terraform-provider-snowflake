@@ -4,9 +4,11 @@ package model
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
@@ -16,7 +18,6 @@ type WarehouseInteractiveModel struct {
 	AutoSuspend                     tfconfig.Variable `json:"auto_suspend,omitempty"`
 	Comment                         tfconfig.Variable `json:"comment,omitempty"`
 	FallbackWarehouse               tfconfig.Variable `json:"fallback_warehouse,omitempty"`
-	FullyQualifiedName              tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	InitiallySuspended              tfconfig.Variable `json:"initially_suspended,omitempty"`
 	MaxClusterCount                 tfconfig.Variable `json:"max_cluster_count,omitempty"`
 	MaxConcurrencyLevel             tfconfig.Variable `json:"max_concurrency_level,omitempty"`
@@ -100,6 +101,11 @@ func (w *WarehouseInteractiveModel) WithAutoResume(autoResume string) *Warehouse
 	return w
 }
 
+func (w *WarehouseInteractiveModel) WithAutoResumeBool(autoResume bool) *WarehouseInteractiveModel {
+	w.AutoResume = tfconfig.StringVariable(strconv.FormatBool(autoResume))
+	return w
+}
+
 func (w *WarehouseInteractiveModel) WithAutoSuspend(autoSuspend int) *WarehouseInteractiveModel {
 	w.AutoSuspend = tfconfig.IntegerVariable(autoSuspend)
 	return w
@@ -115,8 +121,8 @@ func (w *WarehouseInteractiveModel) WithFallbackWarehouse(fallbackWarehouse stri
 	return w
 }
 
-func (w *WarehouseInteractiveModel) WithFullyQualifiedName(fullyQualifiedName string) *WarehouseInteractiveModel {
-	w.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
+func (w *WarehouseInteractiveModel) WithFallbackWarehouseSdk(fallbackWarehouse sdk.AccountObjectIdentifier) *WarehouseInteractiveModel {
+	w.FallbackWarehouse = tfconfig.StringVariable(fallbackWarehouse.Name())
 	return w
 }
 
@@ -145,6 +151,11 @@ func (w *WarehouseInteractiveModel) WithResourceMonitor(resourceMonitor string) 
 	return w
 }
 
+func (w *WarehouseInteractiveModel) WithResourceMonitorSdk(resourceMonitor sdk.AccountObjectIdentifier) *WarehouseInteractiveModel {
+	w.ResourceMonitor = tfconfig.StringVariable(resourceMonitor.Name())
+	return w
+}
+
 func (w *WarehouseInteractiveModel) WithStatementQueuedTimeoutInSeconds(statementQueuedTimeoutInSeconds int) *WarehouseInteractiveModel {
 	w.StatementQueuedTimeoutInSeconds = tfconfig.IntegerVariable(statementQueuedTimeoutInSeconds)
 	return w
@@ -159,6 +170,11 @@ func (w *WarehouseInteractiveModel) WithStatementTimeoutInSeconds(statementTimeo
 
 func (w *WarehouseInteractiveModel) WithWarehouseSize(warehouseSize string) *WarehouseInteractiveModel {
 	w.WarehouseSize = tfconfig.StringVariable(warehouseSize)
+	return w
+}
+
+func (w *WarehouseInteractiveModel) WithWarehouseSizeSdk(warehouseSize sdk.WarehouseSize) *WarehouseInteractiveModel {
+	w.WarehouseSize = tfconfig.StringVariable(string(warehouseSize))
 	return w
 }
 
@@ -193,11 +209,6 @@ func (w *WarehouseInteractiveModel) WithCommentValue(value tfconfig.Variable) *W
 
 func (w *WarehouseInteractiveModel) WithFallbackWarehouseValue(value tfconfig.Variable) *WarehouseInteractiveModel {
 	w.FallbackWarehouse = value
-	return w
-}
-
-func (w *WarehouseInteractiveModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *WarehouseInteractiveModel {
-	w.FullyQualifiedName = value
 	return w
 }
 

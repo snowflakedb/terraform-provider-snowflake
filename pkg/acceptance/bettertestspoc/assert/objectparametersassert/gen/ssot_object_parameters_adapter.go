@@ -18,9 +18,12 @@ func objectParametersFromSsot(obj ssot.Object, enabled bool) SnowflakeObjectPara
 	if len(parameters) == 0 {
 		panic(fmt.Sprintf("object %q is enabled for snowflake parameters assertions but has no catalog parameters at level %s", obj.Name, obj.ParameterLevel()))
 	}
+	names := obj.ParameterAssertionNames()
 	return SnowflakeObjectParameters{
-		Name:       obj.Name,
-		IdType:     "sdk." + obj.IdType,
-		Parameters: snowflakeParameters(parameters),
+		Name:                    obj.Name,
+		IdType:                  "sdk." + obj.IdType,
+		ParameterConstantPrefix: names.ConstantPrefix,
+		ObjectTypeName:          names.ObjectTypeName,
+		Parameters:              snowflakeParameters(parameters),
 	}
 }

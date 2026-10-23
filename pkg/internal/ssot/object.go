@@ -1,6 +1,7 @@
 package ssot
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
@@ -144,4 +145,26 @@ func (obj Object) ObjectName() string { return obj.Name }
 // will require an explicit SSOT parameter-level override.
 func (obj Object) ParameterLevel() ParameterLevel {
 	return ParameterLevel(strings.ToUpper(genhelpers.ToSnakeCase(obj.Name)))
+}
+
+// ParameterAssertionNames is the SDK parameter constant prefix and object type name for assertions.
+// Both are empty when the object is not a variant. A variant uses VariantOf.Name for both.
+// The catalog level stays ParameterLevel.
+type ParameterAssertionNames struct {
+	ConstantPrefix string
+	ObjectTypeName string
+}
+
+// ParameterAssertionNames returns the assertion names for this object.
+func (obj Object) ParameterAssertionNames() ParameterAssertionNames {
+	if obj.VariantOf == nil {
+		return ParameterAssertionNames{}
+	}
+	if obj.VariantOf.Name == "" {
+		panic(fmt.Sprintf("object %q: VariantOf has an empty Name", obj.Name))
+	}
+	return ParameterAssertionNames{
+		ConstantPrefix: obj.VariantOf.Name,
+		ObjectTypeName: obj.VariantOf.Name,
+	}
 }

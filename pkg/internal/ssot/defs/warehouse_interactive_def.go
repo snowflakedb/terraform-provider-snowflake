@@ -101,6 +101,14 @@ var WarehouseInteractiveAttrs = struct {
 	},
 }
 
+// tables is a writable attribute, so the Readonly WarehouseAttrs column cannot be reused.
+// The resource field is a set; SHOW reports a list.
+var warehouseInteractiveTablesShow = ssot.Attribute{
+	Name: "tables", Type: ssot.AttrList, OptionalInDb: true,
+	CustomParser: "ParseCommaSeparatedSchemaObjectIdentifierArray",
+	Elem:         &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "SchemaObjectIdentifier"},
+}
+
 var WarehouseInteractive = ssot.Object{
 	Name:                       "WarehouseInteractive",
 	NamePlural:                 "Warehouses",
@@ -108,6 +116,18 @@ var WarehouseInteractive = ssot.Object{
 	SdkCreateRequestObjectName: "InteractiveWarehouse",
 	VariantOf:                  &Warehouse,
 	AttributesModification:     true,
+	Generators: []ssot.GeneratorOption{
+		ssot.WithSchema(ssot.SchemaShow()),
+		ssot.WithModel(),
+		ssot.WithResourceAssert(),
+		ssot.WithShowOutputAssert(ssot.ShowOutputShow()),
+		ssot.WithObjectAssert(ssot.ObjectAssertShow(
+			ssot.ObjectAssertShowFromBase("AsInteractive"),
+			ssot.ObjectAssertShowSkipFields(&warehouseInteractiveTablesShow),
+		)),
+		ssot.WithObjectParametersAssert(),
+		ssot.WithResourceParametersAssert(),
+	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithDescribeInSdk(ssot.Omitted()),
 		ssot.WithDescribeOutputSet(ssot.Omitted()),
@@ -141,5 +161,34 @@ var WarehouseInteractive = ssot.Object{
 		WarehouseInteractiveAttrs.Comment,
 		WarehouseInteractiveAttrs.Tables,
 		WarehouseInteractiveAttrs.WarehouseType,
+	},
+	Show: ssot.OutputSpec{
+		Columns: []*ssot.Attribute{
+			&WarehouseAttrs.Name,
+			&WarehouseAttrs.State,
+			&WarehouseAttrs.WarehouseType,
+			&WarehouseAttrs.WarehouseSize,
+			&WarehouseAttrs.MinClusterCount,
+			&WarehouseAttrs.MaxClusterCount,
+			&WarehouseAttrs.StartedClusters,
+			&WarehouseAttrs.Running,
+			&WarehouseAttrs.Queued,
+			&WarehouseAttrs.IsDefault,
+			&WarehouseAttrs.IsCurrent,
+			&WarehouseAttrs.AutoSuspend,
+			&WarehouseAttrs.AutoResume,
+			&WarehouseAttrs.Available,
+			&WarehouseAttrs.Provisioning,
+			&WarehouseAttrs.Quiescing,
+			&WarehouseAttrs.Other,
+			&WarehouseAttrs.CreatedOn,
+			&WarehouseAttrs.ResumedOn,
+			&WarehouseAttrs.UpdatedOn,
+			&WarehouseAttrs.Owner,
+			&WarehouseAttrs.Comment,
+			&WarehouseAttrs.ResourceMonitor,
+			&WarehouseAttrs.OwnerRoleType,
+			&warehouseInteractiveTablesShow,
+		},
 	},
 }

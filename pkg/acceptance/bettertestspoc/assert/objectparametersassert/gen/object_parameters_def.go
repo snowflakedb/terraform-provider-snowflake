@@ -50,22 +50,6 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		),
 	},
 	{
-		Name:                    "WarehouseAdaptive",
-		IdType:                  "sdk.AccountObjectIdentifier",
-		Level:                   sdk.ParameterTypeWarehouse,
-		ParameterConstantPrefix: "Warehouse",
-		ObjectTypeName:          "Warehouse",
-		Parameters:              snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelWarehouseAdaptive)),
-	},
-	{
-		Name:                    "WarehouseInteractive",
-		IdType:                  "sdk.AccountObjectIdentifier",
-		Level:                   sdk.ParameterTypeWarehouse,
-		ParameterConstantPrefix: "Warehouse",
-		ObjectTypeName:          "Warehouse",
-		Parameters:              snowflakeParameters(defs.ParameterDefsForLevel(ssot.ParameterLevelWarehouseInteractive)),
-	},
-	{
 		Name:       "Database",
 		IdType:     "sdk.AccountObjectIdentifier",
 		Level:      sdk.ParameterTypeDatabase,

@@ -105,6 +105,29 @@ func Test_objectAssertionDetailsFromSsot_passesNoIdentifiableObject(t *testing.T
 	require.Equal(t, []genhelpers.Field{ssot.ColumnField(obj, name)}, details.Fields)
 }
 
+func Test_objectAssertionDetailsFromSsot_showProjection(t *testing.T) {
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	base := ssot.Object{Name: "Widget"}
+	obj := ssot.Object{
+		Name:      "WidgetAdaptive",
+		IdType:    "AccountObjectIdentifier",
+		VariantOf: &base,
+		Generators: []ssot.GeneratorOption{
+			ssot.WithObjectAssert(ssot.ObjectAssertShow(
+				ssot.ObjectAssertShowFromBase("AsAdaptive"),
+			)),
+		},
+		Show: ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+	}
+
+	details := objectAssertionDetailsFromSsot(obj, false)
+	require.Equal(t, "Widget", details.ObjectTypeName)
+	require.Equal(t, &genhelpers.ShowProjectionDef{ClientName: "Widget", Method: "AsAdaptive"}, details.ShowProjection)
+	model := SnowflakeObjectAssertionsFromSsot(obj, false)
+	require.Equal(t, "Widget", model.ObjectTypeName)
+	require.Equal(t, details.ShowProjection, model.ShowProjection)
+}
+
 func Test_SnowflakeObjectAssertionsFromSsot_panics(t *testing.T) {
 	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
 	enabled := []ssot.GeneratorOption{ssot.WithObjectAssert(ssot.ObjectAssertShow())}

@@ -57,6 +57,21 @@ var WarehouseAdaptiveAttrs = struct {
 	},
 }
 
+// Show columns that cannot reuse WarehouseAttrs.
+// auto_resume is writable there and is not an adaptive attribute.
+// The performance columns are Readonly there and these names are adaptive attributes.
+var (
+	warehouseAdaptiveAutoResumeShow = ssot.Attribute{
+		Name: "auto_resume", Type: ssot.AttrBool, Readonly: true,
+	}
+	warehouseAdaptiveMaxQueryPerformanceLevelShow = ssot.Attribute{
+		Name: "max_query_performance_level", Type: ssot.AttrEnum, Enum: MaxQueryPerformanceLevel, OptionalInShow: true, OptionalInDb: true,
+	}
+	warehouseAdaptiveQueryThroughputMultiplierShow = ssot.Attribute{
+		Name: "query_throughput_multiplier", Type: ssot.AttrInt, OptionalInShow: true, OptionalInDb: true,
+	}
+)
+
 var WarehouseAdaptive = ssot.Object{
 	Name:                       "WarehouseAdaptive",
 	NamePlural:                 "Warehouses",
@@ -64,6 +79,17 @@ var WarehouseAdaptive = ssot.Object{
 	SdkCreateRequestObjectName: "AdaptiveWarehouse",
 	VariantOf:                  &Warehouse,
 	AttributesModification:     true,
+	Generators: []ssot.GeneratorOption{
+		ssot.WithSchema(ssot.SchemaShow()),
+		ssot.WithModel(),
+		ssot.WithResourceAssert(),
+		ssot.WithShowOutputAssert(ssot.ShowOutputShow()),
+		ssot.WithObjectAssert(ssot.ObjectAssertShow(
+			ssot.ObjectAssertShowFromBase("AsAdaptive"),
+		)),
+		ssot.WithObjectParametersAssert(),
+		ssot.WithResourceParametersAssert(),
+	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithDescribeInSdk(ssot.Omitted()),
 		ssot.WithDescribeOutputSet(ssot.Omitted()),
@@ -91,5 +117,30 @@ var WarehouseAdaptive = ssot.Object{
 		WarehouseAdaptiveAttrs.MaxQueryPerformanceLevel,
 		WarehouseAdaptiveAttrs.QueryThroughputMultiplier,
 		WarehouseAdaptiveAttrs.ResourceMonitor,
+	},
+	Show: ssot.OutputSpec{
+		Columns: []*ssot.Attribute{
+			&WarehouseAttrs.Name,
+			&WarehouseAttrs.State,
+			&WarehouseAttrs.WarehouseType,
+			&WarehouseAttrs.Running,
+			&WarehouseAttrs.Queued,
+			&WarehouseAttrs.IsDefault,
+			&WarehouseAttrs.IsCurrent,
+			&warehouseAdaptiveAutoResumeShow,
+			&WarehouseAttrs.Available,
+			&WarehouseAttrs.Provisioning,
+			&WarehouseAttrs.Quiescing,
+			&WarehouseAttrs.Other,
+			&WarehouseAttrs.CreatedOn,
+			&WarehouseAttrs.ResumedOn,
+			&WarehouseAttrs.UpdatedOn,
+			&WarehouseAttrs.Owner,
+			&WarehouseAttrs.Comment,
+			&WarehouseAttrs.ResourceMonitor,
+			&WarehouseAttrs.OwnerRoleType,
+			&warehouseAdaptiveMaxQueryPerformanceLevelShow,
+			&warehouseAdaptiveQueryThroughputMultiplierShow,
+		},
 	},
 }

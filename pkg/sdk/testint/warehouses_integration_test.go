@@ -256,10 +256,16 @@ func TestInt_Warehouses(t *testing.T) {
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
 		assertThatObject(
-			t, objectassert.Warehouse(t, id).
+			t, objectassert.WarehouseAdaptive(t, id).
 				HasName(id.Name()).
 				HasType(sdk.WarehouseTypeAdaptive).
 				HasComment("").
+				HasAutoResume(true).
+				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
+				HasQueryThroughputMultiplier(2),
+		)
+		assertThatObject(
+			t, objectassert.Warehouse(t, id).
 				HasNoSize().
 				HasNoGeneration().
 				HasNoResourceConstraint().
@@ -267,11 +273,8 @@ func TestInt_Warehouses(t *testing.T) {
 				HasNoMinClusterCount().
 				HasNoScalingPolicy().
 				HasNoAutoSuspend().
-				HasAutoResume(true).
 				HasNoEnableQueryAcceleration().
-				HasNoQueryAccelerationMaxScaleFactor().
-				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
-				HasQueryThroughputMultiplier(2),
+				HasNoQueryAccelerationMaxScaleFactor(),
 		)
 		assertThatObject(
 			t, objectparametersassert.WarehouseParameters(t, id).
@@ -294,10 +297,17 @@ func TestInt_Warehouses(t *testing.T) {
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
 		assertThatObject(
-			t, objectassert.Warehouse(t, id).
+			t, objectassert.WarehouseAdaptive(t, id).
 				HasName(id.Name()).
 				HasType(sdk.WarehouseTypeAdaptive).
 				HasComment("test adaptive warehouse").
+				HasAutoResume(true).
+				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
+				HasQueryThroughputMultiplier(22).
+				HasResourceMonitor(resourceMonitor.ID()),
+		)
+		assertThatObject(
+			t, objectassert.Warehouse(t, id).
 				HasNoSize().
 				HasNoGeneration().
 				HasNoResourceConstraint().
@@ -305,12 +315,8 @@ func TestInt_Warehouses(t *testing.T) {
 				HasNoMinClusterCount().
 				HasNoScalingPolicy().
 				HasNoAutoSuspend().
-				HasAutoResume(true).
 				HasNoEnableQueryAcceleration().
-				HasNoQueryAccelerationMaxScaleFactor().
-				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
-				HasQueryThroughputMultiplier(22).
-				HasResourceMonitor(resourceMonitor.ID()),
+				HasNoQueryAccelerationMaxScaleFactor(),
 		)
 		assertThatObject(
 			t, objectparametersassert.WarehouseParameters(t, id).
@@ -429,10 +435,17 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(
-			t, objectassert.Warehouse(t, warehouse.ID()).
+			t, objectassert.WarehouseAdaptive(t, warehouse.ID()).
 				HasType(sdk.WarehouseTypeAdaptive).
 				// the previously suspended warehouse does not stay suspended - adaptive warehouses have no such state
 				HasState(sdk.WarehouseStateEnabled).
+				HasAutoResume(true).
+				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelLarge).
+				// Snowflake does not guarantee a specific default (SNOW-3687301).
+				HasQueryThroughputMultiplierSet(),
+		)
+		assertThatObject(
+			t, objectassert.Warehouse(t, warehouse.ID()).
 				HasNoSize().
 				HasNoGeneration().
 				HasNoResourceConstraint().
@@ -440,12 +453,8 @@ func TestInt_Warehouses(t *testing.T) {
 				HasNoMinClusterCount().
 				HasNoScalingPolicy().
 				HasNoAutoSuspend().
-				HasAutoResume(true).
 				HasNoEnableQueryAcceleration().
-				HasNoQueryAccelerationMaxScaleFactor().
-				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelLarge).
-				// Snowflake does not guarantee a specific default (SNOW-3687301).
-				HasQueryThroughputMultiplierSet(),
+				HasNoQueryAccelerationMaxScaleFactor(),
 		)
 
 		// Change warehouse type back from adaptive to standard
@@ -477,7 +486,7 @@ func TestInt_Warehouses(t *testing.T) {
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateAdaptive(t)
 		t.Cleanup(warehouseCleanup)
 
-		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).HasState(sdk.WarehouseStateEnabled))
+		assertThatObject(t, objectassert.WarehouseAdaptive(t, warehouse.ID()).HasState(sdk.WarehouseStateEnabled))
 
 		err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).WithSuspend(true))
 		require.ErrorContains(t, err, "Invalid operation Command not supported on an Adaptive Warehouse.")
@@ -488,7 +497,7 @@ func TestInt_Warehouses(t *testing.T) {
 		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).WithResume(true).WithIfSuspended(true))
 		require.ErrorContains(t, err, "Invalid operation Command not supported on an Adaptive Warehouse.")
 
-		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).HasState(sdk.WarehouseStateEnabled))
+		assertThatObject(t, objectassert.WarehouseAdaptive(t, warehouse.ID()).HasState(sdk.WarehouseStateEnabled))
 	})
 
 	t.Run("alter adaptive: set and unset all adaptive params", func(t *testing.T) {
@@ -498,7 +507,7 @@ func TestInt_Warehouses(t *testing.T) {
 		emptyId := sdk.NewAccountObjectIdentifier("")
 
 		assertThatObject(
-			t, objectassert.Warehouse(t, warehouse.ID()).
+			t, objectassert.WarehouseAdaptive(t, warehouse.ID()).
 				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
 				HasQueryThroughputMultiplier(2).
 				HasResourceMonitor(emptyId),
@@ -519,7 +528,7 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(
-			t, objectassert.Warehouse(t, warehouse.ID()).
+			t, objectassert.WarehouseAdaptive(t, warehouse.ID()).
 				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXSmall).
 				HasQueryThroughputMultiplier(5).
 				HasResourceMonitor(resourceMonitor.ID()),
@@ -540,7 +549,7 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(
-			t, objectassert.Warehouse(t, warehouse.ID()).
+			t, objectassert.WarehouseAdaptive(t, warehouse.ID()).
 				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
 				HasQueryThroughputMultiplier(2).
 				HasResourceMonitor(emptyId),
@@ -1130,7 +1139,7 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
 		assertThatObject(
-			t, objectassert.Warehouse(t, id).
+			t, objectassert.WarehouseInteractive(t, id).
 				HasName(id.Name()).
 				HasType(sdk.WarehouseTypeInteractive).
 				HasComment("").
@@ -1139,14 +1148,17 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 				HasMinClusterCount(1).
 				HasAutoSuspend(86400).
 				HasAutoResume(true).
+				HasTables(),
+		)
+		assertThatObject(
+			t, objectassert.Warehouse(t, id).
 				HasScalingPolicy(sdk.ScalingPolicyStandard).
 				HasEnableQueryAcceleration(false).
 				HasQueryAccelerationMaxScaleFactor(8).
 				HasNoResourceConstraint().
 				HasNoGeneration().
 				HasNoMaxQueryPerformanceLevel().
-				HasNoQueryThroughputMultiplier().
-				HasTables(),
+				HasNoQueryThroughputMultiplier(),
 		)
 		assertThatObject(
 			t, objectparametersassert.WarehouseInteractiveParameters(t, id).
@@ -1179,7 +1191,7 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
 		assertThatObject(
-			t, objectassert.Warehouse(t, id).
+			t, objectassert.WarehouseInteractive(t, id).
 				HasName(id.Name()).
 				HasType(sdk.WarehouseTypeInteractive).
 				HasComment("interactive warehouse").
@@ -1188,14 +1200,17 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 				HasMinClusterCount(1).
 				HasAutoSuspend(86400).
 				HasAutoResume(true).
+				HasTables(table1.ID(), table2.ID()),
+		)
+		assertThatObject(
+			t, objectassert.Warehouse(t, id).
 				HasScalingPolicy(sdk.ScalingPolicyStandard).
 				HasEnableQueryAcceleration(false).
 				HasQueryAccelerationMaxScaleFactor(8).
 				HasNoResourceConstraint().
 				HasNoGeneration().
 				HasNoMaxQueryPerformanceLevel().
-				HasNoQueryThroughputMultiplier().
-				HasTables(table1.ID(), table2.ID()),
+				HasNoQueryThroughputMultiplier(),
 		)
 		assertThatObject(
 			t, objectparametersassert.WarehouseInteractiveParameters(t, id).
@@ -1224,11 +1239,11 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 
 		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithAddTables([]sdk.SchemaObjectIdentifier{table2.ID()}))
 		require.NoError(t, err)
-		assertThatObject(t, objectassert.Warehouse(t, id).HasTables(table1.ID(), table2.ID()))
+		assertThatObject(t, objectassert.WarehouseInteractive(t, id).HasTables(table1.ID(), table2.ID()))
 
 		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithDropTables([]sdk.SchemaObjectIdentifier{table1.ID()}))
 		require.NoError(t, err)
-		assertThatObject(t, objectassert.Warehouse(t, id).HasTables(table2.ID()))
+		assertThatObject(t, objectassert.WarehouseInteractive(t, id).HasTables(table2.ID()))
 	})
 
 	t.Run("alter: set and unset fallback warehouse", func(t *testing.T) {
@@ -1277,7 +1292,7 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 			require.NoError(t, err)
 		})
 
-		assertThatObject(t, objectassert.Warehouse(t, id).HasType(sdk.WarehouseTypeInteractive))
+		assertThatObject(t, objectassert.WarehouseInteractive(t, id).HasType(sdk.WarehouseTypeInteractive))
 
 		current, err := client.ContextFunctions.CurrentWarehouse(ctx)
 		require.NoError(t, err)
@@ -1309,7 +1324,7 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 			require.NoError(t, err)
 		})
 
-		assertThatObject(t, objectassert.Warehouse(t, id).HasType(sdk.WarehouseTypeInteractive))
+		assertThatObject(t, objectassert.WarehouseInteractive(t, id).HasType(sdk.WarehouseTypeInteractive))
 
 		current, err = client.ContextFunctions.CurrentWarehouse(ctx)
 		require.NoError(t, err)
@@ -1326,6 +1341,6 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 			WithSet(*sdk.NewWarehouseSetRequest().WithWarehouseType(sdk.WarehouseTypeAdaptive)))
 		require.ErrorContains(t, err, "invalid property 'WAREHOUSE_TYPE cannot be changed on interactive warehouses' for 'WAREHOUSE'")
 
-		assertThatObject(t, objectassert.Warehouse(t, id).HasType(sdk.WarehouseTypeInteractive))
+		assertThatObject(t, objectassert.WarehouseInteractive(t, id).HasType(sdk.WarehouseTypeInteractive))
 	})
 }

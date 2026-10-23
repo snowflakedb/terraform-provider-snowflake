@@ -67,7 +67,7 @@ func TestAcc_WarehouseInteractive_BasicUseCase(t *testing.T) {
 			HasAutoSuspendString(r.IntDefaultString).
 			HasCommentEmpty().
 			HasFullyQualifiedNameString(warehouseId.FullyQualifiedName()),
-		resourceshowoutputassert.WarehouseShowOutput(t, ref).
+		resourceshowoutputassert.WarehouseInteractiveShowOutput(t, ref).
 			HasName(warehouseId.Name()).
 			HasStateNotEmpty(),
 	}
@@ -81,7 +81,7 @@ func TestAcc_WarehouseInteractive_BasicUseCase(t *testing.T) {
 			HasAutoResumeString(r.BooleanFalse).
 			HasCommentString(comment).
 			HasMaxConcurrencyLevel(8),
-		resourceshowoutputassert.WarehouseShowOutput(t, ref).
+		resourceshowoutputassert.WarehouseInteractiveShowOutput(t, ref).
 			HasName(warehouseId.Name()).
 			HasComment(comment),
 	}
@@ -215,7 +215,7 @@ func TestAcc_WarehouseInteractive_CompleteUseCase(t *testing.T) {
 						HasStatementTimeoutInSeconds(4).
 						HasTables(table.ID().FullyQualifiedName()).
 						HasFullyQualifiedNameString(warehouseId.FullyQualifiedName()),
-					resourceshowoutputassert.WarehouseShowOutput(t, ref).
+					resourceshowoutputassert.WarehouseInteractiveShowOutput(t, ref).
 						HasName(warehouseId.Name()).
 						HasComment(comment).
 						HasStateNotEmpty(),

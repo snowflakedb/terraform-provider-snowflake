@@ -67,6 +67,8 @@ func ValidateObject(obj Object) {
 	validateGeneratorSkips(obj, "object-assertion", "DESCRIBE", g.ObjectAssert.Describe, obj.Describe.Columns, g.ObjectAssert.DescribeSkipFields)
 	validateGeneratorSkips(obj, "show-output", "SHOW", g.ShowOutputAssert.Show, obj.Show.Columns, g.ShowOutputAssert.ShowSkipFields)
 	validateGeneratorSkips(obj, "show-output", "DESCRIBE", g.ShowOutputAssert.Describe, obj.Describe.Columns, g.ShowOutputAssert.DescribeSkipFields)
+	obj.ShowFromBase()
+	obj.ParameterAssertionNames()
 	validateSchemaStateUpgraders(obj)
 }
 

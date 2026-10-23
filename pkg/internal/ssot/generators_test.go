@@ -75,8 +75,48 @@ func Test_ObjectGenerators_options(t *testing.T) {
 
 	g = ObjectGenerators(WithObjectAssert())
 	require.Equal(t, Generators{}, g)
+}
 
-	g = ObjectGenerators(WithSdk(SdkShow(), SdkDescribe()))
+func Test_ShowFromBase(t *testing.T) {
+	base := Object{Name: "Widget"}
+	obj := Object{
+		Name:      "WidgetAdaptive",
+		VariantOf: &base,
+		Generators: []GeneratorOption{
+			WithObjectAssert(ObjectAssertShow(ObjectAssertShowFromBase("AsAdaptive"))),
+		},
+	}
+	got, ok := obj.ShowFromBase()
+	require.True(t, ok)
+	require.Equal(t, ShowFromBase{ClientName: "Widget", Method: "AsAdaptive"}, got)
+
+	_, ok = Object{Name: "Widget"}.ShowFromBase()
+	require.False(t, ok)
+
+	require.Panics(t, func() {
+		Object{
+			Name: "WidgetAdaptive",
+			Generators: []GeneratorOption{
+				WithObjectAssert(ObjectAssertShow(ObjectAssertShowFromBase("AsAdaptive"))),
+			},
+		}.ShowFromBase()
+	})
+}
+
+func Test_ParameterAssertionNames(t *testing.T) {
+	require.Equal(t, ParameterAssertionNames{}, Object{Name: "Schema"}.ParameterAssertionNames())
+
+	base := Object{Name: "Warehouse"}
+	got := Object{Name: "WarehouseAdaptive", VariantOf: &base}.ParameterAssertionNames()
+	require.Equal(t, ParameterAssertionNames{ConstantPrefix: "Warehouse", ObjectTypeName: "Warehouse"}, got)
+
+	require.Panics(t, func() {
+		Object{Name: "WarehouseAdaptive", VariantOf: &Object{}}.ParameterAssertionNames()
+	})
+}
+
+func Test_ObjectGenerators_sdk(t *testing.T) {
+	g := ObjectGenerators(WithSdk(SdkShow(), SdkDescribe()))
 	require.Equal(t, Generators{Sdk: SdkGenerator{Show: true, Describe: true}}, g)
 
 	g = ObjectGenerators(WithSdk(SdkShow()))

@@ -117,8 +117,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.User{}},
 	{ObjectStruct: sdk.ProgrammaticAccessToken{}},
 	{ObjectStruct: sdk.View{}},
-	{ObjectStruct: sdk.WarehouseAdaptive{}},
-	{ObjectStruct: sdk.WarehouseInteractive{}},
 	{ObjectStruct: sdk.WarehouseRegular{}},
 	{ObjectStruct: sdk.AlertDetails{}, IsDescribe: true},
 	// Nested DescribePropertyListSchema in ext (today’s public describe_output).

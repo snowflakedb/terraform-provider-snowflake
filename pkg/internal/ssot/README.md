@@ -112,12 +112,16 @@ enable nothing.
   argument is the same `*Attribute` that sits in `Show.Columns`. The column stays in `Columns`, and `Has*` is not
   generated. `ObjectAssertDescribe(ObjectAssertDescribeSkipFields(&attrs.Password))` is the describe-side copy.
   `ObjectAssertDescribe(WithNoIdentifiableObject())` suppresses the fetch constructor when `Describe` returns a
-  slice and the row has no `ID()`. These are settings of object-assertion show or describe, not their own generators.
+  slice and the row has no `ID()`. `ObjectAssertShow(ObjectAssertShowFromBase("AsAdaptive"))` fetches through
+  `testClient.<VariantOf.Name>.Show` and projects the row with `AsAdaptive()`. `Object.ShowFromBase` resolves that
+  client from `VariantOf`. The object type constant is `sdk.ObjectType<VariantOf.Name>`. These are settings of
+  object-assertion show or describe, not their own generators.
 - `WithObjectParametersAssert()` - Snowflake object parameters assertions (
   `make generate-snowflake-object-parameters-assertions`).
   See [that section](../../acceptance/bettertestspoc/README.md#adding-new-snowflake-object-parameters-assertions).
   Parameters come from the [catalog](defs/parameters.go) entries for the object's `ParameterLevel()`, not from
-  `Attributes`. Constants are `sdk.<Name>Parameter`.
+  `Attributes`. Constants are `sdk.<Name>Parameter`. A variant uses `VariantOf.Name` for the constant and the object
+  type. `Object.ParameterAssertionNames` returns those names. The catalog level stays `ParameterLevel()`.
 - `WithResourceParametersAssert()` - resource parameters assertions (`make generate-resource-parameters-assertions`).
   See [that section](../../acceptance/bettertestspoc/README.md#adding-new-resource-parameters-assertions).
   Parameters come from the same catalog entries, and constants are `sdk.<Name>Parameter`. The two switches are
@@ -234,7 +238,7 @@ in [Generators](#generators).
 `SdkDrop()` with no options still sets `Drop`. `SdkCreate()` with no options still sets `Create`. `SdkAlter()` with no
 options still sets `Alter`. `ShowOutputShow()` with no options sets `Show` and leaves `ShowSkipFields` nil.
 `ShowOutputDescribe()` with no options sets `Describe` and leaves `DescribeSkipFields` nil. `ObjectAssertShow()` with no
-options sets `Show` and leaves `ShowSkipFields` nil. `ObjectAssertDescribe()` with no options sets `Describe` and leaves
+options sets `Show` and leaves `ShowSkipFields` nil and `ShowProjection` empty. `ObjectAssertShowFromBase` sets `ShowProjection` on that same call. The client name is `VariantOf.Name`. `ObjectAssertDescribe()` with no options sets `Describe` and leaves
 `NoIdentifiableObject` false and `DescribeSkipFields` nil. `WithModel()` and `WithResourceAssert()` take a variadic of
 `ModelOption` and `ResourceAssertOption`. No constructors exist for those option types. Zero options still sets
 `Enabled`. A later setting is another option on that call, not a new `Generators` entry. Consumers read the fields

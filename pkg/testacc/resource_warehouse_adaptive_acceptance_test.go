@@ -75,7 +75,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			HasStatementQueuedTimeoutInSeconds(0).
 			HasStatementTimeoutInSeconds(172800).
 			HasFullyQualifiedNameString(warehouseId.FullyQualifiedName()),
-		resourceshowoutputassert.WarehouseShowOutput(t, ref).
+		resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
 			HasName(warehouseId.Name()).
 			HasType(sdk.WarehouseTypeAdaptive).
 			HasStateNotEmpty().
@@ -94,7 +94,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			HasResourceMonitorString(resourceMonitor.ID().Name()).
 			HasStatementQueuedTimeoutInSeconds(300).
 			HasStatementTimeoutInSeconds(86400),
-		resourceshowoutputassert.WarehouseShowOutput(t, ref).
+		resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
 			HasName(warehouseId.Name()).
 			HasType(sdk.WarehouseTypeAdaptive).
 			HasComment(comment).
@@ -111,7 +111,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			HasStatementQueuedTimeoutInSeconds(600).
 			HasStatementTimeoutInSeconds(43200).
 			HasFullyQualifiedNameString(newWarehouseId.FullyQualifiedName()),
-		resourceshowoutputassert.WarehouseShowOutput(t, ref).
+		resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
 			HasName(newWarehouseId.Name()).
 			HasType(sdk.WarehouseTypeAdaptive).
 			HasComment(newComment).
@@ -128,7 +128,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			HasStatementQueuedTimeoutInSeconds(0).
 			HasStatementTimeoutInSeconds(172800).
 			HasFullyQualifiedNameString(newWarehouseId.FullyQualifiedName()),
-		resourceshowoutputassert.WarehouseShowOutput(t, ref).
+		resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
 			HasName(newWarehouseId.Name()).
 			HasCommentEmpty().
 			HasResourceMonitorEmpty().
@@ -166,7 +166,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 					t,
 					resourceassert.WarehouseAdaptiveResource(t, ref).
 						HasQueryThroughputMultiplier(0),
-					resourceshowoutputassert.WarehouseShowOutput(t, ref).
+					resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
 						HasQueryThroughputMultiplier(0),
 				),
 			},
@@ -283,7 +283,7 @@ func TestAcc_WarehouseAdaptive_CompleteUseCase(t *testing.T) {
 						HasStatementQueuedTimeoutInSeconds(300).
 						HasStatementTimeoutInSeconds(86400).
 						HasFullyQualifiedNameString(warehouseId.FullyQualifiedName()),
-					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModelComplete.ResourceReference()).
+					resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, warehouseModelComplete.ResourceReference()).
 						HasName(warehouseId.Name()).
 						HasType(sdk.WarehouseTypeAdaptive).
 						HasComment(comment).
@@ -399,12 +399,13 @@ import {
 					resourceassert.WarehouseAdaptiveResource(t, adaptiveRef).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeAdaptive)).
 						HasMaxQueryPerformanceLevelString(string(sdk.MaxQueryPerformanceLevelLarge)),
-					resourceshowoutputassert.WarehouseShowOutput(t, adaptiveRef).
+					resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, adaptiveRef).
+						HasType(sdk.WarehouseTypeAdaptive).
+						HasState(sdk.WarehouseStateEnabled),
+					objectassert.WarehouseAdaptive(t, id).
 						HasType(sdk.WarehouseTypeAdaptive).
 						HasState(sdk.WarehouseStateEnabled),
 					objectassert.Warehouse(t, id).
-						HasType(sdk.WarehouseTypeAdaptive).
-						HasState(sdk.WarehouseStateEnabled).
 						HasNoSize(),
 				),
 			},
@@ -467,7 +468,7 @@ func TestAcc_WarehouseAdaptive_ExternalTypeChange(t *testing.T) {
 					t,
 					resourceassert.WarehouseAdaptiveResource(t, ref).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeAdaptive)),
-					resourceshowoutputassert.WarehouseShowOutput(t, ref).
+					resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
 						HasType(sdk.WarehouseTypeAdaptive),
 				),
 			},
@@ -486,7 +487,7 @@ func TestAcc_WarehouseAdaptive_ExternalTypeChange(t *testing.T) {
 					t,
 					resourceassert.WarehouseAdaptiveResource(t, ref).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeAdaptive)),
-					resourceshowoutputassert.WarehouseShowOutput(t, ref).
+					resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
 						HasType(sdk.WarehouseTypeAdaptive),
 				),
 			},
@@ -503,7 +504,7 @@ func TestAcc_WarehouseAdaptive_ExternalTypeChangeToInteractive(t *testing.T) {
 	assertions := []assert.TestCheckFuncProvider{
 		resourceassert.WarehouseAdaptiveResource(t, ref).
 			HasWarehouseType(string(sdk.WarehouseTypeAdaptive)),
-		resourceshowoutputassert.WarehouseShowOutput(t, ref).
+		resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
 			HasType(sdk.WarehouseTypeAdaptive),
 	}
 
