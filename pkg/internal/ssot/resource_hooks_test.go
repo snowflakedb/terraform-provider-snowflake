@@ -21,6 +21,8 @@ func Test_DefaultResourceExtHooks_options(t *testing.T) {
 	require.Equal(t, Generated(), DefaultResourceExtHooks(WithStateUpgraders(Generated())).StateUpgraders)
 	require.Equal(t, Omitted(), hooks.AfterCreate)
 	require.Equal(t, Omitted(), hooks.AfterAlter)
+	require.Equal(t, ExtCall(), hooks.CustomizeDiff)
+	require.Equal(t, Generated(), DefaultResourceExtHooks(WithCustomizeDiff(Generated())).CustomizeDiff)
 }
 
 func Test_DefaultResourceExtHooks_afterHooks(t *testing.T) {

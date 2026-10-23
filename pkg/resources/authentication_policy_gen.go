@@ -7,10 +7,12 @@ import (
 	"errors"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -25,7 +27,7 @@ func AuthenticationPolicy() *tfschema.Resource {
 		DeleteContext: authenticationPolicyDeleteExt,
 		Importer:      authenticationPolicyImporterExt,
 
-		CustomizeDiff: authenticationPolicyCustomizeDiffExt,
+		CustomizeDiff: authenticationPolicyCustomizeDiff,
 		Timeouts:      defaultTimeouts,
 		SchemaVersion: 1,
 		// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
@@ -137,6 +139,12 @@ func UpdateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, m
 	}
 	return ReadAuthenticationPolicyFunc(false)(ctx, d, meta)
 }
+
+var authenticationPolicyCustomizeDiff = TrackingCustomDiffWrapper(resources.AuthenticationPolicy, customdiff.All(
+	ComputedIfAnyAttributeChanged(authenticationPolicySchema, ShowOutputAttributeName, "name", "comment"),
+	ComputedIfAnyAttributeChanged(authenticationPolicySchema, DescribeOutputAttributeName, "name", "mfa_enrollment", "comment"),
+	ComputedIfAnyAttributeChanged(authenticationPolicySchema, FullyQualifiedNameAttributeName, "name"),
+))
 
 func authenticationPolicyParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
 	return sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string)), nil

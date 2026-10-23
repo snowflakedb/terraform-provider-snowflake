@@ -153,6 +153,59 @@ func Test_ValidateObject_createOnlyMustBeOptionalBool(t *testing.T) {
 	})
 }
 
+func Test_ValidateObject_additionalCustomizeDiffs(t *testing.T) {
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			AdditionalCustomizeDiffs: []CustomizeDiffFunc{
+				"widgetForceNewIfSizeRemoved",
+			},
+			ResourceHooks: []ResourceHookOption{
+				WithCustomizeDiff(Generated()),
+			},
+		})
+	})
+}
+
+func Test_ValidateObject_additionalCustomizeDiffsEmptyEntry(t *testing.T) {
+	require.PanicsWithValue(t, `object "Widget": AdditionalCustomizeDiffs entry is empty`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			AdditionalCustomizeDiffs: []CustomizeDiffFunc{
+				"",
+			},
+			ResourceHooks: []ResourceHookOption{
+				WithCustomizeDiff(Generated()),
+			},
+		})
+	})
+}
+
+func Test_ValidateObject_additionalCustomizeDiffsNotAFunctionName(t *testing.T) {
+	require.PanicsWithValue(t, `object "Widget": AdditionalCustomizeDiffs entry "not a func" is not a function name`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			AdditionalCustomizeDiffs: []CustomizeDiffFunc{
+				"not a func",
+			},
+			ResourceHooks: []ResourceHookOption{
+				WithCustomizeDiff(Generated()),
+			},
+		})
+	})
+}
+
+func Test_ValidateObject_additionalCustomizeDiffsRequireGenerated(t *testing.T) {
+	require.PanicsWithValue(t, `object "Widget": AdditionalCustomizeDiffs require WithCustomizeDiff(Generated())`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			AdditionalCustomizeDiffs: []CustomizeDiffFunc{
+				"widgetForceNewIfSizeRemoved",
+			},
+		})
+	})
+}
+
 func Test_ValidateObject_schemaStateUpgraders(t *testing.T) {
 	require.NotPanics(t, func() {
 		ValidateObject(Object{

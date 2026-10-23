@@ -373,10 +373,15 @@ var Warehouse = ssot.Object{
 		ssot.WithParametersOutputSchema(ssot.Generated()),
 		ssot.WithParametersFieldNames(ssot.Generated()),
 		ssot.WithParametersCustomDiff(ssot.Generated()),
+		ssot.WithCustomizeDiff(ssot.Generated()),
 	},
 	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
 		"v092WarehouseSizeStateUpgrader",
 		"v2_6_0_WarehouseResourceConstraintUpgrader",
+	},
+	AdditionalCustomizeDiffs: []ssot.CustomizeDiffFunc{
+		"warehouseForceNewIfSizeRemoved",
+		"warehouseForceNewIfWasInteractive",
 	},
 	Attributes: []ssot.Attribute{
 		WarehouseAttrs.WarehouseType,

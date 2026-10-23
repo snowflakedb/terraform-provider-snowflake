@@ -14,6 +14,7 @@ type ClassifiedField struct {
 	Storage  AttributeType
 	Elem     AttributeType
 	Required bool
+	ForceNew bool // set on identity fields; name uses IdentityNameForceNew, database and schema use IdentityHierarchyForceNew
 	genhelpers.SdkValueType
 }
 
@@ -21,8 +22,11 @@ type ClassifiedField struct {
 // in New<IdType> argument order.
 func IdentityFields(obj Object) []ClassifiedField {
 	name := stringField("name", true)
+	name.ForceNew = obj.IdentityNameForceNew
 	database := stringField("database", true)
+	database.ForceNew = obj.IdentityHierarchyForceNew
 	schemaName := stringField("schema", true)
+	schemaName.ForceNew = obj.IdentityHierarchyForceNew
 	switch obj.IdType {
 	case "AccountObjectIdentifier":
 		return []ClassifiedField{name}

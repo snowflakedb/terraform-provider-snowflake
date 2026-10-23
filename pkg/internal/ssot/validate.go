@@ -70,6 +70,7 @@ func ValidateObject(obj Object) {
 	obj.ShowFromBase()
 	obj.ParameterAssertionNames()
 	validateSchemaStateUpgraders(obj)
+	validateCustomizeDiff(obj)
 }
 
 func validateAttribute(obj Object, a Attribute) {
@@ -95,6 +96,22 @@ func validateAttribute(obj Object, a Attribute) {
 	}
 	for _, child := range a.Children {
 		validateAttribute(obj, child)
+	}
+}
+
+func validateCustomizeDiff(obj Object) {
+	hooks := DefaultResourceExtHooks(obj.ResourceHooks...)
+	for _, diff := range obj.AdditionalCustomizeDiffs {
+		name := string(diff)
+		if name == "" {
+			panic(fmt.Sprintf("object %q: AdditionalCustomizeDiffs entry is empty", obj.Name))
+		}
+		if !token.IsIdentifier(name) || token.IsKeyword(name) {
+			panic(fmt.Sprintf("object %q: AdditionalCustomizeDiffs entry %q is not a function name", obj.Name, name))
+		}
+	}
+	if len(obj.AdditionalCustomizeDiffs) > 0 && !hooks.CustomizeDiff.Generate {
+		panic(fmt.Sprintf("object %q: AdditionalCustomizeDiffs require WithCustomizeDiff(Generated())", obj.Name))
 	}
 }
 

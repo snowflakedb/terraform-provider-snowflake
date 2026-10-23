@@ -28,24 +28,19 @@ var (
 		warehouseParseIdExt,
 		warehouseDropSafelyInSdkExt,
 	))
-	warehouseDescriptionExt   = "Resource used to manage warehouse objects. For more information, check [warehouse documentation](https://docs.snowflake.com/en/sql-reference/commands-warehouse)."
-	warehouseCustomizeDiffExt = TrackingCustomDiffWrapper(resources.Warehouse, customdiff.All(
-		ComputedIfAnyAttributeChanged(warehouseSchema, ShowOutputAttributeName, "name", "warehouse_type", "warehouse_size", "max_cluster_count", "min_cluster_count", "scaling_policy", "auto_suspend", "auto_resume", "resource_monitor", "comment", "enable_query_acceleration", "query_acceleration_max_scale_factor", "resource_constraint", "generation"),
-		ComputedIfAnyAttributeChanged(warehouseParametersAttributesSchema, ParametersAttributeName, warehouseParametersFieldNames...),
-		ComputedIfAnyAttributeChanged(warehouseSchema, FullyQualifiedNameAttributeName, "name"),
-		customdiff.ForceNewIfChange("warehouse_size", func(_ context.Context, old, new, _ any) bool {
-			return old.(string) != "" && new.(string) == ""
-		}),
-		customdiff.ForceNewIfChange("warehouse_type", func(_ context.Context, oldValue, _, _ any) bool {
-			oldRaw, ok := oldValue.(string)
-			if !ok || oldRaw == "" {
-				return false
-			}
-			oldType, err := sdk.ToWarehouseType(oldRaw)
-			return err == nil && oldType == sdk.WarehouseTypeInteractive
-		}),
-		warehouseParametersCustomDiff,
-	))
+	warehouseDescriptionExt = "Resource used to manage warehouse objects. For more information, check [warehouse documentation](https://docs.snowflake.com/en/sql-reference/commands-warehouse)."
+	// Listed on the warehouse SSOT object and appended to the generated customdiff.All.
+	warehouseForceNewIfSizeRemoved = customdiff.ForceNewIfChange("warehouse_size", func(_ context.Context, old, new, _ any) bool {
+		return old.(string) != "" && new.(string) == ""
+	})
+	warehouseForceNewIfWasInteractive = customdiff.ForceNewIfChange("warehouse_type", func(_ context.Context, oldValue, _, _ any) bool {
+		oldRaw, ok := oldValue.(string)
+		if !ok || oldRaw == "" {
+			return false
+		}
+		oldType, err := sdk.ToWarehouseType(oldRaw)
+		return err == nil && oldType == sdk.WarehouseTypeInteractive
+	})
 	warehouseImporterExt = &schema.ResourceImporter{
 		StateContext: TrackingImportWrapper(resources.Warehouse, ImportWarehouse),
 	}

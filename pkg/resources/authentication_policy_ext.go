@@ -12,7 +12,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -29,15 +28,8 @@ var (
 		authenticationPolicyParseIdExt,
 		authenticationPolicyDropSafelyInSdkExt,
 	))
-	authenticationPolicyDescriptionExt   = "Resource used to manage authentication policy objects. For more information, check [authentication policy documentation](https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy)."
-	authenticationPolicyCustomizeDiffExt = TrackingCustomDiffWrapper(resources.AuthenticationPolicy, customdiff.All(
-		// For now, the set/list fields have to be excluded.
-		// TODO [SNOW-1648997]: address the above comment
-		ComputedIfAnyAttributeChanged(authenticationPolicySchema, ShowOutputAttributeName, "name", "comment"),
-		ComputedIfAnyAttributeChanged(authenticationPolicySchema, DescribeOutputAttributeName, "name", "mfa_enrollment", "comment"),
-		ComputedIfAnyAttributeChanged(authenticationPolicySchema, FullyQualifiedNameAttributeName, "name"),
-	))
-	authenticationPolicyImporterExt = &schema.ResourceImporter{
+	authenticationPolicyDescriptionExt = "Resource used to manage authentication policy objects. For more information, check [authentication policy documentation](https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy)."
+	authenticationPolicyImporterExt    = &schema.ResourceImporter{
 		StateContext: TrackingImportWrapper(resources.AuthenticationPolicy, ImportAuthenticationPolicy),
 	}
 )

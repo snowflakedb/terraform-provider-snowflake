@@ -18,7 +18,10 @@ type ResourceModel struct {
 	IdType                              string
 	LegacyIdEncoding                    bool
 	IdentityNameForceNew                bool
+	IdentityHierarchyForceNew           bool
 	AdditionalIdentityNameDescription   string
+	ShowColumns                         []*ssot.Attribute
+	DescribeColumns                     []*ssot.Attribute
 	SdkCreateRequestObjectName          string
 	VariantOf                           *ssot.Object
 	Attributes                          []ResourceAttribute
@@ -26,6 +29,7 @@ type ResourceModel struct {
 	ObjectType                          string
 	Hooks                               ssot.ResourceHooks
 	SchemaStateUpgraders                []ssot.StateUpgraderFunc
+	AdditionalCustomizeDiffs            []ssot.CustomizeDiffFunc
 	*genhelpers.PreambleModel
 }
 
@@ -101,7 +105,10 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		IdType:                              input.IdType,
 		LegacyIdEncoding:                    input.LegacyIdEncoding,
 		IdentityNameForceNew:                input.IdentityNameForceNew,
+		IdentityHierarchyForceNew:           input.IdentityHierarchyForceNew,
 		AdditionalIdentityNameDescription:   input.AdditionalIdentityNameDescription,
+		ShowColumns:                         input.Show.Columns,
+		DescribeColumns:                     input.Describe.Columns,
 		SdkCreateRequestObjectName:          input.SdkCreateRequestObjectName,
 		VariantOf:                           input.VariantOf,
 		Attributes:                          attributes,
@@ -109,6 +116,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		ObjectType:                          input.ObjectType(),
 		Hooks:                               hooks,
 		SchemaStateUpgraders:                input.SchemaStateUpgraders,
+		AdditionalCustomizeDiffs:            input.AdditionalCustomizeDiffs,
 		PreambleModel:                       preamble,
 	}
 }

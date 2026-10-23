@@ -257,11 +257,12 @@ var AuthenticationPolicyAttrs = struct {
 }
 
 var AuthenticationPolicy = ssot.Object{
-	Name:                   "AuthenticationPolicy",
-	NamePlural:             "AuthenticationPolicies",
-	DescribeFailRead:       true,
-	IdType:                 "SchemaObjectIdentifier",
-	AttributesModification: true,
+	Name:                      "AuthenticationPolicy",
+	NamePlural:                "AuthenticationPolicies",
+	DescribeFailRead:          true,
+	IdType:                    "SchemaObjectIdentifier",
+	IdentityHierarchyForceNew: true,
+	AttributesModification:    true,
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
@@ -272,6 +273,7 @@ var AuthenticationPolicy = ssot.Object{
 		ssot.WithIdentitySchema(ssot.ExtCall()),
 		// The describe elem schema is DescribeAuthenticationPolicyDescribeDetailsSchema.
 		ssot.WithDescribeOutputSchema(ssot.ExtCall()),
+		ssot.WithCustomizeDiff(ssot.Generated()),
 	},
 	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
 		"v2_9_0_AuthenticationPolicyStateUpgrader",

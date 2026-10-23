@@ -97,6 +97,14 @@ func Update{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) 
 {{ template "alterUnsetInSdk" . -}}
 {{ template "afterAlter" . }}
 }
+{{- if .Hooks.CustomizeDiff.Generate }}
+
+var {{ .Prefix }}CustomizeDiff = TrackingCustomDiffWrapper(resources.{{ .Name }}, customdiff.All(
+{{- range .CustomDiffCalls }}
+	{{ . }},
+{{- end }}
+))
+{{- end }}
 {{- if .Hooks.ParseIdFromConfig.Generate }}
 
 {{ template "generatedParseIdFromConfig" . }}

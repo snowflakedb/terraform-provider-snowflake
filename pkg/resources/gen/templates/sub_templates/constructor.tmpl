@@ -8,7 +8,7 @@
 {{ template "dropSafelyInSdk" . }}
 		Importer:      {{ .Prefix }}ImporterExt,
 
-		CustomizeDiff: {{ .Prefix }}CustomizeDiffExt,
+		CustomizeDiff: {{ .Prefix }}CustomizeDiff{{ if not .Hooks.CustomizeDiff.Generate }}Ext{{ end }},
 		Timeouts:      defaultTimeouts,
 {{- if .Hooks.StateUpgraders.Generate }}
 		SchemaVersion: {{ len .SchemaStateUpgraders }},

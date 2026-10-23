@@ -48,6 +48,7 @@ type ResourceHooks struct {
 	ParametersOutputSchema          ResourceHook
 	ParametersFieldNames            ResourceHook
 	ParametersCustomDiff            ResourceHook
+	CustomizeDiff                   ResourceHook
 }
 
 type ResourceHookOption func(*ResourceHooks)
@@ -108,6 +109,7 @@ func DefaultResourceExtHooks(opts ...ResourceHookOption) ResourceHooks {
 		ParametersOutputSchema:          Omitted(),
 		ParametersFieldNames:            Omitted(),
 		ParametersCustomDiff:            Omitted(),
+		CustomizeDiff:                   ExtCall(),
 	}
 	for _, opt := range opts {
 		opt(&h)
@@ -281,4 +283,8 @@ func WithParametersFieldNames(h ResourceHook) ResourceHookOption {
 
 func WithParametersCustomDiff(h ResourceHook) ResourceHookOption {
 	return func(hooks *ResourceHooks) { hooks.ParametersCustomDiff = h }
+}
+
+func WithCustomizeDiff(h ResourceHook) ResourceHookOption {
+	return func(hooks *ResourceHooks) { hooks.CustomizeDiff = h }
 }

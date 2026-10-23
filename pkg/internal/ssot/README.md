@@ -219,6 +219,28 @@ present. A resource with a passthrough importer omits it.
 resources. `ExtCall` keeps the ext `SchemaVersion` and `StateUpgraders` pair. `ValidateObject` panics when
 `Generated` has no function names, so the template does not check the list.
 
+`CustomizeDiff` defaults to `ExtCall`, which keeps `<prefix>CustomizeDiffExt` as the whole `schema.CustomizeDiffFunc`.
+`WithCustomizeDiff(Generated())` emits `<prefix>CustomizeDiff` and points `CustomizeDiff` at it. The value is
+`TrackingCustomDiffWrapper` around `customdiff.All`. Call order is `show_output`, `describe_output`, the parameters
+computed-if, `fully_qualified_name`, then `<prefix>ParametersCustomDiff` when that hook is present.
+`AdditionalCustomizeDiffs` on the object is an ordered list of `schema.CustomizeDiffFunc` names in package resources.
+Those names are appended after the generated calls. The function bodies stay in the ext file. `ValidateObject` panics
+when the list is non-empty without `WithCustomizeDiff(Generated())`, when an entry is empty, or when an entry is not
+a function name. An output call is emitted only when that output's schema
+hook is present and the call has changed keys. Its schema argument is `<prefix>Schema`. The parameters computed-if is
+emitted when both `ParametersAttributesSchema` and `ParametersFieldNames` are present. Its schema argument is the
+parameters attributes schema, and its changed keys are `<prefix>ParametersFieldNames...`. `show_output` and
+`describe_output` take the top-level columns of that output, in column order. A column is a changed key when its
+`Name` is a top-level resource or identifier attribute. `Children` marks a nested column or a nested resource
+attribute, and both are left out. For now, the set/list fields have to be excluded
+(`TODO [SNOW-1648997]`): a column or resource attribute whose type is a set or a list is left out, including a set or
+list of scalars. A readonly column that is not a resource attribute is left out: a diff cannot change it. The key is
+`Name`, the resource attribute `ComputedIfAnyAttributeChanged` watches, including when `ShowName` differs.
+`fully_qualified_name` is emitted only when at least one identifier attribute is not ForceNew. Its keys are those
+attributes, in `IdentityFields` order: `database`, then `schema`, then `name`. `name` is ForceNew when
+`IdentityNameForceNew` is set. `database` and `schema` are ForceNew together when `IdentityHierarchyForceNew` is set.
+The identity schema template does not emit that yet. An unknown `IdType` panics.
+
 Optional bools are boolean-strings on purpose (`applyResourceAttributeRules`
 in [resource_attribute_rules.go](../../resources/gen/resource_attribute_rules.go)): an optional bool is Terraform
 `TypeString`, a required bool is `TypeBool`. That classification lives in [classified_field.go](classified_field.go)

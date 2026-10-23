@@ -21,8 +21,10 @@ func main() {
 			WithImport("errors").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections").
+			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas").
 			WithImport("github.com/hashicorp/terraform-plugin-sdk/v2/diag").
+			WithImport("github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff").
 			WithNamedImport("tfschema", "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"),
 		gen.GetAllObjects,
 		gen.ModelFromInputObject,

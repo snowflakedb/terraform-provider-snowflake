@@ -13,6 +13,11 @@ import (
 // The resource schema version is the length of the slice.
 type StateUpgraderFunc string
 
+// CustomizeDiffFunc names a schema.CustomizeDiffFunc in package resources.
+// Object.AdditionalCustomizeDiffs lists these functions in call order.
+// They are appended to the generated customdiff.All.
+type CustomizeDiffFunc string
+
 type Object struct {
 	Name                                string
 	NamePlural                          string
@@ -23,6 +28,7 @@ type Object struct {
 	IdType                              string
 	LegacyIdEncoding                    bool // Keeps the pipe-delimited resource id (db|schema|name) that older resources store.
 	IdentityNameForceNew                bool
+	IdentityHierarchyForceNew           bool // database and schema identifiers are ForceNew; the identity schema template does not emit this yet
 	AdditionalIdentityNameDescription   string
 	SdkCreateRequestObjectName          string  // SDK Create<Name>Request stem; defaults to Name
 	VariantOf                           *Object // Shares SDK parameter details, set/unset request, and ParameterType names with this object; catalog membership still uses Name
@@ -31,6 +37,7 @@ type Object struct {
 	ResourceHooks                       []ResourceHookOption
 	Generators                          []GeneratorOption
 	SchemaStateUpgraders                []StateUpgraderFunc
+	AdditionalCustomizeDiffs            []CustomizeDiffFunc
 	Show                                OutputSpec
 	Describe                            OutputSpec
 	// Create, Set, Unset, and Alter are the SQL field order for those statements.

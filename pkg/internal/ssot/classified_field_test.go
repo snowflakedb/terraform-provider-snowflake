@@ -14,8 +14,19 @@ func Test_IdentityFields(t *testing.T) {
 	database := Object{Name: "Child", IdType: "DatabaseObjectIdentifier"}
 	require.Equal(t, []string{"database", "name"}, classifiedNames(IdentityFields(database)))
 
-	nested := Object{Name: "Nested", IdType: "SchemaObjectIdentifier"}
-	require.Equal(t, []string{"database", "schema", "name"}, classifiedNames(IdentityFields(nested)))
+	nested := Object{Name: "Nested", IdType: "SchemaObjectIdentifier", IdentityNameForceNew: true, IdentityHierarchyForceNew: true}
+	fields := IdentityFields(nested)
+	require.Equal(t, []string{"database", "schema", "name"}, classifiedNames(fields))
+	for _, field := range fields {
+		require.True(t, field.ForceNew)
+	}
+
+	renameable := Object{Name: "Policy", IdType: "SchemaObjectIdentifier", IdentityHierarchyForceNew: true}
+	fields = IdentityFields(renameable)
+	require.False(t, fields[2].ForceNew)
+	require.Equal(t, "name", fields[2].Name)
+	require.True(t, fields[0].ForceNew)
+	require.True(t, fields[1].ForceNew)
 }
 
 func Test_ClassifyAttribute_storageAndSdkType(t *testing.T) {
