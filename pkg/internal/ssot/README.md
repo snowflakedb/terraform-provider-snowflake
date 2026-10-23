@@ -48,6 +48,8 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   (`StringAttributeUpdateBuilder`, ...), or `ListValueUpdate("<mapperFunc>")`. An attribute with no mapping is left out
   of set/unset.
 - `NativeBool` - an optional bool stays Terraform `TypeBool`. Without the mark, an optional bool is a boolean string.
+- `IncludeAliasedInTheDescription` - the resource description lists enum aliases. Without the mark, the description
+  lists canonical values. Warehouse size sets it.
 - `StoredAsText` - the db column is text, and the plain kind stays the semantic type. For a bool, the paired-struct
   generator calls `BoolFromText`. A bool without the mark is still db `bool`. Other generators ignore the mark.
   See [PairedStructs](../../sdk/generator/README.md#pairedstructs).

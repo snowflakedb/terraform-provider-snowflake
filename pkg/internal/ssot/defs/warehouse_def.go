@@ -43,6 +43,7 @@ var WarehouseType = ssot.NewEnum(
 	"STANDARD", "SNOWPARK-OPTIMIZED", "ADAPTIVE", "INTERACTIVE",
 )
 
+// ENABLED is reported for adaptive warehouses, which have no suspend/resume lifecycle.
 var WarehouseState = ssot.NewEnum(
 	"WarehouseState", "WarehouseStates",
 	"SUSPENDED", "SUSPENDING", "STARTED", "RESIZING", "RESUMING", "ENABLED",
@@ -111,17 +112,18 @@ var WarehouseAttrs = struct {
 		SetSql:        ssot.Clause(ssot.SingleQuotes()),
 	},
 	WarehouseSize: ssot.Attribute{
-		Name:                  "warehouse_size",
-		Type:                  ssot.AttrEnum,
-		Description:           "Specifies the size of the virtual warehouse.",
-		AdditionalDescription: "Consult [warehouse documentation](https://docs.snowflake.com/en/sql-reference/sql/create-warehouse#optional-properties-objectproperties) for the details. Note: removing the size from config will result in the resource recreation.",
-		Enum:                  WarehouseSize,
-		ShowName:              "size",
-		DiffSuppress:          ssot.SuppressShow,
-		OptionalInShow:        true,
-		OptionalInDb:          true,
-		CreateSql:             ssot.Clause(ssot.SingleQuotes()),
-		SetSql:                ssot.Clause(ssot.SingleQuotes()),
+		Name:                           "warehouse_size",
+		Type:                           ssot.AttrEnum,
+		Description:                    "Specifies the size of the virtual warehouse.",
+		AdditionalDescription:          "Consult [warehouse documentation](https://docs.snowflake.com/en/sql-reference/sql/create-warehouse#optional-properties-objectproperties) for the details. Note: removing the size from config will result in the resource recreation.",
+		Enum:                           WarehouseSize,
+		IncludeAliasedInTheDescription: true,
+		ShowName:                       "size",
+		DiffSuppress:                   ssot.SuppressShow,
+		OptionalInShow:                 true,
+		OptionalInDb:                   true,
+		CreateSql:                      ssot.Clause(ssot.SingleQuotes()),
+		SetSql:                         ssot.Clause(ssot.SingleQuotes()),
 	},
 	MaxClusterCount: ssot.Attribute{
 		Name:           "max_cluster_count",

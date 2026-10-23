@@ -2,12 +2,16 @@ package defs
 
 import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 
-// MaxQueryPerformanceLevel lists canonical values only. The adaptive schema description uses
-// sdk.AllMaxQueryPerformanceLevels, not the alias string slice.
+// Aliases are accepted by the SDK converter. The adaptive description lists canonical values
+// because IncludeAliasedInTheDescription is unset.
 var MaxQueryPerformanceLevel = ssot.NewEnum(
 	"MaxQueryPerformanceLevel", "MaxQueryPerformanceLevels",
 	"XSMALL", "SMALL", "MEDIUM", "LARGE", "XLARGE", "XXLARGE", "XXXLARGE", "X4LARGE",
-)
+).WithAliases("XSMALL", "X-SMALL").
+	WithAliases("XLARGE", "X-LARGE").
+	WithAliases("XXLARGE", "2X-LARGE").
+	WithAliases("XXXLARGE", "3X-LARGE").
+	WithAliases("X4LARGE", "4X-LARGE")
 
 // WarehouseAdaptiveAttrs holds adaptive warehouse fields. None of them match WarehouseAttrs:
 // comment and resource_monitor use adaptive wording, and warehouse_type is computed.

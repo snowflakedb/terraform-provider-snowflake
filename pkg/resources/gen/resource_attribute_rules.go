@@ -243,7 +243,7 @@ func (ctx resourceAttributeRuleContext) sdkEnumAll(in ssot.Attribute) string {
 		return ""
 	}
 	symbol := "sdk.All" + e.NamePlural
-	if e.HasAliases() {
+	if in.IncludeAliasedInTheDescription {
 		symbol += "String"
 	}
 	return symbol

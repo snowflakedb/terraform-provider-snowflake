@@ -36,7 +36,10 @@ type Attribute struct {
 	// ShowEnum is the SHOW, DESCRIBE, and CREATE/SET enum when it differs from Enum.
 	// Empty uses Enum. Resource schema and model builders keep Enum.
 	ShowEnum *Enum
-	Elem     *Attribute
+	// IncludeAliasedInTheDescription lists aliases in the resource description.
+	// Empty lists canonical values.
+	IncludeAliasedInTheDescription bool
+	Elem                           *Attribute
 	// Children is the named fields of a list or set block. Elem stays a scalar collection element.
 	// A nested field may itself be a block. Create and alter generation skips a nested attribute and every field under it.
 	Children       []Attribute

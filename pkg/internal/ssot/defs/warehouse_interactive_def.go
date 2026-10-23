@@ -27,13 +27,14 @@ var WarehouseInteractiveAttrs = struct {
 	WarehouseType      ssot.Attribute
 }{
 	WarehouseSize: ssot.Attribute{
-		Name:                  "warehouse_size",
-		Type:                  ssot.AttrEnum,
-		Description:           "Specifies the size of the interactive warehouse.",
-		AdditionalDescription: "Note: changing the size briefly suspends and resumes the warehouse to apply the resize (an interactive warehouse cannot be resized while running); removing the size from config will result in the resource recreation.",
-		Enum:                  WarehouseSize,
-		ShowName:              "size",
-		DiffSuppress:          ssot.SuppressShow,
+		Name:                           "warehouse_size",
+		Type:                           ssot.AttrEnum,
+		Description:                    "Specifies the size of the interactive warehouse.",
+		AdditionalDescription:          "Note: changing the size briefly suspends and resumes the warehouse to apply the resize (an interactive warehouse cannot be resized while running); removing the size from config will result in the resource recreation.",
+		Enum:                           WarehouseSize,
+		IncludeAliasedInTheDescription: true,
+		ShowName:                       "size",
+		DiffSuppress:                   ssot.SuppressShow,
 	},
 	MaxClusterCount: ssot.Attribute{
 		Name:         "max_cluster_count",

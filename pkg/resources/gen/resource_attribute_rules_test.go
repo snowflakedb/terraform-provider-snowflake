@@ -315,11 +315,24 @@ func Test_applyResourceAttributeRules_enumNamePluralAndShowSuppress(t *testing.T
 	require.Equal(t, `"Specifies warehouse type. " + enumValuesDescription(sdk.AllWarehouseTypesUserSettable) + " Warehouse needs to be suspended."`, got.DescriptionExpr)
 }
 
-func Test_applyResourceAttributeRules_enumAliasesUseStringList(t *testing.T) {
+func Test_applyResourceAttributeRules_enumAliasesUseCanonicalList(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "warehouse_size",
 		Type:        ssot.AttrEnum,
 		Description: "Specifies the size of the virtual warehouse.",
+		Enum: ssot.NewEnum("WarehouseSize", "WarehouseSizes", "XSMALL").
+			WithAliases("XSMALL", "X-SMALL"),
+	}, resourceAttributeRuleContext{})
+
+	require.Equal(t, `"Specifies the size of the virtual warehouse. " + enumValuesDescription(sdk.AllWarehouseSizes)`, got.DescriptionExpr)
+}
+
+func Test_applyResourceAttributeRules_includeAliasedInTheDescription(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:                           "warehouse_size",
+		Type:                           ssot.AttrEnum,
+		Description:                    "Specifies the size of the virtual warehouse.",
+		IncludeAliasedInTheDescription: true,
 		Enum: ssot.NewEnum("WarehouseSize", "WarehouseSizes", "XSMALL").
 			WithAliases("XSMALL", "X-SMALL"),
 	}, resourceAttributeRuleContext{})

@@ -7,52 +7,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var warehouseTypeEnum = g.NewEnum(
-	"WarehouseType", "WarehouseTypes",
-	"STANDARD", "SNOWPARK-OPTIMIZED", "ADAPTIVE", "INTERACTIVE",
-)
-
-var warehouseSizeEnum = g.NewEnum(
-	"WarehouseSize", "WarehouseSizes",
-	"XSMALL", "SMALL", "MEDIUM", "LARGE", "XLARGE", "XXLARGE", "XXXLARGE", "X4LARGE", "X5LARGE", "X6LARGE",
-).WithAliases("XSMALL", "X-SMALL").
-	WithAliases("XLARGE", "X-LARGE").
-	WithAliases("XXLARGE", "X2LARGE", "2X-LARGE").
-	WithAliases("XXXLARGE", "X3LARGE", "3X-LARGE").
-	WithAliases("X4LARGE", "4X-LARGE").
-	WithAliases("X5LARGE", "5X-LARGE").
-	WithAliases("X6LARGE", "6X-LARGE")
-
-var scalingPolicyEnum = g.NewEnum(
-	"ScalingPolicy", "ScalingPolicies",
-	"STANDARD", "ECONOMY",
-)
-
-var warehouseResourceConstraintEnum = g.NewEnum(
-	"WarehouseResourceConstraint", "WarehouseResourceConstraints",
-	"MEMORY_1X", "MEMORY_1X_x86", "MEMORY_16X", "MEMORY_16X_x86", "MEMORY_64X", "MEMORY_64X_x86",
-)
-
-var maxQueryPerformanceLevelEnum = g.NewEnum(
-	"MaxQueryPerformanceLevel", "MaxQueryPerformanceLevels",
-	"XSMALL", "SMALL", "MEDIUM", "LARGE", "XLARGE", "XXLARGE", "XXXLARGE", "X4LARGE",
-).WithAliases("XSMALL", "X-SMALL").
-	WithAliases("XLARGE", "X-LARGE").
-	WithAliases("XXLARGE", "2X-LARGE").
-	WithAliases("XXXLARGE", "3X-LARGE").
-	WithAliases("X4LARGE", "4X-LARGE")
-
-// ENABLED is reported for adaptive warehouses, which have no suspend/resume lifecycle.
-var warehouseStateEnum = g.NewEnum(
-	"WarehouseState", "WarehouseStates",
-	"SUSPENDED", "SUSPENDING", "STARTED", "RESIZING", "RESUMING", "ENABLED",
-)
-
 func warehouseShowIdentity(ps *g.Plain) *g.Plain {
 	return ps.
 		Text("Name").
-		Enum("State", warehouseStateEnum).
-		Enum("Type", warehouseTypeEnum)
+		Enum("State", ssotdefs.WarehouseState).
+		Enum("Type", ssotdefs.WarehouseType)
 }
 
 func warehouseShowLoad(ps *g.Plain) *g.Plain {
@@ -83,7 +42,7 @@ func warehouseShowAvailability(ps *g.Plain) *g.Plain {
 var warehouseRegularDef = warehouseShowAvailability(
 	warehouseShowLoad(
 		warehouseShowIdentity(g.PlainStruct("WarehouseRegular")).
-			OptionalField("Size", warehouseSizeEnum.Kind()).
+			OptionalField("Size", ssotdefs.WarehouseSize.Kind()).
 			OptionalNumber("MinClusterCount").
 			OptionalNumber("MaxClusterCount").
 			OptionalNumber("StartedClusters"),
@@ -93,9 +52,9 @@ var warehouseRegularDef = warehouseShowAvailability(
 	OptionalBool("EnableQueryAcceleration").
 	OptionalNumber("QueryAccelerationMaxScaleFactor").
 	Field("ResourceMonitor", "AccountObjectIdentifier").
-	OptionalField("ScalingPolicy", scalingPolicyEnum.Kind()).
+	OptionalField("ScalingPolicy", ssotdefs.ScalingPolicy.Kind()).
 	Text("OwnerRoleType").
-	OptionalField("ResourceConstraint", warehouseResourceConstraintEnum.Kind()).
+	OptionalField("ResourceConstraint", ssotdefs.WarehouseResourceConstraint.Kind()).
 	OptionalField("Generation", "WarehouseGeneration")
 
 var warehouseAdaptiveDef = warehouseShowAvailability(
@@ -105,13 +64,13 @@ var warehouseAdaptiveDef = warehouseShowAvailability(
 ).
 	Field("ResourceMonitor", "AccountObjectIdentifier").
 	Text("OwnerRoleType").
-	OptionalField("MaxQueryPerformanceLevel", maxQueryPerformanceLevelEnum.Kind()).
+	OptionalField("MaxQueryPerformanceLevel", ssotdefs.MaxQueryPerformanceLevel.Kind()).
 	OptionalNumber("QueryThroughputMultiplier")
 
 var warehouseInteractiveDef = warehouseShowAvailability(
 	warehouseShowLoad(
 		warehouseShowIdentity(g.PlainStruct("WarehouseInteractive")).
-			OptionalField("Size", warehouseSizeEnum.Kind()).
+			OptionalField("Size", ssotdefs.WarehouseSize.Kind()).
 			OptionalNumber("MinClusterCount").
 			OptionalNumber("MaxClusterCount").
 			OptionalNumber("StartedClusters"),
@@ -138,7 +97,7 @@ var warehousesDef = g.NewInterface(
 			Name().
 			SQLWithCustomFieldName("warehouseType", "WAREHOUSE_TYPE = 'ADAPTIVE'").
 			OptionalComment().
-			OptionalEnumAssignment("MAX_QUERY_PERFORMANCE_LEVEL", maxQueryPerformanceLevelEnum, g.ParameterOptions().SingleQuotes()).
+			OptionalEnumAssignment("MAX_QUERY_PERFORMANCE_LEVEL", ssotdefs.MaxQueryPerformanceLevel, g.ParameterOptions().SingleQuotes()).
 			OptionalNumberAssignment("QUERY_THROUGHPUT_MULTIPLIER", g.ParameterOptions()).
 			OptionalIdentifier("ResourceMonitor", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RESOURCE_MONITOR").Equals()).
 			OptionalTags().
@@ -157,7 +116,7 @@ var warehousesDef = g.NewInterface(
 		IfNotExists().
 		Name().
 		ListAssignment("TABLES", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().Parentheses().NoEquals()).
-		OptionalEnumAssignment("WAREHOUSE_SIZE", warehouseSizeEnum, g.ParameterOptions().SingleQuotes()).
+		OptionalEnumAssignment("WAREHOUSE_SIZE", ssotdefs.WarehouseSize, g.ParameterOptions().SingleQuotes()).
 		OptionalNumberAssignment("MAX_CLUSTER_COUNT", g.ParameterOptions()).
 		OptionalNumberAssignment("MIN_CLUSTER_COUNT", g.ParameterOptions()).
 		OptionalNumberAssignment("AUTO_SUSPEND", g.ParameterOptions()).
@@ -186,10 +145,10 @@ var warehousesDef = g.NewInterface(
 		[]*g.MethodParameter{g.NewMethodParameter("request", "*CreateInteractiveWarehouseRequest")},
 		"error",
 	).WithEnums(
-	warehouseTypeEnum,
-	warehouseSizeEnum,
-	scalingPolicyEnum,
-	warehouseResourceConstraintEnum,
-	maxQueryPerformanceLevelEnum,
-	warehouseStateEnum,
+	ssotdefs.WarehouseType,
+	ssotdefs.WarehouseSize,
+	ssotdefs.ScalingPolicy,
+	ssotdefs.WarehouseResourceConstraint,
+	ssotdefs.MaxQueryPerformanceLevel,
+	ssotdefs.WarehouseState,
 )
