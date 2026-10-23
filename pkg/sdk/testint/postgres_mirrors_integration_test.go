@@ -4,11 +4,14 @@ package testint
 
 import (
 	"database/sql"
+	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -117,6 +120,80 @@ func TestInt_PostgresMirrors(t *testing.T) {
 		// by the caller. The error then comes from its CREATE DATABASE, not from its [ALREADY_EXISTS] check.
 		err := client.PostgresMirrors.Create(ctx, request)
 		require.ErrorContains(t, err, "already exists")
+	})
+
+	t.Run("alter: tables, schemas, and refresh interval", func(t *testing.T) {
+		details := testClientHelper().PostgresMirror.CreateWithTables(t, instance, helpers.PostgresMirrorFixtureTable1, helpers.PostgresMirrorFixtureTable2)
+
+		testClientHelper().PostgresMirror.Alter(t, sdk.NewAlterPostgresMirrorRequest(*sdk.NewAlterPostgresMirrorArgumentsRequest(details.Name).
+			WithAddTables(helpers.PostgresMirrorNames(helpers.PostgresMirrorFixtureTable3)).
+			WithRemoveTables(helpers.PostgresMirrorNames(helpers.PostgresMirrorFixtureTable1)).
+			WithAddSchemas(helpers.PostgresMirrorNames(helpers.PostgresMirrorFixtureSchemaB)).
+			WithRefreshInterval("30 seconds"),
+		))
+		updated := describe(t, details.Name)
+		assertThatObject(t, objectassert.PostgresMirrorDetailsFromObject(t, updated).
+			HasRefreshInterval("30 seconds").
+			HasPostgresTables(helpers.PostgresMirrorFixtureTable2, helpers.PostgresMirrorFixtureTable3).
+			HasPostgresSchemas(helpers.PostgresMirrorFixtureSchemaB),
+		)
+		assert.True(t, updated.IsMembershipKnown())
+
+		testClientHelper().PostgresMirror.Alter(t, sdk.NewAlterPostgresMirrorRequest(*sdk.NewAlterPostgresMirrorArgumentsRequest(details.Name).
+			WithRemoveSchemas(helpers.PostgresMirrorNames(helpers.PostgresMirrorFixtureSchemaB)),
+		))
+		assertThatObject(t, objectassert.PostgresMirrorDetailsFromObject(t, describe(t, details.Name)).
+			HasRefreshInterval("30 seconds").
+			HasPostgresTables(helpers.PostgresMirrorFixtureTable2, helpers.PostgresMirrorFixtureTable3).
+			HasNoPostgresSchemas(),
+		)
+	})
+
+	t.Run("alter: set and unset warehouse", func(t *testing.T) {
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
+		t.Cleanup(warehouseCleanup)
+		t.Cleanup(testClientHelper().Grant.GrantUsageOnWarehouseToSnowflakeApplication(t, warehouse.ID()))
+
+		details := testClientHelper().PostgresMirror.CreateWithTables(t, instance, helpers.PostgresMirrorFixtureTable1)
+
+		testClientHelper().PostgresMirror.Alter(t, sdk.NewAlterPostgresMirrorRequest(*sdk.NewAlterPostgresMirrorArgumentsRequest(details.Name).WithWarehouse(warehouse.ID().Name())))
+		assertThatObject(t, objectassert.PostgresMirrorDetailsFromObject(t, describe(t, details.Name)).
+			HasWarehouse(warehouse.ID().Name()),
+		)
+
+		testClientHelper().PostgresMirror.Alter(t, sdk.NewAlterPostgresMirrorRequest(*sdk.NewAlterPostgresMirrorArgumentsRequest(details.Name).WithUnsetWarehouse(true)))
+		assertThatObject(t, objectassert.PostgresMirrorDetailsFromObject(t, describe(t, details.Name)).
+			HasNoWarehouse(),
+		)
+	})
+
+	t.Run("list", func(t *testing.T) {
+		details := testClientHelper().PostgresMirror.CreateWithTables(t, instance, helpers.PostgresMirrorFixtureTable1)
+
+		mirrors, err := client.PostgresMirrors.List(ctx, sdk.NewListPostgresMirrorRequest(*sdk.NewListPostgresMirrorArgumentsRequest().WithPostgresInstance(instance)))
+		require.NoError(t, err)
+		mirror, err := collections.FindFirst(mirrors, func(mirror sdk.PostgresMirror) bool { return mirror.Name == details.Name })
+		require.NoError(t, err)
+		assert.Equal(t, instance, mirror.PostgresInstance)
+		assert.Equal(t, helpers.PostgresMirrorFixtureDatabase, mirror.PostgresDatabase)
+		assert.Equal(t, details.TargetDatabase, mirror.TargetDatabase)
+		assert.Equal(t, sdk.PostgresMirrorDefaultRefreshInterval, mirror.RefreshInterval)
+		assert.NotNil(t, mirror.TableCount)
+		assert.NotNil(t, mirror.InitialSnapshotTablesRemaining)
+
+		allMirrors, err := client.PostgresMirrors.List(ctx, sdk.NewListPostgresMirrorRequest(*sdk.NewListPostgresMirrorArgumentsRequest()))
+		require.NoError(t, err)
+		assert.True(t, slices.ContainsFunc(allMirrors, func(mirror sdk.PostgresMirror) bool { return mirror.Name == details.Name }))
+	})
+
+	t.Run("wait for the initial snapshot", func(t *testing.T) {
+		details := testClientHelper().PostgresMirror.CreateWithTables(t, instance, helpers.PostgresMirrorFixtureTable1, helpers.PostgresMirrorFixtureTable2)
+
+		testClientHelper().PostgresMirror.WaitForInitialSnapshot(t, instance, details.Name, 2, 15*time.Minute)
+
+		assertThatObject(t, objectassert.PostgresMirrorDetailsFromObject(t, describe(t, details.Name)).
+			HasStatus(sdk.PostgresMirrorStatusActive),
+		)
 	})
 
 	t.Run("describe: missing mirror", func(t *testing.T) {

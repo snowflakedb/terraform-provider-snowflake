@@ -10,10 +10,17 @@ import (
 
 type PostgresMirrors interface {
 	Create(ctx context.Context, request *CreatePostgresMirrorRequest) error
+	Alter(ctx context.Context, request *AlterPostgresMirrorRequest) error
 	Drop(ctx context.Context, request *DropPostgresMirrorRequest) error
 	Describe(ctx context.Context, request *DescribePostgresMirrorRequest) (*PostgresMirrorDetails, error)
+	List(ctx context.Context, request *ListPostgresMirrorRequest) ([]PostgresMirror, error)
 	// DropSafely treats a mirror that no longer exists as dropped.
 	DropSafely(ctx context.Context, request *DropPostgresMirrorRequest) error
+	// WaitForInitialSnapshot polls LIST_MIRRORS until the mirror is ACTIVE, no table is left in its first copy, and at
+	// least minimumTables tables are registered. minimumTables is the number of tables named explicitly on create and
+	// must be at least 1: LIST_MIRRORS reports 0 remaining before registration. Tables reached only through a schema,
+	// or added by a later alter, are included only when the caller counts them. The caller sets the deadline on ctx.
+	WaitForInitialSnapshot(ctx context.Context, postgresInstance string, name string, minimumTables int) error
 }
 
 // CreatePostgresMirrorOptions is based on https://docs.snowflake.com/en/user-guide/snowflake-postgres/postgres-data-mirroring-reference.
@@ -33,6 +40,23 @@ type CreatePostgresMirrorArguments struct {
 	TargetTableType  *PostgresMirrorTargetTableType `ddl:"parameter,single_quotes,arrow_equals" sql:"target_table_type"`
 	Warehouse        *string                        `ddl:"parameter,single_quotes,arrow_equals" sql:"warehouse"`
 	ExternalVolume   *string                        `ddl:"parameter,single_quotes,arrow_equals" sql:"external_volume"`
+}
+
+// AlterPostgresMirrorOptions is based on https://docs.snowflake.com/en/user-guide/snowflake-postgres/postgres-data-mirroring-reference.
+type AlterPostgresMirrorOptions struct {
+	alterMirror bool                         `ddl:"static" sql:"CALL SNOWFLAKE.POSTGRES.ALTER_MIRROR"`
+	arguments   AlterPostgresMirrorArguments `ddl:"list,must_parentheses"`
+}
+
+type AlterPostgresMirrorArguments struct {
+	MirrorName      string                  `ddl:"parameter,single_quotes,arrow_equals" sql:"mirror_name"`
+	RefreshInterval *string                 `ddl:"parameter,single_quotes,arrow_equals" sql:"refresh_interval"`
+	AddTables       []StringListItemWrapper `ddl:"parameter,parentheses,no_equals" sql:"add_tables => ARRAY_CONSTRUCT"`
+	RemoveTables    []StringListItemWrapper `ddl:"parameter,parentheses,no_equals" sql:"remove_tables => ARRAY_CONSTRUCT"`
+	AddSchemas      []StringListItemWrapper `ddl:"parameter,parentheses,no_equals" sql:"add_schemas => ARRAY_CONSTRUCT"`
+	RemoveSchemas   []StringListItemWrapper `ddl:"parameter,parentheses,no_equals" sql:"remove_schemas => ARRAY_CONSTRUCT"`
+	Warehouse       *string                 `ddl:"parameter,single_quotes,arrow_equals" sql:"warehouse"`
+	UnsetWarehouse  *bool                   `ddl:"keyword" sql:"warehouse => NULL"`
 }
 
 // DropPostgresMirrorOptions is based on https://docs.snowflake.com/en/user-guide/snowflake-postgres/postgres-data-mirroring-reference.
@@ -108,4 +132,42 @@ type PostgresMirrorDetails struct {
 
 type DescribePostgresMirrorArguments struct {
 	MirrorName string `ddl:"parameter,single_quotes,arrow_equals" sql:"mirror_name"`
+}
+
+// ListPostgresMirrorOptions is based on https://docs.snowflake.com/en/user-guide/snowflake-postgres/postgres-data-mirroring-reference.
+type ListPostgresMirrorOptions struct {
+	listMirrors bool                        `ddl:"static" sql:"CALL SNOWFLAKE.POSTGRES.LIST_MIRRORS"`
+	arguments   ListPostgresMirrorArguments `ddl:"list,must_parentheses"`
+}
+
+type postgresMirrorRow struct {
+	MirrorName                     string         `db:"MIRROR_NAME"`
+	PostgresInstance               sql.NullString `db:"POSTGRES_INSTANCE"`
+	PostgresDatabase               sql.NullString `db:"POSTGRES_DATABASE"`
+	TargetDatabase                 sql.NullString `db:"TARGET_DATABASE"`
+	Status                         sql.NullString `db:"STATUS"`
+	TableCount                     sql.NullInt64  `db:"TABLE_COUNT"`
+	InitialSnapshotTablesRemaining sql.NullInt64  `db:"INITIAL_SNAPSHOT_TABLES_REMAINING"`
+	RefreshInterval                sql.NullString `db:"REFRESH_INTERVAL"`
+	LastApplyTime                  sql.NullTime   `db:"LAST_APPLY_TIME"`
+	LastOperationTime              sql.NullTime   `db:"LAST_OPERATION_TIME"`
+	ErrorMessage                   sql.NullString `db:"ERROR_MESSAGE"`
+}
+
+type PostgresMirror struct {
+	Name                           string
+	PostgresInstance               string
+	PostgresDatabase               string
+	TargetDatabase                 string
+	Status                         PostgresMirrorStatus
+	TableCount                     *int
+	InitialSnapshotTablesRemaining *int
+	RefreshInterval                string
+	LastApplyTime                  *time.Time
+	LastOperationTime              *time.Time
+	ErrorMessage                   *string
+}
+
+type ListPostgresMirrorArguments struct {
+	PostgresInstance *string `ddl:"parameter,single_quotes,arrow_equals" sql:"postgres_instance"`
 }

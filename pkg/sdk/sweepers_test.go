@@ -2,7 +2,6 @@ package sdk_test
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -801,17 +800,10 @@ func nukeUsers(client *sdk.Client, suffix string) func() error {
 	})
 }
 
-// postgresMirrorSweepRow is the LIST_MIRRORS subset this sweeper reads. The call is direct because
-// PostgresMirrors.List is not on the client. The procedure result has no creation time.
-type postgresMirrorSweepRow struct {
-	MirrorName     string         `db:"MIRROR_NAME"`
-	TargetDatabase sql.NullString `db:"TARGET_DATABASE"`
-}
-
 // postgresMirrorSweepDrop reports whether a mirror belongs to this sweep.
 // A suffix selects the current run, compared case-insensitively after PostgresMirrorNameSuffix.
 // An empty suffix selects leftovers whose target database is older than the stale period.
-// A missing creation time leaves the mirror in place.
+// A missing creation time leaves the mirror in place. LIST_MIRRORS has no creation time.
 func postgresMirrorSweepDrop(name string, suffix string, targetCreatedOn *time.Time, now time.Time) bool {
 	if suffix != "" {
 		return strings.HasSuffix(strings.ToLower(name), strings.ToLower(suffix))
@@ -839,8 +831,7 @@ func Test_postgresMirrorSweepDrop(t *testing.T) {
 func nukePostgresMirrors(client *sdk.Client, suffix string) func() error {
 	return func() error {
 		ctx := context.Background()
-		var rows []postgresMirrorSweepRow
-		err := client.QueryForTests(ctx, &rows, "CALL SNOWFLAKE.POSTGRES.LIST_MIRRORS()")
+		mirrors, err := client.PostgresMirrors.List(ctx, sdk.NewListPostgresMirrorRequest(*sdk.NewListPostgresMirrorArgumentsRequest()))
 		if err != nil {
 			// Accounts the mirror tests do not run on may lack the postgres_mirror_admin application role.
 			if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
@@ -871,29 +862,29 @@ func nukePostgresMirrors(client *sdk.Client, suffix string) func() error {
 		}
 
 		var errs []error
-		for _, row := range rows {
+		for _, mirror := range mirrors {
 			var targetCreatedOn *time.Time
 			if suffix == "" {
-				if !row.TargetDatabase.Valid {
-					log.Printf("[DEBUG] Skipping postgres mirror %s, it has no target database", row.MirrorName)
+				if mirror.TargetDatabase == "" {
+					log.Printf("[DEBUG] Skipping postgres mirror %s, it has no target database", mirror.Name)
 					continue
 				}
-				createdOn, ok := createdOnByDatabase[strings.ToUpper(row.TargetDatabase.String)]
+				createdOn, ok := createdOnByDatabase[strings.ToUpper(mirror.TargetDatabase)]
 				if !ok {
-					log.Printf("[DEBUG] Skipping postgres mirror %s, target database %s has no creation time", row.MirrorName, row.TargetDatabase.String)
+					log.Printf("[DEBUG] Skipping postgres mirror %s, target database %s has no creation time", mirror.Name, mirror.TargetDatabase)
 					continue
 				}
 				targetCreatedOn = &createdOn
 			}
-			if !postgresMirrorSweepDrop(row.MirrorName, mirrorSuffix, targetCreatedOn, time.Now()) {
-				log.Printf("[DEBUG] Skipping postgres mirror %s", row.MirrorName)
+			if !postgresMirrorSweepDrop(mirror.Name, mirrorSuffix, targetCreatedOn, time.Now()) {
+				log.Printf("[DEBUG] Skipping postgres mirror %s", mirror.Name)
 				continue
 			}
 
-			log.Printf("[DEBUG] Dropping postgres mirror %s", row.MirrorName)
-			dropErr := client.PostgresMirrors.DropSafely(ctx, sdk.NewDropPostgresMirrorRequest(*sdk.NewDropPostgresMirrorArgumentsRequest(row.MirrorName).WithDropTargetDatabase(true)))
+			log.Printf("[DEBUG] Dropping postgres mirror %s", mirror.Name)
+			dropErr := client.PostgresMirrors.DropSafely(ctx, sdk.NewDropPostgresMirrorRequest(*sdk.NewDropPostgresMirrorArgumentsRequest(mirror.Name).WithDropTargetDatabase(true)))
 			if dropErr != nil {
-				errs = append(errs, fmt.Errorf("sweeping postgres mirror %s ended with error, err = %w", row.MirrorName, dropErr))
+				errs = append(errs, fmt.Errorf("sweeping postgres mirror %s ended with error, err = %w", mirror.Name, dropErr))
 			}
 		}
 		return errors.Join(errs...)

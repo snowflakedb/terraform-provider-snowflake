@@ -185,7 +185,7 @@ func NewTestClient(
 		PasswordPolicy:               NewPasswordPolicyClient(context, idsGenerator),
 		Pipe:                         NewPipeClient(context, idsGenerator),
 		PostgresInstance:             NewPostgresInstanceClient(context, idsGenerator),
-		PostgresMirror:               NewPostgresMirrorClient(context),
+		PostgresMirror:               NewPostgresMirrorClient(context, idsGenerator),
 		Procedure:                    NewProcedureClient(context, idsGenerator),
 		ProjectionPolicy:             NewProjectionPolicyClient(context, idsGenerator),
 		PolicyReferences:             NewPolicyReferencesClient(context),

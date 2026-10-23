@@ -4,8 +4,10 @@ package sdk
 
 var (
 	_ validatable = new(CreatePostgresMirrorOptions)
+	_ validatable = new(AlterPostgresMirrorOptions)
 	_ validatable = new(DropPostgresMirrorOptions)
 	_ validatable = new(DescribePostgresMirrorOptions)
+	_ validatable = new(ListPostgresMirrorOptions)
 )
 
 func (opts *CreatePostgresMirrorOptions) validate() error {
@@ -31,6 +33,17 @@ func (opts *CreatePostgresMirrorOptions) validate() error {
 	return JoinErrors(errs...)
 }
 
+func (opts *AlterPostgresMirrorOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if valueSet(opts.arguments) {
+		errs = append(errs, opts.arguments.additionalValidations())
+	}
+	return JoinErrors(errs...)
+}
+
 func (opts *DropPostgresMirrorOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
@@ -40,6 +53,14 @@ func (opts *DropPostgresMirrorOptions) validate() error {
 }
 
 func (opts *DescribePostgresMirrorOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	return JoinErrors(errs...)
+}
+
+func (opts *ListPostgresMirrorOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
 	}

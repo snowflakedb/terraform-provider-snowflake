@@ -52,6 +52,20 @@ var postgresMirrorDetailsPairs = g.StructPair("postgresMirrorDetailsRow", "Postg
 	// The JSON object returned by the procedure, compacted; its keys depend on the source's snowflake_cdc version.
 	OptionalText("POSTGRES_STATUS", g.WithManualConvert())
 
+var postgresMirrorPairs = g.StructPair("postgresMirrorRow", "PostgresMirror").
+	Text("MIRROR_NAME", g.WithPlainFieldName("Name")).
+	OptionalText("POSTGRES_INSTANCE", g.WithRequiredInPlain()).
+	OptionalText("POSTGRES_DATABASE", g.WithRequiredInPlain()).
+	OptionalText("TARGET_DATABASE", g.WithRequiredInPlain()).
+	// An unrecognized status is kept; see postgresMirrorRow.additionalConvert.
+	Field("STATUS", "sql.NullString", "PostgresMirrorStatus", g.WithManualConvert()).
+	OptionalNumber("TABLE_COUNT").
+	OptionalNumber("INITIAL_SNAPSHOT_TABLES_REMAINING").
+	OptionalText("REFRESH_INTERVAL", g.WithRequiredInPlain()).
+	OptionalTime("LAST_APPLY_TIME").
+	OptionalTime("LAST_OPERATION_TIME").
+	OptionalText("ERROR_MESSAGE")
+
 // postgresMirrorsDef defines Snowflake Postgres data mirrors. Mirrors are not catalog objects: there is no DDL, SHOW, or
 // DESCRIBE for them, so every operation calls a procedure of the SNOWFLAKE application in SNOWFLAKE.POSTGRES.
 // DropSafely recognizes the procedure's missing-mirror message.
@@ -83,6 +97,28 @@ var postgresMirrorsDef = g.NewInterface(
 				WithAdditionalValidations(),
 			g.ListOptions().MustParentheses().Required(),
 		),
+).CustomOperation(
+	"Alter",
+	postgresMirrorsDoc,
+	g.NewQueryStruct("AlterPostgresMirror").
+		SQLWithCustomFieldName("alterMirror", "CALL SNOWFLAKE.POSTGRES.ALTER_MIRROR").
+		QueryStructField(
+			"arguments",
+			g.NewQueryStruct("AlterPostgresMirrorArguments").
+				TextAssignment("mirror_name", g.ParameterOptions().SingleQuotes().ArrowEquals()).
+				OptionalTextAssignment("refresh_interval", g.ParameterOptions().SingleQuotes().ArrowEquals()).
+				PredefinedQueryStructField("AddTables", "[]StringListItemWrapper", g.ParameterOptions().NoEquals().Parentheses().SQL("add_tables => ARRAY_CONSTRUCT")).
+				PredefinedQueryStructField("RemoveTables", "[]StringListItemWrapper", g.ParameterOptions().NoEquals().Parentheses().SQL("remove_tables => ARRAY_CONSTRUCT")).
+				PredefinedQueryStructField("AddSchemas", "[]StringListItemWrapper", g.ParameterOptions().NoEquals().Parentheses().SQL("add_schemas => ARRAY_CONSTRUCT")).
+				PredefinedQueryStructField("RemoveSchemas", "[]StringListItemWrapper", g.ParameterOptions().NoEquals().Parentheses().SQL("remove_schemas => ARRAY_CONSTRUCT")).
+				OptionalTextAssignment("warehouse", g.ParameterOptions().SingleQuotes().ArrowEquals()).
+				// An omitted warehouse leaves the apply task's compute unchanged; only an explicit NULL switches it to serverless.
+				// The builder emits this keyword only for true. Generated valueSet would treat false as a change and as a
+				// conflict with Warehouse, so those checks are in additionalValidations.
+				OptionalSQLWithCustomFieldName("UnsetWarehouse", "warehouse => NULL").
+				WithAdditionalValidations(),
+			g.ListOptions().MustParentheses().Required(),
+		),
 ).DropOperation(
 	postgresMirrorsDoc,
 	g.NewQueryStruct("DropPostgresMirror").
@@ -111,10 +147,35 @@ var postgresMirrorsDef = g.NewInterface(
 				TextAssignment("mirror_name", g.ParameterOptions().SingleQuotes().ArrowEquals()),
 			g.ListOptions().MustParentheses().Required(),
 		),
+).CustomShowOperationWithPairedStructs(
+	"List",
+	g.ShowMappingKindSlice,
+	postgresMirrorsDoc,
+	postgresMirrorPairs,
+	g.NewQueryStruct("ListPostgresMirror").
+		SQLWithCustomFieldName("listMirrors", "CALL SNOWFLAKE.POSTGRES.LIST_MIRRORS").
+		QueryStructField(
+			"arguments",
+			g.NewQueryStruct("ListPostgresMirrorArguments").
+				OptionalTextAssignment("postgres_instance", g.ParameterOptions().SingleQuotes().ArrowEquals()),
+			g.ListOptions().MustParentheses().Required(),
+		),
 ).WithCustomInterfaceMethod(
 	"DropSafely",
 	"DropSafely treats a mirror that no longer exists as dropped.",
 	[]*g.MethodParameter{g.NewMethodParameter("request", "*DropPostgresMirrorRequest")},
+	"error",
+).WithCustomInterfaceMethod(
+	"WaitForInitialSnapshot",
+	"WaitForInitialSnapshot polls LIST_MIRRORS until the mirror is ACTIVE, no table is left in its first copy, and at\n"+
+		"least minimumTables tables are registered. minimumTables is the number of tables named explicitly on create and\n"+
+		"must be at least 1: LIST_MIRRORS reports 0 remaining before registration. Tables reached only through a schema,\n"+
+		"or added by a later alter, are included only when the caller counts them. The caller sets the deadline on ctx.",
+	[]*g.MethodParameter{
+		g.NewMethodParameter("postgresInstance", "string"),
+		g.NewMethodParameter("name", "string"),
+		g.NewMethodParameter("minimumTables", "int"),
+	},
 	"error",
 ).
 	WithEnums(PostgresMirrorTargetTableTypeEnumDef, PostgresMirrorStatusEnumDef)

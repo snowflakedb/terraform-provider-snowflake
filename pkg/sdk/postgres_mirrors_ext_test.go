@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"context"
 	"database/sql"
 	"math"
 	"testing"
@@ -114,6 +115,141 @@ func init() {
 			case_PostgresMirrors_sql_Describe_basic,
 			`CALL SNOWFLAKE.POSTGRES.DESCRIBE_MIRROR (mirror_name => 'orders_mirror')`,
 		)
+
+	postgresMirrorsTests.Alter.
+		withDefaultOpts(func() *AlterPostgresMirrorOptions {
+			return &AlterPostgresMirrorOptions{
+				arguments: AlterPostgresMirrorArguments{
+					MirrorName:      "orders_mirror",
+					RefreshInterval: new("30 seconds"),
+				},
+			}
+		}).
+		withExpectedSql(
+			case_PostgresMirrors_sql_Alter_basic,
+			`CALL SNOWFLAKE.POSTGRES.ALTER_MIRROR (mirror_name => 'orders_mirror', refresh_interval => '30 seconds')`,
+		).
+		withModifyAndExpectedSqlf(
+			case_PostgresMirrors_sql_Alter_all,
+			func(opts *AlterPostgresMirrorOptions) {
+				opts.arguments.RefreshInterval = new("1 minute")
+				opts.arguments.AddTables = []StringListItemWrapper{{Value: "public.t3"}}
+				opts.arguments.RemoveTables = []StringListItemWrapper{{Value: "public.t1"}}
+				opts.arguments.AddSchemas = []StringListItemWrapper{{Value: "sales"}}
+				opts.arguments.RemoveSchemas = []StringListItemWrapper{{Value: "inventory"}}
+				opts.arguments.Warehouse = new("MY_WH")
+			},
+			`CALL SNOWFLAKE.POSTGRES.ALTER_MIRROR (mirror_name => 'orders_mirror', refresh_interval => '1 minute', add_tables => ARRAY_CONSTRUCT ('public.t3'), remove_tables => ARRAY_CONSTRUCT ('public.t1'), add_schemas => ARRAY_CONSTRUCT ('sales'), remove_schemas => ARRAY_CONSTRUCT ('inventory'), warehouse => 'MY_WH')`,
+		).
+		withAdditionalValidationCase(
+			"validation_Alter_arguments_nothingSet",
+			func(opts *AlterPostgresMirrorOptions) { opts.arguments.RefreshInterval = nil },
+			errAtLeastOneOf("AlterPostgresMirrorOptions.arguments", "RefreshInterval", "AddTables", "RemoveTables", "AddSchemas", "RemoveSchemas", "Warehouse", "UnsetWarehouse"),
+		).
+		withAdditionalValidationCase(
+			"validation_Alter_arguments_UnsetWarehouse_false",
+			func(opts *AlterPostgresMirrorOptions) {
+				opts.arguments.RefreshInterval = nil
+				opts.arguments.UnsetWarehouse = new(false)
+			},
+			errAtLeastOneOf("AlterPostgresMirrorOptions.arguments", "RefreshInterval", "AddTables", "RemoveTables", "AddSchemas", "RemoveSchemas", "Warehouse", "UnsetWarehouse"),
+		).
+		withAdditionalValidationCase(
+			"validation_Alter_arguments_Warehouse_and_UnsetWarehouse",
+			func(opts *AlterPostgresMirrorOptions) {
+				opts.arguments.RefreshInterval = nil
+				opts.arguments.Warehouse = new("MY_WH")
+				opts.arguments.UnsetWarehouse = new(true)
+			},
+			errOneOf("AlterPostgresMirrorOptions.arguments", "Warehouse", "UnsetWarehouse"),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_unsetWarehouse",
+			func(opts *AlterPostgresMirrorOptions) {
+				opts.arguments.RefreshInterval = nil
+				opts.arguments.UnsetWarehouse = new(true)
+			},
+			`CALL SNOWFLAKE.POSTGRES.ALTER_MIRROR (mirror_name => 'orders_mirror', warehouse => NULL)`,
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_unsetWarehouseFalseWithWarehouse",
+			func(opts *AlterPostgresMirrorOptions) {
+				opts.arguments.RefreshInterval = nil
+				opts.arguments.Warehouse = new("MY_WH")
+				opts.arguments.UnsetWarehouse = new(false)
+			},
+			`CALL SNOWFLAKE.POSTGRES.ALTER_MIRROR (mirror_name => 'orders_mirror', warehouse => 'MY_WH')`,
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_addAndRemoveTables",
+			func(opts *AlterPostgresMirrorOptions) {
+				opts.arguments.RefreshInterval = nil
+				opts.arguments.AddTables = []StringListItemWrapper{{Value: "public.t3"}, {Value: `public."MixedCase"`}}
+				opts.arguments.RemoveTables = []StringListItemWrapper{{Value: "public.t1"}}
+			},
+			`CALL SNOWFLAKE.POSTGRES.ALTER_MIRROR (mirror_name => 'orders_mirror', add_tables => ARRAY_CONSTRUCT ('public.t3', 'public.\"MixedCase\"'), remove_tables => ARRAY_CONSTRUCT ('public.t1'))`,
+		)
+
+	postgresMirrorsTests.List.
+		withDefaultOpts(func() *ListPostgresMirrorOptions {
+			return &ListPostgresMirrorOptions{}
+		}).
+		withExpectedSql(
+			case_PostgresMirrors_sql_List_basic,
+			`CALL SNOWFLAKE.POSTGRES.LIST_MIRRORS ()`,
+		).
+		withAdditionalSqlCasef(
+			"sql_List_postgresInstance",
+			func(opts *ListPostgresMirrorOptions) {
+				opts.arguments.PostgresInstance = new("my-instance")
+			},
+			`CALL SNOWFLAKE.POSTGRES.LIST_MIRRORS (postgres_instance => 'my-instance')`,
+		)
+}
+
+func TestPostgresMirrors_WaitForInitialSnapshot_minimumTables(t *testing.T) {
+	var mirrors *postgresMirrors
+	err := mirrors.WaitForInitialSnapshot(context.Background(), "my-instance", "orders_mirror", 0)
+	require.ErrorContains(t, err, "minimumTables must be at least 1")
+}
+
+func TestPostgresMirrorRow_convert(t *testing.T) {
+	t.Run("keeps unrecognized status", func(t *testing.T) {
+		mirror, err := postgresMirrorRow{
+			MirrorName: "orders_mirror",
+			Status:     sql.NullString{String: "REPAIRING", Valid: true},
+		}.convert()
+		require.NoError(t, err)
+		assert.Equal(t, PostgresMirrorStatus("REPAIRING"), mirror.Status)
+	})
+}
+
+func TestPostgresMirror_InitialSnapshotCompleted(t *testing.T) {
+	completed := &PostgresMirror{
+		Status:                         PostgresMirrorStatusActive,
+		TableCount:                     Int(2),
+		InitialSnapshotTablesRemaining: Int(0),
+	}
+	assert.True(t, completed.InitialSnapshotCompleted(2))
+	assert.False(t, completed.InitialSnapshotCompleted(3))
+
+	assert.False(t, (&PostgresMirror{
+		Status:                         PostgresMirrorStatusStarting,
+		TableCount:                     Int(2),
+		InitialSnapshotTablesRemaining: Int(0),
+	}).InitialSnapshotCompleted(2))
+
+	assert.False(t, (&PostgresMirror{
+		Status:                         PostgresMirrorStatusActive,
+		TableCount:                     Int(0),
+		InitialSnapshotTablesRemaining: Int(0),
+	}).InitialSnapshotCompleted(1))
+
+	assert.False(t, (&PostgresMirror{
+		Status:                         PostgresMirrorStatusActive,
+		TableCount:                     Int(2),
+		InitialSnapshotTablesRemaining: Int(1),
+	}).InitialSnapshotCompleted(2))
 }
 
 func TestPostgresMirrorDetailsRow_convert(t *testing.T) {

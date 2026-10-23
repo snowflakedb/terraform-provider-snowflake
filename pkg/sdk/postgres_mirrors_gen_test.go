@@ -18,15 +18,20 @@ const (
 	case_PostgresMirrors_validation_Create_opts_arguments_AtLeastOneValueSet           testCaseName = "validation_Create_opts_arguments_AtLeastOneValueSet"
 	case_PostgresMirrors_sql_Create_basic                                              testCaseName = "sql_Create_basic"
 	case_PostgresMirrors_sql_Create_all                                                testCaseName = "sql_Create_all"
+	case_PostgresMirrors_sql_Alter_basic                                               testCaseName = "sql_Alter_basic"
+	case_PostgresMirrors_sql_Alter_all                                                 testCaseName = "sql_Alter_all"
 	case_PostgresMirrors_sql_Drop_basic                                                testCaseName = "sql_Drop_basic"
 	case_PostgresMirrors_sql_Drop_all                                                  testCaseName = "sql_Drop_all"
 	case_PostgresMirrors_sql_Describe_basic                                            testCaseName = "sql_Describe_basic"
+	case_PostgresMirrors_sql_List_basic                                                testCaseName = "sql_List_basic"
 )
 
 type PostgresMirrorsTestsContext struct {
 	Create   *sdkTestCtx[*CreatePostgresMirrorOptions]
+	Alter    *sdkTestCtx[*AlterPostgresMirrorOptions]
 	Drop     *sdkTestCtx[*DropPostgresMirrorOptions]
 	Describe *sdkTestCtx[*DescribePostgresMirrorOptions]
+	List     *sdkTestCtx[*ListPostgresMirrorOptions]
 }
 
 var postgresMirrorsTests = PostgresMirrorsTestsContext{
@@ -76,6 +81,22 @@ var postgresMirrorsTests = PostgresMirrorsTestsContext{
 				Name: case_PostgresMirrors_sql_Create_all,
 			},
 		),
+	Alter: newSdkTestCtx[*AlterPostgresMirrorOptions](
+		"PostgresMirrors", "Alter",
+	).
+		withDefaultOpts(func() *AlterPostgresMirrorOptions {
+			return &AlterPostgresMirrorOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*AlterPostgresMirrorOptions]{
+				Name:           case_PostgresMirrors_sql_Alter_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*AlterPostgresMirrorOptions]{
+				Name: case_PostgresMirrors_sql_Alter_all,
+			},
+		),
 	Drop: newSdkTestCtx[*DropPostgresMirrorOptions](
 		"PostgresMirrors", "Drop",
 	).
@@ -105,11 +126,29 @@ var postgresMirrorsTests = PostgresMirrorsTestsContext{
 				NoModifyNeeded: true,
 			},
 		),
+	List: newSdkTestCtx[*ListPostgresMirrorOptions](
+		"PostgresMirrors", "List",
+	).
+		withDefaultOpts(func() *ListPostgresMirrorOptions {
+			return &ListPostgresMirrorOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ListPostgresMirrorOptions]{
+				Name:           case_PostgresMirrors_sql_List_basic,
+				NoModifyNeeded: true,
+			},
+		),
 }
 
 func TestPostgresMirrors_Create(t *testing.T) {
 	postgresMirrorsTests.Create.RunValidationCases(t)
 	postgresMirrorsTests.Create.RunSqlCases(t)
+}
+
+func TestPostgresMirrors_Alter(t *testing.T) {
+	postgresMirrorsTests.Alter.RunValidationCases(t)
+	postgresMirrorsTests.Alter.RunSqlCases(t)
 }
 
 func TestPostgresMirrors_Drop(t *testing.T) {
@@ -120,4 +159,9 @@ func TestPostgresMirrors_Drop(t *testing.T) {
 func TestPostgresMirrors_Describe(t *testing.T) {
 	postgresMirrorsTests.Describe.RunValidationCases(t)
 	postgresMirrorsTests.Describe.RunSqlCases(t)
+}
+
+func TestPostgresMirrors_List(t *testing.T) {
+	postgresMirrorsTests.List.RunValidationCases(t)
+	postgresMirrorsTests.List.RunSqlCases(t)
 }

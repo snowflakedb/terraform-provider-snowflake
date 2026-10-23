@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -16,8 +17,10 @@ const (
 	PostgresMirrorFixtureDatabase       = "postgres"
 	PostgresMirrorFixtureTable1         = "tf_mirror.t1"
 	PostgresMirrorFixtureTable2         = "tf_mirror.t2"
+	PostgresMirrorFixtureTable3         = "tf_mirror.t3"
 	PostgresMirrorFixtureMixedCaseTable = `tf_mirror."MixedCase"`
 	PostgresMirrorFixtureSchemaA        = "tf_mirror_schema_a"
+	PostgresMirrorFixtureSchemaB        = "tf_mirror_schema_b"
 )
 
 func PostgresMirrorNames(names ...string) []sdk.StringListItemWrapper {
@@ -28,11 +31,13 @@ func PostgresMirrorNames(names ...string) []sdk.StringListItemWrapper {
 
 type PostgresMirrorClient struct {
 	context *TestClientContext
+	ids     *IdsGenerator
 }
 
-func NewPostgresMirrorClient(context *TestClientContext) *PostgresMirrorClient {
+func NewPostgresMirrorClient(context *TestClientContext, idsGenerator *IdsGenerator) *PostgresMirrorClient {
 	return &PostgresMirrorClient{
 		context: context,
+		ids:     idsGenerator,
 	}
 }
 
@@ -45,6 +50,17 @@ func (c *PostgresMirrorClient) client() sdk.PostgresMirrors {
 func (c *PostgresMirrorClient) FixtureInstance(t *testing.T) string {
 	t.Helper()
 	return testenvs.GetOrSkipTest(t, testenvs.PostgresMirrorInstance)
+}
+
+func (c *PostgresMirrorClient) CreateWithTables(t *testing.T, instance string, tables ...string) *sdk.PostgresMirrorDetails {
+	t.Helper()
+	request := sdk.NewCreatePostgresMirrorRequest(*sdk.NewCreatePostgresMirrorArgumentsRequest(
+		c.ids.RandomPostgresMirrorName(),
+		instance,
+		PostgresMirrorFixtureDatabase,
+		c.ids.RandomAccountObjectIdentifier().Name(),
+	).WithPostgresTables(PostgresMirrorNames(tables...)))
+	return c.CreateWithRequest(t, request)
 }
 
 func (c *PostgresMirrorClient) CreateWithRequest(t *testing.T, request *sdk.CreatePostgresMirrorRequest) *sdk.PostgresMirrorDetails {
@@ -100,4 +116,21 @@ func (c *PostgresMirrorClient) Describe(t *testing.T, name string) (*sdk.Postgre
 	ctx := context.Background()
 
 	return c.client().Describe(ctx, sdk.NewDescribePostgresMirrorRequest(*sdk.NewDescribePostgresMirrorArgumentsRequest(name)))
+}
+
+func (c *PostgresMirrorClient) Alter(t *testing.T, request *sdk.AlterPostgresMirrorRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, request)
+	require.NoError(t, err)
+}
+
+func (c *PostgresMirrorClient) WaitForInitialSnapshot(t *testing.T, instance string, name string, minimumTables int, timeout time.Duration) {
+	t.Helper()
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	err := c.client().WaitForInitialSnapshot(ctx, instance, name, minimumTables)
+	require.NoError(t, err)
 }

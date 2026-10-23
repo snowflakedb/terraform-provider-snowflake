@@ -54,6 +54,57 @@ func (s *CreatePostgresMirrorArgumentsRequest) WithExternalVolume(externalVolume
 	return s
 }
 
+func NewAlterPostgresMirrorRequest(
+	arguments AlterPostgresMirrorArgumentsRequest,
+) *AlterPostgresMirrorRequest {
+	s := AlterPostgresMirrorRequest{}
+	s.arguments = arguments
+	return &s
+}
+
+func NewAlterPostgresMirrorArgumentsRequest(
+	mirrorName string,
+) *AlterPostgresMirrorArgumentsRequest {
+	s := AlterPostgresMirrorArgumentsRequest{}
+	s.MirrorName = mirrorName
+	return &s
+}
+
+func (s *AlterPostgresMirrorArgumentsRequest) WithRefreshInterval(refreshInterval string) *AlterPostgresMirrorArgumentsRequest {
+	s.RefreshInterval = &refreshInterval
+	return s
+}
+
+func (s *AlterPostgresMirrorArgumentsRequest) WithAddTables(addTables []StringListItemWrapper) *AlterPostgresMirrorArgumentsRequest {
+	s.AddTables = addTables
+	return s
+}
+
+func (s *AlterPostgresMirrorArgumentsRequest) WithRemoveTables(removeTables []StringListItemWrapper) *AlterPostgresMirrorArgumentsRequest {
+	s.RemoveTables = removeTables
+	return s
+}
+
+func (s *AlterPostgresMirrorArgumentsRequest) WithAddSchemas(addSchemas []StringListItemWrapper) *AlterPostgresMirrorArgumentsRequest {
+	s.AddSchemas = addSchemas
+	return s
+}
+
+func (s *AlterPostgresMirrorArgumentsRequest) WithRemoveSchemas(removeSchemas []StringListItemWrapper) *AlterPostgresMirrorArgumentsRequest {
+	s.RemoveSchemas = removeSchemas
+	return s
+}
+
+func (s *AlterPostgresMirrorArgumentsRequest) WithWarehouse(warehouse string) *AlterPostgresMirrorArgumentsRequest {
+	s.Warehouse = &warehouse
+	return s
+}
+
+func (s *AlterPostgresMirrorArgumentsRequest) WithUnsetWarehouse(unsetWarehouse bool) *AlterPostgresMirrorArgumentsRequest {
+	s.UnsetWarehouse = &unsetWarehouse
+	return s
+}
+
 func NewDropPostgresMirrorRequest(
 	arguments DropPostgresMirrorArgumentsRequest,
 ) *DropPostgresMirrorRequest {
@@ -89,4 +140,22 @@ func NewDescribePostgresMirrorArgumentsRequest(
 	s := DescribePostgresMirrorArgumentsRequest{}
 	s.MirrorName = mirrorName
 	return &s
+}
+
+func NewListPostgresMirrorRequest(
+	arguments ListPostgresMirrorArgumentsRequest,
+) *ListPostgresMirrorRequest {
+	s := ListPostgresMirrorRequest{}
+	s.arguments = arguments
+	return &s
+}
+
+func NewListPostgresMirrorArgumentsRequest() *ListPostgresMirrorArgumentsRequest {
+	s := ListPostgresMirrorArgumentsRequest{}
+	return &s
+}
+
+func (s *ListPostgresMirrorArgumentsRequest) WithPostgresInstance(postgresInstance string) *ListPostgresMirrorArgumentsRequest {
+	s.PostgresInstance = &postgresInstance
+	return s
 }

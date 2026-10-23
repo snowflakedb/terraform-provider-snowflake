@@ -4,8 +4,10 @@ package sdk
 
 var (
 	_ optionsProvider[CreatePostgresMirrorOptions]   = new(CreatePostgresMirrorRequest)
+	_ optionsProvider[AlterPostgresMirrorOptions]    = new(AlterPostgresMirrorRequest)
 	_ optionsProvider[DropPostgresMirrorOptions]     = new(DropPostgresMirrorRequest)
 	_ optionsProvider[DescribePostgresMirrorOptions] = new(DescribePostgresMirrorRequest)
+	_ optionsProvider[ListPostgresMirrorOptions]     = new(ListPostgresMirrorRequest)
 )
 
 type CreatePostgresMirrorRequest struct {
@@ -25,6 +27,21 @@ type CreatePostgresMirrorArgumentsRequest struct {
 	ExternalVolume   *string
 }
 
+type AlterPostgresMirrorRequest struct {
+	arguments AlterPostgresMirrorArgumentsRequest // required
+}
+
+type AlterPostgresMirrorArgumentsRequest struct {
+	MirrorName      string // required
+	RefreshInterval *string
+	AddTables       []StringListItemWrapper
+	RemoveTables    []StringListItemWrapper
+	AddSchemas      []StringListItemWrapper
+	RemoveSchemas   []StringListItemWrapper
+	Warehouse       *string
+	UnsetWarehouse  *bool
+}
+
 type DropPostgresMirrorRequest struct {
 	arguments DropPostgresMirrorArgumentsRequest // required
 }
@@ -40,4 +57,12 @@ type DescribePostgresMirrorRequest struct {
 
 type DescribePostgresMirrorArgumentsRequest struct {
 	MirrorName string // required
+}
+
+type ListPostgresMirrorRequest struct {
+	arguments ListPostgresMirrorArgumentsRequest // required
+}
+
+type ListPostgresMirrorArgumentsRequest struct {
+	PostgresInstance *string
 }

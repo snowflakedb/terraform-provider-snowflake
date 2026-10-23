@@ -9,6 +9,7 @@ import (
 var (
 	_ PostgresMirrors                       = (*postgresMirrors)(nil)
 	_ convertibleRow[PostgresMirrorDetails] = new(postgresMirrorDetailsRow)
+	_ convertibleRow[PostgresMirror]        = new(postgresMirrorRow)
 )
 
 type postgresMirrors struct {
@@ -16,6 +17,11 @@ type postgresMirrors struct {
 }
 
 func (v *postgresMirrors) Create(ctx context.Context, request *CreatePostgresMirrorRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *postgresMirrors) Alter(ctx context.Context, request *AlterPostgresMirrorRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
@@ -34,6 +40,15 @@ func (v *postgresMirrors) Describe(ctx context.Context, request *DescribePostgre
 	return conversionErrorWrapped(result.convert())
 }
 
+func (v *postgresMirrors) List(ctx context.Context, request *ListPostgresMirrorRequest) ([]PostgresMirror, error) {
+	opts := request.toOpts()
+	dbRows, err := validateAndQuery[postgresMirrorRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return convertRows[postgresMirrorRow, PostgresMirror](dbRows)
+}
+
 func (r *CreatePostgresMirrorRequest) toOpts() *CreatePostgresMirrorOptions {
 	opts := &CreatePostgresMirrorOptions{}
 	opts.arguments = CreatePostgresMirrorArguments{
@@ -47,6 +62,21 @@ func (r *CreatePostgresMirrorRequest) toOpts() *CreatePostgresMirrorOptions {
 		TargetTableType:  r.arguments.TargetTableType,
 		Warehouse:        r.arguments.Warehouse,
 		ExternalVolume:   r.arguments.ExternalVolume,
+	}
+	return opts
+}
+
+func (r *AlterPostgresMirrorRequest) toOpts() *AlterPostgresMirrorOptions {
+	opts := &AlterPostgresMirrorOptions{}
+	opts.arguments = AlterPostgresMirrorArguments{
+		MirrorName:      r.arguments.MirrorName,
+		RefreshInterval: r.arguments.RefreshInterval,
+		AddTables:       r.arguments.AddTables,
+		RemoveTables:    r.arguments.RemoveTables,
+		AddSchemas:      r.arguments.AddSchemas,
+		RemoveSchemas:   r.arguments.RemoveSchemas,
+		Warehouse:       r.arguments.Warehouse,
+		UnsetWarehouse:  r.arguments.UnsetWarehouse,
 	}
 	return opts
 }
@@ -89,6 +119,33 @@ func (r postgresMirrorDetailsRow) convert() (*PostgresMirrorDetails, error) {
 	mapNullInt64(&result.ApplyLagBytes, r.ApplyLagBytes)
 	mapNullString(&result.LastAppliedCommitLsn, r.LastAppliedCommitLsn)
 	mapNullTime(&result.LastAppliedCommitTime, r.LastAppliedCommitTime)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (r *ListPostgresMirrorRequest) toOpts() *ListPostgresMirrorOptions {
+	opts := &ListPostgresMirrorOptions{}
+	opts.arguments = ListPostgresMirrorArguments{
+		PostgresInstance: r.arguments.PostgresInstance,
+	}
+	return opts
+}
+
+func (r postgresMirrorRow) convert() (*PostgresMirror, error) {
+	result := &PostgresMirror{
+		Name: r.MirrorName,
+	}
+	mapNullStringToNonNullableField(&result.PostgresInstance, r.PostgresInstance)
+	mapNullStringToNonNullableField(&result.PostgresDatabase, r.PostgresDatabase)
+	mapNullStringToNonNullableField(&result.TargetDatabase, r.TargetDatabase)
+	mapNullInt(&result.TableCount, r.TableCount)
+	mapNullInt(&result.InitialSnapshotTablesRemaining, r.InitialSnapshotTablesRemaining)
+	mapNullStringToNonNullableField(&result.RefreshInterval, r.RefreshInterval)
+	mapNullTime(&result.LastApplyTime, r.LastApplyTime)
+	mapNullTime(&result.LastOperationTime, r.LastOperationTime)
+	mapNullString(&result.ErrorMessage, r.ErrorMessage)
 	if err := r.additionalConvert(result); err != nil {
 		return nil, err
 	}
