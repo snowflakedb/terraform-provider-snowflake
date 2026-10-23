@@ -320,6 +320,14 @@ var Warehouse = ssot.Object{
 				Kind: "*AlterWarehouseRequest",
 			}},
 		},
+		{
+			Name: "CreateInteractivePreservingSession",
+			Doc:  "CreateInteractivePreservingSession wraps CreateInteractive to work around a known Snowflake behavior: creating a warehouse implicitly switches the session to it, which for interactive warehouses (5 second statement timeout) can cause subsequent statements in the same session to time out. It restores whichever warehouse (or lack of one) was active in the session before creation",
+			Parameters: []ssot.CustomInterfaceMethodParameter{{
+				Name: "request",
+				Kind: "*CreateInteractiveWarehouseRequest",
+			}},
+		},
 	},
 	Generators: []ssot.GeneratorOption{
 		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
