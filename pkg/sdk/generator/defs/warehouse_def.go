@@ -7,81 +7,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-func warehouseShowIdentity(ps *g.Plain) *g.Plain {
-	return ps.
-		Text("Name").
-		Enum("State", ssotdefs.WarehouseState).
-		Enum("Type", ssotdefs.WarehouseType)
-}
-
-func warehouseShowLoad(ps *g.Plain) *g.Plain {
-	return ps.
-		OptionalNumber("Running").
-		OptionalNumber("Queued").
-		Bool("IsDefault").
-		Bool("IsCurrent")
-}
-
-func warehouseShowAvailability(ps *g.Plain) *g.Plain {
-	return ps.
-		Bool("AutoResume").
-		Field("Available", "float64").
-		Field("Provisioning", "float64").
-		Field("Quiescing", "float64").
-		Field("Other", "float64").
-		Time("CreatedOn").
-		Time("ResumedOn").
-		Time("UpdatedOn").
-		Text("Owner").
-		Text("Comment")
-}
-
-// SHOW projections for type-specific Terraform schemas. SHOW WAREHOUSES is one row type.
-// TODO [next PRs]: Show should return the variant rows (WarehouseRegular, WarehouseAdaptive, WarehouseInteractive),
-// the way Describe already does. Show() still returns []Warehouse, so callers project with AsRegular, AsAdaptive, and AsInteractive.
-// Regular covers STANDARD and SNOWPARK-OPTIMIZED SHOW columns.
-var warehouseRegularDef = warehouseShowAvailability(
-	warehouseShowLoad(
-		warehouseShowIdentity(g.PlainStruct("WarehouseRegular")).
-			OptionalField("Size", ssotdefs.WarehouseSize.Kind()).
-			OptionalNumber("MinClusterCount").
-			OptionalNumber("MaxClusterCount").
-			OptionalNumber("StartedClusters"),
-	).
-		OptionalNumber("AutoSuspend"),
-).
-	OptionalBool("EnableQueryAcceleration").
-	OptionalNumber("QueryAccelerationMaxScaleFactor").
-	Field("ResourceMonitor", "AccountObjectIdentifier").
-	OptionalField("ScalingPolicy", ssotdefs.ScalingPolicy.Kind()).
-	Text("OwnerRoleType").
-	OptionalField("ResourceConstraint", ssotdefs.WarehouseResourceConstraint.Kind()).
-	OptionalField("Generation", "WarehouseGeneration")
-
-var warehouseAdaptiveDef = warehouseShowAvailability(
-	warehouseShowLoad(
-		warehouseShowIdentity(g.PlainStruct("WarehouseAdaptive")),
-	),
-).
-	Field("ResourceMonitor", "AccountObjectIdentifier").
-	Text("OwnerRoleType").
-	OptionalField("MaxQueryPerformanceLevel", ssotdefs.MaxQueryPerformanceLevel.Kind()).
-	OptionalNumber("QueryThroughputMultiplier")
-
-var warehouseInteractiveDef = warehouseShowAvailability(
-	warehouseShowLoad(
-		warehouseShowIdentity(g.PlainStruct("WarehouseInteractive")).
-			OptionalField("Size", ssotdefs.WarehouseSize.Kind()).
-			OptionalNumber("MinClusterCount").
-			OptionalNumber("MaxClusterCount").
-			OptionalNumber("StartedClusters"),
-	).
-		OptionalNumber("AutoSuspend"),
-).
-	Field("ResourceMonitor", "AccountObjectIdentifier").
-	Text("OwnerRoleType").
-	Field("Tables", "[]SchemaObjectIdentifier")
-
 var warehousesDef = g.NewInterface(
 	"Warehouses",
 	"Warehouse",
@@ -137,7 +62,7 @@ var warehousesDef = g.NewInterface(
 ).AlterOperationFromObject(ssotdefs.Warehouse).
 	DropOperationFromObject(ssotdefs.Warehouse).
 	ShowOperationFromObject(ssotdefs.Warehouse).
-	DescribeOperationFromObject(ssotdefs.Warehouse, warehouseRegularDef, warehouseAdaptiveDef, warehouseInteractiveDef).
+	DescribeOperationFromObject(ssotdefs.Warehouse).
 	ShowParametersFromObject(ssotdefs.Warehouse).
 	ShowParametersDetailsFromObject(ssotdefs.Warehouse).
 	CustomInterfaceMethodsFromObject(ssotdefs.Warehouse).

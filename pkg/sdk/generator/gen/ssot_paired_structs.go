@@ -27,6 +27,21 @@ func DescribePairedStructs(obj ssot.Object) *PairedStructs {
 	return pairedStructsFromColumns(obj, true, unexported(obj.Name)+"DescRow", obj.Name+"Details")
 }
 
+// plainFromColumns builds the plain side of a SHOW column list. The db row is discarded.
+func plainFromColumns(obj ssot.Object, name string, columns []*ssot.Attribute) *Plain {
+	if name == "" {
+		panic(fmt.Sprintf("object %q: plain SHOW struct name is empty", obj.Name))
+	}
+	pairs := StructPair(unexported(name)+"Row", name)
+	for _, column := range columns {
+		if column == nil {
+			panic(fmt.Sprintf("object %q: nil plain SHOW column", obj.Name))
+		}
+		pairs = appendPairedColumn(pairs, obj, *column)
+	}
+	return pairs.asPlainStruct()
+}
+
 func unexported(name string) string {
 	return strings.ToLower(name[:1]) + name[1:]
 }
@@ -35,7 +50,7 @@ func pairedStructsFromColumns(obj ssot.Object, describe bool, dbName, plainName 
 	generators := ssot.ObjectGenerators(obj.Generators...)
 	kind := "SHOW"
 	enabled := generators.Sdk.Show
-	columns := obj.Show.Columns
+	columns := obj.PairedShowColumns()
 	if describe {
 		kind = "DESCRIBE"
 		enabled = generators.Sdk.Describe

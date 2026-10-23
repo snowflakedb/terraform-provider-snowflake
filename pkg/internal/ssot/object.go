@@ -39,7 +39,18 @@ type Object struct {
 	SchemaStateUpgraders                []StateUpgraderFunc
 	AdditionalCustomizeDiffs            []CustomizeDiffFunc
 	Show                                OutputSpec
-	Describe                            OutputSpec
+	// ShowGeneric is the temporary union of every variant SHOW column.
+	// It is the one paired SHOW. Each variant, including the main one, declares its own show in Show.
+	// TODO [next PRs]: Each variant's Show.Columns becomes a paired SHOW with its dedicated type, and ShowGeneric goes away.
+	ShowGeneric OutputSpec
+	Describe    OutputSpec
+	// ShowPlainName is the plain SHOW struct name when it differs from Name.
+	// Empty uses Name. Set it when ShowGeneric uses Name for the paired SHOW struct.
+	ShowPlainName string
+	// ShowVariants are plain SHOW structs emitted with this object's DESCRIBE.
+	// Each variant's Show.Columns is that struct. The variant does not set SdkShow.
+	// TODO [next PRs]: Emit these from ShowOperationFromObject. See DescribeOperationFromObject.
+	ShowVariants []*Object
 	// Create, Set, Unset, and Alter are the SQL field order for those statements.
 	// Presence in a slice is membership. The slice order is the order generation emits.
 	// Set and Unset are the fields inside those blocks. Alter is the order of the blocks and action keywords after the name.

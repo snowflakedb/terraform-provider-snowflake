@@ -70,6 +70,8 @@ order.
 
 `OutputSpec.Columns` is membership and Snowflake order. Presence in `Columns` is the only SHOW/DESCRIBE membership.
 
+Each warehouse variant declares its show in `Show.Columns`. `Warehouse.ShowGeneric` is the temporary union and the one paired SHOW. Next, each variant's `Show.Columns` becomes a paired SHOW with its dedicated type, and `ShowGeneric` goes away.
+
 ### OptionalInShow vs OptionalInDb
 
 - `OptionalInShow` - the SHOW/DESCRIBE SDK Go field is a pointer (`*string`, `*AccountObjectIdentifier`). SHOW schema
@@ -367,7 +369,7 @@ See [SHOW and DESCRIBE](#show-and-describe).
 - DESCRIBE is not SHOW plus a flag. The two sets differ.
 - Order in `Columns` is the order Snowflake returns and the order generation emits. It is not the `Attributes` order.
 
-A generator that needs SHOW reads `Show.Columns`. A generator that needs DESCRIBE reads `Describe.Columns`. It does not
+A generator that needs the paired SHOW reads `PairedShowColumns`: `ShowGeneric` when that list is set, otherwise `Show.Columns`. A generator that needs DESCRIBE reads `Describe.Columns`. It does not
 derive one from the other, and it does not derive either from `Attributes`.
 
 #### Generators do not depend on each other

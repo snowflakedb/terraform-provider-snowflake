@@ -61,11 +61,12 @@ func ValidateObject(obj Object) {
 	}
 	nested := nestedAttributeNames(obj)
 	validateColumnList(obj, "SHOW", obj.Show.Columns, attrs, nested)
+	validateColumnList(obj, "SHOW generic", obj.ShowGeneric.Columns, attrs, nested)
 	validateColumnList(obj, "DESCRIBE", obj.Describe.Columns, attrs, nested)
 	g := ObjectGenerators(obj.Generators...)
-	validateGeneratorSkips(obj, "object-assertion", "SHOW", g.ObjectAssert.Show, obj.Show.Columns, g.ObjectAssert.ShowSkipFields)
+	validateGeneratorSkips(obj, "object-assertion", "SHOW", g.ObjectAssert.Show, obj.PairedShowColumns(), g.ObjectAssert.ShowSkipFields)
 	validateGeneratorSkips(obj, "object-assertion", "DESCRIBE", g.ObjectAssert.Describe, obj.Describe.Columns, g.ObjectAssert.DescribeSkipFields)
-	validateGeneratorSkips(obj, "show-output", "SHOW", g.ShowOutputAssert.Show, obj.Show.Columns, g.ShowOutputAssert.ShowSkipFields)
+	validateGeneratorSkips(obj, "show-output", "SHOW", g.ShowOutputAssert.Show, obj.PairedShowColumns(), g.ShowOutputAssert.ShowSkipFields)
 	validateGeneratorSkips(obj, "show-output", "DESCRIBE", g.ShowOutputAssert.Describe, obj.Describe.Columns, g.ShowOutputAssert.DescribeSkipFields)
 	obj.ShowFromBase()
 	obj.ParameterAssertionNames()
@@ -485,12 +486,15 @@ func validateColumnList(obj Object, kind string, list []*Attribute, attrs map[st
 		if a.Name == "" {
 			panic(fmt.Sprintf("object %q: %s entry has empty Name", obj.Name, kind))
 		}
-		if a.Readonly {
-			if _, w := attrs[a.Name]; w {
-				panic(fmt.Sprintf("object %q: %s Readonly %q duplicates a CREATE/ALTER attribute", obj.Name, kind, a.Name))
+		// A variant SHOW struct reuses the parent's show attributes, not this object's resource fields.
+		if obj.VariantOf == nil {
+			if a.Readonly {
+				if _, w := attrs[a.Name]; w {
+					panic(fmt.Sprintf("object %q: %s Readonly %q duplicates a CREATE/ALTER attribute", obj.Name, kind, a.Name))
+				}
+			} else if _, w := attrs[a.Name]; !w {
+				panic(fmt.Sprintf("object %q: %s entry %q is writable but not in Attributes", obj.Name, kind, a.Name))
 			}
-		} else if _, w := attrs[a.Name]; !w {
-			panic(fmt.Sprintf("object %q: %s entry %q is writable but not in Attributes", obj.Name, kind, a.Name))
 		}
 		key := a.OutputKey()
 		if _, dup := seenKey[key]; dup {

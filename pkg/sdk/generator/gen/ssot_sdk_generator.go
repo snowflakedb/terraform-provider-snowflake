@@ -31,19 +31,40 @@ func (i *Interface) ShowOperationFromObject(obj ssot.Object) *Interface {
 // DescribeOperationFromObject adds DESCRIBE from obj.SdkConfig.
 // The field chain comes from DescribePairedStructs. The query struct is Describe, SQL,
 // Name, and ValidIdentifier on name.
-// helperStructs are extra query structs the describe operation names, such as a warehouse type variant.
+// helperStructs are extra structs the describe operation emits.
+// TODO [next PRs]: Show.Columns plain structs and ShowVariants are SHOW structs. Emit them from ShowOperationFromObject.
 func (i *Interface) DescribeOperationFromObject(obj ssot.Object, helperStructs ...IntoField) *Interface {
 	cfg := obj.SdkConfig()
 	if !cfg.Describe {
 		panic(fmt.Sprintf("object %q is not enabled for SDK DESCRIBE generation", obj.Name))
 	}
+	helpers := make([]IntoField, 0, len(helperStructs)+len(obj.ShowVariants)+1)
+	helpers = append(helpers, helperStructs...)
+	helpers = append(helpers, plainShowHelpers(obj)...)
 	return i.DescribeOperationWithPairedStructs(
 		describeMappingFromObject(obj, cfg),
 		cfg.DescribeDoc,
 		DescribePairedStructs(obj),
 		describeQueryStructFromConfig(cfg),
-		helperStructs...,
+		helpers...,
 	)
+}
+
+func plainShowHelpers(obj ssot.Object) []IntoField {
+	var out []IntoField
+	if obj.ShowPlainName != "" {
+		if len(obj.Show.Columns) == 0 {
+			panic(fmt.Sprintf("object %q: ShowPlainName %q has no SHOW columns", obj.Name, obj.ShowPlainName))
+		}
+		out = append(out, plainFromColumns(obj, obj.ShowPlainName, obj.Show.Columns))
+	}
+	for _, variant := range obj.ShowVariants {
+		if variant == nil || variant.Name == "" || len(variant.Show.Columns) == 0 {
+			panic(fmt.Sprintf("object %q: show variant needs a name and SHOW columns", obj.Name))
+		}
+		out = append(out, plainFromColumns(*variant, variant.Name, variant.Show.Columns))
+	}
+	return out
 }
 
 func showQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
@@ -396,7 +417,7 @@ func referencedEnums(obj ssot.Object) []*ssot.Enum {
 			addAttr(attr)
 		}
 	}
-	addList(obj.Show.Columns)
+	addList(obj.PairedShowColumns())
 	addList(obj.Describe.Columns)
 	for i := range obj.Attributes {
 		addAttr(&obj.Attributes[i])

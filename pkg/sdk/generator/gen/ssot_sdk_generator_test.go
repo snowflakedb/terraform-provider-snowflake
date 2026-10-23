@@ -66,6 +66,54 @@ func Test_ShowDescribeFromObject(t *testing.T) {
 	requireSameOperations(t, want, got)
 }
 
+func Test_DescribeOperationFromObject_plainShowVariants(t *testing.T) {
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
+	running := ssot.Attribute{Name: "running", Type: ssot.AttrInt, OptionalInShow: true, OptionalInDb: true}
+	monitor := ssot.Attribute{
+		Name:           "resource_monitor",
+		Type:           ssot.AttrIdentifier,
+		IdentifierType: "AccountObjectIdentifier",
+		CustomParser:   "ParseAccountObjectIdentifierExcludingExplicitNullString",
+	}
+	main := ssot.Object{
+		Name:          "Widget",
+		NamePlural:    "Widgets",
+		IdType:        "AccountObjectIdentifier",
+		Describe:      ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+		ShowPlainName: "WidgetRegular",
+		Show:          ssot.OutputSpec{Columns: []*ssot.Attribute{&name, &running}},
+		ShowGeneric:   ssot.OutputSpec{Columns: []*ssot.Attribute{&name, &running, &monitor}},
+		Generators:    []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe())},
+	}
+	adaptive := ssot.Object{
+		Name:      "WidgetAdaptive",
+		VariantOf: &main,
+		Show:      ssot.OutputSpec{Columns: []*ssot.Attribute{&name, &monitor}},
+	}
+	interactive := ssot.Object{
+		Name:      "WidgetInteractive",
+		VariantOf: &main,
+		Show:      ssot.OutputSpec{Columns: []*ssot.Attribute{&running}},
+	}
+	main.ShowVariants = []*ssot.Object{&adaptive, &interactive}
+
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(main)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationWithPairedStructs(
+		DescriptionMappingKindSingleValue,
+		"https://docs.snowflake.com/en/sql-reference/sql/desc-widget",
+		DescribePairedStructs(main),
+		NewQueryStruct("DescWidget").
+			Describe().
+			SQL("WIDGET").
+			Name().
+			WithValidation(ValidIdentifier, "name"),
+		PlainStruct("WidgetRegular").Field("Name", "string").Field("Running", "*int"),
+		PlainStruct("WidgetAdaptive").Field("Name", "string").Field("ResourceMonitor", "AccountObjectIdentifier"),
+		PlainStruct("WidgetInteractive").Field("Running", "*int"),
+	)
+	requireSameOperations(t, want, got)
+}
+
 func Test_ShowDescribeFromObject_panics(t *testing.T) {
 	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
 	column := ssot.OutputSpec{Columns: []*ssot.Attribute{&name}}
