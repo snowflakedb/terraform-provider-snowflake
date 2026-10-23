@@ -73,3 +73,59 @@ func Test_lifecycle_importOmittedWithoutShowByIdInSdk(t *testing.T) {
 	got := renderLifecycle(t, lifecycleModel(withHooks(ssot.WithShowByIdInSdk(ssot.Omitted()))))
 	require.NotContains(t, got, "func ImportPool(")
 }
+
+func Test_lifecycle_mappingHooksOmitted(t *testing.T) {
+	tests := []struct {
+		name     string
+		hook     ssot.ResourceHookOption
+		function string
+	}{
+		{"parseIdFromConfig", ssot.WithParseIdFromConfig(ssot.Omitted()), "func poolParseIdFromConfig("},
+		{"newCreateRequest", ssot.WithNewCreateRequest(ssot.Omitted()), "func poolNewCreateRequest("},
+		{"applyCreateOptionals", ssot.WithApplyCreateOptionals(ssot.Omitted()), "func poolApplyCreateOptionals("},
+		{"applySetUnset", ssot.WithApplySetUnset(ssot.Omitted()), "func poolApplySetUnset("},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			model := lifecycleModel(withHooks(tt.hook))
+			require.Empty(t, renderTemplate(t, tt.name, model))
+			require.NotContains(t, renderLifecycle(t, model), tt.function)
+		})
+	}
+}
+
+func Test_lifecycle_parseIdFromConfigExt(t *testing.T) {
+	model := lifecycleModel()
+	require.Equal(t, "id, err := poolParseIdFromConfigExt(d)\n", renderTemplate(t, "parseIdFromConfig", model))
+	require.NotContains(t, renderLifecycle(t, model), "func poolParseIdFromConfig(")
+}
+
+func Test_lifecycle_dropSafelyInSdk(t *testing.T) {
+	t.Run("generated", func(t *testing.T) {
+		model := lifecycleModel(withHooks(ssot.WithDropSafelyInSdk(ssot.Generated())))
+		got := renderLifecycle(t, model)
+		require.Contains(t, got, "DeleteContext: TrackingDeleteWrapper(resources.Pool, DeletePool),")
+		require.NotContains(t, got, "poolDeleteExt")
+		require.Equal(t, `func DeletePool(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	return ResourceDeleteContextFunc(
+		sdk.ParseSchemaObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.Pools.DropSafely
+		},
+	)(ctx, d, meta)
+}
+`, renderTemplate(t, "generatedDelete", model))
+		require.Contains(t, got, "func DeletePool(")
+	})
+	for name, hook := range map[string]ssot.ResourceHook{
+		"ext call": ssot.ExtCall(),
+		"omitted":  ssot.Omitted(),
+	} {
+		t.Run(name, func(t *testing.T) {
+			model := lifecycleModel(withHooks(ssot.WithDropSafelyInSdk(hook)))
+			got := renderLifecycle(t, model)
+			require.Contains(t, got, "DeleteContext: poolDeleteExt,")
+			require.NotContains(t, got, "func DeletePool(")
+		})
+	}
+}

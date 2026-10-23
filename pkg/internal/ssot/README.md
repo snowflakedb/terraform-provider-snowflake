@@ -22,7 +22,9 @@ generators will follow. Ultimately, all the generators should default to using s
 
 Identity (`Name`, `IdType`, ...) is separate from `Attributes`. `LegacyIdEncoding` keeps the pipe-delimited resource id
 (`db|schema|name`, `helpers.EncodeSnowflakeID`) that older resources store. The generated Create calls it instead of
-`helpers.EncodeResourceIdentifier`. Parsing that id stays in the `ParseId` ext.
+`helpers.EncodeResourceIdentifier`. `WithParseId(Generated())` emits a named parser used by Import, Read, and Update.
+It calls `sdk.Parse<IdType>` for current ids and `helpers.DecodeSnowflakeIDErrLegacy[<IdType>]` for legacy ids.
+The default `ExtCall` keeps the handwritten parser.
 
 `VariantOf` keeps SDK parameter naming simple because variants are expected to share their base object's SDK
 parameter types and usually the same parameter set. Different sets can already use a variant-specific catalog level

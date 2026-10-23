@@ -109,6 +109,10 @@ var {{ .Prefix }}CustomizeDiff = TrackingCustomDiffWrapper(resources.{{ .Name }}
 
 {{ template "generatedParseIdFromConfig" . }}
 {{- end }}
+{{- if .Hooks.ParseId.Generate }}
+
+{{ template "generatedParseId" . }}
+{{- end }}
 {{- if .Hooks.NewCreateRequest.Generate }}
 
 {{ template "generatedNewCreateRequest" . }}

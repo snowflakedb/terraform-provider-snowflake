@@ -53,10 +53,6 @@ type computePoolAlterRequestsExt struct {
 	unset *sdk.ComputePoolUnsetRequest
 }
 
-func computePoolParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
-	return sdk.ParseAccountObjectIdentifier(id)
-}
-
 func computePoolHandleExternalChangesExt(d *schema.ResourceData, computePool *sdk.ComputePool, withExternalChangesMarking bool) error {
 	if !withExternalChangesMarking {
 		return nil
