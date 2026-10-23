@@ -18,6 +18,7 @@ generators will follow. Ultimately, all the generators should default to using s
 - `ResourceHooks` - resource lifecycle/schema overrides (resource generator)
 - `SdkCreateRequestObjectName` - SDK CREATE request type-name stem when it differs from `Name`
 - `VariantOf` - base object whose SDK parameter details, SET/UNSET requests, and `ParameterType` names a variant shares; parameter catalog membership still comes from the variant's own `Name`
+- `VariantEntityCreateName` - SQL object words a variant CREATE emits. `ObjectType` builds those words from `Name`, which does not match a variant (`WarehouseAdaptive` would be `WAREHOUSE ADAPTIVE`). Other statements keep `ObjectType`
 - `SchemaStateUpgraders` - ordered upgrade function names ([Resource generator](#resource-generator))
 
 Identity (`Name`, `IdType`, ...) is separate from `Attributes`. `LegacyIdEncoding` keeps the pipe-delimited resource id
@@ -37,6 +38,9 @@ its `Name`, extend SSOT with an explicit parameter-level override.
 
 - `Readonly` - non-writable output column. Must not sit on `Attributes`. CREATE-only fields are writable and absent from
   `Show` / `Describe` `Columns`.
+- `SqlOnly` - the attribute stays on a SQL sequence and is left out of schema, resource, model, and assertion generation.
+  [`ResourceAttributes`](object.go) is that filtered list. A fixed CREATE value uses [`StaticSQL`](sql_clause.go): the
+  field is the unexported Go name and the SQL is the ddl text, such as `WAREHOUSE_TYPE = 'ADAPTIVE'`.
 - `ShowName` - SHOW/DESCRIBE key when it differs from the resource name (`for_application` → `application`).
   `OutputKey()` is `ShowName` or `Name`.
 - `CreateMapping` - the create helper from `pkg/resources/resource_helpers_create.go` used by a generated
@@ -163,7 +167,12 @@ enable nothing.
   functional options on top of that default. A zero unset clause is a bool keyword. Leave the attribute out of `Unset`
   to omit it, or set `UnsetSql` to a parameter clause to unset by setting a value. A list whose element is an enum uses
   an item query struct named after that enum, with `ListItem` appended. Its field is `Value`, a required single-quoted
-  keyword. When `SdkCreate()` or `SdkAlter()` is off, that call stays in the def. `SdkCustomOperations()` emits
+  keyword. When `SdkCreate()` or `SdkAlter()` is off, that call stays in the def. `SdkCreateForVariants()` emits
+  each variant CREATE as a custom method. The variant fills `Create` (`Doc`, clauses, and
+  `AdditionalValidations`). The SQL object words come from `VariantEntityCreateName`, not from `Create.Sql` and not from
+  `ObjectType`. A fixed value is an `SqlOnly` attribute with `StaticSQL` in that clause list. The method name is `Create` plus the variant name with the base name removed. The query
+  struct name is `Create` plus `SdkCreateRequestObjectName`.
+  TODO [next PRs]: the same switch for variant ALTER, and for SHOW/DESCRIBE. `SdkCustomOperations()` emits
   [`CustomOperations`](custom_operation.go) from one call, in slice order. Place that call after the dedicated operation
   methods and before custom interface methods. The generated interface lists every operation, then the custom interface
   methods, so a custom operation stays with the operations. Reordering in the generated SDK is expected while objects

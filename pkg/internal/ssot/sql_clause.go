@@ -5,13 +5,14 @@ import (
 	"strings"
 )
 
-// SqlKind is the SQL clause shape: parameter, keyword, or identifier.
+// SqlKind is the SQL clause shape: parameter, keyword, identifier, or static.
 type SqlKind string
 
 const (
 	SqlKindParameter  SqlKind = "parameter"
 	SqlKindKeyword    SqlKind = "keyword"
 	SqlKindIdentifier SqlKind = "identifier"
+	SqlKindStatic     SqlKind = "static"
 )
 
 // SqlQuotes is the quote ddl tag. Zero means no quote tag.
@@ -68,6 +69,8 @@ type SqlClause struct {
 	ItemStruct string
 	// IdType is the identifier type, without a pointer. IdentifierKeyword sets it.
 	IdType string
+	// Field is the unexported Go name of a static clause. StaticSQL sets it.
+	Field string
 }
 
 // SqlClauseOption changes one default on a SqlClause.
@@ -124,6 +127,16 @@ func ListParameter(itemStruct string, opts ...SqlClauseOption) SqlClause {
 		c.Parentheses = SqlParensYes
 		c.ItemStruct = itemStruct
 	}, opts)
+}
+
+// StaticSQL is a private static CREATE field.
+// field is the unexported Go name. sql is the ddl text, such as WAREHOUSE_TYPE = 'ADAPTIVE'.
+// The attribute is SqlOnly so schema, resource, model, and assertion generation skip it.
+func StaticSQL(field, sql string) SqlClause {
+	return newClause(SqlKindStatic, func(c *SqlClause) {
+		c.Field = field
+		c.SQL = sql
+	}, nil)
 }
 
 // BoolKeyword is a bare keyword.

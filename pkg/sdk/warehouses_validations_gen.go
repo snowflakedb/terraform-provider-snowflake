@@ -69,6 +69,9 @@ func (opts *CreateInteractiveWarehouseOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateInteractiveWarehouseOptions", "OrReplace", "IfNotExists"))
 	}
+	if opts.FallbackWarehouse != nil && !ValidObjectIdentifier(opts.FallbackWarehouse) {
+		errs = append(errs, errInvalidIdentifier("CreateInteractiveWarehouseOptions", "FallbackWarehouse"))
+	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Tables) {
 		for tableIdx, table := range opts.Tables {

@@ -77,9 +77,9 @@ type CreateAdaptiveWarehouseOptions struct {
 	MaxQueryPerformanceLevel        *MaxQueryPerformanceLevel `ddl:"parameter,single_quotes" sql:"MAX_QUERY_PERFORMANCE_LEVEL"`
 	QueryThroughputMultiplier       *int                      `ddl:"parameter" sql:"QUERY_THROUGHPUT_MULTIPLIER"`
 	ResourceMonitor                 *AccountObjectIdentifier  `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
-	Tag                             []TagAssociation          `ddl:"keyword,parentheses" sql:"TAG"`
 	StatementQueuedTimeoutInSeconds *int                      `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
 	StatementTimeoutInSeconds       *int                      `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+	Tag                             []TagAssociation          `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
 // CreateInteractiveWarehouseOptions is based on https://docs.snowflake.com/en/user-guide/warehouses-interactive.
@@ -98,10 +98,10 @@ type CreateInteractiveWarehouseOptions struct {
 	InitiallySuspended              *bool                    `ddl:"parameter" sql:"INITIALLY_SUSPENDED"`
 	ResourceMonitor                 *AccountObjectIdentifier `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
 	Comment                         *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	FallbackWarehouse               *AccountObjectIdentifier `ddl:"identifier,equals" sql:"FALLBACK_WAREHOUSE"`
 	MaxConcurrencyLevel             *int                     `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
 	StatementQueuedTimeoutInSeconds *int                     `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
 	StatementTimeoutInSeconds       *int                     `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
-	FallbackWarehouse               *AccountObjectIdentifier `ddl:"identifier,equals" sql:"FALLBACK_WAREHOUSE"`
 	Tag                             []TagAssociation         `ddl:"keyword,parentheses" sql:"TAG"`
 }
 

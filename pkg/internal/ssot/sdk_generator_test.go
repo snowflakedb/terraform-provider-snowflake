@@ -203,3 +203,26 @@ func Test_SdkConfig_customInterfaceMethods(t *testing.T) {
 	require.Equal(t, SdkGenerator{CustomInterfaceMethods: true}, ObjectGenerators(obj.Generators...).Sdk)
 	require.Empty(t, obj.CustomInterfaceMethods[0].Doc)
 }
+
+func Test_VariantCreateConfig_usesEntityName(t *testing.T) {
+	comment := Attribute{Name: "comment", Type: AttrString}
+	obj := Object{
+		Name:                       "WarehouseAdaptive",
+		VariantEntityCreateName:    "WAREHOUSE",
+		SdkCreateRequestObjectName: "AdaptiveWarehouse",
+		Create: CreateSpec{
+			Doc:     "https://docs.example.com/adaptive",
+			Clauses: []*Attribute{&comment},
+		},
+	}
+	require.Equal(t, SdkGenerator{
+		CreateDoc:             "https://docs.example.com/adaptive",
+		CreateSql:             "WAREHOUSE",
+		CreateQueryStructName: "CreateAdaptiveWarehouse",
+	}, obj.VariantCreateConfig())
+
+	obj.VariantEntityCreateName = ""
+	require.PanicsWithValue(t, `object "WarehouseAdaptive": variant CREATE needs VariantEntityCreateName`, func() {
+		obj.VariantCreateConfig()
+	})
+}

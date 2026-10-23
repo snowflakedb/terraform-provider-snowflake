@@ -120,9 +120,9 @@ func (r *CreateAdaptiveWarehouseRequest) toOpts() *CreateAdaptiveWarehouseOption
 		MaxQueryPerformanceLevel:        r.MaxQueryPerformanceLevel,
 		QueryThroughputMultiplier:       r.QueryThroughputMultiplier,
 		ResourceMonitor:                 r.ResourceMonitor,
-		Tag:                             r.Tag,
 		StatementQueuedTimeoutInSeconds: r.StatementQueuedTimeoutInSeconds,
 		StatementTimeoutInSeconds:       r.StatementTimeoutInSeconds,
+		Tag:                             r.Tag,
 	}
 	return opts
 }
@@ -141,10 +141,10 @@ func (r *CreateInteractiveWarehouseRequest) toOpts() *CreateInteractiveWarehouse
 		InitiallySuspended:              r.InitiallySuspended,
 		ResourceMonitor:                 r.ResourceMonitor,
 		Comment:                         r.Comment,
+		FallbackWarehouse:               r.FallbackWarehouse,
 		MaxConcurrencyLevel:             r.MaxConcurrencyLevel,
 		StatementQueuedTimeoutInSeconds: r.StatementQueuedTimeoutInSeconds,
 		StatementTimeoutInSeconds:       r.StatementTimeoutInSeconds,
-		FallbackWarehouse:               r.FallbackWarehouse,
 		Tag:                             r.Tag,
 	}
 	return opts

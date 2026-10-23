@@ -24,7 +24,7 @@ func assertionsFromSsotObject(obj ssot.Object, parameters []ssot.ParameterDef) R
 		panic(fmt.Sprintf("object %q is not enabled for resource assertion generation", obj.Name))
 	}
 	identityFields := assertionAttributesFromFields(ssot.IdentityFields(obj))
-	attributeFields := collections.Map(obj.Attributes, func(attr ssot.Attribute) ResourceAttributeAssertionModel {
+	attributeFields := collections.Map(obj.ResourceAttributes(), func(attr ssot.Attribute) ResourceAttributeAssertionModel {
 		return assertionAttributeFromField(ssot.ClassifyAttribute(obj, attr))
 	})
 	parameterFields := collections.Map(parameters, func(parameter ssot.ParameterDef) ResourceAttributeAssertionModel {

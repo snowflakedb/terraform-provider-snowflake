@@ -762,3 +762,38 @@ func Test_ValidateObject_sqlStatement(t *testing.T) {
 		})
 	})
 }
+
+func Test_ValidateObject_variantEntityCreateName(t *testing.T) {
+	base := Object{Name: "Warehouse"}
+	kind := Attribute{
+		Name:      "warehouse_type_static",
+		SqlOnly:   true,
+		CreateSql: StaticSQL("warehouseType", "WAREHOUSE_TYPE = 'ADAPTIVE'"),
+	}
+	comment := Attribute{Name: "comment", Type: AttrString}
+	obj := Object{
+		Name:                    "WarehouseAdaptive",
+		VariantOf:               &base,
+		VariantEntityCreateName: "WAREHOUSE",
+		Attributes:              []Attribute{kind, comment},
+		Create:                  CreateSpec{Clauses: []*Attribute{&kind, &comment}},
+	}
+	require.NotPanics(t, func() { ValidateObject(obj) })
+	require.Equal(t, []Attribute{comment}, obj.ResourceAttributes())
+
+	missing := obj
+	missing.VariantEntityCreateName = ""
+	require.PanicsWithValue(t, `object "WarehouseAdaptive": variant CREATE needs VariantEntityCreateName`, func() {
+		ValidateObject(missing)
+	})
+
+	withSql := obj
+	withSql.Create.Sql = "WAREHOUSE"
+	require.PanicsWithValue(t, `object "WarehouseAdaptive": variant CREATE words are VariantEntityCreateName`, func() {
+		ValidateObject(withSql)
+	})
+
+	require.PanicsWithValue(t, `object "Widget": VariantEntityCreateName is for a variant`, func() {
+		ValidateObject(Object{Name: "Widget", VariantEntityCreateName: "WIDGET"})
+	})
+}

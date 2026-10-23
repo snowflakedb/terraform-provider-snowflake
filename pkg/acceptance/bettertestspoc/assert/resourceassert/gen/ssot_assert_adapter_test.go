@@ -39,7 +39,7 @@ func Test_AssertionsFromSsotObject_mapsClassifiedAttributes(t *testing.T) {
 	for _, field := range ssot.IdentityFields(obj) {
 		requireAssertionMatches(t, assertionByName(t, model, field.Name), field)
 	}
-	for _, attr := range obj.Attributes {
+	for _, attr := range obj.ResourceAttributes() {
 		requireAssertionMatches(t, assertionByName(t, model, attr.Name), ssot.ClassifyAttribute(obj, attr))
 	}
 	requireAssertionMatches(t, assertionByName(t, model, resources.FullyQualifiedNameAttributeName), ssot.ClassifiedField{
@@ -183,7 +183,7 @@ func requireAssertionMatches(t *testing.T, got ResourceAttributeAssertionModel, 
 }
 
 func classifyAttributes(obj ssot.Object) []ssot.ClassifiedField {
-	return collections.Map(obj.Attributes, func(attr ssot.Attribute) ssot.ClassifiedField {
+	return collections.Map(obj.ResourceAttributes(), func(attr ssot.Attribute) ssot.ClassifiedField {
 		return ssot.ClassifyAttribute(obj, attr)
 	})
 }

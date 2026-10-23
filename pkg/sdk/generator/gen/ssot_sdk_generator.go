@@ -11,6 +11,9 @@ import (
 // parametersForLevel is the catalog a Parameters entry spreads. Tests replace it with a short list.
 var parametersForLevel = ssotdefs.ParameterDefsForLevel
 
+// variantsOf is the catalog a variant CREATE reads. Tests replace it with a short list.
+var variantsOf = ssotdefs.VariantsOf
+
 // ShowOperationFromObject adds SHOW and ShowByID from obj.SdkConfig.
 // The field chain comes from ShowPairedStructs. Clauses are emitted in a fixed order:
 // Show, Terse, SQL, OptionalSQL, Like, ExtendedIn, StartsWith, LimitFrom, Limit.
@@ -170,11 +173,39 @@ func dropQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 // helperStructs are query structs the attribute clauses name, other than an enum list item.
 // A list of enums adds its item query struct here. The struct name is the enum name plus ListItem, and its field is Value.
 func (i *Interface) CreateOperationFromObject(obj ssot.Object, helperStructs ...IntoField) *Interface {
+	if obj.VariantOf != nil {
+		panic(fmt.Sprintf("object %q: a variant cannot enable SDK generation", obj.Name))
+	}
 	cfg := obj.SdkConfig()
 	if !cfg.Create {
 		panic(fmt.Sprintf("object %q is not enabled for SDK CREATE generation", obj.Name))
 	}
 	return i.CreateOperation(cfg.CreateDoc, createQueryStructFromConfig(obj, cfg), append(helperStructs, enumListItemStructs(obj)...)...)
+}
+
+// CreateVariantOperationsFromObject emits each variant CREATE as a custom method.
+// Variants come from the catalog for base. The variant supplies the CREATE spec. The base must turn on SdkCreateForVariants.
+// TODO [next PRs]: the same switch for variant ALTER, and for SHOW/DESCRIBE.
+func (i *Interface) CreateVariantOperationsFromObject(base ssot.Object) *Interface {
+	if !base.SdkConfig().CreateForVariants {
+		panic(fmt.Sprintf("object %q is not enabled for variant CREATE generation", base.Name))
+	}
+	variants := variantsOf(base)
+	if len(variants) == 0 {
+		panic(fmt.Sprintf("object %q: variant CREATE generation has no variants", base.Name))
+	}
+	for _, variant := range variants {
+		if variant.VariantOf == nil || variant.VariantOf.Name != base.Name {
+			panic(fmt.Sprintf("object %q: %q is not a variant", base.Name, variant.Name))
+		}
+		if !variant.HasCreateSpec() {
+			panic(fmt.Sprintf("object %q: variant CREATE has no spec", variant.Name))
+		}
+		cfg := variant.VariantCreateConfig()
+		q := createQueryStructFromConfig(variant, cfg)
+		i = i.CustomOperation(variant.VariantCreateMethod(base.Name), cfg.CreateDoc, q, enumListItemStructs(variant)...)
+	}
+	return i
 }
 
 func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
@@ -195,7 +226,8 @@ func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryS
 	if !cfg.CreateWithoutIfNotExists {
 		q = q.IfNotExists()
 	}
-	q = q.Name().appendSqlSequenceParams(obj.Create.Clauses, attributeSqlCreate, createParams).WithValidation(ValidIdentifier, "name")
+	q = q.Name()
+	q = q.appendSqlSequenceParams(obj.Create.Clauses, attributeSqlCreate, createParams).WithValidation(ValidIdentifier, "name")
 	if !cfg.CreateWithoutOrReplace && !cfg.CreateWithoutIfNotExists {
 		q = q.WithValidation(ConflictingFields, "OrReplace", "IfNotExists")
 	}
@@ -320,6 +352,9 @@ func InterfaceFromObject(obj ssot.Object) *Interface {
 	iface := NewInterface(obj.NamePlural, obj.Name, obj.IdType)
 	if cfg.Create {
 		iface = iface.CreateOperationFromObject(obj)
+	}
+	if cfg.CreateForVariants {
+		iface = iface.CreateVariantOperationsFromObject(obj)
 	}
 	if cfg.Alter {
 		iface = iface.AlterOperationFromObject(obj)

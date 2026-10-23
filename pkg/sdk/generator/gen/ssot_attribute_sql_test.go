@@ -228,3 +228,14 @@ func Test_appendSqlSequence_typeDefaults(t *testing.T) {
 		OptionalNumberAssignment("LIMIT", ParameterOptions())
 	require.Equal(t, want.fields, got.fields)
 }
+
+func Test_appendSqlSequence_static(t *testing.T) {
+	kind := ssot.Attribute{
+		Name:      "kind",
+		SqlOnly:   true,
+		CreateSql: ssot.StaticSQL("kind", "KIND = 'MINI'"),
+	}
+	got := NewQueryStruct("clauses").appendSqlSequence([]*ssot.Attribute{&kind}, attributeSqlCreate)
+	want := NewQueryStruct("clauses").SQLWithCustomFieldName("kind", "KIND = 'MINI'")
+	require.Equal(t, want.fields, got.fields)
+}

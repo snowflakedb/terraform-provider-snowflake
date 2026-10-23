@@ -40,6 +40,7 @@ var WarehouseAdaptiveAttrs = struct {
 		Type:        ssot.AttrEnum,
 		Description: "Specifies the maximum query performance level for the adaptive warehouse. Determines the initial compute capacity.",
 		Enum:        MaxQueryPerformanceLevel,
+		CreateSql:   ssot.Clause(ssot.SingleQuotes()),
 	},
 	QueryThroughputMultiplier: ssot.Attribute{
 		Name:        "query_throughput_multiplier",
@@ -54,12 +55,23 @@ var WarehouseAdaptiveAttrs = struct {
 		Description:     "Specifies the name of a resource monitor that is explicitly assigned to the adaptive warehouse.",
 		RelatedResource: &ResourceMonitor,
 		DiffSuppress:    ssot.SuppressShow,
+		CreateSql:       ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Equals()),
 	},
 }
 
 // Show columns that cannot reuse WarehouseAttrs.
 // auto_resume is writable there and is not an adaptive attribute.
 // The performance columns are Readonly there and these names are adaptive attributes.
+
+// warehouseAdaptiveWarehouseType is always emitted on CREATE as a private static field.
+// SqlOnly keeps it out of schema, resource, model, and assertions.
+// The resource warehouse_type field stays a separate computed attribute.
+var warehouseAdaptiveWarehouseType = ssot.Attribute{
+	Name:      "warehouse_type_static",
+	SqlOnly:   true,
+	CreateSql: ssot.StaticSQL("warehouseType", "WAREHOUSE_TYPE = 'ADAPTIVE'"),
+}
+
 var (
 	warehouseAdaptiveAutoResumeShow = ssot.Attribute{
 		Name: "auto_resume", Type: ssot.AttrBool, Readonly: true,
@@ -78,6 +90,7 @@ var WarehouseAdaptive = ssot.Object{
 	IdType:                     "AccountObjectIdentifier",
 	SdkCreateRequestObjectName: "AdaptiveWarehouse",
 	VariantOf:                  &Warehouse,
+	VariantEntityCreateName:    "WAREHOUSE",
 	AttributesModification:     true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithSchema(ssot.SchemaShow()),
@@ -114,6 +127,7 @@ var WarehouseAdaptive = ssot.Object{
 	Attributes: []ssot.Attribute{
 		WarehouseAdaptiveAttrs.Comment,
 		WarehouseAdaptiveAttrs.WarehouseType,
+		warehouseAdaptiveWarehouseType,
 		WarehouseAdaptiveAttrs.MaxQueryPerformanceLevel,
 		WarehouseAdaptiveAttrs.QueryThroughputMultiplier,
 		WarehouseAdaptiveAttrs.ResourceMonitor,
@@ -141,6 +155,19 @@ var WarehouseAdaptive = ssot.Object{
 			&WarehouseAttrs.OwnerRoleType,
 			&warehouseAdaptiveMaxQueryPerformanceLevelShow,
 			&warehouseAdaptiveQueryThroughputMultiplierShow,
+		},
+	},
+	Create: ssot.CreateSpec{
+		Doc:                   "https://docs.snowflake.com/en/user-guide/warehouses-adaptive",
+		AdditionalValidations: true,
+		Clauses: []*ssot.Attribute{
+			&warehouseAdaptiveWarehouseType,
+			&WarehouseAdaptiveAttrs.Comment,
+			&WarehouseAdaptiveAttrs.MaxQueryPerformanceLevel,
+			&WarehouseAdaptiveAttrs.QueryThroughputMultiplier,
+			&WarehouseAdaptiveAttrs.ResourceMonitor,
+			ssot.Parameters,
+			ssot.Tags,
 		},
 	},
 }

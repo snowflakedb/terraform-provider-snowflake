@@ -19,7 +19,7 @@ func ModelFromSsotObject(obj ssot.Object) ResourceConfigBuilderModel {
 		panic(fmt.Sprintf("object %q is not enabled for model generation", obj.Name))
 	}
 	attrs := identityModelAttributes(obj)
-	attrs = append(attrs, collections.Map(obj.Attributes, func(attr ssot.Attribute) ResourceConfigBuilderAttributeModel {
+	attrs = append(attrs, collections.Map(obj.ResourceAttributes(), func(attr ssot.Attribute) ResourceConfigBuilderAttributeModel {
 		return modelAttributeFromField(ssot.ClassifyAttribute(obj, attr))
 	})...)
 	attrs = append(attrs, collections.Map(parameterDefsForObject(obj), func(parameter ssot.ParameterDef) ResourceConfigBuilderAttributeModel {

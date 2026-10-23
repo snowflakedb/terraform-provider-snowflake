@@ -12,54 +12,8 @@ var warehousesDef = g.NewInterface(
 	"Warehouse",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).CreateOperationFromObject(ssotdefs.Warehouse).
-	CustomOperation(
-		"CreateAdaptive",
-		"https://docs.snowflake.com/en/user-guide/warehouses-adaptive",
-		g.NewQueryStruct("CreateAdaptiveWarehouse").
-			Create().
-			OrReplace().
-			SQL("WAREHOUSE").
-			IfNotExists().
-			Name().
-			SQLWithCustomFieldName("warehouseType", "WAREHOUSE_TYPE = 'ADAPTIVE'").
-			OptionalComment().
-			OptionalEnumAssignment("MAX_QUERY_PERFORMANCE_LEVEL", ssotdefs.MaxQueryPerformanceLevel, g.ParameterOptions().SingleQuotes()).
-			OptionalNumberAssignment("QUERY_THROUGHPUT_MULTIPLIER", g.ParameterOptions()).
-			OptionalIdentifier("ResourceMonitor", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RESOURCE_MONITOR").Equals()).
-			OptionalTags().
-			OptionalNumberAssignment("STATEMENT_QUEUED_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
-			OptionalNumberAssignment("STATEMENT_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
-			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
-			WithAdditionalValidations(),
-	).CustomOperation(
-	"CreateInteractive",
-	"https://docs.snowflake.com/en/user-guide/warehouses-interactive",
-	g.NewQueryStruct("CreateInteractiveWarehouse").
-		Create().
-		OrReplace().
-		SQL("INTERACTIVE WAREHOUSE").
-		IfNotExists().
-		Name().
-		ListAssignment("TABLES", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().Parentheses().NoEquals()).
-		OptionalEnumAssignment("WAREHOUSE_SIZE", ssotdefs.WarehouseSize, g.ParameterOptions().SingleQuotes()).
-		OptionalNumberAssignment("MAX_CLUSTER_COUNT", g.ParameterOptions()).
-		OptionalNumberAssignment("MIN_CLUSTER_COUNT", g.ParameterOptions()).
-		OptionalNumberAssignment("AUTO_SUSPEND", g.ParameterOptions()).
-		OptionalBooleanAssignment("AUTO_RESUME", nil).
-		OptionalBooleanAssignment("INITIALLY_SUSPENDED", nil).
-		OptionalIdentifier("ResourceMonitor", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RESOURCE_MONITOR").Equals()).
-		OptionalComment().
-		OptionalNumberAssignment("MAX_CONCURRENCY_LEVEL", g.ParameterOptions()).
-		OptionalNumberAssignment("STATEMENT_QUEUED_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
-		OptionalNumberAssignment("STATEMENT_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
-		OptionalIdentifier("FallbackWarehouse", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("FALLBACK_WAREHOUSE").Equals()).
-		OptionalTags().
-		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
-		WithValidation(g.ValidIdentifier, "Tables").
-		WithAdditionalValidations(),
-).AlterOperationFromObject(ssotdefs.Warehouse).
+	CreateVariantOperationsFromObject(ssotdefs.Warehouse).
+	AlterOperationFromObject(ssotdefs.Warehouse).
 	DropOperationFromObject(ssotdefs.Warehouse).
 	ShowOperationFromObject(ssotdefs.Warehouse).
 	DescribeOperationFromObject(ssotdefs.Warehouse).

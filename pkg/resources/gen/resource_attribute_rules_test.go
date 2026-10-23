@@ -593,3 +593,19 @@ func Test_applyResourceAttributeRules_listOfBlocksAllowsMultipleItems(t *testing
 	require.Equal(t, 1, strings.Count(rendered, "&tfschema.Resource{"))
 	require.Contains(t, rendered, "&tfschema.Schema{")
 }
+
+func Test_ModelFromInputObject_skipsSqlOnly(t *testing.T) {
+	model := ModelFromInputObject(ResourceObject{Object: ssot.Object{
+		Name: "WarehouseAdaptive",
+		Attributes: []ssot.Attribute{
+			{Name: "comment", Type: ssot.AttrString},
+			{
+				Name:      "warehouse_type_static",
+				SqlOnly:   true,
+				CreateSql: ssot.StaticSQL("warehouseType", "WAREHOUSE_TYPE = 'ADAPTIVE'"),
+			},
+		},
+	}}, nil, nil)
+	require.Len(t, model.Attributes, 1)
+	require.Equal(t, "comment", model.Attributes[0].Name)
+}

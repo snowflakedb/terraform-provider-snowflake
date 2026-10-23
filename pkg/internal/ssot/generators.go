@@ -46,6 +46,9 @@ type SdkGenerator struct {
 	CreateWithoutIfNotExists    bool
 	CreateWithoutOrReplace      bool
 	CreateAdditionalValidations bool
+	// CreateForVariants emits each variant CREATE as a custom method on this object's interface.
+	// TODO [next PRs]: the same switch for variant ALTER, and for SHOW/DESCRIBE.
+	CreateForVariants bool
 
 	Alter                          bool
 	AlterDoc                       string
@@ -230,6 +233,13 @@ func SdkCreateWithoutOrReplace() SdkCreateOption {
 
 func SdkCreateAdditionalValidations() SdkCreateOption {
 	return func(s *SdkGenerator) { s.CreateAdditionalValidations = true }
+}
+
+// SdkCreateForVariants emits CREATE for each variant of this object as a custom method.
+// The variant supplies the CREATE spec.
+// TODO [next PRs]: the same switch for variant ALTER, and for SHOW/DESCRIBE.
+func SdkCreateForVariants() SdkOption {
+	return func(s *SdkGenerator) { s.CreateForVariants = true }
 }
 
 type SdkAlterOption func(*SdkGenerator)

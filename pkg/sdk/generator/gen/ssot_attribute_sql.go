@@ -93,9 +93,18 @@ func (v *QueryStruct) appendAttributeClause(attr ssot.Attribute, clause ssot.Sql
 		return v.appendKeywordClause(attr, clause, clauseRequired(attr, clause, statement))
 	case ssot.SqlKindIdentifier:
 		return v.appendIdentifierClause(attr, clause, clauseRequired(attr, clause, statement))
+	case ssot.SqlKindStatic:
+		return v.appendStaticClause(attr, clause)
 	default:
 		panic(fmt.Sprintf("attribute %q: sql kind %q", attr.Name, clause.Kind))
 	}
+}
+
+func (v *QueryStruct) appendStaticClause(attr ssot.Attribute, clause ssot.SqlClause) *QueryStruct {
+	if clause.Field == "" || clause.SQL == "" {
+		panic(fmt.Sprintf("attribute %q: static clause needs a field name and SQL", attr.Name))
+	}
+	return v.SQLWithCustomFieldName(clause.Field, clause.SQL)
 }
 
 // clauseRequired is Attribute.Required on create when the clause leaves Required nil.
@@ -138,11 +147,19 @@ func (v *QueryStruct) appendParameterClause(attr ssot.Attribute, clause ssot.Sql
 			return v.EnumAssignment(sql, enum, opts)
 		}
 		return v.OptionalEnumAssignment(sql, enum, opts)
-	case ssot.AttrList:
-		if clause.ItemStruct == "" {
+	case ssot.AttrList, ssot.AttrSet:
+		item := clause.ItemStruct
+		if item == "" && attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
+			item = attr.Elem.IdentifierType
+		}
+		if item == "" {
 			panic(fmt.Sprintf("attribute %q: list parameter has no item struct", attr.Name))
 		}
-		return v.ListAssignment(sql, clause.ItemStruct, opts)
+		v = v.ListAssignment(sql, item, opts)
+		if attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
+			v = v.WithValidation(ValidIdentifier, sqlToFieldName(sql, true))
+		}
+		return v
 	default:
 		panic(fmt.Sprintf("attribute %q: parameter clause has type %q", attr.Name, attr.Type))
 	}

@@ -875,6 +875,74 @@ func Test_CreateOperationFromObject_enumListItem(t *testing.T) {
 	requireSameOperations(t, want, got)
 }
 
+func Test_CreateVariantOperationsFromObject_fakeObject(t *testing.T) {
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	kind := ssot.Attribute{
+		Name:      "kind",
+		SqlOnly:   true,
+		CreateSql: ssot.StaticSQL("kind", "KIND = 'MINI'"),
+	}
+	base := ssot.Object{
+		Name: "Widget",
+		Generators: []ssot.GeneratorOption{
+			ssot.WithSdk(ssot.SdkCreateForVariants()),
+		},
+	}
+	variant := ssot.Object{
+		Name:                       "WidgetMini",
+		VariantOf:                  &base,
+		VariantEntityCreateName:    "MINI WIDGET",
+		SdkCreateRequestObjectName: "MiniWidget",
+		Create: ssot.CreateSpec{
+			Doc:                   "https://docs.example.com/mini",
+			AdditionalValidations: true,
+			Clauses:               []*ssot.Attribute{&kind, &comment},
+		},
+	}
+	orig := variantsOf
+	t.Cleanup(func() { variantsOf = orig })
+	variantsOf = func(ssot.Object) []ssot.Object { return []ssot.Object{variant} }
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateVariantOperationsFromObject(base)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CustomOperation(
+		"CreateMini",
+		"https://docs.example.com/mini",
+		NewQueryStruct("CreateMiniWidget").
+			Create().
+			OrReplace().
+			SQL("MINI WIDGET").
+			IfNotExists().
+			Name().
+			SQLWithCustomFieldName("kind", "KIND = 'MINI'").
+			OptionalTextAssignment("COMMENT", ParameterOptions().SingleQuotes()).
+			WithValidation(ValidIdentifier, "name").
+			WithValidation(ConflictingFields, "OrReplace", "IfNotExists").
+			WithAdditionalValidations(),
+	)
+	requireSameOperations(t, want, got)
+}
+
+func Test_CreateVariantOperationsFromObject_panics(t *testing.T) {
+	base := ssot.Object{Name: "Widget"}
+	variant := ssot.Object{Name: "WidgetMini", VariantOf: &base}
+	orig := variantsOf
+	t.Cleanup(func() { variantsOf = orig })
+	variantsOf = func(ssot.Object) []ssot.Object { return []ssot.Object{variant} }
+	require.Panics(t, func() {
+		NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateVariantOperationsFromObject(base)
+	})
+	base.Generators = []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreateForVariants())}
+	require.Panics(t, func() {
+		NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateVariantOperationsFromObject(base)
+	})
+	variantsOf = func(ssot.Object) []ssot.Object { return nil }
+	require.Panics(t, func() {
+		NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateVariantOperationsFromObject(base)
+	})
+	require.Panics(t, func() {
+		NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(variant)
+	})
+}
+
 func Test_CustomOperationsFromObject_fakeObject(t *testing.T) {
 	transient := ssot.Attribute{
 		Name:      "is_transient",

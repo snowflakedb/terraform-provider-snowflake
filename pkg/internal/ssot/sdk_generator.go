@@ -251,6 +251,38 @@ func (obj Object) nameForCreate() string {
 	return obj.singularName("CREATE")
 }
 
+// VariantCreateMethod is Create plus the variant name with baseName removed.
+// WarehouseAdaptive with base Warehouse is CreateAdaptive.
+func (obj Object) VariantCreateMethod(baseName string) string {
+	if baseName == "" || !strings.HasPrefix(obj.Name, baseName) || obj.Name == baseName {
+		panic(fmt.Sprintf("object %q: cannot build a variant CREATE method from base %q", obj.Name, baseName))
+	}
+	return "Create" + strings.TrimPrefix(obj.Name, baseName)
+}
+
+// VariantCreateConfig is the CREATE config for emitting this variant as a custom method.
+// It does not read WithSdk. Doc and AdditionalValidations come from Create.
+// SQL words come from VariantEntityCreateName, not from Create.Sql and not from ObjectType.
+// The query struct name is Create plus SdkCreateRequestObjectName, or Create plus Name.
+func (obj Object) VariantCreateConfig() SdkGenerator {
+	if !obj.HasCreateSpec() {
+		panic(fmt.Sprintf("object %q: variant CREATE has no spec", obj.Name))
+	}
+	if obj.VariantEntityCreateName == "" {
+		panic(fmt.Sprintf("object %q: variant CREATE needs VariantEntityCreateName", obj.Name))
+	}
+	stem := obj.SdkCreateRequestObjectName
+	if stem == "" {
+		stem = obj.Name
+	}
+	return SdkGenerator{
+		CreateDoc:                   obj.Create.Doc,
+		CreateSql:                   obj.VariantEntityCreateName,
+		CreateQueryStructName:       "Create" + stem,
+		CreateAdditionalValidations: obj.Create.AdditionalValidations,
+	}
+}
+
 func (obj Object) nameForAlter() string {
 	return obj.singularName("ALTER")
 }

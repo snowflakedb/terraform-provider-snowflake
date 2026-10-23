@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
@@ -32,19 +33,22 @@ type Object struct {
 	AdditionalIdentityNameDescription   string
 	SdkCreateRequestObjectName          string  // SDK Create<Name>Request stem; defaults to Name
 	VariantOf                           *Object // Shares SDK parameter details, set/unset request, and ParameterType names with this object; catalog membership still uses Name
-	Attributes                          []Attribute
-	AttributesModification              bool
-	ResourceHooks                       []ResourceHookOption
-	Generators                          []GeneratorOption
-	SchemaStateUpgraders                []StateUpgraderFunc
-	AdditionalCustomizeDiffs            []CustomizeDiffFunc
-	Show                                OutputSpec
+	// VariantEntityCreateName is the SQL object words a variant CREATE emits, such as WAREHOUSE.
+	// ObjectType builds those words from Name. That is wrong for a variant: WarehouseAdaptive would be WAREHOUSE ADAPTIVE.
+	// Variant CREATE reads this field. Other statements keep ObjectType.
+	VariantEntityCreateName  string
+	Attributes               []Attribute
+	AttributesModification   bool
+	ResourceHooks            []ResourceHookOption
+	Generators               []GeneratorOption
+	SchemaStateUpgraders     []StateUpgraderFunc
+	AdditionalCustomizeDiffs []CustomizeDiffFunc
+	Show                     OutputSpec
 	// ShowGeneric is the temporary union of every variant SHOW column.
 	// It is the one paired SHOW. Each variant, including the main one, declares its own show in Show.
 	// TODO [next PRs]: Each variant's Show.Columns becomes a paired SHOW with its dedicated type, and ShowGeneric goes away.
 	ShowGeneric OutputSpec
-	Describe    OutputSpec
-	// ShowPlainName is the plain SHOW struct name when it differs from Name.
+	Describe    OutputSpec // ShowPlainName is the plain SHOW struct name when it differs from Name.
 	// Empty uses Name. Set it when ShowGeneric uses Name for the paired SHOW struct.
 	ShowPlainName string
 	// ShowVariants are plain SHOW structs emitted with this object's DESCRIBE.
@@ -151,9 +155,28 @@ type AlterSpec struct {
 // CreateSpec is the CREATE statement.
 // Clauses is the order after the name.
 // KeywordsBefore is the order after OR REPLACE and before the object words.
+// Doc and Sql override the generated doc URL and object words. Empty Sql is the uppercase words of Name.
+// A variant does not set Sql. Variant CREATE uses VariantEntityCreateName.
 type CreateSpec struct {
-	Clauses        []*Attribute
-	KeywordsBefore []*Attribute
+	Doc                   string
+	Sql                   string
+	AdditionalValidations bool
+	Clauses               []*Attribute
+	KeywordsBefore        []*Attribute
+}
+
+// HasCreateSpec reports whether this object defines a CREATE statement.
+// Presence is Clauses. Doc, Sql, KeywordsBefore, and AdditionalValidations do not define it.
+func (obj Object) HasCreateSpec() bool {
+	return len(obj.Create.Clauses) > 0
+}
+
+// ResourceAttributes is Attributes without SQL-only fields.
+// Schema, resource, model, and assertion generators use this list.
+func (obj Object) ResourceAttributes() []Attribute {
+	return collections.Filter(obj.Attributes, func(attr Attribute) bool {
+		return !attr.SqlOnly
+	})
 }
 
 func (obj Object) ObjectName() string { return obj.Name }

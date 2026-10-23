@@ -24,3 +24,14 @@ func All() []ssot.Object {
 	}
 	return objs
 }
+
+// VariantsOf returns objects whose VariantOf name is base.Name, in All order.
+func VariantsOf(base ssot.Object) []ssot.Object {
+	var out []ssot.Object
+	for _, obj := range All() {
+		if obj.VariantOf != nil && obj.VariantOf.Name == base.Name {
+			out = append(out, obj)
+		}
+	}
+	return out
+}

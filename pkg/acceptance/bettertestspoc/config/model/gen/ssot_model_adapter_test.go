@@ -34,7 +34,7 @@ func Test_ModelFromSsotObject_mapsClassifiedAttributes(t *testing.T) {
 	for _, field := range ssot.IdentityFields(obj) {
 		requireModelAttributeMatches(t, modelAttributeByName(t, model, field.Name), field)
 	}
-	for _, attr := range obj.Attributes {
+	for _, attr := range obj.ResourceAttributes() {
 		requireModelAttributeMatches(t, modelAttributeByName(t, model, attr.Name), ssot.ClassifyAttribute(obj, attr))
 	}
 }
@@ -140,7 +140,7 @@ func requireModelAttributeMatches(t *testing.T, got ResourceConfigBuilderAttribu
 }
 
 func classifyAttributes(obj ssot.Object) []ssot.ClassifiedField {
-	return collections.Map(obj.Attributes, func(attr ssot.Attribute) ssot.ClassifiedField {
+	return collections.Map(obj.ResourceAttributes(), func(attr ssot.Attribute) ssot.ClassifiedField {
 		return ssot.ClassifyAttribute(obj, attr)
 	})
 }

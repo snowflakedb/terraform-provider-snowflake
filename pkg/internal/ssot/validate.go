@@ -12,6 +12,7 @@ func ValidateObject(obj Object) {
 		panic("ssot object has empty Name")
 	}
 	attrs := make(map[string]struct{})
+	sqlOnly := make(map[string]struct{})
 	seen := make(map[string]struct{})
 	for _, a := range obj.Attributes {
 		if a.IsTags() {
@@ -26,11 +27,17 @@ func ValidateObject(obj Object) {
 		if a.Readonly {
 			panic(fmt.Sprintf("object %q: CREATE/ALTER attribute %q is marked Readonly", obj.Name, a.Name))
 		}
+		if a.SqlOnly && (!a.CreateSql.Present || a.CreateSql.Kind != SqlKindStatic || a.SetSql.Present || a.UnsetSql.Present) {
+			panic(fmt.Sprintf("object %q: SQL-only attribute %q needs a static CREATE clause", obj.Name, a.Name))
+		}
 		if _, dup := seen[a.Name]; dup {
 			panic(fmt.Sprintf("object %q: duplicate attribute %q", obj.Name, a.Name))
 		}
 		seen[a.Name] = struct{}{}
 		attrs[a.Name] = struct{}{}
+		if a.SqlOnly {
+			sqlOnly[a.Name] = struct{}{}
+		}
 		validateCollectionBounds(obj, a)
 		validateNestedAttribute(obj, a)
 		validateAttribute(obj, a)
@@ -38,6 +45,16 @@ func ValidateObject(obj Object) {
 		validateAttributeOptions(obj.Name, a, false)
 	}
 	validateCreateSpec(obj, attrs)
+	if obj.VariantOf != nil {
+		if obj.Create.Sql != "" {
+			panic(fmt.Sprintf("object %q: variant CREATE words are VariantEntityCreateName", obj.Name))
+		}
+		if obj.HasCreateSpec() && obj.VariantEntityCreateName == "" {
+			panic(fmt.Sprintf("object %q: variant CREATE needs VariantEntityCreateName", obj.Name))
+		}
+	} else if obj.VariantEntityCreateName != "" {
+		panic(fmt.Sprintf("object %q: VariantEntityCreateName is for a variant", obj.Name))
+	}
 	validateSqlSequence(obj, "SET", obj.Set, attrs, func(attr Attribute) SqlClause { return attr.SetSql })
 	validateSqlSequence(obj, "UNSET", obj.Unset, attrs, func(attr Attribute) SqlClause { return attr.UnsetSql })
 	validateAlterSpec(obj)
@@ -60,9 +77,9 @@ func ValidateObject(obj Object) {
 		}
 	}
 	nested := nestedAttributeNames(obj)
-	validateColumnList(obj, "SHOW", obj.Show.Columns, attrs, nested)
-	validateColumnList(obj, "SHOW generic", obj.ShowGeneric.Columns, attrs, nested)
-	validateColumnList(obj, "DESCRIBE", obj.Describe.Columns, attrs, nested)
+	validateColumnList(obj, "SHOW", obj.Show.Columns, attrs, sqlOnly, nested)
+	validateColumnList(obj, "SHOW generic", obj.ShowGeneric.Columns, attrs, sqlOnly, nested)
+	validateColumnList(obj, "DESCRIBE", obj.Describe.Columns, attrs, sqlOnly, nested)
 	g := ObjectGenerators(obj.Generators...)
 	validateGeneratorSkips(obj, "object-assertion", "SHOW", g.ObjectAssert.Show, obj.PairedShowColumns(), g.ObjectAssert.ShowSkipFields)
 	validateGeneratorSkips(obj, "object-assertion", "DESCRIBE", g.ObjectAssert.Describe, obj.Describe.Columns, g.ObjectAssert.DescribeSkipFields)
@@ -427,8 +444,8 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 			if enum := attr.ColumnEnum(); enum == nil || enum.Name == "" {
 				panic(fmt.Sprintf("object %q: attribute %q %s enum parameter has no Enum", obj.Name, attr.Name, statement))
 			}
-		case AttrList:
-			if clause.ItemStruct == "" {
+		case AttrList, AttrSet:
+			if clause.ItemStruct == "" && (attr.Elem == nil || attr.Elem.Type != AttrIdentifier || attr.Elem.IdentifierType == "") {
 				panic(fmt.Sprintf("object %q: attribute %q %s list parameter has no item struct", obj.Name, attr.Name, statement))
 			}
 		default:
@@ -442,6 +459,19 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 		}
 		if clause.IdType == "" {
 			panic(fmt.Sprintf("object %q: attribute %q %s identifier has no IdType", obj.Name, attr.Name, statement))
+		}
+	case SqlKindStatic:
+		if statement != "CREATE" {
+			panic(fmt.Sprintf("object %q: attribute %q static clause is CREATE only", obj.Name, attr.Name))
+		}
+		if !attr.SqlOnly {
+			panic(fmt.Sprintf("object %q: attribute %q static clause is SQL-only", obj.Name, attr.Name))
+		}
+		if clause.Field == "" || clause.SQL == "" {
+			panic(fmt.Sprintf("object %q: attribute %q static clause needs a field name and SQL", obj.Name, attr.Name))
+		}
+		if !token.IsIdentifier(clause.Field) || token.IsExported(clause.Field) {
+			panic(fmt.Sprintf("object %q: attribute %q static field %q is not private", obj.Name, attr.Name, clause.Field))
 		}
 	default:
 		panic(fmt.Sprintf("object %q: attribute %q %s has sql kind %q", obj.Name, attr.Name, statement, clause.Kind))
@@ -470,7 +500,7 @@ func validateAttributeOptions(objectName string, attr Attribute, asElem bool) {
 	}
 }
 
-func validateColumnList(obj Object, kind string, list []*Attribute, attrs map[string]struct{}, nested map[string]struct{}) {
+func validateColumnList(obj Object, kind string, list []*Attribute, attrs map[string]struct{}, sqlOnly map[string]struct{}, nested map[string]struct{}) {
 	seenKey := make(map[string]struct{})
 	seenName := make(map[string]struct{})
 	for _, a := range list {
@@ -485,6 +515,9 @@ func validateColumnList(obj Object, kind string, list []*Attribute, attrs map[st
 		}
 		if a.Name == "" {
 			panic(fmt.Sprintf("object %q: %s entry has empty Name", obj.Name, kind))
+		}
+		if _, ok := sqlOnly[a.Name]; ok {
+			panic(fmt.Sprintf("object %q: %s entry %q is SQL-only", obj.Name, kind, a.Name))
 		}
 		// A variant SHOW struct reuses the parent's show attributes, not this object's resource fields.
 		if obj.VariantOf == nil {

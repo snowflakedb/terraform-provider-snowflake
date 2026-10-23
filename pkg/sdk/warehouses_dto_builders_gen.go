@@ -166,11 +166,6 @@ func (s *CreateAdaptiveWarehouseRequest) WithResourceMonitor(resourceMonitor Acc
 	return s
 }
 
-func (s *CreateAdaptiveWarehouseRequest) WithTag(tag []TagAssociation) *CreateAdaptiveWarehouseRequest {
-	s.Tag = tag
-	return s
-}
-
 func (s *CreateAdaptiveWarehouseRequest) WithStatementQueuedTimeoutInSeconds(statementQueuedTimeoutInSeconds int) *CreateAdaptiveWarehouseRequest {
 	s.StatementQueuedTimeoutInSeconds = &statementQueuedTimeoutInSeconds
 	return s
@@ -179,6 +174,22 @@ func (s *CreateAdaptiveWarehouseRequest) WithStatementQueuedTimeoutInSeconds(sta
 func (s *CreateAdaptiveWarehouseRequest) WithStatementTimeoutInSeconds(statementTimeoutInSeconds int) *CreateAdaptiveWarehouseRequest {
 	s.StatementTimeoutInSeconds = &statementTimeoutInSeconds
 	return s
+}
+
+func (s *CreateAdaptiveWarehouseRequest) WithTag(tag []TagAssociation) *CreateAdaptiveWarehouseRequest {
+	s.Tag = tag
+	return s
+}
+
+func (s *CreateAdaptiveWarehouseRequest) SetParameterFromRaw(key string, value string) error {
+	switch strings.ToUpper(key) {
+	case "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.StatementQueuedTimeoutInSeconds)
+	case "STATEMENT_TIMEOUT_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.StatementTimeoutInSeconds)
+	default:
+		return ErrParameterNotSupported
+	}
 }
 
 func NewCreateInteractiveWarehouseRequest(
@@ -244,6 +255,11 @@ func (s *CreateInteractiveWarehouseRequest) WithComment(comment string) *CreateI
 	return s
 }
 
+func (s *CreateInteractiveWarehouseRequest) WithFallbackWarehouse(fallbackWarehouse AccountObjectIdentifier) *CreateInteractiveWarehouseRequest {
+	s.FallbackWarehouse = &fallbackWarehouse
+	return s
+}
+
 func (s *CreateInteractiveWarehouseRequest) WithMaxConcurrencyLevel(maxConcurrencyLevel int) *CreateInteractiveWarehouseRequest {
 	s.MaxConcurrencyLevel = &maxConcurrencyLevel
 	return s
@@ -259,14 +275,24 @@ func (s *CreateInteractiveWarehouseRequest) WithStatementTimeoutInSeconds(statem
 	return s
 }
 
-func (s *CreateInteractiveWarehouseRequest) WithFallbackWarehouse(fallbackWarehouse AccountObjectIdentifier) *CreateInteractiveWarehouseRequest {
-	s.FallbackWarehouse = &fallbackWarehouse
-	return s
-}
-
 func (s *CreateInteractiveWarehouseRequest) WithTag(tag []TagAssociation) *CreateInteractiveWarehouseRequest {
 	s.Tag = tag
 	return s
+}
+
+func (s *CreateInteractiveWarehouseRequest) SetParameterFromRaw(key string, value string) error {
+	switch strings.ToUpper(key) {
+	case "FALLBACK_WAREHOUSE":
+		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.FallbackWarehouse)
+	case "MAX_CONCURRENCY_LEVEL":
+		return assignParsedParameter(value, strconv.Atoi, &s.MaxConcurrencyLevel)
+	case "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.StatementQueuedTimeoutInSeconds)
+	case "STATEMENT_TIMEOUT_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.StatementTimeoutInSeconds)
+	default:
+		return ErrParameterNotSupported
+	}
 }
 
 func NewAlterWarehouseRequest(

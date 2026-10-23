@@ -35,6 +35,7 @@ var WarehouseInteractiveAttrs = struct {
 		IncludeAliasedInTheDescription: true,
 		ShowName:                       "size",
 		DiffSuppress:                   ssot.SuppressShow,
+		CreateSql:                      ssot.Clause(ssot.SingleQuotes()),
 	},
 	MaxClusterCount: ssot.Attribute{
 		Name:         "max_cluster_count",
@@ -78,6 +79,7 @@ var WarehouseInteractiveAttrs = struct {
 		Description:     "Specifies the name of a resource monitor that is explicitly assigned to the interactive warehouse.",
 		RelatedResource: &ResourceMonitor,
 		DiffSuppress:    ssot.SuppressShow,
+		CreateSql:       ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Equals()),
 	},
 	Comment: ssot.Attribute{
 		Name:        "comment",
@@ -92,6 +94,7 @@ var WarehouseInteractiveAttrs = struct {
 			Type:           ssot.AttrIdentifier,
 			IdentifierType: "SchemaObjectIdentifier",
 		},
+		CreateSql: ssot.ListParameter("SchemaObjectIdentifier", ssot.Parentheses(), ssot.NoEquals()),
 	},
 	// Computed in Terraform. The generator emits Optional; AttributesModificationExt clears it.
 	WarehouseType: ssot.Attribute{
@@ -115,6 +118,7 @@ var WarehouseInteractive = ssot.Object{
 	IdType:                     "AccountObjectIdentifier",
 	SdkCreateRequestObjectName: "InteractiveWarehouse",
 	VariantOf:                  &Warehouse,
+	VariantEntityCreateName:    "INTERACTIVE WAREHOUSE",
 	AttributesModification:     true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithSchema(ssot.SchemaShow()),
@@ -189,6 +193,23 @@ var WarehouseInteractive = ssot.Object{
 			&WarehouseAttrs.ResourceMonitor,
 			&WarehouseAttrs.OwnerRoleType,
 			&warehouseInteractiveTablesShow,
+		},
+	},
+	Create: ssot.CreateSpec{
+		Doc:                   "https://docs.snowflake.com/en/user-guide/warehouses-interactive",
+		AdditionalValidations: true,
+		Clauses: []*ssot.Attribute{
+			&WarehouseInteractiveAttrs.Tables,
+			&WarehouseInteractiveAttrs.WarehouseSize,
+			&WarehouseInteractiveAttrs.MaxClusterCount,
+			&WarehouseInteractiveAttrs.MinClusterCount,
+			&WarehouseInteractiveAttrs.AutoSuspend,
+			&WarehouseInteractiveAttrs.AutoResume,
+			&WarehouseInteractiveAttrs.InitiallySuspended,
+			&WarehouseInteractiveAttrs.ResourceMonitor,
+			&WarehouseInteractiveAttrs.Comment,
+			ssot.Parameters,
+			ssot.Tags,
 		},
 	},
 }

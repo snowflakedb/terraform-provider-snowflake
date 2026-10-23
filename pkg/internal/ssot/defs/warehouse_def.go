@@ -344,6 +344,7 @@ var Warehouse = ssot.Object{
 			),
 			ssot.SdkDescribe(ssot.SdkDescribeQueryStructName("DescribeWarehouse")),
 			ssot.SdkCreate(ssot.SdkCreateAdditionalValidations()),
+			ssot.SdkCreateForVariants(),
 			ssot.SdkAlter(
 				ssot.SdkAlterSetAdditionalValidations(),
 				ssot.SdkAlterAdditionalValidations(),
