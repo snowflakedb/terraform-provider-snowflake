@@ -288,7 +288,7 @@ func SdkCustomOperations() SdkOption {
 
 // SdkCustomInterfaceMethods emits Object.CustomInterfaceMethods. Each entry is one interface declaration.
 // The body stays in the SDK ext file. The default signature is id of IdType and a return of error.
-// The default doc is the method name, " is based on ", and the docs URL for that method and Name.
+// An empty doc emits no comment.
 func SdkCustomInterfaceMethods() SdkOption {
 	return func(s *SdkGenerator) { s.CustomInterfaceMethods = true }
 }
@@ -301,7 +301,7 @@ func SdkShowParameters() SdkOption {
 }
 
 // SdkShowParametersDetails emits the typed parameters-details struct and ShowParametersDetails.
-// The fields come from ParameterDefsForLevel for the object's ParameterLevel.
+// The fields are ParameterLevel() plus AlterAdditionalParametersForLevels.
 // The struct name is Name plus ParametersDetails. The generated body calls ShowParameters.
 func SdkShowParametersDetails() SdkOption {
 	return func(s *SdkGenerator) { s.ShowParametersDetails = true }

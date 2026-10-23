@@ -946,7 +946,6 @@ func Test_CustomInterfaceMethodsFromObject_fakeObject(t *testing.T) {
 	got := NewInterface("Fakes", "Fake", "DatabaseObjectIdentifier").CustomInterfaceMethodsFromObject(obj)
 	require.Equal(t, []*CustomInterfaceMethod{{
 		Name:        "Use",
-		Doc:         "Use is based on https://docs.snowflake.com/en/sql-reference/sql/use-fake",
 		Parameters:  []*MethodParameter{NewMethodParameter("id", "DatabaseObjectIdentifier")},
 		ReturnTypes: []string{"error"},
 	}}, got.CustomMethods)
@@ -967,6 +966,18 @@ func Test_CustomInterfaceMethodsFromObject_fakeObject(t *testing.T) {
 		Doc:         "Use is based on https://custom/use",
 		Parameters:  []*MethodParameter{NewMethodParameter("request", "*UseFakeRequest")},
 		ReturnTypes: []string{"bool", "error"},
+	}}, got.CustomMethods)
+
+	emptyDoc := obj
+	emptyDoc.CustomInterfaceMethods = []ssot.CustomInterfaceMethodSpec{{
+		Name:    "ShowByIDExperimentalSafely",
+		Returns: []string{"*Fake", "error"},
+	}}
+	got = NewInterface("Fakes", "Fake", "DatabaseObjectIdentifier").CustomInterfaceMethodsFromObject(emptyDoc)
+	require.Equal(t, []*CustomInterfaceMethod{{
+		Name:        "ShowByIDExperimentalSafely",
+		Parameters:  []*MethodParameter{NewMethodParameter("id", "DatabaseObjectIdentifier")},
+		ReturnTypes: []string{"*Fake", "error"},
 	}}, got.CustomMethods)
 }
 
@@ -1022,6 +1033,26 @@ func Test_ShowParametersFromObject_fakeObject(t *testing.T) {
 			{FieldName: "LogLevel", Key: "LOG_LEVEL", GoType: "LogLevel", Parser: "ToLogLevel"},
 		},
 	}, got.ParametersDetails)
+}
+
+func Test_ShowParametersDetailsFromObject_includesAlterLevels(t *testing.T) {
+	obj := ssot.Object{
+		Name:                               "Widget",
+		IdType:                             "DatabaseObjectIdentifier",
+		AlterAdditionalParametersForLevels: []ssot.ParameterLevel{ssot.ParameterLevelWarehouseInteractive},
+		Generators:                         []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShowParametersDetails())},
+	}
+	got := NewInterface("Widgets", "Widget", "DatabaseObjectIdentifier").ShowParametersDetailsFromObject(obj)
+	keys := make([]string, len(got.ParametersDetails.Fields))
+	for i, field := range got.ParametersDetails.Fields {
+		keys[i] = field.Key
+	}
+	require.Equal(t, []string{
+		"FALLBACK_WAREHOUSE",
+		"MAX_CONCURRENCY_LEVEL",
+		"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS",
+		"STATEMENT_TIMEOUT_IN_SECONDS",
+	}, keys)
 }
 
 func Test_ShowParametersFromObject_panics(t *testing.T) {

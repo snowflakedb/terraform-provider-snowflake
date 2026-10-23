@@ -11,7 +11,7 @@ type CustomInterfaceMethodParameter struct {
 // A nil Parameters slice means the method takes id of IdType.
 // A non-nil Parameters slice is the parameter list, excluding ctx.
 // An empty Returns slice means the method returns error.
-// An empty Doc uses "{Name} is based on" the docs URL for the method and the object.
+// An empty Doc emits no comment.
 type CustomInterfaceMethodSpec struct {
 	Name       string
 	Doc        string

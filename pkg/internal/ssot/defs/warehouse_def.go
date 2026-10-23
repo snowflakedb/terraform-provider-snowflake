@@ -299,6 +299,25 @@ var Warehouse = ssot.Object{
 	// CREATE WAREHOUSE does not accept FALLBACK_WAREHOUSE.
 	// Interactive warehouses add FALLBACK_WAREHOUSE on ALTER. CREATE stays the base warehouse catalog.
 	AlterAdditionalParametersForLevels: []ssot.ParameterLevel{ssot.ParameterLevelWarehouseInteractive},
+	CustomInterfaceMethods: []ssot.CustomInterfaceMethodSpec{
+		{
+			Name:    "ShowByIDExperimental",
+			Doc:     "ShowByIDExperimental is a show by id function with improved performance (using starts with and limit)",
+			Returns: []string{"*Warehouse", "error"},
+		},
+		{
+			Name:    "ShowByIDExperimentalSafely",
+			Returns: []string{"*Warehouse", "error"},
+		},
+		{
+			Name: "AlterWithSuspend",
+			Doc:  "AlterWithSuspend wraps Alter with automatic suspend/resume when changing warehouse type, or resizing an interactive warehouse",
+			Parameters: []ssot.CustomInterfaceMethodParameter{{
+				Name: "request",
+				Kind: "*AlterWarehouseRequest",
+			}},
+		},
+	},
 	Generators: []ssot.GeneratorOption{
 		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
 		ssot.WithModel(),
@@ -327,6 +346,9 @@ var Warehouse = ssot.Object{
 				ssot.SdkAlterAdditionalValidations(),
 			),
 			ssot.SdkDrop(),
+			ssot.SdkShowParameters(),
+			ssot.SdkShowParametersDetails(),
+			ssot.SdkCustomInterfaceMethods(),
 		),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{

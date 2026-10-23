@@ -151,7 +151,10 @@ var Schema = ssot.Object{
 		},
 	},
 	CustomInterfaceMethods: []ssot.CustomInterfaceMethodSpec{
-		{Name: "Use"},
+		{
+			Name: "Use",
+			Doc:  "Use is based on https://docs.snowflake.com/en/sql-reference/sql/use-schema",
+		},
 	},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{

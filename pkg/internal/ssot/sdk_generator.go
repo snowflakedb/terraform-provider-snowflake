@@ -191,19 +191,6 @@ func (obj Object) SdkConfig() SdkGenerator {
 	return cfg
 }
 
-// CustomInterfaceMethodDoc is the comment emitted on the interface method.
-// An explicit Doc wins. Otherwise it is "{Name} is based on" the docs URL for the method and the object.
-func (obj Object) CustomInterfaceMethodDoc(spec CustomInterfaceMethodSpec) string {
-	if spec.Doc != "" {
-		return spec.Doc
-	}
-	if spec.Name == "" {
-		panic(fmt.Sprintf("object %q: custom interface method name is empty", obj.Name))
-	}
-	name := obj.singularName("custom interface method")
-	return spec.Name + " is based on " + customOperationDocURLPrefix + docsObjectSlug(spec.Name) + "-" + docsObjectSlug(name)
-}
-
 // CustomOperationDoc is the operation doc URL.
 // An explicit Doc wins. Otherwise it is the kind slug, a hyphen, and the name slug.
 func (obj Object) CustomOperationDoc(spec CustomOperationSpec) string {

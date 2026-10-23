@@ -5,10 +5,7 @@ import (
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
-
-var warehouseParameters = ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouseInteractive)
 
 var warehouseTypeEnum = g.NewEnum(
 	"WarehouseType", "WarehouseTypes",
@@ -181,25 +178,14 @@ var warehousesDef = g.NewInterface(
 	DropOperationFromObject(ssotdefs.Warehouse).
 	ShowOperationFromObject(ssotdefs.Warehouse).
 	DescribeOperationFromObject(ssotdefs.Warehouse, warehouseRegularDef, warehouseAdaptiveDef, warehouseInteractiveDef).
-	ShowParameters("AccountObjectIdentifier").
-	ShowParametersDetails(warehouseParameters...).
+	ShowParametersFromObject(ssotdefs.Warehouse).
+	ShowParametersDetailsFromObject(ssotdefs.Warehouse).
+	CustomInterfaceMethodsFromObject(ssotdefs.Warehouse).
 	WithCustomInterfaceMethod(
-		"ShowByIDExperimental", "ShowByIDExperimental is a show by id function with improved performance (using starts with and limit)",
-		[]*g.MethodParameter{g.NewMethodParameter("id", "AccountObjectIdentifier")},
-		"*Warehouse", "error",
-	).WithCustomInterfaceMethod(
-	"ShowByIDExperimentalSafely", "",
-	[]*g.MethodParameter{g.NewMethodParameter("id", "AccountObjectIdentifier")},
-	"*Warehouse", "error",
-).WithCustomInterfaceMethod(
-	"AlterWithSuspend", "AlterWithSuspend wraps Alter with automatic suspend/resume when changing warehouse type, or resizing an interactive warehouse",
-	[]*g.MethodParameter{g.NewMethodParameter("request", "*AlterWarehouseRequest")},
-	"error",
-).WithCustomInterfaceMethod(
-	"CreateInteractivePreservingSession", "CreateInteractivePreservingSession wraps CreateInteractive to work around a known Snowflake behavior: creating a warehouse implicitly switches the session to it, which for interactive warehouses (5 second statement timeout) can cause subsequent statements in the same session to time out. It restores whichever warehouse (or lack of one) was active in the session before creation",
-	[]*g.MethodParameter{g.NewMethodParameter("request", "*CreateInteractiveWarehouseRequest")},
-	"error",
-).WithEnums(
+		"CreateInteractivePreservingSession", "CreateInteractivePreservingSession wraps CreateInteractive to work around a known Snowflake behavior: creating a warehouse implicitly switches the session to it, which for interactive warehouses (5 second statement timeout) can cause subsequent statements in the same session to time out. It restores whichever warehouse (or lack of one) was active in the session before creation",
+		[]*g.MethodParameter{g.NewMethodParameter("request", "*CreateInteractiveWarehouseRequest")},
+		"error",
+	).WithEnums(
 	warehouseTypeEnum,
 	warehouseSizeEnum,
 	scalingPolicyEnum,

@@ -239,7 +239,7 @@ func (i *Interface) CustomInterfaceMethodsFromObject(obj ssot.Object) *Interface
 		if len(returns) == 0 {
 			returns = []string{"error"}
 		}
-		i = i.WithCustomInterfaceMethod(spec.Name, obj.CustomInterfaceMethodDoc(spec), customInterfaceMethodParameters(obj, spec), returns...)
+		i = i.WithCustomInterfaceMethod(spec.Name, spec.Doc, customInterfaceMethodParameters(obj, spec), returns...)
 	}
 	return i
 }
@@ -279,12 +279,13 @@ func (i *Interface) ShowParametersFromObject(obj ssot.Object) *Interface {
 }
 
 // ShowParametersDetailsFromObject adds ShowParametersDetails and the typed details struct.
-// The fields come from ParameterDefsForLevel for the object's level. The body is generated and calls ShowParameters.
+// The fields are ParameterLevel() plus AlterAdditionalParametersForLevels, the SET and UNSET catalog.
+// The body is generated and calls ShowParameters.
 func (i *Interface) ShowParametersDetailsFromObject(obj ssot.Object) *Interface {
 	if !obj.SdkConfig().ShowParametersDetails {
 		panic(fmt.Sprintf("object %q is not enabled for SDK ShowParametersDetails generation", obj.Name))
 	}
-	return i.ShowParametersDetails(parametersForLevel(obj.ParameterLevel())...)
+	return i.ShowParametersDetails(parametersForLevels(obj.ParameterLevelsFor("SET"))...)
 }
 
 // InterfaceFromObject builds one SDK interface from the operations whose flags are on.
