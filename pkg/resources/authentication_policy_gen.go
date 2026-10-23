@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -56,7 +57,7 @@ func ImportAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, m
 }
 
 func CreateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := authenticationPolicyParseIdFromConfigExt(d)
+	id, err := authenticationPolicyParseIdFromConfig(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -135,4 +136,8 @@ func UpdateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, m
 		return diag.FromErr(err)
 	}
 	return ReadAuthenticationPolicyFunc(false)(ctx, d, meta)
+}
+
+func authenticationPolicyParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
+	return sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string)), nil
 }

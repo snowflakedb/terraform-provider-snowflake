@@ -55,12 +55,6 @@ type schemaAlterRequestsExt struct {
 	unset *sdk.SchemaUnsetRequest
 }
 
-func schemaParseIdFromConfigExt(d *schema.ResourceData) (sdk.DatabaseObjectIdentifier, error) {
-	name := d.Get("name").(string)
-	database := d.Get("database").(string)
-	return sdk.NewDatabaseObjectIdentifier(database, name), nil
-}
-
 func schemaParseIdExt(id string) (sdk.DatabaseObjectIdentifier, error) {
 	return sdk.ParseDatabaseObjectIdentifier(id)
 }

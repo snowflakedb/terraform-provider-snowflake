@@ -263,6 +263,7 @@ var AuthenticationPolicy = ssot.Object{
 	IdType:                 "SchemaObjectIdentifier",
 	AttributesModification: true,
 	ResourceHooks: []ssot.ResourceHookOption{
+		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 		ssot.WithHandleExternalChangesInDescribe(ssot.ExtCall()),
 		ssot.WithHierarchyRename(ssot.ExtCall()),

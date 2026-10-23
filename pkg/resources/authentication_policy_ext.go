@@ -58,14 +58,6 @@ type authenticationPolicyAlterRequestsExt struct {
 	unset *sdk.AuthenticationPolicyUnsetRequest
 }
 
-func authenticationPolicyParseIdFromConfigExt(d *schema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
-	name := d.Get("name").(string)
-	databaseName := d.Get("database").(string)
-	schemaName := d.Get("schema").(string)
-	id := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
-	return id, nil
-}
-
 func authenticationPolicyParseIdExt(id string) (sdk.SchemaObjectIdentifier, error) {
 	return sdk.ParseSchemaObjectIdentifier(id)
 }

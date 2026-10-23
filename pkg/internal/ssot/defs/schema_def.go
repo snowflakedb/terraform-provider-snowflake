@@ -179,6 +179,7 @@ var Schema = ssot.Object{
 		},
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
+		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithBeforeCreate(ssot.ExtCall()),
 		ssot.WithHierarchyRename(ssot.ExtCall()),
 		ssot.WithBeforeAlter(ssot.ExtCall()),

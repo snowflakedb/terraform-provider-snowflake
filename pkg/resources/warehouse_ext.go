@@ -75,10 +75,6 @@ type warehouseAlterRequestsExt struct {
 	unset *sdk.WarehouseUnsetRequest
 }
 
-func warehouseParseIdFromConfigExt(d *schema.ResourceData) (sdk.AccountObjectIdentifier, error) {
-	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
-}
-
 func warehouseParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
 	return sdk.ParseAccountObjectIdentifier(id)
 }

@@ -64,7 +64,7 @@ func ImportSchema(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*t
 }
 
 func CreateSchema(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := schemaParseIdFromConfigExt(d)
+	id, err := schemaParseIdFromConfig(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -173,6 +173,10 @@ func UpdateSchema(ctx context.Context, d *tfschema.ResourceData, meta any) diag.
 		return diag.FromErr(err)
 	}
 	return ReadSchemaFunc(false)(ctx, d, meta)
+}
+
+func schemaParseIdFromConfig(d *tfschema.ResourceData) (sdk.DatabaseObjectIdentifier, error) {
+	return sdk.NewDatabaseObjectIdentifier(d.Get("database").(string), d.Get("name").(string)), nil
 }
 
 func DeleteSchema(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

@@ -80,10 +80,14 @@ func Test_ExternalVolumeCreateMappings_renderCreateFuncs(t *testing.T) {
 
 func Test_SchemaCreateMappings_stayExt(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.Schema}, nil, nil)
-	require.False(t, model.Hooks.ParseIdFromConfig.Generate)
+	require.True(t, model.Hooks.ParseIdFromConfig.Generate)
 	require.False(t, model.Hooks.NewCreateRequest.Generate)
 	require.False(t, model.Hooks.ApplyCreateOptionals.Generate)
-	require.Equal(t, "id, err := schemaParseIdFromConfigExt(d)\n", renderTemplate(t, "parseIdFromConfig", model))
+	require.Equal(t, "id, err := schemaParseIdFromConfig(d)\n", renderTemplate(t, "parseIdFromConfig", model))
+	require.Equal(t, `func schemaParseIdFromConfig(d *tfschema.ResourceData) (sdk.DatabaseObjectIdentifier, error) {
+	return sdk.NewDatabaseObjectIdentifier(d.Get("database").(string), d.Get("name").(string)), nil
+}
+`, renderTemplate(t, "generatedParseIdFromConfig", model))
 	require.Equal(t, "req, err := schemaNewCreateRequestExt(d, id)\n", renderTemplate(t, "newCreateRequest", model))
 	require.Equal(t, `if err := schemaApplyCreateOptionalsExt(d, req); err != nil {
 		return diag.FromErr(err)

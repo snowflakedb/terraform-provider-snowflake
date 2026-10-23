@@ -63,7 +63,7 @@ func ImportWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) ([
 }
 
 func CreateWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := warehouseParseIdFromConfigExt(d)
+	id, err := warehouseParseIdFromConfig(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -153,4 +153,8 @@ func UpdateWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) di
 		return diag.FromErr(err)
 	}
 	return ReadWarehouseFunc(false)(ctx, d, meta)
+}
+
+func warehouseParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
+	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
 }
