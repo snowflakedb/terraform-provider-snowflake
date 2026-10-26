@@ -91,7 +91,6 @@ func init() {
 		userProgrammaticAccessTokensDef,
 		usersDef,
 		viewsDef,
-		warehousesDef,
 	)
 	gen.AllSdkObjectDefinitions = gen.MergeSdkDefinitions(gen.AllSdkObjectDefinitions, gen.SdkInterfacesFromSsot(ssotdefs.All(), sdkInterfaceOverrides))
 	fmt.Println("SDK object definitions:")

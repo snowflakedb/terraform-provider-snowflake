@@ -431,14 +431,15 @@ func InterfaceFromObject(obj ssot.Object) *Interface {
 type SdkInterfaceOverride func(*Interface)
 
 // SdkInterfacesFromSsot builds SDK interfaces for objects that turn on SdkDefineFromSsot.
-// NamePlural must be unique in objects. A shared plural, such as the catalog integration variants, stays on the old def.
+// NamePlural must be unique among objects that are not variants. A variant shares the base interface.
+// A shared plural among non-variants, such as the catalog integration variants, stays on the old def.
 // The interface contains the operation parts whose flags are on.
 // overrides is keyed by the ssot object Name. Each function receives the built interface and may add to it.
 // A key that does not match a built interface panics.
 func SdkInterfacesFromSsot(objects []ssot.Object, overrides map[string]SdkInterfaceOverride) []*Interface {
 	counts := make(map[string]int, len(objects))
 	for _, obj := range objects {
-		if obj.NamePlural == "" {
+		if obj.NamePlural == "" || obj.VariantOf != nil {
 			continue
 		}
 		counts[obj.NamePlural]++
@@ -465,27 +466,28 @@ func SdkInterfacesFromSsot(objects []ssot.Object, overrides map[string]SdkInterf
 }
 
 // referencedEnums is the enums on the object's columns and attributes, first reference first.
-// SHOW columns come first so a readonly enum precedes an attribute enum that SHOW lists later.
+// SHOW columns come first. ColumnEnum prefers ShowEnum, so the SHOW type is the generated SDK enum.
+// An enum with SdkType is a parser name for another SDK type and is not generated.
 func referencedEnums(obj ssot.Object) []*ssot.Enum {
 	var out []*ssot.Enum
 	seen := map[*ssot.Enum]struct{}{}
+	addEnum := func(enum *ssot.Enum) {
+		if enum == nil || enum.SdkType != "" {
+			return
+		}
+		if _, ok := seen[enum]; ok {
+			return
+		}
+		seen[enum] = struct{}{}
+		out = append(out, enum)
+	}
 	addAttr := func(attr *ssot.Attribute) {
 		if attr == nil {
 			return
 		}
-		addEnum := func(enum *ssot.Enum) {
-			if enum == nil {
-				return
-			}
-			if _, ok := seen[enum]; ok {
-				return
-			}
-			seen[enum] = struct{}{}
-			out = append(out, enum)
-		}
-		addEnum(attr.Enum)
+		addEnum(attr.ColumnEnum())
 		if attr.Elem != nil {
-			addEnum(attr.Elem.Enum)
+			addEnum(attr.Elem.ColumnEnum())
 		}
 	}
 	addList := func(list []*ssot.Attribute) {

@@ -205,6 +205,7 @@ type SdkOption func(*SdkGenerator)
 
 // SdkDefineFromSsot defines this object's SDK interface from this ssot object alone.
 // The interface is built from the operation parts whose flags are on. A part whose flag is off is absent.
+// NamePlural must be unique among objects that are not variants. A variant shares this interface.
 // An object without this option stays on the handwritten SDK def.
 func SdkDefineFromSsot() SdkOption {
 	return func(s *SdkGenerator) { s.DefineFromSsot = true }

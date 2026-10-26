@@ -1327,6 +1327,18 @@ func Test_InterfaceFromObject_enabledOperationsOnly(t *testing.T) {
 }
 
 func Test_SdkInterfacesFromSsot_uniquePluralAndFlag(t *testing.T) {
+	base := ssot.Object{
+		Name:       "Warehouse",
+		NamePlural: "Warehouses",
+		IdType:     "AccountObjectIdentifier",
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDefineFromSsot(), ssot.SdkDrop())},
+	}
+	variant := ssot.Object{
+		Name:       "WarehouseAdaptive",
+		NamePlural: "Warehouses",
+		IdType:     "AccountObjectIdentifier",
+		VariantOf:  &base,
+	}
 	objects := []ssot.Object{
 		{
 			Name:       "VariantA",
@@ -1348,10 +1360,13 @@ func Test_SdkInterfacesFromSsot_uniquePluralAndFlag(t *testing.T) {
 			Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe())},
 		},
 		{Name: "Quiet", NamePlural: "Quiets", IdType: "AccountObjectIdentifier"},
+		base,
+		variant,
 	}
 	got := SdkInterfacesFromSsot(objects, nil)
-	require.Len(t, got, 1)
+	require.Len(t, got, 2)
 	require.Equal(t, "Widgets", got[0].Name)
+	require.Equal(t, "Warehouses", got[1].Name)
 }
 
 func Test_SdkInterfacesFromSsot_override(t *testing.T) {

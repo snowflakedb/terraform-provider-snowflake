@@ -7,12 +7,13 @@ import (
 )
 
 func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[WarehouseState]{"WarehouseState", AllWarehouseStates, ToWarehouseState})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[WarehouseType]{"WarehouseType", AllWarehouseTypes, ToWarehouseType})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[WarehouseSize]{"WarehouseSize", AllWarehouseSizes, ToWarehouseSize})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ScalingPolicy]{"ScalingPolicy", AllScalingPolicies, ToScalingPolicy})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[WarehouseResourceConstraint]{"WarehouseResourceConstraint", AllWarehouseResourceConstraints, ToWarehouseResourceConstraint})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[WarehouseGeneration]{"WarehouseGeneration", AllWarehouseGenerations, ToWarehouseGeneration})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MaxQueryPerformanceLevel]{"MaxQueryPerformanceLevel", AllMaxQueryPerformanceLevels, ToMaxQueryPerformanceLevel})
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[WarehouseState]{"WarehouseState", AllWarehouseStates, ToWarehouseState})
 }
 
 var warehousesTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
