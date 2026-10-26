@@ -117,6 +117,34 @@ func Test_DescribeOperationFromObject_plainShowVariants(t *testing.T) {
 		{Source: "Widget", Method: "AsAdaptive", Target: "WidgetAdaptive", Fields: []string{"Name", "ResourceMonitor"}},
 		{Source: "Widget", Method: "AsInteractive", Target: "WidgetInteractive", Fields: []string{"Running"}},
 	}, got.ShowProjections)
+	require.Empty(t, got.ShowByIDProjections)
+}
+
+func Test_DescribeOperationFromObject_showByIDProjections(t *testing.T) {
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
+	main := ssot.Object{
+		Name:          "Widget",
+		NamePlural:    "Widgets",
+		IdType:        "AccountObjectIdentifier",
+		Describe:      ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+		ShowPlainName: "WidgetRegular",
+		Show:          ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+		Generators:    []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShow(), ssot.SdkDescribe())},
+	}
+	adaptive := ssot.Object{
+		Name:      "WidgetAdaptive",
+		VariantOf: &main,
+		Show:      ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+	}
+	main.ShowVariants = []*ssot.Object{&adaptive}
+
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").
+		ShowOperationFromObject(main).
+		DescribeOperationFromObject(main)
+	require.Equal(t, []*ShowByIDProjection{
+		{Suffix: "Regular", ProjectionMethod: "AsRegular", Target: "WidgetRegular"},
+		{Suffix: "Adaptive", ProjectionMethod: "AsAdaptive", Target: "WidgetAdaptive"},
+	}, got.ShowByIDProjections)
 }
 
 func Test_DescribeOperationFromObject_showProjectionPanics(t *testing.T) {

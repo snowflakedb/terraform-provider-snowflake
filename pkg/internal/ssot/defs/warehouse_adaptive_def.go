@@ -99,7 +99,7 @@ var WarehouseAdaptive = ssot.Object{
 		ssot.WithResourceAssert(),
 		ssot.WithShowOutputAssert(ssot.ShowOutputShow()),
 		ssot.WithObjectAssert(ssot.ObjectAssertShow(
-			ssot.ObjectAssertShowFromBase("AsAdaptive"),
+			ssot.ObjectAssertShowFromBase("ShowByIDAdaptive"),
 		)),
 		ssot.WithObjectParametersAssert(),
 		ssot.WithResourceParametersAssert(),

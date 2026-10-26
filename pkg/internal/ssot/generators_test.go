@@ -83,12 +83,12 @@ func Test_ShowFromBase(t *testing.T) {
 		Name:      "WidgetAdaptive",
 		VariantOf: &base,
 		Generators: []GeneratorOption{
-			WithObjectAssert(ObjectAssertShow(ObjectAssertShowFromBase("AsAdaptive"))),
+			WithObjectAssert(ObjectAssertShow(ObjectAssertShowFromBase("ShowByIDAdaptive"))),
 		},
 	}
 	got, ok := obj.ShowFromBase()
 	require.True(t, ok)
-	require.Equal(t, ShowFromBase{ClientName: "Widget", Method: "AsAdaptive"}, got)
+	require.Equal(t, ShowFromBase{ClientName: "Widget", Method: "ShowByIDAdaptive"}, got)
 
 	_, ok = Object{Name: "Widget"}.ShowFromBase()
 	require.False(t, ok)
@@ -97,7 +97,7 @@ func Test_ShowFromBase(t *testing.T) {
 		Object{
 			Name: "WidgetAdaptive",
 			Generators: []GeneratorOption{
-				WithObjectAssert(ObjectAssertShow(ObjectAssertShowFromBase("AsAdaptive"))),
+				WithObjectAssert(ObjectAssertShow(ObjectAssertShowFromBase("ShowByIDAdaptive"))),
 			},
 		}.ShowFromBase()
 	})

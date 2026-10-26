@@ -74,14 +74,14 @@ func warehouseAdaptiveApplyCreateOptionalsExt(d *schema.ResourceData, opts *sdk.
 	)
 }
 
-func warehouseAdaptiveHandleExternalChangesExt(d *schema.ResourceData, w *sdk.Warehouse, withExternalChangesMarking bool) error {
+func warehouseAdaptiveHandleExternalChangesExt(d *schema.ResourceData, w *sdk.WarehouseAdaptive, withExternalChangesMarking bool) error {
 	if !withExternalChangesMarking {
 		return nil
 	}
 	return handleExternalChangesToObjectInShow(d, warehouseAdaptiveOutputMappingsExt(w)...)
 }
 
-func warehouseAdaptiveOutputMappingsExt(w *sdk.Warehouse) []outputMapping {
+func warehouseAdaptiveOutputMappingsExt(w *sdk.WarehouseAdaptive) []outputMapping {
 	var maxQueryPerformanceLevel string
 	if w.MaxQueryPerformanceLevel != nil {
 		maxQueryPerformanceLevel = string(*w.MaxQueryPerformanceLevel)
@@ -94,13 +94,12 @@ func warehouseAdaptiveOutputMappingsExt(w *sdk.Warehouse) []outputMapping {
 	}
 }
 
-func warehouseAdaptiveSetConfigFieldsExt(d *schema.ResourceData, w *sdk.Warehouse) error {
+func warehouseAdaptiveSetConfigFieldsExt(d *schema.ResourceData, w *sdk.WarehouseAdaptive) error {
 	return errors.Join(
 		d.Set("name", w.Name),
 		d.Set("comment", w.Comment),
 		d.Set("warehouse_type", string(w.Type)),
-		// SHOW returns sdk.Warehouse. show_output uses the adaptive projection.
-		d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseAdaptiveToSchema(w.AsAdaptive())}),
+		d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseAdaptiveToSchema(w)}),
 	)
 }
 
@@ -135,7 +134,7 @@ func warehouseAdaptiveApplySetUnsetExt(d *schema.ResourceData) (*warehouseAdapti
 	return &warehouseAdaptiveAlterRequestsExt{set: set, unset: unset}, nil
 }
 
-func warehouseAdaptiveSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, w *sdk.Warehouse) error {
+func warehouseAdaptiveSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, w *sdk.WarehouseAdaptive) error {
 	// Warehouses of other types can be imported and converted to ADAPTIVE with an in-place ALTER during the next update.
 	// INTERACTIVE is the exception and Snowflake rejects it.
 	if w.Type == sdk.WarehouseTypeInteractive {
@@ -163,8 +162,8 @@ func warehouseAdaptiveCreateInSdkExt(ctx context.Context, meta any, id sdk.Accou
 	return nil
 }
 
-func warehouseAdaptiveShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier) (*sdk.Warehouse, diag.Diagnostics) {
-	w, err := showWarehouseByIDSafely(ctx, meta.(*provider.Context), id)
+func warehouseAdaptiveShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier) (*sdk.WarehouseAdaptive, diag.Diagnostics) {
+	w, err := showWarehouseAdaptiveByIDSafely(ctx, meta.(*provider.Context), id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
@@ -181,8 +180,8 @@ func warehouseAdaptiveShowByIdSafelyInSdkExt(ctx context.Context, d *schema.Reso
 	return w, nil
 }
 
-func warehouseAdaptiveShowByIdInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier) (*sdk.Warehouse, error) {
-	return showWarehouseByID(ctx, meta.(*provider.Context), id)
+func warehouseAdaptiveShowByIdInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier) (*sdk.WarehouseAdaptive, error) {
+	return showWarehouseAdaptiveByID(ctx, meta.(*provider.Context), id)
 }
 
 func warehouseAdaptiveAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseAdaptiveAlterRequestsExt) error {

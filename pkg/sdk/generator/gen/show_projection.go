@@ -42,3 +42,41 @@ func (i *Interface) ShowProjection(source *Plain, method string, target *Plain) 
 	})
 	return i
 }
+
+// ShowByIDProjection is a ShowByID and ShowByIDSafely pair that returns a projected row.
+// Suffix Regular on Warehouse emits ShowByIDRegular, calling AsRegular and returning *WarehouseRegular.
+type ShowByIDProjection struct {
+	Suffix           string
+	ProjectionMethod string
+	Target           string
+}
+
+// ShowByIDProjection records the pair. The projection method is As plus the suffix.
+// The target type is ShowObjectName plus the suffix.
+// Generation panics when the suffix or ShowObjectName is empty, or when the interface has no ShowByID operation.
+func (i *Interface) ShowByIDProjection(suffix string) *Interface {
+	if suffix == "" {
+		panic(fmt.Sprintf("show by id projection on %s has an empty suffix", i.Name))
+	}
+	if !i.hasShowByID() {
+		panic(fmt.Sprintf("show by id projection %s on %s has no ShowByID operation", suffix, i.Name))
+	}
+	if i.ShowObjectName == "" {
+		panic(fmt.Sprintf("show by id projection %s on %s has no show object name", suffix, i.Name))
+	}
+	i.ShowByIDProjections = append(i.ShowByIDProjections, &ShowByIDProjection{
+		Suffix:           suffix,
+		ProjectionMethod: "As" + suffix,
+		Target:           i.ShowObjectName + suffix,
+	})
+	return i
+}
+
+func (i *Interface) hasShowByID() bool {
+	for _, op := range i.Operations {
+		if op.Name == string(OperationKindShowByID) {
+			return true
+		}
+	}
+	return false
+}

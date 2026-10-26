@@ -116,6 +116,7 @@ Additional example definitions covering specific generator features:
 - [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) — `DropOperation` with `WithDropSafelyHook()`, `WithDropSafelyForce()`, and `WithDropSafelySuppressed()` options
 - [instance_method_example_def.go](example/defs/instance_method_example_def.go) — `InstanceMethodOperation` and `InstanceMethodOperationScalar`
 - [enum_example_def.go](example/defs/enum_examples_def.go) — enum definitions with `Enum` and `OptionalEnum`
+- [show_projection_example_def.go](example/defs/show_projection_example_def.go) — `ShowProjection` and `ShowByIDProjection`
 
 The commands follow the same format as the official SDK ones:
 
@@ -284,6 +285,16 @@ Each method accepts zero or more `PairedFieldOption`s (see below).
 - **`WithoutConvertGeneration()`** — disable `convert()` body generation for this pair entirely.
 - **`WithShowResultFilterHook()`** — enable row filtering; the generated code calls `excludeFromShow()` which must be implemented in a `_ext.go` file.
 
+### SHOW projections
+
+`ShowProjection(source, method, target)` emits a method on the source struct. The method returns nil for a nil receiver and copies each target field from the source. It does not emit the target struct. Generation panics when a target field is missing on the source. The receiver is the first letter of the source type, lowercased. Warehouse uses this for `AsRegular`, `AsAdaptive`, and `AsInteractive`.
+
+`ShowByIDProjection(suffix)` emits `ShowByID` plus the suffix and `ShowByIDSafely` plus the suffix. `Mini` emits `ShowByIDMini` and `ShowByIDSafelyMini`. The body calls `ShowByID`, then `As` plus the suffix, and returns `ShowObjectName` plus the suffix. `ShowByIDSafelyMini` passes `ShowByIDMini` to `SafeShowById`. Call it after `Show`, so `ShowByID` and `ShowObjectName` already exist. Generation panics when the suffix or `ShowObjectName` is empty, or when the interface has no `ShowByID`.
+
+From ssot, `DescribeOperationFromObject` emits one projection for `ShowPlainName` and one for each `ShowVariants` entry. The method is `As` plus the plain name with the object name removed. When `ShowByID` is already registered, the same suffix is passed to `ShowByIDProjection`. `Show()` still returns the union row.
+
+See [show_projection_example_def.go](example/defs/show_projection_example_def.go).
+
 ### ShowByID suppression
 
 By default, `ShowOperationWithPairedStructs` auto-generates `ShowByID` and `ShowByIDSafely` methods.
@@ -351,4 +362,7 @@ See [functions_def.go](defs/functions_def.go) (originator) and [notebooks_def.go
 - better handling of list of strings/identifiers
   - there should be no need to define custom types every time
   - more clear definition of lists that can be empty vs cannot be empty
-- field-subset `AsXxx` projections come from `ShowPlainName` and `ShowVariants`. The method is `As` plus the plain name with the object name removed, so `WarehouseRegular` is `AsRegular` and `WarehouseAdaptive` is `AsAdaptive`. Objects not yet migrated, such as `StageDetails.AsAws` and `ApiIntegrationGitHttpsApiDetails.AsToken`, stay handwritten. Property-list parsers (`AsScim`, `AsNetworkPolicyDescribe`, and similar name-keyed row switches) are a different shape and stay handwritten.
+- Handwritten field-subset projections that can use `ShowProjection`:
+  - `StageDetails.AsCommon`, `StageDetails.AsAws`, and `StageDetails.AsAwsCompatible`
+  - `ApiIntegrationGitHttpsApiDetails.AsToken`, `AsGithubApp`, `AsOauth2`, and `AsPrivateLink`
+  - `ApiIntegrationExternalMcpDetails.AsOauth2` and `AsDynamicClient`
