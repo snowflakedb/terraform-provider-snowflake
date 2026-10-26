@@ -280,6 +280,10 @@ present. A resource with a passthrough importer omits it.
 parameters. A failure returns `diag.FromErr` before setting the resource id or reading the object.
 Use `ExtCall` when an object needs a different SDK method or custom error diagnostics.
 
+`WithDescribeInSdk(Generated())` calls `Client.<NamePlural>.Describe(ctx, id)` during Read and assigns the result to
+`<prefix>Details`. A failure returns `diag.FromErr` and stops Read. Use `ExtCall` when an object needs a different SDK
+method, a transformed result, or custom error handling.
+
 `SchemaStateUpgraders` on the object is an ordered list of upgrade function names. `WithStateUpgraders` is the
 `ResourceHook` for that list and for the schema version. `Generated` emits `SchemaVersion` as the length and one
 `StateUpgrader` per name. `Version` is the index. `Type` is `cty.EmptyObject`. The functions stay in package

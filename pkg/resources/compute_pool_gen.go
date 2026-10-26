@@ -83,7 +83,7 @@ func ReadComputePoolFunc(withExternalChangesMarking bool) tfschema.ReadContextFu
 		if diags != nil {
 			return diags
 		}
-		computePoolDetails, err := computePoolDescribeInSdkExt(ctx, meta, id)
+		computePoolDetails, err := meta.(*provider.Context).Client.ComputePools.Describe(ctx, id)
 		if err != nil {
 			return diag.FromErr(err)
 		}
