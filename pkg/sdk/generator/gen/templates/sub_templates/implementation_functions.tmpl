@@ -55,6 +55,21 @@
         func (v *{{ $impl }}) ShowByIDSafely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.ShowObjectName }}, error) {
             return SafeShowById(v.client, v.ShowByID, ctx, id)
         }
+        {{- $idKind := .ObjectInterface.IdentifierKind }}
+        {{- range .ObjectInterface.ShowByIDProjections }}
+
+        func (v *{{ $impl }}) ShowByID{{ .Suffix }}(ctx context.Context, id {{ $idKind }}) (*{{ .Target }}, error) {
+            row, err := v.ShowByID(ctx, id)
+            if err != nil {
+                return nil, err
+            }
+            return row.{{ .ProjectionMethod }}(), nil
+        }
+
+        func (v *{{ $impl }}) ShowByIDSafely{{ .Suffix }}(ctx context.Context, id {{ $idKind }}) (*{{ .Target }}, error) {
+            return SafeShowById(v.client, v.ShowByID{{ .Suffix }}, ctx, id)
+        }
+        {{- end }}
     {{ else if and (eq .Name "Describe") .DescribeMapping }}
         {{ if .DescribeKind }}
             {{ if eq (describe_mapping_deref .DescribeKind) "single_value" }}

@@ -77,6 +77,8 @@ type Interface struct {
 	ShowByIDFindPredicateKind ShowByIDFindPredicateKind
 	// ShowProjections are field-subset methods on an already emitted struct.
 	ShowProjections []*ShowProjection
+	// ShowByIDProjections are ShowByID and ShowByIDSafely methods that return a projected row.
+	ShowByIDProjections []*ShowByIDProjection
 
 	// UnitTests is the prepared model for the optional unit_tests generation part.
 	UnitTests *UnitTestsModel

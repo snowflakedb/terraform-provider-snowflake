@@ -114,7 +114,7 @@ func Test_objectAssertionDetailsFromSsot_showProjection(t *testing.T) {
 		VariantOf: &base,
 		Generators: []ssot.GeneratorOption{
 			ssot.WithObjectAssert(ssot.ObjectAssertShow(
-				ssot.ObjectAssertShowFromBase("AsAdaptive"),
+				ssot.ObjectAssertShowFromBase("ShowByIDAdaptive"),
 			)),
 		},
 		Show: ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
@@ -122,7 +122,7 @@ func Test_objectAssertionDetailsFromSsot_showProjection(t *testing.T) {
 
 	details := objectAssertionDetailsFromSsot(obj, false)
 	require.Equal(t, "Widget", details.ObjectTypeName)
-	require.Equal(t, &genhelpers.ShowProjectionDef{ClientName: "Widget", Method: "AsAdaptive"}, details.ShowProjection)
+	require.Equal(t, &genhelpers.ShowProjectionDef{ClientName: "Widget", Method: "ShowByIDAdaptive"}, details.ShowProjection)
 	model := SnowflakeObjectAssertionsFromSsot(obj, false)
 	require.Equal(t, "Widget", model.ObjectTypeName)
 	require.Equal(t, details.ShowProjection, model.ShowProjection)

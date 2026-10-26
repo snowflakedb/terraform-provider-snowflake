@@ -21,11 +21,7 @@ func WarehouseInteractive(t *testing.T, id sdk.AccountObjectIdentifier) *Warehou
 	return &WarehouseInteractiveAssert{
 		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeWarehouse, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.WarehouseInteractive, sdk.AccountObjectIdentifier] {
 			return func(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.WarehouseInteractive, error) {
-				base, err := testClient.Warehouse.Show(t, id)
-				if err != nil {
-					return nil, err
-				}
-				return base.AsInteractive(), nil
+				return testClient.Warehouse.ShowByIDInteractive(t, id)
 			}
 		}),
 	}

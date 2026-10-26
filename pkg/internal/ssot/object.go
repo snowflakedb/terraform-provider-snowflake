@@ -54,10 +54,12 @@ type Object struct {
 	// ShowPlainName is the plain SHOW struct name when it differs from Name.
 	// Empty uses Name. Set it when ShowGeneric uses Name for the paired SHOW struct.
 	// The projection on the paired SHOW struct is As plus this name with Name removed, so WarehouseRegular is AsRegular.
+	// When ShowByID is generated, that suffix also emits ShowByIDRegular and ShowByIDSafelyRegular.
 	ShowPlainName string
 	// ShowVariants are plain SHOW structs emitted with this object's DESCRIBE.
 	// Each variant's Show.Columns is that struct. The variant does not set SdkShow.
 	// The projection is As plus the variant name with Name removed, so WarehouseAdaptive is AsAdaptive.
+	// When ShowByID is generated, that suffix also emits ShowByIDAdaptive and ShowByIDSafelyAdaptive.
 	// TODO [next PRs]: Emit these structs from ShowOperationFromObject. Show() still returns the union row.
 	ShowVariants []*Object
 	// Create, Set, Unset, and Alter are the SQL field order for those statements.

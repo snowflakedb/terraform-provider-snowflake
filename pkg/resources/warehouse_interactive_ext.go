@@ -87,14 +87,14 @@ func warehouseInteractiveApplyCreateOptionalsExt(d *schema.ResourceData, req *sd
 	)
 }
 
-func warehouseInteractiveHandleExternalChangesExt(d *schema.ResourceData, w *sdk.Warehouse, withExternalChangesMarking bool) error {
+func warehouseInteractiveHandleExternalChangesExt(d *schema.ResourceData, w *sdk.WarehouseInteractive, withExternalChangesMarking bool) error {
 	if !withExternalChangesMarking {
 		return nil
 	}
 	return handleExternalChangesToObjectInShow(d, warehouseInteractiveOutputMappingsExt(w)...)
 }
 
-func warehouseInteractiveOutputMappingsExt(w *sdk.Warehouse) []outputMapping {
+func warehouseInteractiveOutputMappingsExt(w *sdk.WarehouseInteractive) []outputMapping {
 	sizeVal, sizeStr := optionalStringOutputMapping(w.Size)
 	autoResumeVal, autoResumeStr := w.AutoResume, booleanStringFromBool(w.AutoResume)
 	maxClusterCount := optionalIntOutputMapping(w.MaxClusterCount)
@@ -110,10 +110,10 @@ func warehouseInteractiveOutputMappingsExt(w *sdk.Warehouse) []outputMapping {
 	}
 }
 
-func warehouseInteractiveSetConfigFieldsExt(d *schema.ResourceData, w *sdk.Warehouse) error {
-	// Snowflake reports interactive warehouses through the type column (type = INTERACTIVE)
+func warehouseInteractiveSetConfigFieldsExt(d *schema.ResourceData, w *sdk.WarehouseInteractive) error {
+	// Snowflake reports interactive warehouses through the type column (type = INTERACTIVE).
 	effectiveType := string(sdk.WarehouseTypeStandard)
-	if w.IsInteractiveWarehouse() {
+	if w.Type == sdk.WarehouseTypeInteractive {
 		effectiveType = string(sdk.WarehouseTypeInteractive)
 	}
 
@@ -127,8 +127,7 @@ func warehouseInteractiveSetConfigFieldsExt(d *schema.ResourceData, w *sdk.Wareh
 		d.Set("comment", w.Comment),
 		d.Set("warehouse_type", effectiveType),
 		d.Set("tables", tables),
-		// SHOW returns sdk.Warehouse. show_output uses the interactive projection.
-		d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseInteractiveToSchema(w.AsInteractive())}),
+		d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseInteractiveToSchema(w)}),
 	)
 }
 
@@ -193,8 +192,8 @@ func warehouseInteractiveApplySetUnsetExt(d *schema.ResourceData) (*warehouseInt
 	return &warehouseInteractiveAlterRequestsExt{set: set, unset: unset}, nil
 }
 
-func warehouseInteractiveSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, w *sdk.Warehouse) error {
-	if !w.IsInteractiveWarehouse() {
+func warehouseInteractiveSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, w *sdk.WarehouseInteractive) error {
+	if w.Type != sdk.WarehouseTypeInteractive {
 		return fmt.Errorf("warehouse %s is not an interactive warehouse; use snowflake_warehouse or snowflake_warehouse_adaptive instead", id.FullyQualifiedName())
 	}
 
@@ -229,8 +228,8 @@ func warehouseInteractiveCreateInSdkExt(ctx context.Context, meta any, id sdk.Ac
 	return nil
 }
 
-func warehouseInteractiveShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier) (*sdk.Warehouse, diag.Diagnostics) {
-	w, err := showWarehouseByIDSafely(ctx, meta.(*provider.Context), id)
+func warehouseInteractiveShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier) (*sdk.WarehouseInteractive, diag.Diagnostics) {
+	w, err := showWarehouseInteractiveByIDSafely(ctx, meta.(*provider.Context), id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
@@ -247,8 +246,8 @@ func warehouseInteractiveShowByIdSafelyInSdkExt(ctx context.Context, d *schema.R
 	return w, nil
 }
 
-func warehouseInteractiveShowByIdInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier) (*sdk.Warehouse, error) {
-	return showWarehouseByID(ctx, meta.(*provider.Context), id)
+func warehouseInteractiveShowByIdInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier) (*sdk.WarehouseInteractive, error) {
+	return showWarehouseInteractiveByID(ctx, meta.(*provider.Context), id)
 }
 
 func warehouseInteractiveAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseInteractiveAlterRequestsExt) error {

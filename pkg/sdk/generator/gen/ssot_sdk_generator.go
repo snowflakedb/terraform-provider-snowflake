@@ -37,6 +37,7 @@ func (i *Interface) ShowOperationFromObject(obj ssot.Object) *Interface {
 // Name, and ValidIdentifier on name.
 // helperStructs are extra structs the describe operation emits.
 // ShowPlainName and ShowVariants are emitted here too. Each one gets a projection on the paired SHOW struct.
+// When ShowByID is already registered, each plain also gets ShowByID and ShowByIDSafely for that suffix.
 // TODO [next PRs]: those plain structs are SHOW structs. Emit them from ShowOperationFromObject. Show() still returns the union row.
 func (i *Interface) DescribeOperationFromObject(obj ssot.Object, helperStructs ...IntoField) *Interface {
 	cfg := obj.SdkConfig()
@@ -77,6 +78,7 @@ func plainShowHelpers(obj ssot.Object) []*Plain {
 
 // showProjectionsFromPlains attaches one projection per plain onto the paired SHOW struct.
 // The method is As plus the plain name with the object name removed.
+// When ShowByID is already registered, the same suffix is passed to ShowByIDProjection.
 func (i *Interface) showProjectionsFromPlains(obj ssot.Object, targets []*Plain) *Interface {
 	if len(targets) == 0 {
 		return i
@@ -87,7 +89,11 @@ func (i *Interface) showProjectionsFromPlains(obj ssot.Object, targets []*Plain)
 	}
 	source := plainFromColumns(obj, obj.Name, columns)
 	for _, target := range targets {
-		i.ShowProjection(source, showProjectionMethod(obj.Name, target.name), target)
+		method := showProjectionMethod(obj.Name, target.name)
+		i.ShowProjection(source, method, target)
+		if i.hasShowByID() {
+			i.ShowByIDProjection(strings.TrimPrefix(method, "As"))
+		}
 	}
 	return i
 }

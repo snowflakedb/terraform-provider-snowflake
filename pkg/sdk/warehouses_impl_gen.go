@@ -83,6 +83,42 @@ func (v *warehouses) ShowByIDSafely(ctx context.Context, id AccountObjectIdentif
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
+func (v *warehouses) ShowByIDRegular(ctx context.Context, id AccountObjectIdentifier) (*WarehouseRegular, error) {
+	row, err := v.ShowByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return row.AsRegular(), nil
+}
+
+func (v *warehouses) ShowByIDSafelyRegular(ctx context.Context, id AccountObjectIdentifier) (*WarehouseRegular, error) {
+	return SafeShowById(v.client, v.ShowByIDRegular, ctx, id)
+}
+
+func (v *warehouses) ShowByIDAdaptive(ctx context.Context, id AccountObjectIdentifier) (*WarehouseAdaptive, error) {
+	row, err := v.ShowByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return row.AsAdaptive(), nil
+}
+
+func (v *warehouses) ShowByIDSafelyAdaptive(ctx context.Context, id AccountObjectIdentifier) (*WarehouseAdaptive, error) {
+	return SafeShowById(v.client, v.ShowByIDAdaptive, ctx, id)
+}
+
+func (v *warehouses) ShowByIDInteractive(ctx context.Context, id AccountObjectIdentifier) (*WarehouseInteractive, error) {
+	row, err := v.ShowByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return row.AsInteractive(), nil
+}
+
+func (v *warehouses) ShowByIDSafelyInteractive(ctx context.Context, id AccountObjectIdentifier) (*WarehouseInteractive, error) {
+	return SafeShowById(v.client, v.ShowByIDInteractive, ctx, id)
+}
+
 func (v *warehouses) Describe(ctx context.Context, id AccountObjectIdentifier) (*WarehouseDetails, error) {
 	opts := &DescribeWarehouseOptions{
 		name: id,

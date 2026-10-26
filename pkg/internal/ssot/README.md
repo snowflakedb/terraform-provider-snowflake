@@ -100,7 +100,7 @@ order.
 
 `OutputSpec.Columns` is membership and Snowflake order. Presence in `Columns` is the only SHOW/DESCRIBE membership.
 
-Each warehouse variant declares its show in `Show.Columns`. `Warehouse.ShowGeneric` is the temporary union and the one paired SHOW. `ShowPlainName` and `ShowVariants` are plain structs emitted with DESCRIBE. Each one gets a projection on the paired SHOW struct: `As` plus the plain name with the object name removed, so `WarehouseRegular` is `AsRegular` and `WarehouseAdaptive` is `AsAdaptive`. `Show()` still returns the union row. Next, each variant's `Show.Columns` becomes a paired SHOW with its dedicated type, and `ShowGeneric` goes away.
+Each warehouse variant declares its show in `Show.Columns`. `Warehouse.ShowGeneric` is the temporary union and the one paired SHOW. `ShowPlainName` and `ShowVariants` are plain structs emitted with DESCRIBE. Each one gets a projection on the paired SHOW struct: `As` plus the plain name with the object name removed, so `WarehouseRegular` is `AsRegular` and `WarehouseAdaptive` is `AsAdaptive`. When `ShowByID` is generated, the same suffix also emits `ShowByIDRegular` and `ShowByIDSafelyRegular`. `Show()` still returns the union row. Next, each variant's `Show.Columns` becomes a paired SHOW with its dedicated type, and `ShowGeneric` goes away.
 
 ### OptionalInShow vs OptionalInDb
 
@@ -160,8 +160,8 @@ enable nothing.
   `[]sdk.ExternalVolumeStorageLocationDetails`). Pass `ObjectAssertNestedGoType("[]sdk.Other")` when the default does
   not match. `ObjectAssertDescribeNestedField` is the describe-side copy.
   `ObjectAssertDescribe(WithNoIdentifiableObject())` suppresses the fetch constructor when `Describe` returns a
-  slice and the row has no `ID()`. `ObjectAssertShow(ObjectAssertShowFromBase("AsAdaptive"))` fetches through
-  `testClient.<VariantOf.Name>.Show` and projects the row with `AsAdaptive()`. `Object.ShowFromBase` resolves that
+  slice and the row has no `ID()`.   `ObjectAssertShow(ObjectAssertShowFromBase("ShowByIDAdaptive"))` fetches through
+  `testClient.<VariantOf.Name>.ShowByIDAdaptive`. `Object.ShowFromBase` resolves that
   client from `VariantOf`. The object type constant is `sdk.ObjectType<VariantOf.Name>`. These are settings of
   object-assertion show or describe, not their own generators.
 - `WithObjectParametersAssert()` - Snowflake object parameters assertions (

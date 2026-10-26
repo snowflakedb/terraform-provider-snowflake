@@ -23,6 +23,7 @@ func init() {
 		DropSafelyHookExampleDef,
 		DropSafelyForceExampleDef,
 		DropSafelySuppressedExampleDef,
+		ShowProjectionExampleDef,
 	)
 	fmt.Println("SDK object definitions:")
 	for _, def := range gen.AllSdkObjectDefinitions {

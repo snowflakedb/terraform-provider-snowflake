@@ -514,7 +514,7 @@ func ObjectAssertShowSkipFields(attrs ...*Attribute) ObjectAssertShowOption {
 	return func(a *ObjectAssertGenerator) { a.ShowSkipFields = append(a.ShowSkipFields, attrs...) }
 }
 
-// ObjectAssertShowFromBase projects the VariantOf SHOW row with projection, such as AsAdaptive.
+// ObjectAssertShowFromBase fetches through testClient.<VariantOf.Name>.<method>, such as ShowByIDAdaptive.
 // The client name is VariantOf.Name, returned by Object.ShowFromBase.
 func ObjectAssertShowFromBase(projection string) ObjectAssertShowOption {
 	return func(a *ObjectAssertGenerator) {

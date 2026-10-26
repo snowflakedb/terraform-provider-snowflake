@@ -128,7 +128,7 @@ var WarehouseInteractive = ssot.Object{
 		ssot.WithResourceAssert(),
 		ssot.WithShowOutputAssert(ssot.ShowOutputShow()),
 		ssot.WithObjectAssert(ssot.ObjectAssertShow(
-			ssot.ObjectAssertShowFromBase("AsInteractive"),
+			ssot.ObjectAssertShowFromBase("ShowByIDInteractive"),
 			ssot.ObjectAssertShowSkipFields(&warehouseInteractiveTablesShow),
 		)),
 		ssot.WithObjectParametersAssert(),

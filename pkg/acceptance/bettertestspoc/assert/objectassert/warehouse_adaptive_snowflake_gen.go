@@ -21,11 +21,7 @@ func WarehouseAdaptive(t *testing.T, id sdk.AccountObjectIdentifier) *WarehouseA
 	return &WarehouseAdaptiveAssert{
 		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeWarehouse, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.WarehouseAdaptive, sdk.AccountObjectIdentifier] {
 			return func(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.WarehouseAdaptive, error) {
-				base, err := testClient.Warehouse.Show(t, id)
-				if err != nil {
-					return nil, err
-				}
-				return base.AsAdaptive(), nil
+				return testClient.Warehouse.ShowByIDAdaptive(t, id)
 			}
 		}),
 	}
