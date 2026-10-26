@@ -122,11 +122,6 @@ func computePoolShowByIdInSdkExt(ctx context.Context, meta any, id sdk.AccountOb
 	return client.ComputePools.ShowByID(ctx, id)
 }
 
-func computePoolDescribeInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier) (*sdk.ComputePoolDetails, error) {
-	client := meta.(*provider.Context).Client
-	return client.ComputePools.Describe(ctx, id)
-}
-
 // =============================================================================
 // Pre-existing mappers
 // =============================================================================
