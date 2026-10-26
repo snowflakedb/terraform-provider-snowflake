@@ -109,7 +109,7 @@ func (r *CreateExternalVolumeRequest) toOpts() *CreateExternalVolumeOptions {
 					StorageBaseUrl: v.ExternalVolumeStorageLocation.GCSStorageLocationParams.StorageBaseUrl,
 				}
 				if v.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption != nil {
-					storageLocations[i].ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption = &ExternalVolumeGCSEncryption{
+					storageLocations[i].ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption = &ExternalVolumeGcsEncryption{
 						EncryptionType: v.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.EncryptionType,
 						KmsKeyId:       v.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.KmsKeyId,
 					}
@@ -176,7 +176,7 @@ func (r *AlterExternalVolumeRequest) toOpts() *AlterExternalVolumeOptions {
 				StorageBaseUrl: r.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams.StorageBaseUrl,
 			}
 			if r.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption != nil {
-				opts.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption = &ExternalVolumeGCSEncryption{
+				opts.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption = &ExternalVolumeGcsEncryption{
 					EncryptionType: r.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.EncryptionType,
 					KmsKeyId:       r.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.KmsKeyId,
 				}
@@ -201,7 +201,7 @@ func (r *AlterExternalVolumeRequest) toOpts() *AlterExternalVolumeOptions {
 		}
 	}
 	if r.UpdateStorageLocation != nil {
-		opts.UpdateStorageLocation = &AlterExternalVolumeUpdateStorageLocation{
+		opts.UpdateStorageLocation = &ExternalVolumeUpdateStorageLocation{
 			StorageLocation: r.UpdateStorageLocation.StorageLocation,
 		}
 		opts.UpdateStorageLocation.Credentials = ExternalVolumeUpdateCredentials{

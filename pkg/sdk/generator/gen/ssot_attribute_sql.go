@@ -3,7 +3,6 @@ package gen
 import (
 	"fmt"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 )
 
@@ -96,6 +95,8 @@ func (v *QueryStruct) appendAttributeClause(attr ssot.Attribute, clause ssot.Sql
 		return v.appendIdentifierClause(attr, clause, clauseRequired(attr, clause, statement))
 	case ssot.SqlKindStatic:
 		return v.appendStaticClause(attr, clause)
+	case ssot.SqlKindObject:
+		return v.appendObjectClause(attr, clause, clauseRequired(attr, clause, statement))
 	default:
 		panic(fmt.Sprintf("attribute %q: sql kind %q", attr.Name, clause.Kind))
 	}
@@ -123,51 +124,54 @@ func clauseRequired(attr ssot.Attribute, clause ssot.SqlClause, statement attrib
 func (v *QueryStruct) appendParameterClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
 	sql := clause.SQLText(attr)
 	opts := parameterOptionsFromClause(clause, required)
-	switch attr.Type {
+	// scalar adds a scalar parameter. FieldName replaces the name derived from the SQL text.
+	scalar := func(kind string) *QueryStruct {
+		if clause.Field != "" {
+			return v.AssignmentWithFieldName(sql, kind, opts, clause.Field)
+		}
+		return v.Assignment(sql, kind, opts)
+	}
+	pointer := func(kind string) string {
+		if required {
+			return kind
+		}
+		return "*" + kind
+	}
+	attrType := attr.Type
+	enum := attr.ColumnEnum()
+	if clause.Enum != nil {
+		// The clause makes the attribute an enum parameter, such as a string that is a provider-specific enum.
+		attrType, enum = ssot.AttrEnum, clause.Enum
+	}
+	if attrType == ssot.AttrIdentifier {
+		// An identifier with a parameter clause is quoted text.
+		attrType = ssot.AttrString
+	}
+	switch attrType {
 	case ssot.AttrInt:
-		if required {
-			return v.NumberAssignment(sql, opts)
-		}
-		return v.OptionalNumberAssignment(sql, opts)
+		return scalar(pointer("int"))
 	case ssot.AttrBool:
-		if required {
-			return v.BooleanAssignment(sql, opts)
-		}
-		return v.OptionalBooleanAssignment(sql, opts)
+		return scalar(pointer("bool"))
 	case ssot.AttrString:
-		if required {
-			return v.TextAssignment(sql, opts)
-		}
-		return v.OptionalTextAssignment(sql, opts)
+		return scalar(pointer("string"))
 	case ssot.AttrEnum:
-		enum := attr.ColumnEnum()
 		if enum == nil || enum.Name == "" {
 			panic(fmt.Sprintf("attribute %q: enum parameter has no Enum", attr.Name))
 		}
 		if required {
-			return v.EnumAssignment(sql, enum, opts)
+			return scalar(enum.Kind())
 		}
-		return v.OptionalEnumAssignment(sql, enum, opts)
+		return scalar(enum.KindPtr())
 	case ssot.AttrList, ssot.AttrSet:
+		if attr.IsObjectList() {
+			return v.appendObjectList(attr, clause, required)
+		}
 		item := clause.ItemStruct
 		if item == "" && attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
 			item = attr.Elem.IdentifierType
 		}
 		if item == "" {
 			panic(fmt.Sprintf("attribute %q: list parameter has no item struct", attr.Name))
-		}
-		if clause.ItemNested {
-			// The item is a nested query struct from the SDK def, so the field keeps its Request type, mapping, and validations.
-			itemStruct, ok := v.findItemStruct(item)
-			if !ok {
-				panic(fmt.Sprintf("attribute %q: nested item struct %q was not passed to the generator", attr.Name, item))
-			}
-			fieldName := sqlToFieldName(sql, true)
-			v = v.ListQueryStructField(fieldName, itemStruct, opts.SQL(sql))
-			if required {
-				v = v.WithValidation(ValidateValueSet, fieldName)
-			}
-			return v
 		}
 		v = v.ListAssignment(sql, item, opts)
 		if attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
@@ -260,12 +264,4 @@ func identifierOptionsFromClause(clause ssot.SqlClause, required bool) *Identifi
 		opts = opts.Required()
 	}
 	return opts
-}
-
-func (v *QueryStruct) findItemStruct(name string) (*QueryStruct, bool) {
-	found, err := collections.FindFirst(v.itemStructs, func(s *QueryStruct) bool { return s.name == name })
-	if err != nil {
-		return nil, false
-	}
-	return *found, true
 }

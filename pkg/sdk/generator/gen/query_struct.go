@@ -13,8 +13,8 @@ type QueryStruct struct {
 	sharedToOpts    bool
 	setParameters   []ParameterField
 	unsetParameters []ParameterField
-	// itemStructs are the list item query structs an ssot list clause resolves by name.
-	itemStructs []*QueryStruct
+	// owner is the ssot object name that the statement struct belongs to. It prefixes the names of nested structs.
+	owner string
 }
 
 func NewQueryStruct(name string) *QueryStruct {

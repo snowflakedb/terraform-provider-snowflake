@@ -44,7 +44,7 @@ func init() {
 		Name: "gcs_complete",
 		GCSStorageLocationParams: &GCSStorageLocationParams{
 			StorageBaseUrl: "gcs://my-bucket/path",
-			Encryption: &ExternalVolumeGCSEncryption{
+			Encryption: &ExternalVolumeGcsEncryption{
 				EncryptionType: GCSEncryptionTypeGcsSseKms,
 				KmsKeyId:       new("1234abcd-12ab-34cd-56ef-1234567890ab"),
 			},
@@ -192,7 +192,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_ExternalVolumes_sql_Alter_UpdateStorageLocation,
 			func(opts *AlterExternalVolumeOptions) {
-				opts.UpdateStorageLocation = &AlterExternalVolumeUpdateStorageLocation{
+				opts.UpdateStorageLocation = &ExternalVolumeUpdateStorageLocation{
 					StorageLocation: "some_location",
 					Credentials: ExternalVolumeUpdateCredentials{ //nolint:gosec // AWS example credentials
 						AwsKeyId:     "AKIAIOSFODNN7EXAMPLE",
@@ -325,7 +325,7 @@ func Test_GetStorageLocationStorageProvider(t *testing.T) {
 				Name: "gcsTest",
 				GCSStorageLocationParams: &GCSStorageLocationParams{
 					StorageBaseUrl: gcsStorageBaseUrl,
-					Encryption: &ExternalVolumeGCSEncryption{
+					Encryption: &ExternalVolumeGcsEncryption{
 						EncryptionType: GCSEncryptionTypeGcsSseKms,
 						KmsKeyId:       &gcsEncryptionKmsKeyId,
 					},
@@ -437,7 +437,7 @@ func Test_CopySentinelStorageLocation(t *testing.T) {
 
 	gcsStorageLocationA := GCSStorageLocationParams{
 		StorageBaseUrl: gcsStorageBaseUrl,
-		Encryption: &ExternalVolumeGCSEncryption{
+		Encryption: &ExternalVolumeGcsEncryption{
 			EncryptionType: GCSEncryptionTypeGcsSseKms,
 			KmsKeyId:       &gcsEncryptionKmsKeyId,
 		},

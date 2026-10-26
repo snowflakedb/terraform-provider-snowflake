@@ -424,12 +424,12 @@ func parseGCSStorageLocation(d *schema.ResourceData, prefix, name, storageBaseUr
 			"storage_aws_key_id",
 			"storage_aws_secret_key",
 		),
-		attributeMappedValueCreate(d, prefix+"encryption_type", &gcsStorageLocation.Encryption, func(value any) (*sdk.ExternalVolumeGCSEncryption, error) {
+		attributeMappedValueCreate(d, prefix+"encryption_type", &gcsStorageLocation.Encryption, func(value any) (*sdk.ExternalVolumeGcsEncryption, error) {
 			encryptionType, err := sdk.ToGCSEncryptionType(value.(string))
 			if err != nil {
 				return nil, err
 			}
-			encryption := &sdk.ExternalVolumeGCSEncryption{EncryptionType: encryptionType}
+			encryption := &sdk.ExternalVolumeGcsEncryption{EncryptionType: encryptionType}
 			err = stringAttributeCreate(d, prefix+"encryption_kms_key_id", &encryption.KmsKeyId)
 			return encryption, err
 		}),
@@ -589,7 +589,7 @@ func storageLocationItemToRequest(addedLocationItem sdk.ExternalVolumeStorageLoc
 		)
 
 		if addedLocation.Encryption != nil {
-			encryptionRequest := sdk.NewExternalVolumeGCSEncryptionRequest(addedLocation.Encryption.EncryptionType)
+			encryptionRequest := sdk.NewExternalVolumeGcsEncryptionRequest(addedLocation.Encryption.EncryptionType)
 			if addedLocation.Encryption.KmsKeyId != nil {
 				encryptionRequest = encryptionRequest.WithKmsKeyId(*addedLocation.Encryption.KmsKeyId)
 			}

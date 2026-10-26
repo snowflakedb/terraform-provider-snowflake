@@ -3,9 +3,11 @@ package ssot
 import (
 	"fmt"
 	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
-// SqlKind is the SQL clause shape: parameter, keyword, identifier, or static.
+// SqlKind is the SQL clause shape: parameter, keyword, identifier, static, or object.
 type SqlKind string
 
 const (
@@ -13,6 +15,9 @@ const (
 	SqlKindKeyword    SqlKind = "keyword"
 	SqlKindIdentifier SqlKind = "identifier"
 	SqlKindStatic     SqlKind = "static"
+	// SqlKindObject is a nested struct: the fields are the Children of the attribute, or the Children of the Elem object
+	// of a list. See ObjectParameter.
+	SqlKindObject SqlKind = "object"
 )
 
 // SqlQuotes is the quote ddl tag. Zero means no quote tag.
@@ -67,14 +72,23 @@ type SqlClause struct {
 	Required *bool
 	// ItemStruct is the list-item query struct name. ListParameter sets it.
 	ItemStruct string
-	// ItemNested makes the list field a nested block of the ItemStruct query struct that the SDK def passes to the
-	// generator, so the struct keeps its Request type, mapping, and validations. Without it the field is a plain
-	// list of ItemStruct. NestedItem sets it.
-	ItemNested bool
 	// IdType is the identifier type, without a pointer. IdentifierKeyword sets it.
 	IdType string
-	// Field is the unexported Go name of a static clause. StaticSQL sets it.
+	// Field is the Go field name. A static clause needs an unexported one (StaticSQL sets it). Any other clause uses it
+	// instead of the name derived from the SQL text or the attribute name. FieldName sets it.
 	Field string
+	// Enum makes the field an enum parameter of this enum, whatever the attribute type is. EnumOf sets it.
+	Enum *Enum
+	// Variants are the provider-like variants of an object: each is a struct of the attributes it refers to, and the
+	// object has one optional field per variant, exactly one of which is set. WithVariants sets it.
+	Variants []SqlVariant
+}
+
+// SqlVariant is one variant of an object, such as a storage provider. Fields are references to attributes, in SQL order.
+// An attribute is a field with the CREATE clause it already has.
+type SqlVariant struct {
+	Key    string
+	Fields []*Attribute
 }
 
 // SqlClauseOption changes one default on a SqlClause.
@@ -254,22 +268,94 @@ func overlaySqlClause(base, over SqlClause) SqlClause {
 	if over.ItemStruct != "" {
 		base.ItemStruct = over.ItemStruct
 	}
-	if over.ItemNested {
-		base.ItemNested = true
-	}
 	if over.IdType != "" {
 		base.IdType = over.IdType
+	}
+	if over.Field != "" {
+		base.Field = over.Field
+	}
+	if over.Enum != nil {
+		base.Enum = over.Enum
+	}
+	if len(over.Variants) > 0 {
+		base.Variants = over.Variants
 	}
 	return base
 }
 
-func Sql(text string) SqlClauseOption {
-	return func(c *SqlClause) { c.SQL = text }
+// ObjectParameter is a nested struct clause. On the Elem object of a list it is the shape of each element: Parentheses()
+// puts each element in parentheses. On a SqlOnly object attribute it is a nested struct inside a variant: Sql is the text
+// before it and Parentheses() wraps its fields. The fields are the Children.
+func ObjectParameter(opts ...SqlClauseOption) SqlClause {
+	return newClause(SqlKindObject, nil, opts)
 }
 
-// NestedItem marks the ListParameter item struct as a nested block defined in the SDK def. See SqlClause.ItemNested.
-func NestedItem() SqlClauseOption {
-	return func(c *SqlClause) { c.ItemNested = true }
+// ListOfObjects is a parameter clause for a list or set whose Elem is an object. Sql is the text before the list and
+// Parentheses() wraps the whole list.
+func ListOfObjects(opts ...SqlClauseOption) SqlClause {
+	return newClause(SqlKindParameter, nil, opts)
+}
+
+// WithVariants declares the variants of an object. The object holds the Children that no variant refers to, and one
+// optional struct per variant. Exactly one variant is set.
+func WithVariants(variants ...SqlVariant) SqlClauseOption {
+	return func(c *SqlClause) { c.Variants = variants }
+}
+
+// Variant is one variant of an object: the attributes it consists of, in SQL order. The struct is named after the key, the
+// list attribute, and Params (GCS and storage_location give GCSStorageLocationParams).
+func Variant(key string, fields ...*Attribute) SqlVariant {
+	return SqlVariant{Key: key, Fields: fields}
+}
+
+// EnumOf makes the field an enum parameter of enum, whatever the attribute type is.
+func EnumOf(enum *Enum) SqlClauseOption {
+	return func(c *SqlClause) { c.Enum = enum }
+}
+
+// FieldName sets the Go field name when it should not be derived from the SQL text or the attribute name.
+func FieldName(name string) SqlClauseOption {
+	return func(c *SqlClause) { c.Field = name }
+}
+
+// WithCreateSql is a copy of the attribute with another CREATE clause, for the place that needs the same attribute with a
+// different shape, such as an enum of another provider. Name, type, and description are not restated.
+func WithCreateSql(attr *Attribute, clause SqlClause) Attribute {
+	view := *attr
+	view.CreateSql = clause
+	return view
+}
+
+// SqlStructName is the Go struct name of a list of objects or of a nested struct: the object and the attribute,
+// ExternalVolume and storage_location give ExternalVolumeStorageLocation.
+func (a Attribute) SqlStructName(owner string) string {
+	return owner + genhelpers.SnakeCaseToCamel(a.Name)
+}
+
+// SqlVariantStructName is the Go struct name of a variant of a list of objects: GCS and storage_location give
+// GCSStorageLocationParams.
+func (a Attribute) SqlVariantStructName(key string) string {
+	return key + genhelpers.SnakeCaseToCamel(a.Name) + "Params"
+}
+
+// NestedFields are the fields of a block: the Children, or the Children of the Elem object of a list or set.
+func (a Attribute) NestedFields() []Attribute {
+	if len(a.Children) > 0 {
+		return a.Children
+	}
+	if a.Elem != nil && a.Elem.Type == AttrObject {
+		return a.Elem.Children
+	}
+	return nil
+}
+
+// IsObjectList reports whether the attribute is a list or set whose elements are objects.
+func (a Attribute) IsObjectList() bool {
+	return (a.Type == AttrList || a.Type == AttrSet) && a.Elem != nil && a.Elem.Type == AttrObject
+}
+
+func Sql(text string) SqlClauseOption {
+	return func(c *SqlClause) { c.SQL = text }
 }
 
 func NoQuotes() SqlClauseOption {

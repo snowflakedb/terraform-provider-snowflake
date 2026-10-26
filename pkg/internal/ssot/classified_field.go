@@ -100,8 +100,8 @@ func ClassifyParameter(name, kind string) ClassifiedField {
 }
 
 func collectionField(obj Object, attr Attribute, storage AttributeType) ClassifiedField {
-	if attr.Elem == nil {
-		if len(attr.Children) > 0 {
+	if attr.Elem == nil || attr.IsObjectList() {
+		if len(attr.NestedFields()) > 0 {
 			// Nested block (list/set of objects): no scalar Elem to classify. The generator consuming
 			// this (model builder, resource assertion) decides what a Storage with no Elem means —
 			// e.g. an unsupported-type stub, or a Required constructor using a generator-level type

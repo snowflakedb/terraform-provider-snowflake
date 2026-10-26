@@ -121,20 +121,20 @@ func NewGCSStorageLocationParamsRequest(
 	return &s
 }
 
-func (s *GCSStorageLocationParamsRequest) WithEncryption(encryption ExternalVolumeGCSEncryptionRequest) *GCSStorageLocationParamsRequest {
+func (s *GCSStorageLocationParamsRequest) WithEncryption(encryption ExternalVolumeGcsEncryptionRequest) *GCSStorageLocationParamsRequest {
 	s.Encryption = &encryption
 	return s
 }
 
-func NewExternalVolumeGCSEncryptionRequest(
+func NewExternalVolumeGcsEncryptionRequest(
 	encryptionType GCSEncryptionType,
-) *ExternalVolumeGCSEncryptionRequest {
-	s := ExternalVolumeGCSEncryptionRequest{}
+) *ExternalVolumeGcsEncryptionRequest {
+	s := ExternalVolumeGcsEncryptionRequest{}
 	s.EncryptionType = encryptionType
 	return &s
 }
 
-func (s *ExternalVolumeGCSEncryptionRequest) WithKmsKeyId(kmsKeyId string) *ExternalVolumeGCSEncryptionRequest {
+func (s *ExternalVolumeGcsEncryptionRequest) WithKmsKeyId(kmsKeyId string) *ExternalVolumeGcsEncryptionRequest {
 	s.KmsKeyId = &kmsKeyId
 	return s
 }
@@ -204,7 +204,7 @@ func (s *AlterExternalVolumeRequest) WithAddStorageLocation(addStorageLocation E
 	return s
 }
 
-func (s *AlterExternalVolumeRequest) WithUpdateStorageLocation(updateStorageLocation AlterExternalVolumeUpdateStorageLocationRequest) *AlterExternalVolumeRequest {
+func (s *AlterExternalVolumeRequest) WithUpdateStorageLocation(updateStorageLocation ExternalVolumeUpdateStorageLocationRequest) *AlterExternalVolumeRequest {
 	s.UpdateStorageLocation = &updateStorageLocation
 	return s
 }
@@ -224,11 +224,11 @@ func (s *ExternalVolumeSetRequest) WithComment(comment string) *ExternalVolumeSe
 	return s
 }
 
-func NewAlterExternalVolumeUpdateStorageLocationRequest(
+func NewExternalVolumeUpdateStorageLocationRequest(
 	storageLocation string,
 	credentials ExternalVolumeUpdateCredentialsRequest,
-) *AlterExternalVolumeUpdateStorageLocationRequest {
-	s := AlterExternalVolumeUpdateStorageLocationRequest{}
+) *ExternalVolumeUpdateStorageLocationRequest {
+	s := ExternalVolumeUpdateStorageLocationRequest{}
 	s.StorageLocation = storageLocation
 	s.Credentials = credentials
 	return &s
