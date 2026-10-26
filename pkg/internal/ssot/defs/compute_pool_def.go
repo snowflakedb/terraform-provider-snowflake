@@ -222,6 +222,8 @@ var ComputePool = ssot.Object{
 		ssot.WithApplyCreateOptionals(ssot.Generated()),
 		ssot.WithCreateInSdk(ssot.Generated()),
 		ssot.WithApplySetUnset(ssot.Generated()),
+		ssot.WithAlterSetInSdk(ssot.Generated()),
+		ssot.WithAlterUnsetInSdk(ssot.Generated()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
 	},
 	Attributes: []ssot.Attribute{
