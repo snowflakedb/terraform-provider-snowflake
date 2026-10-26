@@ -57,20 +57,6 @@ func authenticationPolicyNewCreateRequestExt(d *schema.ResourceData, id sdk.Sche
 	return sdk.NewCreateAuthenticationPolicyRequest(id), nil
 }
 
-func authenticationPolicyApplyCreateOptionalsExt(d *schema.ResourceData, req *sdk.CreateAuthenticationPolicyRequest) error {
-	return errors.Join(
-		setMappedValueCreateBuilder(d, "authentication_methods", req.WithAuthenticationMethods, authenticationMethodItem),
-		setMappedValueCreateBuilder(d, "client_types", req.WithClientTypes, clientTypeItem),
-		setMappedValueCreateBuilder(d, "client_policy", req.WithClientPolicy, toClientPolicyEntries),
-		attributeMappedValueCreateBuilder(d, "security_integrations", req.WithSecurityIntegrations, ToSecurityIntegrationsRequest),
-		attributeMappedValueCreateBuilder(d, "mfa_enrollment", req.WithMfaEnrollment, sdk.ToMfaEnrollmentOption),
-		stringAttributeCreateBuilder(d, "comment", req.WithComment),
-		singleBlockAttributeCreate(d, "mfa_policy", req.WithMfaPolicy, parseMfaPolicy),
-		singleBlockAttributeCreate(d, "pat_policy", req.WithPatPolicy, parsePatPolicy),
-		singleBlockAttributeCreate(d, "workload_identity_policy", req.WithWorkloadIdentityPolicy, parseWorkloadIdentityPolicy),
-	)
-}
-
 func authenticationPolicySetConfigFieldsExt(d *schema.ResourceData, authenticationPolicy *sdk.AuthenticationPolicy) error {
 	return d.Set("comment", authenticationPolicy.Comment)
 }
@@ -123,10 +109,10 @@ func authenticationPolicyApplySetUnsetExt(d *schema.ResourceData) (*authenticati
 	set, unset := sdk.NewAuthenticationPolicySetRequest(), sdk.NewAuthenticationPolicyUnsetRequest()
 
 	if err := errors.Join(
-		setValueUpdate(d, "authentication_methods", &set.AuthenticationMethods, &unset.AuthenticationMethods, authenticationMethodItem),
+		setValueUpdate(d, "authentication_methods", &set.AuthenticationMethods, &unset.AuthenticationMethods, toAuthenticationPolicyAuthenticationMethods),
 		attributeMappedValueUpdate(d, "mfa_enrollment", &set.MfaEnrollment, &unset.MfaEnrollment, sdk.ToMfaEnrollmentOption),
-		setValueUpdate(d, "client_types", &set.ClientTypes, &unset.ClientTypes, clientTypeItem),
-		setValueUpdate(d, "client_policy", &set.ClientPolicy, &unset.ClientPolicy, toClientPolicyEntries),
+		setValueUpdate(d, "client_types", &set.ClientTypes, &unset.ClientTypes, toAuthenticationPolicyClientTypes),
+		setValueUpdate(d, "client_policy", &set.ClientPolicy, &unset.ClientPolicy, toAuthenticationPolicyClientPolicy),
 		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
 		attributeMappedValueUpdate(d, "security_integrations", &set.SecurityIntegrations, &unset.SecurityIntegrations, ToSecurityIntegrationsRequest),
 		singleBlockAttributeUpdate(d, "mfa_policy", &set.MfaPolicy, &unset.MfaPolicy, applyMfaPolicyUpdate),
@@ -240,7 +226,7 @@ func authenticationPolicyDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[s
 // Pre-existing mappers
 // =============================================================================
 
-func authenticationMethodItem(v any) (sdk.AuthenticationMethods, error) {
+func toAuthenticationPolicyAuthenticationMethods(v any) (sdk.AuthenticationMethods, error) {
 	option, err := sdk.ToAuthenticationMethodsOption(v.(string))
 	if err != nil {
 		return sdk.AuthenticationMethods{}, err
@@ -248,7 +234,7 @@ func authenticationMethodItem(v any) (sdk.AuthenticationMethods, error) {
 	return sdk.AuthenticationMethods{Method: option}, nil
 }
 
-func clientTypeItem(v any) (sdk.ClientTypes, error) {
+func toAuthenticationPolicyClientTypes(v any) (sdk.ClientTypes, error) {
 	option, err := sdk.ToClientTypesOption(v.(string))
 	if err != nil {
 		return sdk.ClientTypes{}, err
@@ -256,41 +242,21 @@ func clientTypeItem(v any) (sdk.ClientTypes, error) {
 	return sdk.ClientTypes{ClientType: option}, nil
 }
 
-func parseMfaPolicy(d *schema.ResourceData, prefix string) (sdk.AuthenticationPolicyMfaPolicyRequest, error) {
-	req := sdk.NewAuthenticationPolicyMfaPolicyRequest()
-	err := errors.Join(
-		attributeMappedValueCreateBuilder(d, prefix+"enforce_mfa_on_external_authentication", req.WithEnforceMfaOnExternalAuthentication, sdk.ToEnforceMfaOnExternalAuthenticationOption),
-		setValueCreate(d, prefix+"allowed_methods", &req.AllowedMethods, mfaPolicyAllowedMethodItem),
-	)
-	return *req, err
-}
-
 func applyMfaPolicyUpdate(d *schema.ResourceData, prefix string, req *sdk.AuthenticationPolicyMfaPolicyRequest) error {
 	return errors.Join(
 		attributeMappedValueUpdateSetOnlyFallback(d, prefix+"enforce_mfa_on_external_authentication", &req.EnforceMfaOnExternalAuthentication, sdk.ToEnforceMfaOnExternalAuthenticationOption, sdk.EnforceMfaOnExternalAuthenticationOptionNone),
-		setValueUpdateFallback(d, prefix+"allowed_methods", &req.AllowedMethods, mfaPolicyAllowedMethodItem, []sdk.AuthenticationPolicyMfaPolicyListItem{{
+		setValueUpdateFallback(d, prefix+"allowed_methods", &req.AllowedMethods, toAuthenticationPolicyMfaPolicyAllowedMethods, []sdk.AuthenticationPolicyMfaPolicyListItem{{
 			Method: sdk.MfaPolicyAllowedMethodsOptionAll,
 		}}),
 	)
 }
 
-func mfaPolicyAllowedMethodItem(v any) (sdk.AuthenticationPolicyMfaPolicyListItem, error) {
+func toAuthenticationPolicyMfaPolicyAllowedMethods(v any) (sdk.AuthenticationPolicyMfaPolicyListItem, error) {
 	option, err := sdk.ToMfaPolicyAllowedMethodsOption(v.(string))
 	if err != nil {
 		return sdk.AuthenticationPolicyMfaPolicyListItem{}, err
 	}
 	return sdk.AuthenticationPolicyMfaPolicyListItem{Method: option}, nil
-}
-
-func parsePatPolicy(d *schema.ResourceData, prefix string) (sdk.AuthenticationPolicyPatPolicyRequest, error) {
-	req := sdk.NewAuthenticationPolicyPatPolicyRequest()
-	err := errors.Join(
-		intAttributeCreateBuilder(d, prefix+"default_expiry_in_days", req.WithDefaultExpiryInDays),
-		intAttributeCreateBuilder(d, prefix+"max_expiry_in_days", req.WithMaxExpiryInDays),
-		attributeMappedValueCreateBuilder(d, prefix+"network_policy_evaluation", req.WithNetworkPolicyEvaluation, sdk.ToNetworkPolicyEvaluationOption),
-		booleanStringAttributeCreateFallbackBuilder(d, prefix+"require_role_restriction_for_service_users", req.WithRequireRoleRestrictionForServiceUsers, true),
-	)
-	return *req, err
 }
 
 func applyPatPolicyUpdate(d *schema.ResourceData, prefix string, req *sdk.AuthenticationPolicyPatPolicyRequest) error {
@@ -302,25 +268,14 @@ func applyPatPolicyUpdate(d *schema.ResourceData, prefix string, req *sdk.Authen
 	)
 }
 
-func parseWorkloadIdentityPolicy(d *schema.ResourceData, prefix string) (sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest, error) {
-	req := sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest()
-	err := errors.Join(
-		setValueCreate(d, prefix+"allowed_providers", &req.AllowedProviders, allowedProviderItem),
-		setValueCreate(d, prefix+"allowed_aws_accounts", &req.AllowedAwsAccounts, stringListItem),
-		setValueCreate(d, prefix+"allowed_azure_issuers", &req.AllowedAzureIssuers, stringListItem),
-		setValueCreate(d, prefix+"allowed_oidc_issuers", &req.AllowedOidcIssuers, stringListItem),
-	)
-	return *req, err
-}
-
 func applyWorkloadIdentityPolicyUpdate(d *schema.ResourceData, prefix string, req *sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest) error {
 	return errors.Join(
-		setValueUpdateFallback(d, prefix+"allowed_providers", &req.AllowedProviders, allowedProviderItem, []sdk.AuthenticationPolicyAllowedProviderListItem{{
+		setValueUpdateFallback(d, prefix+"allowed_providers", &req.AllowedProviders, toAuthenticationPolicyWorkloadIdentityPolicyAllowedProviders, []sdk.AuthenticationPolicyAllowedProviderListItem{{
 			Provider: sdk.AllowedProviderOptionAll,
 		}}),
-		setValueUpdateFallback(d, prefix+"allowed_aws_accounts", &req.AllowedAwsAccounts, stringListItem, allStringListItems()),
-		setValueUpdateFallback(d, prefix+"allowed_azure_issuers", &req.AllowedAzureIssuers, stringListItem, allStringListItems()),
-		setValueUpdateFallback(d, prefix+"allowed_oidc_issuers", &req.AllowedOidcIssuers, stringListItem, allStringListItems()),
+		setValueUpdateFallback(d, prefix+"allowed_aws_accounts", &req.AllowedAwsAccounts, toAuthenticationPolicyWorkloadIdentityPolicyAllowedAwsAccounts, allStringListItems()),
+		setValueUpdateFallback(d, prefix+"allowed_azure_issuers", &req.AllowedAzureIssuers, toAuthenticationPolicyWorkloadIdentityPolicyAllowedAzureIssuers, allStringListItems()),
+		setValueUpdateFallback(d, prefix+"allowed_oidc_issuers", &req.AllowedOidcIssuers, toAuthenticationPolicyWorkloadIdentityPolicyAllowedOidcIssuers, allStringListItems()),
 	)
 }
 
@@ -328,7 +283,7 @@ func allStringListItems() []sdk.StringListItemWrapper {
 	return []sdk.StringListItemWrapper{{Value: "ALL"}}
 }
 
-func allowedProviderItem(v any) (sdk.AuthenticationPolicyAllowedProviderListItem, error) {
+func toAuthenticationPolicyWorkloadIdentityPolicyAllowedProviders(v any) (sdk.AuthenticationPolicyAllowedProviderListItem, error) {
 	option, err := sdk.ToAllowedProviderOption(v.(string))
 	if err != nil {
 		return sdk.AuthenticationPolicyAllowedProviderListItem{}, err
@@ -340,6 +295,12 @@ func stringListItem(v any) (sdk.StringListItemWrapper, error) {
 	return sdk.StringListItemWrapper{Value: v.(string)}, nil
 }
 
+var (
+	toAuthenticationPolicyWorkloadIdentityPolicyAllowedAwsAccounts  = stringListItem
+	toAuthenticationPolicyWorkloadIdentityPolicyAllowedAzureIssuers = stringListItem
+	toAuthenticationPolicyWorkloadIdentityPolicyAllowedOidcIssuers  = stringListItem
+)
+
 func ToSecurityIntegrationsRequest(value any) (sdk.SecurityIntegrationsOptionRequest, error) {
 	raw := expandStringList(value.(*schema.Set).List())
 	securityIntegrations := make([]sdk.AccountObjectIdentifier, len(raw))
@@ -350,7 +311,7 @@ func ToSecurityIntegrationsRequest(value any) (sdk.SecurityIntegrationsOptionReq
 	return *sdk.NewSecurityIntegrationsOptionRequest().WithSecurityIntegrations(securityIntegrations), nil
 }
 
-func toClientPolicyEntries(v any) (sdk.AuthenticationPolicyClientPolicyEntry, error) {
+func toAuthenticationPolicyClientPolicy(v any) (sdk.AuthenticationPolicyClientPolicyEntry, error) {
 	m, ok := v.(map[string]any)
 	if !ok {
 		return sdk.AuthenticationPolicyClientPolicyEntry{}, fmt.Errorf("client_policy entry: expected map, got %T", v)

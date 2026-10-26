@@ -30,5 +30,6 @@ type ResourceAttribute struct {
 	EnumName             string // SDK enum type name; empty when the attribute is not an enum
 	CreateConstructorArg *CreateConstructorArg
 	CreateOptionalCall   *CreateOptionalCall
+	CreateBlock          *CreateRequestFunc
 	UpdateCall           *UpdateCall
 }

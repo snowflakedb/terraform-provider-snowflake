@@ -68,15 +68,6 @@ func (m ResourceModel) ParseIdFunc() string {
 	return m.Prefix() + "ParseIdExt"
 }
 
-func (m ResourceModel) HasCreateOptionalCalls() bool {
-	for _, attr := range m.Attributes {
-		if attr.CreateOptionalCall != nil {
-			return true
-		}
-	}
-	return false
-}
-
 func (m ResourceModel) HasUpdateCalls() bool {
 	for _, attr := range m.Attributes {
 		if attr.UpdateCall != nil {
@@ -91,7 +82,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 	resourceAttributes := input.ResourceAttributes()
 	attributes := applyResourceAttributeRules(input.IdType, resourceAttributes)
 	if hooks.NewCreateRequest.Generate || hooks.ApplyCreateOptionals.Generate {
-		attachCreateMappings(input.Name, input.IdType, resourceAttributes, attributes)
+		attachCreateMappings(input.Name, resourceAttributes, attributes)
 	}
 	if hooks.ApplySetUnset.Generate {
 		attachUpdateMappings(input.Name, resourceAttributes, attributes)

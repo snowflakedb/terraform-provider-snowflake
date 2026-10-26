@@ -1,0 +1,15 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.CreateRequestFunc*/ -}}
+func {{ .Name }}(d *tfschema.ResourceData{{ if .IdType }}, id sdk.{{ .IdType }}{{ else }}, prefix string{{ end }}) ({{ .ResultType }}, error) {
+{{- template "createConstructorArgs" .CreateRequestBuild }}
+{{- if .ApplyOptionals }}
+	request := {{ .NewFunc }}({{ .CallArgs }})
+{{- if .Calls }}
+	errs := {{ template "createOptionalCalls" .CreateRequestBuild }}
+	return {{ .ReturnExpr }}, errs
+{{- else }}
+	return {{ .ReturnExpr }}, nil
+{{- end }}
+{{- else }}
+	return {{ .NewFunc }}({{ .CallArgs }}), nil
+{{- end }}
+}

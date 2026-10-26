@@ -132,6 +132,26 @@ func Test_ValidateObject_conflictsWithKnownAttribute(t *testing.T) {
 	})
 }
 
+func Test_ValidateObject_skipCreateBlockMustBeListBlock(t *testing.T) {
+	require.PanicsWithValue(t, `object "Alert": SkipCreateBlock attribute "comment" must be a list block`, func() {
+		ValidateObject(Object{
+			Name:       "Alert",
+			Attributes: []Attribute{{Name: "comment", Type: AttrString, SkipCreateBlock: true}},
+		})
+	})
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name: "Alert",
+			Attributes: []Attribute{{
+				Name:            "alert_schedule",
+				Type:            AttrList,
+				SkipCreateBlock: true,
+				Children:        []Attribute{{Name: "interval", Type: AttrInt}},
+			}},
+		})
+	})
+}
+
 func Test_ValidateObject_createOnlyMustBeOptionalBool(t *testing.T) {
 	require.PanicsWithValue(t, `object "Warehouse": CreateOnly attribute "auto_suspend" must be an optional bool`, func() {
 		ValidateObject(Object{

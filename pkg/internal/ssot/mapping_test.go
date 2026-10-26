@@ -22,35 +22,15 @@ func Test_CreateCall(t *testing.T) {
 	require.PanicsWithValue(t, `object "ComputePool": attribute "items" ListValueCreate needs a mapper function`, func() {
 		ListValueCreate("").CreateCall("ComputePool", Attribute{Name: "items"})
 	})
-}
 
-func Test_ConstructorGet(t *testing.T) {
-	minNodes := Attribute{Name: "min_nodes", Type: AttrInt, Required: true}
-	get, ok := minNodes.ConstructorGet()
-	require.True(t, ok)
-	require.Equal(t, `d.Get("min_nodes").(int)`, get)
+	call = AttributeMappedValueCreate("ToSecurityIntegrationsRequest").CreateCall("AuthenticationPolicy", Attribute{Name: "security_integrations"})
+	require.Equal(t, CreateCall{
+		Helper: "attributeMappedValueCreateBuilder",
+		Target: "request.WithSecurityIntegrations, ToSecurityIntegrationsRequest",
+	}, call)
 
-	family := NewEnum("ComputePoolInstanceFamily", "ComputePoolInstanceFamilies", "CPU_X64_XS")
-	instanceFamily := Attribute{Name: "instance_family", Type: AttrEnum, Required: true, Enum: family}
-	get, ok = instanceFamily.ConstructorGet()
-	require.True(t, ok)
-	require.Equal(t, `d.Get("instance_family").(string)`, get)
-
-	comment := Attribute{Name: "comment", Type: AttrString}
-	_, ok = comment.ConstructorGet()
-	require.False(t, ok)
-
-	mapped := Attribute{Name: "comment", Type: AttrString, CreateMapping: StringAttributeCreateBuilder}
-	_, ok = mapped.ConstructorGet()
-	require.False(t, ok)
-
-	require.PanicsWithValue(t, `required attribute "items" has no CreateMapping`, func() {
-		items := Attribute{Name: "items", Type: AttrList, Required: true}
-		items.ConstructorGet()
-	})
-	require.PanicsWithValue(t, `constructor attribute "instance_family" has no Enum`, func() {
-		missingEnum := Attribute{Name: "instance_family", Type: AttrEnum, Required: true}
-		missingEnum.ConstructorGet()
+	require.PanicsWithValue(t, `object "AuthenticationPolicy": attribute "security_integrations" attributeMappedValueCreateBuilder needs a mapper function`, func() {
+		AttributeMappedValueCreate("").CreateCall("AuthenticationPolicy", Attribute{Name: "security_integrations"})
 	})
 }
 

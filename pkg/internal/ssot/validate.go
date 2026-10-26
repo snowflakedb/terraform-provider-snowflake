@@ -69,6 +69,7 @@ func ValidateObject(obj Object) {
 		if a.NativeBool && a.Type != AttrBool {
 			panic(fmt.Sprintf("object %q: NativeBool attribute %q must be a bool", obj.Name, a.Name))
 		}
+		validateSkipCreateBlock(obj, a)
 		for _, other := range a.ConflictsWith {
 			if other.Name == a.Name {
 				panic(fmt.Sprintf("object %q: attribute %q conflicts with itself", obj.Name, a.Name))
@@ -182,7 +183,17 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 			panic(fmt.Sprintf("object %q: nested attribute %q.%q has a %s clause", obj.Name, attr.Name, child.Name, statement))
 		}
 		validateCollectionBounds(obj, child)
+		validateSkipCreateBlock(obj, child)
 		validateNestedAttribute(obj, child)
+	}
+}
+
+func validateSkipCreateBlock(obj Object, attr Attribute) {
+	if !attr.SkipCreateBlock {
+		return
+	}
+	if attr.Type != AttrList || len(attr.Children) == 0 {
+		panic(fmt.Sprintf("object %q: SkipCreateBlock attribute %q must be a list block", obj.Name, attr.Name))
 	}
 }
 
