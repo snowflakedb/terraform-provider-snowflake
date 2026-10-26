@@ -4,6 +4,8 @@ package sdk
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -143,7 +145,7 @@ func (r *AlterExternalVolumeRequest) toOpts() *AlterExternalVolumeOptions {
 		RemoveStorageLocation: r.RemoveStorageLocation,
 	}
 	if r.Set != nil {
-		opts.Set = &AlterExternalVolumeSet{
+		opts.Set = &ExternalVolumeSet{
 			AllowWrites: r.Set.AllowWrites,
 			Comment:     r.Set.Comment,
 		}
@@ -227,11 +229,11 @@ func (r *DescribeExternalVolumeRequest) toOpts() *DescribeExternalVolumeOptions 
 
 func (r externalVolumeDescRow) convert() (*ExternalVolumeProperty, error) {
 	result := &ExternalVolumeProperty{
-		Parent:  r.ParentProperty,
-		Name:    r.Property,
-		Type:    r.PropertyType,
-		Value:   r.PropertyValue,
-		Default: r.PropertyDefault,
+		ParentProperty:  r.ParentProperty,
+		Property:        r.Property,
+		PropertyType:    r.PropertyType,
+		PropertyValue:   r.PropertyValue,
+		PropertyDefault: r.PropertyDefault,
 	}
 	return result, nil
 }
@@ -250,4 +252,45 @@ func (r externalVolumesRow) convert() (*ExternalVolume, error) {
 	}
 	mapNullStringToNonNullableField(&result.Comment, r.Comment)
 	return result, nil
+}
+
+func ParseExternalVolumeDescribed(rows []ExternalVolumeProperty) (ExternalVolumeDetails, error) {
+	details := ExternalVolumeDetails{}
+	var storageLocations []ExternalVolumeStorageLocationDetails
+	for _, row := range rows {
+		switch {
+		case row.Property == "COMMENT":
+			details.Comment = row.PropertyValue
+		case row.Property == "ACTIVE":
+			details.Active = row.PropertyValue
+		case row.Property == "ALLOW_WRITES":
+			details.AllowWrites = row.PropertyValue
+		case strings.Contains(row.Property, "STORAGE_LOCATION_"):
+			element, err := ParseExternalVolumeStorageLocationDescribed(row.PropertyValue)
+			if err != nil {
+				return ExternalVolumeDetails{}, err
+			}
+			storageLocations = append(storageLocations, element)
+		default:
+			return ExternalVolumeDetails{}, fmt.Errorf("Unrecognized external volume property: %s", row.Property)
+		}
+	}
+	details.StorageLocations = storageLocations
+	if err := validateExternalVolumeDescribed(details); err != nil {
+		return ExternalVolumeDetails{}, err
+	}
+	return details, nil
+}
+
+func (v *externalVolumes) DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolumeDetails, error) {
+	rows, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	details, err := ParseExternalVolumeDescribed(rows)
+	if err != nil {
+		return nil, err
+	}
+	details.Id = id
+	return &details, nil
 }

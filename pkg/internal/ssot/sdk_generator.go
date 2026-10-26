@@ -92,7 +92,8 @@ func SdkDescribeSql(sql string) SdkDescribeOption {
 }
 
 // SdkDescribeMapping overrides the default DESCRIBE result shape.
-// The default is a single value. Pass SdkDescriptionMappingSlice when DESCRIBE returns a slice.
+// The default is a single value, or a slice when the object sets DescribeRows.
+// Pass SdkDescriptionMappingSlice when DESCRIBE returns a slice of another shape.
 func SdkDescribeMapping(kind SdkDescriptionMapping) SdkDescribeOption {
 	return func(s *SdkGenerator) { s.DescribeMapping = kind }
 }
@@ -131,7 +132,11 @@ func (obj Object) SdkConfig() SdkGenerator {
 			cfg.DescribeQueryStructName = "Desc" + name
 		}
 		if cfg.DescribeMapping == "" {
+			// A raw row list is a slice. Every property-list DESCRIBE in the SDK defs maps to a slice.
 			cfg.DescribeMapping = SdkDescriptionMappingSingleValue
+			if len(obj.DescribeRows.Columns) > 0 {
+				cfg.DescribeMapping = SdkDescriptionMappingSlice
+			}
 		}
 	}
 	if cfg.Drop {

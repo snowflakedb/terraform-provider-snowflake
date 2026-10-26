@@ -388,10 +388,10 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().ExternalVolume.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithSet(
-						*sdk.NewAlterExternalVolumeSetRequest().WithComment("external comment"),
+						*sdk.NewExternalVolumeSetRequest().WithComment("external comment"),
 					))
 					testClient().ExternalVolume.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithSet(
-						*sdk.NewAlterExternalVolumeSetRequest().WithAllowWrites(true),
+						*sdk.NewExternalVolumeSetRequest().WithAllowWrites(true),
 					))
 					testClient().ExternalVolume.Alter(
 						t,
@@ -755,7 +755,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Compat(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().ExternalVolume.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithSet(
-						*sdk.NewAlterExternalVolumeSetRequest().WithAllowWrites(true).WithComment("external comment"),
+						*sdk.NewExternalVolumeSetRequest().WithAllowWrites(true).WithComment("external comment"),
 					))
 					testClient().ExternalVolume.Alter(
 						t,
@@ -1036,7 +1036,7 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().ExternalVolume.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithSet(
-						*sdk.NewAlterExternalVolumeSetRequest().WithAllowWrites(true).WithComment("external comment"),
+						*sdk.NewExternalVolumeSetRequest().WithAllowWrites(true).WithComment("external comment"),
 					))
 					testClient().ExternalVolume.Alter(
 						t,
@@ -1309,10 +1309,10 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().ExternalVolume.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithSet(
-						*sdk.NewAlterExternalVolumeSetRequest().WithComment("external comment"),
+						*sdk.NewExternalVolumeSetRequest().WithComment("external comment"),
 					))
 					testClient().ExternalVolume.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithSet(
-						*sdk.NewAlterExternalVolumeSetRequest().WithAllowWrites(true),
+						*sdk.NewExternalVolumeSetRequest().WithAllowWrites(true),
 					))
 					testClient().ExternalVolume.Alter(
 						t,

@@ -3,6 +3,7 @@ package gen
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 	"github.com/stretchr/testify/require"
 )
@@ -1419,4 +1420,222 @@ func requireSameOperations(t *testing.T, want, got *Interface) {
 		got.Operations[i].ObjectInterface = nil
 		require.Equal(t, want.Operations[i], got.Operations[i])
 	}
+}
+
+func Test_CreateOperationFromObject_nestedItem(t *testing.T) {
+	locations := ssot.Attribute{
+		Name:     "storage_location",
+		Type:     ssot.AttrList,
+		Required: true,
+		Children: []ssot.Attribute{{Name: "name", Type: ssot.AttrString}},
+		CreateSql: ssot.ListParameter("WidgetLocation",
+			ssot.Sql("STORAGE_LOCATIONS"), ssot.NestedItem()),
+	}
+	obj := ssot.Object{
+		Name:       "Widget",
+		Attributes: []ssot.Attribute{locations},
+		Create:     ssot.CreateSpec{Clauses: []*ssot.Attribute{&locations}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate())},
+	}
+	item := func() *QueryStruct {
+		return NewQueryStruct("WidgetLocation").TextAssignment("NAME", ParameterOptions().SingleQuotes().Required())
+	}
+
+	t.Run("item struct becomes the nested list field", func(t *testing.T) {
+		got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj, item())
+		want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperation(
+			"https://docs.snowflake.com/en/sql-reference/sql/create-widget",
+			NewQueryStruct("CreateWidget").
+				Create().
+				OrReplace().
+				SQL("WIDGET").
+				IfNotExists().
+				Name().
+				ListQueryStructField("StorageLocations", item(), ParameterOptions().Parentheses().Required().SQL("STORAGE_LOCATIONS")).
+				WithValidation(ValidateValueSet, "StorageLocations").
+				WithValidation(ValidIdentifier, "name").
+				WithValidation(ConflictingFields, "OrReplace", "IfNotExists"),
+		)
+		requireSameOperations(t, want, got)
+	})
+
+	t.Run("missing item struct panics", func(t *testing.T) {
+		require.Panics(t, func() {
+			NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
+		})
+	})
+}
+
+func Test_AlterOperationFromObject_textAndBlocks(t *testing.T) {
+	obj := ssot.Object{
+		Name: "Widget",
+		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
+			ssot.AlterText("REMOVE LOCATION"),
+			ssot.AlterParameterBlock("AddLocation", "ADD LOCATION", "WidgetLocation"),
+			ssot.AlterKeywordBlock("UpdateLocation", "UPDATE", "WidgetLocationUpdate"),
+		}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter())},
+	}
+	location := func() *QueryStruct {
+		return NewQueryStruct("WidgetLocation").TextAssignment("NAME", ParameterOptions().SingleQuotes().Required())
+	}
+	update := func() *QueryStruct {
+		return NewQueryStruct("WidgetLocationUpdate").TextAssignment("LOCATION", ParameterOptions().SingleQuotes().Required())
+	}
+
+	t.Run("text and block clauses", func(t *testing.T) {
+		got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(obj, location(), update())
+		want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperation(
+			"https://docs.snowflake.com/en/sql-reference/sql/alter-widget",
+			NewQueryStruct("AlterWidget").
+				Alter().
+				SQL("WIDGET").
+				IfExists().
+				Name().
+				OptionalTextAssignment("REMOVE LOCATION", ParameterOptions().SingleQuotes().NoEquals()).
+				OptionalQueryStructField("AddLocation", location(), ParameterOptions().SQL("ADD LOCATION")).
+				OptionalQueryStructField("UpdateLocation", update(), KeywordOptions().SQL("UPDATE")).
+				WithValidation(ValidIdentifier, "name").
+				WithValidation(ExactlyOneValueSet, "RemoveLocation", "AddLocation", "UpdateLocation"),
+		)
+		requireSameOperations(t, want, got)
+	})
+
+	t.Run("missing block struct panics", func(t *testing.T) {
+		require.Panics(t, func() {
+			NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(obj, location())
+		})
+	})
+}
+
+func Test_DescribeOperationFromObject_propertyList(t *testing.T) {
+	parent := ssot.Attribute{Name: "parent_property", Type: ssot.AttrString, Readonly: true}
+	property := ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true}
+	value := ssot.Attribute{Name: "property_value", Type: ssot.AttrString, Readonly: true}
+	active := ssot.Attribute{Name: "active", Type: ssot.AttrString, Readonly: true}
+	obj := ssot.Object{
+		Name:         "Widget",
+		NamePlural:   "Widgets",
+		IdType:       "AccountObjectIdentifier",
+		Describe:     ssot.OutputSpec{Columns: []*ssot.Attribute{&active}},
+		DescribeRows: ssot.OutputSpec{Columns: []*ssot.Attribute{&parent, &property, &value}},
+		Generators:   []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe())},
+	}
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationWithPairedStructs(
+		DescriptionMappingKindSlice,
+		"https://docs.snowflake.com/en/sql-reference/sql/desc-widget",
+		StructPair("widgetDescRow", "WidgetProperty").
+			Text("parent_property").
+			Text("property").
+			Text("property_value"),
+		NewQueryStruct("DescWidget").
+			Describe().
+			SQL("WIDGET").
+			Name().
+			WithValidation(ValidIdentifier, "name"),
+	)
+	requireSameOperations(t, want, got)
+}
+
+func Test_DescribeOperationFromObject_details(t *testing.T) {
+	property := ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true}
+	locations := ssot.Attribute{Name: "storage_locations", Type: ssot.AttrList, Readonly: true, Elem: &ssot.Attribute{Type: ssot.AttrString}}
+	active := ssot.Attribute{Name: "active", Type: ssot.AttrString, Readonly: true}
+	size := ssot.Attribute{Name: "size", Type: ssot.AttrInt, Readonly: true, OptionalInShow: true}
+	obj := ssot.Object{
+		Name:         "Widget",
+		NamePlural:   "Widgets",
+		IdType:       "AccountObjectIdentifier",
+		Describe:     ssot.OutputSpec{Columns: []*ssot.Attribute{&locations, &active, &size}},
+		DescribeRows: ssot.OutputSpec{Columns: []*ssot.Attribute{&property}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(
+			ssot.SdkDescribeDetails(ssot.SdkDescribeDetailsNestedField(&locations)),
+		))},
+	}
+	want := PlainStruct("WidgetDetails").
+		Field("Id", "AccountObjectIdentifier").
+		Field("StorageLocations", "[]WidgetStorageLocationDetails").
+		Field("Active", "string").
+		Field("Size", "*int")
+	require.Equal(t, want.IntoField(), DescribeDetailsPlain(obj).IntoField())
+
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(obj)
+	helperNames := collections.Map(got.Operations[0].HelperStructs, func(f *Field) string { return f.Name })
+	require.Contains(t, helperNames, "WidgetDetails")
+	require.Contains(t, helperNames, "WidgetProperty")
+
+	id := ssot.Attribute{Name: "id", Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier", Readonly: true}
+	obj.Describe = ssot.OutputSpec{Columns: []*ssot.Attribute{&id, &active}}
+	obj.Generators = []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeDetails()))}
+	require.Equal(t,
+		PlainStruct("WidgetDetails").Field("Id", "AccountObjectIdentifier").Field("Active", "string").IntoField(),
+		DescribeDetailsPlain(obj).IntoField(),
+		"a column named id replaces the leading Id field",
+	)
+}
+
+func Test_DescribeOperationFromObject_detailsMethod(t *testing.T) {
+	property := ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true}
+	active := ssot.Attribute{Name: "active", Type: ssot.AttrString, Readonly: true}
+	obj := ssot.Object{
+		Name:         "Widget",
+		NamePlural:   "Widgets",
+		IdType:       "AccountObjectIdentifier",
+		Describe:     ssot.OutputSpec{Columns: []*ssot.Attribute{&active}},
+		DescribeRows: ssot.OutputSpec{Columns: []*ssot.Attribute{&property}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(
+			ssot.SdkDescribeDetails(ssot.SdkDescribeDetailsMethod()),
+		))},
+	}
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(obj)
+	require.Equal(t, &DescribeDetailsConfig{DetailsType: "WidgetDetails", ParseFunc: "ParseWidgetDescribed"}, got.DescribeDetailsMethod)
+	require.Len(t, got.CustomMethods, 1)
+	require.Equal(t, "DescribeDetails", got.CustomMethods[0].Name)
+	require.Equal(t, []string{"*WidgetDetails", "error"}, got.CustomMethods[0].ReturnTypes)
+	require.Equal(t, "AccountObjectIdentifier", got.CustomMethods[0].Parameters[0].Kind)
+}
+
+func Test_DescribeOperationFromObject_detailsParse(t *testing.T) {
+	property := ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true}
+	locations := ssot.Attribute{Name: "storage_locations", Type: ssot.AttrList, Readonly: true, Elem: &ssot.Attribute{Type: ssot.AttrString}}
+	active := ssot.Attribute{Name: "active", Type: ssot.AttrString, Readonly: true}
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString, Readonly: true}
+	obj := ssot.Object{
+		Name:         "ExternalWidget",
+		NamePlural:   "ExternalWidgets",
+		IdType:       "AccountObjectIdentifier",
+		Describe:     ssot.OutputSpec{Columns: []*ssot.Attribute{&locations, &active, &comment}},
+		DescribeRows: ssot.OutputSpec{Columns: []*ssot.Attribute{&property}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(
+			ssot.SdkDescribeDetails(
+				ssot.SdkDescribeDetailsNestedField(&locations),
+				ssot.SdkDescribeDetailsParse(
+					ssot.DescribeProperty(&comment, "COMMENT"),
+					ssot.DescribeProperty(&active, "ACTIVE"),
+					ssot.DescribePropertyPrefix(&locations, "LOCATION_"),
+				),
+			),
+		))},
+	}
+	got := NewInterface("ExternalWidgets", "ExternalWidget", "AccountObjectIdentifier").DescribeOperationFromObject(obj)
+	require.Equal(t, &DescribeParseConfig{
+		RowsType:      "ExternalWidgetProperty",
+		PropertyField: "Property",
+		ValueField:    "PropertyValue",
+		DetailsType:   "ExternalWidgetDetails",
+		ErrorLabel:    "external widget",
+		ValidateFunc:  "validateExternalWidgetDescribed",
+		Properties: []DescribeParseProperty{
+			{Property: "COMMENT", Field: "Comment"},
+			{Property: "ACTIVE", Field: "Active"},
+		},
+		Prefixes: []DescribeParsePrefix{{
+			Prefix:        "LOCATION_",
+			Field:         "StorageLocations",
+			Var:           "storageLocations",
+			ElementType:   "ExternalWidgetStorageLocationDetails",
+			ElementParser: "ParseExternalWidgetStorageLocationDescribed",
+		}},
+	}, got.DescribeParse)
 }

@@ -17,6 +17,7 @@ func init() {
 		SequencesDef,
 		PartialGenerationExample,
 		PairedStructExample,
+		PropertyListExample,
 		EnumExamplesDef,
 		CustomInterfaceMethodExamplesDef,
 		InstanceMethodExamplesDef,

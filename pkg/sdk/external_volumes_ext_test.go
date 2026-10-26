@@ -178,7 +178,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_ExternalVolumes_sql_Alter_Set,
 			func(opts *AlterExternalVolumeOptions) {
-				opts.Set = &AlterExternalVolumeSet{AllowWrites: new(true), Comment: new("some comment")}
+				opts.Set = &ExternalVolumeSet{AllowWrites: new(true), Comment: new("some comment")}
 			},
 			`ALTER EXTERNAL VOLUME %s SET ALLOW_WRITES = true COMMENT = 'some comment'`,
 			id.FullyQualifiedName(),
@@ -949,25 +949,25 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 			Name: "Volume with s3 storage location that has no comment set (in this case describe doesn't contain a comment property)",
 			DescribeOutput: []ExternalVolumeProperty{
 				{
-					Parent:  "",
-					Name:    "ALLOW_WRITES",
-					Type:    "Boolean",
-					Value:   allowWritesTrue,
-					Default: "true",
+					ParentProperty:  "",
+					Property:        "ALLOW_WRITES",
+					PropertyType:    "Boolean",
+					PropertyValue:   allowWritesTrue,
+					PropertyDefault: "true",
 				},
 				{
-					Parent:  "STORAGE_LOCATIONS",
-					Name:    "STORAGE_LOCATION_1",
-					Type:    "String",
-					Value:   s3StorageLocationSseKmsEncryption,
-					Default: "",
+					ParentProperty:  "STORAGE_LOCATIONS",
+					Property:        "STORAGE_LOCATION_1",
+					PropertyType:    "String",
+					PropertyValue:   s3StorageLocationSseKmsEncryption,
+					PropertyDefault: "",
 				},
 				{
-					Parent:  "STORAGE_LOCATIONS",
-					Name:    "ACTIVE",
-					Type:    "String",
-					Value:   s3StorageLocationName,
-					Default: "",
+					ParentProperty:  "STORAGE_LOCATIONS",
+					Property:        "ACTIVE",
+					PropertyType:    "String",
+					PropertyValue:   s3StorageLocationName,
+					PropertyDefault: "",
 				},
 			},
 			ParsedDescribeOutput: ExternalVolumeDetails{
@@ -1041,18 +1041,18 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 			Name: "Volume with no allow writes",
 			DescribeOutput: []ExternalVolumeProperty{
 				{
-					Parent:  "STORAGE_LOCATIONS",
-					Name:    "STORAGE_LOCATION_1",
-					Type:    "String",
-					Value:   s3StorageLocationSseKmsEncryption,
-					Default: "",
+					ParentProperty:  "STORAGE_LOCATIONS",
+					Property:        "STORAGE_LOCATION_1",
+					PropertyType:    "String",
+					PropertyValue:   s3StorageLocationSseKmsEncryption,
+					PropertyDefault: "",
 				},
 				{
-					Parent:  "STORAGE_LOCATIONS",
-					Name:    "ACTIVE",
-					Type:    "String",
-					Value:   s3StorageLocationName,
-					Default: "",
+					ParentProperty:  "STORAGE_LOCATIONS",
+					Property:        "ACTIVE",
+					PropertyType:    "String",
+					PropertyValue:   s3StorageLocationName,
+					PropertyDefault: "",
 				},
 			},
 		},
@@ -1078,36 +1078,36 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 func GenerateParseExternalVolumeDescribedInput(comment string, allowWrites string, storageLocations []string, active string) []ExternalVolumeProperty {
 	storageLocationProperties := make([]ExternalVolumeProperty, len(storageLocations))
 	allowWritesProperty := ExternalVolumeProperty{
-		Parent:  "",
-		Name:    "ALLOW_WRITES",
-		Type:    "Boolean",
-		Value:   allowWrites,
-		Default: "true",
+		ParentProperty:  "",
+		Property:        "ALLOW_WRITES",
+		PropertyType:    "Boolean",
+		PropertyValue:   allowWrites,
+		PropertyDefault: "true",
 	}
 
 	commentProperty := ExternalVolumeProperty{
-		Parent:  "",
-		Name:    "COMMENT",
-		Type:    "String",
-		Value:   comment,
-		Default: "",
+		ParentProperty:  "",
+		Property:        "COMMENT",
+		PropertyType:    "String",
+		PropertyValue:   comment,
+		PropertyDefault: "",
 	}
 
 	activeProperty := ExternalVolumeProperty{
-		Parent:  "STORAGE_LOCATIONS",
-		Name:    "ACTIVE",
-		Type:    "String",
-		Value:   active,
-		Default: "",
+		ParentProperty:  "STORAGE_LOCATIONS",
+		Property:        "ACTIVE",
+		PropertyType:    "String",
+		PropertyValue:   active,
+		PropertyDefault: "",
 	}
 
 	for i, property := range storageLocations {
 		storageLocationProperties[i] = ExternalVolumeProperty{
-			Parent:  "STORAGE_LOCATIONS",
-			Name:    fmt.Sprintf("STORAGE_LOCATION_%s", strconv.Itoa(i+1)),
-			Type:    "String",
-			Value:   property,
-			Default: "",
+			ParentProperty:  "STORAGE_LOCATIONS",
+			Property:        fmt.Sprintf("STORAGE_LOCATION_%s", strconv.Itoa(i+1)),
+			PropertyType:    "String",
+			PropertyValue:   property,
+			PropertyDefault: "",
 		}
 	}
 

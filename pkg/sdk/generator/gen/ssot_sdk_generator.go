@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 )
@@ -50,13 +51,48 @@ func (i *Interface) DescribeOperationFromObject(obj ssot.Object, helperStructs .
 	for _, plain := range plains {
 		helpers = append(helpers, plain)
 	}
-	return i.DescribeOperationWithPairedStructs(
+	if cfg.DescribeDetails {
+		helpers = append(helpers, DescribeDetailsPlain(obj))
+	}
+	i = i.DescribeOperationWithPairedStructs(
 		describeMappingFromObject(obj, cfg),
 		cfg.DescribeDoc,
 		DescribePairedStructs(obj),
 		describeQueryStructFromConfig(cfg),
 		helpers...,
 	).showProjectionsFromPlains(obj, plains)
+	if len(cfg.DescribeDetailsParse) > 0 {
+		i = i.WithDescribeParse(describeParseConfig(obj, cfg))
+	}
+	if cfg.DescribeDetailsMethod {
+		i = i.WithDescribeDetails(obj.Name+"Details", "Parse"+obj.Name+"Described")
+	}
+	return i
+}
+
+func describeParseConfig(obj ssot.Object, cfg ssot.SdkGenerator) DescribeParseConfig {
+	config := DescribeParseConfig{
+		RowsType:     obj.DescribePlainName(),
+		DetailsType:  obj.Name + "Details",
+		ErrorLabel:   genhelpers.CamelToWords(obj.Name),
+		ValidateFunc: "validate" + obj.Name + "Described",
+	}
+	for _, mapping := range cfg.DescribeDetailsParse {
+		field := sqlToFieldName(mapping.Attr.OutputKey(), true)
+		if !mapping.Prefix {
+			config.Properties = append(config.Properties, DescribeParseProperty{Property: mapping.Property, Field: field})
+			continue
+		}
+		element := ssot.NestedDetailsElem(obj, mapping.Attr)
+		config.Prefixes = append(config.Prefixes, DescribeParsePrefix{
+			Prefix:        mapping.Property,
+			Field:         field,
+			Var:           unexported(field),
+			ElementType:   element,
+			ElementParser: "Parse" + strings.TrimSuffix(element, "Details") + "Described",
+		})
+	}
+	return config
 }
 
 func plainShowHelpers(obj ssot.Object) []*Plain {
@@ -217,7 +253,8 @@ func (i *Interface) CreateOperationFromObject(obj ssot.Object, helperStructs ...
 	if !cfg.Create {
 		panic(fmt.Sprintf("object %q is not enabled for SDK CREATE generation", obj.Name))
 	}
-	return i.CreateOperation(cfg.CreateDoc, createQueryStructFromConfig(obj, cfg), append(helperStructs, enumListItemStructs(obj)...)...)
+	itemStructs, helperStructs := splitItemStructs(obj.Create.Clauses, helperStructs)
+	return i.CreateOperation(cfg.CreateDoc, createQueryStructFromConfig(obj, cfg, itemStructs...), append(helperStructs, enumListItemStructs(obj)...)...)
 }
 
 // CreateVariantOperationsFromObject emits each variant CREATE as a custom method.
@@ -245,8 +282,31 @@ func (i *Interface) CreateVariantOperationsFromObject(base ssot.Object) *Interfa
 	return i
 }
 
-func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
+// splitItemStructs separates the helper query structs that a nested-item list clause names from the other helpers.
+// The first are the list field's query structs, so they are not generated again as helpers.
+func splitItemStructs(clauses []*ssot.Attribute, helpers []IntoField) (items []*QueryStruct, others []IntoField) {
+	others = make([]IntoField, 0, len(helpers))
+	named := make(map[string]struct{})
+	for _, attr := range clauses {
+		if attr != nil && attr.CreateSql.ItemNested {
+			named[attr.CreateSql.ItemStruct] = struct{}{}
+		}
+	}
+	for _, helper := range helpers {
+		if queryStruct, ok := helper.(*QueryStruct); ok {
+			if _, isItem := named[queryStruct.name]; isItem {
+				items = append(items, queryStruct)
+				continue
+			}
+		}
+		others = append(others, helper)
+	}
+	return items, others
+}
+
+func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator, itemStructs ...*QueryStruct) *QueryStruct {
 	q := NewQueryStruct(cfg.CreateQueryStructName).Create()
+	q.itemStructs = itemStructs
 	if !cfg.CreateWithoutOrReplace {
 		q = q.OrReplace()
 	}
@@ -496,7 +556,7 @@ func referencedEnums(obj ssot.Object) []*ssot.Enum {
 		}
 	}
 	addList(obj.PairedShowColumns())
-	addList(obj.Describe.Columns)
+	addList(obj.PairedDescribeColumns())
 	for i := range obj.Attributes {
 		addAttr(&obj.Attributes[i])
 	}
@@ -607,7 +667,8 @@ func customOperationAttribute(obj ssot.Object, spec ssot.CustomOperationSpec, cl
 // Clauses are Alter, SQL, optional IF EXISTS, Name, then obj.Alter in order, then ValidIdentifier.
 // AtLeastOneValueSet on SET and UNSET lists the fields those structs contain.
 // ExactlyOneValueSet follows obj.Alter.
-func (i *Interface) AlterOperationFromObject(obj ssot.Object) *Interface {
+// blockStructs are the query structs that AlterParameterBlock and AlterKeywordBlock clauses name.
+func (i *Interface) AlterOperationFromObject(obj ssot.Object, blockStructs ...*QueryStruct) *Interface {
 	if obj.VariantOf != nil {
 		panic(fmt.Sprintf("object %q: a variant cannot enable SDK generation", obj.Name))
 	}
@@ -615,7 +676,7 @@ func (i *Interface) AlterOperationFromObject(obj ssot.Object) *Interface {
 	if !cfg.Alter {
 		panic(fmt.Sprintf("object %q is not enabled for SDK ALTER generation", obj.Name))
 	}
-	return i.AlterOperation(cfg.AlterDoc, alterQueryStructFromConfig(obj, cfg)).withEnumListItems(obj)
+	return i.AlterOperation(cfg.AlterDoc, alterQueryStructFromConfig(obj, cfg, blockStructs...)).withEnumListItems(obj)
 }
 
 // AlterVariantOperationsFromObject emits each variant ALTER as a custom method.
@@ -694,8 +755,9 @@ func enumListItemFields(obj ssot.Object) []*Field {
 	return out
 }
 
-func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
+func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator, blockStructs ...*QueryStruct) *QueryStruct {
 	q := NewQueryStruct(cfg.AlterQueryStructName).Alter().SQL(cfg.AlterSql)
+	q.itemStructs = blockStructs
 	if !cfg.AlterWithoutIfExists {
 		q = q.IfExists()
 	}
@@ -749,6 +811,21 @@ func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QuerySt
 				panic(fmt.Sprintf("object %q: ALTER list %q has no SQL or item type", obj.Name, clause.SQL))
 			}
 			q = q.ListAssignment(clause.SQL, clause.ListItem, ParameterOptions().Parentheses().NoEquals())
+		case ssot.AlterClauseText:
+			if clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: ALTER text is empty", obj.Name))
+			}
+			q = q.OptionalTextAssignment(clause.SQL, ParameterOptions().SingleQuotes().NoEquals())
+		case ssot.AlterClauseBlock:
+			block, ok := q.findItemStruct(clause.BlockStruct)
+			if !ok {
+				panic(fmt.Sprintf("object %q: ALTER block struct %q was not passed to the generator", obj.Name, clause.BlockStruct))
+			}
+			var transformer FieldTransformer = ParameterOptions().SQL(clause.SQL)
+			if clause.BlockKeyword {
+				transformer = KeywordOptions().SQL(clause.SQL)
+			}
+			q = q.OptionalQueryStructField(clause.Field, block, transformer)
 		default:
 			panic(fmt.Sprintf("object %q: ALTER clause has kind %q", obj.Name, clause.Kind))
 		}
@@ -866,8 +943,10 @@ func alterExactlyOneFields(obj ssot.Object) []string {
 				continue
 			}
 			fields = append(fields, sqlToFieldName(clause.SQL, true))
-		case ssot.AlterClauseList:
+		case ssot.AlterClauseList, ssot.AlterClauseText:
 			fields = append(fields, sqlToFieldName(clause.SQL, true))
+		case ssot.AlterClauseBlock:
+			fields = append(fields, clause.Field)
 		case ssot.AlterClauseRenameTo:
 			fields = append(fields, "RenameTo")
 		case ssot.AlterClauseSwapWith:

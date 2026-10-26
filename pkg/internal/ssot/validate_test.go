@@ -435,6 +435,21 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 			}},
 		})
 	})
+	require.PanicsWithValue(t, `object "Widget": ALTER text is empty`, func() {
+		ValidateObject(Object{Name: "Widget", Alter: AlterSpec{Clauses: []AlterClause{AlterText("")}}})
+	})
+	require.PanicsWithValue(t, `object "Widget": ALTER block needs a field, SQL, and struct`, func() {
+		ValidateObject(Object{Name: "Widget", Alter: AlterSpec{Clauses: []AlterClause{AlterParameterBlock("Add", "ADD X", "")}}})
+	})
+	require.PanicsWithValue(t, `object "Widget": duplicate ALTER clause "ADD X"`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			Alter: AlterSpec{Clauses: []AlterClause{
+				AlterParameterBlock("Add", "ADD X", "XStruct"),
+				AlterKeywordBlock("AddAgain", "ADD X", "XStruct"),
+			}},
+		})
+	})
 	require.PanicsWithValue(t, `object "Widget": ALTER list "ADD TABLES" is an exactly-one branch`, func() {
 		ValidateObject(Object{
 			Name:  "Widget",
@@ -809,5 +824,113 @@ func Test_ValidateObject_variantEntityCreateName(t *testing.T) {
 
 	require.PanicsWithValue(t, `object "Widget": VariantEntityCreateName is for a variant`, func() {
 		ValidateObject(Object{Name: "Widget", VariantEntityCreateName: "WIDGET"})
+	})
+}
+
+func Test_ValidateObject_describeGeneric(t *testing.T) {
+	property := Attribute{Name: "property", Type: AttrString, Readonly: true}
+	obj := func(column Attribute, generators ...GeneratorOption) Object {
+		return Object{
+			Name:         "Widget",
+			DescribeRows: OutputSpec{Columns: []*Attribute{&column}},
+			Generators:   generators,
+		}
+	}
+	require.NotPanics(t, func() { ValidateObject(obj(property, WithSdk(SdkDescribe()))) })
+	require.PanicsWithValue(t, `object "Widget": DescribeRows needs SdkDescribe`, func() {
+		ValidateObject(obj(property))
+	})
+	writable := Attribute{Name: "property", Type: AttrString}
+	require.PanicsWithValue(t, `object "Widget": DESCRIBE rows entry "property" is writable but not in Attributes`, func() {
+		ValidateObject(obj(writable, WithSdk(SdkDescribe())))
+	})
+}
+
+func Test_Object_PairedDescribeColumns(t *testing.T) {
+	details := Attribute{Name: "active", Type: AttrString, Readonly: true}
+	row := Attribute{Name: "property", Type: AttrString, Readonly: true}
+	plain := Object{Describe: OutputSpec{Columns: []*Attribute{&details}}}
+	require.Equal(t, []*Attribute{&details}, plain.PairedDescribeColumns())
+	generic := Object{Describe: plain.Describe, DescribeRows: OutputSpec{Columns: []*Attribute{&row}}}
+	require.Equal(t, []*Attribute{&row}, generic.PairedDescribeColumns())
+	require.Equal(t, []*Attribute{&details}, generic.Describe.Columns)
+}
+
+func Test_Object_DescribePlainName(t *testing.T) {
+	row := Attribute{Name: "property", Type: AttrString, Readonly: true}
+	require.Equal(t, "WidgetDetails", Object{Name: "Widget"}.DescribePlainName())
+	require.Equal(t, "WidgetProperty", Object{Name: "Widget", DescribeRows: OutputSpec{Columns: []*Attribute{&row}}}.DescribePlainName())
+}
+
+func Test_ValidateObject_describeDetails(t *testing.T) {
+	row := Attribute{Name: "property", Type: AttrString, Readonly: true}
+	active := Attribute{Name: "active", Type: AttrString, Readonly: true}
+	other := Attribute{Name: "other", Type: AttrString, Readonly: true}
+	obj := func(rows []*Attribute, opts ...SdkDescribeOption) Object {
+		return Object{
+			Name:         "Widget",
+			Describe:     OutputSpec{Columns: []*Attribute{&active}},
+			DescribeRows: OutputSpec{Columns: rows},
+			Generators:   []GeneratorOption{WithSdk(SdkDescribe(opts...))},
+		}
+	}
+	require.NotPanics(t, func() {
+		ValidateObject(obj([]*Attribute{&row}, SdkDescribeDetails(SdkDescribeDetailsNestedField(&active))))
+	})
+	require.PanicsWithValue(t, `object "Widget": SdkDescribeDetails needs SdkDescribe and DescribeRows`, func() {
+		ValidateObject(obj(nil, SdkDescribeDetails()))
+	})
+	require.Panics(t, func() {
+		ValidateObject(obj([]*Attribute{&row}, SdkDescribeDetails(SdkDescribeDetailsNestedField(&other))))
+	})
+	require.PanicsWithValue(t, `object "Widget": SdkDescribeDetailsMethod needs SdkDescribeDetails`, func() {
+		o := obj([]*Attribute{&row})
+		o.Generators = []GeneratorOption{WithSdk(func(s *SdkGenerator) { s.Describe = true; s.DescribeDetailsMethod = true })}
+		ValidateObject(o)
+	})
+}
+
+func Test_NestedDetailsElem(t *testing.T) {
+	locations := Attribute{Name: "storage_locations", Type: AttrList}
+	require.Equal(t, "WidgetStorageLocationDetails", NestedDetailsElem(Object{Name: "Widget"}, &locations))
+	require.Panics(t, func() { NestedDetailsElem(Object{Name: "Widget"}, &Attribute{Name: "x", Type: AttrString}) })
+}
+
+func Test_ValidateObject_describeDetailsParse(t *testing.T) {
+	row := Attribute{Name: "property", Type: AttrString, Readonly: true}
+	active := Attribute{Name: "active", Type: AttrString, Readonly: true}
+	size := Attribute{Name: "size", Type: AttrInt, Readonly: true}
+	locations := Attribute{Name: "locations", Type: AttrList, Readonly: true, Elem: &Attribute{Type: AttrString}}
+	obj := func(columns []*Attribute, mappings ...DescribeDetailsMapping) Object {
+		return Object{
+			Name:         "Widget",
+			Describe:     OutputSpec{Columns: columns},
+			DescribeRows: OutputSpec{Columns: []*Attribute{&row}},
+			Generators: []GeneratorOption{WithSdk(SdkDescribe(SdkDescribeDetails(
+				SdkDescribeDetailsNestedField(&locations),
+				SdkDescribeDetailsParse(mappings...),
+			)))},
+		}
+	}
+	require.NotPanics(t, func() {
+		ValidateObject(obj([]*Attribute{&active, &locations}, DescribeProperty(&active, "ACTIVE"), DescribePropertyPrefix(&locations, "LOC_")))
+	})
+	require.PanicsWithValue(t, `object "Widget": DESCRIBE column "active" has no details mapping`, func() {
+		ValidateObject(obj([]*Attribute{&active, &locations}, DescribePropertyPrefix(&locations, "LOC_")))
+	})
+	require.PanicsWithValue(t, `object "Widget": DESCRIBE details mapping "active" is set twice`, func() {
+		ValidateObject(obj([]*Attribute{&active}, DescribeProperty(&active, "A"), DescribeProperty(&active, "B")))
+	})
+	require.PanicsWithValue(t, `object "Widget": DESCRIBE details prefix mapping "active" must be a nested field`, func() {
+		ValidateObject(obj([]*Attribute{&active}, DescribePropertyPrefix(&active, "A_")))
+	})
+	require.PanicsWithValue(t, `object "Widget": DESCRIBE details property mapping "size" must be a required string column`, func() {
+		ValidateObject(obj([]*Attribute{&size}, DescribeProperty(&size, "SIZE")))
+	})
+	require.PanicsWithValue(t, `object "Widget": DESCRIBE details property mapping "locations" must be a required string column`, func() {
+		ValidateObject(obj([]*Attribute{&locations}, DescribeProperty(&locations, "LOC")))
+	})
+	require.PanicsWithValue(t, `object "Widget": DESCRIBE details mapping "size" is not a DESCRIBE column`, func() {
+		ValidateObject(obj([]*Attribute{&active}, DescribeProperty(&active, "A"), DescribeProperty(&size, "SIZE")))
 	})
 }

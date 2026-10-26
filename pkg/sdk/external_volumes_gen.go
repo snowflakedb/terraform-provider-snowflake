@@ -95,12 +95,12 @@ type AlterExternalVolumeOptions struct {
 	IfExists              *bool                                     `ddl:"keyword" sql:"IF EXISTS"`
 	name                  AccountObjectIdentifier                   `ddl:"identifier"`
 	RemoveStorageLocation *string                                   `ddl:"parameter,single_quotes,no_equals" sql:"REMOVE STORAGE_LOCATION"`
-	Set                   *AlterExternalVolumeSet                   `ddl:"keyword" sql:"SET"`
+	Set                   *ExternalVolumeSet                        `ddl:"keyword" sql:"SET"`
 	AddStorageLocation    *ExternalVolumeStorageLocationItem        `ddl:"parameter" sql:"ADD STORAGE_LOCATION"`
 	UpdateStorageLocation *AlterExternalVolumeUpdateStorageLocation `ddl:"keyword" sql:"UPDATE"`
 }
 
-type AlterExternalVolumeSet struct {
+type ExternalVolumeSet struct {
 	AllowWrites *bool   `ddl:"parameter" sql:"ALLOW_WRITES"`
 	Comment     *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
@@ -139,11 +139,19 @@ type externalVolumeDescRow struct {
 }
 
 type ExternalVolumeProperty struct {
-	Parent  string
-	Name    string
-	Type    string
-	Value   string
-	Default string
+	ParentProperty  string
+	Property        string
+	PropertyType    string
+	PropertyValue   string
+	PropertyDefault string
+}
+
+type ExternalVolumeDetails struct {
+	Id               AccountObjectIdentifier
+	StorageLocations []ExternalVolumeStorageLocationDetails
+	Active           string
+	Comment          string
+	AllowWrites      string
 }
 
 // ShowExternalVolumeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-external-volumes.

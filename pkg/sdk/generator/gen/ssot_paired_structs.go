@@ -2,6 +2,7 @@ package gen
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
@@ -24,7 +25,43 @@ func DescribePairedStructs(obj ssot.Object) *PairedStructs {
 	if obj.Name == "" {
 		panic(fmt.Sprintf("object %q needs Name to build the DESCRIBE paired struct", obj.Name))
 	}
-	return pairedStructsFromColumns(obj, true, unexported(obj.Name)+"DescRow", obj.Name+"Details")
+	return pairedStructsFromColumns(obj, true, unexported(obj.Name)+"DescRow", obj.DescribePlainName())
+}
+
+// DescribeDetailsPlain is the plain details struct built from Describe.Columns. Id comes first unless a column is named id.
+// A nested column is a slice of the hand-written element struct named by ssot.NestedDetailsElem.
+func DescribeDetailsPlain(obj ssot.Object) *Plain {
+	cfg := obj.SdkConfig()
+	if !cfg.DescribeDetails {
+		panic(fmt.Sprintf("object %q is not enabled for SDK DESCRIBE details generation", obj.Name))
+	}
+	plain := PlainStruct(obj.Name + "Details")
+	hasId := slices.ContainsFunc(obj.Describe.Columns, func(c *ssot.Attribute) bool { return c != nil && c.OutputKey() == "id" })
+	if !hasId {
+		plain = plain.Field("Id", obj.IdType)
+	}
+	for _, column := range obj.Describe.Columns {
+		if column == nil {
+			panic(fmt.Sprintf("object %q: nil DESCRIBE column", obj.Name))
+		}
+		kind := detailsFieldKind(obj, *column, cfg.DescribeDetailsNestedFields)
+		plain = plain.Field(sqlToFieldName(column.OutputKey(), true), kind)
+	}
+	return plain
+}
+
+func detailsFieldKind(obj ssot.Object, attr ssot.Attribute, nested []*ssot.Attribute) string {
+	var kind string
+	if slices.ContainsFunc(nested, func(n *ssot.Attribute) bool { return n.Name == attr.Name }) {
+		kind = "[]" + ssot.NestedDetailsElem(obj, &attr)
+	} else {
+		concrete, _ := ssot.AttributeGoTypes(obj, attr)
+		kind = strings.ReplaceAll(concrete, "sdk.", "")
+	}
+	if attr.OptionalInShow {
+		kind = "*" + kind
+	}
+	return kind
 }
 
 // plainFromColumns builds the plain side of a SHOW column list. The db row is discarded.
@@ -54,7 +91,7 @@ func pairedStructsFromColumns(obj ssot.Object, describe bool, dbName, plainName 
 	if describe {
 		kind = "DESCRIBE"
 		enabled = generators.Sdk.Describe
-		columns = obj.Describe.Columns
+		columns = obj.PairedDescribeColumns()
 	}
 	if !enabled {
 		panic(fmt.Sprintf("object %q is not enabled for SDK paired struct %s generation", obj.Name, kind))

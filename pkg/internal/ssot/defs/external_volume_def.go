@@ -7,12 +7,35 @@ var StorageProvider = ssot.NewEnum(
 	"GCS", "AZURE", "S3", "S3GOV", "S3COMPAT",
 )
 
+var (
+	S3StorageProvider = ssot.NewEnum(
+		"S3StorageProvider", "S3StorageProviders",
+		"S3", "S3GOV",
+	)
+	S3EncryptionType = ssot.NewEnum(
+		"S3EncryptionType", "S3EncryptionTypes",
+		"AWS_SSE_S3", "AWS_SSE_KMS", "NONE",
+	)
+	GCSEncryptionType = ssot.NewEnum(
+		"GCSEncryptionType", "GCSEncryptionTypes",
+		"GCS_SSE_KMS", "NONE",
+	)
+	AzureEncryptionType = ssot.NewEnum(
+		"AzureEncryptionType", "AzureEncryptionTypes",
+		"NONE",
+	)
+	S3CompatEncryptionType = ssot.NewEnum(
+		"S3CompatEncryptionType", "S3CompatEncryptionTypes",
+		"NONE",
+	)
+)
+
 // ExternalVolumeAttrs holds the external volume fields that SHOW and DESCRIBE reuse.
-// DESCRIBE EXTERNAL VOLUME returns a generic property list (ParseExternalVolumeDescribed in
-// pkg/sdk/external_volumes_ext.go), not a paired db row: every DESCRIBE value, including
-// allow_writes, is a plain string, unlike SHOW's typed bool. DescribeAllowWrites is therefore a
-// separate attribute from AllowWrites. StorageLocations is ManualInSchema/skipped everywhere: its
-// nested per-provider JSON shape has no ssot representation yet.
+// DESCRIBE EXTERNAL VOLUME returns a generic property list (DescribeRows), which the generated
+// ParseExternalVolumeDescribed parses into the details that Describe.Columns models. Every DESCRIBE value, including allow_writes, is a plain string, unlike
+// SHOW's typed bool, so DescribeAllowWrites is a separate attribute from AllowWrites.
+// StorageLocations is skipped or manual in the generators: its nested per-provider JSON shape has
+// no ssot representation yet.
 var ExternalVolumeAttrs = struct {
 	Comment             ssot.Attribute
 	AllowWrites         ssot.Attribute
@@ -21,6 +44,12 @@ var ExternalVolumeAttrs = struct {
 	Active              ssot.Attribute
 	DescribeAllowWrites ssot.Attribute
 	StorageLocations    ssot.Attribute
+	// The DESCRIBE rows are a generic property list, which the SDK parses into the details the Describe columns model.
+	ParentProperty  ssot.Attribute
+	Property        ssot.Attribute
+	PropertyType    ssot.Attribute
+	PropertyValue   ssot.Attribute
+	PropertyDefault ssot.Attribute
 }{
 	Comment: ssot.Attribute{
 		Name:          "comment",
@@ -36,10 +65,11 @@ var ExternalVolumeAttrs = struct {
 		CreateMapping: ssot.BooleanStringAttributeCreateBuilder,
 	},
 	StorageLocation: ssot.Attribute{
-		Name:     "storage_location",
-		Type:     ssot.AttrList,
-		Required: true,
-		MinItems: new(1),
+		Name:      "storage_location",
+		Type:      ssot.AttrList,
+		Required:  true,
+		MinItems:  new(1),
+		CreateSql: ssot.ListParameter("ExternalVolumeStorageLocationItem", ssot.Sql("STORAGE_LOCATIONS"), ssot.NestedItem()),
 		Description: "List of named cloud storage locations in different regions and, optionally, cloud platforms. Minimum 1 required. " +
 			"The order of the list is important as it impacts the active storage location, and updates will be triggered if it changes. " +
 			"Note that not all parameter combinations are valid as they depend on the given storage_provider. " +
@@ -129,6 +159,11 @@ var ExternalVolumeAttrs = struct {
 		Name: "storage_locations", Type: ssot.AttrList, Readonly: true,
 		Elem: &ssot.Attribute{Type: ssot.AttrString},
 	},
+	ParentProperty:  ssot.Attribute{Name: "parent_property", Type: ssot.AttrString, Readonly: true},
+	Property:        ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true},
+	PropertyType:    ssot.Attribute{Name: "property_type", Type: ssot.AttrString, Readonly: true},
+	PropertyValue:   ssot.Attribute{Name: "property_value", Type: ssot.AttrString, Readonly: true},
+	PropertyDefault: ssot.Attribute{Name: "property_default", Type: ssot.AttrString, Readonly: true},
 }
 
 // ExternalVolumeObject is not named ExternalVolume because that identifier is the
@@ -157,6 +192,20 @@ var ExternalVolumeObject = ssot.Object{
 		ssot.WithSdk(
 			ssot.SdkShow(ssot.SdkShowOptionalLike()),
 			ssot.SdkDrop(),
+			ssot.SdkDescribe(
+				ssot.SdkDescribeDetails(
+					ssot.SdkDescribeDetailsNestedField(&ExternalVolumeAttrs.StorageLocations),
+					ssot.SdkDescribeDetailsMethod(),
+					ssot.SdkDescribeDetailsParse(
+						ssot.DescribeProperty(&ExternalVolumeAttrs.Comment, "COMMENT"),
+						ssot.DescribeProperty(&ExternalVolumeAttrs.Active, "ACTIVE"),
+						ssot.DescribeProperty(&ExternalVolumeAttrs.DescribeAllowWrites, "ALLOW_WRITES"),
+						ssot.DescribePropertyPrefix(&ExternalVolumeAttrs.StorageLocations, "STORAGE_LOCATION_"),
+					),
+				),
+			),
+			ssot.SdkCreate(),
+			ssot.SdkAlter(),
 		),
 		ssot.WithObjectAssert(
 			ssot.ObjectAssertShow(),
@@ -167,6 +216,25 @@ var ExternalVolumeObject = ssot.Object{
 		ExternalVolumeAttrs.Comment,
 		ExternalVolumeAttrs.AllowWrites,
 		ExternalVolumeAttrs.StorageLocation,
+	},
+	Create: ssot.CreateSpec{
+		Clauses: []*ssot.Attribute{
+			&ExternalVolumeAttrs.StorageLocation,
+			&ExternalVolumeAttrs.AllowWrites,
+			&ExternalVolumeAttrs.Comment,
+		},
+	},
+	Set: []*ssot.Attribute{
+		&ExternalVolumeAttrs.AllowWrites,
+		&ExternalVolumeAttrs.Comment,
+	},
+	Alter: ssot.AlterSpec{
+		Clauses: []ssot.AlterClause{
+			ssot.AlterText("REMOVE STORAGE_LOCATION"),
+			ssot.AlterSet(),
+			ssot.AlterParameterBlock("AddStorageLocation", "ADD STORAGE_LOCATION", "ExternalVolumeStorageLocationItem"),
+			ssot.AlterKeywordBlock("UpdateStorageLocation", "UPDATE", "AlterExternalVolumeUpdateStorageLocation"),
+		},
 	},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{
@@ -182,6 +250,15 @@ var ExternalVolumeObject = ssot.Object{
 			&ExternalVolumeAttrs.Active,
 			&ExternalVolumeAttrs.Comment,
 			&ExternalVolumeAttrs.DescribeAllowWrites,
+		},
+	},
+	DescribeRows: ssot.OutputSpec{
+		Columns: []*ssot.Attribute{
+			&ExternalVolumeAttrs.ParentProperty,
+			&ExternalVolumeAttrs.Property,
+			&ExternalVolumeAttrs.PropertyType,
+			&ExternalVolumeAttrs.PropertyValue,
+			&ExternalVolumeAttrs.PropertyDefault,
 		},
 	},
 	ResourceHooks: []ssot.ResourceHookOption{

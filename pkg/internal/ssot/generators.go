@@ -31,9 +31,21 @@ type SdkGenerator struct {
 	ShowByIDFiltering      []SdkShowByIDFilteringKind
 	ShowQueryStructName    string
 
-	DescribeDoc             string
-	DescribeSql             string
-	DescribeMapping         SdkDescriptionMapping
+	DescribeDoc     string
+	DescribeSql     string
+	DescribeMapping SdkDescriptionMapping
+	// DescribeDetails emits the plain details struct (<Name>Details) from Describe.Columns next to the DESCRIBE rows.
+	// DescribeDetailsNestedFields are the same *Attribute pointers that sit in Describe.Columns. Each is a list or set
+	// whose elements are a hand-written struct, so the column is not derived from its placeholder Elem.
+	DescribeDetails             bool
+	DescribeDetailsNestedFields []*Attribute
+	// DescribeDetailsMethod emits the DescribeDetails method: Describe, Parse<Name>Described, and Id.
+	// The parse function stays in the SDK ext file.
+	DescribeDetailsMethod bool
+	// DescribeDetailsParse emits Parse<Name>Described, which fills the details struct from the DESCRIBE property rows.
+	// Every Describe column except id is mapped by one entry. The per-element parser of a prefix entry and the
+	// validate<Name>Described function stay in the SDK ext file.
+	DescribeDetailsParse    []DescribeDetailsMapping
 	DescribeQueryStructName string
 
 	Drop                bool
@@ -231,6 +243,60 @@ func SdkDescribe(opts ...SdkDescribeOption) SdkOption {
 			opt(s)
 		}
 	}
+}
+
+// SdkDescribeDetails emits the plain details struct from Describe.Columns. It needs DescribeRows, because the rows
+// then take the <Name>Property name and <Name>Details is free. The Id field comes first unless a column is named id.
+// Parsing the rows into the struct stays in the SDK ext file.
+func SdkDescribeDetails(opts ...SdkDescribeDetailsOption) SdkDescribeOption {
+	return func(s *SdkGenerator) {
+		s.DescribeDetails = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
+}
+
+type SdkDescribeDetailsOption func(*SdkGenerator)
+
+// DescribeDetailsMapping maps one Describe column to the property rows it is read from.
+// Prefix is false for an exact property name and true for a nested list, whose elements are the rows whose property
+// name contains Property.
+type DescribeDetailsMapping struct {
+	Attr     *Attribute
+	Property string
+	Prefix   bool
+}
+
+// DescribeProperty reads a string column from the property row with exactly this name.
+func DescribeProperty(attr *Attribute, property string) DescribeDetailsMapping {
+	return DescribeDetailsMapping{Attr: attr, Property: property}
+}
+
+// DescribePropertyPrefix reads a nested list column from every property row whose name contains prefix. The column must
+// be marked with SdkDescribeDetailsNestedField. Each row value goes through the hand-written element parser
+// Parse<Name><Column key in camel case without the plural s>Described(value string) (<element>, error).
+func DescribePropertyPrefix(attr *Attribute, prefix string) DescribeDetailsMapping {
+	return DescribeDetailsMapping{Attr: attr, Property: prefix, Prefix: true}
+}
+
+// SdkDescribeDetailsParse emits the function that parses the DESCRIBE property rows into the details struct.
+// Exact properties are matched first, then prefixes, and any other property is an error. The generated function is
+// Parse<Name>Described, which SdkDescribeDetailsMethod calls. validate<Name>Described stays in the SDK ext file.
+func SdkDescribeDetailsParse(mappings ...DescribeDetailsMapping) SdkDescribeDetailsOption {
+	return func(s *SdkGenerator) { s.DescribeDetailsParse = append(s.DescribeDetailsParse, mappings...) }
+}
+
+// SdkDescribeDetailsMethod emits the DescribeDetails method on the interface and its body: it calls Describe, parses
+// the rows with the hand-written Parse<Name>Described(rows []<Name>Property) (<Name>Details, error), and sets Id.
+func SdkDescribeDetailsMethod() SdkDescribeDetailsOption {
+	return func(s *SdkGenerator) { s.DescribeDetailsMethod = true }
+}
+
+// SdkDescribeDetailsNestedField marks a Describe column as a list or set of a hand-written struct.
+// The element type is NestedDetailsElem: <Name>, the column key in camel case without the plural s, and Details.
+func SdkDescribeDetailsNestedField(attrs ...*Attribute) SdkDescribeDetailsOption {
+	return func(s *SdkGenerator) { s.DescribeDetailsNestedFields = append(s.DescribeDetailsNestedFields, attrs...) }
 }
 
 type SdkDropOption func(*SdkGenerator)

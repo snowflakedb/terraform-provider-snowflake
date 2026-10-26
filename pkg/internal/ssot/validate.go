@@ -3,6 +3,7 @@ package ssot
 import (
 	"fmt"
 	"go/token"
+	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -83,6 +84,9 @@ func ValidateObject(obj Object) {
 	validateColumnList(obj, "SHOW", obj.Show.Columns, attrs, sqlOnly, nested)
 	validateColumnList(obj, "SHOW generic", obj.ShowGeneric.Columns, attrs, sqlOnly, nested)
 	validateColumnList(obj, "DESCRIBE", obj.Describe.Columns, attrs, sqlOnly, nested)
+	validateColumnList(obj, "DESCRIBE rows", obj.DescribeRows.Columns, attrs, sqlOnly, nested)
+	validateDescribeRows(obj)
+	validateDescribeDetails(obj)
 	g := ObjectGenerators(obj.Generators...)
 	validateGeneratorSkips(obj, "object-assertion", "SHOW", g.ObjectAssert.Show, obj.PairedShowColumns(), g.ObjectAssert.ShowSkipFields)
 	validateGeneratorSkips(obj, "object-assertion", "DESCRIBE", g.ObjectAssert.Describe, obj.Describe.Columns, g.ObjectAssert.DescribeSkipFields)
@@ -166,9 +170,6 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 	}
 	if attr.Elem != nil {
 		panic(fmt.Sprintf("object %q: attribute %q has both Elem and Nested", obj.Name, attr.Name))
-	}
-	if statement, ok := sqlClauseStatement(attr); ok {
-		panic(fmt.Sprintf("object %q: attribute %q has a %s clause and Nested", obj.Name, attr.Name, statement))
 	}
 	seen := make(map[string]struct{}, len(attr.Children))
 	for _, child := range attr.Children {
@@ -261,6 +262,22 @@ func validateAlterSpec(obj Object) {
 			}
 			if _, dup := seenList[clause.SQL]; dup {
 				panic(fmt.Sprintf("object %q: duplicate ALTER list %q", obj.Name, clause.SQL))
+			}
+			seenList[clause.SQL] = struct{}{}
+		case AlterClauseText:
+			if clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: ALTER text is empty", obj.Name))
+			}
+			if _, dup := seenList[clause.SQL]; dup {
+				panic(fmt.Sprintf("object %q: duplicate ALTER clause %q", obj.Name, clause.SQL))
+			}
+			seenList[clause.SQL] = struct{}{}
+		case AlterClauseBlock:
+			if clause.Field == "" || clause.SQL == "" || clause.BlockStruct == "" {
+				panic(fmt.Sprintf("object %q: ALTER block needs a field, SQL, and struct", obj.Name))
+			}
+			if _, dup := seenList[clause.SQL]; dup {
+				panic(fmt.Sprintf("object %q: duplicate ALTER clause %q", obj.Name, clause.SQL))
 			}
 			seenList[clause.SQL] = struct{}{}
 		case AlterClauseRenameTo, AlterClauseSwapWith, AlterClauseSet, AlterClauseUnset, AlterClauseSetTags, AlterClauseUnsetTags:
@@ -558,6 +575,71 @@ func validateColumnList(obj Object, kind string, list []*Attribute, attrs map[st
 		seenKey[key] = struct{}{}
 		seenName[a.Name] = struct{}{}
 		validateAttribute(obj, *a)
+	}
+}
+
+// validateDescribeRows rejects a DescribeRows row that nothing reads or that cannot be a raw row.
+func validateDescribeRows(obj Object) {
+	if len(obj.DescribeRows.Columns) == 0 {
+		return
+	}
+	if !ObjectGenerators(obj.Generators...).Sdk.Describe {
+		panic(fmt.Sprintf("object %q: DescribeRows needs SdkDescribe", obj.Name))
+	}
+	for _, column := range obj.DescribeRows.Columns {
+		if !column.Readonly {
+			panic(fmt.Sprintf("object %q: DESCRIBE rows entry %q must be Readonly", obj.Name, column.Name))
+		}
+	}
+}
+
+func validateDescribeDetails(obj Object) {
+	sdk := ObjectGenerators(obj.Generators...).Sdk
+	if len(sdk.DescribeDetailsParse) > 0 {
+		validateDescribeDetailsParse(obj, sdk)
+	}
+	if sdk.DescribeDetailsMethod && !sdk.DescribeDetails {
+		panic(fmt.Sprintf("object %q: SdkDescribeDetailsMethod needs SdkDescribeDetails", obj.Name))
+	}
+	if !sdk.DescribeDetails {
+		validateGeneratorSkips(obj, "sdk-describe-details nested", "DESCRIBE", false, obj.Describe.Columns, sdk.DescribeDetailsNestedFields)
+		return
+	}
+	if !sdk.Describe || len(obj.DescribeRows.Columns) == 0 {
+		panic(fmt.Sprintf("object %q: SdkDescribeDetails needs SdkDescribe and DescribeRows", obj.Name))
+	}
+	validateGeneratorSkips(obj, "sdk-describe-details nested", "DESCRIBE", true, obj.Describe.Columns, sdk.DescribeDetailsNestedFields)
+}
+
+// validateDescribeDetailsParse checks that the mappings cover every Describe column except id exactly once.
+func validateDescribeDetailsParse(obj Object, sdk SdkGenerator) {
+	if !sdk.DescribeDetails {
+		panic(fmt.Sprintf("object %q: SdkDescribeDetailsParse needs SdkDescribeDetails", obj.Name))
+	}
+	mapped := make(map[*Attribute]struct{}, len(sdk.DescribeDetailsParse))
+	for _, m := range sdk.DescribeDetailsParse {
+		if m.Attr == nil || m.Property == "" {
+			panic(fmt.Sprintf("object %q: a DESCRIBE details mapping needs an attribute and a property", obj.Name))
+		}
+		if !slices.Contains(obj.Describe.Columns, m.Attr) {
+			panic(fmt.Sprintf("object %q: DESCRIBE details mapping %q is not a DESCRIBE column", obj.Name, m.Attr.Name))
+		}
+		if _, dup := mapped[m.Attr]; dup {
+			panic(fmt.Sprintf("object %q: DESCRIBE details mapping %q is set twice", obj.Name, m.Attr.Name))
+		}
+		mapped[m.Attr] = struct{}{}
+		isNested := slices.Contains(sdk.DescribeDetailsNestedFields, m.Attr)
+		switch {
+		case m.Prefix && !isNested:
+			panic(fmt.Sprintf("object %q: DESCRIBE details prefix mapping %q must be a nested field", obj.Name, m.Attr.Name))
+		case !m.Prefix && (isNested || m.Attr.Type != AttrString || m.Attr.OptionalInShow):
+			panic(fmt.Sprintf("object %q: DESCRIBE details property mapping %q must be a required string column", obj.Name, m.Attr.Name))
+		}
+	}
+	for _, column := range obj.Describe.Columns {
+		if _, ok := mapped[column]; !ok && column.OutputKey() != "id" {
+			panic(fmt.Sprintf("object %q: DESCRIBE column %q has no details mapping", obj.Name, column.Name))
+		}
 	}
 }
 

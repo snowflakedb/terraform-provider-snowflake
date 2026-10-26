@@ -116,6 +116,7 @@ Additional example definitions covering specific generator features:
 - [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) — `DropOperation` with `WithDropSafelyHook()`, `WithDropSafelyForce()`, and `WithDropSafelySuppressed()` options
 - [instance_method_example_def.go](example/defs/instance_method_example_def.go) — `InstanceMethodOperation` and `InstanceMethodOperationScalar`
 - [enum_example_def.go](example/defs/enum_examples_def.go) — enum definitions with `Enum` and `OptionalEnum`
+- [property_list_example_def.go](example/defs/property_list_example_def.go) — a property-list `DESCRIBE`: raw rows, the details struct, the generated `Parse...Described` and `DescribeDetails` (see [Property-list DESCRIBE](#property-list-describe) below), with the hand-written hooks in [property_list_examples_ext.go](example/property_list_examples_ext.go)
 - [show_projection_example_def.go](example/defs/show_projection_example_def.go) — `ShowProjection` and `ShowByIDProjection`
 
 The commands follow the same format as the official SDK ones:
@@ -227,7 +228,7 @@ When `SdkCreate()` or `SdkAlter()` is passed to [`WithSdk()`](../../internal/sso
 
 `PairedStructs` is a single-definition approach for declaring both the database row struct (`dbStruct`) and the plain SDK struct (`plainStruct`) in one field-by-field chain. It replaces the older pattern of calling `ShowOperation`/`DescribeOperation` with separate `DbStruct` and `PlainStruct` builders.
 
-See [paired_struct_def.go](example/defs/paired_struct_def.go) for a handwritten chain covering the field methods and options below. The field chain can instead come from ssot [Columns](../../internal/ssot/README.md#show-and-describe) when `SdkShow()` or `SdkDescribe()` is passed to [`WithSdk()`](../../internal/ssot/README.md#generators). `ShowPairedStructs` uses the unexported plural plus `Row` as the db row name and the object name as the plain struct name. `DescribePairedStructs` uses the unexported object name plus `DescRow` as the db row name and the object name plus `Details` as the plain struct name. When that setting is on, `ShowOperationFromObject` or `DescribeOperationFromObject` builds the Show or Describe method from the `SdkShow()` or `SdkDescribe()` options, including the query struct, ShowByID filtering, and `DescriptionMappingKind`. When the setting is off, that call stays in the def. A bool whose db column is text uses `BoolFromText` and compares to `"Y"`. A bool without that mark is db `bool`. See [Attribute](../../internal/ssot/README.md#attribute).
+See [paired_struct_def.go](example/defs/paired_struct_def.go) for a handwritten chain covering the field methods and options below. The field chain can instead come from ssot [Columns](../../internal/ssot/README.md#show-and-describe) when `SdkShow()` or `SdkDescribe()` is passed to [`WithSdk()`](../../internal/ssot/README.md#generators). `ShowPairedStructs` uses the unexported plural plus `Row` as the db row name and the object name as the plain struct name. `DescribePairedStructs` uses the unexported object name plus `DescRow` as the db row name and the object name plus `Details` as the plain struct name. When the object sets `DescribeRows` (a property-list `DESCRIBE`, see [Property-list DESCRIBE](#property-list-describe)), the columns come from `DescribeRows` and the plain struct name is the object name plus `Property`. When that setting is on, `ShowOperationFromObject` or `DescribeOperationFromObject` builds the Show or Describe method from the `SdkShow()` or `SdkDescribe()` options, including the query struct, ShowByID filtering, and `DescriptionMappingKind`. When the setting is off, that call stays in the def. A bool whose db column is text uses `BoolFromText` and compares to `"Y"`. A bool without that mark is db `bool`. See [Attribute](../../internal/ssot/README.md#attribute).
 
 #### Constructor
 
@@ -284,6 +285,43 @@ Each method accepts zero or more `PairedFieldOption`s (see below).
 
 - **`WithoutConvertGeneration()`** — disable `convert()` body generation for this pair entirely.
 - **`WithShowResultFilterHook()`** — enable row filtering; the generated code calls `excludeFromShow()` which must be implemented in a `_ext.go` file.
+
+### Property-list DESCRIBE
+
+Some objects return `DESCRIBE` as a list of `(property, value, ...)` rows that the SDK then parses into a details struct
+(external volumes, the integrations, stages, file formats). Three calls on the interface cover it. See
+[property_list_example_def.go](example/defs/property_list_example_def.go) for a complete definition.
+
+- **Raw rows and the details struct.** `DescribeOperationWithPairedStructs` with `DescriptionMappingKindSlice` declares the
+  rows (`Describe` returns `[]<Name>Property`). Pass a `g.PlainStruct("<Name>Details")` as the helper struct to generate the
+  details struct. Start it with `AccountObjectIdentifier()` for the `Id` field.
+- **`WithDescribeParse(g.DescribeParseConfig{...})`** generates `Parse<NameSingular>Described(rows []<RowsType>) (<DetailsType>, error)`.
+  - `Properties` are exact property-name matches that copy the row value into a string field.
+  - `Prefixes` are list fields filled from every row whose property name *contains* the prefix. Each row value goes through
+    `ElementParser`, a hand-written `func(value string) (<ElementType>, error)`.
+  - Exact matches are tried first, in order, then the prefixes, and any other property is an error:
+    `Unrecognized <ErrorLabel> property: <name>`.
+  - `ValidateFunc` is a hand-written `func(<DetailsType>) error` that runs last. It is required, so a definition with no
+    checks still writes a function that returns `nil`.
+  - `PropertyField` and `ValueField` name the row fields that hold the property name and value. They default to `Property`
+    and `PropertyValue`, which is what the `property` and `property_value` columns produce without `WithPlainFieldName`.
+- **`WithDescribeDetails(detailsType, parseFunc)`** declares `DescribeDetails(ctx, id) (*<detailsType>, error)` on the
+  interface and generates its body: it calls `Describe`, parses the rows with `parseFunc`, and sets `Id` on the result.
+  `parseFunc` is the function generated by `WithDescribeParse`, or a hand-written one with the same signature.
+
+The ssot generator fills the same `DescribeParseConfig` from `SdkDescribeDetailsParse(...)`. See the ssot
+[Generators](../../internal/ssot/README.md#generators).
+
+Limitations:
+- Only string properties are copied. A value that needs a conversion (bool, number, enum), a property that may repeat, or
+  rows that need the `parent_property` column to decide where a value goes must be parsed by hand.
+- The details struct always has an `Id` field and `DescribeDetails` always sets it, so the identifier is not a DESCRIBE column.
+- A property that no entry matches is an error. There is no option to ignore unknown properties.
+- `WithDescribeParse` names the function `Parse<NameSingular>Described`, and the validate hook and the element parsers are
+  referenced by name. The generated code does not check that they exist: a missing one is a compile error in the package.
+- The details struct, the row struct, and the element type are not linked to the config. A type name that does not match
+  is a compile error, not a generator error.
+- Mixing is possible: an object can use `WithDescribeParse` and a hand-written `DescribeDetails`, or the reverse.
 
 ### SHOW projections
 

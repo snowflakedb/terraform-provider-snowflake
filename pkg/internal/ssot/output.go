@@ -17,6 +17,23 @@ func (obj Object) PairedShowColumns() []*Attribute {
 	return obj.Show.Columns
 }
 
+// PairedDescribeColumns is the paired DESCRIBE row. DescribeRows wins when it is set. Otherwise it is Describe.Columns.
+func (obj Object) PairedDescribeColumns() []*Attribute {
+	if len(obj.DescribeRows.Columns) > 0 {
+		return obj.DescribeRows.Columns
+	}
+	return obj.Describe.Columns
+}
+
+// DescribePlainName is the plain DESCRIBE struct name. A DESCRIBE with a raw row (DescribeRows) is a property list,
+// so its rows are <Name>Property and <Name>Details stays free for the parsed details. Otherwise it is <Name>Details.
+func (obj Object) DescribePlainName() string {
+	if len(obj.DescribeRows.Columns) > 0 {
+		return obj.Name + "Property"
+	}
+	return obj.Name + "Details"
+}
+
 func (obj Object) ShowOutputKeys() []string {
 	return outputKeys(obj.PairedShowColumns())
 }

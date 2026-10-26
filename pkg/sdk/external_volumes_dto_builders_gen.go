@@ -194,7 +194,7 @@ func (s *AlterExternalVolumeRequest) WithRemoveStorageLocation(removeStorageLoca
 	return s
 }
 
-func (s *AlterExternalVolumeRequest) WithSet(set AlterExternalVolumeSetRequest) *AlterExternalVolumeRequest {
+func (s *AlterExternalVolumeRequest) WithSet(set ExternalVolumeSetRequest) *AlterExternalVolumeRequest {
 	s.Set = &set
 	return s
 }
@@ -209,17 +209,17 @@ func (s *AlterExternalVolumeRequest) WithUpdateStorageLocation(updateStorageLoca
 	return s
 }
 
-func NewAlterExternalVolumeSetRequest() *AlterExternalVolumeSetRequest {
-	s := AlterExternalVolumeSetRequest{}
+func NewExternalVolumeSetRequest() *ExternalVolumeSetRequest {
+	s := ExternalVolumeSetRequest{}
 	return &s
 }
 
-func (s *AlterExternalVolumeSetRequest) WithAllowWrites(allowWrites bool) *AlterExternalVolumeSetRequest {
+func (s *ExternalVolumeSetRequest) WithAllowWrites(allowWrites bool) *ExternalVolumeSetRequest {
 	s.AllowWrites = &allowWrites
 	return s
 }
 
-func (s *AlterExternalVolumeSetRequest) WithComment(comment string) *AlterExternalVolumeSetRequest {
+func (s *ExternalVolumeSetRequest) WithComment(comment string) *ExternalVolumeSetRequest {
 	s.Comment = &comment
 	return s
 }

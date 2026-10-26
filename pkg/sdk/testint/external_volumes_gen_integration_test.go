@@ -478,7 +478,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 
 		newComment := "comment"
 		req := sdk.NewAlterExternalVolumeRequest(id).WithSet(
-			*sdk.NewAlterExternalVolumeSetRequest().WithComment(newComment),
+			*sdk.NewExternalVolumeSetRequest().WithComment(newComment),
 		)
 
 		err := client.ExternalVolumes.Alter(ctx, req)
@@ -495,7 +495,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		t.Cleanup(cleanup)
 
 		req := sdk.NewAlterExternalVolumeRequest(id).WithSet(
-			*sdk.NewAlterExternalVolumeSetRequest().WithAllowWrites(false),
+			*sdk.NewExternalVolumeSetRequest().WithAllowWrites(false),
 		)
 
 		err := client.ExternalVolumes.Alter(ctx, req)
