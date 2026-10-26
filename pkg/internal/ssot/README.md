@@ -226,6 +226,10 @@ diagnostics (usually warnings) are added to the final Read. Use them for a step 
 state when it fails, such as resuming a created object. `Import<Name>` is generated only when `ShowByIdInSdk` is
 present. A resource with a passthrough importer omits it.
 
+`WithCreateInSdk(Generated())` calls `Client.<NamePlural>.Create(ctx, req)` after applying the create fields and
+parameters. A failure returns `diag.FromErr` before setting the resource id or reading the object.
+Use `ExtCall` when an object needs a different SDK method or custom error diagnostics.
+
 `SchemaStateUpgraders` on the object is an ordered list of upgrade function names. `WithStateUpgraders` is the
 `ResourceHook` for that list and for the schema version. `Generated` emits `SchemaVersion` as the length and one
 `StateUpgrader` per name. `Version` is the index. `Type` is `cty.EmptyObject`. The functions stay in package
