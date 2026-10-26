@@ -11,7 +11,7 @@ import (
 var (
 	_ ExternalVolumes                        = (*externalVolumes)(nil)
 	_ convertibleRow[ExternalVolumeProperty] = new(externalVolumeDescRow)
-	_ convertibleRow[ExternalVolume]         = new(externalVolumeShowRow)
+	_ convertibleRow[ExternalVolume]         = new(externalVolumesRow)
 )
 
 type externalVolumes struct {
@@ -50,11 +50,11 @@ func (v *externalVolumes) Describe(ctx context.Context, id AccountObjectIdentifi
 
 func (v *externalVolumes) Show(ctx context.Context, request *ShowExternalVolumeRequest) ([]ExternalVolume, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[externalVolumeShowRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[externalVolumesRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[externalVolumeShowRow, ExternalVolume](dbRows)
+	return convertRows[externalVolumesRow, ExternalVolume](dbRows)
 }
 
 func (v *externalVolumes) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolume, error) {
@@ -243,7 +243,7 @@ func (r *ShowExternalVolumeRequest) toOpts() *ShowExternalVolumeOptions {
 	return opts
 }
 
-func (r externalVolumeShowRow) convert() (*ExternalVolume, error) {
+func (r externalVolumesRow) convert() (*ExternalVolume, error) {
 	result := &ExternalVolume{
 		Name:        r.Name,
 		AllowWrites: r.AllowWrites,

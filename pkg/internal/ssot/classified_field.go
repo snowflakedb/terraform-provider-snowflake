@@ -101,6 +101,14 @@ func ClassifyParameter(name, kind string) ClassifiedField {
 
 func collectionField(obj Object, attr Attribute, storage AttributeType) ClassifiedField {
 	if attr.Elem == nil {
+		if len(attr.Children) > 0 {
+			// Nested block (list/set of objects): no scalar Elem to classify. The generator consuming
+			// this (model builder, resource assertion) decides what a Storage with no Elem means —
+			// e.g. an unsupported-type stub, or a Required constructor using a generator-level type
+			// override (ModelRequestType) since there is no mechanical mapping from a nested block to
+			// a concrete Go request type.
+			return ClassifiedField{Name: attr.Name, Storage: storage, Required: attr.Required}
+		}
 		panic(fmt.Sprintf("object %q: attribute %q has no Elem", obj.Name, attr.Name))
 	}
 	var elem AttributeType

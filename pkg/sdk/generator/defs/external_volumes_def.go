@@ -1,6 +1,7 @@
 package defs
 
 import (
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
@@ -178,15 +179,7 @@ var externalVolumesDef = g.NewInterface(
 			WithValidation(g.ExactlyOneValueSet, "RemoveStorageLocation", "Set", "AddStorageLocation", "UpdateStorageLocation").
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	DropOperation(
-		"https://docs.snowflake.com/en/sql-reference/sql/drop-external-volume",
-		g.NewQueryStruct("DropExternalVolume").
-			Drop().
-			SQL("EXTERNAL VOLUME").
-			IfExists().
-			Name().
-			WithValidation(g.ValidIdentifier, "name"),
-	).
+	DropOperationFromObject(ssotdefs.ExternalVolumeObject).
 	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-external-volume",
@@ -202,17 +195,7 @@ var externalVolumesDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperationWithPairedStructs(
-		"https://docs.snowflake.com/en/sql-reference/sql/show-external-volumes",
-		g.StructPair("externalVolumeShowRow", "ExternalVolume").
-			Text("name").
-			Bool("allow_writes").
-			OptionalText("comment", g.WithRequiredInPlain()),
-		g.NewQueryStruct("ShowExternalVolumes").
-			Show().
-			SQL("EXTERNAL VOLUMES").
-			OptionalLike(),
-	).
+	ShowOperationFromObject(ssotdefs.ExternalVolumeObject).
 	WithCustomInterfaceMethod("DescribeDetails", "", []*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())}, "*ExternalVolumeDetails", "error").
 	WithEnums(
 		StorageProviderEnumDef,

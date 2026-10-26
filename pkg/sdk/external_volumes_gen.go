@@ -153,7 +153,7 @@ type ShowExternalVolumeOptions struct {
 	Like            *Like `ddl:"keyword" sql:"LIKE"`
 }
 
-type externalVolumeShowRow struct {
+type externalVolumesRow struct {
 	Name        string         `db:"name"`
 	AllowWrites bool           `db:"allow_writes"`
 	Comment     sql.NullString `db:"comment"`

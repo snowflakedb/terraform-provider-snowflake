@@ -3,6 +3,8 @@ package ssot
 import (
 	"fmt"
 	"go/token"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 // TODO [next PRs]: replace panics with errors and handle them higher up;
@@ -83,6 +85,8 @@ func ValidateObject(obj Object) {
 	g := ObjectGenerators(obj.Generators...)
 	validateGeneratorSkips(obj, "object-assertion", "SHOW", g.ObjectAssert.Show, obj.PairedShowColumns(), g.ObjectAssert.ShowSkipFields)
 	validateGeneratorSkips(obj, "object-assertion", "DESCRIBE", g.ObjectAssert.Describe, obj.Describe.Columns, g.ObjectAssert.DescribeSkipFields)
+	validateGeneratorSkips(obj, "object-assertion nested", "SHOW", g.ObjectAssert.Show, obj.Show.Columns, nestedAttributes(g.ObjectAssert.ShowNestedFields))
+	validateGeneratorSkips(obj, "object-assertion nested", "DESCRIBE", g.ObjectAssert.Describe, obj.Describe.Columns, nestedAttributes(g.ObjectAssert.DescribeNestedFields))
 	validateGeneratorSkips(obj, "show-output", "SHOW", g.ShowOutputAssert.Show, obj.PairedShowColumns(), g.ShowOutputAssert.ShowSkipFields)
 	validateGeneratorSkips(obj, "show-output", "DESCRIBE", g.ShowOutputAssert.Describe, obj.Describe.Columns, g.ShowOutputAssert.DescribeSkipFields)
 	obj.ShowFromBase()
@@ -544,6 +548,10 @@ func validateColumnList(obj Object, kind string, list []*Attribute, attrs map[st
 		seenName[a.Name] = struct{}{}
 		validateAttribute(obj, *a)
 	}
+}
+
+func nestedAttributes(fields []ObjectAssertNestedField) []*Attribute {
+	return collections.Map(fields, func(f ObjectAssertNestedField) *Attribute { return f.Attr })
 }
 
 func validateGeneratorSkips(obj Object, generator, kind string, enabled bool, columns []*Attribute, skipped []*Attribute) {

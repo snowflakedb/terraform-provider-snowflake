@@ -166,10 +166,6 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ExternalS3CompatibleStage().Schema,
 	},
 	{
-		name:   "ExternalVolume",
-		schema: resources.ExternalVolume().Schema,
-	},
-	{
 		name:   "ExternalOauthSecurityIntegration",
 		schema: resources.ExternalOauthIntegration().Schema,
 	},

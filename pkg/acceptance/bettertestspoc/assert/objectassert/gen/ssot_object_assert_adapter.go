@@ -2,7 +2,9 @@ package gen
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 )
@@ -33,12 +35,20 @@ func objectAssertionDetailsFromSsot(obj ssot.Object, isDescribe bool) genhelpers
 	if isDescribe {
 		name += "Details"
 	}
+	nested := g.ObjectAssert.ShowNestedFields
+	if isDescribe {
+		nested = g.ObjectAssert.DescribeNestedFields
+	}
 	fields := make([]genhelpers.Field, 0, len(attrs))
 	for _, attr := range attrs {
 		if attr == nil {
 			panic(fmt.Sprintf("object %q: nil %s column", obj.Name, kind))
 		}
-		fields = append(fields, ssot.ColumnField(obj, *attr))
+		field := ssot.ColumnField(obj, *attr)
+		if nestedField, ok := findNestedField(nested, attr); ok {
+			field.ConcreteType, field.UnderlyingType = nestedFieldTypes(nestedFieldGoType(obj, nestedField))
+		}
+		fields = append(fields, field)
 	}
 	noIdentifiableObject := false
 	skip := objectAssertSkipNames(obj, g.ObjectAssert.ShowSkipFields)
@@ -61,6 +71,7 @@ func objectAssertionDetailsFromSsot(obj ssot.Object, isDescribe bool) genhelpers
 		NoIdentifiableObject: noIdentifiableObject,
 		ShowProjection:       projection,
 		SkipFields:           skip,
+		NestedAssertFields:   objectAssertNestedNames(obj, nested),
 		StructDetails: genhelpers.StructDetails{
 			Name:   name,
 			Fields: fields,
@@ -77,4 +88,44 @@ func objectAssertSkipNames(obj ssot.Object, skipped []*ssot.Attribute) []string 
 		names[i] = ssot.ColumnField(obj, *attr).Name
 	}
 	return names
+}
+
+func objectAssertNestedNames(obj ssot.Object, nested []ssot.ObjectAssertNestedField) []string {
+	if len(nested) == 0 {
+		return nil
+	}
+	return collections.Map(nested, func(n ssot.ObjectAssertNestedField) string { return ssot.ColumnField(obj, *n.Attr).Name })
+}
+
+func findNestedField(nested []ssot.ObjectAssertNestedField, attr *ssot.Attribute) (ssot.ObjectAssertNestedField, bool) {
+	found, err := collections.FindFirst(nested, func(n ssot.ObjectAssertNestedField) bool { return n.Attr == attr })
+	if err != nil {
+		return ssot.ObjectAssertNestedField{}, false
+	}
+	return *found, true
+}
+
+// nestedFieldGoType is the explicit GoType, or the default composition for a list or set column.
+func nestedFieldGoType(obj ssot.Object, nested ssot.ObjectAssertNestedField) string {
+	if nested.GoType != "" {
+		return nested.GoType
+	}
+	if nested.Attr.Type != ssot.AttrList && nested.Attr.Type != ssot.AttrSet {
+		panic(fmt.Sprintf("object %q: nested column %q is not a list or set, set ObjectAssertNestedGoType", obj.Name, nested.Attr.Name))
+	}
+	item := strings.TrimSuffix(genhelpers.SnakeCaseToCamel(nested.Attr.OutputKey()), "s")
+	return "[]sdk." + obj.Name + item + "Details"
+}
+
+// nestedFieldTypes derives the underlying kind from the Go type of a nested-block field.
+func nestedFieldTypes(goType string) (concrete, underlying string) {
+	pointer := ""
+	base := goType
+	if rest, ok := strings.CutPrefix(base, "*"); ok {
+		pointer, base = "*", rest
+	}
+	if strings.HasPrefix(base, "[]") {
+		return goType, pointer + "slice"
+	}
+	return goType, pointer + "struct"
 }
