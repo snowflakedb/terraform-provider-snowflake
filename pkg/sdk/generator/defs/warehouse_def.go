@@ -14,6 +14,7 @@ var warehousesDef = g.NewInterface(
 ).CreateOperationFromObject(ssotdefs.Warehouse).
 	CreateVariantOperationsFromObject(ssotdefs.Warehouse).
 	AlterOperationFromObject(ssotdefs.Warehouse).
+	AlterVariantOperationsFromObject(ssotdefs.Warehouse).
 	DropOperationFromObject(ssotdefs.Warehouse).
 	ShowOperationFromObject(ssotdefs.Warehouse).
 	DescribeOperationFromObject(ssotdefs.Warehouse).

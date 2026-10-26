@@ -792,20 +792,14 @@ func Test_ValidateObject_variantEntityCreateName(t *testing.T) {
 	}
 	comment := Attribute{Name: "comment", Type: AttrString}
 	obj := Object{
-		Name:                    "WarehouseAdaptive",
-		VariantOf:               &base,
-		VariantEntityCreateName: "WAREHOUSE",
-		Attributes:              []Attribute{kind, comment},
-		Create:                  CreateSpec{Clauses: []*Attribute{&kind, &comment}},
+		Name:       "WarehouseAdaptive",
+		VariantOf:  &base,
+		Attributes: []Attribute{kind, comment},
+		Create:     CreateSpec{Clauses: []*Attribute{&kind, &comment}},
 	}
 	require.NotPanics(t, func() { ValidateObject(obj) })
 	require.Equal(t, []Attribute{comment}, obj.ResourceAttributes())
-
-	missing := obj
-	missing.VariantEntityCreateName = ""
-	require.PanicsWithValue(t, `object "WarehouseAdaptive": variant CREATE needs VariantEntityCreateName`, func() {
-		ValidateObject(missing)
-	})
+	require.Equal(t, "WAREHOUSE", obj.VariantCreateConfig().CreateSql)
 
 	withSql := obj
 	withSql.Create.Sql = "WAREHOUSE"

@@ -7,6 +7,8 @@ var (
 	_ optionsProvider[CreateAdaptiveWarehouseOptions]    = new(CreateAdaptiveWarehouseRequest)
 	_ optionsProvider[CreateInteractiveWarehouseOptions] = new(CreateInteractiveWarehouseRequest)
 	_ optionsProvider[AlterWarehouseOptions]             = new(AlterWarehouseRequest)
+	_ optionsProvider[AlterAdaptiveWarehouseOptions]     = new(AlterAdaptiveWarehouseRequest)
+	_ optionsProvider[AlterInteractiveWarehouseOptions]  = new(AlterInteractiveWarehouseRequest)
 	_ optionsProvider[DropWarehouseOptions]              = new(DropWarehouseRequest)
 	_ optionsProvider[ShowWarehouseOptions]              = new(ShowWarehouseRequest)
 	_ optionsProvider[DescribeWarehouseOptions]          = new(DescribeWarehouseRequest)
@@ -79,8 +81,6 @@ type AlterWarehouseRequest struct {
 	RenameTo        *AccountObjectIdentifier
 	Set             *WarehouseSetRequest
 	Unset           *WarehouseUnsetRequest
-	AddTables       []SchemaObjectIdentifier
-	DropTables      []SchemaObjectIdentifier
 	SetTags         []TagAssociation
 	UnsetTags       []ObjectIdentifier
 }
@@ -100,9 +100,6 @@ type WarehouseSetRequest struct {
 	QueryAccelerationMaxScaleFactor *int
 	ResourceConstraint              *WarehouseResourceConstraint
 	Generation                      *WarehouseGeneration
-	QueryThroughputMultiplier       *int
-	MaxQueryPerformanceLevel        *MaxQueryPerformanceLevel
-	FallbackWarehouse               *AccountObjectIdentifier
 	MaxConcurrencyLevel             *int
 	StatementQueuedTimeoutInSeconds *int
 	StatementTimeoutInSeconds       *int
@@ -122,8 +119,75 @@ type WarehouseUnsetRequest struct {
 	QueryAccelerationMaxScaleFactor *bool
 	ResourceConstraint              *bool
 	Generation                      *bool
-	QueryThroughputMultiplier       *bool
+	MaxConcurrencyLevel             *bool
+	StatementQueuedTimeoutInSeconds *bool
+	StatementTimeoutInSeconds       *bool
+}
+
+type AlterAdaptiveWarehouseRequest struct {
+	IfExists  *bool
+	name      AccountObjectIdentifier // required
+	RenameTo  *AccountObjectIdentifier
+	Set       *WarehouseAdaptiveSetRequest
+	Unset     *WarehouseAdaptiveUnsetRequest
+	SetTags   []TagAssociation
+	UnsetTags []ObjectIdentifier
+}
+
+type WarehouseAdaptiveSetRequest struct {
+	WarehouseType                   *WarehouseType
+	Comment                         *string
+	ResourceMonitor                 *AccountObjectIdentifier
+	MaxQueryPerformanceLevel        *MaxQueryPerformanceLevel
+	QueryThroughputMultiplier       *int
+	StatementQueuedTimeoutInSeconds *int
+	StatementTimeoutInSeconds       *int
+}
+
+type WarehouseAdaptiveUnsetRequest struct {
+	WarehouseType                   *bool
+	Comment                         *bool
+	ResourceMonitor                 *bool
 	MaxQueryPerformanceLevel        *bool
+	QueryThroughputMultiplier       *bool
+	StatementQueuedTimeoutInSeconds *bool
+	StatementTimeoutInSeconds       *bool
+}
+
+type AlterInteractiveWarehouseRequest struct {
+	IfExists   *bool
+	name       AccountObjectIdentifier // required
+	RenameTo   *AccountObjectIdentifier
+	Set        *WarehouseInteractiveSetRequest
+	Unset      *WarehouseInteractiveUnsetRequest
+	AddTables  []SchemaObjectIdentifier
+	DropTables []SchemaObjectIdentifier
+	SetTags    []TagAssociation
+	UnsetTags  []ObjectIdentifier
+}
+
+type WarehouseInteractiveSetRequest struct {
+	WarehouseSize                   *WarehouseSize
+	MaxClusterCount                 *int
+	MinClusterCount                 *int
+	AutoSuspend                     *int
+	AutoResume                      *bool
+	ResourceMonitor                 *AccountObjectIdentifier
+	Comment                         *string
+	FallbackWarehouse               *AccountObjectIdentifier
+	MaxConcurrencyLevel             *int
+	StatementQueuedTimeoutInSeconds *int
+	StatementTimeoutInSeconds       *int
+}
+
+type WarehouseInteractiveUnsetRequest struct {
+	WarehouseSize                   *bool
+	MaxClusterCount                 *bool
+	MinClusterCount                 *bool
+	AutoSuspend                     *bool
+	AutoResume                      *bool
+	ResourceMonitor                 *bool
+	Comment                         *bool
 	FallbackWarehouse               *bool
 	MaxConcurrencyLevel             *bool
 	StatementQueuedTimeoutInSeconds *bool

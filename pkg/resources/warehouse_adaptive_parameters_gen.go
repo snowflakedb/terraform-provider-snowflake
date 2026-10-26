@@ -57,7 +57,7 @@ func warehouseAdaptiveApplyParametersCreate(d *tfschema.ResourceData, req *sdk.C
 	)
 }
 
-func warehouseAdaptiveApplyParametersChanges(d *tfschema.ResourceData, set *sdk.WarehouseSetRequest, unset *sdk.WarehouseUnsetRequest) diag.Diagnostics {
+func warehouseAdaptiveApplyParametersChanges(d *tfschema.ResourceData, set *sdk.WarehouseAdaptiveSetRequest, unset *sdk.WarehouseAdaptiveUnsetRequest) diag.Diagnostics {
 	return JoinDiags(
 		handleParameterUpdate(d, "statement_queued_timeout_in_seconds", &set.StatementQueuedTimeoutInSeconds, &unset.StatementQueuedTimeoutInSeconds),
 		handleParameterUpdate(d, "statement_timeout_in_seconds", &set.StatementTimeoutInSeconds, &unset.StatementTimeoutInSeconds),

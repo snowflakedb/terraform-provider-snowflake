@@ -9,6 +9,8 @@ var (
 	_ validatable = new(CreateAdaptiveWarehouseOptions)
 	_ validatable = new(CreateInteractiveWarehouseOptions)
 	_ validatable = new(AlterWarehouseOptions)
+	_ validatable = new(AlterAdaptiveWarehouseOptions)
+	_ validatable = new(AlterInteractiveWarehouseOptions)
 	_ validatable = new(DropWarehouseOptions)
 	_ validatable = new(ShowWarehouseOptions)
 	_ validatable = new(DescribeWarehouseOptions)
@@ -98,45 +100,115 @@ func (opts *AlterWarehouseOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("AlterWarehouseOptions", "name"))
 	}
-	if !exactlyOneValueSet(opts.Suspend, opts.Resume, opts.AbortAllQueries, opts.RenameTo, opts.Set, opts.Unset, opts.AddTables, opts.DropTables, opts.SetTags, opts.UnsetTags) {
-		errs = append(errs, errExactlyOneOf("AlterWarehouseOptions", "Suspend", "Resume", "AbortAllQueries", "RenameTo", "Set", "Unset", "AddTables", "DropTables", "SetTags", "UnsetTags"))
+	if !exactlyOneValueSet(opts.Suspend, opts.Resume, opts.AbortAllQueries, opts.RenameTo, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
+		errs = append(errs, errExactlyOneOf("AlterWarehouseOptions", "Suspend", "Resume", "AbortAllQueries", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags"))
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
 		errs = append(errs, errInvalidIdentifier("AlterWarehouseOptions", "RenameTo"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Set) {
-		if opts.Set.FallbackWarehouse != nil && !ValidObjectIdentifier(opts.Set.FallbackWarehouse) {
-			errs = append(errs, errInvalidIdentifier("AlterWarehouseOptions.Set", "FallbackWarehouse"))
-		}
-		if !anyValueSet(opts.Set.FallbackWarehouse, opts.Set.MaxConcurrencyLevel, opts.Set.StatementQueuedTimeoutInSeconds, opts.Set.StatementTimeoutInSeconds, opts.Set.WarehouseType, opts.Set.WarehouseSize, opts.Set.WaitForCompletion, opts.Set.MaxClusterCount, opts.Set.MinClusterCount, opts.Set.ScalingPolicy, opts.Set.AutoSuspend, opts.Set.AutoResume, opts.Set.ResourceMonitor, opts.Set.Comment, opts.Set.EnableQueryAcceleration, opts.Set.QueryAccelerationMaxScaleFactor, opts.Set.ResourceConstraint, opts.Set.Generation, opts.Set.QueryThroughputMultiplier, opts.Set.MaxQueryPerformanceLevel) {
-			errs = append(errs, errAtLeastOneOf("AlterWarehouseOptions.Set", "FallbackWarehouse", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel"))
+		if !anyValueSet(opts.Set.MaxConcurrencyLevel, opts.Set.StatementQueuedTimeoutInSeconds, opts.Set.StatementTimeoutInSeconds, opts.Set.WarehouseType, opts.Set.WarehouseSize, opts.Set.WaitForCompletion, opts.Set.MaxClusterCount, opts.Set.MinClusterCount, opts.Set.ScalingPolicy, opts.Set.AutoSuspend, opts.Set.AutoResume, opts.Set.ResourceMonitor, opts.Set.Comment, opts.Set.EnableQueryAcceleration, opts.Set.QueryAccelerationMaxScaleFactor, opts.Set.ResourceConstraint, opts.Set.Generation) {
+			errs = append(errs, errAtLeastOneOf("AlterWarehouseOptions.Set", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation"))
 		}
 		errs = append(errs, opts.Set.additionalValidations())
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.FallbackWarehouse, opts.Unset.MaxConcurrencyLevel, opts.Unset.StatementQueuedTimeoutInSeconds, opts.Unset.StatementTimeoutInSeconds, opts.Unset.WarehouseType, opts.Unset.WaitForCompletion, opts.Unset.MaxClusterCount, opts.Unset.MinClusterCount, opts.Unset.ScalingPolicy, opts.Unset.AutoSuspend, opts.Unset.AutoResume, opts.Unset.ResourceMonitor, opts.Unset.Comment, opts.Unset.EnableQueryAcceleration, opts.Unset.QueryAccelerationMaxScaleFactor, opts.Unset.ResourceConstraint, opts.Unset.Generation, opts.Unset.QueryThroughputMultiplier, opts.Unset.MaxQueryPerformanceLevel) {
-			errs = append(errs, errAtLeastOneOf("AlterWarehouseOptions.Unset", "FallbackWarehouse", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel"))
-		}
-	}
-	if valueSet(opts.AddTables) {
-		for addTableIdx, addTable := range opts.AddTables {
-			if !ValidObjectIdentifier(addTable) {
-				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterWarehouseOptions.AddTables[%d]", addTableIdx), "AddTables"))
-			}
-		}
-	}
-	if valueSet(opts.DropTables) {
-		for dropTableIdx, dropTable := range opts.DropTables {
-			if !ValidObjectIdentifier(dropTable) {
-				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterWarehouseOptions.DropTables[%d]", dropTableIdx), "DropTables"))
-			}
+		if !anyValueSet(opts.Unset.MaxConcurrencyLevel, opts.Unset.StatementQueuedTimeoutInSeconds, opts.Unset.StatementTimeoutInSeconds, opts.Unset.WarehouseType, opts.Unset.WaitForCompletion, opts.Unset.MaxClusterCount, opts.Unset.MinClusterCount, opts.Unset.ScalingPolicy, opts.Unset.AutoSuspend, opts.Unset.AutoResume, opts.Unset.ResourceMonitor, opts.Unset.Comment, opts.Unset.EnableQueryAcceleration, opts.Unset.QueryAccelerationMaxScaleFactor, opts.Unset.ResourceConstraint, opts.Unset.Generation) {
+			errs = append(errs, errAtLeastOneOf("AlterWarehouseOptions.Unset", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation"))
 		}
 	}
 	if valueSet(opts.SetTags) {
 		for setTagIdx, setTag := range opts.SetTags {
 			if !ValidObjectIdentifier(setTag.Name) {
 				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterWarehouseOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *AlterAdaptiveWarehouseOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("AlterAdaptiveWarehouseOptions", "name"))
+	}
+	if !exactlyOneValueSet(opts.RenameTo, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
+		errs = append(errs, errExactlyOneOf("AlterAdaptiveWarehouseOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags"))
+	}
+	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
+		errs = append(errs, errInvalidIdentifier("AlterAdaptiveWarehouseOptions", "RenameTo"))
+	}
+	if valueSet(opts.Set) {
+		if !anyValueSet(opts.Set.StatementQueuedTimeoutInSeconds, opts.Set.StatementTimeoutInSeconds, opts.Set.WarehouseType, opts.Set.Comment, opts.Set.ResourceMonitor, opts.Set.MaxQueryPerformanceLevel, opts.Set.QueryThroughputMultiplier) {
+			errs = append(errs, errAtLeastOneOf("AlterAdaptiveWarehouseOptions.Set", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseType", "Comment", "ResourceMonitor", "MaxQueryPerformanceLevel", "QueryThroughputMultiplier"))
+		}
+		errs = append(errs, opts.Set.additionalValidations())
+	}
+	if valueSet(opts.Unset) {
+		if !anyValueSet(opts.Unset.StatementQueuedTimeoutInSeconds, opts.Unset.StatementTimeoutInSeconds, opts.Unset.WarehouseType, opts.Unset.Comment, opts.Unset.ResourceMonitor, opts.Unset.MaxQueryPerformanceLevel, opts.Unset.QueryThroughputMultiplier) {
+			errs = append(errs, errAtLeastOneOf("AlterAdaptiveWarehouseOptions.Unset", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseType", "Comment", "ResourceMonitor", "MaxQueryPerformanceLevel", "QueryThroughputMultiplier"))
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterAdaptiveWarehouseOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *AlterInteractiveWarehouseOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("AlterInteractiveWarehouseOptions", "name"))
+	}
+	if !exactlyOneValueSet(opts.RenameTo, opts.Set, opts.Unset, opts.AddTables, opts.DropTables, opts.SetTags, opts.UnsetTags) {
+		errs = append(errs, errExactlyOneOf("AlterInteractiveWarehouseOptions", "RenameTo", "Set", "Unset", "AddTables", "DropTables", "SetTags", "UnsetTags"))
+	}
+	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
+		errs = append(errs, errInvalidIdentifier("AlterInteractiveWarehouseOptions", "RenameTo"))
+	}
+	if valueSet(opts.Set) {
+		if opts.Set.FallbackWarehouse != nil && !ValidObjectIdentifier(opts.Set.FallbackWarehouse) {
+			errs = append(errs, errInvalidIdentifier("AlterInteractiveWarehouseOptions.Set", "FallbackWarehouse"))
+		}
+		if !anyValueSet(opts.Set.FallbackWarehouse, opts.Set.MaxConcurrencyLevel, opts.Set.StatementQueuedTimeoutInSeconds, opts.Set.StatementTimeoutInSeconds, opts.Set.WarehouseSize, opts.Set.MaxClusterCount, opts.Set.MinClusterCount, opts.Set.AutoSuspend, opts.Set.AutoResume, opts.Set.ResourceMonitor, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterInteractiveWarehouseOptions.Set", "FallbackWarehouse", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseSize", "MaxClusterCount", "MinClusterCount", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment"))
+		}
+		errs = append(errs, opts.Set.additionalValidations())
+	}
+	if valueSet(opts.Unset) {
+		if !anyValueSet(opts.Unset.FallbackWarehouse, opts.Unset.MaxConcurrencyLevel, opts.Unset.StatementQueuedTimeoutInSeconds, opts.Unset.StatementTimeoutInSeconds, opts.Unset.WarehouseSize, opts.Unset.MaxClusterCount, opts.Unset.MinClusterCount, opts.Unset.AutoSuspend, opts.Unset.AutoResume, opts.Unset.ResourceMonitor, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterInteractiveWarehouseOptions.Unset", "FallbackWarehouse", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseSize", "MaxClusterCount", "MinClusterCount", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment"))
+		}
+	}
+	if valueSet(opts.AddTables) {
+		for addTableIdx, addTable := range opts.AddTables {
+			if !ValidObjectIdentifier(addTable) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterInteractiveWarehouseOptions.AddTables[%d]", addTableIdx), "AddTables"))
+			}
+		}
+	}
+	if valueSet(opts.DropTables) {
+		for dropTableIdx, dropTable := range opts.DropTables {
+			if !ValidObjectIdentifier(dropTable) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterInteractiveWarehouseOptions.DropTables[%d]", dropTableIdx), "DropTables"))
+			}
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterInteractiveWarehouseOptions.SetTags[%d]", setTagIdx), "Name"))
 			}
 		}
 	}

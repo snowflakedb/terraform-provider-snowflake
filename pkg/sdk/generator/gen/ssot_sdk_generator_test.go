@@ -620,12 +620,12 @@ func Test_parametersForStatement_addsAlterLevels(t *testing.T) {
 	}
 	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
 	obj := ssot.Object{
-		Name:                               "Widget",
-		AlterAdditionalParametersForLevels: []ssot.ParameterLevel{ssot.ParameterLevelWarehouseInteractive},
-		Attributes:                         []ssot.Attribute{comment},
-		Create:                             ssot.CreateSpec{Clauses: []*ssot.Attribute{ssot.Parameters}},
-		Set:                                []*ssot.Attribute{ssot.Parameters},
-		Unset:                              []*ssot.Attribute{ssot.Parameters},
+		Name:                                  "Widget",
+		ShowParametersDetailsAdditionalLevels: []ssot.ParameterLevel{ssot.ParameterLevelWarehouseInteractive},
+		Attributes:                            []ssot.Attribute{comment},
+		Create:                                ssot.CreateSpec{Clauses: []*ssot.Attribute{ssot.Parameters}},
+		Set:                                   []*ssot.Attribute{ssot.Parameters},
+		Unset:                                 []*ssot.Attribute{ssot.Parameters},
 		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
 			ssot.AlterSet(),
 			ssot.AlterUnset(),
@@ -943,6 +943,87 @@ func Test_CreateVariantOperationsFromObject_panics(t *testing.T) {
 	})
 }
 
+func Test_AlterVariantOperationsFromObject_fakeObject(t *testing.T) {
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	base := ssot.Object{
+		Name: "Widget",
+		Generators: []ssot.GeneratorOption{
+			ssot.WithSdk(ssot.SdkAlterForVariants()),
+		},
+	}
+	variant := ssot.Object{
+		Name:                       "WidgetMini",
+		VariantOf:                  &base,
+		SdkCreateRequestObjectName: "MiniWidget",
+		Set:                        []*ssot.Attribute{&comment},
+		Unset:                      []*ssot.Attribute{&comment},
+		Alter: ssot.AlterSpec{
+			Doc:                   "https://docs.example.com/alter-mini",
+			AdditionalValidations: true,
+			Clauses: []ssot.AlterClause{
+				ssot.AlterRenameTo(),
+				ssot.AlterSet(),
+				ssot.AlterUnset(),
+			},
+		},
+	}
+	orig := variantsOf
+	t.Cleanup(func() { variantsOf = orig })
+	variantsOf = func(ssot.Object) []ssot.Object { return []ssot.Object{variant} }
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterVariantOperationsFromObject(base)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CustomOperation(
+		"AlterMini",
+		"https://docs.example.com/alter-mini",
+		NewQueryStruct("AlterMiniWidget").
+			Alter().
+			SQL("WIDGET").
+			IfExists().
+			Name().
+			RenameTo().
+			OptionalQueryStructField(
+				"Set",
+				NewQueryStruct("WidgetMiniSet").
+					OptionalTextAssignment("COMMENT", ParameterOptions().SingleQuotes()).
+					WithValidation(AtLeastOneValueSet, "Comment"),
+				KeywordOptions().SQL("SET"),
+			).
+			OptionalQueryStructField(
+				"Unset",
+				NewQueryStruct("WidgetMiniUnset").
+					OptionalSQL("COMMENT").
+					WithValidation(AtLeastOneValueSet, "Comment"),
+				ListOptions().NoParentheses().SQL("UNSET"),
+			).
+			WithValidation(ValidIdentifier, "name").
+			WithValidation(ExactlyOneValueSet, "RenameTo", "Set", "Unset").
+			WithValidation(ValidIdentifierIfSet, "RenameTo").
+			WithAdditionalValidations(),
+	)
+	requireSameOperations(t, want, got)
+}
+
+func Test_AlterVariantOperationsFromObject_panics(t *testing.T) {
+	base := ssot.Object{Name: "Widget"}
+	variant := ssot.Object{Name: "WidgetMini", VariantOf: &base}
+	orig := variantsOf
+	t.Cleanup(func() { variantsOf = orig })
+	variantsOf = func(ssot.Object) []ssot.Object { return []ssot.Object{variant} }
+	require.Panics(t, func() {
+		NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterVariantOperationsFromObject(base)
+	})
+	base.Generators = []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlterForVariants())}
+	require.Panics(t, func() {
+		NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterVariantOperationsFromObject(base)
+	})
+	variantsOf = func(ssot.Object) []ssot.Object { return nil }
+	require.Panics(t, func() {
+		NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterVariantOperationsFromObject(base)
+	})
+	require.Panics(t, func() {
+		NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(variant)
+	})
+}
+
 func Test_CustomOperationsFromObject_fakeObject(t *testing.T) {
 	transient := ssot.Attribute{
 		Name:      "is_transient",
@@ -1153,10 +1234,10 @@ func Test_ShowParametersFromObject_fakeObject(t *testing.T) {
 
 func Test_ShowParametersDetailsFromObject_includesAlterLevels(t *testing.T) {
 	obj := ssot.Object{
-		Name:                               "Widget",
-		IdType:                             "DatabaseObjectIdentifier",
-		AlterAdditionalParametersForLevels: []ssot.ParameterLevel{ssot.ParameterLevelWarehouseInteractive},
-		Generators:                         []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShowParametersDetails())},
+		Name:                                  "Widget",
+		IdType:                                "DatabaseObjectIdentifier",
+		ShowParametersDetailsAdditionalLevels: []ssot.ParameterLevel{ssot.ParameterLevelWarehouseInteractive},
+		Generators:                            []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShowParametersDetails())},
 	}
 	got := NewInterface("Widgets", "Widget", "DatabaseObjectIdentifier").ShowParametersDetailsFromObject(obj)
 	keys := make([]string, len(got.ParametersDetails.Fields))

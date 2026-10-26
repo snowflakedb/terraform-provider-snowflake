@@ -205,24 +205,44 @@ func Test_SdkConfig_customInterfaceMethods(t *testing.T) {
 }
 
 func Test_VariantCreateConfig_usesEntityName(t *testing.T) {
+	base := Object{Name: "Warehouse"}
 	comment := Attribute{Name: "comment", Type: AttrString}
 	obj := Object{
 		Name:                       "WarehouseAdaptive",
-		VariantEntityCreateName:    "WAREHOUSE",
+		VariantOf:                  &base,
 		SdkCreateRequestObjectName: "AdaptiveWarehouse",
 		Create: CreateSpec{
 			Doc:     "https://docs.example.com/adaptive",
 			Clauses: []*Attribute{&comment},
 		},
 	}
+	require.Equal(t, "WAREHOUSE", obj.VariantCreateConfig().CreateSql)
+
+	obj.VariantEntityCreateName = "INTERACTIVE WAREHOUSE"
 	require.Equal(t, SdkGenerator{
 		CreateDoc:             "https://docs.example.com/adaptive",
-		CreateSql:             "WAREHOUSE",
+		CreateSql:             "INTERACTIVE WAREHOUSE",
 		CreateQueryStructName: "CreateAdaptiveWarehouse",
 	}, obj.VariantCreateConfig())
+}
 
-	obj.VariantEntityCreateName = ""
-	require.PanicsWithValue(t, `object "WarehouseAdaptive": variant CREATE needs VariantEntityCreateName`, func() {
-		obj.VariantCreateConfig()
-	})
+func Test_VariantAlterConfig_usesEntityName(t *testing.T) {
+	base := Object{Name: "Warehouse"}
+	obj := Object{
+		Name:                       "WarehouseAdaptive",
+		VariantOf:                  &base,
+		SdkCreateRequestObjectName: "AdaptiveWarehouse",
+		Alter: AlterSpec{
+			Doc:     "https://docs.snowflake.com/en/sql-reference/sql/alter-warehouse",
+			Clauses: []AlterClause{AlterSet()},
+		},
+	}
+	require.Equal(t, SdkGenerator{
+		AlterDoc:             "https://docs.snowflake.com/en/sql-reference/sql/alter-warehouse",
+		AlterSql:             "WAREHOUSE",
+		AlterQueryStructName: "AlterAdaptiveWarehouse",
+	}, obj.VariantAlterConfig())
+
+	obj.VariantEntityAlterName = "CUSTOM WAREHOUSE"
+	require.Equal(t, "CUSTOM WAREHOUSE", obj.VariantAlterConfig().AlterSql)
 }

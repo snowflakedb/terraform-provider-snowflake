@@ -43,8 +43,8 @@ var (
 // =============================================================================
 
 type warehouseAdaptiveAlterRequestsExt struct {
-	set   *sdk.WarehouseSetRequest
-	unset *sdk.WarehouseUnsetRequest
+	set   *sdk.WarehouseAdaptiveSetRequest
+	unset *sdk.WarehouseAdaptiveUnsetRequest
 }
 
 func warehouseAdaptiveParseIdFromConfigExt(d *schema.ResourceData) (sdk.AccountObjectIdentifier, error) {
@@ -107,7 +107,7 @@ func warehouseAdaptiveSetConfigFieldsExt(d *schema.ResourceData, w *sdk.Warehous
 func warehouseAdaptiveHierarchyRenameExt(ctx context.Context, d *schema.ResourceData, meta any, id *sdk.AccountObjectIdentifier) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	newID, err := renameAccountLevelResource(ctx, d, *id, func(ctx context.Context, id, newId sdk.AccountObjectIdentifier) error {
-		return client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithRenameTo(newId))
+		return client.Warehouses.AlterAdaptive(ctx, sdk.NewAlterAdaptiveWarehouseRequest(id).WithRenameTo(newId))
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -117,8 +117,8 @@ func warehouseAdaptiveHierarchyRenameExt(ctx context.Context, d *schema.Resource
 }
 
 func warehouseAdaptiveApplySetUnsetExt(d *schema.ResourceData) (*warehouseAdaptiveAlterRequestsExt, error) {
-	set := sdk.NewWarehouseSetRequest()
-	unset := sdk.NewWarehouseUnsetRequest()
+	set := sdk.NewWarehouseAdaptiveSetRequest()
+	unset := sdk.NewWarehouseAdaptiveUnsetRequest()
 
 	if d.HasChange("warehouse_type") {
 		set.WithWarehouseType(sdk.WarehouseTypeAdaptive)
@@ -186,9 +186,9 @@ func warehouseAdaptiveShowByIdInSdkExt(ctx context.Context, meta any, id sdk.Acc
 }
 
 func warehouseAdaptiveAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseAdaptiveAlterRequestsExt) error {
-	if *reqs.set != *sdk.NewWarehouseSetRequest() {
+	if *reqs.set != *sdk.NewWarehouseAdaptiveSetRequest() {
 		client := meta.(*provider.Context).Client
-		if err := client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(id).WithSet(*reqs.set)); err != nil {
+		if err := client.Warehouses.AlterAdaptiveWithSuspend(ctx, sdk.NewAlterAdaptiveWarehouseRequest(id).WithSet(*reqs.set)); err != nil {
 			return fmt.Errorf("error setting adaptive warehouse properties: %w", err)
 		}
 	}
@@ -196,9 +196,9 @@ func warehouseAdaptiveAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceDa
 }
 
 func warehouseAdaptiveAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseAdaptiveAlterRequestsExt) error {
-	if *reqs.unset != *sdk.NewWarehouseUnsetRequest() {
+	if *reqs.unset != *sdk.NewWarehouseAdaptiveUnsetRequest() {
 		client := meta.(*provider.Context).Client
-		if err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithUnset(*reqs.unset)); err != nil {
+		if err := client.Warehouses.AlterAdaptive(ctx, sdk.NewAlterAdaptiveWarehouseRequest(id).WithUnset(*reqs.unset)); err != nil {
 			return fmt.Errorf("error unsetting adaptive warehouse properties: %w", err)
 		}
 	}

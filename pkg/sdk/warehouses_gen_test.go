@@ -18,53 +18,77 @@ func init() {
 var warehousesTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 
 const (
-	case_Warehouses_validation_Create_name_ValidIdentifier                              testCaseName = "validation_Create_name_ValidIdentifier"
-	case_Warehouses_validation_Create_opts_ConflictingFields                            testCaseName = "validation_Create_opts_ConflictingFields"
-	case_Warehouses_validation_Create_Tag_ValidIdentifier                               testCaseName = "validation_Create_Tag_ValidIdentifier"
-	case_Warehouses_sql_Create_basic                                                    testCaseName = "sql_Create_basic"
-	case_Warehouses_sql_Create_all                                                      testCaseName = "sql_Create_all"
-	case_Warehouses_validation_CreateAdaptive_name_ValidIdentifier                      testCaseName = "validation_CreateAdaptive_name_ValidIdentifier"
-	case_Warehouses_validation_CreateAdaptive_opts_ConflictingFields                    testCaseName = "validation_CreateAdaptive_opts_ConflictingFields"
-	case_Warehouses_validation_CreateAdaptive_Tag_ValidIdentifier                       testCaseName = "validation_CreateAdaptive_Tag_ValidIdentifier"
-	case_Warehouses_sql_CreateAdaptive_basic                                            testCaseName = "sql_CreateAdaptive_basic"
-	case_Warehouses_sql_CreateAdaptive_all                                              testCaseName = "sql_CreateAdaptive_all"
-	case_Warehouses_validation_CreateInteractive_name_ValidIdentifier                   testCaseName = "validation_CreateInteractive_name_ValidIdentifier"
-	case_Warehouses_validation_CreateInteractive_opts_ConflictingFields                 testCaseName = "validation_CreateInteractive_opts_ConflictingFields"
-	case_Warehouses_validation_CreateInteractive_FallbackWarehouse_ValidIdentifierIfSet testCaseName = "validation_CreateInteractive_FallbackWarehouse_ValidIdentifierIfSet"
-	case_Warehouses_validation_CreateInteractive_Tables_ValidIdentifier                 testCaseName = "validation_CreateInteractive_Tables_ValidIdentifier"
-	case_Warehouses_validation_CreateInteractive_Tag_ValidIdentifier                    testCaseName = "validation_CreateInteractive_Tag_ValidIdentifier"
-	case_Warehouses_sql_CreateInteractive_basic                                         testCaseName = "sql_CreateInteractive_basic"
-	case_Warehouses_sql_CreateInteractive_all                                           testCaseName = "sql_CreateInteractive_all"
-	case_Warehouses_validation_Alter_name_ValidIdentifier                               testCaseName = "validation_Alter_name_ValidIdentifier"
-	case_Warehouses_validation_Alter_opts_ExactlyOneValueSet_NoneSet                    testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_Warehouses_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet             testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Warehouses_validation_Alter_RenameTo_ValidIdentifierIfSet                      testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
-	case_Warehouses_validation_Alter_Set_FallbackWarehouse_ValidIdentifierIfSet         testCaseName = "validation_Alter_Set_FallbackWarehouse_ValidIdentifierIfSet"
-	case_Warehouses_validation_Alter_opts_Set_AtLeastOneValueSet                        testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
-	case_Warehouses_validation_Alter_opts_Unset_AtLeastOneValueSet                      testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
-	case_Warehouses_validation_Alter_AddTables_ValidIdentifier                          testCaseName = "validation_Alter_AddTables_ValidIdentifier"
-	case_Warehouses_validation_Alter_DropTables_ValidIdentifier                         testCaseName = "validation_Alter_DropTables_ValidIdentifier"
-	case_Warehouses_validation_Alter_SetTags_ValidIdentifier                            testCaseName = "validation_Alter_SetTags_ValidIdentifier"
-	case_Warehouses_sql_Alter_Suspend                                                   testCaseName = "sql_Alter_Suspend"
-	case_Warehouses_sql_Alter_Resume                                                    testCaseName = "sql_Alter_Resume"
-	case_Warehouses_sql_Alter_AbortAllQueries                                           testCaseName = "sql_Alter_AbortAllQueries"
-	case_Warehouses_sql_Alter_RenameTo                                                  testCaseName = "sql_Alter_RenameTo"
-	case_Warehouses_sql_Alter_Set                                                       testCaseName = "sql_Alter_Set"
-	case_Warehouses_sql_Alter_Unset                                                     testCaseName = "sql_Alter_Unset"
-	case_Warehouses_sql_Alter_AddTables                                                 testCaseName = "sql_Alter_AddTables"
-	case_Warehouses_sql_Alter_DropTables                                                testCaseName = "sql_Alter_DropTables"
-	case_Warehouses_sql_Alter_SetTags                                                   testCaseName = "sql_Alter_SetTags"
-	case_Warehouses_sql_Alter_UnsetTags                                                 testCaseName = "sql_Alter_UnsetTags"
-	case_Warehouses_validation_Drop_name_ValidIdentifier                                testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_Warehouses_sql_Drop_basic                                                      testCaseName = "sql_Drop_basic"
-	case_Warehouses_sql_Drop_all                                                        testCaseName = "sql_Drop_all"
-	case_Warehouses_sql_Show_basic                                                      testCaseName = "sql_Show_basic"
-	case_Warehouses_sql_Show_all                                                        testCaseName = "sql_Show_all"
-	case_Warehouses_sql_Show_Like                                                       testCaseName = "sql_Show_Like"
-	case_Warehouses_sql_Show_StartsWith                                                 testCaseName = "sql_Show_StartsWith"
-	case_Warehouses_sql_Show_Limit                                                      testCaseName = "sql_Show_Limit"
-	case_Warehouses_validation_Describe_name_ValidIdentifier                            testCaseName = "validation_Describe_name_ValidIdentifier"
-	case_Warehouses_sql_Describe_basic                                                  testCaseName = "sql_Describe_basic"
+	case_Warehouses_validation_Create_name_ValidIdentifier                                 testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Warehouses_validation_Create_opts_ConflictingFields                               testCaseName = "validation_Create_opts_ConflictingFields"
+	case_Warehouses_validation_Create_Tag_ValidIdentifier                                  testCaseName = "validation_Create_Tag_ValidIdentifier"
+	case_Warehouses_sql_Create_basic                                                       testCaseName = "sql_Create_basic"
+	case_Warehouses_sql_Create_all                                                         testCaseName = "sql_Create_all"
+	case_Warehouses_validation_CreateAdaptive_name_ValidIdentifier                         testCaseName = "validation_CreateAdaptive_name_ValidIdentifier"
+	case_Warehouses_validation_CreateAdaptive_opts_ConflictingFields                       testCaseName = "validation_CreateAdaptive_opts_ConflictingFields"
+	case_Warehouses_validation_CreateAdaptive_Tag_ValidIdentifier                          testCaseName = "validation_CreateAdaptive_Tag_ValidIdentifier"
+	case_Warehouses_sql_CreateAdaptive_basic                                               testCaseName = "sql_CreateAdaptive_basic"
+	case_Warehouses_sql_CreateAdaptive_all                                                 testCaseName = "sql_CreateAdaptive_all"
+	case_Warehouses_validation_CreateInteractive_name_ValidIdentifier                      testCaseName = "validation_CreateInteractive_name_ValidIdentifier"
+	case_Warehouses_validation_CreateInteractive_opts_ConflictingFields                    testCaseName = "validation_CreateInteractive_opts_ConflictingFields"
+	case_Warehouses_validation_CreateInteractive_FallbackWarehouse_ValidIdentifierIfSet    testCaseName = "validation_CreateInteractive_FallbackWarehouse_ValidIdentifierIfSet"
+	case_Warehouses_validation_CreateInteractive_Tables_ValidIdentifier                    testCaseName = "validation_CreateInteractive_Tables_ValidIdentifier"
+	case_Warehouses_validation_CreateInteractive_Tag_ValidIdentifier                       testCaseName = "validation_CreateInteractive_Tag_ValidIdentifier"
+	case_Warehouses_sql_CreateInteractive_basic                                            testCaseName = "sql_CreateInteractive_basic"
+	case_Warehouses_sql_CreateInteractive_all                                              testCaseName = "sql_CreateInteractive_all"
+	case_Warehouses_validation_Alter_name_ValidIdentifier                                  testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Warehouses_validation_Alter_opts_ExactlyOneValueSet_NoneSet                       testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Warehouses_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Warehouses_validation_Alter_RenameTo_ValidIdentifierIfSet                         testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_Warehouses_validation_Alter_opts_Set_AtLeastOneValueSet                           testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Warehouses_validation_Alter_opts_Unset_AtLeastOneValueSet                         testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Warehouses_validation_Alter_SetTags_ValidIdentifier                               testCaseName = "validation_Alter_SetTags_ValidIdentifier"
+	case_Warehouses_sql_Alter_Suspend                                                      testCaseName = "sql_Alter_Suspend"
+	case_Warehouses_sql_Alter_Resume                                                       testCaseName = "sql_Alter_Resume"
+	case_Warehouses_sql_Alter_AbortAllQueries                                              testCaseName = "sql_Alter_AbortAllQueries"
+	case_Warehouses_sql_Alter_RenameTo                                                     testCaseName = "sql_Alter_RenameTo"
+	case_Warehouses_sql_Alter_Set                                                          testCaseName = "sql_Alter_Set"
+	case_Warehouses_sql_Alter_Unset                                                        testCaseName = "sql_Alter_Unset"
+	case_Warehouses_sql_Alter_SetTags                                                      testCaseName = "sql_Alter_SetTags"
+	case_Warehouses_sql_Alter_UnsetTags                                                    testCaseName = "sql_Alter_UnsetTags"
+	case_Warehouses_validation_AlterAdaptive_name_ValidIdentifier                          testCaseName = "validation_AlterAdaptive_name_ValidIdentifier"
+	case_Warehouses_validation_AlterAdaptive_opts_ExactlyOneValueSet_NoneSet               testCaseName = "validation_AlterAdaptive_opts_ExactlyOneValueSet_NoneSet"
+	case_Warehouses_validation_AlterAdaptive_opts_ExactlyOneValueSet_MoreThanOneSet        testCaseName = "validation_AlterAdaptive_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Warehouses_validation_AlterAdaptive_RenameTo_ValidIdentifierIfSet                 testCaseName = "validation_AlterAdaptive_RenameTo_ValidIdentifierIfSet"
+	case_Warehouses_validation_AlterAdaptive_opts_Set_AtLeastOneValueSet                   testCaseName = "validation_AlterAdaptive_opts_Set_AtLeastOneValueSet"
+	case_Warehouses_validation_AlterAdaptive_opts_Unset_AtLeastOneValueSet                 testCaseName = "validation_AlterAdaptive_opts_Unset_AtLeastOneValueSet"
+	case_Warehouses_validation_AlterAdaptive_SetTags_ValidIdentifier                       testCaseName = "validation_AlterAdaptive_SetTags_ValidIdentifier"
+	case_Warehouses_sql_AlterAdaptive_RenameTo                                             testCaseName = "sql_AlterAdaptive_RenameTo"
+	case_Warehouses_sql_AlterAdaptive_Set                                                  testCaseName = "sql_AlterAdaptive_Set"
+	case_Warehouses_sql_AlterAdaptive_Unset                                                testCaseName = "sql_AlterAdaptive_Unset"
+	case_Warehouses_sql_AlterAdaptive_SetTags                                              testCaseName = "sql_AlterAdaptive_SetTags"
+	case_Warehouses_sql_AlterAdaptive_UnsetTags                                            testCaseName = "sql_AlterAdaptive_UnsetTags"
+	case_Warehouses_validation_AlterInteractive_name_ValidIdentifier                       testCaseName = "validation_AlterInteractive_name_ValidIdentifier"
+	case_Warehouses_validation_AlterInteractive_opts_ExactlyOneValueSet_NoneSet            testCaseName = "validation_AlterInteractive_opts_ExactlyOneValueSet_NoneSet"
+	case_Warehouses_validation_AlterInteractive_opts_ExactlyOneValueSet_MoreThanOneSet     testCaseName = "validation_AlterInteractive_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Warehouses_validation_AlterInteractive_RenameTo_ValidIdentifierIfSet              testCaseName = "validation_AlterInteractive_RenameTo_ValidIdentifierIfSet"
+	case_Warehouses_validation_AlterInteractive_Set_FallbackWarehouse_ValidIdentifierIfSet testCaseName = "validation_AlterInteractive_Set_FallbackWarehouse_ValidIdentifierIfSet"
+	case_Warehouses_validation_AlterInteractive_opts_Set_AtLeastOneValueSet                testCaseName = "validation_AlterInteractive_opts_Set_AtLeastOneValueSet"
+	case_Warehouses_validation_AlterInteractive_opts_Unset_AtLeastOneValueSet              testCaseName = "validation_AlterInteractive_opts_Unset_AtLeastOneValueSet"
+	case_Warehouses_validation_AlterInteractive_AddTables_ValidIdentifier                  testCaseName = "validation_AlterInteractive_AddTables_ValidIdentifier"
+	case_Warehouses_validation_AlterInteractive_DropTables_ValidIdentifier                 testCaseName = "validation_AlterInteractive_DropTables_ValidIdentifier"
+	case_Warehouses_validation_AlterInteractive_SetTags_ValidIdentifier                    testCaseName = "validation_AlterInteractive_SetTags_ValidIdentifier"
+	case_Warehouses_sql_AlterInteractive_RenameTo                                          testCaseName = "sql_AlterInteractive_RenameTo"
+	case_Warehouses_sql_AlterInteractive_Set                                               testCaseName = "sql_AlterInteractive_Set"
+	case_Warehouses_sql_AlterInteractive_Unset                                             testCaseName = "sql_AlterInteractive_Unset"
+	case_Warehouses_sql_AlterInteractive_AddTables                                         testCaseName = "sql_AlterInteractive_AddTables"
+	case_Warehouses_sql_AlterInteractive_DropTables                                        testCaseName = "sql_AlterInteractive_DropTables"
+	case_Warehouses_sql_AlterInteractive_SetTags                                           testCaseName = "sql_AlterInteractive_SetTags"
+	case_Warehouses_sql_AlterInteractive_UnsetTags                                         testCaseName = "sql_AlterInteractive_UnsetTags"
+	case_Warehouses_validation_Drop_name_ValidIdentifier                                   testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Warehouses_sql_Drop_basic                                                         testCaseName = "sql_Drop_basic"
+	case_Warehouses_sql_Drop_all                                                           testCaseName = "sql_Drop_all"
+	case_Warehouses_sql_Show_basic                                                         testCaseName = "sql_Show_basic"
+	case_Warehouses_sql_Show_all                                                           testCaseName = "sql_Show_all"
+	case_Warehouses_sql_Show_Like                                                          testCaseName = "sql_Show_Like"
+	case_Warehouses_sql_Show_StartsWith                                                    testCaseName = "sql_Show_StartsWith"
+	case_Warehouses_sql_Show_Limit                                                         testCaseName = "sql_Show_Limit"
+	case_Warehouses_validation_Describe_name_ValidIdentifier                               testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_Warehouses_sql_Describe_basic                                                     testCaseName = "sql_Describe_basic"
 )
 
 type WarehousesTestsContext struct {
@@ -72,6 +96,8 @@ type WarehousesTestsContext struct {
 	CreateAdaptive    *sdkTestCtx[*CreateAdaptiveWarehouseOptions]
 	CreateInteractive *sdkTestCtx[*CreateInteractiveWarehouseOptions]
 	Alter             *sdkTestCtx[*AlterWarehouseOptions]
+	AlterAdaptive     *sdkTestCtx[*AlterAdaptiveWarehouseOptions]
+	AlterInteractive  *sdkTestCtx[*AlterInteractiveWarehouseOptions]
 	Drop              *sdkTestCtx[*DropWarehouseOptions]
 	Show              *sdkTestCtx[*ShowWarehouseOptions]
 	Describe          *sdkTestCtx[*DescribeWarehouseOptions]
@@ -233,7 +259,7 @@ var warehousesTests = WarehousesTestsContext{
 			},
 			validationCase[*AlterWarehouseOptions]{
 				Name:        case_Warehouses_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterWarehouseOptions", "Suspend", "Resume", "AbortAllQueries", "RenameTo", "Set", "Unset", "AddTables", "DropTables", "SetTags", "UnsetTags"),
+				ExpectedErr: errExactlyOneOf("AlterWarehouseOptions", "Suspend", "Resume", "AbortAllQueries", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags"),
 				DefaultModify: func(opts *AlterWarehouseOptions) {
 					opts.Suspend = nil
 					opts.Resume = nil
@@ -241,15 +267,13 @@ var warehousesTests = WarehousesTestsContext{
 					opts.RenameTo = nil
 					opts.Set = nil
 					opts.Unset = nil
-					opts.AddTables = nil
-					opts.DropTables = nil
 					opts.SetTags = nil
 					opts.UnsetTags = nil
 				},
 			},
 			validationCase[*AlterWarehouseOptions]{
 				Name:        case_Warehouses_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("AlterWarehouseOptions", "Suspend", "Resume", "AbortAllQueries", "RenameTo", "Set", "Unset", "AddTables", "DropTables", "SetTags", "UnsetTags"),
+				ExpectedErr: errExactlyOneOf("AlterWarehouseOptions", "Suspend", "Resume", "AbortAllQueries", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags"),
 				DefaultModify: func(opts *AlterWarehouseOptions) {
 					opts.Suspend = new(true)
 					opts.Resume = new(true)
@@ -263,19 +287,10 @@ var warehousesTests = WarehousesTestsContext{
 				},
 			},
 			validationCase[*AlterWarehouseOptions]{
-				Name:        case_Warehouses_validation_Alter_Set_FallbackWarehouse_ValidIdentifierIfSet,
-				ExpectedErr: errInvalidIdentifier("AlterWarehouseOptions.Set", "FallbackWarehouse"),
-				DefaultModify: func(opts *AlterWarehouseOptions) {
-					opts.Set = &WarehouseSet{}
-					opts.Set.FallbackWarehouse = new(emptyAccountObjectIdentifier)
-				},
-			},
-			validationCase[*AlterWarehouseOptions]{
 				Name:        case_Warehouses_validation_Alter_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterWarehouseOptions.Set", "FallbackWarehouse", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel"),
+				ExpectedErr: errAtLeastOneOf("AlterWarehouseOptions.Set", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation"),
 				DefaultModify: func(opts *AlterWarehouseOptions) {
 					opts.Set = &WarehouseSet{}
-					opts.Set.FallbackWarehouse = nil
 					opts.Set.MaxConcurrencyLevel = nil
 					opts.Set.StatementQueuedTimeoutInSeconds = nil
 					opts.Set.StatementTimeoutInSeconds = nil
@@ -293,16 +308,13 @@ var warehousesTests = WarehousesTestsContext{
 					opts.Set.QueryAccelerationMaxScaleFactor = nil
 					opts.Set.ResourceConstraint = nil
 					opts.Set.Generation = nil
-					opts.Set.QueryThroughputMultiplier = nil
-					opts.Set.MaxQueryPerformanceLevel = nil
 				},
 			},
 			validationCase[*AlterWarehouseOptions]{
 				Name:        case_Warehouses_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterWarehouseOptions.Unset", "FallbackWarehouse", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel"),
+				ExpectedErr: errAtLeastOneOf("AlterWarehouseOptions.Unset", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation"),
 				DefaultModify: func(opts *AlterWarehouseOptions) {
 					opts.Unset = &WarehouseUnset{}
-					opts.Unset.FallbackWarehouse = nil
 					opts.Unset.MaxConcurrencyLevel = nil
 					opts.Unset.StatementQueuedTimeoutInSeconds = nil
 					opts.Unset.StatementTimeoutInSeconds = nil
@@ -319,22 +331,6 @@ var warehousesTests = WarehousesTestsContext{
 					opts.Unset.QueryAccelerationMaxScaleFactor = nil
 					opts.Unset.ResourceConstraint = nil
 					opts.Unset.Generation = nil
-					opts.Unset.QueryThroughputMultiplier = nil
-					opts.Unset.MaxQueryPerformanceLevel = nil
-				},
-			},
-			validationCase[*AlterWarehouseOptions]{
-				Name:        case_Warehouses_validation_Alter_AddTables_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("AlterWarehouseOptions.AddTables[0]", "AddTables"),
-				DefaultModify: func(opts *AlterWarehouseOptions) {
-					opts.AddTables = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
-				},
-			},
-			validationCase[*AlterWarehouseOptions]{
-				Name:        case_Warehouses_validation_Alter_DropTables_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("AlterWarehouseOptions.DropTables[0]", "DropTables"),
-				DefaultModify: func(opts *AlterWarehouseOptions) {
-					opts.DropTables = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
 				},
 			},
 			validationCase[*AlterWarehouseOptions]{
@@ -365,16 +361,238 @@ var warehousesTests = WarehousesTestsContext{
 				Name: case_Warehouses_sql_Alter_Unset,
 			},
 			sqlCase[*AlterWarehouseOptions]{
-				Name: case_Warehouses_sql_Alter_AddTables,
-			},
-			sqlCase[*AlterWarehouseOptions]{
-				Name: case_Warehouses_sql_Alter_DropTables,
-			},
-			sqlCase[*AlterWarehouseOptions]{
 				Name: case_Warehouses_sql_Alter_SetTags,
 			},
 			sqlCase[*AlterWarehouseOptions]{
 				Name: case_Warehouses_sql_Alter_UnsetTags,
+			},
+		),
+	AlterAdaptive: newSdkTestCtx[*AlterAdaptiveWarehouseOptions](
+		"Warehouses", "AlterAdaptive",
+	).
+		withDefaultOpts(func() *AlterAdaptiveWarehouseOptions {
+			return &AlterAdaptiveWarehouseOptions{
+				name: warehousesTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterAdaptiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_AlterAdaptive_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterAdaptiveWarehouseOptions", "name"),
+				DefaultModify: func(opts *AlterAdaptiveWarehouseOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*AlterAdaptiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_AlterAdaptive_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterAdaptiveWarehouseOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterAdaptiveWarehouseOptions) {
+					opts.RenameTo = nil
+					opts.Set = nil
+					opts.Unset = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterAdaptiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_AlterAdaptive_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterAdaptiveWarehouseOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterAdaptiveWarehouseOptions) {
+					opts.RenameTo = new(randomAccountObjectIdentifier())
+					opts.Set = &WarehouseAdaptiveSet{}
+				},
+			},
+			validationCase[*AlterAdaptiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_AlterAdaptive_RenameTo_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("AlterAdaptiveWarehouseOptions", "RenameTo"),
+				DefaultModify: func(opts *AlterAdaptiveWarehouseOptions) {
+					opts.RenameTo = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterAdaptiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_AlterAdaptive_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterAdaptiveWarehouseOptions.Set", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseType", "Comment", "ResourceMonitor", "MaxQueryPerformanceLevel", "QueryThroughputMultiplier"),
+				DefaultModify: func(opts *AlterAdaptiveWarehouseOptions) {
+					opts.Set = &WarehouseAdaptiveSet{}
+					opts.Set.StatementQueuedTimeoutInSeconds = nil
+					opts.Set.StatementTimeoutInSeconds = nil
+					opts.Set.WarehouseType = nil
+					opts.Set.Comment = nil
+					opts.Set.ResourceMonitor = nil
+					opts.Set.MaxQueryPerformanceLevel = nil
+					opts.Set.QueryThroughputMultiplier = nil
+				},
+			},
+			validationCase[*AlterAdaptiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_AlterAdaptive_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterAdaptiveWarehouseOptions.Unset", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseType", "Comment", "ResourceMonitor", "MaxQueryPerformanceLevel", "QueryThroughputMultiplier"),
+				DefaultModify: func(opts *AlterAdaptiveWarehouseOptions) {
+					opts.Unset = &WarehouseAdaptiveUnset{}
+					opts.Unset.StatementQueuedTimeoutInSeconds = nil
+					opts.Unset.StatementTimeoutInSeconds = nil
+					opts.Unset.WarehouseType = nil
+					opts.Unset.Comment = nil
+					opts.Unset.ResourceMonitor = nil
+					opts.Unset.MaxQueryPerformanceLevel = nil
+					opts.Unset.QueryThroughputMultiplier = nil
+				},
+			},
+			validationCase[*AlterAdaptiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_AlterAdaptive_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterAdaptiveWarehouseOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterAdaptiveWarehouseOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterAdaptiveWarehouseOptions]{
+				Name: case_Warehouses_sql_AlterAdaptive_RenameTo,
+			},
+			sqlCase[*AlterAdaptiveWarehouseOptions]{
+				Name: case_Warehouses_sql_AlterAdaptive_Set,
+			},
+			sqlCase[*AlterAdaptiveWarehouseOptions]{
+				Name: case_Warehouses_sql_AlterAdaptive_Unset,
+			},
+			sqlCase[*AlterAdaptiveWarehouseOptions]{
+				Name: case_Warehouses_sql_AlterAdaptive_SetTags,
+			},
+			sqlCase[*AlterAdaptiveWarehouseOptions]{
+				Name: case_Warehouses_sql_AlterAdaptive_UnsetTags,
+			},
+		),
+	AlterInteractive: newSdkTestCtx[*AlterInteractiveWarehouseOptions](
+		"Warehouses", "AlterInteractive",
+	).
+		withDefaultOpts(func() *AlterInteractiveWarehouseOptions {
+			return &AlterInteractiveWarehouseOptions{
+				name: warehousesTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterInteractiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_AlterInteractive_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterInteractiveWarehouseOptions", "name"),
+				DefaultModify: func(opts *AlterInteractiveWarehouseOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*AlterInteractiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_AlterInteractive_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterInteractiveWarehouseOptions", "RenameTo", "Set", "Unset", "AddTables", "DropTables", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterInteractiveWarehouseOptions) {
+					opts.RenameTo = nil
+					opts.Set = nil
+					opts.Unset = nil
+					opts.AddTables = nil
+					opts.DropTables = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterInteractiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_AlterInteractive_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterInteractiveWarehouseOptions", "RenameTo", "Set", "Unset", "AddTables", "DropTables", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterInteractiveWarehouseOptions) {
+					opts.RenameTo = new(randomAccountObjectIdentifier())
+					opts.Set = &WarehouseInteractiveSet{}
+				},
+			},
+			validationCase[*AlterInteractiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_AlterInteractive_RenameTo_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("AlterInteractiveWarehouseOptions", "RenameTo"),
+				DefaultModify: func(opts *AlterInteractiveWarehouseOptions) {
+					opts.RenameTo = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterInteractiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_AlterInteractive_Set_FallbackWarehouse_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("AlterInteractiveWarehouseOptions.Set", "FallbackWarehouse"),
+				DefaultModify: func(opts *AlterInteractiveWarehouseOptions) {
+					opts.Set = &WarehouseInteractiveSet{}
+					opts.Set.FallbackWarehouse = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterInteractiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_AlterInteractive_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterInteractiveWarehouseOptions.Set", "FallbackWarehouse", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseSize", "MaxClusterCount", "MinClusterCount", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment"),
+				DefaultModify: func(opts *AlterInteractiveWarehouseOptions) {
+					opts.Set = &WarehouseInteractiveSet{}
+					opts.Set.FallbackWarehouse = nil
+					opts.Set.MaxConcurrencyLevel = nil
+					opts.Set.StatementQueuedTimeoutInSeconds = nil
+					opts.Set.StatementTimeoutInSeconds = nil
+					opts.Set.WarehouseSize = nil
+					opts.Set.MaxClusterCount = nil
+					opts.Set.MinClusterCount = nil
+					opts.Set.AutoSuspend = nil
+					opts.Set.AutoResume = nil
+					opts.Set.ResourceMonitor = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterInteractiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_AlterInteractive_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterInteractiveWarehouseOptions.Unset", "FallbackWarehouse", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseSize", "MaxClusterCount", "MinClusterCount", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment"),
+				DefaultModify: func(opts *AlterInteractiveWarehouseOptions) {
+					opts.Unset = &WarehouseInteractiveUnset{}
+					opts.Unset.FallbackWarehouse = nil
+					opts.Unset.MaxConcurrencyLevel = nil
+					opts.Unset.StatementQueuedTimeoutInSeconds = nil
+					opts.Unset.StatementTimeoutInSeconds = nil
+					opts.Unset.WarehouseSize = nil
+					opts.Unset.MaxClusterCount = nil
+					opts.Unset.MinClusterCount = nil
+					opts.Unset.AutoSuspend = nil
+					opts.Unset.AutoResume = nil
+					opts.Unset.ResourceMonitor = nil
+					opts.Unset.Comment = nil
+				},
+			},
+			validationCase[*AlterInteractiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_AlterInteractive_AddTables_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterInteractiveWarehouseOptions.AddTables[0]", "AddTables"),
+				DefaultModify: func(opts *AlterInteractiveWarehouseOptions) {
+					opts.AddTables = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
+			validationCase[*AlterInteractiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_AlterInteractive_DropTables_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterInteractiveWarehouseOptions.DropTables[0]", "DropTables"),
+				DefaultModify: func(opts *AlterInteractiveWarehouseOptions) {
+					opts.DropTables = []SchemaObjectIdentifier{emptySchemaObjectIdentifier}
+				},
+			},
+			validationCase[*AlterInteractiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_AlterInteractive_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterInteractiveWarehouseOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterInteractiveWarehouseOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterInteractiveWarehouseOptions]{
+				Name: case_Warehouses_sql_AlterInteractive_RenameTo,
+			},
+			sqlCase[*AlterInteractiveWarehouseOptions]{
+				Name: case_Warehouses_sql_AlterInteractive_Set,
+			},
+			sqlCase[*AlterInteractiveWarehouseOptions]{
+				Name: case_Warehouses_sql_AlterInteractive_Unset,
+			},
+			sqlCase[*AlterInteractiveWarehouseOptions]{
+				Name: case_Warehouses_sql_AlterInteractive_AddTables,
+			},
+			sqlCase[*AlterInteractiveWarehouseOptions]{
+				Name: case_Warehouses_sql_AlterInteractive_DropTables,
+			},
+			sqlCase[*AlterInteractiveWarehouseOptions]{
+				Name: case_Warehouses_sql_AlterInteractive_SetTags,
+			},
+			sqlCase[*AlterInteractiveWarehouseOptions]{
+				Name: case_Warehouses_sql_AlterInteractive_UnsetTags,
 			},
 		),
 	Drop: newSdkTestCtx[*DropWarehouseOptions](
@@ -471,6 +689,16 @@ func TestWarehouses_CreateInteractive(t *testing.T) {
 func TestWarehouses_Alter(t *testing.T) {
 	warehousesTests.Alter.RunValidationCases(t)
 	warehousesTests.Alter.RunSqlCases(t)
+}
+
+func TestWarehouses_AlterAdaptive(t *testing.T) {
+	warehousesTests.AlterAdaptive.RunValidationCases(t)
+	warehousesTests.AlterAdaptive.RunSqlCases(t)
+}
+
+func TestWarehouses_AlterInteractive(t *testing.T) {
+	warehousesTests.AlterInteractive.RunValidationCases(t)
+	warehousesTests.AlterInteractive.RunSqlCases(t)
 }
 
 func TestWarehouses_Drop(t *testing.T) {

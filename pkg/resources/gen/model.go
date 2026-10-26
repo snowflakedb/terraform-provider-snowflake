@@ -61,6 +61,12 @@ func (m ResourceModel) EffectiveSdkParametersObjectName() string {
 	return m.Name
 }
 
+// EffectiveSdkAlterObjectName is the SET and UNSET request stem.
+// A variant uses its own name, so WarehouseAdaptive is WarehouseAdaptiveSetRequest.
+func (m ResourceModel) EffectiveSdkAlterObjectName() string {
+	return m.Name
+}
+
 func (m ResourceModel) ParseIdFunc() string {
 	if m.Hooks.ParseId.Generate {
 		return m.Prefix() + "ParseId"

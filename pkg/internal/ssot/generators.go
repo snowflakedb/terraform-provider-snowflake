@@ -52,7 +52,7 @@ type SdkGenerator struct {
 	CreateWithoutOrReplace      bool
 	CreateAdditionalValidations bool
 	// CreateForVariants emits each variant CREATE as a custom method on this object's interface.
-	// TODO [next PRs]: the same switch for variant ALTER, and for SHOW/DESCRIBE.
+	// TODO [next PRs]: the same switch for variant SHOW/DESCRIBE.
 	CreateForVariants bool
 
 	Alter                          bool
@@ -64,6 +64,9 @@ type SdkGenerator struct {
 	AlterSetAdditionalValidations  bool
 	AlterAdditionalValidations     bool
 	AlterWithoutExactlyOneValueSet bool
+	// AlterForVariants emits each variant ALTER as a custom method on this object's interface.
+	// TODO [next PRs]: the same switch for variant SHOW/DESCRIBE.
+	AlterForVariants bool
 
 	CustomOperations       bool
 	CustomInterfaceMethods bool
@@ -295,9 +298,16 @@ func SdkCreateAdditionalValidations() SdkCreateOption {
 
 // SdkCreateForVariants emits CREATE for each variant of this object as a custom method.
 // The variant supplies the CREATE spec.
-// TODO [next PRs]: the same switch for variant ALTER, and for SHOW/DESCRIBE.
+// TODO [next PRs]: the same switch for variant SHOW/DESCRIBE.
 func SdkCreateForVariants() SdkOption {
 	return func(s *SdkGenerator) { s.CreateForVariants = true }
+}
+
+// SdkAlterForVariants emits ALTER for each variant of this object as a custom method.
+// The variant supplies the ALTER spec.
+// TODO [next PRs]: the same switch for variant SHOW/DESCRIBE.
+func SdkAlterForVariants() SdkOption {
+	return func(s *SdkGenerator) { s.AlterForVariants = true }
 }
 
 type SdkAlterOption func(*SdkGenerator)
@@ -375,7 +385,7 @@ func SdkShowParameters() SdkOption {
 }
 
 // SdkShowParametersDetails emits the typed parameters-details struct and ShowParametersDetails.
-// The fields are ParameterLevel() plus AlterAdditionalParametersForLevels.
+// The fields are ParameterLevel() plus ShowParametersDetailsAdditionalLevels.
 // The struct name is Name plus ParametersDetails. The generated body calls ShowParameters.
 func SdkShowParametersDetails() SdkOption {
 	return func(s *SdkGenerator) { s.ShowParametersDetails = true }

@@ -185,7 +185,7 @@ func (i *Interface) CreateOperationFromObject(obj ssot.Object, helperStructs ...
 
 // CreateVariantOperationsFromObject emits each variant CREATE as a custom method.
 // Variants come from the catalog for base. The variant supplies the CREATE spec. The base must turn on SdkCreateForVariants.
-// TODO [next PRs]: the same switch for variant ALTER, and for SHOW/DESCRIBE.
+// TODO [next PRs]: the same switch for variant SHOW/DESCRIBE.
 func (i *Interface) CreateVariantOperationsFromObject(base ssot.Object) *Interface {
 	if !base.SdkConfig().CreateForVariants {
 		panic(fmt.Sprintf("object %q is not enabled for variant CREATE generation", base.Name))
@@ -332,13 +332,14 @@ func (i *Interface) ShowParametersFromObject(obj ssot.Object) *Interface {
 }
 
 // ShowParametersDetailsFromObject adds ShowParametersDetails and the typed details struct.
-// The fields are ParameterLevel() plus AlterAdditionalParametersForLevels, the SET and UNSET catalog.
-// The body is generated and calls ShowParameters.
+// The fields are ParameterLevel() plus ShowParametersDetailsAdditionalLevels.
+// ALTER SET and UNSET stay ParameterLevel(). The body is generated and calls ShowParameters.
 func (i *Interface) ShowParametersDetailsFromObject(obj ssot.Object) *Interface {
 	if !obj.SdkConfig().ShowParametersDetails {
 		panic(fmt.Sprintf("object %q is not enabled for SDK ShowParametersDetails generation", obj.Name))
 	}
-	return i.ShowParametersDetails(parametersForLevels(obj.ParameterLevelsFor("SET"))...)
+	levels := append([]ssot.ParameterLevel{obj.ParameterLevel()}, obj.ShowParametersDetailsAdditionalLevels...)
+	return i.ShowParametersDetails(parametersForLevels(levels)...)
 }
 
 // InterfaceFromObject builds one SDK interface from the operations whose flags are on.
@@ -358,6 +359,9 @@ func InterfaceFromObject(obj ssot.Object) *Interface {
 	}
 	if cfg.Alter {
 		iface = iface.AlterOperationFromObject(obj)
+	}
+	if cfg.AlterForVariants {
+		iface = iface.AlterVariantOperationsFromObject(obj)
 	}
 	if cfg.Drop {
 		iface = iface.DropOperationFromObject(obj)
@@ -565,11 +569,40 @@ func customOperationAttribute(obj ssot.Object, spec ssot.CustomOperationSpec, cl
 // AtLeastOneValueSet on SET and UNSET lists the fields those structs contain.
 // ExactlyOneValueSet follows obj.Alter.
 func (i *Interface) AlterOperationFromObject(obj ssot.Object) *Interface {
+	if obj.VariantOf != nil {
+		panic(fmt.Sprintf("object %q: a variant cannot enable SDK generation", obj.Name))
+	}
 	cfg := obj.SdkConfig()
 	if !cfg.Alter {
 		panic(fmt.Sprintf("object %q is not enabled for SDK ALTER generation", obj.Name))
 	}
 	return i.AlterOperation(cfg.AlterDoc, alterQueryStructFromConfig(obj, cfg)).withEnumListItems(obj)
+}
+
+// AlterVariantOperationsFromObject emits each variant ALTER as a custom method.
+// Variants come from the catalog for base. The variant supplies the ALTER spec. The base must turn on SdkAlterForVariants.
+// TODO [next PRs]: the same switch for variant SHOW/DESCRIBE.
+func (i *Interface) AlterVariantOperationsFromObject(base ssot.Object) *Interface {
+	if !base.SdkConfig().AlterForVariants {
+		panic(fmt.Sprintf("object %q is not enabled for variant ALTER generation", base.Name))
+	}
+	variants := variantsOf(base)
+	if len(variants) == 0 {
+		panic(fmt.Sprintf("object %q: variant ALTER generation has no variants", base.Name))
+	}
+	for _, variant := range variants {
+		if variant.VariantOf == nil || variant.VariantOf.Name != base.Name {
+			panic(fmt.Sprintf("object %q: %q is not a variant", base.Name, variant.Name))
+		}
+		if !variant.HasAlterSpec() {
+			panic(fmt.Sprintf("object %q: variant ALTER has no spec", variant.Name))
+		}
+		cfg := variant.VariantAlterConfig()
+		q := alterQueryStructFromConfig(variant, cfg)
+		i = i.CustomOperation(variant.VariantAlterMethod(base.Name), cfg.AlterDoc, q)
+		i = i.withEnumListItems(variant)
+	}
+	return i
 }
 
 func (i *Interface) withEnumListItems(obj ssot.Object) *Interface {

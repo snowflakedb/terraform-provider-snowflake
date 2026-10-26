@@ -518,8 +518,8 @@ func TestInt_Warehouses(t *testing.T) {
 				HasStatementTimeoutInSeconds(172800),
 		)
 
-		err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
-			WithSet(*sdk.NewWarehouseSetRequest().
+		err := client.Warehouses.AlterAdaptive(ctx, sdk.NewAlterAdaptiveWarehouseRequest(warehouse.ID()).
+			WithSet(*sdk.NewWarehouseAdaptiveSetRequest().
 				WithMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXSmall).
 				WithQueryThroughputMultiplier(5).
 				WithResourceMonitor(resourceMonitor.ID()).
@@ -539,8 +539,8 @@ func TestInt_Warehouses(t *testing.T) {
 				HasStatementTimeoutInSeconds(200),
 		)
 
-		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
-			WithUnset(*sdk.NewWarehouseUnsetRequest().
+		err = client.Warehouses.AlterAdaptive(ctx, sdk.NewAlterAdaptiveWarehouseRequest(warehouse.ID()).
+			WithUnset(*sdk.NewWarehouseAdaptiveUnsetRequest().
 				WithMaxQueryPerformanceLevel(true).
 				WithQueryThroughputMultiplier(true).
 				WithResourceMonitor(true).
@@ -1237,11 +1237,11 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
-		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithAddTables([]sdk.SchemaObjectIdentifier{table2.ID()}))
+		err = client.Warehouses.AlterInteractive(ctx, sdk.NewAlterInteractiveWarehouseRequest(id).WithAddTables([]sdk.SchemaObjectIdentifier{table2.ID()}))
 		require.NoError(t, err)
 		assertThatObject(t, objectassert.WarehouseInteractive(t, id).HasTables(table1.ID(), table2.ID()))
 
-		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithDropTables([]sdk.SchemaObjectIdentifier{table1.ID()}))
+		err = client.Warehouses.AlterInteractive(ctx, sdk.NewAlterInteractiveWarehouseRequest(id).WithDropTables([]sdk.SchemaObjectIdentifier{table1.ID()}))
 		require.NoError(t, err)
 		assertThatObject(t, objectassert.WarehouseInteractive(t, id).HasTables(table2.ID()))
 	})
@@ -1255,8 +1255,8 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
-		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).
-			WithSet(*sdk.NewWarehouseSetRequest().WithFallbackWarehouse(fallback.ID())))
+		err = client.Warehouses.AlterInteractive(ctx, sdk.NewAlterInteractiveWarehouseRequest(id).
+			WithSet(*sdk.NewWarehouseInteractiveSetRequest().WithFallbackWarehouse(fallback.ID())))
 		require.NoError(t, err)
 
 		assertThatObject(
@@ -1264,8 +1264,8 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 				HasFallbackWarehouse(fallback.ID().Name()),
 		)
 
-		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).
-			WithUnset(*sdk.NewWarehouseUnsetRequest().WithFallbackWarehouse(true)))
+		err = client.Warehouses.AlterInteractive(ctx, sdk.NewAlterInteractiveWarehouseRequest(id).
+			WithUnset(*sdk.NewWarehouseInteractiveUnsetRequest().WithFallbackWarehouse(true)))
 		require.NoError(t, err)
 
 		assertThatObject(

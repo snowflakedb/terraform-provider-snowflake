@@ -65,8 +65,10 @@ func TestParameterHooks_variantUsesBaseSdkNames(t *testing.T) {
 	require.Contains(t, parameters, "*sdk.WarehouseParametersDetails")
 	require.Contains(t, parameters, "sdk.ParameterTypeWarehouse")
 	require.Contains(t, parameters, "*sdk.CreateAdaptiveWarehouseRequest")
-	require.Contains(t, parameters, "*sdk.WarehouseSetRequest")
-	require.Contains(t, parameters, "*sdk.WarehouseUnsetRequest")
+	require.Contains(t, parameters, "*sdk.WarehouseAdaptiveSetRequest")
+	require.Contains(t, parameters, "*sdk.WarehouseAdaptiveUnsetRequest")
+	require.NotContains(t, parameters, "*sdk.WarehouseSetRequest")
+	require.NotContains(t, parameters, "*sdk.WarehouseUnsetRequest")
 	require.NotContains(t, parameters, "sdk.WarehouseAdaptiveParametersDetails")
 	require.NotContains(t, parameters, "sdk.CreateWarehouseAdaptiveRequest")
 	// Sharing SDK types must not expose parameters from another variant's catalog scope.
@@ -110,7 +112,9 @@ func TestParameterHooks_variantRetainsOwnCatalog(t *testing.T) {
 	require.Contains(t, parameters, `handleParameterUpdateWithMapping(d, "fallback_warehouse", &set.FallbackWarehouse, &unset.FallbackWarehouse, stringToAccountObjectIdentifier),`)
 	require.Contains(t, parameters, `IdentifierTypedParameterValueComputedIf("fallback_warehouse", parameters.FallbackWarehouse, sdk.ParameterTypeWarehouse),`)
 	require.Contains(t, parameters, "*sdk.WarehouseParametersDetails")
-	require.Contains(t, parameters, "*sdk.WarehouseSetRequest")
+	require.Contains(t, parameters, "*sdk.WarehouseInteractiveSetRequest")
+	require.Contains(t, parameters, "*sdk.WarehouseInteractiveUnsetRequest")
+	require.NotContains(t, parameters, "*sdk.WarehouseSetRequest")
 }
 
 func TestParameterHooks_parametersOutputSetRetainsExtCall(t *testing.T) {

@@ -215,16 +215,6 @@ func init() {
 			`ALTER WAREHOUSE %s UNSET MAX_CLUSTER_COUNT, AUTO_RESUME, RESOURCE_CONSTRAINT, GENERATION`, id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
-			case_Warehouses_sql_Alter_AddTables,
-			func(opts *AlterWarehouseOptions) { opts.AddTables = []SchemaObjectIdentifier{tableId1, tableId2} },
-			`ALTER WAREHOUSE %s ADD TABLES (%s, %s)`, id.FullyQualifiedName(), tableId1.FullyQualifiedName(), tableId2.FullyQualifiedName(),
-		).
-		withModifyAndExpectedSqlf(
-			case_Warehouses_sql_Alter_DropTables,
-			func(opts *AlterWarehouseOptions) { opts.DropTables = []SchemaObjectIdentifier{tableId1} },
-			`ALTER WAREHOUSE %s DROP TABLES (%s)`, id.FullyQualifiedName(), tableId1.FullyQualifiedName(),
-		).
-		withModifyAndExpectedSqlf(
 			case_Warehouses_sql_Alter_SetTags,
 			func(opts *AlterWarehouseOptions) {
 				opts.SetTags = []TagAssociation{
@@ -242,47 +232,105 @@ func init() {
 
 	warehousesTests.Alter.
 		withAdditionalSqlCasef(
-			"sql_Alter_Set_FallbackWarehouse",
-			func(opts *AlterWarehouseOptions) {
-				opts.Set = &WarehouseSet{FallbackWarehouse: Pointer(NewAccountObjectIdentifier("fallbackwh"))}
-			},
-			`ALTER WAREHOUSE %s SET FALLBACK_WAREHOUSE = "fallbackwh"`, id.FullyQualifiedName(),
+			"sql_Alter_UnsetTags_multiple",
+			func(opts *AlterWarehouseOptions) { opts.UnsetTags = []ObjectIdentifier{tagId1, tagId2} },
+			`ALTER WAREHOUSE %s UNSET TAG %s, %s`, id.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
+		)
+
+	warehousesTests.AlterAdaptive.
+		withModifyAndExpectedSqlf(
+			case_Warehouses_sql_AlterAdaptive_RenameTo,
+			func(opts *AlterAdaptiveWarehouseOptions) { opts.RenameTo = &renameTarget },
+			`ALTER WAREHOUSE %s RENAME TO %s`, id.FullyQualifiedName(), renameTarget.FullyQualifiedName(),
 		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Unset_FallbackWarehouse",
-			func(opts *AlterWarehouseOptions) {
-				opts.Unset = &WarehouseUnset{FallbackWarehouse: Bool(true)}
-			},
-			`ALTER WAREHOUSE %s UNSET FALLBACK_WAREHOUSE`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Set_adaptiveParams",
-			func(opts *AlterWarehouseOptions) {
-				opts.Set = &WarehouseSet{
+		withModifyAndExpectedSqlf(
+			case_Warehouses_sql_AlterAdaptive_Set,
+			func(opts *AlterAdaptiveWarehouseOptions) {
+				opts.Set = &WarehouseAdaptiveSet{
 					MaxQueryPerformanceLevel:        Pointer(MaxQueryPerformanceLevelXSmall),
 					QueryThroughputMultiplier:       Int(5),
 					StatementQueuedTimeoutInSeconds: Int(100),
 					StatementTimeoutInSeconds:       Int(200),
 				}
 			},
-			`ALTER WAREHOUSE %s SET QUERY_THROUGHPUT_MULTIPLIER = 5 MAX_QUERY_PERFORMANCE_LEVEL = 'XSMALL' STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 100 STATEMENT_TIMEOUT_IN_SECONDS = 200`, id.FullyQualifiedName(),
+			`ALTER WAREHOUSE %s SET MAX_QUERY_PERFORMANCE_LEVEL = 'XSMALL' QUERY_THROUGHPUT_MULTIPLIER = 5 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 100 STATEMENT_TIMEOUT_IN_SECONDS = 200`,
+			id.FullyQualifiedName(),
 		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Unset_adaptiveParams",
-			func(opts *AlterWarehouseOptions) {
-				opts.Unset = &WarehouseUnset{
+		withModifyAndExpectedSqlf(
+			case_Warehouses_sql_AlterAdaptive_Unset,
+			func(opts *AlterAdaptiveWarehouseOptions) {
+				opts.Unset = &WarehouseAdaptiveUnset{
 					MaxQueryPerformanceLevel:        Bool(true),
 					QueryThroughputMultiplier:       Bool(true),
 					StatementQueuedTimeoutInSeconds: Bool(true),
 					StatementTimeoutInSeconds:       Bool(true),
 				}
 			},
-			`ALTER WAREHOUSE %s UNSET QUERY_THROUGHPUT_MULTIPLIER, MAX_QUERY_PERFORMANCE_LEVEL, STATEMENT_QUEUED_TIMEOUT_IN_SECONDS, STATEMENT_TIMEOUT_IN_SECONDS`, id.FullyQualifiedName(),
+			`ALTER WAREHOUSE %s UNSET MAX_QUERY_PERFORMANCE_LEVEL, QUERY_THROUGHPUT_MULTIPLIER, STATEMENT_QUEUED_TIMEOUT_IN_SECONDS, STATEMENT_TIMEOUT_IN_SECONDS`,
+			id.FullyQualifiedName(),
 		).
-		withAdditionalSqlCasef(
-			"sql_Alter_UnsetTags_multiple",
-			func(opts *AlterWarehouseOptions) { opts.UnsetTags = []ObjectIdentifier{tagId1, tagId2} },
-			`ALTER WAREHOUSE %s UNSET TAG %s, %s`, id.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
+		withModifyAndExpectedSqlf(
+			case_Warehouses_sql_AlterAdaptive_SetTags,
+			func(opts *AlterAdaptiveWarehouseOptions) {
+				opts.SetTags = []TagAssociation{
+					{Name: tagId1, Value: "v1"},
+					{Name: tagId2, Value: "v2"},
+				}
+			},
+			`ALTER WAREHOUSE %s SET TAG %s = 'v1', %s = 'v2'`, id.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Warehouses_sql_AlterAdaptive_UnsetTags,
+			func(opts *AlterAdaptiveWarehouseOptions) { opts.UnsetTags = []ObjectIdentifier{tagId1} },
+			`ALTER WAREHOUSE %s UNSET TAG %s`, id.FullyQualifiedName(), tagId1.FullyQualifiedName(),
+		)
+
+	warehousesTests.AlterInteractive.
+		withModifyAndExpectedSqlf(
+			case_Warehouses_sql_AlterInteractive_RenameTo,
+			func(opts *AlterInteractiveWarehouseOptions) { opts.RenameTo = &renameTarget },
+			`ALTER WAREHOUSE %s RENAME TO %s`, id.FullyQualifiedName(), renameTarget.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Warehouses_sql_AlterInteractive_Set,
+			func(opts *AlterInteractiveWarehouseOptions) {
+				opts.Set = &WarehouseInteractiveSet{FallbackWarehouse: Pointer(NewAccountObjectIdentifier("fallbackwh"))}
+			},
+			`ALTER WAREHOUSE %s SET FALLBACK_WAREHOUSE = "fallbackwh"`, id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Warehouses_sql_AlterInteractive_Unset,
+			func(opts *AlterInteractiveWarehouseOptions) {
+				opts.Unset = &WarehouseInteractiveUnset{FallbackWarehouse: Bool(true)}
+			},
+			`ALTER WAREHOUSE %s UNSET FALLBACK_WAREHOUSE`, id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Warehouses_sql_AlterInteractive_AddTables,
+			func(opts *AlterInteractiveWarehouseOptions) {
+				opts.AddTables = []SchemaObjectIdentifier{tableId1, tableId2}
+			},
+			`ALTER WAREHOUSE %s ADD TABLES (%s, %s)`, id.FullyQualifiedName(), tableId1.FullyQualifiedName(), tableId2.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Warehouses_sql_AlterInteractive_DropTables,
+			func(opts *AlterInteractiveWarehouseOptions) { opts.DropTables = []SchemaObjectIdentifier{tableId1} },
+			`ALTER WAREHOUSE %s DROP TABLES (%s)`, id.FullyQualifiedName(), tableId1.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Warehouses_sql_AlterInteractive_SetTags,
+			func(opts *AlterInteractiveWarehouseOptions) {
+				opts.SetTags = []TagAssociation{
+					{Name: tagId1, Value: "v1"},
+					{Name: tagId2, Value: "v2"},
+				}
+			},
+			`ALTER WAREHOUSE %s SET TAG %s = 'v1', %s = 'v2'`, id.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Warehouses_sql_AlterInteractive_UnsetTags,
+			func(opts *AlterInteractiveWarehouseOptions) { opts.UnsetTags = []ObjectIdentifier{tagId1} },
+			`ALTER WAREHOUSE %s UNSET TAG %s`, id.FullyQualifiedName(), tagId1.FullyQualifiedName(),
 		)
 
 	warehousesTests.Drop.

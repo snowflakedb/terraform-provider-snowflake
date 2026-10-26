@@ -260,16 +260,43 @@ func (obj Object) VariantCreateMethod(baseName string) string {
 	return "Create" + strings.TrimPrefix(obj.Name, baseName)
 }
 
+// VariantAlterMethod is Alter plus the variant name with baseName removed.
+// WarehouseAdaptive with base Warehouse is AlterAdaptive.
+func (obj Object) VariantAlterMethod(baseName string) string {
+	if baseName == "" || !strings.HasPrefix(obj.Name, baseName) || obj.Name == baseName {
+		panic(fmt.Sprintf("object %q: cannot build a variant ALTER method from base %q", obj.Name, baseName))
+	}
+	return "Alter" + strings.TrimPrefix(obj.Name, baseName)
+}
+
+// VariantAlterConfig is the ALTER config for emitting this variant as a custom method.
+// It does not read WithSdk. Doc and AdditionalValidations come from Alter.
+// SQL words are VariantEntityAlterName, or VariantOf.ObjectType when that override is empty.
+// The query struct name is Alter plus SdkCreateRequestObjectName, or Alter plus Name.
+func (obj Object) VariantAlterConfig() SdkGenerator {
+	if !obj.HasAlterSpec() {
+		panic(fmt.Sprintf("object %q: variant ALTER has no spec", obj.Name))
+	}
+	stem := obj.SdkCreateRequestObjectName
+	if stem == "" {
+		stem = obj.Name
+	}
+	return SdkGenerator{
+		AlterDoc:                      obj.Alter.Doc,
+		AlterSql:                      obj.variantEntityName(obj.VariantEntityAlterName),
+		AlterQueryStructName:          "Alter" + stem,
+		AlterAdditionalValidations:    obj.Alter.AdditionalValidations,
+		AlterSetAdditionalValidations: obj.Alter.SetAdditionalValidations,
+	}
+}
+
 // VariantCreateConfig is the CREATE config for emitting this variant as a custom method.
 // It does not read WithSdk. Doc and AdditionalValidations come from Create.
-// SQL words come from VariantEntityCreateName, not from Create.Sql and not from ObjectType.
+// SQL words are VariantEntityCreateName, or VariantOf.ObjectType when that override is empty.
 // The query struct name is Create plus SdkCreateRequestObjectName, or Create plus Name.
 func (obj Object) VariantCreateConfig() SdkGenerator {
 	if !obj.HasCreateSpec() {
 		panic(fmt.Sprintf("object %q: variant CREATE has no spec", obj.Name))
-	}
-	if obj.VariantEntityCreateName == "" {
-		panic(fmt.Sprintf("object %q: variant CREATE needs VariantEntityCreateName", obj.Name))
 	}
 	stem := obj.SdkCreateRequestObjectName
 	if stem == "" {
@@ -277,10 +304,22 @@ func (obj Object) VariantCreateConfig() SdkGenerator {
 	}
 	return SdkGenerator{
 		CreateDoc:                   obj.Create.Doc,
-		CreateSql:                   obj.VariantEntityCreateName,
+		CreateSql:                   obj.variantEntityName(obj.VariantEntityCreateName),
 		CreateQueryStructName:       "Create" + stem,
 		CreateAdditionalValidations: obj.Create.AdditionalValidations,
 	}
+}
+
+// variantEntityName is the SQL object words for a variant statement.
+// An override wins. Empty uses the base object's type words.
+func (obj Object) variantEntityName(override string) string {
+	if override != "" {
+		return override
+	}
+	if obj.VariantOf == nil {
+		panic(fmt.Sprintf("object %q: variant entity name needs VariantOf", obj.Name))
+	}
+	return obj.VariantOf.ObjectType()
 }
 
 func (obj Object) nameForAlter() string {
