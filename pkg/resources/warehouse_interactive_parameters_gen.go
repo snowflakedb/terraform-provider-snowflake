@@ -73,7 +73,7 @@ func warehouseInteractiveApplyParametersCreate(d *tfschema.ResourceData, req *sd
 	)
 }
 
-func warehouseInteractiveApplyParametersChanges(d *tfschema.ResourceData, set *sdk.WarehouseSetRequest, unset *sdk.WarehouseUnsetRequest) diag.Diagnostics {
+func warehouseInteractiveApplyParametersChanges(d *tfschema.ResourceData, set *sdk.WarehouseInteractiveSetRequest, unset *sdk.WarehouseInteractiveUnsetRequest) diag.Diagnostics {
 	return JoinDiags(
 		handleParameterUpdateWithMapping(d, "fallback_warehouse", &set.FallbackWarehouse, &unset.FallbackWarehouse, stringToAccountObjectIdentifier),
 		handleParameterUpdate(d, "max_concurrency_level", &set.MaxConcurrencyLevel, &unset.MaxConcurrencyLevel),

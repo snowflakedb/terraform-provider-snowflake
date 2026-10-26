@@ -41,6 +41,16 @@ func (v *warehouses) Alter(ctx context.Context, request *AlterWarehouseRequest) 
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *warehouses) AlterAdaptive(ctx context.Context, request *AlterAdaptiveWarehouseRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *warehouses) AlterInteractive(ctx context.Context, request *AlterInteractiveWarehouseRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
 func (v *warehouses) Drop(ctx context.Context, request *DropWarehouseRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
@@ -159,8 +169,6 @@ func (r *AlterWarehouseRequest) toOpts() *AlterWarehouseOptions {
 		IfSuspended:     r.IfSuspended,
 		AbortAllQueries: r.AbortAllQueries,
 		RenameTo:        r.RenameTo,
-		AddTables:       r.AddTables,
-		DropTables:      r.DropTables,
 		SetTags:         r.SetTags,
 		UnsetTags:       r.UnsetTags,
 	}
@@ -180,9 +188,6 @@ func (r *AlterWarehouseRequest) toOpts() *AlterWarehouseOptions {
 			QueryAccelerationMaxScaleFactor: r.Set.QueryAccelerationMaxScaleFactor,
 			ResourceConstraint:              r.Set.ResourceConstraint,
 			Generation:                      r.Set.Generation,
-			QueryThroughputMultiplier:       r.Set.QueryThroughputMultiplier,
-			MaxQueryPerformanceLevel:        r.Set.MaxQueryPerformanceLevel,
-			FallbackWarehouse:               r.Set.FallbackWarehouse,
 			MaxConcurrencyLevel:             r.Set.MaxConcurrencyLevel,
 			StatementQueuedTimeoutInSeconds: r.Set.StatementQueuedTimeoutInSeconds,
 			StatementTimeoutInSeconds:       r.Set.StatementTimeoutInSeconds,
@@ -203,8 +208,81 @@ func (r *AlterWarehouseRequest) toOpts() *AlterWarehouseOptions {
 			QueryAccelerationMaxScaleFactor: r.Unset.QueryAccelerationMaxScaleFactor,
 			ResourceConstraint:              r.Unset.ResourceConstraint,
 			Generation:                      r.Unset.Generation,
-			QueryThroughputMultiplier:       r.Unset.QueryThroughputMultiplier,
+			MaxConcurrencyLevel:             r.Unset.MaxConcurrencyLevel,
+			StatementQueuedTimeoutInSeconds: r.Unset.StatementQueuedTimeoutInSeconds,
+			StatementTimeoutInSeconds:       r.Unset.StatementTimeoutInSeconds,
+		}
+	}
+	return opts
+}
+
+func (r *AlterAdaptiveWarehouseRequest) toOpts() *AlterAdaptiveWarehouseOptions {
+	opts := &AlterAdaptiveWarehouseOptions{
+		IfExists:  r.IfExists,
+		name:      r.name,
+		RenameTo:  r.RenameTo,
+		SetTags:   r.SetTags,
+		UnsetTags: r.UnsetTags,
+	}
+	if r.Set != nil {
+		opts.Set = &WarehouseAdaptiveSet{
+			WarehouseType:                   r.Set.WarehouseType,
+			Comment:                         r.Set.Comment,
+			ResourceMonitor:                 r.Set.ResourceMonitor,
+			MaxQueryPerformanceLevel:        r.Set.MaxQueryPerformanceLevel,
+			QueryThroughputMultiplier:       r.Set.QueryThroughputMultiplier,
+			StatementQueuedTimeoutInSeconds: r.Set.StatementQueuedTimeoutInSeconds,
+			StatementTimeoutInSeconds:       r.Set.StatementTimeoutInSeconds,
+		}
+	}
+	if r.Unset != nil {
+		opts.Unset = &WarehouseAdaptiveUnset{
+			WarehouseType:                   r.Unset.WarehouseType,
+			Comment:                         r.Unset.Comment,
+			ResourceMonitor:                 r.Unset.ResourceMonitor,
 			MaxQueryPerformanceLevel:        r.Unset.MaxQueryPerformanceLevel,
+			QueryThroughputMultiplier:       r.Unset.QueryThroughputMultiplier,
+			StatementQueuedTimeoutInSeconds: r.Unset.StatementQueuedTimeoutInSeconds,
+			StatementTimeoutInSeconds:       r.Unset.StatementTimeoutInSeconds,
+		}
+	}
+	return opts
+}
+
+func (r *AlterInteractiveWarehouseRequest) toOpts() *AlterInteractiveWarehouseOptions {
+	opts := &AlterInteractiveWarehouseOptions{
+		IfExists:   r.IfExists,
+		name:       r.name,
+		RenameTo:   r.RenameTo,
+		AddTables:  r.AddTables,
+		DropTables: r.DropTables,
+		SetTags:    r.SetTags,
+		UnsetTags:  r.UnsetTags,
+	}
+	if r.Set != nil {
+		opts.Set = &WarehouseInteractiveSet{
+			WarehouseSize:                   r.Set.WarehouseSize,
+			MaxClusterCount:                 r.Set.MaxClusterCount,
+			MinClusterCount:                 r.Set.MinClusterCount,
+			AutoSuspend:                     r.Set.AutoSuspend,
+			AutoResume:                      r.Set.AutoResume,
+			ResourceMonitor:                 r.Set.ResourceMonitor,
+			Comment:                         r.Set.Comment,
+			FallbackWarehouse:               r.Set.FallbackWarehouse,
+			MaxConcurrencyLevel:             r.Set.MaxConcurrencyLevel,
+			StatementQueuedTimeoutInSeconds: r.Set.StatementQueuedTimeoutInSeconds,
+			StatementTimeoutInSeconds:       r.Set.StatementTimeoutInSeconds,
+		}
+	}
+	if r.Unset != nil {
+		opts.Unset = &WarehouseInteractiveUnset{
+			WarehouseSize:                   r.Unset.WarehouseSize,
+			MaxClusterCount:                 r.Unset.MaxClusterCount,
+			MinClusterCount:                 r.Unset.MinClusterCount,
+			AutoSuspend:                     r.Unset.AutoSuspend,
+			AutoResume:                      r.Unset.AutoResume,
+			ResourceMonitor:                 r.Unset.ResourceMonitor,
+			Comment:                         r.Unset.Comment,
 			FallbackWarehouse:               r.Unset.FallbackWarehouse,
 			MaxConcurrencyLevel:             r.Unset.MaxConcurrencyLevel,
 			StatementQueuedTimeoutInSeconds: r.Unset.StatementQueuedTimeoutInSeconds,

@@ -41,6 +41,7 @@ var WarehouseAdaptiveAttrs = struct {
 		Description: "Specifies the maximum query performance level for the adaptive warehouse. Determines the initial compute capacity.",
 		Enum:        MaxQueryPerformanceLevel,
 		CreateSql:   ssot.Clause(ssot.SingleQuotes()),
+		SetSql:      ssot.Clause(ssot.SingleQuotes()),
 	},
 	QueryThroughputMultiplier: ssot.Attribute{
 		Name:        "query_throughput_multiplier",
@@ -56,6 +57,7 @@ var WarehouseAdaptiveAttrs = struct {
 		RelatedResource: &ResourceMonitor,
 		DiffSuppress:    ssot.SuppressShow,
 		CreateSql:       ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Equals()),
+		SetSql:          ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Equals()),
 	},
 }
 
@@ -90,7 +92,6 @@ var WarehouseAdaptive = ssot.Object{
 	IdType:                     "AccountObjectIdentifier",
 	SdkCreateRequestObjectName: "AdaptiveWarehouse",
 	VariantOf:                  &Warehouse,
-	VariantEntityCreateName:    "WAREHOUSE",
 	AttributesModification:     true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithSchema(ssot.SchemaShow()),
@@ -168,6 +169,33 @@ var WarehouseAdaptive = ssot.Object{
 			&WarehouseAdaptiveAttrs.ResourceMonitor,
 			ssot.Parameters,
 			ssot.Tags,
+		},
+	},
+	Set: []*ssot.Attribute{
+		&WarehouseAttrs.WarehouseType,
+		&WarehouseAdaptiveAttrs.Comment,
+		&WarehouseAdaptiveAttrs.ResourceMonitor,
+		&WarehouseAdaptiveAttrs.MaxQueryPerformanceLevel,
+		&WarehouseAdaptiveAttrs.QueryThroughputMultiplier,
+		ssot.Parameters,
+	},
+	Unset: []*ssot.Attribute{
+		&WarehouseAttrs.WarehouseType,
+		&WarehouseAdaptiveAttrs.Comment,
+		&WarehouseAdaptiveAttrs.ResourceMonitor,
+		&WarehouseAdaptiveAttrs.MaxQueryPerformanceLevel,
+		&WarehouseAdaptiveAttrs.QueryThroughputMultiplier,
+		ssot.Parameters,
+	},
+	Alter: ssot.AlterSpec{
+		Doc:                      "https://docs.snowflake.com/en/sql-reference/sql/alter-warehouse",
+		SetAdditionalValidations: true,
+		Clauses: []ssot.AlterClause{
+			ssot.AlterRenameTo(),
+			ssot.AlterSet(),
+			ssot.AlterUnset(),
+			ssot.AlterSetTags(),
+			ssot.AlterUnsetTags(),
 		},
 	},
 }

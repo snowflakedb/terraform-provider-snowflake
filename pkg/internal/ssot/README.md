@@ -18,7 +18,8 @@ generators will follow. Ultimately, all the generators should default to using s
 - `ResourceHooks` - resource lifecycle/schema overrides (resource generator)
 - `SdkCreateRequestObjectName` - SDK CREATE request type-name stem when it differs from `Name`
 - `VariantOf` - base object whose SDK parameter details, SET/UNSET requests, and `ParameterType` names a variant shares; parameter catalog membership still comes from the variant's own `Name`
-- `VariantEntityCreateName` - SQL object words a variant CREATE emits. `ObjectType` builds those words from `Name`, which does not match a variant (`WarehouseAdaptive` would be `WAREHOUSE ADAPTIVE`). Other statements keep `ObjectType`
+- `VariantEntityCreateName` - optional SQL object words for a variant CREATE. Empty uses `VariantOf.ObjectType` (`WarehouseAdaptive` emits `WAREHOUSE`). Set it when the words differ, as interactive CREATE does with `INTERACTIVE WAREHOUSE`
+- `VariantEntityAlterName` - optional SQL object words for a variant ALTER. Empty uses the same base default as CREATE
 - `SchemaStateUpgraders` - ordered upgrade function names ([Resource generator](#resource-generator))
 
 Identity (`Name`, `IdType`, ...) is separate from `Attributes`. `LegacyIdEncoding` keeps the pipe-delimited resource id
@@ -195,8 +196,8 @@ enable nothing.
   on each element. `SdkAlterAdditionalValidations()` marks the ALTER query struct. `RenameTo` and `SwapWith` use the
   object's `IdType` and get `ValidIdentifierIfSet`. `Set` and `Unset` are the fields inside those blocks. [`Tags`](attribute.go) is the
   optional `TAG` clause and belongs on `Create.Clauses`, not on `KeywordsBefore`. [`Parameters`](attribute.go) spreads
-  the parameter catalog for `ParameterLevel()`. `AlterAdditionalParametersForLevels` adds parameters from more levels
-  onto SET and UNSET. The union is emitted in catalog order, and a name already present is kept once. CREATE does not
+  the parameter catalog for `ParameterLevel()`. `ShowParametersDetailsAdditionalLevels` adds parameters from more levels
+  onto `ShowParametersDetails`. ALTER SET and UNSET stay `ParameterLevel()`. The union is emitted in catalog order, and a name already present is kept once. CREATE does not
   take those levels.
   CREATE and SET use `WithParameters`. UNSET uses `WithParametersUnset`. `AtLeastOneValueSet` lists those parameter
   fields first, then the other fields in the struct.
@@ -208,10 +209,12 @@ enable nothing.
   an item query struct named after that enum, with `ListItem` appended. Its field is `Value`, a required single-quoted
   keyword. When `SdkCreate()` or `SdkAlter()` is off, that call stays in the def. `SdkCreateForVariants()` emits
   each variant CREATE as a custom method. The variant fills `Create` (`Doc`, clauses, and
-  `AdditionalValidations`). The SQL object words come from `VariantEntityCreateName`, not from `Create.Sql` and not from
-  `ObjectType`. A fixed value is an `SqlOnly` attribute with `StaticSQL` in that clause list. The method name is `Create` plus the variant name with the base name removed. The query
-  struct name is `Create` plus `SdkCreateRequestObjectName`.
-  TODO [next PRs]: the same switch for variant ALTER, and for SHOW/DESCRIBE. `SdkCustomOperations()` emits
+  `AdditionalValidations`). The SQL object words are `VariantEntityCreateName`, or `VariantOf.ObjectType` when that override is empty. A fixed value is an `SqlOnly` attribute with `StaticSQL` in that clause list. The method name is `Create` plus the variant name with the base name removed. The query
+  struct name is `Create` plus `SdkCreateRequestObjectName`. `SdkAlterForVariants()` emits each variant ALTER the same way.
+  The variant fills `Alter` (`Doc`, clauses, and `AdditionalValidations`). SQL words are `VariantEntityAlterName`, or the same base default.
+  The method name is `Alter` plus the variant name with the base name removed. The query struct name is `Alter` plus
+  `SdkCreateRequestObjectName`. SET and UNSET structs are `Name` plus `Set` or `Unset`.
+  TODO [next PRs]: the same switch for variant SHOW/DESCRIBE. `SdkCustomOperations()` emits
   [`CustomOperations`](custom_operation.go) from one call, in slice order. Place that call after the dedicated operation
   methods and before custom interface methods. The generated interface lists every operation, then the custom interface
   methods, so a custom operation stays with the operations. Reordering in the generated SDK is expected while objects
@@ -223,7 +226,7 @@ enable nothing.
   When the setting is off, the method stays in the SDK def. `SdkShowParameters()` emits `ShowParameters` as that kind of
   declaration: an empty doc, `id` of `IdType`, and returns `[]*Parameter` and `error`. The body stays in the SDK ext
   file. `SdkShowParametersDetails()` emits `ShowParametersDetails` and the `{Name}ParametersDetails` struct. The fields
-  come from `ParameterDefsForLevel` for the object's `ParameterLevel()`. The generated body calls `ShowParameters`.
+  come from `ParameterLevel()` plus `ShowParametersDetailsAdditionalLevels`. The generated body calls `ShowParameters`.
   When either setting is off, that call stays in the SDK def. `SdkDefineFromSsot()` defines this object's SDK
   interface from this ssot object alone. The interface contains the operation parts whose flags are on. An object
   without it stays on the handwritten SDK def.

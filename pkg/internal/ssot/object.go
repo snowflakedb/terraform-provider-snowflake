@@ -33,10 +33,12 @@ type Object struct {
 	AdditionalIdentityNameDescription   string
 	SdkCreateRequestObjectName          string  // SDK Create<Name>Request stem; defaults to Name
 	VariantOf                           *Object // Shares SDK parameter details, set/unset request, and ParameterType names with this object; catalog membership still uses Name
-	// VariantEntityCreateName is the SQL object words a variant CREATE emits, such as WAREHOUSE.
-	// ObjectType builds those words from Name. That is wrong for a variant: WarehouseAdaptive would be WAREHOUSE ADAPTIVE.
-	// Variant CREATE reads this field. Other statements keep ObjectType.
-	VariantEntityCreateName  string
+	// VariantEntityCreateName overrides the SQL object words a variant CREATE emits.
+	// Empty uses VariantOf.ObjectType, so WarehouseAdaptive emits WAREHOUSE. Interactive CREATE sets INTERACTIVE WAREHOUSE.
+	VariantEntityCreateName string
+	// VariantEntityAlterName overrides the SQL object words a variant ALTER emits.
+	// Empty uses VariantOf.ObjectType, the same default as CREATE.
+	VariantEntityAlterName   string
 	Attributes               []Attribute
 	AttributesModification   bool
 	ResourceHooks            []ResourceHookOption
@@ -46,7 +48,7 @@ type Object struct {
 	Show                     OutputSpec
 	// ShowGeneric is the temporary union of every variant SHOW column.
 	// It is the one paired SHOW. Each variant, including the main one, declares its own show in Show.
-	// TODO [next PRs]: Each variant's Show.Columns becomes a paired SHOW with its dedicated type, and ShowGeneric goes away.
+	// TODO [next PRs]: Each variant'sShow                  .Columns becomes a paired SHOW with its dedicated type, and ShowGeneric goes away.
 	ShowGeneric OutputSpec
 	Describe    OutputSpec // ShowPlainName is the plain SHOW struct name when it differs from Name.
 	// Empty uses Name. Set it when ShowGeneric uses Name for the paired SHOW struct.
@@ -69,21 +71,16 @@ type Object struct {
 	// CustomInterfaceMethods are interface declarations whose bodies stay in the SDK ext file.
 	// SdkCustomInterfaceMethods turns them on.
 	CustomInterfaceMethods []CustomInterfaceMethodSpec
-	// AlterAdditionalParametersForLevels adds parameters from these levels onto SET and UNSET.
-	// The union is emitted in catalog order. A name already in ParameterLevel() is kept once.
-	// CREATE stays ParameterLevel().
-	// TODO [next PRs]: Generate a dedicated ALTER for each object type. One statement that unions every type's parameters is the current shape.
-	AlterAdditionalParametersForLevels []ParameterLevel
+	// ShowParametersDetailsAdditionalLevels adds parameters from these levels onto ShowParametersDetails.
+	// A name already in ParameterLevel() is kept once.
+	ShowParametersDetailsAdditionalLevels []ParameterLevel
 }
 
-// ParameterLevelsFor is the catalog levels a Parameters entry spreads, in order.
-// CREATE is ParameterLevel(). SET and UNSET append AlterAdditionalParametersForLevels.
-func (obj Object) ParameterLevelsFor(statement string) []ParameterLevel {
-	levels := []ParameterLevel{obj.ParameterLevel()}
-	if statement == "SET" || statement == "UNSET" {
-		levels = append(levels, obj.AlterAdditionalParametersForLevels...)
-	}
-	return levels
+// ParameterLevelsFor is the catalog levels a Parameters entry spreads.
+// CREATE, SET, and UNSET are ParameterLevel().
+// ShowParametersDetails appends ShowParametersDetailsAdditionalLevels itself.
+func (obj Object) ParameterLevelsFor(string) []ParameterLevel {
+	return []ParameterLevel{obj.ParameterLevel()}
 }
 
 // AlterClauseKind is one entry in an ALTER statement after the name.
@@ -148,15 +145,26 @@ func AlterSetTags() AlterClause { return AlterClause{Kind: AlterClauseSetTags} }
 func AlterUnsetTags() AlterClause { return AlterClause{Kind: AlterClauseUnsetTags} }
 
 // AlterSpec is the ALTER statement order after the name.
+// Doc overrides the generated doc URL. AdditionalValidations marks the query struct.
+// A variant's SQL words are VariantEntityAlterName, or VariantOf.ObjectType when that override is empty.
 type AlterSpec struct {
-	Clauses []AlterClause
+	Doc                      string
+	AdditionalValidations    bool
+	SetAdditionalValidations bool
+	Clauses                  []AlterClause
+}
+
+// HasAlterSpec reports whether this object defines an ALTER statement.
+// Presence is Clauses. Doc and the validation flags do not define it.
+func (obj Object) HasAlterSpec() bool {
+	return len(obj.Alter.Clauses) > 0
 }
 
 // CreateSpec is the CREATE statement.
 // Clauses is the order after the name.
 // KeywordsBefore is the order after OR REPLACE and before the object words.
 // Doc and Sql override the generated doc URL and object words. Empty Sql is the uppercase words of Name.
-// A variant does not set Sql. Variant CREATE uses VariantEntityCreateName.
+// A variant does not set Sql. Variant CREATE uses VariantEntityCreateName, or VariantOf.ObjectType when that override is empty.
 type CreateSpec struct {
 	Doc                   string
 	Sql                   string

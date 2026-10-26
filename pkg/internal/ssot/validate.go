@@ -47,15 +47,15 @@ func ValidateObject(obj Object) {
 		validateAttributeOptions(obj.Name, a, false)
 	}
 	validateCreateSpec(obj, attrs)
-	if obj.VariantOf != nil {
+	switch {
+	case obj.VariantOf != nil:
 		if obj.Create.Sql != "" {
 			panic(fmt.Sprintf("object %q: variant CREATE words are VariantEntityCreateName", obj.Name))
 		}
-		if obj.HasCreateSpec() && obj.VariantEntityCreateName == "" {
-			panic(fmt.Sprintf("object %q: variant CREATE needs VariantEntityCreateName", obj.Name))
-		}
-	} else if obj.VariantEntityCreateName != "" {
+	case obj.VariantEntityCreateName != "":
 		panic(fmt.Sprintf("object %q: VariantEntityCreateName is for a variant", obj.Name))
+	case obj.VariantEntityAlterName != "":
+		panic(fmt.Sprintf("object %q: VariantEntityAlterName is for a variant", obj.Name))
 	}
 	validateSqlSequence(obj, "SET", obj.Set, attrs, func(attr Attribute) SqlClause { return attr.SetSql })
 	validateSqlSequence(obj, "UNSET", obj.Unset, attrs, func(attr Attribute) SqlClause { return attr.UnsetSql })

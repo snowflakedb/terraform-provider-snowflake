@@ -263,10 +263,9 @@ var WarehouseAttrs = struct {
 	Suspended:       ssot.Attribute{Name: "suspended", Type: ssot.AttrString, Readonly: true, SkipInSchema: true},
 	Uuid:            ssot.Attribute{Name: "uuid", Type: ssot.AttrString, Readonly: true, SkipInSchema: true},
 	OwnerRoleType:   ssot.Attribute{Name: "owner_role_type", Type: ssot.AttrString, Readonly: true, OptionalInDb: true},
-	// SHOW columns that ALTER SET also writes. They stay off Attributes, so they stay off the resource schema.
+	// SHOW columns for the union warehouse row. Adaptive ALTER writes the adaptive attributes, not these copies.
 	MaxQueryPerformanceLevel: ssot.Attribute{
 		Name: "max_query_performance_level", Type: ssot.AttrEnum, Enum: MaxQueryPerformanceLevel, Readonly: true, OptionalInShow: true, OptionalInDb: true,
-		SetSql: ssot.Clause(ssot.SingleQuotes()),
 	},
 	QueryThroughputMultiplier: ssot.Attribute{
 		Name: "query_throughput_multiplier", Type: ssot.AttrInt, Readonly: true, OptionalInShow: true, OptionalInDb: true,
@@ -299,9 +298,8 @@ var Warehouse = ssot.Object{
 	Name:       "Warehouse",
 	NamePlural: "Warehouses",
 	IdType:     "AccountObjectIdentifier",
-	// CREATE WAREHOUSE does not accept FALLBACK_WAREHOUSE.
-	// Interactive warehouses add FALLBACK_WAREHOUSE on ALTER. CREATE stays the base warehouse catalog.
-	AlterAdditionalParametersForLevels: []ssot.ParameterLevel{ssot.ParameterLevelWarehouseInteractive},
+	// ShowParametersDetails lists interactive parameters such as FALLBACK_WAREHOUSE.
+	ShowParametersDetailsAdditionalLevels: []ssot.ParameterLevel{ssot.ParameterLevelWarehouseInteractive},
 	CustomInterfaceMethods: []ssot.CustomInterfaceMethodSpec{
 		{
 			Name:    "ShowByIDExperimental",
@@ -318,6 +316,22 @@ var Warehouse = ssot.Object{
 			Parameters: []ssot.CustomInterfaceMethodParameter{{
 				Name: "request",
 				Kind: "*AlterWarehouseRequest",
+			}},
+		},
+		{
+			Name: "AlterAdaptiveWithSuspend",
+			Doc:  "AlterAdaptiveWithSuspend wraps AlterAdaptive and suspends the warehouse before changing its type. Adaptive warehouses are not resumed afterwards",
+			Parameters: []ssot.CustomInterfaceMethodParameter{{
+				Name: "request",
+				Kind: "*AlterAdaptiveWarehouseRequest",
+			}},
+		},
+		{
+			Name: "AlterInteractiveWithSuspend",
+			Doc:  "AlterInteractiveWithSuspend wraps AlterInteractive and suspends a running interactive warehouse before changing its size",
+			Parameters: []ssot.CustomInterfaceMethodParameter{{
+				Name: "request",
+				Kind: "*AlterInteractiveWarehouseRequest",
 			}},
 		},
 		{
@@ -353,6 +367,7 @@ var Warehouse = ssot.Object{
 			ssot.SdkDescribe(ssot.SdkDescribeQueryStructName("DescribeWarehouse")),
 			ssot.SdkCreate(ssot.SdkCreateAdditionalValidations()),
 			ssot.SdkCreateForVariants(),
+			ssot.SdkAlterForVariants(),
 			ssot.SdkAlter(
 				ssot.SdkAlterSetAdditionalValidations(),
 				ssot.SdkAlterAdditionalValidations(),
@@ -442,8 +457,6 @@ var Warehouse = ssot.Object{
 		&WarehouseAttrs.QueryAccelerationMaxScaleFactor,
 		&WarehouseAttrs.ResourceConstraint,
 		&WarehouseAttrs.Generation,
-		&WarehouseAttrs.QueryThroughputMultiplier,
-		&WarehouseAttrs.MaxQueryPerformanceLevel,
 		ssot.Parameters,
 	},
 	Unset: []*ssot.Attribute{
@@ -460,8 +473,6 @@ var Warehouse = ssot.Object{
 		&WarehouseAttrs.QueryAccelerationMaxScaleFactor,
 		&WarehouseAttrs.ResourceConstraint,
 		&WarehouseAttrs.Generation,
-		&WarehouseAttrs.QueryThroughputMultiplier,
-		&WarehouseAttrs.MaxQueryPerformanceLevel,
 		ssot.Parameters,
 	},
 	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
@@ -472,8 +483,6 @@ var Warehouse = ssot.Object{
 		ssot.AlterRenameTo(),
 		ssot.AlterSet(),
 		ssot.AlterUnset(),
-		ssot.AlterList("ADD TABLES", "SchemaObjectIdentifier"),
-		ssot.AlterList("DROP TABLES", "SchemaObjectIdentifier"),
 		ssot.AlterSetTags(),
 		ssot.AlterUnsetTags(),
 	}},
