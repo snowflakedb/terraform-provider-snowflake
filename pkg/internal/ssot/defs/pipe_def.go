@@ -70,8 +70,6 @@ var Pipe = ssot.Object{
 		ssot.WithDescribeInSdk(ssot.Omitted()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 		ssot.WithSetStateToValuesFromConfig(ssot.Omitted()),
-		ssot.WithShowOutputSet(ssot.Omitted()),
-		ssot.WithDescribeOutputSet(ssot.Omitted()),
 		ssot.WithShowByIdInSdk(ssot.Omitted()),
 		ssot.WithSetFieldsNotSetByRead(ssot.Omitted()),
 		ssot.WithIdentitySchema(ssot.ExtCall()),

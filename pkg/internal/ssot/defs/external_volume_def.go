@@ -187,7 +187,6 @@ var ExternalVolumeObject = ssot.Object{
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithApplyCreateOptionals(ssot.Generated()),
-		ssot.WithDescribeOutputSet(ssot.Omitted()),
 		ssot.WithSetDescribeOutput(ssot.ExtCall()),
 		ssot.WithStateUpgraders(ssot.Generated()),
 	},

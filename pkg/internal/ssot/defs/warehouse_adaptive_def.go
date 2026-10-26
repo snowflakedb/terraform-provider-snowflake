@@ -106,7 +106,6 @@ var WarehouseAdaptive = ssot.Object{
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithDescribeInSdk(ssot.Omitted()),
-		ssot.WithDescribeOutputSet(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
 		ssot.WithShowOutputSet(ssot.Omitted()),
 		ssot.WithShowOutputSchema(ssot.ExtCall()),

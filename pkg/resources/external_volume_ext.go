@@ -9,7 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -106,10 +105,7 @@ func externalVolumeSetDescribeOutputExt(d *schema.ResourceData, _ sdk.AccountObj
 	if describeErr != nil {
 		return describeErr
 	}
-	return errors.Join(
-		d.Set("storage_location", readStorageLocations(d, *details, withExternalChangesMarking)),
-		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ExternalVolumeDetailsToSchema(details)}),
-	)
+	return d.Set("storage_location", readStorageLocations(d, *details, withExternalChangesMarking))
 }
 
 // =============================================================================

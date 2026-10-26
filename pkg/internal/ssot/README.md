@@ -263,6 +263,14 @@ own, with its `With` option. See [resource_hooks.go](resource_hooks.go). `DropSa
 keeps `DeleteExt`. Set it to `Generated` to emit `Delete` and point `DeleteContext` at that function. `Delete` calls
 `ResourceDeleteContextFunc` with `sdk.Parse` plus the object `IdType`.
 
+`ShowOutputSet`, `DescribeOutputSet`, and `FqnSet` default to `Generated`. They emit the `d.Set` call for `show_output`,
+`describe_output`, and `fully_qualified_name` from the generated `schemas` mappers and the id. `ExtCall` calls
+`<name>ShowOutputSetExt(d, <name>)`, `<name>DescribeOutputSetExt(d, <name>Details)`, or `<name>FqnSetExt(d, id)`. Each
+returns an `error`. `Omitted` drops the call. A resource does not list these hooks to opt in. `ShowOutputSet` is omitted by default when
+`ShowOutputSchema` is omitted. `DescribeOutputSet` is omitted by default when `DescribeInSdk` or `DescribeOutputSchema`
+is omitted. `SetDescribeOutput` does not omit it, so that ext only sets what the generated call does not. Warehouse omits `ShowOutputSet` itself because its
+`SetConfigFieldsExt` sets it.
+
 `AfterCreate` and `AfterAlter` are `Omitted` by default. They run after `SetId` and after the alters, and their
 diagnostics (usually warnings) are added to the final Read. Use them for a step that must not drop the object from
 state when it fails, such as resuming a created object. `Import<Name>` is generated only when `ShowByIdInSdk` is
