@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -126,22 +125,6 @@ func computePoolShowByIdInSdkExt(ctx context.Context, meta any, id sdk.AccountOb
 func computePoolDescribeInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier) (*sdk.ComputePoolDetails, error) {
 	client := meta.(*provider.Context).Client
 	return client.ComputePools.Describe(ctx, id)
-}
-
-func computePoolAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *computePoolAlterRequestsExt) error {
-	if reflect.DeepEqual(*reqs.set, *sdk.NewComputePoolSetRequest()) {
-		return nil
-	}
-	client := meta.(*provider.Context).Client
-	return client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithSet(*reqs.set))
-}
-
-func computePoolAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier, reqs *computePoolAlterRequestsExt) error {
-	if reflect.DeepEqual(*reqs.unset, *sdk.NewComputePoolUnsetRequest()) {
-		return nil
-	}
-	client := meta.(*provider.Context).Client
-	return client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithUnset(*reqs.unset))
 }
 
 // =============================================================================

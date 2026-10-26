@@ -5,6 +5,7 @@ package resources
 import (
 	"context"
 	"errors"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -115,11 +116,15 @@ func UpdateComputePool(ctx context.Context, d *tfschema.ResourceData, meta any) 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := computePoolAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.set, *sdk.NewComputePoolSetRequest()) {
+		if err := meta.(*provider.Context).Client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithSet(*setUnset.set)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
-	if err := computePoolAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.unset, *sdk.NewComputePoolUnsetRequest()) {
+		if err := meta.(*provider.Context).Client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithUnset(*setUnset.unset)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	return ReadComputePoolFunc(false)(ctx, d, meta)
 }

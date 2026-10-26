@@ -263,6 +263,13 @@ in [resource_attribute_rules.go](../../resources/gen/resource_attribute_rules.go
 `TypeString`, a required bool is `TypeBool`. That classification lives in [classified_field.go](classified_field.go)
 and applies to the resource schema only.
 
+`WithAlterSetInSdk(Generated())` and `WithAlterUnsetInSdk(Generated())` call `Client.<NamePlural>.Alter` with
+`NewAlter<Name>Request(id).WithSet` or `WithUnset`. They compare the corresponding request against
+`New<Name>SetRequest()` or `New<Name>UnsetRequest()` with `reflect.DeepEqual`, so empty requests are skipped
+and requests containing slices remain supported. SET runs before UNSET; either failure returns `diag.FromErr`
+and marks partial state when `HasPartialOnUpdate` is set. Keep `ExtCall` for suspend-aware alters, additional
+operations, custom diagnostics, or request names that differ from the object name. Omit UNSET for SET-only objects.
+
 #### Other generators
 
 Every plugged generator other than the resource generator is opt-in. It walks `defs.All()`, calls `ObjectGenerators`,
