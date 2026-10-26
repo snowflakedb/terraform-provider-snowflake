@@ -107,6 +107,48 @@ var authenticationPolicyDescribeDetailsDef = g.PlainStruct("AuthenticationPolicy
 	Text("PatPolicy").
 	Text("WorkloadIdentityPolicy")
 
+// Typed DESCRIBE projection returned by DescribeDetails. Nested policies are the shapes
+// Snowflake returns from DESC AUTHENTICATION POLICY, with enum and identifier fields parsed.
+var authenticationPolicyDetailsDef = g.PlainStruct("AuthenticationPolicyDetails").
+	SchemaObjectIdentifier().
+	Text("Name").
+	Text("Owner").
+	Field("AuthenticationMethods", "[]AuthenticationMethodsOption").
+	Enum("MfaEnrollment", MfaEnrollmentReadOptionEnumDef).
+	Field("ClientTypes", "[]ClientTypesOption").
+	Field("SecurityIntegrations", "AuthenticationPolicySecurityIntegrationsDetails").
+	Text("Comment").
+	Field("ClientPolicy", "[]AuthenticationPolicyClientPolicyEntryDetails").
+	Field("MfaPolicy", "AuthenticationPolicyMfaPolicyDetails").
+	Field("PatPolicy", "AuthenticationPolicyPatPolicyDetails").
+	Field("WorkloadIdentityPolicy", "AuthenticationPolicyWorkloadIdentityPolicyDetails").
+	// Original DESC rows. describe_output uses these strings. Rebuilding them from the parsed fields drops properties this struct does not model.
+	Field("descriptions", "AuthenticationPolicyDescriptions")
+
+var authenticationPolicySecurityIntegrationsDetailsDef = g.PlainStruct("AuthenticationPolicySecurityIntegrationsDetails").
+	Bool("All").
+	Field("SecurityIntegrations", "[]AccountObjectIdentifier")
+
+var authenticationPolicyClientPolicyEntryDetailsDef = g.PlainStruct("AuthenticationPolicyClientPolicyEntryDetails").
+	Enum("ClientType", ClientPolicyDriverTypeEnumDef).
+	Text("MinimumVersion")
+
+var authenticationPolicyMfaPolicyDetailsDef = g.PlainStruct("AuthenticationPolicyMfaPolicyDetails").
+	Field("AllowedMethods", "[]MfaPolicyAllowedMethodsOption").
+	Enum("EnforceMfaOnExternalAuthentication", EnforceMfaOnExternalAuthenticationOptionEnumDef)
+
+var authenticationPolicyPatPolicyDetailsDef = g.PlainStruct("AuthenticationPolicyPatPolicyDetails").
+	Number("DefaultExpiryInDays").
+	Number("MaxExpiryInDays").
+	Enum("NetworkPolicyEvaluation", NetworkPolicyEvaluationOptionEnumDef).
+	Bool("RequireRoleRestrictionForServiceUsers")
+
+var authenticationPolicyWorkloadIdentityPolicyDetailsDef = g.PlainStruct("AuthenticationPolicyWorkloadIdentityPolicyDetails").
+	Field("AllowedProviders", "[]AllowedProviderOption").
+	StringList("AllowedAwsAccounts").
+	StringList("AllowedAzureIssuers").
+	StringList("AllowedOidcIssuers")
+
 var authenticationPoliciesDef = g.NewInterface(
 	"AuthenticationPolicies",
 	"AuthenticationPolicy",
@@ -231,6 +273,18 @@ var authenticationPoliciesDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 		authenticationPolicyDescribeDetailsDef,
+		authenticationPolicyDetailsDef,
+		authenticationPolicySecurityIntegrationsDetailsDef,
+		authenticationPolicyClientPolicyEntryDetailsDef,
+		authenticationPolicyMfaPolicyDetailsDef,
+		authenticationPolicyPatPolicyDetailsDef,
+		authenticationPolicyWorkloadIdentityPolicyDetailsDef,
+	).
+	WithCustomInterfaceMethod(
+		"DescribeDetails",
+		"DescribeDetails returns parsed describe output for an authentication policy.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
+		"*AuthenticationPolicyDetails", "error",
 	).
 	WithEnums(
 		AuthenticationMethodsOptionEnumDef,

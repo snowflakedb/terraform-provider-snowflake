@@ -17,6 +17,8 @@ type AuthenticationPolicies interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*AuthenticationPolicy, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*AuthenticationPolicy, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]AuthenticationPolicyDescription, error)
+	// DescribeDetails returns parsed describe output for an authentication policy.
+	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*AuthenticationPolicyDetails, error)
 }
 
 // CreateAuthenticationPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy.
@@ -206,4 +208,49 @@ type AuthenticationPolicyDescribeDetails struct {
 	MfaPolicy              string
 	PatPolicy              string
 	WorkloadIdentityPolicy string
+}
+
+type AuthenticationPolicyDetails struct {
+	Id                     SchemaObjectIdentifier
+	Name                   string
+	Owner                  string
+	AuthenticationMethods  []AuthenticationMethodsOption
+	MfaEnrollment          MfaEnrollmentReadOption
+	ClientTypes            []ClientTypesOption
+	SecurityIntegrations   AuthenticationPolicySecurityIntegrationsDetails
+	Comment                string
+	ClientPolicy           []AuthenticationPolicyClientPolicyEntryDetails
+	MfaPolicy              AuthenticationPolicyMfaPolicyDetails
+	PatPolicy              AuthenticationPolicyPatPolicyDetails
+	WorkloadIdentityPolicy AuthenticationPolicyWorkloadIdentityPolicyDetails
+	descriptions           AuthenticationPolicyDescriptions
+}
+
+type AuthenticationPolicySecurityIntegrationsDetails struct {
+	All                  bool
+	SecurityIntegrations []AccountObjectIdentifier
+}
+
+type AuthenticationPolicyClientPolicyEntryDetails struct {
+	ClientType     ClientPolicyDriverType
+	MinimumVersion string
+}
+
+type AuthenticationPolicyMfaPolicyDetails struct {
+	AllowedMethods                     []MfaPolicyAllowedMethodsOption
+	EnforceMfaOnExternalAuthentication EnforceMfaOnExternalAuthenticationOption
+}
+
+type AuthenticationPolicyPatPolicyDetails struct {
+	DefaultExpiryInDays                   int
+	MaxExpiryInDays                       int
+	NetworkPolicyEvaluation               NetworkPolicyEvaluationOption
+	RequireRoleRestrictionForServiceUsers bool
+}
+
+type AuthenticationPolicyWorkloadIdentityPolicyDetails struct {
+	AllowedProviders    []AllowedProviderOption
+	AllowedAwsAccounts  []string
+	AllowedAzureIssuers []string
+	AllowedOidcIssuers  []string
 }
