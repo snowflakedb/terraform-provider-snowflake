@@ -162,18 +162,10 @@ func validateSchemaStateUpgraders(obj Object) {
 }
 
 func validateNestedAttribute(obj Object, attr Attribute) {
+	validateNestedShape(obj, attr)
 	fields := attr.NestedFields()
 	if len(fields) == 0 {
 		return
-	}
-	if attr.Type != AttrList && attr.Type != AttrSet {
-		panic(fmt.Sprintf("object %q: attribute %q Nested requires a list or set", obj.Name, attr.Name))
-	}
-	if attr.Elem != nil && !attr.IsObjectList() {
-		panic(fmt.Sprintf("object %q: attribute %q has both Elem and Nested", obj.Name, attr.Name))
-	}
-	if attr.Elem != nil && len(attr.Children) > 0 {
-		panic(fmt.Sprintf("object %q: attribute %q has both Children and an object Elem", obj.Name, attr.Name))
 	}
 	// The fields of an object element carry their own CREATE clause when the element has an object clause.
 	sqlFields := attr.IsObjectList() && attr.Elem.CreateSql.Kind == SqlKindObject
@@ -200,11 +192,30 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 	}
 }
 
+// validateNestedShape allows one shape for a nested block: a list or set whose Elem is an object with the fields as Children.
+// Children is valid only on an object, and an object is valid only as that Elem or as a SqlOnly nested struct.
+func validateNestedShape(obj Object, attr Attribute) {
+	if len(attr.Children) > 0 && attr.Type != AttrObject {
+		panic(fmt.Sprintf("object %q: attribute %q has Children but is not an object; declare the fields of a list or set on an object Elem (ObjectElem)", obj.Name, attr.Name))
+	}
+	if attr.Type == AttrObject && !attr.SqlOnly {
+		panic(fmt.Sprintf("object %q: attribute %q is an object; an object is only an Elem or a SqlOnly nested struct", obj.Name, attr.Name))
+	}
+	if attr.Elem != nil && attr.Elem.Type == AttrObject {
+		if attr.Type != AttrList && attr.Type != AttrSet {
+			panic(fmt.Sprintf("object %q: attribute %q has an object Elem and needs to be a list or set", obj.Name, attr.Name))
+		}
+		if len(attr.Elem.Children) == 0 {
+			panic(fmt.Sprintf("object %q: attribute %q has an object Elem with no Children", obj.Name, attr.Name))
+		}
+	}
+}
+
 func validateSkipCreateBlock(obj Object, attr Attribute) {
 	if !attr.SkipCreateBlock {
 		return
 	}
-	if attr.Type != AttrList || len(attr.Children) == 0 {
+	if attr.Type != AttrList || len(attr.NestedFields()) == 0 {
 		panic(fmt.Sprintf("object %q: SkipCreateBlock attribute %q must be a list block", obj.Name, attr.Name))
 	}
 }

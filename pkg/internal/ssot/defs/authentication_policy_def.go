@@ -115,7 +115,7 @@ var AuthenticationPolicyAttrs = struct {
 		Name:        "client_policy",
 		Type:        ssot.AttrSet,
 		Description: "Allows to set policies per-client type. Only valid when `client_types` is empty, contains ALL, or contains DRIVERS.",
-		Children: []ssot.Attribute{
+		Elem: ssot.ObjectElem([]ssot.Attribute{
 			{
 				Name:        "client_type",
 				Type:        ssot.AttrEnum,
@@ -129,14 +129,14 @@ var AuthenticationPolicyAttrs = struct {
 				Required:    true,
 				Description: "Minimum allowed version for this client/driver type (e.g. '1.14.1').",
 			},
-		},
+		}),
 	},
 	MfaPolicy: ssot.Attribute{
 		Name:        "mfa_policy",
 		Type:        ssot.AttrList,
 		MaxItems:    new(1),
 		Description: "Specifies the multi-factor authentication (MFA) methods that users can use as a second factor of authentication.",
-		Children: []ssot.Attribute{
+		Elem: ssot.ObjectElem([]ssot.Attribute{
 			{
 				Name:        "enforce_mfa_on_external_authentication",
 				Type:        ssot.AttrEnum,
@@ -152,14 +152,14 @@ var AuthenticationPolicyAttrs = struct {
 					Enum: MfaPolicyAllowedMethodsOption,
 				},
 			},
-		},
+		}),
 	},
 	PatPolicy: ssot.Attribute{
 		Name:        "pat_policy",
 		Type:        ssot.AttrList,
 		MaxItems:    new(1),
 		Description: "Specifies the policy for programmatic access tokens.",
-		Children: []ssot.Attribute{
+		Elem: ssot.ObjectElem([]ssot.Attribute{
 			{
 				Name:        "default_expiry_in_days",
 				Type:        ssot.AttrInt,
@@ -183,14 +183,14 @@ var AuthenticationPolicyAttrs = struct {
 				Description: "Specifies the network policy evaluation for the PAT.",
 				Enum:        NetworkPolicyEvaluationOption,
 			},
-		},
+		}),
 	},
 	WorkloadIdentityPolicy: ssot.Attribute{
 		Name:        "workload_identity_policy",
 		Type:        ssot.AttrList,
 		MaxItems:    new(1),
 		Description: "Specifies the policy for workload identity federation.",
-		Children: []ssot.Attribute{
+		Elem: ssot.ObjectElem([]ssot.Attribute{
 			{
 				Name:        "allowed_providers",
 				Type:        ssot.AttrSet,
@@ -218,7 +218,7 @@ var AuthenticationPolicyAttrs = struct {
 				Description: "Specifies the list of OIDC issuers allowed by the authentication policy during workload identity authentication of type `OIDC`.",
 				Elem:        &ssot.Attribute{Type: ssot.AttrString},
 			},
-		},
+		}),
 	},
 	SecurityIntegrations: ssot.Attribute{
 		Name: "security_integrations",

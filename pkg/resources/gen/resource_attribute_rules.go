@@ -268,26 +268,22 @@ func applyResourceAttributeRules(idType string, in []ssot.Attribute) []ResourceA
 }
 
 func resolveResourceAttribute(in ssot.Attribute, ctx resourceAttributeRuleContext) ResourceAttribute {
-	if in.IsObjectList() {
-		// A list of objects is a block with the fields of its element object.
-		in.Children, in.Elem = in.Elem.Children, nil
-	}
 	out := resourceAttributeBaseline(in, ctx)
 	for _, rule := range resourceAttributeRules {
 		if rule.When(in, ctx) {
 			rule.Then(in, ctx, &out)
 		}
 	}
-	if in.Elem != nil {
+	if in.Elem != nil && !in.IsObjectList() {
 		elemCtx := ctx
 		elemCtx.AsCollectionElem = true
 		elem := resolveResourceAttribute(*in.Elem, elemCtx)
 		out.Elem = &elem
 	}
-	if len(in.Children) > 0 {
+	if fields := in.NestedFields(); len(fields) > 0 {
 		nestedCtx := ctx
 		nestedCtx.IdType = ""
-		out.Children = collections.Map(in.Children, func(child ssot.Attribute) ResourceAttribute {
+		out.Children = collections.Map(fields, func(child ssot.Attribute) ResourceAttribute {
 			return resolveResourceAttribute(child, nestedCtx)
 		})
 	}

@@ -165,14 +165,14 @@ func Test_attachCreateMappings_unsupportedBlocksStayHandwritten(t *testing.T) {
 		Name:     "storage_location",
 		Type:     ssot.AttrList,
 		Required: true,
-		Children: []ssot.Attribute{{
+		Elem: ssot.ObjectElem([]ssot.Attribute{{
 			Name: "url",
 			Type: ssot.AttrString,
-		}},
+		}}),
 	}, {
 		Name: "policy",
 		Type: ssot.AttrList,
-		Children: []ssot.Attribute{{
+		Elem: ssot.ObjectElem([]ssot.Attribute{{
 			Name: "comment",
 			Type: ssot.AttrString,
 		}, {
@@ -180,7 +180,7 @@ func Test_attachCreateMappings_unsupportedBlocksStayHandwritten(t *testing.T) {
 			Type:     ssot.AttrList,
 			Required: true,
 			Elem:     &ssot.Attribute{Type: ssot.AttrString},
-		}},
+		}}),
 	}}
 	dst := applyResourceAttributeRules("SchemaObjectIdentifier", src)
 	require.NotPanics(t, func() {
@@ -211,20 +211,20 @@ func Test_attachCreateMappings_collectionsUseElementMappers(t *testing.T) {
 	}, {
 		Name: "client_policy",
 		Type: ssot.AttrSet,
-		Children: []ssot.Attribute{{
+		Elem: ssot.ObjectElem([]ssot.Attribute{{
 			Name:     "minimum_version",
 			Type:     ssot.AttrString,
 			Required: true,
-		}},
+		}}),
 	}, {
 		Name:     "policy",
 		Type:     ssot.AttrList,
 		MaxItems: new(1),
-		Children: []ssot.Attribute{{
+		Elem: ssot.ObjectElem([]ssot.Attribute{{
 			Name: "issuers",
 			Type: ssot.AttrSet,
 			Elem: &ssot.Attribute{Type: ssot.AttrString},
-		}},
+		}}),
 	}})
 
 	require.Equal(t, `func widgetApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateWidgetRequest) error {
@@ -252,7 +252,7 @@ func Test_attachCreateMappings_nestedListBlocks(t *testing.T) {
 		Name:     "policy",
 		Type:     ssot.AttrList,
 		MaxItems: new(1),
-		Children: []ssot.Attribute{{
+		Elem: ssot.ObjectElem([]ssot.Attribute{{
 			Name:     "mode",
 			Type:     ssot.AttrEnum,
 			Required: true,
@@ -280,33 +280,33 @@ func Test_attachCreateMappings_nestedListBlocks(t *testing.T) {
 			Name:     "limit",
 			Type:     ssot.AttrList,
 			MaxItems: new(1),
-			Children: []ssot.Attribute{{
+			Elem: ssot.ObjectElem([]ssot.Attribute{{
 				Name: "count",
 				Type: ssot.AttrInt,
 			}, {
 				Name: "enabled",
 				Type: ssot.AttrBool,
-			}},
-		}},
+			}}),
+		}}),
 	}, {
 		Name: "storage_location",
 		Type: ssot.AttrList,
-		Children: []ssot.Attribute{{
+		Elem: ssot.ObjectElem([]ssot.Attribute{{
 			Name:     "name",
 			Type:     ssot.AttrString,
 			Required: true,
 		}, {
 			Name: "url",
 			Type: ssot.AttrString,
-		}},
+		}}),
 	}, {
 		Name: "rule",
 		Type: ssot.AttrList,
-		Children: []ssot.Attribute{{
+		Elem: ssot.ObjectElem([]ssot.Attribute{{
 			Name:     "priority",
 			Type:     ssot.AttrInt,
 			Required: true,
-		}},
+		}}),
 	}})
 
 	require.Equal(t, `func widgetApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateWidgetRequest) error {
@@ -368,10 +368,10 @@ func Test_attachCreateMappings_explicitBlockMapping(t *testing.T) {
 		Name:          "policy",
 		Type:          ssot.AttrSet,
 		CreateMapping: ssot.ListValueCreate("toWidgetPolicy"),
-		Children: []ssot.Attribute{{
+		Elem: ssot.ObjectElem([]ssot.Attribute{{
 			Name: "comment",
 			Type: ssot.AttrString,
-		}},
+		}}),
 	}}
 	dst := applyResourceAttributeRules("", src)
 	attachCreateMappings("Widget", src, dst)
@@ -448,9 +448,9 @@ func Test_attachCreateMappings_fourLevelBlocksWithDeepSet(t *testing.T) {
 
 func Test_attachCreateMappings_fourLevelBlocksWithUnmappedLeafStayHandwritten(t *testing.T) {
 	model := createOptionalsModel("Widget", []ssot.Attribute{fourLevelBlock(func(d *ssot.Attribute) {
-		d.Children[1].Type = ssot.AttrIdentifier
-		d.Children[1].IdentifierType = "SchemaObjectIdentifier"
-		d.Children[1].Required = true
+		d.Elem.Children[1].Type = ssot.AttrIdentifier
+		d.Elem.Children[1].IdentifierType = "SchemaObjectIdentifier"
+		d.Elem.Children[1].Required = true
 	})})
 
 	require.Empty(t, model.CreateBlockFuncs())
@@ -470,30 +470,30 @@ func fourLevelBlock(adjustDeepest func(d *ssot.Attribute)) ssot.Attribute {
 		Name:     "a",
 		Type:     ssot.AttrList,
 		MaxItems: new(1),
-		Children: []ssot.Attribute{{
+		Elem: ssot.ObjectElem([]ssot.Attribute{{
 			Name: "b",
 			Type: ssot.AttrList,
-			Children: []ssot.Attribute{{
+			Elem: ssot.ObjectElem([]ssot.Attribute{{
 				Name:     "c",
 				Type:     ssot.AttrList,
 				MaxItems: new(1),
-				Children: []ssot.Attribute{{
+				Elem: ssot.ObjectElem([]ssot.Attribute{{
 					Name: "d",
 					Type: ssot.AttrList,
-					Children: []ssot.Attribute{{
+					Elem: ssot.ObjectElem([]ssot.Attribute{{
 						Name:     "leaf",
 						Type:     ssot.AttrString,
 						Required: true,
 					}, {
 						Name: "note",
 						Type: ssot.AttrString,
-					}},
-				}},
-			}},
-		}},
+					}}),
+				}}),
+			}}),
+		}}),
 	}
 	if adjustDeepest != nil {
-		adjustDeepest(&block.Children[0].Children[0].Children[0])
+		adjustDeepest(&block.Elem.Children[0].Elem.Children[0].Elem.Children[0])
 	}
 	return block
 }
@@ -504,11 +504,11 @@ func Test_attachCreateMappings_skipCreateBlockStaysHandwritten(t *testing.T) {
 		Type:            ssot.AttrList,
 		MaxItems:        new(1),
 		SkipCreateBlock: true,
-		Children: []ssot.Attribute{{
+		Elem: ssot.ObjectElem([]ssot.Attribute{{
 			Name:     "expression",
 			Type:     ssot.AttrString,
 			Required: true,
-		}},
+		}}),
 	}, {
 		Name: "comment",
 		Type: ssot.AttrString,
@@ -539,10 +539,10 @@ func Test_ApplyCreateOptionals_rendersBlockParseFuncs(t *testing.T) {
 		Name:     "policy",
 		Type:     ssot.AttrList,
 		MaxItems: new(1),
-		Children: []ssot.Attribute{{
+		Elem: ssot.ObjectElem([]ssot.Attribute{{
 			Name: "comment",
 			Type: ssot.AttrString,
-		}},
+		}}),
 	}})
 	var b strings.Builder
 	require.NoError(t, LifecycleTemplate.Execute(&b, model))
