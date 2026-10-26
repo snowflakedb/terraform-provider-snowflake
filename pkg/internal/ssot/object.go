@@ -74,6 +74,9 @@ type Object struct {
 	Set    []*Attribute
 	Unset  []*Attribute
 	Alter  AlterSpec
+	// AdditionalEnums are SDK enums that no attribute, column, or clause refers to, such as the accepted values of a field
+	// that the resource validates but the SQL does not send. They are emitted with the enums the object refers to.
+	AdditionalEnums []*Enum
 	// CustomOperations are operations other than CREATE and ALTER.
 	// Clause order is the emission order. SdkCustomOperations turns them on.
 	CustomOperations []CustomOperationSpec

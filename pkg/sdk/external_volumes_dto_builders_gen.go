@@ -257,14 +257,6 @@ func (s *DropExternalVolumeRequest) WithIfExists(ifExists bool) *DropExternalVol
 	return s
 }
 
-func NewDescribeExternalVolumeRequest(
-	name AccountObjectIdentifier,
-) *DescribeExternalVolumeRequest {
-	s := DescribeExternalVolumeRequest{}
-	s.name = name
-	return &s
-}
-
 func NewShowExternalVolumeRequest() *ShowExternalVolumeRequest {
 	s := ShowExternalVolumeRequest{}
 	return &s
@@ -273,4 +265,12 @@ func NewShowExternalVolumeRequest() *ShowExternalVolumeRequest {
 func (s *ShowExternalVolumeRequest) WithLike(like Like) *ShowExternalVolumeRequest {
 	s.Like = &like
 	return s
+}
+
+func NewDescribeExternalVolumeRequest(
+	name AccountObjectIdentifier,
+) *DescribeExternalVolumeRequest {
+	s := DescribeExternalVolumeRequest{}
+	s.name = name
+	return &s
 }

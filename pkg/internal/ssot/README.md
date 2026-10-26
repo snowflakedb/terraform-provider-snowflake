@@ -20,6 +20,9 @@ generators will follow. Ultimately, all the generators should default to using s
 - `VariantOf` - base object whose SDK parameter details, SET/UNSET requests, and `ParameterType` names a variant shares; parameter catalog membership still comes from the variant's own `Name`
 - `VariantEntityCreateName` - optional SQL object words for a variant CREATE. Empty uses `VariantOf.ObjectType` (`WarehouseAdaptive` emits `WAREHOUSE`). Set it when the words differ, as interactive CREATE does with `INTERACTIVE WAREHOUSE`
 - `VariantEntityAlterName` - optional SQL object words for a variant ALTER. Empty uses the same base default as CREATE
+- `AdditionalEnums` - SDK enums that no attribute, column, or clause refers to, such as the accepted values of a field the
+  resource validates but the SQL does not send. They are emitted with the enums the object refers to, which
+  `SdkDefineFromSsot()` needs so the hand-written SDK definition has nothing left to list
 - `SchemaStateUpgraders` - ordered upgrade function names ([Resource generator](#resource-generator))
 
 Identity (`Name`, `IdType`, ...) is separate from `Attributes`. `LegacyIdEncoding` keeps the pipe-delimited resource id

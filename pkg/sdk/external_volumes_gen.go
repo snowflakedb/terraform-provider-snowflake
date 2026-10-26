@@ -12,10 +12,10 @@ type ExternalVolumes interface {
 	Alter(ctx context.Context, request *AlterExternalVolumeRequest) error
 	Drop(ctx context.Context, request *DropExternalVolumeRequest) error
 	DropSafely(ctx context.Context, id AccountObjectIdentifier) error
-	Describe(ctx context.Context, id AccountObjectIdentifier) ([]ExternalVolumeProperty, error)
 	Show(ctx context.Context, request *ShowExternalVolumeRequest) ([]ExternalVolume, error)
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolume, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolume, error)
+	Describe(ctx context.Context, id AccountObjectIdentifier) ([]ExternalVolumeProperty, error)
 	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolumeDetails, error)
 }
 
@@ -123,6 +123,33 @@ type DropExternalVolumeOptions struct {
 	name           AccountObjectIdentifier `ddl:"identifier"`
 }
 
+// ShowExternalVolumeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-external-volumes.
+type ShowExternalVolumeOptions struct {
+	show            bool  `ddl:"static" sql:"SHOW"`
+	externalVolumes bool  `ddl:"static" sql:"EXTERNAL VOLUMES"`
+	Like            *Like `ddl:"keyword" sql:"LIKE"`
+}
+
+type externalVolumesRow struct {
+	Name        string         `db:"name"`
+	AllowWrites bool           `db:"allow_writes"`
+	Comment     sql.NullString `db:"comment"`
+}
+
+type ExternalVolume struct {
+	Name        string
+	AllowWrites bool
+	Comment     string
+}
+
+func (v *ExternalVolume) ID() AccountObjectIdentifier {
+	return NewAccountObjectIdentifier(v.Name)
+}
+
+func (v *ExternalVolume) ObjectType() ObjectType {
+	return ObjectTypeExternalVolume
+}
+
 // DescribeExternalVolumeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-external-volume.
 type DescribeExternalVolumeOptions struct {
 	describe       bool                    `ddl:"static" sql:"DESCRIBE"`
@@ -152,31 +179,4 @@ type ExternalVolumeDetails struct {
 	Active           string
 	Comment          string
 	AllowWrites      string
-}
-
-// ShowExternalVolumeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-external-volumes.
-type ShowExternalVolumeOptions struct {
-	show            bool  `ddl:"static" sql:"SHOW"`
-	externalVolumes bool  `ddl:"static" sql:"EXTERNAL VOLUMES"`
-	Like            *Like `ddl:"keyword" sql:"LIKE"`
-}
-
-type externalVolumesRow struct {
-	Name        string         `db:"name"`
-	AllowWrites bool           `db:"allow_writes"`
-	Comment     sql.NullString `db:"comment"`
-}
-
-type ExternalVolume struct {
-	Name        string
-	AllowWrites bool
-	Comment     string
-}
-
-func (v *ExternalVolume) ID() AccountObjectIdentifier {
-	return NewAccountObjectIdentifier(v.Name)
-}
-
-func (v *ExternalVolume) ObjectType() ObjectType {
-	return ObjectTypeExternalVolume
 }

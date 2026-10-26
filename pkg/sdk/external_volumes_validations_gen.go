@@ -8,8 +8,8 @@ var (
 	_ validatable = new(CreateExternalVolumeOptions)
 	_ validatable = new(AlterExternalVolumeOptions)
 	_ validatable = new(DropExternalVolumeOptions)
-	_ validatable = new(DescribeExternalVolumeOptions)
 	_ validatable = new(ShowExternalVolumeOptions)
+	_ validatable = new(DescribeExternalVolumeOptions)
 )
 
 func (opts *CreateExternalVolumeOptions) validate() error {
@@ -75,6 +75,14 @@ func (opts *DropExternalVolumeOptions) validate() error {
 	return JoinErrors(errs...)
 }
 
+func (opts *ShowExternalVolumeOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	return JoinErrors(errs...)
+}
+
 func (opts *DescribeExternalVolumeOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
@@ -83,13 +91,5 @@ func (opts *DescribeExternalVolumeOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("DescribeExternalVolumeOptions", "name"))
 	}
-	return JoinErrors(errs...)
-}
-
-func (opts *ShowExternalVolumeOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
 	return JoinErrors(errs...)
 }

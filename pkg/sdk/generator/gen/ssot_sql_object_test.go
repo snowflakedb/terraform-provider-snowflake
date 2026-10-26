@@ -139,3 +139,10 @@ func Test_referencedEnums_walksObjectElemAndVariants(t *testing.T) {
 	obj := ssot.Object{Name: "Widget", Attributes: []ssot.Attribute{widget.list}}
 	require.ElementsMatch(t, []*ssot.Enum{widget.kind, widget.encryptionKind}, referencedEnums(obj))
 }
+
+func Test_referencedEnums_includesAdditionalEnums(t *testing.T) {
+	widget := newWidgetLocationAttributes()
+	extra := ssot.NewEnum("WidgetExtraKind", "WidgetExtraKinds", "NONE")
+	obj := ssot.Object{Name: "Widget", Attributes: []ssot.Attribute{widget.list}, AdditionalEnums: []*ssot.Enum{extra, widget.kind}}
+	require.ElementsMatch(t, []*ssot.Enum{widget.kind, widget.encryptionKind, extra}, referencedEnums(obj))
+}
