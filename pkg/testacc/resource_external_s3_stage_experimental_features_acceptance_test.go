@@ -12,6 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -20,16 +21,16 @@ import (
 )
 
 // TestAcc_Experimental_ExternalS3Stage_ImportJsonBooleanDefaults verifies that importing an external S3 stage
-// with IMPORT_BOOLEAN_DEFAULT disabled causes a permadiff (non-empty plan), and that the experiment (enabled
-// by default) fixes it by setting BooleanDefault fields to "default" instead of the actual Snowflake value.
+// without IMPORT_BOOLEAN_DEFAULT (the default) causes a permadiff (non-empty plan), and that the opt-in experiment
+// fixes it by setting BooleanDefault fields to "default" instead of the actual Snowflake value.
 // It covers all tri-value boolean attributes: JSON file format booleans, directory table booleans, and use_privatelink_endpoint.
 // Regression test for https://github.com/snowflakedb/terraform-provider-snowflake/issues/4549.
 func TestAcc_Experimental_ExternalS3Stage_ImportJsonBooleanDefaults(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	awsUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
 
-	providerModelWithoutExperiment := providermodel.SnowflakeProvider().
-		WithAllEnabledByDefaultExperimentsDisabled()
+	providerModelWithExperiment := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportBooleanDefault)
 
 	// stageModel: directory block with enable=false but NO explicit auto_refresh,
 	// so auto_refresh defaults to "default" in config. This lets us detect the permadiff
@@ -81,10 +82,10 @@ func TestAcc_Experimental_ExternalS3Stage_ImportJsonBooleanDefaults(t *testing.T
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
-			// Import with experiment disabled — booleans are imported as actual Snowflake values ("false"/"true"), causing a permadiff.
+			// Import without the experiment (default) — booleans are imported as actual Snowflake values ("false"/"true"), causing a permadiff.
 			{
-				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
-				Config:                   accconfig.FromModels(t, providerModelWithoutExperiment, stageModel),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, stageModel),
 				ResourceName:             stageModel.ResourceReference(),
 				ImportState:              true,
 				ImportStateId:            id.FullyQualifiedName(),
@@ -103,10 +104,10 @@ func TestAcc_Experimental_ExternalS3Stage_ImportJsonBooleanDefaults(t *testing.T
 				),
 				ImportStatePersist: true,
 			},
-			// Plan with experiment disabled — proves the old behavior: config has "default", state has "false"/"true" → permadiff
+			// Plan without the experiment (default) — config has "default", state has "false"/"true" → permadiff
 			{
-				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
-				Config:                   accconfig.FromModels(t, providerModelWithoutExperiment, stageModel),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, stageModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -120,15 +121,15 @@ func TestAcc_Experimental_ExternalS3Stage_ImportJsonBooleanDefaults(t *testing.T
 			// and the framework doesn't support state removal.
 			// This also drops the stage, so we recreate it in the next step's PreConfig.
 			{
-				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
-				Config:                   accconfig.FromModels(t, providerModelWithoutExperiment, stageModel),
-				Destroy:                  true,
-			},
-			// Import with experiment enabled (default) — all tri-value booleans are imported as "default"
-			{
-				PreConfig:                createStage,
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   accconfig.FromModels(t, stageModel),
+				Destroy:                  true,
+			},
+			// Import with the experiment enabled — all tri-value booleans are imported as "default"
+			{
+				PreConfig:                createStage,
+				ProtoV6ProviderFactories: importBooleanDefaultProviderFactory,
+				Config:                   accconfig.FromModels(t, providerModelWithExperiment, stageModel),
 				ResourceName:             stageModel.ResourceReference(),
 				ImportState:              true,
 				ImportStatePersist:       true,
@@ -147,10 +148,10 @@ func TestAcc_Experimental_ExternalS3Stage_ImportJsonBooleanDefaults(t *testing.T
 					importchecks.TestCheckResourceAttrInstanceState(resourceId, "use_privatelink_endpoint", r.BooleanDefault),
 				),
 			},
-			// Plan with experiment enabled (default) — proves the fix: config and state both have "default" → no diff
+			// Plan with the experiment enabled — proves the fix: config and state both have "default" → no diff
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, stageModel),
+				ProtoV6ProviderFactories: importBooleanDefaultProviderFactory,
+				Config:                   accconfig.FromModels(t, providerModelWithExperiment, stageModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),

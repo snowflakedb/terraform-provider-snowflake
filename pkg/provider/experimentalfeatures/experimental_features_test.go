@@ -48,7 +48,6 @@ func Test_Experiments_IsEnabled(t *testing.T) {
 		require.True(t, New(nil, nil).IsEnabled(WarehouseShowImprovedPerformance))
 		require.True(t, New(nil, nil).IsEnabled(GrantAccountRoleSafePublicRole))
 		require.True(t, New(nil, nil).IsEnabled(GrantsStrictPrivilegeManagement))
-		require.True(t, New(nil, nil).IsEnabled(ImportBooleanDefault))
 		require.True(t, New(nil, nil).IsEnabled(GrantsImportValidation))
 		require.True(t, New(nil, nil).IsEnabled(ParametersIgnoreValueChangesIfNotOnObjectLevel))
 		require.True(t, New(nil, nil).IsEnabled(GrantsSafeDestroy))
@@ -67,7 +66,7 @@ func Test_Experiments_IsEnabled(t *testing.T) {
 
 func Test_Experiments_UserLists(t *testing.T) {
 	enabled := []string{string(HierarchyRenames)}
-	disabled := []string{string(InheritedGrants), string(WarehouseShowImprovedPerformance), string(GrantAccountRoleSafePublicRole), string(GrantsStrictPrivilegeManagement), string(ImportBooleanDefault), string(GrantsImportValidation), string(ParametersIgnoreValueChangesIfNotOnObjectLevel), string(GrantsSafeDestroy), string(TagAssociationSafeDestroy)}
+	disabled := []string{string(InheritedGrants), string(WarehouseShowImprovedPerformance), string(GrantAccountRoleSafePublicRole), string(GrantsStrictPrivilegeManagement), string(GrantsImportValidation), string(ParametersIgnoreValueChangesIfNotOnObjectLevel), string(GrantsSafeDestroy), string(TagAssociationSafeDestroy)}
 	experiments := New(enabled, disabled)
 
 	gotEnabled := experiments.UserEnabled()
@@ -139,12 +138,11 @@ func Test_ComputeEffectiveExperimentsEnabled_Public(t *testing.T) {
 	grantsStrict := string(GrantsStrictPrivilegeManagement)
 	parametersIgnore := string(ParametersIgnoreValueChangesIfNotOnObjectLevel)
 	grantsImport := string(GrantsImportValidation)
-	importBoolean := string(ImportBooleanDefault)
 	grantsSafeDestroy := string(GrantsSafeDestroy)
 	tagAssociationSafeDestroy := string(TagAssociationSafeDestroy)
 	safePublic := string(GrantAccountRoleSafePublicRole)
 	inherited := string(InheritedGrants)
-	allDefaultOn := []string{warehouse, grantsStrict, parametersIgnore, grantsImport, importBoolean, grantsSafeDestroy, tagAssociationSafeDestroy, safePublic, inherited}
+	allDefaultOn := []string{warehouse, grantsStrict, parametersIgnore, grantsImport, grantsSafeDestroy, tagAssociationSafeDestroy, safePublic, inherited}
 
 	t.Run("empty lists enable default-on experiments only", func(t *testing.T) {
 		got := ComputeEffectiveExperimentsEnabled(nil, nil)
@@ -153,7 +151,7 @@ func Test_ComputeEffectiveExperimentsEnabled_Public(t *testing.T) {
 
 	t.Run("opt-in experiment is included when listed in enabled", func(t *testing.T) {
 		got := ComputeEffectiveExperimentsEnabled([]string{optIn}, nil)
-		require.Equal(t, []string{warehouse, grantsStrict, parametersIgnore, grantsImport, importBoolean, grantsSafeDestroy, tagAssociationSafeDestroy, safePublic, optIn, inherited}, got)
+		require.Equal(t, []string{warehouse, grantsStrict, parametersIgnore, grantsImport, grantsSafeDestroy, tagAssociationSafeDestroy, safePublic, optIn, inherited}, got)
 	})
 
 	t.Run("default-on experiment is excluded when listed in disabled", func(t *testing.T) {
@@ -168,6 +166,6 @@ func Test_ComputeEffectiveExperimentsEnabled_Public(t *testing.T) {
 
 	t.Run("matching is case-insensitive", func(t *testing.T) {
 		got := ComputeEffectiveExperimentsEnabled([]string{strings.ToLower(optIn)}, []string{strings.ToLower(inherited)})
-		require.Equal(t, []string{warehouse, grantsStrict, parametersIgnore, grantsImport, importBoolean, grantsSafeDestroy, tagAssociationSafeDestroy, safePublic, optIn}, got)
+		require.Equal(t, []string{warehouse, grantsStrict, parametersIgnore, grantsImport, grantsSafeDestroy, tagAssociationSafeDestroy, safePublic, optIn}, got)
 	})
 }
