@@ -312,6 +312,7 @@ var ExternalVolumeObject = ssot.Object{
 					),
 				),
 			),
+			ssot.SdkDefineFromSsot(),
 			ssot.SdkCreate(),
 			ssot.SdkAlter(),
 		),
@@ -320,6 +321,8 @@ var ExternalVolumeObject = ssot.Object{
 			ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeNestedField(&ExternalVolumeAttrs.StorageLocations)),
 		),
 	},
+	// The Azure and S3-compatible encryption types are validated by the resource, and the SQL does not send them.
+	AdditionalEnums: []*ssot.Enum{AzureEncryptionType, S3CompatEncryptionType},
 	Attributes: []ssot.Attribute{
 		ExternalVolumeAttrs.Comment,
 		ExternalVolumeAttrs.AllowWrites,

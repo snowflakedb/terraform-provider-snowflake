@@ -508,20 +508,20 @@ func SdkInterfacesFromSsot(objects []ssot.Object, overrides map[string]SdkInterf
 func referencedEnums(obj ssot.Object) []*ssot.Enum {
 	var out []*ssot.Enum
 	seen := map[*ssot.Enum]struct{}{}
+	addEnum := func(enum *ssot.Enum) {
+		if enum == nil || enum.SdkType != "" {
+			return
+		}
+		if _, ok := seen[enum]; ok {
+			return
+		}
+		seen[enum] = struct{}{}
+		out = append(out, enum)
+	}
 	var addAttr func(attr *ssot.Attribute)
 	addAttr = func(attr *ssot.Attribute) {
 		if attr == nil {
 			return
-		}
-		addEnum := func(enum *ssot.Enum) {
-			if enum == nil || enum.SdkType != "" {
-				return
-			}
-			if _, ok := seen[enum]; ok {
-				return
-			}
-			seen[enum] = struct{}{}
-			out = append(out, enum)
 		}
 		addEnum(attr.ColumnEnum())
 		if attr.Elem != nil {
@@ -556,6 +556,9 @@ func referencedEnums(obj ssot.Object) []*ssot.Enum {
 	addList(obj.Create.Clauses)
 	addList(obj.Set)
 	addList(obj.Unset)
+	for _, enum := range obj.AdditionalEnums {
+		addEnum(enum)
+	}
 	for _, spec := range obj.CustomOperations {
 		for _, clause := range spec.Clauses {
 			if clause.Kind == ssot.CustomOperationClauseAttribute {

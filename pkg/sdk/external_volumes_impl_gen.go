@@ -12,8 +12,8 @@ import (
 
 var (
 	_ ExternalVolumes                        = (*externalVolumes)(nil)
-	_ convertibleRow[ExternalVolumeProperty] = new(externalVolumeDescRow)
 	_ convertibleRow[ExternalVolume]         = new(externalVolumesRow)
+	_ convertibleRow[ExternalVolumeProperty] = new(externalVolumeDescRow)
 )
 
 type externalVolumes struct {
@@ -39,17 +39,6 @@ func (v *externalVolumes) DropSafely(ctx context.Context, id AccountObjectIdenti
 	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropExternalVolumeRequest(id).WithIfExists(true)) }, ctx, id)
 }
 
-func (v *externalVolumes) Describe(ctx context.Context, id AccountObjectIdentifier) ([]ExternalVolumeProperty, error) {
-	opts := &DescribeExternalVolumeOptions{
-		name: id,
-	}
-	rows, err := validateAndQuery[externalVolumeDescRow](v.client, ctx, opts)
-	if err != nil {
-		return nil, err
-	}
-	return convertRows[externalVolumeDescRow, ExternalVolumeProperty](rows)
-}
-
 func (v *externalVolumes) Show(ctx context.Context, request *ShowExternalVolumeRequest) ([]ExternalVolume, error) {
 	opts := request.toOpts()
 	dbRows, err := validateAndQuery[externalVolumesRow](v.client, ctx, opts)
@@ -71,6 +60,17 @@ func (v *externalVolumes) ShowByID(ctx context.Context, id AccountObjectIdentifi
 
 func (v *externalVolumes) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolume, error) {
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
+}
+
+func (v *externalVolumes) Describe(ctx context.Context, id AccountObjectIdentifier) ([]ExternalVolumeProperty, error) {
+	opts := &DescribeExternalVolumeOptions{
+		name: id,
+	}
+	rows, err := validateAndQuery[externalVolumeDescRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return convertRows[externalVolumeDescRow, ExternalVolumeProperty](rows)
 }
 
 func (r *CreateExternalVolumeRequest) toOpts() *CreateExternalVolumeOptions {
@@ -220,6 +220,22 @@ func (r *DropExternalVolumeRequest) toOpts() *DropExternalVolumeOptions {
 	return opts
 }
 
+func (r *ShowExternalVolumeRequest) toOpts() *ShowExternalVolumeOptions {
+	opts := &ShowExternalVolumeOptions{
+		Like: r.Like,
+	}
+	return opts
+}
+
+func (r externalVolumesRow) convert() (*ExternalVolume, error) {
+	result := &ExternalVolume{
+		Name:        r.Name,
+		AllowWrites: r.AllowWrites,
+	}
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	return result, nil
+}
+
 func (r *DescribeExternalVolumeRequest) toOpts() *DescribeExternalVolumeOptions {
 	opts := &DescribeExternalVolumeOptions{
 		name: r.name,
@@ -235,22 +251,6 @@ func (r externalVolumeDescRow) convert() (*ExternalVolumeProperty, error) {
 		PropertyValue:   r.PropertyValue,
 		PropertyDefault: r.PropertyDefault,
 	}
-	return result, nil
-}
-
-func (r *ShowExternalVolumeRequest) toOpts() *ShowExternalVolumeOptions {
-	opts := &ShowExternalVolumeOptions{
-		Like: r.Like,
-	}
-	return opts
-}
-
-func (r externalVolumesRow) convert() (*ExternalVolume, error) {
-	result := &ExternalVolume{
-		Name:        r.Name,
-		AllowWrites: r.AllowWrites,
-	}
-	mapNullStringToNonNullableField(&result.Comment, r.Comment)
 	return result, nil
 }
 

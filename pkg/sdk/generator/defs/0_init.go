@@ -35,7 +35,6 @@ func init() {
 		externalTablesDef,
 		externalAccessIntegrationsDef,
 		externalFunctionsDef,
-		externalVolumesDef,
 		failoverGroupsDef,
 		fileFormatsDef,
 		functionsDef,

@@ -6,8 +6,8 @@ var (
 	_ optionsProvider[CreateExternalVolumeOptions]   = new(CreateExternalVolumeRequest)
 	_ optionsProvider[AlterExternalVolumeOptions]    = new(AlterExternalVolumeRequest)
 	_ optionsProvider[DropExternalVolumeOptions]     = new(DropExternalVolumeRequest)
-	_ optionsProvider[DescribeExternalVolumeOptions] = new(DescribeExternalVolumeRequest)
 	_ optionsProvider[ShowExternalVolumeOptions]     = new(ShowExternalVolumeRequest)
+	_ optionsProvider[DescribeExternalVolumeOptions] = new(DescribeExternalVolumeRequest)
 )
 
 type CreateExternalVolumeRequest struct {
@@ -102,10 +102,10 @@ type DropExternalVolumeRequest struct {
 	name     AccountObjectIdentifier // required
 }
 
-type DescribeExternalVolumeRequest struct {
-	name AccountObjectIdentifier // required
-}
-
 type ShowExternalVolumeRequest struct {
 	Like *Like
+}
+
+type DescribeExternalVolumeRequest struct {
+	name AccountObjectIdentifier // required
 }
