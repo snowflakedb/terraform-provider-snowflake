@@ -429,7 +429,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 				Type:             schema.TypeString,
 				ValidateDiagFunc: validators.StringInSlice(experimentalfeatures.AcceptedInDisabledExperimentalFeatureNames, true),
 			},
-			Description: fmt.Sprintf("A list of experimental features to disable. Use this to opt out of experiments that are enabled by default (current default behavior, not preview features). This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Experiments you can disable are: %v. Promoted and discontinued experiment names are still accepted as no-ops.", docs.PossibleValuesListed(experimentalfeatures.EnabledByDefaultExperimentalFeatureNames)),
+			Description: fmt.Sprintf("A list of experimental features to disable. Use this to opt out of experiments that are enabled by default (current default behavior, not preview features). This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Experiments you can disable are: %v. Promoted and discontinued experiment names are still accepted as no-ops. Opt-in experiment names are accepted with a warning: opt-in experiments are disabled unless listed in `experimental_features_enabled`, so they don't need to be listed here.", docs.PossibleValuesListed(experimentalfeatures.EnabledByDefaultExperimentalFeatureNames)),
 		},
 		"skip_toml_file_permission_verification": {
 			Type:        schema.TypeBool,

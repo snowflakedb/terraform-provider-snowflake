@@ -28,6 +28,24 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.22.x ➞ v2.23.0
 
+### *(behavior change)* `IMPORT_BOOLEAN_DEFAULT` is no longer enabled by default
+
+`IMPORT_BOOLEAN_DEFAULT` is now an opt-in experiment, and it's deprecated in favor of `IMPORT_PERMISSIVE_MODE` (see [Opt-in experiment: permissive import mode](#new-feature-opt-in-experiment-permissive-import-mode)):
+
+- **If you rely on the default configuration:** importing the stage, stream, and storage integration resources now sets boolean fields that use the special `"default"` value to the Snowflake value. The plan after import shows a change for the ones that your configuration omits (e.g. `use_privatelink_endpoint: "false" -> "default"`). To keep the previous behavior, enable the experiment:
+
+  ```terraform
+  provider "snowflake" {
+    experimental_features_enabled = ["IMPORT_BOOLEAN_DEFAULT"]
+  }
+  ```
+
+  Resources that are already in the state aren't affected until they're imported again.
+- **If you listed it in `experimental_features_enabled`:** nothing changes.
+- **If you listed it in `experimental_features_disabled`:** the behavior doesn't change, but the provider shows a warning, because opt-in experiments don't need to be disabled. Remove the entry.
+
+Once a resource supports `IMPORT_PERMISSIVE_MODE`, it no longer honors `IMPORT_BOOLEAN_DEFAULT`; such resources will be listed in this guide. When all resources are migrated, `IMPORT_BOOLEAN_DEFAULT` will be discontinued.
+
 ### *(bug fix)* `snowflake_resource_monitor` now saves configured values in state
 
 Previously, [`snowflake_resource_monitor`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/resource_monitor) left some optional fields empty in Terraform state when your configuration used the value Snowflake already had. A number could appear as `0`, and text could appear blank, although the value was present both in your configuration and in Snowflake. This affected:
@@ -88,6 +106,25 @@ The values of the write-only fields are never saved in the Terraform plan or sta
 Terraform can not see a write-only value, so it can not detect changes to it either. The key is sent to Snowflake only when the version field changes: increment it whenever you want to rotate the key. For the same reason, external changes to keys set this way are not detected.
 
 To move an existing key out of the state, replace `rsa_public_key` with `rsa_public_key_wo` and set `rsa_public_key_wo_version`. The next apply pushes the key to Snowflake again and removes it from the state. After importing a user, the version field is empty, so the first apply also pushes the key again.
+
+No configuration changes are required for existing configurations.
+
+### *(new feature)* Opt-in experiment: permissive import mode
+
+Imports follow one of two modes:
+
+- **Enforcing mode** (default): The plan after import shows a change for every attribute that the configuration omits but that has a value in Snowflake, whether it's the Snowflake default or not. Applying the plan resets these attributes to their Snowflake defaults. To avoid the changes, add the values to your configuration.
+- **Permissive mode** (opt-in): the provider accepts the values the object already has for the attributes that the configuration omits, so the plan after import shows no change for them. This applies only to the import itself: external changes made after the import are detected as usual.
+
+We added the `IMPORT_PERMISSIVE_MODE` opt-in experiment to switch to permissive mode:
+
+```terraform
+provider "snowflake" {
+  experimental_features_enabled = ["IMPORT_PERMISSIVE_MODE"]
+}
+```
+
+No resources support this experiment yet. They will be added gradually and listed in the experiment's description and in this guide.
 
 No configuration changes are required for existing configurations.
 

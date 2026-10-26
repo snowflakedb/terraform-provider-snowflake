@@ -14,9 +14,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -106,10 +108,13 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 				ResourceName:      storageIntegrationAzureModelNoAttributes.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
+				// use_privatelink_endpoint is ignored because it's not set in the config ("default"),
+				// while import writes the Snowflake value.
+				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
 				ImportStateCheck: assertThatImport(
 					t,
 					resourceassert.ImportedStorageIntegrationAzureResource(t, id.Name()).
-						HasUsePrivatelinkEndpointString(r.BooleanDefault),
+						HasUsePrivatelinkEndpointString(r.BooleanFalse),
 				),
 			},
 			{
@@ -207,10 +212,13 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 				ResourceName:      storageIntegrationAzureAllAttributesChanged.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
+				// use_privatelink_endpoint is ignored because it's not set in the config ("default"),
+				// while import writes the Snowflake value.
+				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
 				ImportStateCheck: assertThatImport(
 					t,
 					resourceassert.ImportedStorageIntegrationAzureResource(t, id.Name()).
-						HasUsePrivatelinkEndpointString(r.BooleanDefault),
+						HasUsePrivatelinkEndpointString(r.BooleanFalse),
 				),
 			},
 			// UNSET ALL
@@ -322,18 +330,15 @@ func TestAcc_StorageIntegrationAzure_CompleteUseCase(t *testing.T) {
 				),
 			},
 			// Import - with all optionals.
-			// use_privatelink_endpoint is ignored because import sets it to "default" while the
-			// configuration has an explicit value.
 			{
-				Config:                  config.FromModels(t, storageIntegrationAzureAllAttributes),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
+				Config:            config.FromModels(t, storageIntegrationAzureAllAttributes),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
 				ImportStateCheck: assertThatImport(
 					t,
 					resourceassert.ImportedStorageIntegrationAzureResource(t, id.Name()).
-						HasUsePrivatelinkEndpointString(r.BooleanDefault),
+						HasUsePrivatelinkEndpointString(r.BooleanFalse),
 				),
 			},
 		},
@@ -399,11 +404,16 @@ func TestAcc_StorageIntegrationAzure_Import(t *testing.T) {
 				ImportStateId:      completeId.FullyQualifiedName(),
 				ImportStatePersist: true,
 			},
-			// Expect empty plan
+			// The basic config omits use_privatelink_endpoint, so the plan resets it to the Snowflake default; the complete config matches Snowflake
 			{
 				Config: config.FromModels(t, basicStorageIntegrationAzureModel, completeStorageIntegrationAzureModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basicRef, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(basicRef, "use_privatelink_endpoint", tfjson.ActionUpdate, sdk.String(r.BooleanFalse), sdk.String(r.BooleanDefault)),
+						plancheck.ExpectResourceAction(completeRef, plancheck.ResourceActionNoop),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
