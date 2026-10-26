@@ -7,7 +7,6 @@ import (
 	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -76,83 +75,32 @@ func authenticationPolicySetConfigFieldsExt(d *schema.ResourceData, authenticati
 	return d.Set("comment", authenticationPolicy.Comment)
 }
 
-func authenticationPolicyHandleExternalChangesInDescribeExt(d *schema.ResourceData, authenticationPolicyDescriptions sdk.AuthenticationPolicyDetails, withExternalChangesMarking bool) diag.Diagnostics {
-	if !withExternalChangesMarking {
+func authenticationPolicyHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.AuthenticationPolicyDetails, withExternalChangesMarking bool) diag.Diagnostics {
+	if !withExternalChangesMarking || details == nil {
 		return nil
 	}
-	diags := make(diag.Diagnostics, 0)
-	describeMappings := make([]outputMapping, 0)
-
-	authenticationMethods, err := authenticationPolicyDescriptions.GetAuthenticationMethods()
-	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "Failed to retrieve authentication from authentication policy describe details.",
-			Detail:   fmt.Sprintf("Authentication policy id: %s, Err: %s", d.Id(), err),
-		})
-	} else {
-		describeMappings = append(
-			describeMappings,
-			outputMapping{"authentication_methods", "authentication_methods", authenticationPolicyDescriptions.Raw("AUTHENTICATION_METHODS"), authenticationMethods, nil},
-		)
+	described := details.Describe()
+	if described == nil {
+		return nil
 	}
-
-	mfaEnrollment, err := authenticationPolicyDescriptions.GetMfaEnrollment()
-	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "Failed to retrieve mfa enrollment from authentication policy describe details.",
-			Detail:   fmt.Sprintf("Authentication policy id: %s, Err: %s", d.Id(), err),
-		})
-	} else {
-		describeMappings = append(
-			describeMappings,
-			outputMapping{"mfa_enrollment", "mfa_enrollment", authenticationPolicyDescriptions.Raw("MFA_ENROLLMENT"), mfaEnrollment, nil},
-		)
+	// valueToCompare matches the TypeString describe_output values. valueToSet is the config representation.
+	if err := handleExternalChangesToObjectInFlatDescribe(d,
+		outputMapping{"authentication_methods", "authentication_methods", described.AuthenticationMethods, authenticationPolicyEnumStrings(details.AuthenticationMethods), nil},
+		outputMapping{"mfa_enrollment", "mfa_enrollment", described.MfaEnrollment, string(details.MfaEnrollment), nil},
+		outputMapping{"client_types", "client_types", described.ClientTypes, authenticationPolicyEnumStrings(details.ClientTypes), nil},
+		outputMapping{"security_integrations", "security_integrations", described.SecurityIntegrations, authenticationPolicySecurityIntegrationNames(details.SecurityIntegrations), nil},
+	); err != nil {
+		return diag.FromErr(err)
 	}
+	return nil
+}
 
-	clientTypes, err := authenticationPolicyDescriptions.GetClientTypes()
-	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "Failed to retrieve client types from authentication policy describe details.",
-			Detail:   fmt.Sprintf("Authentication policy id: %s, Err: %s", d.Id(), err),
-		})
-	} else {
-		describeMappings = append(
-			describeMappings,
-			outputMapping{"client_types", "client_types", authenticationPolicyDescriptions.Raw("CLIENT_TYPES"), clientTypes, nil},
-		)
+func authenticationPolicyEnumStrings[T ~string](values []T) []string {
+	out := make([]string, len(values))
+	for i, value := range values {
+		out[i] = string(value)
 	}
-
-	securityIntegrations, err := authenticationPolicyDescriptions.GetSecurityIntegrations()
-	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "Failed to retrieve security integrations from authentication policy describe details.",
-			Detail:   fmt.Sprintf("Authentication policy id: %s, Err: %s", d.Id(), err),
-		})
-	} else {
-		var securityIntegrationsStrings []string
-		if securityIntegrations != nil {
-			securityIntegrationsStrings = make([]string, len(securityIntegrations))
-			for i, v := range securityIntegrations {
-				securityIntegrationsStrings[i] = v.Name()
-			}
-		}
-
-		describeMappings = append(
-			describeMappings,
-			outputMapping{"security_integrations", "security_integrations", authenticationPolicyDescriptions.Raw("SECURITY_INTEGRATIONS"), securityIntegrationsStrings, nil},
-		)
-	}
-
-	if len(describeMappings) > 0 {
-		if err = handleExternalChangesToObjectInFlatDescribe(d, describeMappings...); err != nil {
-			return append(diags, diag.FromErr(err)...)
-		}
-	}
-	return diags
+	return out
 }
 
 func authenticationPolicyHierarchyRenameExt(ctx context.Context, d *schema.ResourceData, meta any, id *sdk.SchemaObjectIdentifier) diag.Diagnostics {
@@ -190,7 +138,7 @@ func authenticationPolicyApplySetUnsetExt(d *schema.ResourceData) (*authenticati
 	return &authenticationPolicyAlterRequestsExt{set: set, unset: unset}, nil
 }
 
-func authenticationPolicySetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier, authenticationPolicyDetails sdk.AuthenticationPolicyDetails) error {
+func authenticationPolicySetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier, details *sdk.AuthenticationPolicyDetails) error {
 	if err := errors.Join(
 		d.Set("name", id.Name()),
 		d.Set("database", id.DatabaseName()),
@@ -200,33 +148,23 @@ func authenticationPolicySetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk
 	}
 
 	// needed as otherwise the resource will be incorrectly imported when a list-parameter value equals a default value
-	authenticationMethods, err := authenticationPolicyDetails.GetAuthenticationMethods()
-	if err != nil {
-		return err
-	}
-	clientTypes, err := authenticationPolicyDetails.GetClientTypes()
-	if err != nil {
-		return err
-	}
-	securityIntegrations, err := authenticationPolicyDetails.GetSecurityIntegrations()
-	if err != nil {
-		return err
-	}
-	securityIntegrationStrings, err := collections.MapErr(securityIntegrations, func(r sdk.AccountObjectIdentifier) (string, error) { return r.Name(), nil })
-	if err != nil {
-		return err
-	}
-	mfaEnrollment, err := authenticationPolicyDetails.GetMfaEnrollment()
-	if err != nil {
-		return err
-	}
-
 	return errors.Join(
-		d.Set("authentication_methods", authenticationMethods),
-		d.Set("mfa_enrollment", mfaEnrollment),
-		d.Set("client_types", clientTypes),
-		d.Set("security_integrations", securityIntegrationStrings),
+		d.Set("authentication_methods", details.AuthenticationMethods),
+		d.Set("mfa_enrollment", details.MfaEnrollment),
+		d.Set("client_types", details.ClientTypes),
+		d.Set("security_integrations", authenticationPolicySecurityIntegrationNames(details.SecurityIntegrations)),
 	)
+}
+
+func authenticationPolicySecurityIntegrationNames(details sdk.AuthenticationPolicySecurityIntegrationsDetails) []string {
+	if details.All {
+		return []string{"ALL"}
+	}
+	names := make([]string, len(details.SecurityIntegrations))
+	for i, id := range details.SecurityIntegrations {
+		names[i] = id.Name()
+	}
+	return names
 }
 
 // =============================================================================
@@ -261,17 +199,13 @@ func authenticationPolicyShowByIdSafelyInSdkExt(ctx context.Context, d *schema.R
 }
 
 // Import does not SHOW. This returns the same DESCRIBE details Read already uses, in one query.
-func authenticationPolicyShowByIdInSdkExt(ctx context.Context, meta any, id sdk.SchemaObjectIdentifier) (sdk.AuthenticationPolicyDetails, error) {
+func authenticationPolicyShowByIdInSdkExt(ctx context.Context, meta any, id sdk.SchemaObjectIdentifier) (*sdk.AuthenticationPolicyDetails, error) {
 	return authenticationPolicyDescribeInSdkExt(ctx, meta, id)
 }
 
-func authenticationPolicyDescribeInSdkExt(ctx context.Context, meta any, id sdk.SchemaObjectIdentifier) (sdk.AuthenticationPolicyDetails, error) {
+func authenticationPolicyDescribeInSdkExt(ctx context.Context, meta any, id sdk.SchemaObjectIdentifier) (*sdk.AuthenticationPolicyDetails, error) {
 	client := meta.(*provider.Context).Client
-	authenticationPolicyDescriptionsRaw, err := client.AuthenticationPolicies.Describe(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return sdk.AuthenticationPolicyDetails(authenticationPolicyDescriptionsRaw), nil
+	return client.AuthenticationPolicies.DescribeDetails(ctx, id)
 }
 
 func authenticationPolicyAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier, reqs *authenticationPolicyAlterRequestsExt) error {

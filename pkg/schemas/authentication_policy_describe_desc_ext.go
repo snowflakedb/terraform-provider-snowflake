@@ -21,8 +21,13 @@ var AuthenticationPolicyNames = []string{
 	"WORKLOAD_IDENTITY_POLICY",
 }
 
-func AuthenticationPolicyDetailsToSchema(details sdk.AuthenticationPolicyDetails) map[string]any {
-	return AuthenticationPolicyDescriptionsToSchema([]sdk.AuthenticationPolicyDescription(details))
+// AuthenticationPolicyDetailsToSchema maps the original DESC rows. Formatting the parsed fields
+// back into strings drops properties the parser does not model.
+func AuthenticationPolicyDetailsToSchema(details *sdk.AuthenticationPolicyDetails) map[string]any {
+	if details == nil {
+		return map[string]any{}
+	}
+	return AuthenticationPolicyDescriptionsToSchema(details.Descriptions())
 }
 
 func AuthenticationPolicyDescriptionsToSchema(authenticationPolicyDescription []sdk.AuthenticationPolicyDescription) map[string]any {

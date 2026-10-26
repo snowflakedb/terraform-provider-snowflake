@@ -323,4 +323,155 @@ func TestAuthenticationPolicyDescribeProjection(t *testing.T) {
 	require.Equal(t, "c", details.Comment)
 	require.Empty(t, details.Owner)
 	require.Nil(t, AsAuthenticationPolicyDescribe(nil))
+
+	var noDetails *AuthenticationPolicyDetails
+	require.Nil(t, noDetails.Descriptions())
+	require.Nil(t, noDetails.Describe())
+}
+
+func TestParseAuthenticationPolicyDetails(t *testing.T) {
+	id := NewSchemaObjectIdentifier("DB", "SCHEMA", "POLICY")
+
+	t.Run("defaults", func(t *testing.T) {
+		rows := []AuthenticationPolicyDescription{
+			{Property: "NAME", Value: "POLICY"},
+			{Property: "OWNER", Value: "ACCOUNTADMIN"},
+			{Property: "COMMENT", Value: "null"},
+			{Property: "MFA_ENROLLMENT", Value: "OPTIONAL"},
+			{Property: "SECURITY_INTEGRATIONS", Value: "[ALL]"},
+			{Property: "CLIENT_TYPES", Value: "[ALL]"},
+			{Property: "CLIENT_POLICY", Value: "{}"},
+			{Property: "AUTHENTICATION_METHODS", Value: "[ALL]"},
+			{Property: "MFA_POLICY", Value: "{ALLOWED_METHODS=[ALL], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=NONE}"},
+			{Property: "PAT_POLICY", Value: "{DEFAULT_EXPIRY_IN_DAYS=15, MAX_EXPIRY_IN_DAYS=365, NETWORK_POLICY_EVALUATION=ENFORCED_REQUIRED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true, REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS=false, BLOCKED_ROLES_LIST=[]}"},
+			{Property: "WORKLOAD_IDENTITY_POLICY", Value: "{ALLOWED_PROVIDERS=[ALL], ALLOWED_AWS_ACCOUNTS=[ALL], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[ALL], ALLOWED_OIDC_ISSUERS=[ALL]}"},
+		}
+		details, err := parseAuthenticationPolicyDetails(rows, id)
+		require.NoError(t, err)
+		requireAuthenticationPolicyDetailsEqual(t, rows, &AuthenticationPolicyDetails{
+			Id:                    id,
+			Name:                  "POLICY",
+			Owner:                 "ACCOUNTADMIN",
+			AuthenticationMethods: []AuthenticationMethodsOption{AuthenticationMethodsOptionAll},
+			MfaEnrollment:         MfaEnrollmentReadOptionOptional,
+			ClientTypes:           []ClientTypesOption{ClientTypesOptionAll},
+			SecurityIntegrations:  AuthenticationPolicySecurityIntegrationsDetails{All: true},
+			ClientPolicy:          []AuthenticationPolicyClientPolicyEntryDetails{},
+			MfaPolicy: AuthenticationPolicyMfaPolicyDetails{
+				AllowedMethods:                     []MfaPolicyAllowedMethodsOption{MfaPolicyAllowedMethodsOptionAll},
+				EnforceMfaOnExternalAuthentication: EnforceMfaOnExternalAuthenticationOptionNone,
+			},
+			PatPolicy: AuthenticationPolicyPatPolicyDetails{
+				DefaultExpiryInDays:                   15,
+				MaxExpiryInDays:                       365,
+				NetworkPolicyEvaluation:               NetworkPolicyEvaluationOptionEnforcedRequired,
+				RequireRoleRestrictionForServiceUsers: true,
+			},
+			WorkloadIdentityPolicy: AuthenticationPolicyWorkloadIdentityPolicyDetails{
+				AllowedProviders:    []AllowedProviderOption{AllowedProviderOptionAll},
+				AllowedAwsAccounts:  []string{"ALL"},
+				AllowedAzureIssuers: []string{"ALL"},
+				AllowedOidcIssuers:  []string{"ALL"},
+			},
+		}, details)
+	})
+
+	t.Run("configured values", func(t *testing.T) {
+		rows := []AuthenticationPolicyDescription{
+			{Property: "NAME", Value: "POLICY"},
+			{Property: "OWNER", Value: "ACCOUNTADMIN"},
+			{Property: "COMMENT", Value: "some comment"},
+			{Property: "MFA_ENROLLMENT", Value: "REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY"},
+			{Property: "SECURITY_INTEGRATIONS", Value: `["My Integration"]`},
+			{Property: "CLIENT_TYPES", Value: "[DRIVERS, SNOWSQL]"},
+			{Property: "CLIENT_POLICY", Value: "{JDBC_DRIVER={MINIMUM_VERSION=3.25.0}, GO_DRIVER={MINIMUM_VERSION=1.14.1}}"},
+			{Property: "AUTHENTICATION_METHODS", Value: "[PASSWORD, SAML]"},
+			{Property: "MFA_POLICY", Value: "{ALLOWED_METHODS=[PASSKEY, DUO], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=ALL}"},
+			{Property: "PAT_POLICY", Value: "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=false}"},
+			{Property: "WORKLOAD_IDENTITY_POLICY", Value: "{ALLOWED_PROVIDERS=[AWS, AZURE], ALLOWED_AWS_ACCOUNTS=[111122223333, 444455556666], ALLOWED_AZURE_ISSUERS=[https://login.microsoftonline.com/tenantid/v2.0], ALLOWED_OIDC_ISSUERS=[https://example.com, https://other.example]}"},
+		}
+		details, err := parseAuthenticationPolicyDetails(rows, id)
+		require.NoError(t, err)
+		requireAuthenticationPolicyDetailsEqual(t, rows, &AuthenticationPolicyDetails{
+			Id:    id,
+			Name:  "POLICY",
+			Owner: "ACCOUNTADMIN",
+			AuthenticationMethods: []AuthenticationMethodsOption{
+				AuthenticationMethodsOptionPassword,
+				AuthenticationMethodsOptionSaml,
+			},
+			MfaEnrollment: MfaEnrollmentReadOptionRequiredSnowflakeUiPasswordOnly,
+			ClientTypes: []ClientTypesOption{
+				ClientTypesOptionDrivers,
+				ClientTypesOptionSnowsql,
+			},
+			SecurityIntegrations: AuthenticationPolicySecurityIntegrationsDetails{
+				SecurityIntegrations: []AccountObjectIdentifier{NewAccountObjectIdentifier("My Integration")},
+			},
+			Comment: "some comment",
+			ClientPolicy: []AuthenticationPolicyClientPolicyEntryDetails{
+				{ClientType: ClientPolicyDriverTypeJdbcDriver, MinimumVersion: "3.25.0"},
+				{ClientType: ClientPolicyDriverTypeGoDriver, MinimumVersion: "1.14.1"},
+			},
+			MfaPolicy: AuthenticationPolicyMfaPolicyDetails{
+				AllowedMethods: []MfaPolicyAllowedMethodsOption{
+					MfaPolicyAllowedMethodsOptionPasskey,
+					MfaPolicyAllowedMethodsOptionDuo,
+				},
+				EnforceMfaOnExternalAuthentication: EnforceMfaOnExternalAuthenticationOptionAll,
+			},
+			PatPolicy: AuthenticationPolicyPatPolicyDetails{
+				DefaultExpiryInDays:                   1,
+				MaxExpiryInDays:                       30,
+				NetworkPolicyEvaluation:               NetworkPolicyEvaluationOptionNotEnforced,
+				RequireRoleRestrictionForServiceUsers: false,
+			},
+			WorkloadIdentityPolicy: AuthenticationPolicyWorkloadIdentityPolicyDetails{
+				AllowedProviders: []AllowedProviderOption{
+					AllowedProviderOptionAws,
+					AllowedProviderOptionAzure,
+				},
+				AllowedAwsAccounts:  []string{"111122223333", "444455556666"},
+				AllowedAzureIssuers: []string{"https://login.microsoftonline.com/tenantid/v2.0"},
+				AllowedOidcIssuers:  []string{"https://example.com", "https://other.example"},
+			},
+		}, details)
+	})
+
+	t.Run("invalid authentication method", func(t *testing.T) {
+		_, err := parseAuthenticationPolicyDetails([]AuthenticationPolicyDescription{
+			{Property: "AUTHENTICATION_METHODS", Value: "[NOT_A_METHOD]"},
+		}, id)
+		require.ErrorContains(t, err, "parsing AUTHENTICATION_METHODS")
+	})
+
+	t.Run("invalid pat expiry", func(t *testing.T) {
+		_, err := parseAuthenticationPolicyDetails([]AuthenticationPolicyDescription{
+			{Property: "PAT_POLICY", Value: "{DEFAULT_EXPIRY_IN_DAYS=nope}"},
+		}, id)
+		require.ErrorContains(t, err, "parsing PAT_POLICY")
+	})
+
+	t.Run("all mixed with security integrations", func(t *testing.T) {
+		_, err := parseAuthenticationPolicyDetails([]AuthenticationPolicyDescription{
+			{Property: "SECURITY_INTEGRATIONS", Value: "[ALL, OTHER]"},
+		}, id)
+		require.ErrorContains(t, err, "parsing SECURITY_INTEGRATIONS")
+	})
+
+	t.Run("malformed client policy", func(t *testing.T) {
+		_, err := parseAuthenticationPolicyDetails([]AuthenticationPolicyDescription{
+			{Property: "CLIENT_POLICY", Value: "{GO_DRIVER={MINIMUM_VERSION=1.0.0}"},
+		}, id)
+		require.ErrorContains(t, err, "parsing CLIENT_POLICY")
+	})
+}
+
+func requireAuthenticationPolicyDetailsEqual(t *testing.T, rows []AuthenticationPolicyDescription, expected *AuthenticationPolicyDetails, got *AuthenticationPolicyDetails) {
+	t.Helper()
+	require.Equal(t, AuthenticationPolicyDescriptions(rows), got.Descriptions())
+	require.Equal(t, AsAuthenticationPolicyDescribe(rows), got.Describe())
+	parsed := *got
+	parsed.descriptions = nil
+	require.Equal(t, expected, &parsed)
 }
