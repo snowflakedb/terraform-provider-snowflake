@@ -15,15 +15,16 @@ import (
 // ModelFromSsotObject builds the model-builder input for one opted-in object.
 // Field types come from the ssot attribute. Parameter fields come from the parameter catalog when the object generates them.
 func ModelFromSsotObject(obj ssot.Object) ResourceConfigBuilderModel {
-	if !ssot.ObjectGenerators(obj.Generators...).Model.Enabled {
+	g := ssot.ObjectGenerators(obj.Generators...)
+	if !g.Model.Enabled {
 		panic(fmt.Sprintf("object %q is not enabled for model generation", obj.Name))
 	}
 	attrs := identityModelAttributes(obj)
 	attrs = append(attrs, collections.Map(obj.ResourceAttributes(), func(attr ssot.Attribute) ResourceConfigBuilderAttributeModel {
-		return modelAttributeFromField(ssot.ClassifyAttribute(obj, attr))
+		return modelAttributeFromField(ssot.ClassifyAttribute(obj, attr), g.Model.RequestTypeOverrides[attr.Name])
 	})...)
 	attrs = append(attrs, collections.Map(parameterDefsForObject(obj), func(parameter ssot.ParameterDef) ResourceConfigBuilderAttributeModel {
-		return modelAttributeFromField(ssot.ClassifyParameter(parameter.FieldName(), parameter.Kind))
+		return modelAttributeFromField(ssot.ClassifyParameter(parameter.FieldName(), parameter.Kind), "")
 	})...)
 	return ResourceConfigBuilderModel{
 		Name: obj.Name,
@@ -34,7 +35,9 @@ func ModelFromSsotObject(obj ssot.Object) ResourceConfigBuilderModel {
 }
 
 func identityModelAttributes(obj ssot.Object) []ResourceConfigBuilderAttributeModel {
-	return modelAttributesFromFields(ssot.IdentityFields(obj))
+	return collections.Map(ssot.IdentityFields(obj), func(field ssot.ClassifiedField) ResourceConfigBuilderAttributeModel {
+		return modelAttributeFromField(field, "")
+	})
 }
 
 func parameterDefsForObject(obj ssot.Object) []ssot.ParameterDef {
@@ -49,11 +52,10 @@ func parameterDefsForObject(obj ssot.Object) []ssot.ParameterDef {
 	return parameters
 }
 
-func modelAttributesFromFields(fields []ssot.ClassifiedField) []ResourceConfigBuilderAttributeModel {
-	return collections.Map(fields, modelAttributeFromField)
-}
-
-func modelAttributeFromField(field ssot.ClassifiedField) ResourceConfigBuilderAttributeModel {
+// modelAttributeFromField builds one model attribute from a classified field. requestTypeOverride
+// is the ModelRequestType value for this field's Name, or "" when none was configured; it only
+// applies to a Required AttrList/AttrSet field with no Elem (a nested block with no mechanical type).
+func modelAttributeFromField(field ssot.ClassifiedField, requestTypeOverride string) ResourceConfigBuilderAttributeModel {
 	switch field.Storage {
 	case ssot.AttrBool:
 		return typedAttribute(field.Name, "bool", "BoolVariable", schema.TypeBool, field.Required, field.SdkType, field.SdkKind)
@@ -62,9 +64,9 @@ func modelAttributeFromField(field ssot.ClassifiedField) ResourceConfigBuilderAt
 	case ssot.AttrString:
 		return typedAttribute(field.Name, "string", "StringVariable", schema.TypeString, field.Required, field.SdkType, field.SdkKind)
 	case ssot.AttrList:
-		return typedAttribute(field.Name, "", "", schema.TypeList, field.Required, field.SdkType, field.SdkKind)
+		return typedAttribute(field.Name, requestTypeOverride, "", schema.TypeList, field.Required, field.SdkType, field.SdkKind)
 	case ssot.AttrSet:
-		return typedAttribute(field.Name, "", "", schema.TypeSet, field.Required, field.SdkType, field.SdkKind)
+		return typedAttribute(field.Name, requestTypeOverride, "", schema.TypeSet, field.Required, field.SdkType, field.SdkKind)
 	default:
 		panic(fmt.Sprintf("attribute %q has unsupported storage %q", field.Name, field.Storage))
 	}

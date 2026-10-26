@@ -180,3 +180,45 @@ func fieldAssertionNames(model SnowflakeObjectAssertionsModel) []string {
 	}
 	return names
 }
+
+func Test_objectAssertionDetailsFromSsot_passesNestedFields(t *testing.T) {
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
+	locations := ssot.Attribute{Name: "storage_locations", Type: ssot.AttrList, Elem: &ssot.Attribute{Type: ssot.AttrString}}
+	obj := ssot.Object{
+		Name:   "Widget",
+		IdType: "AccountObjectIdentifier",
+		Generators: []ssot.GeneratorOption{
+			ssot.WithObjectAssert(
+				ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeNestedField(&locations)),
+			),
+		},
+		Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&name, &locations}},
+	}
+
+	desc := objectAssertionDetailsFromSsot(obj, true)
+	require.Equal(t, []string{"StorageLocations"}, desc.NestedAssertFields)
+	require.Equal(t, "[]sdk.WidgetStorageLocationDetails", desc.Fields[1].ConcreteType)
+	require.Equal(t, "slice", desc.Fields[1].UnderlyingType)
+	require.Equal(t, "string", desc.Fields[0].ConcreteType)
+
+	model := SnowflakeObjectAssertionsFromSsot(obj, true)
+	require.False(t, model.Fields[0].GenerateNestedAdapter)
+	require.True(t, model.Fields[1].GenerateNestedAdapter)
+}
+
+func Test_objectAssertionDetailsFromSsot_nestedFieldGoTypeOverride(t *testing.T) {
+	locations := ssot.Attribute{Name: "storage_locations", Type: ssot.AttrList, Elem: &ssot.Attribute{Type: ssot.AttrString}}
+	obj := ssot.Object{
+		Name:   "Widget",
+		IdType: "AccountObjectIdentifier",
+		Generators: []ssot.GeneratorOption{
+			ssot.WithObjectAssert(
+				ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeNestedField(&locations, ssot.ObjectAssertNestedGoType("[]sdk.Custom"))),
+			),
+		},
+		Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&locations}},
+	}
+
+	desc := objectAssertionDetailsFromSsot(obj, true)
+	require.Equal(t, "[]sdk.Custom", desc.Fields[0].ConcreteType)
+}

@@ -5,6 +5,11 @@ import "fmt"
 type SchemaGenerator struct {
 	Show     bool
 	Describe bool
+	// ShowManualFields and DescribeManualFields are the same *Attribute pointers that sit in Columns.
+	// The key stays in the generated schema map and ToSchema, but the mapping line is omitted: a
+	// generated additionalSchemaMapper[T] stub is emitted, and *_ext.go must implement it.
+	ShowManualFields     []*Attribute
+	DescribeManualFields []*Attribute
 }
 
 type SdkGenerator struct {
@@ -68,6 +73,10 @@ type SdkGenerator struct {
 
 type ModelGenerator struct {
 	Enabled bool
+	// RequestTypeOverrides maps an attribute Name to the real Go type for a Required nested-block
+	// attribute (Children, no Elem) that the generator cannot classify on its own. Mirrors the
+	// old-list complexListAttributesOverrides table, scoped to this object instead of by resource name.
+	RequestTypeOverrides map[string]string
 }
 
 type ResourceAssertGenerator struct {
@@ -95,6 +104,29 @@ type ObjectAssertGenerator struct {
 	// The fetch is testClient.<VariantOf.Name>.Show, then that method.
 	// The object type constant is sdk.ObjectType<VariantOf.Name>.
 	ShowProjection string
+
+	// ShowNestedFields and DescribeNestedFields hold the *Attribute pointers that sit in Columns.
+	// The column gets the nested assertion adapter (Has<Field>With) instead of a plain Has*.
+	ShowNestedFields     []ObjectAssertNestedField
+	DescribeNestedFields []ObjectAssertNestedField
+}
+
+// ObjectAssertNestedField is a nested-block column. The nested assertion type is derived from the Go type of
+// its SDK field. GoType is that type when set, e.g. "[]sdk.ExternalVolumeStorageLocationDetails".
+// Empty GoType means the default for a list or set column: "[]sdk." + object Name + the column name in
+// camel case with one trailing "s" dropped + "Details" (storage_locations on ExternalVolume is
+// []sdk.ExternalVolumeStorageLocationDetails).
+type ObjectAssertNestedField struct {
+	Attr   *Attribute
+	GoType string
+}
+
+// ObjectAssertNestedOption overrides the defaults of one nested-block column.
+type ObjectAssertNestedOption func(*ObjectAssertNestedField)
+
+// ObjectAssertNestedGoType sets the Go type of the SDK field when the default composition does not match.
+func ObjectAssertNestedGoType(goType string) ObjectAssertNestedOption {
+	return func(f *ObjectAssertNestedField) { f.GoType = goType }
 }
 
 // ObjectParametersAssertGenerator emits Snowflake object parameter assertions from the parameter catalog.
@@ -124,12 +156,38 @@ type GeneratorOption func(*Generators)
 
 type SchemaOption func(*SchemaGenerator)
 
-func SchemaShow() SchemaOption {
-	return func(s *SchemaGenerator) { s.Show = true }
+type SchemaShowOption func(*SchemaGenerator)
+
+type SchemaDescribeOption func(*SchemaGenerator)
+
+func SchemaShow(opts ...SchemaShowOption) SchemaOption {
+	return func(s *SchemaGenerator) {
+		s.Show = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
 }
 
-func SchemaDescribe() SchemaOption {
-	return func(s *SchemaGenerator) { s.Describe = true }
+// SchemaShowManualFields copies ManualFields from the old show schema def.
+// Each argument is the *Attribute already listed in Show.Columns.
+func SchemaShowManualFields(attrs ...*Attribute) SchemaShowOption {
+	return func(s *SchemaGenerator) { s.ShowManualFields = append(s.ShowManualFields, attrs...) }
+}
+
+func SchemaDescribe(opts ...SchemaDescribeOption) SchemaOption {
+	return func(s *SchemaGenerator) {
+		s.Describe = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
+}
+
+// SchemaDescribeManualFields copies ManualFields from the old describe schema def.
+// Each argument is the *Attribute already listed in Describe.Columns.
+func SchemaDescribeManualFields(attrs ...*Attribute) SchemaDescribeOption {
+	return func(s *SchemaGenerator) { s.DescribeManualFields = append(s.DescribeManualFields, attrs...) }
 }
 
 func WithSchema(opts ...SchemaOption) GeneratorOption {
@@ -333,6 +391,18 @@ func WithSdk(opts ...SdkOption) GeneratorOption {
 
 type ModelOption func(*ModelGenerator)
 
+// ModelRequestType overrides the constructor parameter type for a Required nested-block attribute
+// (Children, no Elem). attr is the same *Attribute listed in Attributes. goType is the full type
+// expression used as the constructor parameter type, e.g. "[]sdk.ExternalVolumeStorageLocationRequest".
+func ModelRequestType(attr *Attribute, goType string) ModelOption {
+	return func(m *ModelGenerator) {
+		if m.RequestTypeOverrides == nil {
+			m.RequestTypeOverrides = make(map[string]string)
+		}
+		m.RequestTypeOverrides[attr.Name] = goType
+	}
+}
+
 func WithModel(opts ...ModelOption) GeneratorOption {
 	return func(g *Generators) {
 		g.Model.Enabled = true
@@ -412,6 +482,22 @@ func ObjectAssertShow(opts ...ObjectAssertShowOption) ObjectAssertOption {
 	}
 }
 
+// ObjectAssertShowNestedField copies NestedAssertFields from the old show object-assertion def.
+// attr is the *Attribute already listed in Show.Columns.
+func ObjectAssertShowNestedField(attr *Attribute, opts ...ObjectAssertNestedOption) ObjectAssertShowOption {
+	return func(a *ObjectAssertGenerator) {
+		a.ShowNestedFields = append(a.ShowNestedFields, newObjectAssertNestedField(attr, opts))
+	}
+}
+
+func newObjectAssertNestedField(attr *Attribute, opts []ObjectAssertNestedOption) ObjectAssertNestedField {
+	field := ObjectAssertNestedField{Attr: attr}
+	for _, opt := range opts {
+		opt(&field)
+	}
+	return field
+}
+
 // ObjectAssertShowSkipFields copies SkipFields from the old show object-assertion def.
 // Each argument is the *Attribute already listed in Show.Columns.
 func ObjectAssertShowSkipFields(attrs ...*Attribute) ObjectAssertShowOption {
@@ -451,6 +537,14 @@ func ObjectAssertDescribe(opts ...ObjectAssertDescribeOption) ObjectAssertOption
 		for _, opt := range opts {
 			opt(a)
 		}
+	}
+}
+
+// ObjectAssertDescribeNestedField copies NestedAssertFields from the old describe object-assertion def.
+// attr is the *Attribute already listed in Describe.Columns.
+func ObjectAssertDescribeNestedField(attr *Attribute, opts ...ObjectAssertNestedOption) ObjectAssertDescribeOption {
+	return func(a *ObjectAssertGenerator) {
+		a.DescribeNestedFields = append(a.DescribeNestedFields, newObjectAssertNestedField(attr, opts))
 	}
 }
 

@@ -128,16 +128,6 @@ var allStructs = []SdkObjectDef{
 		SkipFields:   []string{"TaskRelations"},
 	},
 	{
-		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.ExternalVolume{},
-	},
-	{
-		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.ExternalVolumeDetails{},
-		IsDataSourceOutput: true,
-		NestedAssertFields: []string{"StorageLocations"},
-	},
-	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.Secret{},
 	},

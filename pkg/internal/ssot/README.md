@@ -65,6 +65,9 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   means no configured suppression. Output suppressors use `OutputKey()` unless a leaf supplies an override, e.g.
   `ssot.SuppressDescribe.WithKey("definition")`. Output strategies apply to fields, not collection elems.
   Statement suppression uses the resource's `DiffSuppressStatement` helper for strings, including string elems.
+- `SkipInSchema` - the SHOW/DESCRIBE schema generator (`WithSchema`) omits the column from the generated schema map
+  and `ToSchema`; the key is dropped entirely (comment left in place). The column still participates in every other
+  generator (assertions, SDK). This is the ssot equivalent of the old-list `SkipFields`.
 
 Def files keep attributes as vars (`ComputePoolAttrs`) so `Columns` can point at them instead of restating snake_case
 strings.
@@ -94,12 +97,21 @@ settings of that entry. `WithSchema()`, `WithSdk()`, `WithShowOutputAssert()`, a
 enable nothing.
 
 - `WithSchema(SchemaShow(), SchemaDescribe())` - SHOW/DESCRIBE schema generator (`make generate-show-output-schemas`).
-  See [that README](../../schemas/gen/README.md).
+  See [that README](../../schemas/gen/README.md). `SchemaShow(SchemaShowManualFields(&attrs.Tables))` copies
+  `ManualFields` from the old show schema def. The argument is the same `*Attribute` that sits in `Show.Columns`. The
+  key stays in the generated schema map, and its mapping line is not generated — `*_ext.go` must implement the
+  generated `additionalSchemaMapper[T]` stub instead. `SchemaDescribe(SchemaDescribeManualFields(&attrs.Password))`
+  is the describe-side copy.
 - `WithModel()` - resource config model builders (`make generate-resource-model-builders`).
   See [that section](../../acceptance/bettertestspoc/README.md#adding-new-resource-config-model-builders). Fields come
   from `Attributes` and identity, not from [SHOW and DESCRIBE](#show-and-describe) `Columns`. Types are
   in [attribute.go](attribute.go). An optional bool is stored as a boolean-string; the extra setter takes the ssot type.
-  `fully_qualified_name` is not emitted.
+  `fully_qualified_name` is not emitted. `WithModel(ModelRequestType(&attrs.StorageLocation, "[]sdk.StorageLocationRequest"))`
+  supplies the constructor parameter type for a Required nested-block attribute (`Children`, no `Elem`): there is no
+  mechanical mapping from a nested block to a concrete Go request type, so the generator cannot build one on its own.
+  This is the ssot equivalent of the old-list `complexListAttributesOverrides`, scoped to this object instead of by
+  resource name. Without it, a Required nested-block attribute stays a stub (`WithModel()` omitted entirely, as
+  `CatalogIntegrationIcebergRest` does) since the constructor parameter would otherwise have no type.
 - `WithResourceAssert()` - resource assertions (`make generate-resource-assertions`).
   See [that section](../../acceptance/bettertestspoc/README.md#adding-new-resource-assertions). Fields come from
   `Attributes` and identity, not from [SHOW and DESCRIBE](#show-and-describe) `Columns`. Types are
@@ -119,6 +131,13 @@ enable nothing.
   `bool`. `ObjectAssertShow(ObjectAssertShowSkipFields(&attrs.Tables))` copies `SkipFields` from the old show def. The
   argument is the same `*Attribute` that sits in `Show.Columns`. The column stays in `Columns`, and `Has*` is not
   generated. `ObjectAssertDescribe(ObjectAssertDescribeSkipFields(&attrs.Password))` is the describe-side copy.
+  `ObjectAssertShow(ObjectAssertShowNestedField(&attrs.Locations))` copies `NestedAssertFields` from the old show def.
+  The attribute is the one that sits in `Show.Columns`. The column gets `Has<Field>With(...)` taking the nested
+  assertion type instead of a plain `Has*`. A nested block has no scalar `Elem` to derive that type from, so the
+  SDK field's Go type defaults for a list or set to `[]sdk.` + the object `Name` + the column name in camel case with
+  one trailing "s" dropped + `Details` (`storage_locations` on `ExternalVolume` is
+  `[]sdk.ExternalVolumeStorageLocationDetails`). Pass `ObjectAssertNestedGoType("[]sdk.Other")` when the default does
+  not match. `ObjectAssertDescribeNestedField` is the describe-side copy.
   `ObjectAssertDescribe(WithNoIdentifiableObject())` suppresses the fetch constructor when `Describe` returns a
   slice and the row has no `ID()`. `ObjectAssertShow(ObjectAssertShowFromBase("AsAdaptive"))` fetches through
   `testClient.<VariantOf.Name>.Show` and projects the row with `AsAdaptive()`. `Object.ShowFromBase` resolves that
@@ -347,7 +366,11 @@ Until a piece has moved, do not assume it is already in ssot:
   come from `ParameterDefsForLevel` for `ParameterLevel()`. When the setting is off, the call stays in the SDK def.
   Every other operation stays in the SDK def. They are not
   generated from `Columns`.
-- Schema `SkipFields`, `ManualFields`, `TypeOverrides`, and `UsedAsListEntry` have no ssot equivalent yet. Object-assertion
+- Schema `SkipFields` has an ssot equivalent: the `SkipInSchema` attribute mark ([Attribute](#attribute)). Schema
+  `ManualFields` has an ssot equivalent too, but as a generator option rather than an attribute mark:
+  `SchemaShowManualFields` / `SchemaDescribeManualFields` ([Generators](#generators)), the same shape as the
+  show-output and object-assertion `SkipFields` options below. Schema `TypeOverrides` and `UsedAsListEntry` have no
+  ssot equivalent yet. Object-assertion
   `SkipFields` is `ObjectAssertShowSkipFields` and `ObjectAssertDescribeSkipFields`. Show-output `SkipFields` is
   `ShowOutputShowSkipFields` and `ShowOutputDescribeSkipFields`.
 - `ResourceHooks` do not yet generate the whole lifecycle, the SDK calls, or the mapping. A missing step stays an ext
@@ -372,6 +395,12 @@ the enum type.
 - Computed fields, `Deprecated`, and an explicit schema `Default` are not attribute fields. `NativeBool`
   keeps an optional bool as `TypeBool` and does not emit `Default`. `Min` and `Max` emit `ValidateDiagFunc`.
   Chrome the generator does not emit stays in the attributes modification function.
+- `SdkDescribe()` cannot express a DESCRIBE that returns a generic property list (`parent_property`, `property`,
+  `property_type`, ...) which the SDK then parses into a details struct. `Describe.Columns` models the parsed details,
+  while the SDK `Describe` method returns the raw property rows, so the generated paired struct has the wrong shape. Its
+  plain type is `<Name>Details`, which collides with the details struct that the SDK ext already defines. Such an object
+  keeps the handwritten Describe, and only `SchemaDescribe`, `ShowOutputDescribe`, and `ObjectAssertDescribe` read its
+  `Describe.Columns`.
 
 #### Why Show and Describe columns are explicit
 

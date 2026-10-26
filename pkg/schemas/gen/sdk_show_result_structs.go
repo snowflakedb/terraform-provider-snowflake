@@ -58,7 +58,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	// SkipFields `arguments`: unused TypeInvalid (`[]sdk.DataType`). Un-skip with native DataType slices.
 	{ObjectStruct: sdk.ExternalFunction{}, SkipFields: []string{"arguments"}},
 	{ObjectStruct: sdk.ExternalTable{}},
-	{ObjectStruct: sdk.ExternalVolume{}},
 	// SkipFields unused TypeInvalid: `object_types` / `allowed_integration_types` (enum slices).
 	{ObjectStruct: sdk.FailoverGroup{}, SkipFields: []string{"object_types", "allowed_integration_types"}},
 	{ObjectStruct: sdk.FileFormat{}},
@@ -189,8 +188,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"external_oauth_allowed_roles_list", "external_oauth_audience_list", "external_oauth_token_user_mapping_claim",
 		"external_oauth_snowflake_user_mapping_attribute", "external_oauth_scope_delimiter", "comment",
 	}},
-	// SkipFields `id` is the SDK identifier (public schema has no `id`); nested storage_locations is ManualFields.
-	{ObjectStruct: sdk.ExternalVolumeDetails{}, IsDescribe: true, SkipFields: []string{"id"}, ManualFields: []string{"storage_locations"}},
 	// ManualFields nested type-specific structs (public schema is a flat union of per-type keys; nested mapping in ext).
 	{ObjectStruct: sdk.FileFormatAllDetails{}, IsDescribe: true, ManualFields: []string{"csv", "json", "avro", "orc", "parquet", "xml"}},
 	{ObjectStruct: sdk.FileFormatAvro{}, IsDescribe: true},

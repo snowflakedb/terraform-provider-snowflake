@@ -116,7 +116,11 @@ Then, in this generator:
    values for `MapToSchemaField` (`OptionalInShow` prefixes `*`; `OptionalInDb` does not -
    [ssot OptionalInShow vs OptionalInDb](../../../internal/ssot/README.md#optionalinshow-vs-optionalindb)).
 
-`SkipFields` / `ManualFields` / `TypeOverrides` / `UsedAsListEntry` are not yet used in ssot definitions but might be used later. They stay on the SDK-struct path for now.
+`SkipFields` has an ssot equivalent: the `SkipInSchema` attribute mark ([ssot Attribute](../../internal/ssot/README.md#attribute)).
+`ManualFields` has an ssot equivalent too, but as a generator option rather than an attribute mark:
+`SchemaShowManualFields` / `SchemaDescribeManualFields` ([ssot Generators](../../internal/ssot/README.md#generators)).
+`TypeOverrides` / `UsedAsListEntry` are not yet used in ssot definitions but might be used later. They stay on the
+SDK-struct path for now.
 
 ### Next steps
 
