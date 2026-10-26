@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -90,6 +91,10 @@ func (p *pluginFrameworkPocProvider) Schema(_ context.Context, _ provider.Schema
 							Description: envNameFieldDescription("The redirect URI for the OAuth provider when using a refresh token to renew access token.", snowflakeenvs.TokenAccessorRedirectUri),
 							Required:    true,
 							Sensitive:   true,
+						},
+						"min_tls_version": schema.StringAttribute{
+							Description: envNameFieldDescription(fmt.Sprintf("Specifies the minimum TLS version for the HTTP client this block uses to exchange a refresh token. The Snowflake driver connection uses `%s`, which the driver reads itself. Valid options are: %v. The value is case-insensitive. This does not handle driver connections. If you want to set a minimum TLS version for the Snowflake driver connection, read the [driver documentation](https://pkg.go.dev/github.com/snowflakedb/gosnowflake/v2).", snowflakeenvs.MinTLSVersion, docs.PossibleValuesListed([]string{"1.2", "1.3"})), snowflakeenvs.TokenAccessorMinTLSVersion),
+							Optional:    true,
 						},
 					},
 				},
