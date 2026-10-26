@@ -100,7 +100,7 @@ order.
 
 `OutputSpec.Columns` is membership and Snowflake order. Presence in `Columns` is the only SHOW/DESCRIBE membership.
 
-Each warehouse variant declares its show in `Show.Columns`. `Warehouse.ShowGeneric` is the temporary union and the one paired SHOW. Next, each variant's `Show.Columns` becomes a paired SHOW with its dedicated type, and `ShowGeneric` goes away.
+Each warehouse variant declares its show in `Show.Columns`. `Warehouse.ShowGeneric` is the temporary union and the one paired SHOW. `ShowPlainName` and `ShowVariants` are plain structs emitted with DESCRIBE. Each one gets a projection on the paired SHOW struct: `As` plus the plain name with the object name removed, so `WarehouseRegular` is `AsRegular` and `WarehouseAdaptive` is `AsAdaptive`. `Show()` still returns the union row. Next, each variant's `Show.Columns` becomes a paired SHOW with its dedicated type, and `ShowGeneric` goes away.
 
 ### OptionalInShow vs OptionalInDb
 

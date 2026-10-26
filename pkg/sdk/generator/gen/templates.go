@@ -44,6 +44,10 @@ var (
 	showObjectIdMethodTemplateContent string
 	ShowObjectIdMethodTemplate, _     = template.New("showObjectIdMethodTemplate").Parse(showObjectIdMethodTemplateContent)
 
+	//go:embed templates/show_projection_method.tmpl
+	showProjectionMethodTemplateContent string
+	ShowProjectionMethodTemplate, _     = template.New("showProjectionMethodTemplate").Parse(showProjectionMethodTemplateContent)
+
 	//go:embed templates/show_object_type_method.tmpl
 	showObjectTypeMethodTemplateContent string
 	ShowObjectTypeMethodTemplate, _     = template.New("showObjectTypeMethodTemplate").Parse(showObjectTypeMethodTemplateContent)
@@ -122,6 +126,8 @@ func init() {
 		"instance_method_kind_deref":    deref[InstanceMethodKind],
 		"TypeWithoutPointer":            genhelpers.TypeWithoutPointer,
 		"TypeWithoutPointerAndBrackets": genhelpers.TypeWithoutPointerAndBrackets,
+		"FirstLetter":                   genhelpers.FirstLetter,
+		"FirstLetterLowercase":          genhelpers.FirstLetterLowercase,
 		"toOptsSliceElemVar":            func() string { return toOptsSliceElemVar },
 	})
 	subTemplates, _ = subTemplates.New("toOptsMapping").Parse(toOptsMappingTemplateContent)
@@ -138,6 +144,7 @@ func init() {
 	subTemplates, _ = subTemplates.New("optionsTemplate").Parse(operationStructTemplateContent)
 	subTemplates, _ = subTemplates.New("structTemplate").Parse(structTemplateContent)
 	subTemplates, _ = subTemplates.New("showObjectIdMethodTemplate").Parse(showObjectIdMethodTemplateContent)
+	subTemplates, _ = subTemplates.New("showProjectionMethodTemplate").Parse(showProjectionMethodTemplateContent)
 	subTemplates, _ = subTemplates.New("showObjectTypeMethodTemplate").Parse(showObjectTypeMethodTemplateContent)
 	subTemplates, _ = subTemplates.New("dtoDeclTemplate").Parse(dtoStructsTemplateContent)
 	subTemplates, _ = subTemplates.New("dtoBuilderTemplate").Funcs(genhelpers.BuildTemplateFuncMap(

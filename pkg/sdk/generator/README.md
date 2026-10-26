@@ -161,7 +161,6 @@ make generate-sdk-examples SF_TF_GENERATOR_ARGS='--help'
 - Generate `ID()` methods for `Request` structs as already done for `Show` result structs.
 - Generate `ID()` methods for `Describe`/`DescribeDetails` structs as already done for `Show` result structs.
 - `PlainStruct`-only fields do not currently trigger the additionalConvert creation, as they are filtered out in the iteration
-- Generate field-subset `AsXxx` projection methods (see Potential Improvements)
 
 ##### CI guard targets
 
@@ -352,4 +351,4 @@ See [functions_def.go](defs/functions_def.go) (originator) and [notebooks_def.go
 - better handling of list of strings/identifiers
   - there should be no need to define custom types every time
   - more clear definition of lists that can be empty vs cannot be empty
-- generate field-subset `AsXxx` projections from PlainStructs. Methods like `Warehouse.AsRegular`, `StageDetails.AsAws`, and `ApiIntegrationGitHttpsApiDetails.AsToken` are mechanical: nil-guard + copy the intersecting fields. Property-list parsers (`AsScim`, `AsNetworkPolicyDescribe`, and similar name-keyed row switches) are a different shape and are not in scope for that generator.
+- field-subset `AsXxx` projections come from `ShowPlainName` and `ShowVariants`. The method is `As` plus the plain name with the object name removed, so `WarehouseRegular` is `AsRegular` and `WarehouseAdaptive` is `AsAdaptive`. Objects not yet migrated, such as `StageDetails.AsAws` and `ApiIntegrationGitHttpsApiDetails.AsToken`, stay handwritten. Property-list parsers (`AsScim`, `AsNetworkPolicyDescribe`, and similar name-keyed row switches) are a different shape and stay handwritten.

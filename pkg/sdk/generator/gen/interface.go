@@ -75,6 +75,8 @@ type Interface struct {
 	ShowObjectName string
 	// ShowByIDFindPredicateKind selects the predicate strategy for the generated ShowByID FindFirst call.
 	ShowByIDFindPredicateKind ShowByIDFindPredicateKind
+	// ShowProjections are field-subset methods on an already emitted struct.
+	ShowProjections []*ShowProjection
 
 	// UnitTests is the prepared model for the optional unit_tests generation part.
 	UnitTests *UnitTestsModel
