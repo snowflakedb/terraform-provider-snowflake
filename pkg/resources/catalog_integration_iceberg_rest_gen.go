@@ -76,6 +76,7 @@ func ReadCatalogIntegrationIcebergRestFunc(withExternalChangesMarking bool) tfsc
 			return diag.FromErr(err)
 		}
 
+		var diags diag.Diagnostics
 		catalogIntegrationIcebergRest, diags := catalogIntegrationIcebergRestShowByIdSafelyInSdkExt(ctx, d, meta, id)
 		if diags != nil {
 			return diags

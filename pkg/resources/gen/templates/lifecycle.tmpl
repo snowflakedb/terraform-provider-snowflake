@@ -50,10 +50,10 @@ func Read{{ .Name }}Func(withExternalChangesMarking bool) tfschema.ReadContextFu
 			return diag.FromErr(err)
 		}
 
+{{ if and .Hooks.HandleExternalChangesInDescribe.Present .Hooks.DescribeInSdk.Present -}}
+		var diags diag.Diagnostics
+{{ end -}}
 {{ template "showByIdSafelyInSdk" . -}}
-		if diags != nil {
-			return diags
-		}
 {{ template "describeInSdk" . -}}
 {{ template "showParametersInSdk" . -}}
 {{ template "parametersDetailsFromRaw" . -}}

@@ -125,25 +125,6 @@ func pipeCreateInSdkExt(ctx context.Context, meta any, _ sdk.SchemaObjectIdentif
 	return nil
 }
 
-func pipeShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) (*sdk.Pipe, diag.Diagnostics) {
-	client := meta.(*provider.Context).Client
-	pipe, err := client.Pipes.ShowByIDSafely(ctx, id)
-	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotFound) {
-			d.SetId("")
-			return nil, diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "Failed to query pipe. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Pipe id: %s, Err: %s", id.FullyQualifiedName(), err),
-				},
-			}
-		}
-		return nil, diag.FromErr(err)
-	}
-	return pipe, nil
-}
-
 func pipeAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier, reqs *pipeAlterRequestsExt) error {
 	client := meta.(*provider.Context).Client
 	if !reflect.DeepEqual(reqs.set, sdk.NewPipeSetRequest()) {

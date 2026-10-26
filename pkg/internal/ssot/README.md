@@ -291,6 +291,12 @@ Use `ExtCall` when an object needs a different SDK method or custom error diagno
 `<prefix>Details`. A failure returns `diag.FromErr` and stops Read. Use `ExtCall` when an object needs a different SDK
 method, a transformed result, or custom error handling.
 
+`WithShowByIdInSdk(Generated())` calls `Client.<NamePlural>.ShowByID(ctx, id)` during Import and assigns the result to
+`<prefix>`. A failure returns that error. `WithShowByIdSafelyInSdk(Generated())` calls
+`Client.<NamePlural>.ShowByIDSafely(ctx, id)` during Read. `ErrObjectNotFound` clears the id and returns a warning that
+the resource was removed. Any other error returns `diag.FromErr`. Use `ExtCall` when an object needs a different SDK
+method or a different not-found diagnostic.
+
 `SchemaStateUpgraders` on the object is an ordered list of upgrade function names. `WithStateUpgraders` is the
 `ResourceHook` for that list and for the schema version. `Generated` emits `SchemaVersion` as the length and one
 `StateUpgrader` per name. `Version` is the index. `Type` is `cty.EmptyObject`. The functions stay in package

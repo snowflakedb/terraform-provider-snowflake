@@ -5,6 +5,7 @@ package resources
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -52,7 +53,7 @@ func ImportSchema(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*t
 		return nil, err
 	}
 
-	schema, err := schemaShowByIdInSdkExt(ctx, meta, id)
+	schema, err := meta.(*provider.Context).Client.Schemas.ShowByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -102,9 +103,19 @@ func ReadSchemaFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		schema, diags := schemaShowByIdSafelyInSdkExt(ctx, d, meta, id)
-		if diags != nil {
-			return diags
+		schema, err := meta.(*provider.Context).Client.Schemas.ShowByIDSafely(ctx, id)
+		if err != nil {
+			if errors.Is(err, sdk.ErrObjectNotFound) {
+				d.SetId("")
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Failed to query schema. Marking the resource as removed.",
+						Detail:   fmt.Sprintf("Schema id: %s, Err: %s", id.FullyQualifiedName(), err),
+					},
+				}
+			}
+			return diag.FromErr(err)
 		}
 
 		// Describe is best-effort: log + skip Set, do not fail Read. Uses SHOW object's id.

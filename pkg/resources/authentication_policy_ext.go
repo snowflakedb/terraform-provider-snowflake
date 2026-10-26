@@ -165,25 +165,6 @@ func authenticationPolicyCreateInSdkExt(ctx context.Context, meta any, _ sdk.Sch
 	return nil
 }
 
-func authenticationPolicyShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) (*sdk.AuthenticationPolicy, diag.Diagnostics) {
-	client := meta.(*provider.Context).Client
-	authenticationPolicy, err := client.AuthenticationPolicies.ShowByIDSafely(ctx, id)
-	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotFound) {
-			d.SetId("")
-			return nil, diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "Failed to retrieve authentication policy. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Authentication policy id: %s, Err: %s", d.Id(), err),
-				},
-			}
-		}
-		return nil, diag.FromErr(err)
-	}
-	return authenticationPolicy, nil
-}
-
 // Import does not SHOW. This returns the same DESCRIBE details Read already uses, in one query.
 func authenticationPolicyShowByIdInSdkExt(ctx context.Context, meta any, id sdk.SchemaObjectIdentifier) (*sdk.AuthenticationPolicyDetails, error) {
 	return authenticationPolicyDescribeInSdkExt(ctx, meta, id)
