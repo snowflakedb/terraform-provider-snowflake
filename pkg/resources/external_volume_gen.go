@@ -103,6 +103,7 @@ func ReadExternalVolumeFunc(withExternalChangesMarking bool) tfschema.ReadContex
 		}
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ExternalVolumeToSchema(externalVolume)}),
+			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ExternalVolumeDetailsToSchema(externalVolumeDetails)}),
 			externalVolumeSetDescribeOutputExt(d, id, externalVolumeDetails, nil, withExternalChangesMarking),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			externalVolumeSetConfigFieldsExt(d, externalVolume),

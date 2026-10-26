@@ -183,6 +183,7 @@ var Schema = ssot.Object{
 		ssot.WithBeforeCreate(ssot.ExtCall()),
 		ssot.WithHierarchyRename(ssot.ExtCall()),
 		ssot.WithBeforeAlter(ssot.ExtCall()),
+		// Describe is best-effort and its output is a list, so the ext sets it.
 		ssot.WithDescribeOutputSet(ssot.Omitted()),
 		ssot.WithSetDescribeOutput(ssot.ExtCall()),
 		ssot.WithStateUpgraders(ssot.Generated()),
