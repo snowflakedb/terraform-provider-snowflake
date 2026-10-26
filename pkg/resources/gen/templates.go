@@ -43,14 +43,20 @@ var (
 	//go:embed templates/sub_templates/new_create_request.tmpl
 	newCreateRequestTemplateContent string
 
-	//go:embed templates/sub_templates/generated_new_create_request.tmpl
-	generatedNewCreateRequestTemplateContent string
+	//go:embed templates/sub_templates/generated_create_request.tmpl
+	generatedCreateRequestTemplateContent string
 
 	//go:embed templates/sub_templates/apply_create_optionals.tmpl
 	applyCreateOptionalsTemplateContent string
 
 	//go:embed templates/sub_templates/generated_apply_create_optionals.tmpl
 	generatedApplyCreateOptionalsTemplateContent string
+
+	//go:embed templates/sub_templates/create_constructor_args.tmpl
+	createConstructorArgsTemplateContent string
+
+	//go:embed templates/sub_templates/create_optional_calls.tmpl
+	createOptionalCallsTemplateContent string
 
 	//go:embed templates/sub_templates/create_in_sdk.tmpl
 	createInSdkTemplateContent string
@@ -179,7 +185,9 @@ func init() {
 	subTemplates, _ = subTemplates.New("generatedParseIdFromConfig").Parse(generatedParseIdFromConfigTemplateContent)
 	subTemplates, _ = subTemplates.New("beforeCreate").Parse(beforeCreateTemplateContent)
 	subTemplates, _ = subTemplates.New("newCreateRequest").Parse(newCreateRequestTemplateContent)
-	subTemplates, _ = subTemplates.New("generatedNewCreateRequest").Parse(generatedNewCreateRequestTemplateContent)
+	subTemplates, _ = subTemplates.New("createConstructorArgs").Parse(createConstructorArgsTemplateContent)
+	subTemplates, _ = subTemplates.New("createOptionalCalls").Parse(createOptionalCallsTemplateContent)
+	subTemplates, _ = subTemplates.New("generatedCreateRequest").Parse(generatedCreateRequestTemplateContent)
 	subTemplates, _ = subTemplates.New("applyCreateOptionals").Parse(applyCreateOptionalsTemplateContent)
 	subTemplates, _ = subTemplates.New("generatedApplyCreateOptionals").Parse(generatedApplyCreateOptionalsTemplateContent)
 	subTemplates, _ = subTemplates.New("createInSdk").Parse(createInSdkTemplateContent)

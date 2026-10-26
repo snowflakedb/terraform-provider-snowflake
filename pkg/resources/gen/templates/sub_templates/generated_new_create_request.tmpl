@@ -1,9 +1,0 @@
-{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
-func {{ .Prefix }}NewCreateRequest(d *tfschema.ResourceData, id sdk.{{ .IdType }}) (*sdk.Create{{ .EffectiveSdkCreateRequestObjectName }}Request, error) {
-{{ range .Attributes }}{{ if .CreateConstructorArg }}{{ if .EnumName }}	{{ FirstLetterLowercase (SnakeCaseToCamel .Name) }}, err := sdk.To{{ .EnumName }}({{ .CreateConstructorArg.Get }})
-	if err != nil {
-		return nil, err
-	}
-{{ else }}	{{ FirstLetterLowercase (SnakeCaseToCamel .Name) }} := {{ .CreateConstructorArg.Get }}
-{{ end }}{{ end }}{{ end }}	return sdk.NewCreate{{ .EffectiveSdkCreateRequestObjectName }}Request(id{{ range .Attributes }}{{ if .CreateConstructorArg }}, {{ FirstLetterLowercase (SnakeCaseToCamel .Name) }}{{ end }}{{ end }}), nil
-}

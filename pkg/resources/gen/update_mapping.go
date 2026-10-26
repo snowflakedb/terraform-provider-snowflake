@@ -54,7 +54,7 @@ func deduceUpdateCall(objectName string, src ssot.Attribute, resolved ResourceAt
 	case src.Type == ssot.AttrString:
 		return ssot.StringAttributeUpdateBuilder.UpdateCall(objectName, src), true
 	case src.Type == ssot.AttrList && isCollectionOfEnum(src):
-		return ssot.ListValueUpdate(listEnumMapperName(objectName, src)).UpdateCall(objectName, src), true
+		return ssot.ListValueUpdate(collectionMapperName(objectName, src)).UpdateCall(objectName, src), true
 	default:
 		return ssot.UpdateCall{}, false
 	}

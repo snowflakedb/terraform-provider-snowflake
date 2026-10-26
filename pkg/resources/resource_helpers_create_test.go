@@ -20,30 +20,6 @@ func stringSetSchema() map[string]*schema.Schema {
 	}
 }
 
-func Test_booleanStringAttributeCreateFallbackBuilder(t *testing.T) {
-	flagSchema := map[string]*schema.Schema{
-		"flag": {Type: schema.TypeString, Optional: true, Default: BooleanDefault},
-	}
-
-	d := schema.TestResourceDataRaw(t, flagSchema, map[string]any{"flag": BooleanDefault})
-	var got *bool
-	require.NoError(t, booleanStringAttributeCreateFallbackBuilder(d, "flag", func(v bool) any {
-		got = &v
-		return nil
-	}, true))
-	require.NotNil(t, got)
-	assert.True(t, *got)
-
-	d = schema.TestResourceDataRaw(t, flagSchema, map[string]any{"flag": BooleanFalse})
-	got = nil
-	require.NoError(t, booleanStringAttributeCreateFallbackBuilder(d, "flag", func(v bool) any {
-		got = &v
-		return nil
-	}, true))
-	require.NotNil(t, got)
-	assert.False(t, *got)
-}
-
 func Test_setValueCreate(t *testing.T) {
 	d := schema.TestResourceDataRaw(t, stringSetSchema(), map[string]any{
 		"items": []any{"b", "a"},

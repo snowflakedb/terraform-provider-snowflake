@@ -4,8 +4,10 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 
 // AlertAttrs holds reusable alert fields.
 //
-// alert_schedule is a nested block. ConflictsWith paths stay in the schema ext because
-// the generator emits the sibling name, and Terraform needs the resource path.
+// alert_schedule is a nested block with SkipCreateBlock. SCHEDULE is one SQL string, and the
+// ext NewCreateRequest builds it from the block. ConflictsWith paths
+// stay in the schema ext because the generator emits the sibling name, and Terraform needs
+// the resource path.
 // enabled stays in the ext: an optional native bool. Optional bools become boolean strings.
 //
 // warehouse stays a string: the resource never suppressed identifier quoting on it.
@@ -45,10 +47,11 @@ var AlertAttrs = struct {
 		DiffSuppress: ssot.SuppressStatement,
 	},
 	AlertSchedule: ssot.Attribute{
-		Name:        "alert_schedule",
-		Type:        ssot.AttrList,
-		MaxItems:    new(1),
-		Description: "The schedule for periodically running an alert.",
+		Name:            "alert_schedule",
+		Type:            ssot.AttrList,
+		MaxItems:        new(1),
+		Description:     "The schedule for periodically running an alert.",
+		SkipCreateBlock: true,
 		Children: []ssot.Attribute{
 			{
 				Name:     "cron",

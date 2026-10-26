@@ -1,0 +1,11 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.CreateRequestBuild*/ -}}
+{{- range .Args }}
+{{- if .EnumName }}
+	{{ .Var }}, err := sdk.To{{ .EnumName }}({{ .Get }})
+	if err != nil {
+		return {{ $.ErrZero }}, err
+	}
+{{- else }}
+	{{ .Var }} := {{ .Get }}
+{{- end }}
+{{- end -}}

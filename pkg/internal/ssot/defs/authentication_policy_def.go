@@ -53,12 +53,14 @@ var AllowedProviderOption = ssot.NewEnum(
 // AuthenticationPolicyAttrs holds reusable Authentication Policy fields so SHOW and DESCRIBE
 // Columns can point at the same definitions instead of restating names.
 //
-// mfa_authentication_methods stays in the schema ext. It is a deprecated set, not a nested block.
-// The nested blocks below are generated. The ext still sets AtLeastOneOf and keeps the
-// case-sensitive wording on allowed_methods and allowed_providers.
+// mfa_authentication_methods stays in the schema ext. It is a deprecated set with no effect,
+// not a CREATE/ALTER column. The ext also sets AtLeastOneOf and keeps the case-sensitive
+// wording on the nested enum sets.
 //
-// Those blocks are omitted from DESCRIBE Columns. A writable column must be in Attributes,
-// and the raw DESCRIBE property strings are not a separate attribute.
+// Sets are created through hand-written per-element mappers named to<Stem><Field>. The
+// security integrations option is mapped as a whole, because the SDK takes one option request.
+// The nested blocks are omitted from DESCRIBE Columns. A writable column must be in
+// Attributes, and the raw DESCRIBE property strings are not a separate attribute.
 var AuthenticationPolicyAttrs = struct {
 	AuthenticationMethods  ssot.Attribute
 	MfaEnrollment          ssot.Attribute
@@ -230,12 +232,12 @@ var AuthenticationPolicyAttrs = struct {
 			Type:           ssot.AttrIdentifier,
 			IdentifierType: "AccountObjectIdentifier",
 		},
+		CreateMapping: ssot.AttributeMappedValueCreate("ToSecurityIntegrationsRequest"),
 	},
 	Comment: ssot.Attribute{
-		Name:          "comment",
-		Type:          ssot.AttrString,
-		Description:   "Specifies a comment for the authentication policy.",
-		CreateMapping: ssot.StringAttributeCreateBuilder,
+		Name:        "comment",
+		Type:        ssot.AttrString,
+		Description: "Specifies a comment for the authentication policy.",
 	},
 	CreatedOn:     ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, OptionalInDb: true, Readonly: true},
 	Name:          ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
@@ -268,6 +270,7 @@ var AuthenticationPolicy = ssot.Object{
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 		ssot.WithHandleExternalChangesInDescribe(ssot.ExtCall()),
 		ssot.WithHierarchyRename(ssot.ExtCall()),
+		ssot.WithApplyCreateOptionals(ssot.Generated()),
 		ssot.WithStateUpgraders(ssot.Generated()),
 		// database and schema are ForceNew. The identity template does not emit that yet.
 		ssot.WithIdentitySchema(ssot.ExtCall()),

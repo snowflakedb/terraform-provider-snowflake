@@ -1,0 +1,7 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.CreateRequestBuild*/ -}}
+errors.Join(
+{{- range .Calls }}
+		{{ .Helper }}(d, {{ .Key }}, {{ .Target }}),
+{{- end }}
+	)
+{{- /* no trailing newline */ -}}

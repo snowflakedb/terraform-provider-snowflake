@@ -57,6 +57,20 @@ func ListValueCreate(mapper string) ListValueCreateMapping {
 	return ListValueCreateMapping{Mapper: mapper}
 }
 
+// AttributeMappedValueCreate is attributeMappedValueCreateBuilder.
+// The value is the mapper function name.
+type AttributeMappedValueCreate string
+
+func (m AttributeMappedValueCreate) CreateCall(objectName string, attr Attribute) CreateCall {
+	if m == "" {
+		panic(fmt.Sprintf("object %q: attribute %q attributeMappedValueCreateBuilder needs a mapper function", objectName, attr.Name))
+	}
+	return CreateCall{
+		Helper: "attributeMappedValueCreateBuilder",
+		Target: fmt.Sprintf("request.With%s, %s", genhelpers.SnakeCaseToCamel(attr.Name), string(m)),
+	}
+}
+
 // UpdateMapping names the resource update helper for one attribute.
 // An attribute with a nil UpdateMapping is left out of set/unset.
 type UpdateMapping interface {

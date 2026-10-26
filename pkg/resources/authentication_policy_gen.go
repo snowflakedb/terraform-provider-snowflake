@@ -69,7 +69,7 @@ func CreateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	if err := authenticationPolicyApplyCreateOptionalsExt(d, req); err != nil {
+	if err := authenticationPolicyApplyCreateOptionals(d, req); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -148,4 +148,49 @@ var authenticationPolicyCustomizeDiff = TrackingCustomDiffWrapper(resources.Auth
 
 func authenticationPolicyParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
 	return sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string)), nil
+}
+
+func authenticationPolicyApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateAuthenticationPolicyRequest) error {
+	return errors.Join(
+		setMappedValueCreateBuilder(d, "authentication_methods", request.WithAuthenticationMethods, toAuthenticationPolicyAuthenticationMethods),
+		attributeMappedValueCreateBuilder(d, "mfa_enrollment", request.WithMfaEnrollment, sdk.ToMfaEnrollmentOption),
+		setMappedValueCreateBuilder(d, "client_types", request.WithClientTypes, toAuthenticationPolicyClientTypes),
+		setMappedValueCreateBuilder(d, "client_policy", request.WithClientPolicy, toAuthenticationPolicyClientPolicy),
+		singleBlockAttributeCreate(d, "mfa_policy", request.WithMfaPolicy, parseAuthenticationPolicyMfaPolicy),
+		singleBlockAttributeCreate(d, "pat_policy", request.WithPatPolicy, parseAuthenticationPolicyPatPolicy),
+		singleBlockAttributeCreate(d, "workload_identity_policy", request.WithWorkloadIdentityPolicy, parseAuthenticationPolicyWorkloadIdentityPolicy),
+		attributeMappedValueCreateBuilder(d, "security_integrations", request.WithSecurityIntegrations, ToSecurityIntegrationsRequest),
+		stringAttributeCreateBuilder(d, "comment", request.WithComment),
+	)
+}
+
+func parseAuthenticationPolicyMfaPolicy(d *tfschema.ResourceData, prefix string) (sdk.AuthenticationPolicyMfaPolicyRequest, error) {
+	request := sdk.NewAuthenticationPolicyMfaPolicyRequest()
+	errs := errors.Join(
+		attributeMappedValueCreateBuilder(d, prefix+"enforce_mfa_on_external_authentication", request.WithEnforceMfaOnExternalAuthentication, sdk.ToEnforceMfaOnExternalAuthenticationOption),
+		setMappedValueCreateBuilder(d, prefix+"allowed_methods", request.WithAllowedMethods, toAuthenticationPolicyMfaPolicyAllowedMethods),
+	)
+	return *request, errs
+}
+
+func parseAuthenticationPolicyPatPolicy(d *tfschema.ResourceData, prefix string) (sdk.AuthenticationPolicyPatPolicyRequest, error) {
+	request := sdk.NewAuthenticationPolicyPatPolicyRequest()
+	errs := errors.Join(
+		intAttributeCreateBuilder(d, prefix+"default_expiry_in_days", request.WithDefaultExpiryInDays),
+		intAttributeCreateBuilder(d, prefix+"max_expiry_in_days", request.WithMaxExpiryInDays),
+		booleanStringAttributeCreateBuilder(d, prefix+"require_role_restriction_for_service_users", request.WithRequireRoleRestrictionForServiceUsers),
+		attributeMappedValueCreateBuilder(d, prefix+"network_policy_evaluation", request.WithNetworkPolicyEvaluation, sdk.ToNetworkPolicyEvaluationOption),
+	)
+	return *request, errs
+}
+
+func parseAuthenticationPolicyWorkloadIdentityPolicy(d *tfschema.ResourceData, prefix string) (sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest, error) {
+	request := sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest()
+	errs := errors.Join(
+		setMappedValueCreateBuilder(d, prefix+"allowed_providers", request.WithAllowedProviders, toAuthenticationPolicyWorkloadIdentityPolicyAllowedProviders),
+		setMappedValueCreateBuilder(d, prefix+"allowed_aws_accounts", request.WithAllowedAwsAccounts, toAuthenticationPolicyWorkloadIdentityPolicyAllowedAwsAccounts),
+		setMappedValueCreateBuilder(d, prefix+"allowed_azure_issuers", request.WithAllowedAzureIssuers, toAuthenticationPolicyWorkloadIdentityPolicyAllowedAzureIssuers),
+		setMappedValueCreateBuilder(d, prefix+"allowed_oidc_issuers", request.WithAllowedOidcIssuers, toAuthenticationPolicyWorkloadIdentityPolicyAllowedOidcIssuers),
+	)
+	return *request, errs
 }

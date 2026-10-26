@@ -1,7 +1,5 @@
 package ssot
 
-import "fmt"
-
 // AttributeType is the semantic type of an object attribute, not the Terraform schema type.
 type AttributeType string
 
@@ -41,7 +39,8 @@ type Attribute struct {
 	IncludeAliasedInTheDescription bool
 	Elem                           *Attribute
 	// Children is the named fields of a list or set block. Elem stays a scalar collection element.
-	// A nested field may itself be a block. Create and alter generation skips a nested attribute and every field under it.
+	// A nested field may itself be a block. Generated create parses an optional list block; see the README.
+	// Alter generation skips a nested attribute and every field under it.
 	Children       []Attribute
 	OptionalInShow bool // SHOW/DESCRIBE SDK field is a pointer; drives schema ToSchema nil-guards
 	OptionalInDb   bool // DB row is nullable; live for the SDK paired-struct db and plain kinds
@@ -58,6 +57,9 @@ type Attribute struct {
 	// CreateMapping overrides the create helper deduced from Type, the schema default, and CreateOnly.
 	// Nil means deduce one. A required attribute with a nil mapping is a create constructor argument.
 	CreateMapping CreateMapping
+	// SkipCreateBlock leaves a list block out of generated create.
+	// Ext create code builds the value. The generator does not emit a parse function.
+	SkipCreateBlock bool
 	// UpdateMapping overrides the update helper deduced the same way.
 	// Nil means deduce one. ForceNew and CreateOnly attributes are left out of set/unset.
 	UpdateMapping UpdateMapping
@@ -108,29 +110,4 @@ func (a Attribute) ColumnEnum() *Enum {
 		return a.ShowEnum
 	}
 	return a.Enum
-}
-
-// ConstructorGet is the d.Get expression for a required attribute with no CreateMapping.
-// The bool is false when the attribute is not a constructor argument.
-func (a *Attribute) ConstructorGet() (string, bool) {
-	if a.CreateMapping != nil || !a.Required {
-		return "", false
-	}
-	var cast string
-	switch a.Type {
-	case AttrInt:
-		cast = "int"
-	case AttrString:
-		cast = "string"
-	case AttrBool:
-		cast = "bool"
-	case AttrEnum:
-		if a.Enum == nil || a.Enum.Name == "" {
-			panic(fmt.Sprintf("constructor attribute %q has no Enum", a.Name))
-		}
-		cast = "string"
-	default:
-		panic(fmt.Sprintf("required attribute %q has no CreateMapping", a.Name))
-	}
-	return fmt.Sprintf("d.Get(%q).(%s)", a.Name, cast), true
 }

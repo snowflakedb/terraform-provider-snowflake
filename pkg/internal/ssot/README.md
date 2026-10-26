@@ -43,12 +43,32 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   field is the unexported Go name and the SQL is the ddl text, such as `WAREHOUSE_TYPE = 'ADAPTIVE'`.
 - `ShowName` - SHOW/DESCRIBE key when it differs from the resource name (`for_application` → `application`).
   `OutputKey()` is `ShowName` or `Name`.
-- `CreateMapping` - the create helper from `pkg/resources/resource_helpers_create.go` used by a generated
-  `ApplyCreateOptionals`. Use a `HelperMapping` constant (`StringAttributeCreateBuilder`, ...) or
-  `ListValueCreate("<mapperFunc>")`. A required attribute with no mapping is a `NewCreate<Object>Request` constructor
-  argument (int or enum only). The resource identifier is not an attribute. A generated `ParseIdFromConfig` builds it
-  from `IdType`: `name` for an account object, `database` and `name` for a database object, and `database`, `schema`,
-  and `name` for a schema object.
+- `CreateMapping` - overrides the create helper a generated `ApplyCreateOptionals` deduces for the attribute. Leave it
+  nil, including on nested fields, unless the deduced call does not match the SDK request. The helpers are in
+  `pkg/resources/resource_helpers_create.go`. Without a mapping, an optional field is deduced from its type and the
+  schema default: a string, int, bool, enum (`attributeMappedValueCreateBuilder` with `sdk.To<Enum>`), or
+  `AccountObjectIdentifier` (by its own `IdentifierType`) uses its builder. A list with `Elem` calls `listValueCreate`,
+  and a set, with `Elem` or `Children`, calls `setMappedValueCreateBuilder`. Both take a hand-written per-element mapper
+  in package resources named `to<Stem><Field>`, where the stem is the object name plus any enclosing block names:
+  `toComputePoolBackupInstanceFamilies`, `toAuthenticationPolicyMfaPolicyAllowedMethods`. A required field with no
+  mapping is a constructor argument (string, int, bool, or enum). To override, use a `HelperMapping` constant
+  (`StringAttributeCreateBuilder`, ...), `ListValueCreate("<mapperFunc>")`, or
+  `AttributeMappedValueCreate("<mapperFunc>")` when the SDK setter takes the whole value. A generated
+  `ApplyCreateOptionals` covers only `Attributes`, so a resource field that is not an attribute keeps the
+  ext call. The resource identifier is not an attribute. A generated `ParseIdFromConfig` builds it from `IdType`:
+  `name` for an account object, `database` and `name` for a database object, and `database`, `schema`, and `name` for
+  a schema object.
+- `Children` - named fields of a list or set block. A child may itself be a block. `Elem` stays a scalar collection
+  element. A generated `ApplyCreateOptionals` parses an optional list block with a generated `parse<Stem>` function.
+  `MaxItems: 1` calls `singleBlockAttributeCreate`. Any other list calls `listBlockAttributeCreate`. The block request
+  is built like the object request, with the same deduction and the same templates: required fields are
+  `sdk.New<Stem>Request` arguments in `Children` order, and other fields use their deduced create helper on that
+  request. Fields are read from `prefix+"<name>"`. The stem of a block is the parent stem plus the block name:
+  `Widget` + `policy` + `limit` is `sdk.WidgetPolicyLimitRequest`. A set block is not parsed, because a set element has
+  no index for the prefix. It uses the set rule above. A list block stays out of generated create when it is required
+  or any field has no create mapping, including a required field the constructor cannot take. Keep such a block in an
+  ext `ApplyCreateOptionals`. `SkipCreateBlock` leaves a list block out even when its fields could be mapped. Ext
+  create code builds the value, and the generator does not emit a parse function. Alter generation still skips a nested attribute.
 - `UpdateMapping` - the update helper from `pkg/resources/resource_helpers_update.go` used by a generated
   `ApplySetUnset`. Use a `SetOnlyMapping` constant (`IntAttributeUpdateSetOnlyBuilder`), a `SetUnsetMapping` constant
   (`StringAttributeUpdateBuilder`, ...), or `ListValueUpdate("<mapperFunc>")`. An attribute with no mapping is left out
