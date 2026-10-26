@@ -220,6 +220,7 @@ var ComputePool = ssot.Object{
 		ssot.WithParseId(ssot.Generated()),
 		ssot.WithNewCreateRequest(ssot.Generated()),
 		ssot.WithApplyCreateOptionals(ssot.Generated()),
+		ssot.WithCreateInSdk(ssot.Generated()),
 		ssot.WithApplySetUnset(ssot.Generated()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
 	},
