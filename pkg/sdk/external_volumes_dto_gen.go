@@ -48,10 +48,10 @@ type ExternalVolumeS3EncryptionRequest struct {
 
 type GCSStorageLocationParamsRequest struct {
 	StorageBaseUrl string // required
-	Encryption     *ExternalVolumeGCSEncryptionRequest
+	Encryption     *ExternalVolumeGcsEncryptionRequest
 }
 
-type ExternalVolumeGCSEncryptionRequest struct {
+type ExternalVolumeGcsEncryptionRequest struct {
 	EncryptionType GCSEncryptionType // required
 	KmsKeyId       *string
 }
@@ -79,7 +79,7 @@ type AlterExternalVolumeRequest struct {
 	RemoveStorageLocation *string
 	Set                   *ExternalVolumeSetRequest
 	AddStorageLocation    *ExternalVolumeStorageLocationItemRequest
-	UpdateStorageLocation *AlterExternalVolumeUpdateStorageLocationRequest
+	UpdateStorageLocation *ExternalVolumeUpdateStorageLocationRequest
 }
 
 type ExternalVolumeSetRequest struct {
@@ -87,7 +87,7 @@ type ExternalVolumeSetRequest struct {
 	Comment     *string
 }
 
-type AlterExternalVolumeUpdateStorageLocationRequest struct {
+type ExternalVolumeUpdateStorageLocationRequest struct {
 	StorageLocation string                                 // required
 	Credentials     ExternalVolumeUpdateCredentialsRequest // required
 }

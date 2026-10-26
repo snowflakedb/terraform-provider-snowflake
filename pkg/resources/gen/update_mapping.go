@@ -19,7 +19,7 @@ func attachUpdateMappings(objectName string, src []ssot.Attribute, dst []Resourc
 	}
 	for i := range src {
 		// TODO (next PRs): Support nested attributes.
-		if len(src[i].Children) > 0 {
+		if len(src[i].NestedFields()) > 0 {
 			continue
 		}
 		call, ok := updateCallFor(objectName, src[i], dst[i])

@@ -13,6 +13,9 @@ const (
 	AttrList       AttributeType = "list"
 	AttrSet        AttributeType = "set"
 	AttrTime       AttributeType = "time"
+	// AttrObject is the element of a list or set of objects: an Elem with Children. It is also a SqlOnly nested struct
+	// that a variant of such an element refers to.
+	AttrObject AttributeType = "object"
 )
 
 // Attribute is the written intent for one object attribute.
@@ -37,10 +40,15 @@ type Attribute struct {
 	// IncludeAliasedInTheDescription lists aliases in the resource description.
 	// Empty lists canonical values.
 	IncludeAliasedInTheDescription bool
-	Elem                           *Attribute
-	// Children is the named fields of a list or set block. Elem stays a scalar collection element.
+	// Elem is the element of a list or set: a scalar attribute, or an AttrObject whose Children are the fields of a nested
+	// block. A field of an Elem object may carry its own CREATE clause, which is how SDK query structs are generated.
+	Elem *Attribute
+	// Children are the fields of an AttrObject, which is an Elem or a SqlOnly nested struct.
 	// A nested field may itself be a block. Generated create parses an optional list block; see the README.
 	// Alter generation skips a nested attribute and every field under it.
+	// TODO [next PRs]: Definitions that put Children directly on a list or set (alert, authentication policy, the catalog
+	// integrations, table) are rewritten to an Elem object once the nested create generation (#679) is merged. Children is then
+	// valid only on an AttrObject, and NestedFields reads one shape.
 	Children       []Attribute
 	OptionalInShow bool // SHOW/DESCRIBE SDK field is a pointer; drives schema ToSchema nil-guards
 	OptionalInDb   bool // DB row is nullable; live for the SDK paired-struct db and plain kinds

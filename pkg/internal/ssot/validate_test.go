@@ -438,15 +438,20 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 	require.PanicsWithValue(t, `object "Widget": ALTER text is empty`, func() {
 		ValidateObject(Object{Name: "Widget", Alter: AlterSpec{Clauses: []AlterClause{AlterText("")}}})
 	})
-	require.PanicsWithValue(t, `object "Widget": ALTER block needs a field, SQL, and struct`, func() {
-		ValidateObject(Object{Name: "Widget", Alter: AlterSpec{Clauses: []AlterClause{AlterParameterBlock("Add", "ADD X", "")}}})
+	require.PanicsWithValue(t, `object "Widget": ALTER block needs a field, SQL, and an attribute`, func() {
+		ValidateObject(Object{Name: "Widget", Alter: AlterSpec{Clauses: []AlterClause{AlterParameterBlock("Add", "ADD X", nil)}}})
+	})
+	require.PanicsWithValue(t, `object "Widget": ALTER block "ADD X" needs a list of objects or an object with Children`, func() {
+		scalar := Attribute{Name: "x", Type: AttrString}
+		ValidateObject(Object{Name: "Widget", Alter: AlterSpec{Clauses: []AlterClause{AlterParameterBlock("Add", "ADD X", &scalar)}}})
 	})
 	require.PanicsWithValue(t, `object "Widget": duplicate ALTER clause "ADD X"`, func() {
+		block := Attribute{Name: "x", Type: AttrObject, SqlOnly: true, Children: []Attribute{{Name: "y", Type: AttrString}}}
 		ValidateObject(Object{
 			Name: "Widget",
 			Alter: AlterSpec{Clauses: []AlterClause{
-				AlterParameterBlock("Add", "ADD X", "XStruct"),
-				AlterKeywordBlock("AddAgain", "ADD X", "XStruct"),
+				AlterParameterBlock("Add", "ADD X", &block),
+				AlterKeywordBlock("AddAgain", "ADD X", &block),
 			}},
 		})
 	})
@@ -933,4 +938,63 @@ func Test_ValidateObject_describeDetailsParse(t *testing.T) {
 	require.PanicsWithValue(t, `object "Widget": DESCRIBE details mapping "size" is not a DESCRIBE column`, func() {
 		ValidateObject(obj([]*Attribute{&active}, DescribeProperty(&active, "A"), DescribeProperty(&size, "SIZE")))
 	})
+}
+
+func Test_ValidateObject_objectListVariants(t *testing.T) {
+	baseUrl := Attribute{Name: "base_url", Type: AttrString, CreateSql: Clause()}
+	keyId := Attribute{Name: "key_id", Type: AttrString, CreateSql: Clause()}
+	static := Attribute{Name: "kind", SqlOnly: true, CreateSql: StaticSQL("kind", "KIND = 'X'")}
+	list := func(elem SqlClause, children ...Attribute) Object {
+		attr := Attribute{
+			Name:      "location",
+			Type:      AttrList,
+			CreateSql: ListOfObjects(Sql("LOCATIONS")),
+			Elem:      &Attribute{Type: AttrObject, CreateSql: elem, Children: children},
+		}
+		return Object{Name: "Widget", Attributes: []Attribute{attr}, Create: CreateSpec{Clauses: []*Attribute{&attr}}}
+	}
+
+	require.NotPanics(t, func() {
+		ValidateObject(list(ObjectParameter(Parentheses(), WithVariants(Variant("First", &baseUrl), Variant("Second", &static, &baseUrl))), baseUrl, keyId))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "location" has an empty or duplicate variant "First"`, func() {
+		ValidateObject(list(ObjectParameter(WithVariants(Variant("First", &baseUrl), Variant("First", &keyId))), baseUrl, keyId))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "location" variant "First" has no fields`, func() {
+		ValidateObject(list(ObjectParameter(WithVariants(Variant("First"))), baseUrl))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "location" variant "First" has duplicate field "base_url"`, func() {
+		ValidateObject(list(ObjectParameter(WithVariants(Variant("First", &baseUrl, &baseUrl))), baseUrl))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "location" variant "First" field "key_id" is not a child of the element`, func() {
+		ValidateObject(list(ObjectParameter(WithVariants(Variant("First", &keyId))), baseUrl))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "location" variant "First" field "key_id" has no CREATE clause`, func() {
+		noClause := Attribute{Name: "key_id", Type: AttrString}
+		ValidateObject(list(ObjectParameter(WithVariants(Variant("First", &noClause))), baseUrl))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "location" variant "First" field "block" needs Children`, func() {
+		block := Attribute{Name: "block", Type: AttrObject, SqlOnly: true, CreateSql: ObjectParameter()}
+		ValidateObject(list(ObjectParameter(WithVariants(Variant("First", &block))), baseUrl))
+	})
+	require.PanicsWithValue(t, `object "Widget": nested attribute "location"."base_url" has a CREATE clause`, func() {
+		attr := Attribute{Name: "location", Type: AttrList, Elem: &Attribute{Type: AttrObject, Children: []Attribute{baseUrl}}}
+		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{attr}})
+	})
+}
+
+func Test_Attribute_nestedFields(t *testing.T) {
+	child := Attribute{Name: "child"}
+	require.Equal(t, []Attribute{child}, Attribute{Children: []Attribute{child}}.NestedFields())
+	list := Attribute{Type: AttrList, Elem: &Attribute{Type: AttrObject, Children: []Attribute{child}}}
+	require.Equal(t, []Attribute{child}, list.NestedFields())
+	require.True(t, list.IsObjectList())
+	require.Empty(t, Attribute{Type: AttrList, Elem: &Attribute{Type: AttrString}}.NestedFields())
+	require.False(t, Attribute{Type: AttrList, Elem: &Attribute{Type: AttrString}}.IsObjectList())
+}
+
+func Test_Attribute_sqlStructNames(t *testing.T) {
+	attr := Attribute{Name: "storage_location"}
+	require.Equal(t, "ExternalVolumeStorageLocation", attr.SqlStructName("ExternalVolume"))
+	require.Equal(t, "GCSStorageLocationParams", attr.SqlVariantStructName("GCS"))
 }

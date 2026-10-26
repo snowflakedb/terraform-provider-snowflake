@@ -1422,90 +1422,44 @@ func requireSameOperations(t *testing.T, want, got *Interface) {
 	}
 }
 
-func Test_CreateOperationFromObject_nestedItem(t *testing.T) {
-	locations := ssot.Attribute{
-		Name:     "storage_location",
-		Type:     ssot.AttrList,
-		Required: true,
-		Children: []ssot.Attribute{{Name: "name", Type: ssot.AttrString}},
-		CreateSql: ssot.ListParameter("WidgetLocation",
-			ssot.Sql("STORAGE_LOCATIONS"), ssot.NestedItem()),
-	}
-	obj := ssot.Object{
-		Name:       "Widget",
-		Attributes: []ssot.Attribute{locations},
-		Create:     ssot.CreateSpec{Clauses: []*ssot.Attribute{&locations}},
-		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate())},
-	}
-	item := func() *QueryStruct {
-		return NewQueryStruct("WidgetLocation").TextAssignment("NAME", ParameterOptions().SingleQuotes().Required())
-	}
-
-	t.Run("item struct becomes the nested list field", func(t *testing.T) {
-		got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj, item())
-		want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperation(
-			"https://docs.snowflake.com/en/sql-reference/sql/create-widget",
-			NewQueryStruct("CreateWidget").
-				Create().
-				OrReplace().
-				SQL("WIDGET").
-				IfNotExists().
-				Name().
-				ListQueryStructField("StorageLocations", item(), ParameterOptions().Parentheses().Required().SQL("STORAGE_LOCATIONS")).
-				WithValidation(ValidateValueSet, "StorageLocations").
-				WithValidation(ValidIdentifier, "name").
-				WithValidation(ConflictingFields, "OrReplace", "IfNotExists"),
-		)
-		requireSameOperations(t, want, got)
-	})
-
-	t.Run("missing item struct panics", func(t *testing.T) {
-		require.Panics(t, func() {
-			NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
-		})
-	})
-}
-
 func Test_AlterOperationFromObject_textAndBlocks(t *testing.T) {
+	widget := newWidgetLocationAttributes()
+	locations := widget.list
+	update := ssot.Attribute{
+		Name:      "update_location",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(),
+		Children: []ssot.Attribute{
+			{Name: "location_name", Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier", CreateSql: ssot.StringParameter(ssot.Sql("LOCATION"), ssot.NoEquals(), ssot.Required())},
+		},
+	}
 	obj := ssot.Object{
 		Name: "Widget",
 		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
 			ssot.AlterText("REMOVE LOCATION"),
-			ssot.AlterParameterBlock("AddLocation", "ADD LOCATION", "WidgetLocation"),
-			ssot.AlterKeywordBlock("UpdateLocation", "UPDATE", "WidgetLocationUpdate"),
+			ssot.AlterParameterBlock("AddLocation", "ADD LOCATION", &locations),
+			ssot.AlterKeywordBlock("UpdateLocation", "UPDATE", &update),
 		}},
 		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter())},
 	}
-	location := func() *QueryStruct {
-		return NewQueryStruct("WidgetLocation").TextAssignment("NAME", ParameterOptions().SingleQuotes().Required())
-	}
-	update := func() *QueryStruct {
-		return NewQueryStruct("WidgetLocationUpdate").TextAssignment("LOCATION", ParameterOptions().SingleQuotes().Required())
-	}
 
-	t.Run("text and block clauses", func(t *testing.T) {
-		got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(obj, location(), update())
-		want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperation(
-			"https://docs.snowflake.com/en/sql-reference/sql/alter-widget",
-			NewQueryStruct("AlterWidget").
-				Alter().
-				SQL("WIDGET").
-				IfExists().
-				Name().
-				OptionalTextAssignment("REMOVE LOCATION", ParameterOptions().SingleQuotes().NoEquals()).
-				OptionalQueryStructField("AddLocation", location(), ParameterOptions().SQL("ADD LOCATION")).
-				OptionalQueryStructField("UpdateLocation", update(), KeywordOptions().SQL("UPDATE")).
-				WithValidation(ValidIdentifier, "name").
-				WithValidation(ExactlyOneValueSet, "RemoveLocation", "AddLocation", "UpdateLocation"),
-		)
-		requireSameOperations(t, want, got)
-	})
-
-	t.Run("missing block struct panics", func(t *testing.T) {
-		require.Panics(t, func() {
-			NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(obj, location())
-		})
-	})
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-widget",
+		NewQueryStruct("AlterWidget").
+			Alter().
+			SQL("WIDGET").
+			IfExists().
+			Name().
+			OptionalTextAssignment("REMOVE LOCATION", ParameterOptions().SingleQuotes().NoEquals()).
+			OptionalQueryStructField("AddLocation", queryStructFromObjectList("Widget", locations), ParameterOptions().SQL("ADD LOCATION")).
+			OptionalQueryStructField("UpdateLocation", NewQueryStruct("WidgetUpdateLocation").
+				TextAssignment("LOCATION", ParameterOptions().SingleQuotes().NoEquals().Required()), KeywordOptions().SQL("UPDATE")).
+			WithValidation(ValidIdentifier, "name").
+			WithValidation(ExactlyOneValueSet, "RemoveLocation", "AddLocation", "UpdateLocation"),
+	)
+	requireSameOperations(t, want, got)
 }
 
 func Test_DescribeOperationFromObject_propertyList(t *testing.T) {

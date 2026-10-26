@@ -30,6 +30,159 @@ var (
 	)
 )
 
+// ExternalVolumeStorageLocationAttrs holds the fields of the storage_location element. Terraform lists them as the Children
+// of the element, and each one carries the CREATE clause it has as a field of the SQL. The variants of the element refer to
+// them, and to the SQL-only attributes below.
+var ExternalVolumeStorageLocationAttrs = struct {
+	Name                   ssot.Attribute
+	StorageProvider        ssot.Attribute
+	StorageBaseUrl         ssot.Attribute
+	AwsRoleArn             ssot.Attribute
+	AwsExternalId          ssot.Attribute
+	EncryptionType         ssot.Attribute
+	EncryptionKmsKeyId     ssot.Attribute
+	AwsAccessPointArn      ssot.Attribute
+	UsePrivatelinkEndpoint ssot.Attribute
+	AzureTenantId          ssot.Attribute
+	StorageEndpoint        ssot.Attribute
+	AwsKeyId               ssot.Attribute
+	AwsSecretKey           ssot.Attribute
+}{
+	Name: ssot.Attribute{
+		Name:           "storage_location_name",
+		Type:           ssot.AttrIdentifier,
+		IdentifierType: "AccountObjectIdentifier",
+		Required:       true,
+		Description:    "Name of the storage location. Must be unique for the external volume. Do not use the name `terraform_provider_sentinel_storage_location` - this is reserved for the provider for performing update operations.",
+		CreateSql:      ssot.StringParameter(ssot.Sql("NAME"), ssot.Required()),
+	},
+	StorageProvider: ssot.Attribute{
+		Name:        "storage_provider",
+		Type:        ssot.AttrEnum,
+		Required:    true,
+		Description: "Specifies the cloud storage provider that stores your data files.",
+		Enum:        StorageProvider,
+		CreateSql:   ssot.EnumParameter(ssot.EnumOf(S3StorageProvider), ssot.SingleQuotes(), ssot.Required()),
+	},
+	StorageBaseUrl: ssot.Attribute{
+		Name:        "storage_base_url",
+		Type:        ssot.AttrString,
+		Required:    true,
+		Description: "Specifies the base URL for your cloud storage location.",
+		CreateSql:   ssot.Clause(),
+	},
+	AwsRoleArn: ssot.Attribute{
+		Name:        "storage_aws_role_arn",
+		Type:        ssot.AttrString,
+		Description: "Specifies the case-sensitive Amazon Resource Name (ARN) of the AWS identity and access management (IAM) role that grants privileges on the S3 bucket containing your data files.",
+		CreateSql:   ssot.Clause(ssot.Required()),
+	},
+	AwsExternalId: ssot.Attribute{
+		Name:        "storage_aws_external_id",
+		Type:        ssot.AttrString,
+		Description: "External ID that Snowflake uses to establish a trust relationship with AWS.",
+		CreateSql:   ssot.Clause(),
+	},
+	EncryptionType: ssot.Attribute{
+		Name:        "encryption_type",
+		Type:        ssot.AttrString,
+		Description: "Specifies the encryption type used.",
+		CreateSql:   ssot.Clause(ssot.Sql("TYPE"), ssot.FieldName("EncryptionType"), ssot.EnumOf(S3EncryptionType), ssot.SingleQuotes(), ssot.Required()),
+	},
+	EncryptionKmsKeyId: ssot.Attribute{
+		Name:        "encryption_kms_key_id",
+		Type:        ssot.AttrString,
+		Description: "Specifies the ID for the KMS-managed key used to encrypt files.",
+		CreateSql:   ssot.Clause(ssot.Sql("KMS_KEY_ID")),
+	},
+	AwsAccessPointArn: ssot.Attribute{
+		Name:        "storage_aws_access_point_arn",
+		Type:        ssot.AttrString,
+		Description: "Specifies the access point ARN for the S3 bucket containing your data files. Only applicable for S3 and S3GOV storage providers.",
+		CreateSql:   ssot.Clause(),
+	},
+	UsePrivatelinkEndpoint: ssot.Attribute{
+		Name:        "use_privatelink_endpoint",
+		Type:        ssot.AttrBool,
+		Description: "Specifies whether to use a privatelink endpoint for the storage location. Only applicable for S3, S3GOV, and AZURE storage providers.",
+		CreateSql:   ssot.Clause(),
+	},
+	AzureTenantId: ssot.Attribute{
+		Name:        "azure_tenant_id",
+		Type:        ssot.AttrString,
+		Description: "Specifies the ID for your Office 365 tenant that the allowed and blocked storage accounts belong to.",
+		CreateSql:   ssot.Clause(ssot.Required()),
+	},
+	StorageEndpoint: ssot.Attribute{
+		Name:        "storage_endpoint",
+		Type:        ssot.AttrString,
+		Description: "Specifies the endpoint for the S3-compatible storage location. Only applicable for S3COMPAT storage provider.",
+		CreateSql:   ssot.Clause(ssot.Required()),
+	},
+	AwsKeyId: ssot.Attribute{
+		Name:        "storage_aws_key_id",
+		Type:        ssot.AttrString,
+		Description: "Specifies the AWS key ID for the S3-compatible storage location. Only applicable for S3COMPAT storage provider.",
+		CreateSql:   ssot.Clause(ssot.Sql("AWS_KEY_ID"), ssot.Required()),
+	},
+	AwsSecretKey: ssot.Attribute{
+		Name:        "storage_aws_secret_key",
+		Type:        ssot.AttrString,
+		Description: "Specifies the AWS secret key for the S3-compatible storage location. Only applicable for S3COMPAT storage provider.",
+		CreateSql:   ssot.Clause(ssot.Sql("AWS_SECRET_KEY"), ssot.Required()),
+	},
+}
+
+// The parts of the storage_location SQL that are not Terraform fields. Each is an attribute with its own CREATE clause.
+var (
+	externalVolumeProviderGcs      = ssot.Attribute{Name: "storage_provider_gcs", SqlOnly: true, CreateSql: ssot.StaticSQL("storageProviderGcs", "STORAGE_PROVIDER = 'GCS'")}
+	externalVolumeProviderAzure    = ssot.Attribute{Name: "storage_provider_azure", SqlOnly: true, CreateSql: ssot.StaticSQL("storageProviderAzure", "STORAGE_PROVIDER = 'AZURE'")}
+	externalVolumeProviderS3Compat = ssot.Attribute{Name: "storage_provider_s3_compat", SqlOnly: true, CreateSql: ssot.StaticSQL("storageProviderS3Compat", "STORAGE_PROVIDER = 'S3COMPAT'")}
+
+	externalVolumeS3Encryption = ssot.Attribute{
+		Name:      "s3_encryption",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(ssot.Sql("ENCRYPTION ="), ssot.Parentheses(), ssot.FieldName("Encryption")),
+		Children:  []ssot.Attribute{ExternalVolumeStorageLocationAttrs.EncryptionType, ExternalVolumeStorageLocationAttrs.EncryptionKmsKeyId},
+	}
+	externalVolumeGcsEncryption = ssot.Attribute{
+		Name:      "gcs_encryption",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(ssot.Sql("ENCRYPTION ="), ssot.Parentheses(), ssot.FieldName("Encryption")),
+		Children: []ssot.Attribute{
+			ssot.WithCreateSql(&ExternalVolumeStorageLocationAttrs.EncryptionType, ssot.Clause(ssot.Sql("TYPE"), ssot.FieldName("EncryptionType"), ssot.EnumOf(GCSEncryptionType), ssot.SingleQuotes(), ssot.Required())),
+			ExternalVolumeStorageLocationAttrs.EncryptionKmsKeyId,
+		},
+	}
+	// UPDATE STORAGE_LOCATION '<name>' CREDENTIALS = (...) of ALTER: the name and the credentials of an existing location.
+	externalVolumeUpdateCredentials = ssot.Attribute{
+		Name:      "update_credentials",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(ssot.Sql("CREDENTIALS ="), ssot.Parentheses(), ssot.Required(), ssot.FieldName("Credentials")),
+		Children:  []ssot.Attribute{ExternalVolumeStorageLocationAttrs.AwsKeyId, ExternalVolumeStorageLocationAttrs.AwsSecretKey},
+	}
+	externalVolumeUpdateStorageLocation = ssot.Attribute{
+		Name:      "update_storage_location",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(),
+		Children: []ssot.Attribute{
+			ssot.WithCreateSql(&ExternalVolumeStorageLocationAttrs.Name, ssot.StringParameter(ssot.Sql("STORAGE_LOCATION"), ssot.NoEquals(), ssot.Required())),
+			externalVolumeUpdateCredentials,
+		},
+	}
+	externalVolumeS3CompatCredentials = ssot.Attribute{
+		Name:      "s3_compat_credentials",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(ssot.Sql("CREDENTIALS ="), ssot.Parentheses(), ssot.Required(), ssot.FieldName("Credentials")),
+		Children:  []ssot.Attribute{ExternalVolumeStorageLocationAttrs.AwsKeyId, ExternalVolumeStorageLocationAttrs.AwsSecretKey},
+	}
+)
+
 // ExternalVolumeAttrs holds the external volume fields that SHOW and DESCRIBE reuse.
 // DESCRIBE EXTERNAL VOLUME returns a generic property list (DescribeRows), which the generated
 // ParseExternalVolumeDescribed parses into the details that Describe.Columns models. Every DESCRIBE value, including allow_writes, is a plain string, unlike
@@ -69,81 +222,36 @@ var ExternalVolumeAttrs = struct {
 		Type:      ssot.AttrList,
 		Required:  true,
 		MinItems:  new(1),
-		CreateSql: ssot.ListParameter("ExternalVolumeStorageLocationItem", ssot.Sql("STORAGE_LOCATIONS"), ssot.NestedItem()),
+		CreateSql: ssot.ListOfObjects(ssot.Sql("STORAGE_LOCATIONS"), ssot.Parentheses()),
 		Description: "List of named cloud storage locations in different regions and, optionally, cloud platforms. Minimum 1 required. " +
 			"The order of the list is important as it impacts the active storage location, and updates will be triggered if it changes. " +
 			"Note that not all parameter combinations are valid as they depend on the given storage_provider. " +
 			"Consult [the docs](https://docs.snowflake.com/en/sql-reference/sql/create-external-volume#cloud-provider-parameters-cloudproviderparams) for more details on this.",
-		Children: []ssot.Attribute{
-			{
-				Name:           "storage_location_name",
-				Type:           ssot.AttrIdentifier,
-				IdentifierType: "AccountObjectIdentifier",
-				Required:       true,
-				Description:    "Name of the storage location. Must be unique for the external volume. Do not use the name `terraform_provider_sentinel_storage_location` - this is reserved for the provider for performing update operations.",
-			},
-			{
-				Name:        "storage_provider",
-				Type:        ssot.AttrEnum,
-				Required:    true,
-				Description: "Specifies the cloud storage provider that stores your data files.",
-				Enum:        StorageProvider,
-			},
-			{
-				Name:        "storage_base_url",
-				Type:        ssot.AttrString,
-				Required:    true,
-				Description: "Specifies the base URL for your cloud storage location.",
-			},
-			{
-				Name:        "storage_aws_role_arn",
-				Type:        ssot.AttrString,
-				Description: "Specifies the case-sensitive Amazon Resource Name (ARN) of the AWS identity and access management (IAM) role that grants privileges on the S3 bucket containing your data files.",
-			},
-			{
-				Name:        "storage_aws_external_id",
-				Type:        ssot.AttrString,
-				Description: "External ID that Snowflake uses to establish a trust relationship with AWS.",
-			},
-			{
-				Name:        "encryption_type",
-				Type:        ssot.AttrString,
-				Description: "Specifies the encryption type used.",
-			},
-			{
-				Name:        "encryption_kms_key_id",
-				Type:        ssot.AttrString,
-				Description: "Specifies the ID for the KMS-managed key used to encrypt files.",
-			},
-			{
-				Name:        "storage_aws_access_point_arn",
-				Type:        ssot.AttrString,
-				Description: "Specifies the access point ARN for the S3 bucket containing your data files. Only applicable for S3 and S3GOV storage providers.",
-			},
-			{
-				Name:        "use_privatelink_endpoint",
-				Type:        ssot.AttrBool,
-				Description: "Specifies whether to use a privatelink endpoint for the storage location. Only applicable for S3, S3GOV, and AZURE storage providers.",
-			},
-			{
-				Name:        "azure_tenant_id",
-				Type:        ssot.AttrString,
-				Description: "Specifies the ID for your Office 365 tenant that the allowed and blocked storage accounts belong to.",
-			},
-			{
-				Name:        "storage_endpoint",
-				Type:        ssot.AttrString,
-				Description: "Specifies the endpoint for the S3-compatible storage location. Only applicable for S3COMPAT storage provider.",
-			},
-			{
-				Name:        "storage_aws_key_id",
-				Type:        ssot.AttrString,
-				Description: "Specifies the AWS key ID for the S3-compatible storage location. Only applicable for S3COMPAT storage provider.",
-			},
-			{
-				Name:        "storage_aws_secret_key",
-				Type:        ssot.AttrString,
-				Description: "Specifies the AWS secret key for the S3-compatible storage location. Only applicable for S3COMPAT storage provider.",
+		Elem: &ssot.Attribute{
+			Type: ssot.AttrObject,
+			CreateSql: ssot.ObjectParameter(
+				ssot.Parentheses(),
+				ssot.WithVariants(
+					ssot.Variant("S3", &ExternalVolumeStorageLocationAttrs.StorageProvider, &ExternalVolumeStorageLocationAttrs.AwsRoleArn, &ExternalVolumeStorageLocationAttrs.StorageBaseUrl, &ExternalVolumeStorageLocationAttrs.AwsExternalId, &ExternalVolumeStorageLocationAttrs.AwsAccessPointArn, &ExternalVolumeStorageLocationAttrs.UsePrivatelinkEndpoint, &externalVolumeS3Encryption),
+					ssot.Variant("GCS", &externalVolumeProviderGcs, &ExternalVolumeStorageLocationAttrs.StorageBaseUrl, &externalVolumeGcsEncryption),
+					ssot.Variant("Azure", &externalVolumeProviderAzure, &ExternalVolumeStorageLocationAttrs.AzureTenantId, &ExternalVolumeStorageLocationAttrs.StorageBaseUrl, &ExternalVolumeStorageLocationAttrs.UsePrivatelinkEndpoint),
+					ssot.Variant("S3Compat", &externalVolumeProviderS3Compat, &ExternalVolumeStorageLocationAttrs.StorageBaseUrl, &ExternalVolumeStorageLocationAttrs.StorageEndpoint, &externalVolumeS3CompatCredentials),
+				),
+			),
+			Children: []ssot.Attribute{
+				ExternalVolumeStorageLocationAttrs.Name,
+				ExternalVolumeStorageLocationAttrs.StorageProvider,
+				ExternalVolumeStorageLocationAttrs.StorageBaseUrl,
+				ExternalVolumeStorageLocationAttrs.AwsRoleArn,
+				ExternalVolumeStorageLocationAttrs.AwsExternalId,
+				ExternalVolumeStorageLocationAttrs.EncryptionType,
+				ExternalVolumeStorageLocationAttrs.EncryptionKmsKeyId,
+				ExternalVolumeStorageLocationAttrs.AwsAccessPointArn,
+				ExternalVolumeStorageLocationAttrs.UsePrivatelinkEndpoint,
+				ExternalVolumeStorageLocationAttrs.AzureTenantId,
+				ExternalVolumeStorageLocationAttrs.StorageEndpoint,
+				ExternalVolumeStorageLocationAttrs.AwsKeyId,
+				ExternalVolumeStorageLocationAttrs.AwsSecretKey,
 			},
 		},
 	},
@@ -232,8 +340,8 @@ var ExternalVolumeObject = ssot.Object{
 		Clauses: []ssot.AlterClause{
 			ssot.AlterText("REMOVE STORAGE_LOCATION"),
 			ssot.AlterSet(),
-			ssot.AlterParameterBlock("AddStorageLocation", "ADD STORAGE_LOCATION", "ExternalVolumeStorageLocationItem"),
-			ssot.AlterKeywordBlock("UpdateStorageLocation", "UPDATE", "AlterExternalVolumeUpdateStorageLocation"),
+			ssot.AlterParameterBlock("AddStorageLocation", "ADD STORAGE_LOCATION", &ExternalVolumeAttrs.StorageLocation),
+			ssot.AlterKeywordBlock("UpdateStorageLocation", "UPDATE", &externalVolumeUpdateStorageLocation),
 		},
 	},
 	Show: ssot.OutputSpec{

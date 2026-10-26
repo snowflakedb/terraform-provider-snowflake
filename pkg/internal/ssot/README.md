@@ -93,6 +93,38 @@ its `Name`, extend SSOT with an explicit parameter-level override.
 Def files keep attributes as vars (`ComputePoolAttrs`) so `Columns` can point at them instead of restating snake_case
 strings.
 
+### Lists and nested objects
+
+How an attribute models a collection or a nested object. The Terraform side (schema, model, resource) and the SDK side
+(CREATE and ALTER query structs) read the same attribute, and neither needs a second definition.
+
+- **List or set of scalars.** `Elem` is the scalar element attribute: a string, bool, int, enum, or identifier. A list of
+  enums takes a `<Enum>ListItem` query struct in SQL. Create and update use `ListValueCreate` / `ListValueUpdate` with a
+  hand-written per-element mapper.
+- **List or set of objects.** The list attribute has `Elem` of type `AttrObject`, and the `Children` of that `Elem` are the
+  object fields. Terraform sees a nested block (`MaxItems: 1` makes it a single block). `Attribute.NestedFields()` returns the
+  fields and `IsObjectList()` tells the two shapes apart, so generators do not read `Children` or `Elem` directly.
+  - SQL of the list is the list attribute's `CreateSql`: `ListOfObjects(Sql(text), Parentheses())`.
+  - SQL of one element is the `Elem`'s `CreateSql`: `ObjectParameter(...)`. `Parentheses()` puts each element in
+    parentheses, through a generated `<Struct>Item` that holds the struct.
+  - The struct is named after the object and the list attribute, so `ExternalVolume` and `storage_location` give
+    `ExternalVolumeStorageLocation`, and its Request type follows.
+  - Each field's SQL is the `CreateSql` the child attribute already has, in `Children` order.
+  - Provider-like alternatives are variants of the element: `WithVariants(Variant("S3", &a, &b, ...), ...)` lists, for each
+    one, the attributes it consists of, as pointers, in SQL order. Exactly one variant is set. A child that is in no variant
+    is a field of the element itself.
+- **Object that is not a Terraform attribute.** A `SqlOnly` attribute of type `AttrObject` with `Children` is a nested SQL
+  struct (`ENCRYPTION = (...)`, `UPDATE ... CREDENTIALS = (...)`). It is not in the schema, the resource, or the assertions.
+  A variant or an ALTER block refers to it by pointer. A fixed text is a `SqlOnly` attribute with `StaticSQL`, and
+  `WithCreateSql(&attr, clause)` is a copy of an attribute with another clause for the one place that needs it.
+- **Where each part is used.** CREATE reads the list attribute through `Create.Clauses`. ALTER reuses the same element with
+  `AlterParameterBlock(field, sql, &listAttr)` (`ADD STORAGE_LOCATION`), or a `SqlOnly` object with
+  `AlterKeywordBlock(field, sql, &object)`. Enums on the children, on their clauses (`EnumOf`), and in variants are emitted
+  with the object's enums. See [Generators](#generators) for the clause options.
+
+[external_volume_def.go](defs/external_volume_def.go) is the reference: a list of objects with four provider variants, nested
+`ENCRYPTION` and `CREDENTIALS` structs, static provider texts, and an ALTER `UPDATE` block.
+
 ### SHOW and DESCRIBE
 
 `Attributes` cannot drive SHOW/DESCRIBE: more columns than settable fields, CREATE-only fields, renames, mixed Snowflake
@@ -207,13 +239,15 @@ enable nothing.
   functional options on top of that default. A zero unset clause is a bool keyword. Leave the attribute out of `Unset`
   to omit it, or set `UnsetSql` to a parameter clause to unset by setting a value. A list whose element is an enum uses
   an item query struct named after that enum, with `ListItem` appended. Its field is `Value`, a required single-quoted
-  keyword. `NestedItem()` on a `ListParameter` clause makes the item struct a nested block: the SDK def passes that query
-  struct to `CreateOperationFromObject`, and the list field is a list of it, so the struct keeps its Request type, mapping,
-  and validations. A required list also gets `ValidateValueSet`. Such a clause may sit on an attribute with `Children`.
+  keyword.
   `AlterText(sql)` is an optional single-quoted value with no equals, such as `REMOVE STORAGE_LOCATION 'name'`.
-  `AlterParameterBlock(field, sql, struct)` and `AlterKeywordBlock(field, sql, struct)` are optional nested blocks, as a
-  parameter or a keyword clause. The SDK def passes each block's query struct to `AlterOperationFromObject`, and the
-  generator panics when a named struct is missing. All three are branches of `ExactlyOneValueSet`.
+  `AlterParameterBlock(field, sql, &attr)` and `AlterKeywordBlock(field, sql, &attr)` are optional nested blocks, as a
+  parameter or a keyword clause. `attr` is a list of objects, and the block is one of its elements, with the same struct as in
+  CREATE (`ADD STORAGE_LOCATION`), or a SqlOnly object attribute whose `Children` are the fields and whose `CreateSql` are
+  the field clauses (`UPDATE`). All three are branches of `ExactlyOneValueSet`.
+  A list of objects, its variants, and its nested structs are described on the attributes: see
+  [Lists and nested objects](#lists-and-nested-objects). A `Clause(...)` on a child takes `Sql`, `Required`, `FieldName(name)`
+  for the Go field name, and `EnumOf(enum)`. An identifier child with a parameter clause is quoted text.
   When `SdkCreate()` or `SdkAlter()` is off, that call stays in the def. `SdkCreateForVariants()` emits
   each variant CREATE as a custom method. The variant fills `Create` (`Doc`, clauses, and
   `AdditionalValidations`). The SQL object words are `VariantEntityCreateName`, or `VariantOf.ObjectType` when that override is empty. A fixed value is an `SqlOnly` attribute with `StaticSQL` in that clause list. The method name is `Create` plus the variant name with the base name removed. The query
@@ -438,6 +472,10 @@ the enum type.
 
 #### Limitations
 
+- Some definitions still put `Children` directly on a list or set attribute, with no `Elem` (alert, authentication policy,
+  both catalog integrations, table). `NestedFields()` reads both shapes and the Terraform side treats them the same, but only
+  the `Elem` object shape can carry SQL clauses on its fields, so only it can generate SDK CREATE and ALTER structs.
+  See [Lists and nested objects](#lists-and-nested-objects).
 - Paired struct field names have no override, for SHOW or for DESCRIBE. The db field and the plain field are both the
   camel-cased `OutputKey()`, so a column cannot map to a differently named plain field (the handwritten defs use
   `WithPlainFieldName` for that, such as `property_value` to `Value`). An object moved to ssot may end up with slightly

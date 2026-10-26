@@ -118,8 +118,9 @@ type AlterClause struct {
 	ListItem string
 	// Field is the Go field name of a block.
 	Field string
-	// BlockStruct is the query struct name of a block. The SDK def passes that struct to the generator.
-	BlockStruct string
+	// Block is the attribute that a block clause is built from: a list of objects, whose element is the block, or a SqlOnly
+	// object attribute, whose Children are the block fields.
+	Block *Attribute
 	// BlockKeyword makes the block a keyword clause. Without it the block is a parameter clause.
 	BlockKeyword bool
 }
@@ -150,15 +151,16 @@ func AlterText(sql string) AlterClause {
 }
 
 // AlterParameterBlock is an optional nested block after the name, as a parameter clause, such as ADD STORAGE_LOCATION.
-// field is the Go field name. structName is the block's query struct, which the SDK def passes to AlterOperationFromObject.
+// field is the Go field name. block is the attribute the block is built from: a list of objects (the block is one element,
+// as in the CREATE list), or a SqlOnly object attribute whose Children are the fields.
 // It is one branch of ExactlyOneValueSet.
-func AlterParameterBlock(field, sql, structName string) AlterClause {
-	return AlterClause{Kind: AlterClauseBlock, Field: field, SQL: sql, BlockStruct: structName}
+func AlterParameterBlock(field, sql string, block *Attribute) AlterClause {
+	return AlterClause{Kind: AlterClauseBlock, Field: field, SQL: sql, Block: block}
 }
 
 // AlterKeywordBlock is AlterParameterBlock as a keyword clause, such as UPDATE followed by the struct.
-func AlterKeywordBlock(field, sql, structName string) AlterClause {
-	return AlterClause{Kind: AlterClauseBlock, Field: field, SQL: sql, BlockStruct: structName, BlockKeyword: true}
+func AlterKeywordBlock(field, sql string, block *Attribute) AlterClause {
+	return AlterClause{Kind: AlterClauseBlock, Field: field, SQL: sql, Block: block, BlockKeyword: true}
 }
 
 // AlterRenameTo is RENAME TO. The identifier type is the object's IdType.

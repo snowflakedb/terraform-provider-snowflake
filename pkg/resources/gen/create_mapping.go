@@ -143,7 +143,7 @@ func attachFieldCreate(scope createScope, src ssot.Attribute, dst *ResourceAttri
 	if src.SkipCreateBlock {
 		return false
 	}
-	if len(src.Children) > 0 && src.CreateMapping == nil && src.Type == ssot.AttrList {
+	if len(src.NestedFields()) > 0 && src.CreateMapping == nil && src.Type == ssot.AttrList {
 		return attachBlockCreate(scope, src, dst)
 	}
 	if arg, ok := constructorArg(scope, src, *dst); ok {

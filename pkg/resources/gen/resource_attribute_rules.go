@@ -268,6 +268,10 @@ func applyResourceAttributeRules(idType string, in []ssot.Attribute) []ResourceA
 }
 
 func resolveResourceAttribute(in ssot.Attribute, ctx resourceAttributeRuleContext) ResourceAttribute {
+	if in.IsObjectList() {
+		// A list of objects is a block with the fields of its element object.
+		in.Children, in.Elem = in.Elem.Children, nil
+	}
 	out := resourceAttributeBaseline(in, ctx)
 	for _, rule := range resourceAttributeRules {
 		if rule.When(in, ctx) {
