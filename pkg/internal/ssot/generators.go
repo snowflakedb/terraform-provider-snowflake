@@ -89,7 +89,7 @@ type SdkGenerator struct {
 type ModelGenerator struct {
 	Enabled bool
 	// RequestTypeOverrides maps an attribute Name to the real Go type for a Required nested-block
-	// attribute (Children, no Elem) that the generator cannot classify on its own. Mirrors the
+	// attribute (a list or set of objects) that the generator cannot classify on its own. Mirrors the
 	// old-list complexListAttributesOverrides table, scoped to this object instead of by resource name.
 	RequestTypeOverrides map[string]string
 }
@@ -469,7 +469,7 @@ func WithSdk(opts ...SdkOption) GeneratorOption {
 type ModelOption func(*ModelGenerator)
 
 // ModelRequestType overrides the constructor parameter type for a Required nested-block attribute
-// (Children, no Elem). attr is the same *Attribute listed in Attributes. goType is the full type
+// (a list or set of objects). attr is the same *Attribute listed in Attributes. goType is the full type
 // expression used as the constructor parameter type, e.g. "[]sdk.ExternalVolumeStorageLocationRequest".
 func ModelRequestType(attr *Attribute, goType string) ModelOption {
 	return func(m *ModelGenerator) {

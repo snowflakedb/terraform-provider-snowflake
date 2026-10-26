@@ -338,15 +338,16 @@ func (a Attribute) SqlVariantStructName(key string) string {
 	return key + genhelpers.SnakeCaseToCamel(a.Name) + "Params"
 }
 
-// NestedFields are the fields of a block: the Children, or the Children of the Elem object of a list or set.
+// NestedFields are the fields of a block: the Children of the Elem object of a list or set, or the Children of an object.
 func (a Attribute) NestedFields() []Attribute {
-	if len(a.Children) > 0 {
-		return a.Children
-	}
-	if a.Elem != nil && a.Elem.Type == AttrObject {
+	switch {
+	case a.IsObjectList():
 		return a.Elem.Children
+	case a.Type == AttrObject:
+		return a.Children
+	default:
+		return nil
 	}
-	return nil
 }
 
 // IsObjectList reports whether the attribute is a list or set whose elements are objects.

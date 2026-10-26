@@ -14,9 +14,9 @@ func Test_CustomDiffEntries(t *testing.T) {
 	nested := ssot.Attribute{
 		Name: "mfa_policy",
 		Type: ssot.AttrList,
-		Children: []ssot.Attribute{
+		Elem: ssot.ObjectElem([]ssot.Attribute{
 			{Name: "allowed_methods", Type: ssot.AttrSet},
-		},
+		}),
 	}
 	createdOn := ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, Readonly: true}
 	name := ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true}

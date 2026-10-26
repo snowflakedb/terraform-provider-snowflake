@@ -87,3 +87,8 @@ func Test_ClassifyParameter_primitiveStaysOnStorageType(t *testing.T) {
 func classifiedNames(fields []ClassifiedField) []string {
 	return collections.Map(fields, func(field ClassifiedField) string { return field.Name })
 }
+
+func Test_ClassifyAttribute_objectList(t *testing.T) {
+	list := Attribute{Name: "location", Type: AttrList, Required: true, Elem: ObjectElem([]Attribute{{Name: "url", Type: AttrString}})}
+	require.Equal(t, ClassifiedField{Name: "location", Storage: AttrList, Required: true}, ClassifyAttribute(Object{Name: "Widget"}, list))
+}

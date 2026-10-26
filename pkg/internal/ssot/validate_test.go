@@ -1,6 +1,7 @@
 package ssot
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -146,7 +147,7 @@ func Test_ValidateObject_skipCreateBlockMustBeListBlock(t *testing.T) {
 				Name:            "alert_schedule",
 				Type:            AttrList,
 				SkipCreateBlock: true,
-				Children:        []Attribute{{Name: "interval", Type: AttrInt}},
+				Elem:            ObjectElem([]Attribute{{Name: "interval", Type: AttrInt}}),
 			}},
 		})
 	})
@@ -550,8 +551,8 @@ func Test_ValidateObject_sqlOnlyField(t *testing.T) {
 
 func Test_ValidateObject_nestedAttribute(t *testing.T) {
 	leaf := Attribute{Name: "leaf", Type: AttrString}
-	inner := Attribute{Name: "inner", Type: AttrList, Children: []Attribute{leaf}}
-	outer := Attribute{Name: "outer", Type: AttrSet, Children: []Attribute{inner}}
+	inner := Attribute{Name: "inner", Type: AttrList, Elem: ObjectElem([]Attribute{leaf})}
+	outer := Attribute{Name: "outer", Type: AttrSet, Elem: ObjectElem([]Attribute{inner})}
 	require.NotPanics(t, func() {
 		ValidateObject(Object{
 			Name:       "Widget",
@@ -559,32 +560,43 @@ func Test_ValidateObject_nestedAttribute(t *testing.T) {
 		})
 	})
 
-	require.PanicsWithValue(t, `object "Widget": attribute "label" Nested requires a list or set`, func() {
-		ValidateObject(Object{
-			Name:       "Widget",
-			Attributes: []Attribute{{Name: "label", Type: AttrString, Children: []Attribute{leaf}}},
+	legacyMessage := `object "Widget": attribute "%s" has Children but is not an object; declare the fields of a list or set on an object Elem (ObjectElem)`
+	for name, attr := range map[string]Attribute{
+		"label":  {Name: "label", Type: AttrString, Children: []Attribute{leaf}},
+		"legacy": {Name: "legacy", Type: AttrList, Children: []Attribute{leaf}},
+		"items":  {Name: "items", Type: AttrSet, Elem: &Attribute{Type: AttrString}, Children: []Attribute{leaf}},
+	} {
+		require.PanicsWithValue(t, fmt.Sprintf(legacyMessage, name), func() {
+			ValidateObject(Object{Name: "Widget", Attributes: []Attribute{attr}})
 		})
+	}
+	require.PanicsWithValue(t, fmt.Sprintf(legacyMessage, "nested"), func() {
+		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{{
+			Name: "outer",
+			Type: AttrList,
+			Elem: ObjectElem([]Attribute{{Name: "nested", Type: AttrList, Children: []Attribute{leaf}}}),
+		}}})
 	})
 
-	require.PanicsWithValue(t, `object "Widget": attribute "items" has both Elem and Nested`, func() {
-		ValidateObject(Object{
-			Name: "Widget",
-			Attributes: []Attribute{{
-				Name:     "items",
-				Type:     AttrSet,
-				Elem:     &Attribute{Type: AttrString},
-				Children: []Attribute{leaf},
-			}},
-		})
+	require.PanicsWithValue(t, `object "Widget": attribute "label" has an object Elem and needs to be a list or set`, func() {
+		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{{Name: "label", Type: AttrString, Elem: ObjectElem([]Attribute{leaf})}}})
+	})
+
+	require.PanicsWithValue(t, `object "Widget": attribute "empty" has an object Elem with no Children`, func() {
+		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{{Name: "empty", Type: AttrList, Elem: ObjectElem(nil)}}})
+	})
+
+	require.PanicsWithValue(t, `object "Widget": attribute "object" is an object; an object is only an Elem or a SqlOnly nested struct`, func() {
+		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{{Name: "object", Type: AttrObject, Children: []Attribute{leaf}}}})
 	})
 
 	require.PanicsWithValue(t, `object "Widget": attribute "outer" has duplicate nested attribute "inner"`, func() {
 		ValidateObject(Object{
 			Name: "Widget",
 			Attributes: []Attribute{{
-				Name:     "outer",
-				Type:     AttrSet,
-				Children: []Attribute{inner, {Name: "inner", Type: AttrString}},
+				Name: "outer",
+				Type: AttrSet,
+				Elem: ObjectElem([]Attribute{inner, {Name: "inner", Type: AttrString}}),
 			}},
 		})
 	})
@@ -595,11 +607,11 @@ func Test_ValidateObject_nestedAttribute(t *testing.T) {
 			Attributes: []Attribute{{
 				Name: "outer",
 				Type: AttrSet,
-				Children: []Attribute{{
+				Elem: ObjectElem([]Attribute{{
 					Name:      "inner",
 					Type:      AttrString,
 					CreateSql: StringParameter(),
-				}},
+				}}),
 			}},
 		})
 	})
@@ -610,15 +622,15 @@ func Test_ValidateObject_nestedAttribute(t *testing.T) {
 			Attributes: []Attribute{{
 				Name: "outer",
 				Type: AttrSet,
-				Children: []Attribute{{
+				Elem: ObjectElem([]Attribute{{
 					Name: "inner",
 					Type: AttrList,
-					Children: []Attribute{{
+					Elem: ObjectElem([]Attribute{{
 						Name:   "leaf",
 						Type:   AttrString,
 						SetSql: StringParameter(),
-					}},
-				}},
+					}}),
+				}}),
 			}},
 		})
 	})
@@ -639,11 +651,11 @@ func Test_ValidateObject_collectionItemBounds(t *testing.T) {
 		Type:     AttrList,
 		Required: true,
 		MinItems: new(1),
-		Children: []Attribute{
+		Elem: ObjectElem([]Attribute{
 			{Name: "storage_location_name", Type: AttrString, Required: true},
 			{Name: "storage_base_url", Type: AttrString, Required: true},
 			{Name: "allowed_locations", Type: AttrList, MinItems: new(1), Elem: &Attribute{Type: AttrString}},
-		},
+		}),
 	}
 	require.NotPanics(t, func() {
 		ValidateObject(Object{Name: "ExternalVolume", Attributes: []Attribute{locations}})
@@ -674,11 +686,11 @@ func Test_ValidateObject_collectionItemBounds(t *testing.T) {
 			Attributes: []Attribute{{
 				Name: "storage_location",
 				Type: AttrSet,
-				Children: []Attribute{{
+				Elem: ObjectElem([]Attribute{{
 					Name:     "storage_base_url",
 					Type:     AttrString,
 					MinItems: new(1),
-				}},
+				}}),
 			}},
 		})
 	})
@@ -985,16 +997,40 @@ func Test_ValidateObject_objectListVariants(t *testing.T) {
 
 func Test_Attribute_nestedFields(t *testing.T) {
 	child := Attribute{Name: "child"}
-	require.Equal(t, []Attribute{child}, Attribute{Children: []Attribute{child}}.NestedFields())
-	list := Attribute{Type: AttrList, Elem: &Attribute{Type: AttrObject, Children: []Attribute{child}}}
+	list := Attribute{Type: AttrList, Elem: ObjectElem([]Attribute{child})}
 	require.Equal(t, []Attribute{child}, list.NestedFields())
 	require.True(t, list.IsObjectList())
-	require.Empty(t, Attribute{Type: AttrList, Elem: &Attribute{Type: AttrString}}.NestedFields())
-	require.False(t, Attribute{Type: AttrList, Elem: &Attribute{Type: AttrString}}.IsObjectList())
+	set := Attribute{Type: AttrSet, Elem: ObjectElem([]Attribute{child})}
+	require.Equal(t, []Attribute{child}, set.NestedFields())
+	require.Equal(t, []Attribute{child}, Attribute{Type: AttrObject, Children: []Attribute{child}}.NestedFields())
+	scalars := Attribute{Type: AttrList, Elem: &Attribute{Type: AttrString}}
+	require.Empty(t, scalars.NestedFields())
+	require.False(t, scalars.IsObjectList())
+	require.Empty(t, Attribute{Type: AttrList, Children: []Attribute{child}}.NestedFields(), "Children on a list is not a block")
 }
 
 func Test_Attribute_sqlStructNames(t *testing.T) {
 	attr := Attribute{Name: "storage_location"}
 	require.Equal(t, "ExternalVolumeStorageLocation", attr.SqlStructName("ExternalVolume"))
 	require.Equal(t, "GCSStorageLocationParams", attr.SqlVariantStructName("GCS"))
+}
+
+func Test_ValidateObject_skipCreateBlockOnObjectLists(t *testing.T) {
+	leaf := Attribute{Name: "leaf", Type: AttrString}
+	inner := Attribute{Name: "inner", Type: AttrList, Elem: ObjectElem([]Attribute{leaf})}
+	outer := Attribute{Name: "outer", Type: AttrList, SkipCreateBlock: true, Elem: ObjectElem([]Attribute{inner})}
+	require.NotPanics(t, func() { ValidateObject(Object{Name: "Widget", Attributes: []Attribute{outer}}) })
+
+	scalar := Attribute{Name: "scalar", Type: AttrString, SkipCreateBlock: true}
+	require.PanicsWithValue(t, `object "Widget": SkipCreateBlock attribute "scalar" must be a list block`, func() {
+		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{scalar}})
+	})
+}
+
+func Test_ObjectElem(t *testing.T) {
+	child := Attribute{Name: "child", Type: AttrString}
+	list := Attribute{Name: "block", Type: AttrList, Elem: ObjectElem([]Attribute{child})}
+	require.True(t, list.IsObjectList())
+	require.Equal(t, []Attribute{child}, list.NestedFields())
+	require.Equal(t, AttrObject, list.Elem.Type)
 }

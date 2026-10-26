@@ -427,11 +427,11 @@ func Test_applyResourceAttributeRules_nestedBlocksRecurse(t *testing.T) {
 		Name:        "outer",
 		Type:        ssot.AttrSet,
 		Description: "Outer block.",
-		Children: []ssot.Attribute{{
+		Elem: ssot.ObjectElem([]ssot.Attribute{{
 			Name:     "inner",
 			Type:     ssot.AttrList,
 			Required: true,
-			Children: []ssot.Attribute{{
+			Elem: ssot.ObjectElem([]ssot.Attribute{{
 				Name:        "leaf",
 				Type:        ssot.AttrEnum,
 				Required:    true,
@@ -440,8 +440,8 @@ func Test_applyResourceAttributeRules_nestedBlocksRecurse(t *testing.T) {
 			}, {
 				Name: "target",
 				Type: ssot.AttrIdentifier,
-			}},
-		}},
+			}}),
+		}}),
 	}, resourceAttributeRuleContext{IdType: "SchemaObjectIdentifier"})
 
 	require.Equal(t, SchemaTypeSet, got.TfType)
@@ -487,14 +487,14 @@ func gotSourceNested() ssot.Attribute {
 	return ssot.Attribute{
 		Name: "outer",
 		Type: ssot.AttrSet,
-		Children: []ssot.Attribute{{
+		Elem: ssot.ObjectElem([]ssot.Attribute{{
 			Name: "inner",
 			Type: ssot.AttrList,
-			Children: []ssot.Attribute{{
+			Elem: ssot.ObjectElem([]ssot.Attribute{{
 				Name: "leaf",
 				Type: ssot.AttrString,
-			}},
-		}},
+			}}),
+		}}),
 	}
 }
 
@@ -503,7 +503,7 @@ func Test_applyResourceAttributeRules_nestedBlock(t *testing.T) {
 		Name:        "client_policy",
 		Type:        ssot.AttrSet,
 		Description: "Allows to set policies per-client type.",
-		Children: []ssot.Attribute{
+		Elem: ssot.ObjectElem([]ssot.Attribute{
 			{
 				Name:        "client_type",
 				Type:        ssot.AttrEnum,
@@ -522,7 +522,7 @@ func Test_applyResourceAttributeRules_nestedBlock(t *testing.T) {
 				Required:    true,
 				Description: "Minimum allowed version.",
 			},
-		},
+		}),
 	}, resourceAttributeRuleContext{IdType: "SchemaObjectIdentifier"})
 
 	require.Equal(t, SchemaTypeSet, got.TfType)
@@ -555,12 +555,12 @@ func Test_applyResourceAttributeRules_listOfBlocksAllowsMultipleItems(t *testing
 		Required:    true,
 		MinItems:    new(1),
 		Description: "List of named cloud storage locations.",
-		Children: []ssot.Attribute{
+		Elem: ssot.ObjectElem([]ssot.Attribute{
 			{Name: "storage_location_name", Type: ssot.AttrString, Required: true, Description: "Name of the storage location."},
 			{Name: "storage_base_url", Type: ssot.AttrString, Required: true, Description: "Specifies the base URL."},
 			{Name: "storage_aws_role_arn", Type: ssot.AttrString, Description: "Specifies the role ARN."},
 			{Name: "allowed_locations", Type: ssot.AttrList, MinItems: new(1), Description: "Extra locations.", Elem: &ssot.Attribute{Type: ssot.AttrString}},
-		},
+		}),
 	}
 	got := resolveResourceAttribute(attr, resourceAttributeRuleContext{})
 

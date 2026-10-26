@@ -164,13 +164,14 @@ func attachBlockCreate(scope createScope, src ssot.Attribute, dst *ResourceAttri
 	if src.Required {
 		return false
 	}
-	if len(src.Children) != len(dst.Children) {
-		panic(fmt.Sprintf("object %q: attribute %q has %d nested attributes and %d resource attributes", scope.stem, src.Name, len(src.Children), len(dst.Children)))
+	fields := src.NestedFields()
+	if len(fields) != len(dst.Children) {
+		panic(fmt.Sprintf("object %q: attribute %q has %d nested attributes and %d resource attributes", scope.stem, src.Name, len(fields), len(dst.Children)))
 	}
 	blockScope := createScope{stem: scope.stem + genhelpers.SnakeCaseToCamel(src.Name), inBlock: true}
 	children := append([]ResourceAttribute(nil), dst.Children...)
-	for i := range src.Children {
-		if !attachFieldCreate(blockScope, src.Children[i], &children[i]) {
+	for i := range fields {
+		if !attachFieldCreate(blockScope, fields[i], &children[i]) {
 			return false
 		}
 	}
@@ -249,7 +250,7 @@ func deduceCreateCall(objectName string, src ssot.Attribute, resolved ResourceAt
 		return withFieldMapperCall("attributeMappedValueCreateBuilder", src, "sdk.To"+resolved.EnumName), true
 	case src.Type == ssot.AttrIdentifier && src.IdentifierType == "AccountObjectIdentifier":
 		return ssot.AccountObjectIdentifierAttributeCreateBuilder.CreateCall(objectName, src), true
-	case src.Type == ssot.AttrList && src.Elem != nil:
+	case src.Type == ssot.AttrList && src.Elem != nil && !src.IsObjectList():
 		return ssot.ListValueCreate(collectionMapperName(objectName, src)).CreateCall(objectName, src), true
 	case src.Type == ssot.AttrSet:
 		return withFieldMapperCall("setMappedValueCreateBuilder", src, collectionMapperName(objectName, src)), true

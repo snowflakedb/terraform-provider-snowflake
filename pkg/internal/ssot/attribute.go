@@ -18,6 +18,11 @@ const (
 	AttrObject AttributeType = "object"
 )
 
+// ObjectElem is the Elem of a list or set of objects: an AttrObject whose Children are the fields of each element.
+func ObjectElem(children []Attribute) *Attribute {
+	return &Attribute{Type: AttrObject, Children: children}
+}
+
 // Attribute is the written intent for one object attribute.
 type Attribute struct {
 	Name                  string
@@ -43,12 +48,10 @@ type Attribute struct {
 	// Elem is the element of a list or set: a scalar attribute, or an AttrObject whose Children are the fields of a nested
 	// block. A field of an Elem object may carry its own CREATE clause, which is how SDK query structs are generated.
 	Elem *Attribute
-	// Children are the fields of an AttrObject, which is an Elem or a SqlOnly nested struct.
+	// Children are the fields of an AttrObject, which is an Elem or a SqlOnly nested struct. They are valid only there:
+	// a list or set of objects declares its fields on an Elem object (ObjectElem), never on the list itself.
 	// A nested field may itself be a block. Generated create parses an optional list block; see the README.
-	// Alter generation skips a nested attribute and every field under it.
-	// TODO [next PRs]: Definitions that put Children directly on a list or set (alert, authentication policy, the catalog
-	// integrations, table) are rewritten to an Elem object once the nested create generation (#679) is merged. Children is then
-	// valid only on an AttrObject, and NestedFields reads one shape.
+	// Resource alter generation skips a nested attribute and every field under it.
 	Children       []Attribute
 	OptionalInShow bool // SHOW/DESCRIBE SDK field is a pointer; drives schema ToSchema nil-guards
 	OptionalInDb   bool // DB row is nullable; live for the SDK paired-struct db and plain kinds

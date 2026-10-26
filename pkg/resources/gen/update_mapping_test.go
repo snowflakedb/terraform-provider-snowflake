@@ -41,11 +41,11 @@ func Test_attachUpdateMappings_skipsNested(t *testing.T) {
 		Name:          "client_policy",
 		Type:          ssot.AttrSet,
 		UpdateMapping: ssot.StringAttributeUpdateBuilder,
-		Children: []ssot.Attribute{{
+		Elem: ssot.ObjectElem([]ssot.Attribute{{
 			Name:          "minimum_version",
 			Type:          ssot.AttrString,
 			UpdateMapping: ssot.StringAttributeUpdateBuilder,
-		}},
+		}}),
 	}}
 	dst := applyResourceAttributeRules("", src)
 	attachUpdateMappings("AuthenticationPolicy", src, dst)

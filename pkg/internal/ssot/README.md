@@ -52,7 +52,7 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   `pkg/resources/resource_helpers_create.go`. Without a mapping, an optional field is deduced from its type and the
   schema default: a string, int, bool, enum (`attributeMappedValueCreateBuilder` with `sdk.To<Enum>`), or
   `AccountObjectIdentifier` (by its own `IdentifierType`) uses its builder. A list with `Elem` calls `listValueCreate`,
-  and a set, with `Elem` or `Children`, calls `setMappedValueCreateBuilder`. Both take a hand-written per-element mapper
+  and a set, of scalars or of objects, calls `setMappedValueCreateBuilder`. Both take a hand-written per-element mapper
   in package resources named `to<Stem><Field>`, where the stem is the object name plus any enclosing block names:
   `toComputePoolBackupInstanceFamilies`, `toAuthenticationPolicyMfaPolicyAllowedMethods`. A required field with no
   mapping is a constructor argument (string, int, bool, or enum). To override, use a `HelperMapping` constant
@@ -62,17 +62,8 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   ext call. The resource identifier is not an attribute. A generated `ParseIdFromConfig` builds it from `IdType`:
   `name` for an account object, `database` and `name` for a database object, and `database`, `schema`, and `name` for
   a schema object.
-- `Children` - named fields of a list or set block. A child may itself be a block. `Elem` stays a scalar collection
-  element. A generated `ApplyCreateOptionals` parses an optional list block with a generated `parse<Stem>` function.
-  `MaxItems: 1` calls `singleBlockAttributeCreate`. Any other list calls `listBlockAttributeCreate`. The block request
-  is built like the object request, with the same deduction and the same templates: required fields are
-  `sdk.New<Stem>Request` arguments in `Children` order, and other fields use their deduced create helper on that
-  request. Fields are read from `prefix+"<name>"`. The stem of a block is the parent stem plus the block name:
-  `Widget` + `policy` + `limit` is `sdk.WidgetPolicyLimitRequest`. A set block is not parsed, because a set element has
-  no index for the prefix. It uses the set rule above. A list block stays out of generated create when it is required
-  or any field has no create mapping, including a required field the constructor cannot take. Keep such a block in an
-  ext `ApplyCreateOptionals`. `SkipCreateBlock` leaves a list block out even when its fields could be mapped. Ext
-  create code builds the value, and the generator does not emit a parse function. Alter generation still skips a nested attribute.
+- `SkipCreateBlock` - leaves a list block out of generated create even when its fields could be mapped. Ext create code
+  builds the value, and the generator does not emit a parse function.
 - `UpdateMapping` - the update helper from `pkg/resources/resource_helpers_update.go` used by a generated
   `ApplySetUnset`. Use a `SetOnlyMapping` constant (`IntAttributeUpdateSetOnlyBuilder`), a `SetUnsetMapping` constant
   (`StringAttributeUpdateBuilder`, ...), or `ListValueUpdate("<mapperFunc>")`. An attribute with no mapping is left out
@@ -106,7 +97,25 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   hand-written per-element mapper.
 - **List or set of objects.** The list attribute has `Elem` of type `AttrObject`, and the `Children` of that `Elem` are the
   object fields. Terraform sees a nested block (`MaxItems: 1` makes it a single block). `Attribute.NestedFields()` returns the
-  fields and `IsObjectList()` tells the two shapes apart, so generators do not read `Children` or `Elem` directly.
+  fields and `IsObjectList()` tells a list of objects from a list of scalars, so generators ask the attribute for its fields
+  and do not read `Children` or `Elem` directly.
+
+  ```go
+  {
+      Name:     "mfa_policy",
+      Type:     ssot.AttrList,
+      MaxItems: new(1),
+      Elem: ssot.ObjectElem([]ssot.Attribute{
+          {Name: "enforce_mfa_on_external_authentication", Type: ssot.AttrEnum, Enum: ...},
+          {Name: "allowed_methods", Type: ssot.AttrSet, Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: ...}},
+      }),
+  }
+  ```
+
+  `Required`, `MinItems`, `MaxItems`, `Description`, `ForceNew`, and the other settings of the block stay on the list
+  attribute. The `Elem` carries the fields and, for SDK SQL, the element clause. `Children` is valid only on an object:
+  validation panics when a list or set has `Children`, and an `AttrObject` is only an `Elem` or a `SqlOnly` nested struct.
+
   - SQL of the list is the list attribute's `CreateSql`: `ListOfObjects(Sql(text), Parentheses())`.
   - SQL of one element is the `Elem`'s `CreateSql`: `ObjectParameter(...)`. `Parentheses()` puts each element in
     parentheses, through a generated `<Struct>Item` that holds the struct.
@@ -120,6 +129,16 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   struct (`ENCRYPTION = (...)`, `UPDATE ... CREDENTIALS = (...)`). It is not in the schema, the resource, or the assertions.
   A variant or an ALTER block refers to it by pointer. A fixed text is a `SqlOnly` attribute with `StaticSQL`, and
   `WithCreateSql(&attr, clause)` is a copy of an attribute with another clause for the one place that needs it.
+- **Generated create of a block.** A generated `ApplyCreateOptionals` parses an optional list block with a generated
+  `parse<Stem>` function. `MaxItems: 1` calls `singleBlockAttributeCreate`, and any other list calls
+  `listBlockAttributeCreate`. The block request is built like the object request, with the same deduction and templates:
+  required fields are `sdk.New<Stem>Request` arguments in field order, and other fields use their deduced create helper on
+  that request. Fields are read from `prefix+"<name>"`. The stem of a block is the parent stem plus the block name:
+  `Widget` + `policy` + `limit` is `sdk.WidgetPolicyLimitRequest`. A set block is not parsed, because a set element has no
+  index for the prefix. It uses the set rule of `CreateMapping`. A list block stays out of generated create when it is
+  required or any field has no create mapping, including a required field the constructor cannot take. Keep such a block
+  in an ext `ApplyCreateOptionals`, or use `SkipCreateBlock`. Resource update generation (`ApplySetUnset`) skips nested
+  attributes.
 - **Where each part is used.** CREATE reads the list attribute through `Create.Clauses`. ALTER reuses the same element with
   `AlterParameterBlock(field, sql, &listAttr)` (`ADD STORAGE_LOCATION`), or a `SqlOnly` object with
   `AlterKeywordBlock(field, sql, &object)`. Enums on the children, on their clauses (`EnumOf`), and in variants are emitted
@@ -163,7 +182,7 @@ enable nothing.
   from `Attributes` and identity, not from [SHOW and DESCRIBE](#show-and-describe) `Columns`. Types are
   in [attribute.go](attribute.go). An optional bool is stored as a boolean-string; the extra setter takes the ssot type.
   `fully_qualified_name` is not emitted. `WithModel(ModelRequestType(&attrs.StorageLocation, "[]sdk.StorageLocationRequest"))`
-  supplies the constructor parameter type for a Required nested-block attribute (`Children`, no `Elem`): there is no
+  supplies the constructor parameter type for a Required nested-block attribute (a list or set of objects): there is no
   mechanical mapping from a nested block to a concrete Go request type, so the generator cannot build one on its own.
   This is the ssot equivalent of the old-list `complexListAttributesOverrides`, scoped to this object instead of by
   resource name. Without it, a Required nested-block attribute stays a stub (`WithModel()` omitted entirely, as
@@ -189,8 +208,8 @@ enable nothing.
   generated. `ObjectAssertDescribe(ObjectAssertDescribeSkipFields(&attrs.Password))` is the describe-side copy.
   `ObjectAssertShow(ObjectAssertShowNestedField(&attrs.Locations))` copies `NestedAssertFields` from the old show def.
   The attribute is the one that sits in `Show.Columns`. The column gets `Has<Field>With(...)` taking the nested
-  assertion type instead of a plain `Has*`. A nested block has no scalar `Elem` to derive that type from, so the
-  SDK field's Go type defaults for a list or set to `[]sdk.` + the object `Name` + the column name in camel case with
+  assertion type instead of a plain `Has*`. A nested column has only a placeholder scalar `Elem`, so the assertion type
+  cannot be derived from it, and the SDK field's Go type defaults for a list or set to `[]sdk.` + the object `Name` + the column name in camel case with
   one trailing "s" dropped + `Details` (`storage_locations` on `ExternalVolume` is
   `[]sdk.ExternalVolumeStorageLocationDetails`). Pass `ObjectAssertNestedGoType("[]sdk.Other")` when the default does
   not match. `ObjectAssertDescribeNestedField` is the describe-side copy.
@@ -352,7 +371,7 @@ hook is present and the call has changed keys. Its schema argument is `<prefix>S
 emitted when both `ParametersAttributesSchema` and `ParametersFieldNames` are present. Its schema argument is the
 parameters attributes schema, and its changed keys are `<prefix>ParametersFieldNames...`. `show_output` and
 `describe_output` take the top-level columns of that output, in column order. A column is a changed key when its
-`Name` is a top-level resource or identifier attribute. `Children` marks a nested column or a nested resource
+`Name` is a top-level resource or identifier attribute. An object `Elem` marks a nested column or a nested resource
 attribute, and both are left out. For now, the set/list fields have to be excluded
 (`TODO [SNOW-1648997]`): a column or resource attribute whose type is a set or a list is left out, including a set or
 list of scalars. A readonly column that is not a resource attribute is left out: a diff cannot change it. The key is
@@ -475,16 +494,13 @@ the enum type.
 
 #### Limitations
 
-- Some definitions still put `Children` directly on a list or set attribute, with no `Elem` (alert, authentication policy,
-  both catalog integrations, table). `NestedFields()` reads both shapes and the Terraform side treats them the same, but only
-  the `Elem` object shape can carry SQL clauses on its fields, so only it can generate SDK CREATE and ALTER structs.
-  See [Lists and nested objects](#lists-and-nested-objects).
 - Paired struct field names have no override, for SHOW or for DESCRIBE. The db field and the plain field are both the
   camel-cased `OutputKey()`, so a column cannot map to a differently named plain field (the handwritten defs use
   `WithPlainFieldName` for that, such as `property_value` to `Value`). An object moved to ssot may end up with slightly
   different plain struct fields than its handwritten def had. That is acceptable for now: the SDK is internal, so callers
   are renamed with the move. Add an override to both paths together if a real need appears.
-- A list that is not a list of enums takes the item query struct name as a string. That struct stays in the SDK def.
+- A list that is not a list of enums or of objects takes the item query struct name as a string. That struct stays in the SDK
+  def. A list of objects is generated from its attributes: see [Lists and nested objects](#lists-and-nested-objects).
 - A list of enums is built in the SDK generator: struct name `{Enum}ListItem`, field `Value`, required single-quoted keyword. ssot should hold that description, and the generator should only translate it into the query struct. Do that together with more complex list items, not for this enum case alone.
 - Computed fields, `Deprecated`, and an explicit schema `Default` are not attribute fields. `NativeBool`
   keeps an optional bool as `TypeBool` and does not emit `Default`. `Min` and `Max` emit `ValidateDiagFunc`.
