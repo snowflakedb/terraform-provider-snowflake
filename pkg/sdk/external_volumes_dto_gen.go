@@ -77,12 +77,12 @@ type AlterExternalVolumeRequest struct {
 	IfExists              *bool
 	name                  AccountObjectIdentifier // required
 	RemoveStorageLocation *string
-	Set                   *AlterExternalVolumeSetRequest
+	Set                   *ExternalVolumeSetRequest
 	AddStorageLocation    *ExternalVolumeStorageLocationItemRequest
 	UpdateStorageLocation *AlterExternalVolumeUpdateStorageLocationRequest
 }
 
-type AlterExternalVolumeSetRequest struct {
+type ExternalVolumeSetRequest struct {
 	AllowWrites *bool
 	Comment     *string
 }

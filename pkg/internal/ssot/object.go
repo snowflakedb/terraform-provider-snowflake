@@ -51,6 +51,10 @@ type Object struct {
 	// TODO [next PRs]: Each variant's Show.Columns becomes a paired SHOW with its dedicated type, and ShowGeneric goes away.
 	ShowGeneric OutputSpec
 	Describe    OutputSpec
+	// DescribeRows is the DESCRIBE row when the SDK Describe method returns raw rows that differ from Describe.Columns.
+	// A property-list DESCRIBE is one: the rows are (property, property_type, ...) and the SDK parses them into the details
+	// that Describe.Columns models. Only the SDK paired struct reads DescribeRows. Schema and assertions read Describe.Columns.
+	DescribeRows OutputSpec
 	// ShowPlainName is the plain SHOW struct name when it differs from Name.
 	// Empty uses Name. Set it when ShowGeneric uses Name for the paired SHOW struct.
 	// The projection on the paired SHOW struct is As plus this name with Name removed, so WarehouseRegular is AsRegular.
@@ -100,6 +104,8 @@ const (
 	AlterClauseSetTags   AlterClauseKind = "set_tags"
 	AlterClauseUnsetTags AlterClauseKind = "unset_tags"
 	AlterClauseList      AlterClauseKind = "list"
+	AlterClauseText      AlterClauseKind = "text"
+	AlterClauseBlock     AlterClauseKind = "block"
 )
 
 // AlterClause is one ALTER entry. Keyword and list use SQL. The other kinds are the SET, UNSET, SET TAG, and UNSET TAG blocks.
@@ -110,6 +116,12 @@ type AlterClause struct {
 	NotExactlyOne bool
 	// ListItem is the Go type of a list element, without a pointer.
 	ListItem string
+	// Field is the Go field name of a block.
+	Field string
+	// BlockStruct is the query struct name of a block. The SDK def passes that struct to the generator.
+	BlockStruct string
+	// BlockKeyword makes the block a keyword clause. Without it the block is a parameter clause.
+	BlockKeyword bool
 }
 
 // AlterKeyword is an optional action keyword, such as RESUME or ENABLE MANAGED ACCESS.
@@ -129,6 +141,24 @@ func AlterKeywordNotExactlyOne(sql string) AlterClause {
 // It is one branch of ExactlyOneValueSet, and each element is a valid identifier.
 func AlterList(sql, itemType string) AlterClause {
 	return AlterClause{Kind: AlterClauseList, SQL: sql, ListItem: itemType}
+}
+
+// AlterText is an optional single-quoted text value after the name, with no equals, such as REMOVE STORAGE_LOCATION 'name'.
+// It is one branch of ExactlyOneValueSet.
+func AlterText(sql string) AlterClause {
+	return AlterClause{Kind: AlterClauseText, SQL: sql}
+}
+
+// AlterParameterBlock is an optional nested block after the name, as a parameter clause, such as ADD STORAGE_LOCATION.
+// field is the Go field name. structName is the block's query struct, which the SDK def passes to AlterOperationFromObject.
+// It is one branch of ExactlyOneValueSet.
+func AlterParameterBlock(field, sql, structName string) AlterClause {
+	return AlterClause{Kind: AlterClauseBlock, Field: field, SQL: sql, BlockStruct: structName}
+}
+
+// AlterKeywordBlock is AlterParameterBlock as a keyword clause, such as UPDATE followed by the struct.
+func AlterKeywordBlock(field, sql, structName string) AlterClause {
+	return AlterClause{Kind: AlterClauseBlock, Field: field, SQL: sql, BlockStruct: structName, BlockKeyword: true}
 }
 
 // AlterRenameTo is RENAME TO. The identifier type is the object's IdType.

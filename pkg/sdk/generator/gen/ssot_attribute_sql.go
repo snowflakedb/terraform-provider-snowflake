@@ -3,6 +3,7 @@ package gen
 import (
 	"fmt"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 )
 
@@ -155,6 +156,19 @@ func (v *QueryStruct) appendParameterClause(attr ssot.Attribute, clause ssot.Sql
 		if item == "" {
 			panic(fmt.Sprintf("attribute %q: list parameter has no item struct", attr.Name))
 		}
+		if clause.ItemNested {
+			// The item is a nested query struct from the SDK def, so the field keeps its Request type, mapping, and validations.
+			itemStruct, ok := v.findItemStruct(item)
+			if !ok {
+				panic(fmt.Sprintf("attribute %q: nested item struct %q was not passed to the generator", attr.Name, item))
+			}
+			fieldName := sqlToFieldName(sql, true)
+			v = v.ListQueryStructField(fieldName, itemStruct, opts.SQL(sql))
+			if required {
+				v = v.WithValidation(ValidateValueSet, fieldName)
+			}
+			return v
+		}
 		v = v.ListAssignment(sql, item, opts)
 		if attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
 			v = v.WithValidation(ValidIdentifier, sqlToFieldName(sql, true))
@@ -246,4 +260,12 @@ func identifierOptionsFromClause(clause ssot.SqlClause, required bool) *Identifi
 		opts = opts.Required()
 	}
 	return opts
+}
+
+func (v *QueryStruct) findItemStruct(name string) (*QueryStruct, bool) {
+	found, err := collections.FindFirst(v.itemStructs, func(s *QueryStruct) bool { return s.name == name })
+	if err != nil {
+		return nil, false
+	}
+	return *found, true
 }

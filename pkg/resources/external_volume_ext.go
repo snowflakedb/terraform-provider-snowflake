@@ -48,7 +48,7 @@ var externalVolumeSetStateToValueFromConfigFieldsExt = []string{
 }
 
 type externalVolumeAlterRequestsExt struct {
-	set *sdk.AlterExternalVolumeSetRequest
+	set *sdk.ExternalVolumeSetRequest
 }
 
 func externalVolumeParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
@@ -83,7 +83,7 @@ func externalVolumeSetConfigFieldsExt(d *schema.ResourceData, externalVolume *sd
 }
 
 func externalVolumeApplySetUnsetExt(d *schema.ResourceData) (*externalVolumeAlterRequestsExt, error) {
-	set := sdk.NewAlterExternalVolumeSetRequest()
+	set := sdk.NewExternalVolumeSetRequest()
 	errs := errors.Join(
 		stringAttributeUpdateSetOnlyNotEmpty(d, "comment", &set.Comment),
 		booleanStringAttributeUnsetFallbackUpdate(d, "allow_writes", &set.AllowWrites, false),
@@ -159,7 +159,7 @@ func externalVolumeDescribeInSdkExt(ctx context.Context, meta any, id sdk.Accoun
 
 func externalVolumeAlterSetInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *externalVolumeAlterRequestsExt) error {
 	client := meta.(*provider.Context).Client
-	if *reqs.set != (sdk.AlterExternalVolumeSetRequest{}) {
+	if *reqs.set != (sdk.ExternalVolumeSetRequest{}) {
 		if err := client.ExternalVolumes.Alter(ctx, sdk.NewAlterExternalVolumeRequest(id).WithSet(*reqs.set)); err != nil {
 			return err
 		}

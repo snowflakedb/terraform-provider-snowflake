@@ -207,7 +207,14 @@ enable nothing.
   functional options on top of that default. A zero unset clause is a bool keyword. Leave the attribute out of `Unset`
   to omit it, or set `UnsetSql` to a parameter clause to unset by setting a value. A list whose element is an enum uses
   an item query struct named after that enum, with `ListItem` appended. Its field is `Value`, a required single-quoted
-  keyword. When `SdkCreate()` or `SdkAlter()` is off, that call stays in the def. `SdkCreateForVariants()` emits
+  keyword. `NestedItem()` on a `ListParameter` clause makes the item struct a nested block: the SDK def passes that query
+  struct to `CreateOperationFromObject`, and the list field is a list of it, so the struct keeps its Request type, mapping,
+  and validations. A required list also gets `ValidateValueSet`. Such a clause may sit on an attribute with `Children`.
+  `AlterText(sql)` is an optional single-quoted value with no equals, such as `REMOVE STORAGE_LOCATION 'name'`.
+  `AlterParameterBlock(field, sql, struct)` and `AlterKeywordBlock(field, sql, struct)` are optional nested blocks, as a
+  parameter or a keyword clause. The SDK def passes each block's query struct to `AlterOperationFromObject`, and the
+  generator panics when a named struct is missing. All three are branches of `ExactlyOneValueSet`.
+  When `SdkCreate()` or `SdkAlter()` is off, that call stays in the def. `SdkCreateForVariants()` emits
   each variant CREATE as a custom method. The variant fills `Create` (`Doc`, clauses, and
   `AdditionalValidations`). The SQL object words are `VariantEntityCreateName`, or `VariantOf.ObjectType` when that override is empty. A fixed value is an `SqlOnly` attribute with `StaticSQL` in that clause list. The method name is `Create` plus the variant name with the base name removed. The query
   struct name is `Create` plus `SdkCreateRequestObjectName`. `SdkAlterForVariants()` emits each variant ALTER the same way.
@@ -425,17 +432,16 @@ the enum type.
 
 #### Limitations
 
+- Paired struct field names have no override, for SHOW or for DESCRIBE. The db field and the plain field are both the
+  camel-cased `OutputKey()`, so a column cannot map to a differently named plain field (the handwritten defs use
+  `WithPlainFieldName` for that, such as `property_value` to `Value`). An object moved to ssot may end up with slightly
+  different plain struct fields than its handwritten def had. That is acceptable for now: the SDK is internal, so callers
+  are renamed with the move. Add an override to both paths together if a real need appears.
 - A list that is not a list of enums takes the item query struct name as a string. That struct stays in the SDK def.
 - A list of enums is built in the SDK generator: struct name `{Enum}ListItem`, field `Value`, required single-quoted keyword. ssot should hold that description, and the generator should only translate it into the query struct. Do that together with more complex list items, not for this enum case alone.
 - Computed fields, `Deprecated`, and an explicit schema `Default` are not attribute fields. `NativeBool`
   keeps an optional bool as `TypeBool` and does not emit `Default`. `Min` and `Max` emit `ValidateDiagFunc`.
   Chrome the generator does not emit stays in the attributes modification function.
-- `SdkDescribe()` cannot express a DESCRIBE that returns a generic property list (`parent_property`, `property`,
-  `property_type`, ...) which the SDK then parses into a details struct. `Describe.Columns` models the parsed details,
-  while the SDK `Describe` method returns the raw property rows, so the generated paired struct has the wrong shape. Its
-  plain type is `<Name>Details`, which collides with the details struct that the SDK ext already defines. Such an object
-  keeps the handwritten Describe, and only `SchemaDescribe`, `ShowOutputDescribe`, and `ObjectAssertDescribe` read its
-  `Describe.Columns`.
 
 #### Why Show and Describe columns are explicit
 
@@ -454,6 +460,30 @@ See [SHOW and DESCRIBE](#show-and-describe).
 - Some settable fields appear under another key.
 - DESCRIBE is not SHOW plus a flag. The two sets differ.
 - Order in `Columns` is the order Snowflake returns and the order generation emits. It is not the `Attributes` order.
+
+A generator that needs the paired DESCRIBE row reads `PairedDescribeColumns`: `DescribeRows` when that list is set,
+otherwise `Describe.Columns`. `DescribeRows` is for a DESCRIBE that returns raw rows the SDK then parses into the
+details `Describe.Columns` models, such as a property list (`parent_property`, `property`, `property_type`, ...). Its
+columns are Readonly, and the plain struct is named `<Name>Property` instead of `<Name>Details`, which stays free for
+the parsed details. It needs `SdkDescribe()`, and only the SDK paired struct reads it.
+The DESCRIBE mapping defaults to a slice when `DescribeRows` is set, since raw property rows are a list. Plain field names
+are the camel-cased column names (`property_value` is `PropertyValue`).
+`SdkDescribeDetails()` emits the parsed details struct, `<Name>Details`, from `Describe.Columns` as a helper of the
+DESCRIBE operation. It needs `DescribeRows`, because that frees the `<Name>Details` name. `Id` is the first field unless
+a column is named `id`. `SdkDescribeDetailsNestedField(&attr)` marks a list or set column whose elements are a
+hand-written struct, with the element type `[]<Name><Column key in camel case without the plural s>Details`
+(`storage_locations` of `ExternalVolume` is `[]ExternalVolumeStorageLocationDetails`). Parsing the rows into the struct
+stays in the SDK ext file. `SdkDescribeDetailsMethod()` also emits the `DescribeDetails` method: the interface declaration
+and a generated body that calls `Describe`, parses the rows with `Parse<Name>Described(rows []<Name>Property)
+(<Name>Details, error)`, and sets `Id`. Without `SdkDescribeDetailsParse` that function is hand-written.
+`SdkDescribeDetailsParse(...)` generates `Parse<Name>Described`. Every `Describe.Columns` entry except `id` has one
+mapping: `DescribeProperty(&attr, "NAME")` reads a required string column from the row with exactly that property
+name, and `DescribePropertyPrefix(&attr, "PREFIX_")` reads a nested list column from every row whose property name
+contains the prefix. Exact properties are matched first, then prefixes, and any other property is an error
+(`Unrecognized <object words> property: <name>`). Two functions stay in the SDK ext file: the element parser of
+each prefix mapping, `Parse<Name><Column key in camel case without the plural s>Described(value string) (<element>,
+error)`, and `validate<Name>Described(details <Name>Details) error`, which runs last. Only string columns and nested
+lists are mapped: other types panic, since a silent conversion could change behavior.
 
 A generator that needs the paired SHOW reads `PairedShowColumns`: `ShowGeneric` when that list is set, otherwise `Show.Columns`. A generator that needs DESCRIBE reads `Describe.Columns`. It does not
 derive one from the other, and it does not derive either from `Attributes`.

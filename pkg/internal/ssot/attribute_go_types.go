@@ -2,6 +2,7 @@ package ssot
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
@@ -36,6 +37,16 @@ func AttributeGoTypes(obj Object, attr Attribute) (concrete, underlying string) 
 	default:
 		panic(fmt.Sprintf("object %q: attribute %q has unknown type %q", obj.Name, attr.Name, attr.Type))
 	}
+}
+
+// NestedDetailsElem is the element type name of a nested list or set column in the details struct:
+// the object Name, the column key in camel case without the plural s, and Details.
+// ExternalVolume with storage_locations is ExternalVolumeStorageLocationDetails.
+func NestedDetailsElem(obj Object, attr *Attribute) string {
+	if attr.Type != AttrList && attr.Type != AttrSet {
+		panic(fmt.Sprintf("object %q: nested column %q is not a list or set", obj.Name, attr.Name))
+	}
+	return obj.Name + strings.TrimSuffix(genhelpers.SnakeCaseToCamel(attr.OutputKey()), "s") + "Details"
 }
 
 // ColumnField is the field ExtractStructDetails would report for one column.

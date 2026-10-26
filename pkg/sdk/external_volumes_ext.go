@@ -1,11 +1,9 @@
 package sdk
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"slices"
-	"strings"
 )
 
 // CopySentinelStorageLocationItem creates a copy of the given storage location with a
@@ -90,29 +88,8 @@ type StorageLocationS3CompatDetails struct {
 	EncryptionKmsKeyId string
 }
 
-type ExternalVolumeDetails struct {
-	Id               AccountObjectIdentifier
-	StorageLocations []ExternalVolumeStorageLocationDetails
-	Active           string
-	Comment          string
-	AllowWrites      string
-}
-
 func (d ExternalVolumeDetails) ID() AccountObjectIdentifier {
 	return d.Id
-}
-
-func (v *externalVolumes) DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolumeDetails, error) {
-	props, err := v.Describe(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	details, err := ParseExternalVolumeDescribed(props)
-	if err != nil {
-		return nil, err
-	}
-	details.Id = id
-	return &details, nil
 }
 
 // externalVolumeStorageLocationJsonRaw is the internal JSON deserialization type
@@ -186,43 +163,16 @@ func (e externalVolumeStorageLocationJsonRaw) toStorageLocationDetails() (Extern
 	return details, nil
 }
 
-func ParseExternalVolumeDescribed(props []ExternalVolumeProperty) (ExternalVolumeDetails, error) {
-	externalVolumeDetails := ExternalVolumeDetails{}
-	var storageLocations []ExternalVolumeStorageLocationDetails
-	for _, p := range props {
-		switch {
-		case p.Name == "COMMENT":
-			externalVolumeDetails.Comment = p.Value
-		case p.Name == "ACTIVE":
-			externalVolumeDetails.Active = p.Value
-		case p.Name == "ALLOW_WRITES":
-			externalVolumeDetails.AllowWrites = p.Value
-		case strings.Contains(p.Name, "STORAGE_LOCATION_"):
-			var raw externalVolumeStorageLocationJsonRaw
-			err := json.Unmarshal([]byte(p.Value), &raw)
-			if err != nil {
-				return ExternalVolumeDetails{}, err
-			}
-			details, err := raw.toStorageLocationDetails()
-			if err != nil {
-				return ExternalVolumeDetails{}, err
-			}
-			storageLocations = append(storageLocations, details)
-		default:
-			return ExternalVolumeDetails{}, fmt.Errorf("Unrecognized external volume property: %s", p.Name)
-		}
+// ParseExternalVolumeStorageLocationDescribed parses the JSON value of one STORAGE_LOCATION_* DESCRIBE property.
+func ParseExternalVolumeStorageLocationDescribed(value string) (ExternalVolumeStorageLocationDetails, error) {
+	var raw externalVolumeStorageLocationJsonRaw
+	if err := json.Unmarshal([]byte(value), &raw); err != nil {
+		return ExternalVolumeStorageLocationDetails{}, err
 	}
-
-	externalVolumeDetails.StorageLocations = storageLocations
-	err := validateExternalVolumeDetails(externalVolumeDetails)
-	if err != nil {
-		return ExternalVolumeDetails{}, err
-	}
-
-	return externalVolumeDetails, nil
+	return raw.toStorageLocationDetails()
 }
 
-func validateExternalVolumeDetails(p ExternalVolumeDetails) error {
+func validateExternalVolumeDescribed(p ExternalVolumeDetails) error {
 	if len(p.StorageLocations) == 0 {
 		return fmt.Errorf("No storage locations could be parsed from the external volume.")
 	}

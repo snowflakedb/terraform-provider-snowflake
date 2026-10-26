@@ -246,3 +246,15 @@ func Test_VariantAlterConfig_usesEntityName(t *testing.T) {
 	obj.VariantEntityAlterName = "CUSTOM WAREHOUSE"
 	require.Equal(t, "CUSTOM WAREHOUSE", obj.VariantAlterConfig().AlterSql)
 }
+
+func Test_SdkConfig_describeMappingDefault(t *testing.T) {
+	row := Attribute{Name: "property", Type: AttrString, Readonly: true}
+	obj := Object{Name: "Widget", NamePlural: "Widgets", Generators: []GeneratorOption{WithSdk(SdkDescribe())}}
+	require.Equal(t, SdkDescriptionMappingSingleValue, obj.SdkConfig().DescribeMapping)
+
+	obj.DescribeRows = OutputSpec{Columns: []*Attribute{&row}}
+	require.Equal(t, SdkDescriptionMappingSlice, obj.SdkConfig().DescribeMapping)
+
+	obj.Generators = []GeneratorOption{WithSdk(SdkDescribe(SdkDescribeMapping(SdkDescriptionMappingSingleValue)))}
+	require.Equal(t, SdkDescriptionMappingSingleValue, obj.SdkConfig().DescribeMapping)
+}

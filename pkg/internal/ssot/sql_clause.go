@@ -67,6 +67,10 @@ type SqlClause struct {
 	Required *bool
 	// ItemStruct is the list-item query struct name. ListParameter sets it.
 	ItemStruct string
+	// ItemNested makes the list field a nested block of the ItemStruct query struct that the SDK def passes to the
+	// generator, so the struct keeps its Request type, mapping, and validations. Without it the field is a plain
+	// list of ItemStruct. NestedItem sets it.
+	ItemNested bool
 	// IdType is the identifier type, without a pointer. IdentifierKeyword sets it.
 	IdType string
 	// Field is the unexported Go name of a static clause. StaticSQL sets it.
@@ -250,6 +254,9 @@ func overlaySqlClause(base, over SqlClause) SqlClause {
 	if over.ItemStruct != "" {
 		base.ItemStruct = over.ItemStruct
 	}
+	if over.ItemNested {
+		base.ItemNested = true
+	}
 	if over.IdType != "" {
 		base.IdType = over.IdType
 	}
@@ -258,6 +265,11 @@ func overlaySqlClause(base, over SqlClause) SqlClause {
 
 func Sql(text string) SqlClauseOption {
 	return func(c *SqlClause) { c.SQL = text }
+}
+
+// NestedItem marks the ListParameter item struct as a nested block defined in the SDK def. See SqlClause.ItemNested.
+func NestedItem() SqlClauseOption {
+	return func(c *SqlClause) { c.ItemNested = true }
 }
 
 func NoQuotes() SqlClauseOption {

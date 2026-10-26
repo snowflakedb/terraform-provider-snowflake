@@ -19,15 +19,16 @@ var externalVolumesTestIdAccountObjectIdentifier = randomAccountObjectIdentifier
 
 const (
 	case_ExternalVolumes_validation_Create_StorageLocations_ValidateValueSet                                                      testCaseName = "validation_Create_StorageLocations_ValidateValueSet"
-	case_ExternalVolumes_validation_Create_opts_ConflictingFields                                                                 testCaseName = "validation_Create_opts_ConflictingFields"
 	case_ExternalVolumes_validation_Create_name_ValidIdentifier                                                                   testCaseName = "validation_Create_name_ValidIdentifier"
+	case_ExternalVolumes_validation_Create_opts_ConflictingFields                                                                 testCaseName = "validation_Create_opts_ConflictingFields"
 	case_ExternalVolumes_validation_Create_opts_StorageLocations_ExternalVolumeStorageLocation_ExactlyOneValueSet_NoneSet         testCaseName = "validation_Create_opts_StorageLocations_ExternalVolumeStorageLocation_ExactlyOneValueSet_NoneSet"
 	case_ExternalVolumes_validation_Create_opts_StorageLocations_ExternalVolumeStorageLocation_ExactlyOneValueSet_MoreThanOneSet  testCaseName = "validation_Create_opts_StorageLocations_ExternalVolumeStorageLocation_ExactlyOneValueSet_MoreThanOneSet"
 	case_ExternalVolumes_sql_Create_basic                                                                                         testCaseName = "sql_Create_basic"
 	case_ExternalVolumes_sql_Create_all                                                                                           testCaseName = "sql_Create_all"
+	case_ExternalVolumes_validation_Alter_name_ValidIdentifier                                                                    testCaseName = "validation_Alter_name_ValidIdentifier"
 	case_ExternalVolumes_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                                         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_ExternalVolumes_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                                  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_ExternalVolumes_validation_Alter_name_ValidIdentifier                                                                    testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_ExternalVolumes_validation_Alter_opts_Set_AtLeastOneValueSet                                                             testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_ExternalVolumes_validation_Alter_opts_AddStorageLocation_ExternalVolumeStorageLocation_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_AddStorageLocation_ExternalVolumeStorageLocation_ExactlyOneValueSet_NoneSet"
 	case_ExternalVolumes_validation_Alter_opts_AddStorageLocation_ExternalVolumeStorageLocation_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_AddStorageLocation_ExternalVolumeStorageLocation_ExactlyOneValueSet_MoreThanOneSet"
 	case_ExternalVolumes_sql_Alter_RemoveStorageLocation                                                                          testCaseName = "sql_Alter_RemoveStorageLocation"
@@ -70,18 +71,18 @@ var externalVolumesTests = ExternalVolumesTestsContext{
 				},
 			},
 			validationCase[*CreateExternalVolumeOptions]{
+				Name:        case_ExternalVolumes_validation_Create_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateExternalVolumeOptions", "name"),
+				DefaultModify: func(opts *CreateExternalVolumeOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateExternalVolumeOptions]{
 				Name:        case_ExternalVolumes_validation_Create_opts_ConflictingFields,
 				ExpectedErr: errOneOf("CreateExternalVolumeOptions", "OrReplace", "IfNotExists"),
 				DefaultModify: func(opts *CreateExternalVolumeOptions) {
 					opts.OrReplace = new(true)
 					opts.IfNotExists = new(true)
-				},
-			},
-			validationCase[*CreateExternalVolumeOptions]{
-				Name:        case_ExternalVolumes_validation_Create_name_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("CreateExternalVolumeOptions", "name"),
-				DefaultModify: func(opts *CreateExternalVolumeOptions) {
-					opts.name = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*CreateExternalVolumeOptions]{
@@ -124,6 +125,13 @@ var externalVolumesTests = ExternalVolumesTestsContext{
 		}).
 		withValidationCases(
 			validationCase[*AlterExternalVolumeOptions]{
+				Name:        case_ExternalVolumes_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterExternalVolumeOptions", "name"),
+				DefaultModify: func(opts *AlterExternalVolumeOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*AlterExternalVolumeOptions]{
 				Name:        case_ExternalVolumes_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
 				ExpectedErr: errExactlyOneOf("AlterExternalVolumeOptions", "RemoveStorageLocation", "Set", "AddStorageLocation", "UpdateStorageLocation"),
 				DefaultModify: func(opts *AlterExternalVolumeOptions) {
@@ -138,14 +146,16 @@ var externalVolumesTests = ExternalVolumesTestsContext{
 				ExpectedErr: errExactlyOneOf("AlterExternalVolumeOptions", "RemoveStorageLocation", "Set", "AddStorageLocation", "UpdateStorageLocation"),
 				DefaultModify: func(opts *AlterExternalVolumeOptions) {
 					opts.RemoveStorageLocation = new("foo")
-					opts.Set = &AlterExternalVolumeSet{}
+					opts.Set = &ExternalVolumeSet{}
 				},
 			},
 			validationCase[*AlterExternalVolumeOptions]{
-				Name:        case_ExternalVolumes_validation_Alter_name_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("AlterExternalVolumeOptions", "name"),
+				Name:        case_ExternalVolumes_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterExternalVolumeOptions.Set", "AllowWrites", "Comment"),
 				DefaultModify: func(opts *AlterExternalVolumeOptions) {
-					opts.name = emptyAccountObjectIdentifier
+					opts.Set = &ExternalVolumeSet{}
+					opts.Set.AllowWrites = nil
+					opts.Set.Comment = nil
 				},
 			},
 			validationCase[*AlterExternalVolumeOptions]{

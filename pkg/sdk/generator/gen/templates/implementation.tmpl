@@ -17,6 +17,55 @@ client *Client
 {{ template "implementationFunctions" . }}
 
 {{ template "implementationMappings" . }}
+{{- if .DescribeParse }}
+
+func Parse{{ .NameSingular }}Described(rows []{{ .DescribeParse.RowsType }}) ({{ .DescribeParse.DetailsType }}, error) {
+	details := {{ .DescribeParse.DetailsType }}{}
+	{{- range .DescribeParse.Prefixes }}
+	var {{ .Var }} []{{ .ElementType }}
+	{{- end }}
+	for _, row := range rows {
+		switch {
+		{{- range .DescribeParse.Properties }}
+		case row.{{ $.DescribeParse.PropertyField }} == "{{ .Property }}":
+			details.{{ .Field }} = row.{{ $.DescribeParse.ValueField }}
+		{{- end }}
+		{{- range .DescribeParse.Prefixes }}
+		case strings.Contains(row.{{ $.DescribeParse.PropertyField }}, "{{ .Prefix }}"):
+			element, err := {{ .ElementParser }}(row.{{ $.DescribeParse.ValueField }})
+			if err != nil {
+				return {{ $.DescribeParse.DetailsType }}{}, err
+			}
+			{{ .Var }} = append({{ .Var }}, element)
+		{{- end }}
+		default:
+			return {{ .DescribeParse.DetailsType }}{}, fmt.Errorf("Unrecognized {{ .DescribeParse.ErrorLabel }} property: %s", row.{{ .DescribeParse.PropertyField }})
+		}
+	}
+	{{- range .DescribeParse.Prefixes }}
+	details.{{ .Field }} = {{ .Var }}
+	{{- end }}
+	if err := {{ .DescribeParse.ValidateFunc }}(details); err != nil {
+		return {{ .DescribeParse.DetailsType }}{}, err
+	}
+	return details, nil
+}
+{{- end }}
+{{- if .DescribeDetailsMethod }}
+
+func (v *{{ .NameLowerCased }}) DescribeDetails(ctx context.Context, id {{ .IdentifierKind }}) (*{{ .DescribeDetailsMethod.DetailsType }}, error) {
+	rows, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	details, err := {{ .DescribeDetailsMethod.ParseFunc }}(rows)
+	if err != nil {
+		return nil, err
+	}
+	details.Id = id
+	return &details, nil
+}
+{{- end }}
 {{- if .ParametersDetails }}
 
 func To{{ .NameSingular }}ParametersDetails(params []*Parameter) (*{{ .NameSingular }}ParametersDetails, error) {

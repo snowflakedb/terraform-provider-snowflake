@@ -113,8 +113,7 @@ func nestedFieldGoType(obj ssot.Object, nested ssot.ObjectAssertNestedField) str
 	if nested.Attr.Type != ssot.AttrList && nested.Attr.Type != ssot.AttrSet {
 		panic(fmt.Sprintf("object %q: nested column %q is not a list or set, set ObjectAssertNestedGoType", obj.Name, nested.Attr.Name))
 	}
-	item := strings.TrimSuffix(genhelpers.SnakeCaseToCamel(nested.Attr.OutputKey()), "s")
-	return "[]sdk." + obj.Name + item + "Details"
+	return "[]sdk." + ssot.NestedDetailsElem(obj, nested.Attr)
 }
 
 // nestedFieldTypes derives the underlying kind from the Go type of a nested-block field.
