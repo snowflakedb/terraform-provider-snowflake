@@ -450,3 +450,102 @@ type WarehouseInteractive struct {
 	OwnerRoleType   string
 	Tables          []SchemaObjectIdentifier
 }
+
+func (w *Warehouse) AsRegular() *WarehouseRegular {
+	if w == nil {
+		return nil
+	}
+	return &WarehouseRegular{
+		Name:                            w.Name,
+		State:                           w.State,
+		Type:                            w.Type,
+		Size:                            w.Size,
+		MinClusterCount:                 w.MinClusterCount,
+		MaxClusterCount:                 w.MaxClusterCount,
+		StartedClusters:                 w.StartedClusters,
+		Running:                         w.Running,
+		Queued:                          w.Queued,
+		IsDefault:                       w.IsDefault,
+		IsCurrent:                       w.IsCurrent,
+		AutoSuspend:                     w.AutoSuspend,
+		AutoResume:                      w.AutoResume,
+		Available:                       w.Available,
+		Provisioning:                    w.Provisioning,
+		Quiescing:                       w.Quiescing,
+		Other:                           w.Other,
+		CreatedOn:                       w.CreatedOn,
+		ResumedOn:                       w.ResumedOn,
+		UpdatedOn:                       w.UpdatedOn,
+		Owner:                           w.Owner,
+		Comment:                         w.Comment,
+		EnableQueryAcceleration:         w.EnableQueryAcceleration,
+		QueryAccelerationMaxScaleFactor: w.QueryAccelerationMaxScaleFactor,
+		ResourceMonitor:                 w.ResourceMonitor,
+		ScalingPolicy:                   w.ScalingPolicy,
+		OwnerRoleType:                   w.OwnerRoleType,
+		ResourceConstraint:              w.ResourceConstraint,
+		Generation:                      w.Generation,
+	}
+}
+
+func (w *Warehouse) AsAdaptive() *WarehouseAdaptive {
+	if w == nil {
+		return nil
+	}
+	return &WarehouseAdaptive{
+		Name:                      w.Name,
+		State:                     w.State,
+		Type:                      w.Type,
+		Running:                   w.Running,
+		Queued:                    w.Queued,
+		IsDefault:                 w.IsDefault,
+		IsCurrent:                 w.IsCurrent,
+		AutoResume:                w.AutoResume,
+		Available:                 w.Available,
+		Provisioning:              w.Provisioning,
+		Quiescing:                 w.Quiescing,
+		Other:                     w.Other,
+		CreatedOn:                 w.CreatedOn,
+		ResumedOn:                 w.ResumedOn,
+		UpdatedOn:                 w.UpdatedOn,
+		Owner:                     w.Owner,
+		Comment:                   w.Comment,
+		ResourceMonitor:           w.ResourceMonitor,
+		OwnerRoleType:             w.OwnerRoleType,
+		MaxQueryPerformanceLevel:  w.MaxQueryPerformanceLevel,
+		QueryThroughputMultiplier: w.QueryThroughputMultiplier,
+	}
+}
+
+func (w *Warehouse) AsInteractive() *WarehouseInteractive {
+	if w == nil {
+		return nil
+	}
+	return &WarehouseInteractive{
+		Name:            w.Name,
+		State:           w.State,
+		Type:            w.Type,
+		Size:            w.Size,
+		MinClusterCount: w.MinClusterCount,
+		MaxClusterCount: w.MaxClusterCount,
+		StartedClusters: w.StartedClusters,
+		Running:         w.Running,
+		Queued:          w.Queued,
+		IsDefault:       w.IsDefault,
+		IsCurrent:       w.IsCurrent,
+		AutoSuspend:     w.AutoSuspend,
+		AutoResume:      w.AutoResume,
+		Available:       w.Available,
+		Provisioning:    w.Provisioning,
+		Quiescing:       w.Quiescing,
+		Other:           w.Other,
+		CreatedOn:       w.CreatedOn,
+		ResumedOn:       w.ResumedOn,
+		UpdatedOn:       w.UpdatedOn,
+		Owner:           w.Owner,
+		Comment:         w.Comment,
+		ResourceMonitor: w.ResourceMonitor,
+		OwnerRoleType:   w.OwnerRoleType,
+		Tables:          w.Tables,
+	}
+}

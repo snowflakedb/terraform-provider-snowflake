@@ -48,14 +48,17 @@ type Object struct {
 	Show                     OutputSpec
 	// ShowGeneric is the temporary union of every variant SHOW column.
 	// It is the one paired SHOW. Each variant, including the main one, declares its own show in Show.
-	// TODO [next PRs]: Each variant'sShow                  .Columns becomes a paired SHOW with its dedicated type, and ShowGeneric goes away.
+	// TODO [next PRs]: Each variant's Show.Columns becomes a paired SHOW with its dedicated type, and ShowGeneric goes away.
 	ShowGeneric OutputSpec
-	Describe    OutputSpec // ShowPlainName is the plain SHOW struct name when it differs from Name.
+	Describe    OutputSpec
+	// ShowPlainName is the plain SHOW struct name when it differs from Name.
 	// Empty uses Name. Set it when ShowGeneric uses Name for the paired SHOW struct.
+	// The projection on the paired SHOW struct is As plus this name with Name removed, so WarehouseRegular is AsRegular.
 	ShowPlainName string
 	// ShowVariants are plain SHOW structs emitted with this object's DESCRIBE.
 	// Each variant's Show.Columns is that struct. The variant does not set SdkShow.
-	// TODO [next PRs]: Emit these from ShowOperationFromObject. See DescribeOperationFromObject.
+	// The projection is As plus the variant name with Name removed, so WarehouseAdaptive is AsAdaptive.
+	// TODO [next PRs]: Emit these structs from ShowOperationFromObject. Show() still returns the union row.
 	ShowVariants []*Object
 	// Create, Set, Unset, and Alter are the SQL field order for those statements.
 	// Presence in a slice is membership. The slice order is the order generation emits.

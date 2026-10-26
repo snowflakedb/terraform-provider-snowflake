@@ -112,6 +112,26 @@ func Test_DescribeOperationFromObject_plainShowVariants(t *testing.T) {
 		PlainStruct("WidgetInteractive").Field("Running", "*int"),
 	)
 	requireSameOperations(t, want, got)
+	require.Equal(t, []*ShowProjection{
+		{Source: "Widget", Method: "AsRegular", Target: "WidgetRegular", Fields: []string{"Name", "Running"}},
+		{Source: "Widget", Method: "AsAdaptive", Target: "WidgetAdaptive", Fields: []string{"Name", "ResourceMonitor"}},
+		{Source: "Widget", Method: "AsInteractive", Target: "WidgetInteractive", Fields: []string{"Running"}},
+	}, got.ShowProjections)
+}
+
+func Test_DescribeOperationFromObject_showProjectionPanics(t *testing.T) {
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
+	column := ssot.OutputSpec{Columns: []*ssot.Attribute{&name}}
+	obj := ssot.Object{
+		Name:          "Widget",
+		ShowPlainName: "Other",
+		Show:          column,
+		Describe:      column,
+		Generators:    []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe())},
+	}
+	require.Panics(t, func() {
+		NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(obj)
+	})
 }
 
 func Test_ShowDescribeFromObject_panics(t *testing.T) {

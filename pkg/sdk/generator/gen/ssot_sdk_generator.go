@@ -2,6 +2,7 @@ package gen
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
@@ -35,26 +36,30 @@ func (i *Interface) ShowOperationFromObject(obj ssot.Object) *Interface {
 // The field chain comes from DescribePairedStructs. The query struct is Describe, SQL,
 // Name, and ValidIdentifier on name.
 // helperStructs are extra structs the describe operation emits.
-// TODO [next PRs]: Show.Columns plain structs and ShowVariants are SHOW structs. Emit them from ShowOperationFromObject.
+// ShowPlainName and ShowVariants are emitted here too. Each one gets a projection on the paired SHOW struct.
+// TODO [next PRs]: those plain structs are SHOW structs. Emit them from ShowOperationFromObject. Show() still returns the union row.
 func (i *Interface) DescribeOperationFromObject(obj ssot.Object, helperStructs ...IntoField) *Interface {
 	cfg := obj.SdkConfig()
 	if !cfg.Describe {
 		panic(fmt.Sprintf("object %q is not enabled for SDK DESCRIBE generation", obj.Name))
 	}
-	helpers := make([]IntoField, 0, len(helperStructs)+len(obj.ShowVariants)+1)
+	plains := plainShowHelpers(obj)
+	helpers := make([]IntoField, 0, len(helperStructs)+len(plains))
 	helpers = append(helpers, helperStructs...)
-	helpers = append(helpers, plainShowHelpers(obj)...)
+	for _, plain := range plains {
+		helpers = append(helpers, plain)
+	}
 	return i.DescribeOperationWithPairedStructs(
 		describeMappingFromObject(obj, cfg),
 		cfg.DescribeDoc,
 		DescribePairedStructs(obj),
 		describeQueryStructFromConfig(cfg),
 		helpers...,
-	)
+	).showProjectionsFromPlains(obj, plains)
 }
 
-func plainShowHelpers(obj ssot.Object) []IntoField {
-	var out []IntoField
+func plainShowHelpers(obj ssot.Object) []*Plain {
+	var out []*Plain
 	if obj.ShowPlainName != "" {
 		if len(obj.Show.Columns) == 0 {
 			panic(fmt.Sprintf("object %q: ShowPlainName %q has no SHOW columns", obj.Name, obj.ShowPlainName))
@@ -68,6 +73,32 @@ func plainShowHelpers(obj ssot.Object) []IntoField {
 		out = append(out, plainFromColumns(*variant, variant.Name, variant.Show.Columns))
 	}
 	return out
+}
+
+// showProjectionsFromPlains attaches one projection per plain onto the paired SHOW struct.
+// The method is As plus the plain name with the object name removed.
+func (i *Interface) showProjectionsFromPlains(obj ssot.Object, targets []*Plain) *Interface {
+	if len(targets) == 0 {
+		return i
+	}
+	columns := obj.PairedShowColumns()
+	if len(columns) == 0 {
+		panic(fmt.Sprintf("object %q: SHOW projections have no paired SHOW columns", obj.Name))
+	}
+	source := plainFromColumns(obj, obj.Name, columns)
+	for _, target := range targets {
+		i.ShowProjection(source, showProjectionMethod(obj.Name, target.name), target)
+	}
+	return i
+}
+
+// showProjectionMethod is As plus plainName with baseName removed.
+// WarehouseRegular on Warehouse is AsRegular. WarehouseAdaptive is AsAdaptive.
+func showProjectionMethod(baseName, plainName string) string {
+	if baseName == "" || !strings.HasPrefix(plainName, baseName) || plainName == baseName {
+		panic(fmt.Sprintf("object %q: cannot build a SHOW projection method from %q", baseName, plainName))
+	}
+	return "As" + strings.TrimPrefix(plainName, baseName)
 }
 
 func showQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
