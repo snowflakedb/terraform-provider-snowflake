@@ -31,10 +31,11 @@ var WarehouseResourceConstraint = ssot.NewEnum(
 	"MEMORY_1X", "MEMORY_1X_x86", "MEMORY_16X", "MEMORY_16X_x86", "MEMORY_64X", "MEMORY_64X_x86",
 )
 
+// WithValue keeps WarehouseGenerationStandardGen1 and WarehouseGenerationStandardGen2.
+// The SQL values are "1" and "2", which would otherwise generate WarehouseGeneration1 and WarehouseGeneration2.
 var WarehouseGeneration = ssot.NewEnum(
 	"WarehouseGeneration", "WarehouseGenerations",
-	"1", "2",
-)
+).WithValue("StandardGen1", "1").WithValue("StandardGen2", "2")
 
 // WarehouseType is the SHOW type, including ADAPTIVE and INTERACTIVE.
 // WarehouseTypeUserSettable is the regular resource's writable enum.
@@ -358,6 +359,7 @@ var Warehouse = ssot.Object{
 		ssot.WithObjectParametersAssert(),
 		ssot.WithResourceParametersAssert(),
 		ssot.WithSdk(
+			ssot.SdkDefineFromSsot(),
 			ssot.SdkShow(
 				ssot.SdkShowOptionalLike(),
 				ssot.SdkShowOptionalStartsWith(),

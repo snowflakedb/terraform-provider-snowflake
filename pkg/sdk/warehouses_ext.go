@@ -45,30 +45,6 @@ const (
 	MaxQueryPerformanceLevelX4Large  = MaxQueryPerformanceLevelX4large
 )
 
-// WarehouseGeneration is kept manual because its values ("1", "2") produce non-descriptive generated names.
-type WarehouseGeneration string
-
-const (
-	WarehouseGenerationStandardGen1 WarehouseGeneration = "1"
-	WarehouseGenerationStandardGen2 WarehouseGeneration = "2"
-)
-
-var AllWarehouseGenerations = []string{
-	string(WarehouseGenerationStandardGen1),
-	string(WarehouseGenerationStandardGen2),
-}
-
-func ToWarehouseGeneration(s string) (WarehouseGeneration, error) {
-	switch s {
-	case "1":
-		return WarehouseGenerationStandardGen1, nil
-	case "2":
-		return WarehouseGenerationStandardGen2, nil
-	default:
-		return "", fmt.Errorf("invalid generation: %s", s)
-	}
-}
-
 // AllWarehouseTypesUserSettable excludes ADAPTIVE and INTERACTIVE. Those types are separate resources.
 var AllWarehouseTypesUserSettable = []WarehouseType{
 	WarehouseTypeStandard,
