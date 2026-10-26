@@ -67,6 +67,10 @@ var alertAttributesSchema = alertAttributesModificationExt(map[string]*tfschema.
 		},
 		Description: "The schedule for periodically running an alert.",
 	},
+	"enabled": {
+		Type:     tfschema.TypeBool,
+		Optional: true,
+	},
 })
 
 var alertSchema = collections.MergeMaps(

@@ -171,3 +171,23 @@ func modelAttributeByName(t *testing.T, model ResourceConfigBuilderModel, name s
 	t.Fatalf("attribute %q not found in %s", name, strings.Join(attributeNames(model), ", "))
 	return ResourceConfigBuilderAttributeModel{}
 }
+
+func Test_ModelFromSsotObject_nativeBoolAndNested(t *testing.T) {
+	obj := ssot.Object{
+		Name: "Widget", IdType: "AccountObjectIdentifier", Generators: []ssot.GeneratorOption{ssot.WithModel()},
+		Attributes: []ssot.Attribute{
+			{Name: "enabled", Type: ssot.AttrBool, NativeBool: true},
+			{Name: "schedule", Type: ssot.AttrList, Elem: ssot.ObjectElem([]ssot.Attribute{{Name: "interval", Type: ssot.AttrInt}})},
+		},
+	}
+	model := ModelFromSsotObject(obj)
+	for _, field := range model.Attributes {
+		switch field.Name {
+		case "enabled":
+			require.Equal(t, "BoolVariable", field.VariableMethod)
+		case "schedule":
+			require.Empty(t, field.AttributeType)
+			require.False(t, field.Required)
+		}
+	}
+}

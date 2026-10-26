@@ -213,6 +213,7 @@ enable nothing.
   one trailing "s" dropped + `Details` (`storage_locations` on `ExternalVolume` is
   `[]sdk.ExternalVolumeStorageLocationDetails`). Pass `ObjectAssertNestedGoType("[]sdk.Other")` when the default does
   not match. `ObjectAssertDescribeNestedField` is the describe-side copy.
+  Identified rows provide `ID()` in SDK extensions when it is not generated.
   `ObjectAssertDescribe(WithNoIdentifiableObject())` suppresses the fetch constructor when `Describe` returns a
   slice and the row has no `ID()`.   `ObjectAssertShow(ObjectAssertShowFromBase("ShowByIDAdaptive"))` fetches through
   `testClient.<VariantOf.Name>.ShowByIDAdaptive`. `Object.ShowFromBase` resolves that
