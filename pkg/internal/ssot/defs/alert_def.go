@@ -18,12 +18,24 @@ var AlertAttrs = struct {
 	Condition     ssot.Attribute
 	Action        ssot.Attribute
 	AlertSchedule ssot.Attribute
+	Enabled       ssot.Attribute
+	CreatedOn     ssot.Attribute
+	Name          ssot.Attribute
+	DatabaseName  ssot.Attribute
+	SchemaName    ssot.Attribute
+	Owner         ssot.Attribute
+	Schedule      ssot.Attribute
+	State         ssot.Attribute
+	DescribeState ssot.Attribute
+	OwnerRoleType ssot.Attribute
 }{
+	Enabled: ssot.Attribute{Name: "enabled", Type: ssot.AttrBool, NativeBool: true},
 	Comment: ssot.Attribute{
-		Name:          "comment",
-		Type:          ssot.AttrString,
-		Description:   "Specifies a comment for the alert.",
-		CreateMapping: ssot.StringAttributeCreateBuilder,
+		Name:           "comment",
+		OptionalInShow: true,
+		Type:           ssot.AttrString,
+		Description:    "Specifies a comment for the alert.",
+		CreateMapping:  ssot.StringAttributeCreateBuilder,
 	},
 	Warehouse: ssot.Attribute{
 		Name:        "warehouse",
@@ -81,6 +93,15 @@ var AlertAttrs = struct {
 			},
 		}),
 	},
+	CreatedOn:     ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, Readonly: true},
+	Name:          ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
+	DatabaseName:  ssot.Attribute{Name: "database_name", Type: ssot.AttrString, Readonly: true},
+	SchemaName:    ssot.Attribute{Name: "schema_name", Type: ssot.AttrString, Readonly: true},
+	Owner:         ssot.Attribute{Name: "owner", Type: ssot.AttrString, Readonly: true},
+	Schedule:      ssot.Attribute{Name: "schedule", Type: ssot.AttrString, Readonly: true},
+	State:         ssot.Attribute{Name: "state", Type: ssot.AttrEnum, Enum: &ssot.Enum{Name: "AlertState"}, Readonly: true},
+	DescribeState: ssot.Attribute{Name: "state", Type: ssot.AttrString, Readonly: true},
+	OwnerRoleType: ssot.Attribute{Name: "owner_role_type", Type: ssot.AttrString, Readonly: true},
 }
 
 var Alert = ssot.Object{
@@ -107,11 +128,49 @@ var Alert = ssot.Object{
 		ssot.WithShowOutputSchema(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
 	},
+	Generators: []ssot.GeneratorOption{
+		ssot.WithModel(),
+		ssot.WithResourceAssert(),
+		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
+		ssot.WithShowOutputAssert(ssot.ShowOutputShow()),
+	},
+	Show: ssot.OutputSpec{
+		Columns: []*ssot.Attribute{
+			&AlertAttrs.CreatedOn,
+			&AlertAttrs.Name,
+			&AlertAttrs.DatabaseName,
+			&AlertAttrs.SchemaName,
+			&AlertAttrs.Owner,
+			&AlertAttrs.Comment,
+			&AlertAttrs.Warehouse,
+			&AlertAttrs.Schedule,
+			&AlertAttrs.State,
+			&AlertAttrs.Condition,
+			&AlertAttrs.Action,
+			&AlertAttrs.OwnerRoleType,
+		},
+	},
+	Describe: ssot.OutputSpec{
+		Columns: []*ssot.Attribute{
+			&AlertAttrs.CreatedOn,
+			&AlertAttrs.Name,
+			&AlertAttrs.DatabaseName,
+			&AlertAttrs.SchemaName,
+			&AlertAttrs.Owner,
+			&AlertAttrs.Comment,
+			&AlertAttrs.Warehouse,
+			&AlertAttrs.Schedule,
+			&AlertAttrs.DescribeState,
+			&AlertAttrs.Condition,
+			&AlertAttrs.Action,
+		},
+	},
 	Attributes: []ssot.Attribute{
 		AlertAttrs.Comment,
 		AlertAttrs.Warehouse,
 		AlertAttrs.Condition,
 		AlertAttrs.Action,
 		AlertAttrs.AlertSchedule,
+		AlertAttrs.Enabled,
 	},
 }

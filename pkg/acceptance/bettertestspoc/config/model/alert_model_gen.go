@@ -11,16 +11,15 @@ import (
 )
 
 type AlertModel struct {
-	Database           tfconfig.Variable `json:"database,omitempty"`
-	Schema             tfconfig.Variable `json:"schema,omitempty"`
-	Name               tfconfig.Variable `json:"name,omitempty"`
-	Action             tfconfig.Variable `json:"action,omitempty"`
-	AlertSchedule      tfconfig.Variable `json:"alert_schedule,omitempty"`
-	Comment            tfconfig.Variable `json:"comment,omitempty"`
-	Condition          tfconfig.Variable `json:"condition,omitempty"`
-	Enabled            tfconfig.Variable `json:"enabled,omitempty"`
-	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Warehouse          tfconfig.Variable `json:"warehouse,omitempty"`
+	Database      tfconfig.Variable `json:"database,omitempty"`
+	Schema        tfconfig.Variable `json:"schema,omitempty"`
+	Name          tfconfig.Variable `json:"name,omitempty"`
+	Action        tfconfig.Variable `json:"action,omitempty"`
+	AlertSchedule tfconfig.Variable `json:"alert_schedule,omitempty"`
+	Comment       tfconfig.Variable `json:"comment,omitempty"`
+	Condition     tfconfig.Variable `json:"condition,omitempty"`
+	Enabled       tfconfig.Variable `json:"enabled,omitempty"`
+	Warehouse     tfconfig.Variable `json:"warehouse,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -141,11 +140,6 @@ func (a *AlertModel) WithEnabled(enabled bool) *AlertModel {
 	return a
 }
 
-func (a *AlertModel) WithFullyQualifiedName(fullyQualifiedName string) *AlertModel {
-	a.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
-	return a
-}
-
 func (a *AlertModel) WithWarehouse(warehouse string) *AlertModel {
 	a.Warehouse = tfconfig.StringVariable(warehouse)
 	return a
@@ -192,11 +186,6 @@ func (a *AlertModel) WithConditionValue(value tfconfig.Variable) *AlertModel {
 
 func (a *AlertModel) WithEnabledValue(value tfconfig.Variable) *AlertModel {
 	a.Enabled = value
-	return a
-}
-
-func (a *AlertModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *AlertModel {
-	a.FullyQualifiedName = value
 	return a
 }
 
