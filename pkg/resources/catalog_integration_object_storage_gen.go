@@ -76,6 +76,7 @@ func ReadCatalogIntegrationObjectStorageFunc(withExternalChangesMarking bool) tf
 			return diag.FromErr(err)
 		}
 
+		var diags diag.Diagnostics
 		catalogIntegrationObjectStorage, diags := catalogIntegrationObjectStorageShowByIdSafelyInSdkExt(ctx, d, meta, id)
 		if diags != nil {
 			return diags

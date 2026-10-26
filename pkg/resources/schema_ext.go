@@ -241,30 +241,6 @@ func schemaCreateInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObjectId
 	return nil
 }
 
-func schemaShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.DatabaseObjectIdentifier) (*sdk.Schema, diag.Diagnostics) {
-	client := meta.(*provider.Context).Client
-	s, err := client.Schemas.ShowByIDSafely(ctx, id)
-	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotFound) {
-			d.SetId("")
-			return nil, diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "Failed to query schema. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Schema id: %s, Err: %s", id.FullyQualifiedName(), err),
-				},
-			}
-		}
-		return nil, diag.FromErr(err)
-	}
-	return s, nil
-}
-
-func schemaShowByIdInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObjectIdentifier) (*sdk.Schema, error) {
-	client := meta.(*provider.Context).Client
-	return client.Schemas.ShowByID(ctx, id)
-}
-
 func schemaDescribeInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObjectIdentifier) ([]sdk.SchemaDetails, error) {
 	client := meta.(*provider.Context).Client
 	return client.Schemas.Describe(ctx, id)

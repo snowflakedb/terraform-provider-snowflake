@@ -175,6 +175,7 @@ func init() {
 		genhelpers.Unimplemented,
 		genhelpers.CamelToWords,
 		genhelpers.FirstLetterLowercase,
+		genhelpers.FirstLetterUppercase,
 		genhelpers.SnakeCaseToCamel,
 		strings.ToUpper,
 	))

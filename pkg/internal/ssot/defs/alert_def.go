@@ -101,6 +101,7 @@ var Alert = ssot.Object{
 		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
 		ssot.WithAfterAlter(ssot.ExtCall()),
 		ssot.WithShowByIdInSdk(ssot.Omitted()),
+		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
 		ssot.WithSetFieldsNotSetByRead(ssot.Omitted()),
 		ssot.WithIdentitySchema(ssot.ExtCall()),
 		ssot.WithShowOutputSchema(ssot.Omitted()),

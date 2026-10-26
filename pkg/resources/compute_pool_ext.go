@@ -1,14 +1,10 @@
 package resources
 
 import (
-	"context"
 	"errors"
-	"fmt"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -92,34 +88,6 @@ func computePoolSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountO
 		d.Set("auto_resume", booleanStringFromBool(computePool.AutoResume)),
 		d.Set("auto_suspend_secs", computePool.AutoSuspendSecs),
 	)
-}
-
-// =============================================================================
-// SDK incision points
-// =============================================================================
-
-func computePoolShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier) (*sdk.ComputePool, diag.Diagnostics) {
-	client := meta.(*provider.Context).Client
-	computePool, err := client.ComputePools.ShowByIDSafely(ctx, id)
-	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotFound) {
-			d.SetId("")
-			return nil, diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "Failed to query compute pool. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Compute pool id: %s, Err: %s", id.FullyQualifiedName(), err),
-				},
-			}
-		}
-		return nil, diag.FromErr(err)
-	}
-	return computePool, nil
-}
-
-func computePoolShowByIdInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier) (*sdk.ComputePool, error) {
-	client := meta.(*provider.Context).Client
-	return client.ComputePools.ShowByID(ctx, id)
 }
 
 // =============================================================================

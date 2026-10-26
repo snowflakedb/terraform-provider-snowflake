@@ -5,8 +5,10 @@ package resources
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -88,9 +90,20 @@ func ReadAuthenticationPolicyFunc(withExternalChangesMarking bool) tfschema.Read
 			return diag.FromErr(err)
 		}
 
-		authenticationPolicy, diags := authenticationPolicyShowByIdSafelyInSdkExt(ctx, d, meta, id)
-		if diags != nil {
-			return diags
+		var diags diag.Diagnostics
+		authenticationPolicy, err := meta.(*provider.Context).Client.AuthenticationPolicies.ShowByIDSafely(ctx, id)
+		if err != nil {
+			if errors.Is(err, sdk.ErrObjectNotFound) {
+				d.SetId("")
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Failed to query authentication policy. Marking the resource as removed.",
+						Detail:   fmt.Sprintf("Authentication policy id: %s, Err: %s", id.FullyQualifiedName(), err),
+					},
+				}
+			}
+			return diag.FromErr(err)
 		}
 		authenticationPolicyDetails, err := authenticationPolicyDescribeInSdkExt(ctx, meta, id)
 		if err != nil {

@@ -76,6 +76,7 @@ func ReadCatalogIntegrationAwsGlueFunc(withExternalChangesMarking bool) tfschema
 			return diag.FromErr(err)
 		}
 
+		var diags diag.Diagnostics
 		catalogIntegrationAwsGlue, diags := catalogIntegrationAwsGlueShowByIdSafelyInSdkExt(ctx, d, meta, id)
 		if diags != nil {
 			return diags

@@ -195,25 +195,6 @@ func alertAfterCreateExt(ctx context.Context, d *schema.ResourceData, meta any, 
 	return nil
 }
 
-func alertShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) (*sdk.Alert, diag.Diagnostics) {
-	client := meta.(*provider.Context).Client
-	alert, err := client.Alerts.ShowByIDSafely(ctx, id)
-	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotFound) {
-			d.SetId("")
-			return nil, diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "Failed to query alert. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Alert id: %s, Err: %s", id.FullyQualifiedName(), err),
-				},
-			}
-		}
-		return nil, diag.FromErr(err)
-	}
-	return alert, nil
-}
-
 // alertBeforeAlterExt suspends the alert before any change. A failure is only logged.
 func alertBeforeAlterExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
 	if d.HasChanges("enabled", "warehouse", "alert_schedule", "condition", "action", "comment") {

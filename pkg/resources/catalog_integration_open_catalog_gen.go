@@ -76,6 +76,7 @@ func ReadCatalogIntegrationOpenCatalogFunc(withExternalChangesMarking bool) tfsc
 			return diag.FromErr(err)
 		}
 
+		var diags diag.Diagnostics
 		catalogIntegrationOpenCatalog, diags := catalogIntegrationOpenCatalogShowByIdSafelyInSdkExt(ctx, d, meta, id)
 		if diags != nil {
 			return diags
