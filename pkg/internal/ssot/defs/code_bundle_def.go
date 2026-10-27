@@ -124,6 +124,7 @@ var CodeBundle = ssot.Object{
 			ssot.ObjectAssertShow(),
 			ssot.ObjectAssertDescribe(),
 		),
+		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
 	},
 	Attributes: []ssot.Attribute{
 		CodeBundleAttrs.From,
