@@ -32,8 +32,18 @@ func (opts *AlterCodeBundleOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("AlterCodeBundleOptions", "name"))
 	}
-	if !exactlyOneValueSet(opts.AddVersionFrom) {
-		errs = append(errs, errExactlyOneOf("AlterCodeBundleOptions", "AddVersionFrom"))
+	if !exactlyOneValueSet(opts.AddVersionFrom, opts.Set, opts.Unset) {
+		errs = append(errs, errExactlyOneOf("AlterCodeBundleOptions", "AddVersionFrom", "Set", "Unset"))
+	}
+	if valueSet(opts.Set) {
+		if !anyValueSet(opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterCodeBundleOptions.Set", "Comment"))
+		}
+	}
+	if valueSet(opts.Unset) {
+		if !anyValueSet(opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterCodeBundleOptions.Unset", "Comment"))
+		}
 	}
 	return JoinErrors(errs...)
 }

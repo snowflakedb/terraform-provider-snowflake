@@ -15,7 +15,7 @@ func TestInt_CodeBundles(t *testing.T) {
 	ctx := testContext(t)
 
 	// SHOW CODE BUNDLES has only IN. There is no LIKE, STARTS WITH, or LIMIT.
-	// ALTER has only ADD VERSION FROM. There is no RENAME, SET, or UNSET.
+	// ALTER supports ADD VERSION FROM, SET COMMENT, and UNSET COMMENT. RENAME TO is unsupported.
 	createBundle := func(t *testing.T, id sdk.SchemaObjectIdentifier, adjust func(*sdk.CreateCodeBundleRequest)) *sdk.Stage {
 		t.Helper()
 		stage, cleanupStage := testClientHelper().Stage.CreateStageInSchema(t, id.SchemaId())
@@ -97,6 +97,31 @@ func TestInt_CodeBundles(t *testing.T) {
 		assertThatObject(t, objectassert.CodeBundleDetailsFromObject(t, details).
 			HasLastVersionNameNotEmpty().
 			HasLastVersionSourceLocationUriContaining(stage.ID().Name()),
+		)
+	})
+
+	t.Run("alter: set and unset comment", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		createBundle(t, id, nil)
+
+		err := client.CodeBundles.Alter(ctx, sdk.NewAlterCodeBundleRequest(id).
+			WithSet(*sdk.NewCodeBundleSetRequest().WithComment("code bundle comment")))
+		require.NoError(t, err)
+
+		bundle, err := client.CodeBundles.ShowByID(ctx, id)
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.CodeBundleFromObject(t, bundle).
+			HasComment("code bundle comment"),
+		)
+
+		err = client.CodeBundles.Alter(ctx, sdk.NewAlterCodeBundleRequest(id).
+			WithUnset(*sdk.NewCodeBundleUnsetRequest().WithComment(true)))
+		require.NoError(t, err)
+
+		bundle, err = client.CodeBundles.ShowByID(ctx, id)
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.CodeBundleFromObject(t, bundle).
+			HasNoComment(),
 		)
 	})
 

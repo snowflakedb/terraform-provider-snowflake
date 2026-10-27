@@ -12,6 +12,7 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 // created_on is optional only in the DB row, because an optional plain time is not mapped.
 // ADD VERSION FROM appends a version. It is an ALTER clause, not an attribute.
 // AlterText quotes the source. The user-guide example is unquoted; the integration test checks which form Snowflake accepts.
+// SET COMMENT and UNSET COMMENT were confirmed live on 2026-10-27. RENAME TO is rejected as an unsupported NOTEBOOK_PROJECT rename.
 var CodeBundleAttrs = struct {
 	From                            ssot.Attribute
 	Comment                         ssot.Attribute
@@ -50,7 +51,6 @@ var CodeBundleAttrs = struct {
 	Comment: ssot.Attribute{
 		Name:           "comment",
 		Type:           ssot.AttrString,
-		ForceNew:       true,
 		OptionalInShow: true,
 		OptionalInDb:   true,
 		Description:    "Specifies a comment for the code bundle.",
@@ -140,11 +140,9 @@ var CodeBundle = ssot.Object{
 		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
 		ssot.WithDescribeInSdk(ssot.Generated()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
-		ssot.WithApplySetUnset(ssot.Omitted()),
-		ssot.WithAlterSetInSdk(ssot.Omitted()),
-		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
-		// Update still parses the id. AfterAlter keeps that id used when SET and UNSET are omitted.
-		ssot.WithAfterAlter(ssot.ExtCall()),
+		ssot.WithApplySetUnset(ssot.Generated()),
+		ssot.WithAlterSetInSdk(ssot.Generated()),
+		ssot.WithAlterUnsetInSdk(ssot.Generated()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
 	},
@@ -163,8 +161,16 @@ var CodeBundle = ssot.Object{
 		Doc:     "DescribeDetails calls Describe and sets database and schema from the identifier. DESCRIBE does not return those columns.",
 		Returns: []string{"*CodeBundleDetails", "error"},
 	}},
+	Set: []*ssot.Attribute{
+		&CodeBundleAttrs.Comment,
+	},
+	Unset: []*ssot.Attribute{
+		&CodeBundleAttrs.Comment,
+	},
 	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
 		ssot.AlterText("ADD VERSION FROM"),
+		ssot.AlterSet(),
+		ssot.AlterUnset(),
 	}},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{

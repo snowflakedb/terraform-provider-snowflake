@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -119,8 +120,21 @@ func UpdateCodeBundle(ctx context.Context, d *tfschema.ResourceData, meta any) d
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	afterAlterDiags := codeBundleAfterAlterExt(ctx, d, meta, id)
-	return append(afterAlterDiags, ReadCodeBundleFunc(false)(ctx, d, meta)...)
+	setUnset, err := codeBundleApplySetUnset(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if !reflect.DeepEqual(*setUnset.set, *sdk.NewCodeBundleSetRequest()) {
+		if err := meta.(*provider.Context).Client.CodeBundles.Alter(ctx, sdk.NewAlterCodeBundleRequest(id).WithSet(*setUnset.set)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if !reflect.DeepEqual(*setUnset.unset, *sdk.NewCodeBundleUnsetRequest()) {
+		if err := meta.(*provider.Context).Client.CodeBundles.Alter(ctx, sdk.NewAlterCodeBundleRequest(id).WithUnset(*setUnset.unset)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	return ReadCodeBundleFunc(false)(ctx, d, meta)
 }
 
 var codeBundleCustomizeDiff = TrackingCustomDiffWrapper(resources.CodeBundle, customdiff.All(
@@ -145,6 +159,17 @@ func codeBundleApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.Creat
 	return errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
+}
+
+func codeBundleApplySetUnset(d *tfschema.ResourceData) (*codeBundleAlterRequestsExt, error) {
+	set, unset := sdk.NewCodeBundleSetRequest(), sdk.NewCodeBundleUnsetRequest()
+	errs := errors.Join(
+		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &codeBundleAlterRequestsExt{set: set, unset: unset}, nil
 }
 
 func DeleteCodeBundle(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

@@ -94,6 +94,39 @@ func (m ResourceModel) HasUpdateCalls() bool {
 	return false
 }
 
+// RequiresUpdate reports whether the schema has a field Terraform can change in place.
+// An Update function is rejected when every field is ForceNew or computed without Optional.
+func (m ResourceModel) RequiresUpdate() bool {
+	if m.Hooks.IdentitySchema.Present && !m.Hooks.IdentitySchema.Generate {
+		return true
+	}
+	if m.Hooks.AttributesSchema.Present && !m.Hooks.AttributesSchema.Generate {
+		return true
+	}
+	if m.AttributesModification {
+		return true
+	}
+	if m.Hooks.ParametersAttributesSchema.Present {
+		return true
+	}
+	if m.Hooks.IdentitySchema.Generate {
+		if !m.IdentityNameForceNew {
+			return true
+		}
+		if m.IdType == "DatabaseObjectIdentifier" || m.IdType == "SchemaObjectIdentifier" {
+			if !m.IdentityHierarchyForceNew {
+				return true
+			}
+		}
+	}
+	for _, attr := range m.Attributes {
+		if !attr.ForceNew {
+			return true
+		}
+	}
+	return false
+}
+
 func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleModel, _ *log.Logger) ResourceModel {
 	hooks := ssot.DefaultResourceExtHooks(input.ResourceHooks...)
 	resourceAttributes := input.ResourceAttributes()

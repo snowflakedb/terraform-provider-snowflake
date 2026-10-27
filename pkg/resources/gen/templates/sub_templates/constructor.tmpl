@@ -4,7 +4,8 @@
 
 		CreateContext: {{ .Prefix }}CreateExt,
 		ReadContext:   {{ .Prefix }}ReadExt,
-		UpdateContext: {{ .Prefix }}UpdateExt,
+{{ if .RequiresUpdate }}		UpdateContext: {{ .Prefix }}UpdateExt,
+{{ end -}}
 {{ template "dropSafelyInSdk" . }}
 		Importer:      {{ .Prefix }}ImporterExt,
 

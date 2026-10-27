@@ -34,7 +34,6 @@ const (
 	CatalogIntegrationOpenCatalogResource          feature = "snowflake_catalog_integration_open_catalog_resource"
 	CatalogIntegrationIcebergRestResource          feature = "snowflake_catalog_integration_iceberg_rest_resource"
 	CatalogIntegrationsDatasource                  feature = "snowflake_catalog_integrations_datasource"
-	CodeBundleResource                             feature = "snowflake_code_bundle_resource"
 	ComputePoolResource                            feature = "snowflake_compute_pool_resource"
 	ComputePoolsDatasource                         feature = "snowflake_compute_pools_datasource"
 	CortexAgentResource                            feature = "snowflake_cortex_agent_resource"
@@ -171,8 +170,6 @@ var allPreviewFeatures = []feature{
 	AlertResource,
 	AlertsDatasource,
 	ApiIntegrationResource,
-	// CodeBundleResource is registered only on the acceptance test provider.
-	// CodeBundleResource,
 	CortexSearchServiceResource,
 	CortexSearchServicesDatasource,
 	CurrentAccountDatasource,

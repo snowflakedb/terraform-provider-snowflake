@@ -90,6 +90,16 @@ func (r *AlterCodeBundleRequest) toOpts() *AlterCodeBundleOptions {
 		name:           r.name,
 		AddVersionFrom: r.AddVersionFrom,
 	}
+	if r.Set != nil {
+		opts.Set = &CodeBundleSet{
+			Comment: r.Set.Comment,
+		}
+	}
+	if r.Unset != nil {
+		opts.Unset = &CodeBundleUnset{
+			Comment: r.Unset.Comment,
+		}
+	}
 	return opts
 }
 
