@@ -313,18 +313,10 @@ var Warehouse = ssot.Object{
 		},
 		{
 			Name: "AlterWithSuspend",
-			Doc:  "AlterWithSuspend wraps Alter with automatic suspend/resume when changing warehouse type, or resizing an interactive warehouse",
+			Doc:  "AlterWithSuspend wraps Alter with automatic suspend/resume when changing between STANDARD and SNOWPARK-OPTIMIZED, or resizing an interactive warehouse",
 			Parameters: []ssot.CustomInterfaceMethodParameter{{
 				Name: "request",
 				Kind: "*AlterWarehouseRequest",
-			}},
-		},
-		{
-			Name: "AlterAdaptiveWithSuspend",
-			Doc:  "AlterAdaptiveWithSuspend wraps AlterAdaptive and suspends the warehouse before changing its type. Adaptive warehouses are not resumed afterwards",
-			Parameters: []ssot.CustomInterfaceMethodParameter{{
-				Name: "request",
-				Kind: "*AlterAdaptiveWarehouseRequest",
 			}},
 		},
 		{
