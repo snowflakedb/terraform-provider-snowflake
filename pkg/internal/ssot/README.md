@@ -12,6 +12,7 @@ generators will follow. Ultimately, all the generators should default to using s
 `Object` is the written intent for one Snowflake object:
 
 - `Attributes` - CREATE/ALTER sequence (resource schema)
+- `ComputedAttributes` - read-only resource state used by resource assertions; excluded from CREATE/ALTER and config models
 - `Show` / `Describe` - output columns ([SHOW and DESCRIBE](#show-and-describe))
 - `Generators` - which generators may consume those lists ([Generators](#generators))
 - `ResourceHooks` - resource lifecycle/schema overrides (resource generator)
@@ -189,6 +190,10 @@ enable nothing.
   This is the ssot equivalent of the old-list `complexListAttributesOverrides`, scoped to this object instead of by
   resource name. Without it, a Required nested-block attribute stays a stub (`WithModel()` omitted entirely, as
   `CatalogIntegrationIcebergRest` does) since the constructor parameter would otherwise have no type.
+  `WithModel(ModelMultiline(&attrs.CopyStatement))` marks string attributes whose config model builder emits
+  `MultilineWrapperVariable`. This is the ssot equivalent of the old-list `multilineAttributesOverrides`, scoped to
+  this object. The argument is the same `*Attribute` that sits in `Attributes`, and it must be a string.
+- `ComputedAttributes` are included in generated resource assertions, but not in the resource schema or config model.
 - `WithResourceAssert()` - resource assertions (`make generate-resource-assertions`).
   See [that section](../../acceptance/bettertestspoc/README.md#adding-new-resource-assertions). Fields come from
   `Attributes` and identity, not from [SHOW and DESCRIBE](#show-and-describe) `Columns`. Types are
@@ -215,6 +220,8 @@ enable nothing.
   one trailing "s" dropped + `Details` (`storage_locations` on `ExternalVolume` is
   `[]sdk.ExternalVolumeStorageLocationDetails`). Pass `ObjectAssertNestedGoType("[]sdk.Other")` when the default does
   not match. `ObjectAssertDescribeNestedField` is the describe-side copy.
+  A DESCRIBE assertion uses `sdk.<Object>Details` and fetches through `testClient.<Object>.Describe`.
+  Rename the SDK describe type and the test client method to that. There is no type or method override.
   Identified rows provide `ID()` in SDK extensions when it is not generated.
   `ObjectAssertDescribe(WithNoIdentifiableObject())` suppresses the fetch constructor when `Describe` returns a
   slice and the row has no `ID()`.   `ObjectAssertShow(ObjectAssertShowFromBase("ShowByIDAdaptive"))` fetches through

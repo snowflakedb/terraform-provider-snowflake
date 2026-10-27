@@ -59,3 +59,8 @@ func (c *PipeClient) DropPipeFunc(t *testing.T, id sdk.SchemaObjectIdentifier) f
 		require.NoError(t, err)
 	}
 }
+
+func (c *PipeClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.PipeDetails, error) {
+	t.Helper()
+	return c.client().Describe(context.Background(), id)
+}

@@ -290,10 +290,6 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.Notebook().Schema,
 	},
 	{
-		name:   "Pipe",
-		schema: resources.Pipe().Schema,
-	},
-	{
 		name:   "ObjectParameter",
 		schema: resources.ObjectParameter().Schema,
 	},
