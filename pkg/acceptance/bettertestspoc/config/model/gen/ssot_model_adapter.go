@@ -21,7 +21,14 @@ func ModelFromSsotObject(obj ssot.Object) ResourceConfigBuilderModel {
 	}
 	attrs := identityModelAttributes(obj)
 	attrs = append(attrs, collections.Map(obj.ResourceAttributes(), func(attr ssot.Attribute) ResourceConfigBuilderAttributeModel {
-		return modelAttributeFromField(ssot.ClassifyAttribute(obj, attr), g.Model.RequestTypeOverrides[attr.Name])
+		field := modelAttributeFromField(ssot.ClassifyAttribute(obj, attr), g.Model.RequestTypeOverrides[attr.Name])
+		if modelMultiline(g.Model.Multiline, attr.Name) {
+			if attr.Type != ssot.AttrString {
+				panic("multiline model attribute must be a string")
+			}
+			field.VariableMethod, field.MethodImport = "MultilineWrapperVariable", "config"
+		}
+		return field
 	})...)
 	attrs = append(attrs, collections.Map(parameterDefsForObject(obj), func(parameter ssot.ParameterDef) ResourceConfigBuilderAttributeModel {
 		return modelAttributeFromField(ssot.ClassifyParameter(parameter.FieldName(), parameter.Kind), "")
@@ -32,6 +39,15 @@ func ModelFromSsotObject(obj ssot.Object) ResourceConfigBuilderModel {
 			return attr.Name
 		}),
 	}
+}
+
+func modelMultiline(multiline []*ssot.Attribute, name string) bool {
+	for _, attr := range multiline {
+		if attr != nil && attr.Name == name {
+			return true
+		}
+	}
+	return false
 }
 
 func identityModelAttributes(obj ssot.Object) []ResourceConfigBuilderAttributeModel {

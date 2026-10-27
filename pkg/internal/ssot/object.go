@@ -40,6 +40,7 @@ type Object struct {
 	// Empty uses VariantOf.ObjectType, the same default as CREATE.
 	VariantEntityAlterName   string
 	Attributes               []Attribute
+	ComputedAttributes       []Attribute // Read-only resource state; never used for CREATE/ALTER.
 	AttributesModification   bool
 	ResourceHooks            []ResourceHookOption
 	Generators               []GeneratorOption

@@ -22,3 +22,8 @@ func (opts *ShowPipeOptions) additionalValidations() error {
 	}
 	return errors.Join(errs...)
 }
+
+// ID returns the schema identifier of the described object.
+func (v *PipeDetails) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
+}

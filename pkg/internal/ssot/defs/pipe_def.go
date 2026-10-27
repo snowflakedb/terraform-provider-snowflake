@@ -11,12 +11,21 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 // integration and error_integration stay strings: the resource never suppressed identifier quoting on them.
 // The resource has no show_output and no describe_output.
 var PipeAttrs = struct {
-	Comment          ssot.Attribute
-	CopyStatement    ssot.Attribute
-	AutoIngest       ssot.Attribute
-	AwsSnsTopicArn   ssot.Attribute
-	Integration      ssot.Attribute
-	ErrorIntegration ssot.Attribute
+	Comment             ssot.Attribute
+	CopyStatement       ssot.Attribute
+	AutoIngest          ssot.Attribute
+	AwsSnsTopicArn      ssot.Attribute
+	Integration         ssot.Attribute
+	ErrorIntegration    ssot.Attribute
+	CreatedOn           ssot.Attribute
+	Name                ssot.Attribute
+	DatabaseName        ssot.Attribute
+	SchemaName          ssot.Attribute
+	Owner               ssot.Attribute
+	NotificationChannel ssot.Attribute
+	Pattern             ssot.Attribute
+	OwnerRoleType       ssot.Attribute
+	InvalidReason       ssot.Attribute
 }{
 	Comment: ssot.Attribute{
 		Name:        "comment",
@@ -26,6 +35,7 @@ var PipeAttrs = struct {
 	CopyStatement: ssot.Attribute{
 		Name:        "copy_statement",
 		Type:        ssot.AttrString,
+		ShowName:    "definition",
 		Required:    true,
 		ForceNew:    true,
 		Description: "Specifies the copy statement for the pipe.",
@@ -53,6 +63,15 @@ var PipeAttrs = struct {
 		Type:        ssot.AttrString,
 		Description: "Specifies the name of the notification integration used for error notifications.",
 	},
+	CreatedOn:           ssot.Attribute{Name: "created_on", Type: ssot.AttrString, Readonly: true},
+	Name:                ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
+	DatabaseName:        ssot.Attribute{Name: "database_name", Type: ssot.AttrString, Readonly: true},
+	SchemaName:          ssot.Attribute{Name: "schema_name", Type: ssot.AttrString, Readonly: true},
+	Owner:               ssot.Attribute{Name: "owner", Type: ssot.AttrString, Readonly: true},
+	NotificationChannel: ssot.Attribute{Name: "notification_channel", Type: ssot.AttrString, Readonly: true},
+	Pattern:             ssot.Attribute{Name: "pattern", Type: ssot.AttrString, Readonly: true},
+	OwnerRoleType:       ssot.Attribute{Name: "owner_role_type", Type: ssot.AttrString, Readonly: true},
+	InvalidReason:       ssot.Attribute{Name: "invalid_reason", Type: ssot.AttrString, Readonly: true},
 }
 
 var Pipe = ssot.Object{
@@ -79,6 +98,50 @@ var Pipe = ssot.Object{
 		ssot.WithIdentitySchema(ssot.ExtCall()),
 		ssot.WithShowOutputSchema(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
+	},
+	Generators: []ssot.GeneratorOption{
+		ssot.WithModel(ssot.ModelMultiline(&PipeAttrs.CopyStatement)),
+		ssot.WithResourceAssert(),
+		ssot.WithShowOutputAssert(ssot.ShowOutputShow()),
+		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
+	},
+	ComputedAttributes: []ssot.Attribute{
+		PipeAttrs.Owner,
+		PipeAttrs.NotificationChannel,
+	},
+	Show: ssot.OutputSpec{
+		Columns: []*ssot.Attribute{
+			&PipeAttrs.CreatedOn,
+			&PipeAttrs.Name,
+			&PipeAttrs.DatabaseName,
+			&PipeAttrs.SchemaName,
+			&PipeAttrs.CopyStatement,
+			&PipeAttrs.Owner,
+			&PipeAttrs.NotificationChannel,
+			&PipeAttrs.Comment,
+			&PipeAttrs.Integration,
+			&PipeAttrs.Pattern,
+			&PipeAttrs.ErrorIntegration,
+			&PipeAttrs.OwnerRoleType,
+			&PipeAttrs.InvalidReason,
+		},
+	},
+	Describe: ssot.OutputSpec{
+		Columns: []*ssot.Attribute{
+			&PipeAttrs.CreatedOn,
+			&PipeAttrs.Name,
+			&PipeAttrs.DatabaseName,
+			&PipeAttrs.SchemaName,
+			&PipeAttrs.CopyStatement,
+			&PipeAttrs.Owner,
+			&PipeAttrs.NotificationChannel,
+			&PipeAttrs.Comment,
+			&PipeAttrs.Integration,
+			&PipeAttrs.Pattern,
+			&PipeAttrs.ErrorIntegration,
+			&PipeAttrs.OwnerRoleType,
+			&PipeAttrs.InvalidReason,
+		},
 	},
 	Attributes: []ssot.Attribute{
 		PipeAttrs.Comment,

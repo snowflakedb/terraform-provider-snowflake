@@ -322,10 +322,6 @@ var allStructs = []SdkObjectDef{
 		IsDataSourceOutput: true,
 	},
 	{
-		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectStruct: sdk.Pipe{},
-	},
-	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.ExternalVolumeStorageLocationDetails{},
 		IsSubStruct:        true,

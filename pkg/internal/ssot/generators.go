@@ -1,6 +1,8 @@
 package ssot
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type SchemaGenerator struct {
 	Show     bool
@@ -92,6 +94,9 @@ type ModelGenerator struct {
 	// attribute (a list or set of objects) that the generator cannot classify on its own. Mirrors the
 	// old-list complexListAttributesOverrides table, scoped to this object instead of by resource name.
 	RequestTypeOverrides map[string]string
+	// Multiline lists string attributes whose config model builder emits MultilineWrapperVariable.
+	// Mirrors the old-list multilineAttributesOverrides, scoped to this object.
+	Multiline []*Attribute
 }
 
 // ResourceGenerator emits the Terraform resource. Enabled is set by WithResource.
@@ -497,6 +502,19 @@ func ModelRequestType(attr *Attribute, goType string) ModelOption {
 			m.RequestTypeOverrides = make(map[string]string)
 		}
 		m.RequestTypeOverrides[attr.Name] = goType
+	}
+}
+
+// ModelMultiline marks string attributes whose config model builder emits MultilineWrapperVariable.
+// Each argument is the same *Attribute listed in Attributes. Mirrors multilineAttributesOverrides.
+func ModelMultiline(attrs ...*Attribute) ModelOption {
+	return func(m *ModelGenerator) {
+		for _, attr := range attrs {
+			if attr == nil {
+				panic("ModelMultiline: nil attribute")
+			}
+			m.Multiline = append(m.Multiline, attr)
+		}
 	}
 }
 

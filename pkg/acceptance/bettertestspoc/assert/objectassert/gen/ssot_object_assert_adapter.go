@@ -65,9 +65,9 @@ func objectAssertionDetailsFromSsot(obj ssot.Object, isDescribe bool) genhelpers
 		objectTypeName = fromBase.ClientName
 	}
 	return genhelpers.SdkObjectDetails{
+		ObjectTypeName:       objectTypeName,
 		IdType:               "sdk." + obj.IdType,
 		IsDataSourceOutput:   isDescribe,
-		ObjectTypeName:       objectTypeName,
 		NoIdentifiableObject: noIdentifiableObject,
 		ShowProjection:       projection,
 		SkipFields:           skip,

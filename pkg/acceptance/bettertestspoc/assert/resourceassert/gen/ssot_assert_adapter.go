@@ -36,6 +36,9 @@ func assertionsFromSsotObject(obj ssot.Object, parameters []ssot.ParameterDef) R
 	attrs := make([]ResourceAttributeAssertionModel, 0, len(identityFields)+len(attributeFields)+len(parameterFields)+len(fullyQualifiedNameFields))
 	attrs = append(attrs, identityFields...)
 	attrs = append(attrs, attributeFields...)
+	for _, attr := range obj.ComputedAttributes {
+		attrs = append(attrs, assertionAttributeFromField(ssot.ClassifyAttribute(obj, attr)))
+	}
 	attrs = append(attrs, parameterFields...)
 	attrs = append(attrs, fullyQualifiedNameFields...)
 	return ResourceAssertionsModel{

@@ -15,43 +15,64 @@ func Test_SnowflakeObjectAssertionsFromSsot_usesShowAndDescribeColumns(t *testin
 		Name:   "Widget",
 		IdType: "AccountObjectIdentifier",
 		Generators: []ssot.GeneratorOption{
-			ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
+			ssot.WithObjectAssert(
+				ssot.ObjectAssertShow(),
+				ssot.ObjectAssertDescribe(),
+			),
 		},
-		Show:     ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
-		Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&errorCode}},
+		Show: ssot.OutputSpec{
+			Columns: []*ssot.Attribute{
+				&comment,
+			},
+		},
+		Describe: ssot.OutputSpec{
+			Columns: []*ssot.Attribute{
+				&errorCode,
+			},
+		},
 	}
 
-	showDetails := objectAssertionDetailsFromSsot(obj, false)
-	require.Equal(t, genhelpers.SdkObjectDetails{
-		IdType: "sdk.AccountObjectIdentifier",
-		StructDetails: genhelpers.StructDetails{
-			Name:   "sdk.Widget",
-			Fields: []genhelpers.Field{ssot.ColumnField(obj, comment)},
-		},
-	}, showDetails)
-	show := SnowflakeObjectAssertionsFromSsot(obj, false)
-	require.Equal(t, "Widget", show.Name)
-	require.Equal(t, "sdk.Widget", show.SdkType)
-	require.Equal(t, showDetails.IdType, show.IdType)
-	require.False(t, show.IsDataSourceOutput)
-	require.False(t, show.NoIdentifiableObject)
-	require.Equal(t, []string{"Comment"}, fieldAssertionNames(show))
+	t.Run("show", func(t *testing.T) {
+		details := objectAssertionDetailsFromSsot(obj, false)
+		require.Equal(t, genhelpers.SdkObjectDetails{
+			IdType: "sdk.AccountObjectIdentifier",
+			StructDetails: genhelpers.StructDetails{
+				Name: "sdk.Widget",
+				Fields: []genhelpers.Field{
+					ssot.ColumnField(obj, comment),
+				},
+			},
+		}, details)
 
-	descDetails := objectAssertionDetailsFromSsot(obj, true)
-	require.Equal(t, genhelpers.SdkObjectDetails{
-		IdType:             "sdk.AccountObjectIdentifier",
-		IsDataSourceOutput: true,
-		StructDetails: genhelpers.StructDetails{
-			Name:   "sdk.WidgetDetails",
-			Fields: []genhelpers.Field{ssot.ColumnField(obj, errorCode)},
-		},
-	}, descDetails)
-	desc := SnowflakeObjectAssertionsFromSsot(obj, true)
-	require.Equal(t, "WidgetDetails", desc.Name)
-	require.Equal(t, "sdk.WidgetDetails", desc.SdkType)
-	require.True(t, desc.IsDataSourceOutput)
-	require.False(t, desc.NoIdentifiableObject)
-	require.Equal(t, []string{"ErrorCode"}, fieldAssertionNames(desc))
+		show := SnowflakeObjectAssertionsFromSsot(obj, false)
+		require.Equal(t, "Widget", show.Name)
+		require.Equal(t, "sdk.Widget", show.SdkType)
+		require.Equal(t, details.IdType, show.IdType)
+		require.False(t, show.IsDataSourceOutput)
+		require.False(t, show.NoIdentifiableObject)
+		require.Equal(t, []string{"Comment"}, fieldAssertionNames(show))
+	})
+
+	t.Run("describe", func(t *testing.T) {
+		details := objectAssertionDetailsFromSsot(obj, true)
+		require.Equal(t, genhelpers.SdkObjectDetails{
+			IdType:             "sdk.AccountObjectIdentifier",
+			IsDataSourceOutput: true,
+			StructDetails: genhelpers.StructDetails{
+				Name: "sdk.WidgetDetails",
+				Fields: []genhelpers.Field{
+					ssot.ColumnField(obj, errorCode),
+				},
+			},
+		}, details)
+
+		desc := SnowflakeObjectAssertionsFromSsot(obj, true)
+		require.Equal(t, "WidgetDetails", desc.Name)
+		require.Equal(t, "sdk.WidgetDetails", desc.SdkType)
+		require.True(t, desc.IsDataSourceOutput)
+		require.False(t, desc.NoIdentifiableObject)
+		require.Equal(t, []string{"ErrorCode"}, fieldAssertionNames(desc))
+	})
 }
 
 func Test_objectAssertionDetailsFromSsot_passesSkipFields(t *testing.T) {
@@ -63,28 +84,53 @@ func Test_objectAssertionDetailsFromSsot_passesSkipFields(t *testing.T) {
 		IdType: "AccountObjectIdentifier",
 		Generators: []ssot.GeneratorOption{
 			ssot.WithObjectAssert(
-				ssot.ObjectAssertShow(ssot.ObjectAssertShowSkipFields(&tables)),
-				ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeSkipFields(&password)),
+				ssot.ObjectAssertShow(
+					ssot.ObjectAssertShowSkipFields(&tables),
+				),
+				ssot.ObjectAssertDescribe(
+					ssot.ObjectAssertDescribeSkipFields(&password),
+				),
 			),
 		},
-		Show:     ssot.OutputSpec{Columns: []*ssot.Attribute{&comment, &tables}},
-		Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&password}},
+		Show: ssot.OutputSpec{
+			Columns: []*ssot.Attribute{
+				&comment,
+				&tables,
+			},
+		},
+		Describe: ssot.OutputSpec{
+			Columns: []*ssot.Attribute{
+				&password,
+			},
+		},
 	}
 
 	show := objectAssertionDetailsFromSsot(obj, false)
 	require.Equal(t, []string{"Tables"}, show.SkipFields)
-	require.Nil(t, objectAssertionDetailsFromSsot(ssot.Object{
-		Name:       "Widget",
-		IdType:     "AccountObjectIdentifier",
-		Generators: []ssot.GeneratorOption{ssot.WithObjectAssert(ssot.ObjectAssertShow())},
-		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
-	}, false).SkipFields)
+
+	withoutSkips := ssot.Object{
+		Name:   "Widget",
+		IdType: "AccountObjectIdentifier",
+		Generators: []ssot.GeneratorOption{
+			ssot.WithObjectAssert(
+				ssot.ObjectAssertShow(),
+			),
+		},
+		Show: ssot.OutputSpec{
+			Columns: []*ssot.Attribute{
+				&comment,
+			},
+		},
+	}
+	unskipped := objectAssertionDetailsFromSsot(withoutSkips, false)
+	require.Nil(t, unskipped.SkipFields)
 
 	desc := objectAssertionDetailsFromSsot(obj, true)
 	require.Equal(t, []string{"Password"}, desc.SkipFields)
+
 	model := SnowflakeObjectAssertionsFromSsot(obj, false)
-	require.False(t, model.Fields[0].SkipGeneration)
-	require.True(t, model.Fields[1].SkipGeneration)
+	require.False(t, fieldByName(t, model, "Comment").SkipGeneration)
+	require.True(t, fieldByName(t, model, "Tables").SkipGeneration)
 }
 
 func Test_objectAssertionDetailsFromSsot_passesNoIdentifiableObject(t *testing.T) {
@@ -93,16 +139,26 @@ func Test_objectAssertionDetailsFromSsot_passesNoIdentifiableObject(t *testing.T
 		Name:   "Widget",
 		IdType: "DatabaseObjectIdentifier",
 		Generators: []ssot.GeneratorOption{
-			ssot.WithObjectAssert(ssot.ObjectAssertDescribe(ssot.WithNoIdentifiableObject())),
+			ssot.WithObjectAssert(
+				ssot.ObjectAssertDescribe(
+					ssot.WithNoIdentifiableObject(),
+				),
+			),
 		},
-		Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+		Describe: ssot.OutputSpec{
+			Columns: []*ssot.Attribute{
+				&name,
+			},
+		},
 	}
 
 	details := objectAssertionDetailsFromSsot(obj, true)
 	require.Equal(t, "sdk.WidgetDetails", details.ObjectName())
 	require.True(t, details.IsDataSourceOutput)
 	require.True(t, details.NoIdentifiableObject)
-	require.Equal(t, []genhelpers.Field{ssot.ColumnField(obj, name)}, details.Fields)
+	require.Equal(t, []genhelpers.Field{
+		ssot.ColumnField(obj, name),
+	}, details.Fields)
 }
 
 func Test_objectAssertionDetailsFromSsot_showProjection(t *testing.T) {
@@ -113,16 +169,25 @@ func Test_objectAssertionDetailsFromSsot_showProjection(t *testing.T) {
 		IdType:    "AccountObjectIdentifier",
 		VariantOf: &base,
 		Generators: []ssot.GeneratorOption{
-			ssot.WithObjectAssert(ssot.ObjectAssertShow(
-				ssot.ObjectAssertShowFromBase("ShowByIDAdaptive"),
-			)),
+			ssot.WithObjectAssert(
+				ssot.ObjectAssertShow(
+					ssot.ObjectAssertShowFromBase("ShowByIDAdaptive"),
+				),
+			),
 		},
-		Show: ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+		Show: ssot.OutputSpec{
+			Columns: []*ssot.Attribute{
+				&comment,
+			},
+		},
 	}
 
 	details := objectAssertionDetailsFromSsot(obj, false)
 	require.Equal(t, "Widget", details.ObjectTypeName)
-	require.Equal(t, &genhelpers.ShowProjectionDef{ClientName: "Widget", Method: "ShowByIDAdaptive"}, details.ShowProjection)
+	require.Equal(t, &genhelpers.ShowProjectionDef{
+		ClientName: "Widget",
+		Method:     "ShowByIDAdaptive",
+	}, details.ShowProjection)
 	model := SnowflakeObjectAssertionsFromSsot(obj, false)
 	require.Equal(t, "Widget", model.ObjectTypeName)
 	require.Equal(t, details.ShowProjection, model.ShowProjection)
@@ -130,45 +195,72 @@ func Test_objectAssertionDetailsFromSsot_showProjection(t *testing.T) {
 
 func Test_SnowflakeObjectAssertionsFromSsot_panics(t *testing.T) {
 	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
-	enabled := []ssot.GeneratorOption{ssot.WithObjectAssert(ssot.ObjectAssertShow())}
+	enabled := []ssot.GeneratorOption{
+		ssot.WithObjectAssert(
+			ssot.ObjectAssertShow(),
+		),
+	}
 
 	t.Run("show option off", func(t *testing.T) {
+		obj := ssot.Object{
+			Name:   "Widget",
+			IdType: "AccountObjectIdentifier",
+			Show: ssot.OutputSpec{
+				Columns: []*ssot.Attribute{
+					&comment,
+				},
+			},
+		}
 		require.Panics(t, func() {
-			SnowflakeObjectAssertionsFromSsot(ssot.Object{
-				Name:   "Widget",
-				IdType: "AccountObjectIdentifier",
-				Show:   ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
-			}, false)
+			SnowflakeObjectAssertionsFromSsot(obj, false)
 		})
 	})
+
 	t.Run("describe option off", func(t *testing.T) {
+		obj := ssot.Object{
+			Name:       "Widget",
+			IdType:     "AccountObjectIdentifier",
+			Generators: enabled,
+			Show: ssot.OutputSpec{
+				Columns: []*ssot.Attribute{
+					&comment,
+				},
+			},
+			Describe: ssot.OutputSpec{
+				Columns: []*ssot.Attribute{
+					&comment,
+				},
+			},
+		}
 		require.Panics(t, func() {
-			SnowflakeObjectAssertionsFromSsot(ssot.Object{
-				Name:       "Widget",
-				IdType:     "AccountObjectIdentifier",
-				Generators: enabled,
-				Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
-				Describe:   ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
-			}, true)
+			SnowflakeObjectAssertionsFromSsot(obj, true)
 		})
 	})
+
 	t.Run("empty columns", func(t *testing.T) {
+		obj := ssot.Object{
+			Name:       "Widget",
+			IdType:     "AccountObjectIdentifier",
+			Generators: enabled,
+		}
 		require.Panics(t, func() {
-			SnowflakeObjectAssertionsFromSsot(ssot.Object{
-				Name:       "Widget",
-				IdType:     "AccountObjectIdentifier",
-				Generators: enabled,
-			}, false)
+			SnowflakeObjectAssertionsFromSsot(obj, false)
 		})
 	})
+
 	t.Run("nil column", func(t *testing.T) {
+		obj := ssot.Object{
+			Name:       "Widget",
+			IdType:     "AccountObjectIdentifier",
+			Generators: enabled,
+			Show: ssot.OutputSpec{
+				Columns: []*ssot.Attribute{
+					nil,
+				},
+			},
+		}
 		require.Panics(t, func() {
-			SnowflakeObjectAssertionsFromSsot(ssot.Object{
-				Name:       "Widget",
-				IdType:     "AccountObjectIdentifier",
-				Generators: enabled,
-				Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{nil}},
-			}, false)
+			SnowflakeObjectAssertionsFromSsot(obj, false)
 		})
 	})
 }
@@ -189,10 +281,17 @@ func Test_objectAssertionDetailsFromSsot_passesNestedFields(t *testing.T) {
 		IdType: "AccountObjectIdentifier",
 		Generators: []ssot.GeneratorOption{
 			ssot.WithObjectAssert(
-				ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeNestedField(&locations)),
+				ssot.ObjectAssertDescribe(
+					ssot.ObjectAssertDescribeNestedField(&locations),
+				),
 			),
 		},
-		Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&name, &locations}},
+		Describe: ssot.OutputSpec{
+			Columns: []*ssot.Attribute{
+				&name,
+				&locations,
+			},
+		},
 	}
 
 	desc := objectAssertionDetailsFromSsot(obj, true)
@@ -213,12 +312,29 @@ func Test_objectAssertionDetailsFromSsot_nestedFieldGoTypeOverride(t *testing.T)
 		IdType: "AccountObjectIdentifier",
 		Generators: []ssot.GeneratorOption{
 			ssot.WithObjectAssert(
-				ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeNestedField(&locations, ssot.ObjectAssertNestedGoType("[]sdk.Custom"))),
+				ssot.ObjectAssertDescribe(
+					ssot.ObjectAssertDescribeNestedField(&locations, ssot.ObjectAssertNestedGoType("[]sdk.Custom")),
+				),
 			),
 		},
-		Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&locations}},
+		Describe: ssot.OutputSpec{
+			Columns: []*ssot.Attribute{
+				&locations,
+			},
+		},
 	}
 
 	desc := objectAssertionDetailsFromSsot(obj, true)
 	require.Equal(t, "[]sdk.Custom", desc.Fields[0].ConcreteType)
+}
+
+func fieldByName(t *testing.T, model SnowflakeObjectAssertionsModel, name string) SnowflakeObjectFieldAssertion {
+	t.Helper()
+	for _, field := range model.Fields {
+		if field.Name == name {
+			return field
+		}
+	}
+	t.Fatalf("field %q not found", name)
+	return SnowflakeObjectFieldAssertion{}
 }

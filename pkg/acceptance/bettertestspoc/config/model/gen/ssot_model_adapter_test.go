@@ -172,11 +172,14 @@ func modelAttributeByName(t *testing.T, model ResourceConfigBuilderModel, name s
 	return ResourceConfigBuilderAttributeModel{}
 }
 
-func Test_ModelFromSsotObject_nativeBoolAndNested(t *testing.T) {
+func Test_ModelFromSsotObject_nativeBoolNestedAndMultiline(t *testing.T) {
+	query := ssot.Attribute{Name: "query", Type: ssot.AttrString}
 	obj := ssot.Object{
-		Name: "Widget", IdType: "AccountObjectIdentifier", Generators: []ssot.GeneratorOption{ssot.WithModel()},
+		Name: "Widget", IdType: "AccountObjectIdentifier",
+		Generators: []ssot.GeneratorOption{ssot.WithModel(ssot.ModelMultiline(&query))},
 		Attributes: []ssot.Attribute{
 			{Name: "enabled", Type: ssot.AttrBool, NativeBool: true},
+			query,
 			{Name: "schedule", Type: ssot.AttrList, Elem: ssot.ObjectElem([]ssot.Attribute{{Name: "interval", Type: ssot.AttrInt}})},
 		},
 	}
@@ -185,6 +188,9 @@ func Test_ModelFromSsotObject_nativeBoolAndNested(t *testing.T) {
 		switch field.Name {
 		case "enabled":
 			require.Equal(t, "BoolVariable", field.VariableMethod)
+		case "query":
+			require.Equal(t, "MultilineWrapperVariable", field.VariableMethod)
+			require.Equal(t, "config", field.MethodImport)
 		case "schedule":
 			require.Empty(t, field.AttributeType)
 			require.False(t, field.Required)
