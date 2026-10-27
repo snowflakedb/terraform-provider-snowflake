@@ -240,7 +240,7 @@ enable nothing.
   independent. Leave the handwritten entry while only one of them is opted in.
 - `WithSdk(SdkShow(), SdkDescribe(), SdkDrop(), SdkCreate(), SdkAlter())` - SDK paired structs, DROP, CREATE, and ALTER (`make generate-sdk`).
   See [PairedStructs](../../sdk/generator/README.md#pairedstructs). Show and Describe fields come
-  from [SHOW and DESCRIBE](#show-and-describe) `Columns`, not from `Attributes`. `OptionalInDb` is live for the mapped
+  from [SHOW and DESCRIBE](#show-and-describe) `Columns`, not from `Attributes`. `SdkDescribePlainOnlyField(name, kind)` adds a field that is only on the DESCRIBE plain struct. `name` is the Go field name and `kind` is its type, as in `PlainOnlyField`. It is not a column. `convert` skips it, and `additionalConvert` in the SDK ext file fills it. `OptionalInDb` is live for the mapped
   db and plain kinds. `StoredAsText` selects `BoolFromText` for a bool. A bool without the mark is still db `bool`.
   Other generators ignore the mark. See [Attribute](#attribute). `SdkDrop()` builds DROP from `Name`: `DROP`, the
   uppercase words, `IF EXISTS`, and the name. `SdkDropDoc()` overrides the default DROP doc URL. `SdkDropSafelyHook()`, `SdkDropSafelyForce()`, and

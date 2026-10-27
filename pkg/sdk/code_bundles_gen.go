@@ -17,6 +17,8 @@ type CodeBundles interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*CodeBundle, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*CodeBundle, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*CodeBundleDetails, error)
+	// DescribeDetails calls Describe and sets database and schema from the identifier. DESCRIBE does not return those columns.
+	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*CodeBundleDetails, error)
 }
 
 // CreateCodeBundleOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-code-bundle.
@@ -132,4 +134,6 @@ type CodeBundleDetails struct {
 	ContainerDatabase               *string
 	ContainerSchema                 *string
 	ContainerName                   *string
+	DatabaseName                    string
+	SchemaName                      string
 }

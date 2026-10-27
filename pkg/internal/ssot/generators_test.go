@@ -164,6 +164,18 @@ func Test_ObjectGenerators_sdk(t *testing.T) {
 		DescribeQueryStructName: "DescThing",
 	}}, g)
 
+	g = ObjectGenerators(WithSdk(SdkDescribe(
+		SdkDescribePlainOnlyField("DatabaseName", "string"),
+		SdkDescribePlainOnlyField("SchemaName", "string"),
+	)))
+	require.Equal(t, Generators{Sdk: SdkGenerator{
+		Describe: true,
+		DescribePlainOnlyFields: []SdkPlainOnlyField{
+			{Name: "DatabaseName", Kind: "string"},
+			{Name: "SchemaName", Kind: "string"},
+		},
+	}}, g)
+
 	g = ObjectGenerators(WithSdk(SdkDrop(
 		SdkDropDoc("https://drop"),
 		SdkDropSafelyHook(),

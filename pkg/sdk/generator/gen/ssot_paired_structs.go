@@ -25,7 +25,11 @@ func DescribePairedStructs(obj ssot.Object) *PairedStructs {
 	if obj.Name == "" {
 		panic(fmt.Sprintf("object %q needs Name to build the DESCRIBE paired struct", obj.Name))
 	}
-	return pairedStructsFromColumns(obj, true, unexported(obj.Name)+"DescRow", obj.DescribePlainName())
+	pairs := pairedStructsFromColumns(obj, true, unexported(obj.Name)+"DescRow", obj.DescribePlainName())
+	for _, field := range ssot.ObjectGenerators(obj.Generators...).Sdk.DescribePlainOnlyFields {
+		pairs = pairs.PlainOnlyField(field.Name, field.Kind)
+	}
+	return pairs
 }
 
 // DescribeDetailsPlain is the plain details struct built from Describe.Columns. Id comes first unless a column is named id.

@@ -863,6 +863,40 @@ func Test_ValidateObject_describeGeneric(t *testing.T) {
 	})
 }
 
+func Test_ValidateObject_describePlainOnlyField(t *testing.T) {
+	name := Attribute{Name: "name", Type: AttrString, Readonly: true}
+	obj := func(generators ...GeneratorOption) Object {
+		return Object{
+			Name:       "Widget",
+			Describe:   OutputSpec{Columns: []*Attribute{&name}},
+			Generators: generators,
+		}
+	}
+	require.NotPanics(t, func() {
+		ValidateObject(obj(WithSdk(SdkDescribe(
+			SdkDescribePlainOnlyField("DatabaseName", "string"),
+			SdkDescribePlainOnlyField("SchemaName", "string"),
+		))))
+	})
+	require.PanicsWithValue(t, `object "Widget": SdkDescribePlainOnlyField needs SdkDescribe`, func() {
+		ValidateObject(obj(WithSdk(func(s *SdkGenerator) {
+			s.DescribePlainOnlyFields = []SdkPlainOnlyField{{Name: "DatabaseName", Kind: "string"}}
+		})))
+	})
+	require.PanicsWithValue(t, `object "Widget": SdkDescribePlainOnlyField needs a name and a kind`, func() {
+		ValidateObject(obj(WithSdk(SdkDescribe(SdkDescribePlainOnlyField("", "string")))))
+	})
+	require.PanicsWithValue(t, `object "Widget": SdkDescribePlainOnlyField "Name" duplicates a DESCRIBE field`, func() {
+		ValidateObject(obj(WithSdk(SdkDescribe(SdkDescribePlainOnlyField("Name", "string")))))
+	})
+	row := Attribute{Name: "property", Type: AttrString, Readonly: true}
+	withRows := obj(WithSdk(SdkDescribe(SdkDescribePlainOnlyField("DatabaseName", "string"))))
+	withRows.DescribeRows = OutputSpec{Columns: []*Attribute{&row}}
+	require.PanicsWithValue(t, `object "Widget": SdkDescribePlainOnlyField cannot be used with DescribeRows`, func() {
+		ValidateObject(withRows)
+	})
+}
+
 func Test_Object_PairedDescribeColumns(t *testing.T) {
 	details := Attribute{Name: "active", Type: AttrString, Readonly: true}
 	row := Attribute{Name: "property", Type: AttrString, Readonly: true}
