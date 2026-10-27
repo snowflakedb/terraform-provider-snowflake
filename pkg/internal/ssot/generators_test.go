@@ -165,12 +165,14 @@ func Test_ObjectGenerators_sdk(t *testing.T) {
 	}}, g)
 
 	g = ObjectGenerators(WithSdk(SdkDrop(
+		SdkDropDoc("https://drop"),
 		SdkDropSafelyHook(),
 		SdkDropSafelyForce(),
 		SdkDropCascadeRestrict(),
 	)))
 	require.Equal(t, Generators{Sdk: SdkGenerator{
 		Drop:                true,
+		DropDoc:             "https://drop",
 		DropSafelyHook:      true,
 		DropSafelyForce:     true,
 		DropCascadeRestrict: true,
