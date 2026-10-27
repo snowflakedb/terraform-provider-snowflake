@@ -60,6 +60,19 @@ Previously, [`snowflake_resource_monitor`](https://registry.terraform.io/provide
 
 The provider now saves these configured values in state. When they already match Snowflake, Snowflake is left unchanged. No configuration changes are required. After upgrading, the next `terraform plan` refreshes the resource monitor and the fields listed above show the configured values.
 
+### *(bug fix)* Catalog integrations and warehouses now save configured values in state
+
+Previously, the catalog integration resources and the adaptive and interactive warehouse resources left some optional fields empty in Terraform state when your configuration used the value Snowflake already had. A number could appear as `0` or `-1`, and text could appear blank, although the value was present both in your configuration and in Snowflake. This affected:
+
+- [`snowflake_catalog_integration_aws_glue`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue): `refresh_interval_seconds`, `glue_region`, `catalog_namespace`
+- [`snowflake_catalog_integration_iceberg_rest`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest): `refresh_interval_seconds`, `catalog_namespace`
+- [`snowflake_catalog_integration_object_storage`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_object_storage): `refresh_interval_seconds`
+- [`snowflake_catalog_integration_open_catalog`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_open_catalog): `refresh_interval_seconds`, `catalog_namespace`
+- [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive): `max_query_performance_level`, `query_throughput_multiplier`, `resource_monitor`
+- [`snowflake_warehouse_interactive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive): `warehouse_size`, `max_cluster_count`, `min_cluster_count`, `auto_suspend`, `auto_resume`, `resource_monitor`
+
+The provider now saves these configured values in state. When they already match Snowflake, Snowflake is left unchanged. No configuration changes are required. After upgrading, the next `terraform plan` refreshes the resource and the fields listed above show the configured values.
+
 ### *(bug fix)* Fixed task graph root resolution for quoted identifiers
 
 Previously, updating an existing child [`snowflake_task`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/task) during `terraform apply` could fail with:

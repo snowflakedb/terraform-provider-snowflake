@@ -215,7 +215,6 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 		ssot.WithDescribeOutputSchema(ssot.ExtCall()),
 		ssot.WithHandleExternalChangesInDescribe(ssot.ExtCall()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
-		ssot.WithSetStateToValuesFromConfig(ssot.Omitted()),
 	},
 	Attributes: []ssot.Attribute{
 		CatalogIntegrationIcebergRestAttrs.Enabled,

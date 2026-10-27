@@ -117,7 +117,12 @@ func ReadAuthenticationPolicyFunc(withExternalChangesMarking bool) tfschema.Read
 			return diags
 		}
 
-		if err = setStateToValuesFromConfig(d, authenticationPolicySchema, authenticationPolicySetStateToValueFromConfigFieldsExt); err != nil {
+		if err = setStateToValuesFromConfig(d, authenticationPolicySchema, []string{
+			"authentication_methods",
+			"mfa_enrollment",
+			"client_types",
+			"security_integrations",
+		}); err != nil {
 			return append(diags, diag.FromErr(err)...)
 		}
 		errs := errors.Join(

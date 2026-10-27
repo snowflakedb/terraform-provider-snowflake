@@ -117,7 +117,6 @@ var Alert = ssot.Object{
 		ssot.WithAfterCreate(ssot.ExtCall()),
 		ssot.WithDescribeInSdk(ssot.Omitted()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
-		ssot.WithSetStateToValuesFromConfig(ssot.Omitted()),
 		ssot.WithBeforeAlter(ssot.ExtCall()),
 		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
 		ssot.WithAfterAlter(ssot.ExtCall()),

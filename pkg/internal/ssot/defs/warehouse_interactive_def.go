@@ -141,7 +141,6 @@ var WarehouseInteractive = ssot.Object{
 		ssot.WithShowOutputSet(ssot.Omitted()),
 		ssot.WithShowOutputSchema(ssot.ExtCall()),
 		ssot.WithIdentitySchema(ssot.ExtCall()),
-		ssot.WithSetStateToValuesFromConfig(ssot.Omitted()),
 		ssot.WithHierarchyRename(ssot.ExtCall()),
 		ssot.WithBeforeAlter(ssot.ExtCall()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),

@@ -1,6 +1,18 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
 {{- if .Hooks.SetStateToValuesFromConfig.Generate -}}
-{{ Unimplemented "SetStateToValuesFromConfig" }}
+{{- if .SetStateToValueFromConfigFields }}
+		if err = setStateToValuesFromConfig(d, {{ .Prefix }}Schema, []string{
+{{- range .SetStateToValueFromConfigFields }}
+			{{ printf "%q" . }},
+{{- end }}
+		}); err != nil {
+{{ if and .Hooks.HandleExternalChangesInDescribe.Present .Hooks.DescribeInSdk.Present -}}
+			return append(diags, diag.FromErr(err)...)
+{{ else -}}
+			return diag.FromErr(err)
+{{ end }}
+		}
+{{ end }}
 {{- else if .Hooks.SetStateToValuesFromConfig.Present -}}
 		if err = setStateToValuesFromConfig(d, {{ .Prefix }}Schema, {{ .Prefix }}SetStateToValueFromConfigFieldsExt); err != nil {
 {{ if and .Hooks.HandleExternalChangesInDescribe.Present .Hooks.DescribeInSdk.Present -}}

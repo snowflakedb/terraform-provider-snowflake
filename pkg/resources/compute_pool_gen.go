@@ -104,7 +104,11 @@ func ReadComputePoolFunc(withExternalChangesMarking bool) tfschema.ReadContextFu
 			return diag.FromErr(err)
 		}
 
-		if err = setStateToValuesFromConfig(d, computePoolSchema, computePoolSetStateToValueFromConfigFieldsExt); err != nil {
+		if err = setStateToValuesFromConfig(d, computePoolSchema, []string{
+			"for_application",
+			"auto_resume",
+			"auto_suspend_secs",
+		}); err != nil {
 			return diag.FromErr(err)
 		}
 		errs := errors.Join(

@@ -187,7 +187,6 @@ var CatalogIntegrationOpenCatalog = ssot.Object{
 		ssot.WithDescribeOutputSchema(ssot.ExtCall()),
 		ssot.WithHandleExternalChangesInDescribe(ssot.ExtCall()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
-		ssot.WithSetStateToValuesFromConfig(ssot.Omitted()),
 		// SHOW has name, enabled, and comment only. catalog_source and catalog_namespace
 		// come from DESCRIBE, so SetConfigFields stays on the describe hook.
 		ssot.WithSetConfigFields(ssot.Omitted()),

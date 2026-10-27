@@ -82,7 +82,6 @@ var CatalogIntegrationObjectStorage = ssot.Object{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithHandleExternalChangesInDescribe(ssot.ExtCall()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
-		ssot.WithSetStateToValuesFromConfig(ssot.Omitted()),
 	},
 	Attributes: []ssot.Attribute{
 		CatalogIntegrationObjectStorageAttrs.Enabled,

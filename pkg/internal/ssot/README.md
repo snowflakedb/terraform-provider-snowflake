@@ -403,6 +403,15 @@ and requests containing slices remain supported. SET runs before UNSET; either f
 and marks partial state when `HasPartialOnUpdate` is set. Keep `ExtCall` for suspend-aware alters, additional
 operations, custom diagnostics, or request names that differ from the object name. Omit UNSET for SET-only objects.
 
+`SetStateToValuesFromConfig` defaults to `Generated`. Read inlines the field names in `setStateToValuesFromConfig`.
+The names are optional attributes in `Attributes` order that the helper can copy: string (an optional bool, an enum,
+an identifier, or a float), int, and a set of string or int. An optional bool element is stored as a string, so a set
+of those bools is included. `comment` is left out, because `SetConfigFields` writes it from SHOW. A nested block
+(`Children`) is left out. A list is left out, because the helper does not handle `TypeList`. `CreateOnly` is left out.
+Skipping a nested block does not panic. An empty list omits the call. A resource does not list this hook to opt in.
+`Omitted` drops the call. `ExtCall` keeps a hand-written `<prefix>SetStateToValueFromConfigFieldsExt` list, for an
+object that needs a nested name or a list name.
+
 #### Other generators
 
 Every plugged generator is opt-in, including the resource generator. It walks `defs.All()`, calls `ObjectGenerators`,

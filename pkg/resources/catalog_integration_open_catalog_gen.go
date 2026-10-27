@@ -94,6 +94,12 @@ func ReadCatalogIntegrationOpenCatalogFunc(withExternalChangesMarking bool) tfsc
 			return diags
 		}
 
+		if err = setStateToValuesFromConfig(d, catalogIntegrationOpenCatalogSchema, []string{
+			"refresh_interval_seconds",
+			"catalog_namespace",
+		}); err != nil {
+			return append(diags, diag.FromErr(err)...)
+		}
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationOpenCatalogToSchema(catalogIntegrationOpenCatalog)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CatalogIntegrationOpenCatalogDetailsToSchema(catalogIntegrationOpenCatalogDetails)}),

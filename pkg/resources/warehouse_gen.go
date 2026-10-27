@@ -119,7 +119,20 @@ func ReadWarehouseFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc
 			return diag.FromErr(err)
 		}
 
-		if err = setStateToValuesFromConfig(d, warehouseSchema, warehouseSetStateToValueFromConfigFieldsExt); err != nil {
+		if err = setStateToValuesFromConfig(d, warehouseSchema, []string{
+			"warehouse_type",
+			"warehouse_size",
+			"max_cluster_count",
+			"min_cluster_count",
+			"scaling_policy",
+			"auto_suspend",
+			"auto_resume",
+			"resource_monitor",
+			"enable_query_acceleration",
+			"query_acceleration_max_scale_factor",
+			"resource_constraint",
+			"generation",
+		}); err != nil {
 			return diag.FromErr(err)
 		}
 		errs := errors.Join(

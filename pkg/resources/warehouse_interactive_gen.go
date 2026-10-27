@@ -103,6 +103,18 @@ func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) tfschema.Read
 			return diag.FromErr(err)
 		}
 
+		if err = setStateToValuesFromConfig(d, warehouseInteractiveSchema, []string{
+			"warehouse_size",
+			"max_cluster_count",
+			"min_cluster_count",
+			"auto_suspend",
+			"auto_resume",
+			"resource_monitor",
+			"tables",
+			"warehouse_type",
+		}); err != nil {
+			return diag.FromErr(err)
+		}
 		errs := errors.Join(
 			d.Set(ParametersAttributeName, []map[string]any{schemas.WarehouseInteractiveParametersToSchema(rawWarehouseInteractiveParameters, meta.(*provider.Context))}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),

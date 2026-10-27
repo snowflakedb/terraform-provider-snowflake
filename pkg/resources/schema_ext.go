@@ -45,11 +45,6 @@ var (
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-var schemaSetStateToValueFromConfigFieldsExt = []string{
-	"is_transient",
-	"with_managed_access",
-}
-
 type schemaAlterRequestsExt struct {
 	set   *sdk.SchemaSetRequest
 	unset *sdk.SchemaUnsetRequest

@@ -111,7 +111,6 @@ var WarehouseAdaptive = ssot.Object{
 		ssot.WithShowOutputSet(ssot.Omitted()),
 		ssot.WithShowOutputSchema(ssot.ExtCall()),
 		ssot.WithIdentitySchema(ssot.ExtCall()),
-		ssot.WithSetStateToValuesFromConfig(ssot.Omitted()),
 		ssot.WithHierarchyRename(ssot.ExtCall()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
 		ssot.WithApplyParametersCreate(ssot.Generated()),
