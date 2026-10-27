@@ -407,7 +407,7 @@ list of scalars. A readonly column that is not a resource attribute is left out:
 `fully_qualified_name` is emitted only when at least one identifier attribute is not ForceNew. Its keys are those
 attributes, in `IdentityFields` order: `database`, then `schema`, then `name`. `name` is ForceNew when
 `IdentityNameForceNew` is set. `database` and `schema` are ForceNew together when `IdentityHierarchyForceNew` is set.
-The identity schema emits that ForceNew. An unknown `IdType` panics.
+The identity schema template emits that `ForceNew`. An unknown `IdType` panics.
 `AdditionalIdentityNameDescription` is appended to the generated name sentence.
 `DescribeDetailsName` is the SDK type in `schemas.Describe<Name>Schema`. Empty uses `Name` plus `Details`.
 `ObjectType()` is `Sdk.DescribeSql` when that is set, and otherwise the uppercase words of `Name`. The words after
