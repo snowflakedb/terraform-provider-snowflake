@@ -156,7 +156,14 @@ var CatalogIntegration = ssot.Object{
 		CatalogIntegrationCatalogApiType,
 	},
 	Generators: []ssot.GeneratorOption{
-		ssot.WithSdk(ssot.SdkCreateForVariants(), ssot.SdkAlter(), ssot.SdkShow(ssot.SdkShowOptionalLike()), ssot.SdkDrop(), ssot.SdkDescribe(ssot.SdkDescribeDetailsForVariants(), ssot.SdkDescribeDetails(ssot.SdkDescribeDetailsMethod()))),
+		ssot.WithSdk(
+			ssot.SdkCreateForVariants(),
+			ssot.SdkAlter(),
+			ssot.SdkShow(ssot.SdkShowOptionalLike()),
+			ssot.SdkDrop(),
+			ssot.SdkDescribe(ssot.SdkDescribeDetailsForVariants(), ssot.SdkDescribeDetails(ssot.SdkDescribeDetailsMethod())),
+			ssot.SdkDefineFromSsot(),
+		),
 	},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{

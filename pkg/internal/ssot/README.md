@@ -677,11 +677,13 @@ The skip is not permission to leave the object on the list forever. A repeated s
 repeat for an object that ssot does not emit stays. Do not delete it.
 
 SDK interfaces come from two lists. The old list is the handwritten defs. ssot adds an interface when `SdkDefineFromSsot()`
-is on and `NamePlural` is unique among objects that are not variants in [`defs.All()`](defs/all.go). A variant shares the base interface.
-That option defines the interface from this ssot
-object alone. It contains the operation parts whose flags are on. A part whose flag is off is absent. The SDK generator may then change that
-interface through an override keyed by the ssot object `Name`. A shared `NamePlural` among non-variants, such as the catalog
-integration variants, does not get its own interface. The merge skips an old name that ssot emits.
+is on and `NamePlural` is unique among objects that are not variants in [`defs.All()`](defs/all.go). A variant shares the base interface: the variants of
+`Warehouse`, and the four catalog integration sources of `CatalogIntegration`, which is a `VariantBaseOnly` base. The base supplies the
+interface and each variant supplies its own part of it: `SdkCreateForVariants()` the `Create<Variant>` methods,
+`SdkDescribeDetailsForVariants()` the `Describe<Variant>Details` methods and their structs. That option defines the interface from this
+ssot object and its variants. It contains the operation parts whose flags are on. A part whose flag is off is absent. The SDK
+generator may then change that interface through an override keyed by the ssot object `Name`. Two objects with the same
+`NamePlural` that are not variants of one base do not get an interface. The merge skips an old name that ssot emits.
 `ShowOperationFromObject` and the other `FromObject` calls stay the translators for one operation. They panic when that
 operation's flag is off.
 

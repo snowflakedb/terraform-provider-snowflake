@@ -22,7 +22,6 @@ func init() {
 		authenticationPoliciesDef,
 		backupPoliciesDef,
 		budgetsDef,
-		catalogIntegrationsDef,
 		connectionsDef,
 		contextFunctionsDef,
 		cortexAgentsDef,
