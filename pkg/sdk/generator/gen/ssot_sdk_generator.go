@@ -861,8 +861,15 @@ func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QuerySt
 
 func appendAlterSet(q *QueryStruct, obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
 	setParams := parametersForStatement(obj, obj.Set, "SET")
-	setStruct := NewQueryStruct(obj.Name+"Set").appendSqlSequenceParams(obj.Set, attributeSqlSet, setParams)
+	setStruct := NewQueryStruct(obj.Name + "Set")
+	setStruct.owner = obj.Name
+	setStruct = setStruct.appendSqlSequenceParams(obj.Set, attributeSqlSet, setParams)
 	setStruct = setStruct.withIdentifierParameterValidations(setParams)
+	for _, pair := range obj.Alter.SetConflictingFields {
+		setStruct = setStruct.WithValidation(ConflictingFields, collections.Map(pair, func(attr *ssot.Attribute) string {
+			return clauseFieldName(*attr, attributeSqlSet)
+		})...)
+	}
 	setStruct = setStruct.WithValidation(AtLeastOneValueSet, atLeastOneFields(setStruct, setParams)...)
 	if cfg.AlterSetAdditionalValidations {
 		setStruct = setStruct.WithAdditionalValidations()

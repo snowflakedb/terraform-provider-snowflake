@@ -153,6 +153,9 @@ func (v *QueryStruct) appendParameterClause(attr ssot.Attribute, clause ssot.Sql
 	case ssot.AttrBool:
 		return scalar(pointer("bool"))
 	case ssot.AttrString:
+		if clause.AllowEmpty {
+			return scalar(pointer("StringAllowEmpty"))
+		}
 		return scalar(pointer("string"))
 	case ssot.AttrEnum:
 		if enum == nil || enum.Name == "" {

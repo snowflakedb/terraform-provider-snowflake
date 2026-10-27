@@ -18,7 +18,22 @@ type catalogIntegrations struct {
 	client *Client
 }
 
-func (v *catalogIntegrations) Create(ctx context.Context, request *CreateCatalogIntegrationRequest) error {
+func (v *catalogIntegrations) CreateAwsGlue(ctx context.Context, request *CreateAwsGlueCatalogIntegrationRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *catalogIntegrations) CreateIcebergRest(ctx context.Context, request *CreateIcebergRestCatalogIntegrationRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *catalogIntegrations) CreateObjectStorage(ctx context.Context, request *CreateObjectStorageCatalogIntegrationRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *catalogIntegrations) CreateOpenCatalog(ctx context.Context, request *CreateOpenCatalogCatalogIntegrationRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
@@ -71,76 +86,96 @@ func (v *catalogIntegrations) Describe(ctx context.Context, id AccountObjectIden
 	return convertRows[descCatalogIntegrationsDbRow, CatalogIntegrationProperty](rows)
 }
 
-func (r *CreateCatalogIntegrationRequest) toOpts() *CreateCatalogIntegrationOptions {
-	opts := &CreateCatalogIntegrationOptions{
+func (r *CreateAwsGlueCatalogIntegrationRequest) toOpts() *CreateAwsGlueCatalogIntegrationOptions {
+	opts := &CreateAwsGlueCatalogIntegrationOptions{
 		OrReplace:              r.OrReplace,
 		IfNotExists:            r.IfNotExists,
 		name:                   r.name,
+		GlueAwsRoleArn:         r.GlueAwsRoleArn,
+		GlueCatalogId:          r.GlueCatalogId,
+		GlueRegion:             r.GlueRegion,
+		CatalogNamespace:       r.CatalogNamespace,
 		Enabled:                r.Enabled,
 		RefreshIntervalSeconds: r.RefreshIntervalSeconds,
 		Comment:                r.Comment,
 	}
-	if r.AwsGlueCatalogSourceParams != nil {
-		opts.AwsGlueCatalogSourceParams = &AwsGlueParams{
-			GlueAwsRoleArn:   r.AwsGlueCatalogSourceParams.GlueAwsRoleArn,
-			GlueCatalogId:    r.AwsGlueCatalogSourceParams.GlueCatalogId,
-			GlueRegion:       r.AwsGlueCatalogSourceParams.GlueRegion,
-			CatalogNamespace: r.AwsGlueCatalogSourceParams.CatalogNamespace,
+	return opts
+}
+
+func (r *CreateIcebergRestCatalogIntegrationRequest) toOpts() *CreateIcebergRestCatalogIntegrationOptions {
+	opts := &CreateIcebergRestCatalogIntegrationOptions{
+		OrReplace:              r.OrReplace,
+		IfNotExists:            r.IfNotExists,
+		name:                   r.name,
+		CatalogNamespace:       r.CatalogNamespace,
+		Enabled:                r.Enabled,
+		RefreshIntervalSeconds: r.RefreshIntervalSeconds,
+		Comment:                r.Comment,
+	}
+	opts.RestConfig = CatalogIntegrationIcebergRestRestConfig{
+		CatalogUri:           r.RestConfig.CatalogUri,
+		Prefix:               r.RestConfig.Prefix,
+		CatalogName:          r.RestConfig.CatalogName,
+		CatalogApiType:       r.RestConfig.CatalogApiType,
+		AccessDelegationMode: r.RestConfig.AccessDelegationMode,
+	}
+	if r.OAuthRestAuthentication != nil {
+		opts.OAuthRestAuthentication = &CatalogIntegrationIcebergRestOauthRestAuthentication{
+			OauthTokenUri:      r.OAuthRestAuthentication.OauthTokenUri,
+			OauthClientId:      r.OAuthRestAuthentication.OauthClientId,
+			OauthClientSecret:  r.OAuthRestAuthentication.OauthClientSecret,
+			OauthAllowedScopes: r.OAuthRestAuthentication.OauthAllowedScopes,
 		}
 	}
-	if r.ObjectStorageCatalogSourceParams != nil {
-		opts.ObjectStorageCatalogSourceParams = &ObjectStorageParams{
-			TableFormat: r.ObjectStorageCatalogSourceParams.TableFormat,
+	if r.BearerRestAuthentication != nil {
+		opts.BearerRestAuthentication = &CatalogIntegrationIcebergRestBearerRestAuthentication{
+			BearerToken: r.BearerRestAuthentication.BearerToken,
 		}
 	}
-	if r.OpenCatalogCatalogSourceParams != nil {
-		opts.OpenCatalogCatalogSourceParams = &OpenCatalogParams{
-			CatalogNamespace: r.OpenCatalogCatalogSourceParams.CatalogNamespace,
-		}
-		opts.OpenCatalogCatalogSourceParams.RestConfig = OpenCatalogRestConfig{
-			CatalogUri:           r.OpenCatalogCatalogSourceParams.RestConfig.CatalogUri,
-			CatalogApiType:       r.OpenCatalogCatalogSourceParams.RestConfig.CatalogApiType,
-			CatalogName:          r.OpenCatalogCatalogSourceParams.RestConfig.CatalogName,
-			AccessDelegationMode: r.OpenCatalogCatalogSourceParams.RestConfig.AccessDelegationMode,
-		}
-		opts.OpenCatalogCatalogSourceParams.RestAuthentication = OAuthRestAuthentication{
-			OauthTokenUri:      r.OpenCatalogCatalogSourceParams.RestAuthentication.OauthTokenUri,
-			OauthClientId:      r.OpenCatalogCatalogSourceParams.RestAuthentication.OauthClientId,
-			OauthClientSecret:  r.OpenCatalogCatalogSourceParams.RestAuthentication.OauthClientSecret,
-			OauthAllowedScopes: r.OpenCatalogCatalogSourceParams.RestAuthentication.OauthAllowedScopes,
+	if r.SigV4RestAuthentication != nil {
+		opts.SigV4RestAuthentication = &CatalogIntegrationIcebergRestSigv4RestAuthentication{
+			Sigv4IamRole:       r.SigV4RestAuthentication.Sigv4IamRole,
+			Sigv4SigningRegion: r.SigV4RestAuthentication.Sigv4SigningRegion,
+			Sigv4ExternalId:    r.SigV4RestAuthentication.Sigv4ExternalId,
 		}
 	}
-	if r.IcebergRestCatalogSourceParams != nil {
-		opts.IcebergRestCatalogSourceParams = &IcebergRestParams{
-			CatalogNamespace: r.IcebergRestCatalogSourceParams.CatalogNamespace,
-		}
-		opts.IcebergRestCatalogSourceParams.RestConfig = IcebergRestRestConfig{
-			CatalogUri:           r.IcebergRestCatalogSourceParams.RestConfig.CatalogUri,
-			Prefix:               r.IcebergRestCatalogSourceParams.RestConfig.Prefix,
-			CatalogName:          r.IcebergRestCatalogSourceParams.RestConfig.CatalogName,
-			CatalogApiType:       r.IcebergRestCatalogSourceParams.RestConfig.CatalogApiType,
-			AccessDelegationMode: r.IcebergRestCatalogSourceParams.RestConfig.AccessDelegationMode,
-		}
-		if r.IcebergRestCatalogSourceParams.OAuthRestAuthentication != nil {
-			opts.IcebergRestCatalogSourceParams.OAuthRestAuthentication = &OAuthRestAuthentication{
-				OauthTokenUri:      r.IcebergRestCatalogSourceParams.OAuthRestAuthentication.OauthTokenUri,
-				OauthClientId:      r.IcebergRestCatalogSourceParams.OAuthRestAuthentication.OauthClientId,
-				OauthClientSecret:  r.IcebergRestCatalogSourceParams.OAuthRestAuthentication.OauthClientSecret,
-				OauthAllowedScopes: r.IcebergRestCatalogSourceParams.OAuthRestAuthentication.OauthAllowedScopes,
-			}
-		}
-		if r.IcebergRestCatalogSourceParams.BearerRestAuthentication != nil {
-			opts.IcebergRestCatalogSourceParams.BearerRestAuthentication = &BearerRestAuthentication{
-				BearerToken: r.IcebergRestCatalogSourceParams.BearerRestAuthentication.BearerToken,
-			}
-		}
-		if r.IcebergRestCatalogSourceParams.SigV4RestAuthentication != nil {
-			opts.IcebergRestCatalogSourceParams.SigV4RestAuthentication = &SigV4RestAuthentication{
-				Sigv4IamRole:       r.IcebergRestCatalogSourceParams.SigV4RestAuthentication.Sigv4IamRole,
-				Sigv4SigningRegion: r.IcebergRestCatalogSourceParams.SigV4RestAuthentication.Sigv4SigningRegion,
-				Sigv4ExternalId:    r.IcebergRestCatalogSourceParams.SigV4RestAuthentication.Sigv4ExternalId,
-			}
-		}
+	return opts
+}
+
+func (r *CreateObjectStorageCatalogIntegrationRequest) toOpts() *CreateObjectStorageCatalogIntegrationOptions {
+	opts := &CreateObjectStorageCatalogIntegrationOptions{
+		OrReplace:              r.OrReplace,
+		IfNotExists:            r.IfNotExists,
+		name:                   r.name,
+		TableFormat:            r.TableFormat,
+		Enabled:                r.Enabled,
+		RefreshIntervalSeconds: r.RefreshIntervalSeconds,
+		Comment:                r.Comment,
+	}
+	return opts
+}
+
+func (r *CreateOpenCatalogCatalogIntegrationRequest) toOpts() *CreateOpenCatalogCatalogIntegrationOptions {
+	opts := &CreateOpenCatalogCatalogIntegrationOptions{
+		OrReplace:              r.OrReplace,
+		IfNotExists:            r.IfNotExists,
+		name:                   r.name,
+		CatalogNamespace:       r.CatalogNamespace,
+		Enabled:                r.Enabled,
+		RefreshIntervalSeconds: r.RefreshIntervalSeconds,
+		Comment:                r.Comment,
+	}
+	opts.RestConfig = CatalogIntegrationOpenCatalogRestConfig{
+		CatalogUri:           r.RestConfig.CatalogUri,
+		CatalogApiType:       r.RestConfig.CatalogApiType,
+		CatalogName:          r.RestConfig.CatalogName,
+		AccessDelegationMode: r.RestConfig.AccessDelegationMode,
+	}
+	opts.RestAuthentication = CatalogIntegrationOpenCatalogRestAuthentication{
+		OauthTokenUri:      r.RestAuthentication.OauthTokenUri,
+		OauthClientId:      r.RestAuthentication.OauthClientId,
+		OauthClientSecret:  r.RestAuthentication.OauthClientSecret,
+		OauthAllowedScopes: r.RestAuthentication.OauthAllowedScopes,
 	}
 	return opts
 }
@@ -159,12 +194,12 @@ func (r *AlterCatalogIntegrationRequest) toOpts() *AlterCatalogIntegrationOption
 			Comment:                r.Set.Comment,
 		}
 		if r.Set.SetOAuthRestAuthentication != nil {
-			opts.Set.SetOAuthRestAuthentication = &SetOAuthRestAuthentication{
+			opts.Set.SetOAuthRestAuthentication = &CatalogIntegrationSetOauthRestAuthentication{
 				OauthClientSecret: r.Set.SetOAuthRestAuthentication.OauthClientSecret,
 			}
 		}
 		if r.Set.SetBearerRestAuthentication != nil {
-			opts.Set.SetBearerRestAuthentication = &SetBearerRestAuthentication{
+			opts.Set.SetBearerRestAuthentication = &CatalogIntegrationSetBearerRestAuthentication{
 				BearerToken: r.Set.SetBearerRestAuthentication.BearerToken,
 			}
 		}

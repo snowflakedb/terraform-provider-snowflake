@@ -49,24 +49,21 @@ func catalogIntegrationOpenCatalogParseIdExt(id string) (sdk.AccountObjectIdenti
 	return sdk.ParseAccountObjectIdentifier(id)
 }
 
-func catalogIntegrationOpenCatalogNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateCatalogIntegrationRequest, error) {
+func catalogIntegrationOpenCatalogNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateOpenCatalogCatalogIntegrationRequest, error) {
 	enabled := d.Get("enabled").(bool)
 
-	openCatalogParams := sdk.NewOpenCatalogParamsRequest()
-	if err := errors.Join(
-		singleBlockAttributeCreate(d, "rest_config", openCatalogParams.WithRestConfig, parseOpenCatalogRestConfig),
-		singleBlockAttributeCreate(d, "rest_authentication", openCatalogParams.WithRestAuthentication, parseOAuthRestAuthentication),
-		stringAttributeCreateBuilder(d, "catalog_namespace", openCatalogParams.WithCatalogNamespace),
-	); err != nil {
+	restConfig, restConfigErr := parseOpenCatalogRestConfig(d, "rest_config.0.")
+	restAuthentication, restAuthenticationErr := parseOpenCatalogRestAuthentication(d, "rest_authentication.0.")
+	if err := errors.Join(restConfigErr, restAuthenticationErr); err != nil {
 		return nil, err
 	}
 
-	request := sdk.NewCreateCatalogIntegrationRequest(id, enabled).WithOpenCatalogCatalogSourceParams(*openCatalogParams)
-	return request, nil
+	return sdk.NewCreateOpenCatalogCatalogIntegrationRequest(id, restConfig, restAuthentication, enabled), nil
 }
 
-func catalogIntegrationOpenCatalogApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.CreateCatalogIntegrationRequest) error {
+func catalogIntegrationOpenCatalogApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.CreateOpenCatalogCatalogIntegrationRequest) error {
 	return errors.Join(
+		stringAttributeCreateBuilder(d, "catalog_namespace", request.WithCatalogNamespace),
 		intAttributeCreateBuilder(d, "refresh_interval_seconds", request.WithRefreshIntervalSeconds),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
@@ -112,8 +109,8 @@ func catalogIntegrationOpenCatalogApplySetUnsetExt(d *schema.ResourceData) (*cat
 	set := sdk.NewCatalogIntegrationSetRequest()
 
 	if errs := errors.Join(
-		attributeMappedValueUpdateSetOnlyAlways(d, "rest_authentication.0.oauth_client_secret", &set.SetOAuthRestAuthentication, func(secret string) (sdk.SetOAuthRestAuthenticationRequest, error) {
-			return *sdk.NewSetOAuthRestAuthenticationRequest(secret), nil
+		attributeMappedValueUpdateSetOnlyAlways(d, "rest_authentication.0.oauth_client_secret", &set.SetOAuthRestAuthentication, func(secret string) (sdk.CatalogIntegrationSetOauthRestAuthenticationRequest, error) {
+			return *sdk.NewCatalogIntegrationSetOauthRestAuthenticationRequest(secret), nil
 		}),
 		handleCatalogIntegrationCommonPropsUpdate(d, set),
 	); errs != nil {
@@ -133,9 +130,9 @@ func catalogIntegrationOpenCatalogSetFieldsNotSetByReadExt(d *schema.ResourceDat
 // SDK incision points
 // =============================================================================
 
-func catalogIntegrationOpenCatalogCreateInSdkExt(ctx context.Context, meta any, _ sdk.AccountObjectIdentifier, req *sdk.CreateCatalogIntegrationRequest) diag.Diagnostics {
+func catalogIntegrationOpenCatalogCreateInSdkExt(ctx context.Context, meta any, _ sdk.AccountObjectIdentifier, req *sdk.CreateOpenCatalogCatalogIntegrationRequest) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	if err := client.CatalogIntegrations.Create(ctx, req); err != nil {
+	if err := client.CatalogIntegrations.CreateOpenCatalog(ctx, req); err != nil {
 		return diag.FromErr(fmt.Errorf("error creating Open Catalog catalog integration, err = %w", err))
 	}
 	return nil
@@ -202,8 +199,8 @@ func catalogIntegrationOpenCatalogAlterUnsetInSdkExt(context.Context, any, sdk.A
 // Pre-existing mappers
 // =============================================================================
 
-func parseOpenCatalogRestConfig(d *schema.ResourceData, prefix string) (sdk.OpenCatalogRestConfigRequest, error) {
-	req := sdk.NewOpenCatalogRestConfigRequest(d.Get(prefix+"catalog_uri").(string), d.Get(prefix+"catalog_name").(string))
+func parseOpenCatalogRestConfig(d *schema.ResourceData, prefix string) (sdk.CatalogIntegrationOpenCatalogRestConfigRequest, error) {
+	req := sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(d.Get(prefix+"catalog_uri").(string), d.Get(prefix+"catalog_name").(string))
 	err := errors.Join(
 		attributeMappedValueCreateBuilder(d, prefix+"catalog_api_type", req.WithCatalogApiType, sdk.ToCatalogIntegrationCatalogApiType),
 		attributeMappedValueCreateBuilder(d, prefix+"access_delegation_mode", req.WithAccessDelegationMode, sdk.ToCatalogIntegrationAccessDelegationMode),

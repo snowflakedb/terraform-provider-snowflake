@@ -45,6 +45,7 @@ var CatalogIntegrationAwsGlueAttrs = struct {
 		Description:   "Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh. For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.",
 		Min:           new(1),
 		CreateMapping: ssot.IntAttributeCreateBuilder,
+		CreateSql:     ssot.IntParameter(ssot.NoQuotes()),
 	},
 	Comment: ssot.Attribute{
 		Name:          "comment",
@@ -100,6 +101,12 @@ var CatalogIntegrationAwsGlueAttrs = struct {
 	GlueAwsExternalId: ssot.Attribute{Name: "glue_aws_external_id", Type: ssot.AttrString, Readonly: true},
 }
 
+var catalogIntegrationAwsGlueCatalogSourceStatic = ssot.Attribute{
+	Name:      "catalog_source_glue",
+	SqlOnly:   true,
+	CreateSql: ssot.StaticSQL("catalogSource", "CATALOG_SOURCE = GLUE"),
+}
+
 var CatalogIntegrationAwsGlue = ssot.Object{
 	Name:                   "CatalogIntegrationAwsGlue",
 	NamePlural:             "CatalogIntegrations",
@@ -135,6 +142,20 @@ var CatalogIntegrationAwsGlue = ssot.Object{
 		CatalogIntegrationAwsGlueAttrs.GlueCatalogId,
 		CatalogIntegrationAwsGlueAttrs.GlueRegion,
 		CatalogIntegrationAwsGlueAttrs.CatalogNamespace,
+	},
+	Create: ssot.CreateSpec{
+		Doc: "https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-glue",
+		Clauses: []*ssot.Attribute{
+			&catalogIntegrationAwsGlueCatalogSourceStatic,
+			&catalogIntegrationTableFormatIceberg,
+			&CatalogIntegrationAwsGlueAttrs.GlueAwsRoleArn,
+			&CatalogIntegrationAwsGlueAttrs.GlueCatalogId,
+			&CatalogIntegrationAwsGlueAttrs.GlueRegion,
+			&CatalogIntegrationAwsGlueAttrs.CatalogNamespace,
+			&CatalogIntegrationAwsGlueAttrs.Enabled,
+			&CatalogIntegrationAwsGlueAttrs.RefreshIntervalSeconds,
+			&CatalogIntegrationAwsGlueAttrs.Comment,
+		},
 	},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{

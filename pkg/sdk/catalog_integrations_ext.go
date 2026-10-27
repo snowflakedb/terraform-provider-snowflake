@@ -8,7 +8,19 @@ import (
 	"strings"
 )
 
-func (r *CreateCatalogIntegrationRequest) GetName() AccountObjectIdentifier {
+func (r *CreateAwsGlueCatalogIntegrationRequest) GetName() AccountObjectIdentifier {
+	return r.name
+}
+
+func (r *CreateIcebergRestCatalogIntegrationRequest) GetName() AccountObjectIdentifier {
+	return r.name
+}
+
+func (r *CreateObjectStorageCatalogIntegrationRequest) GetName() AccountObjectIdentifier {
+	return r.name
+}
+
+func (r *CreateOpenCatalogCatalogIntegrationRequest) GetName() AccountObjectIdentifier {
 	return r.name
 }
 

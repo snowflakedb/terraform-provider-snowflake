@@ -265,3 +265,59 @@ func Test_createQueryStruct_exactlyOneOf(t *testing.T) {
 		})
 	})
 }
+
+func Test_alterQueryStruct_setBlocksAllowEmptyAndConflicts(t *testing.T) {
+	secret := ssot.Attribute{Name: "client_secret", Type: ssot.AttrString, Required: true}
+	token := ssot.Attribute{Name: "bearer_token", Type: ssot.AttrString, Required: true}
+	setOauth := ssot.Attribute{
+		Name:     "set_oauth",
+		Type:     ssot.AttrObject,
+		SqlOnly:  true,
+		SetSql:   ssot.ObjectParameter(ssot.Sql("AUTHENTICATION ="), ssot.Parentheses(), ssot.FieldName("SetOAuth")),
+		Children: []ssot.Attribute{secret},
+	}
+	setBearer := ssot.Attribute{
+		Name:     "set_bearer",
+		Type:     ssot.AttrObject,
+		SqlOnly:  true,
+		SetSql:   ssot.ObjectParameter(ssot.Sql("AUTHENTICATION ="), ssot.Parentheses()),
+		Children: []ssot.Attribute{token},
+	}
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString, SetSql: ssot.StringParameter(ssot.AllowEmpty())}
+	obj := ssot.Object{
+		Name:       "Widget",
+		NamePlural: "Widgets",
+		IdType:     "AccountObjectIdentifier",
+		Set:        []*ssot.Attribute{&setOauth, &setBearer, &comment},
+		Alter: ssot.AlterSpec{
+			Clauses:              []ssot.AlterClause{ssot.AlterSet()},
+			SetConflictingFields: [][]*ssot.Attribute{{&setOauth, &setBearer}},
+		},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter())},
+	}
+	ssot.ValidateObject(obj)
+
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(obj)
+	auth := ListOptions().SQL("AUTHENTICATION =").Parentheses().NoComma()
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-widget",
+		NewQueryStruct("AlterWidget").
+			Alter().
+			SQL("WIDGET").
+			IfExists().
+			Name().
+			OptionalQueryStructField(
+				"Set",
+				NewQueryStruct("WidgetSet").
+					OptionalQueryStructField("SetOAuth", NewQueryStruct("WidgetSetOauth").TextAssignment("CLIENT_SECRET", ParameterOptions().SingleQuotes().Required()), auth).
+					OptionalQueryStructField("SetBearer", NewQueryStruct("WidgetSetBearer").TextAssignment("BEARER_TOKEN", ParameterOptions().SingleQuotes().Required()), auth).
+					OptionalAssignment("COMMENT", "StringAllowEmpty", ParameterOptions()).
+					WithValidation(ConflictingFields, "SetOAuth", "SetBearer").
+					WithValidation(AtLeastOneValueSet, "SetOAuth", "SetBearer", "Comment"),
+				KeywordOptions().SQL("SET"),
+			).
+			WithValidation(ValidIdentifier, "name").
+			WithValidation(ExactlyOneValueSet, "Set"),
+	)
+	requireSameOperations(t, want, got)
+}

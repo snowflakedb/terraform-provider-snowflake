@@ -267,10 +267,9 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 			// Change force new "table_format" prop externally
 			{
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
-						WithOrReplace(true).
-						WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(sdk.CatalogIntegrationTableFormatDelta))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+					createRequest := sdk.NewCreateObjectStorageCatalogIntegrationRequest(id, sdk.CatalogIntegrationTableFormatDelta, false).
+						WithOrReplace(true)
+					testClient().CatalogIntegration.CreateObjectStorageFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -285,10 +284,9 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 			// Change "catalog_source" externally
 			{
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
-						WithOrReplace(true).
-						WithAwsGlueCatalogSourceParams(*sdk.NewAwsGlueParamsRequest("arn:aws:iam::123456789012:role/sqsAccess", random.NumericN(15)))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+					createRequest := sdk.NewCreateAwsGlueCatalogIntegrationRequest(id, "arn:aws:iam::123456789012:role/sqsAccess", random.NumericN(15), false).
+						WithOrReplace(true)
+					testClient().CatalogIntegration.CreateAwsGlueFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -422,9 +420,8 @@ func TestAcc_CatalogIntegrationObjectStorage_ImportValidation(t *testing.T) {
 	t.Cleanup(notificationIntegrationCleanup)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	catalogIntegrationAwsGlue, catalogIntegrationAwsGlueCleanup := testClient().CatalogIntegration.CreateFunc(t,
-		sdk.NewCreateCatalogIntegrationRequest(id, false).
-			WithAwsGlueCatalogSourceParams(*sdk.NewAwsGlueParamsRequest("arn:aws:iam::123456789012:role/sqsAccess", random.NumericN(15))))
+	catalogIntegrationAwsGlue, catalogIntegrationAwsGlueCleanup := testClient().CatalogIntegration.CreateAwsGlueFunc(t,
+		sdk.NewCreateAwsGlueCatalogIntegrationRequest(id, "arn:aws:iam::123456789012:role/sqsAccess", random.NumericN(15), false))
 	t.Cleanup(catalogIntegrationAwsGlueCleanup)
 
 	tableFormat := string(sdk.CatalogIntegrationTableFormatDelta)
@@ -481,11 +478,10 @@ func TestAcc_CatalogIntegrationObjectStorage_Import(t *testing.T) {
 			{
 				PreConfig: func() {
 					tableFormatEnum, _ := sdk.ToCatalogIntegrationTableFormat(tableFormat)
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+					createRequest := sdk.NewCreateObjectStorageCatalogIntegrationRequest(id, tableFormatEnum, false).
 						WithRefreshIntervalSeconds(refreshIntervalSeconds).
-						WithComment(comment).
-						WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(tableFormatEnum))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+						WithComment(comment)
+					testClient().CatalogIntegration.CreateObjectStorageFunc(t, createRequest)
 				},
 				Config:             config.FromModels(t, allAttributes),
 				ResourceName:       ref,

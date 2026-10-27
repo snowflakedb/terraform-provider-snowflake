@@ -59,28 +59,28 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 	refreshIntervalSeconds := random.IntRange(30, 86400)
 	externalRefreshIntervalSeconds := random.IntRange(30, 86400)
 
-	basicRestAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}),
+	basicRestAuth := []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}),
 	}
-	completeRestAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
+	completeRestAuth := []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
 			WithOauthTokenUri(oAuthTokenUri),
 	}
-	changedRestAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest(newOAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}, {Value: additionalOAuthAllowedScope}}).
+	changedRestAuth := []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest(newOAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}, {Value: additionalOAuthAllowedScope}}).
 			WithOauthTokenUri(privateOAuthTokenUri),
 	}
 
-	basicRestConfig := []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest(catalogUri, catalogName),
+	basicRestConfig := []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(catalogUri, catalogName),
 	}
-	completeRestConfig := []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest(catalogUri, catalogName).
+	completeRestConfig := []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(catalogUri, catalogName).
 			WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
 			WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
 	}
-	changedRestConfig := []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest(privateCatalogUri, newCatalogName).
+	changedRestConfig := []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(privateCatalogUri, newCatalogName).
 			WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePrivate).
 			WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials),
 	}
@@ -106,8 +106,8 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
 		WithCatalogNamespace(newCatalogNamespace)
 
-	withChangedOAuthClientSecret := model.CatalogIntegrationOpenCatalogVar("t", id.Name(), false, []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}),
+	withChangedOAuthClientSecret := model.CatalogIntegrationOpenCatalogVar("t", id.Name(), false, []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest(oAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}),
 	}, changedRestConfig, oauthClientSecretVariableName).
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -554,13 +554,10 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			// Change force new "catalog_namespace" prop externally
 			{
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
-						WithOrReplace(true).
-						WithOpenCatalogCatalogSourceParams(*sdk.NewOpenCatalogParamsRequest().
-							WithRestConfig(completeRestConfig[0]).
-							WithRestAuthentication(completeRestAuth[0]).
-							WithCatalogNamespace(externalCatalogNamespace))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+					createRequest := sdk.NewCreateOpenCatalogCatalogIntegrationRequest(id, completeRestConfig[0], completeRestAuth[0], false).
+						WithCatalogNamespace(externalCatalogNamespace).
+						WithOrReplace(true)
+					testClient().CatalogIntegration.CreateOpenCatalogFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -587,12 +584,9 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			// Change force new props in "rest_config" externally
 			{
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
-						WithOrReplace(true).
-						WithOpenCatalogCatalogSourceParams(*sdk.NewOpenCatalogParamsRequest().
-							WithRestConfig(completeRestConfig[0]).
-							WithRestAuthentication(completeRestAuth[0]))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+					createRequest := sdk.NewCreateOpenCatalogCatalogIntegrationRequest(id, completeRestConfig[0], completeRestAuth[0], false).
+						WithOrReplace(true)
+					testClient().CatalogIntegration.CreateOpenCatalogFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -636,15 +630,10 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			// Change force new props in "rest_authentication" externally
 			{
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
-						WithOrReplace(true).
-						WithOpenCatalogCatalogSourceParams(*sdk.NewOpenCatalogParamsRequest().
-							WithRestConfig(changedRestConfig[0]).
-							WithRestAuthentication(
-								*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
-									WithOauthTokenUri(privateOAuthTokenUri),
-							))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+					createRequest := sdk.NewCreateOpenCatalogCatalogIntegrationRequest(id, changedRestConfig[0], *sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
+						WithOauthTokenUri(privateOAuthTokenUri), false).
+						WithOrReplace(true)
+					testClient().CatalogIntegration.CreateOpenCatalogFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					// Open Catalog only accepts one OAuth token URI (<account_url>/v1/oauth/tokens),
@@ -664,10 +653,9 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			// Change "catalog_source" externally
 			{
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
-						WithOrReplace(true).
-						WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(sdk.CatalogIntegrationTableFormatDelta))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+					createRequest := sdk.NewCreateObjectStorageCatalogIntegrationRequest(id, sdk.CatalogIntegrationTableFormatDelta, false).
+						WithOrReplace(true)
+					testClient().CatalogIntegration.CreateObjectStorageFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -686,11 +674,11 @@ func TestAcc_CatalogIntegrationOpenCatalog_Validations(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	catalogUri := "https://testorg-testacc.snowflakecomputing.com/polaris/api/catalog"
 	catalogName := "my_catalog_name"
-	restConfig := []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest(catalogUri, catalogName),
+	restConfig := []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(catalogUri, catalogName),
 	}
-	restAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
+	restAuth := []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
 	}
 
 	refreshIntervalNonPositive := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, restConfig).
@@ -699,39 +687,39 @@ func TestAcc_CatalogIntegrationOpenCatalog_Validations(t *testing.T) {
 	emptyCatalogNamespace := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, restConfig).
 		WithCatalogNamespace("")
 
-	emptyCatalogUri := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest("", catalogName),
+	emptyCatalogUri := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest("", catalogName),
 	})
 
-	emptyCatalogName := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest(catalogUri, ""),
+	emptyCatalogName := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(catalogUri, ""),
 	})
 
-	invalidCatalogApiType := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest(catalogUri, catalogName).
+	invalidCatalogApiType := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(catalogUri, catalogName).
 			WithCatalogApiType("invalid"),
 	})
 
-	invalidAccessDelegationMode := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest(catalogUri, catalogName).
+	invalidAccessDelegationMode := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(catalogUri, catalogName).
 			WithAccessDelegationMode("invalid"),
 	})
 
-	emptyOAuthTokenUri := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}).
+	emptyOAuthTokenUri := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}).
 			WithOauthTokenUri(""),
 	}, restConfig)
 
-	emptyOAuthClientId := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest("", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
+	emptyOAuthClientId := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest("", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
 	}, restConfig)
 
-	emptyOAuthClientSecret := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest("my_client_id", "", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
+	emptyOAuthClientSecret := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest("my_client_id", "", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
 	}, restConfig)
 
-	emptyOAuthScopes := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{}),
+	emptyOAuthScopes := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{}),
 	}, restConfig)
 
 	resource.Test(t, resource.TestCase{
@@ -796,11 +784,11 @@ func TestAcc_CatalogIntegrationOpenCatalog_Validations(t *testing.T) {
 }
 
 func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase_ImportValidation(t *testing.T) {
-	restConfig := []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest("https://testorg-testacc.snowflakecomputing.com/polaris/api/catalog", "my_catalog_name"),
+	restConfig := []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest("https://testorg-testacc.snowflakecomputing.com/polaris/api/catalog", "my_catalog_name"),
 	}
-	restAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
+	restAuth := []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
 	}
 
 	notificationIntegration, notificationIntegrationCleanup := testClient().NotificationIntegration.Create(t)
@@ -856,12 +844,12 @@ func TestAcc_CatalogIntegrationOpenCatalog_CompleteUseCase(t *testing.T) {
 	comment := random.Comment()
 	refreshIntervalSeconds := random.IntRange(30, 86400)
 
-	completeRestAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
+	completeRestAuth := []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
 			WithOauthTokenUri(oAuthTokenUri),
 	}
-	completeRestConfig := []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest(catalogUri, catalogName).
+	completeRestConfig := []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(catalogUri, catalogName).
 			WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
 			WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
 	}
@@ -991,13 +979,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_Import(t *testing.T) {
 	comment := random.Comment()
 	refreshIntervalSeconds := random.IntRange(30, 86400)
 
-	completeRestAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
+	completeRestAuth := []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
 			WithOauthTokenUri(oAuthTokenUri),
 	}
 
-	completeRestConfig := []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest(catalogUri, catalogName).
+	completeRestConfig := []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(catalogUri, catalogName).
 			WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
 			WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
 	}
@@ -1018,14 +1006,11 @@ func TestAcc_CatalogIntegrationOpenCatalog_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+					createRequest := sdk.NewCreateOpenCatalogCatalogIntegrationRequest(id, completeRestConfig[0], completeRestAuth[0], false).
+						WithCatalogNamespace(catalogNamespace).
 						WithRefreshIntervalSeconds(refreshIntervalSeconds).
-						WithComment(comment).
-						WithOpenCatalogCatalogSourceParams(*sdk.NewOpenCatalogParamsRequest().
-							WithRestConfig(completeRestConfig[0]).
-							WithRestAuthentication(completeRestAuth[0]).
-							WithCatalogNamespace(catalogNamespace))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+						WithComment(comment)
+					testClient().CatalogIntegration.CreateOpenCatalogFunc(t, createRequest)
 				},
 				Config:             config.FromModels(t, allAttributes, oauthClientSecretVariableModel),
 				ConfigVariables:    oauthClientSecretConfigVariables,

@@ -47,12 +47,6 @@ var catalogIntegrationOpenCatalogAttributesSchema = catalogIntegrationOpenCatalo
 					ForceNew:    true,
 					Description: "Specifies Open Catalog account URL.",
 				},
-				"catalog_name": {
-					Type:        tfschema.TypeString,
-					Required:    true,
-					ForceNew:    true,
-					Description: "Specifies the name of the catalog to use in Open Catalog.",
-				},
 				"catalog_api_type": {
 					Type:             tfschema.TypeString,
 					Optional:         true,
@@ -60,6 +54,12 @@ var catalogIntegrationOpenCatalogAttributesSchema = catalogIntegrationOpenCatalo
 					ValidateDiagFunc: sdkValidation(sdk.ToCatalogIntegrationCatalogApiType),
 					DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationCatalogApiType)),
 					Description:      "Specifies how Snowflake connects to Open Catalog. " + enumValuesDescription(sdk.AllCatalogIntegrationCatalogApiTypes),
+				},
+				"catalog_name": {
+					Type:        tfschema.TypeString,
+					Required:    true,
+					ForceNew:    true,
+					Description: "Specifies the name of the catalog to use in Open Catalog.",
 				},
 				"access_delegation_mode": {
 					Type:             tfschema.TypeString,

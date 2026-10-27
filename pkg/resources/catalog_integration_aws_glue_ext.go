@@ -43,24 +43,20 @@ func catalogIntegrationAwsGlueParseIdExt(id string) (sdk.AccountObjectIdentifier
 	return sdk.ParseAccountObjectIdentifier(id)
 }
 
-func catalogIntegrationAwsGlueNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateCatalogIntegrationRequest, error) {
+func catalogIntegrationAwsGlueNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateAwsGlueCatalogIntegrationRequest, error) {
 	enabled := d.Get("enabled").(bool)
 	glueAwsRoleArn := d.Get("glue_aws_role_arn").(string)
 	glueCatalogId := d.Get("glue_catalog_id").(string)
 
-	request := sdk.NewCreateCatalogIntegrationRequest(id, enabled)
-	awsGlueRequest := sdk.NewAwsGlueParamsRequest(glueAwsRoleArn, glueCatalogId)
-	// Attached before optionals so glue_region and catalog_namespace can be written
-	// onto this params pointer. The create request matches the previous post-optional copy.
-	return request.WithAwsGlueCatalogSourceParams(*awsGlueRequest), nil
+	return sdk.NewCreateAwsGlueCatalogIntegrationRequest(id, glueAwsRoleArn, glueCatalogId, enabled), nil
 }
 
-func catalogIntegrationAwsGlueApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.CreateCatalogIntegrationRequest) error {
+func catalogIntegrationAwsGlueApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.CreateAwsGlueCatalogIntegrationRequest) error {
 	return errors.Join(
 		intAttributeCreateBuilder(d, "refresh_interval_seconds", request.WithRefreshIntervalSeconds),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
-		stringAttributeCreateBuilder(d, "glue_region", request.AwsGlueCatalogSourceParams.WithGlueRegion),
-		stringAttributeCreateBuilder(d, "catalog_namespace", request.AwsGlueCatalogSourceParams.WithCatalogNamespace),
+		stringAttributeCreateBuilder(d, "glue_region", request.WithGlueRegion),
+		stringAttributeCreateBuilder(d, "catalog_namespace", request.WithCatalogNamespace),
 	)
 }
 
@@ -118,9 +114,9 @@ func catalogIntegrationAwsGlueSetFieldsNotSetByReadExt(_ *schema.ResourceData, _
 // SDK incision points
 // =============================================================================
 
-func catalogIntegrationAwsGlueCreateInSdkExt(ctx context.Context, meta any, _ sdk.AccountObjectIdentifier, req *sdk.CreateCatalogIntegrationRequest) diag.Diagnostics {
+func catalogIntegrationAwsGlueCreateInSdkExt(ctx context.Context, meta any, _ sdk.AccountObjectIdentifier, req *sdk.CreateAwsGlueCatalogIntegrationRequest) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	if err := client.CatalogIntegrations.Create(ctx, req); err != nil {
+	if err := client.CatalogIntegrations.CreateAwsGlue(ctx, req); err != nil {
 		return diag.FromErr(fmt.Errorf("error creating AWS Glue catalog integration, err = %w", err))
 	}
 	return nil

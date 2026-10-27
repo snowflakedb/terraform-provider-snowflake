@@ -48,19 +48,17 @@ func catalogIntegrationObjectStorageParseIdExt(id string) (sdk.AccountObjectIden
 	return sdk.ParseAccountObjectIdentifier(id)
 }
 
-func catalogIntegrationObjectStorageNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateCatalogIntegrationRequest, error) {
+func catalogIntegrationObjectStorageNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateObjectStorageCatalogIntegrationRequest, error) {
 	enabled := d.Get("enabled").(bool)
 	tableFormat, err := sdk.ToCatalogIntegrationTableFormat(d.Get("table_format").(string))
 	if err != nil {
 		return nil, err
 	}
 
-	request := sdk.NewCreateCatalogIntegrationRequest(id, enabled)
-	objectStorageRequest := sdk.NewObjectStorageParamsRequest(tableFormat)
-	return request.WithObjectStorageCatalogSourceParams(*objectStorageRequest), nil
+	return sdk.NewCreateObjectStorageCatalogIntegrationRequest(id, tableFormat, enabled), nil
 }
 
-func catalogIntegrationObjectStorageApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.CreateCatalogIntegrationRequest) error {
+func catalogIntegrationObjectStorageApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.CreateObjectStorageCatalogIntegrationRequest) error {
 	return errors.Join(
 		intAttributeCreateBuilder(d, "refresh_interval_seconds", request.WithRefreshIntervalSeconds),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
@@ -113,9 +111,9 @@ func catalogIntegrationObjectStorageSetFieldsNotSetByReadExt(_ *schema.ResourceD
 // SDK incision points
 // =============================================================================
 
-func catalogIntegrationObjectStorageCreateInSdkExt(ctx context.Context, meta any, _ sdk.AccountObjectIdentifier, req *sdk.CreateCatalogIntegrationRequest) diag.Diagnostics {
+func catalogIntegrationObjectStorageCreateInSdkExt(ctx context.Context, meta any, _ sdk.AccountObjectIdentifier, req *sdk.CreateObjectStorageCatalogIntegrationRequest) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	if err := client.CatalogIntegrations.Create(ctx, req); err != nil {
+	if err := client.CatalogIntegrations.CreateObjectStorage(ctx, req); err != nil {
 		return diag.FromErr(fmt.Errorf("error creating object storage catalog integration, err = %w", err))
 	}
 	return nil

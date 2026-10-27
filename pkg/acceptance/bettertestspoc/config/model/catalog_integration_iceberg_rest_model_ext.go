@@ -7,7 +7,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (c *CatalogIntegrationIcebergRestModel) WithRestConfig(restConfig []sdk.IcebergRestRestConfigRequest) *CatalogIntegrationIcebergRestModel {
+func (c *CatalogIntegrationIcebergRestModel) WithRestConfig(restConfig []sdk.CatalogIntegrationIcebergRestRestConfigRequest) *CatalogIntegrationIcebergRestModel {
 	if len(restConfig) == 0 {
 		return c
 	}
@@ -31,7 +31,7 @@ func (c *CatalogIntegrationIcebergRestModel) WithRestConfig(restConfig []sdk.Ice
 	return c
 }
 
-func (c *CatalogIntegrationIcebergRestModel) WithOauthRestAuthentication(oauth sdk.OAuthRestAuthenticationRequest, oauthClientSecretVariableName string) *CatalogIntegrationIcebergRestModel {
+func (c *CatalogIntegrationIcebergRestModel) WithOauthRestAuthentication(oauth sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationRequest, oauthClientSecretVariableName string) *CatalogIntegrationIcebergRestModel {
 	scopeVars := make([]tfconfig.Variable, len(oauth.OauthAllowedScopes))
 	for i, s := range oauth.OauthAllowedScopes {
 		scopeVars[i] = tfconfig.StringVariable(s.Value)
@@ -55,7 +55,7 @@ func (c *CatalogIntegrationIcebergRestModel) WithBearerRestAuthentication(bearer
 	return c
 }
 
-func (c *CatalogIntegrationIcebergRestModel) WithSigV4RestAuthentication(sigv4 sdk.SigV4RestAuthenticationRequest) *CatalogIntegrationIcebergRestModel {
+func (c *CatalogIntegrationIcebergRestModel) WithSigV4RestAuthentication(sigv4 sdk.CatalogIntegrationIcebergRestSigv4RestAuthenticationRequest) *CatalogIntegrationIcebergRestModel {
 	m := map[string]tfconfig.Variable{
 		"sigv4_iam_role": tfconfig.StringVariable(sigv4.Sigv4IamRole),
 	}
@@ -73,11 +73,11 @@ func CatalogIntegrationIcebergRestOAuth(
 	resourceName string,
 	name string,
 	enabled bool,
-	restConfig sdk.IcebergRestRestConfigRequest,
-	oAuthRestAuthentication sdk.OAuthRestAuthenticationRequest,
+	restConfig sdk.CatalogIntegrationIcebergRestRestConfigRequest,
+	oAuthRestAuthentication sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationRequest,
 	oauthClientSecretVariableName string,
 ) *CatalogIntegrationIcebergRestModel {
-	return CatalogIntegrationIcebergRest(resourceName, name, enabled, []sdk.IcebergRestRestConfigRequest{restConfig}).
+	return CatalogIntegrationIcebergRest(resourceName, name, enabled, []sdk.CatalogIntegrationIcebergRestRestConfigRequest{restConfig}).
 		WithOauthRestAuthentication(oAuthRestAuthentication, oauthClientSecretVariableName)
 }
 
@@ -85,10 +85,10 @@ func CatalogIntegrationIcebergRestBearer(
 	resourceName string,
 	name string,
 	enabled bool,
-	restConfig sdk.IcebergRestRestConfigRequest,
+	restConfig sdk.CatalogIntegrationIcebergRestRestConfigRequest,
 	bearerTokenVariableName string,
 ) *CatalogIntegrationIcebergRestModel {
-	return CatalogIntegrationIcebergRest(resourceName, name, enabled, []sdk.IcebergRestRestConfigRequest{restConfig}).
+	return CatalogIntegrationIcebergRest(resourceName, name, enabled, []sdk.CatalogIntegrationIcebergRestRestConfigRequest{restConfig}).
 		WithBearerRestAuthentication(bearerTokenVariableName)
 }
 
@@ -96,9 +96,9 @@ func CatalogIntegrationIcebergRestSigV4(
 	resourceName string,
 	name string,
 	enabled bool,
-	restConfig sdk.IcebergRestRestConfigRequest,
-	sigV4RestAuthentication sdk.SigV4RestAuthenticationRequest,
+	restConfig sdk.CatalogIntegrationIcebergRestRestConfigRequest,
+	sigV4RestAuthentication sdk.CatalogIntegrationIcebergRestSigv4RestAuthenticationRequest,
 ) *CatalogIntegrationIcebergRestModel {
-	return CatalogIntegrationIcebergRest(resourceName, name, enabled, []sdk.IcebergRestRestConfigRequest{restConfig}).
+	return CatalogIntegrationIcebergRest(resourceName, name, enabled, []sdk.CatalogIntegrationIcebergRestRestConfigRequest{restConfig}).
 		WithSigV4RestAuthentication(sigV4RestAuthentication)
 }
