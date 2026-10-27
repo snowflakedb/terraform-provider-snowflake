@@ -111,7 +111,7 @@ func ReadExternalVolumeFunc(withExternalChangesMarking bool) tfschema.ReadContex
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ExternalVolumeDetailsToSchema(externalVolumeDetails)}),
 			externalVolumeSetDescribeOutputExt(d, id, externalVolumeDetails, nil, withExternalChangesMarking),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			externalVolumeSetConfigFieldsExt(d, externalVolume),
+			externalVolumeSetConfigFields(d, externalVolume),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
@@ -146,5 +146,11 @@ func externalVolumeApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.C
 	return errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 		booleanStringAttributeCreateBuilder(d, "allow_writes", request.WithAllowWrites),
+	)
+}
+
+func externalVolumeSetConfigFields(d *tfschema.ResourceData, obj *sdk.ExternalVolume) error {
+	return errors.Join(
+		d.Set("comment", obj.Comment),
 	)
 }

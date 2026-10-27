@@ -47,6 +47,15 @@ func (m ResourceModel) Prefix() string {
 	return genhelpers.FirstLetterLowercase(m.Name)
 }
 
+// ShowObjectName is the SDK type of the SHOW row passed to SetConfigFields.
+// A variant's row is the parent type.
+func (m ResourceModel) ShowObjectName() string {
+	if m.VariantOf != nil && m.VariantOf.Name != "" {
+		return m.VariantOf.Name
+	}
+	return m.Name
+}
+
 func (m ResourceModel) EffectiveSdkCreateRequestObjectName() string {
 	if m.SdkCreateRequestObjectName != "" {
 		return m.SdkCreateRequestObjectName

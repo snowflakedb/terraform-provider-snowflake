@@ -74,10 +74,6 @@ func externalVolumeHandleExternalChangesExt(d *schema.ResourceData, externalVolu
 	)
 }
 
-func externalVolumeSetConfigFieldsExt(d *schema.ResourceData, externalVolume *sdk.ExternalVolume) error {
-	return d.Set("comment", externalVolume.Comment)
-}
-
 func externalVolumeApplySetUnsetExt(d *schema.ResourceData) (*externalVolumeAlterRequestsExt, error) {
 	set := sdk.NewExternalVolumeSetRequest()
 	errs := errors.Join(

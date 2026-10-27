@@ -148,7 +148,7 @@ func ReadSchemaFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 			schemaSetDescribeOutputExt(d, id, schemaDetails, describeErr, withExternalChangesMarking),
 			d.Set(ParametersAttributeName, []map[string]any{schemas.SchemaParametersToSchema(rawSchemaParameters, meta.(*provider.Context))}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			schemaSetConfigFieldsExt(d, schema),
+			schemaSetConfigFields(d, schema),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
@@ -202,4 +202,10 @@ func DeleteSchema(ctx context.Context, d *tfschema.ResourceData, meta any) diag.
 			return client.Schemas.DropSafely
 		},
 	)(ctx, d, meta)
+}
+
+func schemaSetConfigFields(d *tfschema.ResourceData, obj *sdk.Schema) error {
+	return errors.Join(
+		d.Set("comment", obj.Comment),
+	)
 }

@@ -135,3 +135,7 @@ var {{ .Prefix }}CustomizeDiff = TrackingCustomDiffWrapper(resources.{{ .Name }}
 
 {{ template "generatedDelete" . }}
 {{- end }}
+{{- if .Hooks.SetConfigFields.Generate }}
+
+{{ template "generatedSetConfigFields" . }}
+{{- end }}
