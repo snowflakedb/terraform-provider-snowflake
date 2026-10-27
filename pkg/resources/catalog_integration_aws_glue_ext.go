@@ -20,14 +20,9 @@ import (
 // =============================================================================
 
 var (
-	catalogIntegrationAwsGlueCreateExt = TrackingCreateWrapper(resources.CatalogIntegrationAwsGlue, CreateCatalogIntegrationAwsGlue)
-	catalogIntegrationAwsGlueReadExt   = TrackingReadWrapper(resources.CatalogIntegrationAwsGlue, ReadCatalogIntegrationAwsGlueFunc(true))
-	catalogIntegrationAwsGlueUpdateExt = TrackingUpdateWrapper(resources.CatalogIntegrationAwsGlue, UpdateCatalogIntegrationAwsGlue)
-	// Same delete wiring as deleteCatalogIntegrationFunc: ParseAccountObjectIdentifier and CatalogIntegrations.DropSafely.
-	catalogIntegrationAwsGlueDeleteExt = TrackingDeleteWrapper(resources.CatalogIntegrationAwsGlue, ResourceDeleteContextFunc(
-		catalogIntegrationAwsGlueParseIdExt,
-		catalogIntegrationAwsGlueDropSafelyInSdkExt,
-	))
+	catalogIntegrationAwsGlueCreateExt      = TrackingCreateWrapper(resources.CatalogIntegrationAwsGlue, CreateCatalogIntegrationAwsGlue)
+	catalogIntegrationAwsGlueReadExt        = TrackingReadWrapper(resources.CatalogIntegrationAwsGlue, ReadCatalogIntegrationAwsGlueFunc(true))
+	catalogIntegrationAwsGlueUpdateExt      = TrackingUpdateWrapper(resources.CatalogIntegrationAwsGlue, UpdateCatalogIntegrationAwsGlue)
 	catalogIntegrationAwsGlueDescriptionExt = "Resource used to manage AWS Glue catalog integration objects. For more information, check [catalog integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-glue)."
 	// CustomizeDiff was not wrapped in TrackingCustomDiffWrapper.
 	catalogIntegrationAwsGlueCustomizeDiffExt = customdiff.All(
@@ -186,8 +181,4 @@ func catalogIntegrationAwsGlueAlterSetInSdkExt(ctx context.Context, _ *schema.Re
 
 func catalogIntegrationAwsGlueAlterUnsetInSdkExt(context.Context, any, sdk.AccountObjectIdentifier, *catalogIntegrationAwsGlueAlterRequestsExt) error {
 	return nil
-}
-
-func catalogIntegrationAwsGlueDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
-	return client.CatalogIntegrations.DropSafely
 }

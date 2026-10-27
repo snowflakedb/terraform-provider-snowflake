@@ -20,14 +20,9 @@ import (
 // =============================================================================
 
 var (
-	catalogIntegrationObjectStorageCreateExt = TrackingCreateWrapper(resources.CatalogIntegrationObjectStorage, CreateCatalogIntegrationObjectStorage)
-	catalogIntegrationObjectStorageReadExt   = TrackingReadWrapper(resources.CatalogIntegrationObjectStorage, ReadCatalogIntegrationObjectStorageFunc(true))
-	catalogIntegrationObjectStorageUpdateExt = TrackingUpdateWrapper(resources.CatalogIntegrationObjectStorage, UpdateCatalogIntegrationObjectStorage)
-	// Same delete wiring as deleteCatalogIntegrationFunc: ParseAccountObjectIdentifier and CatalogIntegrations.DropSafely.
-	catalogIntegrationObjectStorageDeleteExt = TrackingDeleteWrapper(resources.CatalogIntegrationObjectStorage, ResourceDeleteContextFunc(
-		catalogIntegrationObjectStorageParseIdExt,
-		catalogIntegrationObjectStorageDropSafelyInSdkExt,
-	))
+	catalogIntegrationObjectStorageCreateExt      = TrackingCreateWrapper(resources.CatalogIntegrationObjectStorage, CreateCatalogIntegrationObjectStorage)
+	catalogIntegrationObjectStorageReadExt        = TrackingReadWrapper(resources.CatalogIntegrationObjectStorage, ReadCatalogIntegrationObjectStorageFunc(true))
+	catalogIntegrationObjectStorageUpdateExt      = TrackingUpdateWrapper(resources.CatalogIntegrationObjectStorage, UpdateCatalogIntegrationObjectStorage)
 	catalogIntegrationObjectStorageDescriptionExt = "Resource used to manage catalog integration objects for Apache Iceberg™ table files or Delta table files in object storage. For more information, check [catalog integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-object-storage)."
 	// No TrackingCustomDiffWrapper: the resource did not use one.
 	catalogIntegrationObjectStorageCustomizeDiffExt = customdiff.All(
@@ -180,8 +175,4 @@ func catalogIntegrationObjectStorageAlterSetInSdkExt(ctx context.Context, _ *sch
 
 func catalogIntegrationObjectStorageAlterUnsetInSdkExt(context.Context, any, sdk.AccountObjectIdentifier, *catalogIntegrationObjectStorageAlterRequestsExt) error {
 	return nil
-}
-
-func catalogIntegrationObjectStorageDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
-	return client.CatalogIntegrations.DropSafely
 }

@@ -280,6 +280,8 @@ var AuthenticationPolicy = ssot.Object{
 		ssot.WithCustomizeDiff(ssot.Generated()),
 		ssot.WithSetConfigFields(ssot.Generated()),
 		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
+		// TODO(SNOW-1818849): unassign policies before dropping. Generated Delete does not do that yet.
+		ssot.WithDropSafelyInSdk(ssot.Generated()),
 	},
 	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
 		"v2_9_0_AuthenticationPolicyStateUpgrader",

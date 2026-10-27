@@ -23,7 +23,6 @@ var (
 	catalogIntegrationOpenCatalogCreateExt        = TrackingCreateWrapper(resources.CatalogIntegrationOpenCatalog, CreateCatalogIntegrationOpenCatalog)
 	catalogIntegrationOpenCatalogReadExt          = TrackingReadWrapper(resources.CatalogIntegrationOpenCatalog, ReadCatalogIntegrationOpenCatalogFunc(true))
 	catalogIntegrationOpenCatalogUpdateExt        = TrackingUpdateWrapper(resources.CatalogIntegrationOpenCatalog, UpdateCatalogIntegrationOpenCatalog)
-	catalogIntegrationOpenCatalogDeleteExt        = TrackingDeleteWrapper(resources.CatalogIntegrationOpenCatalog, ResourceDeleteContextFunc(catalogIntegrationOpenCatalogParseIdExt, catalogIntegrationOpenCatalogDropSafelyInSdkExt))
 	catalogIntegrationOpenCatalogDescriptionExt   = "Resource used to manage catalog integration objects for Apache Iceberg™ tables that integrate with Snowflake Open Catalog. For more information, check [catalog integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-open-catalog)."
 	catalogIntegrationOpenCatalogCustomizeDiffExt = TrackingCustomDiffWrapper(resources.CatalogIntegrationOpenCatalog, customdiff.All(
 		ComputedIfAnyAttributeChanged(catalogIntegrationOpenCatalogSchema, ShowOutputAttributeName, "enabled", "comment"),
@@ -197,10 +196,6 @@ func catalogIntegrationOpenCatalogAlterSetInSdkExt(ctx context.Context, _ *schem
 func catalogIntegrationOpenCatalogAlterUnsetInSdkExt(context.Context, any, sdk.AccountObjectIdentifier, *catalogIntegrationOpenCatalogAlterRequestsExt) error {
 	// Catalog integration ALTER has no UNSET clause.
 	return nil
-}
-
-func catalogIntegrationOpenCatalogDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
-	return client.CatalogIntegrations.DropSafely
 }
 
 // =============================================================================

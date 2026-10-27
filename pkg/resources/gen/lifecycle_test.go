@@ -127,6 +127,31 @@ func Test_lifecycle_dropSafelyInSdk(t *testing.T) {
 `, renderTemplate(t, "generatedDelete", model))
 		require.Contains(t, got, "func DeletePool(")
 	})
+
+	t.Run("legacy id", func(t *testing.T) {
+		model := lifecycleModel(withHooks(ssot.WithDropSafelyInSdk(ssot.Generated())), func(obj *ssot.Object) {
+			obj.LegacyIdEncoding = true
+		})
+		require.Equal(t, `func DeletePool(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	return ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.Pools.DropSafely
+		},
+	)(ctx, d, meta)
+}
+`, renderTemplate(t, "generatedDelete", model))
+	})
+
+	t.Run("preview feature", func(t *testing.T) {
+		model := lifecycleModel(withHooks(ssot.WithDropSafelyInSdk(ssot.Generated())), func(obj *ssot.Object) {
+			obj.PreviewFeature = true
+		})
+		got := renderLifecycle(t, model)
+		require.Contains(t, got, "DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.PoolResource), TrackingDeleteWrapper(resources.Pool, DeletePool)),")
+		require.NotContains(t, got, "poolDeleteExt")
+	})
+
 	for name, hook := range map[string]ssot.ResourceHook{
 		"ext call": ssot.ExtCall(),
 		"omitted":  ssot.Omitted(),

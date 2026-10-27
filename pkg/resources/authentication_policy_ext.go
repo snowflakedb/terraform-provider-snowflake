@@ -19,14 +19,9 @@ import (
 // =============================================================================
 
 var (
-	authenticationPolicyCreateExt = TrackingCreateWrapper(resources.AuthenticationPolicy, CreateAuthenticationPolicy)
-	authenticationPolicyReadExt   = TrackingReadWrapper(resources.AuthenticationPolicy, ReadAuthenticationPolicyFunc(true))
-	authenticationPolicyUpdateExt = TrackingUpdateWrapper(resources.AuthenticationPolicy, UpdateAuthenticationPolicy)
-	// TODO(SNOW-1818849): unassign policies before dropping
-	authenticationPolicyDeleteExt = TrackingDeleteWrapper(resources.AuthenticationPolicy, ResourceDeleteContextFunc(
-		authenticationPolicyParseIdExt,
-		authenticationPolicyDropSafelyInSdkExt,
-	))
+	authenticationPolicyCreateExt      = TrackingCreateWrapper(resources.AuthenticationPolicy, CreateAuthenticationPolicy)
+	authenticationPolicyReadExt        = TrackingReadWrapper(resources.AuthenticationPolicy, ReadAuthenticationPolicyFunc(true))
+	authenticationPolicyUpdateExt      = TrackingUpdateWrapper(resources.AuthenticationPolicy, UpdateAuthenticationPolicy)
 	authenticationPolicyDescriptionExt = "Resource used to manage authentication policy objects. For more information, check [authentication policy documentation](https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy)."
 	authenticationPolicyImporterExt    = &schema.ResourceImporter{
 		StateContext: TrackingImportWrapper(resources.AuthenticationPolicy, ImportAuthenticationPolicy),
@@ -186,10 +181,6 @@ func authenticationPolicyAlterUnsetInSdkExt(ctx context.Context, meta any, id sd
 		}
 	}
 	return nil
-}
-
-func authenticationPolicyDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
-	return client.AuthenticationPolicies.DropSafely
 }
 
 // =============================================================================

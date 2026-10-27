@@ -25,13 +25,9 @@ import (
 // =============================================================================
 
 var (
-	alertCreateExt = PreviewFeatureCreateContextWrapper(string(previewfeatures.AlertResource), TrackingCreateWrapper(resources.Alert, CreateAlert))
-	alertReadExt   = PreviewFeatureReadContextWrapper(string(previewfeatures.AlertResource), TrackingReadWrapper(resources.Alert, ReadAlertFunc(true)))
-	alertUpdateExt = PreviewFeatureUpdateContextWrapper(string(previewfeatures.AlertResource), TrackingUpdateWrapper(resources.Alert, UpdateAlert))
-	alertDeleteExt = PreviewFeatureDeleteContextWrapper(string(previewfeatures.AlertResource), TrackingDeleteWrapper(resources.Alert, ResourceDeleteContextFunc(
-		alertParseIdExt,
-		alertDropSafelyInSdkExt,
-	)))
+	alertCreateExt        = PreviewFeatureCreateContextWrapper(string(previewfeatures.AlertResource), TrackingCreateWrapper(resources.Alert, CreateAlert))
+	alertReadExt          = PreviewFeatureReadContextWrapper(string(previewfeatures.AlertResource), TrackingReadWrapper(resources.Alert, ReadAlertFunc(true)))
+	alertUpdateExt        = PreviewFeatureUpdateContextWrapper(string(previewfeatures.AlertResource), TrackingUpdateWrapper(resources.Alert, UpdateAlert))
 	alertDescriptionExt   = ""
 	alertCustomizeDiffExt schema.CustomizeDiffFunc
 	alertImporterExt      = &schema.ResourceImporter{
@@ -249,10 +245,6 @@ func alertAfterAlterExt(ctx context.Context, d *schema.ResourceData, meta any, i
 		}
 	}
 	return nil
-}
-
-func alertDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
-	return client.Alerts.DropSafely
 }
 
 func waitResumeAlert(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier) error {

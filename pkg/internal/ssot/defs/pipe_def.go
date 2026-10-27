@@ -79,6 +79,7 @@ var Pipe = ssot.Object{
 	NamePlural:                "Pipes",
 	IdType:                    "SchemaObjectIdentifier",
 	LegacyIdEncoding:          true,
+	PreviewFeature:            true,
 	IdentityNameForceNew:      true,
 	IdentityHierarchyForceNew: true,
 	AttributesModification:    true,
@@ -96,6 +97,7 @@ var Pipe = ssot.Object{
 		ssot.WithSetFieldsNotSetByRead(ssot.Omitted()),
 		ssot.WithShowOutputSchema(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
+		ssot.WithDropSafelyInSdk(ssot.Generated()),
 	},
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),

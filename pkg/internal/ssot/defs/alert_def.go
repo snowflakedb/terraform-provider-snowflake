@@ -109,6 +109,7 @@ var Alert = ssot.Object{
 	NamePlural:                "Alerts",
 	IdType:                    "SchemaObjectIdentifier",
 	LegacyIdEncoding:          true,
+	PreviewFeature:            true,
 	IdentityNameForceNew:      true,
 	IdentityHierarchyForceNew: true,
 	AttributesModification:    true,
@@ -128,6 +129,7 @@ var Alert = ssot.Object{
 		ssot.WithSetFieldsNotSetByRead(ssot.Omitted()),
 		ssot.WithShowOutputSchema(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
+		ssot.WithDropSafelyInSdk(ssot.Generated()),
 	},
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),

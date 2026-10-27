@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -23,7 +24,7 @@ func CatalogIntegrationIcebergRest() *tfschema.Resource {
 		CreateContext: catalogIntegrationIcebergRestCreateExt,
 		ReadContext:   catalogIntegrationIcebergRestReadExt,
 		UpdateContext: catalogIntegrationIcebergRestUpdateExt,
-		DeleteContext: catalogIntegrationIcebergRestDeleteExt,
+		DeleteContext: TrackingDeleteWrapper(resources.CatalogIntegrationIcebergRest, DeleteCatalogIntegrationIcebergRest),
 		Importer:      catalogIntegrationIcebergRestImporterExt,
 
 		CustomizeDiff: catalogIntegrationIcebergRestCustomizeDiffExt,
@@ -133,4 +134,13 @@ func UpdateCatalogIntegrationIcebergRest(ctx context.Context, d *tfschema.Resour
 
 func catalogIntegrationIcebergRestParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
 	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
+}
+
+func DeleteCatalogIntegrationIcebergRest(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	return ResourceDeleteContextFunc(
+		sdk.ParseAccountObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.CatalogIntegrations.DropSafely
+		},
+	)(ctx, d, meta)
 }

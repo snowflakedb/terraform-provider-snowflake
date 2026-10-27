@@ -26,7 +26,7 @@ func Warehouse() *tfschema.Resource {
 		CreateContext: warehouseCreateExt,
 		ReadContext:   warehouseReadExt,
 		UpdateContext: warehouseUpdateExt,
-		DeleteContext: warehouseDeleteExt,
+		DeleteContext: TrackingDeleteWrapper(resources.Warehouse, DeleteWarehouse),
 		Importer:      warehouseImporterExt,
 
 		CustomizeDiff: warehouseCustomizeDiff,
@@ -183,4 +183,13 @@ var warehouseCustomizeDiff = TrackingCustomDiffWrapper(resources.Warehouse, cust
 
 func warehouseParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
 	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
+}
+
+func DeleteWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	return ResourceDeleteContextFunc(
+		sdk.ParseAccountObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.Warehouses.DropSafely
+		},
+	)(ctx, d, meta)
 }

@@ -21,13 +21,9 @@ import (
 // =============================================================================
 
 var (
-	warehouseCreateExt = TrackingCreateWrapper(resources.Warehouse, CreateWarehouse)
-	warehouseReadExt   = TrackingReadWrapper(resources.Warehouse, ReadWarehouseFunc(true))
-	warehouseUpdateExt = TrackingUpdateWrapper(resources.Warehouse, UpdateWarehouse)
-	warehouseDeleteExt = TrackingDeleteWrapper(resources.Warehouse, ResourceDeleteContextFunc(
-		warehouseParseIdExt,
-		warehouseDropSafelyInSdkExt,
-	))
+	warehouseCreateExt      = TrackingCreateWrapper(resources.Warehouse, CreateWarehouse)
+	warehouseReadExt        = TrackingReadWrapper(resources.Warehouse, ReadWarehouseFunc(true))
+	warehouseUpdateExt      = TrackingUpdateWrapper(resources.Warehouse, UpdateWarehouse)
 	warehouseDescriptionExt = "Resource used to manage warehouse objects. For more information, check [warehouse documentation](https://docs.snowflake.com/en/sql-reference/commands-warehouse)."
 	// Listed on the warehouse SSOT object and appended to the generated customdiff.All.
 	warehouseForceNewIfSizeRemoved = customdiff.ForceNewIfChange("warehouse_size", func(_ context.Context, old, new, _ any) bool {
@@ -273,10 +269,6 @@ func warehouseAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.AccountOb
 		return client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithUnset(*reqs.unset))
 	}
 	return nil
-}
-
-func warehouseDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
-	return client.Warehouses.DropSafely
 }
 
 func showWarehouseRegularByID(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.WarehouseRegular, error) {

@@ -1,7 +1,7 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
 func Delete{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
 	return ResourceDeleteContextFunc(
-		sdk.Parse{{ .IdType }},
+		{{ if .LegacyIdEncoding }}helpers.DecodeSnowflakeIDErrLegacy[sdk.{{ .IdType }}]{{ else }}sdk.Parse{{ .IdType }}{{ end }},
 		func(client *sdk.Client) DropSafelyFunc[sdk.{{ .IdType }}] {
 			return client.{{ .NamePlural }}.DropSafely
 		},
