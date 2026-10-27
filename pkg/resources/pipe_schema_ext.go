@@ -4,27 +4,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var pipeIdentitySchemaExt = map[string]*schema.Schema{
-	"name": {
-		Type:        schema.TypeString,
-		Required:    true,
-		ForceNew:    true,
-		Description: "Specifies the identifier for the pipe; must be unique for the database and schema in which the pipe is created.",
-	},
-	"database": {
-		Type:        schema.TypeString,
-		Required:    true,
-		ForceNew:    true,
-		Description: "The database in which to create the pipe.",
-	},
-	"schema": {
-		Type:        schema.TypeString,
-		Required:    true,
-		ForceNew:    true,
-		Description: "The schema in which to create the pipe.",
-	},
-}
-
 func pipeAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
 	s["copy_statement"].DiffSuppressFunc = pipeCopyStatementDiffSuppress
 	s["auto_ingest"].Default = false

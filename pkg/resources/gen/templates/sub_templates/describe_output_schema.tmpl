@@ -4,9 +4,9 @@
 		DescribeOutputAttributeName: {
 			Type:        tfschema.TypeList,
 			Computed:    true,
-			Description: "Outputs the result of `DESCRIBE {{ .ObjectType }}` for the given {{ CamelToWords .Name }}.{{ if .AdditionalDescribeOutputDescription }} {{ .AdditionalDescribeOutputDescription }}{{ end }}",
+			Description: "Outputs the result of `DESCRIBE {{ .ObjectType }}` for the given {{ ToLower .ObjectType }}.{{ if .AdditionalDescribeOutputDescription }} {{ .AdditionalDescribeOutputDescription }}{{ end }}",
 			Elem: &tfschema.Resource{
-				Schema: schemas.Describe{{ .Name }}DetailsSchema,
+				Schema: schemas.Describe{{ if .DescribeDetailsName }}{{ .DescribeDetailsName }}{{ else }}{{ .Name }}Details{{ end }}Schema,
 			},
 		},
 	},

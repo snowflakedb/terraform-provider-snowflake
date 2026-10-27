@@ -137,5 +137,14 @@ var catalogIntegrationOpenCatalogSchema = collections.MergeMaps(
 			},
 		},
 	},
-	catalogIntegrationOpenCatalogDescribeOutputSchemaExt,
+	map[string]*tfschema.Schema{
+		DescribeOutputAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `DESCRIBE CATALOG INTEGRATION` for the given catalog integration.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.DescribeCatalogIntegrationOpenCatalogDetailsSchema,
+			},
+		},
+	},
 )

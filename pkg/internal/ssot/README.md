@@ -34,7 +34,8 @@ generators will follow. Ultimately, all the generators should default to using s
 
 Identity (`Name`, `IdType`, ...) is separate from `Attributes`. `LegacyIdEncoding` keeps the pipe-delimited resource id
 (`db|schema|name`, `helpers.EncodeSnowflakeID`) that older resources store. The generated Create calls it instead of
-`helpers.EncodeResourceIdentifier`. `WithParseId(Generated())` emits a named parser used by Import, Read, and Update.
+`helpers.EncodeResourceIdentifier`. The identity schema for those resources stays a plain string and omits
+`suppressIdentifierQuoting`. `WithParseId(Generated())` emits a named parser used by Import, Read, and Update.
 It calls `sdk.Parse<IdType>` for current ids and `helpers.DecodeSnowflakeIDErrLegacy[<IdType>]` for legacy ids.
 The default `ExtCall` keeps the handwritten parser.
 
@@ -406,7 +407,12 @@ list of scalars. A readonly column that is not a resource attribute is left out:
 `fully_qualified_name` is emitted only when at least one identifier attribute is not ForceNew. Its keys are those
 attributes, in `IdentityFields` order: `database`, then `schema`, then `name`. `name` is ForceNew when
 `IdentityNameForceNew` is set. `database` and `schema` are ForceNew together when `IdentityHierarchyForceNew` is set.
-The identity schema template does not emit that yet. An unknown `IdType` panics.
+The identity schema emits that ForceNew. An unknown `IdType` panics.
+`AdditionalIdentityNameDescription` is appended to the generated name sentence.
+`DescribeDetailsName` is the SDK type in `schemas.Describe<Name>Schema`. Empty uses `Name` plus `Details`.
+`ObjectType()` is `Sdk.DescribeSql` when that is set, and otherwise the uppercase words of `Name`. The words after
+"for the given" are the lowercase of `ObjectType()`. A shared command such as `DESCRIBE CATALOG INTEGRATION` sets
+`SdkDescribeSql` so every variant emits the same sentence.
 
 Optional bools are boolean-strings on purpose (`applyResourceAttributeRules`
 in [resource_attribute_rules.go](../../resources/gen/resource_attribute_rules.go)): an optional bool is Terraform

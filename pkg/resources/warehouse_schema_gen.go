@@ -120,7 +120,14 @@ var warehouseAttributesSchema = map[string]*tfschema.Schema{
 }
 
 var warehouseSchema = collections.MergeMaps(
-	warehouseIdentitySchemaExt,
+	map[string]*tfschema.Schema{
+		"name": {
+			Type:             tfschema.TypeString,
+			Required:         true,
+			Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the warehouse; must be unique for the account."),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+		},
+	},
 	warehouseAttributesSchema,
 	warehouseParametersAttributesSchema,
 	map[string]*tfschema.Schema{

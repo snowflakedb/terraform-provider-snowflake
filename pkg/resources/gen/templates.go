@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -180,6 +181,8 @@ func init() {
 		genhelpers.FirstLetterLowercase,
 		genhelpers.FirstLetterUppercase,
 		genhelpers.SnakeCaseToCamel,
+		strconv.Quote,
+		strings.ToLower,
 		strings.ToUpper,
 	))
 	subTemplates, _ = subTemplates.New("constructor").Parse(constructorTemplateContent)

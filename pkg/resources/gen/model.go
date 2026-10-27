@@ -15,6 +15,7 @@ type ResourceModel struct {
 	DescribeUsesShowId                  bool
 	HasPartialOnUpdate                  bool
 	AdditionalDescribeOutputDescription string
+	DescribeDetailsName                 string
 	IdType                              string
 	LegacyIdEncoding                    bool
 	IdentityNameForceNew                bool
@@ -110,6 +111,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		DescribeUsesShowId:                  input.DescribeUsesShowId,
 		HasPartialOnUpdate:                  input.HasPartialOnUpdate,
 		AdditionalDescribeOutputDescription: input.AdditionalDescribeOutputDescription,
+		DescribeDetailsName:                 input.DescribeDetailsName,
 		IdType:                              input.IdType,
 		LegacyIdEncoding:                    input.LegacyIdEncoding,
 		IdentityNameForceNew:                input.IdentityNameForceNew,

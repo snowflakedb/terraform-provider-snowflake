@@ -182,7 +182,28 @@ var authenticationPolicyAttributesSchema = authenticationPolicyAttributesModific
 })
 
 var authenticationPolicySchema = collections.MergeMaps(
-	authenticationPolicyIdentitySchemaExt,
+	map[string]*tfschema.Schema{
+		"name": {
+			Type:             tfschema.TypeString,
+			Required:         true,
+			Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the authentication policy; must be unique for the schema in which the authentication policy is created."),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+		},
+		"database": {
+			Type:             tfschema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      blocklistedCharactersFieldDescription("The database in which to create the authentication policy."),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+		},
+		"schema": {
+			Type:             tfschema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      blocklistedCharactersFieldDescription("The schema in which to create the authentication policy."),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+		},
+	},
 	authenticationPolicyAttributesSchema,
 	map[string]*tfschema.Schema{
 		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
@@ -197,5 +218,14 @@ var authenticationPolicySchema = collections.MergeMaps(
 			},
 		},
 	},
-	authenticationPolicyDescribeOutputSchemaExt,
+	map[string]*tfschema.Schema{
+		DescribeOutputAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `DESCRIBE AUTHENTICATION POLICY` for the given authentication policy.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.DescribeAuthenticationPolicyDescribeDetailsSchema,
+			},
+		},
+	},
 )

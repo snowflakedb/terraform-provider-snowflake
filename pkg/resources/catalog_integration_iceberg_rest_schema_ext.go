@@ -1,23 +1,10 @@
 package resources
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
-
-// Snowflake describes every catalog integration with DESCRIBE CATALOG INTEGRATION.
-var catalogIntegrationIcebergRestDescribeOutputSchemaExt = map[string]*schema.Schema{
-	DescribeOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `DESCRIBE CATALOG INTEGRATION` for the given catalog integration.",
-		Elem: &schema.Resource{
-			Schema: schemas.DescribeCatalogIntegrationIcebergRestDetailsSchema,
-		},
-	},
-}
 
 // Nested blocks and ExactlyOneOf are generated. This adds sensitive fields, empty-string checks,
 // describe diff suppressors, and the describe-only catalog_source attribute.

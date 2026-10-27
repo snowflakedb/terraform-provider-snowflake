@@ -26,13 +26,20 @@ type Object struct {
 	DescribeUsesShowId                  bool
 	HasPartialOnUpdate                  bool
 	AdditionalDescribeOutputDescription string
-	IdType                              string
-	LegacyIdEncoding                    bool // Keeps the pipe-delimited resource id (db|schema|name) that older resources store.
-	IdentityNameForceNew                bool
-	IdentityHierarchyForceNew           bool // database and schema identifiers are ForceNew; the identity schema template does not emit this yet
-	AdditionalIdentityNameDescription   string
-	SdkCreateRequestObjectName          string  // SDK Create<Name>Request stem; defaults to Name
-	VariantOf                           *Object // Shares SDK parameter details, set/unset request, and ParameterType names with this object; catalog membership still uses Name
+	// DescribeDetailsName is the SDK type in schemas.Describe<Name>Schema.
+	// Empty uses Name plus Details.
+	DescribeDetailsName string
+	IdType              string
+	// LegacyIdEncoding keeps the pipe-delimited resource id (db|schema|name) that older resources store.
+	// Those identity schemas stay plain strings and omit suppressIdentifierQuoting.
+	LegacyIdEncoding     bool
+	IdentityNameForceNew bool
+	// IdentityHierarchyForceNew marks database and schema ForceNew in the identity schema.
+	IdentityHierarchyForceNew bool
+	// AdditionalIdentityNameDescription is appended to the generated name sentence.
+	AdditionalIdentityNameDescription string
+	SdkCreateRequestObjectName        string  // SDK Create<Name>Request stem; defaults to Name
+	VariantOf                         *Object // Shares SDK parameter details, set/unset request, and ParameterType names with this object; catalog membership still uses Name
 	// VariantEntityCreateName overrides the SQL object words a variant CREATE emits.
 	// Empty uses VariantOf.ObjectType, so WarehouseAdaptive emits WAREHOUSE. Interactive CREATE sets INTERACTIVE WAREHOUSE.
 	VariantEntityCreateName string

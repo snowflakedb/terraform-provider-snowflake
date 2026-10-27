@@ -74,7 +74,26 @@ var alertAttributesSchema = alertAttributesModificationExt(map[string]*tfschema.
 })
 
 var alertSchema = collections.MergeMaps(
-	alertIdentitySchemaExt,
+	map[string]*tfschema.Schema{
+		"name": {
+			Type:        tfschema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "Specifies the identifier for the alert; must be unique for the schema in which the alert is created.",
+		},
+		"database": {
+			Type:        tfschema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The database in which to create the alert.",
+		},
+		"schema": {
+			Type:        tfschema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The schema in which to create the alert.",
+		},
+	},
 	alertAttributesSchema,
 	map[string]*tfschema.Schema{
 		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,

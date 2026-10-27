@@ -1,22 +1,9 @@
 package resources
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
-
-// Snowflake describes every catalog integration with DESCRIBE CATALOG INTEGRATION.
-var catalogIntegrationAwsGlueDescribeOutputSchemaExt = map[string]*schema.Schema{
-	DescribeOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `DESCRIBE CATALOG INTEGRATION` for the given catalog integration.",
-		Elem: &schema.Resource{
-			Schema: schemas.DescribeCatalogIntegrationAwsGlueDetailsSchema,
-		},
-	},
-}
 
 // catalogIntegrationAwsGlueAttributesModificationExt adds the computed catalog_source field
 // and the describe-output diff suppressors the attribute generator does not emit.

@@ -82,7 +82,14 @@ var warehouseInteractiveAttributesSchema = warehouseInteractiveAttributesModific
 })
 
 var warehouseInteractiveSchema = collections.MergeMaps(
-	warehouseInteractiveIdentitySchemaExt,
+	map[string]*tfschema.Schema{
+		"name": {
+			Type:             tfschema.TypeString,
+			Required:         true,
+			Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the warehouse interactive; must be unique for the account."),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+		},
+	},
 	warehouseInteractiveAttributesSchema,
 	warehouseInteractiveParametersAttributesSchema,
 	map[string]*tfschema.Schema{

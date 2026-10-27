@@ -6,15 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var warehouseInteractiveIdentitySchemaExt = map[string]*schema.Schema{
-	"name": {
-		Type:             schema.TypeString,
-		Required:         true,
-		Description:      blocklistedCharactersFieldDescription("Identifier for the interactive warehouse; must be unique for your account."),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
-}
-
 // warehouseInteractiveAttributesModificationExt applies schema details the attribute generator does not emit.
 // warehouse_type is computed. auto_suspend keeps the IntDefault sentinel even though 0 is invalid (min 1).
 // tables is a set of schema-object identifiers, applied incrementally in BeforeAlter.
