@@ -129,7 +129,7 @@ func ReadAuthenticationPolicyFunc(withExternalChangesMarking bool) tfschema.Read
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.AuthenticationPolicyToSchema(authenticationPolicy)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.AuthenticationPolicyDetailsToSchema(authenticationPolicyDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			authenticationPolicySetConfigFieldsExt(d, authenticationPolicy),
+			authenticationPolicySetConfigFields(d, authenticationPolicy),
 		)
 		if errs != nil {
 			return append(diags, diag.FromErr(errs)...)
@@ -213,4 +213,10 @@ func parseAuthenticationPolicyWorkloadIdentityPolicy(d *tfschema.ResourceData, p
 		setMappedValueCreateBuilder(d, prefix+"allowed_oidc_issuers", request.WithAllowedOidcIssuers, toAuthenticationPolicyWorkloadIdentityPolicyAllowedOidcIssuers),
 	)
 	return *request, errs
+}
+
+func authenticationPolicySetConfigFields(d *tfschema.ResourceData, obj *sdk.AuthenticationPolicy) error {
+	return errors.Join(
+		d.Set("comment", obj.Comment),
+	)
 }

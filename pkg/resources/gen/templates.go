@@ -82,6 +82,9 @@ var (
 	//go:embed templates/sub_templates/set_state_to_values_from_config.tmpl
 	setStateToValuesFromConfigTemplateContent string
 
+	//go:embed templates/sub_templates/generated_set_config_fields.tmpl
+	generatedSetConfigFieldsTemplateContent string
+
 	//go:embed templates/sub_templates/show_output_set.tmpl
 	showOutputSetTemplateContent string
 
@@ -199,6 +202,7 @@ func init() {
 	subTemplates, _ = subTemplates.New("handleExternalChanges").Parse(handleExternalChangesTemplateContent)
 	subTemplates, _ = subTemplates.New("handleExternalChangesInDescribe").Parse(handleExternalChangesInDescribeTemplateContent)
 	subTemplates, _ = subTemplates.New("setStateToValuesFromConfig").Parse(setStateToValuesFromConfigTemplateContent)
+	subTemplates, _ = subTemplates.New("generatedSetConfigFields").Parse(generatedSetConfigFieldsTemplateContent)
 	subTemplates, _ = subTemplates.New("showOutputSet").Parse(showOutputSetTemplateContent)
 	subTemplates, _ = subTemplates.New("describeOutputSet").Parse(describeOutputSetTemplateContent)
 	subTemplates, _ = subTemplates.New("setDescribeOutput").Parse(setDescribeOutputTemplateContent)

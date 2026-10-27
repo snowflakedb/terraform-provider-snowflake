@@ -115,7 +115,7 @@ func ReadComputePoolFunc(withExternalChangesMarking bool) tfschema.ReadContextFu
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ComputePoolToSchema(computePool)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ComputePoolDetailsToSchema(computePoolDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			computePoolSetConfigFieldsExt(d, computePool),
+			computePoolSetConfigFields(d, computePool),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
@@ -198,4 +198,14 @@ func DeleteComputePool(ctx context.Context, d *tfschema.ResourceData, meta any) 
 			return client.ComputePools.DropSafely
 		},
 	)(ctx, d, meta)
+}
+
+func computePoolSetConfigFields(d *tfschema.ResourceData, obj *sdk.ComputePool) error {
+	return errors.Join(
+		d.Set("min_nodes", obj.MinNodes),
+		d.Set("max_nodes", obj.MaxNodes),
+		d.Set("instance_family", obj.InstanceFamily),
+		d.Set("backup_instance_families", obj.BackupInstanceFamilies),
+		d.Set("comment", obj.Comment),
+	)
 }

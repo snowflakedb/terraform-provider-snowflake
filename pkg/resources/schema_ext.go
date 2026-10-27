@@ -116,10 +116,6 @@ func schemaOutputMappingsExt(s *sdk.Schema) []outputMapping {
 	}
 }
 
-func schemaSetConfigFieldsExt(d *schema.ResourceData, s *sdk.Schema) error {
-	return d.Set("comment", s.Comment)
-}
-
 func schemaSetDescribeOutputExt(d *schema.ResourceData, id sdk.DatabaseObjectIdentifier, details []sdk.SchemaDetails, describeErr error, _ bool) error {
 	if describeErr != nil {
 		log.Printf("[DEBUG] describing schema: %s, err: %s", id.FullyQualifiedName(), describeErr)

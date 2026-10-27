@@ -50,10 +50,6 @@ func authenticationPolicyNewCreateRequestExt(d *schema.ResourceData, id sdk.Sche
 	return sdk.NewCreateAuthenticationPolicyRequest(id), nil
 }
 
-func authenticationPolicySetConfigFieldsExt(d *schema.ResourceData, authenticationPolicy *sdk.AuthenticationPolicy) error {
-	return d.Set("comment", authenticationPolicy.Comment)
-}
-
 func authenticationPolicyHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.AuthenticationPolicyDetails, withExternalChangesMarking bool) diag.Diagnostics {
 	if !withExternalChangesMarking || details == nil {
 		return nil

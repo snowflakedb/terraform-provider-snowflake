@@ -280,6 +280,7 @@ var AuthenticationPolicy = ssot.Object{
 		// The describe elem schema is DescribeAuthenticationPolicyDescribeDetailsSchema.
 		ssot.WithDescribeOutputSchema(ssot.ExtCall()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
+		ssot.WithSetConfigFields(ssot.Generated()),
 		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
 	},
 	SchemaStateUpgraders: []ssot.StateUpgraderFunc{

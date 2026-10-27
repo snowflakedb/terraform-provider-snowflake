@@ -199,6 +199,7 @@ var Schema = ssot.Object{
 		ssot.WithParametersFieldNames(ssot.Generated()),
 		ssot.WithParametersCustomDiff(ssot.Generated()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
+		ssot.WithSetConfigFields(ssot.Generated()),
 		ssot.WithShowByIdInSdk(ssot.Generated()),
 		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
 	},

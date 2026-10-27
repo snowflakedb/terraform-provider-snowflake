@@ -429,6 +429,16 @@ Skipping a nested block does not panic. An empty list omits the call. A resource
 `Omitted` drops the call. `ExtCall` keeps a hand-written `<prefix>SetStateToValueFromConfigFieldsExt` list, for an
 object that needs a nested name or a list name.
 
+`WithSetConfigFields(Generated())` emits `<prefix>SetConfigFields(d *tfschema.ResourceData, obj *sdk.<Name>) error`.
+Read passes the SHOW row. A variant's row uses the parent type. A field is set when it is a resource attribute in
+`Show.Columns`, not in the set-state list, not `CreateOnly`, and not a nested block. Membership matches `Name`.
+The SDK field is `obj.` plus the camel-case of the show column's output key (`ShowName`, otherwise `Name`).
+A string, int, float, enum, native bool, list, or set is passed through, including a SHOW pointer such as `comment`.
+An optional boolean-string uses `booleanStringFromBool`. An identifier uses `FullyQualifiedName()`.
+A SHOW pointer is passed through. No matching fields returns nil.
+Skipping a nested block does not panic. An object that also writes `show_output` in this hook, or that copies
+values from DESCRIBE, keeps `ExtCall`.
+
 #### Other generators
 
 Every plugged generator is opt-in, including the resource generator. It walks `defs.All()`, calls `ObjectGenerators`,

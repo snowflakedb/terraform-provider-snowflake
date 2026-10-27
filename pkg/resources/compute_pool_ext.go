@@ -61,16 +61,6 @@ func computePoolOutputMappingsExt(computePool *sdk.ComputePool) []outputMapping 
 	}
 }
 
-func computePoolSetConfigFieldsExt(d *schema.ResourceData, computePool *sdk.ComputePool) error {
-	return errors.Join(
-		d.Set("min_nodes", computePool.MinNodes),
-		d.Set("max_nodes", computePool.MaxNodes),
-		d.Set("instance_family", computePool.InstanceFamily),
-		d.Set("backup_instance_families", computePool.BackupInstanceFamilies),
-		d.Set("comment", computePool.Comment),
-	)
-}
-
 func computePoolSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, computePool *sdk.ComputePool, importPermissiveMode bool) error {
 	var applicationFullyQualifiedName string
 	if computePool.Application != nil {
