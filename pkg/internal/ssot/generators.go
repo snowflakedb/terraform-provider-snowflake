@@ -49,6 +49,9 @@ type SdkGenerator struct {
 	// validate<Name>Described function stay in the SDK ext file.
 	DescribeDetailsParse    []DescribeDetailsMapping
 	DescribeQueryStructName string
+	// DescribePlainOnlyFields are fields on the DESCRIBE plain struct that are not DESCRIBE columns.
+	// convert skips them. additionalConvert in the SDK ext file fills them.
+	DescribePlainOnlyFields []SdkPlainOnlyField
 
 	Drop                bool
 	DropDoc             string

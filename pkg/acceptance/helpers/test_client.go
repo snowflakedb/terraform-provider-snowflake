@@ -31,6 +31,7 @@ type TestClient struct {
 	CortexAgent                  *AgentClient
 	CortexSearchService          *CortexSearchServiceClient
 	CatalogIntegration           *CatalogIntegrationClient
+	CodeBundle                   *CodeBundleClient
 	Database                     *DatabaseClient
 	DatabaseRole                 *DatabaseRoleClient
 	DataMetricFunctionClient     *DataMetricFunctionClient
@@ -144,6 +145,7 @@ func NewTestClient(
 		CortexAgent:                  NewAgentClient(context, idsGenerator),
 		CortexSearchService:          NewCortexSearchServiceClient(context, idsGenerator),
 		CatalogIntegration:           NewCatalogIntegrationClient(context, idsGenerator),
+		CodeBundle:                   NewCodeBundleClient(context, idsGenerator),
 		Database:                     NewDatabaseClient(context, idsGenerator),
 		DatabaseRole:                 NewDatabaseRoleClient(context, idsGenerator),
 		DataMetricFunctionClient:     NewDataMetricFunctionClient(context, idsGenerator),

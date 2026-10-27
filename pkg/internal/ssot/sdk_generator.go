@@ -104,6 +104,22 @@ func SdkDescribeQueryStructName(name string) SdkDescribeOption {
 	return func(s *SdkGenerator) { s.DescribeQueryStructName = name }
 }
 
+// SdkPlainOnlyField is a field on the DESCRIBE plain struct that DESCRIBE does not return.
+// Name is the Go field name. Kind is the plain Go type, without a package prefix.
+type SdkPlainOnlyField struct {
+	Name string
+	Kind string
+}
+
+// SdkDescribePlainOnlyField adds a plain-only field to the DESCRIBE paired struct.
+// It is the ssot form of PlainOnlyField. The field is not a column, convert skips it,
+// and additionalConvert in the SDK ext file fills it.
+func SdkDescribePlainOnlyField(name, kind string) SdkDescribeOption {
+	return func(s *SdkGenerator) {
+		s.DescribePlainOnlyFields = append(s.DescribePlainOnlyFields, SdkPlainOnlyField{Name: name, Kind: kind})
+	}
+}
+
 // SdkConfig returns the SDK settings for obj with defaults filled from Name and NamePlural.
 // A functional option that sets a value wins over the default.
 func (obj Object) SdkConfig() SdkGenerator {

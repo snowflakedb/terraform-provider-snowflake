@@ -97,6 +97,20 @@ func Test_PairedStructsFromColumns_matchesHandwrittenChain(t *testing.T) {
 		Text("name").
 		Text("kind")
 	require.Equal(t, describeWant, describeGot)
+
+	withPlainOnly := obj
+	withPlainOnly.Generators = []ssot.GeneratorOption{ssot.WithSdk(
+		ssot.SdkShow(),
+		ssot.SdkDescribe(
+			ssot.SdkDescribePlainOnlyField("DatabaseName", "string"),
+			ssot.SdkDescribePlainOnlyField("SchemaName", "string"),
+		),
+	)}
+	require.Equal(t, describeWant.
+		PlainOnlyField("DatabaseName", "string").
+		PlainOnlyField("SchemaName", "string"),
+		DescribePairedStructs(withPlainOnly),
+	)
 }
 
 func Test_PairedStructsFromColumns_panics(t *testing.T) {

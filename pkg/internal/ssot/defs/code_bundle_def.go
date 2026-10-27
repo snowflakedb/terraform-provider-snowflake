@@ -114,7 +114,15 @@ var CodeBundle = ssot.Object{
 			),
 			ssot.SdkDescribe(
 				ssot.SdkDescribeDoc("https://docs.snowflake.com/en/developer-guide/code-bundles/code-bundles#describe-code-bundle"),
+				// DESCRIBE does not return database_name or schema_name. DescribeDetails fills them from the identifier.
+				ssot.SdkDescribePlainOnlyField("DatabaseName", "string"),
+				ssot.SdkDescribePlainOnlyField("SchemaName", "string"),
 			),
+			ssot.SdkCustomInterfaceMethods(),
+		),
+		ssot.WithObjectAssert(
+			ssot.ObjectAssertShow(),
+			ssot.ObjectAssertDescribe(),
 		),
 	},
 	Attributes: []ssot.Attribute{
@@ -127,6 +135,11 @@ var CodeBundle = ssot.Object{
 			&CodeBundleAttrs.Comment,
 		},
 	},
+	CustomInterfaceMethods: []ssot.CustomInterfaceMethodSpec{{
+		Name:    "DescribeDetails",
+		Doc:     "DescribeDetails calls Describe and sets database and schema from the identifier. DESCRIBE does not return those columns.",
+		Returns: []string{"*CodeBundleDetails", "error"},
+	}},
 	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
 		ssot.AlterText("ADD VERSION FROM"),
 	}},

@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
 // TODO [next PRs]: replace panics with errors and handle them higher up;
@@ -87,6 +88,7 @@ func ValidateObject(obj Object) {
 	validateColumnList(obj, "DESCRIBE rows", obj.DescribeRows.Columns, attrs, sqlOnly, nested)
 	validateDescribeRows(obj)
 	validateDescribeDetails(obj)
+	validateDescribePlainOnlyFields(obj)
 	g := ObjectGenerators(obj.Generators...)
 	validateGeneratorSkips(obj, "object-assertion", "SHOW", g.ObjectAssert.Show, obj.PairedShowColumns(), g.ObjectAssert.ShowSkipFields)
 	validateGeneratorSkips(obj, "object-assertion", "DESCRIBE", g.ObjectAssert.Describe, obj.Describe.Columns, g.ObjectAssert.DescribeSkipFields)
@@ -663,6 +665,38 @@ func validateColumnList(obj Object, kind string, list []*Attribute, attrs map[st
 		seenKey[key] = struct{}{}
 		seenName[a.Name] = struct{}{}
 		validateAttribute(obj, *a)
+	}
+}
+
+// validateDescribePlainOnlyFields rejects a plain-only DESCRIBE field that is not attached to SdkDescribe,
+// that collides with a DESCRIBE column, or that is combined with a raw DESCRIBE row.
+func validateDescribePlainOnlyFields(obj Object) {
+	sdk := ObjectGenerators(obj.Generators...).Sdk
+	fields := sdk.DescribePlainOnlyFields
+	if len(fields) == 0 {
+		return
+	}
+	if !sdk.Describe {
+		panic(fmt.Sprintf("object %q: SdkDescribePlainOnlyField needs SdkDescribe", obj.Name))
+	}
+	if len(obj.DescribeRows.Columns) > 0 {
+		panic(fmt.Sprintf("object %q: SdkDescribePlainOnlyField cannot be used with DescribeRows", obj.Name))
+	}
+	seen := make(map[string]struct{}, len(obj.Describe.Columns)+len(fields))
+	for _, column := range obj.Describe.Columns {
+		if column == nil {
+			continue
+		}
+		seen[genhelpers.SnakeCaseToCamel(column.OutputKey())] = struct{}{}
+	}
+	for _, field := range fields {
+		if field.Name == "" || field.Kind == "" {
+			panic(fmt.Sprintf("object %q: SdkDescribePlainOnlyField needs a name and a kind", obj.Name))
+		}
+		if _, ok := seen[field.Name]; ok {
+			panic(fmt.Sprintf("object %q: SdkDescribePlainOnlyField %q duplicates a DESCRIBE field", obj.Name, field.Name))
+		}
+		seen[field.Name] = struct{}{}
 	}
 }
 
