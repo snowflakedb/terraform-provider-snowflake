@@ -265,3 +265,16 @@ func identifierOptionsFromClause(clause ssot.SqlClause, required bool) *Identifi
 	}
 	return opts
 }
+
+// clauseFieldName is the Go field name that the attribute's clause gets in the statement struct.
+func clauseFieldName(attr ssot.Attribute, statement attributeSqlStatement) string {
+	clause := attributeClause(attr, statement)
+	if !clause.Present {
+		panic(fmt.Sprintf("attribute %q has no %s clause", attr.Name, statementName(statement)))
+	}
+	fields := NewQueryStruct("scratch").appendAttributeClause(attr, clause, statement).fields
+	if len(fields) == 0 {
+		panic(fmt.Sprintf("attribute %q adds no field", attr.Name))
+	}
+	return fields[0].Name
+}

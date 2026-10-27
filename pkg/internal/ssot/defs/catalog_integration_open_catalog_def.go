@@ -73,13 +73,11 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 	},
 	RestConfig: ssot.Attribute{
 		Name:        "rest_config",
-		Type:        ssot.AttrList,
+		Type:        ssot.AttrObject,
 		Required:    true,
 		ForceNew:    true,
-		MinItems:    new(1),
-		MaxItems:    new(1),
 		Description: "Specifies information about the Open Catalog account and catalog name.",
-		Elem: ssot.ObjectElem([]ssot.Attribute{
+		Children: []ssot.Attribute{
 			{
 				Name:        "catalog_uri",
 				Type:        ssot.AttrString,
@@ -108,16 +106,14 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 				Description: "Specifies the access delegation mode for accessing Iceberg table files in your external cloud storage.",
 				Enum:        CatalogIntegrationAccessDelegationMode,
 			},
-		}),
+		},
 	},
 	RestAuthentication: ssot.Attribute{
 		Name:        "rest_authentication",
-		Type:        ssot.AttrList,
+		Type:        ssot.AttrObject,
 		Required:    true,
-		MinItems:    new(1),
-		MaxItems:    new(1),
 		Description: "Specifies authentication details that Snowflake uses to connect to Open Catalog.",
-		Elem: ssot.ObjectElem([]ssot.Attribute{
+		Children: []ssot.Attribute{
 			{
 				Name:        "oauth_token_uri",
 				Type:        ssot.AttrString,
@@ -146,7 +142,7 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 				Description: "Specifies one or more scopes for the OAuth token.",
 				Elem:        &ssot.Attribute{Type: ssot.AttrString},
 			},
-		}),
+		},
 	},
 	Id: ssot.Attribute{Name: "id", Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier", Readonly: true},
 	CatalogSource: ssot.Attribute{
@@ -166,6 +162,7 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 var CatalogIntegrationOpenCatalog = ssot.Object{
 	Name:                   "CatalogIntegrationOpenCatalog",
 	NamePlural:             "CatalogIntegrations",
+	VariantOf:              &CatalogIntegration,
 	DescribeFailRead:       true,
 	IdType:                 "AccountObjectIdentifier",
 	IdentityNameForceNew:   true,

@@ -52,6 +52,9 @@ func GetAllObjects() []ResourceObject {
 		if !ssot.ObjectGenerators(def.Generators...).Resource.Enabled {
 			continue
 		}
+		if def.VariantBaseOnly {
+			continue
+		}
 		fmt.Printf(" - %s\n", def.Name)
 		out = append(out, ResourceObject{
 			Object:                   def,

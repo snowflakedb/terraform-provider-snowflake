@@ -134,7 +134,7 @@ func Test_ValidateObject_conflictsWithKnownAttribute(t *testing.T) {
 }
 
 func Test_ValidateObject_skipCreateBlockMustBeListBlock(t *testing.T) {
-	require.PanicsWithValue(t, `object "Alert": SkipCreateBlock attribute "comment" must be a list block`, func() {
+	require.PanicsWithValue(t, `object "Alert": SkipCreateBlock attribute "comment" must be a block`, func() {
 		ValidateObject(Object{
 			Name:       "Alert",
 			Attributes: []Attribute{{Name: "comment", Type: AttrString, SkipCreateBlock: true}},
@@ -586,8 +586,36 @@ func Test_ValidateObject_nestedAttribute(t *testing.T) {
 		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{{Name: "empty", Type: AttrList, Elem: ObjectElem(nil)}}})
 	})
 
-	require.PanicsWithValue(t, `object "Widget": attribute "object" is an object; an object is only an Elem or a SqlOnly nested struct`, func() {
+	require.NotPanics(t, func() {
 		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{{Name: "object", Type: AttrObject, Children: []Attribute{leaf}}}})
+	})
+
+	require.PanicsWithValue(t, `object "Widget": attribute "object" is an object with no Children`, func() {
+		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{{Name: "object", Type: AttrObject}}})
+	})
+
+	require.PanicsWithValue(t, `object "Widget": attribute "object" is an object and has an Elem; the fields of an object are its Children`, func() {
+		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{{Name: "object", Type: AttrObject, Children: []Attribute{leaf}, Elem: ObjectElem([]Attribute{leaf})}}})
+	})
+
+	for name, attr := range map[string]Attribute{
+		"min": {Name: "min", Type: AttrObject, Children: []Attribute{leaf}, MinItems: new(1)},
+		"max": {Name: "max", Type: AttrObject, Children: []Attribute{leaf}, MaxItems: new(1)},
+	} {
+		require.PanicsWithValue(t, fmt.Sprintf(`object "Widget": attribute %q item bounds require a list or set`, name), func() {
+			ValidateObject(Object{Name: "Widget", Attributes: []Attribute{attr}})
+		})
+	}
+
+	// The fields of a single block carry their CREATE clause when the block has an object clause.
+	block := Attribute{
+		Name:      "block",
+		Type:      AttrObject,
+		CreateSql: ObjectParameter(Sql("BLOCK ="), Parentheses()),
+		Children:  []Attribute{{Name: "inner", Type: AttrString, CreateSql: StringParameter()}},
+	}
+	require.NotPanics(t, func() {
+		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{block}, Create: CreateSpec{Clauses: []*Attribute{&block}}})
 	})
 
 	require.PanicsWithValue(t, `object "Widget": attribute "outer" has duplicate nested attribute "inner"`, func() {
@@ -1056,7 +1084,7 @@ func Test_ValidateObject_skipCreateBlockOnObjectLists(t *testing.T) {
 	require.NotPanics(t, func() { ValidateObject(Object{Name: "Widget", Attributes: []Attribute{outer}}) })
 
 	scalar := Attribute{Name: "scalar", Type: AttrString, SkipCreateBlock: true}
-	require.PanicsWithValue(t, `object "Widget": SkipCreateBlock attribute "scalar" must be a list block`, func() {
+	require.PanicsWithValue(t, `object "Widget": SkipCreateBlock attribute "scalar" must be a block`, func() {
 		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{scalar}})
 	})
 }
@@ -1067,4 +1095,121 @@ func Test_ObjectElem(t *testing.T) {
 	require.True(t, list.IsObjectList())
 	require.Equal(t, []Attribute{child}, list.NestedFields())
 	require.Equal(t, AttrObject, list.Elem.Type)
+}
+
+func Test_Attribute_IsSingleBlock(t *testing.T) {
+	leaf := Attribute{Name: "leaf", Type: AttrString}
+	require.True(t, Attribute{Type: AttrObject, Children: []Attribute{leaf}}.IsSingleBlock())
+	require.True(t, Attribute{Type: AttrList, MaxItems: new(1), Elem: ObjectElem([]Attribute{leaf})}.IsSingleBlock())
+	require.False(t, Attribute{Type: AttrList, Elem: ObjectElem([]Attribute{leaf})}.IsSingleBlock())
+	require.False(t, Attribute{Type: AttrList, MaxItems: new(1), Elem: &Attribute{Type: AttrString}}.IsSingleBlock())
+}
+
+func Test_Attribute_nestedSqlFields(t *testing.T) {
+	typeOauth := Attribute{Name: "type_oauth", SqlOnly: true, CreateSql: StaticSQL("restAuthType", "TYPE = OAUTH")}
+	uri := Attribute{Name: "uri", Type: AttrString}
+
+	object := Attribute{Type: AttrObject, Children: []Attribute{typeOauth, uri}}
+	require.Equal(t, []Attribute{uri}, object.NestedFields())
+	require.Equal(t, []Attribute{typeOauth, uri}, object.NestedSqlFields())
+
+	list := Attribute{Type: AttrList, Elem: ObjectElem([]Attribute{typeOauth, uri})}
+	require.Equal(t, []Attribute{uri}, list.NestedFields())
+	require.Equal(t, []Attribute{typeOauth, uri}, list.NestedSqlFields())
+
+	require.Empty(t, Attribute{Type: AttrString}.NestedSqlFields())
+}
+
+func Test_ValidateObject_nestedStaticFields(t *testing.T) {
+	typeOauth := Attribute{Name: "type_oauth", SqlOnly: true, CreateSql: StaticSQL("restAuthType", "TYPE = OAUTH")}
+	uri := Attribute{Name: "uri", Type: AttrString, CreateSql: StringParameter()}
+	validate := func(block Attribute) {
+		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{block}, Create: CreateSpec{Clauses: []*Attribute{&block}}})
+	}
+
+	t.Run("static field of a single block with an object clause", func(t *testing.T) {
+		require.NotPanics(t, func() {
+			validate(Attribute{Name: "block", Type: AttrObject, CreateSql: ObjectParameter(Sql("BLOCK ="), Parentheses()), Children: []Attribute{typeOauth, uri}})
+		})
+	})
+
+	t.Run("static field of a list element with an object clause", func(t *testing.T) {
+		require.NotPanics(t, func() {
+			validate(Attribute{
+				Name:      "blocks",
+				Type:      AttrList,
+				CreateSql: ListOfObjects(Sql("BLOCKS"), Parentheses()),
+				Elem: &Attribute{
+					Type:      AttrObject,
+					CreateSql: ObjectParameter(Parentheses()),
+					Children:  []Attribute{typeOauth, uri},
+				},
+			})
+		})
+	})
+
+	t.Run("without an object clause", func(t *testing.T) {
+		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."type_oauth" is SQL-only but not a static clause of an object clause`, func() {
+			ValidateObject(Object{Name: "Widget", Attributes: []Attribute{{Name: "block", Type: AttrObject, Children: []Attribute{typeOauth, uri}}}})
+		})
+	})
+
+	t.Run("not static", func(t *testing.T) {
+		notStatic := Attribute{Name: "other", SqlOnly: true, CreateSql: StringParameter()}
+		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."other" is SQL-only but not a static clause of an object clause`, func() {
+			validate(Attribute{Name: "block", Type: AttrObject, CreateSql: ObjectParameter(Sql("BLOCK =")), Children: []Attribute{notStatic, uri}})
+		})
+	})
+
+	t.Run("static field is private", func(t *testing.T) {
+		exported := Attribute{Name: "exported", SqlOnly: true, CreateSql: StaticSQL("RestAuthType", "TYPE = OAUTH")}
+		require.Panics(t, func() {
+			validate(Attribute{Name: "block", Type: AttrObject, CreateSql: ObjectParameter(Sql("BLOCK =")), Children: []Attribute{exported, uri}})
+		})
+	})
+
+	t.Run("only static fields", func(t *testing.T) {
+		require.PanicsWithValue(t, `object "Widget": attribute "block" is an object with no Children`, func() {
+			validate(Attribute{Name: "block", Type: AttrObject, CreateSql: ObjectParameter(Sql("BLOCK =")), Children: []Attribute{typeOauth}})
+		})
+	})
+}
+
+func Test_ValidateObject_exactlyOneOf(t *testing.T) {
+	one := Attribute{Name: "one", Type: AttrString}
+	two := Attribute{Name: "two", Type: AttrString}
+	three := Attribute{Name: "three", Type: AttrString}
+	required := Attribute{Name: "required", Type: AttrString, Required: true}
+	static := Attribute{Name: "static", SqlOnly: true, CreateSql: StaticSQL("static", "A = B")}
+	outside := Attribute{Name: "outside", Type: AttrString}
+	newObject := func(groups ...[]*Attribute) Object {
+		return Object{
+			Name:         "Widget",
+			Attributes:   []Attribute{one, two, three, required, static},
+			ExactlyOneOf: groups,
+			Create:       CreateSpec{Clauses: []*Attribute{&static}},
+		}
+	}
+
+	require.NotPanics(t, func() { ValidateObject(newObject()) }, "no group")
+	require.NotPanics(t, func() { ValidateObject(newObject([]*Attribute{&one, &two})) })
+
+	require.PanicsWithValue(t, `object "Widget": ExactlyOneOf group 0 needs at least two attributes`, func() {
+		ValidateObject(newObject([]*Attribute{&one}))
+	})
+	require.PanicsWithValue(t, `object "Widget": ExactlyOneOf group 0 has a nil attribute`, func() {
+		ValidateObject(newObject([]*Attribute{&one, nil}))
+	})
+	require.PanicsWithValue(t, `object "Widget": ExactlyOneOf group 0 attribute "outside" is not an attribute of the object`, func() {
+		ValidateObject(newObject([]*Attribute{&one, &outside}))
+	})
+	require.PanicsWithValue(t, `object "Widget": ExactlyOneOf group 0 attribute "static" is not an attribute of the object`, func() {
+		ValidateObject(newObject([]*Attribute{&one, &static}))
+	})
+	require.PanicsWithValue(t, `object "Widget": ExactlyOneOf group 0 attribute "required" is required`, func() {
+		ValidateObject(newObject([]*Attribute{&one, &required}))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "one" is in more than one ExactlyOneOf group, or twice in one`, func() {
+		ValidateObject(newObject([]*Attribute{&one, &two}, []*Attribute{&one, &three}))
+	})
 }

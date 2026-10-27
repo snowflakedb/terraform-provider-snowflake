@@ -13,8 +13,9 @@ const (
 	AttrList       AttributeType = "list"
 	AttrSet        AttributeType = "set"
 	AttrTime       AttributeType = "time"
-	// AttrObject is the element of a list or set of objects: an Elem with Children. It is also a SqlOnly nested struct
-	// that a variant of such an element refers to.
+	// AttrObject is an object with Children. Alone it is a single block: one struct on the SDK side, and for Terraform a
+	// list of at most one element, which the resource attribute rules derive. It is also the Elem of a list or set of
+	// objects, and a SqlOnly nested struct that is not a Terraform field.
 	AttrObject AttributeType = "object"
 )
 
@@ -48,8 +49,11 @@ type Attribute struct {
 	// Elem is the element of a list or set: a scalar attribute, or an AttrObject whose Children are the fields of a nested
 	// block. A field of an Elem object may carry its own CREATE clause, which is how SDK query structs are generated.
 	Elem *Attribute
-	// Children are the fields of an AttrObject, which is an Elem or a SqlOnly nested struct. They are valid only there:
-	// a list or set of objects declares its fields on an Elem object (ObjectElem), never on the list itself.
+	// Children are the fields of an AttrObject: a single block, an Elem, or a SqlOnly nested struct. They are valid only
+	// there: a list or set of objects declares its fields on an Elem object (ObjectElem), never on the list itself.
+	// A single block sets no MinItems or MaxItems: Terraform gets MaxItems 1, and MinItems 1 when it is Required.
+	// A SqlOnly child is fixed text of the SQL struct, such as TYPE = OAUTH: a StaticSQL clause, valid when the object has an
+	// object clause. It is in NestedSqlFields and not in NestedFields, so it is not a Terraform field.
 	// A nested field may itself be a block. Generated create parses an optional list block; see the README.
 	// Resource alter generation skips a nested attribute and every field under it.
 	Children       []Attribute

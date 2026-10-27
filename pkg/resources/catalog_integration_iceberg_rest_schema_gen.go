@@ -115,6 +115,11 @@ var catalogIntegrationIcebergRestAttributesSchema = catalogIntegrationIcebergRes
 				},
 			},
 		},
+		ExactlyOneOf: []string{
+			"oauth_rest_authentication",
+			"bearer_rest_authentication",
+			"sigv4_rest_authentication",
+		},
 		Description: "Specifies OAuth as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
 	},
 	"bearer_rest_authentication": {
@@ -129,6 +134,11 @@ var catalogIntegrationIcebergRestAttributesSchema = catalogIntegrationIcebergRes
 					Description: "The bearer token for the identity provider.",
 				},
 			},
+		},
+		ExactlyOneOf: []string{
+			"oauth_rest_authentication",
+			"bearer_rest_authentication",
+			"sigv4_rest_authentication",
 		},
 		Description: "Specifies a bearer token as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
 	},
@@ -158,6 +168,11 @@ var catalogIntegrationIcebergRestAttributesSchema = catalogIntegrationIcebergRes
 					Description: "Specifies an external ID that Snowflake uses to establish a trust relationship with AWS. If you don’t specify this parameter, Snowflake automatically generates a unique external ID when you create a catalog integration.",
 				},
 			},
+		},
+		ExactlyOneOf: []string{
+			"oauth_rest_authentication",
+			"bearer_rest_authentication",
+			"sigv4_rest_authentication",
 		},
 		Description: "Specifies Signature Version 4 as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
 	},

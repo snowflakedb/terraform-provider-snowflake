@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
@@ -338,8 +339,15 @@ func (a Attribute) SqlVariantStructName(key string) string {
 	return key + genhelpers.SnakeCaseToCamel(a.Name) + "Params"
 }
 
-// NestedFields are the fields of a block: the Children of the Elem object of a list or set, or the Children of an object.
+// NestedFields are the Terraform fields of a block: the Children of the Elem object of a list or set, or the Children of
+// an object, without the SqlOnly ones. A SqlOnly child is fixed text of the SQL struct, see NestedSqlFields.
 func (a Attribute) NestedFields() []Attribute {
+	return collections.Filter(a.NestedSqlFields(), func(child Attribute) bool { return !child.SqlOnly })
+}
+
+// NestedSqlFields are all the fields of the SQL struct of a block, in SQL order: NestedFields and the SqlOnly children, which
+// are the fixed text of the struct (a static TYPE = OAUTH). Only SDK SQL generation reads them.
+func (a Attribute) NestedSqlFields() []Attribute {
 	switch {
 	case a.IsObjectList():
 		return a.Elem.Children
@@ -353,6 +361,11 @@ func (a Attribute) NestedFields() []Attribute {
 // IsObjectList reports whether the attribute is a list or set whose elements are objects.
 func (a Attribute) IsObjectList() bool {
 	return (a.Type == AttrList || a.Type == AttrSet) && a.Elem != nil && a.Elem.Type == AttrObject
+}
+
+// IsSingleBlock reports whether the attribute is one nested block: an object, or a list with MaxItems 1.
+func (a Attribute) IsSingleBlock() bool {
+	return a.Type == AttrObject || (a.IsObjectList() && a.MaxItems != nil && *a.MaxItems == 1)
 }
 
 func Sql(text string) SqlClauseOption {

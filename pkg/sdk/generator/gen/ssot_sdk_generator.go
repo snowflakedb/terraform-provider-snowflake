@@ -2,6 +2,7 @@ package gen
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -306,10 +307,31 @@ func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryS
 		q = q.WithValidation(ConflictingFields, "OrReplace", "IfNotExists")
 	}
 	q = q.withIdentifierParameterValidations(createParams)
+	q = q.withExactlyOneOfValidations(obj, obj.Create.Clauses)
 	if cfg.CreateAdditionalValidations {
 		q = q.WithAdditionalValidations()
 	}
 	return q
+}
+
+// withExactlyOneOfValidations adds ExactlyOneValueSet for each ExactlyOneOf group of obj whose attributes are all in clauses.
+// A group that has only some of them in the statement is a mistake in the definition.
+func (v *QueryStruct) withExactlyOneOfValidations(obj ssot.Object, clauses []*ssot.Attribute) *QueryStruct {
+	for _, group := range obj.ExactlyOneOf {
+		present := collections.Filter(group, func(member *ssot.Attribute) bool {
+			return slices.ContainsFunc(clauses, func(clause *ssot.Attribute) bool { return clause != nil && clause.Name == member.Name })
+		})
+		switch len(present) {
+		case 0:
+		case len(group):
+			v = v.WithValidation(ExactlyOneValueSet, collections.Map(group, func(member *ssot.Attribute) string {
+				return clauseFieldName(*member, attributeSqlCreate)
+			})...)
+		default:
+			panic(fmt.Sprintf("object %q: only some attributes of an ExactlyOneOf group are in the statement", obj.Name))
+		}
+	}
+	return v
 }
 
 // TODO [next PRs]: Delete the repeated definition checks in CustomOperationsFromObject,

@@ -55,6 +55,13 @@ var {{ .Prefix }}AttributesSchema = {{ if .AttributesModification }}{{ .Prefix }
 {{- end }}
 		},
 {{- end }}
+{{- if .ExactlyOneOf }}
+		ExactlyOneOf: []string{
+{{- range .ExactlyOneOf }}
+			{{ printf "%q" . }},
+{{- end }}
+		},
+{{- end }}
 {{- if .DescriptionExpr }}
 		Description: {{ .DescriptionExpr }},
 {{- end }}

@@ -92,3 +92,8 @@ func Test_ClassifyAttribute_objectList(t *testing.T) {
 	list := Attribute{Name: "location", Type: AttrList, Required: true, Elem: ObjectElem([]Attribute{{Name: "url", Type: AttrString}})}
 	require.Equal(t, ClassifiedField{Name: "location", Storage: AttrList, Required: true}, ClassifyAttribute(Object{Name: "Widget"}, list))
 }
+
+func Test_ClassifyAttribute_singleBlock(t *testing.T) {
+	got := ClassifyAttribute(Object{Name: "Widget"}, Attribute{Name: "block", Type: AttrObject, Required: true, Children: []Attribute{{Name: "leaf", Type: AttrString}}})
+	require.Equal(t, ClassifiedField{Name: "block", Storage: AttrList, Required: true}, got)
+}

@@ -61,6 +61,7 @@ var CatalogIntegrationObjectStorageAttrs = struct {
 var CatalogIntegrationObjectStorage = ssot.Object{
 	Name:                   "CatalogIntegrationObjectStorage",
 	NamePlural:             "CatalogIntegrations",
+	VariantOf:              &CatalogIntegration,
 	DescribeFailRead:       true,
 	IdType:                 "AccountObjectIdentifier",
 	IdentityNameForceNew:   true,

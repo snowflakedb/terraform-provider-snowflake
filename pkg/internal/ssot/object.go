@@ -38,7 +38,11 @@ type Object struct {
 	VariantEntityCreateName string
 	// VariantEntityAlterName overrides the SQL object words a variant ALTER emits.
 	// Empty uses VariantOf.ObjectType, the same default as CREATE.
-	VariantEntityAlterName   string
+	VariantEntityAlterName string
+	// VariantBaseOnly marks an object that only is the base of its variants and is not a Terraform resource itself:
+	// the variants are separate resources and the base owns what they share, such as the SDK interface.
+	// The resource generator skips it.
+	VariantBaseOnly          bool
 	Attributes               []Attribute
 	ComputedAttributes       []Attribute // Read-only resource state; never used for CREATE/ALTER.
 	AttributesModification   bool
@@ -84,6 +88,10 @@ type Object struct {
 	// CustomInterfaceMethods are interface declarations whose bodies stay in the SDK ext file.
 	// SdkCustomInterfaceMethods turns them on.
 	CustomInterfaceMethods []CustomInterfaceMethodSpec
+	// ExactlyOneOf are groups of optional top-level attributes of which exactly one is set. Each group is declared once,
+	// with pointers to the attributes. SDK CREATE adds ExactlyOneValueSet to a statement that has all of the group,
+	// and the generated schema gets ExactlyOneOf on each attribute of the group.
+	ExactlyOneOf [][]*Attribute
 	// ShowParametersDetailsAdditionalLevels adds parameters from these levels onto ShowParametersDetails.
 	// A name already in ParameterLevel() is kept once.
 	ShowParametersDetailsAdditionalLevels []ParameterLevel

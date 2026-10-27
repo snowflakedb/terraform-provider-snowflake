@@ -19,11 +19,9 @@ var catalogIntegrationIcebergRestDescribeOutputSchemaExt = map[string]*schema.Sc
 	},
 }
 
-// Nested blocks are generated. This adds ExactlyOneOf, sensitive fields, empty-string checks,
+// Nested blocks and ExactlyOneOf are generated. This adds sensitive fields, empty-string checks,
 // describe diff suppressors, and the describe-only catalog_source attribute.
 func catalogIntegrationIcebergRestAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
-	authExactlyOneOf := []string{"oauth_rest_authentication", "bearer_rest_authentication", "sigv4_rest_authentication"}
-
 	s["refresh_interval_seconds"].DiffSuppressFunc = IgnoreChangeToCurrentSnowflakeValueInDescribe("refresh_interval_seconds")
 	s["catalog_namespace"].ValidateFunc = validation.StringIsNotEmpty
 
@@ -32,9 +30,6 @@ func catalogIntegrationIcebergRestAttributesModificationExt(s map[string]*schema
 		Computed: true,
 		Description: joinWithSpace("Specifies the type of catalog source.",
 			"This field is used to detect when the catalog source was changed outside of Terraform and to recreate the resource when that happens."),
-	}
-	for _, name := range authExactlyOneOf {
-		s[name].ExactlyOneOf = authExactlyOneOf
 	}
 
 	restConfig := s["rest_config"].Elem.(*schema.Resource).Schema

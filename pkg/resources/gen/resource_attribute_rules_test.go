@@ -609,3 +609,56 @@ func Test_ModelFromInputObject_skipsSqlOnly(t *testing.T) {
 	require.Len(t, model.Attributes, 1)
 	require.Equal(t, "comment", model.Attributes[0].Name)
 }
+
+func Test_applyResourceAttributeRules_singleObjectIsListOfOne(t *testing.T) {
+	leaf := ssot.Attribute{Name: "leaf", Type: ssot.AttrString, Required: true, ForceNew: true}
+	inner := ssot.Attribute{Name: "inner", Type: ssot.AttrObject, Children: []ssot.Attribute{leaf}}
+
+	t.Run("optional", func(t *testing.T) {
+		got := resolveResourceAttribute(ssot.Attribute{Name: "block", Type: ssot.AttrObject, ForceNew: true, Children: []ssot.Attribute{leaf, inner}}, resourceAttributeRuleContext{})
+
+		require.Equal(t, SchemaTypeList, got.TfType)
+		require.True(t, got.Optional)
+		require.True(t, got.ForceNew)
+		require.Nil(t, got.MinItems)
+		require.Equal(t, new(1), got.MaxItems)
+		require.Len(t, got.Children, 2)
+		require.Equal(t, "leaf", got.Children[0].Name)
+		require.Equal(t, SchemaTypeList, got.Children[1].TfType, "a nested object is a list of one too")
+		require.Equal(t, new(1), got.Children[1].MaxItems)
+	})
+
+	t.Run("required", func(t *testing.T) {
+		got := resolveResourceAttribute(ssot.Attribute{Name: "block", Type: ssot.AttrObject, Required: true, Children: []ssot.Attribute{leaf}}, resourceAttributeRuleContext{})
+
+		require.Equal(t, SchemaTypeList, got.TfType)
+		require.True(t, got.Required)
+		require.Equal(t, new(1), got.MinItems)
+		require.Equal(t, new(1), got.MaxItems)
+	})
+
+	t.Run("equals the list declaration", func(t *testing.T) {
+		object := resolveResourceAttribute(ssot.Attribute{Name: "block", Type: ssot.AttrObject, Required: true, ForceNew: true, Children: []ssot.Attribute{leaf}}, resourceAttributeRuleContext{})
+		list := resolveResourceAttribute(ssot.Attribute{
+			Name: "block", Type: ssot.AttrList, Required: true, ForceNew: true, MinItems: new(1), MaxItems: new(1),
+			Elem: ssot.ObjectElem([]ssot.Attribute{leaf}),
+		}, resourceAttributeRuleContext{})
+		require.Equal(t, list, object)
+	})
+}
+
+func Test_applyExactlyOneOf(t *testing.T) {
+	one := ssot.Attribute{Name: "one"}
+	two := ssot.Attribute{Name: "two"}
+	three := ssot.Attribute{Name: "three"}
+	attributes := []ResourceAttribute{{Name: "one"}, {Name: "two"}, {Name: "three"}, {Name: "other"}}
+
+	applyExactlyOneOf([][]*ssot.Attribute{{&one, &three}}, attributes)
+
+	require.Equal(t, []string{"one", "three"}, attributes[0].ExactlyOneOf)
+	require.Nil(t, attributes[1].ExactlyOneOf)
+	require.Equal(t, []string{"one", "three"}, attributes[2].ExactlyOneOf)
+	require.Nil(t, attributes[3].ExactlyOneOf)
+
+	require.Panics(t, func() { applyExactlyOneOf([][]*ssot.Attribute{{&one, &two, {Name: "missing"}}}, attributes) })
+}

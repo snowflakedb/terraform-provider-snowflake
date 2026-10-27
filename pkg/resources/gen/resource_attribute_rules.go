@@ -2,6 +2,7 @@ package gen
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -23,6 +24,7 @@ const (
 	RuleEnumFieldNormalizes                    = "enum_field_normalizes"
 	RuleCollectionOfEnumNormalizes             = "collection_of_enum_normalizes"
 	RuleConfiguredDiffSuppress                 = "configured_diff_suppress"
+	RuleSingleObjectIsListOfOne                = "single_object_is_list_of_one"
 )
 
 // resourceAttributeRuleContext distinguishes a top-level attribute from a collection
@@ -183,6 +185,20 @@ var resourceAttributeRules = []resourceAttributeRule{
 		},
 	},
 	{
+		Name:        RuleSingleObjectIsListOfOne,
+		Description: "A single object is a list of at most one element, because SDKv2 cannot declare a nested object: MaxItems 1, and MinItems 1 when it is required.",
+		When: func(in ssot.Attribute, _ resourceAttributeRuleContext) bool {
+			return in.Type == ssot.AttrObject
+		},
+		Then: func(in ssot.Attribute, _ resourceAttributeRuleContext, out *ResourceAttribute) {
+			out.TfType = SchemaTypeList
+			out.MaxItems = new(1)
+			if in.Required {
+				out.MinItems = new(1)
+			}
+		},
+	},
+	{
 		Name:        RuleConfiguredDiffSuppress,
 		Description: "Configured suppressors compose with inferred normalization.",
 		When: func(in ssot.Attribute, _ resourceAttributeRuleContext) bool {
@@ -332,5 +348,20 @@ func tfTypeFor(t ssot.AttributeType) SchemaValueType {
 		return SchemaTypeSet
 	default:
 		return SchemaTypeString
+	}
+}
+
+// applyExactlyOneOf sets ExactlyOneOf on the attributes of each group: the names of the whole group, itself included.
+// The attributes are the top-level ones of the object, in the order of the groups' own attributes.
+func applyExactlyOneOf(groups [][]*ssot.Attribute, attributes []ResourceAttribute) {
+	for _, group := range groups {
+		names := collections.Map(group, func(attr *ssot.Attribute) string { return attr.Name })
+		for _, name := range names {
+			i := slices.IndexFunc(attributes, func(attr ResourceAttribute) bool { return attr.Name == name })
+			if i < 0 {
+				panic(fmt.Sprintf("ExactlyOneOf attribute %q is not a resource attribute", name))
+			}
+			attributes[i].ExactlyOneOf = names
+		}
 	}
 }
