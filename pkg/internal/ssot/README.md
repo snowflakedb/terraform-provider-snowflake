@@ -602,8 +602,15 @@ are the camel-cased column names (`property_value` is `PropertyValue`).
 DESCRIBE operation. It needs `DescribeRows`, because that frees the `<Name>Details` name. `Id` is the first field unless
 a column is named `id`. `SdkDescribeDetailsNestedField(&attr)` marks a list or set column whose elements are a
 hand-written struct, with the element type `[]<Name><Column key in camel case without the plural s>Details`
-(`storage_locations` of `ExternalVolume` is `[]ExternalVolumeStorageLocationDetails`). Parsing the rows into the struct
-stays in the SDK ext file. `SdkDescribeDetailsMethod()` also emits the `DescribeDetails` method: the interface declaration
+(`storage_locations` of `ExternalVolume` is `[]ExternalVolumeStorageLocationDetails`). A column that is an object attribute (an attribute that has `Children`, such as `rest_config`) is a nested struct
+`<Name><Column key in camel case>Details`, generated from the `Children` of the attribute, as plain values. The field is a
+pointer when the attribute is not `Required`. A variant lists its own attributes as DESCRIBE columns, so the nested details are
+described by the same attribute as the Terraform block and the SQL. Generators that cannot render a nested column skip it
+(`ShowOutputDescribeSkipFields`). Parsing the rows into the struct
+stays in the SDK ext file. `SdkDescribeDetailsForVariants()` on the base object (under `SdkDescribe`) emits the details of each
+variant that turns on `SdkDescribeDetails` (the variant needs no `DescribeRows`, it uses the ones of the base): the struct
+`<Variant>Details` from the Describe columns of the variant and the method `Describe<Variant>Details`, with the generated body of
+`SdkDescribeDetailsMethod()` and the hand-written `Parse<Variant>Described`. `SdkDescribeDetailsMethod()` also emits the `DescribeDetails` method: the interface declaration
 and a generated body that calls `Describe`, parses the rows with `Parse<Name>Described(rows []<Name>Property)
 (<Name>Details, error)`, and sets `Id`. Without `SdkDescribeDetailsParse` that function is hand-written.
 `SdkDescribeDetailsParse(...)` generates `Parse<Name>Described`. Every `Describe.Columns` entry except `id` has one

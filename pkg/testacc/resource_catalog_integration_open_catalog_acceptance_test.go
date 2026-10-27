@@ -128,13 +128,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasCommentEmpty().
 			HasNoRefreshIntervalSeconds().
 			HasCatalogNamespaceEmpty().
-			HasRestConfig(&sdk.OpenCatalogRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationOpenCatalogRestConfigDetails{
 				CatalogUri:           catalogUri,
 				CatalogApiType:       "",
 				CatalogName:          catalogName,
 				AccessDelegationMode: "",
 			}).
-			HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasRestAuthentication(&sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{
 				OauthTokenUri:      "",
 				OauthClientId:      oAuthClientId,
 				OauthClientSecret:  oAuthClientSecret,
@@ -173,13 +173,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 				HasCommentEmpty().
 				HasRefreshIntervalSeconds(0).
 				HasCatalogNamespaceEmpty().
-				HasRestConfig(&sdk.OpenCatalogRestConfigDetails{
+				HasRestConfig(&sdk.CatalogIntegrationOpenCatalogRestConfigDetails{
 					CatalogUri:           catalogUri,
 					CatalogApiType:       "",
 					CatalogName:          catalogName,
 					AccessDelegationMode: "",
 				}).
-				HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+				HasRestAuthentication(&sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{
 					OauthTokenUri:      "",
 					OauthClientId:      oAuthClientId,
 					OauthClientSecret:  oAuthClientSecret,
@@ -197,13 +197,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasCatalogNamespaceEmpty().
-			HasRestConfig(&sdk.OpenCatalogRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationOpenCatalogRestConfigDetails{
 				CatalogUri:           catalogUri,
 				CatalogApiType:       "",
 				CatalogName:          catalogName,
 				AccessDelegationMode: "",
 			}).
-			HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasRestAuthentication(&sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{
 				OauthTokenUri:      "",
 				OauthClientId:      oAuthClientId,
 				OauthClientSecret:  oAuthClientSecret,
@@ -241,13 +241,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasCatalogNamespace(catalogNamespace).
-			HasRestConfig(&sdk.OpenCatalogRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationOpenCatalogRestConfigDetails{
 				CatalogUri:           catalogUri,
 				CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePublic,
 				CatalogName:          catalogName,
 				AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials,
 			}).
-			HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasRestAuthentication(&sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{
 				OauthTokenUri:      oAuthTokenUri,
 				OauthClientId:      oAuthClientId,
 				OauthClientSecret:  oAuthClientSecret,
@@ -285,13 +285,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasCatalogNamespace(newCatalogNamespace).
-			HasRestConfig(&sdk.OpenCatalogRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationOpenCatalogRestConfigDetails{
 				CatalogUri:           catalogUri,
 				CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePublic,
 				CatalogName:          catalogName,
 				AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials,
 			}).
-			HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasRestAuthentication(&sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{
 				OauthTokenUri:      oAuthTokenUri,
 				OauthClientId:      oAuthClientId,
 				OauthClientSecret:  oAuthClientSecret,
@@ -329,13 +329,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasCatalogNamespace(newCatalogNamespace).
-			HasRestConfig(&sdk.OpenCatalogRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationOpenCatalogRestConfigDetails{
 				CatalogUri:           privateCatalogUri,
 				CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePrivate,
 				CatalogName:          newCatalogName,
 				AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeVendedCredentials,
 			}).
-			HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasRestAuthentication(&sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{
 				OauthTokenUri:      "",
 				OauthClientId:      oAuthClientId,
 				OauthClientSecret:  oAuthClientSecret,
@@ -374,13 +374,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 				HasComment(comment).
 				HasRefreshIntervalSeconds(refreshIntervalSeconds).
 				HasCatalogNamespace(newCatalogNamespace).
-				HasRestConfig(&sdk.OpenCatalogRestConfigDetails{
+				HasRestConfig(&sdk.CatalogIntegrationOpenCatalogRestConfigDetails{
 					CatalogUri:           privateCatalogUri,
 					CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePrivate,
 					CatalogName:          newCatalogName,
 					AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeVendedCredentials,
 				}).
-				HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+				HasRestAuthentication(&sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{
 					OauthTokenUri:      "",
 					OauthClientId:      oAuthClientId,
 					OauthClientSecret:  newOAuthClientSecret,
@@ -398,13 +398,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasCatalogNamespace(newCatalogNamespace).
-			HasRestConfig(&sdk.OpenCatalogRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationOpenCatalogRestConfigDetails{
 				CatalogUri:           privateCatalogUri,
 				CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePrivate,
 				CatalogName:          newCatalogName,
 				AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeVendedCredentials,
 			}).
-			HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasRestAuthentication(&sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{
 				OauthTokenUri:      privateOAuthTokenUri,
 				OauthClientId:      newOAuthClientId,
 				OauthClientSecret:  newOAuthClientSecret,
@@ -881,13 +881,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_CompleteUseCase(t *testing.T) {
 						HasComment(comment).
 						HasRefreshIntervalSeconds(refreshIntervalSeconds).
 						HasCatalogNamespace(catalogNamespace).
-						HasRestConfig(&sdk.OpenCatalogRestConfigDetails{
+						HasRestConfig(&sdk.CatalogIntegrationOpenCatalogRestConfigDetails{
 							CatalogUri:           catalogUri,
 							CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePublic,
 							CatalogName:          catalogName,
 							AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials,
 						}).
-						HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+						HasRestAuthentication(&sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{
 							OauthTokenUri:      oAuthTokenUri,
 							OauthClientId:      oAuthClientId,
 							OauthClientSecret:  oAuthClientSecret,
@@ -930,12 +930,12 @@ func TestAcc_CatalogIntegrationOpenCatalog_CompleteUseCase(t *testing.T) {
 						HasRefreshIntervalSeconds(refreshIntervalSeconds).
 						HasComment(comment).
 						HasCatalogNamespace(catalogNamespace).
-						HasRestConfigWith(objectassert.NewOpenCatalogRestConfigDetailsAssert().
+						HasRestConfigWith(objectassert.NewCatalogIntegrationOpenCatalogRestConfigDetailsAssert().
 							HasCatalogUri(catalogUri).
 							HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
 							HasCatalogName(catalogName).
 							HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)).
-						HasRestAuthenticationWith(objectassert.NewOAuthRestAuthenticationDetailsAssert().
+						HasRestAuthenticationWith(objectassert.NewCatalogIntegrationOpenCatalogRestAuthenticationDetailsAssert().
 							HasOauthTokenUri(oAuthTokenUri).
 							HasOauthClientId(oAuthClientId).
 							HasOauthAllowedScopes(oAuthAllowedScope)),

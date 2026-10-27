@@ -2,6 +2,31 @@ package defs
 
 import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 
+var CatalogIntegrationCatalogSourceType = ssot.NewEnum(
+	"CatalogIntegrationCatalogSourceType", "CatalogIntegrationCatalogSourceTypes",
+	"GLUE", "OBJECT_STORE", "POLARIS", "ICEBERG_REST", "SAP_BDC",
+)
+
+var CatalogIntegrationTableFormat = ssot.NewEnum(
+	"CatalogIntegrationTableFormat", "CatalogIntegrationTableFormats",
+	"ICEBERG", "DELTA",
+)
+
+var CatalogIntegrationCatalogApiType = ssot.NewEnum(
+	"CatalogIntegrationCatalogApiType", "CatalogIntegrationCatalogApiTypes",
+	"PUBLIC", "PRIVATE", "AWS_API_GATEWAY", "AWS_PRIVATE_API_GATEWAY", "AWS_GLUE", "AWS_PRIVATE_GLUE",
+)
+
+var CatalogIntegrationAccessDelegationMode = ssot.NewEnum(
+	"CatalogIntegrationAccessDelegationMode", "CatalogIntegrationAccessDelegationModes",
+	"VENDED_CREDENTIALS", "EXTERNAL_VOLUME_CREDENTIALS",
+)
+
+var CatalogIntegrationRestAuthenticationType = ssot.NewEnum(
+	"CatalogIntegrationRestAuthenticationType", "CatalogIntegrationRestAuthenticationTypes",
+	"OAUTH", "BEARER", "SIGV4",
+)
+
 var catalogIntegrationTableFormatIceberg = ssot.Attribute{
 	Name:      "table_format_iceberg",
 	SqlOnly:   true,
@@ -48,6 +73,73 @@ var catalogIntegrationSetAttrs = struct {
 	},
 }
 
+// catalogIntegrationShowAttrs are the SHOW columns, which are the same for every catalog integration variant.
+var catalogIntegrationShowAttrs = struct {
+	Name      ssot.Attribute
+	Enabled   ssot.Attribute
+	Type      ssot.Attribute
+	Category  ssot.Attribute
+	Comment   ssot.Attribute
+	CreatedOn ssot.Attribute
+}{
+	Name:      ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
+	Enabled:   ssot.Attribute{Name: "enabled", Type: ssot.AttrBool, Readonly: true},
+	Type:      ssot.Attribute{Name: "type", Type: ssot.AttrString, Readonly: true},
+	Category:  ssot.Attribute{Name: "category", Type: ssot.AttrString, Readonly: true},
+	Comment:   ssot.Attribute{Name: "comment", Type: ssot.AttrString, Readonly: true, OptionalInDb: true},
+	CreatedOn: ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, Readonly: true},
+}
+
+// catalogIntegrationDescribeRowAttrs are the columns of a DESCRIBE row. Snowflake describes every catalog integration as a
+// list of properties, which the details of each variant are parsed from.
+var catalogIntegrationDescribeRowAttrs = struct {
+	Property        ssot.Attribute
+	PropertyType    ssot.Attribute
+	PropertyValue   ssot.Attribute
+	PropertyDefault ssot.Attribute
+}{
+	Property:        ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true},
+	PropertyType:    ssot.Attribute{Name: "property_type", Type: ssot.AttrString, Readonly: true},
+	PropertyValue:   ssot.Attribute{Name: "property_value", Type: ssot.AttrString, Readonly: true},
+	PropertyDefault: ssot.Attribute{Name: "property_default", Type: ssot.AttrString, Readonly: true},
+}
+
+// readonlyColumn is the attribute as a DESCRIBE column of the base: the same field, read only. It is not required, so an
+// object column is optional in the details of the base, which has the fields of every variant.
+func readonlyColumn(attr ssot.Attribute) ssot.Attribute {
+	attr.Readonly = true
+	attr.Required = false
+	return attr
+}
+
+// catalogIntegrationDescribeColumns are the DESCRIBE columns of the base: the union of the columns of the variants.
+// Each is the attribute of a variant.
+var catalogIntegrationDescribeColumns = struct {
+	Enabled                  ssot.Attribute
+	RefreshIntervalSeconds   ssot.Attribute
+	Comment                  ssot.Attribute
+	GlueAwsRoleArn           ssot.Attribute
+	GlueCatalogId            ssot.Attribute
+	GlueRegion               ssot.Attribute
+	CatalogNamespace         ssot.Attribute
+	RestConfig               ssot.Attribute
+	OauthRestAuthentication  ssot.Attribute
+	BearerRestAuthentication ssot.Attribute
+	Sigv4RestAuthentication  ssot.Attribute
+}{
+	Enabled:                  readonlyColumn(CatalogIntegrationIcebergRestAttrs.Enabled),
+	RefreshIntervalSeconds:   readonlyColumn(CatalogIntegrationIcebergRestAttrs.RefreshIntervalSeconds),
+	Comment:                  readonlyColumn(CatalogIntegrationIcebergRestAttrs.Comment),
+	GlueAwsRoleArn:           readonlyColumn(CatalogIntegrationAwsGlueAttrs.GlueAwsRoleArn),
+	GlueCatalogId:            readonlyColumn(CatalogIntegrationAwsGlueAttrs.GlueCatalogId),
+	GlueRegion:               readonlyColumn(CatalogIntegrationAwsGlueAttrs.GlueRegion),
+	CatalogNamespace:         readonlyColumn(CatalogIntegrationIcebergRestAttrs.CatalogNamespace),
+	RestConfig:               readonlyColumn(CatalogIntegrationIcebergRestAttrs.RestConfig),
+	OauthRestAuthentication:  readonlyColumn(CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication),
+	BearerRestAuthentication: readonlyColumn(CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication),
+	Sigv4RestAuthentication:  readonlyColumn(CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication),
+}
+
 // CatalogIntegration is the base of the catalog integration variants. All of them are the same Snowflake object,
 // CATALOG INTEGRATION, and share one SDK interface, which is built from this object.
 var CatalogIntegration = ssot.Object{
@@ -55,8 +147,54 @@ var CatalogIntegration = ssot.Object{
 	NamePlural:      "CatalogIntegrations",
 	IdType:          "AccountObjectIdentifier",
 	VariantBaseOnly: true,
+	// The enums of the variants are the SDK enums of the shared interface. The REST authentication type is only in DESCRIBE.
+	AdditionalEnums: []*ssot.Enum{
+		CatalogIntegrationCatalogSourceType,
+		CatalogIntegrationTableFormat,
+		CatalogIntegrationRestAuthenticationType,
+		CatalogIntegrationAccessDelegationMode,
+		CatalogIntegrationCatalogApiType,
+	},
 	Generators: []ssot.GeneratorOption{
-		ssot.WithSdk(ssot.SdkCreateForVariants(), ssot.SdkAlter()),
+		ssot.WithSdk(ssot.SdkCreateForVariants(), ssot.SdkAlter(), ssot.SdkShow(ssot.SdkShowOptionalLike()), ssot.SdkDrop(), ssot.SdkDescribe(ssot.SdkDescribeDetailsForVariants(), ssot.SdkDescribeDetails(ssot.SdkDescribeDetailsMethod()))),
+	},
+	Show: ssot.OutputSpec{
+		Columns: []*ssot.Attribute{
+			&catalogIntegrationShowAttrs.Name,
+			&catalogIntegrationShowAttrs.Enabled,
+			&catalogIntegrationShowAttrs.Type,
+			&catalogIntegrationShowAttrs.Category,
+			&catalogIntegrationShowAttrs.Comment,
+			&catalogIntegrationShowAttrs.CreatedOn,
+		},
+	},
+	Describe: ssot.OutputSpec{
+		Columns: []*ssot.Attribute{
+			&CatalogIntegrationIcebergRestAttrs.Id,
+			&CatalogIntegrationIcebergRestAttrs.CatalogSource,
+			&CatalogIntegrationIcebergRestAttrs.TableFormat,
+			&catalogIntegrationDescribeColumns.Enabled,
+			&catalogIntegrationDescribeColumns.RefreshIntervalSeconds,
+			&catalogIntegrationDescribeColumns.Comment,
+			&catalogIntegrationDescribeColumns.GlueAwsRoleArn,
+			&catalogIntegrationDescribeColumns.GlueCatalogId,
+			&catalogIntegrationDescribeColumns.GlueRegion,
+			&catalogIntegrationDescribeColumns.CatalogNamespace,
+			&CatalogIntegrationAwsGlueAttrs.GlueAwsIamUserArn,
+			&CatalogIntegrationAwsGlueAttrs.GlueAwsExternalId,
+			&catalogIntegrationDescribeColumns.RestConfig,
+			&catalogIntegrationDescribeColumns.OauthRestAuthentication,
+			&catalogIntegrationDescribeColumns.BearerRestAuthentication,
+			&catalogIntegrationDescribeColumns.Sigv4RestAuthentication,
+		},
+	},
+	DescribeRows: ssot.OutputSpec{
+		Columns: []*ssot.Attribute{
+			&catalogIntegrationDescribeRowAttrs.Property,
+			&catalogIntegrationDescribeRowAttrs.PropertyType,
+			&catalogIntegrationDescribeRowAttrs.PropertyValue,
+			&catalogIntegrationDescribeRowAttrs.PropertyDefault,
+		},
 	},
 	Set: []*ssot.Attribute{
 		&catalogIntegrationSetAttrs.OauthRestAuthentication,

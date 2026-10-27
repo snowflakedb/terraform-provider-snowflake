@@ -2,17 +2,6 @@ package defs
 
 import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 
-// https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-glue
-var catalogIntegrationAwsGlueCatalogSourceType = ssot.NewEnum(
-	"CatalogIntegrationCatalogSourceType", "CatalogIntegrationCatalogSourceTypes",
-	"GLUE", "OBJECT_STORE", "POLARIS", "ICEBERG_REST", "SAP_BDC",
-)
-
-var catalogIntegrationAwsGlueTableFormat = ssot.NewEnum(
-	"CatalogIntegrationTableFormat", "CatalogIntegrationTableFormats",
-	"ICEBERG", "DELTA",
-)
-
 // CatalogIntegrationAwsGlueAttrs holds reusable AWS Glue catalog integration fields so SHOW and
 // DESCRIBE Columns can point at the same definitions instead of restating names.
 var CatalogIntegrationAwsGlueAttrs = struct {
@@ -93,10 +82,10 @@ var CatalogIntegrationAwsGlueAttrs = struct {
 		Name:        "catalog_source",
 		Type:        ssot.AttrEnum,
 		Description: "Specifies the type of catalog source. This field is used to detect when the catalog source was changed outside of Terraform and to recreate the resource when that happens.",
-		Enum:        catalogIntegrationAwsGlueCatalogSourceType,
+		Enum:        CatalogIntegrationCatalogSourceType,
 		Readonly:    true,
 	},
-	TableFormat:       ssot.Attribute{Name: "table_format", Type: ssot.AttrEnum, Enum: catalogIntegrationAwsGlueTableFormat, Readonly: true},
+	TableFormat:       ssot.Attribute{Name: "table_format", Type: ssot.AttrEnum, Enum: CatalogIntegrationTableFormat, Readonly: true},
 	GlueAwsIamUserArn: ssot.Attribute{Name: "glue_aws_iam_user_arn", Type: ssot.AttrString, Readonly: true},
 	GlueAwsExternalId: ssot.Attribute{Name: "glue_aws_external_id", Type: ssot.AttrString, Readonly: true},
 }
@@ -126,6 +115,8 @@ var CatalogIntegrationAwsGlue = ssot.Object{
 		// WithResourceAssert omitted. catalog_source is added in the schema ext, so the schema-based assert still emits it.
 		// ObjectAssertShow omitted. There is no sdk.CatalogIntegrationAwsGlue type.
 		// ObjectAssertDescribe omitted. The SDK list keeps DescribeAwsGlue.
+		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant. The details are parsed in the SDK ext.
+		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"), ssot.SdkDescribeDetails())),
 		ssot.WithShowOutputAssert(ssot.ShowOutputDescribe()),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{

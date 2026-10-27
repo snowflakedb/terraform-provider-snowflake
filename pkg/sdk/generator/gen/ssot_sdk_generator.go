@@ -54,6 +54,15 @@ func (i *Interface) DescribeOperationFromObject(obj ssot.Object, helperStructs .
 	}
 	if cfg.DescribeDetails {
 		helpers = append(helpers, DescribeDetailsPlain(obj))
+		helpers = appendPlains(helpers, DescribeNestedPlains(obj))
+	}
+	var variants []ssot.Object
+	if cfg.DescribeDetailsForVariants {
+		variants = describeDetailsVariants(obj)
+		for _, variant := range variants {
+			helpers = append(helpers, DescribeDetailsPlain(variant))
+			helpers = appendPlains(helpers, DescribeNestedPlains(variant))
+		}
 	}
 	i = i.DescribeOperationWithPairedStructs(
 		describeMappingFromObject(obj, cfg),
@@ -68,7 +77,31 @@ func (i *Interface) DescribeOperationFromObject(obj ssot.Object, helperStructs .
 	if cfg.DescribeDetailsMethod {
 		i = i.WithDescribeDetails(obj.Name+"Details", "Parse"+obj.Name+"Described")
 	}
+	for _, variant := range variants {
+		i = i.WithDescribeDetailsMethod("Describe"+variant.VariantStem(obj.Name)+"Details", variant.Name+"Details", "Parse"+variant.Name+"Described")
+	}
 	return i
+}
+
+func appendPlains(helpers []IntoField, plains []*Plain) []IntoField {
+	for _, plain := range plains {
+		helpers = append(helpers, plain)
+	}
+	return helpers
+}
+
+// describeDetailsVariants are the variants of base that turn on SdkDescribeDetails.
+func describeDetailsVariants(base ssot.Object) []ssot.Object {
+	variants := collections.Filter(variantsOf(base), func(variant ssot.Object) bool { return variant.SdkConfig().DescribeDetails })
+	if len(variants) == 0 {
+		panic(fmt.Sprintf("object %q: variant DESCRIBE details generation has no variants with SdkDescribeDetails", base.Name))
+	}
+	for _, variant := range variants {
+		if variant.VariantOf == nil || variant.VariantOf.Name != base.Name {
+			panic(fmt.Sprintf("object %q: %q is not a variant", base.Name, variant.Name))
+		}
+	}
+	return variants
 }
 
 func describeParseConfig(obj ssot.Object, cfg ssot.SdkGenerator) DescribeParseConfig {

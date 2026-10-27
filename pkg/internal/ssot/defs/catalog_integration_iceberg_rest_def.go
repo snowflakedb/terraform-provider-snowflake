@@ -232,7 +232,14 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 		// WithResourceAssert omitted. catalog_source is added in the schema ext, so the schema-based assert still emits it.
 		// ObjectAssertShow omitted. There is no sdk.CatalogIntegrationIcebergRest type.
 		// ObjectAssertDescribe omitted. The SDK list keeps DescribeIcebergRest and the nested rest asserts.
-		ssot.WithShowOutputAssert(ssot.ShowOutputDescribe()),
+		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant. The details are parsed in the SDK ext.
+		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"), ssot.SdkDescribeDetails())),
+		ssot.WithShowOutputAssert(ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(
+			&CatalogIntegrationIcebergRestAttrs.RestConfig,
+			&CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication,
+			&CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication,
+			&CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication,
+		))),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
@@ -289,6 +296,10 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 			&CatalogIntegrationIcebergRestAttrs.RefreshIntervalSeconds,
 			&CatalogIntegrationIcebergRestAttrs.Comment,
 			&CatalogIntegrationIcebergRestAttrs.CatalogNamespace,
+			&CatalogIntegrationIcebergRestAttrs.RestConfig,
+			&CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication,
+			&CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication,
+			&CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication,
 		},
 	},
 }

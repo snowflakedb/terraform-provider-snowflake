@@ -41,6 +41,9 @@ type SdkGenerator struct {
 	// whose elements are a hand-written struct, so the column is not derived from its placeholder Elem.
 	DescribeDetails             bool
 	DescribeDetailsNestedFields []*Attribute
+	// DescribeDetailsForVariants emits, for each variant of this object that turns on SdkDescribeDetails, its details
+	// struct <Variant>Details and the method Describe<Variant>Details: Describe, Parse<Variant>Described, and Id.
+	DescribeDetailsForVariants bool
 	// DescribeDetailsMethod emits the DescribeDetails method: Describe, Parse<Name>Described, and Id.
 	// The parse function stays in the SDK ext file.
 	DescribeDetailsMethod bool
@@ -306,6 +309,13 @@ func SdkDescribeDetailsParse(mappings ...DescribeDetailsMapping) SdkDescribeDeta
 // the rows with the hand-written Parse<Name>Described(rows []<Name>Property) (<Name>Details, error), and sets Id.
 func SdkDescribeDetailsMethod() SdkDescribeDetailsOption {
 	return func(s *SdkGenerator) { s.DescribeDetailsMethod = true }
+}
+
+// SdkDescribeDetailsForVariants emits the details of each variant: the struct <Variant>Details from the Describe.Columns
+// of the variant, and the method Describe<Variant>Details. The variant turns on SdkDescribeDetails, and the DESCRIBE rows are
+// the ones of this object. The parse function Parse<Variant>Described stays in the SDK ext file.
+func SdkDescribeDetailsForVariants() SdkDescribeOption {
+	return func(s *SdkGenerator) { s.DescribeDetailsForVariants = true }
 }
 
 // SdkDescribeDetailsNestedField marks a Describe column as a list or set of a hand-written struct.

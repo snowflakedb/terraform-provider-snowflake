@@ -399,7 +399,7 @@ func TestParseCommaSeparatedEnumMap(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			actual := parseCommaSeparatedEnumMap(CatalogIntegrationProperty{Value: tc.Value})
+			actual := parseCommaSeparatedEnumMap(CatalogIntegrationProperty{PropertyValue: tc.Value})
 			require.Equal(t, tc.Result, actual)
 		})
 	}

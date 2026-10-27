@@ -4,7 +4,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (c *CatalogIntegrationIcebergRestResourceAssert) HasRestConfig(restConfig *sdk.IcebergRestRestConfigDetails) *CatalogIntegrationIcebergRestResourceAssert {
+func (c *CatalogIntegrationIcebergRestResourceAssert) HasRestConfig(restConfig *sdk.CatalogIntegrationIcebergRestRestConfigDetails) *CatalogIntegrationIcebergRestResourceAssert {
 	c.ValueSet("rest_config.0.catalog_uri", restConfig.CatalogUri)
 	c.ValueSet("rest_config.0.prefix", restConfig.Prefix)
 	c.ValueSet("rest_config.0.catalog_name", restConfig.CatalogName)
@@ -13,7 +13,7 @@ func (c *CatalogIntegrationIcebergRestResourceAssert) HasRestConfig(restConfig *
 	return c
 }
 
-func (c *CatalogIntegrationIcebergRestResourceAssert) HasOauthRestAuthentication(restAuth *sdk.OAuthRestAuthenticationDetails) *CatalogIntegrationIcebergRestResourceAssert {
+func (c *CatalogIntegrationIcebergRestResourceAssert) HasOauthRestAuthentication(restAuth *sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationDetails) *CatalogIntegrationIcebergRestResourceAssert {
 	c.ValueSet("oauth_rest_authentication.0.oauth_token_uri", restAuth.OauthTokenUri)
 	c.ValueSet("oauth_rest_authentication.0.oauth_client_id", restAuth.OauthClientId)
 	c.ValueSet("oauth_rest_authentication.0.oauth_client_secret", restAuth.OauthClientSecret)
@@ -21,12 +21,12 @@ func (c *CatalogIntegrationIcebergRestResourceAssert) HasOauthRestAuthentication
 	return c
 }
 
-func (c *CatalogIntegrationIcebergRestResourceAssert) HasBearerRestAuthentication(restAuth *sdk.BearerRestAuthenticationDetails) *CatalogIntegrationIcebergRestResourceAssert {
+func (c *CatalogIntegrationIcebergRestResourceAssert) HasBearerRestAuthentication(restAuth *sdk.CatalogIntegrationIcebergRestBearerRestAuthenticationDetails) *CatalogIntegrationIcebergRestResourceAssert {
 	c.ValueSet("bearer_rest_authentication.0.bearer_token", restAuth.BearerToken)
 	return c
 }
 
-func (c *CatalogIntegrationIcebergRestResourceAssert) HasSigV4RestAuthentication(restAuth *sdk.SigV4RestAuthenticationDetails) *CatalogIntegrationIcebergRestResourceAssert {
+func (c *CatalogIntegrationIcebergRestResourceAssert) HasSigV4RestAuthentication(restAuth *sdk.CatalogIntegrationIcebergRestSigv4RestAuthenticationDetails) *CatalogIntegrationIcebergRestResourceAssert {
 	c.ValueSet("sigv4_rest_authentication.0.sigv4_iam_role", restAuth.Sigv4IamRole)
 	c.ValueSet("sigv4_rest_authentication.0.sigv4_signing_region", restAuth.Sigv4SigningRegion)
 	c.ValueSet("sigv4_rest_authentication.0.sigv4_external_id", restAuth.Sigv4ExternalId)
