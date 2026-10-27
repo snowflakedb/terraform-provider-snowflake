@@ -192,7 +192,7 @@ func warehouseInteractiveApplySetUnsetExt(d *schema.ResourceData) (*warehouseInt
 	return &warehouseInteractiveAlterRequestsExt{set: set, unset: unset}, nil
 }
 
-func warehouseInteractiveSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, w *sdk.WarehouseInteractive) error {
+func warehouseInteractiveSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, w *sdk.WarehouseInteractive, _ bool) error {
 	if w.Type != sdk.WarehouseTypeInteractive {
 		return fmt.Errorf("warehouse %s is not an interactive warehouse; use snowflake_warehouse or snowflake_warehouse_adaptive instead", id.FullyQualifiedName())
 	}

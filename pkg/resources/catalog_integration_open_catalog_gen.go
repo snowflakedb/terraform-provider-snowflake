@@ -7,6 +7,8 @@ import (
 	"errors"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -40,7 +42,8 @@ func ImportCatalogIntegrationOpenCatalog(ctx context.Context, d *tfschema.Resour
 		return nil, err
 	}
 
-	if err := catalogIntegrationOpenCatalogSetFieldsNotSetByReadExt(d, id, catalogIntegrationOpenCatalog); err != nil {
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
+	if err := catalogIntegrationOpenCatalogSetFieldsNotSetByReadExt(d, id, catalogIntegrationOpenCatalog, importPermissiveMode); err != nil {
 		return nil, err
 	}
 	return []*tfschema.ResourceData{d}, nil

@@ -67,6 +67,16 @@ func Test_lifecycle_afterAlter(t *testing.T) {
 	})
 }
 
+func Test_lifecycle_importPermissiveMode(t *testing.T) {
+	got := renderLifecycle(t, lifecycleModel())
+	require.Contains(t, got, "importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)")
+	require.Contains(t, got, "poolSetFieldsNotSetByReadExt(d, id, pool, importPermissiveMode)")
+
+	omitted := renderLifecycle(t, lifecycleModel(withHooks(ssot.WithSetFieldsNotSetByRead(ssot.Omitted()))))
+	require.NotContains(t, omitted, "importPermissiveMode")
+	require.NotContains(t, omitted, "SetFieldsNotSetByReadExt")
+}
+
 func Test_lifecycle_importOmittedWithoutShowByIdInSdk(t *testing.T) {
 	require.Contains(t, renderLifecycle(t, lifecycleModel()), "func ImportPool(")
 

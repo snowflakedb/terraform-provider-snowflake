@@ -7,6 +7,8 @@ import (
 	"errors"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -40,7 +42,8 @@ func ImportCatalogIntegrationAwsGlue(ctx context.Context, d *tfschema.ResourceDa
 		return nil, err
 	}
 
-	if err := catalogIntegrationAwsGlueSetFieldsNotSetByReadExt(d, id, catalogIntegrationAwsGlue); err != nil {
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
+	if err := catalogIntegrationAwsGlueSetFieldsNotSetByReadExt(d, id, catalogIntegrationAwsGlue, importPermissiveMode); err != nil {
 		return nil, err
 	}
 	return []*tfschema.ResourceData{d}, nil

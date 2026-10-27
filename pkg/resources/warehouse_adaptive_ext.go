@@ -134,7 +134,7 @@ func warehouseAdaptiveApplySetUnsetExt(d *schema.ResourceData) (*warehouseAdapti
 	return &warehouseAdaptiveAlterRequestsExt{set: set, unset: unset}, nil
 }
 
-func warehouseAdaptiveSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, w *sdk.WarehouseAdaptive) error {
+func warehouseAdaptiveSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, w *sdk.WarehouseAdaptive, _ bool) error {
 	// Warehouses of other types can be imported and converted to ADAPTIVE with an in-place ALTER during the next update.
 	// INTERACTIVE is the exception and Snowflake rejects it.
 	if w.Type == sdk.WarehouseTypeInteractive {

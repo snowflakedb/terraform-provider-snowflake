@@ -115,7 +115,7 @@ func catalogIntegrationAwsGlueApplySetUnsetExt(d *schema.ResourceData) (*catalog
 	return &catalogIntegrationAwsGlueAlterRequestsExt{set: set}, nil
 }
 
-func catalogIntegrationAwsGlueSetFieldsNotSetByReadExt(_ *schema.ResourceData, _ sdk.AccountObjectIdentifier, _ *sdk.CatalogIntegrationAwsGlueDetails) error {
+func catalogIntegrationAwsGlueSetFieldsNotSetByReadExt(_ *schema.ResourceData, _ sdk.AccountObjectIdentifier, _ *sdk.CatalogIntegrationAwsGlueDetails, _ bool) error {
 	return nil
 }
 
