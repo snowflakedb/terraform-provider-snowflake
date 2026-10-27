@@ -20,6 +20,7 @@ func All() []ssot.Object {
 		Table,
 		Pipe,
 		CodeBundle,
+		BackupPolicy,
 	}
 	for _, obj := range objs {
 		ssot.ValidateObject(obj)

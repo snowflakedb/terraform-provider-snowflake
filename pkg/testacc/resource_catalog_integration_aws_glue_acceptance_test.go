@@ -513,10 +513,9 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase_Import(t *testing.T) {
 	basicModel := model.CatalogIntegrationAwsGlue("t", id.Name(), false, glueAwsRoleArn, glueCatalogId)
 	ref := basicModel.ResourceReference()
 
-	_, cleanup := testClient().CatalogIntegration.CreateFunc(t, sdk.NewCreateCatalogIntegrationRequest(id, false).
+	_, cleanup := testClient().CatalogIntegration.CreateAwsGlueFunc(t, sdk.NewCreateAwsGlueCatalogIntegrationRequest(id, glueAwsRoleArn, glueCatalogId, false).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
-		WithAwsGlueCatalogSourceParams(*sdk.NewAwsGlueParamsRequest(glueAwsRoleArn, glueCatalogId).
-			WithGlueRegion(glueRegion)))
+		WithGlueRegion(glueRegion))
 	t.Cleanup(cleanup)
 
 	resource.Test(t, resource.TestCase{

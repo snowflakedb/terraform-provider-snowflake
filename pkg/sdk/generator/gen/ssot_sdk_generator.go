@@ -19,7 +19,7 @@ var variantsOf = ssotdefs.VariantsOf
 
 // ShowOperationFromObject adds SHOW and ShowByID from obj.SdkConfig.
 // The field chain comes from ShowPairedStructs. Clauses are emitted in a fixed order:
-// Show, Terse, SQL, OptionalSQL, Like, ExtendedIn, StartsWith, LimitFrom, Limit.
+// Show, Terse, SQL, OptionalSQL, Like, plain IN or ExtendedIn, StartsWith, LimitFrom, Limit.
 // An empty ShowByID filtering list passes no filtering argument, so ShowByID stays Like.
 func (i *Interface) ShowOperationFromObject(obj ssot.Object) *Interface {
 	cfg := obj.SdkConfig()
@@ -189,6 +189,12 @@ func showQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 	if cfg.ShowOptionalLike {
 		q = q.OptionalLike()
 	}
+	if cfg.ShowOptionalIn && cfg.ShowOptionalExtendedIn {
+		panic("SHOW cannot set both plain IN and extended IN")
+	}
+	if cfg.ShowOptionalIn {
+		q = q.OptionalIn()
+	}
 	if cfg.ShowOptionalExtendedIn {
 		q = q.OptionalExtendedIn()
 	}
@@ -213,6 +219,8 @@ func showByIDFilteringFromObject(obj ssot.Object, cfg ssot.SdkGenerator) []ShowB
 		switch kind {
 		case ssot.SdkShowByIDLike:
 			filtering[i] = ShowByIDLikeFiltering
+		case ssot.SdkShowByIDIn:
+			filtering[i] = ShowByIDInFiltering
 		case ssot.SdkShowByIDExtendedIn:
 			filtering[i] = ShowByIDExtendedInFiltering
 		default:
@@ -341,6 +349,7 @@ func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryS
 	}
 	q = q.withIdentifierParameterValidations(createParams)
 	q = q.withExactlyOneOfValidations(obj, obj.Create.Clauses)
+	q = q.withAtLeastOneOfValidations(obj, obj.Create.Clauses)
 	if cfg.CreateAdditionalValidations {
 		q = q.WithAdditionalValidations()
 	}
@@ -350,18 +359,28 @@ func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryS
 // withExactlyOneOfValidations adds ExactlyOneValueSet for each ExactlyOneOf group of obj whose attributes are all in clauses.
 // A group that has only some of them in the statement is a mistake in the definition.
 func (v *QueryStruct) withExactlyOneOfValidations(obj ssot.Object, clauses []*ssot.Attribute) *QueryStruct {
-	for _, group := range obj.ExactlyOneOf {
+	return v.withValueSetGroups(obj, "ExactlyOneOf", obj.ExactlyOneOf, ExactlyOneValueSet, clauses)
+}
+
+// withAtLeastOneOfValidations adds AtLeastOneValueSet for each AtLeastOneOf group of obj whose attributes are all in clauses.
+// A group that has only some of them in the statement is a mistake in the definition.
+func (v *QueryStruct) withAtLeastOneOfValidations(obj ssot.Object, clauses []*ssot.Attribute) *QueryStruct {
+	return v.withValueSetGroups(obj, "AtLeastOneOf", obj.AtLeastOneOf, AtLeastOneValueSet, clauses)
+}
+
+func (v *QueryStruct) withValueSetGroups(obj ssot.Object, label string, groups [][]*ssot.Attribute, kind ValidationType, clauses []*ssot.Attribute) *QueryStruct {
+	for _, group := range groups {
 		present := collections.Filter(group, func(member *ssot.Attribute) bool {
 			return slices.ContainsFunc(clauses, func(clause *ssot.Attribute) bool { return clause != nil && clause.Name == member.Name })
 		})
 		switch len(present) {
 		case 0:
 		case len(group):
-			v = v.WithValidation(ExactlyOneValueSet, collections.Map(group, func(member *ssot.Attribute) string {
+			v = v.WithValidation(kind, collections.Map(group, func(member *ssot.Attribute) string {
 				return clauseFieldName(*member, attributeSqlCreate)
 			})...)
 		default:
-			panic(fmt.Sprintf("object %q: only some attributes of an ExactlyOneOf group are in the statement", obj.Name))
+			panic(fmt.Sprintf("object %q: only some attributes of an %s group are in the statement", obj.Name, label))
 		}
 	}
 	return v
@@ -633,6 +652,7 @@ func customOperationQueryStruct(obj ssot.Object, spec ssot.CustomOperationSpec) 
 	sawOrReplace := false
 	sawIfNotExists := false
 	sawName := false
+	var attributes []*ssot.Attribute
 	seen := make(map[ssot.CustomOperationClauseKind]struct{})
 	seenAttr := make(map[string]struct{})
 	seenPredefined := make(map[string]struct{})
@@ -659,6 +679,7 @@ func customOperationQueryStruct(obj ssot.Object, spec ssot.CustomOperationSpec) 
 			q = q.IfNotExists()
 		case ssot.CustomOperationClauseAttribute:
 			attr := customOperationAttribute(obj, spec, clause, seenAttr)
+			attributes = append(attributes, attr)
 			q = q.appendSqlSequence([]*ssot.Attribute{attr}, attributeSqlCreate)
 		case ssot.CustomOperationClauseObjectWords:
 			singleton(clause.Kind)
@@ -686,6 +707,7 @@ func customOperationQueryStruct(obj ssot.Object, spec ssot.CustomOperationSpec) 
 	if sawOrReplace && sawIfNotExists {
 		q = q.WithValidation(ConflictingFields, "OrReplace", "IfNotExists")
 	}
+	q = q.withAtLeastOneOfValidations(obj, attributes)
 	if spec.AdditionalValidations {
 		q = q.WithAdditionalValidations()
 	}
@@ -918,6 +940,12 @@ func appendAlterUnset(q *QueryStruct, obj ssot.Object) *QueryStruct {
 	unsetParams := parametersForStatement(obj, obj.Unset, "UNSET")
 	unsetStruct := NewQueryStruct(obj.Name+"Unset").appendSqlSequenceParams(obj.Unset, attributeSqlUnset, unsetParams)
 	unsetStruct = unsetStruct.WithValidation(AtLeastOneValueSet, atLeastOneFields(unsetStruct, unsetParams)...)
+	for _, group := range obj.UnsetConflicts {
+		names := collections.Map(group, func(member *ssot.Attribute) string {
+			return clauseFieldName(*member, attributeSqlUnset)
+		})
+		unsetStruct = unsetStruct.WithValidation(ConflictingFields, names...)
+	}
 	return q.OptionalQueryStructField("Unset", unsetStruct, ListOptions().NoParentheses().SQL("UNSET"))
 }
 
