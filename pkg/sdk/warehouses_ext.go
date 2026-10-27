@@ -148,6 +148,8 @@ func (v *warehouses) ShowParameters(ctx context.Context, id AccountObjectIdentif
 // AlterWithSuspend suspends around changes Snowflake rejects on a running warehouse:
 // STANDARD/SNOWPARK-OPTIMIZED type changes and interactive resizes. ADAPTIVE conversion is online.
 func (v *warehouses) AlterWithSuspend(ctx context.Context, request *AlterWarehouseRequest) error {
+	// UNSET, including WAREHOUSE_TYPE, does not require suspension. Skip SHOW for
+	// unrelated updates too, preserving IF EXISTS when the warehouse is absent.
 	if request.Set == nil || (request.Set.WarehouseType == nil && request.Set.WarehouseSize == nil) {
 		return v.Alter(ctx, request)
 	}
@@ -189,6 +191,7 @@ func (v *warehouses) AlterInteractiveWithSuspend(ctx context.Context, request *A
 }
 
 // suspendStartedWarehouse suspends id if started. The returned cleanup resumes it and is never nil.
+// Callers must run the cleanup even when an error is returned.
 func (v *warehouses) suspendStartedWarehouse(ctx context.Context, id AccountObjectIdentifier) (func(), error) {
 	noop := func() {}
 	warehouse, err := v.ShowByID(ctx, id)

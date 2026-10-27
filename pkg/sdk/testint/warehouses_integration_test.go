@@ -4,6 +4,7 @@ package testint
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -1372,13 +1373,18 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 	})
 }
 
-// assertNoSuspendIssued fails if an ALTER_WAREHOUSE_SUSPEND hit the warehouse in the last ten minutes.
+// assertNoSuspendIssued checks that recent history contains the conversion without a warehouse suspension.
 func assertNoSuspendIssued(t *testing.T, id sdk.AccountObjectIdentifier) {
 	t.Helper()
-	rows, err := testClient(t).QueryUnsafe(testContext(t), fmt.Sprintf(
-		"SELECT COUNT(*) AS N FROM TABLE(%s.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER(USER_NAME => CURRENT_USER(), END_TIME_RANGE_START => DATEADD(MINUTE, -10, CURRENT_TIMESTAMP()), RESULT_LIMIT => 10000)) WHERE QUERY_TYPE = 'ALTER_WAREHOUSE_SUSPEND' AND QUERY_TEXT ILIKE '%%%s%%'",
-		testClientHelper().Ids.DatabaseId().FullyQualifiedName(), id.Name()))
-	require.NoError(t, err)
-	require.Len(t, rows, 1)
-	assert.Equal(t, "0", fmt.Sprint(*rows[0]["N"]), "conversion to ADAPTIVE must not suspend the warehouse")
+	queryHistory := testClientHelper().InformationSchema.GetQueryHistory(t, 100)
+	suspendSQL := fmt.Sprintf("ALTER WAREHOUSE %s SUSPEND", id.FullyQualifiedName())
+	conversionSQL := fmt.Sprintf("ALTER WAREHOUSE %s SET WAREHOUSE_TYPE = 'ADAPTIVE'", id.FullyQualifiedName())
+	foundConversion := false
+	for _, query := range queryHistory {
+		assert.NotContains(t, query.QueryText, suspendSQL, "conversion to ADAPTIVE must not suspend the warehouse")
+		if strings.Contains(query.QueryText, conversionSQL) {
+			foundConversion = true
+		}
+	}
+	assert.True(t, foundConversion, "query history must contain the conversion to ADAPTIVE")
 }
