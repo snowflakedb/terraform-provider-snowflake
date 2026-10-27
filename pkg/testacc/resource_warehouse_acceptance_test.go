@@ -869,7 +869,7 @@ func TestAcc_Warehouse_Validations(t *testing.T) {
 			{
 				Config:      config.FromModels(t, warehouseModelInvalidGeneration),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid generation: unknown`),
+				ExpectError: regexp.MustCompile(`invalid warehouse generation: unknown`),
 			},
 			{
 				Config:      config.FromModels(t, warehouseModelInvalidResourceConstraint),
