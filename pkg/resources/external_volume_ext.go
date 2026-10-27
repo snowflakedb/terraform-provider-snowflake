@@ -21,13 +21,9 @@ import (
 // =============================================================================
 
 var (
-	externalVolumeCreateExt = TrackingCreateWrapper(resources.ExternalVolume, CreateExternalVolume)
-	externalVolumeReadExt   = TrackingReadWrapper(resources.ExternalVolume, ReadExternalVolumeFunc(true))
-	externalVolumeUpdateExt = TrackingUpdateWrapper(resources.ExternalVolume, UpdateExternalVolume)
-	externalVolumeDeleteExt = TrackingDeleteWrapper(resources.ExternalVolume, ResourceDeleteContextFunc(
-		externalVolumeParseIdExt,
-		externalVolumeDropSafelyInSdkExt,
-	))
+	externalVolumeCreateExt        = TrackingCreateWrapper(resources.ExternalVolume, CreateExternalVolume)
+	externalVolumeReadExt          = TrackingReadWrapper(resources.ExternalVolume, ReadExternalVolumeFunc(true))
+	externalVolumeUpdateExt        = TrackingUpdateWrapper(resources.ExternalVolume, UpdateExternalVolume)
 	externalVolumeDescriptionExt   = "Resource used to manage external volume objects. For more information, check [external volume documentation](https://docs.snowflake.com/en/sql-reference/commands-data-loading#external-volume)."
 	externalVolumeCustomizeDiffExt = TrackingCustomDiffWrapper(resources.ExternalVolume, customdiff.All(
 		ComputedIfAnyAttributeChanged(externalVolumeSchema, ShowOutputAttributeName, "name", "allow_writes", "comment"),
@@ -219,10 +215,6 @@ func externalVolumeAlterSetInSdkExt(ctx context.Context, d *schema.ResourceData,
 
 func externalVolumeAlterUnsetInSdkExt(context.Context, any, sdk.AccountObjectIdentifier, *externalVolumeAlterRequestsExt) error {
 	return nil
-}
-
-func externalVolumeDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
-	return client.ExternalVolumes.DropSafely
 }
 
 // =============================================================================

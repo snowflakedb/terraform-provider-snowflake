@@ -9,6 +9,8 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -22,7 +24,7 @@ func Alert() *tfschema.Resource {
 		CreateContext: alertCreateExt,
 		ReadContext:   alertReadExt,
 		UpdateContext: alertUpdateExt,
-		DeleteContext: alertDeleteExt,
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.AlertResource), TrackingDeleteWrapper(resources.Alert, DeleteAlert)),
 		Importer:      alertImporterExt,
 
 		CustomizeDiff: alertCustomizeDiffExt,
@@ -116,4 +118,13 @@ func alertApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateAler
 	return errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
+}
+
+func DeleteAlert(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	return ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.Alerts.DropSafely
+		},
+	)(ctx, d, meta)
 }

@@ -400,6 +400,7 @@ var Warehouse = ssot.Object{
 		ssot.WithParametersFieldNames(ssot.Generated()),
 		ssot.WithParametersCustomDiff(ssot.Generated()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
+		ssot.WithDropSafelyInSdk(ssot.Generated()),
 	},
 	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
 		"v092WarehouseSizeStateUpgrader",

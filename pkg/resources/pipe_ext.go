@@ -21,13 +21,9 @@ import (
 // =============================================================================
 
 var (
-	pipeCreateExt = PreviewFeatureCreateContextWrapper(string(previewfeatures.PipeResource), TrackingCreateWrapper(resources.Pipe, CreatePipe))
-	pipeReadExt   = PreviewFeatureReadContextWrapper(string(previewfeatures.PipeResource), TrackingReadWrapper(resources.Pipe, ReadPipeFunc(true)))
-	pipeUpdateExt = PreviewFeatureUpdateContextWrapper(string(previewfeatures.PipeResource), TrackingUpdateWrapper(resources.Pipe, UpdatePipe))
-	pipeDeleteExt = PreviewFeatureDeleteContextWrapper(string(previewfeatures.PipeResource), TrackingDeleteWrapper(resources.Pipe, ResourceDeleteContextFunc(
-		pipeParseIdExt,
-		pipeDropSafelyInSdkExt,
-	)))
+	pipeCreateExt        = PreviewFeatureCreateContextWrapper(string(previewfeatures.PipeResource), TrackingCreateWrapper(resources.Pipe, CreatePipe))
+	pipeReadExt          = PreviewFeatureReadContextWrapper(string(previewfeatures.PipeResource), TrackingReadWrapper(resources.Pipe, ReadPipeFunc(true)))
+	pipeUpdateExt        = PreviewFeatureUpdateContextWrapper(string(previewfeatures.PipeResource), TrackingUpdateWrapper(resources.Pipe, UpdatePipe))
 	pipeDescriptionExt   = ""
 	pipeCustomizeDiffExt schema.CustomizeDiffFunc
 	pipeImporterExt      = &schema.ResourceImporter{
@@ -143,10 +139,6 @@ func pipeAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.SchemaObjectId
 		}
 	}
 	return nil
-}
-
-func pipeDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
-	return client.Pipes.DropSafely
 }
 
 // =============================================================================

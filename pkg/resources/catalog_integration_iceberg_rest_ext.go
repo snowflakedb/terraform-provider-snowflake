@@ -20,13 +20,9 @@ import (
 // =============================================================================
 
 var (
-	catalogIntegrationIcebergRestCreateExt = TrackingCreateWrapper(resources.CatalogIntegrationIcebergRest, CreateCatalogIntegrationIcebergRest)
-	catalogIntegrationIcebergRestReadExt   = TrackingReadWrapper(resources.CatalogIntegrationIcebergRest, ReadCatalogIntegrationIcebergRestFunc(true))
-	catalogIntegrationIcebergRestUpdateExt = TrackingUpdateWrapper(resources.CatalogIntegrationIcebergRest, UpdateCatalogIntegrationIcebergRest)
-	catalogIntegrationIcebergRestDeleteExt = TrackingDeleteWrapper(resources.CatalogIntegrationIcebergRest, ResourceDeleteContextFunc(
-		catalogIntegrationIcebergRestParseIdExt,
-		catalogIntegrationIcebergRestDropSafelyInSdkExt,
-	))
+	catalogIntegrationIcebergRestCreateExt        = TrackingCreateWrapper(resources.CatalogIntegrationIcebergRest, CreateCatalogIntegrationIcebergRest)
+	catalogIntegrationIcebergRestReadExt          = TrackingReadWrapper(resources.CatalogIntegrationIcebergRest, ReadCatalogIntegrationIcebergRestFunc(true))
+	catalogIntegrationIcebergRestUpdateExt        = TrackingUpdateWrapper(resources.CatalogIntegrationIcebergRest, UpdateCatalogIntegrationIcebergRest)
 	catalogIntegrationIcebergRestDescriptionExt   = "Resource used to manage catalog integration objects for Apache Iceberg™ tables managed in a remote catalog that complies with the open source Apache Iceberg™ REST OpenAPI specification. For more information, check [catalog integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-rest)."
 	catalogIntegrationIcebergRestCustomizeDiffExt = TrackingCustomDiffWrapper(resources.CatalogIntegrationIcebergRest, customdiff.All(
 		ComputedIfAnyAttributeChanged(catalogIntegrationIcebergRestSchema, ShowOutputAttributeName, "enabled", "comment"),
@@ -204,10 +200,6 @@ func catalogIntegrationIcebergRestAlterSetInSdkExt(ctx context.Context, _ *schem
 func catalogIntegrationIcebergRestAlterUnsetInSdkExt(context.Context, any, sdk.AccountObjectIdentifier, *catalogIntegrationIcebergRestAlterRequestsExt) error {
 	// Catalog integration ALTER has no UNSET request. Update still calls this hook after SET.
 	return nil
-}
-
-func catalogIntegrationIcebergRestDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
-	return client.CatalogIntegrations.DropSafely
 }
 
 // =============================================================================

@@ -18,6 +18,7 @@ type ResourceModel struct {
 	DescribeDetailsName                 string
 	IdType                              string
 	LegacyIdEncoding                    bool
+	PreviewFeature                      bool
 	IdentityNameForceNew                bool
 	IdentityHierarchyForceNew           bool
 	AdditionalIdentityNameDescription   string
@@ -114,6 +115,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		DescribeDetailsName:                 input.DescribeDetailsName,
 		IdType:                              input.IdType,
 		LegacyIdEncoding:                    input.LegacyIdEncoding,
+		PreviewFeature:                      input.PreviewFeature,
 		IdentityNameForceNew:                input.IdentityNameForceNew,
 		IdentityHierarchyForceNew:           input.IdentityHierarchyForceNew,
 		AdditionalIdentityNameDescription:   input.AdditionalIdentityNameDescription,

@@ -37,7 +37,8 @@ Identity (`Name`, `IdType`, ...) is separate from `Attributes`. `LegacyIdEncodin
 `helpers.EncodeResourceIdentifier`. The identity schema for those resources stays a plain string and omits
 `suppressIdentifierQuoting`. `WithParseId(Generated())` emits a named parser used by Import, Read, and Update.
 It calls `sdk.Parse<IdType>` for current ids and `helpers.DecodeSnowflakeIDErrLegacy[<IdType>]` for legacy ids.
-The default `ExtCall` keeps the handwritten parser.
+The default `ExtCall` keeps the handwritten parser. `PreviewFeature` marks a preview resource. Generated `Delete`
+wraps `DeleteContext` with `PreviewFeatureDeleteContextWrapper` and `previewfeatures.<Name>Resource`.
 
 `VariantOf` keeps SDK parameter naming simple because variants are expected to share their base object's SDK
 parameter types and usually the same parameter set. Different sets can already use a variant-specific catalog level
@@ -352,7 +353,9 @@ A subtemplate calls the ext function by default (`ExtCall`). Set that hook to `G
 template. Until the subtemplate body is written, generation panics through `Unimplemented`. Each hook is switched on its
 own, with its `With` option. See [resource_hooks.go](resource_hooks.go). `DropSafelyInSdk` defaults to omitted, which
 keeps `DeleteExt`. Set it to `Generated` to emit `Delete` and point `DeleteContext` at that function. `Delete` calls
-`ResourceDeleteContextFunc` with `sdk.Parse` plus the object `IdType`.
+`ResourceDeleteContextFunc` with `sdk.Parse` plus the object `IdType`. An object with `LegacyIdEncoding` uses
+`helpers.DecodeSnowflakeIDErrLegacy` instead. An object with `PreviewFeature` wraps that `DeleteContext` in
+`PreviewFeatureDeleteContextWrapper` using `previewfeatures.<Name>Resource`.
 
 `ShowOutputSet`, `DescribeOutputSet`, and `FqnSet` default to `Generated`. They emit the `d.Set` call for `show_output`,
 `describe_output`, and `fully_qualified_name` from the generated `schemas` mappers and the id. `ExtCall` calls

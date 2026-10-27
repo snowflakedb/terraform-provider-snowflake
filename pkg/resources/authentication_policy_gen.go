@@ -27,7 +27,7 @@ func AuthenticationPolicy() *tfschema.Resource {
 		CreateContext: authenticationPolicyCreateExt,
 		ReadContext:   authenticationPolicyReadExt,
 		UpdateContext: authenticationPolicyUpdateExt,
-		DeleteContext: authenticationPolicyDeleteExt,
+		DeleteContext: TrackingDeleteWrapper(resources.AuthenticationPolicy, DeleteAuthenticationPolicy),
 		Importer:      authenticationPolicyImporterExt,
 
 		CustomizeDiff: authenticationPolicyCustomizeDiff,
@@ -213,6 +213,15 @@ func parseAuthenticationPolicyWorkloadIdentityPolicy(d *tfschema.ResourceData, p
 		setMappedValueCreateBuilder(d, prefix+"allowed_oidc_issuers", request.WithAllowedOidcIssuers, toAuthenticationPolicyWorkloadIdentityPolicyAllowedOidcIssuers),
 	)
 	return *request, errs
+}
+
+func DeleteAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	return ResourceDeleteContextFunc(
+		sdk.ParseSchemaObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.AuthenticationPolicies.DropSafely
+		},
+	)(ctx, d, meta)
 }
 
 func authenticationPolicySetConfigFields(d *tfschema.ResourceData, obj *sdk.AuthenticationPolicy) error {

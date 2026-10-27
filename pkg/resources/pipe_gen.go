@@ -9,6 +9,8 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -22,7 +24,7 @@ func Pipe() *tfschema.Resource {
 		CreateContext: pipeCreateExt,
 		ReadContext:   pipeReadExt,
 		UpdateContext: pipeUpdateExt,
-		DeleteContext: pipeDeleteExt,
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.PipeResource), TrackingDeleteWrapper(resources.Pipe, DeletePipe)),
 		Importer:      pipeImporterExt,
 
 		CustomizeDiff: pipeCustomizeDiffExt,
@@ -111,4 +113,13 @@ func pipeParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier
 func pipeNewCreateRequest(d *tfschema.ResourceData, id sdk.SchemaObjectIdentifier) (*sdk.CreatePipeRequest, error) {
 	copyStatement := d.Get("copy_statement").(string)
 	return sdk.NewCreatePipeRequest(id, copyStatement), nil
+}
+
+func DeletePipe(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	return ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.Pipes.DropSafely
+		},
+	)(ctx, d, meta)
 }
