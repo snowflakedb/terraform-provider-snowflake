@@ -243,7 +243,7 @@ enable nothing.
   from [SHOW and DESCRIBE](#show-and-describe) `Columns`, not from `Attributes`. `OptionalInDb` is live for the mapped
   db and plain kinds. `StoredAsText` selects `BoolFromText` for a bool. A bool without the mark is still db `bool`.
   Other generators ignore the mark. See [Attribute](#attribute). `SdkDrop()` builds DROP from `Name`: `DROP`, the
-  uppercase words, `IF EXISTS`, and the name. `SdkDropSafelyHook()`, `SdkDropSafelyForce()`, and
+  uppercase words, `IF EXISTS`, and the name. `SdkDropDoc()` overrides the default DROP doc URL. `SdkDropSafelyHook()`, `SdkDropSafelyForce()`, and
   `SdkDropCascadeRestrict()` are settings of that call. `SdkDropCascadeRestrict()` adds optional `CASCADE` and
   `RESTRICT` and marks those fields as conflicting. The hook body stays in the SDK ext file. `SdkCreate()` builds
   CREATE from `Name`: `CREATE`, optional `OR REPLACE`, `Create.KeywordsBefore`, the uppercase words, `IF NOT EXISTS`,

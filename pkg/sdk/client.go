@@ -34,6 +34,7 @@ type Client struct {
 	BackupPolicies               BackupPolicies
 	Budgets                      Budgets
 	CatalogIntegrations          CatalogIntegrations
+	CodeBundles                  CodeBundles
 	ComputePools                 ComputePools
 	Connections                  Connections
 	CortexAgents                 CortexAgents
@@ -182,6 +183,7 @@ func (c *Client) initialize() {
 	c.BackupPolicies = &backupPolicies{client: c}
 	c.Budgets = &budgets{client: c}
 	c.CatalogIntegrations = &catalogIntegrations{client: c}
+	c.CodeBundles = &codeBundles{client: c}
 	c.ComputePools = &computePools{client: c}
 	c.Connections = &connections{client: c}
 	c.ContextFunctions = &contextFunctions{client: c}

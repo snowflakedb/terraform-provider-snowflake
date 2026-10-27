@@ -335,6 +335,11 @@ func SdkDropCascadeRestrict() SdkDropOption {
 	return func(s *SdkGenerator) { s.DropCascadeRestrict = true }
 }
 
+// SdkDropDoc overrides the default DROP doc URL.
+func SdkDropDoc(url string) SdkDropOption {
+	return func(s *SdkGenerator) { s.DropDoc = url }
+}
+
 type SdkCreateOption func(*SdkGenerator)
 
 func SdkCreate(opts ...SdkCreateOption) SdkOption {
