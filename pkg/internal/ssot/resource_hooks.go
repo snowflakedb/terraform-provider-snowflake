@@ -78,7 +78,7 @@ func DefaultResourceExtHooks(opts ...ResourceHookOption) ResourceHooks {
 		DescribeInSdk:                   ExtCall(),
 		HandleExternalChanges:           ExtCall(),
 		HandleExternalChangesInDescribe: Omitted(),
-		SetStateToValuesFromConfig:      ExtCall(),
+		SetStateToValuesFromConfig:      Generated(),
 		ShowOutputSet:                   Generated(),
 		DescribeOutputSet:               Generated(),
 		SetDescribeOutput:               Omitted(),

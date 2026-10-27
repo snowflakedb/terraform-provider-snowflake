@@ -37,13 +37,6 @@ var (
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-var authenticationPolicySetStateToValueFromConfigFieldsExt = []string{
-	"authentication_methods",
-	"mfa_enrollment",
-	"client_types",
-	"security_integrations",
-}
-
 type authenticationPolicyAlterRequestsExt struct {
 	set   *sdk.AuthenticationPolicySetRequest
 	unset *sdk.AuthenticationPolicyUnsetRequest

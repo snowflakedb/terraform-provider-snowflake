@@ -43,10 +43,6 @@ var (
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-var externalVolumeSetStateToValueFromConfigFieldsExt = []string{
-	"allow_writes",
-}
-
 type externalVolumeAlterRequestsExt struct {
 	set *sdk.ExternalVolumeSetRequest
 }

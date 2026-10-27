@@ -101,7 +101,9 @@ func ReadExternalVolumeFunc(withExternalChangesMarking bool) tfschema.ReadContex
 			return diag.FromErr(err)
 		}
 
-		if err = setStateToValuesFromConfig(d, externalVolumeSchema, externalVolumeSetStateToValueFromConfigFieldsExt); err != nil {
+		if err = setStateToValuesFromConfig(d, externalVolumeSchema, []string{
+			"allow_writes",
+		}); err != nil {
 			return diag.FromErr(err)
 		}
 		errs := errors.Join(

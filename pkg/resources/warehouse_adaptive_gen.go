@@ -103,6 +103,14 @@ func ReadWarehouseAdaptiveFunc(withExternalChangesMarking bool) tfschema.ReadCon
 			return diag.FromErr(err)
 		}
 
+		if err = setStateToValuesFromConfig(d, warehouseAdaptiveSchema, []string{
+			"warehouse_type",
+			"max_query_performance_level",
+			"query_throughput_multiplier",
+			"resource_monitor",
+		}); err != nil {
+			return diag.FromErr(err)
+		}
 		errs := errors.Join(
 			d.Set(ParametersAttributeName, []map[string]any{schemas.WarehouseAdaptiveParametersToSchema(rawWarehouseAdaptiveParameters, meta.(*provider.Context))}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),

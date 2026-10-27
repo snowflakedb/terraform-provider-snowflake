@@ -137,7 +137,10 @@ func ReadSchemaFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		if err = setStateToValuesFromConfig(d, schemaSchema, schemaSetStateToValueFromConfigFieldsExt); err != nil {
+		if err = setStateToValuesFromConfig(d, schemaSchema, []string{
+			"with_managed_access",
+			"is_transient",
+		}); err != nil {
 			return diag.FromErr(err)
 		}
 		errs := errors.Join(

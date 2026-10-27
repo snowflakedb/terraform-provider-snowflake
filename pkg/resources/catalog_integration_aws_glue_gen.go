@@ -94,6 +94,13 @@ func ReadCatalogIntegrationAwsGlueFunc(withExternalChangesMarking bool) tfschema
 			return diags
 		}
 
+		if err = setStateToValuesFromConfig(d, catalogIntegrationAwsGlueSchema, []string{
+			"refresh_interval_seconds",
+			"glue_region",
+			"catalog_namespace",
+		}); err != nil {
+			return append(diags, diag.FromErr(err)...)
+		}
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationAwsGlueToSchema(catalogIntegrationAwsGlue)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CatalogIntegrationAwsGlueDetailsToSchema(catalogIntegrationAwsGlueDetails)}),

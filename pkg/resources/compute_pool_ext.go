@@ -37,12 +37,6 @@ var (
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-var computePoolSetStateToValueFromConfigFieldsExt = []string{
-	"for_application",
-	"auto_resume",
-	"auto_suspend_secs",
-}
-
 type computePoolAlterRequestsExt struct {
 	set   *sdk.ComputePoolSetRequest
 	unset *sdk.ComputePoolUnsetRequest

@@ -94,6 +94,12 @@ func ReadCatalogIntegrationIcebergRestFunc(withExternalChangesMarking bool) tfsc
 			return diags
 		}
 
+		if err = setStateToValuesFromConfig(d, catalogIntegrationIcebergRestSchema, []string{
+			"refresh_interval_seconds",
+			"catalog_namespace",
+		}); err != nil {
+			return append(diags, diag.FromErr(err)...)
+		}
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationIcebergRestToSchema(catalogIntegrationIcebergRest)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CatalogIntegrationIcebergRestDetailsToSchema(catalogIntegrationIcebergRestDetails)}),
