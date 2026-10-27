@@ -50,6 +50,7 @@ func ValidateObject(obj Object) {
 	}
 	validateCreateSpec(obj, attrs)
 	validateExactlyOneOf(obj)
+	validateAtLeastOneOf(obj)
 	switch {
 	case obj.VariantOf != nil:
 		if obj.Create.Sql != "" {
@@ -62,6 +63,7 @@ func ValidateObject(obj Object) {
 	}
 	validateSqlSequence(obj, "SET", obj.Set, attrs, func(attr Attribute) SqlClause { return attr.SetSql })
 	validateSqlSequence(obj, "UNSET", obj.Unset, attrs, func(attr Attribute) SqlClause { return attr.UnsetSql })
+	validateUnsetConflicts(obj)
 	validateAlterSpec(obj)
 	validateCustomOperations(obj, attrs)
 	validateCustomInterfaceMethods(obj)
@@ -331,25 +333,61 @@ func sqlClauseStatement(attr Attribute) (string, bool) {
 
 // validateExactlyOneOf checks the groups: at least two optional top-level attributes each, none in two groups.
 func validateExactlyOneOf(obj Object) {
+	validateAttributeGroups(obj, "ExactlyOneOf", obj.ExactlyOneOf)
+}
+
+// validateAtLeastOneOf checks the groups: at least two optional top-level attributes each, none in two groups.
+func validateAtLeastOneOf(obj Object) {
+	validateAttributeGroups(obj, "AtLeastOneOf", obj.AtLeastOneOf)
+}
+
+func validateAttributeGroups(obj Object, label string, groups [][]*Attribute) {
 	inGroup := make(map[string]struct{})
-	for i, group := range obj.ExactlyOneOf {
+	for i, group := range groups {
 		if len(group) < 2 {
-			panic(fmt.Sprintf("object %q: ExactlyOneOf group %d needs at least two attributes", obj.Name, i))
+			panic(fmt.Sprintf("object %q: %s group %d needs at least two attributes", obj.Name, label, i))
 		}
 		for _, member := range group {
 			if member == nil {
-				panic(fmt.Sprintf("object %q: ExactlyOneOf group %d has a nil attribute", obj.Name, i))
+				panic(fmt.Sprintf("object %q: %s group %d has a nil attribute", obj.Name, label, i))
 			}
 			if !slices.ContainsFunc(obj.Attributes, func(a Attribute) bool { return a.Name == member.Name && !a.SqlOnly }) {
-				panic(fmt.Sprintf("object %q: ExactlyOneOf group %d attribute %q is not an attribute of the object", obj.Name, i, member.Name))
+				panic(fmt.Sprintf("object %q: %s group %d attribute %q is not an attribute of the object", obj.Name, label, i, member.Name))
 			}
 			if member.Required {
-				panic(fmt.Sprintf("object %q: ExactlyOneOf group %d attribute %q is required", obj.Name, i, member.Name))
+				panic(fmt.Sprintf("object %q: %s group %d attribute %q is required", obj.Name, label, i, member.Name))
 			}
 			if _, dup := inGroup[member.Name]; dup {
-				panic(fmt.Sprintf("object %q: attribute %q is in more than one ExactlyOneOf group, or twice in one", obj.Name, member.Name))
+				panic(fmt.Sprintf("object %q: attribute %q is in more than one %s group, or twice in one", obj.Name, member.Name, label))
 			}
 			inGroup[member.Name] = struct{}{}
+		}
+	}
+}
+
+func validateUnsetConflicts(obj Object) {
+	inUnset := make(map[string]struct{}, len(obj.Unset))
+	for _, attr := range obj.Unset {
+		if attr != nil {
+			inUnset[attr.Name] = struct{}{}
+		}
+	}
+	for i, group := range obj.UnsetConflicts {
+		if len(group) < 2 {
+			panic(fmt.Sprintf("object %q: UnsetConflicts group %d needs at least two attributes", obj.Name, i))
+		}
+		seen := make(map[string]struct{}, len(group))
+		for _, member := range group {
+			if member == nil {
+				panic(fmt.Sprintf("object %q: UnsetConflicts group %d has a nil attribute", obj.Name, i))
+			}
+			if _, ok := inUnset[member.Name]; !ok {
+				panic(fmt.Sprintf("object %q: UnsetConflicts group %d attribute %q is not in Unset", obj.Name, i, member.Name))
+			}
+			if _, dup := seen[member.Name]; dup {
+				panic(fmt.Sprintf("object %q: UnsetConflicts group %d repeats attribute %q", obj.Name, i, member.Name))
+			}
+			seen[member.Name] = struct{}{}
 		}
 	}
 }

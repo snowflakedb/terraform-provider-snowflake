@@ -23,6 +23,7 @@ type SdkShowByIDFilteringKind string
 
 const (
 	SdkShowByIDLike       SdkShowByIDFilteringKind = "like"
+	SdkShowByIDIn         SdkShowByIDFilteringKind = "in"
 	SdkShowByIDExtendedIn SdkShowByIDFilteringKind = "extended_in"
 )
 
@@ -59,6 +60,12 @@ func SdkShowOptionalLike() SdkShowOption {
 	return func(s *SdkGenerator) { s.ShowOptionalLike = true }
 }
 
+// SdkShowOptionalIn emits IN for account, database, and schema.
+func SdkShowOptionalIn() SdkShowOption {
+	return func(s *SdkGenerator) { s.ShowOptionalIn = true }
+}
+
+// SdkShowOptionalExtendedIn emits IN for account, database, schema, application, and application package.
 func SdkShowOptionalExtendedIn() SdkShowOption {
 	return func(s *SdkGenerator) { s.ShowOptionalExtendedIn = true }
 }

@@ -8,6 +8,38 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func Test_ShowOperationFromObject_plainIn(t *testing.T) {
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
+	obj := ssot.Object{
+		Name:       "Fake",
+		NamePlural: "Fakes",
+		IdType:     "SchemaObjectIdentifier",
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShow(
+			ssot.SdkShowOptionalLike(),
+			ssot.SdkShowOptionalIn(),
+			ssot.SdkShowOptionalStartsWith(),
+			ssot.SdkShowOptionalLimit(),
+			ssot.SdkShowByIDFiltering(ssot.SdkShowByIDIn, ssot.SdkShowByIDLike),
+		))},
+	}
+	got := NewInterface("Fakes", "Fake", "SchemaObjectIdentifier").ShowOperationFromObject(obj)
+	want := NewInterface("Fakes", "Fake", "SchemaObjectIdentifier").ShowOperationWithPairedStructs(
+		"https://docs.snowflake.com/en/sql-reference/sql/show-fakes",
+		ShowPairedStructs(obj),
+		NewQueryStruct("ShowFakes").
+			Show().
+			SQL("FAKES").
+			OptionalLike().
+			OptionalIn().
+			OptionalStartsWith().
+			OptionalLimit(),
+		ShowByIDInFiltering,
+		ShowByIDLikeFiltering,
+	)
+	requireSameOperations(t, want, got)
+}
+
 func Test_ShowDescribeFromObject(t *testing.T) {
 	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
 	column := ssot.OutputSpec{Columns: []*ssot.Attribute{&name}}
@@ -459,6 +491,36 @@ func Test_CreateAlterFromObject(t *testing.T) {
 	})
 }
 
+func Test_CreateOperationFromObject_atLeastOneOf(t *testing.T) {
+	schedule := ssot.Attribute{Name: "schedule", Type: ssot.AttrString, CreateSql: ssot.StringParameter()}
+	expire := ssot.Attribute{Name: "expire_after_days", Type: ssot.AttrInt, CreateSql: ssot.IntParameter()}
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString, CreateSql: ssot.StringParameter()}
+	obj := ssot.Object{
+		Name:         "Widget",
+		Attributes:   []ssot.Attribute{schedule, expire, comment},
+		AtLeastOneOf: [][]*ssot.Attribute{{&schedule, &expire}},
+		Create:       ssot.CreateSpec{Clauses: []*ssot.Attribute{&schedule, &expire, &comment}},
+		Generators:   []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate())},
+	}
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/create-widget",
+		NewQueryStruct("CreateWidget").
+			Create().
+			OrReplace().
+			SQL("WIDGET").
+			IfNotExists().
+			Name().
+			OptionalTextAssignment("SCHEDULE", ParameterOptions().SingleQuotes()).
+			OptionalNumberAssignment("EXPIRE_AFTER_DAYS", ParameterOptions()).
+			OptionalTextAssignment("COMMENT", ParameterOptions().SingleQuotes()).
+			WithValidation(ValidIdentifier, "name").
+			WithValidation(ConflictingFields, "OrReplace", "IfNotExists").
+			WithValidation(AtLeastOneValueSet, "Schedule", "ExpireAfterDays"),
+	)
+	requireSameOperations(t, want, got)
+}
+
 func Test_CreateOperationFromObject_fakeObject(t *testing.T) {
 	comment := ssot.Attribute{
 		Name:      "comment",
@@ -494,6 +556,40 @@ func Test_CreateOperationFromObject_fakeObject(t *testing.T) {
 			WithValidation(ValidIdentifier, "name").
 			WithValidation(ConflictingFields, "OrReplace", "IfNotExists").
 			WithAdditionalValidations(),
+	)
+	requireSameOperations(t, want, got)
+}
+
+func Test_AlterOperationFromObject_unsetConflicts(t *testing.T) {
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	schedule := ssot.Attribute{Name: "schedule", Type: ssot.AttrString}
+	expire := ssot.Attribute{Name: "expire_after_days", Type: ssot.AttrInt}
+	obj := ssot.Object{
+		Name:           "Widget",
+		Attributes:     []ssot.Attribute{comment, schedule, expire},
+		Unset:          []*ssot.Attribute{&comment, &schedule, &expire},
+		UnsetConflicts: [][]*ssot.Attribute{{&schedule, &expire}},
+		Alter:          ssot.AlterSpec{Clauses: []ssot.AlterClause{ssot.AlterUnset()}},
+		Generators:     []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter(ssot.SdkAlterWithoutIfExists(), ssot.SdkAlterWithoutExactlyOneValueSet()))},
+	}
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-widget",
+		NewQueryStruct("AlterWidget").
+			Alter().
+			SQL("WIDGET").
+			Name().
+			OptionalQueryStructField(
+				"Unset",
+				NewQueryStruct("WidgetUnset").
+					OptionalSQL("COMMENT").
+					OptionalSQL("SCHEDULE").
+					OptionalSQL("EXPIRE_AFTER_DAYS").
+					WithValidation(AtLeastOneValueSet, "Comment", "Schedule", "ExpireAfterDays").
+					WithValidation(ConflictingFields, "Schedule", "ExpireAfterDays"),
+				ListOptions().NoParentheses().SQL("UNSET"),
+			).
+			WithValidation(ValidIdentifier, "name"),
 	)
 	requireSameOperations(t, want, got)
 }

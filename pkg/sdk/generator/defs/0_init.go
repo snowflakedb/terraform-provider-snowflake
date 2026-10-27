@@ -20,7 +20,6 @@ func init() {
 		applicationRolesDef,
 		applicationsDef,
 		authenticationPoliciesDef,
-		backupPoliciesDef,
 		budgetsDef,
 		connectionsDef,
 		contextFunctionsDef,

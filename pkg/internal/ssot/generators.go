@@ -26,6 +26,7 @@ type SdkGenerator struct {
 	ShowTerse              bool
 	ShowOptionalSql        []string
 	ShowOptionalLike       bool
+	ShowOptionalIn         bool
 	ShowOptionalExtendedIn bool
 	ShowOptionalStartsWith bool
 	ShowOptionalLimitFrom  bool

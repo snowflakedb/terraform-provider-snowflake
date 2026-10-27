@@ -87,7 +87,10 @@ type Object struct {
 	Create CreateSpec
 	Set    []*Attribute
 	Unset  []*Attribute
-	Alter  AlterSpec
+	// UnsetConflicts are groups of Unset attributes that cannot be set together.
+	// Each group has at least two attributes from Unset. SDK UNSET adds ConflictingFields.
+	UnsetConflicts [][]*Attribute
+	Alter          AlterSpec
 	// AdditionalEnums are SDK enums that no attribute, column, or clause refers to, such as the accepted values of a field
 	// that the resource validates but the SQL does not send. They are emitted with the enums the object refers to.
 	AdditionalEnums []*Enum
@@ -101,6 +104,10 @@ type Object struct {
 	// with pointers to the attributes. SDK CREATE adds ExactlyOneValueSet to a statement that has all of the group,
 	// and the generated schema gets ExactlyOneOf on each attribute of the group.
 	ExactlyOneOf [][]*Attribute
+	// AtLeastOneOf are groups of optional top-level attributes of which at least one is set. Each group is declared once,
+	// with pointers to the attributes. SDK CREATE adds AtLeastOneValueSet to a statement that has all of the group.
+	// The schema-side AtLeastOneOf is not generated from it.
+	AtLeastOneOf [][]*Attribute
 	// ShowParametersDetailsAdditionalLevels adds parameters from these levels onto ShowParametersDetails.
 	// A name already in ParameterLevel() is kept once.
 	ShowParametersDetailsAdditionalLevels []ParameterLevel

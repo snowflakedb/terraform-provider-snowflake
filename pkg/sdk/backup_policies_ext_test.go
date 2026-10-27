@@ -68,12 +68,12 @@ func init() {
 			case_BackupPolicies_sql_Alter_Set,
 			func(opts *AlterBackupPolicyOptions) {
 				opts.Set = &BackupPolicySet{
+					Comment:         new("some comment"),
 					Schedule:        new("2 HOUR"),
 					ExpireAfterDays: new(30),
-					Comment:         new("some comment"),
 				}
 			},
-			"ALTER BACKUP POLICY %s SET SCHEDULE = '2 HOUR' EXPIRE_AFTER_DAYS = 30 COMMENT = 'some comment'", backupPoliciesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+			"ALTER BACKUP POLICY %s SET COMMENT = 'some comment' SCHEDULE = '2 HOUR' EXPIRE_AFTER_DAYS = 30", backupPoliciesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_BackupPolicies_sql_Alter_SetTags,
@@ -95,12 +95,11 @@ func init() {
 			case_BackupPolicies_sql_Alter_Unset,
 			func(opts *AlterBackupPolicyOptions) {
 				opts.Unset = &BackupPolicyUnset{
-					Schedule:        new(true),
-					ExpireAfterDays: new(true),
-					Comment:         new(true),
+					Comment:  new(true),
+					Schedule: new(true),
 				}
 			},
-			"ALTER BACKUP POLICY %s UNSET SCHEDULE, EXPIRE_AFTER_DAYS, COMMENT", backupPoliciesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+			"ALTER BACKUP POLICY %s UNSET COMMENT, SCHEDULE", backupPoliciesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_BackupPolicies_sql_Alter_UnsetTags,

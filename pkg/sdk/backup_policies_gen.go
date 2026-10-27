@@ -40,21 +40,21 @@ type AlterBackupPolicyOptions struct {
 	name         SchemaObjectIdentifier  `ddl:"identifier"`
 	RenameTo     *SchemaObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 	Set          *BackupPolicySet        `ddl:"keyword" sql:"SET"`
-	SetTags      []TagAssociation        `ddl:"keyword" sql:"SET TAG"`
 	Unset        *BackupPolicyUnset      `ddl:"list,no_parentheses" sql:"UNSET"`
+	SetTags      []TagAssociation        `ddl:"keyword" sql:"SET TAG"`
 	UnsetTags    []ObjectIdentifier      `ddl:"keyword" sql:"UNSET TAG"`
 }
 
 type BackupPolicySet struct {
+	Comment         *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	Schedule        *string `ddl:"parameter,single_quotes" sql:"SCHEDULE"`
 	ExpireAfterDays *int    `ddl:"parameter" sql:"EXPIRE_AFTER_DAYS"`
-	Comment         *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type BackupPolicyUnset struct {
+	Comment         *bool `ddl:"keyword" sql:"COMMENT"`
 	Schedule        *bool `ddl:"keyword" sql:"SCHEDULE"`
 	ExpireAfterDays *bool `ddl:"keyword" sql:"EXPIRE_AFTER_DAYS"`
-	Comment         *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
 // DropBackupPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-backup-policy.
@@ -75,17 +75,17 @@ type ShowBackupPolicyOptions struct {
 	Limit          *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
 
-type backupPolicyDBRow struct {
+type backupPoliciesRow struct {
 	CreatedOn        time.Time      `db:"created_on"`
 	Name             string         `db:"name"`
 	DatabaseName     string         `db:"database_name"`
 	SchemaName       string         `db:"schema_name"`
 	Owner            string         `db:"owner"`
-	OwnerRoleType    string         `db:"owner_role_type"`
 	Comment          sql.NullString `db:"comment"`
 	Schedule         sql.NullString `db:"schedule"`
 	ExpireAfterDays  sql.NullInt64  `db:"expire_after_days"`
 	HasRetentionLock string         `db:"has_retention_lock"`
+	OwnerRoleType    string         `db:"owner_role_type"`
 }
 
 type BackupPolicy struct {
@@ -94,11 +94,11 @@ type BackupPolicy struct {
 	DatabaseName     string
 	SchemaName       string
 	Owner            string
-	OwnerRoleType    string
 	Comment          *string
 	Schedule         *string
 	ExpireAfterDays  *int
 	HasRetentionLock bool
+	OwnerRoleType    string
 }
 
 func (v *BackupPolicy) ID() SchemaObjectIdentifier {
@@ -116,17 +116,17 @@ type DescribeBackupPolicyOptions struct {
 	name         SchemaObjectIdentifier `ddl:"identifier"`
 }
 
-type backupPolicyDetailsRow struct {
+type backupPolicyDescRow struct {
 	CreatedOn        time.Time      `db:"created_on"`
 	Name             string         `db:"name"`
 	DatabaseName     string         `db:"database_name"`
 	SchemaName       string         `db:"schema_name"`
 	Owner            string         `db:"owner"`
-	OwnerRoleType    string         `db:"owner_role_type"`
 	Comment          sql.NullString `db:"comment"`
 	Schedule         sql.NullString `db:"schedule"`
 	ExpireAfterDays  sql.NullInt64  `db:"expire_after_days"`
 	HasRetentionLock string         `db:"has_retention_lock"`
+	OwnerRoleType    string         `db:"owner_role_type"`
 }
 
 type BackupPolicyDetails struct {
@@ -135,9 +135,9 @@ type BackupPolicyDetails struct {
 	DatabaseName     string
 	SchemaName       string
 	Owner            string
-	OwnerRoleType    string
 	Comment          *string
 	Schedule         *string
 	ExpireAfterDays  *int
 	HasRetentionLock bool
+	OwnerRoleType    string
 }

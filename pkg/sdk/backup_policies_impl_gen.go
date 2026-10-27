@@ -10,8 +10,8 @@ import (
 
 var (
 	_ BackupPolicies                      = (*backupPolicies)(nil)
-	_ convertibleRow[BackupPolicy]        = new(backupPolicyDBRow)
-	_ convertibleRow[BackupPolicyDetails] = new(backupPolicyDetailsRow)
+	_ convertibleRow[BackupPolicy]        = new(backupPoliciesRow)
+	_ convertibleRow[BackupPolicyDetails] = new(backupPolicyDescRow)
 )
 
 type backupPolicies struct {
@@ -39,11 +39,11 @@ func (v *backupPolicies) DropSafely(ctx context.Context, id SchemaObjectIdentifi
 
 func (v *backupPolicies) Show(ctx context.Context, request *ShowBackupPolicyRequest) ([]BackupPolicy, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[backupPolicyDBRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[backupPoliciesRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[backupPolicyDBRow, BackupPolicy](dbRows)
+	return convertRows[backupPoliciesRow, BackupPolicy](dbRows)
 }
 
 func (v *backupPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*BackupPolicy, error) {
@@ -65,7 +65,7 @@ func (v *backupPolicies) Describe(ctx context.Context, id SchemaObjectIdentifier
 	opts := &DescribeBackupPolicyOptions{
 		name: id,
 	}
-	result, err := validateAndQueryOne[backupPolicyDetailsRow](v.client, ctx, opts)
+	result, err := validateAndQueryOne[backupPolicyDescRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -95,16 +95,16 @@ func (r *AlterBackupPolicyRequest) toOpts() *AlterBackupPolicyOptions {
 	}
 	if r.Set != nil {
 		opts.Set = &BackupPolicySet{
+			Comment:         r.Set.Comment,
 			Schedule:        r.Set.Schedule,
 			ExpireAfterDays: r.Set.ExpireAfterDays,
-			Comment:         r.Set.Comment,
 		}
 	}
 	if r.Unset != nil {
 		opts.Unset = &BackupPolicyUnset{
+			Comment:         r.Unset.Comment,
 			Schedule:        r.Unset.Schedule,
 			ExpireAfterDays: r.Unset.ExpireAfterDays,
-			Comment:         r.Unset.Comment,
 		}
 	}
 	return opts
@@ -128,19 +128,19 @@ func (r *ShowBackupPolicyRequest) toOpts() *ShowBackupPolicyOptions {
 	return opts
 }
 
-func (r backupPolicyDBRow) convert() (*BackupPolicy, error) {
+func (r backupPoliciesRow) convert() (*BackupPolicy, error) {
 	result := &BackupPolicy{
-		CreatedOn:     r.CreatedOn,
-		Name:          r.Name,
-		DatabaseName:  r.DatabaseName,
-		SchemaName:    r.SchemaName,
-		Owner:         r.Owner,
-		OwnerRoleType: r.OwnerRoleType,
+		CreatedOn:        r.CreatedOn,
+		Name:             r.Name,
+		DatabaseName:     r.DatabaseName,
+		SchemaName:       r.SchemaName,
+		Owner:            r.Owner,
+		HasRetentionLock: r.HasRetentionLock == "Y",
+		OwnerRoleType:    r.OwnerRoleType,
 	}
 	mapNullString(&result.Comment, r.Comment)
 	mapNullString(&result.Schedule, r.Schedule)
 	mapNullInt(&result.ExpireAfterDays, r.ExpireAfterDays)
-	mapStringToBoolParsed(&result.HasRetentionLock, r.HasRetentionLock)
 	return result, nil
 }
 
@@ -151,18 +151,18 @@ func (r *DescribeBackupPolicyRequest) toOpts() *DescribeBackupPolicyOptions {
 	return opts
 }
 
-func (r backupPolicyDetailsRow) convert() (*BackupPolicyDetails, error) {
+func (r backupPolicyDescRow) convert() (*BackupPolicyDetails, error) {
 	result := &BackupPolicyDetails{
-		CreatedOn:     r.CreatedOn,
-		Name:          r.Name,
-		DatabaseName:  r.DatabaseName,
-		SchemaName:    r.SchemaName,
-		Owner:         r.Owner,
-		OwnerRoleType: r.OwnerRoleType,
+		CreatedOn:        r.CreatedOn,
+		Name:             r.Name,
+		DatabaseName:     r.DatabaseName,
+		SchemaName:       r.SchemaName,
+		Owner:            r.Owner,
+		HasRetentionLock: r.HasRetentionLock == "Y",
+		OwnerRoleType:    r.OwnerRoleType,
 	}
 	mapNullString(&result.Comment, r.Comment)
 	mapNullString(&result.Schedule, r.Schedule)
 	mapNullInt(&result.ExpireAfterDays, r.ExpireAfterDays)
-	mapStringToBoolParsed(&result.HasRetentionLock, r.HasRetentionLock)
 	return result, nil
 }

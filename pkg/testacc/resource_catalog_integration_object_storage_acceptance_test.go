@@ -406,9 +406,8 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase_Import(t *testing.T) {
 	basicModel := model.CatalogIntegrationObjectStorage("t", id.Name(), false, string(tableFormat))
 	ref := basicModel.ResourceReference()
 
-	_, cleanup := testClient().CatalogIntegration.CreateFunc(t, sdk.NewCreateCatalogIntegrationRequest(id, false).
-		WithRefreshIntervalSeconds(refreshIntervalSeconds).
-		WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(tableFormat)))
+	_, cleanup := testClient().CatalogIntegration.CreateObjectStorageFunc(t, sdk.NewCreateObjectStorageCatalogIntegrationRequest(id, tableFormat, false).
+		WithRefreshIntervalSeconds(refreshIntervalSeconds))
 	t.Cleanup(cleanup)
 
 	resource.Test(t, resource.TestCase{
