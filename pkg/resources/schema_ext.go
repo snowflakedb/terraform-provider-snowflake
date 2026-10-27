@@ -213,7 +213,7 @@ func schemaApplySetUnsetExt(d *schema.ResourceData) (*schemaAlterRequestsExt, er
 	return &schemaAlterRequestsExt{set: set, unset: unset}, nil
 }
 
-func schemaSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.DatabaseObjectIdentifier, s *sdk.Schema) error {
+func schemaSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.DatabaseObjectIdentifier, s *sdk.Schema, _ bool) error {
 	return errors.Join(
 		d.Set("name", id.Name()),
 		d.Set("database", id.DatabaseName()),

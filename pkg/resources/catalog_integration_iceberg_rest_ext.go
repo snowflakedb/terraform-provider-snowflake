@@ -130,7 +130,7 @@ func catalogIntegrationIcebergRestApplySetUnsetExt(d *schema.ResourceData) (*cat
 	return &catalogIntegrationIcebergRestAlterRequestsExt{set: set}, nil
 }
 
-func catalogIntegrationIcebergRestSetFieldsNotSetByReadExt(d *schema.ResourceData, _ sdk.AccountObjectIdentifier, details *sdk.CatalogIntegrationIcebergRestDetails) error {
+func catalogIntegrationIcebergRestSetFieldsNotSetByReadExt(d *schema.ResourceData, _ sdk.AccountObjectIdentifier, details *sdk.CatalogIntegrationIcebergRestDetails, _ bool) error {
 	if err := setIcebergRestConfigInState(d, details); err != nil {
 		return err
 	}

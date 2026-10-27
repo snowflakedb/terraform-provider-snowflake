@@ -123,7 +123,7 @@ func catalogIntegrationOpenCatalogApplySetUnsetExt(d *schema.ResourceData) (*cat
 	return &catalogIntegrationOpenCatalogAlterRequestsExt{set: set}, nil
 }
 
-func catalogIntegrationOpenCatalogSetFieldsNotSetByReadExt(d *schema.ResourceData, _ sdk.AccountObjectIdentifier, details *sdk.CatalogIntegrationOpenCatalogDetails) error {
+func catalogIntegrationOpenCatalogSetFieldsNotSetByReadExt(d *schema.ResourceData, _ sdk.AccountObjectIdentifier, details *sdk.CatalogIntegrationOpenCatalogDetails, _ bool) error {
 	if err := setOpenCatalogRestConfigInState(d, details); err != nil {
 		return err
 	}

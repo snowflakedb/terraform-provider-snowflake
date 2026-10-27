@@ -77,16 +77,16 @@ func computePoolSetConfigFieldsExt(d *schema.ResourceData, computePool *sdk.Comp
 	)
 }
 
-func computePoolSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, computePool *sdk.ComputePool) error {
+func computePoolSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, computePool *sdk.ComputePool, importPermissiveMode bool) error {
+	var applicationFullyQualifiedName string
 	if computePool.Application != nil {
-		if err := d.Set("for_application", computePool.Application.FullyQualifiedName()); err != nil {
-			return err
-		}
+		applicationFullyQualifiedName = computePool.Application.FullyQualifiedName()
 	}
 	return errors.Join(
 		d.Set("name", id.Name()),
-		d.Set("auto_resume", booleanStringFromBool(computePool.AutoResume)),
-		d.Set("auto_suspend_secs", computePool.AutoSuspendSecs),
+		importStringAttribute(d, "for_application", importPermissiveMode, applicationFullyQualifiedName),
+		importBooleanStringAttribute(d, "auto_resume", importPermissiveMode, computePool.AutoResume),
+		importIntWithIntDefaultAttribute(d, "auto_suspend_secs", importPermissiveMode, computePool.AutoSuspendSecs),
 	)
 }
 

@@ -94,7 +94,7 @@ func externalVolumeApplySetUnsetExt(d *schema.ResourceData) (*externalVolumeAlte
 	return &externalVolumeAlterRequestsExt{set: set}, nil
 }
 
-func externalVolumeSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, externalVolume *sdk.ExternalVolume) error {
+func externalVolumeSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, externalVolume *sdk.ExternalVolume, _ bool) error {
 	return errors.Join(
 		d.Set("name", id.Name()),
 		d.Set("allow_writes", booleanStringFromBool(externalVolume.AllowWrites)),

@@ -178,7 +178,7 @@ func warehouseApplySetUnsetExt(d *schema.ResourceData) (*warehouseAlterRequestsE
 	return &warehouseAlterRequestsExt{set: set, unset: unset}, nil
 }
 
-func warehouseSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, warehouse *sdk.WarehouseRegular) error {
+func warehouseSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, warehouse *sdk.WarehouseRegular, _ bool) error {
 	if err := d.Set("name", id.Name()); err != nil {
 		return err
 	}

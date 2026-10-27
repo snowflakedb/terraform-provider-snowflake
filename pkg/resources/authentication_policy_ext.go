@@ -124,7 +124,7 @@ func authenticationPolicyApplySetUnsetExt(d *schema.ResourceData) (*authenticati
 	return &authenticationPolicyAlterRequestsExt{set: set, unset: unset}, nil
 }
 
-func authenticationPolicySetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier, details *sdk.AuthenticationPolicyDetails) error {
+func authenticationPolicySetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier, details *sdk.AuthenticationPolicyDetails, _ bool) error {
 	if err := errors.Join(
 		d.Set("name", id.Name()),
 		d.Set("database", id.DatabaseName()),

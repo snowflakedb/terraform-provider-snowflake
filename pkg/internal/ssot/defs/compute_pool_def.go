@@ -110,6 +110,7 @@ var ComputePoolAttrs = struct {
 		OptionalInDb:   true,
 		ShowName:       "application",
 		CreateSql:      ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Sql("FOR APPLICATION")),
+		DiffSuppress:   ssot.SuppressShow.WithKey("application"),
 	},
 	MinNodes: ssot.Attribute{
 		Name:        "min_nodes",
@@ -144,9 +145,10 @@ var ComputePoolAttrs = struct {
 		},
 	},
 	AutoResume: ssot.Attribute{
-		Name:        "auto_resume",
-		Type:        ssot.AttrBool,
-		Description: "Specifies whether to automatically resume a compute pool when a service or job is submitted to it.",
+		Name:         "auto_resume",
+		Type:         ssot.AttrBool,
+		Description:  "Specifies whether to automatically resume a compute pool when a service or job is submitted to it.",
+		DiffSuppress: ssot.SuppressShow,
 	},
 	InitiallySuspended: ssot.Attribute{
 		Name:           "initially_suspended",
@@ -156,10 +158,11 @@ var ComputePoolAttrs = struct {
 		RawDescription: true,
 	},
 	AutoSuspendSecs: ssot.Attribute{
-		Name:        "auto_suspend_secs",
-		Type:        ssot.AttrInt,
-		Description: "Number of seconds of inactivity after which you want Snowflake to automatically suspend the compute pool.",
-		Min:         new(0),
+		Name:         "auto_suspend_secs",
+		Type:         ssot.AttrInt,
+		Description:  "Number of seconds of inactivity after which you want Snowflake to automatically suspend the compute pool.",
+		Min:          new(0),
+		DiffSuppress: ssot.SuppressShow,
 	},
 	Comment: ssot.Attribute{
 		Name:           "comment",
@@ -185,12 +188,11 @@ var ComputePoolAttrs = struct {
 }
 
 var ComputePool = ssot.Object{
-	Name:                   "ComputePool",
-	NamePlural:             "ComputePools",
-	DescribeFailRead:       true,
-	IdType:                 "AccountObjectIdentifier",
-	IdentityNameForceNew:   true,
-	AttributesModification: true,
+	Name:                 "ComputePool",
+	NamePlural:           "ComputePools",
+	DescribeFailRead:     true,
+	IdType:               "AccountObjectIdentifier",
+	IdentityNameForceNew: true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
 		ssot.WithModel(),
