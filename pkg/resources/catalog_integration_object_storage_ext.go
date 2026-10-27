@@ -103,8 +103,8 @@ func catalogIntegrationObjectStorageApplySetUnsetExt(d *schema.ResourceData) (*c
 	return &catalogIntegrationObjectStorageAlterRequestsExt{set: set}, nil
 }
 
-func catalogIntegrationObjectStorageSetFieldsNotSetByReadExt(_ *schema.ResourceData, _ sdk.AccountObjectIdentifier, _ *sdk.CatalogIntegrationObjectStorageDetails, _ bool) error {
-	return nil
+func catalogIntegrationObjectStorageSetFieldsNotSetByReadExt(d *schema.ResourceData, _ sdk.AccountObjectIdentifier, details *sdk.CatalogIntegrationObjectStorageDetails, importPermissiveMode bool) error {
+	return importIntAttribute(d, "refresh_interval_seconds", importPermissiveMode, details.RefreshIntervalSeconds)
 }
 
 // =============================================================================

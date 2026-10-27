@@ -165,7 +165,7 @@ var allExperiments = []Experiment{
 		"Switches imports to the permissive mode.",
 		"By default, imports use the enforcing mode: the plan after import shows a change for every attribute that the configuration omits but that has a value in Snowflake. Applying that plan resets these attributes to their Snowflake defaults.",
 		"When enabled, the provider accepts the values the object already has for the attributes that the configuration omits, so the plan after import shows no change for them. This applies only to the import itself: external changes made after the import are detected as usual.",
-		"Note: this is currently supported only on the `snowflake_compute_pool` resource.",
+		"Note: this is currently supported only on the `snowflake_catalog_integration_aws_glue`, `snowflake_catalog_integration_object_storage`, and `snowflake_compute_pool` resources.",
 	),
 	NewEnabledByDefaultExperiment(
 		GrantsSafeDestroy,

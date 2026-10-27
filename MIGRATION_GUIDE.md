@@ -137,7 +137,13 @@ provider "snowflake" {
 }
 ```
 
-The experiment is currently supported only on the [`snowflake_compute_pool`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/compute_pool) resource. More resources will be added gradually and listed in the experiment's description and in this guide.
+The experiment is currently supported only on the following resources:
+
+- [`snowflake_catalog_integration_aws_glue`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue)
+- [`snowflake_catalog_integration_object_storage`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_object_storage)
+- [`snowflake_compute_pool`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/compute_pool)
+
+More resources will be added gradually and listed in the experiment's description and in this guide.
 
 No configuration changes are required for existing configurations.
 
