@@ -345,6 +345,7 @@ var Warehouse = ssot.Object{
 		},
 	},
 	Generators: []ssot.GeneratorOption{
+		ssot.WithResource(),
 		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),

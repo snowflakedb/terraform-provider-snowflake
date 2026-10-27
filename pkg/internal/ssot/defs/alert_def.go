@@ -110,6 +110,9 @@ var Alert = ssot.Object{
 	IdType:                 "SchemaObjectIdentifier",
 	LegacyIdEncoding:       true,
 	AttributesModification: true,
+	Generators: []ssot.GeneratorOption{
+		ssot.WithResource(),
+	},
 	// The importer is a passthrough (alertImporterExt). With ShowByIdInSdk omitted, no Import function is generated.
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),

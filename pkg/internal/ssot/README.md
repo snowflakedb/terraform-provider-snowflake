@@ -3,8 +3,7 @@
 Shared object definitions for generators. Types live in this package; instances in [defs](defs). This package must not
 import `pkg/sdk` or any meaningful logic package.
 
-Generators consume ssot; they do not all consume `defs.All()` the same way. Resource generation uses every object in
-`All()`. SHOW/DESCRIBE schema generation, resource config model builders, resource assertions, resource show output
+Generators consume ssot; they do not all consume `defs.All()` the same way. Resource generation, SHOW/DESCRIBE schema generation, resource config model builders, resource assertions, resource show output
 assertions, Snowflake object assertions, object and resource parameters assertions, and SDK paired structs are opt-in per object ([Generators](#generators)). More
 generators will follow. Ultimately, all the generators should default to using ssot and `defs.All()`.
 
@@ -171,6 +170,9 @@ They are independent: a column can be optional in SHOW, in the DB row, both, or 
 settings of that entry. `WithSchema()`, `WithSdk()`, `WithShowOutputAssert()`, and `WithObjectAssert()` with no settings
 enable nothing.
 
+- `WithResource()` - resource generator (`make generate-resource`).
+  See [Resource generator](#resource-generator). An object in `All()` is a resource-generation input when this call is present.
+  Zero options still sets `Enabled`. Generation parts stay on the resource generator's per-object settings.
 - `WithSchema(SchemaShow(), SchemaDescribe())` - SHOW/DESCRIBE schema generator (`make generate-show-output-schemas`).
   See [that README](../../schemas/gen/README.md). `SchemaShow(SchemaShowManualFields(&attrs.Tables))` copies
   `ManualFields` from the old show schema def. The argument is the same `*Attribute` that sits in `Show.Columns`. The
@@ -318,8 +320,8 @@ one way.
 #### Resource generator
 
 [`defs.All()`](defs/all.go) is the set of objects in ssot. The resource generator (`make generate-resource`) walks that
-slice with no `Generators` flag. Every object in `All()` is a resource-generation input. That is the exception to
-opt-in.
+slice and keeps objects with `WithResource()` on. An object without that call is left out. `WithResource()` with no
+options still sets `Enabled`.
 
 A subtemplate calls the ext function by default (`ExtCall`). Set that hook to `Generated` to take the step from the
 template. Until the subtemplate body is written, generation panics through `Unimplemented`. Each hook is switched on its
@@ -396,8 +398,9 @@ operations, custom diagnostics, or request names that differ from the object nam
 
 #### Other generators
 
-Every plugged generator other than the resource generator is opt-in. It walks `defs.All()`, calls `ObjectGenerators`,
-and reads that generator's bools. An object with the flag off stays on the generator's old input. Setting the flag on
+Every plugged generator is opt-in, including the resource generator. It walks `defs.All()`, calls `ObjectGenerators`,
+and reads that generator's bools. An object with the flag off stays on the generator's old input. The resource generator
+has no old list, so an object with `WithResource()` off is left out. Setting the flag on
 nothing must not change generated files. Do not feed `All()` in as "generate every object" for those generators.
 Generators default to ssot and `All()` only once the definitions cover the objects. The calls are
 in [Generators](#generators).
@@ -409,8 +412,8 @@ in [Generators](#generators).
 options still sets `Alter`. `ShowOutputShow()` with no options sets `Show` and leaves `ShowSkipFields` nil.
 `ShowOutputDescribe()` with no options sets `Describe` and leaves `DescribeSkipFields` nil. `ObjectAssertShow()` with no
 options sets `Show` and leaves `ShowSkipFields` nil and `ShowProjection` empty. `ObjectAssertShowFromBase` sets `ShowProjection` on that same call. The client name is `VariantOf.Name`. `ObjectAssertDescribe()` with no options sets `Describe` and leaves
-`NoIdentifiableObject` false and `DescribeSkipFields` nil. `WithModel()` and `WithResourceAssert()` take a variadic of
-`ModelOption` and `ResourceAssertOption`. No constructors exist for those option types. Zero options still sets
+`NoIdentifiableObject` false and `DescribeSkipFields` nil. `WithModel()`, `WithResourceAssert()`, and `WithResource()` take a variadic of
+`ModelOption`, `ResourceAssertOption`, and `ResourceOption`. No constructors exist for those option types. Zero options still sets
 `Enabled`. A later setting is another option on that call, not a new `Generators` entry. Consumers read the fields
 `Show`, `Describe`, `Drop`, `Create`, `Alter`, `Enabled`, `NoIdentifiableObject`, `ShowSkipFields`, and
 `DescribeSkipFields`.

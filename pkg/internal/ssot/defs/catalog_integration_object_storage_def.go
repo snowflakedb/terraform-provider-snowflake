@@ -66,6 +66,7 @@ var CatalogIntegrationObjectStorage = ssot.Object{
 	IdentityNameForceNew:   true,
 	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{
+		ssot.WithResource(),
 		// ShowOutputShow omitted. SHOW rows are sdk.CatalogIntegration, so tests use CatalogIntegrationShowOutput.
 		// WithSchema omitted. SHOW is the shared CatalogIntegration schema alias in the ext.
 		// DESCRIBE stays on the SDK schema list. SSOT would register the same sdk.CatalogIntegrationObjectStorageDetails name.

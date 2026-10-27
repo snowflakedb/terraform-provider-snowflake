@@ -265,6 +265,9 @@ var AuthenticationPolicy = ssot.Object{
 	IdType:                    "SchemaObjectIdentifier",
 	IdentityHierarchyForceNew: true,
 	AttributesModification:    true,
+	Generators: []ssot.GeneratorOption{
+		ssot.WithResource(),
+	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),

@@ -94,6 +94,12 @@ type ModelGenerator struct {
 	RequestTypeOverrides map[string]string
 }
 
+// ResourceGenerator emits the Terraform resource. Enabled is set by WithResource.
+// An object in All without it is not a resource-generation input.
+type ResourceGenerator struct {
+	Enabled bool
+}
+
 type ResourceAssertGenerator struct {
 	Enabled bool
 }
@@ -159,6 +165,7 @@ type ResourceParametersAssertGenerator struct {
 type Generators struct {
 	Schema                   SchemaGenerator
 	Sdk                      SdkGenerator
+	Resource                 ResourceGenerator
 	Model                    ModelGenerator
 	ResourceAssert           ResourceAssertGenerator
 	ShowOutputAssert         ShowOutputAssertGenerator
@@ -462,6 +469,19 @@ func WithSdk(opts ...SdkOption) GeneratorOption {
 	return func(g *Generators) {
 		for _, opt := range opts {
 			opt(&g.Sdk)
+		}
+	}
+}
+
+type ResourceOption func(*ResourceGenerator)
+
+// WithResource enables resource generation for this object.
+// Zero options still sets Enabled. An object without this call is left out of make generate-resource.
+func WithResource(opts ...ResourceOption) GeneratorOption {
+	return func(g *Generators) {
+		g.Resource.Enabled = true
+		for _, opt := range opts {
+			opt(&g.Resource)
 		}
 	}
 }
