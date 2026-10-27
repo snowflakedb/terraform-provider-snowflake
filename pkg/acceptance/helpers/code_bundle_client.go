@@ -40,6 +40,12 @@ func (c *CodeBundleClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier)
 	return c.client().DescribeDetails(ctx, id)
 }
 
+func (c *CodeBundleClient) CreateWithRequest(t *testing.T, req *sdk.CreateCodeBundleRequest) {
+	t.Helper()
+	err := c.client().Create(context.Background(), req)
+	require.NoError(t, err)
+}
+
 func (c *CodeBundleClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.CodeBundle, error) {
 	t.Helper()
 	ctx := context.Background()

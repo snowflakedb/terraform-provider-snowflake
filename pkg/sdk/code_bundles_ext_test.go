@@ -65,6 +65,26 @@ func init() {
 			func(opts *AlterCodeBundleOptions) { opts.AddVersionFrom = new(from) },
 			`ALTER CODE BUNDLE %s ADD VERSION FROM '%s'`,
 			id.FullyQualifiedName(), from,
+		).
+		withModifyAndExpectedSqlf(
+			case_CodeBundles_sql_Alter_Set,
+			func(opts *AlterCodeBundleOptions) {
+				opts.Set = &CodeBundleSet{
+					Comment: new(comment),
+				}
+			},
+			`ALTER CODE BUNDLE %s SET COMMENT = '%s'`,
+			id.FullyQualifiedName(), comment,
+		).
+		withModifyAndExpectedSqlf(
+			case_CodeBundles_sql_Alter_Unset,
+			func(opts *AlterCodeBundleOptions) {
+				opts.Unset = &CodeBundleUnset{
+					Comment: new(true),
+				}
+			},
+			`ALTER CODE BUNDLE %s UNSET COMMENT`,
+			id.FullyQualifiedName(),
 		)
 
 	codeBundlesTests.Drop.

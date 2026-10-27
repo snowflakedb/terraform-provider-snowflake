@@ -40,6 +40,36 @@ func (s *AlterCodeBundleRequest) WithAddVersionFrom(addVersionFrom string) *Alte
 	return s
 }
 
+func (s *AlterCodeBundleRequest) WithSet(set CodeBundleSetRequest) *AlterCodeBundleRequest {
+	s.Set = &set
+	return s
+}
+
+func (s *AlterCodeBundleRequest) WithUnset(unset CodeBundleUnsetRequest) *AlterCodeBundleRequest {
+	s.Unset = &unset
+	return s
+}
+
+func NewCodeBundleSetRequest() *CodeBundleSetRequest {
+	s := CodeBundleSetRequest{}
+	return &s
+}
+
+func (s *CodeBundleSetRequest) WithComment(comment string) *CodeBundleSetRequest {
+	s.Comment = &comment
+	return s
+}
+
+func NewCodeBundleUnsetRequest() *CodeBundleUnsetRequest {
+	s := CodeBundleUnsetRequest{}
+	return &s
+}
+
+func (s *CodeBundleUnsetRequest) WithComment(comment bool) *CodeBundleUnsetRequest {
+	s.Comment = &comment
+	return s
+}
+
 func NewDropCodeBundleRequest(
 	name SchemaObjectIdentifier,
 ) *DropCodeBundleRequest {

@@ -18,7 +18,6 @@ var codeBundleAttributesSchema = map[string]*tfschema.Schema{
 	"comment": {
 		Type:        tfschema.TypeString,
 		Optional:    true,
-		ForceNew:    true,
 		Description: "Specifies a comment for the code bundle.",
 	},
 }

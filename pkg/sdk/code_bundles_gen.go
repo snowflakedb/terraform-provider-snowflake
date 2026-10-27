@@ -38,6 +38,16 @@ type AlterCodeBundleOptions struct {
 	codeBundle     bool                   `ddl:"static" sql:"CODE BUNDLE"`
 	name           SchemaObjectIdentifier `ddl:"identifier"`
 	AddVersionFrom *string                `ddl:"parameter,single_quotes,no_equals" sql:"ADD VERSION FROM"`
+	Set            *CodeBundleSet         `ddl:"keyword" sql:"SET"`
+	Unset          *CodeBundleUnset       `ddl:"list,no_parentheses" sql:"UNSET"`
+}
+
+type CodeBundleSet struct {
+	Comment *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
+}
+
+type CodeBundleUnset struct {
+	Comment *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
 // DropCodeBundleOptions is based on https://docs.snowflake.com/en/developer-guide/code-bundles/code-bundles#drop-code-bundle.

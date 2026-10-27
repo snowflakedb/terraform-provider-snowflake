@@ -21,6 +21,16 @@ type CreateCodeBundleRequest struct {
 type AlterCodeBundleRequest struct {
 	name           SchemaObjectIdentifier // required
 	AddVersionFrom *string
+	Set            *CodeBundleSetRequest
+	Unset          *CodeBundleUnsetRequest
+}
+
+type CodeBundleSetRequest struct {
+	Comment *string
+}
+
+type CodeBundleUnsetRequest struct {
+	Comment *bool
 }
 
 type DropCodeBundleRequest struct {

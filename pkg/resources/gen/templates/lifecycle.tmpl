@@ -86,6 +86,7 @@ func Read{{ .Name }}Func(withExternalChangesMarking bool) tfschema.ReadContextFu
 	}
 }
 
+{{- if .RequiresUpdate }}
 func Update{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
 {{ template "parseId" . -}}
 	if err != nil {
@@ -99,6 +100,7 @@ func Update{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) 
 {{ template "alterUnsetInSdk" . -}}
 {{ template "afterAlter" . }}
 }
+{{- end }}
 {{- if .Hooks.CustomizeDiff.Generate }}
 
 var {{ .Prefix }}CustomizeDiff = TrackingCustomDiffWrapper(resources.{{ .Name }}, customdiff.All(

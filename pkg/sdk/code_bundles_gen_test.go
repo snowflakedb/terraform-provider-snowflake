@@ -9,21 +9,26 @@ import (
 var codeBundlesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
 const (
-	case_CodeBundles_validation_Create_name_ValidIdentifier           testCaseName = "validation_Create_name_ValidIdentifier"
-	case_CodeBundles_validation_Create_opts_ConflictingFields         testCaseName = "validation_Create_opts_ConflictingFields"
-	case_CodeBundles_sql_Create_basic                                 testCaseName = "sql_Create_basic"
-	case_CodeBundles_sql_Create_all                                   testCaseName = "sql_Create_all"
-	case_CodeBundles_validation_Alter_name_ValidIdentifier            testCaseName = "validation_Alter_name_ValidIdentifier"
-	case_CodeBundles_validation_Alter_opts_ExactlyOneValueSet_NoneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_CodeBundles_sql_Alter_AddVersionFrom                         testCaseName = "sql_Alter_AddVersionFrom"
-	case_CodeBundles_validation_Drop_name_ValidIdentifier             testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_CodeBundles_sql_Drop_basic                                   testCaseName = "sql_Drop_basic"
-	case_CodeBundles_sql_Drop_all                                     testCaseName = "sql_Drop_all"
-	case_CodeBundles_sql_Show_basic                                   testCaseName = "sql_Show_basic"
-	case_CodeBundles_sql_Show_all                                     testCaseName = "sql_Show_all"
-	case_CodeBundles_sql_Show_In                                      testCaseName = "sql_Show_In"
-	case_CodeBundles_validation_Describe_name_ValidIdentifier         testCaseName = "validation_Describe_name_ValidIdentifier"
-	case_CodeBundles_sql_Describe_basic                               testCaseName = "sql_Describe_basic"
+	case_CodeBundles_validation_Create_name_ValidIdentifier                  testCaseName = "validation_Create_name_ValidIdentifier"
+	case_CodeBundles_validation_Create_opts_ConflictingFields                testCaseName = "validation_Create_opts_ConflictingFields"
+	case_CodeBundles_sql_Create_basic                                        testCaseName = "sql_Create_basic"
+	case_CodeBundles_sql_Create_all                                          testCaseName = "sql_Create_all"
+	case_CodeBundles_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_CodeBundles_validation_Alter_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_CodeBundles_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_CodeBundles_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_CodeBundles_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_CodeBundles_sql_Alter_AddVersionFrom                                testCaseName = "sql_Alter_AddVersionFrom"
+	case_CodeBundles_sql_Alter_Set                                           testCaseName = "sql_Alter_Set"
+	case_CodeBundles_sql_Alter_Unset                                         testCaseName = "sql_Alter_Unset"
+	case_CodeBundles_validation_Drop_name_ValidIdentifier                    testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_CodeBundles_sql_Drop_basic                                          testCaseName = "sql_Drop_basic"
+	case_CodeBundles_sql_Drop_all                                            testCaseName = "sql_Drop_all"
+	case_CodeBundles_sql_Show_basic                                          testCaseName = "sql_Show_basic"
+	case_CodeBundles_sql_Show_all                                            testCaseName = "sql_Show_all"
+	case_CodeBundles_sql_Show_In                                             testCaseName = "sql_Show_In"
+	case_CodeBundles_validation_Describe_name_ValidIdentifier                testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_CodeBundles_sql_Describe_basic                                      testCaseName = "sql_Describe_basic"
 )
 
 type CodeBundlesTestsContext struct {
@@ -87,15 +92,47 @@ var codeBundlesTests = CodeBundlesTestsContext{
 			},
 			validationCase[*AlterCodeBundleOptions]{
 				Name:        case_CodeBundles_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterCodeBundleOptions", "AddVersionFrom"),
+				ExpectedErr: errExactlyOneOf("AlterCodeBundleOptions", "AddVersionFrom", "Set", "Unset"),
 				DefaultModify: func(opts *AlterCodeBundleOptions) {
 					opts.AddVersionFrom = nil
+					opts.Set = nil
+					opts.Unset = nil
+				},
+			},
+			validationCase[*AlterCodeBundleOptions]{
+				Name:        case_CodeBundles_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterCodeBundleOptions", "AddVersionFrom", "Set", "Unset"),
+				DefaultModify: func(opts *AlterCodeBundleOptions) {
+					opts.AddVersionFrom = new("foo")
+					opts.Set = &CodeBundleSet{}
+				},
+			},
+			validationCase[*AlterCodeBundleOptions]{
+				Name:        case_CodeBundles_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterCodeBundleOptions.Set", "Comment"),
+				DefaultModify: func(opts *AlterCodeBundleOptions) {
+					opts.Set = &CodeBundleSet{}
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterCodeBundleOptions]{
+				Name:        case_CodeBundles_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterCodeBundleOptions.Unset", "Comment"),
+				DefaultModify: func(opts *AlterCodeBundleOptions) {
+					opts.Unset = &CodeBundleUnset{}
+					opts.Unset.Comment = nil
 				},
 			},
 		).
 		withSqlCases(
 			sqlCase[*AlterCodeBundleOptions]{
 				Name: case_CodeBundles_sql_Alter_AddVersionFrom,
+			},
+			sqlCase[*AlterCodeBundleOptions]{
+				Name: case_CodeBundles_sql_Alter_Set,
+			},
+			sqlCase[*AlterCodeBundleOptions]{
+				Name: case_CodeBundles_sql_Alter_Unset,
 			},
 		),
 	Drop: newSdkTestCtx[*DropCodeBundleOptions](
