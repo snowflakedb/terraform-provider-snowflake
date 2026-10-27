@@ -33,10 +33,10 @@
 		},
 {{- if or (eq .IdType "DatabaseObjectIdentifier") (eq .IdType "SchemaObjectIdentifier") }}
 		"database": {
-			Type:        tfschema.TypeString,
-			Required:    true,
+			Type:             tfschema.TypeString,
+			Required:         true,
 {{- if .IdentityHierarchyForceNew }}
-			ForceNew: true,
+			ForceNew:         true,
 {{- end }}
 {{- if .LegacyIdEncoding }}
 			Description: {{ Quote $databaseText }},
@@ -48,10 +48,10 @@
 {{- end }}
 {{- if eq .IdType "SchemaObjectIdentifier" }}
 		"schema": {
-			Type:        tfschema.TypeString,
-			Required:    true,
+			Type:             tfschema.TypeString,
+			Required:         true,
 {{- if .IdentityHierarchyForceNew }}
-			ForceNew: true,
+			ForceNew:         true,
 {{- end }}
 {{- if .LegacyIdEncoding }}
 			Description: {{ Quote $schemaText }},
