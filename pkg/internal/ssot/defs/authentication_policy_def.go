@@ -264,7 +264,9 @@ var AuthenticationPolicy = ssot.Object{
 	DescribeFailRead:          true,
 	IdType:                    "SchemaObjectIdentifier",
 	IdentityHierarchyForceNew: true,
-	AttributesModification:    true,
+	// Public describe_output uses the projected AuthenticationPolicyDescribeDetails schema.
+	DescribeDetailsName:    "AuthenticationPolicyDescribeDetails",
+	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),
 	},
@@ -275,10 +277,6 @@ var AuthenticationPolicy = ssot.Object{
 		ssot.WithHierarchyRename(ssot.ExtCall()),
 		ssot.WithApplyCreateOptionals(ssot.Generated()),
 		ssot.WithStateUpgraders(ssot.Generated()),
-		// database and schema are ForceNew. The identity template does not emit that yet.
-		ssot.WithIdentitySchema(ssot.ExtCall()),
-		// The describe elem schema is DescribeAuthenticationPolicyDescribeDetailsSchema.
-		ssot.WithDescribeOutputSchema(ssot.ExtCall()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
 		ssot.WithSetConfigFields(ssot.Generated()),
 		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),

@@ -105,11 +105,13 @@ var AlertAttrs = struct {
 }
 
 var Alert = ssot.Object{
-	Name:                   "Alert",
-	NamePlural:             "Alerts",
-	IdType:                 "SchemaObjectIdentifier",
-	LegacyIdEncoding:       true,
-	AttributesModification: true,
+	Name:                      "Alert",
+	NamePlural:                "Alerts",
+	IdType:                    "SchemaObjectIdentifier",
+	LegacyIdEncoding:          true,
+	IdentityNameForceNew:      true,
+	IdentityHierarchyForceNew: true,
+	AttributesModification:    true,
 	// The importer is a passthrough (alertImporterExt). With ShowByIdInSdk omitted, no Import function is generated.
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
@@ -117,13 +119,13 @@ var Alert = ssot.Object{
 		ssot.WithAfterCreate(ssot.ExtCall()),
 		ssot.WithDescribeInSdk(ssot.Omitted()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
+		ssot.WithSetStateToValuesFromConfig(ssot.Omitted()),
 		ssot.WithBeforeAlter(ssot.ExtCall()),
 		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
 		ssot.WithAfterAlter(ssot.ExtCall()),
 		ssot.WithShowByIdInSdk(ssot.Omitted()),
 		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
 		ssot.WithSetFieldsNotSetByRead(ssot.Omitted()),
-		ssot.WithIdentitySchema(ssot.ExtCall()),
 		ssot.WithShowOutputSchema(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
 	},

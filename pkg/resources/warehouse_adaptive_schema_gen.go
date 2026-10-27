@@ -46,7 +46,14 @@ var warehouseAdaptiveAttributesSchema = warehouseAdaptiveAttributesModificationE
 })
 
 var warehouseAdaptiveSchema = collections.MergeMaps(
-	warehouseAdaptiveIdentitySchemaExt,
+	map[string]*tfschema.Schema{
+		"name": {
+			Type:             tfschema.TypeString,
+			Required:         true,
+			Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the warehouse adaptive; must be unique for the account."),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+		},
+	},
 	warehouseAdaptiveAttributesSchema,
 	warehouseAdaptiveParametersAttributesSchema,
 	map[string]*tfschema.Schema{

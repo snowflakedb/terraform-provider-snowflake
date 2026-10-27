@@ -196,6 +196,8 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),
+		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant.
+		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"))),
 		// ShowOutputShow omitted. SHOW rows are sdk.CatalogIntegration, so tests use CatalogIntegrationShowOutput.
 		// WithSchema omitted. SHOW is the shared CatalogIntegration schema alias in the ext.
 		// DESCRIBE stays on the SDK schema list until ManualFields exist in SSOT.
@@ -207,8 +209,6 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
-		// Snowflake's command is DESCRIBE CATALOG INTEGRATION. The generated text would use the resource name.
-		ssot.WithDescribeOutputSchema(ssot.ExtCall()),
 		ssot.WithHandleExternalChangesInDescribe(ssot.ExtCall()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 	},

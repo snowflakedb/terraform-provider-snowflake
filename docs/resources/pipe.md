@@ -74,7 +74,7 @@ resource "snowflake_pipe" "pipe_with_stage_change_trigger" {
 
 - `copy_statement` (String) Specifies the copy statement for the pipe.
 - `database` (String) The database in which to create the pipe.
-- `name` (String) Specifies the identifier for the pipe; must be unique for the database and schema in which the pipe is created.
+- `name` (String) Specifies the identifier for the pipe; must be unique for the schema in which the pipe is created.
 - `schema` (String) The schema in which to create the pipe.
 
 ### Optional

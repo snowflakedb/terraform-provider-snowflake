@@ -3,44 +3,9 @@ package resources
 import (
 	"fmt"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
-
-var authenticationPolicyIdentitySchemaExt = map[string]*schema.Schema{
-	"name": {
-		Type:             schema.TypeString,
-		Required:         true,
-		Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the authentication policy."),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
-	"schema": {
-		Type:             schema.TypeString,
-		Required:         true,
-		ForceNew:         true,
-		Description:      blocklistedCharactersFieldDescription("The schema in which to create the authentication policy."),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
-	"database": {
-		Type:             schema.TypeString,
-		Required:         true,
-		ForceNew:         true,
-		Description:      blocklistedCharactersFieldDescription("The database in which to create the authentication policy."),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
-}
-
-var authenticationPolicyDescribeOutputSchemaExt = map[string]*schema.Schema{
-	DescribeOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `DESCRIBE AUTHENTICATION POLICY` for the given policy.",
-		Elem: &schema.Resource{
-			Schema: schemas.DescribeAuthenticationPolicyDescribeDetailsSchema,
-		},
-	},
-}
 
 // Nested blocks are generated. This keeps the deprecated set, AtLeastOneOf, and the
 // case-sensitive wording on nested enum sets. Set diffs and the MFA enrollment special case are also applied here.

@@ -45,7 +45,26 @@ var pipeAttributesSchema = pipeAttributesModificationExt(map[string]*tfschema.Sc
 })
 
 var pipeSchema = collections.MergeMaps(
-	pipeIdentitySchemaExt,
+	map[string]*tfschema.Schema{
+		"name": {
+			Type:        tfschema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "Specifies the identifier for the pipe; must be unique for the schema in which the pipe is created.",
+		},
+		"database": {
+			Type:        tfschema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The database in which to create the pipe.",
+		},
+		"schema": {
+			Type:        tfschema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The schema in which to create the pipe.",
+		},
+	},
 	pipeAttributesSchema,
 	map[string]*tfschema.Schema{
 		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,

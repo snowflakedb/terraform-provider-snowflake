@@ -5,15 +5,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var warehouseAdaptiveIdentitySchemaExt = map[string]*schema.Schema{
-	"name": {
-		Type:             schema.TypeString,
-		Required:         true,
-		Description:      blocklistedCharactersFieldDescription("Identifier for the adaptive warehouse; must be unique for your account."),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
-}
-
 // warehouseAdaptiveAttributesModificationExt marks warehouse_type computed.
 // The attribute generator emits Optional and has no Computed flag.
 func warehouseAdaptiveAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {

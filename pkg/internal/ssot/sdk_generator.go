@@ -246,7 +246,7 @@ func (obj Object) namePluralForShow() string {
 }
 
 // ObjectType is the Snowflake SQL object type words, so ComputePool is COMPUTE POOL.
-// SdkDescribeSql overrides the default. The default is the uppercase words of Name.
+// Sdk.DescribeSql overrides the words. The default is the uppercase words of Name.
 func (obj Object) ObjectType() string {
 	if sql := ObjectGenerators(obj.Generators...).Sdk.DescribeSql; sql != "" {
 		return sql
