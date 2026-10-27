@@ -24,8 +24,8 @@ var multilineAttributesOverrides = map[string][]string{
 
 var complexListAttributesOverrides = map[string]map[string]string{
 	"GrantOwnership":                {"on": "sdk.OwnershipGrantOnRequest"},
-	"CatalogIntegrationOpenCatalog": {"rest_config": "sdk.OpenCatalogRestConfigRequest", "rest_authentication": "sdk.OAuthRestAuthenticationRequest"},
-	"CatalogIntegrationIcebergRest": {"rest_config": "sdk.IcebergRestRestConfigRequest", "oauth_rest_authentication": "sdk.OAuthRestAuthenticationRequest", "bearer_rest_authentication": "sdk.BearerRestAuthenticationRequest", "sigv4_rest_authentication": "sdk.SigV4RestAuthenticationRequest"}, //nolint:gosec // field-name mapping, not a credential
+	"CatalogIntegrationOpenCatalog": {"rest_config": "sdk.CatalogIntegrationOpenCatalogRestConfigRequest", "rest_authentication": "sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest"},
+	"CatalogIntegrationIcebergRest": {"rest_config": "sdk.CatalogIntegrationIcebergRestRestConfigRequest", "oauth_rest_authentication": "sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationRequest", "bearer_rest_authentication": "sdk.CatalogIntegrationIcebergRestBearerRestAuthenticationRequest", "sigv4_rest_authentication": "sdk.CatalogIntegrationIcebergRestSigv4RestAuthenticationRequest"}, //nolint:gosec // field-name mapping, not a credential
 	"ExternalVolume":                {"storage_location": "sdk.ExternalVolumeStorageLocationRequest"},
 	"Listing":                       {"manifest": "sdk.StageLocation"},
 	"MaskingPolicy":                 {"argument": "sdk.TableColumnSignature"},

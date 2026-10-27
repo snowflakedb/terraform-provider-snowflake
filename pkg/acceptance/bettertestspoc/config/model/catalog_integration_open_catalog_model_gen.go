@@ -35,8 +35,8 @@ func CatalogIntegrationOpenCatalog(
 	resourceName string,
 	name string,
 	enabled bool,
-	restAuthentication []sdk.OAuthRestAuthenticationRequest,
-	restConfig []sdk.OpenCatalogRestConfigRequest,
+	restAuthentication []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest,
+	restConfig []sdk.CatalogIntegrationOpenCatalogRestConfigRequest,
 ) *CatalogIntegrationOpenCatalogModel {
 	c := &CatalogIntegrationOpenCatalogModel{ResourceModelMeta: config.Meta(resourceName, resources.CatalogIntegrationOpenCatalog)}
 	c.WithName(name)
@@ -49,8 +49,8 @@ func CatalogIntegrationOpenCatalog(
 func CatalogIntegrationOpenCatalogWithDefaultMeta(
 	name string,
 	enabled bool,
-	restAuthentication []sdk.OAuthRestAuthenticationRequest,
-	restConfig []sdk.OpenCatalogRestConfigRequest,
+	restAuthentication []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest,
+	restConfig []sdk.CatalogIntegrationOpenCatalogRestConfigRequest,
 ) *CatalogIntegrationOpenCatalogModel {
 	c := &CatalogIntegrationOpenCatalogModel{ResourceModelMeta: config.DefaultMeta(resources.CatalogIntegrationOpenCatalog)}
 	c.WithName(name)

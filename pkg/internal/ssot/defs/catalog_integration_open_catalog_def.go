@@ -57,6 +57,7 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 			"For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.",
 		Min:           new(1),
 		CreateMapping: ssot.IntAttributeCreateBuilder,
+		CreateSql:     ssot.IntParameter(ssot.NoQuotes()),
 	},
 	Comment: ssot.Attribute{
 		Name:          "comment",
@@ -77,6 +78,7 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 		Required:    true,
 		ForceNew:    true,
 		Description: "Specifies information about the Open Catalog account and catalog name.",
+		CreateSql:   ssot.ObjectParameter(ssot.Sql("REST_CONFIG ="), ssot.Parentheses()),
 		Children: []ssot.Attribute{
 			{
 				Name:        "catalog_uri",
@@ -86,18 +88,18 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 				Description: "Specifies Open Catalog account URL.",
 			},
 			{
-				Name:        "catalog_name",
-				Type:        ssot.AttrString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Specifies the name of the catalog to use in Open Catalog.",
-			},
-			{
 				Name:        "catalog_api_type",
 				Type:        ssot.AttrEnum,
 				ForceNew:    true,
 				Description: "Specifies how Snowflake connects to Open Catalog.",
 				Enum:        CatalogIntegrationCatalogApiType,
+			},
+			{
+				Name:        "catalog_name",
+				Type:        ssot.AttrString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Specifies the name of the catalog to use in Open Catalog.",
 			},
 			{
 				Name:        "access_delegation_mode",
@@ -113,7 +115,9 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 		Type:        ssot.AttrObject,
 		Required:    true,
 		Description: "Specifies authentication details that Snowflake uses to connect to Open Catalog.",
+		CreateSql:   ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses()),
 		Children: []ssot.Attribute{
+			catalogIntegrationRestAuthTypeOauth,
 			{
 				Name:        "oauth_token_uri",
 				Type:        ssot.AttrString,
@@ -141,6 +145,7 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 				MinItems:    new(1),
 				Description: "Specifies one or more scopes for the OAuth token.",
 				Elem:        &ssot.Attribute{Type: ssot.AttrString},
+				CreateSql:   ssot.ListParameter("StringListItemWrapper"),
 			},
 		},
 	},
@@ -157,6 +162,12 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 	Type:        ssot.Attribute{Name: "type", Type: ssot.AttrString, Readonly: true},
 	Category:    ssot.Attribute{Name: "category", Type: ssot.AttrString, Readonly: true},
 	CreatedOn:   ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, Readonly: true},
+}
+
+var catalogIntegrationOpenCatalogCatalogSourceStatic = ssot.Attribute{
+	Name:      "catalog_source_polaris",
+	SqlOnly:   true,
+	CreateSql: ssot.StaticSQL("catalogSource", "CATALOG_SOURCE = POLARIS"),
 }
 
 var CatalogIntegrationOpenCatalog = ssot.Object{
@@ -196,6 +207,19 @@ var CatalogIntegrationOpenCatalog = ssot.Object{
 		CatalogIntegrationOpenCatalogAttrs.CatalogNamespace,
 		CatalogIntegrationOpenCatalogAttrs.RestConfig,
 		CatalogIntegrationOpenCatalogAttrs.RestAuthentication,
+	},
+	Create: ssot.CreateSpec{
+		Doc: "https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-open-catalog",
+		Clauses: []*ssot.Attribute{
+			&catalogIntegrationOpenCatalogCatalogSourceStatic,
+			&catalogIntegrationTableFormatIceberg,
+			&CatalogIntegrationOpenCatalogAttrs.CatalogNamespace,
+			&CatalogIntegrationOpenCatalogAttrs.RestConfig,
+			&CatalogIntegrationOpenCatalogAttrs.RestAuthentication,
+			&CatalogIntegrationOpenCatalogAttrs.Enabled,
+			&CatalogIntegrationOpenCatalogAttrs.RefreshIntervalSeconds,
+			&CatalogIntegrationOpenCatalogAttrs.Comment,
+		},
 	},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{

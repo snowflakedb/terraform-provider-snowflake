@@ -27,6 +27,8 @@ generators will follow. Ultimately, all the generators should default to using s
   of the group to a statement that has all of its attributes in `Create.Clauses`, and panics when it has only some of them.
   The Go field name is the one the clause gets, so `FieldName` on the clause renames it. The generated schema gets Terraform
   `ExactlyOneOf` on each attribute of the group, with the names of the whole group.
+- `Alter.SetConflictingFields` - pairs of `Set` attributes that cannot be set together. The SET struct gets `ConflictingFields`
+  for each pair, with the Go field names of the clauses.
 - `AdditionalEnums` - SDK enums that no attribute, column, or clause refers to, such as the accepted values of a field the
   resource validates but the SQL does not send. They are emitted with the enums the object refers to, which
   `SdkDefineFromSsot()` needs so the hand-written SDK definition has nothing left to list
@@ -298,7 +300,10 @@ enable nothing.
   the field clauses (`UPDATE`). All three are branches of `ExactlyOneValueSet`.
   A list of objects, its variants, and its nested structs are described on the attributes: see
   [Lists and nested objects](#lists-and-nested-objects). A `Clause(...)` on a child takes `Sql`, `Required`, `FieldName(name)`
-  for the Go field name, and `EnumOf(enum)`. An identifier child with a parameter clause is quoted text.
+  for the Go field name, and `EnumOf(enum)`. An identifier child with a parameter clause is quoted text. `AllowEmpty()` on a
+  string parameter makes the SDK field `StringAllowEmpty`, which takes an empty string and quotes itself, so SET can clear it.
+  A SET block that changes part of a nested struct is a `SqlOnly` object in `Set` with a `SetSql` object clause and the changed
+  fields as `Children`.
   When `SdkCreate()` or `SdkAlter()` is off, that call stays in the def. `SdkCreateForVariants()` emits
   each variant CREATE as a custom method. The variant fills `Create` (`Doc`, clauses, and
   `AdditionalValidations`). The SQL object words are `VariantEntityCreateName`, or `VariantOf.ObjectType` when that override is empty. A fixed value is an `SqlOnly` attribute with `StaticSQL` in that clause list. The method name is `Create` plus the variant name with the base name removed. The query

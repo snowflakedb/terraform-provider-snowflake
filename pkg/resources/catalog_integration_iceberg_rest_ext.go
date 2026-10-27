@@ -46,28 +46,31 @@ func catalogIntegrationIcebergRestParseIdExt(id string) (sdk.AccountObjectIdenti
 	return sdk.ParseAccountObjectIdentifier(id)
 }
 
-func catalogIntegrationIcebergRestNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateCatalogIntegrationRequest, error) {
+func catalogIntegrationIcebergRestNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateIcebergRestCatalogIntegrationRequest, error) {
 	enabled := d.Get("enabled").(bool)
 
-	params := sdk.NewIcebergRestParamsRequest()
+	restConfig, err := parseIcebergRestConfig(d, "rest_config.0.")
+	if err != nil {
+		return nil, err
+	}
+	request := sdk.NewCreateIcebergRestCatalogIntegrationRequest(id, restConfig, enabled)
 	if err := errors.Join(
-		singleBlockAttributeCreate(d, "rest_config", params.WithRestConfig, parseIcebergRestConfig),
-		stringAttributeCreateBuilder(d, "catalog_namespace", params.WithCatalogNamespace),
-		singleBlockAttributeCreate(d, "oauth_rest_authentication", params.WithOAuthRestAuthentication, parseOAuthRestAuthentication),
-		singleBlockAttributeCreate(d, "bearer_rest_authentication", params.WithBearerRestAuthentication, parseBearerRestAuthentication),
-		singleBlockAttributeCreate(d, "sigv4_rest_authentication", params.WithSigV4RestAuthentication, parseSigV4RestAuthentication),
+		singleBlockAttributeCreate(d, "oauth_rest_authentication", request.WithOAuthRestAuthentication, parseIcebergRestOAuthRestAuthentication),
+		singleBlockAttributeCreate(d, "bearer_rest_authentication", request.WithBearerRestAuthentication, parseBearerRestAuthentication),
+		singleBlockAttributeCreate(d, "sigv4_rest_authentication", request.WithSigV4RestAuthentication, parseSigV4RestAuthentication),
 	); err != nil {
 		return nil, err
 	}
-	if params.OAuthRestAuthentication == nil && params.BearerRestAuthentication == nil && params.SigV4RestAuthentication == nil {
+	if request.OAuthRestAuthentication == nil && request.BearerRestAuthentication == nil && request.SigV4RestAuthentication == nil {
 		return nil, fmt.Errorf("one of oauth_rest_authentication, bearer_rest_authentication, or sigv4_rest_authentication must be set")
 	}
 
-	return sdk.NewCreateCatalogIntegrationRequest(id, enabled).WithIcebergRestCatalogSourceParams(*params), nil
+	return request, nil
 }
 
-func catalogIntegrationIcebergRestApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.CreateCatalogIntegrationRequest) error {
+func catalogIntegrationIcebergRestApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.CreateIcebergRestCatalogIntegrationRequest) error {
 	return errors.Join(
+		stringAttributeCreateBuilder(d, "catalog_namespace", request.WithCatalogNamespace),
 		intAttributeCreateBuilder(d, "refresh_interval_seconds", request.WithRefreshIntervalSeconds),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
@@ -113,11 +116,11 @@ func catalogIntegrationIcebergRestApplySetUnsetExt(d *schema.ResourceData) (*cat
 	set := sdk.NewCatalogIntegrationSetRequest()
 
 	if errs := errors.Join(
-		attributeMappedValueUpdateSetOnlyAlways(d, "oauth_rest_authentication.0.oauth_client_secret", &set.SetOAuthRestAuthentication, func(secret string) (sdk.SetOAuthRestAuthenticationRequest, error) {
-			return *sdk.NewSetOAuthRestAuthenticationRequest(secret), nil
+		attributeMappedValueUpdateSetOnlyAlways(d, "oauth_rest_authentication.0.oauth_client_secret", &set.SetOAuthRestAuthentication, func(secret string) (sdk.CatalogIntegrationSetOauthRestAuthenticationRequest, error) {
+			return *sdk.NewCatalogIntegrationSetOauthRestAuthenticationRequest(secret), nil
 		}),
-		attributeMappedValueUpdateSetOnlyAlways(d, "bearer_rest_authentication.0.bearer_token", &set.SetBearerRestAuthentication, func(token string) (sdk.SetBearerRestAuthenticationRequest, error) {
-			return *sdk.NewSetBearerRestAuthenticationRequest(token), nil
+		attributeMappedValueUpdateSetOnlyAlways(d, "bearer_rest_authentication.0.bearer_token", &set.SetBearerRestAuthentication, func(token string) (sdk.CatalogIntegrationSetBearerRestAuthenticationRequest, error) {
+			return *sdk.NewCatalogIntegrationSetBearerRestAuthenticationRequest(token), nil
 		}),
 		handleCatalogIntegrationCommonPropsUpdate(d, set),
 	); errs != nil {
@@ -137,9 +140,9 @@ func catalogIntegrationIcebergRestSetFieldsNotSetByReadExt(d *schema.ResourceDat
 // SDK incision points
 // =============================================================================
 
-func catalogIntegrationIcebergRestCreateInSdkExt(ctx context.Context, meta any, _ sdk.AccountObjectIdentifier, req *sdk.CreateCatalogIntegrationRequest) diag.Diagnostics {
+func catalogIntegrationIcebergRestCreateInSdkExt(ctx context.Context, meta any, _ sdk.AccountObjectIdentifier, req *sdk.CreateIcebergRestCatalogIntegrationRequest) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	if err := client.CatalogIntegrations.Create(ctx, req); err != nil {
+	if err := client.CatalogIntegrations.CreateIcebergRest(ctx, req); err != nil {
 		return diag.FromErr(fmt.Errorf("error creating Iceberg REST catalog integration, err = %w", err))
 	}
 	return nil
@@ -206,8 +209,8 @@ func catalogIntegrationIcebergRestAlterUnsetInSdkExt(context.Context, any, sdk.A
 // Pre-existing mappers
 // =============================================================================
 
-func parseIcebergRestConfig(d *schema.ResourceData, prefix string) (sdk.IcebergRestRestConfigRequest, error) {
-	req := sdk.NewIcebergRestRestConfigRequest(d.Get(prefix + "catalog_uri").(string))
+func parseIcebergRestConfig(d *schema.ResourceData, prefix string) (sdk.CatalogIntegrationIcebergRestRestConfigRequest, error) {
+	req := sdk.NewCatalogIntegrationIcebergRestRestConfigRequest(d.Get(prefix + "catalog_uri").(string))
 	err := errors.Join(
 		stringAttributeCreateBuilder(d, prefix+"prefix", req.WithPrefix),
 		stringAttributeCreateBuilder(d, prefix+"catalog_name", req.WithCatalogName),
@@ -217,12 +220,12 @@ func parseIcebergRestConfig(d *schema.ResourceData, prefix string) (sdk.IcebergR
 	return *req, err
 }
 
-func parseBearerRestAuthentication(d *schema.ResourceData, prefix string) (sdk.BearerRestAuthenticationRequest, error) {
-	return *sdk.NewBearerRestAuthenticationRequest(d.Get(prefix + "bearer_token").(string)), nil
+func parseBearerRestAuthentication(d *schema.ResourceData, prefix string) (sdk.CatalogIntegrationIcebergRestBearerRestAuthenticationRequest, error) {
+	return *sdk.NewCatalogIntegrationIcebergRestBearerRestAuthenticationRequest(d.Get(prefix + "bearer_token").(string)), nil
 }
 
-func parseSigV4RestAuthentication(d *schema.ResourceData, prefix string) (sdk.SigV4RestAuthenticationRequest, error) {
-	req := sdk.NewSigV4RestAuthenticationRequest(d.Get(prefix + "sigv4_iam_role").(string))
+func parseSigV4RestAuthentication(d *schema.ResourceData, prefix string) (sdk.CatalogIntegrationIcebergRestSigv4RestAuthenticationRequest, error) {
+	req := sdk.NewCatalogIntegrationIcebergRestSigv4RestAuthenticationRequest(d.Get(prefix + "sigv4_iam_role").(string))
 	err := errors.Join(
 		stringAttributeCreateBuilder(d, prefix+"sigv4_signing_region", req.WithSigv4SigningRegion),
 		stringAttributeCreateBuilder(d, prefix+"sigv4_external_id", req.WithSigv4ExternalId),

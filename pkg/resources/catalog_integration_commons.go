@@ -111,17 +111,30 @@ func deleteCatalogIntegrationFunc() schema.DeleteContextFunc {
 	)
 }
 
-func parseOAuthRestAuthentication(d *schema.ResourceData, prefix string) (sdk.OAuthRestAuthenticationRequest, error) {
-	scopes := collections.Map(expandStringList(d.Get(prefix+"oauth_allowed_scopes").([]any)), func(v string) sdk.StringListItemWrapper {
-		return sdk.StringListItemWrapper{Value: v}
-	})
-	req := sdk.NewOAuthRestAuthenticationRequest(
+func parseOpenCatalogRestAuthentication(d *schema.ResourceData, prefix string) (sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest, error) {
+	req := sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest(
 		d.Get(prefix+"oauth_client_id").(string),
 		d.Get(prefix+"oauth_client_secret").(string),
-		scopes,
+		parseOAuthAllowedScopes(d, prefix),
 	)
 	err := stringAttributeCreateBuilder(d, prefix+"oauth_token_uri", req.WithOauthTokenUri)
 	return *req, err
+}
+
+func parseIcebergRestOAuthRestAuthentication(d *schema.ResourceData, prefix string) (sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationRequest, error) {
+	req := sdk.NewCatalogIntegrationIcebergRestOauthRestAuthenticationRequest(
+		d.Get(prefix+"oauth_client_id").(string),
+		d.Get(prefix+"oauth_client_secret").(string),
+		parseOAuthAllowedScopes(d, prefix),
+	)
+	err := stringAttributeCreateBuilder(d, prefix+"oauth_token_uri", req.WithOauthTokenUri)
+	return *req, err
+}
+
+func parseOAuthAllowedScopes(d *schema.ResourceData, prefix string) []sdk.StringListItemWrapper {
+	return collections.Map(expandStringList(d.Get(prefix+"oauth_allowed_scopes").([]any)), func(v string) sdk.StringListItemWrapper {
+		return sdk.StringListItemWrapper{Value: v}
+	})
 }
 
 func handleExternalChangesToOAuthRestAuthentication(d *schema.ResourceData, attrName, oAuthTokenUri, oAuthClientId string, oAuthAllowedScopes []string) error {

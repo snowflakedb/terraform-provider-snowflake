@@ -80,6 +80,8 @@ type SqlClause struct {
 	Field string
 	// Enum makes the field an enum parameter of this enum, whatever the attribute type is. EnumOf sets it.
 	Enum *Enum
+	// AllowEmpty makes a string parameter take an empty string (StringAllowEmpty), so SET can clear the value. AllowEmpty sets it.
+	AllowEmpty bool
 	// Variants are the provider-like variants of an object: each is a struct of the attributes it refers to, and the
 	// object has one optional field per variant, exactly one of which is set. WithVariants sets it.
 	Variants []SqlVariant
@@ -278,6 +280,9 @@ func overlaySqlClause(base, over SqlClause) SqlClause {
 	if over.Enum != nil {
 		base.Enum = over.Enum
 	}
+	if over.AllowEmpty {
+		base.AllowEmpty = true
+	}
 	if len(over.Variants) > 0 {
 		base.Variants = over.Variants
 	}
@@ -366,6 +371,15 @@ func (a Attribute) IsObjectList() bool {
 // IsSingleBlock reports whether the attribute is one nested block: an object, or a list with MaxItems 1.
 func (a Attribute) IsSingleBlock() bool {
 	return a.Type == AttrObject || (a.IsObjectList() && a.MaxItems != nil && *a.MaxItems == 1)
+}
+
+// AllowEmpty makes a string parameter take an empty string: the SDK field is StringAllowEmpty, not string.
+// That type quotes its value itself, so the clause has no quote tag.
+func AllowEmpty() SqlClauseOption {
+	return func(c *SqlClause) {
+		c.AllowEmpty = true
+		c.Quotes = ""
+	}
 }
 
 func Sql(text string) SqlClauseOption {

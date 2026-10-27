@@ -210,6 +210,8 @@ type AlterSpec struct {
 	AdditionalValidations    bool
 	SetAdditionalValidations bool
 	Clauses                  []AlterClause
+	// SetConflictingFields are pairs of Set attributes that cannot be set together. SET gets ConflictingFields for each pair.
+	SetConflictingFields [][]*Attribute
 }
 
 // HasAlterSpec reports whether this object defines an ALTER statement.

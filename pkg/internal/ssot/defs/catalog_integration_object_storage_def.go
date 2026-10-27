@@ -28,6 +28,7 @@ var CatalogIntegrationObjectStorageAttrs = struct {
 		Description:   "Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh. For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.",
 		Min:           new(1),
 		CreateMapping: ssot.IntAttributeCreateBuilder,
+		CreateSql:     ssot.IntParameter(ssot.NoQuotes()),
 	},
 	Comment: ssot.Attribute{
 		Name:          "comment",
@@ -56,6 +57,12 @@ var CatalogIntegrationObjectStorageAttrs = struct {
 		Enum:        CatalogIntegrationCatalogSourceType,
 		Readonly:    true,
 	},
+}
+
+var catalogIntegrationObjectStorageCatalogSourceStatic = ssot.Attribute{
+	Name:      "catalog_source_object_store",
+	SqlOnly:   true,
+	CreateSql: ssot.StaticSQL("catalogSource", "CATALOG_SOURCE = OBJECT_STORE"),
 }
 
 var CatalogIntegrationObjectStorage = ssot.Object{
@@ -90,6 +97,16 @@ var CatalogIntegrationObjectStorage = ssot.Object{
 		CatalogIntegrationObjectStorageAttrs.RefreshIntervalSeconds,
 		CatalogIntegrationObjectStorageAttrs.Comment,
 		CatalogIntegrationObjectStorageAttrs.TableFormat,
+	},
+	Create: ssot.CreateSpec{
+		Doc: "https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-object-storage",
+		Clauses: []*ssot.Attribute{
+			&catalogIntegrationObjectStorageCatalogSourceStatic,
+			&CatalogIntegrationObjectStorageAttrs.TableFormat,
+			&CatalogIntegrationObjectStorageAttrs.Enabled,
+			&CatalogIntegrationObjectStorageAttrs.RefreshIntervalSeconds,
+			&CatalogIntegrationObjectStorageAttrs.Comment,
+		},
 	},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{

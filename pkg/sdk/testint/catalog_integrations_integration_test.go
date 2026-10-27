@@ -48,12 +48,8 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasComment(comment))
 	}
 
-	createCatalogIntegrationWithRequest := func(t *testing.T, request *sdk.CreateCatalogIntegrationRequest) *sdk.CatalogIntegration {
+	showCreatedCatalogIntegration := func(t *testing.T, id sdk.AccountObjectIdentifier) *sdk.CatalogIntegration {
 		t.Helper()
-		id := request.GetName()
-
-		err := client.CatalogIntegrations.Create(ctx, request)
-		require.NoError(t, err)
 		t.Cleanup(testClientHelper().CatalogIntegration.DropFunc(t, id))
 
 		integration, err := client.CatalogIntegrations.ShowByID(ctx, id)
@@ -62,83 +58,108 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		return integration
 	}
 
-	createCatalogIntegrationAwsGlueRequest := func(t *testing.T) *sdk.CreateCatalogIntegrationRequest {
+	createAwsGlueWithRequest := func(t *testing.T, request *sdk.CreateAwsGlueCatalogIntegrationRequest) *sdk.CatalogIntegration {
 		t.Helper()
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-
-		return sdk.NewCreateCatalogIntegrationRequest(id, false).
-			WithAwsGlueCatalogSourceParams(*sdk.NewAwsGlueParamsRequest(glueAwsRoleArn, glueCatalogId).
-				WithGlueRegion(glueRegion))
+		require.NoError(t, client.CatalogIntegrations.CreateAwsGlue(ctx, request))
+		return showCreatedCatalogIntegration(t, request.GetName())
 	}
 
-	createCatalogIntegrationObjectStorageRequest := func(t *testing.T) *sdk.CreateCatalogIntegrationRequest {
+	createObjectStorageWithRequest := func(t *testing.T, request *sdk.CreateObjectStorageCatalogIntegrationRequest) *sdk.CatalogIntegration {
 		t.Helper()
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-
-		return sdk.NewCreateCatalogIntegrationRequest(id, false).
-			WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(sdk.CatalogIntegrationTableFormatDelta))
+		require.NoError(t, client.CatalogIntegrations.CreateObjectStorage(ctx, request))
+		return showCreatedCatalogIntegration(t, request.GetName())
 	}
 
-	createCatalogIntegrationOpenCatalogRequest := func(t *testing.T, catalogUri, oAuthClientId, oAuthClientSecret string) *sdk.CreateCatalogIntegrationRequest {
+	createOpenCatalogWithRequest := func(t *testing.T, request *sdk.CreateOpenCatalogCatalogIntegrationRequest) *sdk.CatalogIntegration {
 		t.Helper()
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-
-		return sdk.NewCreateCatalogIntegrationRequest(id, false).
-			WithOpenCatalogCatalogSourceParams(*sdk.NewOpenCatalogParamsRequest().
-				WithRestConfig(sdk.OpenCatalogRestConfigRequest{
-					CatalogUri:  catalogUri,
-					CatalogName: catalogName,
-				}).
-				WithRestAuthentication(sdk.OAuthRestAuthenticationRequest{
-					OauthClientId:      oAuthClientId,
-					OauthClientSecret:  oAuthClientSecret,
-					OauthAllowedScopes: []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}},
-				}))
+		require.NoError(t, client.CatalogIntegrations.CreateOpenCatalog(ctx, request))
+		return showCreatedCatalogIntegration(t, request.GetName())
 	}
 
-	createCatalogIntegrationIcebergRestRequest := func(t *testing.T, catalogUri, oAuthClientId, oAuthClientSecret string) *sdk.CreateCatalogIntegrationRequest {
+	createIcebergRestWithRequest := func(t *testing.T, request *sdk.CreateIcebergRestCatalogIntegrationRequest) *sdk.CatalogIntegration {
+		t.Helper()
+		require.NoError(t, client.CatalogIntegrations.CreateIcebergRest(ctx, request))
+		return showCreatedCatalogIntegration(t, request.GetName())
+	}
+
+	createCatalogIntegrationAwsGlueRequest := func(t *testing.T) *sdk.CreateAwsGlueCatalogIntegrationRequest {
 		t.Helper()
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		return sdk.NewCreateCatalogIntegrationRequest(id, false).
-			WithIcebergRestCatalogSourceParams(*sdk.NewIcebergRestParamsRequest().
-				WithRestConfig(sdk.IcebergRestRestConfigRequest{
-					CatalogUri:  catalogUri,
-					CatalogName: new(catalogName),
-				}).
-				WithOAuthRestAuthentication(sdk.OAuthRestAuthenticationRequest{
-					OauthClientId:      oAuthClientId,
-					OauthClientSecret:  oAuthClientSecret,
-					OauthAllowedScopes: []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}},
-				}))
+		return sdk.NewCreateAwsGlueCatalogIntegrationRequest(id, glueAwsRoleArn, glueCatalogId, false).
+			WithGlueRegion(glueRegion)
+	}
+
+	createCatalogIntegrationObjectStorageRequest := func(t *testing.T) *sdk.CreateObjectStorageCatalogIntegrationRequest {
+		t.Helper()
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+
+		return sdk.NewCreateObjectStorageCatalogIntegrationRequest(id, sdk.CatalogIntegrationTableFormatDelta, false)
+	}
+
+	createCatalogIntegrationOpenCatalogRequest := func(t *testing.T, catalogUri, oAuthClientId, oAuthClientSecret string) *sdk.CreateOpenCatalogCatalogIntegrationRequest {
+		t.Helper()
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+
+		return sdk.NewCreateOpenCatalogCatalogIntegrationRequest(
+			id,
+			sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+				CatalogUri:  catalogUri,
+				CatalogName: catalogName,
+			},
+			sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+				OauthClientId:      oAuthClientId,
+				OauthClientSecret:  oAuthClientSecret,
+				OauthAllowedScopes: []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}},
+			},
+			false,
+		)
+	}
+
+	createCatalogIntegrationIcebergRestRequest := func(t *testing.T, catalogUri, oAuthClientId, oAuthClientSecret string) *sdk.CreateIcebergRestCatalogIntegrationRequest {
+		t.Helper()
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+
+		return sdk.NewCreateIcebergRestCatalogIntegrationRequest(
+			id,
+			sdk.CatalogIntegrationIcebergRestRestConfigRequest{
+				CatalogUri:  catalogUri,
+				CatalogName: new(catalogName),
+			},
+			false,
+		).WithOAuthRestAuthentication(sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationRequest{
+			OauthClientId:      oAuthClientId,
+			OauthClientSecret:  oAuthClientSecret,
+			OauthAllowedScopes: []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}},
+		})
 	}
 
 	createAwsGlueCatalogIntegration := func(t *testing.T) *sdk.CatalogIntegration {
 		t.Helper()
-		return createCatalogIntegrationWithRequest(t, createCatalogIntegrationAwsGlueRequest(t))
+		return createAwsGlueWithRequest(t, createCatalogIntegrationAwsGlueRequest(t))
 	}
 
 	createObjectStorageCatalogIntegration := func(t *testing.T) *sdk.CatalogIntegration {
 		t.Helper()
-		return createCatalogIntegrationWithRequest(t, createCatalogIntegrationObjectStorageRequest(t))
+		return createObjectStorageWithRequest(t, createCatalogIntegrationObjectStorageRequest(t))
 	}
 
 	createOpenCatalogCatalogIntegration := func(t *testing.T) *sdk.CatalogIntegration {
 		t.Helper()
 		catalogUri, _, oAuthClientId, oAuthClientSecret := loadOpenCatalogConfig(t)
-		return createCatalogIntegrationWithRequest(t, createCatalogIntegrationOpenCatalogRequest(t, catalogUri, oAuthClientId, oAuthClientSecret))
+		return createOpenCatalogWithRequest(t, createCatalogIntegrationOpenCatalogRequest(t, catalogUri, oAuthClientId, oAuthClientSecret))
 	}
 
 	createIcebergRestCatalogIntegration := func(t *testing.T) *sdk.CatalogIntegration {
 		t.Helper()
 		catalogUri, _, oAuthClientId, oAuthClientSecret := loadOpenCatalogConfig(t)
-		return createCatalogIntegrationWithRequest(t, createCatalogIntegrationIcebergRestRequest(t, catalogUri, oAuthClientId, oAuthClientSecret))
+		return createIcebergRestWithRequest(t, createCatalogIntegrationIcebergRestRequest(t, catalogUri, oAuthClientId, oAuthClientSecret))
 	}
 
 	t.Run("create catalog integration: AWS Glue basic", func(t *testing.T) {
 		request := createCatalogIntegrationAwsGlueRequest(t)
 
-		integration := createCatalogIntegrationWithRequest(t, request)
+		integration := createAwsGlueWithRequest(t, request)
 
 		assertCatalogIntegration(t, integration, request.GetName(), "")
 		assertThatObject(t, objectassert.CatalogIntegrationAwsGlueDetails(t, integration.ID()).
@@ -158,7 +179,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 	t.Run("create catalog integration: object storage basic", func(t *testing.T) {
 		request := createCatalogIntegrationObjectStorageRequest(t)
 
-		integration := createCatalogIntegrationWithRequest(t, request)
+		integration := createObjectStorageWithRequest(t, request)
 
 		assertCatalogIntegration(t, integration, request.GetName(), "")
 		assertThatObject(t, objectassert.CatalogIntegrationObjectStorageDetails(t, integration.ID()).
@@ -173,7 +194,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		catalogUri, _, oAuthClientId, oAuthClientSecret := loadOpenCatalogConfig(t)
 		request := createCatalogIntegrationOpenCatalogRequest(t, catalogUri, oAuthClientId, oAuthClientSecret)
 
-		integration := createCatalogIntegrationWithRequest(t, request)
+		integration := createOpenCatalogWithRequest(t, request)
 
 		assertCatalogIntegration(t, integration, request.GetName(), "")
 
@@ -202,7 +223,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		catalogUri, _, oAuthClientId, oAuthClientSecret := loadOpenCatalogConfig(t)
 		request := createCatalogIntegrationIcebergRestRequest(t, catalogUri, oAuthClientId, oAuthClientSecret)
 
-		integration := createCatalogIntegrationWithRequest(t, request)
+		integration := createIcebergRestWithRequest(t, request)
 
 		assertCatalogIntegration(t, integration, request.GetName(), "")
 
@@ -231,13 +252,12 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 	t.Run("create catalog integration: AWS Glue all options", func(t *testing.T) {
 		request := createCatalogIntegrationAwsGlueRequest(t).
 			WithIfNotExists(true).
-			WithAwsGlueCatalogSourceParams(*sdk.NewAwsGlueParamsRequest(glueAwsRoleArn, glueCatalogId).
-				WithGlueRegion(glueRegion).
-				WithCatalogNamespace(catalogNamespace)).
+			WithGlueRegion(glueRegion).
+			WithCatalogNamespace(catalogNamespace).
 			WithRefreshIntervalSeconds(120).
 			WithComment("test comment")
 
-		integration := createCatalogIntegrationWithRequest(t, request)
+		integration := createAwsGlueWithRequest(t, request)
 
 		assertCatalogIntegration(t, integration, request.GetName(), "test comment")
 		assertThatObject(t, objectassert.CatalogIntegrationAwsGlueDetails(t, integration.ID()).
@@ -260,7 +280,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			WithRefreshIntervalSeconds(120).
 			WithComment("test comment")
 
-		integration := createCatalogIntegrationWithRequest(t, request)
+		integration := createObjectStorageWithRequest(t, request)
 
 		assertCatalogIntegration(t, integration, request.GetName(), "test comment")
 		assertThatObject(t, objectassert.CatalogIntegrationObjectStorageDetails(t, integration.ID()).
@@ -274,26 +294,26 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 	t.Run("create catalog integration: Open Catalog all options", func(t *testing.T) {
 		_, privateCatalogUri, oAuthClientId, oAuthClientSecret := loadOpenCatalogConfig(t)
 		privateOAuthTokenUri := privateCatalogUri + "/v1/oauth/tokens"
-		request := createCatalogIntegrationOpenCatalogRequest(t, privateCatalogUri, oAuthClientId, oAuthClientSecret).
+		request := createCatalogIntegrationOpenCatalogRequest(t, privateCatalogUri, oAuthClientId, oAuthClientSecret)
+		request.RestConfig = sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+			CatalogUri:           privateCatalogUri,
+			CatalogApiType:       sdk.Pointer(sdk.CatalogIntegrationCatalogApiTypePrivate),
+			CatalogName:          catalogName,
+			AccessDelegationMode: sdk.Pointer(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials),
+		}
+		request.RestAuthentication = sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+			OauthTokenUri:      sdk.String(privateOAuthTokenUri),
+			OauthClientId:      oAuthClientId,
+			OauthClientSecret:  oAuthClientSecret,
+			OauthAllowedScopes: []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}, {Value: additionalOAuthAllowedScope}},
+		}
+		request.
 			WithIfNotExists(true).
-			WithOpenCatalogCatalogSourceParams(*sdk.NewOpenCatalogParamsRequest().
-				WithCatalogNamespace(catalogNamespace).
-				WithRestConfig(sdk.OpenCatalogRestConfigRequest{
-					CatalogUri:           privateCatalogUri,
-					CatalogApiType:       sdk.Pointer(sdk.CatalogIntegrationCatalogApiTypePrivate),
-					CatalogName:          catalogName,
-					AccessDelegationMode: sdk.Pointer(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials),
-				}).
-				WithRestAuthentication(sdk.OAuthRestAuthenticationRequest{
-					OauthTokenUri:      sdk.String(privateOAuthTokenUri),
-					OauthClientId:      oAuthClientId,
-					OauthClientSecret:  oAuthClientSecret,
-					OauthAllowedScopes: []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}, {Value: additionalOAuthAllowedScope}},
-				})).
+			WithCatalogNamespace(catalogNamespace).
 			WithRefreshIntervalSeconds(120).
 			WithComment("test comment")
 
-		integration := createCatalogIntegrationWithRequest(t, request)
+		integration := createOpenCatalogWithRequest(t, request)
 
 		assertCatalogIntegration(t, integration, request.GetName(), "test comment")
 
@@ -322,27 +342,27 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		catalogUri, _, oAuthClientId, oAuthClientSecret := loadOpenCatalogConfig(t)
 		oAuthTokenUri := catalogUri + "/v1/oauth/tokens"
 		const prefix = "prefix"
-		request := createCatalogIntegrationIcebergRestRequest(t, catalogUri, oAuthClientId, oAuthClientSecret).
+		request := createCatalogIntegrationIcebergRestRequest(t, catalogUri, oAuthClientId, oAuthClientSecret)
+		request.RestConfig = sdk.CatalogIntegrationIcebergRestRestConfigRequest{
+			CatalogUri:           catalogUri,
+			Prefix:               sdk.String(prefix),
+			CatalogName:          sdk.String(catalogName),
+			CatalogApiType:       sdk.Pointer(sdk.CatalogIntegrationCatalogApiTypePublic),
+			AccessDelegationMode: sdk.Pointer(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials),
+		}
+		request.
 			WithIfNotExists(true).
-			WithIcebergRestCatalogSourceParams(*sdk.NewIcebergRestParamsRequest().
-				WithCatalogNamespace(catalogNamespace).
-				WithRestConfig(sdk.IcebergRestRestConfigRequest{
-					CatalogUri:           catalogUri,
-					Prefix:               sdk.String(prefix),
-					CatalogName:          sdk.String(catalogName),
-					CatalogApiType:       sdk.Pointer(sdk.CatalogIntegrationCatalogApiTypePublic),
-					AccessDelegationMode: sdk.Pointer(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials),
-				}).
-				WithOAuthRestAuthentication(sdk.OAuthRestAuthenticationRequest{
-					OauthTokenUri:      new(oAuthTokenUri),
-					OauthClientId:      oAuthClientId,
-					OauthClientSecret:  oAuthClientSecret,
-					OauthAllowedScopes: []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}, {Value: additionalOAuthAllowedScope}},
-				})).
+			WithCatalogNamespace(catalogNamespace).
+			WithOAuthRestAuthentication(sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationRequest{
+				OauthTokenUri:      new(oAuthTokenUri),
+				OauthClientId:      oAuthClientId,
+				OauthClientSecret:  oAuthClientSecret,
+				OauthAllowedScopes: []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}, {Value: additionalOAuthAllowedScope}},
+			}).
 			WithRefreshIntervalSeconds(120).
 			WithComment("test comment")
 
-		integration := createCatalogIntegrationWithRequest(t, request)
+		integration := createIcebergRestWithRequest(t, request)
 
 		assertCatalogIntegration(t, integration, request.GetName(), "test comment")
 
@@ -393,16 +413,17 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		integrationAwsGlue := createAwsGlueCatalogIntegration(t)
 		integrationObjectStorage := createObjectStorageCatalogIntegration(t)
 		integrationOpenCatalog := createOpenCatalogCatalogIntegration(t)
-		integrationIcebergRest := createCatalogIntegrationWithRequest(t, sdk.NewCreateCatalogIntegrationRequest(testClientHelper().Ids.RandomAccountObjectIdentifier(), false).
-			WithIcebergRestCatalogSourceParams(*sdk.NewIcebergRestParamsRequest().
-				WithRestConfig(sdk.IcebergRestRestConfigRequest{
-					CatalogUri:  catalogUri,
-					CatalogName: new(catalogName),
-				}).
-				WithBearerRestAuthentication(sdk.BearerRestAuthenticationRequest{BearerToken: bearerToken})))
+		integrationIcebergRest := createIcebergRestWithRequest(t, sdk.NewCreateIcebergRestCatalogIntegrationRequest(
+			testClientHelper().Ids.RandomAccountObjectIdentifier(),
+			sdk.CatalogIntegrationIcebergRestRestConfigRequest{
+				CatalogUri:  catalogUri,
+				CatalogName: new(catalogName),
+			},
+			false,
+		).WithBearerRestAuthentication(sdk.CatalogIntegrationIcebergRestBearerRestAuthenticationRequest{BearerToken: bearerToken}))
 
 		request := *sdk.NewCatalogIntegrationSetRequest().
-			WithSetBearerRestAuthentication(*sdk.NewSetBearerRestAuthenticationRequest(newBearerToken))
+			WithSetBearerRestAuthentication(*sdk.NewCatalogIntegrationSetBearerRestAuthenticationRequest(newBearerToken))
 
 		err := client.CatalogIntegrations.Alter(ctx, sdk.NewAlterCatalogIntegrationRequest(integrationIcebergRest.ID()).WithSet(request))
 		require.NoError(t, err)
@@ -428,7 +449,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		integrationIcebergRest := createIcebergRestCatalogIntegration(t)
 
 		request := *sdk.NewCatalogIntegrationSetRequest().
-			WithSetOAuthRestAuthentication(*sdk.NewSetOAuthRestAuthenticationRequest(newOAuthClientSecret))
+			WithSetOAuthRestAuthentication(*sdk.NewCatalogIntegrationSetOauthRestAuthenticationRequest(newOAuthClientSecret))
 
 		valid := []*sdk.CatalogIntegration{
 			integrationOpenCatalog, integrationIcebergRest,
@@ -546,7 +567,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 
 	t.Run("describe catalog integration: Open Catalog", func(t *testing.T) {
 		catalogUri, _, oAuthClientId, oAuthClientSecret := loadOpenCatalogConfig(t)
-		id := createCatalogIntegrationWithRequest(t, createCatalogIntegrationOpenCatalogRequest(t, catalogUri, oAuthClientId, oAuthClientSecret)).ID()
+		id := createOpenCatalogWithRequest(t, createCatalogIntegrationOpenCatalogRequest(t, catalogUri, oAuthClientId, oAuthClientSecret)).ID()
 
 		openCatalogDetails, err := client.CatalogIntegrations.DescribeOpenCatalogDetails(ctx, id)
 		require.NoError(t, err)
@@ -571,7 +592,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 
 	t.Run("describe catalog integration: Iceberg REST", func(t *testing.T) {
 		catalogUri, _, oAuthClientId, oAuthClientSecret := loadOpenCatalogConfig(t)
-		id := createCatalogIntegrationWithRequest(t, createCatalogIntegrationIcebergRestRequest(t, catalogUri, oAuthClientId, oAuthClientSecret)).ID()
+		id := createIcebergRestWithRequest(t, createCatalogIntegrationIcebergRestRequest(t, catalogUri, oAuthClientId, oAuthClientSecret)).ID()
 
 		icebergRestDetails, err := client.CatalogIntegrations.DescribeIcebergRestDetails(ctx, id)
 		require.NoError(t, err)

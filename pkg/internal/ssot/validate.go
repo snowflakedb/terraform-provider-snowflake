@@ -363,6 +363,16 @@ func validateCreateSpec(obj Object, attrs map[string]struct{}) {
 }
 
 func validateAlterSpec(obj Object) {
+	for i, pair := range obj.Alter.SetConflictingFields {
+		if len(pair) != 2 {
+			panic(fmt.Sprintf("object %q: SetConflictingFields entry %d needs exactly two attributes", obj.Name, i))
+		}
+		for _, member := range pair {
+			if member == nil || !slices.ContainsFunc(obj.Set, func(set *Attribute) bool { return set != nil && set.Name == member.Name }) {
+				panic(fmt.Sprintf("object %q: SetConflictingFields entry %d has an attribute that is not in Set", obj.Name, i))
+			}
+		}
+	}
 	seen := make(map[AlterClauseKind]struct{})
 	seenList := make(map[string]struct{})
 	for _, clause := range obj.Alter.Clauses {
@@ -591,6 +601,9 @@ func validateExplicitSqlClause(obj Object, attr Attribute, statement string, cla
 func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlClause) {
 	if !clause.Present {
 		return
+	}
+	if clause.AllowEmpty && (clause.Kind != SqlKindParameter || attr.Type != AttrString) {
+		panic(fmt.Sprintf("object %q: attribute %q %s clause allows an empty value but is not a string parameter", obj.Name, attr.Name, statement))
 	}
 	switch clause.Kind {
 	case SqlKindParameter:

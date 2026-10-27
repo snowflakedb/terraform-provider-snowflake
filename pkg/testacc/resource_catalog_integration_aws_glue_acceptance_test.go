@@ -365,12 +365,11 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			// Change force new props externally
 			{
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
-						WithOrReplace(true).
-						WithAwsGlueCatalogSourceParams(*sdk.NewAwsGlueParamsRequest(externalGlueAwsRoleArn, externalGlueCatalogId).
-							WithGlueRegion(externalGlueRegion).
-							WithCatalogNamespace(externalCatalogNamespace))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+					createRequest := sdk.NewCreateAwsGlueCatalogIntegrationRequest(id, externalGlueAwsRoleArn, externalGlueCatalogId, false).
+						WithGlueRegion(externalGlueRegion).
+						WithCatalogNamespace(externalCatalogNamespace).
+						WithOrReplace(true)
+					testClient().CatalogIntegration.CreateAwsGlueFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -391,10 +390,9 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			// Change "catalog_source" externally
 			{
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
-						WithOrReplace(true).
-						WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(sdk.CatalogIntegrationTableFormatDelta))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+					createRequest := sdk.NewCreateObjectStorageCatalogIntegrationRequest(id, sdk.CatalogIntegrationTableFormatDelta, false).
+						WithOrReplace(true)
+					testClient().CatalogIntegration.CreateObjectStorageFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -612,13 +610,12 @@ func TestAcc_CatalogIntegrationAwsGlue_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+					createRequest := sdk.NewCreateAwsGlueCatalogIntegrationRequest(id, glueAwsRoleArn, glueCatalogId, false).
+						WithGlueRegion(glueRegion).
+						WithCatalogNamespace(catalogNamespace).
 						WithRefreshIntervalSeconds(refreshIntervalSeconds).
-						WithComment(comment).
-						WithAwsGlueCatalogSourceParams(*sdk.NewAwsGlueParamsRequest(glueAwsRoleArn, glueCatalogId).
-							WithGlueRegion(glueRegion).
-							WithCatalogNamespace(catalogNamespace))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+						WithComment(comment)
+					testClient().CatalogIntegration.CreateAwsGlueFunc(t, createRequest)
 				},
 				Config:             config.FromModels(t, allAttributes),
 				ResourceName:       ref,

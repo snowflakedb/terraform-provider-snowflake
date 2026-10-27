@@ -1213,3 +1213,42 @@ func Test_ValidateObject_exactlyOneOf(t *testing.T) {
 		ValidateObject(newObject([]*Attribute{&one, &two}, []*Attribute{&one, &three}))
 	})
 }
+
+func Test_ValidateObject_allowEmpty(t *testing.T) {
+	validate := func(attr Attribute) {
+		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{attr}, Set: []*Attribute{&attr}})
+	}
+	require.NotPanics(t, func() {
+		validate(Attribute{Name: "comment", Type: AttrString, SetSql: StringParameter(AllowEmpty())})
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "count" SET clause allows an empty value but is not a string parameter`, func() {
+		validate(Attribute{Name: "count", Type: AttrInt, SetSql: IntParameter(AllowEmpty())})
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "flag" SET clause allows an empty value but is not a string parameter`, func() {
+		validate(Attribute{Name: "flag", Type: AttrString, SetSql: BoolKeyword(AllowEmpty())})
+	})
+}
+
+func Test_ValidateObject_setConflictingFields(t *testing.T) {
+	one := Attribute{Name: "one", Type: AttrString}
+	two := Attribute{Name: "two", Type: AttrString}
+	three := Attribute{Name: "three", Type: AttrString}
+	newObject := func(pairs ...[]*Attribute) Object {
+		return Object{
+			Name:       "Widget",
+			Attributes: []Attribute{one, two, three},
+			Set:        []*Attribute{&one, &two},
+			Alter:      AlterSpec{SetConflictingFields: pairs},
+		}
+	}
+	require.NotPanics(t, func() { ValidateObject(newObject([]*Attribute{&one, &two})) })
+	require.PanicsWithValue(t, `object "Widget": SetConflictingFields entry 0 needs exactly two attributes`, func() {
+		ValidateObject(newObject([]*Attribute{&one, &two, &three}))
+	})
+	require.PanicsWithValue(t, `object "Widget": SetConflictingFields entry 0 has an attribute that is not in Set`, func() {
+		ValidateObject(newObject([]*Attribute{&one, &three}))
+	})
+	require.PanicsWithValue(t, `object "Widget": SetConflictingFields entry 0 has an attribute that is not in Set`, func() {
+		ValidateObject(newObject([]*Attribute{&one, nil}))
+	})
+}
