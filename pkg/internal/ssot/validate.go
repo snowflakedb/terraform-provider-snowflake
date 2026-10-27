@@ -49,6 +49,7 @@ func ValidateObject(obj Object) {
 		validateAttributeOptions(obj.Name, a, false)
 	}
 	validateCreateSpec(obj, attrs)
+	validateExactlyOneOf(obj)
 	switch {
 	case obj.VariantOf != nil:
 		if obj.Create.Sql != "" {
@@ -165,12 +166,12 @@ func validateSchemaStateUpgraders(obj Object) {
 
 func validateNestedAttribute(obj Object, attr Attribute) {
 	validateNestedShape(obj, attr)
-	fields := attr.NestedFields()
+	fields := attr.NestedSqlFields()
 	if len(fields) == 0 {
 		return
 	}
 	// The fields of an object element carry their own CREATE clause when the element has an object clause.
-	sqlFields := attr.IsObjectList() && attr.Elem.CreateSql.Kind == SqlKindObject
+	sqlFields := (attr.IsObjectList() && attr.Elem.CreateSql.Kind == SqlKindObject) || (attr.Type == AttrObject && attr.CreateSql.Kind == SqlKindObject)
 	seen := make(map[string]struct{}, len(fields))
 	for _, child := range fields {
 		if child.Name == "" {
@@ -180,6 +181,12 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 			panic(fmt.Sprintf("object %q: attribute %q has duplicate nested attribute %q", obj.Name, attr.Name, child.Name))
 		}
 		seen[child.Name] = struct{}{}
+		if child.SqlOnly && (!sqlFields || child.CreateSql.Kind != SqlKindStatic) {
+			panic(fmt.Sprintf("object %q: nested attribute %q.%q is SQL-only but not a static clause of an object clause", obj.Name, attr.Name, child.Name))
+		}
+		if child.SqlOnly {
+			validateSqlClause(obj, child, "CREATE", child.CreateSql)
+		}
 		if statement, ok := sqlClauseStatement(child); ok {
 			if !sqlFields || statement != "CREATE" || child.SetSql.Present || child.UnsetSql.Present {
 				panic(fmt.Sprintf("object %q: nested attribute %q.%q has a %s clause", obj.Name, attr.Name, child.Name, statement))
@@ -194,20 +201,26 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 	}
 }
 
-// validateNestedShape allows one shape for a nested block: a list or set whose Elem is an object with the fields as Children.
-// Children is valid only on an object, and an object is valid only as that Elem or as a SqlOnly nested struct.
+// validateNestedShape allows two shapes for a nested block: an object, which is a single block, and a list or set whose Elem
+// is an object, which is a repeated block. The fields are the Children of the object. Children is valid only on an object.
+// A single block gets its item bounds from ResourceForm, so it sets none: bounds are valid only on a list or set.
 func validateNestedShape(obj Object, attr Attribute) {
 	if len(attr.Children) > 0 && attr.Type != AttrObject {
 		panic(fmt.Sprintf("object %q: attribute %q has Children but is not an object; declare the fields of a list or set on an object Elem (ObjectElem)", obj.Name, attr.Name))
 	}
-	if attr.Type == AttrObject && !attr.SqlOnly {
-		panic(fmt.Sprintf("object %q: attribute %q is an object; an object is only an Elem or a SqlOnly nested struct", obj.Name, attr.Name))
+	if attr.Type == AttrObject {
+		if len(attr.Children) == 0 || (!attr.SqlOnly && len(attr.NestedFields()) == 0) {
+			panic(fmt.Sprintf("object %q: attribute %q is an object with no Children", obj.Name, attr.Name))
+		}
+		if attr.Elem != nil {
+			panic(fmt.Sprintf("object %q: attribute %q is an object and has an Elem; the fields of an object are its Children", obj.Name, attr.Name))
+		}
 	}
 	if attr.Elem != nil && attr.Elem.Type == AttrObject {
 		if attr.Type != AttrList && attr.Type != AttrSet {
 			panic(fmt.Sprintf("object %q: attribute %q has an object Elem and needs to be a list or set", obj.Name, attr.Name))
 		}
-		if len(attr.Elem.Children) == 0 {
+		if len(attr.NestedFields()) == 0 {
 			panic(fmt.Sprintf("object %q: attribute %q has an object Elem with no Children", obj.Name, attr.Name))
 		}
 	}
@@ -217,8 +230,8 @@ func validateSkipCreateBlock(obj Object, attr Attribute) {
 	if !attr.SkipCreateBlock {
 		return
 	}
-	if attr.Type != AttrList || len(attr.NestedFields()) == 0 {
-		panic(fmt.Sprintf("object %q: SkipCreateBlock attribute %q must be a list block", obj.Name, attr.Name))
+	if (attr.Type != AttrList && attr.Type != AttrObject) || len(attr.NestedFields()) == 0 {
+		panic(fmt.Sprintf("object %q: SkipCreateBlock attribute %q must be a block", obj.Name, attr.Name))
 	}
 }
 
@@ -313,6 +326,31 @@ func sqlClauseStatement(attr Attribute) (string, bool) {
 		return "UNSET", true
 	default:
 		return "", false
+	}
+}
+
+// validateExactlyOneOf checks the groups: at least two optional top-level attributes each, none in two groups.
+func validateExactlyOneOf(obj Object) {
+	inGroup := make(map[string]struct{})
+	for i, group := range obj.ExactlyOneOf {
+		if len(group) < 2 {
+			panic(fmt.Sprintf("object %q: ExactlyOneOf group %d needs at least two attributes", obj.Name, i))
+		}
+		for _, member := range group {
+			if member == nil {
+				panic(fmt.Sprintf("object %q: ExactlyOneOf group %d has a nil attribute", obj.Name, i))
+			}
+			if !slices.ContainsFunc(obj.Attributes, func(a Attribute) bool { return a.Name == member.Name && !a.SqlOnly }) {
+				panic(fmt.Sprintf("object %q: ExactlyOneOf group %d attribute %q is not an attribute of the object", obj.Name, i, member.Name))
+			}
+			if member.Required {
+				panic(fmt.Sprintf("object %q: ExactlyOneOf group %d attribute %q is required", obj.Name, i, member.Name))
+			}
+			if _, dup := inGroup[member.Name]; dup {
+				panic(fmt.Sprintf("object %q: attribute %q is in more than one ExactlyOneOf group, or twice in one", obj.Name, member.Name))
+			}
+			inGroup[member.Name] = struct{}{}
+		}
 	}
 }
 

@@ -20,6 +20,13 @@ generators will follow. Ultimately, all the generators should default to using s
 - `VariantOf` - base object whose SDK parameter details, SET/UNSET requests, and `ParameterType` names a variant shares; parameter catalog membership still comes from the variant's own `Name`
 - `VariantEntityCreateName` - optional SQL object words for a variant CREATE. Empty uses `VariantOf.ObjectType` (`WarehouseAdaptive` emits `WAREHOUSE`). Set it when the words differ, as interactive CREATE does with `INTERACTIVE WAREHOUSE`
 - `VariantEntityAlterName` - optional SQL object words for a variant ALTER. Empty uses the same base default as CREATE
+- `VariantBaseOnly` - the object only is the base of its `VariantOf` variants and is not a Terraform resource itself (catalog integration: each source type is its own resource). The base owns what the variants share, such as the SDK interface. The resource generator skips it
+- `ExactlyOneOf` - groups of optional top-level attributes of which exactly one is set, declared once with pointers to the
+  attributes: `ExactlyOneOf: [][]*ssot.Attribute{{&oauth, &bearer, &sigv4}}`. Validation needs at least two attributes per group,
+  all of them optional attributes of the object, and none in two groups. SDK CREATE adds `ExactlyOneValueSet` over the Go fields
+  of the group to a statement that has all of its attributes in `Create.Clauses`, and panics when it has only some of them.
+  The Go field name is the one the clause gets, so `FieldName` on the clause renames it. The generated schema gets Terraform
+  `ExactlyOneOf` on each attribute of the group, with the names of the whole group.
 - `AdditionalEnums` - SDK enums that no attribute, column, or clause refers to, such as the accepted values of a field the
   resource validates but the SQL does not send. They are emitted with the enums the object refers to, which
   `SdkDefineFromSsot()` needs so the hand-written SDK definition has nothing left to list
@@ -95,6 +102,16 @@ How an attribute models a collection or a nested object. The Terraform side (sch
 - **List or set of scalars.** `Elem` is the scalar element attribute: a string, bool, int, enum, or identifier. A list of
   enums takes a `<Enum>ListItem` query struct in SQL. Create and update use `ListValueCreate` / `ListValueUpdate` with a
   hand-written per-element mapper.
+- **Single object.** An attribute of type `AttrObject` with `Children` is one nested block, and one struct in SDK SQL.
+  Terraform sees it as a list of at most one object. The resource attribute rule `single_object_is_list_of_one` makes it a
+  `TypeList` with `MaxItems: 1`, and `MinItems: 1` when it is `Required`. The definition sets no `MinItems`, `MaxItems`, or
+  `Elem`. Its SQL is its own `CreateSql`, `ObjectParameter(Sql("REST_CONFIG ="), Parentheses())`, and each child has the
+  `CreateSql` it needs. Generated create parses it like a list block with `MaxItems: 1` (`Attribute.IsSingleBlock()`). A single
+  block that is a `SqlOnly` attribute is the same struct and is not a Terraform field. A list of exactly one object
+  (`MaxItems: 1`) is still a list: it is a slice in SQL.
+  A fixed text of its struct, such as `TYPE = OAUTH`, is a `SqlOnly` child with `StaticSQL`, in SQL position. It is not a
+  Terraform field: `NestedFields()` skips it and `NestedSqlFields()` has it. Only SDK SQL reads `NestedSqlFields()`.
+  The same holds for the `Children` of a list element.
 - **List or set of objects.** The list attribute has `Elem` of type `AttrObject`, and the `Children` of that `Elem` are the
   object fields. Terraform sees a nested block (`MaxItems: 1` makes it a single block). `Attribute.NestedFields()` returns the
   fields and `IsObjectList()` tells a list of objects from a list of scalars, so generators ask the attribute for its fields
@@ -114,7 +131,7 @@ How an attribute models a collection or a nested object. The Terraform side (sch
 
   `Required`, `MinItems`, `MaxItems`, `Description`, `ForceNew`, and the other settings of the block stay on the list
   attribute. The `Elem` carries the fields and, for SDK SQL, the element clause. `Children` is valid only on an object:
-  validation panics when a list or set has `Children`, and an `AttrObject` is only an `Elem` or a `SqlOnly` nested struct.
+  validation panics when a list or set has `Children`, and an `AttrObject` with no `Children` or with an `Elem`.
 
   - SQL of the list is the list attribute's `CreateSql`: `ListOfObjects(Sql(text), Parentheses())`.
   - SQL of one element is the `Elem`'s `CreateSql`: `ObjectParameter(...)`. `Parentheses()` puts each element in

@@ -146,3 +146,122 @@ func Test_referencedEnums_includesAdditionalEnums(t *testing.T) {
 	obj := ssot.Object{Name: "Widget", Attributes: []ssot.Attribute{widget.list}, AdditionalEnums: []*ssot.Enum{extra, widget.kind}}
 	require.ElementsMatch(t, []*ssot.Enum{widget.kind, widget.encryptionKind, extra}, referencedEnums(obj))
 }
+
+func Test_appendSqlSequence_singleObject(t *testing.T) {
+	uri := ssot.Attribute{Name: "catalog_uri", Type: ssot.AttrString, Required: true}
+	name := ssot.Attribute{Name: "catalog_name", Type: ssot.AttrString}
+	config := ssot.Attribute{
+		Name:      "rest_config",
+		Type:      ssot.AttrObject,
+		Required:  true,
+		CreateSql: ssot.ObjectParameter(ssot.Sql("REST_CONFIG ="), ssot.Parentheses()),
+		Children:  []ssot.Attribute{uri, name},
+	}
+	got := NewQueryStruct("CreateWidget").appendSqlSequence([]*ssot.Attribute{&config}, attributeSqlCreate)
+	want := NewQueryStruct("CreateWidget").QueryStructField(
+		"RestConfig",
+		NewQueryStruct("RestConfig").
+			TextAssignment("CATALOG_URI", ParameterOptions().SingleQuotes().Required()).
+			OptionalTextAssignment("CATALOG_NAME", ParameterOptions().SingleQuotes()),
+		ListOptions().SQL("REST_CONFIG =").Parentheses().NoComma().Required(),
+	)
+	require.Equal(t, want.fields, got.fields)
+}
+
+func Test_appendSqlSequence_singleObjectWithStaticField(t *testing.T) {
+	typeOauth := ssot.Attribute{Name: "type_oauth", SqlOnly: true, CreateSql: ssot.StaticSQL("restAuthType", "TYPE = OAUTH")}
+	secret := ssot.Attribute{Name: "client_secret", Type: ssot.AttrString, Required: true}
+	auth := ssot.Attribute{
+		Name:      "rest_authentication",
+		Type:      ssot.AttrObject,
+		CreateSql: ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses()),
+		Children:  []ssot.Attribute{typeOauth, secret},
+	}
+	got := NewQueryStruct("CreateWidget").appendSqlSequence([]*ssot.Attribute{&auth}, attributeSqlCreate)
+	want := NewQueryStruct("CreateWidget").OptionalQueryStructField(
+		"RestAuthentication",
+		NewQueryStruct("RestAuthentication").
+			SQLWithCustomFieldName("restAuthType", "TYPE = OAUTH").
+			TextAssignment("CLIENT_SECRET", ParameterOptions().SingleQuotes().Required()),
+		ListOptions().SQL("REST_AUTHENTICATION =").Parentheses().NoComma(),
+	)
+	require.Equal(t, want.fields, got.fields)
+}
+
+func Test_createQueryStruct_exactlyOneOf(t *testing.T) {
+	typeOauth := ssot.Attribute{Name: "type_oauth", SqlOnly: true, CreateSql: ssot.StaticSQL("restAuthType", "TYPE = OAUTH")}
+	secret := ssot.Attribute{Name: "client_secret", Type: ssot.AttrString, Required: true}
+	token := ssot.Attribute{Name: "bearer_token", Type: ssot.AttrString, Required: true}
+	oauth := ssot.Attribute{
+		Name:      "oauth_authentication",
+		Type:      ssot.AttrObject,
+		CreateSql: ssot.ObjectParameter(ssot.Sql("AUTHENTICATION ="), ssot.Parentheses(), ssot.FieldName("OAuthAuthentication")),
+		Children:  []ssot.Attribute{typeOauth, secret},
+	}
+	bearer := ssot.Attribute{
+		Name:      "bearer_authentication",
+		Type:      ssot.AttrObject,
+		CreateSql: ssot.ObjectParameter(ssot.Sql("AUTHENTICATION ="), ssot.Parentheses()),
+		Children:  []ssot.Attribute{token},
+	}
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	newObject := func(group []*ssot.Attribute, clauses ...*ssot.Attribute) ssot.Object {
+		return ssot.Object{
+			Name:         "Widget",
+			NamePlural:   "Widgets",
+			IdType:       "AccountObjectIdentifier",
+			Attributes:   []ssot.Attribute{oauth, bearer, comment},
+			ExactlyOneOf: [][]*ssot.Attribute{group},
+			Create:       ssot.CreateSpec{Clauses: clauses},
+			Generators:   []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate())},
+		}
+	}
+
+	t.Run("all members in the statement", func(t *testing.T) {
+		obj := newObject([]*ssot.Attribute{&oauth, &bearer}, &oauth, &bearer, &comment)
+		ssot.ValidateObject(obj)
+		got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
+		want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperation(
+			"https://docs.snowflake.com/en/sql-reference/sql/create-widget",
+			NewQueryStruct("CreateWidget").
+				Create().
+				OrReplace().
+				SQL("WIDGET").
+				IfNotExists().
+				Name().
+				OptionalQueryStructField(
+					"OAuthAuthentication",
+					NewQueryStruct("WidgetOauthAuthentication").
+						SQLWithCustomFieldName("restAuthType", "TYPE = OAUTH").
+						TextAssignment("CLIENT_SECRET", ParameterOptions().SingleQuotes().Required()),
+					ListOptions().SQL("AUTHENTICATION =").Parentheses().NoComma(),
+				).
+				OptionalQueryStructField(
+					"BearerAuthentication",
+					NewQueryStruct("WidgetBearerAuthentication").
+						TextAssignment("BEARER_TOKEN", ParameterOptions().SingleQuotes().Required()),
+					ListOptions().SQL("AUTHENTICATION =").Parentheses().NoComma(),
+				).
+				OptionalTextAssignment("COMMENT", ParameterOptions().SingleQuotes()).
+				WithValidation(ValidIdentifier, "name").
+				WithValidation(ConflictingFields, "OrReplace", "IfNotExists").
+				WithValidation(ExactlyOneValueSet, "OAuthAuthentication", "BearerAuthentication"),
+		)
+		requireSameOperations(t, want, got)
+	})
+
+	t.Run("no member in the statement", func(t *testing.T) {
+		obj := newObject([]*ssot.Attribute{&oauth, &bearer}, &comment)
+		got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
+		for _, validation := range got.Operations[0].OptsField.Validations {
+			require.NotEqual(t, ExactlyOneValueSet, validation.Type)
+		}
+	})
+
+	t.Run("some members in the statement", func(t *testing.T) {
+		obj := newObject([]*ssot.Attribute{&oauth, &bearer}, &oauth, &comment)
+		require.Panics(t, func() {
+			NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
+		})
+	})
+}

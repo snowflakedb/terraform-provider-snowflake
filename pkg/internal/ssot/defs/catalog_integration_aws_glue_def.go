@@ -103,6 +103,7 @@ var CatalogIntegrationAwsGlueAttrs = struct {
 var CatalogIntegrationAwsGlue = ssot.Object{
 	Name:                   "CatalogIntegrationAwsGlue",
 	NamePlural:             "CatalogIntegrations",
+	VariantOf:              &CatalogIntegration,
 	DescribeFailRead:       true,
 	IdType:                 "AccountObjectIdentifier",
 	IdentityNameForceNew:   true,

@@ -43,8 +43,9 @@ func (v *QueryStruct) appendObjectClause(attr ssot.Attribute, clause ssot.SqlCla
 func queryStructFromObject(owner string, attr ssot.Attribute) *QueryStruct {
 	nested := NewQueryStruct(attr.SqlStructName(owner))
 	nested.owner = owner
-	for i := range attr.Children {
-		child := &attr.Children[i]
+	fields := attr.NestedSqlFields()
+	for i := range fields {
+		child := &fields[i]
 		nested = nested.appendAttributeClause(*child, child.EffectiveSqlClause(ssot.ClauseCreate), attributeSqlCreate)
 	}
 	return nested
@@ -78,8 +79,9 @@ func queryStructFromObjectList(owner string, list ssot.Attribute) *QueryStruct {
 	structName := list.SqlStructName(owner)
 	element := NewQueryStruct(structName)
 	element.owner = owner
-	for i := range list.Elem.Children {
-		child := &list.Elem.Children[i]
+	fields := list.NestedSqlFields()
+	for i := range fields {
+		child := &fields[i]
 		if _, used := inVariant[child.Name]; used || !child.CreateSql.Present {
 			continue
 		}

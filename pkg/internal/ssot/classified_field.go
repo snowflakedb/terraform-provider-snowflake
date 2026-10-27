@@ -65,6 +65,9 @@ func ClassifyAttribute(obj Object, attr Attribute) ClassifiedField {
 		}
 	case AttrString:
 		return stringField(attr.Name, attr.Required)
+	case AttrObject:
+		// A single block is a list of at most one object in the Terraform state.
+		return ClassifiedField{Name: attr.Name, Storage: AttrList, Required: attr.Required}
 	case AttrList:
 		return collectionField(obj, attr, AttrList)
 	case AttrSet:

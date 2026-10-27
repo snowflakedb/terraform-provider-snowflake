@@ -25,6 +25,7 @@ type ResourceAttribute struct {
 	ValidateDiagExpr     string
 	DiffSuppressExpr     string
 	ConflictsWith        []string
+	ExactlyOneOf         []string
 	Elem                 *ResourceAttribute
 	Children             []ResourceAttribute
 	EnumName             string // SDK enum type name; empty when the attribute is not an enum

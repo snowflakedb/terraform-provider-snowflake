@@ -143,7 +143,7 @@ func attachFieldCreate(scope createScope, src ssot.Attribute, dst *ResourceAttri
 	if src.SkipCreateBlock {
 		return false
 	}
-	if len(src.NestedFields()) > 0 && src.CreateMapping == nil && src.Type == ssot.AttrList {
+	if len(src.NestedFields()) > 0 && src.CreateMapping == nil && (src.Type == ssot.AttrList || src.Type == ssot.AttrObject) {
 		return attachBlockCreate(scope, src, dst)
 	}
 	if arg, ok := constructorArg(scope, src, *dst); ok {
@@ -268,11 +268,11 @@ func withFieldMapperCall(helper string, attr ssot.Attribute, mapper string) ssot
 	}
 }
 
-// blockCreateCall parses a list block. MaxItems 1 passes the value to request.With<Field>.
+// blockCreateCall parses a block. A single block passes the value to request.With<Field>.
 // Any other list assigns &request.<Field>.
 func blockCreateCall(attr ssot.Attribute, parseName string) ssot.CreateCall {
 	goName := genhelpers.SnakeCaseToCamel(attr.Name)
-	if attr.MaxItems != nil && *attr.MaxItems == 1 {
+	if attr.IsSingleBlock() {
 		return ssot.CreateCall{
 			Helper: "singleBlockAttributeCreate",
 			Target: fmt.Sprintf("request.With%s, %s", goName, parseName),
