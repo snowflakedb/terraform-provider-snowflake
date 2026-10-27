@@ -19,6 +19,7 @@ var catalogIntegrationAwsGlueAttributesSchema = catalogIntegrationAwsGlueAttribu
 		Type:             tfschema.TypeInt,
 		Optional:         true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("refresh_interval_seconds"),
 		Description:      "Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh. For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.",
 	},
 	"comment": {
@@ -39,10 +40,11 @@ var catalogIntegrationAwsGlueAttributesSchema = catalogIntegrationAwsGlueAttribu
 		Description: "Specifies the ID of your AWS account.",
 	},
 	"glue_region": {
-		Type:        tfschema.TypeString,
-		Optional:    true,
-		ForceNew:    true,
-		Description: "Specifies the AWS region of your AWS Glue Data Catalog. You must specify a value for this attribute if your Snowflake account is not hosted on AWS. Otherwise, the default region is the Snowflake deployment region for the account.",
+		Type:             tfschema.TypeString,
+		Optional:         true,
+		ForceNew:         true,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("glue_region"),
+		Description:      "Specifies the AWS region of your AWS Glue Data Catalog. You must specify a value for this attribute if your Snowflake account is not hosted on AWS. Otherwise, the default region is the Snowflake deployment region for the account.",
 	},
 	"catalog_namespace": {
 		Type:        tfschema.TypeString,

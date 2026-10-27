@@ -27,6 +27,7 @@ var CatalogIntegrationObjectStorageAttrs = struct {
 		Type:          ssot.AttrInt,
 		Description:   "Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh. For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.",
 		Min:           new(1),
+		DiffSuppress:  ssot.SuppressDescribe,
 		CreateMapping: ssot.IntAttributeCreateBuilder,
 		CreateSql:     ssot.IntParameter(ssot.NoQuotes()),
 	},

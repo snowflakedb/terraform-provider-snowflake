@@ -18,6 +18,13 @@ func importIntWithIntDefaultAttribute(d *schema.ResourceData, key string, import
 	return d.Set(key, snowflakeValue)
 }
 
+func importIntAttribute(d *schema.ResourceData, key string, importPermissiveMode bool, snowflakeValue int) error {
+	if importPermissiveMode {
+		return d.Set(key, 0)
+	}
+	return d.Set(key, snowflakeValue)
+}
+
 func importStringAttribute(d *schema.ResourceData, key string, importPermissiveMode bool, snowflakeValue string) error {
 	if importPermissiveMode {
 		return d.Set(key, "")

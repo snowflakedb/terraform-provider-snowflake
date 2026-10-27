@@ -19,6 +19,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -245,8 +246,10 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasGlueAwsExternalIdNotEmpty(),
 	}
 
+	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -254,6 +257,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -262,15 +266,17 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, catalogIntegrationAwsGlueBasic),
 				Check:  assertThat(t, basicAssertions...),
 			},
-			// Import
+			// Import - permissive mode
 			{
-				Config:            config.FromModels(t, catalogIntegrationAwsGlueBasic),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				Config:                   config.FromModels(t, providerModelImportPermissiveMode, catalogIntegrationAwsGlueBasic),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
 			},
 			// Change alterable props
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -281,6 +287,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			},
 			// Unset
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -291,6 +298,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			},
 			// Destroy
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroy),
@@ -301,6 +309,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			},
 			// Create with all attributes
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -309,16 +318,9 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, catalogIntegrationAwsGlueAllAttributes),
 				Check:  assertThat(t, completeAssertions...),
 			},
-			// Import
-			{
-				Config:                  config.FromModels(t, catalogIntegrationAwsGlueAllAttributes),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"refresh_interval_seconds", "glue_region"},
-			},
 			// Change alterable props externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					alterRequest := sdk.NewAlterCatalogIntegrationRequest(id).WithSet(
 						*sdk.NewCatalogIntegrationSetRequest().
@@ -344,6 +346,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			},
 			// Change force new "glue_aws_role_arn" prop
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -354,6 +357,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			},
 			// Change force new "glue_region" prop
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -364,6 +368,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			},
 			// Change force new props externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					createRequest := sdk.NewCreateAwsGlueCatalogIntegrationRequest(id, externalGlueAwsRoleArn, externalGlueCatalogId, false).
 						WithGlueRegion(externalGlueRegion).
@@ -389,6 +394,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			},
 			// Change "catalog_source" externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					createRequest := sdk.NewCreateObjectStorageCatalogIntegrationRequest(id, sdk.CatalogIntegrationTableFormatDelta, false).
 						WithOrReplace(true)
@@ -456,8 +462,10 @@ func TestAcc_CatalogIntegrationAwsGlue_CompleteUseCase(t *testing.T) {
 			HasGlueAwsExternalIdNotEmpty(),
 	}
 
+	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -465,6 +473,7 @@ func TestAcc_CatalogIntegrationAwsGlue_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create with all attributes
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -473,18 +482,76 @@ func TestAcc_CatalogIntegrationAwsGlue_CompleteUseCase(t *testing.T) {
 				Config: config.FromModels(t, catalogIntegrationAwsGlueAllAttributes),
 				Check:  assertThat(t, completeAssertions...),
 			},
-			// Import with all attributes.
-			// refresh_interval_seconds and glue_region are not written into resource state on read
-			// (they are detected via describe_output external-change handling), so import cannot verify them.
+			// Import with all attributes
 			{
-				Config:            config.FromModels(t, catalogIntegrationAwsGlueAllAttributes),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"refresh_interval_seconds", // unreadable: Read skips this attribute; value is only compared via describe_output
-					"glue_region",              // unreadable: Read skips this attribute; value is only compared via describe_output
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, catalogIntegrationAwsGlueAllAttributes),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateVerify:        true,
+			},
+			// Import with all attributes, permissive mode
+			{
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				Config:                   config.FromModels(t, providerModelImportPermissiveMode, catalogIntegrationAwsGlueAllAttributes),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
+			},
+		},
+	})
+}
+
+func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase_Import(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	glueAwsRoleArn := "arn:aws:iam::123456789012:role/sqsAccess"
+	glueCatalogId := random.NumericN(15)
+	glueRegion := "us-east-1"
+	refreshIntervalSeconds := random.IntRange(31, 86400)
+
+	basicModel := model.CatalogIntegrationAwsGlue("t", id.Name(), false, glueAwsRoleArn, glueCatalogId)
+	ref := basicModel.ResourceReference()
+
+	_, cleanup := testClient().CatalogIntegration.CreateFunc(t, sdk.NewCreateCatalogIntegrationRequest(id, false).
+		WithRefreshIntervalSeconds(refreshIntervalSeconds).
+		WithAwsGlueCatalogSourceParams(*sdk.NewAwsGlueParamsRequest(glueAwsRoleArn, glueCatalogId).
+			WithGlueRegion(glueRegion)))
+	t.Cleanup(cleanup)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.CatalogIntegrationAwsGlue),
+		Steps: []resource.TestStep{
+			// Import without optionals
+			{
+				Config:             config.FromModels(t, basicModel),
+				ResourceName:       ref,
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			// Expect empty plan after the plan after import is applied
+			{
+				Config: config.FromModels(t, basicModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.ExpectChange(ref, "refresh_interval_seconds", tfjson.ActionDelete, new(strconv.Itoa(refreshIntervalSeconds)), nil),
+						planchecks.ExpectChange(ref, "glue_region", tfjson.ActionDelete, new(glueRegion), nil),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
 				},
+				Check: assertThat(t,
+					resourceassert.CatalogIntegrationAwsGlueResource(t, ref).
+						HasNoRefreshIntervalSeconds().
+						HasNoGlueRegion(),
+				),
 			},
 		},
 	})

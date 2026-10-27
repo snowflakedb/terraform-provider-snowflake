@@ -106,8 +106,11 @@ func catalogIntegrationAwsGlueApplySetUnsetExt(d *schema.ResourceData) (*catalog
 	return &catalogIntegrationAwsGlueAlterRequestsExt{set: set}, nil
 }
 
-func catalogIntegrationAwsGlueSetFieldsNotSetByReadExt(_ *schema.ResourceData, _ sdk.AccountObjectIdentifier, _ *sdk.CatalogIntegrationAwsGlueDetails, _ bool) error {
-	return nil
+func catalogIntegrationAwsGlueSetFieldsNotSetByReadExt(d *schema.ResourceData, _ sdk.AccountObjectIdentifier, details *sdk.CatalogIntegrationAwsGlueDetails, importPermissiveMode bool) error {
+	return errors.Join(
+		importIntAttribute(d, "refresh_interval_seconds", importPermissiveMode, details.RefreshIntervalSeconds),
+		importStringAttribute(d, "glue_region", importPermissiveMode, details.GlueRegion),
+	)
 }
 
 // =============================================================================
