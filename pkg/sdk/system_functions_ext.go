@@ -176,6 +176,12 @@ func parseClusteringInformation(raw string) (*ClusteringInformation, error) {
 	}, nil
 }
 
+// SYSTEM$GET_CATALOG_LINKED_DATABASE_CONFIG embeds single quotes in the namespace values (e.g. "'ns1'"),
+// unlike the values passed to CREATE/ALTER.
+func unquoteCatalogLinkedDatabaseNamespace(namespace string) string {
+	return strings.TrimSuffix(strings.TrimPrefix(namespace, "'"), "'")
+}
+
 func parseCatalogLinkedDatabaseConfig(raw string) (*CatalogLinkedDatabaseConfig, error) {
 	var config catalogLinkedDatabaseConfigDbStruct
 	if err := json.Unmarshal([]byte(raw), &config); err != nil {
@@ -187,8 +193,8 @@ func parseCatalogLinkedDatabaseConfig(raw string) (*CatalogLinkedDatabaseConfig,
 		SyncIntervalSeconds:       config.SyncIntervalSeconds,
 		NamespaceFlattenDelimiter: config.NamespaceFlattenDelimiter,
 		IsSuspended:               config.IsSuspended,
-		AllowedNamespaces:         config.AllowedNamespaces,
-		BlockedNamespaces:         config.BlockedNamespaces,
+		AllowedNamespaces:         collections.Map(config.AllowedNamespaces, unquoteCatalogLinkedDatabaseNamespace),
+		BlockedNamespaces:         collections.Map(config.BlockedNamespaces, unquoteCatalogLinkedDatabaseNamespace),
 	}
 	mapStringWithMapping(&result.CatalogIntegration, config.CatalogIntegration, ParseAccountObjectIdentifier)
 	if config.ExternalVolume != nil {
