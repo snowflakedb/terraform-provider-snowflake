@@ -172,6 +172,9 @@ var Table = ssot.Object{
 	NamePlural:             "Tables",
 	IdType:                 "SchemaObjectIdentifier",
 	AttributesModification: true,
+	Generators: []ssot.GeneratorOption{
+		ssot.WithResource(),
+	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithShowOutputSchema(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),

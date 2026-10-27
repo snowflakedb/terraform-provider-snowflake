@@ -123,6 +123,7 @@ var WarehouseInteractive = ssot.Object{
 	VariantEntityCreateName:    "INTERACTIVE WAREHOUSE",
 	AttributesModification:     true,
 	Generators: []ssot.GeneratorOption{
+		ssot.WithResource(),
 		ssot.WithSchema(ssot.SchemaShow()),
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),

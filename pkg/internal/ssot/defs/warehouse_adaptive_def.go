@@ -94,6 +94,7 @@ var WarehouseAdaptive = ssot.Object{
 	VariantOf:                  &Warehouse,
 	AttributesModification:     true,
 	Generators: []ssot.GeneratorOption{
+		ssot.WithResource(),
 		ssot.WithSchema(ssot.SchemaShow()),
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),
