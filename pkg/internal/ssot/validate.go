@@ -709,8 +709,10 @@ func validateColumnList(obj Object, kind string, list []*Attribute, attrs map[st
 		if _, dup := seenName[a.Name]; dup {
 			panic(fmt.Sprintf("object %q: duplicate %s attribute %q", obj.Name, kind, a.Name))
 		}
-		// TODO (next PRs): Support nested attributes.
-		if _, nestedAttr := nested[a.Name]; nestedAttr || len(a.NestedFields()) > 0 {
+		// A column that is an object is a nested struct of the details, from the Children of the attribute.
+		// TODO (next PRs): Support the other nested attributes.
+		_, nestedAttr := nested[a.Name]
+		if (nestedAttr || len(a.NestedFields()) > 0) && !(kind == "DESCRIBE" && a.Type == AttrObject && ObjectGenerators(obj.Generators...).Sdk.DescribeDetails) {
 			panic(fmt.Sprintf("object %q: nested attribute %q is not a %s column", obj.Name, a.Name, kind))
 		}
 		seenKey[key] = struct{}{}
@@ -778,7 +780,8 @@ func validateDescribeDetails(obj Object) {
 		validateGeneratorSkips(obj, "sdk-describe-details nested", "DESCRIBE", false, obj.Describe.Columns, sdk.DescribeDetailsNestedFields)
 		return
 	}
-	if !sdk.Describe || len(obj.DescribeRows.Columns) == 0 {
+	// The rows of a variant are the rows of its base.
+	if !sdk.Describe || (len(obj.DescribeRows.Columns) == 0 && obj.VariantOf == nil) {
 		panic(fmt.Sprintf("object %q: SdkDescribeDetails needs SdkDescribe and DescribeRows", obj.Name))
 	}
 	validateGeneratorSkips(obj, "sdk-describe-details nested", "DESCRIBE", true, obj.Describe.Columns, sdk.DescribeDetailsNestedFields)

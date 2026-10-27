@@ -208,12 +208,12 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasRefreshIntervalSeconds(30).
 			HasComment("").
 			HasCatalogNamespace("").
-			HasRestConfigWith(objectassert.NewOpenCatalogRestConfigDetailsAssert().
+			HasRestConfigWith(objectassert.NewCatalogIntegrationOpenCatalogRestConfigDetailsAssert().
 				HasCatalogUri(catalogUri).
 				HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
 				HasCatalogName(catalogName).
 				HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)).
-			HasRestAuthenticationWith(objectassert.NewOAuthRestAuthenticationDetailsAssert().
+			HasRestAuthenticationWith(objectassert.NewCatalogIntegrationOpenCatalogRestAuthenticationDetailsAssert().
 				HasOauthTokenUri(catalogUri+"/v1/oauth/tokens").
 				HasOauthClientId(oAuthClientId).
 				HasOauthAllowedScopes(oAuthAllowedScope)))
@@ -237,11 +237,11 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasRefreshIntervalSeconds(30).
 			HasComment("").
 			HasCatalogNamespace("").
-			HasOAuthRestAuthenticationWith(objectassert.NewOAuthRestAuthenticationDetailsAssert().
+			HasOauthRestAuthenticationWith(objectassert.NewCatalogIntegrationIcebergRestOauthRestAuthenticationDetailsAssert().
 				HasOauthTokenUri(catalogUri+"/v1/oauth/tokens").
 				HasOauthClientId(oAuthClientId).
 				HasOauthAllowedScopes(oAuthAllowedScope)).
-			HasRestConfigWith(objectassert.NewIcebergRestRestConfigDetailsAssert().
+			HasRestConfigWith(objectassert.NewCatalogIntegrationIcebergRestRestConfigDetailsAssert().
 				HasCatalogUri(catalogUri).
 				HasPrefix("").
 				HasCatalogName(catalogName).
@@ -327,12 +327,12 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasRefreshIntervalSeconds(120).
 			HasComment("test comment").
 			HasCatalogNamespace(catalogNamespace).
-			HasRestConfigWith(objectassert.NewOpenCatalogRestConfigDetailsAssert().
+			HasRestConfigWith(objectassert.NewCatalogIntegrationOpenCatalogRestConfigDetailsAssert().
 				HasCatalogUri(privateCatalogUri).
 				HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePrivate).
 				HasCatalogName(catalogName).
 				HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials)).
-			HasRestAuthenticationWith(objectassert.NewOAuthRestAuthenticationDetailsAssert().
+			HasRestAuthenticationWith(objectassert.NewCatalogIntegrationOpenCatalogRestAuthenticationDetailsAssert().
 				HasOauthTokenUri(privateOAuthTokenUri).
 				HasOauthClientId(oAuthClientId).
 				HasOauthAllowedScopes(oAuthAllowedScope, additionalOAuthAllowedScope)))
@@ -376,11 +376,11 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasRefreshIntervalSeconds(120).
 			HasComment("test comment").
 			HasCatalogNamespace(catalogNamespace).
-			HasOAuthRestAuthenticationWith(objectassert.NewOAuthRestAuthenticationDetailsAssert().
+			HasOauthRestAuthenticationWith(objectassert.NewCatalogIntegrationIcebergRestOauthRestAuthenticationDetailsAssert().
 				HasOauthTokenUri(oAuthTokenUri).
 				HasOauthClientId(oAuthClientId).
 				HasOauthAllowedScopes(oAuthAllowedScope, additionalOAuthAllowedScope)).
-			HasRestConfigWith(objectassert.NewIcebergRestRestConfigDetailsAssert().
+			HasRestConfigWith(objectassert.NewCatalogIntegrationIcebergRestRestConfigDetailsAssert().
 				HasCatalogUri(catalogUri).
 				HasPrefix(prefix).
 				HasCatalogName(catalogName).
@@ -579,12 +579,12 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasRefreshIntervalSeconds(30).
 			HasComment("").
 			HasCatalogNamespace("").
-			HasRestConfigWith(objectassert.NewOpenCatalogRestConfigDetailsAssert().
+			HasRestConfigWith(objectassert.NewCatalogIntegrationOpenCatalogRestConfigDetailsAssert().
 				HasCatalogUri(catalogUri).
 				HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
 				HasCatalogName(catalogName).
 				HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)).
-			HasRestAuthenticationWith(objectassert.NewOAuthRestAuthenticationDetailsAssert().
+			HasRestAuthenticationWith(objectassert.NewCatalogIntegrationOpenCatalogRestAuthenticationDetailsAssert().
 				HasOauthTokenUri(catalogUri+"/v1/oauth/tokens").
 				HasOauthClientId(oAuthClientId).
 				HasOauthAllowedScopes(oAuthAllowedScope)))
@@ -604,11 +604,11 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasRefreshIntervalSeconds(30).
 			HasComment("").
 			HasCatalogNamespace("").
-			HasOAuthRestAuthenticationWith(objectassert.NewOAuthRestAuthenticationDetailsAssert().
+			HasOauthRestAuthenticationWith(objectassert.NewCatalogIntegrationIcebergRestOauthRestAuthenticationDetailsAssert().
 				HasOauthTokenUri(catalogUri+"/v1/oauth/tokens").
 				HasOauthClientId(oAuthClientId).
 				HasOauthAllowedScopes(oAuthAllowedScope)).
-			HasRestConfigWith(objectassert.NewIcebergRestRestConfigDetailsAssert().
+			HasRestConfigWith(objectassert.NewCatalogIntegrationIcebergRestRestConfigDetailsAssert().
 				HasCatalogUri(catalogUri).
 				HasPrefix("").
 				HasCatalogName(catalogName).

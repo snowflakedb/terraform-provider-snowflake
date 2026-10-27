@@ -83,7 +83,7 @@ var CatalogIntegrationObjectStorage = ssot.Object{
 		// ObjectAssertShow omitted. There is no sdk.CatalogIntegrationObjectStorage type.
 		// ObjectAssertDescribe omitted. The SDK list keeps DescribeObjectStorage on the catalog integration helper.
 		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant.
-		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"))),
+		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"), ssot.SdkDescribeDetails())),
 		ssot.WithShowOutputAssert(ssot.ShowOutputDescribe()),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{

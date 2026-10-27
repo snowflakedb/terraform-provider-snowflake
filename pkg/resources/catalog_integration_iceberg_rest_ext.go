@@ -237,10 +237,10 @@ func handleExternalChangesToIcebergRestNestedAttrs(d *schema.ResourceData, detai
 	if err := handleExternalChangesToIcebergRestConfig(d, details); err != nil {
 		return err
 	}
-	if details.OAuthRestAuthentication != nil {
+	if details.OauthRestAuthentication != nil {
 		return handleExternalChangesToOAuthRestAuthenticationIcebergRest(d, details)
 	}
-	if details.SigV4RestAuthentication != nil {
+	if details.Sigv4RestAuthentication != nil {
 		return handleExternalChangesToSigV4RestAuthentication(d, details)
 	}
 	return handleExternalChangesToBearerRestAuthentication(d)
@@ -267,9 +267,9 @@ func handleExternalChangesToOAuthRestAuthenticationIcebergRest(d *schema.Resourc
 		handleExternalChangesToOAuthRestAuthentication(
 			d,
 			"oauth_rest_authentication",
-			details.OAuthRestAuthentication.OauthTokenUri,
-			details.OAuthRestAuthentication.OauthClientId,
-			details.OAuthRestAuthentication.OauthAllowedScopes,
+			details.OauthRestAuthentication.OauthTokenUri,
+			details.OauthRestAuthentication.OauthClientId,
+			details.OauthRestAuthentication.OauthAllowedScopes,
 		),
 		d.Set("bearer_rest_authentication", nil),
 		d.Set("sigv4_rest_authentication", nil),
@@ -279,8 +279,8 @@ func handleExternalChangesToOAuthRestAuthenticationIcebergRest(d *schema.Resourc
 func handleExternalChangesToSigV4RestAuthentication(d *schema.ResourceData, details *sdk.CatalogIntegrationIcebergRestDetails) error {
 	sigV4RestAuthorization := []any{
 		map[string]any{
-			"sigv4_iam_role":       details.SigV4RestAuthentication.Sigv4IamRole,
-			"sigv4_signing_region": details.SigV4RestAuthentication.Sigv4SigningRegion,
+			"sigv4_iam_role":       details.Sigv4RestAuthentication.Sigv4IamRole,
+			"sigv4_signing_region": details.Sigv4RestAuthentication.Sigv4SigningRegion,
 		},
 	}
 	err := handleExternalChangesToObjectInFlatDescribeDeepEqual(
@@ -309,21 +309,21 @@ func setIcebergRestConfigInState(d *schema.ResourceData, details *sdk.CatalogInt
 }
 
 func setIcebergRestAuthInState(d *schema.ResourceData, details *sdk.CatalogIntegrationIcebergRestDetails) error {
-	if details.OAuthRestAuthentication != nil {
+	if details.OauthRestAuthentication != nil {
 		return errors.Join(
 			d.Set("oauth_rest_authentication", []any{map[string]any{
-				"oauth_token_uri": details.OAuthRestAuthentication.OauthTokenUri,
-				"oauth_client_id": details.OAuthRestAuthentication.OauthClientId,
+				"oauth_token_uri": details.OauthRestAuthentication.OauthTokenUri,
+				"oauth_client_id": details.OauthRestAuthentication.OauthClientId,
 				// oauth_client_secret not returned from Snowflake
-				"oauth_allowed_scopes": details.OAuthRestAuthentication.OauthAllowedScopes,
+				"oauth_allowed_scopes": details.OauthRestAuthentication.OauthAllowedScopes,
 			}}),
 		)
 	}
-	if details.SigV4RestAuthentication != nil {
+	if details.Sigv4RestAuthentication != nil {
 		return errors.Join(
 			d.Set("sigv4_rest_authentication", []any{map[string]any{
-				"sigv4_iam_role":       details.SigV4RestAuthentication.Sigv4IamRole,
-				"sigv4_signing_region": details.SigV4RestAuthentication.Sigv4SigningRegion,
+				"sigv4_iam_role":       details.Sigv4RestAuthentication.Sigv4IamRole,
+				"sigv4_signing_region": details.Sigv4RestAuthentication.Sigv4SigningRegion,
 				// sigv4_external_id not returned from Snowflake
 			}}),
 		)

@@ -51,14 +51,14 @@ func Parse{{ .NameSingular }}Described(rows []{{ .DescribeParse.RowsType }}) ({{
 	return details, nil
 }
 {{- end }}
-{{- if .DescribeDetailsMethod }}
+{{- range .DescribeDetailsMethods }}
 
-func (v *{{ .NameLowerCased }}) DescribeDetails(ctx context.Context, id {{ .IdentifierKind }}) (*{{ .DescribeDetailsMethod.DetailsType }}, error) {
+func (v *{{ $.NameLowerCased }}) {{ .MethodName }}(ctx context.Context, id {{ $.IdentifierKind }}) (*{{ .DetailsType }}, error) {
 	rows, err := v.Describe(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	details, err := {{ .DescribeDetailsMethod.ParseFunc }}(rows)
+	details, err := {{ .ParseFunc }}(rows)
 	if err != nil {
 		return nil, err
 	}

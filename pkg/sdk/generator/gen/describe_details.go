@@ -1,7 +1,9 @@
 package gen
 
-// DescribeDetailsConfig holds the data needed to generate the DescribeDetails accessor.
+// DescribeDetailsConfig holds the data needed to generate one Describe details accessor.
 type DescribeDetailsConfig struct {
+	// MethodName is the interface method, e.g. "DescribeDetails" or "DescribeAwsGlueDetails".
+	MethodName string
 	// DetailsType is the parsed details struct, e.g. "ExternalVolumeDetails".
 	DetailsType string
 	// ParseFunc parses the Describe rows into the details: func(rows []<NameSingular>Property) (<DetailsType>, error).
@@ -12,9 +14,15 @@ type DescribeDetailsConfig struct {
 // WithDescribeDetails declares a DescribeDetails accessor on the interface and generates its body:
 // it calls Describe, parses the rows with parseFunc, and sets Id on the result.
 func (i *Interface) WithDescribeDetails(detailsType, parseFunc string) *Interface {
-	i.DescribeDetailsMethod = &DescribeDetailsConfig{DetailsType: detailsType, ParseFunc: parseFunc}
+	return i.WithDescribeDetailsMethod("DescribeDetails", detailsType, parseFunc)
+}
+
+// WithDescribeDetailsMethod is WithDescribeDetails for a method with another name, so that one interface can have the
+// details of several kinds, such as a method per variant. Each method has its own details type and parse function.
+func (i *Interface) WithDescribeDetailsMethod(methodName, detailsType, parseFunc string) *Interface {
+	i.DescribeDetailsMethods = append(i.DescribeDetailsMethods, &DescribeDetailsConfig{MethodName: methodName, DetailsType: detailsType, ParseFunc: parseFunc})
 	return i.WithCustomInterfaceMethod(
-		"DescribeDetails",
+		methodName,
 		"",
 		[]*MethodParameter{NewMethodParameter("id", i.IdentifierKind)},
 		"*"+detailsType, "error",

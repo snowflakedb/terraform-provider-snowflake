@@ -62,10 +62,31 @@ func detailsFieldKind(obj ssot.Object, attr ssot.Attribute, nested []*ssot.Attri
 		concrete, _ := ssot.AttributeGoTypes(obj, attr)
 		kind = strings.ReplaceAll(concrete, "sdk.", "")
 	}
-	if attr.OptionalInShow {
+	if attr.IsOptionalColumn() {
 		kind = "*" + kind
 	}
 	return kind
+}
+
+// DescribeNestedPlains are the plain structs of the columns of obj that are objects. The fields are the Children of the
+// column, as plain values.
+func DescribeNestedPlains(obj ssot.Object) []*Plain {
+	var plains []*Plain
+	for _, column := range obj.Describe.Columns {
+		if column == nil || column.Type != ssot.AttrObject {
+			continue
+		}
+		plain := PlainStruct(ssot.NestedObjectDetails(obj, *column))
+		for _, child := range column.NestedFields() {
+			if child.Type == ssot.AttrObject {
+				panic(fmt.Sprintf("object %q: DESCRIBE column %q has an object child %q", obj.Name, column.Name, child.Name))
+			}
+			concrete, _ := ssot.AttributeGoTypes(obj, child)
+			plain = plain.Field(ssot.ColumnFieldName(child), strings.ReplaceAll(concrete, "sdk.", ""))
+		}
+		plains = append(plains, plain)
+	}
+	return plains
 }
 
 // plainFromColumns builds the plain side of a SHOW column list. The db row is discarded.

@@ -164,10 +164,10 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	// Property-row list entry (same pattern as SecurityIntegrationProperty / NetworkPolicyProperty).
 	{ObjectStruct: sdk.AuthenticationPolicyDescription{}, UsedAsListEntry: true},
 	// ManualFields uses generator snake_case (OAuth → o_auth, SigV4 → sig_v4); ext re-adds public oauth_* / sigv4_* keys.
-	{ObjectStruct: sdk.CatalogIntegrationAllDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "o_auth_rest_authentication", "bearer_rest_authentication", "sig_v4_rest_authentication"}},
+	{ObjectStruct: sdk.CatalogIntegrationDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "oauth_rest_authentication", "bearer_rest_authentication", "sigv4_rest_authentication"}},
 	{ObjectStruct: sdk.CatalogIntegrationAwsGlueDetails{}, IsDescribe: true},
 	// ManualFields uses generator snake_case (OAuth → o_auth, SigV4 → sig_v4); ext re-adds public oauth_* / sigv4_* keys.
-	{ObjectStruct: sdk.CatalogIntegrationIcebergRestDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "o_auth_rest_authentication", "bearer_rest_authentication", "sig_v4_rest_authentication"}},
+	{ObjectStruct: sdk.CatalogIntegrationIcebergRestDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "oauth_rest_authentication", "bearer_rest_authentication", "sigv4_rest_authentication"}},
 	{ObjectStruct: sdk.CatalogIntegrationObjectStorageDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.CatalogIntegrationOpenCatalogDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "rest_authentication"}},
 	{ObjectStruct: sdk.CortexAgentDetails{}, IsDescribe: true, ManualFields: []string{"profile"}},

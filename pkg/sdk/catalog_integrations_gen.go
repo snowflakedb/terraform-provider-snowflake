@@ -20,12 +20,11 @@ type CatalogIntegrations interface {
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegration, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegration, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) ([]CatalogIntegrationProperty, error)
+	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationDetails, error)
 	DescribeAwsGlueDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAwsGlueDetails, error)
+	DescribeIcebergRestDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationIcebergRestDetails, error)
 	DescribeObjectStorageDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationObjectStorageDetails, error)
 	DescribeOpenCatalogDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationOpenCatalogDetails, error)
-	DescribeIcebergRestDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationIcebergRestDetails, error)
-	// DescribeDetails returns combined describe output for all types of catalog integrations.
-	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAllDetails, error)
 }
 
 // CreateAwsGlueCatalogIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-glue.
@@ -181,7 +180,7 @@ type ShowCatalogIntegrationOptions struct {
 	Like                *Like `ddl:"keyword" sql:"LIKE"`
 }
 
-type showCatalogIntegrationsDbRow struct {
+type catalogIntegrationsRow struct {
 	Name      string         `db:"name"`
 	Enabled   bool           `db:"enabled"`
 	Type      string         `db:"type"`
@@ -214,7 +213,7 @@ type DescribeCatalogIntegrationOptions struct {
 	name               AccountObjectIdentifier `ddl:"identifier"`
 }
 
-type descCatalogIntegrationsDbRow struct {
+type catalogIntegrationDescRow struct {
 	Property        string `db:"property"`
 	PropertyType    string `db:"property_type"`
 	PropertyValue   string `db:"property_value"`
@@ -222,10 +221,54 @@ type descCatalogIntegrationsDbRow struct {
 }
 
 type CatalogIntegrationProperty struct {
-	Name    string
-	Type    string
-	Value   string
-	Default string
+	Property        string
+	PropertyType    string
+	PropertyValue   string
+	PropertyDefault string
+}
+
+type CatalogIntegrationDetails struct {
+	Id                       AccountObjectIdentifier
+	CatalogSource            CatalogIntegrationCatalogSourceType
+	TableFormat              CatalogIntegrationTableFormat
+	Enabled                  bool
+	RefreshIntervalSeconds   int
+	Comment                  string
+	GlueAwsRoleArn           string
+	GlueCatalogId            string
+	GlueRegion               string
+	CatalogNamespace         string
+	GlueAwsIamUserArn        string
+	GlueAwsExternalId        string
+	RestConfig               *CatalogIntegrationRestConfigDetails
+	OauthRestAuthentication  *CatalogIntegrationOauthRestAuthenticationDetails
+	BearerRestAuthentication *CatalogIntegrationBearerRestAuthenticationDetails
+	Sigv4RestAuthentication  *CatalogIntegrationSigv4RestAuthenticationDetails
+}
+
+type CatalogIntegrationRestConfigDetails struct {
+	CatalogUri           string
+	Prefix               string
+	CatalogName          string
+	CatalogApiType       CatalogIntegrationCatalogApiType
+	AccessDelegationMode CatalogIntegrationAccessDelegationMode
+}
+
+type CatalogIntegrationOauthRestAuthenticationDetails struct {
+	OauthTokenUri      string
+	OauthClientId      string
+	OauthClientSecret  string
+	OauthAllowedScopes []string
+}
+
+type CatalogIntegrationBearerRestAuthenticationDetails struct {
+	BearerToken string
+}
+
+type CatalogIntegrationSigv4RestAuthenticationDetails struct {
+	Sigv4IamRole       string
+	Sigv4SigningRegion string
+	Sigv4ExternalId    string
 }
 
 type CatalogIntegrationAwsGlueDetails struct {
@@ -241,6 +284,45 @@ type CatalogIntegrationAwsGlueDetails struct {
 	CatalogNamespace       string
 	GlueAwsIamUserArn      string
 	GlueAwsExternalId      string
+}
+
+type CatalogIntegrationIcebergRestDetails struct {
+	Id                       AccountObjectIdentifier
+	CatalogSource            CatalogIntegrationCatalogSourceType
+	TableFormat              CatalogIntegrationTableFormat
+	Enabled                  bool
+	RefreshIntervalSeconds   int
+	Comment                  string
+	CatalogNamespace         string
+	RestConfig               CatalogIntegrationIcebergRestRestConfigDetails
+	OauthRestAuthentication  *CatalogIntegrationIcebergRestOauthRestAuthenticationDetails
+	BearerRestAuthentication *CatalogIntegrationIcebergRestBearerRestAuthenticationDetails
+	Sigv4RestAuthentication  *CatalogIntegrationIcebergRestSigv4RestAuthenticationDetails
+}
+
+type CatalogIntegrationIcebergRestRestConfigDetails struct {
+	CatalogUri           string
+	Prefix               string
+	CatalogName          string
+	CatalogApiType       CatalogIntegrationCatalogApiType
+	AccessDelegationMode CatalogIntegrationAccessDelegationMode
+}
+
+type CatalogIntegrationIcebergRestOauthRestAuthenticationDetails struct {
+	OauthTokenUri      string
+	OauthClientId      string
+	OauthClientSecret  string
+	OauthAllowedScopes []string
+}
+
+type CatalogIntegrationIcebergRestBearerRestAuthenticationDetails struct {
+	BearerToken string
+}
+
+type CatalogIntegrationIcebergRestSigv4RestAuthenticationDetails struct {
+	Sigv4IamRole       string
+	Sigv4SigningRegion string
+	Sigv4ExternalId    string
 }
 
 type CatalogIntegrationObjectStorageDetails struct {
@@ -260,71 +342,20 @@ type CatalogIntegrationOpenCatalogDetails struct {
 	RefreshIntervalSeconds int
 	Comment                string
 	CatalogNamespace       string
-	RestConfig             OpenCatalogRestConfigDetails
-	RestAuthentication     OAuthRestAuthenticationDetails
+	RestConfig             CatalogIntegrationOpenCatalogRestConfigDetails
+	RestAuthentication     CatalogIntegrationOpenCatalogRestAuthenticationDetails
 }
 
-type CatalogIntegrationIcebergRestDetails struct {
-	Id                       AccountObjectIdentifier
-	CatalogSource            CatalogIntegrationCatalogSourceType
-	TableFormat              CatalogIntegrationTableFormat
-	Enabled                  bool
-	RefreshIntervalSeconds   int
-	Comment                  string
-	CatalogNamespace         string
-	RestConfig               IcebergRestRestConfigDetails
-	OAuthRestAuthentication  *OAuthRestAuthenticationDetails
-	BearerRestAuthentication *BearerRestAuthenticationDetails
-	SigV4RestAuthentication  *SigV4RestAuthenticationDetails
-}
-
-type CatalogIntegrationAllDetails struct {
-	Id                       AccountObjectIdentifier
-	CatalogSource            CatalogIntegrationCatalogSourceType
-	TableFormat              CatalogIntegrationTableFormat
-	Enabled                  bool
-	RefreshIntervalSeconds   int
-	Comment                  string
-	GlueAwsRoleArn           string
-	GlueCatalogId            string
-	GlueRegion               string
-	CatalogNamespace         string
-	GlueAwsIamUserArn        string
-	GlueAwsExternalId        string
-	RestConfig               *IcebergRestRestConfigDetails
-	OAuthRestAuthentication  *OAuthRestAuthenticationDetails
-	BearerRestAuthentication *BearerRestAuthenticationDetails
-	SigV4RestAuthentication  *SigV4RestAuthenticationDetails
-}
-
-type OpenCatalogRestConfigDetails struct {
+type CatalogIntegrationOpenCatalogRestConfigDetails struct {
 	CatalogUri           string
 	CatalogApiType       CatalogIntegrationCatalogApiType
 	CatalogName          string
 	AccessDelegationMode CatalogIntegrationAccessDelegationMode
 }
 
-type IcebergRestRestConfigDetails struct {
-	CatalogUri           string
-	Prefix               string
-	CatalogName          string
-	CatalogApiType       CatalogIntegrationCatalogApiType
-	AccessDelegationMode CatalogIntegrationAccessDelegationMode
-}
-
-type OAuthRestAuthenticationDetails struct {
+type CatalogIntegrationOpenCatalogRestAuthenticationDetails struct {
 	OauthTokenUri      string
 	OauthClientId      string
 	OauthClientSecret  string
 	OauthAllowedScopes []string
-}
-
-type BearerRestAuthenticationDetails struct {
-	BearerToken string
-}
-
-type SigV4RestAuthenticationDetails struct {
-	Sigv4IamRole       string
-	Sigv4SigningRegion string
-	Sigv4ExternalId    string
 }

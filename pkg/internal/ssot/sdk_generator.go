@@ -272,13 +272,18 @@ func (obj Object) nameForCreate() string {
 	return obj.singularName("CREATE")
 }
 
+// VariantStem is the variant name with baseName removed. WarehouseAdaptive with base Warehouse is Adaptive.
+func (obj Object) VariantStem(baseName string) string {
+	if baseName == "" || !strings.HasPrefix(obj.Name, baseName) || obj.Name == baseName {
+		panic(fmt.Sprintf("object %q: cannot build a variant stem from base %q", obj.Name, baseName))
+	}
+	return strings.TrimPrefix(obj.Name, baseName)
+}
+
 // VariantCreateMethod is Create plus the variant name with baseName removed.
 // WarehouseAdaptive with base Warehouse is CreateAdaptive.
 func (obj Object) VariantCreateMethod(baseName string) string {
-	if baseName == "" || !strings.HasPrefix(obj.Name, baseName) || obj.Name == baseName {
-		panic(fmt.Sprintf("object %q: cannot build a variant CREATE method from base %q", obj.Name, baseName))
-	}
-	return "Create" + strings.TrimPrefix(obj.Name, baseName)
+	return "Create" + obj.VariantStem(baseName)
 }
 
 // VariantAlterMethod is Alter plus the variant name with baseName removed.

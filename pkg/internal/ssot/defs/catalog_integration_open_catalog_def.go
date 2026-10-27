@@ -2,26 +2,6 @@ package defs
 
 import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 
-var CatalogIntegrationCatalogSourceType = ssot.NewEnum(
-	"CatalogIntegrationCatalogSourceType", "CatalogIntegrationCatalogSourceTypes",
-	"GLUE", "OBJECT_STORE", "POLARIS", "ICEBERG_REST", "SAP_BDC",
-)
-
-var CatalogIntegrationTableFormat = ssot.NewEnum(
-	"CatalogIntegrationTableFormat", "CatalogIntegrationTableFormats",
-	"ICEBERG", "DELTA",
-)
-
-var CatalogIntegrationCatalogApiType = ssot.NewEnum(
-	"CatalogIntegrationCatalogApiType", "CatalogIntegrationCatalogApiTypes",
-	"PUBLIC", "PRIVATE", "AWS_API_GATEWAY", "AWS_PRIVATE_API_GATEWAY", "AWS_GLUE", "AWS_PRIVATE_GLUE",
-)
-
-var CatalogIntegrationAccessDelegationMode = ssot.NewEnum(
-	"CatalogIntegrationAccessDelegationMode", "CatalogIntegrationAccessDelegationModes",
-	"VENDED_CREDENTIALS", "EXTERNAL_VOLUME_CREDENTIALS",
-)
-
 // CatalogIntegrationOpenCatalogAttrs holds reusable Open Catalog integration fields so SHOW
 // and DESCRIBE Columns can point at the same definitions instead of restating names.
 //
@@ -189,7 +169,12 @@ var CatalogIntegrationOpenCatalog = ssot.Object{
 		// WithResourceAssert omitted. catalog_source is added in the schema ext, so the schema-based assert still emits it.
 		// ObjectAssertShow omitted. There is no sdk.CatalogIntegrationOpenCatalog type.
 		// ObjectAssertDescribe omitted. The SDK list keeps DescribeOpenCatalog and the nested rest asserts.
-		ssot.WithShowOutputAssert(ssot.ShowOutputDescribe()),
+		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant. The details are parsed in the SDK ext.
+		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"), ssot.SdkDescribeDetails())),
+		ssot.WithShowOutputAssert(ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(
+			&CatalogIntegrationOpenCatalogAttrs.RestConfig,
+			&CatalogIntegrationOpenCatalogAttrs.RestAuthentication,
+		))),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
@@ -240,6 +225,8 @@ var CatalogIntegrationOpenCatalog = ssot.Object{
 			&CatalogIntegrationOpenCatalogAttrs.RefreshIntervalSeconds,
 			&CatalogIntegrationOpenCatalogAttrs.Comment,
 			&CatalogIntegrationOpenCatalogAttrs.CatalogNamespace,
+			&CatalogIntegrationOpenCatalogAttrs.RestConfig,
+			&CatalogIntegrationOpenCatalogAttrs.RestAuthentication,
 		},
 	},
 }

@@ -68,7 +68,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 
 	// Describe output:
 	normalized(sdk.ApiIntegrationAllDetails{}):      {"ApiIntegrations"},
-	normalized(sdk.CatalogIntegrationAllDetails{}):  {"CatalogIntegrations"},
+	normalized(sdk.CatalogIntegrationDetails{}):     {"CatalogIntegrations"},
 	normalized(sdk.CortexAgentDetails{}):            {"CortexAgents"},
 	normalized(sdk.ExternalVolumeDetails{}):         {"ExternalVolumes"},
 	normalized(sdk.FileFormatAllDetails{}):          {"FileFormats"},
@@ -103,14 +103,15 @@ func GetFilteredSdkObjectDetails() []SdkObjectShowOutputDetails {
 
 var (
 	objectsNotBeingResources = []any{
-		sdk.BearerRestAuthenticationDetails{},
+		sdk.CatalogIntegrationIcebergRestBearerRestAuthenticationDetails{},
+		sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationDetails{},
+		sdk.CatalogIntegrationIcebergRestRestConfigDetails{},
+		sdk.CatalogIntegrationIcebergRestSigv4RestAuthenticationDetails{},
+		sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{},
+		sdk.CatalogIntegrationOpenCatalogRestConfigDetails{},
 		sdk.ExternalVolumeStorageLocationDetails{},
-		sdk.IcebergRestRestConfigDetails{},
-		sdk.OAuthRestAuthenticationDetails{},
-		sdk.OpenCatalogRestConfigDetails{},
 		sdk.PolicyReference{},
 		sdk.PostgresMirrorDetails{},
-		sdk.SigV4RestAuthenticationDetails{},
 		sdk.StorageLocationAzureDetails{},
 		sdk.StorageLocationGcsDetails{},
 		sdk.StorageLocationS3CompatDetails{},

@@ -1543,7 +1543,7 @@ func Test_DescribeOperationFromObject_detailsMethod(t *testing.T) {
 		))},
 	}
 	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(obj)
-	require.Equal(t, &DescribeDetailsConfig{DetailsType: "WidgetDetails", ParseFunc: "ParseWidgetDescribed"}, got.DescribeDetailsMethod)
+	require.Equal(t, []*DescribeDetailsConfig{{MethodName: "DescribeDetails", DetailsType: "WidgetDetails", ParseFunc: "ParseWidgetDescribed"}}, got.DescribeDetailsMethods)
 	require.Len(t, got.CustomMethods, 1)
 	require.Equal(t, "DescribeDetails", got.CustomMethods[0].Name)
 	require.Equal(t, []string{"*WidgetDetails", "error"}, got.CustomMethods[0].ReturnTypes)
@@ -1592,4 +1592,105 @@ func Test_DescribeOperationFromObject_detailsParse(t *testing.T) {
 			ElementParser: "ParseExternalWidgetStorageLocationDescribed",
 		}},
 	}, got.DescribeParse)
+}
+
+func Test_Interface_WithDescribeDetailsMethod_manyMethods(t *testing.T) {
+	i := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").
+		WithDescribeDetails("WidgetDetails", "ParseWidgetDescribed").
+		WithDescribeDetailsMethod("DescribeMiniDetails", "WidgetMiniDetails", "ParseWidgetMiniDescribed")
+
+	require.Equal(t, []*DescribeDetailsConfig{
+		{MethodName: "DescribeDetails", DetailsType: "WidgetDetails", ParseFunc: "ParseWidgetDescribed"},
+		{MethodName: "DescribeMiniDetails", DetailsType: "WidgetMiniDetails", ParseFunc: "ParseWidgetMiniDescribed"},
+	}, i.DescribeDetailsMethods)
+	require.Equal(t, []string{"DescribeDetails", "DescribeMiniDetails"}, collections.Map(i.CustomMethods, func(m *CustomInterfaceMethod) string { return m.Name }))
+}
+
+func Test_DescribeOperationFromObject_detailsForVariants(t *testing.T) {
+	property := ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true}
+	active := ssot.Attribute{Name: "active", Type: ssot.AttrString, Readonly: true}
+	mode := ssot.NewEnum("WidgetMode", "WidgetModes", "FAST", "SLOW")
+	config := ssot.Attribute{
+		Name: "config", Type: ssot.AttrObject, Required: true,
+		Children: []ssot.Attribute{
+			{Name: "uri", Type: ssot.AttrString, Required: true},
+			{Name: "mode", Type: ssot.AttrEnum, Enum: mode},
+			{Name: "scopes", Type: ssot.AttrList, Elem: &ssot.Attribute{Type: ssot.AttrString}},
+			{Name: "fixed", SqlOnly: true, CreateSql: ssot.StaticSQL("fixed", "A = B")},
+		},
+	}
+	auth := ssot.Attribute{Name: "o_auth_config", Type: ssot.AttrObject, Children: []ssot.Attribute{{Name: "token", Type: ssot.AttrString}}}
+	base := ssot.Object{
+		Name:         "Widget",
+		NamePlural:   "Widgets",
+		IdType:       "AccountObjectIdentifier",
+		DescribeRows: ssot.OutputSpec{Columns: []*ssot.Attribute{&property}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(
+			ssot.SdkDescribeDetailsForVariants(),
+		))},
+	}
+	mini := ssot.Object{
+		Name:      "WidgetMini",
+		IdType:    "AccountObjectIdentifier",
+		VariantOf: &base,
+		Describe:  ssot.OutputSpec{Columns: []*ssot.Attribute{&active}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(
+			ssot.SdkDescribeSql("WIDGET"),
+			ssot.SdkDescribeDetails(),
+		))},
+	}
+	maxi := ssot.Object{
+		Name:      "WidgetMaxi",
+		IdType:    "AccountObjectIdentifier",
+		VariantOf: &base,
+		Describe:  ssot.OutputSpec{Columns: []*ssot.Attribute{&active, &config, &auth}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(
+			ssot.SdkDescribeSql("WIDGET"),
+			ssot.SdkDescribeDetails(),
+		))},
+	}
+	other := ssot.Object{Name: "WidgetOther", IdType: "AccountObjectIdentifier", VariantOf: &base, Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&active}}}
+	orig := variantsOf
+	t.Cleanup(func() { variantsOf = orig })
+	variantsOf = func(ssot.Object) []ssot.Object { return []ssot.Object{mini, other, maxi} }
+
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(base)
+
+	require.Equal(t, []*DescribeDetailsConfig{
+		{MethodName: "DescribeMiniDetails", DetailsType: "WidgetMiniDetails", ParseFunc: "ParseWidgetMiniDescribed"},
+		{MethodName: "DescribeMaxiDetails", DetailsType: "WidgetMaxiDetails", ParseFunc: "ParseWidgetMaxiDescribed"},
+	}, got.DescribeDetailsMethods, "a variant without SdkDescribeDetails has no details")
+
+	helpers := collections.Map(got.Operations[0].HelperStructs, func(f *Field) string { return f.Name })
+	require.Equal(t, []string{"WidgetMiniDetails", "WidgetMaxiDetails", "WidgetMaxiConfigDetails", "WidgetMaxiOAuthConfigDetails"}, helpers[len(helpers)-4:])
+
+	require.Equal(t,
+		PlainStruct("WidgetMaxiDetails").
+			Field("Id", "AccountObjectIdentifier").
+			Field("Active", "string").
+			Field("Config", "WidgetMaxiConfigDetails").
+			Field("OAuthConfig", "*WidgetMaxiOAuthConfigDetails").
+			IntoField(),
+		DescribeDetailsPlain(maxi).IntoField(),
+		"an object column is a struct of its Children, a pointer when it is not required",
+	)
+
+	nested := DescribeNestedPlains(maxi)
+	require.Len(t, nested, 2)
+	require.Equal(t,
+		PlainStruct("WidgetMaxiConfigDetails").
+			Field("Uri", "string").
+			Field("Mode", "WidgetMode").
+			Field("Scopes", "[]string").
+			IntoField(),
+		nested[0].IntoField(),
+		"a Child that is only SQL is not a field",
+	)
+
+	t.Run("no variant with details", func(t *testing.T) {
+		variantsOf = func(ssot.Object) []ssot.Object { return []ssot.Object{other} }
+		require.Panics(t, func() {
+			NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(base)
+		})
+	})
 }

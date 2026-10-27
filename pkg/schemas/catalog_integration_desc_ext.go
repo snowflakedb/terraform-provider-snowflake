@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func (catalogIntegrationAllDetailsToSchemaMapper) additionalSchema() map[string]*schema.Schema {
+func (catalogIntegrationDetailsToSchemaMapper) additionalSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"rest_config": {
 			Type:     schema.TypeList,
@@ -83,7 +83,7 @@ func (catalogIntegrationAllDetailsToSchemaMapper) additionalSchema() map[string]
 	}
 }
 
-func (catalogIntegrationAllDetailsToSchemaMapper) additionalToSchema(src *sdk.CatalogIntegrationAllDetails, dst map[string]any) {
+func (catalogIntegrationDetailsToSchemaMapper) additionalToSchema(src *sdk.CatalogIntegrationDetails, dst map[string]any) {
 	if src.RestConfig != nil {
 		dst["rest_config"] = []map[string]any{
 			{
@@ -97,23 +97,23 @@ func (catalogIntegrationAllDetailsToSchemaMapper) additionalToSchema(src *sdk.Ca
 	} else {
 		dst["rest_config"] = []map[string]any{}
 	}
-	if src.OAuthRestAuthentication != nil {
+	if src.OauthRestAuthentication != nil {
 		dst["oauth_rest_authentication"] = []map[string]any{
 			{
-				"oauth_token_uri":      src.OAuthRestAuthentication.OauthTokenUri,
-				"oauth_client_id":      src.OAuthRestAuthentication.OauthClientId,
-				"oauth_allowed_scopes": src.OAuthRestAuthentication.OauthAllowedScopes,
+				"oauth_token_uri":      src.OauthRestAuthentication.OauthTokenUri,
+				"oauth_client_id":      src.OauthRestAuthentication.OauthClientId,
+				"oauth_allowed_scopes": src.OauthRestAuthentication.OauthAllowedScopes,
 			},
 		}
 	} else {
 		dst["oauth_rest_authentication"] = []map[string]any{}
 	}
 	dst["bearer_rest_authentication"] = []map[string]any{}
-	if src.SigV4RestAuthentication != nil {
+	if src.Sigv4RestAuthentication != nil {
 		dst["sigv4_rest_authentication"] = []map[string]any{
 			{
-				"sigv4_iam_role":       src.SigV4RestAuthentication.Sigv4IamRole,
-				"sigv4_signing_region": src.SigV4RestAuthentication.Sigv4SigningRegion,
+				"sigv4_iam_role":       src.Sigv4RestAuthentication.Sigv4IamRole,
+				"sigv4_signing_region": src.Sigv4RestAuthentication.Sigv4SigningRegion,
 			},
 		}
 	} else {

@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -40,48 +39,8 @@ func (d *CatalogIntegrationObjectStorageDetails) ID() AccountObjectIdentifier {
 	return d.Id
 }
 
-func (d *CatalogIntegrationAllDetails) ID() AccountObjectIdentifier {
+func (d *CatalogIntegrationDetails) ID() AccountObjectIdentifier {
 	return d.Id
-}
-
-func (v *catalogIntegrations) DescribeAwsGlueDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAwsGlueDetails, error) {
-	properties, err := v.Describe(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return parseAwsGlueProperties(properties, id)
-}
-
-func (v *catalogIntegrations) DescribeObjectStorageDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationObjectStorageDetails, error) {
-	properties, err := v.Describe(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return parseObjectStorageProperties(properties, id)
-}
-
-func (v *catalogIntegrations) DescribeOpenCatalogDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationOpenCatalogDetails, error) {
-	properties, err := v.Describe(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return parseOpenCatalogProperties(properties, id)
-}
-
-func (v *catalogIntegrations) DescribeIcebergRestDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationIcebergRestDetails, error) {
-	properties, err := v.Describe(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return parseIcebergRestProperties(properties, id)
-}
-
-func (v *catalogIntegrations) DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAllDetails, error) {
-	properties, err := v.Describe(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return parseAllCatalogIntegrationProperties(properties, id)
 }
 
 type commonDetails struct {
@@ -96,33 +55,33 @@ func parseCommonProperties(properties []CatalogIntegrationProperty) (*commonDeta
 	commons := &commonDetails{}
 	var errs []error
 	for _, prop := range properties {
-		switch prop.Name {
+		switch prop.Property {
 		case "CATALOG_SOURCE":
-			if catalogSource, err := ToCatalogIntegrationCatalogSourceType(prop.Value); err != nil {
+			if catalogSource, err := ToCatalogIntegrationCatalogSourceType(prop.PropertyValue); err != nil {
 				errs = append(errs, err)
 			} else {
 				commons.CatalogSource = catalogSource
 			}
 		case "TABLE_FORMAT":
-			if tableFormat, err := ToCatalogIntegrationTableFormat(prop.Value); err != nil {
+			if tableFormat, err := ToCatalogIntegrationTableFormat(prop.PropertyValue); err != nil {
 				errs = append(errs, err)
 			} else {
 				commons.TableFormat = tableFormat
 			}
 		case "ENABLED":
-			if val, err := strconv.ParseBool(prop.Value); err != nil {
+			if val, err := strconv.ParseBool(prop.PropertyValue); err != nil {
 				errs = append(errs, err)
 			} else {
 				commons.Enabled = val
 			}
 		case "REFRESH_INTERVAL_SECONDS":
-			if val, err := strconv.ParseInt(prop.Value, 10, 32); err != nil {
+			if val, err := strconv.ParseInt(prop.PropertyValue, 10, 32); err != nil {
 				errs = append(errs, err)
 			} else {
 				commons.RefreshIntervalSeconds = int(val)
 			}
 		case "COMMENT":
-			commons.Comment = prop.Value
+			commons.Comment = prop.PropertyValue
 		}
 	}
 	return commons, errors.Join(errs...)
@@ -137,13 +96,12 @@ type awsGlueSpecificDetails struct {
 	glueAwsExternalId string
 }
 
-func parseAwsGlueProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationAwsGlueDetails, error) {
+func ParseCatalogIntegrationAwsGlueDescribed(properties []CatalogIntegrationProperty) (CatalogIntegrationAwsGlueDetails, error) {
 	commons, err := parseCommonProperties(properties)
 	if err != nil {
-		return nil, err
+		return CatalogIntegrationAwsGlueDetails{}, err
 	}
-	details := &CatalogIntegrationAwsGlueDetails{
-		Id:                     id,
+	details := CatalogIntegrationAwsGlueDetails{
 		CatalogSource:          commons.CatalogSource,
 		TableFormat:            commons.TableFormat,
 		Enabled:                commons.Enabled,
@@ -163,31 +121,30 @@ func parseAwsGlueProperties(properties []CatalogIntegrationProperty, id AccountO
 func parseAwsGlueSpecificProperties(properties []CatalogIntegrationProperty) *awsGlueSpecificDetails {
 	details := &awsGlueSpecificDetails{}
 	for _, prop := range properties {
-		switch prop.Name {
+		switch prop.Property {
 		case "GLUE_AWS_ROLE_ARN":
-			details.glueAwsRoleArn = prop.Value
+			details.glueAwsRoleArn = prop.PropertyValue
 		case "GLUE_CATALOG_ID":
-			details.glueCatalogId = prop.Value
+			details.glueCatalogId = prop.PropertyValue
 		case "GLUE_REGION":
-			details.glueRegion = prop.Value
+			details.glueRegion = prop.PropertyValue
 		case "CATALOG_NAMESPACE":
-			details.catalogNamespace = prop.Value
+			details.catalogNamespace = prop.PropertyValue
 		case "GLUE_AWS_IAM_USER_ARN":
-			details.glueAwsIamUserArn = prop.Value
+			details.glueAwsIamUserArn = prop.PropertyValue
 		case "GLUE_AWS_EXTERNAL_ID":
-			details.glueAwsExternalId = prop.Value
+			details.glueAwsExternalId = prop.PropertyValue
 		}
 	}
 	return details
 }
 
-func parseObjectStorageProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationObjectStorageDetails, error) {
+func ParseCatalogIntegrationObjectStorageDescribed(properties []CatalogIntegrationProperty) (CatalogIntegrationObjectStorageDetails, error) {
 	commons, err := parseCommonProperties(properties)
 	if err != nil {
-		return nil, err
+		return CatalogIntegrationObjectStorageDetails{}, err
 	}
-	details := &CatalogIntegrationObjectStorageDetails{
-		Id:                     id,
+	details := CatalogIntegrationObjectStorageDetails{
 		CatalogSource:          commons.CatalogSource,
 		TableFormat:            commons.TableFormat,
 		Enabled:                commons.Enabled,
@@ -197,13 +154,12 @@ func parseObjectStorageProperties(properties []CatalogIntegrationProperty, id Ac
 	return details, nil
 }
 
-func parseOpenCatalogProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationOpenCatalogDetails, error) {
+func ParseCatalogIntegrationOpenCatalogDescribed(properties []CatalogIntegrationProperty) (CatalogIntegrationOpenCatalogDetails, error) {
 	commons, err := parseCommonProperties(properties)
 	if err != nil {
-		return nil, err
+		return CatalogIntegrationOpenCatalogDetails{}, err
 	}
-	details := &CatalogIntegrationOpenCatalogDetails{
-		Id:                     id,
+	details := CatalogIntegrationOpenCatalogDetails{
 		CatalogSource:          commons.CatalogSource,
 		TableFormat:            commons.TableFormat,
 		Enabled:                commons.Enabled,
@@ -212,9 +168,9 @@ func parseOpenCatalogProperties(properties []CatalogIntegrationProperty, id Acco
 	}
 	var errs []error
 	for _, prop := range properties {
-		switch prop.Name {
+		switch prop.Property {
 		case "CATALOG_NAMESPACE":
-			details.CatalogNamespace = prop.Value
+			details.CatalogNamespace = prop.PropertyValue
 		case "REST_CONFIG":
 			if restConfig, err := parseOpenCatalogRestConfigProperty(prop); err != nil {
 				errs = append(errs, err)
@@ -227,20 +183,19 @@ func parseOpenCatalogProperties(properties []CatalogIntegrationProperty, id Acco
 			} else if oAuthRestAuth == nil {
 				errs = append(errs, errors.New("REST_AUTHENTICATION property is not of OAUTH type"))
 			} else {
-				details.RestAuthentication = *oAuthRestAuth
+				details.RestAuthentication = CatalogIntegrationOpenCatalogRestAuthenticationDetails(*oAuthRestAuth)
 			}
 		}
 	}
 	return details, errors.Join(errs...)
 }
 
-func parseIcebergRestProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationIcebergRestDetails, error) {
+func ParseCatalogIntegrationIcebergRestDescribed(properties []CatalogIntegrationProperty) (CatalogIntegrationIcebergRestDetails, error) {
 	commons, err := parseCommonProperties(properties)
 	if err != nil {
-		return nil, err
+		return CatalogIntegrationIcebergRestDetails{}, err
 	}
-	details := &CatalogIntegrationIcebergRestDetails{
-		Id:                     id,
+	details := CatalogIntegrationIcebergRestDetails{
 		CatalogSource:          commons.CatalogSource,
 		TableFormat:            commons.TableFormat,
 		Enabled:                commons.Enabled,
@@ -249,9 +204,9 @@ func parseIcebergRestProperties(properties []CatalogIntegrationProperty, id Acco
 	}
 	var errs []error
 	for _, prop := range properties {
-		switch prop.Name {
+		switch prop.Property {
 		case "CATALOG_NAMESPACE":
-			details.CatalogNamespace = prop.Value
+			details.CatalogNamespace = prop.PropertyValue
 		case "REST_CONFIG":
 			if restConfig, err := parseIcebergRestRestConfigProperty(prop); err != nil {
 				errs = append(errs, err)
@@ -262,22 +217,21 @@ func parseIcebergRestProperties(properties []CatalogIntegrationProperty, id Acco
 			if oAuthRestAuth, bearerRestAuth, sigV4RestAuth, err := parseRestAuthenticationProperty(prop); err != nil {
 				errs = append(errs, err)
 			} else {
-				details.OAuthRestAuthentication = oAuthRestAuth
+				details.OauthRestAuthentication = oAuthRestAuth
 				details.BearerRestAuthentication = bearerRestAuth
-				details.SigV4RestAuthentication = sigV4RestAuth
+				details.Sigv4RestAuthentication = sigV4RestAuth
 			}
 		}
 	}
 	return details, errors.Join(errs...)
 }
 
-func parseAllCatalogIntegrationProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationAllDetails, error) {
+func ParseCatalogIntegrationDescribed(properties []CatalogIntegrationProperty) (CatalogIntegrationDetails, error) {
 	commons, err := parseCommonProperties(properties)
 	if err != nil {
-		return nil, err
+		return CatalogIntegrationDetails{}, err
 	}
-	details := &CatalogIntegrationAllDetails{
-		Id:                     id,
+	details := CatalogIntegrationDetails{
 		CatalogSource:          commons.CatalogSource,
 		TableFormat:            commons.TableFormat,
 		Enabled:                commons.Enabled,
@@ -295,28 +249,39 @@ func parseAllCatalogIntegrationProperties(properties []CatalogIntegrationPropert
 
 	var errs []error
 	for _, prop := range properties {
-		switch prop.Name {
+		switch prop.Property {
 		case "REST_CONFIG":
+			// IcebergRestRestConfigDetails contains all properties of OpenCatalogRestConfigDetails
 			if restConfig, err := parseIcebergRestRestConfigProperty(prop); err != nil {
 				errs = append(errs, err)
 			} else {
-				details.RestConfig = &restConfig
+				converted := CatalogIntegrationRestConfigDetails(restConfig)
+				details.RestConfig = &converted
 			}
 		case "REST_AUTHENTICATION":
 			if oAuthRestAuth, bearerRestAuth, sigV4RestAuth, err := parseRestAuthenticationProperty(prop); err != nil {
 				errs = append(errs, err)
 			} else {
-				details.OAuthRestAuthentication = oAuthRestAuth
-				details.BearerRestAuthentication = bearerRestAuth
-				details.SigV4RestAuthentication = sigV4RestAuth
+				if oAuthRestAuth != nil {
+					converted := CatalogIntegrationOauthRestAuthenticationDetails(*oAuthRestAuth)
+					details.OauthRestAuthentication = &converted
+				}
+				if bearerRestAuth != nil {
+					converted := CatalogIntegrationBearerRestAuthenticationDetails(*bearerRestAuth)
+					details.BearerRestAuthentication = &converted
+				}
+				if sigV4RestAuth != nil {
+					converted := CatalogIntegrationSigv4RestAuthenticationDetails(*sigV4RestAuth)
+					details.Sigv4RestAuthentication = &converted
+				}
 			}
 		}
 	}
 	return details, errors.Join(errs...)
 }
 
-func parseOpenCatalogRestConfigProperty(property CatalogIntegrationProperty) (OpenCatalogRestConfigDetails, error) {
-	restConfig := OpenCatalogRestConfigDetails{}
+func parseOpenCatalogRestConfigProperty(property CatalogIntegrationProperty) (CatalogIntegrationOpenCatalogRestConfigDetails, error) {
+	restConfig := CatalogIntegrationOpenCatalogRestConfigDetails{}
 	var errs []error
 	parts := parseCommaSeparatedEnumMap(property)
 	for _, part := range parts {
@@ -343,8 +308,8 @@ func parseOpenCatalogRestConfigProperty(property CatalogIntegrationProperty) (Op
 	return restConfig, errors.Join(errs...)
 }
 
-func parseIcebergRestRestConfigProperty(property CatalogIntegrationProperty) (IcebergRestRestConfigDetails, error) {
-	restConfig := IcebergRestRestConfigDetails{}
+func parseIcebergRestRestConfigProperty(property CatalogIntegrationProperty) (CatalogIntegrationIcebergRestRestConfigDetails, error) {
+	restConfig := CatalogIntegrationIcebergRestRestConfigDetails{}
 	var errs []error
 	parts := parseCommaSeparatedEnumMap(property)
 	for _, part := range parts {
@@ -373,10 +338,10 @@ func parseIcebergRestRestConfigProperty(property CatalogIntegrationProperty) (Ic
 	return restConfig, errors.Join(errs...)
 }
 
-func parseRestAuthenticationProperty(property CatalogIntegrationProperty) (*OAuthRestAuthenticationDetails, *BearerRestAuthenticationDetails, *SigV4RestAuthenticationDetails, error) {
-	var oAuthRestAuthentication *OAuthRestAuthenticationDetails
-	var bearerRestAuthentication *BearerRestAuthenticationDetails
-	var sigV4RestAuthentication *SigV4RestAuthenticationDetails
+func parseRestAuthenticationProperty(property CatalogIntegrationProperty) (*CatalogIntegrationIcebergRestOauthRestAuthenticationDetails, *CatalogIntegrationIcebergRestBearerRestAuthenticationDetails, *CatalogIntegrationIcebergRestSigv4RestAuthenticationDetails, error) {
+	var oAuthRestAuthentication *CatalogIntegrationIcebergRestOauthRestAuthenticationDetails
+	var bearerRestAuthentication *CatalogIntegrationIcebergRestBearerRestAuthenticationDetails
+	var sigV4RestAuthentication *CatalogIntegrationIcebergRestSigv4RestAuthenticationDetails
 	var errs []error
 	parts := parseCommaSeparatedEnumMap(property)
 	for _, part := range parts {
@@ -407,8 +372,8 @@ func parseRestAuthenticationProperty(property CatalogIntegrationProperty) (*OAut
 	return oAuthRestAuthentication, bearerRestAuthentication, sigV4RestAuthentication, errors.Join(errs...)
 }
 
-func parseOAuthRestAuthenticationProperty(parts []string) (*OAuthRestAuthenticationDetails, error) {
-	restAuthentication := &OAuthRestAuthenticationDetails{}
+func parseOAuthRestAuthenticationProperty(parts []string) (*CatalogIntegrationIcebergRestOauthRestAuthenticationDetails, error) {
+	restAuthentication := &CatalogIntegrationIcebergRestOauthRestAuthenticationDetails{}
 	for _, part := range parts {
 		k, v, _ := strings.Cut(part, "=")
 		switch k {
@@ -425,13 +390,13 @@ func parseOAuthRestAuthenticationProperty(parts []string) (*OAuthRestAuthenticat
 	return restAuthentication, nil
 }
 
-func parseBearerRestAuthenticationProperty() (*BearerRestAuthenticationDetails, error) {
-	restAuthentication := &BearerRestAuthenticationDetails{}
+func parseBearerRestAuthenticationProperty() (*CatalogIntegrationIcebergRestBearerRestAuthenticationDetails, error) {
+	restAuthentication := &CatalogIntegrationIcebergRestBearerRestAuthenticationDetails{}
 	return restAuthentication, nil
 }
 
-func parseSigV4RestAuthenticationProperty(parts []string) (*SigV4RestAuthenticationDetails, error) {
-	restAuthentication := &SigV4RestAuthenticationDetails{}
+func parseSigV4RestAuthenticationProperty(parts []string) (*CatalogIntegrationIcebergRestSigv4RestAuthenticationDetails, error) {
+	restAuthentication := &CatalogIntegrationIcebergRestSigv4RestAuthenticationDetails{}
 	for _, part := range parts {
 		k, v, _ := strings.Cut(part, "=")
 		switch k {
@@ -447,7 +412,7 @@ func parseSigV4RestAuthenticationProperty(parts []string) (*SigV4RestAuthenticat
 }
 
 func parseCommaSeparatedEnumMap(property CatalogIntegrationProperty) []string {
-	s := strings.TrimPrefix(property.Value, "{")
+	s := strings.TrimPrefix(property.PropertyValue, "{")
 	s = strings.TrimSuffix(s, "}")
 	return ParseOuterCommaSeparatedStringArray(fmt.Sprintf("[%s]", s), false)
 }

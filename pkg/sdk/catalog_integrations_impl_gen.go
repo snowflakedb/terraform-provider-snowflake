@@ -10,8 +10,8 @@ import (
 
 var (
 	_ CatalogIntegrations                        = (*catalogIntegrations)(nil)
-	_ convertibleRow[CatalogIntegration]         = new(showCatalogIntegrationsDbRow)
-	_ convertibleRow[CatalogIntegrationProperty] = new(descCatalogIntegrationsDbRow)
+	_ convertibleRow[CatalogIntegration]         = new(catalogIntegrationsRow)
+	_ convertibleRow[CatalogIntegrationProperty] = new(catalogIntegrationDescRow)
 )
 
 type catalogIntegrations struct {
@@ -54,11 +54,11 @@ func (v *catalogIntegrations) DropSafely(ctx context.Context, id AccountObjectId
 
 func (v *catalogIntegrations) Show(ctx context.Context, request *ShowCatalogIntegrationRequest) ([]CatalogIntegration, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[showCatalogIntegrationsDbRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[catalogIntegrationsRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[showCatalogIntegrationsDbRow, CatalogIntegration](dbRows)
+	return convertRows[catalogIntegrationsRow, CatalogIntegration](dbRows)
 }
 
 func (v *catalogIntegrations) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegration, error) {
@@ -79,11 +79,11 @@ func (v *catalogIntegrations) Describe(ctx context.Context, id AccountObjectIden
 	opts := &DescribeCatalogIntegrationOptions{
 		name: id,
 	}
-	rows, err := validateAndQuery[descCatalogIntegrationsDbRow](v.client, ctx, opts)
+	rows, err := validateAndQuery[catalogIntegrationDescRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[descCatalogIntegrationsDbRow, CatalogIntegrationProperty](rows)
+	return convertRows[catalogIntegrationDescRow, CatalogIntegrationProperty](rows)
 }
 
 func (r *CreateAwsGlueCatalogIntegrationRequest) toOpts() *CreateAwsGlueCatalogIntegrationOptions {
@@ -222,7 +222,7 @@ func (r *ShowCatalogIntegrationRequest) toOpts() *ShowCatalogIntegrationOptions 
 	return opts
 }
 
-func (r showCatalogIntegrationsDbRow) convert() (*CatalogIntegration, error) {
+func (r catalogIntegrationsRow) convert() (*CatalogIntegration, error) {
 	result := &CatalogIntegration{
 		Name:      r.Name,
 		Enabled:   r.Enabled,
@@ -241,12 +241,77 @@ func (r *DescribeCatalogIntegrationRequest) toOpts() *DescribeCatalogIntegration
 	return opts
 }
 
-func (r descCatalogIntegrationsDbRow) convert() (*CatalogIntegrationProperty, error) {
+func (r catalogIntegrationDescRow) convert() (*CatalogIntegrationProperty, error) {
 	result := &CatalogIntegrationProperty{
-		Name:    r.Property,
-		Type:    r.PropertyType,
-		Value:   r.PropertyValue,
-		Default: r.PropertyDefault,
+		Property:        r.Property,
+		PropertyType:    r.PropertyType,
+		PropertyValue:   r.PropertyValue,
+		PropertyDefault: r.PropertyDefault,
 	}
 	return result, nil
+}
+
+func (v *catalogIntegrations) DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationDetails, error) {
+	rows, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	details, err := ParseCatalogIntegrationDescribed(rows)
+	if err != nil {
+		return nil, err
+	}
+	details.Id = id
+	return &details, nil
+}
+
+func (v *catalogIntegrations) DescribeAwsGlueDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAwsGlueDetails, error) {
+	rows, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	details, err := ParseCatalogIntegrationAwsGlueDescribed(rows)
+	if err != nil {
+		return nil, err
+	}
+	details.Id = id
+	return &details, nil
+}
+
+func (v *catalogIntegrations) DescribeIcebergRestDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationIcebergRestDetails, error) {
+	rows, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	details, err := ParseCatalogIntegrationIcebergRestDescribed(rows)
+	if err != nil {
+		return nil, err
+	}
+	details.Id = id
+	return &details, nil
+}
+
+func (v *catalogIntegrations) DescribeObjectStorageDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationObjectStorageDetails, error) {
+	rows, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	details, err := ParseCatalogIntegrationObjectStorageDescribed(rows)
+	if err != nil {
+		return nil, err
+	}
+	details.Id = id
+	return &details, nil
+}
+
+func (v *catalogIntegrations) DescribeOpenCatalogDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationOpenCatalogDetails, error) {
+	rows, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	details, err := ParseCatalogIntegrationOpenCatalogDescribed(rows)
+	if err != nil {
+		return nil, err
+	}
+	details.Id = id
+	return &details, nil
 }

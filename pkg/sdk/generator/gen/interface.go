@@ -65,8 +65,9 @@ type Interface struct {
 	// ParametersDetails, when set (via ShowParametersDetails), drives generation of the typed
 	// <NameSingular>ParametersDetails struct and its ShowParametersDetails accessor.
 	ParametersDetails *ParametersDetailsConfig
-	// DescribeDetailsMethod, when set (via WithDescribeDetails), drives generation of the DescribeDetails body.
-	DescribeDetailsMethod *DescribeDetailsConfig
+	// DescribeDetailsMethods, when set (via WithDescribeDetails or WithDescribeDetailsMethod), drive generation of the
+	// Describe details method bodies. An interface has one per kind of details, such as one per variant.
+	DescribeDetailsMethods []*DescribeDetailsConfig
 	// DescribeParse, when set (via WithDescribeParse), drives generation of Parse<NameSingular>Described.
 	DescribeParse *DescribeParseConfig
 	// CustomMethods holds interface methods that have no generated implementation.

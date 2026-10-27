@@ -1252,3 +1252,45 @@ func Test_ValidateObject_setConflictingFields(t *testing.T) {
 		ValidateObject(newObject([]*Attribute{&one, nil}))
 	})
 }
+
+func Test_ValidateObject_describeDetailsObjectColumnsAndVariants(t *testing.T) {
+	active := Attribute{Name: "active", Type: AttrString, Readonly: true}
+	config := Attribute{Name: "config", Type: AttrObject, Required: true, Children: []Attribute{{Name: "uri", Type: AttrString}}}
+	base := Object{Name: "Widget", NamePlural: "Widgets", IdType: "AccountObjectIdentifier"}
+
+	newVariant := func(withDetails bool) Object {
+		obj := Object{
+			Name:       "WidgetMini",
+			VariantOf:  &base,
+			Attributes: []Attribute{config},
+			Describe:   OutputSpec{Columns: []*Attribute{&active, &config}},
+		}
+		if withDetails {
+			obj.Generators = []GeneratorOption{WithSdk(SdkDescribe(SdkDescribeDetails()))}
+		}
+		return obj
+	}
+
+	t.Run("variant details use the rows of the base and an attribute that is an object is a nested struct", func(t *testing.T) {
+		require.NotPanics(t, func() { ValidateObject(newVariant(true)) })
+	})
+
+	t.Run("an object column needs the details", func(t *testing.T) {
+		require.PanicsWithValue(t, `object "WidgetMini": nested attribute "config" is not a DESCRIBE column`, func() {
+			ValidateObject(newVariant(false))
+		})
+	})
+
+	t.Run("an object without a variant needs rows", func(t *testing.T) {
+		obj := newVariant(true)
+		obj.VariantOf = nil
+		require.PanicsWithValue(t, `object "WidgetMini": SdkDescribeDetails needs SdkDescribe and DescribeRows`, func() { ValidateObject(obj) })
+	})
+}
+
+func Test_Attribute_IsOptionalColumn(t *testing.T) {
+	require.True(t, Attribute{Type: AttrString, OptionalInShow: true}.IsOptionalColumn())
+	require.False(t, Attribute{Type: AttrString}.IsOptionalColumn())
+	require.True(t, Attribute{Type: AttrObject}.IsOptionalColumn(), "an object that is not required is a pointer")
+	require.False(t, Attribute{Type: AttrObject, Required: true}.IsOptionalColumn())
+}
