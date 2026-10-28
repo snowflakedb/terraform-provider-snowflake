@@ -245,6 +245,13 @@ func showPairedObject(idType string, columns ...*ssot.Attribute) ssot.Object {
 	}
 }
 
+func Test_PairedStructsFromColumns_boolParsed(t *testing.T) {
+	lock := ssot.Attribute{Name: "has_retention_lock", Type: ssot.AttrBool, StoredAsText: true, BoolParsed: true}
+	got := ShowPairedStructs(showPairedObject("SchemaObjectIdentifier", &lock))
+	want := StructPair("fakesRow", "Fake").BoolFromText("has_retention_lock", WithBoolParsed())
+	require.Equal(t, want, got)
+}
+
 func pairedFieldByColumn(pairs *PairedStructs, column string) pairedField {
 	for _, field := range pairs.fields {
 		if field.dbColumnName == column {

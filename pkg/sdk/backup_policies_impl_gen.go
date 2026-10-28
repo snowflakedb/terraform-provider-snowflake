@@ -130,17 +130,17 @@ func (r *ShowBackupPolicyRequest) toOpts() *ShowBackupPolicyOptions {
 
 func (r backupPoliciesRow) convert() (*BackupPolicy, error) {
 	result := &BackupPolicy{
-		CreatedOn:        r.CreatedOn,
-		Name:             r.Name,
-		DatabaseName:     r.DatabaseName,
-		SchemaName:       r.SchemaName,
-		Owner:            r.Owner,
-		HasRetentionLock: r.HasRetentionLock == "Y",
-		OwnerRoleType:    r.OwnerRoleType,
+		CreatedOn:     r.CreatedOn,
+		Name:          r.Name,
+		DatabaseName:  r.DatabaseName,
+		SchemaName:    r.SchemaName,
+		Owner:         r.Owner,
+		OwnerRoleType: r.OwnerRoleType,
 	}
 	mapNullString(&result.Comment, r.Comment)
 	mapNullString(&result.Schedule, r.Schedule)
 	mapNullInt(&result.ExpireAfterDays, r.ExpireAfterDays)
+	mapStringToBoolParsed(&result.HasRetentionLock, r.HasRetentionLock)
 	return result, nil
 }
 
@@ -153,16 +153,16 @@ func (r *DescribeBackupPolicyRequest) toOpts() *DescribeBackupPolicyOptions {
 
 func (r backupPolicyDescRow) convert() (*BackupPolicyDetails, error) {
 	result := &BackupPolicyDetails{
-		CreatedOn:        r.CreatedOn,
-		Name:             r.Name,
-		DatabaseName:     r.DatabaseName,
-		SchemaName:       r.SchemaName,
-		Owner:            r.Owner,
-		HasRetentionLock: r.HasRetentionLock == "Y",
-		OwnerRoleType:    r.OwnerRoleType,
+		CreatedOn:     r.CreatedOn,
+		Name:          r.Name,
+		DatabaseName:  r.DatabaseName,
+		SchemaName:    r.SchemaName,
+		Owner:         r.Owner,
+		OwnerRoleType: r.OwnerRoleType,
 	}
 	mapNullString(&result.Comment, r.Comment)
 	mapNullString(&result.Schedule, r.Schedule)
 	mapNullInt(&result.ExpireAfterDays, r.ExpireAfterDays)
+	mapStringToBoolParsed(&result.HasRetentionLock, r.HasRetentionLock)
 	return result, nil
 }

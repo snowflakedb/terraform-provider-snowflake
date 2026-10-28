@@ -156,12 +156,12 @@ func appendPairedColumn(pairs *PairedStructs, obj ssot.Object, attr ssot.Attribu
 	case ssot.AttrBool:
 		if attr.OptionalInShow || attr.OptionalInDb {
 			if attr.StoredAsText {
-				return pairs.OptionalBoolFromText(key, plainRequiredOpt(attr)...)
+				return pairs.OptionalBoolFromText(key, boolFromTextOpts(attr)...)
 			}
 			return pairs.OptionalBool(key, plainRequiredOpt(attr)...)
 		}
 		if attr.StoredAsText {
-			return pairs.BoolFromText(key)
+			return pairs.BoolFromText(key, boolFromTextOpts(attr)...)
 		}
 		return pairs.Bool(key)
 	case ssot.AttrFloat:
@@ -215,6 +215,17 @@ func appendPairedColumn(pairs *PairedStructs, obj ssot.Object, attr ssot.Attribu
 		panicPairedColumn(obj, attr, fmt.Sprintf("type %q has no paired struct mapping", attr.Type))
 	}
 	return pairs
+}
+
+func boolFromTextOpts(attr ssot.Attribute) []PairedFieldOption {
+	if attr.BoolParsed && !attr.StoredAsText {
+		panic(fmt.Sprintf("column %q sets BoolParsed without StoredAsText", attr.OutputKey()))
+	}
+	opts := plainRequiredOpt(attr)
+	if attr.BoolParsed {
+		opts = append(opts, WithBoolParsed())
+	}
+	return opts
 }
 
 func plainRequiredOpt(attr ssot.Attribute) []PairedFieldOption {

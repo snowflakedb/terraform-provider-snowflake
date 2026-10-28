@@ -15,12 +15,13 @@ var BackupPolicyAttrs = struct {
 	Owner            ssot.Attribute
 	OwnerRoleType    ssot.Attribute
 }{
-	// SHOW and DESCRIBE return Y or N.
+	// The pages say Y or N. SHOW and DESCRIBE return true or false.
 	HasRetentionLock: ssot.Attribute{
 		Name:         "has_retention_lock",
 		Type:         ssot.AttrBool,
 		ForceNew:     true,
 		StoredAsText: true,
+		BoolParsed:   true,
 		Description:  "Specifies a retention lock. Backups created under the policy cannot be deleted before they expire, including by a privileged user. The lock cannot be changed on an existing backup policy.",
 		CreateSql:    ssot.BoolKeyword(ssot.Sql("WITH RETENTION LOCK")),
 	},
@@ -82,6 +83,7 @@ var BackupPolicy = ssot.Object{
 			ssot.SdkAlter(ssot.SdkAlterWithoutIfExists()),
 			ssot.SdkDescribe(),
 		),
+		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
 	},
 	Attributes: []ssot.Attribute{
 		BackupPolicyAttrs.HasRetentionLock,

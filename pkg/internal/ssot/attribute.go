@@ -60,9 +60,12 @@ type Attribute struct {
 	OptionalInShow bool // SHOW/DESCRIBE SDK field is a pointer; drives schema ToSchema nil-guards
 	OptionalInDb   bool // DB row is nullable; live for the SDK paired-struct db and plain kinds
 	StoredAsText   bool // the db column is text, and the plain kind stays the semantic type
-	ManualConvert  bool // paired-struct convert() skips this column; ext additionalConvert fills it
-	CustomParser   string
-	SkipInSchema   bool // column stays on the SDK struct and assertions, and is omitted from the public schema
+	// BoolParsed, with StoredAsText, parses a bool column with strconv.ParseBool.
+	// Without it, a text bool is true when the column is Y.
+	BoolParsed    bool
+	ManualConvert bool // paired-struct convert() skips this column; ext additionalConvert fills it
+	CustomParser  string
+	SkipInSchema  bool // column stays on the SDK struct and assertions, and is omitted from the public schema
 	// SqlOnly keeps the attribute on a SQL sequence and out of schema, resource, model, and assertion generation.
 	// ResourceAttributes drops these. A static CREATE value sets CreateSql to StaticSQL.
 	SqlOnly        bool
