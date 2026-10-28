@@ -38,6 +38,7 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 		Min:           new(1),
 		CreateMapping: ssot.IntAttributeCreateBuilder,
 		CreateSql:     ssot.IntParameter(ssot.NoQuotes()),
+		DiffSuppress:  ssot.SuppressDescribe,
 	},
 	Comment: ssot.Attribute{
 		Name:          "comment",

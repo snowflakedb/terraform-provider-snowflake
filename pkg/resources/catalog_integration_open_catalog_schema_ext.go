@@ -10,7 +10,6 @@ import (
 // Nested blocks are generated. Sensitive fields, empty-string checks, and describe diffs stay here.
 // catalog_source is describe-only.
 func catalogIntegrationOpenCatalogAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
-	s["refresh_interval_seconds"].DiffSuppressFunc = IgnoreChangeToCurrentSnowflakeValueInDescribe("refresh_interval_seconds")
 	s["catalog_namespace"].ValidateFunc = validation.StringIsNotEmpty
 	s["catalog_source"] = &schema.Schema{
 		Type:     schema.TypeString,
@@ -21,12 +20,12 @@ func catalogIntegrationOpenCatalogAttributesModificationExt(s map[string]*schema
 	restConfig := s["rest_config"].Elem.(*schema.Resource).Schema
 	restConfig["catalog_uri"].ValidateFunc = validation.StringIsNotEmpty
 	restConfig["catalog_name"].ValidateFunc = validation.StringIsNotEmpty
-	restConfig["catalog_api_type"].DiffSuppressFunc = SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationCatalogApiType), IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.catalog_api_type"))
-	restConfig["access_delegation_mode"].DiffSuppressFunc = SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationAccessDelegationMode), IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.access_delegation_mode"))
+	restConfig["catalog_api_type"].DiffSuppressFunc = SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationCatalogApiType), IgnoreChangeToCurrentSnowflakePlainValueInOutput("describe_output.0.rest_config", "catalog_api_type"))
+	restConfig["access_delegation_mode"].DiffSuppressFunc = SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationAccessDelegationMode), IgnoreChangeToCurrentSnowflakePlainValueInOutput("describe_output.0.rest_config", "access_delegation_mode"))
 
 	restAuth := s["rest_authentication"].Elem.(*schema.Resource).Schema
 	restAuth["oauth_token_uri"].ValidateFunc = validation.StringIsNotEmpty
-	restAuth["oauth_token_uri"].DiffSuppressFunc = IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_authentication.0.oauth_token_uri")
+	restAuth["oauth_token_uri"].DiffSuppressFunc = IgnoreChangeToCurrentSnowflakePlainValueInOutput("describe_output.0.rest_authentication", "oauth_token_uri")
 	restAuth["oauth_client_id"].ValidateFunc = validation.StringIsNotEmpty
 	restAuth["oauth_client_id"].Sensitive = true
 	restAuth["oauth_client_secret"].ValidateFunc = validation.StringIsNotEmpty

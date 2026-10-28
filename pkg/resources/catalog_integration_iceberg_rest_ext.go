@@ -129,11 +129,12 @@ func catalogIntegrationIcebergRestApplySetUnsetExt(d *schema.ResourceData) (*cat
 	return &catalogIntegrationIcebergRestAlterRequestsExt{set: set}, nil
 }
 
-func catalogIntegrationIcebergRestSetFieldsNotSetByReadExt(d *schema.ResourceData, _ sdk.AccountObjectIdentifier, details *sdk.CatalogIntegrationIcebergRestDetails, _ bool) error {
-	if err := setIcebergRestConfigInState(d, details); err != nil {
-		return err
-	}
-	return setIcebergRestAuthInState(d, details)
+func catalogIntegrationIcebergRestSetFieldsNotSetByReadExt(d *schema.ResourceData, _ sdk.AccountObjectIdentifier, details *sdk.CatalogIntegrationIcebergRestDetails, importPermissiveMode bool) error {
+	return errors.Join(
+		importIntAttribute(d, "refresh_interval_seconds", importPermissiveMode, details.RefreshIntervalSeconds),
+		setIcebergRestConfigInState(d, details, importPermissiveMode),
+		setIcebergRestAuthInState(d, details, importPermissiveMode),
+	)
 }
 
 // =============================================================================
@@ -298,21 +299,30 @@ func handleExternalChangesToBearerRestAuthentication(d *schema.ResourceData) err
 	return errors.Join(d.Set("oauth_rest_authentication", nil), d.Set("sigv4_rest_authentication", nil))
 }
 
-func setIcebergRestConfigInState(d *schema.ResourceData, details *sdk.CatalogIntegrationIcebergRestDetails) error {
+func setIcebergRestConfigInState(d *schema.ResourceData, details *sdk.CatalogIntegrationIcebergRestDetails, importPermissiveMode bool) error {
+	var catalogApiType, accessDelegationMode string
+	if !importPermissiveMode {
+		catalogApiType = string(details.RestConfig.CatalogApiType)
+		accessDelegationMode = string(details.RestConfig.AccessDelegationMode)
+	}
 	return d.Set("rest_config", []any{map[string]any{
 		"catalog_uri":            details.RestConfig.CatalogUri,
 		"prefix":                 details.RestConfig.Prefix,
 		"catalog_name":           details.RestConfig.CatalogName,
-		"catalog_api_type":       string(details.RestConfig.CatalogApiType),
-		"access_delegation_mode": string(details.RestConfig.AccessDelegationMode),
+		"catalog_api_type":       catalogApiType,
+		"access_delegation_mode": accessDelegationMode,
 	}})
 }
 
-func setIcebergRestAuthInState(d *schema.ResourceData, details *sdk.CatalogIntegrationIcebergRestDetails) error {
+func setIcebergRestAuthInState(d *schema.ResourceData, details *sdk.CatalogIntegrationIcebergRestDetails, importPermissiveMode bool) error {
 	if details.OauthRestAuthentication != nil {
+		var oAuthTokenUri string
+		if !importPermissiveMode {
+			oAuthTokenUri = details.OauthRestAuthentication.OauthTokenUri
+		}
 		return errors.Join(
 			d.Set("oauth_rest_authentication", []any{map[string]any{
-				"oauth_token_uri": details.OauthRestAuthentication.OauthTokenUri,
+				"oauth_token_uri": oAuthTokenUri,
 				"oauth_client_id": details.OauthRestAuthentication.OauthClientId,
 				// oauth_client_secret not returned from Snowflake
 				"oauth_allowed_scopes": details.OauthRestAuthentication.OauthAllowedScopes,
@@ -320,10 +330,14 @@ func setIcebergRestAuthInState(d *schema.ResourceData, details *sdk.CatalogInteg
 		)
 	}
 	if details.Sigv4RestAuthentication != nil {
+		var sigV4SigningRegion string
+		if !importPermissiveMode {
+			sigV4SigningRegion = details.Sigv4RestAuthentication.Sigv4SigningRegion
+		}
 		return errors.Join(
 			d.Set("sigv4_rest_authentication", []any{map[string]any{
 				"sigv4_iam_role":       details.Sigv4RestAuthentication.Sigv4IamRole,
-				"sigv4_signing_region": details.Sigv4RestAuthentication.Sigv4SigningRegion,
+				"sigv4_signing_region": sigV4SigningRegion,
 				// sigv4_external_id not returned from Snowflake
 			}}),
 		)
