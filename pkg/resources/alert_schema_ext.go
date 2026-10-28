@@ -5,10 +5,7 @@ import (
 )
 
 func alertAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
-	schedule := s["alert_schedule"].Elem.(*schema.Resource).Schema
-	// ConflictsWith is a path from the resource root. The generator emits the sibling name.
-	schedule["cron"].ConflictsWith = []string{"alert_schedule.0.interval"}
-	schedule["interval"].ConflictsWith = []string{"alert_schedule.0.cron"}
+	// enabled keeps its description here. Optional+computed fields stay out of the generator.
 	s["enabled"] = &schema.Schema{
 		Type:        schema.TypeBool,
 		Optional:    true,

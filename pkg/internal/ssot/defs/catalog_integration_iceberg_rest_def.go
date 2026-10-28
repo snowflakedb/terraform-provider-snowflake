@@ -5,8 +5,8 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 // CatalogIntegrationIcebergRestAttrs holds reusable Iceberg REST catalog integration fields
 // so SHOW and DESCRIBE Columns can point at the same definitions instead of restating names.
 //
-// rest_config and the authentication blocks are nested. Sensitive fields, empty-string checks,
-// and describe diff suppressors stay in the schema ext.
+// rest_config and the authentication blocks are nested. Sensitive is on the attributes.
+// Empty-string checks and describe diff suppressors stay in the schema ext.
 var CatalogIntegrationIcebergRestAttrs = struct {
 	Enabled                  ssot.Attribute
 	RefreshIntervalSeconds   ssot.Attribute
@@ -117,12 +117,14 @@ var CatalogIntegrationIcebergRestAttrs = struct {
 				Type:        ssot.AttrString,
 				Required:    true,
 				ForceNew:    true,
+				Sensitive:   true,
 				Description: "Specifies the client ID of the OAuth2 credential.",
 			},
 			{
 				Name:        "oauth_client_secret",
 				Type:        ssot.AttrString,
 				Required:    true,
+				Sensitive:   true,
 				Description: "Specifies the secret of the OAuth2 credential.",
 			},
 			{
@@ -148,6 +150,7 @@ var CatalogIntegrationIcebergRestAttrs = struct {
 				Name:        "bearer_token",
 				Type:        ssot.AttrString,
 				Required:    true,
+				Sensitive:   true,
 				Description: "The bearer token for the identity provider.",
 			},
 		},

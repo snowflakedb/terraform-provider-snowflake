@@ -91,11 +91,13 @@ var catalogIntegrationOpenCatalogAttributesSchema = catalogIntegrationOpenCatalo
 					Type:        tfschema.TypeString,
 					Required:    true,
 					ForceNew:    true,
+					Sensitive:   true,
 					Description: "Specifies the client ID of the OAuth2 credential associated with your Open Catalog service connection.",
 				},
 				"oauth_client_secret": {
 					Type:        tfschema.TypeString,
 					Required:    true,
+					Sensitive:   true,
 					Description: "Specifies the secret of the OAuth2 credential associated with your Open Catalog service connection.",
 				},
 				"oauth_allowed_scopes": {

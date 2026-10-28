@@ -5,10 +5,9 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 // AlertAttrs holds reusable alert fields.
 //
 // alert_schedule is a nested block with SkipCreateBlock. SCHEDULE is one SQL string, and the
-// ext NewCreateRequest builds it from the block. ConflictsWith paths
-// stay in the schema ext because the generator emits the sibling name, and Terraform needs
-// the resource path.
-// enabled stays in the ext: an optional native bool. Optional bools become boolean strings.
+// ext NewCreateRequest builds it from the block. cron and interval conflict; the generator emits
+// alert_schedule.0.cron and alert_schedule.0.interval.
+// enabled stays in the ext. Optional+computed fields are not a generator setting.
 //
 // warehouse stays a string: the resource never suppressed identifier quoting on it.
 // The resource has no show_output and no describe_output.
@@ -66,9 +65,10 @@ var AlertAttrs = struct {
 		SkipCreateBlock: true,
 		Elem: ssot.ObjectElem([]ssot.Attribute{
 			{
-				Name:     "cron",
-				Type:     ssot.AttrList,
-				MaxItems: new(1),
+				Name:          "cron",
+				Type:          ssot.AttrList,
+				MaxItems:      new(1),
+				ConflictsWith: []ssot.Attribute{{Name: "interval"}},
 				Description: "Specifies the cron expression for the alert. The cron expression must be in the following format: \"minute hour day-of-month month day-of-week\". " +
 					"The following values are supported: minute: 0-59 hour: 0-23 day-of-month: 1-31 month: 1-12 day-of-week: 0-6 (0 is Sunday)",
 				Elem: ssot.ObjectElem([]ssot.Attribute{
@@ -87,9 +87,10 @@ var AlertAttrs = struct {
 				}),
 			},
 			{
-				Name:        "interval",
-				Type:        ssot.AttrInt,
-				Description: "Specifies the interval in minutes for the alert schedule. The interval must be greater than 0 and less than 1440 (24 hours).",
+				Name:          "interval",
+				Type:          ssot.AttrInt,
+				ConflictsWith: []ssot.Attribute{{Name: "cron"}},
+				Description:   "Specifies the interval in minutes for the alert schedule. The interval must be greater than 0 and less than 1440 (24 hours).",
 			},
 		}),
 	},

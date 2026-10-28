@@ -7,7 +7,7 @@ import (
 )
 
 // catalogIntegrationOpenCatalogAttributesModificationExt adds fields the generator does not emit.
-// Nested blocks are generated. Sensitive fields, empty-string checks, and describe diffs stay here.
+// Nested blocks are generated, including Sensitive. Empty-string checks and describe diffs stay here.
 // catalog_source is describe-only.
 func catalogIntegrationOpenCatalogAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
 	s["catalog_namespace"].ValidateFunc = validation.StringIsNotEmpty
@@ -27,9 +27,7 @@ func catalogIntegrationOpenCatalogAttributesModificationExt(s map[string]*schema
 	restAuth["oauth_token_uri"].ValidateFunc = validation.StringIsNotEmpty
 	restAuth["oauth_token_uri"].DiffSuppressFunc = IgnoreChangeToCurrentSnowflakePlainValueInOutput("describe_output.0.rest_authentication", "oauth_token_uri")
 	restAuth["oauth_client_id"].ValidateFunc = validation.StringIsNotEmpty
-	restAuth["oauth_client_id"].Sensitive = true
 	restAuth["oauth_client_secret"].ValidateFunc = validation.StringIsNotEmpty
-	restAuth["oauth_client_secret"].Sensitive = true
 	restAuth["oauth_client_secret"].Description = externalChangesNotDetectedFieldDescription("Specifies the secret of the OAuth2 credential associated with your Open Catalog service connection.")
 	return s
 }

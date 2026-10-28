@@ -196,7 +196,7 @@ func Test_applyResourceAttributeRules_setOfEnum(t *testing.T) {
 
 	require.Equal(t, SchemaTypeSet, got.TfType)
 	require.True(t, got.Optional)
-	require.Equal(t, "NormalizeAndCompare(sdk.ToComputePoolInstanceFamily)", got.DiffSuppressExpr)
+	require.Equal(t, `NormalizeAndCompareEnumsInSet("allowed_values", sdk.ToComputePoolInstanceFamily)`, got.DiffSuppressExpr)
 	require.Equal(t, `"Specifies a set of allowed values. " + enumValuesDescription(sdk.AllComputePoolInstanceFamilies)`, got.DescriptionExpr)
 	require.NotNil(t, got.Elem)
 	require.Equal(t, SchemaTypeString, got.Elem.TfType)
@@ -592,6 +592,98 @@ func Test_applyResourceAttributeRules_listOfBlocksAllowsMultipleItems(t *testing
 	require.Contains(t, rendered, `"allowed_locations"`)
 	require.Equal(t, 1, strings.Count(rendered, "&tfschema.Resource{"))
 	require.Contains(t, rendered, "&tfschema.Schema{")
+}
+
+func Test_applyResourceAttributeRules_setOfIdentifiers(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:        "tables",
+		Type:        ssot.AttrSet,
+		Description: "Specifies the tables.",
+		Elem: &ssot.Attribute{
+			Type:           ssot.AttrIdentifier,
+			IdentifierType: "SchemaObjectIdentifier",
+		},
+	}, resourceAttributeRuleContext{IdType: "AccountObjectIdentifier"})
+
+	require.Equal(t, SchemaTypeSet, got.TfType)
+	require.Equal(t, `NormalizeAndCompareIdentifiersInSet("tables")`, got.DiffSuppressExpr)
+	require.NotNil(t, got.Elem)
+	require.Equal(t, "IsValidIdentifier[sdk.SchemaObjectIdentifier]()", got.Elem.ValidateDiagExpr)
+	require.Empty(t, got.Elem.DescriptionExpr)
+}
+
+func Test_applyResourceAttributeRules_nestedSetOfEnumsStaysElementWise(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:     "mfa_policy",
+		Type:     ssot.AttrList,
+		MaxItems: new(1),
+		Elem: ssot.ObjectElem([]ssot.Attribute{{
+			Name:        "allowed_methods",
+			Type:        ssot.AttrSet,
+			Description: "Specifies the allowed methods.",
+			Elem: &ssot.Attribute{
+				Type: ssot.AttrEnum,
+				Enum: defs.MfaPolicyAllowedMethodsOption,
+			},
+		}}),
+	}, resourceAttributeRuleContext{})
+
+	require.Equal(t, "NormalizeAndCompare(sdk.ToMfaPolicyAllowedMethodsOption)", got.Children[0].DiffSuppressExpr)
+}
+
+func Test_applyResourceAttributeRules_nestedRelationsAndSensitive(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:     "alert_schedule",
+		Type:     ssot.AttrList,
+		MaxItems: new(1),
+		Elem: ssot.ObjectElem([]ssot.Attribute{
+			{
+				Name:          "cron",
+				Type:          ssot.AttrList,
+				MaxItems:      new(1),
+				ConflictsWith: []ssot.Attribute{{Name: "interval"}},
+			},
+			{
+				Name:          "interval",
+				Type:          ssot.AttrInt,
+				ConflictsWith: []ssot.Attribute{{Name: "cron"}},
+				AtLeastOneOf:  []ssot.Attribute{{Name: "interval"}, {Name: "cron"}},
+			},
+		}),
+	}, resourceAttributeRuleContext{})
+
+	require.Equal(t, []string{"alert_schedule.0.interval"}, got.Children[0].ConflictsWith)
+	require.Equal(t, []string{"alert_schedule.0.cron"}, got.Children[1].ConflictsWith)
+	require.Equal(t, []string{"alert_schedule.0.interval", "alert_schedule.0.cron"}, got.Children[1].AtLeastOneOf)
+
+	secret := resolveResourceAttribute(ssot.Attribute{
+		Name:      "storage_aws_secret_key",
+		Type:      ssot.AttrString,
+		Sensitive: true,
+	}, resourceAttributeRuleContext{})
+	require.True(t, secret.Sensitive)
+
+	model := ModelFromInputObject(ResourceObject{Object: ssot.Object{
+		Name: "Widget",
+		Attributes: []ssot.Attribute{
+			{
+				Name:     "alert_schedule",
+				Type:     ssot.AttrList,
+				MaxItems: new(1),
+				Elem: ssot.ObjectElem([]ssot.Attribute{
+					{Name: "cron", Type: ssot.AttrString, ConflictsWith: []ssot.Attribute{{Name: "interval"}}},
+					{Name: "interval", Type: ssot.AttrInt, AtLeastOneOf: []ssot.Attribute{{Name: "cron"}, {Name: "interval"}}},
+				}),
+			},
+			{Name: "storage_aws_secret_key", Type: ssot.AttrString, Sensitive: true},
+		},
+	}}, nil, nil)
+	var b strings.Builder
+	require.NoError(t, SchemaTemplate.ExecuteTemplate(&b, "attributesSchemaDefinition", model))
+	rendered := b.String()
+	require.Contains(t, rendered, `"alert_schedule.0.interval"`)
+	require.Contains(t, rendered, "AtLeastOneOf: []string{")
+	require.Contains(t, rendered, "Sensitive: true,")
 }
 
 func Test_ModelFromInputObject_skipsSqlOnly(t *testing.T) {

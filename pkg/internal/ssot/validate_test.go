@@ -121,6 +121,58 @@ func Test_ValidateObject_conflictsWithItself(t *testing.T) {
 	})
 }
 
+func Test_ValidateObject_atLeastOneOfAndNestedRelations(t *testing.T) {
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name: "AuthenticationPolicy",
+			Attributes: []Attribute{{
+				Name:     "mfa_policy",
+				Type:     AttrList,
+				MaxItems: new(1),
+				Elem: ObjectElem([]Attribute{
+					{Name: "enforce_mfa_on_external_authentication", AtLeastOneOf: []Attribute{{Name: "enforce_mfa_on_external_authentication"}, {Name: "allowed_methods"}}},
+					{Name: "allowed_methods", AtLeastOneOf: []Attribute{{Name: "enforce_mfa_on_external_authentication"}, {Name: "allowed_methods"}}},
+				}),
+			}},
+		})
+	})
+	require.PanicsWithValue(t, `object "AuthenticationPolicy": attribute "allowed_methods" at least one of unknown attribute "missing"`, func() {
+		ValidateObject(Object{
+			Name: "AuthenticationPolicy",
+			Attributes: []Attribute{{
+				Name:     "mfa_policy",
+				Type:     AttrList,
+				MaxItems: new(1),
+				Elem: ObjectElem([]Attribute{
+					{Name: "allowed_methods", AtLeastOneOf: []Attribute{{Name: "missing"}}},
+				}),
+			}},
+		})
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "items" relations require a list with MaxItems 1`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			Attributes: []Attribute{{
+				Name: "items",
+				Type: AttrSet,
+				Elem: ObjectElem([]Attribute{
+					{Name: "left", ConflictsWith: []Attribute{{Name: "right"}}},
+					{Name: "right"},
+				}),
+			}},
+		})
+	})
+	require.PanicsWithValue(t, `object "Widget": ConflictsWith attribute "left" is required`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			Attributes: []Attribute{
+				{Name: "left", Required: true, ConflictsWith: []Attribute{{Name: "right"}}},
+				{Name: "right"},
+			},
+		})
+	})
+}
+
 func Test_ValidateObject_conflictsWithKnownAttribute(t *testing.T) {
 	require.NotPanics(t, func() {
 		ValidateObject(Object{

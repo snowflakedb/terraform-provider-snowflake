@@ -606,7 +606,7 @@ func TestAcc_Alert_Validations(t *testing.T) {
 			{
 				Config:      config.FromModels(t, bothSchedules),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("conflicts with"),
+				ExpectError: regexp.MustCompile(`"alert_schedule\.0\.(?:cron|interval)": conflicts with\s+alert_schedule\.0\.(?:interval|cron)`),
 			},
 		},
 	})

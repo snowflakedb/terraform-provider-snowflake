@@ -100,6 +100,11 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   means no configured suppression. Output suppressors use `OutputKey()` unless a leaf supplies an override, e.g.
   `ssot.SuppressDescribe.WithKey("definition")`. Output strategies apply to fields, not collection elems.
   Statement suppression uses the resource's `DiffSuppressStatement` helper for strings, including string elems.
+- `ConflictsWith` names other attributes on the same level. The generator emits `schema.ConflictsWith` as a path from
+  the resource root: the attribute name at the top, and `parent.0.name` for a child of a list with `MaxItems: 1`.
+  A set, or a list without that bound, cannot name these relations. `AtLeastOneOf` uses the same paths and may include
+  this attribute.
+- `Sensitive` marks the schema field sensitive.
 - `SkipInSchema` - the SHOW/DESCRIBE schema generator (`WithSchema`) omits the column from the generated schema map
   and `ToSchema`; the key is dropped entirely (comment left in place). The column still participates in every other
   generator (assertions, SDK). This is the ssot equivalent of the old-list `SkipFields`.
@@ -444,6 +449,16 @@ in [resource_attribute_rules.go](../../resources/gen/resource_attribute_rules.go
 `TypeString`, a required bool is `TypeBool`. That classification lives in [classified_field.go](classified_field.go)
 and applies to the resource schema only. The schema default is `default`. Create omits the clause for that value. Import writes `true` or `false` from SHOW.
 
+An optional int whose `Min` is 0 or less emits `Default = IntDefault`, because 0 is a real value and cannot mean unset.
+Warehouse `auto_suspend` is that case. A minimum above 0 does not emit that default.
+
+A top-level set of identifiers emits `NormalizeAndCompareIdentifiersInSet`. A top-level set of enums emits
+`NormalizeAndCompareEnumsInSet`. A list of enums, and a nested set of enums, emit `NormalizeAndCompare` on the
+collection. A resource that must keep a nested set case-sensitive clears that suppressor in the attributes
+modification function. A list or set element is validated: an enum element uses `sdkValidation`, and an identifier
+element uses `IsValidIdentifier` for the element's `IdentifierType`. `ConflictsWith`, `AtLeastOneOf`, and `Sensitive`
+are emitted on the schema field. See [Attribute](#attribute).
+
 `WithAlterSetInSdk(Generated())` and `WithAlterUnsetInSdk(Generated())` call `Client.<NamePlural>.Alter` with
 `NewAlter<Name>Request(id).WithSet` or `WithUnset`. They compare the corresponding request against
 `New<Name>SetRequest()` or `New<Name>UnsetRequest()` with `reflect.DeepEqual`, so empty requests are skipped
@@ -580,7 +595,8 @@ the enum type.
 - A list that is not a list of enums or of objects takes the item query struct name as a string. That struct stays in the SDK
   def. A list of objects is generated from its attributes: see [Lists and nested objects](#lists-and-nested-objects).
 - A list of enums is built in the SDK generator: struct name `{Enum}ListItem`, field `Value`, required single-quoted keyword. ssot should hold that description, and the generator should only translate it into the query struct. Do that together with more complex list items, not for this enum case alone.
-- Computed fields, `Deprecated`, and an explicit schema `Default` are not attribute fields. `NativeBool`
+- Computed fields and `Deprecated` are not attribute fields. An explicit schema `Default` is not an attribute field.
+  An optional int whose `Min` is 0 or less still emits `Default = IntDefault`. `NativeBool`
   keeps an optional bool as `TypeBool` and does not emit `Default`. `Min` and `Max` emit `ValidateDiagFunc`.
   Chrome the generator does not emit stays in the attributes modification function.
 
