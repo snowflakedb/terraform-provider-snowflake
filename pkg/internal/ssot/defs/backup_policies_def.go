@@ -4,20 +4,21 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 
 // BackupPolicyAttrs holds reusable backup policy fields.
 var BackupPolicyAttrs = struct {
-	HasRetentionLock ssot.Attribute
-	Schedule         ssot.Attribute
-	ExpireAfterDays  ssot.Attribute
-	Comment          ssot.Attribute
-	CreatedOn        ssot.Attribute
-	Name             ssot.Attribute
-	DatabaseName     ssot.Attribute
-	SchemaName       ssot.Attribute
-	Owner            ssot.Attribute
-	OwnerRoleType    ssot.Attribute
+	WithRetentionLock ssot.Attribute
+	Schedule          ssot.Attribute
+	ExpireAfterDays   ssot.Attribute
+	Comment           ssot.Attribute
+	CreatedOn         ssot.Attribute
+	Name              ssot.Attribute
+	DatabaseName      ssot.Attribute
+	SchemaName        ssot.Attribute
+	Owner             ssot.Attribute
+	OwnerRoleType     ssot.Attribute
 }{
 	// The pages say Y or N. SHOW and DESCRIBE return true or false.
-	HasRetentionLock: ssot.Attribute{
-		Name:         "has_retention_lock",
+	WithRetentionLock: ssot.Attribute{
+		Name:         "with_retention_lock",
+		ShowName:     "has_retention_lock",
 		Type:         ssot.AttrBool,
 		ForceNew:     true,
 		StoredAsText: true,
@@ -84,9 +85,28 @@ var BackupPolicy = ssot.Object{
 			ssot.SdkDescribe(),
 		),
 		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
+		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
+		ssot.WithResource(),
+	},
+	ResourceHooks: []ssot.ResourceHookOption{
+		ssot.WithParseIdFromConfig(ssot.Generated()),
+		ssot.WithParseId(ssot.Generated()),
+		ssot.WithNewCreateRequest(ssot.Generated()),
+		ssot.WithApplyCreateOptionals(ssot.Generated()),
+		ssot.WithCreateInSdk(ssot.Generated()),
+		ssot.WithShowByIdInSdk(ssot.Generated()),
+		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
+		ssot.WithDescribeInSdk(ssot.Generated()),
+		ssot.WithDropSafelyInSdk(ssot.Generated()),
+		ssot.WithApplySetUnset(ssot.Generated()),
+		ssot.WithAlterSetInSdk(ssot.Generated()),
+		ssot.WithAlterUnsetInSdk(ssot.Generated()),
+		ssot.WithSetConfigFields(ssot.Generated()),
+		ssot.WithHandleExternalChanges(ssot.Omitted()),
+		ssot.WithCustomizeDiff(ssot.Generated()),
 	},
 	Attributes: []ssot.Attribute{
-		BackupPolicyAttrs.HasRetentionLock,
+		BackupPolicyAttrs.WithRetentionLock,
 		BackupPolicyAttrs.Schedule,
 		BackupPolicyAttrs.ExpireAfterDays,
 		BackupPolicyAttrs.Comment,
@@ -94,7 +114,7 @@ var BackupPolicy = ssot.Object{
 	Create: ssot.CreateSpec{
 		Clauses: []*ssot.Attribute{
 			ssot.Tags,
-			&BackupPolicyAttrs.HasRetentionLock,
+			&BackupPolicyAttrs.WithRetentionLock,
 			&BackupPolicyAttrs.Schedule,
 			&BackupPolicyAttrs.ExpireAfterDays,
 			&BackupPolicyAttrs.Comment,
@@ -131,7 +151,7 @@ var BackupPolicy = ssot.Object{
 			&BackupPolicyAttrs.Comment,
 			&BackupPolicyAttrs.Schedule,
 			&BackupPolicyAttrs.ExpireAfterDays,
-			&BackupPolicyAttrs.HasRetentionLock,
+			&BackupPolicyAttrs.WithRetentionLock,
 			&BackupPolicyAttrs.OwnerRoleType,
 		},
 	},
@@ -145,7 +165,7 @@ var BackupPolicy = ssot.Object{
 			&BackupPolicyAttrs.Comment,
 			&BackupPolicyAttrs.Schedule,
 			&BackupPolicyAttrs.ExpireAfterDays,
-			&BackupPolicyAttrs.HasRetentionLock,
+			&BackupPolicyAttrs.WithRetentionLock,
 			&BackupPolicyAttrs.OwnerRoleType,
 		},
 	},

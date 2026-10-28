@@ -193,7 +193,12 @@ func (v *QueryStruct) appendKeywordClause(attr ssot.Attribute, clause ssot.SqlCl
 	if clause.Quotes != "" || clause.Parentheses != "" || clause.Equals != "" {
 		panic(fmt.Sprintf("attribute %q: keyword clause has parameter tags", attr.Name))
 	}
-	return v.OptionalSQL(clause.SQLText(attr))
+	sql := clause.SQLText(attr)
+	name := sqlToFieldName(sql, true)
+	if clause.Field != "" {
+		name = clause.Field
+	}
+	return v.OptionalSQLWithCustomFieldName(name, sql)
 }
 
 func (v *QueryStruct) appendIdentifierClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {

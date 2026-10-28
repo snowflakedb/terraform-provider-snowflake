@@ -67,6 +67,17 @@ func intAttributeUpdateSetOnly(d *schema.ResourceData, key string, setField **in
 	return nil
 }
 
+func intAttributeUpdateBuilder[Set any, Unset any](d *schema.ResourceData, key string, setValue func(int) Set, unsetValue func(bool) Unset) error {
+	if d.HasChange(key) {
+		if v, ok := d.GetOk(key); ok {
+			setValue(v.(int))
+		} else {
+			unsetValue(true)
+		}
+	}
+	return nil
+}
+
 func intAttributeUpdateSetOnlyBuilder[Set any](d *schema.ResourceData, key string, setValue func(int) Set) error {
 	if d.HasChange(key) {
 		if v, ok := d.GetOk(key); ok {

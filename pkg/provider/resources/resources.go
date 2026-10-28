@@ -24,6 +24,7 @@ const (
 	ApiIntegrationGitRepositoryToken                       resource = "snowflake_api_integration_git_repository_token"
 	ApiIntegrationGoogleCloudApiGateway                    resource = "snowflake_api_integration_google_cloud_api_gateway"
 	AuthenticationPolicy                                   resource = "snowflake_authentication_policy"
+	BackupPolicy                                           resource = "snowflake_backup_policy"
 	CatalogIntegrationAwsGlue                              resource = "snowflake_catalog_integration_aws_glue"
 	CatalogIntegrationObjectStorage                        resource = "snowflake_catalog_integration_object_storage"
 	CatalogIntegrationOpenCatalog                          resource = "snowflake_catalog_integration_open_catalog"
