@@ -49,6 +49,8 @@ func deduceUpdateCall(objectName string, src ssot.Attribute, resolved ResourceAt
 		return ssot.IntAttributeUpdateSetOnlyBuilder.UpdateCall(objectName, src), true
 	case src.Type == ssot.AttrInt && resolved.DefaultExpr == "IntDefault":
 		return ssot.IntAttributeWithSpecialDefaultUpdateBuilder.UpdateCall(objectName, src), true
+	case src.Type == ssot.AttrInt:
+		return ssot.IntAttributeUpdateBuilder.UpdateCall(objectName, src), true
 	case src.Type == ssot.AttrBool && resolved.DefaultExpr == "BooleanDefault":
 		return ssot.BooleanStringAttributeUpdateBuilder.UpdateCall(objectName, src), true
 	case src.Type == ssot.AttrString:

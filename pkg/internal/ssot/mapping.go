@@ -111,6 +111,7 @@ func (m SetUnsetMapping) UpdateCall(_ string, attr Attribute) UpdateCall {
 
 const (
 	StringAttributeUpdateBuilder                SetUnsetMapping = "stringAttributeUpdateBuilder"
+	IntAttributeUpdateBuilder                   SetUnsetMapping = "intAttributeUpdateBuilder"
 	IntAttributeWithSpecialDefaultUpdateBuilder SetUnsetMapping = "intAttributeWithSpecialDefaultUpdateBuilder"
 	BooleanStringAttributeUpdateBuilder         SetUnsetMapping = "booleanStringAttributeUpdateBuilder"
 )
