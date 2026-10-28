@@ -38,7 +38,7 @@ func TestDescribeOutputSchema_authenticationPolicy(t *testing.T) {
 	got := renderSchemaTemplate(t, "describeOutputSchema", model)
 	require.Contains(t, got, "DESCRIBE AUTHENTICATION POLICY")
 	require.Contains(t, got, "for the given authentication policy.")
-	require.Contains(t, got, "schemas.DescribeAuthenticationPolicyDescribeDetailsSchema")
+	require.Contains(t, got, "schemas.DescribeAuthenticationPolicyDetailsSchema")
 }
 
 func TestDescribeOutputSchema_catalogIntegrationVariant(t *testing.T) {

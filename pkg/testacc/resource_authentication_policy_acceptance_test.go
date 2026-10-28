@@ -41,24 +41,24 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 	samlIntegration, cleanupSamlIntegration := testClient().SecurityIntegration.CreateSaml2(t)
 	t.Cleanup(cleanupSamlIntegration)
 
-	completeModelClientPolicy := []sdk.AuthenticationPolicyClientPolicyEntry{
+	completeModelClientPolicy := []sdk.AuthenticationPolicyClientPolicyRequest{
 		{
 			ClientType: sdk.ClientPolicyDriverTypeGoDriver,
-			Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("1.14.1")},
+			Params:     sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "1.14.1"},
 		},
 		{
 			ClientType: sdk.ClientPolicyDriverTypeJdbcDriver,
-			Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("3.25.0")},
+			Params:     sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "3.25.0"},
 		},
 	}
-	differentModelClientPolicy := []sdk.AuthenticationPolicyClientPolicyEntry{
+	differentModelClientPolicy := []sdk.AuthenticationPolicyClientPolicyRequest{
 		{
 			ClientType: sdk.ClientPolicyDriverTypeGoDriver,
-			Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("1.14.1")},
+			Params:     sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "1.14.1"},
 		},
 		{
 			ClientType: sdk.ClientPolicyDriverTypeJdbcDriver,
-			Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("4.0.0")},
+			Params:     sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "4.0.0"},
 		},
 	}
 
@@ -74,9 +74,9 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 		WithMfaPolicy(
 			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
 				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionAll).
-				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-					{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey},
-					{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
+				WithAllowedMethods([]sdk.MfaPolicyAllowedMethodsOptionListItem{
+					{Value: sdk.MfaPolicyAllowedMethodsOptionPasskey},
+					{Value: sdk.MfaPolicyAllowedMethodsOptionDuo},
 				}),
 		).
 		WithPatPolicy(
@@ -88,8 +88,8 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 		).
 		WithWorkloadIdentityPolicy(
 			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-					{Provider: sdk.AllowedProviderOptionAll},
+				WithAllowedProviders([]sdk.AllowedProviderOptionListItem{
+					{Value: sdk.AllowedProviderOptionAll},
 				}).
 				WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
 					{Value: "111122223333"},
@@ -112,8 +112,8 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 		WithMfaPolicy(
 			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
 				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionNone).
-				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-					{Method: sdk.MfaPolicyAllowedMethodsOptionTotp},
+				WithAllowedMethods([]sdk.MfaPolicyAllowedMethodsOptionListItem{
+					{Value: sdk.MfaPolicyAllowedMethodsOptionTotp},
 				}),
 		).
 		WithPatPolicy(
@@ -125,8 +125,8 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 		).
 		WithWorkloadIdentityPolicy(
 			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-					{Provider: sdk.AllowedProviderOptionAzure},
+				WithAllowedProviders([]sdk.AllowedProviderOptionListItem{
+					{Value: sdk.AllowedProviderOptionAzure},
 				}).
 				WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
 					{Value: "444455556666"},
@@ -287,13 +287,13 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 					testClient().AuthenticationPolicy.Alter(t, sdk.NewAlterAuthenticationPolicyRequest(id2).WithSet(
 						*sdk.NewAuthenticationPolicySetRequest().
 							WithComment(random.Comment()).
-							WithAuthenticationMethods([]sdk.AuthenticationMethods{{Method: sdk.AuthenticationMethodsOptionPassword}}).
+							WithAuthenticationMethods([]sdk.AuthenticationMethodsOptionListItem{{Value: sdk.AuthenticationMethodsOptionPassword}}).
 							WithMfaEnrollment(sdk.MfaEnrollmentOptionRequired).
-							WithClientTypes([]sdk.ClientTypes{{ClientType: sdk.ClientTypesOptionSnowflakeUi}, {ClientType: sdk.ClientTypesOptionDrivers}}).
-							WithSecurityIntegrations(*sdk.NewSecurityIntegrationsOptionRequest().WithAll(true)).
+							WithClientTypes([]sdk.ClientTypesOptionListItem{{Value: sdk.ClientTypesOptionSnowflakeUi}, {Value: sdk.ClientTypesOptionDrivers}}).
+							WithSecurityIntegrations(*sdk.NewAuthenticationPolicySecurityIntegrationsOptionRequest().WithAll(true)).
 							WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
 								WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionAll).
-								WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey}}),
+								WithAllowedMethods([]sdk.MfaPolicyAllowedMethodsOptionListItem{{Value: sdk.MfaPolicyAllowedMethodsOptionPasskey}}),
 							).
 							WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
 								WithDefaultExpiryInDays(5).
@@ -302,14 +302,14 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 								WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionNotEnforced),
 							).
 							WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-								WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{{Provider: sdk.AllowedProviderOptionAws}}).
+								WithAllowedProviders([]sdk.AllowedProviderOptionListItem{{Value: sdk.AllowedProviderOptionAws}}).
 								WithAllowedAwsAccounts([]sdk.StringListItemWrapper{{Value: "111122223333"}}).
 								WithAllowedAzureIssuers([]sdk.StringListItemWrapper{{Value: "https://login.microsoftonline.com/tenantid/v2.0"}}).
 								WithAllowedOidcIssuers([]sdk.StringListItemWrapper{{Value: "https://example.com"}}),
 							).
-							WithClientPolicy([]sdk.AuthenticationPolicyClientPolicyEntry{{
+							WithClientPolicy([]sdk.AuthenticationPolicyClientPolicyRequest{{
 								ClientType: sdk.ClientPolicyDriverTypeGoDriver,
-								Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("1.15.0")},
+								Params:     sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "1.15.0"},
 							}}),
 					))
 				},
@@ -411,14 +411,14 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 func TestAcc_AuthenticationPolicy_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
-	completeModelClientPolicy := []sdk.AuthenticationPolicyClientPolicyEntry{
+	completeModelClientPolicy := []sdk.AuthenticationPolicyClientPolicyRequest{
 		{
 			ClientType: sdk.ClientPolicyDriverTypeGoDriver,
-			Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("1.14.1")},
+			Params:     sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "1.14.1"},
 		},
 		{
 			ClientType: sdk.ClientPolicyDriverTypeJdbcDriver,
-			Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("3.25.0")},
+			Params:     sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "3.25.0"},
 		},
 	}
 
@@ -430,9 +430,9 @@ func TestAcc_AuthenticationPolicy_CompleteUseCase(t *testing.T) {
 		WithMfaPolicy(
 			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
 				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionAll).
-				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-					{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey},
-					{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
+				WithAllowedMethods([]sdk.MfaPolicyAllowedMethodsOptionListItem{
+					{Value: sdk.MfaPolicyAllowedMethodsOptionPasskey},
+					{Value: sdk.MfaPolicyAllowedMethodsOptionDuo},
 				}),
 		).
 		WithPatPolicy(
@@ -444,8 +444,8 @@ func TestAcc_AuthenticationPolicy_CompleteUseCase(t *testing.T) {
 		).
 		WithWorkloadIdentityPolicy(
 			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-					{Provider: sdk.AllowedProviderOptionAll},
+				WithAllowedProviders([]sdk.AllowedProviderOptionListItem{
+					{Value: sdk.AllowedProviderOptionAll},
 				}).
 				WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
 					{Value: "111122223333"},
@@ -663,15 +663,15 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 		WithMfaPolicy(
 			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
 				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionNone).
-				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-					{Method: sdk.MfaPolicyAllowedMethodsOptionTotp},
-					{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
+				WithAllowedMethods([]sdk.MfaPolicyAllowedMethodsOptionListItem{
+					{Value: sdk.MfaPolicyAllowedMethodsOptionTotp},
+					{Value: sdk.MfaPolicyAllowedMethodsOptionDuo},
 				}),
 		).
 		WithWorkloadIdentityPolicy(
 			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-					{Provider: sdk.AllowedProviderOptionAzure},
+				WithAllowedProviders([]sdk.AllowedProviderOptionListItem{
+					{Value: sdk.AllowedProviderOptionAzure},
 				}).
 				WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
 					{Value: "111111111111"}, {Value: "222222222222"},
@@ -691,8 +691,8 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 		).
 		WithWorkloadIdentityPolicy(
 			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-					{Provider: sdk.AllowedProviderOptionAzure},
+				WithAllowedProviders([]sdk.AllowedProviderOptionListItem{
+					{Value: sdk.AllowedProviderOptionAzure},
 				}),
 		)
 
@@ -700,15 +700,15 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 		WithMfaPolicy(
 			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
 				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionNone).
-				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-					{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
-					{Method: sdk.MfaPolicyAllowedMethodsOptionTotp},
+				WithAllowedMethods([]sdk.MfaPolicyAllowedMethodsOptionListItem{
+					{Value: sdk.MfaPolicyAllowedMethodsOptionDuo},
+					{Value: sdk.MfaPolicyAllowedMethodsOptionTotp},
 				}),
 		).
 		WithWorkloadIdentityPolicy(
 			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-					{Provider: sdk.AllowedProviderOptionAzure},
+				WithAllowedProviders([]sdk.AllowedProviderOptionListItem{
+					{Value: sdk.AllowedProviderOptionAzure},
 				}).
 				WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
 					{Value: "222222222222"}, {Value: "111111111111"},
@@ -899,8 +899,8 @@ func TestAcc_AuthenticationPolicy_Validations(t *testing.T) {
 	modelInvalidAllowedMethods := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithMfaPolicy(
 			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
-				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-					{Method: "invalid"},
+				WithAllowedMethods([]sdk.MfaPolicyAllowedMethodsOptionListItem{
+					{Value: "invalid"},
 				}),
 		)
 	modelInvalidDefaultExpiryInDays := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
@@ -921,8 +921,8 @@ func TestAcc_AuthenticationPolicy_Validations(t *testing.T) {
 	modelInvalidAllowedProviders := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithWorkloadIdentityPolicy(
 			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-					{Provider: "invalid"},
+				WithAllowedProviders([]sdk.AllowedProviderOptionListItem{
+					{Value: "invalid"},
 				}),
 		)
 	modelInvalidClientPolicyDriverType := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
@@ -936,9 +936,9 @@ func TestAcc_AuthenticationPolicy_Validations(t *testing.T) {
 	modelClientPolicyIncompatibleClientTypes := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithClientTypes(sdk.ClientTypesOptionSnowflakeUi).
 		WithClientPolicy(
-			sdk.AuthenticationPolicyClientPolicyEntry{
+			sdk.AuthenticationPolicyClientPolicyRequest{
 				ClientType: sdk.ClientPolicyDriverTypeGoDriver,
-				Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("1.0.0")},
+				Params:     sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "1.0.0"},
 			},
 		)
 

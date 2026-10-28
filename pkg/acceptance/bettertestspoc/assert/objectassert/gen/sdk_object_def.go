@@ -100,7 +100,7 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:             "sdk.SchemaObjectIdentifier",
-		ObjectStruct:       sdk.AuthenticationPolicyClientPolicyEntryDetails{},
+		ObjectStruct:       sdk.AuthenticationPolicyClientPolicyDetails{},
 		IsDataSourceOutput: true,
 		IsSubStruct:        true,
 	},

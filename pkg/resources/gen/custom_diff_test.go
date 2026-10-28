@@ -53,6 +53,17 @@ func Test_CustomDiffEntries(t *testing.T) {
 		}, model().CustomDiffEntries())
 	})
 
+	t.Run("describe-only read-only column follows the attribute of its show name", func(t *testing.T) {
+		enrollment := ssot.Attribute{Name: "enrollment", Type: ssot.AttrString}
+		describeEnrollment := ssot.Attribute{Name: "describe_enrollment", ShowName: "enrollment", Type: ssot.AttrString, Readonly: true}
+		unrelated := ssot.Attribute{Name: "describe_other", ShowName: "other", Type: ssot.AttrString, Readonly: true}
+		got := model(func(obj *ssot.Object) {
+			obj.Attributes = append(obj.Attributes, enrollment)
+			obj.Describe.Columns = []*ssot.Attribute{&name, &describeEnrollment, &unrelated, &comment}
+		}).CustomDiffEntries()
+		require.Contains(t, got, CustomDiffEntry{Key: "DescribeOutputAttributeName", Attrs: []string{"name", "enrollment", "comment"}})
+	})
+
 	t.Run("fully qualified name includes identifiers that are not force new", func(t *testing.T) {
 		got := model(func(obj *ssot.Object) {
 			obj.IdentityHierarchyForceNew = false

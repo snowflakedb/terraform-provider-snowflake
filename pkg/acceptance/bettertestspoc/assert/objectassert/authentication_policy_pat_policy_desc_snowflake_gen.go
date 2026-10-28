@@ -40,22 +40,22 @@ func (a *AuthenticationPolicyPatPolicyDetailsAssert) HasMaxExpiryInDays(expected
 	return a
 }
 
-func (a *AuthenticationPolicyPatPolicyDetailsAssert) HasNetworkPolicyEvaluation(expected sdk.NetworkPolicyEvaluationOption) *AuthenticationPolicyPatPolicyDetailsAssert {
+func (a *AuthenticationPolicyPatPolicyDetailsAssert) HasRequireRoleRestrictionForServiceUsers(expected bool) *AuthenticationPolicyPatPolicyDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicyPatPolicyDetails) error {
 		t.Helper()
-		if o.NetworkPolicyEvaluation != expected {
-			return fmt.Errorf("expected network policy evaluation: %v; got: %v", expected, o.NetworkPolicyEvaluation)
+		if o.RequireRoleRestrictionForServiceUsers != expected {
+			return fmt.Errorf("expected require role restriction for service users: %v; got: %v", expected, o.RequireRoleRestrictionForServiceUsers)
 		}
 		return nil
 	})
 	return a
 }
 
-func (a *AuthenticationPolicyPatPolicyDetailsAssert) HasRequireRoleRestrictionForServiceUsers(expected bool) *AuthenticationPolicyPatPolicyDetailsAssert {
+func (a *AuthenticationPolicyPatPolicyDetailsAssert) HasNetworkPolicyEvaluation(expected sdk.NetworkPolicyEvaluationOption) *AuthenticationPolicyPatPolicyDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicyPatPolicyDetails) error {
 		t.Helper()
-		if o.RequireRoleRestrictionForServiceUsers != expected {
-			return fmt.Errorf("expected require role restriction for service users: %v; got: %v", expected, o.RequireRoleRestrictionForServiceUsers)
+		if o.NetworkPolicyEvaluation != expected {
+			return fmt.Errorf("expected network policy evaluation: %v; got: %v", expected, o.NetworkPolicyEvaluation)
 		}
 		return nil
 	})

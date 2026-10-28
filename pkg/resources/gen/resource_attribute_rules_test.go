@@ -656,6 +656,18 @@ func Test_applyResourceAttributeRules_nestedRelationsAndSensitive(t *testing.T) 
 	require.Equal(t, []string{"alert_schedule.0.cron"}, got.Children[1].ConflictsWith)
 	require.Equal(t, []string{"alert_schedule.0.interval", "alert_schedule.0.cron"}, got.Children[1].AtLeastOneOf)
 
+	object := resolveResourceAttribute(ssot.Attribute{
+		Name: "policy",
+		Type: ssot.AttrObject,
+		Children: []ssot.Attribute{
+			{Name: "left", Type: ssot.AttrString, AtLeastOneOf: []ssot.Attribute{{Name: "left"}, {Name: "right"}}},
+			{Name: "right", Type: ssot.AttrString, AtLeastOneOf: []ssot.Attribute{{Name: "left"}, {Name: "right"}}},
+		},
+	}, resourceAttributeRuleContext{})
+	require.Equal(t, []string{"policy.0.left", "policy.0.right"}, object.Children[0].AtLeastOneOf)
+	require.Equal(t, SchemaTypeList, object.TfType)
+	require.Equal(t, new(1), object.MaxItems)
+
 	secret := resolveResourceAttribute(ssot.Attribute{
 		Name:      "storage_aws_secret_key",
 		Type:      ssot.AttrString,

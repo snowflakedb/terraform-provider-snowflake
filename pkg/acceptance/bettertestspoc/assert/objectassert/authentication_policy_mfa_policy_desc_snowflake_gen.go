@@ -20,6 +20,17 @@ func NewAuthenticationPolicyMfaPolicyDetailsAssert() *AuthenticationPolicyMfaPol
 	return &AuthenticationPolicyMfaPolicyDetailsAssert{assert.NewSubStructAssert[sdk.AuthenticationPolicyMfaPolicyDetails]()}
 }
 
+func (a *AuthenticationPolicyMfaPolicyDetailsAssert) HasEnforceMfaOnExternalAuthentication(expected sdk.EnforceMfaOnExternalAuthenticationOption) *AuthenticationPolicyMfaPolicyDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicyMfaPolicyDetails) error {
+		t.Helper()
+		if o.EnforceMfaOnExternalAuthentication != expected {
+			return fmt.Errorf("expected enforce mfa on external authentication: %v; got: %v", expected, o.EnforceMfaOnExternalAuthentication)
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *AuthenticationPolicyMfaPolicyDetailsAssert) HasAllowedMethods(expected ...sdk.MfaPolicyAllowedMethodsOption) *AuthenticationPolicyMfaPolicyDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicyMfaPolicyDetails) error {
 		t.Helper()
@@ -38,17 +49,6 @@ func (a *AuthenticationPolicyMfaPolicyDetailsAssert) HasNoAllowedMethods() *Auth
 		t.Helper()
 		if len(o.AllowedMethods) > 0 {
 			return fmt.Errorf("expected allowed methods to be empty; got: %v", o.AllowedMethods)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *AuthenticationPolicyMfaPolicyDetailsAssert) HasEnforceMfaOnExternalAuthentication(expected sdk.EnforceMfaOnExternalAuthenticationOption) *AuthenticationPolicyMfaPolicyDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicyMfaPolicyDetails) error {
-		t.Helper()
-		if o.EnforceMfaOnExternalAuthentication != expected {
-			return fmt.Errorf("expected enforce mfa on external authentication: %v; got: %v", expected, o.EnforceMfaOnExternalAuthentication)
 		}
 		return nil
 	})

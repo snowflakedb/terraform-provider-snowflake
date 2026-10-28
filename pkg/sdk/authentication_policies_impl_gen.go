@@ -4,15 +4,16 @@ package sdk
 
 import (
 	"context"
+	"log"
 	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var (
-	_ AuthenticationPolicies                          = (*authenticationPolicies)(nil)
-	_ convertibleRow[AuthenticationPolicy]            = new(showAuthenticationPolicyDBRow)
-	_ convertibleRow[AuthenticationPolicyDescription] = new(describeAuthenticationPolicyDBRow)
+	_ AuthenticationPolicies                       = (*authenticationPolicies)(nil)
+	_ convertibleRow[AuthenticationPolicy]         = new(authenticationPoliciesRow)
+	_ convertibleRow[AuthenticationPolicyProperty] = new(authenticationPolicyDescRow)
 )
 
 type authenticationPolicies struct {
@@ -40,12 +41,12 @@ func (v *authenticationPolicies) DropSafely(ctx context.Context, id SchemaObject
 
 func (v *authenticationPolicies) Show(ctx context.Context, request *ShowAuthenticationPolicyRequest) ([]AuthenticationPolicy, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[showAuthenticationPolicyDBRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[authenticationPoliciesRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	dbRows = slices.DeleteFunc(dbRows, func(row showAuthenticationPolicyDBRow) bool { return row.excludeFromShow() })
-	return convertRows[showAuthenticationPolicyDBRow, AuthenticationPolicy](dbRows)
+	dbRows = slices.DeleteFunc(dbRows, func(row authenticationPoliciesRow) bool { return row.excludeFromShow() })
+	return convertRows[authenticationPoliciesRow, AuthenticationPolicy](dbRows)
 }
 
 func (v *authenticationPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*AuthenticationPolicy, error) {
@@ -63,15 +64,15 @@ func (v *authenticationPolicies) ShowByIDSafely(ctx context.Context, id SchemaOb
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
-func (v *authenticationPolicies) Describe(ctx context.Context, id SchemaObjectIdentifier) ([]AuthenticationPolicyDescription, error) {
+func (v *authenticationPolicies) Describe(ctx context.Context, id SchemaObjectIdentifier) ([]AuthenticationPolicyProperty, error) {
 	opts := &DescribeAuthenticationPolicyOptions{
 		name: id,
 	}
-	rows, err := validateAndQuery[describeAuthenticationPolicyDBRow](v.client, ctx, opts)
+	rows, err := validateAndQuery[authenticationPolicyDescRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[describeAuthenticationPolicyDBRow, AuthenticationPolicyDescription](rows)
+	return convertRows[authenticationPolicyDescRow, AuthenticationPolicyProperty](rows)
 }
 
 func (r *CreateAuthenticationPolicyRequest) toOpts() *CreateAuthenticationPolicyOptions {
@@ -82,7 +83,6 @@ func (r *CreateAuthenticationPolicyRequest) toOpts() *CreateAuthenticationPolicy
 		AuthenticationMethods: r.AuthenticationMethods,
 		MfaEnrollment:         r.MfaEnrollment,
 		ClientTypes:           r.ClientTypes,
-		ClientPolicy:          r.ClientPolicy,
 		Comment:               r.Comment,
 	}
 	if r.MfaPolicy != nil {
@@ -91,8 +91,20 @@ func (r *CreateAuthenticationPolicyRequest) toOpts() *CreateAuthenticationPolicy
 			AllowedMethods:                     r.MfaPolicy.AllowedMethods,
 		}
 	}
+	if r.ClientPolicy != nil {
+		clientPolicy := make([]AuthenticationPolicyClientPolicy, len(r.ClientPolicy))
+		for i, v := range r.ClientPolicy {
+			clientPolicy[i] = AuthenticationPolicyClientPolicy{
+				ClientType: v.ClientType,
+			}
+			clientPolicy[i].Params = AuthenticationPolicyClientPolicyParams{
+				MinimumVersion: v.Params.MinimumVersion,
+			}
+		}
+		opts.ClientPolicy = clientPolicy
+	}
 	if r.SecurityIntegrations != nil {
-		opts.SecurityIntegrations = &SecurityIntegrationsOption{
+		opts.SecurityIntegrations = &AuthenticationPolicySecurityIntegrationsOption{
 			All:                  r.SecurityIntegrations.All,
 			SecurityIntegrations: r.SecurityIntegrations.SecurityIntegrations,
 		}
@@ -127,7 +139,6 @@ func (r *AlterAuthenticationPolicyRequest) toOpts() *AlterAuthenticationPolicyOp
 			AuthenticationMethods: r.Set.AuthenticationMethods,
 			MfaEnrollment:         r.Set.MfaEnrollment,
 			ClientTypes:           r.Set.ClientTypes,
-			ClientPolicy:          r.Set.ClientPolicy,
 			Comment:               r.Set.Comment,
 		}
 		if r.Set.MfaPolicy != nil {
@@ -136,8 +147,20 @@ func (r *AlterAuthenticationPolicyRequest) toOpts() *AlterAuthenticationPolicyOp
 				AllowedMethods:                     r.Set.MfaPolicy.AllowedMethods,
 			}
 		}
+		if r.Set.ClientPolicy != nil {
+			clientPolicy := make([]AuthenticationPolicyClientPolicy, len(r.Set.ClientPolicy))
+			for i, v := range r.Set.ClientPolicy {
+				clientPolicy[i] = AuthenticationPolicyClientPolicy{
+					ClientType: v.ClientType,
+				}
+				clientPolicy[i].Params = AuthenticationPolicyClientPolicyParams{
+					MinimumVersion: v.Params.MinimumVersion,
+				}
+			}
+			opts.Set.ClientPolicy = clientPolicy
+		}
 		if r.Set.SecurityIntegrations != nil {
-			opts.Set.SecurityIntegrations = &SecurityIntegrationsOption{
+			opts.Set.SecurityIntegrations = &AuthenticationPolicySecurityIntegrationsOption{
 				All:                  r.Set.SecurityIntegrations.All,
 				SecurityIntegrations: r.Set.SecurityIntegrations.SecurityIntegrations,
 			}
@@ -194,7 +217,7 @@ func (r *ShowAuthenticationPolicyRequest) toOpts() *ShowAuthenticationPolicyOpti
 	return opts
 }
 
-func (r showAuthenticationPolicyDBRow) convert() (*AuthenticationPolicy, error) {
+func (r authenticationPoliciesRow) convert() (*AuthenticationPolicy, error) {
 	result := &AuthenticationPolicy{
 		Name:    r.Name,
 		Comment: r.Comment,
@@ -217,12 +240,98 @@ func (r *DescribeAuthenticationPolicyRequest) toOpts() *DescribeAuthenticationPo
 	return opts
 }
 
-func (r describeAuthenticationPolicyDBRow) convert() (*AuthenticationPolicyDescription, error) {
-	result := &AuthenticationPolicyDescription{
+func (r authenticationPolicyDescRow) convert() (*AuthenticationPolicyProperty, error) {
+	result := &AuthenticationPolicyProperty{
 		Property:    r.Property,
 		Value:       r.Value,
 		Default:     r.Default,
 		Description: r.Description,
 	}
 	return result, nil
+}
+
+func ParseAuthenticationPolicyDescribed(rows []AuthenticationPolicyProperty) (AuthenticationPolicyDetails, error) {
+	details := AuthenticationPolicyDetails{}
+	details.descriptions = AuthenticationPolicyDescriptions(rows)
+	for _, row := range rows {
+		switch {
+		case row.Property == "NAME":
+			details.Name = row.Value
+		case row.Property == "OWNER":
+			details.Owner = row.Value
+		case row.Property == "AUTHENTICATION_METHODS":
+			value, err := ParseAuthenticationPolicyAuthenticationMethodsDescribed(row.Value)
+			if err != nil {
+				return AuthenticationPolicyDetails{}, err
+			}
+			details.AuthenticationMethods = value
+		case row.Property == "MFA_ENROLLMENT":
+			value, err := ParseAuthenticationPolicyMfaEnrollmentDescribed(row.Value)
+			if err != nil {
+				return AuthenticationPolicyDetails{}, err
+			}
+			details.MfaEnrollment = value
+		case row.Property == "CLIENT_TYPES":
+			value, err := ParseAuthenticationPolicyClientTypesDescribed(row.Value)
+			if err != nil {
+				return AuthenticationPolicyDetails{}, err
+			}
+			details.ClientTypes = value
+		case row.Property == "SECURITY_INTEGRATIONS":
+			value, err := ParseAuthenticationPolicySecurityIntegrationsDescribed(row.Value)
+			if err != nil {
+				return AuthenticationPolicyDetails{}, err
+			}
+			details.SecurityIntegrations = value
+		case row.Property == "COMMENT":
+			value, err := ParseAuthenticationPolicyCommentDescribed(row.Value)
+			if err != nil {
+				return AuthenticationPolicyDetails{}, err
+			}
+			details.Comment = value
+		case row.Property == "CLIENT_POLICY":
+			value, err := ParseAuthenticationPolicyClientPolicyDescribed(row.Value)
+			if err != nil {
+				return AuthenticationPolicyDetails{}, err
+			}
+			details.ClientPolicy = value
+		case row.Property == "MFA_POLICY":
+			value, err := ParseAuthenticationPolicyMfaPolicyDescribed(row.Value)
+			if err != nil {
+				return AuthenticationPolicyDetails{}, err
+			}
+			details.MfaPolicy = value
+		case row.Property == "PAT_POLICY":
+			value, err := ParseAuthenticationPolicyPatPolicyDescribed(row.Value)
+			if err != nil {
+				return AuthenticationPolicyDetails{}, err
+			}
+			details.PatPolicy = value
+		case row.Property == "WORKLOAD_IDENTITY_POLICY":
+			value, err := ParseAuthenticationPolicyWorkloadIdentityPolicyDescribed(row.Value)
+			if err != nil {
+				return AuthenticationPolicyDetails{}, err
+			}
+			details.WorkloadIdentityPolicy = value
+		default:
+			log.Printf("[WARN] unrecognized authentication policy property: %s", row.Property)
+		}
+	}
+	if err := validateAuthenticationPolicyDescribed(details); err != nil {
+		return AuthenticationPolicyDetails{}, err
+	}
+	return details, nil
+}
+
+func (v *authenticationPolicies) DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*AuthenticationPolicyDetails, error) {
+	rows, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	details, err := ParseAuthenticationPolicyDescribed(rows)
+	if err != nil {
+		return nil, err
+	}
+	details.Id = id
+	return &details, nil
 }

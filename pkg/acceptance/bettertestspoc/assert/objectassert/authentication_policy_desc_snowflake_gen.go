@@ -182,7 +182,7 @@ func (a *AuthenticationPolicyDetailsAssert) HasCommentNotEmpty() *Authentication
 	return a
 }
 
-func (a *AuthenticationPolicyDetailsAssert) HasClientPolicyWith(subAsserts ...*AuthenticationPolicyClientPolicyEntryDetailsAssert) *AuthenticationPolicyDetailsAssert {
+func (a *AuthenticationPolicyDetailsAssert) HasClientPolicyWith(subAsserts ...*AuthenticationPolicyClientPolicyDetailsAssert) *AuthenticationPolicyDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicyDetails) error {
 		if len(o.ClientPolicy) != len(subAsserts) {
 			return fmt.Errorf("expected %d client policy; got: %d", len(subAsserts), len(o.ClientPolicy))

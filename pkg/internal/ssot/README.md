@@ -101,7 +101,8 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   `ssot.SuppressDescribe.WithKey("definition")`. Output strategies apply to fields, not collection elems.
   Statement suppression uses the resource's `DiffSuppressStatement` helper for strings, including string elems.
 - `ConflictsWith` names other attributes on the same level. The generator emits `schema.ConflictsWith` as a path from
-  the resource root: the attribute name at the top, and `parent.0.name` for a child of a list with `MaxItems: 1`.
+  the resource root: the attribute name at the top, and `parent.0.name` for a child of a single block (an `AttrObject`,
+  or a list of objects with `MaxItems: 1`).
   A set, or a list without that bound, cannot name these relations. `AtLeastOneOf` uses the same paths and may include
   this attribute.
 - `Sensitive` marks the schema field sensitive.
@@ -125,11 +126,24 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   `TypeList` with `MaxItems: 1`, and `MinItems: 1` when it is `Required`. The definition sets no `MinItems`, `MaxItems`, or
   `Elem`. Its SQL is its own `CreateSql`, `ObjectParameter(Sql("REST_CONFIG ="), Parentheses())`, and each child has the
   `CreateSql` it needs. Generated create parses it like a list block with `MaxItems: 1` (`Attribute.IsSingleBlock()`). A single
-  block that is a `SqlOnly` attribute is the same struct and is not a Terraform field. A list of exactly one object
+  block that is a `SqlOnly` attribute is the same struct and is not a Terraform field. Child `ConflictsWith` and
+  `AtLeastOneOf` use the same `name.0.child` paths as a list of objects with `MaxItems: 1`. A list of exactly one object
   (`MaxItems: 1`) is still a list: it is a slice in SQL.
+  `ChildrenRule` on the object (`ChildrenAtLeastOne` or `ChildrenExactlyOne`) adds `AtLeastOneValueSet` or `ExactlyOneValueSet` over
+  the `Children` that are fields of its SQL struct, so not the fixed texts, in `Children` order. It does not generate the
+  schema-side `AtLeastOneOf`.
   A fixed text of its struct, such as `TYPE = OAUTH`, is a `SqlOnly` child with `StaticSQL`, in SQL position. It is not a
   Terraform field: `NestedFields()` skips it and `NestedSqlFields()` has it. Only SDK SQL reads `NestedSqlFields()`.
   The same holds for the `Children` of a list element.
+  A `SqlOnly` child of an object element can also be a nested struct (`ObjectParameter(Sql("="), Parentheses())` with its own
+  `Children`), for SQL that is nested deeper than the Terraform block. A child of the element that such a struct holds is
+  written only inside it, so `client_policy` stays `{client_type, minimum_version}` in Terraform and is
+  `CLIENT_TYPE = (MINIMUM_VERSION = '...')` in SQL. `EnumKeyword(NoQuotes(), Required())` writes an enum as a bare keyword
+  (the driver name before its settings), and `IdentifierListKeyword()` writes a list of identifiers with no name, in
+  parentheses. A `SqlOnly` child can also be a keyword (`BoolKeyword(Sql("('ALL')"), FieldName("All"))` is an optional flag
+  with that text). An attribute that a `SqlOnly` nested struct holds counts as listed in the CREATE sequence when the struct
+  is: this is how an attribute that is a Terraform field is also the field of a struct that is not (`security_integrations`
+  is the list of `SECURITY_INTEGRATIONS = ('ALL')` or `= (a, b)`, and `ChildrenExactlyOne` requires one of the two).
 - **List or set of objects.** The list attribute has `Elem` of type `AttrObject`, and the `Children` of that `Elem` are the
   object fields. Terraform sees a nested block (`MaxItems: 1` makes it a single block). `Attribute.NestedFields()` returns the
   fields and `IsObjectList()` tells a list of objects from a list of scalars, so generators ask the attribute for its fields
@@ -275,7 +289,13 @@ enable nothing.
   independent. Leave the handwritten entry while only one of them is opted in.
 - `WithSdk(SdkShow(), SdkDescribe(), SdkDrop(), SdkCreate(), SdkAlter())` - SDK paired structs, DROP, CREATE, and ALTER (`make generate-sdk`).
   See [PairedStructs](../../sdk/generator/README.md#pairedstructs). Show and Describe fields come
-  from [SHOW and DESCRIBE](#show-and-describe) `Columns`, not from `Attributes`. `SdkDescribePlainOnlyField(name, kind)` adds a field that is only on the DESCRIBE plain struct. `name` is the Go field name and `kind` is its type, as in `PlainOnlyField`. It is not a column. `convert` skips it, and `additionalConvert` in the SDK ext file fills it. `OptionalInDb` is live for the mapped
+  from [SHOW and DESCRIBE](#show-and-describe) `Columns`, not from `Attributes`. `SdkDescribePlainOnlyField(name, kind)` adds a field that is only on the DESCRIBE plain struct. `name` is the Go field name and `kind` is its type, as in `PlainOnlyField`. It is not a column. `convert` skips it, and `additionalConvert` in the SDK ext file fills it.
+  `SdkShowOptionalOn()` adds the optional `ON` clause, after `IN` and before `STARTS WITH`.
+  `SdkShowResultFilterHook()` makes the generated `Show` drop each row for which `excludeFromShow()` returns true, a method
+  of the SHOW row that the SDK ext file implements. `SdkShowPlainOnly(&attr, kind)` marks a SHOW column as only on the plain
+  struct, with Go type `kind`. `attr` is the same `*Attribute` that sits in `Show.Columns`: the column stays there for the
+  schema and the assertions, the SHOW row does not read it, and `additionalConvert` fills the field. A string column with
+  `ManualConvert` is skipped by `convert` the same way. `OptionalInDb` is live for the mapped
   db and plain kinds. `StoredAsText` selects `BoolFromText` for a bool. A bool without the mark is still db `bool`.
   Other generators ignore the mark. See [Attribute](#attribute). `SdkDrop()` builds DROP from `Name`: `DROP`, the
   uppercase words, `IF EXISTS`, and the name. `SdkDropDoc()` overrides the default DROP doc URL. `SdkDropSafelyHook()`, `SdkDropSafelyForce()`, and
@@ -303,9 +323,9 @@ enable nothing.
   fields first, then the other fields in the struct.
   An identifier parameter gets `ValidIdentifierIfSet` on CREATE and SET. Comment stays an attribute clause beside that
   entry. Clause shape is `CreateSql`, `SetSql`,
-  and `UnsetSql` on [Attribute](attribute.go). A zero create or set clause uses the attribute type. `Clause` applies
+  and `UnsetSql` on [Attribute](attribute.go). A zero create or set clause uses the attribute type. `AsParameter()` on an object clause writes the nested struct as a parameter field (`NAME = (...)`) instead of a list. `PlainParameter()` is a parameter with no quote tag, for an attribute whose type default adds one (an enum gets `no_quotes`). `Clause` applies
   functional options on top of that default. A zero unset clause is a bool keyword. Leave the attribute out of `Unset`
-  to omit it, or set `UnsetSql` to a parameter clause to unset by setting a value. A list whose element is an enum uses
+  to omit it, or set `UnsetSql` to a parameter clause to unset by setting a value. A list or set whose element is an enum uses
   an item query struct named after that enum, with `ListItem` appended. Its field is `Value`, a required single-quoted
   keyword.
   `AlterText(sql)` is an optional single-quoted value with no equals, such as `REMOVE STORAGE_LOCATION 'name'`.
@@ -432,8 +452,9 @@ parameters attributes schema, and its changed keys are `<prefix>ParametersFieldN
 `Name` is a top-level resource or identifier attribute. An object `Elem` marks a nested column or a nested resource
 attribute, and both are left out. For now, the set/list fields have to be excluded
 (`TODO [SNOW-1648997]`): a column or resource attribute whose type is a set or a list is left out, including a set or
-list of scalars. A readonly column that is not a resource attribute is left out: a diff cannot change it. The key is
-`Name`, the resource attribute `ComputedIfAnyAttributeChanged` watches, including when `ShowName` differs.
+list of scalars. A readonly column that is not a resource attribute is left out: a diff cannot change it, unless its `ShowName` is a
+resource attribute (a DESCRIBE-only column that reads that attribute's property in another type, such as a plain string): the key
+is then that attribute. Otherwise the key is `Name`, the resource attribute `ComputedIfAnyAttributeChanged` watches.
 `fully_qualified_name` is emitted only when at least one identifier attribute is not ForceNew. Its keys are those
 attributes, in `IdentityFields` order: `database`, then `schema`, then `name`. `name` is ForceNew when
 `IdentityNameForceNew` is set. `database` and `schema` are ForceNew together when `IdentityHierarchyForceNew` is set.
@@ -582,8 +603,8 @@ A `Readonly` column must not sit on `Attributes`. It may still appear in `Set` o
 an ALTER field. A field in `Create`, `Set`, or `Unset` may be absent from `Attributes` when it is not a resource
 attribute. A CREATE-only field is an `Attribute` and is absent from `Columns`.
 A paired-field option that ssot does not map panics. There is no silent fallback. `StoredAsText` is mapped for a bool
-with neither optional flag. Anything else panics. A list of enums is plain `[]string` in the SDK struct, not a slice of
-the enum type.
+with neither optional flag. Anything else panics. A list of enums is plain `[]string` in a SHOW row, and a slice of
+the enum type in a details struct (also in its nested structs).
 
 #### Limitations
 
@@ -595,6 +616,10 @@ the enum type.
 - A list that is not a list of enums or of objects takes the item query struct name as a string. That struct stays in the SDK
   def. A list of objects is generated from its attributes: see [Lists and nested objects](#lists-and-nested-objects).
 - A list of enums is built in the SDK generator: struct name `{Enum}ListItem`, field `Value`, required single-quoted keyword. ssot should hold that description, and the generator should only translate it into the query struct. Do that together with more complex list items, not for this enum case alone.
+- The generated DESCRIBE parse reads a column in three ways: `DescribeProperty` (a string as it is), `DescribePropertyPrefix` (a nested
+  list) and `DescribePropertyParsed` (a hand-written `Parse<Name><Column>Described`). Some columns that need a hand-written parser
+  could be generated from the column itself: a list of enums (the items validated with the `To<Enum>` function of the element
+  enum), a single enum (one `To<Enum>` call), and a string whose `null` value means empty. They are hand-written for now.
 - Computed fields and `Deprecated` are not attribute fields. An explicit schema `Default` is not an attribute field.
   An optional int whose `Min` is 0 or less still emits `Default = IntDefault`. `NativeBool`
   keeps an optional bool as `TypeBool` and does not emit `Default`. `Min` and `Max` emit `ValidateDiagFunc`.
@@ -637,7 +662,7 @@ described by the same attribute as the Terraform block and the SQL. Generators t
 stays in the SDK ext file. `SdkDescribeDetailsForVariants()` on the base object (under `SdkDescribe`) emits the details of each
 variant that turns on `SdkDescribeDetails` (the variant needs no `DescribeRows`, it uses the ones of the base): the struct
 `<Variant>Details` from the Describe columns of the variant and the method `Describe<Variant>Details`, with the generated body of
-`SdkDescribeDetailsMethod()` and the hand-written `Parse<Variant>Described`. `SdkDescribeDetailsMethod()` also emits the `DescribeDetails` method: the interface declaration
+`SdkDescribeDetailsMethod()` and the hand-written `Parse<Variant>Described`. `DescribePropertyParsed(&attr, "NAME")` reads a column of any type from the property row with exactly that name, through the hand-written `Parse<Name><Column key in camel case>Described(value string) (<column type>, error)`. `SdkDescribeDetailsParseIgnoreUnknown()` makes the generated parse skip a property that has no mapping, with a warning, instead of returning an error: use it when Snowflake can add DESCRIBE properties without a provider release. `SdkDescribeDetailsRowsField(name, kind)` adds a field that keeps the original rows to the end of the details struct, and the generated parse fills it (for a legacy string `describe_output` that typed details cannot rebuild). `SdkDescribeDetailsMethod()` also emits the `DescribeDetails` method: the interface declaration
 and a generated body that calls `Describe`, parses the rows with `Parse<Name>Described(rows []<Name>Property)
 (<Name>Details, error)`, and sets `Id`. Without `SdkDescribeDetailsParse` that function is hand-written.
 `SdkDescribeDetailsParse(...)` generates `Parse<Name>Described`. Every `Describe.Columns` entry except `id` has one
@@ -647,7 +672,7 @@ contains the prefix. Exact properties are matched first, then prefixes, and any 
 (`Unrecognized <object words> property: <name>`). Two functions stay in the SDK ext file: the element parser of
 each prefix mapping, `Parse<Name><Column key in camel case without the plural s>Described(value string) (<element>,
 error)`, and `validate<Name>Described(details <Name>Details) error`, which runs last. Only string columns and nested
-lists are mapped: other types panic, since a silent conversion could change behavior.
+lists are mapped by the first two, and any other type is mapped by `DescribePropertyParsed`.
 
 A generator that needs the paired SHOW reads `PairedShowColumns`: `ShowGeneric` when that list is set, otherwise `Show.Columns`. A generator that needs DESCRIBE reads `Describe.Columns`. It does not
 derive one from the other, and it does not derive either from `Attributes`.

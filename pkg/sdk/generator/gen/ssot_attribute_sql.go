@@ -3,6 +3,7 @@ package gen
 import (
 	"fmt"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 )
 
@@ -187,6 +188,9 @@ func (v *QueryStruct) appendParameterClause(attr ssot.Attribute, clause ssot.Sql
 }
 
 func (v *QueryStruct) appendKeywordClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	if clause.ValueKeyword {
+		return v.appendValueKeywordClause(attr, clause, required)
+	}
 	if required {
 		panic(fmt.Sprintf("attribute %q: keyword clause is required", attr.Name))
 	}
@@ -199,6 +203,54 @@ func (v *QueryStruct) appendKeywordClause(attr ssot.Attribute, clause ssot.SqlCl
 		name = clause.Field
 	}
 	return v.OptionalSQLWithCustomFieldName(name, sql)
+}
+
+// appendValueKeywordClause adds the value of the attribute written as a bare keyword: an enum, or a list of identifiers.
+// The field name is the clause Field, or the attribute name.
+func (v *QueryStruct) appendValueKeywordClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	if (attr.Type == ssot.AttrList || attr.Type == ssot.AttrSet) && attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
+		return v.appendIdentifierListKeywordClause(attr, clause)
+	}
+	enum := clause.Enum
+	if enum == nil {
+		enum = attr.ColumnEnum()
+	}
+	if enum == nil || enum.Name == "" {
+		panic(fmt.Sprintf("attribute %q: enum keyword has no Enum", attr.Name))
+	}
+	if clause.Parentheses != "" || clause.Equals != "" {
+		panic(fmt.Sprintf("attribute %q: enum keyword has parentheses or equals", attr.Name))
+	}
+	name := clause.Field
+	if name == "" {
+		name = genhelpers.SnakeCaseToCamel(attr.Name)
+	}
+	opts := KeywordOptions()
+	switch clause.Quotes {
+	case "":
+	case ssot.SqlQuotesSingle:
+		opts = opts.SingleQuotes()
+	case ssot.SqlQuotesNo:
+		opts = opts.NoQuotes()
+	default:
+		panic(fmt.Sprintf("sql clause quotes %q", clause.Quotes))
+	}
+	if required {
+		return v.Enum(name, enum, opts.Required())
+	}
+	return v.OptionalEnum(name, enum, opts)
+}
+
+func (v *QueryStruct) appendIdentifierListKeywordClause(attr ssot.Attribute, clause ssot.SqlClause) *QueryStruct {
+	name := clause.Field
+	if name == "" {
+		name = genhelpers.SnakeCaseToCamel(attr.Name)
+	}
+	opts := KeywordOptions()
+	if clause.Parentheses == ssot.SqlParensYes {
+		opts = opts.Parentheses()
+	}
+	return v.UnnamedList(name, attr.Elem.IdentifierType, opts).WithValidation(ValidIdentifier, name)
 }
 
 func (v *QueryStruct) appendIdentifierClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {

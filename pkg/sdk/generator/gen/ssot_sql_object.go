@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 )
@@ -26,6 +27,13 @@ func (v *QueryStruct) appendObjectClause(attr ssot.Attribute, clause ssot.SqlCla
 	if name == "" {
 		name = genhelpers.SnakeCaseToCamel(attr.Name)
 	}
+	if clause.AsParameter {
+		opts := ParameterOptions().SQL(clause.SQL)
+		if required {
+			return v.QueryStructField(name, nested, opts.Required())
+		}
+		return v.OptionalQueryStructField(name, nested, opts)
+	}
 	opts := ListOptions().NoComma()
 	if clause.Parentheses == ssot.SqlParensYes {
 		opts = opts.Parentheses()
@@ -47,6 +55,17 @@ func queryStructFromObject(owner string, attr ssot.Attribute) *QueryStruct {
 	for i := range fields {
 		child := &fields[i]
 		nested = nested.appendAttributeClause(*child, child.EffectiveSqlClause(ssot.ClauseCreate), attributeSqlCreate)
+	}
+	if attr.ChildrenRule != "" {
+		names := collections.Map(attr.RuleFields(), func(child ssot.Attribute) string {
+			return clauseFieldName(child, attributeSqlCreate)
+		})
+		switch attr.ChildrenRule {
+		case ssot.ChildrenAtLeastOne:
+			nested = nested.WithValidation(AtLeastOneValueSet, names...)
+		case ssot.ChildrenExactlyOne:
+			nested = nested.WithValidation(ExactlyOneValueSet, names...)
+		}
 	}
 	return nested
 }
@@ -72,6 +91,15 @@ func queryStructFromObjectList(owner string, list ssot.Attribute) *QueryStruct {
 			// The fields of a nested struct belong to the variant too.
 			for _, nested := range field.Children {
 				inVariant[nested.Name] = struct{}{}
+			}
+		}
+	}
+
+	// A child that a sibling SqlOnly nested struct holds is written only inside that struct.
+	for _, sibling := range list.NestedSqlFields() {
+		if sibling.SqlOnly && sibling.Type == ssot.AttrObject {
+			for _, held := range sibling.Children {
+				inVariant[held.Name] = struct{}{}
 			}
 		}
 	}

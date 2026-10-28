@@ -43,6 +43,11 @@ type DescribeParseConfig struct {
 	ErrorLabel string
 	// ValidateFunc is the hand-written check of the parsed details: func(<DetailsType>) error.
 	ValidateFunc string
+	// IgnoreUnknown skips a property with no mapping and logs a warning, instead of returning an error.
+	IgnoreUnknown bool
+	// RowsField and RowsFieldType keep the original rows in the details: details.<RowsField> = <RowsFieldType>(rows). Empty is off.
+	RowsField     string
+	RowsFieldType string
 	// Properties are the exact property matches, in order.
 	Properties []DescribeParseProperty
 	// Prefixes are the nested list matches, in order, after the exact ones.
@@ -53,6 +58,8 @@ type DescribeParseConfig struct {
 type DescribeParseProperty struct {
 	Property string
 	Field    string
+	// Parser is the hand-written func(value string) (<field type>, error). Empty reads the value as it is.
+	Parser string
 }
 
 // DescribeParsePrefix reads a list field from every row whose property name contains Prefix.

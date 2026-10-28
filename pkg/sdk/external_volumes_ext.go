@@ -49,6 +49,8 @@ func GetStorageLocationStorageProvider(i ExternalVolumeStorageLocationItem) (Sto
 // ExternalVolumeStorageLocationDetails is the typed representation of a storage location
 // returned by DESCRIBE EXTERNAL VOLUME. Common fields live on the wrapper; provider-specific
 // fields live on exactly one of the provider sub-structs (the rest are nil).
+// TODO [next PRs]: generate this element struct from the Elem children of the column (SdkDescribeDetailsNestedField), like the object columns.
+// Authentication policy has the same hand-written element (AuthenticationPolicyClientPolicyDetails).
 type ExternalVolumeStorageLocationDetails struct {
 	Name                    string
 	StorageProvider         string

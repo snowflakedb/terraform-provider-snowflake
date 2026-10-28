@@ -160,9 +160,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"api_key", "api_provider", "allowed_prefixes", "blocked_prefixes",
 	}},
 	// TypeString of each property .Value (today’s public describe_output).
-	{ObjectStruct: sdk.AuthenticationPolicyDescribeDetails{}, IsDescribe: true},
 	// Property-row list entry (same pattern as SecurityIntegrationProperty / NetworkPolicyProperty).
-	{ObjectStruct: sdk.AuthenticationPolicyDescription{}, UsedAsListEntry: true},
+	{ObjectStruct: sdk.AuthenticationPolicyProperty{}, UsedAsListEntry: true},
 	// ManualFields uses generator snake_case (OAuth → o_auth, SigV4 → sig_v4); ext re-adds public oauth_* / sigv4_* keys.
 	{ObjectStruct: sdk.CatalogIntegrationDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "oauth_rest_authentication", "bearer_rest_authentication", "sigv4_rest_authentication"}},
 	{ObjectStruct: sdk.CatalogIntegrationAwsGlueDetails{}, IsDescribe: true},

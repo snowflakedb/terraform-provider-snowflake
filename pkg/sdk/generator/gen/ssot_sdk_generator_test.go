@@ -55,6 +55,7 @@ func Test_ShowDescribeFromObject(t *testing.T) {
 				ssot.SdkShowOptionalSql("HISTORY"),
 				ssot.SdkShowOptionalLike(),
 				ssot.SdkShowOptionalExtendedIn(),
+				ssot.SdkShowOptionalOn(),
 				ssot.SdkShowOptionalStartsWith(),
 				ssot.SdkShowOptionalLimitFrom(),
 				ssot.SdkShowOptionalLimit(),
@@ -80,6 +81,7 @@ func Test_ShowDescribeFromObject(t *testing.T) {
 				OptionalSQL("HISTORY").
 				OptionalLike().
 				OptionalExtendedIn().
+				OptionalOn().
 				OptionalStartsWith().
 				OptionalLimitFrom().
 				OptionalLimit(),
@@ -1789,4 +1791,44 @@ func Test_DescribeOperationFromObject_detailsForVariants(t *testing.T) {
 			NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(base)
 		})
 	})
+}
+
+func Test_DescribeOperationFromObject_detailsParseParsedAndRows(t *testing.T) {
+	property := ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true}
+	value := ssot.Attribute{Name: "value", Type: ssot.AttrString, Readonly: true}
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true}
+	mode := ssot.Attribute{Name: "mode", Type: ssot.AttrEnum, Enum: ssot.NewEnum("WidgetMode", "WidgetModes", "FAST"), Readonly: true}
+	obj := ssot.Object{
+		Name:         "Widget",
+		NamePlural:   "Widgets",
+		IdType:       "AccountObjectIdentifier",
+		Describe:     ssot.OutputSpec{Columns: []*ssot.Attribute{&name, &mode}},
+		DescribeRows: ssot.OutputSpec{Columns: []*ssot.Attribute{&property, &value}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(
+			ssot.SdkDescribeDetails(
+				ssot.SdkDescribeDetailsRowsField("descriptions", "WidgetDescriptions"),
+				ssot.SdkDescribeDetailsParseIgnoreUnknown(),
+				ssot.SdkDescribeDetailsParse(
+					ssot.DescribeProperty(&name, "NAME"),
+					ssot.DescribePropertyParsed(&mode, "MODE"),
+				),
+			),
+		))},
+	}
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(obj)
+	require.Equal(t, &DescribeParseConfig{
+		RowsType:      "WidgetProperty",
+		PropertyField: "Property",
+		ValueField:    "Value",
+		DetailsType:   "WidgetDetails",
+		ErrorLabel:    "widget",
+		ValidateFunc:  "validateWidgetDescribed",
+		IgnoreUnknown: true,
+		RowsField:     "descriptions",
+		RowsFieldType: "WidgetDescriptions",
+		Properties: []DescribeParseProperty{
+			{Property: "NAME", Field: "Name"},
+			{Property: "MODE", Field: "Mode", Parser: "ParseWidgetModeDescribed"},
+		},
+	}, got.DescribeParse)
 }

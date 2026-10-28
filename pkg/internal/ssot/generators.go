@@ -28,11 +28,17 @@ type SdkGenerator struct {
 	ShowOptionalLike       bool
 	ShowOptionalIn         bool
 	ShowOptionalExtendedIn bool
+	ShowOptionalOn         bool
 	ShowOptionalStartsWith bool
 	ShowOptionalLimitFrom  bool
 	ShowOptionalLimit      bool
 	ShowByIDFiltering      []SdkShowByIDFilteringKind
 	ShowQueryStructName    string
+	// ShowResultFilterHook makes the generated Show drop rows for which the SDK ext file's excludeFromShow returns true.
+	ShowResultFilterHook bool
+	// ShowPlainOnlyFields are SHOW columns that only the plain struct has. convert skips them and additionalConvert in the
+	// SDK ext file fills them.
+	ShowPlainOnlyFields []SdkShowPlainOnlyField
 
 	DescribeDoc     string
 	DescribeSql     string
@@ -42,6 +48,8 @@ type SdkGenerator struct {
 	// whose elements are a hand-written struct, so the column is not derived from its placeholder Elem.
 	DescribeDetails             bool
 	DescribeDetailsNestedFields []*Attribute
+	// DescribeDetailsRowsField is a field at the end of the details struct that keeps the original DESCRIBE rows. It is not a column.
+	DescribeDetailsRowsField *SdkPlainOnlyField
 	// DescribeDetailsForVariants emits, for each variant of this object that turns on SdkDescribeDetails, its details
 	// struct <Variant>Details and the method Describe<Variant>Details: Describe, Parse<Variant>Described, and Id.
 	DescribeDetailsForVariants bool
@@ -51,8 +59,10 @@ type SdkGenerator struct {
 	// DescribeDetailsParse emits Parse<Name>Described, which fills the details struct from the DESCRIBE property rows.
 	// Every Describe column except id is mapped by one entry. The per-element parser of a prefix entry and the
 	// validate<Name>Described function stay in the SDK ext file.
-	DescribeDetailsParse    []DescribeDetailsMapping
-	DescribeQueryStructName string
+	DescribeDetailsParse []DescribeDetailsMapping
+	// DescribeDetailsParseIgnoreUnknown skips a property with no mapping and logs a warning, instead of returning an error.
+	DescribeDetailsParseIgnoreUnknown bool
+	DescribeQueryStructName           string
 	// DescribePlainOnlyFields are fields on the DESCRIBE plain struct that are not DESCRIBE columns.
 	// convert skips them. additionalConvert in the SDK ext file fills them.
 	DescribePlainOnlyFields []SdkPlainOnlyField
@@ -285,11 +295,22 @@ type DescribeDetailsMapping struct {
 	Attr     *Attribute
 	Property string
 	Prefix   bool
+	// Parsed is an exact property whose value is parsed by a hand-written function.
+	Parsed bool
 }
 
 // DescribeProperty reads a string column from the property row with exactly this name.
 func DescribeProperty(attr *Attribute, property string) DescribeDetailsMapping {
 	return DescribeDetailsMapping{Attr: attr, Property: property}
+}
+
+// TODO [next PRs]: Generate the parser of a list of enums, of a single enum, and of a string whose null value means empty from the
+// column itself, so that DescribePropertyParsed is needed only for values with their own logic.
+
+// DescribePropertyParsed reads a column of any type from the property row with exactly this name. The value goes through the
+// hand-written Parse<Name><Column key in camel case>Described(value string) (<column type>, error).
+func DescribePropertyParsed(attr *Attribute, property string) DescribeDetailsMapping {
+	return DescribeDetailsMapping{Attr: attr, Property: property, Parsed: true}
 }
 
 // DescribePropertyPrefix reads a nested list column from every property row whose name contains prefix. The column must
@@ -304,6 +325,20 @@ func DescribePropertyPrefix(attr *Attribute, prefix string) DescribeDetailsMappi
 // Parse<Name>Described, which SdkDescribeDetailsMethod calls. validate<Name>Described stays in the SDK ext file.
 func SdkDescribeDetailsParse(mappings ...DescribeDetailsMapping) SdkDescribeDetailsOption {
 	return func(s *SdkGenerator) { s.DescribeDetailsParse = append(s.DescribeDetailsParse, mappings...) }
+}
+
+// SdkDescribeDetailsRowsField adds a field that keeps the original DESCRIBE rows to the end of the details struct, and the generated
+// Parse<Name>Described fills it. name is the Go field name (it can be unexported) and kind is a Go type with the rows as its underlying type.
+// Use it when a legacy describe_output block of raw strings is built from the rows, because the typed details cannot rebuild them.
+func SdkDescribeDetailsRowsField(name, kind string) SdkDescribeDetailsOption {
+	return func(s *SdkGenerator) { s.DescribeDetailsRowsField = &SdkPlainOnlyField{Name: name, Kind: kind} }
+}
+
+// SdkDescribeDetailsParseIgnoreUnknown makes the generated Parse<Name>Described skip a property that has no mapping, and log a
+// warning, instead of returning an "Unrecognized property" error. Use it when Snowflake can add properties to the DESCRIBE
+// output without the provider being updated.
+func SdkDescribeDetailsParseIgnoreUnknown() SdkDescribeDetailsOption {
+	return func(s *SdkGenerator) { s.DescribeDetailsParseIgnoreUnknown = true }
 }
 
 // SdkDescribeDetailsMethod emits the DescribeDetails method on the interface and its body: it calls Describe, parses

@@ -113,6 +113,27 @@ func Test_PairedStructsFromColumns_matchesHandwrittenChain(t *testing.T) {
 	)
 }
 
+func Test_ShowPairedStructs_plainOnlyHookAndManualConvert(t *testing.T) {
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
+	database := ssot.Attribute{Name: "database_name", Type: ssot.AttrString, OptionalInDb: true, ManualConvert: true}
+	scopes := ssot.Attribute{Name: "target_scopes", Type: ssot.AttrList, Elem: &ssot.Attribute{Type: ssot.AttrEnum}}
+	obj := ssot.Object{
+		Name:       "Fake",
+		NamePlural: "Fakes",
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&name, &database, &scopes}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShow(
+			ssot.SdkShowResultFilterHook(),
+			ssot.SdkShowPlainOnly(&scopes, "[]FakeScope"),
+		))},
+	}
+	want := StructPair("fakesRow", "Fake").
+		Text("name").
+		OptionalText("database_name", WithRequiredInPlain(), WithManualConvert()).
+		PlainOnlyField("TargetScopes", "[]FakeScope").
+		WithShowResultFilterHook()
+	require.Equal(t, want, ShowPairedStructs(obj))
+}
+
 func Test_PairedStructsFromColumns_panics(t *testing.T) {
 	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
 	state := NewEnum("FakeState", "FakeStates", "STARTED")
@@ -259,4 +280,13 @@ func pairedFieldByColumn(pairs *PairedStructs, column string) pairedField {
 		}
 	}
 	panic("missing column " + column)
+}
+
+func Test_detailsGoType(t *testing.T) {
+	family := ssot.NewEnum("WidgetFamily", "WidgetFamilies", "SMALL")
+	obj := ssot.Object{Name: "Widget"}
+	require.Equal(t, "[]WidgetFamily", detailsGoType(obj, ssot.Attribute{Name: "families", Type: ssot.AttrSet, Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: family}}))
+	require.Equal(t, "[]WidgetFamily", detailsGoType(obj, ssot.Attribute{Name: "families", Type: ssot.AttrList, Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: family}}))
+	require.Equal(t, "[]string", detailsGoType(obj, ssot.Attribute{Name: "names", Type: ssot.AttrSet, Elem: &ssot.Attribute{Type: ssot.AttrString}}))
+	require.Equal(t, "WidgetFamily", detailsGoType(obj, ssot.Attribute{Name: "family", Type: ssot.AttrEnum, Enum: family}))
 }

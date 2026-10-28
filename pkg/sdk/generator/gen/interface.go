@@ -85,6 +85,11 @@ type Interface struct {
 	// ShowByIDProjections are ShowByID and ShowByIDSafely methods that return a projected row.
 	ShowByIDProjections []*ShowByIDProjection
 
+	// checkStructShapes makes preprocessing panic when two operations define a struct with the same name and a different
+	// shape. The ssot operation builders set it: they derive a nested struct name from the object and the attribute, so
+	// CREATE and ALTER SET share the struct.
+	checkStructShapes bool
+
 	// UnitTests is the prepared model for the optional unit_tests generation part.
 	UnitTests *UnitTestsModel
 
