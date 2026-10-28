@@ -10,6 +10,7 @@ const (
 	AuthenticationPolicies         datasource = "snowflake_authentication_policies"
 	BackupPolicies                 datasource = "snowflake_backup_policies"
 	CatalogIntegrations            datasource = "snowflake_catalog_integrations"
+	CodeBundles                    datasource = "snowflake_code_bundles"
 	ComputePools                   datasource = "snowflake_compute_pools"
 	Connections                    datasource = "snowflake_connections"
 	CortexAgents                   datasource = "snowflake_cortex_agents"
