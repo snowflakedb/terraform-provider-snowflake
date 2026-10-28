@@ -85,8 +85,15 @@ type Attribute struct {
 	SetSql        SqlClause // SET SQL clause. Zero is absent from that statement.
 	UnsetSql      SqlClause // UNSET SQL clause. Zero is absent from that statement.
 	DiffSuppress  DiffSuppress
-	// ConflictsWith names other attributes on the same object. The generator emits schema.ConflictsWith.
+	// ConflictsWith names other attributes on the same level. The generator emits schema.ConflictsWith
+	// as a path from the resource root: the name at the top, and parent.0.name under a list with MaxItems 1.
+	// A set, or a list without that bound, cannot name these relations.
 	ConflictsWith []Attribute
+	// AtLeastOneOf names attributes of which at least one must be set. Paths follow ConflictsWith.
+	// The list may include this attribute.
+	AtLeastOneOf []Attribute
+	// Sensitive marks the Terraform schema field sensitive.
+	Sensitive bool
 	// CreateOnly marks an optional bool that is applied only on create.
 	// The generator emits IgnoreAfterCreation and a create helper, not an update helper.
 	// The Terraform type stays a boolean string unless NativeBool is set.

@@ -18,6 +18,7 @@ type ResourceAttribute struct {
 	Required             bool
 	Optional             bool
 	ForceNew             bool
+	Sensitive            bool
 	MinItems             *int
 	MaxItems             *int
 	DescriptionExpr      string
@@ -25,6 +26,7 @@ type ResourceAttribute struct {
 	ValidateDiagExpr     string
 	DiffSuppressExpr     string
 	ConflictsWith        []string
+	AtLeastOneOf         []string
 	ExactlyOneOf         []string
 	Elem                 *ResourceAttribute
 	Children             []ResourceAttribute

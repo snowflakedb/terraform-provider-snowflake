@@ -56,6 +56,12 @@ Cannot reset ERROR_INTEGRATION property
 
 The provider now clears the current error integration and then sets the new one. No configuration changes are required. After upgrading, apply the same configuration that previously failed. This resource is still in preview and will be reworked in the future.
 
+### *(bug fix)* `snowflake_alert` rejects a schedule that sets both `cron` and `interval`
+
+[`snowflake_alert`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/alert) treats `alert_schedule.cron` and `alert_schedule.interval` as mutually exclusive. The conflict check used `alert_schedule.interval` and `alert_schedule.cron`, which Terraform cannot read on a single-item list, so a configuration that set both was accepted.
+
+The check now uses `alert_schedule.0.interval` and `alert_schedule.0.cron`. Setting both fails at plan time. Remove one of them. Configurations that set only one are unchanged.
+
 ### *(bug fix)* `snowflake_resource_monitor` now saves configured values in state
 
 Previously, [`snowflake_resource_monitor`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/resource_monitor) left some optional fields empty in Terraform state when your configuration used the value Snowflake already had. A number could appear as `0`, and text could appear blank, although the value was present both in your configuration and in Snowflake. This affected:

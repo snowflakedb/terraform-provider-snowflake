@@ -75,14 +75,7 @@ func ValidateObject(obj Object) {
 			panic(fmt.Sprintf("object %q: NativeBool attribute %q must be a bool", obj.Name, a.Name))
 		}
 		validateSkipCreateBlock(obj, a)
-		for _, other := range a.ConflictsWith {
-			if other.Name == a.Name {
-				panic(fmt.Sprintf("object %q: attribute %q conflicts with itself", obj.Name, a.Name))
-			}
-			if _, ok := attrs[other.Name]; !ok {
-				panic(fmt.Sprintf("object %q: attribute %q conflicts with unknown attribute %q", obj.Name, a.Name, other.Name))
-			}
-		}
+		validateAttributeRelations(obj, a, obj.Attributes)
 	}
 	nested := nestedAttributeNames(obj)
 	validateColumnList(obj, "SHOW", obj.Show.Columns, attrs, sqlOnly, nested)
@@ -103,6 +96,63 @@ func ValidateObject(obj Object) {
 	obj.ParameterAssertionNames()
 	validateSchemaStateUpgraders(obj)
 	validateCustomizeDiff(obj)
+}
+
+func validateAttributeRelations(obj Object, a Attribute, siblings []Attribute) {
+	siblingByName := make(map[string]Attribute, len(siblings))
+	for _, sibling := range siblings {
+		siblingByName[sibling.Name] = sibling
+	}
+	for _, other := range a.ConflictsWith {
+		if other.Name == a.Name {
+			panic(fmt.Sprintf("object %q: attribute %q conflicts with itself", obj.Name, a.Name))
+		}
+		target, ok := siblingByName[other.Name]
+		if !ok {
+			panic(fmt.Sprintf("object %q: attribute %q conflicts with unknown attribute %q", obj.Name, a.Name, other.Name))
+		}
+		if target.Required {
+			panic(fmt.Sprintf("object %q: attribute %q conflicts with required attribute %q", obj.Name, a.Name, other.Name))
+		}
+	}
+	if len(a.ConflictsWith) > 0 && a.Required {
+		panic(fmt.Sprintf("object %q: ConflictsWith attribute %q is required", obj.Name, a.Name))
+	}
+	for _, other := range a.AtLeastOneOf {
+		target, ok := siblingByName[other.Name]
+		if !ok {
+			panic(fmt.Sprintf("object %q: attribute %q at least one of unknown attribute %q", obj.Name, a.Name, other.Name))
+		}
+		if target.Required {
+			panic(fmt.Sprintf("object %q: attribute %q at least one of required attribute %q", obj.Name, a.Name, other.Name))
+		}
+	}
+	if len(a.AtLeastOneOf) > 0 && a.Required {
+		panic(fmt.Sprintf("object %q: AtLeastOneOf attribute %q is required", obj.Name, a.Name))
+	}
+	fields := a.NestedFields()
+	if len(fields) == 0 {
+		return
+	}
+	if nestedRelations(fields) && !isSingleListBlock(a) {
+		panic(fmt.Sprintf("object %q: attribute %q relations require a list with MaxItems 1", obj.Name, a.Name))
+	}
+	for _, child := range fields {
+		validateAttributeRelations(obj, child, fields)
+	}
+}
+
+func nestedRelations(fields []Attribute) bool {
+	for _, field := range fields {
+		if len(field.ConflictsWith) > 0 || len(field.AtLeastOneOf) > 0 || nestedRelations(field.NestedFields()) {
+			return true
+		}
+	}
+	return false
+}
+
+func isSingleListBlock(a Attribute) bool {
+	return a.Type == AttrList && a.MaxItems != nil && *a.MaxItems == 1
 }
 
 func validateAttribute(obj Object, a Attribute) {

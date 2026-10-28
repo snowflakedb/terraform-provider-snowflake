@@ -128,6 +128,7 @@ var ExternalVolumeStorageLocationAttrs = struct {
 	AwsSecretKey: ssot.Attribute{
 		Name:        "storage_aws_secret_key",
 		Type:        ssot.AttrString,
+		Sensitive:   true,
 		Description: "Specifies the AWS secret key for the S3-compatible storage location. Only applicable for S3COMPAT storage provider.",
 		CreateSql:   ssot.Clause(ssot.Sql("AWS_SECRET_KEY"), ssot.Required()),
 	},

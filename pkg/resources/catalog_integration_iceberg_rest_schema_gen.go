@@ -97,11 +97,13 @@ var catalogIntegrationIcebergRestAttributesSchema = catalogIntegrationIcebergRes
 					Type:        tfschema.TypeString,
 					Required:    true,
 					ForceNew:    true,
+					Sensitive:   true,
 					Description: "Specifies the client ID of the OAuth2 credential.",
 				},
 				"oauth_client_secret": {
 					Type:        tfschema.TypeString,
 					Required:    true,
+					Sensitive:   true,
 					Description: "Specifies the secret of the OAuth2 credential.",
 				},
 				"oauth_allowed_scopes": {
@@ -132,6 +134,7 @@ var catalogIntegrationIcebergRestAttributesSchema = catalogIntegrationIcebergRes
 				"bearer_token": {
 					Type:        tfschema.TypeString,
 					Required:    true,
+					Sensitive:   true,
 					Description: "The bearer token for the identity provider.",
 				},
 			},

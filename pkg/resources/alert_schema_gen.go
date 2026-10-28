@@ -56,11 +56,17 @@ var alertAttributesSchema = alertAttributesModificationExt(map[string]*tfschema.
 							},
 						},
 					},
+					ConflictsWith: []string{
+						"alert_schedule.0.interval",
+					},
 					Description: "Specifies the cron expression for the alert. The cron expression must be in the following format: \"minute hour day-of-month month day-of-week\". The following values are supported: minute: 0-59 hour: 0-23 day-of-month: 1-31 month: 1-12 day-of-week: 0-6 (0 is Sunday)",
 				},
 				"interval": {
-					Type:        tfschema.TypeInt,
-					Optional:    true,
+					Type:     tfschema.TypeInt,
+					Optional: true,
+					ConflictsWith: []string{
+						"alert_schedule.0.cron",
+					},
 					Description: "Specifies the interval in minutes for the alert schedule. The interval must be greater than 0 and less than 1440 (24 hours).",
 				},
 			},

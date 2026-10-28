@@ -54,13 +54,25 @@ var AllowedProviderOption = ssot.NewEnum(
 // Columns can point at the same definitions instead of restating names.
 //
 // mfa_authentication_methods stays in the schema ext. It is a deprecated set with no effect,
-// not a CREATE/ALTER column. The ext also sets AtLeastOneOf and keeps the case-sensitive
-// wording on the nested enum sets.
+// not a CREATE/ALTER column. Nested enum sets stay case-sensitive: the generator normalizes
+// them, and the ext clears that and keeps the case-sensitive wording.
 //
 // Sets are created through hand-written per-element mappers named to<Stem><Field>. The
 // security integrations option is mapped as a whole, because the SDK takes one option request.
 // The nested blocks are omitted from DESCRIBE Columns. A writable column must be in
 // Attributes, and the raw DESCRIBE property strings are not a separate attribute.
+var authenticationPolicyMfaAtLeastOneOf = []ssot.Attribute{
+	{Name: "enforce_mfa_on_external_authentication"},
+	{Name: "allowed_methods"},
+}
+
+var authenticationPolicyPatAtLeastOneOf = []ssot.Attribute{
+	{Name: "default_expiry_in_days"},
+	{Name: "max_expiry_in_days"},
+	{Name: "require_role_restriction_for_service_users"},
+	{Name: "network_policy_evaluation"},
+}
+
 var AuthenticationPolicyAttrs = struct {
 	AuthenticationMethods  ssot.Attribute
 	MfaEnrollment          ssot.Attribute
@@ -138,10 +150,11 @@ var AuthenticationPolicyAttrs = struct {
 		Description: "Specifies the multi-factor authentication (MFA) methods that users can use as a second factor of authentication.",
 		Elem: ssot.ObjectElem([]ssot.Attribute{
 			{
-				Name:        "enforce_mfa_on_external_authentication",
-				Type:        ssot.AttrEnum,
-				Description: "Determines whether multi-factor authentication (MFA) is enforced on external authentication.",
-				Enum:        EnforceMfaOnExternalAuthenticationOption,
+				Name:         "enforce_mfa_on_external_authentication",
+				Type:         ssot.AttrEnum,
+				Description:  "Determines whether multi-factor authentication (MFA) is enforced on external authentication.",
+				Enum:         EnforceMfaOnExternalAuthenticationOption,
+				AtLeastOneOf: authenticationPolicyMfaAtLeastOneOf,
 			},
 			{
 				Name:        "allowed_methods",
@@ -151,6 +164,7 @@ var AuthenticationPolicyAttrs = struct {
 					Type: ssot.AttrEnum,
 					Enum: MfaPolicyAllowedMethodsOption,
 				},
+				AtLeastOneOf: authenticationPolicyMfaAtLeastOneOf,
 			},
 		}),
 	},
@@ -161,27 +175,31 @@ var AuthenticationPolicyAttrs = struct {
 		Description: "Specifies the policy for programmatic access tokens.",
 		Elem: ssot.ObjectElem([]ssot.Attribute{
 			{
-				Name:        "default_expiry_in_days",
-				Type:        ssot.AttrInt,
-				Description: "Specifies the default expiration time (in days) for a programmatic access token.",
-				Min:         new(1),
+				Name:         "default_expiry_in_days",
+				Type:         ssot.AttrInt,
+				Description:  "Specifies the default expiration time (in days) for a programmatic access token.",
+				Min:          new(1),
+				AtLeastOneOf: authenticationPolicyPatAtLeastOneOf,
 			},
 			{
-				Name:        "max_expiry_in_days",
-				Type:        ssot.AttrInt,
-				Description: "Specifies the maximum number of days that can be set for the expiration time for a programmatic access token.",
-				Min:         new(1),
+				Name:         "max_expiry_in_days",
+				Type:         ssot.AttrInt,
+				Description:  "Specifies the maximum number of days that can be set for the expiration time for a programmatic access token.",
+				Min:          new(1),
+				AtLeastOneOf: authenticationPolicyPatAtLeastOneOf,
 			},
 			{
-				Name:        "require_role_restriction_for_service_users",
-				Type:        ssot.AttrBool,
-				Description: "If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role.",
+				Name:         "require_role_restriction_for_service_users",
+				Type:         ssot.AttrBool,
+				Description:  "If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role.",
+				AtLeastOneOf: authenticationPolicyPatAtLeastOneOf,
 			},
 			{
-				Name:        "network_policy_evaluation",
-				Type:        ssot.AttrEnum,
-				Description: "Specifies the network policy evaluation for the PAT.",
-				Enum:        NetworkPolicyEvaluationOption,
+				Name:         "network_policy_evaluation",
+				Type:         ssot.AttrEnum,
+				Description:  "Specifies the network policy evaluation for the PAT.",
+				Enum:         NetworkPolicyEvaluationOption,
+				AtLeastOneOf: authenticationPolicyPatAtLeastOneOf,
 			},
 		}),
 	},

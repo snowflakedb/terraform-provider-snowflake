@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-// Nested blocks and ExactlyOneOf are generated. This adds sensitive fields, empty-string checks,
+// Nested blocks, ExactlyOneOf, and Sensitive are generated. This adds empty-string checks,
 // describe diff suppressors, and the describe-only catalog_source attribute.
 func catalogIntegrationIcebergRestAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
 	s["catalog_namespace"].ValidateFunc = validation.StringIsNotEmpty
@@ -28,14 +28,11 @@ func catalogIntegrationIcebergRestAttributesModificationExt(s map[string]*schema
 	oauth["oauth_token_uri"].ValidateFunc = validation.StringIsNotEmpty
 	oauth["oauth_token_uri"].DiffSuppressFunc = IgnoreChangeToCurrentSnowflakePlainValueInOutput("describe_output.0.oauth_rest_authentication", "oauth_token_uri")
 	oauth["oauth_client_id"].ValidateFunc = validation.StringIsNotEmpty
-	oauth["oauth_client_id"].Sensitive = true
 	oauth["oauth_client_secret"].ValidateFunc = validation.StringIsNotEmpty
-	oauth["oauth_client_secret"].Sensitive = true
 	oauth["oauth_client_secret"].Description = externalChangesNotDetectedFieldDescription("Specifies the secret of the OAuth2 credential.")
 
 	bearer := s["bearer_rest_authentication"].Elem.(*schema.Resource).Schema
 	bearer["bearer_token"].ValidateFunc = validation.StringIsNotEmpty
-	bearer["bearer_token"].Sensitive = true
 	bearer["bearer_token"].Description = externalChangesNotDetectedFieldDescription("The bearer token for the identity provider.")
 
 	sigv4 := s["sigv4_rest_authentication"].Elem.(*schema.Resource).Schema
