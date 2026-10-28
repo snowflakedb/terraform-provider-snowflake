@@ -89,7 +89,8 @@ its `Name`, extend SSOT with an explicit parameter-level override.
 - `IncludeAliasedInTheDescription` - the resource description lists enum aliases. Without the mark, the description
   lists canonical values. Warehouse size sets it.
 - `StoredAsText` - the db column is text, and the plain kind stays the semantic type. For a bool, the paired-struct
-  generator calls `BoolFromText`. A bool without the mark is still db `bool`. Other generators ignore the mark.
+  generator calls `BoolFromText`, which is true when the column is `Y`. `BoolParsed` with `StoredAsText` parses
+  `true`/`false` through `strconv.ParseBool`. A bool without `StoredAsText` is still db `bool`. Other generators ignore both marks.
   See [PairedStructs](../../sdk/generator/README.md#pairedstructs).
 - `DiffSuppress` - a suppressor composed with inferred identifier and enum normalization. Set it directly to
   `ssot.SuppressShow`, `ssot.SuppressDescribe`, or `ssot.SuppressStatement`; combine them with

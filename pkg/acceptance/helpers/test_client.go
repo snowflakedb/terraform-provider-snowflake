@@ -22,6 +22,7 @@ type TestClient struct {
 	Application                  *ApplicationClient
 	ApplicationPackage           *ApplicationPackageClient
 	AuthenticationPolicy         *AuthenticationPolicyClient
+	BackupPolicy                 *BackupPolicyClient
 	BcrBundles                   *BcrBundlesClient
 	Budget                       *BudgetClient
 	ComputePool                  *ComputePoolClient
@@ -136,6 +137,7 @@ func NewTestClient(
 		Application:                  NewApplicationClient(context, idsGenerator),
 		ApplicationPackage:           NewApplicationPackageClient(context, idsGenerator),
 		AuthenticationPolicy:         NewAuthenticationPolicyClient(context, idsGenerator),
+		BackupPolicy:                 NewBackupPolicyClient(context, idsGenerator),
 		BcrBundles:                   NewBcrBundlesClient(context),
 		Budget:                       NewBudgetClient(context, idsGenerator),
 		ComputePool:                  NewComputePoolClient(context, idsGenerator),
