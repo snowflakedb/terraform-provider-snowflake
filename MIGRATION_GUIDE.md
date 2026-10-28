@@ -41,11 +41,39 @@ These features will be marked as stable in future releases. Breaking changes are
 
 No changes are required for existing configurations unless you want to adopt these preview features with Terraform.
 
-### *(behavior change)* `IMPORT_BOOLEAN_DEFAULT` is no longer enabled by default
+### *(new feature)* Opt-in experiment: permissive import mode
 
-`IMPORT_BOOLEAN_DEFAULT` is now an opt-in experiment, and it's deprecated in favor of `IMPORT_PERMISSIVE_MODE` (see [Opt-in experiment: permissive import mode](#new-feature-opt-in-experiment-permissive-import-mode)):
+Imports follow one of two modes:
 
-- **If you rely on the default configuration:** importing the stage, stream, and storage integration resources now sets boolean fields that use the special `"default"` value to the Snowflake value. The plan after import shows a change for the ones that your configuration omits (e.g. `use_privatelink_endpoint: "false" -> "default"`). To keep the previous behavior, enable the experiment:
+- **Enforcing mode** (default): the plan after import shows a change for every attribute that the configuration omits but that has a value in Snowflake, whether it's the Snowflake default or not. Applying the plan resets these attributes to their Snowflake defaults. To avoid the changes, add the values to your configuration.
+- **Permissive mode** (opt-in): the provider accepts the values the object already has for the attributes that the configuration omits, so the plan after import shows no change for them. This applies only to the import itself: external changes made after the import are detected as usual.
+
+To switch to permissive mode, enable the new `IMPORT_PERMISSIVE_MODE` opt-in experiment:
+
+```terraform
+provider "snowflake" {
+  experimental_features_enabled = ["IMPORT_PERMISSIVE_MODE"]
+}
+```
+
+The experiment is currently supported on the following resources:
+
+- [`snowflake_authentication_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy)
+- [`snowflake_catalog_integration_aws_glue`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue)
+- [`snowflake_catalog_integration_iceberg_rest`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest)
+- [`snowflake_catalog_integration_object_storage`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_object_storage)
+- [`snowflake_catalog_integration_open_catalog`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_open_catalog)
+- [`snowflake_compute_pool`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/compute_pool)
+
+More resources will be added gradually and listed in the experiment's description and in this guide.
+
+#### `IMPORT_BOOLEAN_DEFAULT` is deprecated
+
+`IMPORT_PERMISSIVE_MODE` replaces `IMPORT_BOOLEAN_DEFAULT`, which does the same for a narrower set: the boolean fields that use the special `"default"` value in the stage, stream, and storage integration resources. `IMPORT_BOOLEAN_DEFAULT` was [enabled by default in v2.22.0](#new-feature-experiments-enabled-by-default); to make enforcing mode the default for all resources, it's an opt-in experiment again.
+
+This affects only new imports of these resources. Resources that are already in state keep their values. Depending on your provider configuration:
+
+- **`IMPORT_BOOLEAN_DEFAULT` isn't listed:** these resources are imported in enforcing mode, so the plan after import shows a change for every field that uses the special `"default"` value and that your configuration omits (e.g. `use_privatelink_endpoint: "false" -> "default"`). These resources don't support `IMPORT_PERMISSIVE_MODE` yet. To get no change for these fields, enable `IMPORT_BOOLEAN_DEFAULT`:
 
   ```terraform
   provider "snowflake" {
@@ -53,11 +81,10 @@ No changes are required for existing configurations unless you want to adopt the
   }
   ```
 
-  Resources that are already in the state aren't affected until they're imported again.
-- **If you listed it in `experimental_features_enabled`:** nothing changes.
-- **If you listed it in `experimental_features_disabled`:** the behavior doesn't change, but the provider shows a warning, because opt-in experiments don't need to be disabled. Remove the entry.
+- **`IMPORT_BOOLEAN_DEFAULT` is listed in `experimental_features_enabled`:** nothing changes.
+- **`IMPORT_BOOLEAN_DEFAULT` is listed in `experimental_features_disabled`:** nothing changes either, but the provider shows a warning, because opt-in experiments don't need to be disabled. Remove the entry.
 
-Once a resource supports `IMPORT_PERMISSIVE_MODE`, it no longer honors `IMPORT_BOOLEAN_DEFAULT`; such resources will be listed in this guide. When all resources are migrated, `IMPORT_BOOLEAN_DEFAULT` will be discontinued.
+When a resource starts supporting `IMPORT_PERMISSIVE_MODE`, it stops honoring `IMPORT_BOOLEAN_DEFAULT`, and this guide lists it. After all resources are migrated, `IMPORT_BOOLEAN_DEFAULT` will be discontinued.
 
 ### *(bug fix)* `snowflake_authentication_policy` detects external changes to `client_policy`, `mfa_policy`, `pat_policy`, and `workload_identity_policy`
 
@@ -161,34 +188,6 @@ The values of the write-only fields are never saved in the Terraform plan or sta
 Terraform can not see a write-only value, so it can not detect changes to it either. The key is sent to Snowflake only when the version field changes: increment it whenever you want to rotate the key. For the same reason, external changes to keys set this way are not detected.
 
 To move an existing key out of the state, replace `rsa_public_key` with `rsa_public_key_wo` and set `rsa_public_key_wo_version`. The next apply pushes the key to Snowflake again and removes it from the state. After importing a user, the version field is empty, so the first apply also pushes the key again.
-
-No configuration changes are required for existing configurations.
-
-### *(new feature)* Opt-in experiment: permissive import mode
-
-Imports follow one of two modes:
-
-- **Enforcing mode** (default): The plan after import shows a change for every attribute that the configuration omits but that has a value in Snowflake, whether it's the Snowflake default or not. Applying the plan resets these attributes to their Snowflake defaults. To avoid the changes, add the values to your configuration.
-- **Permissive mode** (opt-in): the provider accepts the values the object already has for the attributes that the configuration omits, so the plan after import shows no change for them. This applies only to the import itself: external changes made after the import are detected as usual.
-
-We added the `IMPORT_PERMISSIVE_MODE` opt-in experiment to switch to permissive mode:
-
-```terraform
-provider "snowflake" {
-  experimental_features_enabled = ["IMPORT_PERMISSIVE_MODE"]
-}
-```
-
-The experiment is currently supported only on the following resources:
-
-- [`snowflake_authentication_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy)
-- [`snowflake_catalog_integration_aws_glue`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue)
-- [`snowflake_catalog_integration_iceberg_rest`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest)
-- [`snowflake_catalog_integration_object_storage`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_object_storage)
-- [`snowflake_catalog_integration_open_catalog`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_open_catalog)
-- [`snowflake_compute_pool`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/compute_pool)
-
-More resources will be added gradually and listed in the experiment's description and in this guide.
 
 No configuration changes are required for existing configurations.
 
