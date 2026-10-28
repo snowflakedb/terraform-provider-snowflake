@@ -30,6 +30,18 @@ func (c *NotificationIntegrationClient) client() sdk.NotificationIntegrations {
 	return c.context.client.NotificationIntegrations
 }
 
+func (c *NotificationIntegrationClient) CreateWithAmazonPush(t *testing.T) (*sdk.NotificationIntegration, func()) {
+	t.Helper()
+	return c.CreateWithRequest(
+		t, sdk.NewCreateNotificationIntegrationRequest(c.ids.RandomAccountObjectIdentifier(), true).
+			WithPushNotificationParams(*sdk.NewPushNotificationParamsRequest().
+				WithAmazonPushParams(*sdk.NewAmazonPushParamsRequest(
+					"arn:aws:sns:us-east-2:123456789012:MyTopic",
+					"arn:aws:iam::000000000001:/role/test",
+				))),
+	)
+}
+
 func (c *NotificationIntegrationClient) CreateWithGcpPubSub(t *testing.T) (*sdk.NotificationIntegration, func()) {
 	t.Helper()
 	return c.CreateWithRequest(
