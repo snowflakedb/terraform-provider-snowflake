@@ -16,6 +16,8 @@ type ProjectionPolicies interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*ProjectionPolicy, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*ProjectionPolicy, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*ProjectionPolicyDetails, error)
+	// DescribeDetails calls Describe and sets database and schema from the identifier. DESCRIBE does not return those columns.
+	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*ProjectionPolicyDetails, error)
 }
 
 // CreateProjectionPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-projection-policy.
@@ -117,8 +119,10 @@ type projectionPolicyDescRow struct {
 }
 
 type ProjectionPolicyDetails struct {
-	Name       string
-	Signature  string
-	ReturnType string
-	Body       string
+	Name         string
+	Signature    string
+	ReturnType   string
+	Body         string
+	DatabaseName string
+	SchemaName   string
 }
