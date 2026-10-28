@@ -46,21 +46,29 @@ func authenticationPolicyNewCreateRequestExt(d *schema.ResourceData, id sdk.Sche
 }
 
 func authenticationPolicyHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.AuthenticationPolicyDetails, withExternalChangesMarking bool) diag.Diagnostics {
-	if !withExternalChangesMarking || details == nil {
+	if details == nil {
 		return nil
 	}
-	described := details.Describe()
-	if described == nil {
-		return nil
-	}
-	// valueToCompare matches the TypeString describe_output values. valueToSet is the config representation.
-	if err := handleExternalChangesToObjectInFlatDescribe(d,
-		outputMapping{"authentication_methods", "authentication_methods", described.AuthenticationMethods, authenticationPolicyEnumStrings(details.AuthenticationMethods), nil},
-		outputMapping{"mfa_enrollment", "mfa_enrollment", described.MfaEnrollment, string(details.MfaEnrollment), nil},
-		outputMapping{"client_types", "client_types", described.ClientTypes, authenticationPolicyEnumStrings(details.ClientTypes), nil},
-		outputMapping{"security_integrations", "security_integrations", described.SecurityIntegrations, authenticationPolicySecurityIntegrationNames(details.SecurityIntegrations), nil},
-	); err != nil {
+	if err := d.Set("client_policy", authenticationPolicyClientPolicyToSchema(details.ClientPolicy)); err != nil {
 		return diag.FromErr(err)
+	}
+	if withExternalChangesMarking {
+		described := details.Describe()
+		if described == nil {
+			return nil
+		}
+		// valueToCompare matches the TypeString describe_output values. valueToSet is the config representation.
+		if err := handleExternalChangesToObjectInFlatDescribe(d,
+			outputMapping{"authentication_methods", "authentication_methods", described.AuthenticationMethods, authenticationPolicyEnumStrings(details.AuthenticationMethods), nil},
+			outputMapping{"mfa_enrollment", "mfa_enrollment", described.MfaEnrollment, string(details.MfaEnrollment), nil},
+			outputMapping{"client_types", "client_types", described.ClientTypes, authenticationPolicyEnumStrings(details.ClientTypes), nil},
+			outputMapping{"security_integrations", "security_integrations", described.SecurityIntegrations, authenticationPolicySecurityIntegrationNames(details.SecurityIntegrations), nil},
+			outputMapping{"mfa_policy", "mfa_policy", described.MfaPolicy, authenticationPolicyMfaPolicyToSchema(details.MfaPolicy), nil},
+			outputMapping{"pat_policy", "pat_policy", described.PatPolicy, authenticationPolicyPatPolicyToSchema(details.PatPolicy), nil},
+			outputMapping{"workload_identity_policy", "workload_identity_policy", described.WorkloadIdentityPolicy, authenticationPolicyWorkloadIdentityPolicyToSchema(details.WorkloadIdentityPolicy), nil},
+		); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	return nil
 }
@@ -108,21 +116,18 @@ func authenticationPolicyApplySetUnsetExt(d *schema.ResourceData) (*authenticati
 	return &authenticationPolicyAlterRequestsExt{set: set, unset: unset}, nil
 }
 
-func authenticationPolicySetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier, details *sdk.AuthenticationPolicyDetails, _ bool) error {
-	if err := errors.Join(
+func authenticationPolicySetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier, details *sdk.AuthenticationPolicyDetails, importPermissiveMode bool) error {
+	return errors.Join(
 		d.Set("name", id.Name()),
 		d.Set("database", id.DatabaseName()),
 		d.Set("schema", id.SchemaName()),
-	); err != nil {
-		return err
-	}
-
-	// needed as otherwise the resource will be incorrectly imported when a list-parameter value equals a default value
-	return errors.Join(
-		d.Set("authentication_methods", details.AuthenticationMethods),
-		d.Set("mfa_enrollment", details.MfaEnrollment),
-		d.Set("client_types", details.ClientTypes),
-		d.Set("security_integrations", authenticationPolicySecurityIntegrationNames(details.SecurityIntegrations)),
+		importSetAttribute(d, "authentication_methods", importPermissiveMode, details.AuthenticationMethods),
+		importStringAttribute(d, "mfa_enrollment", importPermissiveMode, string(details.MfaEnrollment)),
+		importSetAttribute(d, "client_types", importPermissiveMode, details.ClientTypes),
+		importSetAttribute(d, "security_integrations", importPermissiveMode, authenticationPolicySecurityIntegrationNames(details.SecurityIntegrations)),
+		importBlockAttribute(d, "mfa_policy", importPermissiveMode, authenticationPolicyMfaPolicyToSchema(details.MfaPolicy)),
+		importBlockAttribute(d, "pat_policy", importPermissiveMode, authenticationPolicyPatPolicyToSchema(details.PatPolicy)),
+		importBlockAttribute(d, "workload_identity_policy", importPermissiveMode, authenticationPolicyWorkloadIdentityPolicyToSchema(details.WorkloadIdentityPolicy)),
 	)
 }
 
@@ -287,4 +292,40 @@ func toAuthenticationPolicyClientPolicy(v any) (sdk.AuthenticationPolicyClientPo
 			MinimumVersion: sdk.Pointer(m["minimum_version"].(string)),
 		},
 	}, nil
+}
+
+func authenticationPolicyClientPolicyToSchema(entries []sdk.AuthenticationPolicyClientPolicyEntryDetails) []map[string]any {
+	out := make([]map[string]any, len(entries))
+	for i, entry := range entries {
+		out[i] = map[string]any{
+			"client_type":     string(entry.ClientType),
+			"minimum_version": entry.MinimumVersion,
+		}
+	}
+	return out
+}
+
+func authenticationPolicyMfaPolicyToSchema(details sdk.AuthenticationPolicyMfaPolicyDetails) []map[string]any {
+	return []map[string]any{{
+		"allowed_methods":                        authenticationPolicyEnumStrings(details.AllowedMethods),
+		"enforce_mfa_on_external_authentication": string(details.EnforceMfaOnExternalAuthentication),
+	}}
+}
+
+func authenticationPolicyPatPolicyToSchema(details sdk.AuthenticationPolicyPatPolicyDetails) []map[string]any {
+	return []map[string]any{{
+		"default_expiry_in_days":                     details.DefaultExpiryInDays,
+		"max_expiry_in_days":                         details.MaxExpiryInDays,
+		"network_policy_evaluation":                  string(details.NetworkPolicyEvaluation),
+		"require_role_restriction_for_service_users": booleanStringFromBool(details.RequireRoleRestrictionForServiceUsers),
+	}}
+}
+
+func authenticationPolicyWorkloadIdentityPolicyToSchema(details sdk.AuthenticationPolicyWorkloadIdentityPolicyDetails) []map[string]any {
+	return []map[string]any{{
+		"allowed_providers":     authenticationPolicyEnumStrings(details.AllowedProviders),
+		"allowed_aws_accounts":  details.AllowedAwsAccounts,
+		"allowed_azure_issuers": details.AllowedAzureIssuers,
+		"allowed_oidc_issuers":  details.AllowedOidcIssuers,
+	}}
 }

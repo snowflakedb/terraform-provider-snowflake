@@ -46,6 +46,19 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 Once a resource supports `IMPORT_PERMISSIVE_MODE`, it no longer honors `IMPORT_BOOLEAN_DEFAULT`; such resources will be listed in this guide. When all resources are migrated, `IMPORT_BOOLEAN_DEFAULT` will be discontinued.
 
+### *(bug fix)* `snowflake_authentication_policy` detects external changes to `client_policy`, `mfa_policy`, `pat_policy`, and `workload_identity_policy`
+
+Previously, [`snowflake_authentication_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy) didn't detect changes made outside Terraform to the `client_policy`, `mfa_policy`, `pat_policy`, and `workload_identity_policy` blocks. The plan showed no changes, and the values in Snowflake stayed different from your configuration.
+
+The provider now detects these changes, and the plan shows an update that restores the values from your configuration. If your configuration omits a block, the plan removes the block, so applying it resets the block to the Snowflake defaults.
+
+After upgrading:
+
+- `client_policy` is compared with Snowflake on every refresh, so differences that already exist show on the first plan.
+- `mfa_policy`, `pat_policy`, and `workload_identity_policy` are compared through `describe_output`, so only changes made after the upgrade are detected.
+
+No configuration changes are required. To keep a value that was changed outside Terraform, add it to your configuration.
+
 ### *(bug fix)* `snowflake_pipe` can replace `error_integration` on an existing pipe
 
 Changing `error_integration` on an existing [`snowflake_pipe`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/pipe) from one notification integration to another failed during `terraform apply`. Snowflake rejects `ALTER PIPE ... SET ERROR_INTEGRATION` while an integration is already assigned:
@@ -155,6 +168,7 @@ provider "snowflake" {
 
 The experiment is currently supported only on the following resources:
 
+- [`snowflake_authentication_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy)
 - [`snowflake_catalog_integration_aws_glue`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue)
 - [`snowflake_catalog_integration_iceberg_rest`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest)
 - [`snowflake_catalog_integration_object_storage`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_object_storage)

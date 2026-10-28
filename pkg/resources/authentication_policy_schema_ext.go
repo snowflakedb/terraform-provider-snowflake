@@ -12,7 +12,7 @@ import (
 // wording on nested enum sets.
 func authenticationPolicyAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
 	s["mfa_enrollment"].DiffSuppressFunc = SuppressIfAny(
-		NormalizeAndCompare(sdk.ToMfaEnrollmentOption),
+		s["mfa_enrollment"].DiffSuppressFunc,
 		// We need a custom diff because when this field is set to OPTIONAL, the value is returned as REQUIRED_PASSWORD_ONLY.
 		func(_, oldRaw, newRaw string, _ *schema.ResourceData) bool {
 			old, err := sdk.ToMfaEnrollmentReadOption(oldRaw)

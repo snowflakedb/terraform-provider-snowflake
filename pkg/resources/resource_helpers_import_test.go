@@ -28,6 +28,24 @@ func importTestSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Optional: true,
 		},
+		"string_set": {
+			Type:     schema.TypeSet,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+			Optional: true,
+		},
+		"block": {
+			Type:     schema.TypeList,
+			MaxItems: 1,
+			Optional: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"string": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+				},
+			},
+		},
 	}
 }
 
@@ -107,6 +125,48 @@ func Test_importStringAttribute(t *testing.T) {
 			d := schema.TestResourceDataRaw(t, importTestSchema(), map[string]any{})
 			require.NoError(t, importStringAttribute(d, "string", tt.importPermissiveMode, tt.snowflakeValue))
 			assert.Equal(t, tt.expected, d.Get("string"))
+		})
+	}
+}
+
+func Test_importSetAttribute(t *testing.T) {
+	type stringEnum string
+
+	tests := []struct {
+		name                 string
+		importPermissiveMode bool
+		snowflakeValue       []stringEnum
+		expected             []string
+	}{
+		{name: "enforcing", snowflakeValue: []stringEnum{"A", "B"}, expected: []string{"A", "B"}},
+		{name: "enforcing, empty", snowflakeValue: []stringEnum{}, expected: []string{}},
+		{name: "permissive", importPermissiveMode: true, snowflakeValue: []stringEnum{"A", "B"}, expected: []string{}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := schema.TestResourceDataRaw(t, importTestSchema(), map[string]any{})
+			require.NoError(t, importSetAttribute(d, "string_set", tt.importPermissiveMode, tt.snowflakeValue))
+			assert.ElementsMatch(t, tt.expected, expandStringList(d.Get("string_set").(*schema.Set).List()))
+		})
+	}
+}
+
+func Test_importBlockAttribute(t *testing.T) {
+	tests := []struct {
+		name                 string
+		importPermissiveMode bool
+		snowflakeValue       []map[string]any
+		expected             []any
+	}{
+		{name: "enforcing", snowflakeValue: []map[string]any{{"string": "value"}}, expected: []any{map[string]any{"string": "value"}}},
+		{name: "enforcing, empty", snowflakeValue: []map[string]any{}, expected: []any{}},
+		{name: "permissive", importPermissiveMode: true, snowflakeValue: []map[string]any{{"string": "value"}}, expected: []any{}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := schema.TestResourceDataRaw(t, importTestSchema(), map[string]any{})
+			require.NoError(t, importBlockAttribute(d, "block", tt.importPermissiveMode, tt.snowflakeValue))
+			assert.Equal(t, tt.expected, d.Get("block"))
 		})
 	}
 }

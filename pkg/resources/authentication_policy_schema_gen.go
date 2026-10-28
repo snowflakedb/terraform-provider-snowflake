@@ -25,7 +25,7 @@ var authenticationPolicyAttributesSchema = authenticationPolicyAttributesModific
 		Type:             tfschema.TypeString,
 		Optional:         true,
 		ValidateDiagFunc: sdkValidation(sdk.ToMfaEnrollmentOption),
-		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToMfaEnrollmentOption)),
+		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToMfaEnrollmentOption), IgnoreChangeToCurrentSnowflakeValueInDescribe("mfa_enrollment")),
 		Description:      "Determines whether a user must enroll in multi-factor authentication. " + enumValuesDescription(sdk.AllMfaEnrollmentOptions) + " When REQUIRED is specified, Enforces users to enroll in MFA. If this value is used, then the `client_types` parameter must include `snowflake_ui`, because Snowsight is the only place users can enroll in multi-factor authentication (MFA). Note that when you set this value to OPTIONAL, and your account setup forces users to enroll in MFA, then Snowflake may set quietly this value to `REQUIRED_PASSWORD_ONLY`, which may cause permadiff. In this case, you may want to adjust this field value.",
 	},
 	"client_types": {
