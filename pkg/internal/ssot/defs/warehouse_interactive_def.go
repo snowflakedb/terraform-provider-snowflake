@@ -136,6 +136,7 @@ var WarehouseInteractive = ssot.Object{
 		ssot.WithResourceParametersAssert(),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
+		ssot.WithParseId(ssot.Generated()),
 		ssot.WithDescribeInSdk(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
 		ssot.WithShowOutputSet(ssot.Omitted()),

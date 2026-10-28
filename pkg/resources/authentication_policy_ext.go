@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -35,10 +34,6 @@ var (
 type authenticationPolicyAlterRequestsExt struct {
 	set   *sdk.AuthenticationPolicySetRequest
 	unset *sdk.AuthenticationPolicyUnsetRequest
-}
-
-func authenticationPolicyParseIdExt(id string) (sdk.SchemaObjectIdentifier, error) {
-	return sdk.ParseSchemaObjectIdentifier(id)
 }
 
 func authenticationPolicyNewCreateRequestExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier) (*sdk.CreateAuthenticationPolicyRequest, error) {
@@ -146,14 +141,6 @@ func authenticationPolicySecurityIntegrationNames(details sdk.AuthenticationPoli
 // SDK incision points
 // =============================================================================
 
-func authenticationPolicyCreateInSdkExt(ctx context.Context, meta any, _ sdk.SchemaObjectIdentifier, req *sdk.CreateAuthenticationPolicyRequest) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	if err := client.AuthenticationPolicies.Create(ctx, req); err != nil {
-		return diag.FromErr(err)
-	}
-	return nil
-}
-
 // Import does not SHOW. This returns the same DESCRIBE details Read already uses, in one query.
 func authenticationPolicyShowByIdInSdkExt(ctx context.Context, meta any, id sdk.SchemaObjectIdentifier) (*sdk.AuthenticationPolicyDetails, error) {
 	return authenticationPolicyDescribeInSdkExt(ctx, meta, id)
@@ -162,30 +149,6 @@ func authenticationPolicyShowByIdInSdkExt(ctx context.Context, meta any, id sdk.
 func authenticationPolicyDescribeInSdkExt(ctx context.Context, meta any, id sdk.SchemaObjectIdentifier) (*sdk.AuthenticationPolicyDetails, error) {
 	client := meta.(*provider.Context).Client
 	return client.AuthenticationPolicies.DescribeDetails(ctx, id)
-}
-
-func authenticationPolicyAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier, reqs *authenticationPolicyAlterRequestsExt) error {
-	set := reqs.set
-	if !reflect.DeepEqual(*set, *sdk.NewAuthenticationPolicySetRequest()) {
-		client := meta.(*provider.Context).Client
-		req := sdk.NewAlterAuthenticationPolicyRequest(id).WithSet(*set)
-		if err := client.AuthenticationPolicies.Alter(ctx, req); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func authenticationPolicyAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.SchemaObjectIdentifier, reqs *authenticationPolicyAlterRequestsExt) error {
-	unset := reqs.unset
-	if !reflect.DeepEqual(*unset, *sdk.NewAuthenticationPolicyUnsetRequest()) {
-		client := meta.(*provider.Context).Client
-		req := sdk.NewAlterAuthenticationPolicyRequest(id).WithUnset(*unset)
-		if err := client.AuthenticationPolicies.Alter(ctx, req); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 // =============================================================================

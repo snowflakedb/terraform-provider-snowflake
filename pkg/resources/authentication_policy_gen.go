@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -45,7 +46,7 @@ func AuthenticationPolicy() *tfschema.Resource {
 }
 
 func ImportAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
-	id, err := authenticationPolicyParseIdExt(d.Id())
+	id, err := authenticationPolicyParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}
@@ -77,8 +78,8 @@ func CreateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	if diags := authenticationPolicyCreateInSdkExt(ctx, meta, id, req); diags != nil {
-		return diags
+	if err := meta.(*provider.Context).Client.AuthenticationPolicies.Create(ctx, req); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
@@ -87,7 +88,7 @@ func CreateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, m
 
 func ReadAuthenticationPolicyFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := authenticationPolicyParseIdExt(d.Id())
+		id, err := authenticationPolicyParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -139,7 +140,7 @@ func ReadAuthenticationPolicyFunc(withExternalChangesMarking bool) tfschema.Read
 }
 
 func UpdateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := authenticationPolicyParseIdExt(d.Id())
+	id, err := authenticationPolicyParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -151,11 +152,15 @@ func UpdateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := authenticationPolicyAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.set, *sdk.NewAuthenticationPolicySetRequest()) {
+		if err := meta.(*provider.Context).Client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(id).WithSet(*setUnset.set)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
-	if err := authenticationPolicyAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.unset, *sdk.NewAuthenticationPolicyUnsetRequest()) {
+		if err := meta.(*provider.Context).Client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(id).WithUnset(*setUnset.unset)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	return ReadAuthenticationPolicyFunc(false)(ctx, d, meta)
 }
@@ -168,6 +173,10 @@ var authenticationPolicyCustomizeDiff = TrackingCustomDiffWrapper(resources.Auth
 
 func authenticationPolicyParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
 	return sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string)), nil
+}
+
+func authenticationPolicyParseId(id string) (sdk.SchemaObjectIdentifier, error) {
+	return sdk.ParseSchemaObjectIdentifier(id)
 }
 
 func authenticationPolicyApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateAuthenticationPolicyRequest) error {

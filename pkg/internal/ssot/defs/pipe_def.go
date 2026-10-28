@@ -88,7 +88,9 @@ var Pipe = ssot.Object{
 	// auto_ingest has no create mapping, and integration is not part of SET/UNSET.
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
+		ssot.WithParseId(ssot.Generated()),
 		ssot.WithNewCreateRequest(ssot.Generated()),
+		ssot.WithCreateInSdk(ssot.Generated()),
 		ssot.WithDescribeInSdk(ssot.Omitted()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 		ssot.WithSetStateToValuesFromConfig(ssot.Omitted()),

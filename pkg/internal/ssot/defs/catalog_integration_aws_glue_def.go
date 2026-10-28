@@ -123,6 +123,8 @@ var CatalogIntegrationAwsGlue = ssot.Object{
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
+		ssot.WithParseId(ssot.Generated()),
+		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
 		ssot.WithHandleExternalChangesInDescribe(ssot.ExtCall()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),

@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -39,10 +38,6 @@ type pipeAlterRequestsExt struct {
 	set                   *sdk.PipeSetRequest
 	unset                 *sdk.PipeUnsetRequest
 	resetErrorIntegration bool
-}
-
-func pipeParseIdExt(id string) (sdk.SchemaObjectIdentifier, error) {
-	return helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier](id)
 }
 
 func pipeApplyCreateOptionalsExt(d *schema.ResourceData, req *sdk.CreatePipeRequest) error {
@@ -116,12 +111,23 @@ func pipeApplySetUnsetExt(d *schema.ResourceData) (*pipeAlterRequestsExt, error)
 // SDK incision points
 // =============================================================================
 
-func pipeCreateInSdkExt(ctx context.Context, meta any, _ sdk.SchemaObjectIdentifier, req *sdk.CreatePipeRequest) diag.Diagnostics {
+func pipeShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) (*sdk.Pipe, diag.Diagnostics) {
 	client := meta.(*provider.Context).Client
-	if err := client.Pipes.Create(ctx, req); err != nil {
-		return diag.FromErr(err)
+	pipe, err := client.Pipes.ShowByIDSafely(ctx, id)
+	if err != nil {
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return nil, diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query pipe. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Pipe id: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
+		return nil, diag.FromErr(err)
 	}
-	return nil
+	return pipe, nil
 }
 
 func pipeAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier, reqs *pipeAlterRequestsExt) error {

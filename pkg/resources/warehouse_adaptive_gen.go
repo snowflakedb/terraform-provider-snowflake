@@ -33,7 +33,7 @@ func WarehouseAdaptive() *tfschema.Resource {
 }
 
 func ImportWarehouseAdaptive(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
-	id, err := warehouseAdaptiveParseIdExt(d.Id())
+	id, err := warehouseAdaptiveParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func CreateWarehouseAdaptive(ctx context.Context, d *tfschema.ResourceData, meta
 
 func ReadWarehouseAdaptiveFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := warehouseAdaptiveParseIdExt(d.Id())
+		id, err := warehouseAdaptiveParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -124,7 +124,7 @@ func ReadWarehouseAdaptiveFunc(withExternalChangesMarking bool) tfschema.ReadCon
 }
 
 func UpdateWarehouseAdaptive(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := warehouseAdaptiveParseIdExt(d.Id())
+	id, err := warehouseAdaptiveParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -146,6 +146,10 @@ func UpdateWarehouseAdaptive(ctx context.Context, d *tfschema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 	return ReadWarehouseAdaptiveFunc(false)(ctx, d, meta)
+}
+
+func warehouseAdaptiveParseId(id string) (sdk.AccountObjectIdentifier, error) {
+	return sdk.ParseAccountObjectIdentifier(id)
 }
 
 func DeleteWarehouseAdaptive(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

@@ -39,10 +39,6 @@ var (
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-func catalogIntegrationAwsGlueParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
-	return sdk.ParseAccountObjectIdentifier(id)
-}
-
 func catalogIntegrationAwsGlueNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateAwsGlueCatalogIntegrationRequest, error) {
 	enabled := d.Get("enabled").(bool)
 	glueAwsRoleArn := d.Get("glue_aws_role_arn").(string)
@@ -175,9 +171,5 @@ func catalogIntegrationAwsGlueAlterSetInSdkExt(ctx context.Context, _ *schema.Re
 	if err := client.CatalogIntegrations.Alter(ctx, req); err != nil {
 		return fmt.Errorf("error updating catalog integration (%s), err = %w", helpers.EncodeResourceIdentifier(id), err)
 	}
-	return nil
-}
-
-func catalogIntegrationAwsGlueAlterUnsetInSdkExt(context.Context, any, sdk.AccountObjectIdentifier, *catalogIntegrationAwsGlueAlterRequestsExt) error {
 	return nil
 }

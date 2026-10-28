@@ -117,7 +117,9 @@ var Alert = ssot.Object{
 	// The importer is a passthrough (alertImporterExt). With ShowByIdInSdk omitted, no Import function is generated.
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
+		ssot.WithParseId(ssot.Generated()),
 		ssot.WithApplyCreateOptionals(ssot.Generated()),
+		ssot.WithCreateInSdk(ssot.Generated()),
 		ssot.WithAfterCreate(ssot.ExtCall()),
 		ssot.WithDescribeInSdk(ssot.Omitted()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),

@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
@@ -43,10 +42,6 @@ type alertAlterRequestsExt struct {
 	set             *sdk.AlertSetRequest
 	modifyCondition *string
 	modifyAction    *string
-}
-
-func alertParseIdExt(id string) (sdk.SchemaObjectIdentifier, error) {
-	return helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier](id)
 }
 
 func alertNewCreateRequestExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier) (*sdk.CreateAlertRequest, error) {
@@ -165,14 +160,6 @@ func alertApplySetUnsetExt(d *schema.ResourceData) (*alertAlterRequestsExt, erro
 // =============================================================================
 // SDK calls
 // =============================================================================
-
-func alertCreateInSdkExt(ctx context.Context, meta any, _ sdk.SchemaObjectIdentifier, req *sdk.CreateAlertRequest) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	if err := client.Alerts.Create(ctx, req); err != nil {
-		return diag.FromErr(err)
-	}
-	return nil
-}
 
 // alertAfterCreateExt resumes the alert after creation when it is enabled. A failure is only a warning.
 func alertAfterCreateExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {

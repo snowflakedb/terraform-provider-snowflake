@@ -33,7 +33,7 @@ func CatalogIntegrationIcebergRest() *tfschema.Resource {
 }
 
 func ImportCatalogIntegrationIcebergRest(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
-	id, err := catalogIntegrationIcebergRestParseIdExt(d.Id())
+	id, err := catalogIntegrationIcebergRestParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func CreateCatalogIntegrationIcebergRest(ctx context.Context, d *tfschema.Resour
 
 func ReadCatalogIntegrationIcebergRestFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := catalogIntegrationIcebergRestParseIdExt(d.Id())
+		id, err := catalogIntegrationIcebergRestParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -115,7 +115,7 @@ func ReadCatalogIntegrationIcebergRestFunc(withExternalChangesMarking bool) tfsc
 }
 
 func UpdateCatalogIntegrationIcebergRest(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := catalogIntegrationIcebergRestParseIdExt(d.Id())
+	id, err := catalogIntegrationIcebergRestParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -126,14 +126,15 @@ func UpdateCatalogIntegrationIcebergRest(ctx context.Context, d *tfschema.Resour
 	if err := catalogIntegrationIcebergRestAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := catalogIntegrationIcebergRestAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
-	}
 	return ReadCatalogIntegrationIcebergRestFunc(false)(ctx, d, meta)
 }
 
 func catalogIntegrationIcebergRestParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
 	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
+}
+
+func catalogIntegrationIcebergRestParseId(id string) (sdk.AccountObjectIdentifier, error) {
+	return sdk.ParseAccountObjectIdentifier(id)
 }
 
 func DeleteCatalogIntegrationIcebergRest(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

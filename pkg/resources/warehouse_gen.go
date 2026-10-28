@@ -5,6 +5,7 @@ package resources
 import (
 	"context"
 	"errors"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -49,7 +50,7 @@ func Warehouse() *tfschema.Resource {
 }
 
 func ImportWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
-	id, err := warehouseParseIdExt(d.Id())
+	id, err := warehouseParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}
@@ -85,8 +86,8 @@ func CreateWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) di
 		return diags
 	}
 
-	if diags := warehouseCreateInSdkExt(ctx, meta, id, req); diags != nil {
-		return diags
+	if err := meta.(*provider.Context).Client.Warehouses.Create(ctx, req); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
@@ -95,7 +96,7 @@ func CreateWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) di
 
 func ReadWarehouseFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := warehouseParseIdExt(d.Id())
+		id, err := warehouseParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -148,7 +149,7 @@ func ReadWarehouseFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc
 }
 
 func UpdateWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := warehouseParseIdExt(d.Id())
+	id, err := warehouseParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -166,8 +167,10 @@ func UpdateWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) di
 	if err := warehouseAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := warehouseAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.unset, *sdk.NewWarehouseUnsetRequest()) {
+		if err := meta.(*provider.Context).Client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithUnset(*setUnset.unset)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	return ReadWarehouseFunc(false)(ctx, d, meta)
 }
@@ -183,6 +186,10 @@ var warehouseCustomizeDiff = TrackingCustomDiffWrapper(resources.Warehouse, cust
 
 func warehouseParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
 	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
+}
+
+func warehouseParseId(id string) (sdk.AccountObjectIdentifier, error) {
+	return sdk.ParseAccountObjectIdentifier(id)
 }
 
 func DeleteWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

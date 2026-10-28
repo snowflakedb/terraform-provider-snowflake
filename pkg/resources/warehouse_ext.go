@@ -51,10 +51,6 @@ type warehouseAlterRequestsExt struct {
 	unset *sdk.WarehouseUnsetRequest
 }
 
-func warehouseParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
-	return sdk.ParseAccountObjectIdentifier(id)
-}
-
 func warehouseNewCreateRequestExt(_ *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateWarehouseRequest, error) {
 	return sdk.NewCreateWarehouseRequest(id), nil
 }
@@ -225,14 +221,6 @@ func warehouseGenerationUpdate(d *schema.ResourceData, set *sdk.WarehouseSetRequ
 // SDK incision points
 // =============================================================================
 
-func warehouseCreateInSdkExt(ctx context.Context, meta any, _ sdk.AccountObjectIdentifier, req *sdk.CreateWarehouseRequest) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	if err := client.Warehouses.Create(ctx, req); err != nil {
-		return diag.FromErr(err)
-	}
-	return nil
-}
-
 func warehouseShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier) (*sdk.WarehouseRegular, diag.Diagnostics) {
 	warehouse, err := showWarehouseRegularByIDSafely(ctx, meta.(*provider.Context), id)
 	if err != nil {
@@ -259,14 +247,6 @@ func warehouseAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta
 	if *reqs.set != *sdk.NewWarehouseSetRequest() {
 		client := meta.(*provider.Context).Client
 		return client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(id).WithSet(*reqs.set))
-	}
-	return nil
-}
-
-func warehouseAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseAlterRequestsExt) error {
-	if *reqs.unset != *sdk.NewWarehouseUnsetRequest() {
-		client := meta.(*provider.Context).Client
-		return client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithUnset(*reqs.unset))
 	}
 	return nil
 }
