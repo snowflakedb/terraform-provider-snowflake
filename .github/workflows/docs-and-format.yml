@@ -30,7 +30,7 @@ jobs:
         uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
         id: setup_terraform
         with:
-          terraform_version: 1.7.4
+          terraform_version: 1.11.4
           terraform_wrapper: false
 
       - name: Install dependencies
