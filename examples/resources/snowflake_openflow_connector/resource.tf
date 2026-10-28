@@ -24,7 +24,8 @@ resource "snowflake_openflow_connector" "from_stage" {
     path  = "connectors/postgres"
   }
 
-  # changing this loads the bundle again as a new version of the same connector, rather than recreating it
+  # changing this from one non-empty value to another loads the bundle again as a new version of the same
+  # connector, rather than recreating it; adding or removing it loads nothing
   version_trigger = "1"
 }
 

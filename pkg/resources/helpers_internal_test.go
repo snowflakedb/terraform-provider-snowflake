@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestShouldRotateToken(t *testing.T) {
+func TestKeeperChanged(t *testing.T) {
 	tests := []struct {
 		name     string
 		old      string
@@ -96,7 +96,7 @@ func TestShouldRotateToken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := shouldRotateToken(tt.old, tt.new, tt.isKnown)
+			result := keeperChanged(tt.old, tt.new, tt.isKnown)
 			assert.Equal(t, tt.expected, result)
 		})
 	}

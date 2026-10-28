@@ -2,7 +2,7 @@
 page_title: "snowflake_openflow_connector Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  Resource used to manage Openflow connectors, which run inside an Openflow runtime. Every mutating statement is asynchronous, so create and update return once the connector settles. Starting, stopping and version management are operational actions and are not exposed here, except that a change to version_trigger loads the bundle again as a new version; the connector's state is reported in show_output. For more information, check Openflow connector documentation https://docs.snowflake.com/en/sql-reference/sql/create-openflow-connector.
+  Resource used to manage Openflow connectors, which run inside an Openflow runtime. Every mutating statement is asynchronous, so create and update return once the connector settles. Starting and stopping are operational actions and are not exposed here, although the provider may execute such commands when altering the object; the connector's state is reported in show_output. For more information, check Openflow connector documentation https://docs.snowflake.com/en/sql-reference/sql/create-openflow-connector.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
@@ -11,11 +11,11 @@ description: |-
 
 -> **Note** `from` is create-only and is not read back. Snowflake resolves a connector definition whichever source the connector was created from, so a value read from `SHOW` could not be told apart from a configured one; `show_output.connector_definition` reports what Snowflake resolved. External changes to the block are therefore not detected, and after `terraform import` the block is absent from state, so the first plan asks to replace the connector.
 
--> **Note** Starting, stopping and version management are operational actions rather than desired state, so they are not exposed here. The connector's current status is reported in `show_output`. The exception is `version_trigger`: changing it loads the bundle at `from` again as a new version of the same connector, stopping and restarting a running connector around the load.
+-> **Note** Starting and stopping are operational actions rather than desired state, so they are not exposed here, although the provider may execute such commands when altering the object. The connector's current status is reported in `show_output`.
 
 # snowflake_openflow_connector (Resource)
 
-Resource used to manage Openflow connectors, which run inside an Openflow runtime. Every mutating statement is asynchronous, so create and update return once the connector settles. Starting, stopping and version management are operational actions and are not exposed here, except that a change to `version_trigger` loads the bundle again as a new version; the connector's state is reported in `show_output`. For more information, check [Openflow connector documentation](https://docs.snowflake.com/en/sql-reference/sql/create-openflow-connector).
+Resource used to manage Openflow connectors, which run inside an Openflow runtime. Every mutating statement is asynchronous, so create and update return once the connector settles. Starting and stopping are operational actions and are not exposed here, although the provider may execute such commands when altering the object; the connector's state is reported in `show_output`. For more information, check [Openflow connector documentation](https://docs.snowflake.com/en/sql-reference/sql/create-openflow-connector).
 
 ## Example Usage
 
@@ -49,7 +49,8 @@ resource "snowflake_openflow_connector" "from_stage" {
     path  = "connectors/postgres"
   }
 
-  # changing this loads the bundle again as a new version of the same connector, rather than recreating it
+  # changing this from one non-empty value to another loads the bundle again as a new version of the same
+  # connector, rather than recreating it; adding or removing it loads nothing
   version_trigger = "1"
 }
 
@@ -144,7 +145,7 @@ resource "snowflake_openflow_connector" "complete" {
 - `comment` (String) Specifies a comment for the Openflow connector.
 - `display_name` (String) A free-text alias for the connector. Shown in the Openflow UI in place of the connector's identifier when set.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
-- `version_trigger` (String) An arbitrary value, such as a hash of the bundle's files, whose change loads the bundle at `from` again as a new configuration version of the same connector, rather than recreating it. A running connector is stopped for the load and started again afterwards; a stopped one stays stopped. Setting it on create, or removing it, loads nothing. Only for a connector created from a stage.
+- `version_trigger` (String) An arbitrary value, such as a hash of the bundle's files, that, if and only if changed from a non-empty to a different non-empty value (or known after apply), loads the bundle at `from` again as a new configuration version of the same connector, rather than recreating it. When you add this field to the configuration, or remove it, nothing is loaded, so add it before the bundle changes. A running connector is stopped for the load and started again afterwards; a stopped one stays stopped. When a version is loaded, `show_output` and `describe_output` are marked as computed. Only for a connector created from a stage.
 
 ### Read-Only
 

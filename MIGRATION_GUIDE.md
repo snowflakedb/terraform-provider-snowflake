@@ -58,9 +58,9 @@ No configuration or state changes are required. After upgrading, retry the faile
 
 ### *(new feature)* `version_trigger` in `snowflake_openflow_connector`
 
-We added an optional `version_trigger` field to the `snowflake_openflow_connector` resource. A connector reads its bundle only once, when it is created, so until now the only way to apply a changed `config.json` was to replace the connector. For a CDC connector, replacing it loses the replication position and snapshots every table again. When `version_trigger` changes, the provider instead runs `ALTER OPENFLOW CONNECTOR ... ADD VERSION FROM` with the stage location in `from`, so the same connector takes the bundle as its new default version. A running connector is stopped for the load and started again afterwards. A stopped one stays stopped.
+We added an optional `version_trigger` field to the `snowflake_openflow_connector` resource. A connector reads its bundle only once, when it is created, so until now the only way to apply a changed `config.json` was to replace the connector. For a CDC connector, replacing it loses the replication position and snapshots every table again. When `version_trigger` changes from one non-empty value to another, the provider instead runs `ALTER OPENFLOW CONNECTOR ... ADD VERSION FROM` with the stage location in `from`, so the same connector takes the bundle as its new default version. A running connector is stopped for the load and started again afterwards. A stopped one stays stopped.
 
-Set it to a value that changes with the bundle, such as a hash of its files. Setting it on create, or removing it, loads nothing. It can only be used with `from.stage`.
+Set it to a value that changes with the bundle, such as a hash of its files. Adding it to the configuration, or removing it, loads nothing, so add it to an existing connector before its bundle next changes, not in the same apply. It can only be used with `from.stage`.
 
 ```terraform
 resource "snowflake_openflow_connector" "example" {

@@ -301,3 +301,11 @@ type PlanCheckFunc func(ctx context.Context, req plancheck.CheckPlanRequest, res
 func (fn PlanCheckFunc) CheckPlan(ctx context.Context, req plancheck.CheckPlanRequest, resp *plancheck.CheckPlanResponse) {
 	fn(ctx, req, resp)
 }
+
+// keeperChanged reports whether a keeper field (an arbitrary value whose change triggers an action, such as
+// `keeper` rotating a token) asks for that action: only when the value changes from a non-empty to a different
+// non-empty value, or the new value is unknown (known after apply). Adding the field to the configuration, or
+// removing it, does not trigger the action, and neither does a value that was empty and is now known after apply.
+func keeperChanged(old, new string, isKnown bool) bool {
+	return old != "" && (new != "" && old != new || !isKnown)
+}

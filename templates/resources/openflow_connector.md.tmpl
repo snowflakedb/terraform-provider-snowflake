@@ -15,7 +15,7 @@ description: |-
 
 -> **Note** `from` is create-only and is not read back. Snowflake resolves a connector definition whichever source the connector was created from, so a value read from `SHOW` could not be told apart from a configured one; `show_output.connector_definition` reports what Snowflake resolved. External changes to the block are therefore not detected, and after `terraform import` the block is absent from state, so the first plan asks to replace the connector.
 
--> **Note** Starting, stopping and version management are operational actions rather than desired state, so they are not exposed here. The connector's current status is reported in `show_output`. The exception is `version_trigger`: changing it loads the bundle at `from` again as a new version of the same connector, stopping and restarting a running connector around the load.
+-> **Note** Starting and stopping are operational actions rather than desired state, so they are not exposed here, although the provider may execute such commands when altering the object. The connector's current status is reported in `show_output`.
 
 # {{.Name}} ({{.Type}})
 

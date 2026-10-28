@@ -108,7 +108,7 @@ var openflowConnectorSchema = map[string]*schema.Schema{
 		Type:         schema.TypeString,
 		Optional:     true,
 		RequiredWith: []string{"from.0.stage"},
-		Description:  "An arbitrary value, such as a hash of the bundle's files, whose change loads the bundle at `from` again as a new configuration version of the same connector, rather than recreating it. A running connector is stopped for the load and started again afterwards; a stopped one stays stopped. Setting it on create, or removing it, loads nothing. Only for a connector created from a stage.",
+		Description:  "An arbitrary value, such as a hash of the bundle's files, that, if and only if changed from a non-empty to a different non-empty value (or known after apply), loads the bundle at `from` again as a new configuration version of the same connector, rather than recreating it. When you add this field to the configuration, or remove it, nothing is loaded, so add it before the bundle changes. A running connector is stopped for the load and started again afterwards; a stopped one stays stopped. When a version is loaded, `show_output` and `describe_output` are marked as computed. Only for a connector created from a stage.",
 	},
 	"display_name": {
 		Type:        schema.TypeString,
@@ -148,14 +148,25 @@ func OpenflowConnector() *schema.Resource {
 		Description: joinWithSpace(
 			"Resource used to manage Openflow connectors, which run inside an Openflow runtime.",
 			"Every mutating statement is asynchronous, so create and update return once the connector settles.",
-			"Starting, stopping and version management are operational actions and are not exposed here, except that a change to `version_trigger` loads the bundle again as a new version; the connector's state is reported in `show_output`.",
+			"Starting and stopping are operational actions and are not exposed here, although the provider may execute such commands when altering the object; the connector's state is reported in `show_output`.",
 			"For more information, check [Openflow connector documentation](https://docs.snowflake.com/en/sql-reference/sql/create-openflow-connector).",
 		),
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.OpenflowConnector, customdiff.All(
-			ComputedIfAnyAttributeChanged(openflowConnectorSchema, ShowOutputAttributeName, "name", "display_name", "comment", "version_trigger"),
-			ComputedIfAnyAttributeChanged(openflowConnectorSchema, DescribeOutputAttributeName, "name", "display_name", "comment", "version_trigger"),
+			ComputedIfAnyAttributeChanged(openflowConnectorSchema, ShowOutputAttributeName, "name", "display_name", "comment"),
+			ComputedIfAnyAttributeChanged(openflowConnectorSchema, DescribeOutputAttributeName, "name", "display_name", "comment"),
 			ComputedIfAnyAttributeChanged(openflowConnectorSchema, FullyQualifiedNameAttributeName, "name"),
+			func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+				// A new version changes the version columns of both outputs.
+				o, n := diff.GetChange("version_trigger")
+				if keeperChanged(o.(string), n.(string), diff.GetRawPlan().AsValueMap()["version_trigger"].IsKnown()) {
+					return errors.Join(
+						diff.SetNewComputed(ShowOutputAttributeName),
+						diff.SetNewComputed(DescribeOutputAttributeName),
+					)
+				}
+				return nil
+			},
 		)),
 
 		Schema:   openflowConnectorSchema,
@@ -379,8 +390,7 @@ func UpdateOpenflowConnector(ctx context.Context, d *schema.ResourceData, meta a
 		}
 	}
 
-	// Removing the trigger is not a request for a new version, so only a change to a value loads one.
-	if d.HasChange("version_trigger") && d.Get("version_trigger").(string) != "" {
+	if o, n := d.GetChange("version_trigger"); keeperChanged(o.(string), n.(string), d.GetRawPlan().AsValueMap()["version_trigger"].IsKnown()) {
 		if err := addOpenflowConnectorVersionFromBundle(ctx, client, id, d.Get("from").([]any)[0].(map[string]any), timeout); err != nil {
 			// Without this the new trigger would be saved even though no version was added, and the next plan
 			// would show nothing left to do.

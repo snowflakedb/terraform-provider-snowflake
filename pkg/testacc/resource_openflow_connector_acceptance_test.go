@@ -23,6 +23,7 @@ import (
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
@@ -484,19 +485,34 @@ func TestAcc_OpenflowConnector_VersionTrigger(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.OpenflowConnector),
 		Steps: []resource.TestStep{
-			// 1. Create with a trigger. The bundle is read by CREATE, so no version is added on top of it.
+			// 1. Create without a trigger. The bundle is read by CREATE.
 			{
-				Config: config.FromModels(t, withV1),
+				Config: config.FromModels(t, withoutTrigger),
 				Check: assertThat(
 					t,
 					resourceassert.OpenflowConnectorResource(t, ref).
-						HasVersionTriggerString("v1"),
+						HasNoVersionTrigger(),
 					resourceshowoutputassert.OpenflowConnectorShowOutput(t, ref).
 						HasStatus(sdk.OpenflowConnectorStatusStopped),
 					assert.Check(recordLastVersion),
 				),
 			},
-			// 2. Change the bundle and the trigger. The same connector takes the bundle as a new version, in
+			// 2. Adding the trigger updates state only and adds no version.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withV1),
+				Check: assertThat(
+					t,
+					resourceassert.OpenflowConnectorResource(t, ref).
+						HasVersionTriggerString("v1"),
+					assert.Check(lastVersionUnchanged),
+				),
+			},
+			// 3. Change the bundle and the trigger. The same connector takes the bundle as a new version, in
 			// place, and a stopped connector stays stopped.
 			{
 				PreConfig: func() {
@@ -505,6 +521,7 @@ func TestAcc_OpenflowConnector_VersionTrigger(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						plancheck.ExpectUnknownValue(ref, tfjsonpath.New("describe_output")),
 					},
 				},
 				Config: config.FromModels(t, withV2),
@@ -518,7 +535,7 @@ func TestAcc_OpenflowConnector_VersionTrigger(t *testing.T) {
 					assert.Check(lastVersionChanged),
 				),
 			},
-			// 3. Removing the trigger updates state only and adds no version.
+			// 4. Removing the trigger updates state only and adds no version.
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
