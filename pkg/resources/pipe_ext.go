@@ -36,8 +36,9 @@ var (
 // =============================================================================
 
 type pipeAlterRequestsExt struct {
-	set   *sdk.PipeSetRequest
-	unset *sdk.PipeUnsetRequest
+	set                   *sdk.PipeSetRequest
+	unset                 *sdk.PipeUnsetRequest
+	resetErrorIntegration bool
 }
 
 func pipeParseIdExt(id string) (sdk.SchemaObjectIdentifier, error) {
@@ -101,6 +102,8 @@ func pipeApplySetUnsetExt(d *schema.ResourceData) (*pipeAlterRequestsExt, error)
 
 	if d.HasChange("error_integration") {
 		if errorIntegration, ok := d.GetOk("error_integration"); ok {
+			oldValue, _ := d.GetChange("error_integration")
+			reqs.resetErrorIntegration = oldValue.(string) != ""
 			reqs.set.WithErrorIntegration(errorIntegration.(string))
 		} else {
 			reqs.unset.WithErrorIntegration(true)
@@ -123,6 +126,12 @@ func pipeCreateInSdkExt(ctx context.Context, meta any, _ sdk.SchemaObjectIdentif
 
 func pipeAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier, reqs *pipeAlterRequestsExt) error {
 	client := meta.(*provider.Context).Client
+	// Snowflake rejects setting another integration while one is already assigned.
+	if reqs.resetErrorIntegration {
+		if err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(id).WithUnset(*sdk.NewPipeUnsetRequest().WithErrorIntegration(true))); err != nil {
+			return fmt.Errorf("error clearing pipe %v error integration: %w", id.Name(), err)
+		}
+	}
 	if !reflect.DeepEqual(reqs.set, sdk.NewPipeSetRequest()) {
 		if err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(id).WithSet(*reqs.set)); err != nil {
 			return fmt.Errorf("error updating pipe %v: %w", id.Name(), err)

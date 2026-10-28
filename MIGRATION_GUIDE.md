@@ -46,6 +46,16 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 Once a resource supports `IMPORT_PERMISSIVE_MODE`, it no longer honors `IMPORT_BOOLEAN_DEFAULT`; such resources will be listed in this guide. When all resources are migrated, `IMPORT_BOOLEAN_DEFAULT` will be discontinued.
 
+### *(bug fix)* `snowflake_pipe` can replace `error_integration` on an existing pipe
+
+Changing `error_integration` on an existing [`snowflake_pipe`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/pipe) from one notification integration to another failed during `terraform apply`. Snowflake rejects `ALTER PIPE ... SET ERROR_INTEGRATION` while an integration is already assigned:
+
+```text
+Cannot reset ERROR_INTEGRATION property
+```
+
+The provider now clears the current error integration and then sets the new one. No configuration changes are required. After upgrading, apply the same configuration that previously failed. This resource is still in preview and will be reworked in the future.
+
 ### *(bug fix)* `snowflake_resource_monitor` now saves configured values in state
 
 Previously, [`snowflake_resource_monitor`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/resource_monitor) left some optional fields empty in Terraform state when your configuration used the value Snowflake already had. A number could appear as `0`, and text could appear blank, although the value was present both in your configuration and in Snowflake. This affected:
