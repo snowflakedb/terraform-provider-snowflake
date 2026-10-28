@@ -7,7 +7,8 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 // SHOW and DESCRIBE column lists come from a probe on 2026-10-28. The public pages have no column table.
 // SHOW returned created_on, name, database_name, schema_name, kind, owner, comment, owner_role_type, options.
 // comment and options were empty strings when unset, not null.
-// DESCRIBE returned name, signature, return_type, body. It did not return created_on.
+// DESCRIBE returned name, signature, return_type, body. It did not return created_on, database_name, or schema_name.
+// DatabaseName and SchemaName are plain-only fields. DescribeDetails sets them from the identifier so ID() can be built.
 // signature is always () and return_type is always PROJECTION_CONSTRAINT.
 // CREATE emits one clause, AS () RETURNS PROJECTION_CONSTRAINT -> <body>. body is the expression.
 // CREATE accepts TAG even though the CREATE page omits it. The SDK emits TAG, which Snowflake also accepts as WITH TAG.
@@ -69,9 +70,19 @@ var ProjectionPolicy = ssot.Object{
 				ssot.SdkShowOptionalLimit(),
 				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDLike, ssot.SdkShowByIDExtendedIn),
 			),
-			ssot.SdkDescribe(),
+			ssot.SdkDescribe(
+				ssot.SdkDescribePlainOnlyField("DatabaseName", "string"),
+				ssot.SdkDescribePlainOnlyField("SchemaName", "string"),
+			),
+			ssot.SdkCustomInterfaceMethods(),
 		),
+		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
 	},
+	CustomInterfaceMethods: []ssot.CustomInterfaceMethodSpec{{
+		Name:    "DescribeDetails",
+		Doc:     "DescribeDetails calls Describe and sets database and schema from the identifier. DESCRIBE does not return those columns.",
+		Returns: []string{"*ProjectionPolicyDetails", "error"},
+	}},
 	Attributes: []ssot.Attribute{
 		ProjectionPolicyAttrs.Body,
 		ProjectionPolicyAttrs.Comment,

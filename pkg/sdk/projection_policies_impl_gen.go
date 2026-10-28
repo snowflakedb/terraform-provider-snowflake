@@ -153,5 +153,8 @@ func (r projectionPolicyDescRow) convert() (*ProjectionPolicyDetails, error) {
 		ReturnType: r.ReturnType,
 		Body:       r.Body,
 	}
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
+	}
 	return result, nil
 }
