@@ -37,7 +37,7 @@ var alertPairs = g.StructPair("alertDBRow", "Alert").
 	Text("schema_name").
 	Text("owner").
 	OptionalText("comment").
-	Text("warehouse").
+	OptionalText("warehouse", g.WithRequiredInPlain()).
 	Text("schedule").
 	Enum("state", alertStateDef).
 	Text("condition").
@@ -51,7 +51,7 @@ var alertDetailPairs = g.StructPair("alertDetailRow", "AlertDetails").
 	Text("schema_name").
 	Text("owner").
 	OptionalText("comment").
-	Text("warehouse").
+	OptionalText("warehouse", g.WithRequiredInPlain()).
 	Text("schedule").
 	Text("state").
 	Text("condition").

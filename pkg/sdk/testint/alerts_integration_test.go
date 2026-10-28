@@ -3,344 +3,324 @@
 package testint
 
 import (
-	"errors"
-	"strings"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestInt_AlertsShow(t *testing.T) {
+func TestInt_Alerts(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	alertTest, alertCleanup := testClientHelper().Alert.CreateAlert(t)
-	t.Cleanup(alertCleanup)
+	warehouse := testClientHelper().Ids.WarehouseId()
+	currentRole := testClientHelper().Context.CurrentRole(t)
 
-	alert2Test, alert2Cleanup := testClientHelper().Alert.CreateAlert(t)
-	t.Cleanup(alert2Cleanup)
+	assertAlert := func(t *testing.T, id sdk.SchemaObjectIdentifier, warehouseName, schedule, comment, condition, action string, state sdk.AlertState) {
+		t.Helper()
 
-	t.Run("without show options", func(t *testing.T) {
-		alerts, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest())
-		require.NoError(t, err)
-		assert.Len(t, alerts, 2)
-	})
+		assertThatObject(
+			t, objectassert.Alert(t, id).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner(currentRole.Name()).
+				HasOwnerRoleType("ROLE").
+				HasWarehouse(warehouseName).
+				HasSchedule(schedule).
+				HasComment(comment).
+				HasCondition(condition).
+				HasAction(action).
+				HasState(state),
+		)
+		assertThatObject(
+			t, objectassert.AlertDetails(t, id).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner(currentRole.Name()).
+				HasWarehouse(warehouseName).
+				HasSchedule(schedule).
+				HasComment(comment).
+				HasCondition(condition).
+				HasAction(action).
+				HasState(string(state)),
+		)
+	}
 
-	t.Run("with show options", func(t *testing.T) {
-		alerts, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
-			WithIn(sdk.In{Schema: testClientHelper().Ids.SchemaId()}))
-		require.NoError(t, err)
-		assert.Contains(t, alerts, *alertTest)
-		assert.Contains(t, alerts, *alert2Test)
-		assert.Len(t, alerts, 2)
-	})
-
-	t.Run("with show options and like", func(t *testing.T) {
-		alerts, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
-			WithLike(sdk.Like{Pattern: sdk.String(alertTest.Name)}).
-			WithIn(sdk.In{Database: testClientHelper().Ids.DatabaseId()}))
-		require.NoError(t, err)
-		assert.Contains(t, alerts, *alertTest)
-		assert.Len(t, alerts, 1)
-	})
-
-	t.Run("when searching a non-existent alert", func(t *testing.T) {
-		alerts, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
-			WithLike(sdk.Like{Pattern: sdk.String("non-existent")}))
-		require.NoError(t, err)
-		assert.Empty(t, alerts)
-	})
-
-	t.Run("when limiting the number of results", func(t *testing.T) {
-		alerts, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
-			WithIn(sdk.In{Schema: testClientHelper().Ids.SchemaId()}).
-			WithLimit(sdk.LimitFrom{Rows: new(1)}))
-		require.NoError(t, err)
-		assert.Len(t, alerts, 1)
-	})
-}
-
-func TestInt_AlertCreate(t *testing.T) {
-	client := testClient(t)
-	ctx := testContext(t)
-
-	t.Run("test complete case", func(t *testing.T) {
+	t.Run("create: no options", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		name := id.Name()
-		schedule := "USING CRON * * * * TUE,THU UTC"
-		condition := "SELECT 1"
-		action := "SELECT 1"
-		comment := random.Comment()
-		err := client.Alerts.Create(ctx, sdk.NewCreateAlertRequest(id, testClientHelper().Ids.WarehouseId(), schedule, sdk.NewAlertConditionFromString(condition), action).
-			WithOrReplace(true).
-			WithComment(comment))
-		require.NoError(t, err)
-		alertDetails, err := client.Alerts.Describe(ctx, id)
-		require.NoError(t, err)
-		assert.Equal(t, name, alertDetails.Name)
-		assert.Equal(t, testClientHelper().Ids.WarehouseId().Name(), alertDetails.Warehouse)
-		assert.Equal(t, schedule, alertDetails.Schedule)
-		assert.Equal(t, comment, *alertDetails.Comment)
-		assert.Equal(t, condition, alertDetails.Condition)
-		assert.Equal(t, action, alertDetails.Action)
 
-		alert, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
-			WithLike(sdk.Like{Pattern: sdk.String(name)}).
-			WithIn(sdk.In{Schema: testClientHelper().Ids.SchemaId()}))
+		err := client.Alerts.Create(ctx, sdk.NewCreateAlertRequest(
+			id,
+			warehouse,
+			"5 MINUTE",
+			sdk.NewAlertConditionFromString("SELECT 1"),
+			"SELECT 1",
+		))
 		require.NoError(t, err)
-		assert.Len(t, alert, 1)
-		assert.Equal(t, name, alert[0].Name)
-		assert.Equal(t, comment, *alert[0].Comment)
+		t.Cleanup(testClientHelper().Alert.DropAlertFunc(t, id))
+
+		assertAlert(t, id, warehouse.Name(), "5 MINUTE", "", "SELECT 1", "SELECT 1", sdk.AlertStateSuspended)
 	})
 
-	t.Run("test if_not_exists", func(t *testing.T) {
+	t.Run("create: complete", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		name := id.Name()
-		schedule := "USING CRON * * * * TUE,THU UTC"
-		condition := "SELECT 1"
-		action := "SELECT 1"
 		comment := random.Comment()
-		err := client.Alerts.Create(ctx, sdk.NewCreateAlertRequest(id, testClientHelper().Ids.WarehouseId(), schedule, sdk.NewAlertConditionFromString(condition), action).
+		action := "SELECT\n  CASE WHEN true THEN 1 ELSE 2 END"
+
+		err := client.Alerts.Create(ctx, sdk.NewCreateAlertRequest(
+			id,
+			warehouse,
+			"USING CRON * * * * TUE,THU UTC",
+			sdk.NewAlertConditionFromString("SELECT 1"),
+			action,
+		).
 			WithIfNotExists(true).
 			WithComment(comment))
 		require.NoError(t, err)
-		alertDetails, err := client.Alerts.Describe(ctx, id)
-		require.NoError(t, err)
-		assert.Equal(t, name, alertDetails.Name)
-		assert.Equal(t, testClientHelper().Ids.WarehouseId().Name(), alertDetails.Warehouse)
-		assert.Equal(t, schedule, alertDetails.Schedule)
-		assert.Equal(t, comment, *alertDetails.Comment)
-		assert.Equal(t, condition, alertDetails.Condition)
-		assert.Equal(t, action, alertDetails.Action)
+		t.Cleanup(testClientHelper().Alert.DropAlertFunc(t, id))
 
-		alert, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
-			WithLike(sdk.Like{Pattern: sdk.String(name)}).
-			WithIn(sdk.In{Schema: testClientHelper().Ids.SchemaId()}))
-		require.NoError(t, err)
-		assert.Len(t, alert, 1)
-		assert.Equal(t, name, alert[0].Name)
-		assert.Equal(t, comment, *alert[0].Comment)
+		assertAlert(t, id, warehouse.Name(), "USING CRON * * * * TUE,THU UTC", comment, "SELECT 1", action, sdk.AlertStateSuspended)
 	})
 
-	t.Run("test no options", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		name := id.Name()
-		schedule := "USING CRON * * * * TUE,THU UTC"
-		condition := "SELECT 1"
-		action := "SELECT 1"
-		err := client.Alerts.Create(ctx, sdk.NewCreateAlertRequest(id, testClientHelper().Ids.WarehouseId(), schedule, sdk.NewAlertConditionFromString(condition), action))
-		require.NoError(t, err)
-		alertDetails, err := client.Alerts.Describe(ctx, id)
-		require.NoError(t, err)
-		assert.Equal(t, name, alertDetails.Name)
-		assert.Equal(t, testClientHelper().Ids.WarehouseId().Name(), alertDetails.Warehouse)
-		assert.Equal(t, schedule, alertDetails.Schedule)
-		assert.Equal(t, condition, alertDetails.Condition)
-		assert.Equal(t, action, alertDetails.Action)
+	t.Run("alter: set and unset", func(t *testing.T) {
+		alert, cleanup := testClientHelper().Alert.CreateAlert(t)
+		t.Cleanup(cleanup)
 
-		alert, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
-			WithLike(sdk.Like{Pattern: sdk.String(name)}).
-			WithIn(sdk.In{Schema: testClientHelper().Ids.SchemaId()}))
-		require.NoError(t, err)
-		assert.Len(t, alert, 1)
-		assert.Equal(t, name, alert[0].Name)
-		assert.Equal(t, "", *alert[0].Comment)
-	})
-
-	t.Run("test multiline action", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		name := id.Name()
-		schedule := "USING CRON * * * * TUE,THU UTC"
-		condition := "SELECT 1"
-		action := `
-			select
-				case
-					when true then
-						1
-					else
-						2
-				end
-		`
-		err := client.Alerts.Create(ctx, sdk.NewCreateAlertRequest(id, testClientHelper().Ids.WarehouseId(), schedule, sdk.NewAlertConditionFromString(condition), action))
-		require.NoError(t, err)
-		alertDetails, err := client.Alerts.Describe(ctx, id)
-		require.NoError(t, err)
-		assert.Equal(t, name, alertDetails.Name)
-		assert.Equal(t, testClientHelper().Ids.WarehouseId().Name(), alertDetails.Warehouse)
-		assert.Equal(t, schedule, alertDetails.Schedule)
-		assert.Equal(t, condition, alertDetails.Condition)
-		assert.Equal(t, strings.TrimSpace(action), alertDetails.Action)
-
-		alert, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
-			WithLike(sdk.Like{Pattern: sdk.String(name)}).
-			WithIn(sdk.In{Schema: testClientHelper().Ids.SchemaId()}))
-		require.NoError(t, err)
-		assert.Len(t, alert, 1)
-		assert.Equal(t, name, alert[0].Name)
-		assert.Equal(t, "", *alert[0].Comment)
-	})
-}
-
-func TestInt_AlertDescribe(t *testing.T) {
-	client := testClient(t)
-	ctx := testContext(t)
-
-	alert, alertCleanup := testClientHelper().Alert.CreateAlert(t)
-	t.Cleanup(alertCleanup)
-
-	t.Run("when alert exists", func(t *testing.T) {
-		alertDetails, err := client.Alerts.Describe(ctx, alert.ID())
-		require.NoError(t, err)
-		assert.Equal(t, alert.Name, alertDetails.Name)
-	})
-
-	t.Run("when alert does not exist", func(t *testing.T) {
-		_, err := client.Alerts.Describe(ctx, NonExistingSchemaObjectIdentifier)
-		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
-	})
-}
-
-func TestInt_AlertAlter(t *testing.T) {
-	client := testClient(t)
-	ctx := testContext(t)
-
-	t.Run("when setting and unsetting a value", func(t *testing.T) {
-		alert, alertCleanup := testClientHelper().Alert.CreateAlert(t)
-		t.Cleanup(alertCleanup)
-		newSchedule := "USING CRON * * * * TUE,FRI GMT"
-
-		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(alert.ID()).WithSet(*sdk.NewAlertSetRequest().WithSchedule(newSchedule)))
-		require.NoError(t, err)
-		alerts, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
-			WithLike(sdk.Like{Pattern: sdk.String(alert.Name)}).
-			WithIn(sdk.In{Schema: testClientHelper().Ids.SchemaId()}))
-		require.NoError(t, err)
-		assert.Len(t, alerts, 1)
-		assert.Equal(t, newSchedule, alerts[0].Schedule)
-	})
-
-	t.Run("when modifying condition and action", func(t *testing.T) {
-		alert, alertCleanup := testClientHelper().Alert.CreateAlert(t)
-		t.Cleanup(alertCleanup)
-		newCondition := "select * from DUAL where false"
-
-		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(alert.ID()).WithModifyCondition([]string{newCondition}))
-		require.NoError(t, err)
-		alerts, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
-			WithLike(sdk.Like{Pattern: sdk.String(alert.Name)}).
-			WithIn(sdk.In{Schema: testClientHelper().Ids.SchemaId()}))
-		require.NoError(t, err)
-		assert.Len(t, alerts, 1)
-		assert.Equal(t, newCondition, alerts[0].Condition)
-
-		newAction := "create table FOO(ID INT)"
-
-		err = client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(alert.ID()).WithModifyAction(newAction))
-		require.NoError(t, err)
-		alerts, err = client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
-			WithLike(sdk.Like{Pattern: sdk.String(alert.Name)}).
-			WithIn(sdk.In{Schema: testClientHelper().Ids.SchemaId()}))
-		require.NoError(t, err)
-		assert.Len(t, alerts, 1)
-		assert.Equal(t, newAction, alerts[0].Action)
-	})
-
-	t.Run("resume and then suspend", func(t *testing.T) {
-		alert, alertCleanup := testClientHelper().Alert.CreateAlert(t)
-		t.Cleanup(alertCleanup)
-
-		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(alert.ID()).WithAction(sdk.AlertActionResume))
-		require.NoError(t, err)
-		alerts, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
-			WithLike(sdk.Like{Pattern: sdk.String(alert.Name)}).
-			WithIn(sdk.In{Schema: testClientHelper().Ids.SchemaId()}))
-		require.NoError(t, err)
-		assert.Len(t, alerts, 1)
-		assert.Equal(t, alerts[0].State, sdk.AlertStateStarted)
-
-		err = client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(alert.ID()).WithAction(sdk.AlertActionSuspend))
-		require.NoError(t, err)
-		alerts, err = client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
-			WithLike(sdk.Like{Pattern: sdk.String(alert.Name)}).
-			WithIn(sdk.In{Schema: testClientHelper().Ids.SchemaId()}))
-		require.NoError(t, err)
-		assert.Len(t, alerts, 1)
-		assert.Equal(t, alerts[0].State, sdk.AlertStateSuspended)
-	})
-}
-
-func TestInt_AlertDrop(t *testing.T) {
-	client := testClient(t)
-	ctx := testContext(t)
-
-	t.Run("when alert exists", func(t *testing.T) {
-		alert, _ := testClientHelper().Alert.CreateAlert(t)
+		otherWarehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
+		t.Cleanup(warehouseCleanup)
 		id := alert.ID()
-		err := client.Alerts.Drop(ctx, sdk.NewDropAlertRequest(id))
+
+		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).
+			WithSet(
+				*sdk.NewAlertSetRequest().
+					WithWarehouse(otherWarehouse.ID()).
+					WithSchedule("10 MINUTE").
+					WithComment("changed"),
+			))
 		require.NoError(t, err)
-		_, err = client.PasswordPolicies.Describe(ctx, id)
-		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+
+		assertAlert(t, id, otherWarehouse.Name, "10 MINUTE", "changed", "SELECT 1", "SELECT 1", sdk.AlertStateSuspended)
+
+		// Snowflake rejects UNSET WAREHOUSE COMMENT as a syntax error, so each property is unset on its own.
+		// Schedule is omitted: unsetting it would convert the alert into a streaming alert.
+		err = client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).
+			WithUnset(
+				*sdk.NewAlertUnsetRequest().
+					WithWarehouse(true),
+			))
+		require.NoError(t, err)
+
+		err = client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).
+			WithUnset(
+				*sdk.NewAlertUnsetRequest().
+					WithComment(true),
+			))
+		require.NoError(t, err)
+
+		assertAlert(t, id, "", "10 MINUTE", "", "SELECT 1", "SELECT 1", sdk.AlertStateSuspended)
 	})
 
-	t.Run("when alert does not exist", func(t *testing.T) {
-		err := client.Alerts.Drop(ctx, sdk.NewDropAlertRequest(NonExistingSchemaObjectIdentifier))
-		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+	t.Run("alter: modify condition and action", func(t *testing.T) {
+		alert, cleanup := testClientHelper().Alert.CreateAlert(t)
+		t.Cleanup(cleanup)
+
+		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(alert.ID()).
+			WithModifyCondition([]string{"SELECT 2 WHERE false"}))
+		require.NoError(t, err)
+
+		err = client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(alert.ID()).
+			WithModifyAction("SELECT 3"))
+		require.NoError(t, err)
+
+		assertAlert(t, alert.ID(), alert.Warehouse, alert.Schedule, "", "SELECT 2 WHERE false", "SELECT 3", sdk.AlertStateSuspended)
 	})
-}
 
-func TestInt_AlertsShowByID(t *testing.T) {
-	client := testClient(t)
-	ctx := testContext(t)
+	t.Run("alter: resume and suspend", func(t *testing.T) {
+		alert, cleanup := testClientHelper().Alert.CreateAlert(t)
+		t.Cleanup(cleanup)
 
-	warehouseId := testClientHelper().Ids.WarehouseId()
-	cleanupAlertHandle := func(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
-		t.Helper()
-		return func() {
-			err := client.Alerts.Drop(ctx, sdk.NewDropAlertRequest(id))
-			if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
-				return
-			}
-			require.NoError(t, err)
+		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(alert.ID()).
+			WithAction(sdk.AlertActionResume))
+		require.NoError(t, err)
+
+		assertAlert(t, alert.ID(), alert.Warehouse, alert.Schedule, "", alert.Condition, alert.Action, sdk.AlertStateStarted)
+
+		err = client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(alert.ID()).
+			WithAction(sdk.AlertActionSuspend))
+		require.NoError(t, err)
+
+		assertAlert(t, alert.ID(), alert.Warehouse, alert.Schedule, "", alert.Condition, alert.Action, sdk.AlertStateSuspended)
+	})
+
+	t.Run("describe", func(t *testing.T) {
+		alert, cleanup := testClientHelper().Alert.CreateAlert(t)
+		t.Cleanup(cleanup)
+
+		assertAlert(t, alert.ID(), alert.Warehouse, alert.Schedule, "", alert.Condition, alert.Action, sdk.AlertStateSuspended)
+	})
+
+	t.Run("show: with like", func(t *testing.T) {
+		alert, cleanup := testClientHelper().Alert.CreateAlert(t)
+		t.Cleanup(cleanup)
+
+		alerts, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
+			WithLike(sdk.Like{Pattern: sdk.String(alert.Name)}))
+		require.NoError(t, err)
+		require.Len(t, alerts, 1)
+
+		assertThatObject(
+			t, objectassert.AlertFromObject(t, &alerts[0]).
+				HasName(alert.Name).
+				HasDatabaseName(alert.DatabaseName).
+				HasSchemaName(alert.SchemaName).
+				HasSchedule(alert.Schedule).
+				HasState(sdk.AlertStateSuspended).
+				HasCondition(alert.Condition).
+				HasAction(alert.Action).
+				HasOwnerRoleType("ROLE"),
+		)
+	})
+
+	t.Run("show: in account, database and schema", func(t *testing.T) {
+		alert, cleanup := testClientHelper().Alert.CreateAlert(t)
+		t.Cleanup(cleanup)
+		id := alert.ID()
+
+		names := func(alerts []sdk.Alert) []string {
+			return collections.Map(alerts, func(alert sdk.Alert) string { return alert.Name })
 		}
-	}
 
-	createAlertHandle := func(t *testing.T, id sdk.SchemaObjectIdentifier) {
-		t.Helper()
-
-		schedule, condition, action := "USING CRON * * * * * UTC", "SELECT 1", "SELECT 1"
-		err := client.Alerts.Create(ctx, sdk.NewCreateAlertRequest(id, warehouseId, schedule, sdk.NewAlertConditionFromString(condition), action))
+		inAccount, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
+			WithIn(sdk.In{Account: sdk.Bool(true)}))
 		require.NoError(t, err)
-		t.Cleanup(cleanupAlertHandle(t, id))
-	}
+		assert.Contains(t, names(inAccount), alert.Name)
 
-	t.Run("show by id - same name in different schemas", func(t *testing.T) {
+		inDatabase, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
+			WithIn(sdk.In{Database: id.DatabaseId()}))
+		require.NoError(t, err)
+		assert.Contains(t, names(inDatabase), alert.Name)
+
+		inSchema, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
+			WithIn(sdk.In{Schema: id.SchemaId()}))
+		require.NoError(t, err)
+		assert.Contains(t, names(inSchema), alert.Name)
+	})
+
+	t.Run("show: with starts with and limit", func(t *testing.T) {
+		alert, cleanup := testClientHelper().Alert.CreateAlert(t)
+		t.Cleanup(cleanup)
+
+		alerts, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
+			WithStartsWith(alert.Name).
+			WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}))
+		require.NoError(t, err)
+		require.Len(t, alerts, 1)
+		assert.Equal(t, alert.Name, alerts[0].Name)
+
+		all, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
+			WithIn(sdk.In{Schema: alert.ID().SchemaId()}))
+		require.NoError(t, err)
+		require.NotEmpty(t, all)
+
+		limited, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
+			WithIn(sdk.In{Schema: alert.ID().SchemaId()}).
+			WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}))
+		require.NoError(t, err)
+		assert.Len(t, limited, 1)
+		assert.LessOrEqual(t, len(limited), len(all))
+	})
+
+	t.Run("show: terse", func(t *testing.T) {
+		alert, cleanup := testClientHelper().Alert.CreateAlert(t)
+		t.Cleanup(cleanup)
+
+		alerts, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
+			WithTerse(true).
+			WithLike(sdk.Like{Pattern: sdk.String(alert.Name)}))
+		require.NoError(t, err)
+		require.Len(t, alerts, 1)
+
+		assertThatObject(
+			t, objectassert.AlertFromObject(t, &alerts[0]).
+				HasCreatedOnNotEmpty().
+				HasName(alert.Name).
+				HasDatabaseName(alert.DatabaseName).
+				HasSchemaName(alert.SchemaName),
+		)
+	})
+
+	t.Run("show by id: same name in different schemas", func(t *testing.T) {
 		schema, schemaCleanup := testClientHelper().Schema.CreateSchema(t)
 		t.Cleanup(schemaCleanup)
 
 		id1 := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		id2 := testClientHelper().Ids.NewSchemaObjectIdentifierInSchema(id1.Name(), schema.ID())
 
-		createAlertHandle(t, id1)
-		createAlertHandle(t, id2)
+		for _, id := range []sdk.SchemaObjectIdentifier{id1, id2} {
+			created, cleanup := testClientHelper().Alert.CreateAlertWithRequest(t, sdk.NewCreateAlertRequest(
+				id,
+				warehouse,
+				"5 MINUTE",
+				sdk.NewAlertConditionFromString("SELECT 1"),
+				"SELECT 1",
+			))
+			t.Cleanup(cleanup)
 
-		e1, err := client.Alerts.ShowByID(ctx, id1)
-		require.NoError(t, err)
-		require.Equal(t, id1, e1.ID())
-
-		e2, err := client.Alerts.ShowByID(ctx, id2)
-		require.NoError(t, err)
-		require.Equal(t, id2, e2.ID())
+			assert.Equal(t, id, created.ID())
+			assertAlert(t, id, created.Warehouse, "5 MINUTE", "", "SELECT 1", "SELECT 1", sdk.AlertStateSuspended)
+		}
 	})
 
-	t.Run("show by id: check fields", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		createAlertHandle(t, id)
+	// LIKE wildcards must not select a different alert. "prefix1" contains "prefix_" once "_" is a wildcard.
+	t.Run("show by id: like wildcards do not select another alert", func(t *testing.T) {
+		schema, schemaCleanup := testClientHelper().Schema.CreateSchema(t)
+		t.Cleanup(schemaCleanup)
+		suffix := testClientHelper().Ids.Alpha()
 
-		alert, err := client.Alerts.ShowByID(ctx, id)
+		for _, name := range []string{"prefix1" + suffix, "prefix_" + suffix} {
+			id := testClientHelper().Ids.NewSchemaObjectIdentifierInSchema(name, schema.ID())
+			_, cleanup := testClientHelper().Alert.CreateAlertWithRequest(t, sdk.NewCreateAlertRequest(
+				id,
+				warehouse,
+				"5 MINUTE",
+				sdk.NewAlertConditionFromString("SELECT 1"),
+				"SELECT 1",
+			))
+			t.Cleanup(cleanup)
+
+			found, err := client.Alerts.ShowByID(ctx, id)
+			require.NoError(t, err)
+			require.Equal(t, id, found.ID())
+		}
+	})
+
+	t.Run("drop: existing", func(t *testing.T) {
+		alert, cleanup := testClientHelper().Alert.CreateAlert(t)
+		t.Cleanup(cleanup)
+
+		err := client.Alerts.Drop(ctx, sdk.NewDropAlertRequest(alert.ID()))
 		require.NoError(t, err)
-		assert.Equal(t, "ROLE", alert.OwnerRoleType)
+
+		_, err = client.Alerts.ShowByID(ctx, alert.ID())
+		assert.ErrorIs(t, err, sdk.ErrObjectNotFound)
+	})
+
+	t.Run("drop: when an alert does not exist", func(t *testing.T) {
+		err := client.Alerts.Drop(ctx, sdk.NewDropAlertRequest(NonExistingSchemaObjectIdentifier))
+		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+	})
+
+	t.Run("drop: if exists on a non-existing alert", func(t *testing.T) {
+		err := client.Alerts.Drop(ctx, sdk.NewDropAlertRequest(NonExistingSchemaObjectIdentifier).
+			WithIfExists(true))
+		require.NoError(t, err)
 	})
 }

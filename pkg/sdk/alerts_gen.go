@@ -88,7 +88,7 @@ type alertDBRow struct {
 	SchemaName    string         `db:"schema_name"`
 	Owner         string         `db:"owner"`
 	Comment       sql.NullString `db:"comment"`
-	Warehouse     string         `db:"warehouse"`
+	Warehouse     sql.NullString `db:"warehouse"`
 	Schedule      string         `db:"schedule"`
 	State         string         `db:"state"`
 	Condition     string         `db:"condition"`
@@ -133,7 +133,7 @@ type alertDetailRow struct {
 	SchemaName   string         `db:"schema_name"`
 	Owner        string         `db:"owner"`
 	Comment      sql.NullString `db:"comment"`
-	Warehouse    string         `db:"warehouse"`
+	Warehouse    sql.NullString `db:"warehouse"`
 	Schedule     string         `db:"schedule"`
 	State        string         `db:"state"`
 	Condition    string         `db:"condition"`
