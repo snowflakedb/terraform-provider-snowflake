@@ -624,3 +624,32 @@ func TestWarehouseShowProjections(t *testing.T) {
 	require.Equal(t, w.Size, interactive.Size)
 	require.Nil(t, (*Warehouse)(nil).AsInteractive())
 }
+
+func Test_Warehouse_alterNeedsSuspendedWarehouse(t *testing.T) {
+	standard := &Warehouse{Type: WarehouseTypeStandard}
+	snowpark := &Warehouse{Type: WarehouseTypeSnowparkOptimized}
+	interactive := &Warehouse{Type: WarehouseTypeInteractive}
+	adaptive := &Warehouse{Type: WarehouseTypeAdaptive}
+
+	cases := []struct {
+		name      string
+		set       *WarehouseSetRequest
+		warehouse *Warehouse
+		want      bool
+	}{
+		{"standard to adaptive", NewWarehouseSetRequest().WithWarehouseType(WarehouseTypeAdaptive), standard, false},
+		{"adaptive set to adaptive again", NewWarehouseSetRequest().WithWarehouseType(WarehouseTypeAdaptive), adaptive, false},
+		{"adaptive to standard", NewWarehouseSetRequest().WithWarehouseType(WarehouseTypeStandard), adaptive, true},
+		{"standard to snowpark-optimized", NewWarehouseSetRequest().WithWarehouseType(WarehouseTypeSnowparkOptimized), standard, true},
+		{"snowpark-optimized to standard", NewWarehouseSetRequest().WithWarehouseType(WarehouseTypeStandard), snowpark, true},
+		{"standard resize", NewWarehouseSetRequest().WithWarehouseSize(WarehouseSizeLarge), standard, false},
+		{"interactive resize", NewWarehouseSetRequest().WithWarehouseSize(WarehouseSizeLarge), interactive, true},
+		{"auto_suspend only", NewWarehouseSetRequest().WithAutoSuspend(60), standard, false},
+		{"comment only", NewWarehouseSetRequest().WithComment("c"), standard, false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			assert.Equal(t, c.want, alterNeedsSuspendedWarehouse(c.set, c.warehouse))
+		})
+	}
+}

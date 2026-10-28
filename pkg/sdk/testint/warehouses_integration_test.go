@@ -4,6 +4,7 @@ package testint
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -415,6 +416,32 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Nil(t, warehouseAfterUnset.QueryThroughputMultiplier)
 	})
 
+	t.Run("alter adaptive: convert a started warehouse through the adaptive request", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithRequest(
+			t, sdk.NewCreateWarehouseRequest(id).
+				WithWarehouseSize(sdk.WarehouseSizeMedium),
+		)
+		t.Cleanup(warehouseCleanup)
+
+		condition := warehouseCondition(warehouse.ID(), func(r *sdk.Warehouse) bool {
+			return r.State == sdk.WarehouseStateStarted && r.Type == sdk.WarehouseTypeStandard
+		})
+		require.Eventually(t, condition, 5*time.Second, time.Second)
+
+		// Path snowflake_warehouse_adaptive takes when adopting a standard warehouse.
+		err := client.Warehouses.AlterAdaptive(ctx, sdk.NewAlterAdaptiveWarehouseRequest(warehouse.ID()).
+			WithSet(*sdk.NewWarehouseAdaptiveSetRequest().WithWarehouseType(sdk.WarehouseTypeAdaptive)))
+		require.NoError(t, err)
+		assertNoSuspendIssued(t, warehouse.ID())
+
+		assertThatObject(
+			t, objectassert.WarehouseAdaptive(t, warehouse.ID()).
+				HasType(sdk.WarehouseTypeAdaptive).
+				HasState(sdk.WarehouseStateEnabled),
+		)
+	})
+
 	t.Run("alter adaptive: change warehouse type", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithRequest(
@@ -429,15 +456,16 @@ func TestInt_Warehouses(t *testing.T) {
 		})
 		require.Eventually(t, condition, 5*time.Second, time.Second)
 
-		// Change warehouse type from standard to adaptive
+		// Standard to adaptive is online; the started warehouse must not be suspended.
 		err := client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
 			WithSet(*sdk.NewWarehouseSetRequest().WithWarehouseType(sdk.WarehouseTypeAdaptive)))
 		require.NoError(t, err)
+		assertNoSuspendIssued(t, warehouse.ID())
 
 		assertThatObject(
 			t, objectassert.WarehouseAdaptive(t, warehouse.ID()).
 				HasType(sdk.WarehouseTypeAdaptive).
-				// the previously suspended warehouse does not stay suspended - adaptive warehouses have no such state
+				// adaptive warehouses have no suspended/started lifecycle
 				HasState(sdk.WarehouseStateEnabled).
 				HasAutoResume(true).
 				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelLarge).
@@ -1343,4 +1371,20 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 
 		assertThatObject(t, objectassert.WarehouseInteractive(t, id).HasType(sdk.WarehouseTypeInteractive))
 	})
+}
+
+// assertNoSuspendIssued checks that recent history contains the conversion without a warehouse suspension.
+func assertNoSuspendIssued(t *testing.T, id sdk.AccountObjectIdentifier) {
+	t.Helper()
+	queryHistory := testClientHelper().InformationSchema.GetQueryHistory(t, 100)
+	suspendSQL := fmt.Sprintf("ALTER WAREHOUSE %s SUSPEND", id.FullyQualifiedName())
+	conversionSQL := fmt.Sprintf("ALTER WAREHOUSE %s SET WAREHOUSE_TYPE = 'ADAPTIVE'", id.FullyQualifiedName())
+	foundConversion := false
+	for _, query := range queryHistory {
+		assert.NotContains(t, query.QueryText, suspendSQL, "conversion to ADAPTIVE must not suspend the warehouse")
+		if strings.Contains(query.QueryText, conversionSQL) {
+			foundConversion = true
+		}
+	}
+	assert.True(t, foundConversion, "query history must contain the conversion to ADAPTIVE")
 }

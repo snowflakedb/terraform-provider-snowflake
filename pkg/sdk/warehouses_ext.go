@@ -145,28 +145,22 @@ func (v *warehouses) ShowParameters(ctx context.Context, id AccountObjectIdentif
 	})
 }
 
-// AlterWithSuspend wraps Alter with automatic suspend/resume for changes that Snowflake refuses to
-// apply to a running warehouse. Changing the warehouse type requires a suspended warehouse for any
-// warehouse, and an interactive warehouse additionally cannot be resized while running. In both
-// cases the warehouse is suspended before the alter and resumed afterwards.
+// AlterWithSuspend suspends around changes Snowflake rejects on a running warehouse:
+// STANDARD/SNOWPARK-OPTIMIZED type changes and interactive resizes. ADAPTIVE conversion is online.
 func (v *warehouses) AlterWithSuspend(ctx context.Context, request *AlterWarehouseRequest) error {
-	changesType := request.Set != nil && request.Set.WarehouseType != nil
-	changesSize := request.Set != nil && request.Set.WarehouseSize != nil
-	if !changesType && !changesSize {
+	// UNSET, including WAREHOUSE_TYPE, does not require suspension. Skip SHOW for
+	// unrelated updates too, preserving IF EXISTS when the warehouse is absent.
+	if request.Set == nil || (request.Set.WarehouseType == nil && request.Set.WarehouseSize == nil) {
 		return v.Alter(ctx, request)
 	}
-	becomesAdaptive := changesType && *request.Set.WarehouseType == WarehouseTypeAdaptive
 
 	warehouse, err := v.ShowByID(ctx, request.name)
 	if err != nil {
 		return err
 	}
 
-	// A type change always needs a suspended warehouse; a size change needs it only for interactive
-	// warehouses (regular warehouses resize live).
-	mustSuspend := changesType || (changesSize && warehouse.IsInteractiveWarehouse())
-	if mustSuspend {
-		cleanup, err := v.suspendStartedWarehouse(ctx, request.name, becomesAdaptive)
+	if alterNeedsSuspendedWarehouse(request.Set, warehouse) {
+		cleanup, err := v.suspendStartedWarehouse(ctx, request.name)
 		defer cleanup()
 		if err != nil {
 			return err
@@ -175,18 +169,12 @@ func (v *warehouses) AlterWithSuspend(ctx context.Context, request *AlterWarehou
 	return v.Alter(ctx, request)
 }
 
-func (v *warehouses) AlterAdaptiveWithSuspend(ctx context.Context, request *AlterAdaptiveWarehouseRequest) error {
-	changesType := request.Set != nil && request.Set.WarehouseType != nil
-	if !changesType {
-		return v.AlterAdaptive(ctx, request)
-	}
-	// Adaptive warehouses reject RESUME. A type change leaves them in the ENABLED state.
-	cleanup, err := v.suspendStartedWarehouse(ctx, request.name, true)
-	defer cleanup()
-	if err != nil {
-		return err
-	}
-	return v.AlterAdaptive(ctx, request)
+// alterNeedsSuspendedWarehouse reports whether this SET requires a suspended warehouse.
+func alterNeedsSuspendedWarehouse(set *WarehouseSetRequest, warehouse *Warehouse) bool {
+	changesType := set.WarehouseType != nil
+	becomesAdaptive := changesType && *set.WarehouseType == WarehouseTypeAdaptive
+	changesSize := set.WarehouseSize != nil
+	return (changesType && !becomesAdaptive) || (changesSize && warehouse.IsInteractiveWarehouse())
 }
 
 func (v *warehouses) AlterInteractiveWithSuspend(ctx context.Context, request *AlterInteractiveWarehouseRequest) error {
@@ -194,7 +182,7 @@ func (v *warehouses) AlterInteractiveWithSuspend(ctx context.Context, request *A
 	if !changesSize {
 		return v.AlterInteractive(ctx, request)
 	}
-	cleanup, err := v.suspendStartedWarehouse(ctx, request.name, false)
+	cleanup, err := v.suspendStartedWarehouse(ctx, request.name)
 	defer cleanup()
 	if err != nil {
 		return err
@@ -202,10 +190,9 @@ func (v *warehouses) AlterInteractiveWithSuspend(ctx context.Context, request *A
 	return v.AlterInteractive(ctx, request)
 }
 
-// suspendStartedWarehouse suspends id when it is started. skipResume leaves an adaptive conversion suspended
-// from this helper's point of view: adaptive warehouses reject RESUME and become ENABLED by the alter.
-// The returned function resumes the warehouse unless skipResume is set. It is always non-nil.
-func (v *warehouses) suspendStartedWarehouse(ctx context.Context, id AccountObjectIdentifier, skipResume bool) (func(), error) {
+// suspendStartedWarehouse suspends id if started. The returned cleanup resumes it and is never nil.
+// Callers must run the cleanup even when an error is returned.
+func (v *warehouses) suspendStartedWarehouse(ctx context.Context, id AccountObjectIdentifier) (func(), error) {
 	noop := func() {}
 	warehouse, err := v.ShowByID(ctx, id)
 	if err != nil {
@@ -218,13 +205,10 @@ func (v *warehouses) suspendStartedWarehouse(ctx context.Context, id AccountObje
 	if err != nil {
 		return noop, err
 	}
-	cleanup := noop
-	if !skipResume {
-		cleanup = func() {
-			err := v.Alter(ctx, NewAlterWarehouseRequest(id).WithResume(true).WithIfSuspended(true))
-			if err != nil {
-				log.Printf("[DEBUG] error occurred during warehouse resumption, err=%v", err)
-			}
+	cleanup := func() {
+		err := v.Alter(ctx, NewAlterWarehouseRequest(id).WithResume(true).WithIfSuspended(true))
+		if err != nil {
+			log.Printf("[DEBUG] error occurred during warehouse resumption, err=%v", err)
 		}
 	}
 	var warehouseSuspensionErrs []error

@@ -32,10 +32,8 @@ type Warehouses interface {
 	// ShowByIDExperimental is a show by id function with improved performance (using starts with and limit)
 	ShowByIDExperimental(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
 	ShowByIDExperimentalSafely(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
-	// AlterWithSuspend wraps Alter with automatic suspend/resume when changing warehouse type, or resizing an interactive warehouse
+	// AlterWithSuspend wraps Alter with automatic suspend/resume when changing between STANDARD and SNOWPARK-OPTIMIZED, or resizing an interactive warehouse
 	AlterWithSuspend(ctx context.Context, request *AlterWarehouseRequest) error
-	// AlterAdaptiveWithSuspend wraps AlterAdaptive and suspends the warehouse before changing its type. Adaptive warehouses are not resumed afterwards
-	AlterAdaptiveWithSuspend(ctx context.Context, request *AlterAdaptiveWarehouseRequest) error
 	// AlterInteractiveWithSuspend wraps AlterInteractive and suspends a running interactive warehouse before changing its size
 	AlterInteractiveWithSuspend(ctx context.Context, request *AlterInteractiveWarehouseRequest) error
 	// CreateInteractivePreservingSession wraps CreateInteractive to work around a known Snowflake behavior: creating a warehouse implicitly switches the session to it, which for interactive warehouses (5 second statement timeout) can cause subsequent statements in the same session to time out. It restores whichever warehouse (or lack of one) was active in the session before creation

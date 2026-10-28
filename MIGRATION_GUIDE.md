@@ -28,6 +28,14 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.22.x ➞ v2.23.0
 
+### *(bug fix)* Converting a warehouse to `ADAPTIVE` no longer suspends it
+
+Previously, [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive) applied the Standard to Adaptive type change through the same suspend-then-alter path used for changing between Standard and Snowpark-optimized. On a warehouse that never idles the suspend never completed and the update failed with `warehouse suspension failed`; on a quiet one it cost a cold start. Snowflake applies this conversion online, so the provider now runs `ALTER WAREHOUSE ... SET WAREHOUSE_TYPE = 'ADAPTIVE'` directly. Queries already running finish on the old compute.
+
+The SDK method `Warehouses.AlterAdaptiveWithSuspend` was removed; use `Warehouses.AlterAdaptive`.
+
+No changes to existing configurations are required.
+
 ### *(behavior change)* `IMPORT_BOOLEAN_DEFAULT` is no longer enabled by default
 
 `IMPORT_BOOLEAN_DEFAULT` is now an opt-in experiment, and it's deprecated in favor of `IMPORT_PERMISSIVE_MODE` (see [Opt-in experiment: permissive import mode](#new-feature-opt-in-experiment-permissive-import-mode)):
