@@ -2,8 +2,11 @@ package gen
 
 import (
 	"fmt"
+	"slices"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 )
@@ -16,7 +19,7 @@ var variantsOf = ssotdefs.VariantsOf
 
 // ShowOperationFromObject adds SHOW and ShowByID from obj.SdkConfig.
 // The field chain comes from ShowPairedStructs. Clauses are emitted in a fixed order:
-// Show, Terse, SQL, OptionalSQL, Like, ExtendedIn, StartsWith, LimitFrom, Limit.
+// Show, Terse, SQL, OptionalSQL, Like, plain IN or ExtendedIn, On, StartsWith, LimitFrom, Limit.
 // An empty ShowByID filtering list passes no filtering argument, so ShowByID stays Like.
 func (i *Interface) ShowOperationFromObject(obj ssot.Object) *Interface {
 	cfg := obj.SdkConfig()
@@ -35,26 +38,117 @@ func (i *Interface) ShowOperationFromObject(obj ssot.Object) *Interface {
 // The field chain comes from DescribePairedStructs. The query struct is Describe, SQL,
 // Name, and ValidIdentifier on name.
 // helperStructs are extra structs the describe operation emits.
-// TODO [next PRs]: Show.Columns plain structs and ShowVariants are SHOW structs. Emit them from ShowOperationFromObject.
+// ShowPlainName and ShowVariants are emitted here too. Each one gets a projection on the paired SHOW struct.
+// When ShowByID is already registered, each plain also gets ShowByID and ShowByIDSafely for that suffix.
+// TODO [next PRs]: those plain structs are SHOW structs. Emit them from ShowOperationFromObject. Show() still returns the union row.
 func (i *Interface) DescribeOperationFromObject(obj ssot.Object, helperStructs ...IntoField) *Interface {
 	cfg := obj.SdkConfig()
 	if !cfg.Describe {
 		panic(fmt.Sprintf("object %q is not enabled for SDK DESCRIBE generation", obj.Name))
 	}
-	helpers := make([]IntoField, 0, len(helperStructs)+len(obj.ShowVariants)+1)
+	plains := plainShowHelpers(obj)
+	helpers := make([]IntoField, 0, len(helperStructs)+len(plains))
 	helpers = append(helpers, helperStructs...)
-	helpers = append(helpers, plainShowHelpers(obj)...)
-	return i.DescribeOperationWithPairedStructs(
+	for _, plain := range plains {
+		helpers = append(helpers, plain)
+	}
+	if cfg.DescribeDetails {
+		helpers = append(helpers, DescribeDetailsPlain(obj))
+		helpers = appendPlains(helpers, DescribeNestedPlains(obj))
+	}
+	var variants []ssot.Object
+	if cfg.DescribeDetailsForVariants {
+		variants = describeDetailsVariants(obj)
+		for _, variant := range variants {
+			helpers = append(helpers, DescribeDetailsPlain(variant))
+			helpers = appendPlains(helpers, DescribeNestedPlains(variant))
+		}
+	}
+	i = i.DescribeOperationWithPairedStructs(
 		describeMappingFromObject(obj, cfg),
 		cfg.DescribeDoc,
 		DescribePairedStructs(obj),
 		describeQueryStructFromConfig(cfg),
 		helpers...,
-	)
+	).showProjectionsFromPlains(obj, plains)
+	if len(cfg.DescribeDetailsParse) > 0 {
+		i = i.WithDescribeParse(describeParseConfig(obj, cfg))
+	}
+	if cfg.DescribeDetailsMethod {
+		i = i.WithDescribeDetails(obj.Name+"Details", "Parse"+obj.Name+"Described")
+	}
+	for _, variant := range variants {
+		i = i.WithDescribeDetailsMethod("Describe"+variant.VariantStem(obj.Name)+"Details", variant.Name+"Details", "Parse"+variant.Name+"Described")
+	}
+	return i
 }
 
-func plainShowHelpers(obj ssot.Object) []IntoField {
-	var out []IntoField
+func appendPlains(helpers []IntoField, plains []*Plain) []IntoField {
+	for _, plain := range plains {
+		helpers = append(helpers, plain)
+	}
+	return helpers
+}
+
+// describeDetailsVariants are the variants of base that turn on SdkDescribeDetails.
+func describeDetailsVariants(base ssot.Object) []ssot.Object {
+	variants := collections.Filter(variantsOf(base), func(variant ssot.Object) bool { return variant.SdkConfig().DescribeDetails })
+	if len(variants) == 0 {
+		panic(fmt.Sprintf("object %q: variant DESCRIBE details generation has no variants with SdkDescribeDetails", base.Name))
+	}
+	for _, variant := range variants {
+		if variant.VariantOf == nil || variant.VariantOf.Name != base.Name {
+			panic(fmt.Sprintf("object %q: %q is not a variant", base.Name, variant.Name))
+		}
+	}
+	return variants
+}
+
+func describeParseConfig(obj ssot.Object, cfg ssot.SdkGenerator) DescribeParseConfig {
+	config := DescribeParseConfig{
+		RowsType:      obj.DescribePlainName(),
+		DetailsType:   obj.Name + "Details",
+		ErrorLabel:    genhelpers.CamelToWords(obj.Name),
+		ValidateFunc:  "validate" + obj.Name + "Described",
+		IgnoreUnknown: cfg.DescribeDetailsParseIgnoreUnknown,
+	}
+	if cfg.DescribeDetailsRowsField != nil {
+		config.RowsField = cfg.DescribeDetailsRowsField.Name
+		config.RowsFieldType = cfg.DescribeDetailsRowsField.Kind
+	}
+	// The property and value fields of the row are the columns property and property_value, or value.
+	for _, column := range obj.DescribeRows.Columns {
+		switch column.OutputKey() {
+		case "property":
+			config.PropertyField = ssot.ColumnFieldName(*column)
+		case "property_value", "value":
+			config.ValueField = ssot.ColumnFieldName(*column)
+		}
+	}
+	for _, mapping := range cfg.DescribeDetailsParse {
+		field := sqlToFieldName(mapping.Attr.OutputKey(), true)
+		if !mapping.Prefix {
+			property := DescribeParseProperty{Property: mapping.Property, Field: field}
+			if mapping.Parsed {
+				property.Parser = "Parse" + obj.Name + field + "Described"
+			}
+			config.Properties = append(config.Properties, property)
+			continue
+		}
+		element := ssot.NestedDetailsElem(obj, mapping.Attr)
+		config.Prefixes = append(config.Prefixes, DescribeParsePrefix{
+			Prefix:        mapping.Property,
+			Field:         field,
+			Var:           unexported(field),
+			ElementType:   element,
+			ElementParser: "Parse" + strings.TrimSuffix(element, "Details") + "Described",
+		})
+	}
+	return config
+}
+
+func plainShowHelpers(obj ssot.Object) []*Plain {
+	var out []*Plain
 	if obj.ShowPlainName != "" {
 		if len(obj.Show.Columns) == 0 {
 			panic(fmt.Sprintf("object %q: ShowPlainName %q has no SHOW columns", obj.Name, obj.ShowPlainName))
@@ -70,6 +164,37 @@ func plainShowHelpers(obj ssot.Object) []IntoField {
 	return out
 }
 
+// showProjectionsFromPlains attaches one projection per plain onto the paired SHOW struct.
+// The method is As plus the plain name with the object name removed.
+// When ShowByID is already registered, the same suffix is passed to ShowByIDProjection.
+func (i *Interface) showProjectionsFromPlains(obj ssot.Object, targets []*Plain) *Interface {
+	if len(targets) == 0 {
+		return i
+	}
+	columns := obj.PairedShowColumns()
+	if len(columns) == 0 {
+		panic(fmt.Sprintf("object %q: SHOW projections have no paired SHOW columns", obj.Name))
+	}
+	source := plainFromColumns(obj, obj.Name, columns)
+	for _, target := range targets {
+		method := showProjectionMethod(obj.Name, target.name)
+		i.ShowProjection(source, method, target)
+		if i.hasShowByID() {
+			i.ShowByIDProjection(strings.TrimPrefix(method, "As"))
+		}
+	}
+	return i
+}
+
+// showProjectionMethod is As plus plainName with baseName removed.
+// WarehouseRegular on Warehouse is AsRegular. WarehouseAdaptive is AsAdaptive.
+func showProjectionMethod(baseName, plainName string) string {
+	if baseName == "" || !strings.HasPrefix(plainName, baseName) || plainName == baseName {
+		panic(fmt.Sprintf("object %q: cannot build a SHOW projection method from %q", baseName, plainName))
+	}
+	return "As" + strings.TrimPrefix(plainName, baseName)
+}
+
 func showQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 	q := NewQueryStruct(cfg.ShowQueryStructName).Show()
 	if cfg.ShowTerse {
@@ -82,8 +207,17 @@ func showQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 	if cfg.ShowOptionalLike {
 		q = q.OptionalLike()
 	}
+	if cfg.ShowOptionalIn && cfg.ShowOptionalExtendedIn {
+		panic("SHOW cannot set both plain IN and extended IN")
+	}
+	if cfg.ShowOptionalIn {
+		q = q.OptionalIn()
+	}
 	if cfg.ShowOptionalExtendedIn {
 		q = q.OptionalExtendedIn()
+	}
+	if cfg.ShowOptionalOn {
+		q = q.OptionalOn()
 	}
 	if cfg.ShowOptionalStartsWith {
 		q = q.OptionalStartsWith()
@@ -106,6 +240,8 @@ func showByIDFilteringFromObject(obj ssot.Object, cfg ssot.SdkGenerator) []ShowB
 		switch kind {
 		case ssot.SdkShowByIDLike:
 			filtering[i] = ShowByIDLikeFiltering
+		case ssot.SdkShowByIDIn:
+			filtering[i] = ShowByIDInFiltering
 		case ssot.SdkShowByIDExtendedIn:
 			filtering[i] = ShowByIDExtendedInFiltering
 		default:
@@ -180,12 +316,13 @@ func (i *Interface) CreateOperationFromObject(obj ssot.Object, helperStructs ...
 	if !cfg.Create {
 		panic(fmt.Sprintf("object %q is not enabled for SDK CREATE generation", obj.Name))
 	}
+	i.checkStructShapes = true
 	return i.CreateOperation(cfg.CreateDoc, createQueryStructFromConfig(obj, cfg), append(helperStructs, enumListItemStructs(obj)...)...)
 }
 
 // CreateVariantOperationsFromObject emits each variant CREATE as a custom method.
 // Variants come from the catalog for base. The variant supplies the CREATE spec. The base must turn on SdkCreateForVariants.
-// TODO [next PRs]: the same switch for variant ALTER, and for SHOW/DESCRIBE.
+// TODO [next PRs]: the same switch for variant SHOW/DESCRIBE.
 func (i *Interface) CreateVariantOperationsFromObject(base ssot.Object) *Interface {
 	if !base.SdkConfig().CreateForVariants {
 		panic(fmt.Sprintf("object %q is not enabled for variant CREATE generation", base.Name))
@@ -210,6 +347,7 @@ func (i *Interface) CreateVariantOperationsFromObject(base ssot.Object) *Interfa
 
 func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
 	q := NewQueryStruct(cfg.CreateQueryStructName).Create()
+	q.owner = obj.Name
 	if !cfg.CreateWithoutOrReplace {
 		q = q.OrReplace()
 	}
@@ -232,10 +370,42 @@ func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryS
 		q = q.WithValidation(ConflictingFields, "OrReplace", "IfNotExists")
 	}
 	q = q.withIdentifierParameterValidations(createParams)
+	q = q.withExactlyOneOfValidations(obj, obj.Create.Clauses)
+	q = q.withAtLeastOneOfValidations(obj, obj.Create.Clauses)
 	if cfg.CreateAdditionalValidations {
 		q = q.WithAdditionalValidations()
 	}
 	return q
+}
+
+// withExactlyOneOfValidations adds ExactlyOneValueSet for each ExactlyOneOf group of obj whose attributes are all in clauses.
+// A group that has only some of them in the statement is a mistake in the definition.
+func (v *QueryStruct) withExactlyOneOfValidations(obj ssot.Object, clauses []*ssot.Attribute) *QueryStruct {
+	return v.withValueSetGroups(obj, "ExactlyOneOf", obj.ExactlyOneOf, ExactlyOneValueSet, clauses)
+}
+
+// withAtLeastOneOfValidations adds AtLeastOneValueSet for each AtLeastOneOf group of obj whose attributes are all in clauses.
+// A group that has only some of them in the statement is a mistake in the definition.
+func (v *QueryStruct) withAtLeastOneOfValidations(obj ssot.Object, clauses []*ssot.Attribute) *QueryStruct {
+	return v.withValueSetGroups(obj, "AtLeastOneOf", obj.AtLeastOneOf, AtLeastOneValueSet, clauses)
+}
+
+func (v *QueryStruct) withValueSetGroups(obj ssot.Object, label string, groups [][]*ssot.Attribute, kind ValidationType, clauses []*ssot.Attribute) *QueryStruct {
+	for _, group := range groups {
+		present := collections.Filter(group, func(member *ssot.Attribute) bool {
+			return slices.ContainsFunc(clauses, func(clause *ssot.Attribute) bool { return clause != nil && clause.Name == member.Name })
+		})
+		switch len(present) {
+		case 0:
+		case len(group):
+			v = v.WithValidation(kind, collections.Map(group, func(member *ssot.Attribute) string {
+				return clauseFieldName(*member, attributeSqlCreate)
+			})...)
+		default:
+			panic(fmt.Sprintf("object %q: only some attributes of an %s group are in the statement", obj.Name, label))
+		}
+	}
+	return v
 }
 
 // TODO [next PRs]: Delete the repeated definition checks in CustomOperationsFromObject,
@@ -332,13 +502,14 @@ func (i *Interface) ShowParametersFromObject(obj ssot.Object) *Interface {
 }
 
 // ShowParametersDetailsFromObject adds ShowParametersDetails and the typed details struct.
-// The fields are ParameterLevel() plus AlterAdditionalParametersForLevels, the SET and UNSET catalog.
-// The body is generated and calls ShowParameters.
+// The fields are ParameterLevel() plus ShowParametersDetailsAdditionalLevels.
+// ALTER SET and UNSET stay ParameterLevel(). The body is generated and calls ShowParameters.
 func (i *Interface) ShowParametersDetailsFromObject(obj ssot.Object) *Interface {
 	if !obj.SdkConfig().ShowParametersDetails {
 		panic(fmt.Sprintf("object %q is not enabled for SDK ShowParametersDetails generation", obj.Name))
 	}
-	return i.ShowParametersDetails(parametersForLevels(obj.ParameterLevelsFor("SET"))...)
+	levels := append([]ssot.ParameterLevel{obj.ParameterLevel()}, obj.ShowParametersDetailsAdditionalLevels...)
+	return i.ShowParametersDetails(parametersForLevels(levels)...)
 }
 
 // InterfaceFromObject builds one SDK interface from the operations whose flags are on.
@@ -358,6 +529,9 @@ func InterfaceFromObject(obj ssot.Object) *Interface {
 	}
 	if cfg.Alter {
 		iface = iface.AlterOperationFromObject(obj)
+	}
+	if cfg.AlterForVariants {
+		iface = iface.AlterVariantOperationsFromObject(obj)
 	}
 	if cfg.Drop {
 		iface = iface.DropOperationFromObject(obj)
@@ -390,14 +564,15 @@ func InterfaceFromObject(obj ssot.Object) *Interface {
 type SdkInterfaceOverride func(*Interface)
 
 // SdkInterfacesFromSsot builds SDK interfaces for objects that turn on SdkDefineFromSsot.
-// NamePlural must be unique in objects. A shared plural, such as the catalog integration variants, stays on the old def.
+// NamePlural must be unique among objects that are not variants. A variant shares the base interface.
+// A shared plural among non-variants, such as the catalog integration variants, stays on the old def.
 // The interface contains the operation parts whose flags are on.
 // overrides is keyed by the ssot object Name. Each function receives the built interface and may add to it.
 // A key that does not match a built interface panics.
 func SdkInterfacesFromSsot(objects []ssot.Object, overrides map[string]SdkInterfaceOverride) []*Interface {
 	counts := make(map[string]int, len(objects))
 	for _, obj := range objects {
-		if obj.NamePlural == "" {
+		if obj.NamePlural == "" || obj.VariantOf != nil {
 			continue
 		}
 		counts[obj.NamePlural]++
@@ -424,27 +599,43 @@ func SdkInterfacesFromSsot(objects []ssot.Object, overrides map[string]SdkInterf
 }
 
 // referencedEnums is the enums on the object's columns and attributes, first reference first.
-// SHOW columns come first so a readonly enum precedes an attribute enum that SHOW lists later.
+// SHOW columns come first. ColumnEnum prefers ShowEnum, so the SHOW type is the generated SDK enum.
+// An enum with SdkType is a parser name for another SDK type and is not generated.
 func referencedEnums(obj ssot.Object) []*ssot.Enum {
 	var out []*ssot.Enum
 	seen := map[*ssot.Enum]struct{}{}
-	addAttr := func(attr *ssot.Attribute) {
+	addEnum := func(enum *ssot.Enum) {
+		if enum == nil || enum.SdkType != "" {
+			return
+		}
+		if _, ok := seen[enum]; ok {
+			return
+		}
+		seen[enum] = struct{}{}
+		out = append(out, enum)
+	}
+	var addAttr func(attr *ssot.Attribute)
+	addAttr = func(attr *ssot.Attribute) {
 		if attr == nil {
 			return
 		}
-		addEnum := func(enum *ssot.Enum) {
-			if enum == nil {
-				return
-			}
-			if _, ok := seen[enum]; ok {
-				return
-			}
-			seen[enum] = struct{}{}
-			out = append(out, enum)
-		}
-		addEnum(attr.Enum)
+		addEnum(attr.ColumnEnum())
 		if attr.Elem != nil {
-			addEnum(attr.Elem.Enum)
+			addEnum(attr.Elem.ColumnEnum())
+		}
+		addEnum(attr.CreateSql.Enum)
+		for i := range attr.Children {
+			addAttr(&attr.Children[i])
+		}
+		if attr.Elem != nil && attr.Elem.Type == ssot.AttrObject {
+			for i := range attr.Elem.Children {
+				addAttr(&attr.Elem.Children[i])
+			}
+			for _, variant := range attr.Elem.CreateSql.Variants {
+				for _, field := range variant.Fields {
+					addAttr(field)
+				}
+			}
 		}
 	}
 	addList := func(list []*ssot.Attribute) {
@@ -453,7 +644,7 @@ func referencedEnums(obj ssot.Object) []*ssot.Enum {
 		}
 	}
 	addList(obj.PairedShowColumns())
-	addList(obj.Describe.Columns)
+	addList(obj.PairedDescribeColumns())
 	for i := range obj.Attributes {
 		addAttr(&obj.Attributes[i])
 	}
@@ -461,6 +652,9 @@ func referencedEnums(obj ssot.Object) []*ssot.Enum {
 	addList(obj.Create.Clauses)
 	addList(obj.Set)
 	addList(obj.Unset)
+	for _, enum := range obj.AdditionalEnums {
+		addEnum(enum)
+	}
 	for _, spec := range obj.CustomOperations {
 		for _, clause := range spec.Clauses {
 			if clause.Kind == ssot.CustomOperationClauseAttribute {
@@ -480,6 +674,7 @@ func customOperationQueryStruct(obj ssot.Object, spec ssot.CustomOperationSpec) 
 	sawOrReplace := false
 	sawIfNotExists := false
 	sawName := false
+	var attributes []*ssot.Attribute
 	seen := make(map[ssot.CustomOperationClauseKind]struct{})
 	seenAttr := make(map[string]struct{})
 	seenPredefined := make(map[string]struct{})
@@ -506,6 +701,7 @@ func customOperationQueryStruct(obj ssot.Object, spec ssot.CustomOperationSpec) 
 			q = q.IfNotExists()
 		case ssot.CustomOperationClauseAttribute:
 			attr := customOperationAttribute(obj, spec, clause, seenAttr)
+			attributes = append(attributes, attr)
 			q = q.appendSqlSequence([]*ssot.Attribute{attr}, attributeSqlCreate)
 		case ssot.CustomOperationClauseObjectWords:
 			singleton(clause.Kind)
@@ -533,6 +729,7 @@ func customOperationQueryStruct(obj ssot.Object, spec ssot.CustomOperationSpec) 
 	if sawOrReplace && sawIfNotExists {
 		q = q.WithValidation(ConflictingFields, "OrReplace", "IfNotExists")
 	}
+	q = q.withAtLeastOneOfValidations(obj, attributes)
 	if spec.AdditionalValidations {
 		q = q.WithAdditionalValidations()
 	}
@@ -565,11 +762,41 @@ func customOperationAttribute(obj ssot.Object, spec ssot.CustomOperationSpec, cl
 // AtLeastOneValueSet on SET and UNSET lists the fields those structs contain.
 // ExactlyOneValueSet follows obj.Alter.
 func (i *Interface) AlterOperationFromObject(obj ssot.Object) *Interface {
+	if obj.VariantOf != nil {
+		panic(fmt.Sprintf("object %q: a variant cannot enable SDK generation", obj.Name))
+	}
 	cfg := obj.SdkConfig()
 	if !cfg.Alter {
 		panic(fmt.Sprintf("object %q is not enabled for SDK ALTER generation", obj.Name))
 	}
+	i.checkStructShapes = true
 	return i.AlterOperation(cfg.AlterDoc, alterQueryStructFromConfig(obj, cfg)).withEnumListItems(obj)
+}
+
+// AlterVariantOperationsFromObject emits each variant ALTER as a custom method.
+// Variants come from the catalog for base. The variant supplies the ALTER spec. The base must turn on SdkAlterForVariants.
+// TODO [next PRs]: the same switch for variant SHOW/DESCRIBE.
+func (i *Interface) AlterVariantOperationsFromObject(base ssot.Object) *Interface {
+	if !base.SdkConfig().AlterForVariants {
+		panic(fmt.Sprintf("object %q is not enabled for variant ALTER generation", base.Name))
+	}
+	variants := variantsOf(base)
+	if len(variants) == 0 {
+		panic(fmt.Sprintf("object %q: variant ALTER generation has no variants", base.Name))
+	}
+	for _, variant := range variants {
+		if variant.VariantOf == nil || variant.VariantOf.Name != base.Name {
+			panic(fmt.Sprintf("object %q: %q is not a variant", base.Name, variant.Name))
+		}
+		if !variant.HasAlterSpec() {
+			panic(fmt.Sprintf("object %q: variant ALTER has no spec", variant.Name))
+		}
+		cfg := variant.VariantAlterConfig()
+		q := alterQueryStructFromConfig(variant, cfg)
+		i = i.CustomOperation(variant.VariantAlterMethod(base.Name), cfg.AlterDoc, q)
+		i = i.withEnumListItems(variant)
+	}
+	return i
 }
 
 func (i *Interface) withEnumListItems(obj ssot.Object) *Interface {
@@ -584,17 +811,25 @@ func enumListItemQueryStructs(obj ssot.Object) []*QueryStruct {
 	// TODO [next PRs]: Move this shape into ssot as a description (struct name, field Value, the enum, single quotes, required). This function should only translate that description into a query struct. Do that together with more complex list items, not for this enum case alone.
 	seen := map[string]struct{}{}
 	var out []*QueryStruct
+	var addAttr func(attr *ssot.Attribute)
+	addAttr = func(attr *ssot.Attribute) {
+		if attr == nil {
+			return
+		}
+		if (attr.Type == ssot.AttrList || attr.Type == ssot.AttrSet) && attr.Elem != nil && attr.Elem.Type == ssot.AttrEnum && attr.Elem.Enum != nil {
+			name := ssot.EnumListItemName(attr.Elem.Enum)
+			if _, ok := seen[name]; !ok {
+				seen[name] = struct{}{}
+				out = append(out, NewQueryStruct(name).Enum("Value", attr.Elem.Enum, KeywordOptions().SingleQuotes().Required()))
+			}
+		}
+		for i := range attr.Children {
+			addAttr(&attr.Children[i])
+		}
+	}
 	add := func(list []*ssot.Attribute) {
 		for _, attr := range list {
-			if attr == nil || attr.Type != ssot.AttrList || attr.Elem == nil || attr.Elem.Type != ssot.AttrEnum || attr.Elem.Enum == nil {
-				continue
-			}
-			name := ssot.EnumListItemName(attr.Elem.Enum)
-			if _, ok := seen[name]; ok {
-				continue
-			}
-			seen[name] = struct{}{}
-			out = append(out, NewQueryStruct(name).Enum("Value", attr.Elem.Enum, KeywordOptions().SingleQuotes().Required()))
+			addAttr(attr)
 		}
 	}
 	add(obj.Create.KeywordsBefore)
@@ -624,6 +859,7 @@ func enumListItemFields(obj ssot.Object) []*Field {
 
 func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
 	q := NewQueryStruct(cfg.AlterQueryStructName).Alter().SQL(cfg.AlterSql)
+	q.owner = obj.Name
 	if !cfg.AlterWithoutIfExists {
 		q = q.IfExists()
 	}
@@ -677,6 +913,18 @@ func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QuerySt
 				panic(fmt.Sprintf("object %q: ALTER list %q has no SQL or item type", obj.Name, clause.SQL))
 			}
 			q = q.ListAssignment(clause.SQL, clause.ListItem, ParameterOptions().Parentheses().NoEquals())
+		case ssot.AlterClauseText:
+			if clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: ALTER text is empty", obj.Name))
+			}
+			q = q.OptionalTextAssignment(clause.SQL, ParameterOptions().SingleQuotes().NoEquals())
+		case ssot.AlterClauseBlock:
+			block := queryStructFromBlockAttribute(obj.Name, *clause.Block)
+			var transformer FieldTransformer = ParameterOptions().SQL(clause.SQL)
+			if clause.BlockKeyword {
+				transformer = KeywordOptions().SQL(clause.SQL)
+			}
+			q = q.OptionalQueryStructField(clause.Field, block, transformer)
 		default:
 			panic(fmt.Sprintf("object %q: ALTER clause has kind %q", obj.Name, clause.Kind))
 		}
@@ -699,8 +947,15 @@ func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QuerySt
 
 func appendAlterSet(q *QueryStruct, obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
 	setParams := parametersForStatement(obj, obj.Set, "SET")
-	setStruct := NewQueryStruct(obj.Name+"Set").appendSqlSequenceParams(obj.Set, attributeSqlSet, setParams)
+	setStruct := NewQueryStruct(obj.Name + "Set")
+	setStruct.owner = obj.Name
+	setStruct = setStruct.appendSqlSequenceParams(obj.Set, attributeSqlSet, setParams)
 	setStruct = setStruct.withIdentifierParameterValidations(setParams)
+	for _, pair := range obj.Alter.SetConflictingFields {
+		setStruct = setStruct.WithValidation(ConflictingFields, collections.Map(pair, func(attr *ssot.Attribute) string {
+			return clauseFieldName(*attr, attributeSqlSet)
+		})...)
+	}
 	setStruct = setStruct.WithValidation(AtLeastOneValueSet, atLeastOneFields(setStruct, setParams)...)
 	if cfg.AlterSetAdditionalValidations {
 		setStruct = setStruct.WithAdditionalValidations()
@@ -716,6 +971,12 @@ func appendAlterUnset(q *QueryStruct, obj ssot.Object) *QueryStruct {
 	unsetParams := parametersForStatement(obj, obj.Unset, "UNSET")
 	unsetStruct := NewQueryStruct(obj.Name+"Unset").appendSqlSequenceParams(obj.Unset, attributeSqlUnset, unsetParams)
 	unsetStruct = unsetStruct.WithValidation(AtLeastOneValueSet, atLeastOneFields(unsetStruct, unsetParams)...)
+	for _, group := range obj.UnsetConflicts {
+		names := collections.Map(group, func(member *ssot.Attribute) string {
+			return clauseFieldName(*member, attributeSqlUnset)
+		})
+		unsetStruct = unsetStruct.WithValidation(ConflictingFields, names...)
+	}
 	return q.OptionalQueryStructField("Unset", unsetStruct, ListOptions().NoParentheses().SQL("UNSET"))
 }
 
@@ -794,8 +1055,10 @@ func alterExactlyOneFields(obj ssot.Object) []string {
 				continue
 			}
 			fields = append(fields, sqlToFieldName(clause.SQL, true))
-		case ssot.AlterClauseList:
+		case ssot.AlterClauseList, ssot.AlterClauseText:
 			fields = append(fields, sqlToFieldName(clause.SQL, true))
+		case ssot.AlterClauseBlock:
+			fields = append(fields, clause.Field)
 		case ssot.AlterClauseRenameTo:
 			fields = append(fields, "RenameTo")
 		case ssot.AlterClauseSwapWith:

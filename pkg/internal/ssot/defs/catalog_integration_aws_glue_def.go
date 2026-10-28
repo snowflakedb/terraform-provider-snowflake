@@ -2,17 +2,6 @@ package defs
 
 import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 
-// https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-glue
-var catalogIntegrationAwsGlueCatalogSourceType = ssot.NewEnum(
-	"CatalogIntegrationCatalogSourceType", "CatalogIntegrationCatalogSourceTypes",
-	"GLUE", "OBJECT_STORE", "POLARIS", "ICEBERG_REST", "SAP_BDC",
-)
-
-var catalogIntegrationAwsGlueTableFormat = ssot.NewEnum(
-	"CatalogIntegrationTableFormat", "CatalogIntegrationTableFormats",
-	"ICEBERG", "DELTA",
-)
-
 // CatalogIntegrationAwsGlueAttrs holds reusable AWS Glue catalog integration fields so SHOW and
 // DESCRIBE Columns can point at the same definitions instead of restating names.
 var CatalogIntegrationAwsGlueAttrs = struct {
@@ -44,7 +33,9 @@ var CatalogIntegrationAwsGlueAttrs = struct {
 		Type:          ssot.AttrInt,
 		Description:   "Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh. For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.",
 		Min:           new(1),
+		DiffSuppress:  ssot.SuppressDescribe,
 		CreateMapping: ssot.IntAttributeCreateBuilder,
+		CreateSql:     ssot.IntParameter(ssot.NoQuotes()),
 	},
 	Comment: ssot.Attribute{
 		Name:          "comment",
@@ -72,10 +63,11 @@ var CatalogIntegrationAwsGlueAttrs = struct {
 	},
 	// GlueRegion and CatalogNamespace are written onto AwsGlueCatalogSourceParams, not request.With<Field>.
 	GlueRegion: ssot.Attribute{
-		Name:        "glue_region",
-		Type:        ssot.AttrString,
-		ForceNew:    true,
-		Description: "Specifies the AWS region of your AWS Glue Data Catalog. You must specify a value for this attribute if your Snowflake account is not hosted on AWS. Otherwise, the default region is the Snowflake deployment region for the account.",
+		Name:         "glue_region",
+		Type:         ssot.AttrString,
+		ForceNew:     true,
+		DiffSuppress: ssot.SuppressDescribe,
+		Description:  "Specifies the AWS region of your AWS Glue Data Catalog. You must specify a value for this attribute if your Snowflake account is not hosted on AWS. Otherwise, the default region is the Snowflake deployment region for the account.",
 	},
 	CatalogNamespace: ssot.Attribute{
 		Name:        "catalog_namespace",
@@ -92,22 +84,32 @@ var CatalogIntegrationAwsGlueAttrs = struct {
 		Name:        "catalog_source",
 		Type:        ssot.AttrEnum,
 		Description: "Specifies the type of catalog source. This field is used to detect when the catalog source was changed outside of Terraform and to recreate the resource when that happens.",
-		Enum:        catalogIntegrationAwsGlueCatalogSourceType,
+		Enum:        CatalogIntegrationCatalogSourceType,
 		Readonly:    true,
 	},
-	TableFormat:       ssot.Attribute{Name: "table_format", Type: ssot.AttrEnum, Enum: catalogIntegrationAwsGlueTableFormat, Readonly: true},
+	TableFormat:       ssot.Attribute{Name: "table_format", Type: ssot.AttrEnum, Enum: CatalogIntegrationTableFormat, Readonly: true},
 	GlueAwsIamUserArn: ssot.Attribute{Name: "glue_aws_iam_user_arn", Type: ssot.AttrString, Readonly: true},
 	GlueAwsExternalId: ssot.Attribute{Name: "glue_aws_external_id", Type: ssot.AttrString, Readonly: true},
+}
+
+var catalogIntegrationAwsGlueCatalogSourceStatic = ssot.Attribute{
+	Name:      "catalog_source_glue",
+	SqlOnly:   true,
+	CreateSql: ssot.StaticSQL("catalogSource", "CATALOG_SOURCE = GLUE"),
 }
 
 var CatalogIntegrationAwsGlue = ssot.Object{
 	Name:                   "CatalogIntegrationAwsGlue",
 	NamePlural:             "CatalogIntegrations",
+	VariantOf:              &CatalogIntegration,
 	DescribeFailRead:       true,
 	IdType:                 "AccountObjectIdentifier",
 	IdentityNameForceNew:   true,
 	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{
+		ssot.WithResource(),
+		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant.
+		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"))),
 		// ShowOutputShow omitted. SHOW rows are sdk.CatalogIntegration, so tests use CatalogIntegrationShowOutput.
 		// WithSchema omitted. SHOW is the shared CatalogIntegration schema alias in the ext.
 		// DESCRIBE stays on the SDK schema list. SSOT would repeat sdk.CatalogIntegrationAwsGlueDetails.
@@ -115,15 +117,17 @@ var CatalogIntegrationAwsGlue = ssot.Object{
 		// WithResourceAssert omitted. catalog_source is added in the schema ext, so the schema-based assert still emits it.
 		// ObjectAssertShow omitted. There is no sdk.CatalogIntegrationAwsGlue type.
 		// ObjectAssertDescribe omitted. The SDK list keeps DescribeAwsGlue.
+		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant. The details are parsed in the SDK ext.
+		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"), ssot.SdkDescribeDetails())),
 		ssot.WithShowOutputAssert(ssot.ShowOutputDescribe()),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
-		// Snowflake's command is DESCRIBE CATALOG INTEGRATION. The generated text would use the resource name.
-		ssot.WithDescribeOutputSchema(ssot.ExtCall()),
+		ssot.WithParseId(ssot.Generated()),
+		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
 		ssot.WithHandleExternalChangesInDescribe(ssot.ExtCall()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
-		ssot.WithSetStateToValuesFromConfig(ssot.Omitted()),
+		ssot.WithDropSafelyInSdk(ssot.Generated()),
 	},
 	Attributes: []ssot.Attribute{
 		CatalogIntegrationAwsGlueAttrs.Enabled,
@@ -133,6 +137,20 @@ var CatalogIntegrationAwsGlue = ssot.Object{
 		CatalogIntegrationAwsGlueAttrs.GlueCatalogId,
 		CatalogIntegrationAwsGlueAttrs.GlueRegion,
 		CatalogIntegrationAwsGlueAttrs.CatalogNamespace,
+	},
+	Create: ssot.CreateSpec{
+		Doc: "https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-glue",
+		Clauses: []*ssot.Attribute{
+			&catalogIntegrationAwsGlueCatalogSourceStatic,
+			&catalogIntegrationTableFormatIceberg,
+			&CatalogIntegrationAwsGlueAttrs.GlueAwsRoleArn,
+			&CatalogIntegrationAwsGlueAttrs.GlueCatalogId,
+			&CatalogIntegrationAwsGlueAttrs.GlueRegion,
+			&CatalogIntegrationAwsGlueAttrs.CatalogNamespace,
+			&CatalogIntegrationAwsGlueAttrs.Enabled,
+			&CatalogIntegrationAwsGlueAttrs.RefreshIntervalSeconds,
+			&CatalogIntegrationAwsGlueAttrs.Comment,
+		},
 	},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{

@@ -20,6 +20,9 @@ var {{ .Prefix }}AttributesSchema = {{ if .AttributesModification }}{{ .Prefix }
 {{- if .ForceNew }}
 		ForceNew: true,
 {{- end }}
+{{- if .Sensitive }}
+		Sensitive: true,
+{{- end }}
 {{- if .MinItems }}
 		MinItems: {{ .MinItems }},
 {{- end }}
@@ -51,6 +54,20 @@ var {{ .Prefix }}AttributesSchema = {{ if .AttributesModification }}{{ .Prefix }
 {{- if .ConflictsWith }}
 		ConflictsWith: []string{
 {{- range .ConflictsWith }}
+			{{ printf "%q" . }},
+{{- end }}
+		},
+{{- end }}
+{{- if .AtLeastOneOf }}
+		AtLeastOneOf: []string{
+{{- range .AtLeastOneOf }}
+			{{ printf "%q" . }},
+{{- end }}
+		},
+{{- end }}
+{{- if .ExactlyOneOf }}
+		ExactlyOneOf: []string{
+{{- range .ExactlyOneOf }}
 			{{ printf "%q" . }},
 {{- end }}
 		},

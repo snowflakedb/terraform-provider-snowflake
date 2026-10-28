@@ -15,8 +15,10 @@ type ResourceModel struct {
 	DescribeUsesShowId                  bool
 	HasPartialOnUpdate                  bool
 	AdditionalDescribeOutputDescription string
+	DescribeDetailsName                 string
 	IdType                              string
 	LegacyIdEncoding                    bool
+	PreviewFeature                      bool
 	IdentityNameForceNew                bool
 	IdentityHierarchyForceNew           bool
 	AdditionalIdentityNameDescription   string
@@ -47,6 +49,15 @@ func (m ResourceModel) Prefix() string {
 	return genhelpers.FirstLetterLowercase(m.Name)
 }
 
+// ShowObjectName is the SDK type of the SHOW row passed to SetConfigFields.
+// A variant's row is the parent type.
+func (m ResourceModel) ShowObjectName() string {
+	if m.VariantOf != nil && m.VariantOf.Name != "" {
+		return m.VariantOf.Name
+	}
+	return m.Name
+}
+
 func (m ResourceModel) EffectiveSdkCreateRequestObjectName() string {
 	if m.SdkCreateRequestObjectName != "" {
 		return m.SdkCreateRequestObjectName
@@ -61,20 +72,17 @@ func (m ResourceModel) EffectiveSdkParametersObjectName() string {
 	return m.Name
 }
 
+// EffectiveSdkAlterObjectName is the SET and UNSET request stem.
+// A variant uses its own name, so WarehouseAdaptive is WarehouseAdaptiveSetRequest.
+func (m ResourceModel) EffectiveSdkAlterObjectName() string {
+	return m.Name
+}
+
 func (m ResourceModel) ParseIdFunc() string {
 	if m.Hooks.ParseId.Generate {
 		return m.Prefix() + "ParseId"
 	}
 	return m.Prefix() + "ParseIdExt"
-}
-
-func (m ResourceModel) HasCreateOptionalCalls() bool {
-	for _, attr := range m.Attributes {
-		if attr.CreateOptionalCall != nil {
-			return true
-		}
-	}
-	return false
 }
 
 func (m ResourceModel) HasUpdateCalls() bool {
@@ -86,12 +94,46 @@ func (m ResourceModel) HasUpdateCalls() bool {
 	return false
 }
 
+// RequiresUpdate reports whether the schema has a field Terraform can change in place.
+// An Update function is rejected when every field is ForceNew or computed without Optional.
+func (m ResourceModel) RequiresUpdate() bool {
+	if m.Hooks.IdentitySchema.Present && !m.Hooks.IdentitySchema.Generate {
+		return true
+	}
+	if m.Hooks.AttributesSchema.Present && !m.Hooks.AttributesSchema.Generate {
+		return true
+	}
+	if m.AttributesModification {
+		return true
+	}
+	if m.Hooks.ParametersAttributesSchema.Present {
+		return true
+	}
+	if m.Hooks.IdentitySchema.Generate {
+		if !m.IdentityNameForceNew {
+			return true
+		}
+		if m.IdType == "DatabaseObjectIdentifier" || m.IdType == "SchemaObjectIdentifier" {
+			if !m.IdentityHierarchyForceNew {
+				return true
+			}
+		}
+	}
+	for _, attr := range m.Attributes {
+		if !attr.ForceNew {
+			return true
+		}
+	}
+	return false
+}
+
 func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleModel, _ *log.Logger) ResourceModel {
 	hooks := ssot.DefaultResourceExtHooks(input.ResourceHooks...)
 	resourceAttributes := input.ResourceAttributes()
 	attributes := applyResourceAttributeRules(input.IdType, resourceAttributes)
+	applyExactlyOneOf(input.ExactlyOneOf, attributes)
 	if hooks.NewCreateRequest.Generate || hooks.ApplyCreateOptionals.Generate {
-		attachCreateMappings(input.Name, input.IdType, resourceAttributes, attributes)
+		attachCreateMappings(input.Name, resourceAttributes, attributes)
 	}
 	if hooks.ApplySetUnset.Generate {
 		attachUpdateMappings(input.Name, resourceAttributes, attributes)
@@ -103,8 +145,10 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		DescribeUsesShowId:                  input.DescribeUsesShowId,
 		HasPartialOnUpdate:                  input.HasPartialOnUpdate,
 		AdditionalDescribeOutputDescription: input.AdditionalDescribeOutputDescription,
+		DescribeDetailsName:                 input.DescribeDetailsName,
 		IdType:                              input.IdType,
 		LegacyIdEncoding:                    input.LegacyIdEncoding,
+		PreviewFeature:                      input.PreviewFeature,
 		IdentityNameForceNew:                input.IdentityNameForceNew,
 		IdentityHierarchyForceNew:           input.IdentityHierarchyForceNew,
 		AdditionalIdentityNameDescription:   input.AdditionalIdentityNameDescription,

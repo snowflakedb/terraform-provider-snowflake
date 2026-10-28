@@ -18,14 +18,14 @@ var authenticationPolicyAttributesSchema = authenticationPolicyAttributesModific
 			Type:             tfschema.TypeString,
 			ValidateDiagFunc: sdkValidation(sdk.ToAuthenticationMethodsOption),
 		},
-		DiffSuppressFunc: NormalizeAndCompare(sdk.ToAuthenticationMethodsOption),
+		DiffSuppressFunc: NormalizeAndCompareEnumsInSet("authentication_methods", sdk.ToAuthenticationMethodsOption),
 		Description:      "A list of authentication methods that are allowed during login. " + enumValuesDescription(sdk.AllAuthenticationMethodsOptions),
 	},
 	"mfa_enrollment": {
 		Type:             tfschema.TypeString,
 		Optional:         true,
 		ValidateDiagFunc: sdkValidation(sdk.ToMfaEnrollmentOption),
-		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToMfaEnrollmentOption)),
+		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToMfaEnrollmentOption), IgnoreChangeToCurrentSnowflakeValueInDescribe("mfa_enrollment")),
 		Description:      "Determines whether a user must enroll in multi-factor authentication. " + enumValuesDescription(sdk.AllMfaEnrollmentOptions) + " When REQUIRED is specified, Enforces users to enroll in MFA. If this value is used, then the `client_types` parameter must include `snowflake_ui`, because Snowsight is the only place users can enroll in multi-factor authentication (MFA). Note that when you set this value to OPTIONAL, and your account setup forces users to enroll in MFA, then Snowflake may set quietly this value to `REQUIRED_PASSWORD_ONLY`, which may cause permadiff. In this case, you may want to adjust this field value.",
 	},
 	"client_types": {
@@ -35,7 +35,7 @@ var authenticationPolicyAttributesSchema = authenticationPolicyAttributesModific
 			Type:             tfschema.TypeString,
 			ValidateDiagFunc: sdkValidation(sdk.ToClientTypesOption),
 		},
-		DiffSuppressFunc: NormalizeAndCompare(sdk.ToClientTypesOption),
+		DiffSuppressFunc: NormalizeAndCompareEnumsInSet("client_types", sdk.ToClientTypesOption),
 		Description:      "A list of clients that can authenticate with Snowflake. If a client tries to connect, and the client is not one of the valid `client_types`, then the login attempt fails. " + enumValuesDescription(sdk.AllClientTypesOptions) + " The `client_types` property of an authentication policy is a best effort method to block user logins based on specific clients. It should not be used as the sole control to establish a security boundary.",
 	},
 	"client_policy": {
@@ -70,7 +70,11 @@ var authenticationPolicyAttributesSchema = authenticationPolicyAttributesModific
 					Optional:         true,
 					ValidateDiagFunc: sdkValidation(sdk.ToEnforceMfaOnExternalAuthenticationOption),
 					DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToEnforceMfaOnExternalAuthenticationOption)),
-					Description:      "Determines whether multi-factor authentication (MFA) is enforced on external authentication. " + enumValuesDescription(sdk.AllEnforceMfaOnExternalAuthenticationOptions),
+					AtLeastOneOf: []string{
+						"mfa_policy.0.enforce_mfa_on_external_authentication",
+						"mfa_policy.0.allowed_methods",
+					},
+					Description: "Determines whether multi-factor authentication (MFA) is enforced on external authentication. " + enumValuesDescription(sdk.AllEnforceMfaOnExternalAuthenticationOptions),
 				},
 				"allowed_methods": {
 					Type:     tfschema.TypeSet,
@@ -80,7 +84,11 @@ var authenticationPolicyAttributesSchema = authenticationPolicyAttributesModific
 						ValidateDiagFunc: sdkValidation(sdk.ToMfaPolicyAllowedMethodsOption),
 					},
 					DiffSuppressFunc: NormalizeAndCompare(sdk.ToMfaPolicyAllowedMethodsOption),
-					Description:      "Specifies the allowed methods for the MFA policy. " + enumValuesDescription(sdk.AllMfaPolicyAllowedMethodsOptions),
+					AtLeastOneOf: []string{
+						"mfa_policy.0.enforce_mfa_on_external_authentication",
+						"mfa_policy.0.allowed_methods",
+					},
+					Description: "Specifies the allowed methods for the MFA policy. " + enumValuesDescription(sdk.AllMfaPolicyAllowedMethodsOptions),
 				},
 			},
 		},
@@ -96,27 +104,51 @@ var authenticationPolicyAttributesSchema = authenticationPolicyAttributesModific
 					Type:             tfschema.TypeInt,
 					Optional:         true,
 					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
-					Description:      "Specifies the default expiration time (in days) for a programmatic access token.",
+					AtLeastOneOf: []string{
+						"pat_policy.0.default_expiry_in_days",
+						"pat_policy.0.max_expiry_in_days",
+						"pat_policy.0.require_role_restriction_for_service_users",
+						"pat_policy.0.network_policy_evaluation",
+					},
+					Description: "Specifies the default expiration time (in days) for a programmatic access token.",
 				},
 				"max_expiry_in_days": {
 					Type:             tfschema.TypeInt,
 					Optional:         true,
 					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
-					Description:      "Specifies the maximum number of days that can be set for the expiration time for a programmatic access token.",
+					AtLeastOneOf: []string{
+						"pat_policy.0.default_expiry_in_days",
+						"pat_policy.0.max_expiry_in_days",
+						"pat_policy.0.require_role_restriction_for_service_users",
+						"pat_policy.0.network_policy_evaluation",
+					},
+					Description: "Specifies the maximum number of days that can be set for the expiration time for a programmatic access token.",
 				},
 				"require_role_restriction_for_service_users": {
 					Type:             tfschema.TypeString,
 					Optional:         true,
 					ValidateDiagFunc: validateBooleanString,
-					Description:      booleanStringFieldDescription("If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role."),
-					Default:          BooleanDefault,
+					AtLeastOneOf: []string{
+						"pat_policy.0.default_expiry_in_days",
+						"pat_policy.0.max_expiry_in_days",
+						"pat_policy.0.require_role_restriction_for_service_users",
+						"pat_policy.0.network_policy_evaluation",
+					},
+					Description: booleanStringFieldDescription("If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role."),
+					Default:     BooleanDefault,
 				},
 				"network_policy_evaluation": {
 					Type:             tfschema.TypeString,
 					Optional:         true,
 					ValidateDiagFunc: sdkValidation(sdk.ToNetworkPolicyEvaluationOption),
 					DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToNetworkPolicyEvaluationOption)),
-					Description:      "Specifies the network policy evaluation for the PAT. " + enumValuesDescription(sdk.AllNetworkPolicyEvaluationOptions),
+					AtLeastOneOf: []string{
+						"pat_policy.0.default_expiry_in_days",
+						"pat_policy.0.max_expiry_in_days",
+						"pat_policy.0.require_role_restriction_for_service_users",
+						"pat_policy.0.network_policy_evaluation",
+					},
+					Description: "Specifies the network policy evaluation for the PAT. " + enumValuesDescription(sdk.AllNetworkPolicyEvaluationOptions),
 				},
 			},
 		},
@@ -170,9 +202,11 @@ var authenticationPolicyAttributesSchema = authenticationPolicyAttributesModific
 		Type:     tfschema.TypeSet,
 		Optional: true,
 		Elem: &tfschema.Schema{
-			Type: tfschema.TypeString,
+			Type:             tfschema.TypeString,
+			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 		},
-		Description: "A list of security integrations the authentication policy is associated with. This parameter has no effect when `saml` or `oauth` are not in the `authentication_methods` list. All values in the `security_integrations` list must be compatible with the values in the `authentication_methods` list. For example, if `security_integrations` contains a SAML security integration, and `authentication_methods` contains OAUTH, then you cannot create the authentication policy. To allow all security integrations use `ALL` as parameter.",
+		DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("security_integrations"),
+		Description:      "A list of security integrations the authentication policy is associated with. This parameter has no effect when `saml` or `oauth` are not in the `authentication_methods` list. All values in the `security_integrations` list must be compatible with the values in the `authentication_methods` list. For example, if `security_integrations` contains a SAML security integration, and `authentication_methods` contains OAUTH, then you cannot create the authentication policy. To allow all security integrations use `ALL` as parameter.",
 	},
 	"comment": {
 		Type:        tfschema.TypeString,
@@ -182,7 +216,28 @@ var authenticationPolicyAttributesSchema = authenticationPolicyAttributesModific
 })
 
 var authenticationPolicySchema = collections.MergeMaps(
-	authenticationPolicyIdentitySchemaExt,
+	map[string]*tfschema.Schema{
+		"name": {
+			Type:             tfschema.TypeString,
+			Required:         true,
+			Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the authentication policy; must be unique for the schema in which the authentication policy is created."),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+		},
+		"database": {
+			Type:             tfschema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      blocklistedCharactersFieldDescription("The database in which to create the authentication policy."),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+		},
+		"schema": {
+			Type:             tfschema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      blocklistedCharactersFieldDescription("The schema in which to create the authentication policy."),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+		},
+	},
 	authenticationPolicyAttributesSchema,
 	map[string]*tfschema.Schema{
 		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
@@ -197,5 +252,14 @@ var authenticationPolicySchema = collections.MergeMaps(
 			},
 		},
 	},
-	authenticationPolicyDescribeOutputSchemaExt,
+	map[string]*tfschema.Schema{
+		DescribeOutputAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `DESCRIBE AUTHENTICATION POLICY` for the given authentication policy.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.DescribeAuthenticationPolicyDetailsSchema,
+			},
+		},
+	},
 )

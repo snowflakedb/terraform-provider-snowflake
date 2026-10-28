@@ -7,6 +7,9 @@ import (
 	"errors"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -21,7 +24,7 @@ func CatalogIntegrationIcebergRest() *tfschema.Resource {
 		CreateContext: catalogIntegrationIcebergRestCreateExt,
 		ReadContext:   catalogIntegrationIcebergRestReadExt,
 		UpdateContext: catalogIntegrationIcebergRestUpdateExt,
-		DeleteContext: catalogIntegrationIcebergRestDeleteExt,
+		DeleteContext: TrackingDeleteWrapper(resources.CatalogIntegrationIcebergRest, DeleteCatalogIntegrationIcebergRest),
 		Importer:      catalogIntegrationIcebergRestImporterExt,
 
 		CustomizeDiff: catalogIntegrationIcebergRestCustomizeDiffExt,
@@ -30,7 +33,7 @@ func CatalogIntegrationIcebergRest() *tfschema.Resource {
 }
 
 func ImportCatalogIntegrationIcebergRest(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
-	id, err := catalogIntegrationIcebergRestParseIdExt(d.Id())
+	id, err := catalogIntegrationIcebergRestParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +43,8 @@ func ImportCatalogIntegrationIcebergRest(ctx context.Context, d *tfschema.Resour
 		return nil, err
 	}
 
-	if err := catalogIntegrationIcebergRestSetFieldsNotSetByReadExt(d, id, catalogIntegrationIcebergRest); err != nil {
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
+	if err := catalogIntegrationIcebergRestSetFieldsNotSetByReadExt(d, id, catalogIntegrationIcebergRest, importPermissiveMode); err != nil {
 		return nil, err
 	}
 	return []*tfschema.ResourceData{d}, nil
@@ -71,11 +75,12 @@ func CreateCatalogIntegrationIcebergRest(ctx context.Context, d *tfschema.Resour
 
 func ReadCatalogIntegrationIcebergRestFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := catalogIntegrationIcebergRestParseIdExt(d.Id())
+		id, err := catalogIntegrationIcebergRestParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
+		var diags diag.Diagnostics
 		catalogIntegrationIcebergRest, diags := catalogIntegrationIcebergRestShowByIdSafelyInSdkExt(ctx, d, meta, id)
 		if diags != nil {
 			return diags
@@ -90,6 +95,12 @@ func ReadCatalogIntegrationIcebergRestFunc(withExternalChangesMarking bool) tfsc
 			return diags
 		}
 
+		if err = setStateToValuesFromConfig(d, catalogIntegrationIcebergRestSchema, []string{
+			"refresh_interval_seconds",
+			"catalog_namespace",
+		}); err != nil {
+			return append(diags, diag.FromErr(err)...)
+		}
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationIcebergRestToSchema(catalogIntegrationIcebergRest)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CatalogIntegrationIcebergRestDetailsToSchema(catalogIntegrationIcebergRestDetails)}),
@@ -104,7 +115,7 @@ func ReadCatalogIntegrationIcebergRestFunc(withExternalChangesMarking bool) tfsc
 }
 
 func UpdateCatalogIntegrationIcebergRest(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := catalogIntegrationIcebergRestParseIdExt(d.Id())
+	id, err := catalogIntegrationIcebergRestParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -115,12 +126,22 @@ func UpdateCatalogIntegrationIcebergRest(ctx context.Context, d *tfschema.Resour
 	if err := catalogIntegrationIcebergRestAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := catalogIntegrationIcebergRestAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
-	}
 	return ReadCatalogIntegrationIcebergRestFunc(false)(ctx, d, meta)
 }
 
 func catalogIntegrationIcebergRestParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
 	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
+}
+
+func catalogIntegrationIcebergRestParseId(id string) (sdk.AccountObjectIdentifier, error) {
+	return sdk.ParseAccountObjectIdentifier(id)
+}
+
+func DeleteCatalogIntegrationIcebergRest(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	return ResourceDeleteContextFunc(
+		sdk.ParseAccountObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.CatalogIntegrations.DropSafely
+		},
+	)(ctx, d, meta)
 }

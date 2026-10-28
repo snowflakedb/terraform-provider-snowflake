@@ -20,14 +20,9 @@ import (
 // =============================================================================
 
 var (
-	catalogIntegrationObjectStorageCreateExt = TrackingCreateWrapper(resources.CatalogIntegrationObjectStorage, CreateCatalogIntegrationObjectStorage)
-	catalogIntegrationObjectStorageReadExt   = TrackingReadWrapper(resources.CatalogIntegrationObjectStorage, ReadCatalogIntegrationObjectStorageFunc(true))
-	catalogIntegrationObjectStorageUpdateExt = TrackingUpdateWrapper(resources.CatalogIntegrationObjectStorage, UpdateCatalogIntegrationObjectStorage)
-	// Same delete wiring as deleteCatalogIntegrationFunc: ParseAccountObjectIdentifier and CatalogIntegrations.DropSafely.
-	catalogIntegrationObjectStorageDeleteExt = TrackingDeleteWrapper(resources.CatalogIntegrationObjectStorage, ResourceDeleteContextFunc(
-		catalogIntegrationObjectStorageParseIdExt,
-		catalogIntegrationObjectStorageDropSafelyInSdkExt,
-	))
+	catalogIntegrationObjectStorageCreateExt      = TrackingCreateWrapper(resources.CatalogIntegrationObjectStorage, CreateCatalogIntegrationObjectStorage)
+	catalogIntegrationObjectStorageReadExt        = TrackingReadWrapper(resources.CatalogIntegrationObjectStorage, ReadCatalogIntegrationObjectStorageFunc(true))
+	catalogIntegrationObjectStorageUpdateExt      = TrackingUpdateWrapper(resources.CatalogIntegrationObjectStorage, UpdateCatalogIntegrationObjectStorage)
 	catalogIntegrationObjectStorageDescriptionExt = "Resource used to manage catalog integration objects for Apache Iceberg™ table files or Delta table files in object storage. For more information, check [catalog integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-object-storage)."
 	// No TrackingCustomDiffWrapper: the resource did not use one.
 	catalogIntegrationObjectStorageCustomizeDiffExt = customdiff.All(
@@ -49,23 +44,17 @@ type catalogIntegrationObjectStorageAlterRequestsExt struct {
 	set *sdk.CatalogIntegrationSetRequest
 }
 
-func catalogIntegrationObjectStorageParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
-	return sdk.ParseAccountObjectIdentifier(id)
-}
-
-func catalogIntegrationObjectStorageNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateCatalogIntegrationRequest, error) {
+func catalogIntegrationObjectStorageNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateObjectStorageCatalogIntegrationRequest, error) {
 	enabled := d.Get("enabled").(bool)
 	tableFormat, err := sdk.ToCatalogIntegrationTableFormat(d.Get("table_format").(string))
 	if err != nil {
 		return nil, err
 	}
 
-	request := sdk.NewCreateCatalogIntegrationRequest(id, enabled)
-	objectStorageRequest := sdk.NewObjectStorageParamsRequest(tableFormat)
-	return request.WithObjectStorageCatalogSourceParams(*objectStorageRequest), nil
+	return sdk.NewCreateObjectStorageCatalogIntegrationRequest(id, tableFormat, enabled), nil
 }
 
-func catalogIntegrationObjectStorageApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.CreateCatalogIntegrationRequest) error {
+func catalogIntegrationObjectStorageApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.CreateObjectStorageCatalogIntegrationRequest) error {
 	return errors.Join(
 		intAttributeCreateBuilder(d, "refresh_interval_seconds", request.WithRefreshIntervalSeconds),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
@@ -110,17 +99,17 @@ func catalogIntegrationObjectStorageApplySetUnsetExt(d *schema.ResourceData) (*c
 	return &catalogIntegrationObjectStorageAlterRequestsExt{set: set}, nil
 }
 
-func catalogIntegrationObjectStorageSetFieldsNotSetByReadExt(_ *schema.ResourceData, _ sdk.AccountObjectIdentifier, _ *sdk.CatalogIntegrationObjectStorageDetails) error {
-	return nil
+func catalogIntegrationObjectStorageSetFieldsNotSetByReadExt(d *schema.ResourceData, _ sdk.AccountObjectIdentifier, details *sdk.CatalogIntegrationObjectStorageDetails, importPermissiveMode bool) error {
+	return importIntAttribute(d, "refresh_interval_seconds", importPermissiveMode, details.RefreshIntervalSeconds)
 }
 
 // =============================================================================
 // SDK incision points
 // =============================================================================
 
-func catalogIntegrationObjectStorageCreateInSdkExt(ctx context.Context, meta any, _ sdk.AccountObjectIdentifier, req *sdk.CreateCatalogIntegrationRequest) diag.Diagnostics {
+func catalogIntegrationObjectStorageCreateInSdkExt(ctx context.Context, meta any, _ sdk.AccountObjectIdentifier, req *sdk.CreateObjectStorageCatalogIntegrationRequest) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	if err := client.CatalogIntegrations.Create(ctx, req); err != nil {
+	if err := client.CatalogIntegrations.CreateObjectStorage(ctx, req); err != nil {
 		return diag.FromErr(fmt.Errorf("error creating object storage catalog integration, err = %w", err))
 	}
 	return nil
@@ -176,12 +165,4 @@ func catalogIntegrationObjectStorageAlterSetInSdkExt(ctx context.Context, _ *sch
 		}
 	}
 	return nil
-}
-
-func catalogIntegrationObjectStorageAlterUnsetInSdkExt(context.Context, any, sdk.AccountObjectIdentifier, *catalogIntegrationObjectStorageAlterRequestsExt) error {
-	return nil
-}
-
-func catalogIntegrationObjectStorageDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
-	return client.CatalogIntegrations.DropSafely
 }

@@ -20,6 +20,7 @@ var catalogIntegrationOpenCatalogAttributesSchema = catalogIntegrationOpenCatalo
 		Type:             tfschema.TypeInt,
 		Optional:         true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("refresh_interval_seconds"),
 		Description:      "Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh. For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.",
 	},
 	"comment": {
@@ -47,12 +48,6 @@ var catalogIntegrationOpenCatalogAttributesSchema = catalogIntegrationOpenCatalo
 					ForceNew:    true,
 					Description: "Specifies Open Catalog account URL.",
 				},
-				"catalog_name": {
-					Type:        tfschema.TypeString,
-					Required:    true,
-					ForceNew:    true,
-					Description: "Specifies the name of the catalog to use in Open Catalog.",
-				},
 				"catalog_api_type": {
 					Type:             tfschema.TypeString,
 					Optional:         true,
@@ -60,6 +55,12 @@ var catalogIntegrationOpenCatalogAttributesSchema = catalogIntegrationOpenCatalo
 					ValidateDiagFunc: sdkValidation(sdk.ToCatalogIntegrationCatalogApiType),
 					DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationCatalogApiType)),
 					Description:      "Specifies how Snowflake connects to Open Catalog. " + enumValuesDescription(sdk.AllCatalogIntegrationCatalogApiTypes),
+				},
+				"catalog_name": {
+					Type:        tfschema.TypeString,
+					Required:    true,
+					ForceNew:    true,
+					Description: "Specifies the name of the catalog to use in Open Catalog.",
 				},
 				"access_delegation_mode": {
 					Type:             tfschema.TypeString,
@@ -90,11 +91,13 @@ var catalogIntegrationOpenCatalogAttributesSchema = catalogIntegrationOpenCatalo
 					Type:        tfschema.TypeString,
 					Required:    true,
 					ForceNew:    true,
+					Sensitive:   true,
 					Description: "Specifies the client ID of the OAuth2 credential associated with your Open Catalog service connection.",
 				},
 				"oauth_client_secret": {
 					Type:        tfschema.TypeString,
 					Required:    true,
+					Sensitive:   true,
 					Description: "Specifies the secret of the OAuth2 credential associated with your Open Catalog service connection.",
 				},
 				"oauth_allowed_scopes": {
@@ -137,5 +140,14 @@ var catalogIntegrationOpenCatalogSchema = collections.MergeMaps(
 			},
 		},
 	},
-	catalogIntegrationOpenCatalogDescribeOutputSchemaExt,
+	map[string]*tfschema.Schema{
+		DescribeOutputAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `DESCRIBE CATALOG INTEGRATION` for the given catalog integration.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.DescribeCatalogIntegrationOpenCatalogDetailsSchema,
+			},
+		},
+	},
 )

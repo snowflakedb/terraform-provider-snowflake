@@ -20,6 +20,5 @@ func externalVolumeAttributesModificationExt(s map[string]*schema.Schema) map[st
 	fields["use_privatelink_endpoint"].DiffSuppressFunc = func(_, oldValue, newValue string, _ *schema.ResourceData) bool {
 		return oldValue == "" && (newValue == BooleanDefault || newValue == BooleanFalse)
 	}
-	fields["storage_aws_secret_key"].Sensitive = true
 	return s
 }

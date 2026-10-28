@@ -21,7 +21,9 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.Account{}):                     {"Accounts"},
 	normalized(sdk.ApiIntegration{}):              {"ApiIntegrations"},
 	normalized(sdk.AuthenticationPolicy{}):        {"AuthenticationPolicies"},
+	normalized(sdk.BackupPolicy{}):                {"BackupPolicies"},
 	normalized(sdk.CatalogIntegration{}):          {"CatalogIntegrations"},
+	normalized(sdk.CodeBundle{}):                  {"CodeBundles"},
 	normalized(sdk.ComputePool{}):                 {"ComputePools"},
 	normalized(sdk.CortexAgent{}):                 {"CortexAgents"},
 	normalized(sdk.Database{}):                    {"Databases"},
@@ -68,7 +70,9 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 
 	// Describe output:
 	normalized(sdk.ApiIntegrationAllDetails{}):      {"ApiIntegrations"},
-	normalized(sdk.CatalogIntegrationAllDetails{}):  {"CatalogIntegrations"},
+	normalized(sdk.BackupPolicyDetails{}):           {"BackupPolicies"},
+	normalized(sdk.CatalogIntegrationDetails{}):     {"CatalogIntegrations"},
+	normalized(sdk.CodeBundleDetails{}):             {"CodeBundles"},
 	normalized(sdk.CortexAgentDetails{}):            {"CortexAgents"},
 	normalized(sdk.ExternalVolumeDetails{}):         {"ExternalVolumes"},
 	normalized(sdk.FileFormatAllDetails{}):          {"FileFormats"},
@@ -103,14 +107,15 @@ func GetFilteredSdkObjectDetails() []SdkObjectShowOutputDetails {
 
 var (
 	objectsNotBeingResources = []any{
-		sdk.BearerRestAuthenticationDetails{},
+		sdk.CatalogIntegrationIcebergRestBearerRestAuthenticationDetails{},
+		sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationDetails{},
+		sdk.CatalogIntegrationIcebergRestRestConfigDetails{},
+		sdk.CatalogIntegrationIcebergRestSigv4RestAuthenticationDetails{},
+		sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{},
+		sdk.CatalogIntegrationOpenCatalogRestConfigDetails{},
 		sdk.ExternalVolumeStorageLocationDetails{},
-		sdk.IcebergRestRestConfigDetails{},
-		sdk.OAuthRestAuthenticationDetails{},
-		sdk.OpenCatalogRestConfigDetails{},
 		sdk.PolicyReference{},
 		sdk.PostgresMirrorDetails{},
-		sdk.SigV4RestAuthenticationDetails{},
 		sdk.StorageLocationAzureDetails{},
 		sdk.StorageLocationGcsDetails{},
 		sdk.StorageLocationS3CompatDetails{},

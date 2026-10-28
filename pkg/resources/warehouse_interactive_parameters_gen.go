@@ -48,7 +48,7 @@ var (
 )
 
 func warehouseInteractiveParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) (*sdk.WarehouseParametersDetails, error) {
-	id, err := warehouseInteractiveParseIdExt(d.Id())
+	id, err := warehouseInteractiveParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func warehouseInteractiveApplyParametersCreate(d *tfschema.ResourceData, req *sd
 	)
 }
 
-func warehouseInteractiveApplyParametersChanges(d *tfschema.ResourceData, set *sdk.WarehouseSetRequest, unset *sdk.WarehouseUnsetRequest) diag.Diagnostics {
+func warehouseInteractiveApplyParametersChanges(d *tfschema.ResourceData, set *sdk.WarehouseInteractiveSetRequest, unset *sdk.WarehouseInteractiveUnsetRequest) diag.Diagnostics {
 	return JoinDiags(
 		handleParameterUpdateWithMapping(d, "fallback_warehouse", &set.FallbackWarehouse, &unset.FallbackWarehouse, stringToAccountObjectIdentifier),
 		handleParameterUpdate(d, "max_concurrency_level", &set.MaxConcurrencyLevel, &unset.MaxConcurrencyLevel),

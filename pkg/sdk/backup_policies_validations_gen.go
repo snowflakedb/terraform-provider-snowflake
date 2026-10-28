@@ -44,12 +44,23 @@ func (opts *AlterBackupPolicyOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("AlterBackupPolicyOptions", "name"))
 	}
-	if !exactlyOneValueSet(opts.RenameTo, opts.Set, opts.SetTags, opts.Unset, opts.UnsetTags) {
-		errs = append(errs, errExactlyOneOf("AlterBackupPolicyOptions", "RenameTo", "Set", "SetTags", "Unset", "UnsetTags"))
+	if !exactlyOneValueSet(opts.RenameTo, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
+		errs = append(errs, errExactlyOneOf("AlterBackupPolicyOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags"))
+	}
+	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
+		errs = append(errs, errInvalidIdentifier("AlterBackupPolicyOptions", "RenameTo"))
 	}
 	if valueSet(opts.Set) {
-		if !anyValueSet(opts.Set.Schedule, opts.Set.ExpireAfterDays, opts.Set.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterBackupPolicyOptions.Set", "Schedule", "ExpireAfterDays", "Comment"))
+		if !anyValueSet(opts.Set.Comment, opts.Set.Schedule, opts.Set.ExpireAfterDays) {
+			errs = append(errs, errAtLeastOneOf("AlterBackupPolicyOptions.Set", "Comment", "Schedule", "ExpireAfterDays"))
+		}
+	}
+	if valueSet(opts.Unset) {
+		if !anyValueSet(opts.Unset.Comment, opts.Unset.Schedule, opts.Unset.ExpireAfterDays) {
+			errs = append(errs, errAtLeastOneOf("AlterBackupPolicyOptions.Unset", "Comment", "Schedule", "ExpireAfterDays"))
+		}
+		if everyValueSet(opts.Unset.Schedule, opts.Unset.ExpireAfterDays) {
+			errs = append(errs, errOneOf("AlterBackupPolicyOptions.Unset", "Schedule", "ExpireAfterDays"))
 		}
 	}
 	if valueSet(opts.SetTags) {
@@ -57,11 +68,6 @@ func (opts *AlterBackupPolicyOptions) validate() error {
 			if !ValidObjectIdentifier(setTag.Name) {
 				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterBackupPolicyOptions.SetTags[%d]", setTagIdx), "Name"))
 			}
-		}
-	}
-	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.Schedule, opts.Unset.ExpireAfterDays, opts.Unset.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterBackupPolicyOptions.Unset", "Schedule", "ExpireAfterDays", "Comment"))
 		}
 	}
 	return JoinErrors(errs...)

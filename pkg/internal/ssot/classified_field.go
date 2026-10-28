@@ -65,6 +65,9 @@ func ClassifyAttribute(obj Object, attr Attribute) ClassifiedField {
 		}
 	case AttrString:
 		return stringField(attr.Name, attr.Required)
+	case AttrObject:
+		// A single block is a list of at most one object in the Terraform state.
+		return ClassifiedField{Name: attr.Name, Storage: AttrList, Required: attr.Required}
 	case AttrList:
 		return collectionField(obj, attr, AttrList)
 	case AttrSet:
@@ -100,7 +103,15 @@ func ClassifyParameter(name, kind string) ClassifiedField {
 }
 
 func collectionField(obj Object, attr Attribute, storage AttributeType) ClassifiedField {
-	if attr.Elem == nil {
+	if attr.Elem == nil || attr.IsObjectList() {
+		if attr.IsObjectList() {
+			// Nested block (list/set of objects): no scalar Elem to classify. The generator consuming
+			// this (model builder, resource assertion) decides what a Storage with no Elem means —
+			// e.g. an unsupported-type stub, or a Required constructor using a generator-level type
+			// override (ModelRequestType) since there is no mechanical mapping from a nested block to
+			// a concrete Go request type.
+			return ClassifiedField{Name: attr.Name, Storage: storage, Required: attr.Required}
+		}
 		panic(fmt.Sprintf("object %q: attribute %q has no Elem", obj.Name, attr.Name))
 	}
 	var elem AttributeType

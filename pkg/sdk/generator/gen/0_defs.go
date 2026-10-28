@@ -122,6 +122,10 @@ func preprocessDefinition(definition *Interface, logger *log.Logger) {
 		}
 	}
 
+	if definition.checkStructShapes {
+		requireConsistentStructShapes(definition)
+	}
+
 	// Built for every object regardless of opt-in; main.go's generation part decides whether to render it.
 	definition.UnitTests = definition.buildUnitTestsModel()
 }

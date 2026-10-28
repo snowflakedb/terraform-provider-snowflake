@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -43,14 +44,20 @@ var (
 	//go:embed templates/sub_templates/new_create_request.tmpl
 	newCreateRequestTemplateContent string
 
-	//go:embed templates/sub_templates/generated_new_create_request.tmpl
-	generatedNewCreateRequestTemplateContent string
+	//go:embed templates/sub_templates/generated_create_request.tmpl
+	generatedCreateRequestTemplateContent string
 
 	//go:embed templates/sub_templates/apply_create_optionals.tmpl
 	applyCreateOptionalsTemplateContent string
 
 	//go:embed templates/sub_templates/generated_apply_create_optionals.tmpl
 	generatedApplyCreateOptionalsTemplateContent string
+
+	//go:embed templates/sub_templates/create_constructor_args.tmpl
+	createConstructorArgsTemplateContent string
+
+	//go:embed templates/sub_templates/create_optional_calls.tmpl
+	createOptionalCallsTemplateContent string
 
 	//go:embed templates/sub_templates/create_in_sdk.tmpl
 	createInSdkTemplateContent string
@@ -75,6 +82,9 @@ var (
 
 	//go:embed templates/sub_templates/set_state_to_values_from_config.tmpl
 	setStateToValuesFromConfigTemplateContent string
+
+	//go:embed templates/sub_templates/generated_set_config_fields.tmpl
+	generatedSetConfigFieldsTemplateContent string
 
 	//go:embed templates/sub_templates/show_output_set.tmpl
 	showOutputSetTemplateContent string
@@ -169,7 +179,10 @@ func init() {
 		genhelpers.Unimplemented,
 		genhelpers.CamelToWords,
 		genhelpers.FirstLetterLowercase,
+		genhelpers.FirstLetterUppercase,
 		genhelpers.SnakeCaseToCamel,
+		strconv.Quote,
+		strings.ToLower,
 		strings.ToUpper,
 	))
 	subTemplates, _ = subTemplates.New("constructor").Parse(constructorTemplateContent)
@@ -179,7 +192,9 @@ func init() {
 	subTemplates, _ = subTemplates.New("generatedParseIdFromConfig").Parse(generatedParseIdFromConfigTemplateContent)
 	subTemplates, _ = subTemplates.New("beforeCreate").Parse(beforeCreateTemplateContent)
 	subTemplates, _ = subTemplates.New("newCreateRequest").Parse(newCreateRequestTemplateContent)
-	subTemplates, _ = subTemplates.New("generatedNewCreateRequest").Parse(generatedNewCreateRequestTemplateContent)
+	subTemplates, _ = subTemplates.New("createConstructorArgs").Parse(createConstructorArgsTemplateContent)
+	subTemplates, _ = subTemplates.New("createOptionalCalls").Parse(createOptionalCallsTemplateContent)
+	subTemplates, _ = subTemplates.New("generatedCreateRequest").Parse(generatedCreateRequestTemplateContent)
 	subTemplates, _ = subTemplates.New("applyCreateOptionals").Parse(applyCreateOptionalsTemplateContent)
 	subTemplates, _ = subTemplates.New("generatedApplyCreateOptionals").Parse(generatedApplyCreateOptionalsTemplateContent)
 	subTemplates, _ = subTemplates.New("createInSdk").Parse(createInSdkTemplateContent)
@@ -190,6 +205,7 @@ func init() {
 	subTemplates, _ = subTemplates.New("handleExternalChanges").Parse(handleExternalChangesTemplateContent)
 	subTemplates, _ = subTemplates.New("handleExternalChangesInDescribe").Parse(handleExternalChangesInDescribeTemplateContent)
 	subTemplates, _ = subTemplates.New("setStateToValuesFromConfig").Parse(setStateToValuesFromConfigTemplateContent)
+	subTemplates, _ = subTemplates.New("generatedSetConfigFields").Parse(generatedSetConfigFieldsTemplateContent)
 	subTemplates, _ = subTemplates.New("showOutputSet").Parse(showOutputSetTemplateContent)
 	subTemplates, _ = subTemplates.New("describeOutputSet").Parse(describeOutputSetTemplateContent)
 	subTemplates, _ = subTemplates.New("setDescribeOutput").Parse(setDescribeOutputTemplateContent)

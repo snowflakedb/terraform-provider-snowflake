@@ -6,8 +6,8 @@ var (
 	_ optionsProvider[CreateExternalVolumeOptions]   = new(CreateExternalVolumeRequest)
 	_ optionsProvider[AlterExternalVolumeOptions]    = new(AlterExternalVolumeRequest)
 	_ optionsProvider[DropExternalVolumeOptions]     = new(DropExternalVolumeRequest)
-	_ optionsProvider[DescribeExternalVolumeOptions] = new(DescribeExternalVolumeRequest)
 	_ optionsProvider[ShowExternalVolumeOptions]     = new(ShowExternalVolumeRequest)
+	_ optionsProvider[DescribeExternalVolumeOptions] = new(DescribeExternalVolumeRequest)
 )
 
 type CreateExternalVolumeRequest struct {
@@ -48,10 +48,10 @@ type ExternalVolumeS3EncryptionRequest struct {
 
 type GCSStorageLocationParamsRequest struct {
 	StorageBaseUrl string // required
-	Encryption     *ExternalVolumeGCSEncryptionRequest
+	Encryption     *ExternalVolumeGcsEncryptionRequest
 }
 
-type ExternalVolumeGCSEncryptionRequest struct {
+type ExternalVolumeGcsEncryptionRequest struct {
 	EncryptionType GCSEncryptionType // required
 	KmsKeyId       *string
 }
@@ -77,17 +77,17 @@ type AlterExternalVolumeRequest struct {
 	IfExists              *bool
 	name                  AccountObjectIdentifier // required
 	RemoveStorageLocation *string
-	Set                   *AlterExternalVolumeSetRequest
+	Set                   *ExternalVolumeSetRequest
 	AddStorageLocation    *ExternalVolumeStorageLocationItemRequest
-	UpdateStorageLocation *AlterExternalVolumeUpdateStorageLocationRequest
+	UpdateStorageLocation *ExternalVolumeUpdateStorageLocationRequest
 }
 
-type AlterExternalVolumeSetRequest struct {
+type ExternalVolumeSetRequest struct {
 	AllowWrites *bool
 	Comment     *string
 }
 
-type AlterExternalVolumeUpdateStorageLocationRequest struct {
+type ExternalVolumeUpdateStorageLocationRequest struct {
 	StorageLocation string                                 // required
 	Credentials     ExternalVolumeUpdateCredentialsRequest // required
 }
@@ -102,10 +102,10 @@ type DropExternalVolumeRequest struct {
 	name     AccountObjectIdentifier // required
 }
 
-type DescribeExternalVolumeRequest struct {
-	name AccountObjectIdentifier // required
-}
-
 type ShowExternalVolumeRequest struct {
 	Like *Like
+}
+
+type DescribeExternalVolumeRequest struct {
+	name AccountObjectIdentifier // required
 }

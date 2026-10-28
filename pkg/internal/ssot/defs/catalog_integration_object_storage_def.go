@@ -27,7 +27,9 @@ var CatalogIntegrationObjectStorageAttrs = struct {
 		Type:          ssot.AttrInt,
 		Description:   "Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh. For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.",
 		Min:           new(1),
+		DiffSuppress:  ssot.SuppressDescribe,
 		CreateMapping: ssot.IntAttributeCreateBuilder,
+		CreateSql:     ssot.IntParameter(ssot.NoQuotes()),
 	},
 	Comment: ssot.Attribute{
 		Name:          "comment",
@@ -58,14 +60,22 @@ var CatalogIntegrationObjectStorageAttrs = struct {
 	},
 }
 
+var catalogIntegrationObjectStorageCatalogSourceStatic = ssot.Attribute{
+	Name:      "catalog_source_object_store",
+	SqlOnly:   true,
+	CreateSql: ssot.StaticSQL("catalogSource", "CATALOG_SOURCE = OBJECT_STORE"),
+}
+
 var CatalogIntegrationObjectStorage = ssot.Object{
 	Name:                   "CatalogIntegrationObjectStorage",
 	NamePlural:             "CatalogIntegrations",
+	VariantOf:              &CatalogIntegration,
 	DescribeFailRead:       true,
 	IdType:                 "AccountObjectIdentifier",
 	IdentityNameForceNew:   true,
 	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{
+		ssot.WithResource(),
 		// ShowOutputShow omitted. SHOW rows are sdk.CatalogIntegration, so tests use CatalogIntegrationShowOutput.
 		// WithSchema omitted. SHOW is the shared CatalogIntegration schema alias in the ext.
 		// DESCRIBE stays on the SDK schema list. SSOT would register the same sdk.CatalogIntegrationObjectStorageDetails name.
@@ -74,20 +84,32 @@ var CatalogIntegrationObjectStorage = ssot.Object{
 		// ObjectAssertShow omitted. There is no sdk.CatalogIntegrationObjectStorage type.
 		// ObjectAssertDescribe omitted. The SDK list keeps DescribeObjectStorage on the catalog integration helper.
 		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant.
-		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"))),
+		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"), ssot.SdkDescribeDetails())),
 		ssot.WithShowOutputAssert(ssot.ShowOutputDescribe()),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
+		ssot.WithParseId(ssot.Generated()),
+		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
 		ssot.WithHandleExternalChangesInDescribe(ssot.ExtCall()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
-		ssot.WithSetStateToValuesFromConfig(ssot.Omitted()),
+		ssot.WithDropSafelyInSdk(ssot.Generated()),
 	},
 	Attributes: []ssot.Attribute{
 		CatalogIntegrationObjectStorageAttrs.Enabled,
 		CatalogIntegrationObjectStorageAttrs.RefreshIntervalSeconds,
 		CatalogIntegrationObjectStorageAttrs.Comment,
 		CatalogIntegrationObjectStorageAttrs.TableFormat,
+	},
+	Create: ssot.CreateSpec{
+		Doc: "https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-object-storage",
+		Clauses: []*ssot.Attribute{
+			&catalogIntegrationObjectStorageCatalogSourceStatic,
+			&CatalogIntegrationObjectStorageAttrs.TableFormat,
+			&CatalogIntegrationObjectStorageAttrs.Enabled,
+			&CatalogIntegrationObjectStorageAttrs.RefreshIntervalSeconds,
+			&CatalogIntegrationObjectStorageAttrs.Comment,
+		},
 	},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{

@@ -7,6 +7,9 @@ import (
 	"errors"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -21,7 +24,7 @@ func CatalogIntegrationOpenCatalog() *tfschema.Resource {
 		CreateContext: catalogIntegrationOpenCatalogCreateExt,
 		ReadContext:   catalogIntegrationOpenCatalogReadExt,
 		UpdateContext: catalogIntegrationOpenCatalogUpdateExt,
-		DeleteContext: catalogIntegrationOpenCatalogDeleteExt,
+		DeleteContext: TrackingDeleteWrapper(resources.CatalogIntegrationOpenCatalog, DeleteCatalogIntegrationOpenCatalog),
 		Importer:      catalogIntegrationOpenCatalogImporterExt,
 
 		CustomizeDiff: catalogIntegrationOpenCatalogCustomizeDiffExt,
@@ -30,7 +33,7 @@ func CatalogIntegrationOpenCatalog() *tfschema.Resource {
 }
 
 func ImportCatalogIntegrationOpenCatalog(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
-	id, err := catalogIntegrationOpenCatalogParseIdExt(d.Id())
+	id, err := catalogIntegrationOpenCatalogParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +43,8 @@ func ImportCatalogIntegrationOpenCatalog(ctx context.Context, d *tfschema.Resour
 		return nil, err
 	}
 
-	if err := catalogIntegrationOpenCatalogSetFieldsNotSetByReadExt(d, id, catalogIntegrationOpenCatalog); err != nil {
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
+	if err := catalogIntegrationOpenCatalogSetFieldsNotSetByReadExt(d, id, catalogIntegrationOpenCatalog, importPermissiveMode); err != nil {
 		return nil, err
 	}
 	return []*tfschema.ResourceData{d}, nil
@@ -71,11 +75,12 @@ func CreateCatalogIntegrationOpenCatalog(ctx context.Context, d *tfschema.Resour
 
 func ReadCatalogIntegrationOpenCatalogFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := catalogIntegrationOpenCatalogParseIdExt(d.Id())
+		id, err := catalogIntegrationOpenCatalogParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
+		var diags diag.Diagnostics
 		catalogIntegrationOpenCatalog, diags := catalogIntegrationOpenCatalogShowByIdSafelyInSdkExt(ctx, d, meta, id)
 		if diags != nil {
 			return diags
@@ -90,6 +95,12 @@ func ReadCatalogIntegrationOpenCatalogFunc(withExternalChangesMarking bool) tfsc
 			return diags
 		}
 
+		if err = setStateToValuesFromConfig(d, catalogIntegrationOpenCatalogSchema, []string{
+			"refresh_interval_seconds",
+			"catalog_namespace",
+		}); err != nil {
+			return append(diags, diag.FromErr(err)...)
+		}
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationOpenCatalogToSchema(catalogIntegrationOpenCatalog)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CatalogIntegrationOpenCatalogDetailsToSchema(catalogIntegrationOpenCatalogDetails)}),
@@ -103,7 +114,7 @@ func ReadCatalogIntegrationOpenCatalogFunc(withExternalChangesMarking bool) tfsc
 }
 
 func UpdateCatalogIntegrationOpenCatalog(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := catalogIntegrationOpenCatalogParseIdExt(d.Id())
+	id, err := catalogIntegrationOpenCatalogParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -114,12 +125,22 @@ func UpdateCatalogIntegrationOpenCatalog(ctx context.Context, d *tfschema.Resour
 	if err := catalogIntegrationOpenCatalogAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := catalogIntegrationOpenCatalogAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
-	}
 	return ReadCatalogIntegrationOpenCatalogFunc(false)(ctx, d, meta)
 }
 
 func catalogIntegrationOpenCatalogParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
 	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
+}
+
+func catalogIntegrationOpenCatalogParseId(id string) (sdk.AccountObjectIdentifier, error) {
+	return sdk.ParseAccountObjectIdentifier(id)
+}
+
+func DeleteCatalogIntegrationOpenCatalog(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	return ResourceDeleteContextFunc(
+		sdk.ParseAccountObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.CatalogIntegrations.DropSafely
+		},
+	)(ctx, d, meta)
 }

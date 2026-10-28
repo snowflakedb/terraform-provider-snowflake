@@ -23,6 +23,7 @@ func Test_AuthenticationPolicyRead_preservesPropertyReadWarnings(t *testing.T) {
 	require.Contains(t, setState, "return append(diags, diag.FromErr(err)...)")
 
 	read := renderTemplate(t, "lifecycleTemplate", model)
+	require.Contains(t, read, "var diags diag.Diagnostics")
 	require.Contains(t, read, "return append(diags, diag.FromErr(errs)...)")
 	require.Contains(t, read, "return diags")
 }
@@ -39,6 +40,7 @@ func Test_ComputePoolRead_doesNotThreadDescribeWarnings(t *testing.T) {
 
 	read := renderTemplate(t, "lifecycleTemplate", model)
 	require.Contains(t, read, "return diag.FromErr(errs)")
+	require.NotContains(t, read, "var diags diag.Diagnostics")
 	require.NotContains(t, read, "append(diags")
 	require.NotContains(t, read, "HandleExternalChangesInDescribeExt")
 }

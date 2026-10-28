@@ -31,10 +31,11 @@ var WarehouseResourceConstraint = ssot.NewEnum(
 	"MEMORY_1X", "MEMORY_1X_x86", "MEMORY_16X", "MEMORY_16X_x86", "MEMORY_64X", "MEMORY_64X_x86",
 )
 
+// WithValue keeps WarehouseGenerationStandardGen1 and WarehouseGenerationStandardGen2.
+// The SQL values are "1" and "2", which would otherwise generate WarehouseGeneration1 and WarehouseGeneration2.
 var WarehouseGeneration = ssot.NewEnum(
 	"WarehouseGeneration", "WarehouseGenerations",
-	"1", "2",
-)
+).WithValue("StandardGen1", "1").WithValue("StandardGen2", "2")
 
 // WarehouseType is the SHOW type, including ADAPTIVE and INTERACTIVE.
 // WarehouseTypeUserSettable is the regular resource's writable enum.
@@ -263,10 +264,9 @@ var WarehouseAttrs = struct {
 	Suspended:       ssot.Attribute{Name: "suspended", Type: ssot.AttrString, Readonly: true, SkipInSchema: true},
 	Uuid:            ssot.Attribute{Name: "uuid", Type: ssot.AttrString, Readonly: true, SkipInSchema: true},
 	OwnerRoleType:   ssot.Attribute{Name: "owner_role_type", Type: ssot.AttrString, Readonly: true, OptionalInDb: true},
-	// SHOW columns that ALTER SET also writes. They stay off Attributes, so they stay off the resource schema.
+	// SHOW columns for the union warehouse row. Adaptive ALTER writes the adaptive attributes, not these copies.
 	MaxQueryPerformanceLevel: ssot.Attribute{
 		Name: "max_query_performance_level", Type: ssot.AttrEnum, Enum: MaxQueryPerformanceLevel, Readonly: true, OptionalInShow: true, OptionalInDb: true,
-		SetSql: ssot.Clause(ssot.SingleQuotes()),
 	},
 	QueryThroughputMultiplier: ssot.Attribute{
 		Name: "query_throughput_multiplier", Type: ssot.AttrInt, Readonly: true, OptionalInShow: true, OptionalInDb: true,
@@ -299,9 +299,8 @@ var Warehouse = ssot.Object{
 	Name:       "Warehouse",
 	NamePlural: "Warehouses",
 	IdType:     "AccountObjectIdentifier",
-	// CREATE WAREHOUSE does not accept FALLBACK_WAREHOUSE.
-	// Interactive warehouses add FALLBACK_WAREHOUSE on ALTER. CREATE stays the base warehouse catalog.
-	AlterAdditionalParametersForLevels: []ssot.ParameterLevel{ssot.ParameterLevelWarehouseInteractive},
+	// ShowParametersDetails lists interactive parameters such as FALLBACK_WAREHOUSE.
+	ShowParametersDetailsAdditionalLevels: []ssot.ParameterLevel{ssot.ParameterLevelWarehouseInteractive},
 	CustomInterfaceMethods: []ssot.CustomInterfaceMethodSpec{
 		{
 			Name:    "ShowByIDExperimental",
@@ -321,6 +320,22 @@ var Warehouse = ssot.Object{
 			}},
 		},
 		{
+			Name: "AlterAdaptiveWithSuspend",
+			Doc:  "AlterAdaptiveWithSuspend wraps AlterAdaptive and suspends the warehouse before changing its type. Adaptive warehouses are not resumed afterwards",
+			Parameters: []ssot.CustomInterfaceMethodParameter{{
+				Name: "request",
+				Kind: "*AlterAdaptiveWarehouseRequest",
+			}},
+		},
+		{
+			Name: "AlterInteractiveWithSuspend",
+			Doc:  "AlterInteractiveWithSuspend wraps AlterInteractive and suspends a running interactive warehouse before changing its size",
+			Parameters: []ssot.CustomInterfaceMethodParameter{{
+				Name: "request",
+				Kind: "*AlterInteractiveWarehouseRequest",
+			}},
+		},
+		{
 			Name: "CreateInteractivePreservingSession",
 			Doc:  "CreateInteractivePreservingSession wraps CreateInteractive to work around a known Snowflake behavior: creating a warehouse implicitly switches the session to it, which for interactive warehouses (5 second statement timeout) can cause subsequent statements in the same session to time out. It restores whichever warehouse (or lack of one) was active in the session before creation",
 			Parameters: []ssot.CustomInterfaceMethodParameter{{
@@ -330,6 +345,7 @@ var Warehouse = ssot.Object{
 		},
 	},
 	Generators: []ssot.GeneratorOption{
+		ssot.WithResource(),
 		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),
@@ -344,6 +360,7 @@ var Warehouse = ssot.Object{
 		ssot.WithObjectParametersAssert(),
 		ssot.WithResourceParametersAssert(),
 		ssot.WithSdk(
+			ssot.SdkDefineFromSsot(),
 			ssot.SdkShow(
 				ssot.SdkShowOptionalLike(),
 				ssot.SdkShowOptionalStartsWith(),
@@ -353,6 +370,7 @@ var Warehouse = ssot.Object{
 			ssot.SdkDescribe(ssot.SdkDescribeQueryStructName("DescribeWarehouse")),
 			ssot.SdkCreate(ssot.SdkCreateAdditionalValidations()),
 			ssot.SdkCreateForVariants(),
+			ssot.SdkAlterForVariants(),
 			ssot.SdkAlter(
 				ssot.SdkAlterSetAdditionalValidations(),
 				ssot.SdkAlterAdditionalValidations(),
@@ -365,12 +383,13 @@ var Warehouse = ssot.Object{
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
+		ssot.WithParseId(ssot.Generated()),
+		ssot.WithCreateInSdk(ssot.Generated()),
+		ssot.WithAlterUnsetInSdk(ssot.Generated()),
 		ssot.WithDescribeInSdk(ssot.Omitted()),
-		ssot.WithDescribeOutputSet(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
 		ssot.WithShowOutputSet(ssot.Omitted()),
 		ssot.WithShowOutputSchema(ssot.ExtCall()),
-		ssot.WithIdentitySchema(ssot.ExtCall()),
 		ssot.WithHierarchyRename(ssot.ExtCall()),
 		ssot.WithStateUpgraders(ssot.Generated()),
 		ssot.WithApplyParametersCreate(ssot.Generated()),
@@ -384,6 +403,7 @@ var Warehouse = ssot.Object{
 		ssot.WithParametersFieldNames(ssot.Generated()),
 		ssot.WithParametersCustomDiff(ssot.Generated()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
+		ssot.WithDropSafelyInSdk(ssot.Generated()),
 	},
 	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
 		"v092WarehouseSizeStateUpgrader",
@@ -442,8 +462,6 @@ var Warehouse = ssot.Object{
 		&WarehouseAttrs.QueryAccelerationMaxScaleFactor,
 		&WarehouseAttrs.ResourceConstraint,
 		&WarehouseAttrs.Generation,
-		&WarehouseAttrs.QueryThroughputMultiplier,
-		&WarehouseAttrs.MaxQueryPerformanceLevel,
 		ssot.Parameters,
 	},
 	Unset: []*ssot.Attribute{
@@ -460,8 +478,6 @@ var Warehouse = ssot.Object{
 		&WarehouseAttrs.QueryAccelerationMaxScaleFactor,
 		&WarehouseAttrs.ResourceConstraint,
 		&WarehouseAttrs.Generation,
-		&WarehouseAttrs.QueryThroughputMultiplier,
-		&WarehouseAttrs.MaxQueryPerformanceLevel,
 		ssot.Parameters,
 	},
 	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
@@ -472,8 +488,6 @@ var Warehouse = ssot.Object{
 		ssot.AlterRenameTo(),
 		ssot.AlterSet(),
 		ssot.AlterUnset(),
-		ssot.AlterList("ADD TABLES", "SchemaObjectIdentifier"),
-		ssot.AlterList("DROP TABLES", "SchemaObjectIdentifier"),
 		ssot.AlterSetTags(),
 		ssot.AlterUnsetTags(),
 	}},

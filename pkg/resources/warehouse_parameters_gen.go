@@ -52,7 +52,7 @@ var (
 )
 
 func warehouseParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) (*sdk.WarehouseParametersDetails, error) {
-	id, err := warehouseParseIdExt(d.Id())
+	id, err := warehouseParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}

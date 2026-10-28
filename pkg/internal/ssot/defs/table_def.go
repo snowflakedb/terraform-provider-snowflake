@@ -47,7 +47,7 @@ var TableAttrs = struct {
 		Required:    true,
 		MinItems:    new(1),
 		Description: "Definitions of a column to create in the table. Minimum one required.",
-		Children: []ssot.Attribute{
+		Elem: ssot.ObjectElem([]ssot.Attribute{
 			{
 				Name:        "name",
 				Type:        ssot.AttrString,
@@ -72,7 +72,7 @@ var TableAttrs = struct {
 				MinItems:    new(1),
 				MaxItems:    new(1),
 				Description: "Defines the column default value; note due to limitations of Snowflake's ALTER TABLE ADD/MODIFY COLUMN updates to default will not be applied",
-				Children: []ssot.Attribute{
+				Elem: ssot.ObjectElem([]ssot.Attribute{
 					{
 						Name:        "constant",
 						Type:        ssot.AttrString,
@@ -89,7 +89,7 @@ var TableAttrs = struct {
 						IdentifierType: "SchemaObjectIdentifier",
 						Description:    "The default sequence to use for the column",
 					},
-				},
+				}),
 			},
 			{
 				Name:        "identity",
@@ -97,7 +97,7 @@ var TableAttrs = struct {
 				MinItems:    new(1),
 				MaxItems:    new(1),
 				Description: "Defines the identity start/step values for a column. **Note** Identity/default are mutually exclusive.",
-				Children: []ssot.Attribute{
+				Elem: ssot.ObjectElem([]ssot.Attribute{
 					{
 						Name:        "start_num",
 						Type:        ssot.AttrInt,
@@ -108,7 +108,7 @@ var TableAttrs = struct {
 						Type:        ssot.AttrInt,
 						Description: "Step size to increment by.",
 					},
-				},
+				}),
 			},
 			{
 				Name:        "comment",
@@ -125,7 +125,7 @@ var TableAttrs = struct {
 				Type:        ssot.AttrString,
 				Description: "Column collation, e.g. utf8",
 			},
-		},
+		}),
 	},
 	Comment: ssot.Attribute{
 		Name:        "comment",
@@ -137,7 +137,7 @@ var TableAttrs = struct {
 		Type:        ssot.AttrList,
 		MaxItems:    new(1),
 		Description: "Definitions of primary key constraint to create on table",
-		Children: []ssot.Attribute{
+		Elem: ssot.ObjectElem([]ssot.Attribute{
 			{
 				Name:        "name",
 				Type:        ssot.AttrString,
@@ -150,7 +150,7 @@ var TableAttrs = struct {
 				Description: "Columns to use in primary key",
 				Elem:        &ssot.Attribute{Type: ssot.AttrString},
 			},
-		},
+		}),
 	},
 	DataRetentionTimeInDays: ssot.Attribute{
 		Name:        "data_retention_time_in_days",
@@ -172,6 +172,9 @@ var Table = ssot.Object{
 	NamePlural:             "Tables",
 	IdType:                 "SchemaObjectIdentifier",
 	AttributesModification: true,
+	Generators: []ssot.GeneratorOption{
+		ssot.WithResource(),
+	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithShowOutputSchema(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),

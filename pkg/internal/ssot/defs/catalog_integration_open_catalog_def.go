@@ -2,31 +2,11 @@ package defs
 
 import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 
-var CatalogIntegrationCatalogSourceType = ssot.NewEnum(
-	"CatalogIntegrationCatalogSourceType", "CatalogIntegrationCatalogSourceTypes",
-	"GLUE", "OBJECT_STORE", "POLARIS", "ICEBERG_REST", "SAP_BDC",
-)
-
-var CatalogIntegrationTableFormat = ssot.NewEnum(
-	"CatalogIntegrationTableFormat", "CatalogIntegrationTableFormats",
-	"ICEBERG", "DELTA",
-)
-
-var CatalogIntegrationCatalogApiType = ssot.NewEnum(
-	"CatalogIntegrationCatalogApiType", "CatalogIntegrationCatalogApiTypes",
-	"PUBLIC", "PRIVATE", "AWS_API_GATEWAY", "AWS_PRIVATE_API_GATEWAY", "AWS_GLUE", "AWS_PRIVATE_GLUE",
-)
-
-var CatalogIntegrationAccessDelegationMode = ssot.NewEnum(
-	"CatalogIntegrationAccessDelegationMode", "CatalogIntegrationAccessDelegationModes",
-	"VENDED_CREDENTIALS", "EXTERNAL_VOLUME_CREDENTIALS",
-)
-
 // CatalogIntegrationOpenCatalogAttrs holds reusable Open Catalog integration fields so SHOW
 // and DESCRIBE Columns can point at the same definitions instead of restating names.
 //
-// rest_config and rest_authentication are nested blocks. Sensitive fields, empty-string checks,
-// and describe diff suppressors stay in the schema ext.
+// rest_config and rest_authentication are nested blocks. Sensitive is on the attributes.
+// Empty-string checks and describe diff suppressors stay in the schema ext.
 var CatalogIntegrationOpenCatalogAttrs = struct {
 	Enabled                ssot.Attribute
 	RefreshIntervalSeconds ssot.Attribute
@@ -57,6 +37,8 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 			"For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.",
 		Min:           new(1),
 		CreateMapping: ssot.IntAttributeCreateBuilder,
+		CreateSql:     ssot.IntParameter(ssot.NoQuotes()),
+		DiffSuppress:  ssot.SuppressDescribe,
 	},
 	Comment: ssot.Attribute{
 		Name:          "comment",
@@ -73,12 +55,11 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 	},
 	RestConfig: ssot.Attribute{
 		Name:        "rest_config",
-		Type:        ssot.AttrList,
+		Type:        ssot.AttrObject,
 		Required:    true,
 		ForceNew:    true,
-		MinItems:    new(1),
-		MaxItems:    new(1),
 		Description: "Specifies information about the Open Catalog account and catalog name.",
+		CreateSql:   ssot.ObjectParameter(ssot.Sql("REST_CONFIG ="), ssot.Parentheses()),
 		Children: []ssot.Attribute{
 			{
 				Name:        "catalog_uri",
@@ -88,18 +69,18 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 				Description: "Specifies Open Catalog account URL.",
 			},
 			{
-				Name:        "catalog_name",
-				Type:        ssot.AttrString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Specifies the name of the catalog to use in Open Catalog.",
-			},
-			{
 				Name:        "catalog_api_type",
 				Type:        ssot.AttrEnum,
 				ForceNew:    true,
 				Description: "Specifies how Snowflake connects to Open Catalog.",
 				Enum:        CatalogIntegrationCatalogApiType,
+			},
+			{
+				Name:        "catalog_name",
+				Type:        ssot.AttrString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Specifies the name of the catalog to use in Open Catalog.",
 			},
 			{
 				Name:        "access_delegation_mode",
@@ -112,12 +93,12 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 	},
 	RestAuthentication: ssot.Attribute{
 		Name:        "rest_authentication",
-		Type:        ssot.AttrList,
+		Type:        ssot.AttrObject,
 		Required:    true,
-		MinItems:    new(1),
-		MaxItems:    new(1),
 		Description: "Specifies authentication details that Snowflake uses to connect to Open Catalog.",
+		CreateSql:   ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses()),
 		Children: []ssot.Attribute{
+			catalogIntegrationRestAuthTypeOauth,
 			{
 				Name:        "oauth_token_uri",
 				Type:        ssot.AttrString,
@@ -129,12 +110,14 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 				Type:        ssot.AttrString,
 				Required:    true,
 				ForceNew:    true,
+				Sensitive:   true,
 				Description: "Specifies the client ID of the OAuth2 credential associated with your Open Catalog service connection.",
 			},
 			{
 				Name:        "oauth_client_secret",
 				Type:        ssot.AttrString,
 				Required:    true,
+				Sensitive:   true,
 				Description: "Specifies the secret of the OAuth2 credential associated with your Open Catalog service connection.",
 			},
 			{
@@ -145,6 +128,7 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 				MinItems:    new(1),
 				Description: "Specifies one or more scopes for the OAuth token.",
 				Elem:        &ssot.Attribute{Type: ssot.AttrString},
+				CreateSql:   ssot.ListParameter("StringListItemWrapper"),
 			},
 		},
 	},
@@ -163,14 +147,24 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 	CreatedOn:   ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, Readonly: true},
 }
 
+var catalogIntegrationOpenCatalogCatalogSourceStatic = ssot.Attribute{
+	Name:      "catalog_source_polaris",
+	SqlOnly:   true,
+	CreateSql: ssot.StaticSQL("catalogSource", "CATALOG_SOURCE = POLARIS"),
+}
+
 var CatalogIntegrationOpenCatalog = ssot.Object{
 	Name:                   "CatalogIntegrationOpenCatalog",
 	NamePlural:             "CatalogIntegrations",
+	VariantOf:              &CatalogIntegration,
 	DescribeFailRead:       true,
 	IdType:                 "AccountObjectIdentifier",
 	IdentityNameForceNew:   true,
 	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{
+		ssot.WithResource(),
+		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant.
+		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"))),
 		// ShowOutputShow omitted. SHOW rows are sdk.CatalogIntegration, so tests use CatalogIntegrationShowOutput.
 		// WithSchema omitted. SHOW is the shared CatalogIntegration schema alias in the ext.
 		// DESCRIBE stays on the SDK schema list until ManualFields exist in SSOT.
@@ -178,18 +172,23 @@ var CatalogIntegrationOpenCatalog = ssot.Object{
 		// WithResourceAssert omitted. catalog_source is added in the schema ext, so the schema-based assert still emits it.
 		// ObjectAssertShow omitted. There is no sdk.CatalogIntegrationOpenCatalog type.
 		// ObjectAssertDescribe omitted. The SDK list keeps DescribeOpenCatalog and the nested rest asserts.
-		ssot.WithShowOutputAssert(ssot.ShowOutputDescribe()),
+		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant. The details are parsed in the SDK ext.
+		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"), ssot.SdkDescribeDetails())),
+		ssot.WithShowOutputAssert(ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(
+			&CatalogIntegrationOpenCatalogAttrs.RestConfig,
+			&CatalogIntegrationOpenCatalogAttrs.RestAuthentication,
+		))),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
-		// Snowflake's command is DESCRIBE CATALOG INTEGRATION. The generated text would use the resource name.
-		ssot.WithDescribeOutputSchema(ssot.ExtCall()),
+		ssot.WithParseId(ssot.Generated()),
+		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
 		ssot.WithHandleExternalChangesInDescribe(ssot.ExtCall()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
-		ssot.WithSetStateToValuesFromConfig(ssot.Omitted()),
 		// SHOW has name, enabled, and comment only. catalog_source and catalog_namespace
 		// come from DESCRIBE, so SetConfigFields stays on the describe hook.
 		ssot.WithSetConfigFields(ssot.Omitted()),
+		ssot.WithDropSafelyInSdk(ssot.Generated()),
 	},
 	Attributes: []ssot.Attribute{
 		CatalogIntegrationOpenCatalogAttrs.Enabled,
@@ -198,6 +197,19 @@ var CatalogIntegrationOpenCatalog = ssot.Object{
 		CatalogIntegrationOpenCatalogAttrs.CatalogNamespace,
 		CatalogIntegrationOpenCatalogAttrs.RestConfig,
 		CatalogIntegrationOpenCatalogAttrs.RestAuthentication,
+	},
+	Create: ssot.CreateSpec{
+		Doc: "https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-open-catalog",
+		Clauses: []*ssot.Attribute{
+			&catalogIntegrationOpenCatalogCatalogSourceStatic,
+			&catalogIntegrationTableFormatIceberg,
+			&CatalogIntegrationOpenCatalogAttrs.CatalogNamespace,
+			&CatalogIntegrationOpenCatalogAttrs.RestConfig,
+			&CatalogIntegrationOpenCatalogAttrs.RestAuthentication,
+			&CatalogIntegrationOpenCatalogAttrs.Enabled,
+			&CatalogIntegrationOpenCatalogAttrs.RefreshIntervalSeconds,
+			&CatalogIntegrationOpenCatalogAttrs.Comment,
+		},
 	},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{
@@ -218,6 +230,8 @@ var CatalogIntegrationOpenCatalog = ssot.Object{
 			&CatalogIntegrationOpenCatalogAttrs.RefreshIntervalSeconds,
 			&CatalogIntegrationOpenCatalogAttrs.Comment,
 			&CatalogIntegrationOpenCatalogAttrs.CatalogNamespace,
+			&CatalogIntegrationOpenCatalogAttrs.RestConfig,
+			&CatalogIntegrationOpenCatalogAttrs.RestAuthentication,
 		},
 	},
 }

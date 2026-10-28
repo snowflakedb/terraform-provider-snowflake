@@ -76,7 +76,7 @@ func {{ .Prefix }}ApplyParametersCreate(d *tfschema.ResourceData, req *sdk.Creat
 {{- end }}
 {{- if .Hooks.ApplyParametersChanges.Generate }}
 
-func {{ .Prefix }}ApplyParametersChanges(d *tfschema.ResourceData, set *sdk.{{ .EffectiveSdkParametersObjectName }}SetRequest, unset *sdk.{{ .EffectiveSdkParametersObjectName }}UnsetRequest) diag.Diagnostics {
+func {{ .Prefix }}ApplyParametersChanges(d *tfschema.ResourceData, set *sdk.{{ .EffectiveSdkAlterObjectName }}SetRequest, unset *sdk.{{ .EffectiveSdkAlterObjectName }}UnsetRequest) diag.Diagnostics {
 	return JoinDiags(
 {{- range .ParameterHooks }}
 		handleParameterUpdate{{ if .NeedsMapping }}WithMapping{{ end }}(d, {{ printf "%q" .Parameter.FieldName }}, &set.{{ .Parameter.StructFieldName }}, &unset.{{ .Parameter.StructFieldName }}{{ if .NeedsMapping }}, {{ .Mapper }}{{ end }}),

@@ -70,9 +70,11 @@ var warehouseInteractiveAttributesSchema = warehouseInteractiveAttributesModific
 		Type:     tfschema.TypeSet,
 		Optional: true,
 		Elem: &tfschema.Schema{
-			Type: tfschema.TypeString,
+			Type:             tfschema.TypeString,
+			ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 		},
-		Description: "Specifies the fully qualified names of the tables associated with the interactive warehouse. Changes are applied incrementally (ADD TABLES / DROP TABLES) rather than by full re-association.",
+		DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("tables"),
+		Description:      "Specifies the fully qualified names of the tables associated with the interactive warehouse. Changes are applied incrementally (ADD TABLES / DROP TABLES) rather than by full re-association.",
 	},
 	"warehouse_type": {
 		Type:        tfschema.TypeString,
@@ -82,7 +84,14 @@ var warehouseInteractiveAttributesSchema = warehouseInteractiveAttributesModific
 })
 
 var warehouseInteractiveSchema = collections.MergeMaps(
-	warehouseInteractiveIdentitySchemaExt,
+	map[string]*tfschema.Schema{
+		"name": {
+			Type:             tfschema.TypeString,
+			Required:         true,
+			Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the warehouse interactive; must be unique for the account."),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+		},
+	},
 	warehouseInteractiveAttributesSchema,
 	warehouseInteractiveParametersAttributesSchema,
 	map[string]*tfschema.Schema{

@@ -83,15 +83,16 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 	catalogUri := fmt.Sprintf("https://%s.snowflakecomputing.com/polaris/api/catalog", accountLocator)
 	catalogName := "TEST_CATALOG"
 	oAuthAllowedScope := "PRINCIPAL_ROLE:PRINCIPAL"
-	basicRestAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}),
+	basicRestAuth := []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}),
 	}
-	basicRestConfig := []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest(catalogUri, catalogName),
+	basicIcebergRestAuth := *sdk.NewCatalogIntegrationIcebergRestOauthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}})
+	basicRestConfig := []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(catalogUri, catalogName),
 	}
 	openCatalogId := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix + "oc")
 
-	icebergRestConfig := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+	icebergRestConfig := *sdk.NewCatalogIntegrationIcebergRestRestConfigRequest(catalogUri).
 		WithCatalogName(catalogName)
 	icebergId := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix + "ice")
 
@@ -99,7 +100,7 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 	catalogIntegrationObjectStorage := model.CatalogIntegrationObjectStorage("w", objectStorageId.Name(), true, string(sdk.CatalogIntegrationTableFormatIceberg))
 	catalogIntegrationOpenCatalog := model.CatalogIntegrationOpenCatalogVar("w", openCatalogId.Name(), false, basicRestAuth, basicRestConfig, oauthClientSecretVariableName).
 		WithComment(comment)
-	catalogIntegrationIcebergRestOAuth := model.CatalogIntegrationIcebergRestOAuth("w", icebergId.Name(), false, icebergRestConfig, basicRestAuth[0], oauthClientSecretVariableName).
+	catalogIntegrationIcebergRestOAuth := model.CatalogIntegrationIcebergRestOAuth("w", icebergId.Name(), false, icebergRestConfig, basicIcebergRestAuth, oauthClientSecretVariableName).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds)
 
 	glueNoDescribe := datasourcemodel.CatalogIntegrations("test").

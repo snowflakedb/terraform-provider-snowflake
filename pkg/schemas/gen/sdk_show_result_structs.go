@@ -58,7 +58,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	// SkipFields `arguments`: unused TypeInvalid (`[]sdk.DataType`). Un-skip with native DataType slices.
 	{ObjectStruct: sdk.ExternalFunction{}, SkipFields: []string{"arguments"}},
 	{ObjectStruct: sdk.ExternalTable{}},
-	{ObjectStruct: sdk.ExternalVolume{}},
 	// SkipFields unused TypeInvalid: `object_types` / `allowed_integration_types` (enum slices).
 	{ObjectStruct: sdk.FailoverGroup{}, SkipFields: []string{"object_types", "allowed_integration_types"}},
 	{ObjectStruct: sdk.FileFormat{}},
@@ -161,14 +160,13 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"api_key", "api_provider", "allowed_prefixes", "blocked_prefixes",
 	}},
 	// TypeString of each property .Value (today’s public describe_output).
-	{ObjectStruct: sdk.AuthenticationPolicyDescribeDetails{}, IsDescribe: true},
 	// Property-row list entry (same pattern as SecurityIntegrationProperty / NetworkPolicyProperty).
-	{ObjectStruct: sdk.AuthenticationPolicyDescription{}, UsedAsListEntry: true},
+	{ObjectStruct: sdk.AuthenticationPolicyProperty{}, UsedAsListEntry: true},
 	// ManualFields uses generator snake_case (OAuth → o_auth, SigV4 → sig_v4); ext re-adds public oauth_* / sigv4_* keys.
-	{ObjectStruct: sdk.CatalogIntegrationAllDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "o_auth_rest_authentication", "bearer_rest_authentication", "sig_v4_rest_authentication"}},
+	{ObjectStruct: sdk.CatalogIntegrationDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "oauth_rest_authentication", "bearer_rest_authentication", "sigv4_rest_authentication"}},
 	{ObjectStruct: sdk.CatalogIntegrationAwsGlueDetails{}, IsDescribe: true},
 	// ManualFields uses generator snake_case (OAuth → o_auth, SigV4 → sig_v4); ext re-adds public oauth_* / sigv4_* keys.
-	{ObjectStruct: sdk.CatalogIntegrationIcebergRestDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "o_auth_rest_authentication", "bearer_rest_authentication", "sig_v4_rest_authentication"}},
+	{ObjectStruct: sdk.CatalogIntegrationIcebergRestDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "oauth_rest_authentication", "bearer_rest_authentication", "sigv4_rest_authentication"}},
 	{ObjectStruct: sdk.CatalogIntegrationObjectStorageDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.CatalogIntegrationOpenCatalogDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "rest_authentication"}},
 	{ObjectStruct: sdk.CortexAgentDetails{}, IsDescribe: true, ManualFields: []string{"profile"}},
@@ -189,8 +187,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"external_oauth_allowed_roles_list", "external_oauth_audience_list", "external_oauth_token_user_mapping_claim",
 		"external_oauth_snowflake_user_mapping_attribute", "external_oauth_scope_delimiter", "comment",
 	}},
-	// SkipFields `id` is the SDK identifier (public schema has no `id`); nested storage_locations is ManualFields.
-	{ObjectStruct: sdk.ExternalVolumeDetails{}, IsDescribe: true, SkipFields: []string{"id"}, ManualFields: []string{"storage_locations"}},
 	// ManualFields nested type-specific structs (public schema is a flat union of per-type keys; nested mapping in ext).
 	{ObjectStruct: sdk.FileFormatAllDetails{}, IsDescribe: true, ManualFields: []string{"csv", "json", "avro", "orc", "parquet", "xml"}},
 	{ObjectStruct: sdk.FileFormatAvro{}, IsDescribe: true},

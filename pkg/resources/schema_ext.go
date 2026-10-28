@@ -45,11 +45,6 @@ var (
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-var schemaSetStateToValueFromConfigFieldsExt = []string{
-	"is_transient",
-	"with_managed_access",
-}
-
 type schemaAlterRequestsExt struct {
 	set   *sdk.SchemaSetRequest
 	unset *sdk.SchemaUnsetRequest
@@ -119,10 +114,6 @@ func schemaOutputMappingsExt(s *sdk.Schema) []outputMapping {
 			return slices.Contains(sdk.ParseCommaSeparatedStringArray(x.(string), false), "MANAGED ACCESS")
 		}},
 	}
-}
-
-func schemaSetConfigFieldsExt(d *schema.ResourceData, s *sdk.Schema) error {
-	return d.Set("comment", s.Comment)
 }
 
 func schemaSetDescribeOutputExt(d *schema.ResourceData, id sdk.DatabaseObjectIdentifier, details []sdk.SchemaDetails, describeErr error, _ bool) error {
@@ -213,7 +204,7 @@ func schemaApplySetUnsetExt(d *schema.ResourceData) (*schemaAlterRequestsExt, er
 	return &schemaAlterRequestsExt{set: set, unset: unset}, nil
 }
 
-func schemaSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.DatabaseObjectIdentifier, s *sdk.Schema) error {
+func schemaSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.DatabaseObjectIdentifier, s *sdk.Schema, _ bool) error {
 	return errors.Join(
 		d.Set("name", id.Name()),
 		d.Set("database", id.DatabaseName()),
@@ -241,47 +232,7 @@ func schemaCreateInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObjectId
 	return nil
 }
 
-func schemaShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.DatabaseObjectIdentifier) (*sdk.Schema, diag.Diagnostics) {
-	client := meta.(*provider.Context).Client
-	s, err := client.Schemas.ShowByIDSafely(ctx, id)
-	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotFound) {
-			d.SetId("")
-			return nil, diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "Failed to query schema. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Schema id: %s, Err: %s", id.FullyQualifiedName(), err),
-				},
-			}
-		}
-		return nil, diag.FromErr(err)
-	}
-	return s, nil
-}
-
-func schemaShowByIdInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObjectIdentifier) (*sdk.Schema, error) {
-	client := meta.(*provider.Context).Client
-	return client.Schemas.ShowByID(ctx, id)
-}
-
 func schemaDescribeInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObjectIdentifier) ([]sdk.SchemaDetails, error) {
 	client := meta.(*provider.Context).Client
 	return client.Schemas.Describe(ctx, id)
-}
-
-func schemaAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.DatabaseObjectIdentifier, reqs *schemaAlterRequestsExt) error {
-	if *reqs.set != *sdk.NewSchemaSetRequest() {
-		client := meta.(*provider.Context).Client
-		return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithSet(*reqs.set))
-	}
-	return nil
-}
-
-func schemaAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObjectIdentifier, reqs *schemaAlterRequestsExt) error {
-	if *reqs.unset != *sdk.NewSchemaUnsetRequest() {
-		client := meta.(*provider.Context).Client
-		return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithUnset(*reqs.unset))
-	}
-	return nil
 }

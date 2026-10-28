@@ -1,30 +1,14 @@
 package resources
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-// Snowflake describes every catalog integration with DESCRIBE CATALOG INTEGRATION.
-var catalogIntegrationIcebergRestDescribeOutputSchemaExt = map[string]*schema.Schema{
-	DescribeOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `DESCRIBE CATALOG INTEGRATION` for the given catalog integration.",
-		Elem: &schema.Resource{
-			Schema: schemas.DescribeCatalogIntegrationIcebergRestDetailsSchema,
-		},
-	},
-}
-
-// Nested blocks are generated. This adds ExactlyOneOf, sensitive fields, empty-string checks,
+// Nested blocks, ExactlyOneOf, and Sensitive are generated. This adds empty-string checks,
 // describe diff suppressors, and the describe-only catalog_source attribute.
 func catalogIntegrationIcebergRestAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
-	authExactlyOneOf := []string{"oauth_rest_authentication", "bearer_rest_authentication", "sigv4_rest_authentication"}
-
-	s["refresh_interval_seconds"].DiffSuppressFunc = IgnoreChangeToCurrentSnowflakeValueInDescribe("refresh_interval_seconds")
 	s["catalog_namespace"].ValidateFunc = validation.StringIsNotEmpty
 
 	s["catalog_source"] = &schema.Schema{
@@ -33,33 +17,28 @@ func catalogIntegrationIcebergRestAttributesModificationExt(s map[string]*schema
 		Description: joinWithSpace("Specifies the type of catalog source.",
 			"This field is used to detect when the catalog source was changed outside of Terraform and to recreate the resource when that happens."),
 	}
-	for _, name := range authExactlyOneOf {
-		s[name].ExactlyOneOf = authExactlyOneOf
-	}
 
 	restConfig := s["rest_config"].Elem.(*schema.Resource).Schema
 	restConfig["catalog_uri"].ValidateFunc = validation.StringIsNotEmpty
 	restConfig["catalog_name"].ValidateFunc = validation.StringIsNotEmpty
-	restConfig["catalog_api_type"].DiffSuppressFunc = SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationCatalogApiType), IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.catalog_api_type"))
-	restConfig["access_delegation_mode"].DiffSuppressFunc = SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationAccessDelegationMode), IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.access_delegation_mode"))
+	restConfig["catalog_api_type"].DiffSuppressFunc = SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationCatalogApiType), IgnoreChangeToCurrentSnowflakePlainValueInOutput("describe_output.0.rest_config", "catalog_api_type"))
+	restConfig["access_delegation_mode"].DiffSuppressFunc = SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationAccessDelegationMode), IgnoreChangeToCurrentSnowflakePlainValueInOutput("describe_output.0.rest_config", "access_delegation_mode"))
 
 	oauth := s["oauth_rest_authentication"].Elem.(*schema.Resource).Schema
 	oauth["oauth_token_uri"].ValidateFunc = validation.StringIsNotEmpty
-	oauth["oauth_token_uri"].DiffSuppressFunc = IgnoreChangeToCurrentSnowflakeValueInDescribe("oauth_rest_authentication.0.oauth_token_uri")
+	oauth["oauth_token_uri"].DiffSuppressFunc = IgnoreChangeToCurrentSnowflakePlainValueInOutput("describe_output.0.oauth_rest_authentication", "oauth_token_uri")
 	oauth["oauth_client_id"].ValidateFunc = validation.StringIsNotEmpty
-	oauth["oauth_client_id"].Sensitive = true
 	oauth["oauth_client_secret"].ValidateFunc = validation.StringIsNotEmpty
-	oauth["oauth_client_secret"].Sensitive = true
 	oauth["oauth_client_secret"].Description = externalChangesNotDetectedFieldDescription("Specifies the secret of the OAuth2 credential.")
 
 	bearer := s["bearer_rest_authentication"].Elem.(*schema.Resource).Schema
 	bearer["bearer_token"].ValidateFunc = validation.StringIsNotEmpty
-	bearer["bearer_token"].Sensitive = true
 	bearer["bearer_token"].Description = externalChangesNotDetectedFieldDescription("The bearer token for the identity provider.")
 
 	sigv4 := s["sigv4_rest_authentication"].Elem.(*schema.Resource).Schema
 	sigv4["sigv4_iam_role"].ValidateFunc = validation.StringIsNotEmpty
 	sigv4["sigv4_signing_region"].ValidateFunc = validation.StringIsNotEmpty
+	sigv4["sigv4_signing_region"].DiffSuppressFunc = IgnoreChangeToCurrentSnowflakePlainValueInOutput("describe_output.0.sigv4_rest_authentication", "sigv4_signing_region")
 	sigv4["sigv4_external_id"].ValidateFunc = validation.StringIsNotEmpty
 	sigv4["sigv4_external_id"].Description = externalChangesNotDetectedFieldDescription(joinWithSpace(
 		"Specifies an external ID that Snowflake uses to establish a trust relationship with AWS.",

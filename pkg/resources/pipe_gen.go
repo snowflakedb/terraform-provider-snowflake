@@ -5,8 +5,12 @@ package resources
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -20,7 +24,7 @@ func Pipe() *tfschema.Resource {
 		CreateContext: pipeCreateExt,
 		ReadContext:   pipeReadExt,
 		UpdateContext: pipeUpdateExt,
-		DeleteContext: pipeDeleteExt,
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.PipeResource), TrackingDeleteWrapper(resources.Pipe, DeletePipe)),
 		Importer:      pipeImporterExt,
 
 		CustomizeDiff: pipeCustomizeDiffExt,
@@ -43,8 +47,8 @@ func CreatePipe(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Di
 		return diag.FromErr(err)
 	}
 
-	if diags := pipeCreateInSdkExt(ctx, meta, id, req); diags != nil {
-		return diags
+	if err := meta.(*provider.Context).Client.Pipes.Create(ctx, req); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(helpers.EncodeSnowflakeID(id))
@@ -53,14 +57,24 @@ func CreatePipe(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Di
 
 func ReadPipeFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := pipeParseIdExt(d.Id())
+		id, err := pipeParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		pipe, diags := pipeShowByIdSafelyInSdkExt(ctx, d, meta, id)
-		if diags != nil {
-			return diags
+		pipe, err := meta.(*provider.Context).Client.Pipes.ShowByIDSafely(ctx, id)
+		if err != nil {
+			if errors.Is(err, sdk.ErrObjectNotFound) {
+				d.SetId("")
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Failed to query pipe. Marking the resource as removed.",
+						Detail:   fmt.Sprintf("Pipe id: %s, Err: %s", id.FullyQualifiedName(), err),
+					},
+				}
+			}
+			return diag.FromErr(err)
 		}
 
 		errs := errors.Join(
@@ -75,7 +89,7 @@ func ReadPipeFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 }
 
 func UpdatePipe(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := pipeParseIdExt(d.Id())
+	id, err := pipeParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -96,7 +110,20 @@ func pipeParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier
 	return sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string)), nil
 }
 
+func pipeParseId(id string) (sdk.SchemaObjectIdentifier, error) {
+	return helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier](id)
+}
+
 func pipeNewCreateRequest(d *tfschema.ResourceData, id sdk.SchemaObjectIdentifier) (*sdk.CreatePipeRequest, error) {
 	copyStatement := d.Get("copy_statement").(string)
 	return sdk.NewCreatePipeRequest(id, copyStatement), nil
+}
+
+func DeletePipe(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	return ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.Pipes.DropSafely
+		},
+	)(ctx, d, meta)
 }

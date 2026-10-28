@@ -2,7 +2,9 @@ package gen
 
 import (
 	"fmt"
+	"slices"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 )
@@ -33,17 +35,23 @@ func showOutputDetailsFromSsot(obj ssot.Object, isDescribe bool) SdkObjectShowOu
 	if isDescribe {
 		name += "Details"
 	}
+	skipped := g.ShowOutputAssert.ShowSkipFields
+	if isDescribe {
+		skipped = g.ShowOutputAssert.DescribeSkipFields
+	}
 	fields := make([]genhelpers.Field, 0, len(attrs))
 	for _, attr := range attrs {
 		if attr == nil {
 			panic(fmt.Sprintf("object %q: nil %s column", obj.Name, kind))
 		}
+		// A skipped column may have no Go type the generator can derive, such as a hand-written struct of the details.
+		if slices.Contains(skipped, attr) {
+			fields = append(fields, genhelpers.Field{Name: ssot.ColumnFieldName(*attr)})
+			continue
+		}
 		fields = append(fields, ssot.ColumnField(obj, *attr))
 	}
-	skip := showOutputSkipNames(obj, g.ShowOutputAssert.ShowSkipFields)
-	if isDescribe {
-		skip = showOutputSkipNames(obj, g.ShowOutputAssert.DescribeSkipFields)
-	}
+	skip := showOutputSkipNames(skipped)
 	dataSource, _ := dataSourceMappingNormalized[name]
 	return SdkObjectShowOutputDetails{
 		dataSourceDef: &dataSource,
@@ -58,13 +66,9 @@ func showOutputDetailsFromSsot(obj ssot.Object, isDescribe bool) SdkObjectShowOu
 	}
 }
 
-func showOutputSkipNames(obj ssot.Object, skipped []*ssot.Attribute) []string {
+func showOutputSkipNames(skipped []*ssot.Attribute) []string {
 	if len(skipped) == 0 {
 		return nil
 	}
-	names := make([]string, len(skipped))
-	for i, attr := range skipped {
-		names[i] = ssot.ColumnField(obj, *attr).Name
-	}
-	return names
+	return collections.Map(skipped, func(attr *ssot.Attribute) string { return ssot.ColumnFieldName(*attr) })
 }

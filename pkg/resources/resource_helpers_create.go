@@ -86,21 +86,6 @@ func booleanStringAttributeCreateBuilder[T any](d *schema.ResourceData, key stri
 	return nil
 }
 
-// booleanStringAttributeCreateFallbackBuilder sets fallbackValue when the tri-state field is BooleanDefault.
-// An explicit "true" or "false" is parsed and set.
-func booleanStringAttributeCreateFallbackBuilder[T any](d *schema.ResourceData, key string, setValue func(bool) T, fallbackValue bool) error {
-	if v := d.Get(key).(string); v != BooleanDefault {
-		parsed, err := booleanStringToBool(v)
-		if err != nil {
-			return err
-		}
-		setValue(parsed)
-		return nil
-	}
-	setValue(fallbackValue)
-	return nil
-}
-
 // booleanStringPairAttributeCreate reads a tri-state boolean string field and sets exactly one of the
 // two given pointer fields: positiveField when the value is "true", negativeField when it is "false".
 // Both are left untouched when the value is BooleanDefault. Useful for squashing a pair of mutually

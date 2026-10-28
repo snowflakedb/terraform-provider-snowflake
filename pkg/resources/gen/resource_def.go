@@ -49,6 +49,12 @@ func GetAllObjects() []ResourceObject {
 	fmt.Println("resource object definitions:")
 	out := make([]ResourceObject, 0, len(objects))
 	for _, def := range objects {
+		if !ssot.ObjectGenerators(def.Generators...).Resource.Enabled {
+			continue
+		}
+		if def.VariantBaseOnly {
+			continue
+		}
 		fmt.Printf(" - %s\n", def.Name)
 		out = append(out, ResourceObject{
 			Object:                   def,

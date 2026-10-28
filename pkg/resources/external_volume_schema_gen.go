@@ -96,6 +96,7 @@ var externalVolumeAttributesSchema = externalVolumeAttributesModificationExt(map
 				"storage_aws_secret_key": {
 					Type:        tfschema.TypeString,
 					Optional:    true,
+					Sensitive:   true,
 					Description: "Specifies the AWS secret key for the S3-compatible storage location. Only applicable for S3COMPAT storage provider.",
 				},
 			},

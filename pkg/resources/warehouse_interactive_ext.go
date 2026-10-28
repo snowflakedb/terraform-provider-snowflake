@@ -57,16 +57,12 @@ var (
 const interactiveWarehouseDefaultAutoSuspend = 86400
 
 type warehouseInteractiveAlterRequestsExt struct {
-	set   *sdk.WarehouseSetRequest
-	unset *sdk.WarehouseUnsetRequest
+	set   *sdk.WarehouseInteractiveSetRequest
+	unset *sdk.WarehouseInteractiveUnsetRequest
 }
 
 func warehouseInteractiveParseIdFromConfigExt(d *schema.ResourceData) (sdk.AccountObjectIdentifier, error) {
 	return sdk.ParseAccountObjectIdentifier(d.Get("name").(string))
-}
-
-func warehouseInteractiveParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
-	return sdk.ParseAccountObjectIdentifier(id)
 }
 
 func warehouseInteractiveNewCreateRequestExt(_ *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateInteractiveWarehouseRequest, error) {
@@ -87,14 +83,14 @@ func warehouseInteractiveApplyCreateOptionalsExt(d *schema.ResourceData, req *sd
 	)
 }
 
-func warehouseInteractiveHandleExternalChangesExt(d *schema.ResourceData, w *sdk.Warehouse, withExternalChangesMarking bool) error {
+func warehouseInteractiveHandleExternalChangesExt(d *schema.ResourceData, w *sdk.WarehouseInteractive, withExternalChangesMarking bool) error {
 	if !withExternalChangesMarking {
 		return nil
 	}
 	return handleExternalChangesToObjectInShow(d, warehouseInteractiveOutputMappingsExt(w)...)
 }
 
-func warehouseInteractiveOutputMappingsExt(w *sdk.Warehouse) []outputMapping {
+func warehouseInteractiveOutputMappingsExt(w *sdk.WarehouseInteractive) []outputMapping {
 	sizeVal, sizeStr := optionalStringOutputMapping(w.Size)
 	autoResumeVal, autoResumeStr := w.AutoResume, booleanStringFromBool(w.AutoResume)
 	maxClusterCount := optionalIntOutputMapping(w.MaxClusterCount)
@@ -110,10 +106,10 @@ func warehouseInteractiveOutputMappingsExt(w *sdk.Warehouse) []outputMapping {
 	}
 }
 
-func warehouseInteractiveSetConfigFieldsExt(d *schema.ResourceData, w *sdk.Warehouse) error {
-	// Snowflake reports interactive warehouses through the type column (type = INTERACTIVE)
+func warehouseInteractiveSetConfigFieldsExt(d *schema.ResourceData, w *sdk.WarehouseInteractive) error {
+	// Snowflake reports interactive warehouses through the type column (type = INTERACTIVE).
 	effectiveType := string(sdk.WarehouseTypeStandard)
-	if w.IsInteractiveWarehouse() {
+	if w.Type == sdk.WarehouseTypeInteractive {
 		effectiveType = string(sdk.WarehouseTypeInteractive)
 	}
 
@@ -127,15 +123,14 @@ func warehouseInteractiveSetConfigFieldsExt(d *schema.ResourceData, w *sdk.Wareh
 		d.Set("comment", w.Comment),
 		d.Set("warehouse_type", effectiveType),
 		d.Set("tables", tables),
-		// SHOW returns sdk.Warehouse. show_output uses the interactive projection.
-		d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseInteractiveToSchema(w.AsInteractive())}),
+		d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseInteractiveToSchema(w)}),
 	)
 }
 
 func warehouseInteractiveHierarchyRenameExt(ctx context.Context, d *schema.ResourceData, meta any, id *sdk.AccountObjectIdentifier) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	newId, err := renameAccountLevelResource(ctx, d, *id, func(ctx context.Context, id, newId sdk.AccountObjectIdentifier) error {
-		return client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithRenameTo(newId))
+		return client.Warehouses.AlterInteractive(ctx, sdk.NewAlterInteractiveWarehouseRequest(id).WithRenameTo(newId))
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -162,12 +157,12 @@ func warehouseInteractiveBeforeAlterExt(ctx context.Context, d *schema.ResourceD
 		}
 
 		if len(toAdd) > 0 {
-			if err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithAddTables(toAdd)); err != nil {
+			if err := client.Warehouses.AlterInteractive(ctx, sdk.NewAlterInteractiveWarehouseRequest(id).WithAddTables(toAdd)); err != nil {
 				return diag.FromErr(fmt.Errorf("error adding tables to interactive warehouse %s: %w", id.FullyQualifiedName(), err))
 			}
 		}
 		if len(toDrop) > 0 {
-			if err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithDropTables(toDrop)); err != nil {
+			if err := client.Warehouses.AlterInteractive(ctx, sdk.NewAlterInteractiveWarehouseRequest(id).WithDropTables(toDrop)); err != nil {
 				return diag.FromErr(fmt.Errorf("error dropping tables from interactive warehouse %s: %w", id.FullyQualifiedName(), err))
 			}
 		}
@@ -176,8 +171,8 @@ func warehouseInteractiveBeforeAlterExt(ctx context.Context, d *schema.ResourceD
 }
 
 func warehouseInteractiveApplySetUnsetExt(d *schema.ResourceData) (*warehouseInteractiveAlterRequestsExt, error) {
-	set := sdk.NewWarehouseSetRequest()
-	unset := sdk.NewWarehouseUnsetRequest()
+	set := sdk.NewWarehouseInteractiveSetRequest()
+	unset := sdk.NewWarehouseInteractiveUnsetRequest()
 
 	if err := errors.Join(
 		attributeMappedValueUpdateSetOnlyAlways(d, "warehouse_size", &set.WarehouseSize, sdk.ToWarehouseSize),
@@ -193,8 +188,8 @@ func warehouseInteractiveApplySetUnsetExt(d *schema.ResourceData) (*warehouseInt
 	return &warehouseInteractiveAlterRequestsExt{set: set, unset: unset}, nil
 }
 
-func warehouseInteractiveSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, w *sdk.Warehouse) error {
-	if !w.IsInteractiveWarehouse() {
+func warehouseInteractiveSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, w *sdk.WarehouseInteractive, _ bool) error {
+	if w.Type != sdk.WarehouseTypeInteractive {
 		return fmt.Errorf("warehouse %s is not an interactive warehouse; use snowflake_warehouse or snowflake_warehouse_adaptive instead", id.FullyQualifiedName())
 	}
 
@@ -229,8 +224,8 @@ func warehouseInteractiveCreateInSdkExt(ctx context.Context, meta any, id sdk.Ac
 	return nil
 }
 
-func warehouseInteractiveShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier) (*sdk.Warehouse, diag.Diagnostics) {
-	w, err := showWarehouseByIDSafely(ctx, meta.(*provider.Context), id)
+func warehouseInteractiveShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier) (*sdk.WarehouseInteractive, diag.Diagnostics) {
+	w, err := showWarehouseInteractiveByIDSafely(ctx, meta.(*provider.Context), id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
@@ -247,17 +242,17 @@ func warehouseInteractiveShowByIdSafelyInSdkExt(ctx context.Context, d *schema.R
 	return w, nil
 }
 
-func warehouseInteractiveShowByIdInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier) (*sdk.Warehouse, error) {
-	return showWarehouseByID(ctx, meta.(*provider.Context), id)
+func warehouseInteractiveShowByIdInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier) (*sdk.WarehouseInteractive, error) {
+	return showWarehouseInteractiveByID(ctx, meta.(*provider.Context), id)
 }
 
 func warehouseInteractiveAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseInteractiveAlterRequestsExt) error {
-	if *reqs.set != *sdk.NewWarehouseSetRequest() {
-		// AlterWithSuspend suspends and resumes the warehouse around the alter when it changes the
+	if *reqs.set != *sdk.NewWarehouseInteractiveSetRequest() {
+		// AlterInteractiveWithSuspend suspends and resumes the warehouse around the alter when it changes the
 		// size, because an interactive warehouse cannot be resized while running. Other SET changes
 		// are applied without a suspend.
 		client := meta.(*provider.Context).Client
-		if err := client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(id).WithSet(*reqs.set)); err != nil {
+		if err := client.Warehouses.AlterInteractiveWithSuspend(ctx, sdk.NewAlterInteractiveWarehouseRequest(id).WithSet(*reqs.set)); err != nil {
 			return fmt.Errorf("error setting interactive warehouse properties: %w", err)
 		}
 	}
@@ -265,9 +260,9 @@ func warehouseInteractiveAlterSetInSdkExt(ctx context.Context, _ *schema.Resourc
 }
 
 func warehouseInteractiveAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseInteractiveAlterRequestsExt) error {
-	if *reqs.unset != *sdk.NewWarehouseUnsetRequest() {
+	if *reqs.unset != *sdk.NewWarehouseInteractiveUnsetRequest() {
 		client := meta.(*provider.Context).Client
-		if err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithUnset(*reqs.unset)); err != nil {
+		if err := client.Warehouses.AlterInteractive(ctx, sdk.NewAlterInteractiveWarehouseRequest(id).WithUnset(*reqs.unset)); err != nil {
 			return fmt.Errorf("error unsetting interactive warehouse properties: %w", err)
 		}
 	}

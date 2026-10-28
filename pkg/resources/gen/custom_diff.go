@@ -103,7 +103,8 @@ func (m ResourceModel) identityFields() []ssot.ClassifiedField {
 }
 
 // changedAttributeKeys keeps show or describe columns that are top-level resource attributes.
-// Nested columns are excluded. A column whose name is not a resource attribute is excluded.
+// Nested columns are excluded. A column whose name is not a resource attribute is excluded, except for a read-only column
+// whose ShowName is one (a DESCRIBE-only column that reads the property of that attribute in another type).
 // The key is the resource attribute name, which is what ComputedIfAnyAttributeChanged watches.
 func (m ResourceModel) changedAttributeKeys(columns []*ssot.Attribute) []string {
 	names := m.diffAttributeNames()
@@ -117,10 +118,15 @@ func (m ResourceModel) changedAttributeKeys(columns []*ssot.Attribute) []string 
 		if col.Type == ssot.AttrList || col.Type == ssot.AttrSet {
 			continue
 		}
-		if _, ok := names[col.Name]; !ok {
+		key := col.Name
+		if _, ok := names[key]; !ok && col.Readonly && col.ShowName != "" {
+			// A read-only column with another name reads the same property as the resource attribute of its output key.
+			key = col.ShowName
+		}
+		if _, ok := names[key]; !ok {
 			continue
 		}
-		keys = append(keys, col.Name)
+		keys = append(keys, key)
 	}
 	return keys
 }

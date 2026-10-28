@@ -5,9 +5,11 @@ package resources
 import (
 	"context"
 	"errors"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -25,7 +27,7 @@ func Warehouse() *tfschema.Resource {
 		CreateContext: warehouseCreateExt,
 		ReadContext:   warehouseReadExt,
 		UpdateContext: warehouseUpdateExt,
-		DeleteContext: warehouseDeleteExt,
+		DeleteContext: TrackingDeleteWrapper(resources.Warehouse, DeleteWarehouse),
 		Importer:      warehouseImporterExt,
 
 		CustomizeDiff: warehouseCustomizeDiff,
@@ -48,7 +50,7 @@ func Warehouse() *tfschema.Resource {
 }
 
 func ImportWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
-	id, err := warehouseParseIdExt(d.Id())
+	id, err := warehouseParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +60,8 @@ func ImportWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) ([
 		return nil, err
 	}
 
-	if err := warehouseSetFieldsNotSetByReadExt(d, id, warehouse); err != nil {
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
+	if err := warehouseSetFieldsNotSetByReadExt(d, id, warehouse, importPermissiveMode); err != nil {
 		return nil, err
 	}
 	return []*tfschema.ResourceData{d}, nil
@@ -83,8 +86,8 @@ func CreateWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) di
 		return diags
 	}
 
-	if diags := warehouseCreateInSdkExt(ctx, meta, id, req); diags != nil {
-		return diags
+	if err := meta.(*provider.Context).Client.Warehouses.Create(ctx, req); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
@@ -93,7 +96,7 @@ func CreateWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) di
 
 func ReadWarehouseFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := warehouseParseIdExt(d.Id())
+		id, err := warehouseParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -117,7 +120,20 @@ func ReadWarehouseFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc
 			return diag.FromErr(err)
 		}
 
-		if err = setStateToValuesFromConfig(d, warehouseSchema, warehouseSetStateToValueFromConfigFieldsExt); err != nil {
+		if err = setStateToValuesFromConfig(d, warehouseSchema, []string{
+			"warehouse_type",
+			"warehouse_size",
+			"max_cluster_count",
+			"min_cluster_count",
+			"scaling_policy",
+			"auto_suspend",
+			"auto_resume",
+			"resource_monitor",
+			"enable_query_acceleration",
+			"query_acceleration_max_scale_factor",
+			"resource_constraint",
+			"generation",
+		}); err != nil {
 			return diag.FromErr(err)
 		}
 		errs := errors.Join(
@@ -133,7 +149,7 @@ func ReadWarehouseFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc
 }
 
 func UpdateWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := warehouseParseIdExt(d.Id())
+	id, err := warehouseParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -151,8 +167,10 @@ func UpdateWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) di
 	if err := warehouseAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := warehouseAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.unset, *sdk.NewWarehouseUnsetRequest()) {
+		if err := meta.(*provider.Context).Client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithUnset(*setUnset.unset)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	return ReadWarehouseFunc(false)(ctx, d, meta)
 }
@@ -168,4 +186,17 @@ var warehouseCustomizeDiff = TrackingCustomDiffWrapper(resources.Warehouse, cust
 
 func warehouseParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
 	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
+}
+
+func warehouseParseId(id string) (sdk.AccountObjectIdentifier, error) {
+	return sdk.ParseAccountObjectIdentifier(id)
+}
+
+func DeleteWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	return ResourceDeleteContextFunc(
+		sdk.ParseAccountObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.Warehouses.DropSafely
+		},
+	)(ctx, d, meta)
 }

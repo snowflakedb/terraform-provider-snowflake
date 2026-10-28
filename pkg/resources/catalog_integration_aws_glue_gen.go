@@ -7,6 +7,9 @@ import (
 	"errors"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -21,7 +24,7 @@ func CatalogIntegrationAwsGlue() *tfschema.Resource {
 		CreateContext: catalogIntegrationAwsGlueCreateExt,
 		ReadContext:   catalogIntegrationAwsGlueReadExt,
 		UpdateContext: catalogIntegrationAwsGlueUpdateExt,
-		DeleteContext: catalogIntegrationAwsGlueDeleteExt,
+		DeleteContext: TrackingDeleteWrapper(resources.CatalogIntegrationAwsGlue, DeleteCatalogIntegrationAwsGlue),
 		Importer:      catalogIntegrationAwsGlueImporterExt,
 
 		CustomizeDiff: catalogIntegrationAwsGlueCustomizeDiffExt,
@@ -30,7 +33,7 @@ func CatalogIntegrationAwsGlue() *tfschema.Resource {
 }
 
 func ImportCatalogIntegrationAwsGlue(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
-	id, err := catalogIntegrationAwsGlueParseIdExt(d.Id())
+	id, err := catalogIntegrationAwsGlueParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +43,8 @@ func ImportCatalogIntegrationAwsGlue(ctx context.Context, d *tfschema.ResourceDa
 		return nil, err
 	}
 
-	if err := catalogIntegrationAwsGlueSetFieldsNotSetByReadExt(d, id, catalogIntegrationAwsGlue); err != nil {
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
+	if err := catalogIntegrationAwsGlueSetFieldsNotSetByReadExt(d, id, catalogIntegrationAwsGlue, importPermissiveMode); err != nil {
 		return nil, err
 	}
 	return []*tfschema.ResourceData{d}, nil
@@ -71,11 +75,12 @@ func CreateCatalogIntegrationAwsGlue(ctx context.Context, d *tfschema.ResourceDa
 
 func ReadCatalogIntegrationAwsGlueFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := catalogIntegrationAwsGlueParseIdExt(d.Id())
+		id, err := catalogIntegrationAwsGlueParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
+		var diags diag.Diagnostics
 		catalogIntegrationAwsGlue, diags := catalogIntegrationAwsGlueShowByIdSafelyInSdkExt(ctx, d, meta, id)
 		if diags != nil {
 			return diags
@@ -90,6 +95,13 @@ func ReadCatalogIntegrationAwsGlueFunc(withExternalChangesMarking bool) tfschema
 			return diags
 		}
 
+		if err = setStateToValuesFromConfig(d, catalogIntegrationAwsGlueSchema, []string{
+			"refresh_interval_seconds",
+			"glue_region",
+			"catalog_namespace",
+		}); err != nil {
+			return append(diags, diag.FromErr(err)...)
+		}
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationAwsGlueToSchema(catalogIntegrationAwsGlue)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CatalogIntegrationAwsGlueDetailsToSchema(catalogIntegrationAwsGlueDetails)}),
@@ -104,7 +116,7 @@ func ReadCatalogIntegrationAwsGlueFunc(withExternalChangesMarking bool) tfschema
 }
 
 func UpdateCatalogIntegrationAwsGlue(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := catalogIntegrationAwsGlueParseIdExt(d.Id())
+	id, err := catalogIntegrationAwsGlueParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -115,12 +127,22 @@ func UpdateCatalogIntegrationAwsGlue(ctx context.Context, d *tfschema.ResourceDa
 	if err := catalogIntegrationAwsGlueAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := catalogIntegrationAwsGlueAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
-	}
 	return ReadCatalogIntegrationAwsGlueFunc(false)(ctx, d, meta)
 }
 
 func catalogIntegrationAwsGlueParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
 	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
+}
+
+func catalogIntegrationAwsGlueParseId(id string) (sdk.AccountObjectIdentifier, error) {
+	return sdk.ParseAccountObjectIdentifier(id)
+}
+
+func DeleteCatalogIntegrationAwsGlue(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	return ResourceDeleteContextFunc(
+		sdk.ParseAccountObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.CatalogIntegrations.DropSafely
+		},
+	)(ctx, d, meta)
 }

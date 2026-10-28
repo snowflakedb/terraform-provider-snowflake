@@ -8,6 +8,7 @@ func All() []ssot.Object {
 		ExternalVolumeObject,
 		Schema,
 		AuthenticationPolicy,
+		CatalogIntegration,
 		CatalogIntegrationAwsGlue,
 		CatalogIntegrationIcebergRest,
 		CatalogIntegrationObjectStorage,
@@ -18,6 +19,9 @@ func All() []ssot.Object {
 		Alert,
 		Table,
 		Pipe,
+		CodeBundle,
+		BackupPolicy,
+		ProjectionPolicy,
 	}
 	for _, obj := range objs {
 		ssot.ValidateObject(obj)

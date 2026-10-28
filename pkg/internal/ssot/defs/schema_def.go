@@ -60,6 +60,7 @@ var Schema = ssot.Object{
 	AdditionalIdentityNameDescription:   "When the name is `PUBLIC`, during creation the provider checks if this schema has already been created and, in such case, `ALTER` is used to match the desired state.",
 	AttributesModification:              true,
 	Generators: []ssot.GeneratorOption{
+		ssot.WithResource(),
 		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),
@@ -183,6 +184,9 @@ var Schema = ssot.Object{
 		ssot.WithBeforeCreate(ssot.ExtCall()),
 		ssot.WithHierarchyRename(ssot.ExtCall()),
 		ssot.WithBeforeAlter(ssot.ExtCall()),
+		ssot.WithAlterSetInSdk(ssot.Generated()),
+		ssot.WithAlterUnsetInSdk(ssot.Generated()),
+		// Describe is best-effort and its output is a list, so the ext sets it.
 		ssot.WithDescribeOutputSet(ssot.Omitted()),
 		ssot.WithSetDescribeOutput(ssot.ExtCall()),
 		ssot.WithStateUpgraders(ssot.Generated()),
@@ -197,6 +201,9 @@ var Schema = ssot.Object{
 		ssot.WithParametersFieldNames(ssot.Generated()),
 		ssot.WithParametersCustomDiff(ssot.Generated()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
+		ssot.WithSetConfigFields(ssot.Generated()),
+		ssot.WithShowByIdInSdk(ssot.Generated()),
+		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
 	},
 	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
 		"v093SchemaStateUpgrader",

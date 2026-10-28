@@ -12,10 +12,10 @@ type ExternalVolumes interface {
 	Alter(ctx context.Context, request *AlterExternalVolumeRequest) error
 	Drop(ctx context.Context, request *DropExternalVolumeRequest) error
 	DropSafely(ctx context.Context, id AccountObjectIdentifier) error
-	Describe(ctx context.Context, id AccountObjectIdentifier) ([]ExternalVolumeProperty, error)
 	Show(ctx context.Context, request *ShowExternalVolumeRequest) ([]ExternalVolume, error)
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolume, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolume, error)
+	Describe(ctx context.Context, id AccountObjectIdentifier) ([]ExternalVolumeProperty, error)
 	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolumeDetails, error)
 }
 
@@ -59,25 +59,25 @@ type ExternalVolumeS3Encryption struct {
 }
 
 type GCSStorageLocationParams struct {
-	StorageProviderGcs string                       `ddl:"static" sql:"STORAGE_PROVIDER = 'GCS'"`
+	storageProviderGcs bool                         `ddl:"static" sql:"STORAGE_PROVIDER = 'GCS'"`
 	StorageBaseUrl     string                       `ddl:"parameter,single_quotes" sql:"STORAGE_BASE_URL"`
-	Encryption         *ExternalVolumeGCSEncryption `ddl:"list,parentheses,no_comma" sql:"ENCRYPTION ="`
+	Encryption         *ExternalVolumeGcsEncryption `ddl:"list,parentheses,no_comma" sql:"ENCRYPTION ="`
 }
 
-type ExternalVolumeGCSEncryption struct {
+type ExternalVolumeGcsEncryption struct {
 	EncryptionType GCSEncryptionType `ddl:"parameter,single_quotes" sql:"TYPE"`
 	KmsKeyId       *string           `ddl:"parameter,single_quotes" sql:"KMS_KEY_ID"`
 }
 
 type AzureStorageLocationParams struct {
-	StorageProviderAzure   string `ddl:"static" sql:"STORAGE_PROVIDER = 'AZURE'"`
+	storageProviderAzure   bool   `ddl:"static" sql:"STORAGE_PROVIDER = 'AZURE'"`
 	AzureTenantId          string `ddl:"parameter,single_quotes" sql:"AZURE_TENANT_ID"`
 	StorageBaseUrl         string `ddl:"parameter,single_quotes" sql:"STORAGE_BASE_URL"`
 	UsePrivatelinkEndpoint *bool  `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
 }
 
 type S3CompatStorageLocationParams struct {
-	StorageProviderS3Compat string                            `ddl:"static" sql:"STORAGE_PROVIDER = 'S3COMPAT'"`
+	storageProviderS3Compat bool                              `ddl:"static" sql:"STORAGE_PROVIDER = 'S3COMPAT'"`
 	StorageBaseUrl          string                            `ddl:"parameter,single_quotes" sql:"STORAGE_BASE_URL"`
 	StorageEndpoint         string                            `ddl:"parameter,single_quotes" sql:"STORAGE_ENDPOINT"`
 	Credentials             ExternalVolumeS3CompatCredentials `ddl:"list,parentheses,no_comma" sql:"CREDENTIALS ="`
@@ -90,22 +90,22 @@ type ExternalVolumeS3CompatCredentials struct {
 
 // AlterExternalVolumeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-external-volume.
 type AlterExternalVolumeOptions struct {
-	alter                 bool                                      `ddl:"static" sql:"ALTER"`
-	externalVolume        bool                                      `ddl:"static" sql:"EXTERNAL VOLUME"`
-	IfExists              *bool                                     `ddl:"keyword" sql:"IF EXISTS"`
-	name                  AccountObjectIdentifier                   `ddl:"identifier"`
-	RemoveStorageLocation *string                                   `ddl:"parameter,single_quotes,no_equals" sql:"REMOVE STORAGE_LOCATION"`
-	Set                   *AlterExternalVolumeSet                   `ddl:"keyword" sql:"SET"`
-	AddStorageLocation    *ExternalVolumeStorageLocationItem        `ddl:"parameter" sql:"ADD STORAGE_LOCATION"`
-	UpdateStorageLocation *AlterExternalVolumeUpdateStorageLocation `ddl:"keyword" sql:"UPDATE"`
+	alter                 bool                                 `ddl:"static" sql:"ALTER"`
+	externalVolume        bool                                 `ddl:"static" sql:"EXTERNAL VOLUME"`
+	IfExists              *bool                                `ddl:"keyword" sql:"IF EXISTS"`
+	name                  AccountObjectIdentifier              `ddl:"identifier"`
+	RemoveStorageLocation *string                              `ddl:"parameter,single_quotes,no_equals" sql:"REMOVE STORAGE_LOCATION"`
+	Set                   *ExternalVolumeSet                   `ddl:"keyword" sql:"SET"`
+	AddStorageLocation    *ExternalVolumeStorageLocationItem   `ddl:"parameter" sql:"ADD STORAGE_LOCATION"`
+	UpdateStorageLocation *ExternalVolumeUpdateStorageLocation `ddl:"keyword" sql:"UPDATE"`
 }
 
-type AlterExternalVolumeSet struct {
+type ExternalVolumeSet struct {
 	AllowWrites *bool   `ddl:"parameter" sql:"ALLOW_WRITES"`
 	Comment     *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
-type AlterExternalVolumeUpdateStorageLocation struct {
+type ExternalVolumeUpdateStorageLocation struct {
 	StorageLocation string                          `ddl:"parameter,single_quotes,no_equals" sql:"STORAGE_LOCATION"`
 	Credentials     ExternalVolumeUpdateCredentials `ddl:"list,parentheses,no_comma" sql:"CREDENTIALS ="`
 }
@@ -121,6 +121,33 @@ type DropExternalVolumeOptions struct {
 	externalVolume bool                    `ddl:"static" sql:"EXTERNAL VOLUME"`
 	IfExists       *bool                   `ddl:"keyword" sql:"IF EXISTS"`
 	name           AccountObjectIdentifier `ddl:"identifier"`
+}
+
+// ShowExternalVolumeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-external-volumes.
+type ShowExternalVolumeOptions struct {
+	show            bool  `ddl:"static" sql:"SHOW"`
+	externalVolumes bool  `ddl:"static" sql:"EXTERNAL VOLUMES"`
+	Like            *Like `ddl:"keyword" sql:"LIKE"`
+}
+
+type externalVolumesRow struct {
+	Name        string         `db:"name"`
+	AllowWrites bool           `db:"allow_writes"`
+	Comment     sql.NullString `db:"comment"`
+}
+
+type ExternalVolume struct {
+	Name        string
+	AllowWrites bool
+	Comment     string
+}
+
+func (v *ExternalVolume) ID() AccountObjectIdentifier {
+	return NewAccountObjectIdentifier(v.Name)
+}
+
+func (v *ExternalVolume) ObjectType() ObjectType {
+	return ObjectTypeExternalVolume
 }
 
 // DescribeExternalVolumeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-external-volume.
@@ -139,36 +166,17 @@ type externalVolumeDescRow struct {
 }
 
 type ExternalVolumeProperty struct {
-	Parent  string
-	Name    string
-	Type    string
-	Value   string
-	Default string
+	ParentProperty  string
+	Property        string
+	PropertyType    string
+	PropertyValue   string
+	PropertyDefault string
 }
 
-// ShowExternalVolumeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-external-volumes.
-type ShowExternalVolumeOptions struct {
-	show            bool  `ddl:"static" sql:"SHOW"`
-	externalVolumes bool  `ddl:"static" sql:"EXTERNAL VOLUMES"`
-	Like            *Like `ddl:"keyword" sql:"LIKE"`
-}
-
-type externalVolumeShowRow struct {
-	Name        string         `db:"name"`
-	AllowWrites bool           `db:"allow_writes"`
-	Comment     sql.NullString `db:"comment"`
-}
-
-type ExternalVolume struct {
-	Name        string
-	AllowWrites bool
-	Comment     string
-}
-
-func (v *ExternalVolume) ID() AccountObjectIdentifier {
-	return NewAccountObjectIdentifier(v.Name)
-}
-
-func (v *ExternalVolume) ObjectType() ObjectType {
-	return ObjectTypeExternalVolume
+type ExternalVolumeDetails struct {
+	Id               AccountObjectIdentifier
+	StorageLocations []ExternalVolumeStorageLocationDetails
+	Active           string
+	Comment          string
+	AllowWrites      string
 }

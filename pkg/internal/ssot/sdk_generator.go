@@ -23,6 +23,7 @@ type SdkShowByIDFilteringKind string
 
 const (
 	SdkShowByIDLike       SdkShowByIDFilteringKind = "like"
+	SdkShowByIDIn         SdkShowByIDFilteringKind = "in"
 	SdkShowByIDExtendedIn SdkShowByIDFilteringKind = "extended_in"
 )
 
@@ -59,8 +60,40 @@ func SdkShowOptionalLike() SdkShowOption {
 	return func(s *SdkGenerator) { s.ShowOptionalLike = true }
 }
 
+// SdkShowOptionalIn emits IN for account, database, and schema.
+func SdkShowOptionalIn() SdkShowOption {
+	return func(s *SdkGenerator) { s.ShowOptionalIn = true }
+}
+
+// SdkShowOptionalExtendedIn emits IN for account, database, schema, application, and application package.
 func SdkShowOptionalExtendedIn() SdkShowOption {
 	return func(s *SdkGenerator) { s.ShowOptionalExtendedIn = true }
+}
+
+// SdkShowOptionalOn adds the optional ON clause, after IN and before STARTS WITH.
+func SdkShowOptionalOn() SdkShowOption {
+	return func(s *SdkGenerator) { s.ShowOptionalOn = true }
+}
+
+// SdkShowResultFilterHook calls the excludeFromShow method of the SHOW row, which the SDK ext file implements,
+// for each row. A row for which it returns true is left out of the result.
+func SdkShowResultFilterHook() SdkShowOption {
+	return func(s *SdkGenerator) { s.ShowResultFilterHook = true }
+}
+
+// SdkShowPlainOnlyField is a SHOW column that only the plain struct has, with Go type Kind (without a package prefix).
+type SdkShowPlainOnlyField struct {
+	Column *Attribute
+	Kind   string
+}
+
+// SdkShowPlainOnly marks a SHOW column as plain-only. column is the same *Attribute that sits in Show.Columns.
+// The column stays in Columns for the schema and the assertions, but the SHOW row does not read it:
+// convert skips it, and additionalConvert in the SDK ext file fills the plain field. kind is the plain Go type.
+func SdkShowPlainOnly(column *Attribute, kind string) SdkShowOption {
+	return func(s *SdkGenerator) {
+		s.ShowPlainOnlyFields = append(s.ShowPlainOnlyFields, SdkShowPlainOnlyField{Column: column, Kind: kind})
+	}
 }
 
 func SdkShowOptionalStartsWith() SdkShowOption {
@@ -92,7 +125,8 @@ func SdkDescribeSql(sql string) SdkDescribeOption {
 }
 
 // SdkDescribeMapping overrides the default DESCRIBE result shape.
-// The default is a single value. Pass SdkDescriptionMappingSlice when DESCRIBE returns a slice.
+// The default is a single value, or a slice when the object sets DescribeRows.
+// Pass SdkDescriptionMappingSlice when DESCRIBE returns a slice of another shape.
 func SdkDescribeMapping(kind SdkDescriptionMapping) SdkDescribeOption {
 	return func(s *SdkGenerator) { s.DescribeMapping = kind }
 }
@@ -101,6 +135,22 @@ func SdkDescribeMapping(kind SdkDescriptionMapping) SdkDescribeOption {
 // The default is Desc plus Name, so ComputePool is DescComputePool.
 func SdkDescribeQueryStructName(name string) SdkDescribeOption {
 	return func(s *SdkGenerator) { s.DescribeQueryStructName = name }
+}
+
+// SdkPlainOnlyField is a field on the DESCRIBE plain struct that DESCRIBE does not return.
+// Name is the Go field name. Kind is the plain Go type, without a package prefix.
+type SdkPlainOnlyField struct {
+	Name string
+	Kind string
+}
+
+// SdkDescribePlainOnlyField adds a plain-only field to the DESCRIBE paired struct.
+// It is the ssot form of PlainOnlyField. The field is not a column, convert skips it,
+// and additionalConvert in the SDK ext file fills it.
+func SdkDescribePlainOnlyField(name, kind string) SdkDescribeOption {
+	return func(s *SdkGenerator) {
+		s.DescribePlainOnlyFields = append(s.DescribePlainOnlyFields, SdkPlainOnlyField{Name: name, Kind: kind})
+	}
 }
 
 // SdkConfig returns the SDK settings for obj with defaults filled from Name and NamePlural.
@@ -131,7 +181,11 @@ func (obj Object) SdkConfig() SdkGenerator {
 			cfg.DescribeQueryStructName = "Desc" + name
 		}
 		if cfg.DescribeMapping == "" {
+			// A raw row list is a slice. Every property-list DESCRIBE in the SDK defs maps to a slice.
 			cfg.DescribeMapping = SdkDescriptionMappingSingleValue
+			if len(obj.DescribeRows.Columns) > 0 {
+				cfg.DescribeMapping = SdkDescriptionMappingSlice
+			}
 		}
 	}
 	if cfg.Drop {
@@ -225,7 +279,7 @@ func (obj Object) namePluralForShow() string {
 }
 
 // ObjectType is the Snowflake SQL object type words, so ComputePool is COMPUTE POOL.
-// SdkDescribeSql overrides the default. The default is the uppercase words of Name.
+// Sdk.DescribeSql overrides the words. The default is the uppercase words of Name.
 func (obj Object) ObjectType() string {
 	if sql := ObjectGenerators(obj.Generators...).Sdk.DescribeSql; sql != "" {
 		return sql
@@ -251,25 +305,57 @@ func (obj Object) nameForCreate() string {
 	return obj.singularName("CREATE")
 }
 
+// VariantStem is the variant name with baseName removed. WarehouseAdaptive with base Warehouse is Adaptive.
+func (obj Object) VariantStem(baseName string) string {
+	if baseName == "" || !strings.HasPrefix(obj.Name, baseName) || obj.Name == baseName {
+		panic(fmt.Sprintf("object %q: cannot build a variant stem from base %q", obj.Name, baseName))
+	}
+	return strings.TrimPrefix(obj.Name, baseName)
+}
+
 // VariantCreateMethod is Create plus the variant name with baseName removed.
 // WarehouseAdaptive with base Warehouse is CreateAdaptive.
 func (obj Object) VariantCreateMethod(baseName string) string {
+	return "Create" + obj.VariantStem(baseName)
+}
+
+// VariantAlterMethod is Alter plus the variant name with baseName removed.
+// WarehouseAdaptive with base Warehouse is AlterAdaptive.
+func (obj Object) VariantAlterMethod(baseName string) string {
 	if baseName == "" || !strings.HasPrefix(obj.Name, baseName) || obj.Name == baseName {
-		panic(fmt.Sprintf("object %q: cannot build a variant CREATE method from base %q", obj.Name, baseName))
+		panic(fmt.Sprintf("object %q: cannot build a variant ALTER method from base %q", obj.Name, baseName))
 	}
-	return "Create" + strings.TrimPrefix(obj.Name, baseName)
+	return "Alter" + strings.TrimPrefix(obj.Name, baseName)
+}
+
+// VariantAlterConfig is the ALTER config for emitting this variant as a custom method.
+// It does not read WithSdk. Doc and AdditionalValidations come from Alter.
+// SQL words are VariantEntityAlterName, or VariantOf.ObjectType when that override is empty.
+// The query struct name is Alter plus SdkCreateRequestObjectName, or Alter plus Name.
+func (obj Object) VariantAlterConfig() SdkGenerator {
+	if !obj.HasAlterSpec() {
+		panic(fmt.Sprintf("object %q: variant ALTER has no spec", obj.Name))
+	}
+	stem := obj.SdkCreateRequestObjectName
+	if stem == "" {
+		stem = obj.Name
+	}
+	return SdkGenerator{
+		AlterDoc:                      obj.Alter.Doc,
+		AlterSql:                      obj.variantEntityName(obj.VariantEntityAlterName),
+		AlterQueryStructName:          "Alter" + stem,
+		AlterAdditionalValidations:    obj.Alter.AdditionalValidations,
+		AlterSetAdditionalValidations: obj.Alter.SetAdditionalValidations,
+	}
 }
 
 // VariantCreateConfig is the CREATE config for emitting this variant as a custom method.
 // It does not read WithSdk. Doc and AdditionalValidations come from Create.
-// SQL words come from VariantEntityCreateName, not from Create.Sql and not from ObjectType.
+// SQL words are VariantEntityCreateName, or VariantOf.ObjectType when that override is empty.
 // The query struct name is Create plus SdkCreateRequestObjectName, or Create plus Name.
 func (obj Object) VariantCreateConfig() SdkGenerator {
 	if !obj.HasCreateSpec() {
 		panic(fmt.Sprintf("object %q: variant CREATE has no spec", obj.Name))
-	}
-	if obj.VariantEntityCreateName == "" {
-		panic(fmt.Sprintf("object %q: variant CREATE needs VariantEntityCreateName", obj.Name))
 	}
 	stem := obj.SdkCreateRequestObjectName
 	if stem == "" {
@@ -277,10 +363,22 @@ func (obj Object) VariantCreateConfig() SdkGenerator {
 	}
 	return SdkGenerator{
 		CreateDoc:                   obj.Create.Doc,
-		CreateSql:                   obj.VariantEntityCreateName,
+		CreateSql:                   obj.variantEntityName(obj.VariantEntityCreateName),
 		CreateQueryStructName:       "Create" + stem,
 		CreateAdditionalValidations: obj.Create.AdditionalValidations,
 	}
+}
+
+// variantEntityName is the SQL object words for a variant statement.
+// An override wins. Empty uses the base object's type words.
+func (obj Object) variantEntityName(override string) string {
+	if override != "" {
+		return override
+	}
+	if obj.VariantOf == nil {
+		panic(fmt.Sprintf("object %q: variant entity name needs VariantOf", obj.Name))
+	}
+	return obj.VariantOf.ObjectType()
 }
 
 func (obj Object) nameForAlter() string {

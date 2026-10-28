@@ -121,20 +121,20 @@ func NewGCSStorageLocationParamsRequest(
 	return &s
 }
 
-func (s *GCSStorageLocationParamsRequest) WithEncryption(encryption ExternalVolumeGCSEncryptionRequest) *GCSStorageLocationParamsRequest {
+func (s *GCSStorageLocationParamsRequest) WithEncryption(encryption ExternalVolumeGcsEncryptionRequest) *GCSStorageLocationParamsRequest {
 	s.Encryption = &encryption
 	return s
 }
 
-func NewExternalVolumeGCSEncryptionRequest(
+func NewExternalVolumeGcsEncryptionRequest(
 	encryptionType GCSEncryptionType,
-) *ExternalVolumeGCSEncryptionRequest {
-	s := ExternalVolumeGCSEncryptionRequest{}
+) *ExternalVolumeGcsEncryptionRequest {
+	s := ExternalVolumeGcsEncryptionRequest{}
 	s.EncryptionType = encryptionType
 	return &s
 }
 
-func (s *ExternalVolumeGCSEncryptionRequest) WithKmsKeyId(kmsKeyId string) *ExternalVolumeGCSEncryptionRequest {
+func (s *ExternalVolumeGcsEncryptionRequest) WithKmsKeyId(kmsKeyId string) *ExternalVolumeGcsEncryptionRequest {
 	s.KmsKeyId = &kmsKeyId
 	return s
 }
@@ -194,7 +194,7 @@ func (s *AlterExternalVolumeRequest) WithRemoveStorageLocation(removeStorageLoca
 	return s
 }
 
-func (s *AlterExternalVolumeRequest) WithSet(set AlterExternalVolumeSetRequest) *AlterExternalVolumeRequest {
+func (s *AlterExternalVolumeRequest) WithSet(set ExternalVolumeSetRequest) *AlterExternalVolumeRequest {
 	s.Set = &set
 	return s
 }
@@ -204,31 +204,31 @@ func (s *AlterExternalVolumeRequest) WithAddStorageLocation(addStorageLocation E
 	return s
 }
 
-func (s *AlterExternalVolumeRequest) WithUpdateStorageLocation(updateStorageLocation AlterExternalVolumeUpdateStorageLocationRequest) *AlterExternalVolumeRequest {
+func (s *AlterExternalVolumeRequest) WithUpdateStorageLocation(updateStorageLocation ExternalVolumeUpdateStorageLocationRequest) *AlterExternalVolumeRequest {
 	s.UpdateStorageLocation = &updateStorageLocation
 	return s
 }
 
-func NewAlterExternalVolumeSetRequest() *AlterExternalVolumeSetRequest {
-	s := AlterExternalVolumeSetRequest{}
+func NewExternalVolumeSetRequest() *ExternalVolumeSetRequest {
+	s := ExternalVolumeSetRequest{}
 	return &s
 }
 
-func (s *AlterExternalVolumeSetRequest) WithAllowWrites(allowWrites bool) *AlterExternalVolumeSetRequest {
+func (s *ExternalVolumeSetRequest) WithAllowWrites(allowWrites bool) *ExternalVolumeSetRequest {
 	s.AllowWrites = &allowWrites
 	return s
 }
 
-func (s *AlterExternalVolumeSetRequest) WithComment(comment string) *AlterExternalVolumeSetRequest {
+func (s *ExternalVolumeSetRequest) WithComment(comment string) *ExternalVolumeSetRequest {
 	s.Comment = &comment
 	return s
 }
 
-func NewAlterExternalVolumeUpdateStorageLocationRequest(
+func NewExternalVolumeUpdateStorageLocationRequest(
 	storageLocation string,
 	credentials ExternalVolumeUpdateCredentialsRequest,
-) *AlterExternalVolumeUpdateStorageLocationRequest {
-	s := AlterExternalVolumeUpdateStorageLocationRequest{}
+) *ExternalVolumeUpdateStorageLocationRequest {
+	s := ExternalVolumeUpdateStorageLocationRequest{}
 	s.StorageLocation = storageLocation
 	s.Credentials = credentials
 	return &s
@@ -257,14 +257,6 @@ func (s *DropExternalVolumeRequest) WithIfExists(ifExists bool) *DropExternalVol
 	return s
 }
 
-func NewDescribeExternalVolumeRequest(
-	name AccountObjectIdentifier,
-) *DescribeExternalVolumeRequest {
-	s := DescribeExternalVolumeRequest{}
-	s.name = name
-	return &s
-}
-
 func NewShowExternalVolumeRequest() *ShowExternalVolumeRequest {
 	s := ShowExternalVolumeRequest{}
 	return &s
@@ -273,4 +265,12 @@ func NewShowExternalVolumeRequest() *ShowExternalVolumeRequest {
 func (s *ShowExternalVolumeRequest) WithLike(like Like) *ShowExternalVolumeRequest {
 	s.Like = &like
 	return s
+}
+
+func NewDescribeExternalVolumeRequest(
+	name AccountObjectIdentifier,
+) *DescribeExternalVolumeRequest {
+	s := DescribeExternalVolumeRequest{}
+	s.name = name
+	return &s
 }

@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
@@ -25,13 +24,9 @@ import (
 // =============================================================================
 
 var (
-	alertCreateExt = PreviewFeatureCreateContextWrapper(string(previewfeatures.AlertResource), TrackingCreateWrapper(resources.Alert, CreateAlert))
-	alertReadExt   = PreviewFeatureReadContextWrapper(string(previewfeatures.AlertResource), TrackingReadWrapper(resources.Alert, ReadAlertFunc(true)))
-	alertUpdateExt = PreviewFeatureUpdateContextWrapper(string(previewfeatures.AlertResource), TrackingUpdateWrapper(resources.Alert, UpdateAlert))
-	alertDeleteExt = PreviewFeatureDeleteContextWrapper(string(previewfeatures.AlertResource), TrackingDeleteWrapper(resources.Alert, ResourceDeleteContextFunc(
-		alertParseIdExt,
-		alertDropSafelyInSdkExt,
-	)))
+	alertCreateExt        = PreviewFeatureCreateContextWrapper(string(previewfeatures.AlertResource), TrackingCreateWrapper(resources.Alert, CreateAlert))
+	alertReadExt          = PreviewFeatureReadContextWrapper(string(previewfeatures.AlertResource), TrackingReadWrapper(resources.Alert, ReadAlertFunc(true)))
+	alertUpdateExt        = PreviewFeatureUpdateContextWrapper(string(previewfeatures.AlertResource), TrackingUpdateWrapper(resources.Alert, UpdateAlert))
 	alertDescriptionExt   = ""
 	alertCustomizeDiffExt schema.CustomizeDiffFunc
 	alertImporterExt      = &schema.ResourceImporter{
@@ -47,10 +42,6 @@ type alertAlterRequestsExt struct {
 	set             *sdk.AlertSetRequest
 	modifyCondition *string
 	modifyAction    *string
-}
-
-func alertParseIdExt(id string) (sdk.SchemaObjectIdentifier, error) {
-	return helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier](id)
 }
 
 func alertNewCreateRequestExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier) (*sdk.CreateAlertRequest, error) {
@@ -170,14 +161,6 @@ func alertApplySetUnsetExt(d *schema.ResourceData) (*alertAlterRequestsExt, erro
 // SDK calls
 // =============================================================================
 
-func alertCreateInSdkExt(ctx context.Context, meta any, _ sdk.SchemaObjectIdentifier, req *sdk.CreateAlertRequest) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	if err := client.Alerts.Create(ctx, req); err != nil {
-		return diag.FromErr(err)
-	}
-	return nil
-}
-
 // alertAfterCreateExt resumes the alert after creation when it is enabled. A failure is only a warning.
 func alertAfterCreateExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
 	if !d.Get("enabled").(bool) {
@@ -193,25 +176,6 @@ func alertAfterCreateExt(ctx context.Context, d *schema.ResourceData, meta any, 
 		}
 	}
 	return nil
-}
-
-func alertShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) (*sdk.Alert, diag.Diagnostics) {
-	client := meta.(*provider.Context).Client
-	alert, err := client.Alerts.ShowByIDSafely(ctx, id)
-	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotFound) {
-			d.SetId("")
-			return nil, diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "Failed to query alert. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Alert id: %s, Err: %s", id.FullyQualifiedName(), err),
-				},
-			}
-		}
-		return nil, diag.FromErr(err)
-	}
-	return alert, nil
 }
 
 // alertBeforeAlterExt suspends the alert before any change. A failure is only logged.
@@ -268,10 +232,6 @@ func alertAfterAlterExt(ctx context.Context, d *schema.ResourceData, meta any, i
 		}
 	}
 	return nil
-}
-
-func alertDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
-	return client.Alerts.DropSafely
 }
 
 func waitResumeAlert(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier) error {

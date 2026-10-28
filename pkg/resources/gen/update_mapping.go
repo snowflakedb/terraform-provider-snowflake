@@ -19,7 +19,7 @@ func attachUpdateMappings(objectName string, src []ssot.Attribute, dst []Resourc
 	}
 	for i := range src {
 		// TODO (next PRs): Support nested attributes.
-		if len(src[i].Children) > 0 {
+		if len(src[i].NestedFields()) > 0 {
 			continue
 		}
 		call, ok := updateCallFor(objectName, src[i], dst[i])
@@ -49,12 +49,14 @@ func deduceUpdateCall(objectName string, src ssot.Attribute, resolved ResourceAt
 		return ssot.IntAttributeUpdateSetOnlyBuilder.UpdateCall(objectName, src), true
 	case src.Type == ssot.AttrInt && resolved.DefaultExpr == "IntDefault":
 		return ssot.IntAttributeWithSpecialDefaultUpdateBuilder.UpdateCall(objectName, src), true
+	case src.Type == ssot.AttrInt:
+		return ssot.IntAttributeUpdateBuilder.UpdateCall(objectName, src), true
 	case src.Type == ssot.AttrBool && resolved.DefaultExpr == "BooleanDefault":
 		return ssot.BooleanStringAttributeUpdateBuilder.UpdateCall(objectName, src), true
 	case src.Type == ssot.AttrString:
 		return ssot.StringAttributeUpdateBuilder.UpdateCall(objectName, src), true
 	case src.Type == ssot.AttrList && isCollectionOfEnum(src):
-		return ssot.ListValueUpdate(listEnumMapperName(objectName, src)).UpdateCall(objectName, src), true
+		return ssot.ListValueUpdate(collectionMapperName(objectName, src)).UpdateCall(objectName, src), true
 	default:
 		return ssot.UpdateCall{}, false
 	}

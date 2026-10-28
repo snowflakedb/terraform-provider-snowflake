@@ -17,7 +17,9 @@ func Import{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) 
 	if err != nil {
 		return nil, err
 	}
-
+{{ if .Hooks.SetFieldsNotSetByRead.Present }}
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
+{{ end -}}
 {{ template "setFieldsNotSetByRead" . -}}
 	return []*tfschema.ResourceData{d}, nil
 }
@@ -50,10 +52,10 @@ func Read{{ .Name }}Func(withExternalChangesMarking bool) tfschema.ReadContextFu
 			return diag.FromErr(err)
 		}
 
+{{ if and .Hooks.HandleExternalChangesInDescribe.Present .Hooks.DescribeInSdk.Present -}}
+		var diags diag.Diagnostics
+{{ end -}}
 {{ template "showByIdSafelyInSdk" . -}}
-		if diags != nil {
-			return diags
-		}
 {{ template "describeInSdk" . -}}
 {{ template "showParametersInSdk" . -}}
 {{ template "parametersDetailsFromRaw" . -}}
@@ -84,6 +86,7 @@ func Read{{ .Name }}Func(withExternalChangesMarking bool) tfschema.ReadContextFu
 	}
 }
 
+{{- if .RequiresUpdate }}
 func Update{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
 {{ template "parseId" . -}}
 	if err != nil {
@@ -97,6 +100,7 @@ func Update{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) 
 {{ template "alterUnsetInSdk" . -}}
 {{ template "afterAlter" . }}
 }
+{{- end }}
 {{- if .Hooks.CustomizeDiff.Generate }}
 
 var {{ .Prefix }}CustomizeDiff = TrackingCustomDiffWrapper(resources.{{ .Name }}, customdiff.All(
@@ -115,11 +119,15 @@ var {{ .Prefix }}CustomizeDiff = TrackingCustomDiffWrapper(resources.{{ .Name }}
 {{- end }}
 {{- if .Hooks.NewCreateRequest.Generate }}
 
-{{ template "generatedNewCreateRequest" . }}
+{{ template "generatedCreateRequest" .CreateRequestFunc }}
 {{- end }}
 {{- if .Hooks.ApplyCreateOptionals.Generate }}
 
 {{ template "generatedApplyCreateOptionals" . }}
+{{- range .CreateBlockFuncs }}
+
+{{ template "generatedCreateRequest" . }}
+{{- end }}
 {{- end }}
 {{- if .Hooks.ApplySetUnset.Generate }}
 
@@ -128,4 +136,8 @@ var {{ .Prefix }}CustomizeDiff = TrackingCustomDiffWrapper(resources.{{ .Name }}
 {{- if .Hooks.DropSafelyInSdk.Generate }}
 
 {{ template "generatedDelete" . }}
+{{- end }}
+{{- if .Hooks.SetConfigFields.Generate }}
+
+{{ template "generatedSetConfigFields" . }}
 {{- end }}

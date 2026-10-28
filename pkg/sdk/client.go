@@ -34,6 +34,7 @@ type Client struct {
 	BackupPolicies               BackupPolicies
 	Budgets                      Budgets
 	CatalogIntegrations          CatalogIntegrations
+	CodeBundles                  CodeBundles
 	ComputePools                 ComputePools
 	Connections                  Connections
 	CortexAgents                 CortexAgents
@@ -74,6 +75,7 @@ type Client struct {
 	PasswordPolicies             PasswordPolicies
 	Pipes                        Pipes
 	PolicyReferences             PolicyReferences
+	ProjectionPolicies           ProjectionPolicies
 	PostgresInstances            PostgresInstances
 	PostgresMirrors              PostgresMirrors
 	Procedures                   Procedures
@@ -182,6 +184,7 @@ func (c *Client) initialize() {
 	c.BackupPolicies = &backupPolicies{client: c}
 	c.Budgets = &budgets{client: c}
 	c.CatalogIntegrations = &catalogIntegrations{client: c}
+	c.CodeBundles = &codeBundles{client: c}
 	c.ComputePools = &computePools{client: c}
 	c.Connections = &connections{client: c}
 	c.ContextFunctions = &contextFunctions{client: c}
@@ -223,6 +226,7 @@ func (c *Client) initialize() {
 	c.PasswordPolicies = &passwordPolicies{client: c}
 	c.Pipes = &pipes{client: c}
 	c.PolicyReferences = &policyReferences{client: c}
+	c.ProjectionPolicies = &projectionPolicies{client: c}
 	c.PostgresInstances = &postgresInstances{client: c}
 	c.PostgresMirrors = &postgresMirrors{client: c}
 	c.Procedures = &procedures{client: c}

@@ -5,8 +5,12 @@ package resources
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -20,7 +24,7 @@ func Alert() *tfschema.Resource {
 		CreateContext: alertCreateExt,
 		ReadContext:   alertReadExt,
 		UpdateContext: alertUpdateExt,
-		DeleteContext: alertDeleteExt,
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.AlertResource), TrackingDeleteWrapper(resources.Alert, DeleteAlert)),
 		Importer:      alertImporterExt,
 
 		CustomizeDiff: alertCustomizeDiffExt,
@@ -43,8 +47,8 @@ func CreateAlert(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 		return diag.FromErr(err)
 	}
 
-	if diags := alertCreateInSdkExt(ctx, meta, id, req); diags != nil {
-		return diags
+	if err := meta.(*provider.Context).Client.Alerts.Create(ctx, req); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(helpers.EncodeSnowflakeID(id))
@@ -54,14 +58,24 @@ func CreateAlert(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 
 func ReadAlertFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := alertParseIdExt(d.Id())
+		id, err := alertParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		alert, diags := alertShowByIdSafelyInSdkExt(ctx, d, meta, id)
-		if diags != nil {
-			return diags
+		alert, err := meta.(*provider.Context).Client.Alerts.ShowByIDSafely(ctx, id)
+		if err != nil {
+			if errors.Is(err, sdk.ErrObjectNotFound) {
+				d.SetId("")
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Failed to query alert. Marking the resource as removed.",
+						Detail:   fmt.Sprintf("Alert id: %s, Err: %s", id.FullyQualifiedName(), err),
+					},
+				}
+			}
+			return diag.FromErr(err)
 		}
 
 		errs := errors.Join(
@@ -76,7 +90,7 @@ func ReadAlertFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 }
 
 func UpdateAlert(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := alertParseIdExt(d.Id())
+	id, err := alertParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -100,8 +114,21 @@ func alertParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifie
 	return sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string)), nil
 }
 
+func alertParseId(id string) (sdk.SchemaObjectIdentifier, error) {
+	return helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier](id)
+}
+
 func alertApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateAlertRequest) error {
 	return errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
+}
+
+func DeleteAlert(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	return ResourceDeleteContextFunc(
+		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.Alerts.DropSafely
+		},
+	)(ctx, d, meta)
 }

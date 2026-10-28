@@ -20,6 +20,7 @@ var catalogIntegrationIcebergRestAttributesSchema = catalogIntegrationIcebergRes
 		Type:             tfschema.TypeInt,
 		Optional:         true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("refresh_interval_seconds"),
 		Description:      "Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh. For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.",
 	},
 	"comment": {
@@ -96,11 +97,13 @@ var catalogIntegrationIcebergRestAttributesSchema = catalogIntegrationIcebergRes
 					Type:        tfschema.TypeString,
 					Required:    true,
 					ForceNew:    true,
+					Sensitive:   true,
 					Description: "Specifies the client ID of the OAuth2 credential.",
 				},
 				"oauth_client_secret": {
 					Type:        tfschema.TypeString,
 					Required:    true,
+					Sensitive:   true,
 					Description: "Specifies the secret of the OAuth2 credential.",
 				},
 				"oauth_allowed_scopes": {
@@ -115,6 +118,11 @@ var catalogIntegrationIcebergRestAttributesSchema = catalogIntegrationIcebergRes
 				},
 			},
 		},
+		ExactlyOneOf: []string{
+			"oauth_rest_authentication",
+			"bearer_rest_authentication",
+			"sigv4_rest_authentication",
+		},
 		Description: "Specifies OAuth as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
 	},
 	"bearer_rest_authentication": {
@@ -126,9 +134,15 @@ var catalogIntegrationIcebergRestAttributesSchema = catalogIntegrationIcebergRes
 				"bearer_token": {
 					Type:        tfschema.TypeString,
 					Required:    true,
+					Sensitive:   true,
 					Description: "The bearer token for the identity provider.",
 				},
 			},
+		},
+		ExactlyOneOf: []string{
+			"oauth_rest_authentication",
+			"bearer_rest_authentication",
+			"sigv4_rest_authentication",
 		},
 		Description: "Specifies a bearer token as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
 	},
@@ -159,6 +173,11 @@ var catalogIntegrationIcebergRestAttributesSchema = catalogIntegrationIcebergRes
 				},
 			},
 		},
+		ExactlyOneOf: []string{
+			"oauth_rest_authentication",
+			"bearer_rest_authentication",
+			"sigv4_rest_authentication",
+		},
 		Description: "Specifies Signature Version 4 as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
 	},
 })
@@ -187,5 +206,14 @@ var catalogIntegrationIcebergRestSchema = collections.MergeMaps(
 			},
 		},
 	},
-	catalogIntegrationIcebergRestDescribeOutputSchemaExt,
+	map[string]*tfschema.Schema{
+		DescribeOutputAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `DESCRIBE CATALOG INTEGRATION` for the given catalog integration.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.DescribeCatalogIntegrationIcebergRestDetailsSchema,
+			},
+		},
+	},
 )

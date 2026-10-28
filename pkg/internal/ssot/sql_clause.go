@@ -3,9 +3,12 @@ package ssot
 import (
 	"fmt"
 	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
-// SqlKind is the SQL clause shape: parameter, keyword, identifier, or static.
+// SqlKind is the SQL clause shape: parameter, keyword, identifier, static, or object.
 type SqlKind string
 
 const (
@@ -13,6 +16,9 @@ const (
 	SqlKindKeyword    SqlKind = "keyword"
 	SqlKindIdentifier SqlKind = "identifier"
 	SqlKindStatic     SqlKind = "static"
+	// SqlKindObject is a nested struct: the fields are the Children of the attribute, or the Children of the Elem object
+	// of a list. See ObjectParameter.
+	SqlKindObject SqlKind = "object"
 )
 
 // SqlQuotes is the quote ddl tag. Zero means no quote tag.
@@ -69,8 +75,29 @@ type SqlClause struct {
 	ItemStruct string
 	// IdType is the identifier type, without a pointer. IdentifierKeyword sets it.
 	IdType string
-	// Field is the unexported Go name of a static clause. StaticSQL sets it.
+	// Field is the Go field name. A static clause needs an unexported one (StaticSQL sets it). Any other clause uses it
+	// instead of the name derived from the SQL text or the attribute name. FieldName sets it.
 	Field string
+	// Enum makes the field an enum parameter of this enum, whatever the attribute type is. EnumOf sets it.
+	Enum *Enum
+	// AllowEmpty makes a string parameter take an empty string (StringAllowEmpty), so SET can clear the value. AllowEmpty sets it.
+	AllowEmpty bool
+	// AsParameter writes an object clause as a parameter field (ddl "parameter", the SQL text is the parameter name) instead
+	// of a list. AsParameter sets it.
+	AsParameter bool
+	// ValueKeyword makes a keyword clause carry the value of the attribute instead of marking presence: the enum is written
+	// as a bare keyword. EnumKeyword sets it.
+	ValueKeyword bool
+	// Variants are the provider-like variants of an object: each is a struct of the attributes it refers to, and the
+	// object has one optional field per variant, exactly one of which is set. WithVariants sets it.
+	Variants []SqlVariant
+}
+
+// SqlVariant is one variant of an object, such as a storage provider. Fields are references to attributes, in SQL order.
+// An attribute is a field with the CREATE clause it already has.
+type SqlVariant struct {
+	Key    string
+	Fields []*Attribute
 }
 
 // SqlClauseOption changes one default on a SqlClause.
@@ -108,6 +135,12 @@ func BoolParameter(opts ...SqlClauseOption) SqlClause {
 	return newClause(SqlKindParameter, nil, opts)
 }
 
+// PlainParameter is a parameter clause with no quote tag, whatever the type of the attribute is.
+// The type defaults add one to a string (single quotes) and to an enum (no quotes).
+func PlainParameter(opts ...SqlClauseOption) SqlClause {
+	return newClause(SqlKindParameter, nil, opts)
+}
+
 func StringParameter(opts ...SqlClauseOption) SqlClause {
 	return newClause(SqlKindParameter, func(c *SqlClause) {
 		c.Quotes = SqlQuotesSingle
@@ -142,6 +175,23 @@ func StaticSQL(field, sql string) SqlClause {
 // BoolKeyword is a bare keyword.
 func BoolKeyword(opts ...SqlClauseOption) SqlClause {
 	return newClause(SqlKindKeyword, nil, opts)
+}
+
+// EnumKeyword is an enum value written as a bare keyword, such as a driver name before its settings.
+// The enum is the one of the attribute, or the EnumOf option. Pass NoQuotes or SingleQuotes, and Required when it is mandatory.
+func EnumKeyword(opts ...SqlClauseOption) SqlClause {
+	return newClause(SqlKindKeyword, func(c *SqlClause) {
+		c.ValueKeyword = true
+	}, opts)
+}
+
+// IdentifierListKeyword is a list of identifiers written with no name, in parentheses: ('a', 'b').
+// The attribute is a list or set of identifiers.
+func IdentifierListKeyword(opts ...SqlClauseOption) SqlClause {
+	return newClause(SqlKindKeyword, func(c *SqlClause) {
+		c.ValueKeyword = true
+		c.Parentheses = SqlParensYes
+	}, opts)
 }
 
 // IdentifierKeyword is an identifier keyword.
@@ -203,7 +253,7 @@ func (a *Attribute) defaultSqlClause(use ClauseUse) SqlClause {
 		return StringParameter()
 	case AttrEnum:
 		return EnumParameter()
-	case AttrList:
+	case AttrList, AttrSet:
 		if item := a.enumListItemName(); item != "" {
 			return ListParameter(item)
 		}
@@ -253,7 +303,132 @@ func overlaySqlClause(base, over SqlClause) SqlClause {
 	if over.IdType != "" {
 		base.IdType = over.IdType
 	}
+	if over.Field != "" {
+		base.Field = over.Field
+	}
+	if over.Enum != nil {
+		base.Enum = over.Enum
+	}
+	if over.AllowEmpty {
+		base.AllowEmpty = true
+	}
+	if over.AsParameter {
+		base.AsParameter = true
+	}
+	if over.ValueKeyword {
+		base.ValueKeyword = true
+	}
+	if len(over.Variants) > 0 {
+		base.Variants = over.Variants
+	}
 	return base
+}
+
+// ObjectParameter is a nested struct clause. On the Elem object of a list it is the shape of each element: Parentheses()
+// puts each element in parentheses. On a SqlOnly object attribute it is a nested struct inside a variant: Sql is the text
+// before it and Parentheses() wraps its fields. The fields are the Children.
+func ObjectParameter(opts ...SqlClauseOption) SqlClause {
+	return newClause(SqlKindObject, nil, opts)
+}
+
+// ListOfObjects is a parameter clause for a list or set whose Elem is an object. Sql is the text before the list and
+// Parentheses() wraps the whole list.
+func ListOfObjects(opts ...SqlClauseOption) SqlClause {
+	return newClause(SqlKindParameter, nil, opts)
+}
+
+// WithVariants declares the variants of an object. The object holds the Children that no variant refers to, and one
+// optional struct per variant. Exactly one variant is set.
+func WithVariants(variants ...SqlVariant) SqlClauseOption {
+	return func(c *SqlClause) { c.Variants = variants }
+}
+
+// Variant is one variant of an object: the attributes it consists of, in SQL order. The struct is named after the key, the
+// list attribute, and Params (GCS and storage_location give GCSStorageLocationParams).
+func Variant(key string, fields ...*Attribute) SqlVariant {
+	return SqlVariant{Key: key, Fields: fields}
+}
+
+// EnumOf makes the field an enum parameter of enum, whatever the attribute type is.
+func EnumOf(enum *Enum) SqlClauseOption {
+	return func(c *SqlClause) { c.Enum = enum }
+}
+
+// FieldName sets the Go field name when it should not be derived from the SQL text or the attribute name.
+func FieldName(name string) SqlClauseOption {
+	return func(c *SqlClause) { c.Field = name }
+}
+
+// WithCreateSql is a copy of the attribute with another CREATE clause, for the place that needs the same attribute with a
+// different shape, such as an enum of another provider. Name, type, and description are not restated.
+func WithCreateSql(attr *Attribute, clause SqlClause) Attribute {
+	view := *attr
+	view.CreateSql = clause
+	return view
+}
+
+// SqlStructName is the Go struct name of a list of objects or of a nested struct: the object and the attribute,
+// ExternalVolume and storage_location give ExternalVolumeStorageLocation.
+func (a Attribute) SqlStructName(owner string) string {
+	return owner + genhelpers.SnakeCaseToCamel(a.Name)
+}
+
+// SqlVariantStructName is the Go struct name of a variant of a list of objects: GCS and storage_location give
+// GCSStorageLocationParams.
+func (a Attribute) SqlVariantStructName(key string) string {
+	return key + genhelpers.SnakeCaseToCamel(a.Name) + "Params"
+}
+
+// NestedFields are the Terraform fields of a block: the Children of the Elem object of a list or set, or the Children of
+// an object, without the SqlOnly ones. A SqlOnly child is fixed text of the SQL struct, see NestedSqlFields.
+func (a Attribute) NestedFields() []Attribute {
+	return collections.Filter(a.NestedSqlFields(), func(child Attribute) bool { return !child.SqlOnly })
+}
+
+// NestedSqlFields are all the fields of the SQL struct of a block, in SQL order: NestedFields and the SqlOnly children, which
+// are the fixed text of the struct (a static TYPE = OAUTH). Only SDK SQL generation reads them.
+func (a Attribute) NestedSqlFields() []Attribute {
+	switch {
+	case a.IsObjectList():
+		return a.Elem.Children
+	case a.Type == AttrObject:
+		return a.Children
+	default:
+		return nil
+	}
+}
+
+// RuleFields are the Children that ChildrenRule is applied to: the fields of the SQL struct that are not a fixed text, in
+// Children order. A child with no explicit clause uses the type default.
+func (a Attribute) RuleFields() []Attribute {
+	return collections.Filter(a.NestedSqlFields(), func(child Attribute) bool {
+		return child.CreateSql.Kind != SqlKindStatic
+	})
+}
+
+// IsObjectList reports whether the attribute is a list or set whose elements are objects.
+func (a Attribute) IsObjectList() bool {
+	return (a.Type == AttrList || a.Type == AttrSet) && a.Elem != nil && a.Elem.Type == AttrObject
+}
+
+// IsSingleBlock reports whether the attribute is one nested block: an object, or a list with MaxItems 1.
+func (a Attribute) IsSingleBlock() bool {
+	return a.Type == AttrObject || (a.IsObjectList() && a.MaxItems != nil && *a.MaxItems == 1)
+}
+
+// AllowEmpty makes a string parameter take an empty string: the SDK field is StringAllowEmpty, not string.
+// That type quotes its value itself, so the clause has no quote tag.
+func AllowEmpty() SqlClauseOption {
+	return func(c *SqlClause) {
+		c.AllowEmpty = true
+		c.Quotes = ""
+	}
+}
+
+// AsParameter writes an object clause as a parameter: `NAME = (fields)` with the field tagged parameter, and Sql is the name
+// without the equals sign.
+func AsParameter() SqlClauseOption {
+	return func(c *SqlClause) { c.AsParameter = true }
 }
 
 func Sql(text string) SqlClauseOption {

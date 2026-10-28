@@ -2,6 +2,7 @@ package gen
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -22,15 +23,21 @@ const (
 	RuleEnumDescriptionListsValues             = "enum_description_lists_values"
 	RuleEnumFieldNormalizes                    = "enum_field_normalizes"
 	RuleCollectionOfEnumNormalizes             = "collection_of_enum_normalizes"
+	RuleSetOfIdentifiersNormalizes             = "set_of_identifiers_normalizes"
 	RuleConfiguredDiffSuppress                 = "configured_diff_suppress"
+	RuleSingleObjectIsListOfOne                = "single_object_is_list_of_one"
 )
 
 // resourceAttributeRuleContext distinguishes a top-level attribute from a collection
-// elem (list or set) so rules that only apply to fields (enum DiffSuppress,
-// descriptions) can skip elems.
+// elem (list or set) and from a field inside a nested block, so rules that only apply
+// to fields (enum DiffSuppress, descriptions, top-level set normalization) can skip the others.
+// RelationPrefix is the Terraform path of this attribute's parent, without a trailing dot.
+// Empty at the resource root. A list with MaxItems 1 uses parent.0.
 type resourceAttributeRuleContext struct {
 	AsCollectionElem bool
+	InBlock          bool
 	IdType           string
+	RelationPrefix   string
 }
 
 type resourceAttributeRule struct {
@@ -117,12 +124,12 @@ var resourceAttributeRules = []resourceAttributeRule{
 	},
 	{
 		Name:        RuleIdentifierValidates,
-		Description: "Identifier attributes can validate with IsValidIdentifier for a concrete SDK identifier type.",
+		Description: "Identifier fields validate with IsValidIdentifier. A collection element uses its IdentifierType. A top-level field uses the object id type.",
 		When: func(in ssot.Attribute, ctx resourceAttributeRuleContext) bool {
-			return in.Type == ssot.AttrIdentifier && !ctx.AsCollectionElem && ctx.IdType != ""
+			return in.Type == ssot.AttrIdentifier && identifierSchemaType(in, ctx) != ""
 		},
-		Then: func(_ ssot.Attribute, ctx resourceAttributeRuleContext, out *ResourceAttribute) {
-			out.ValidateDiagExpr = fmt.Sprintf("IsValidIdentifier[sdk.%s]()", ctx.IdType)
+		Then: func(in ssot.Attribute, ctx resourceAttributeRuleContext, out *ResourceAttribute) {
+			out.ValidateDiagExpr = fmt.Sprintf("IsValidIdentifier[sdk.%s]()", identifierSchemaType(in, ctx))
 		},
 	},
 	{
@@ -174,12 +181,40 @@ var resourceAttributeRules = []resourceAttributeRule{
 	},
 	{
 		Name:        RuleCollectionOfEnumNormalizes,
-		Description: "Collections of enums (list or set) normalize values in diffs via NormalizeAndCompare on the collection field.",
+		Description: "A top-level set of enums uses NormalizeAndCompareEnumsInSet. A list, and a nested set, use NormalizeAndCompare on the collection field.",
 		When: func(in ssot.Attribute, ctx resourceAttributeRuleContext) bool {
 			return isCollectionOfEnum(in) && ctx.sdkEnumTo(in) != "" && !ctx.AsCollectionElem
 		},
 		Then: func(in ssot.Attribute, ctx resourceAttributeRuleContext, out *ResourceAttribute) {
+			if in.Type == ssot.AttrSet && !ctx.InBlock {
+				out.DiffSuppressExpr = fmt.Sprintf("NormalizeAndCompareEnumsInSet(%q, %s)", in.Name, ctx.sdkEnumTo(in))
+				return
+			}
 			out.DiffSuppressExpr = fmt.Sprintf("NormalizeAndCompare(%s)", ctx.sdkEnumTo(in))
+		},
+	},
+	{
+		Name:        RuleSetOfIdentifiersNormalizes,
+		Description: "A top-level set of identifiers uses NormalizeAndCompareIdentifiersInSet.",
+		When: func(in ssot.Attribute, ctx resourceAttributeRuleContext) bool {
+			return isSetOfIdentifiers(in) && !ctx.AsCollectionElem && !ctx.InBlock
+		},
+		Then: func(in ssot.Attribute, _ resourceAttributeRuleContext, out *ResourceAttribute) {
+			out.DiffSuppressExpr = fmt.Sprintf("NormalizeAndCompareIdentifiersInSet(%q)", in.Name)
+		},
+	},
+	{
+		Name:        RuleSingleObjectIsListOfOne,
+		Description: "A single object is a list of at most one element, because SDKv2 cannot declare a nested object: MaxItems 1, and MinItems 1 when it is required.",
+		When: func(in ssot.Attribute, _ resourceAttributeRuleContext) bool {
+			return in.Type == ssot.AttrObject
+		},
+		Then: func(in ssot.Attribute, _ resourceAttributeRuleContext, out *ResourceAttribute) {
+			out.TfType = SchemaTypeList
+			out.MaxItems = new(1)
+			if in.Required {
+				out.MinItems = new(1)
+			}
 		},
 	},
 	{
@@ -217,6 +252,51 @@ func isCollection(in ssot.Attribute) bool {
 
 func isCollectionOfEnum(in ssot.Attribute) bool {
 	return isCollection(in) && in.Elem != nil && in.Elem.Type == ssot.AttrEnum
+}
+
+func isSetOfIdentifiers(in ssot.Attribute) bool {
+	return in.Type == ssot.AttrSet && in.Elem != nil && in.Elem.Type == ssot.AttrIdentifier
+}
+
+// identifierSchemaType is the SDK identifier type used for schema validation.
+// Collection elements use their own IdentifierType. Nested block fields are left alone.
+// A top-level field uses the object id type, then IdentifierType.
+func identifierSchemaType(in ssot.Attribute, ctx resourceAttributeRuleContext) string {
+	if ctx.AsCollectionElem {
+		return in.IdentifierType
+	}
+	if ctx.InBlock {
+		return ""
+	}
+	if ctx.IdType != "" {
+		return ctx.IdType
+	}
+	return in.IdentifierType
+}
+
+func relationPaths(prefix string, attrs []ssot.Attribute) []string {
+	if len(attrs) == 0 {
+		return nil
+	}
+	return collections.Map(attrs, func(attr ssot.Attribute) string {
+		if prefix == "" {
+			return attr.Name
+		}
+		return prefix + "." + attr.Name
+	})
+}
+
+// listBlockRelationPrefix is the Terraform path of children of a single block: an object, or a list of objects
+// with MaxItems 1. Other blocks cannot name child relations, so their children keep an empty prefix.
+func listBlockRelationPrefix(parent ssot.Attribute, ctx resourceAttributeRuleContext) string {
+	if !parent.IsSingleBlock() {
+		return ""
+	}
+	segment := parent.Name + ".0"
+	if ctx.RelationPrefix == "" {
+		return segment
+	}
+	return ctx.RelationPrefix + "." + segment
 }
 
 func enumDef(in ssot.Attribute) *ssot.Enum {
@@ -274,16 +354,19 @@ func resolveResourceAttribute(in ssot.Attribute, ctx resourceAttributeRuleContex
 			rule.Then(in, ctx, &out)
 		}
 	}
-	if in.Elem != nil {
+	if in.Elem != nil && !in.IsObjectList() {
 		elemCtx := ctx
 		elemCtx.AsCollectionElem = true
 		elem := resolveResourceAttribute(*in.Elem, elemCtx)
 		out.Elem = &elem
 	}
-	if len(in.Children) > 0 {
+	if fields := in.NestedFields(); len(fields) > 0 {
 		nestedCtx := ctx
 		nestedCtx.IdType = ""
-		out.Children = collections.Map(in.Children, func(child ssot.Attribute) ResourceAttribute {
+		nestedCtx.InBlock = true
+		nestedCtx.AsCollectionElem = false
+		nestedCtx.RelationPrefix = listBlockRelationPrefix(in, ctx)
+		out.Children = collections.Map(fields, func(child ssot.Attribute) ResourceAttribute {
 			return resolveResourceAttribute(child, nestedCtx)
 		})
 	}
@@ -299,9 +382,11 @@ func resourceAttributeBaseline(in ssot.Attribute, ctx resourceAttributeRuleConte
 		out.Required = in.Required
 		out.Optional = !in.Required
 		out.ForceNew = in.ForceNew
+		out.Sensitive = in.Sensitive
 		out.MinItems = in.MinItems
 		out.MaxItems = in.MaxItems
-		out.ConflictsWith = collections.Map(in.ConflictsWith, func(attr ssot.Attribute) string { return attr.Name })
+		out.ConflictsWith = relationPaths(ctx.RelationPrefix, in.ConflictsWith)
+		out.AtLeastOneOf = relationPaths(ctx.RelationPrefix, in.AtLeastOneOf)
 	}
 	if in.Description != "" {
 		out.DescriptionExpr = strconv.Quote(in.Description)
@@ -332,5 +417,20 @@ func tfTypeFor(t ssot.AttributeType) SchemaValueType {
 		return SchemaTypeSet
 	default:
 		return SchemaTypeString
+	}
+}
+
+// applyExactlyOneOf sets ExactlyOneOf on the attributes of each group: the names of the whole group, itself included.
+// The attributes are the top-level ones of the object, in the order of the groups' own attributes.
+func applyExactlyOneOf(groups [][]*ssot.Attribute, attributes []ResourceAttribute) {
+	for _, group := range groups {
+		names := collections.Map(group, func(attr *ssot.Attribute) string { return attr.Name })
+		for _, name := range names {
+			i := slices.IndexFunc(attributes, func(attr ResourceAttribute) bool { return attr.Name == name })
+			if i < 0 {
+				panic(fmt.Sprintf("ExactlyOneOf attribute %q is not a resource attribute", name))
+			}
+			attributes[i].ExactlyOneOf = names
+		}
 	}
 }

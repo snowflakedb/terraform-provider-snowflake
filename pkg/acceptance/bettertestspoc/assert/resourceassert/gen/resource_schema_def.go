@@ -58,10 +58,6 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiAuthenticationIntegrationWithJwtBearer().Schema,
 	},
 	{
-		name:   "Alert",
-		schema: resources.Alert().Schema,
-	},
-	{
 		name:   "ApiIntegrationAmazonApiGateway",
 		schema: resources.ApiIntegrationAmazonApiGateway().Schema,
 	},
@@ -164,10 +160,6 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "ExternalS3CompatibleStage",
 		schema: resources.ExternalS3CompatibleStage().Schema,
-	},
-	{
-		name:   "ExternalVolume",
-		schema: resources.ExternalVolume().Schema,
 	},
 	{
 		name:   "ExternalOauthSecurityIntegration",
@@ -296,10 +288,6 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "Notebook",
 		schema: resources.Notebook().Schema,
-	},
-	{
-		name:   "Pipe",
-		schema: resources.Pipe().Schema,
 	},
 	{
 		name:   "ObjectParameter",

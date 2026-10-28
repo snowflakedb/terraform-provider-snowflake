@@ -8,8 +8,8 @@ var (
 	_ validatable = new(CreateExternalVolumeOptions)
 	_ validatable = new(AlterExternalVolumeOptions)
 	_ validatable = new(DropExternalVolumeOptions)
-	_ validatable = new(DescribeExternalVolumeOptions)
 	_ validatable = new(ShowExternalVolumeOptions)
+	_ validatable = new(DescribeExternalVolumeOptions)
 )
 
 func (opts *CreateExternalVolumeOptions) validate() error {
@@ -20,11 +20,11 @@ func (opts *CreateExternalVolumeOptions) validate() error {
 	if !valueSet(opts.StorageLocations) {
 		errs = append(errs, errNotSet("CreateExternalVolumeOptions", "StorageLocations"))
 	}
-	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
-		errs = append(errs, errOneOf("CreateExternalVolumeOptions", "OrReplace", "IfNotExists"))
-	}
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreateExternalVolumeOptions", "name"))
+	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CreateExternalVolumeOptions", "OrReplace", "IfNotExists"))
 	}
 	if valueSet(opts.StorageLocations) {
 		for storageLocationIdx, storageLocation := range opts.StorageLocations {
@@ -43,11 +43,16 @@ func (opts *AlterExternalVolumeOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("AlterExternalVolumeOptions", "name"))
+	}
 	if !exactlyOneValueSet(opts.RemoveStorageLocation, opts.Set, opts.AddStorageLocation, opts.UpdateStorageLocation) {
 		errs = append(errs, errExactlyOneOf("AlterExternalVolumeOptions", "RemoveStorageLocation", "Set", "AddStorageLocation", "UpdateStorageLocation"))
 	}
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, errInvalidIdentifier("AlterExternalVolumeOptions", "name"))
+	if valueSet(opts.Set) {
+		if !anyValueSet(opts.Set.AllowWrites, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterExternalVolumeOptions.Set", "AllowWrites", "Comment"))
+		}
 	}
 	if valueSet(opts.AddStorageLocation) {
 		if valueSet(opts.AddStorageLocation.ExternalVolumeStorageLocation) {
@@ -70,6 +75,14 @@ func (opts *DropExternalVolumeOptions) validate() error {
 	return JoinErrors(errs...)
 }
 
+func (opts *ShowExternalVolumeOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	return JoinErrors(errs...)
+}
+
 func (opts *DescribeExternalVolumeOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
@@ -78,13 +91,5 @@ func (opts *DescribeExternalVolumeOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("DescribeExternalVolumeOptions", "name"))
 	}
-	return JoinErrors(errs...)
-}
-
-func (opts *ShowExternalVolumeOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
 	return JoinErrors(errs...)
 }

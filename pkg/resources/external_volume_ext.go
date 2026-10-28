@@ -9,7 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -22,13 +21,9 @@ import (
 // =============================================================================
 
 var (
-	externalVolumeCreateExt = TrackingCreateWrapper(resources.ExternalVolume, CreateExternalVolume)
-	externalVolumeReadExt   = TrackingReadWrapper(resources.ExternalVolume, ReadExternalVolumeFunc(true))
-	externalVolumeUpdateExt = TrackingUpdateWrapper(resources.ExternalVolume, UpdateExternalVolume)
-	externalVolumeDeleteExt = TrackingDeleteWrapper(resources.ExternalVolume, ResourceDeleteContextFunc(
-		externalVolumeParseIdExt,
-		externalVolumeDropSafelyInSdkExt,
-	))
+	externalVolumeCreateExt        = TrackingCreateWrapper(resources.ExternalVolume, CreateExternalVolume)
+	externalVolumeReadExt          = TrackingReadWrapper(resources.ExternalVolume, ReadExternalVolumeFunc(true))
+	externalVolumeUpdateExt        = TrackingUpdateWrapper(resources.ExternalVolume, UpdateExternalVolume)
 	externalVolumeDescriptionExt   = "Resource used to manage external volume objects. For more information, check [external volume documentation](https://docs.snowflake.com/en/sql-reference/commands-data-loading#external-volume)."
 	externalVolumeCustomizeDiffExt = TrackingCustomDiffWrapper(resources.ExternalVolume, customdiff.All(
 		ComputedIfAnyAttributeChanged(externalVolumeSchema, ShowOutputAttributeName, "name", "allow_writes", "comment"),
@@ -44,16 +39,8 @@ var (
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-var externalVolumeSetStateToValueFromConfigFieldsExt = []string{
-	"allow_writes",
-}
-
 type externalVolumeAlterRequestsExt struct {
-	set *sdk.AlterExternalVolumeSetRequest
-}
-
-func externalVolumeParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
-	return sdk.ParseAccountObjectIdentifier(id)
+	set *sdk.ExternalVolumeSetRequest
 }
 
 func externalVolumeNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateExternalVolumeRequest, error) {
@@ -79,12 +66,8 @@ func externalVolumeHandleExternalChangesExt(d *schema.ResourceData, externalVolu
 	)
 }
 
-func externalVolumeSetConfigFieldsExt(d *schema.ResourceData, externalVolume *sdk.ExternalVolume) error {
-	return d.Set("comment", externalVolume.Comment)
-}
-
 func externalVolumeApplySetUnsetExt(d *schema.ResourceData) (*externalVolumeAlterRequestsExt, error) {
-	set := sdk.NewAlterExternalVolumeSetRequest()
+	set := sdk.NewExternalVolumeSetRequest()
 	errs := errors.Join(
 		stringAttributeUpdateSetOnlyNotEmpty(d, "comment", &set.Comment),
 		booleanStringAttributeUnsetFallbackUpdate(d, "allow_writes", &set.AllowWrites, false),
@@ -95,7 +78,7 @@ func externalVolumeApplySetUnsetExt(d *schema.ResourceData) (*externalVolumeAlte
 	return &externalVolumeAlterRequestsExt{set: set}, nil
 }
 
-func externalVolumeSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, externalVolume *sdk.ExternalVolume) error {
+func externalVolumeSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, externalVolume *sdk.ExternalVolume, _ bool) error {
 	return errors.Join(
 		d.Set("name", id.Name()),
 		d.Set("allow_writes", booleanStringFromBool(externalVolume.AllowWrites)),
@@ -106,10 +89,7 @@ func externalVolumeSetDescribeOutputExt(d *schema.ResourceData, _ sdk.AccountObj
 	if describeErr != nil {
 		return describeErr
 	}
-	return errors.Join(
-		d.Set("storage_location", readStorageLocations(d, *details, withExternalChangesMarking)),
-		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ExternalVolumeDetailsToSchema(details)}),
-	)
+	return d.Set("storage_location", readStorageLocations(d, *details, withExternalChangesMarking))
 }
 
 // =============================================================================
@@ -163,7 +143,7 @@ func externalVolumeDescribeInSdkExt(ctx context.Context, meta any, id sdk.Accoun
 
 func externalVolumeAlterSetInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *externalVolumeAlterRequestsExt) error {
 	client := meta.(*provider.Context).Client
-	if *reqs.set != (sdk.AlterExternalVolumeSetRequest{}) {
+	if *reqs.set != (sdk.ExternalVolumeSetRequest{}) {
 		if err := client.ExternalVolumes.Alter(ctx, sdk.NewAlterExternalVolumeRequest(id).WithSet(*reqs.set)); err != nil {
 			return err
 		}
@@ -227,14 +207,6 @@ func externalVolumeAlterSetInSdkExt(ctx context.Context, d *schema.ResourceData,
 		return removeThenAddWithPlaceholder(tempStorageLocation, removedLocations, addedLocations, removeLocation, addLocation)
 	}
 	return removeThenAdd(removedLocations, addedLocations, removeLocation, addLocation)
-}
-
-func externalVolumeAlterUnsetInSdkExt(context.Context, any, sdk.AccountObjectIdentifier, *externalVolumeAlterRequestsExt) error {
-	return nil
-}
-
-func externalVolumeDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
-	return client.ExternalVolumes.DropSafely
 }
 
 // =============================================================================
@@ -428,12 +400,12 @@ func parseGCSStorageLocation(d *schema.ResourceData, prefix, name, storageBaseUr
 			"storage_aws_key_id",
 			"storage_aws_secret_key",
 		),
-		attributeMappedValueCreate(d, prefix+"encryption_type", &gcsStorageLocation.Encryption, func(value any) (*sdk.ExternalVolumeGCSEncryption, error) {
+		attributeMappedValueCreate(d, prefix+"encryption_type", &gcsStorageLocation.Encryption, func(value any) (*sdk.ExternalVolumeGcsEncryption, error) {
 			encryptionType, err := sdk.ToGCSEncryptionType(value.(string))
 			if err != nil {
 				return nil, err
 			}
-			encryption := &sdk.ExternalVolumeGCSEncryption{EncryptionType: encryptionType}
+			encryption := &sdk.ExternalVolumeGcsEncryption{EncryptionType: encryptionType}
 			err = stringAttributeCreate(d, prefix+"encryption_kms_key_id", &encryption.KmsKeyId)
 			return encryption, err
 		}),
@@ -593,7 +565,7 @@ func storageLocationItemToRequest(addedLocationItem sdk.ExternalVolumeStorageLoc
 		)
 
 		if addedLocation.Encryption != nil {
-			encryptionRequest := sdk.NewExternalVolumeGCSEncryptionRequest(addedLocation.Encryption.EncryptionType)
+			encryptionRequest := sdk.NewExternalVolumeGcsEncryptionRequest(addedLocation.Encryption.EncryptionType)
 			if addedLocation.Encryption.KmsKeyId != nil {
 				encryptionRequest = encryptionRequest.WithKmsKeyId(*addedLocation.Encryption.KmsKeyId)
 			}

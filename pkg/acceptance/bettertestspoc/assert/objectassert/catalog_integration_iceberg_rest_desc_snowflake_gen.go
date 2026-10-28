@@ -130,7 +130,7 @@ func (c *CatalogIntegrationIcebergRestDetailsAssert) HasCatalogNamespaceNotEmpty
 	return c
 }
 
-func (c *CatalogIntegrationIcebergRestDetailsAssert) HasRestConfigWith(subAssert *IcebergRestRestConfigDetailsAssert) *CatalogIntegrationIcebergRestDetailsAssert {
+func (c *CatalogIntegrationIcebergRestDetailsAssert) HasRestConfigWith(subAssert *CatalogIntegrationIcebergRestRestConfigDetailsAssert) *CatalogIntegrationIcebergRestDetailsAssert {
 	for _, assertion := range subAssert.GetAssertions() {
 		assertion := assertion
 		c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
@@ -143,23 +143,23 @@ func (c *CatalogIntegrationIcebergRestDetailsAssert) HasRestConfigWith(subAssert
 	return c
 }
 
-func (c *CatalogIntegrationIcebergRestDetailsAssert) HasOAuthRestAuthentication() *CatalogIntegrationIcebergRestDetailsAssert {
+func (c *CatalogIntegrationIcebergRestDetailsAssert) HasOauthRestAuthentication() *CatalogIntegrationIcebergRestDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
-		if o.OAuthRestAuthentication == nil {
-			return fmt.Errorf("expected o auth rest authentication to have value; got: nil")
+		if o.OauthRestAuthentication == nil {
+			return fmt.Errorf("expected oauth rest authentication to have value; got: nil")
 		}
 		return nil
 	})
 	return c
 }
 
-func (c *CatalogIntegrationIcebergRestDetailsAssert) HasOAuthRestAuthenticationWith(subAssert *OAuthRestAuthenticationDetailsAssert) *CatalogIntegrationIcebergRestDetailsAssert {
-	c.HasOAuthRestAuthentication()
+func (c *CatalogIntegrationIcebergRestDetailsAssert) HasOauthRestAuthenticationWith(subAssert *CatalogIntegrationIcebergRestOauthRestAuthenticationDetailsAssert) *CatalogIntegrationIcebergRestDetailsAssert {
+	c.HasOauthRestAuthentication()
 	for _, assertion := range subAssert.GetAssertions() {
 		assertion := assertion
 		c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
-			if err := assert.AssertionOnPointerField(t, o.OAuthRestAuthentication, "o auth rest authentication", assertion); err != nil {
-				return fmt.Errorf("o auth rest authentication: %w", err)
+			if err := assert.AssertionOnPointerField(t, o.OauthRestAuthentication, "oauth rest authentication", assertion); err != nil {
+				return fmt.Errorf("oauth rest authentication: %w", err)
 			}
 			return nil
 		})
@@ -167,34 +167,34 @@ func (c *CatalogIntegrationIcebergRestDetailsAssert) HasOAuthRestAuthenticationW
 	return c
 }
 
-func (c *CatalogIntegrationIcebergRestDetailsAssert) HasNoOAuthRestAuthentication() *CatalogIntegrationIcebergRestDetailsAssert {
+func (c *CatalogIntegrationIcebergRestDetailsAssert) HasNoOauthRestAuthentication() *CatalogIntegrationIcebergRestDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
 		t.Helper()
-		if o.OAuthRestAuthentication != nil {
-			return fmt.Errorf("expected o auth rest authentication to be nil; got: %v", *o.OAuthRestAuthentication)
+		if o.OauthRestAuthentication != nil {
+			return fmt.Errorf("expected oauth rest authentication to be nil; got: %v", *o.OauthRestAuthentication)
 		}
 		return nil
 	})
 	return c
 }
 
-func (c *CatalogIntegrationIcebergRestDetailsAssert) HasSigV4RestAuthentication() *CatalogIntegrationIcebergRestDetailsAssert {
+func (c *CatalogIntegrationIcebergRestDetailsAssert) HasSigv4RestAuthentication() *CatalogIntegrationIcebergRestDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
-		if o.SigV4RestAuthentication == nil {
-			return fmt.Errorf("expected sig v4 rest authentication to have value; got: nil")
+		if o.Sigv4RestAuthentication == nil {
+			return fmt.Errorf("expected sigv4 rest authentication to have value; got: nil")
 		}
 		return nil
 	})
 	return c
 }
 
-func (c *CatalogIntegrationIcebergRestDetailsAssert) HasSigV4RestAuthenticationWith(subAssert *SigV4RestAuthenticationDetailsAssert) *CatalogIntegrationIcebergRestDetailsAssert {
-	c.HasSigV4RestAuthentication()
+func (c *CatalogIntegrationIcebergRestDetailsAssert) HasSigv4RestAuthenticationWith(subAssert *CatalogIntegrationIcebergRestSigv4RestAuthenticationDetailsAssert) *CatalogIntegrationIcebergRestDetailsAssert {
+	c.HasSigv4RestAuthentication()
 	for _, assertion := range subAssert.GetAssertions() {
 		assertion := assertion
 		c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
-			if err := assert.AssertionOnPointerField(t, o.SigV4RestAuthentication, "sig v4 rest authentication", assertion); err != nil {
-				return fmt.Errorf("sig v4 rest authentication: %w", err)
+			if err := assert.AssertionOnPointerField(t, o.Sigv4RestAuthentication, "sigv4 rest authentication", assertion); err != nil {
+				return fmt.Errorf("sigv4 rest authentication: %w", err)
 			}
 			return nil
 		})
@@ -202,11 +202,11 @@ func (c *CatalogIntegrationIcebergRestDetailsAssert) HasSigV4RestAuthenticationW
 	return c
 }
 
-func (c *CatalogIntegrationIcebergRestDetailsAssert) HasNoSigV4RestAuthentication() *CatalogIntegrationIcebergRestDetailsAssert {
+func (c *CatalogIntegrationIcebergRestDetailsAssert) HasNoSigv4RestAuthentication() *CatalogIntegrationIcebergRestDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
 		t.Helper()
-		if o.SigV4RestAuthentication != nil {
-			return fmt.Errorf("expected sig v4 rest authentication to be nil; got: %v", *o.SigV4RestAuthentication)
+		if o.Sigv4RestAuthentication != nil {
+			return fmt.Errorf("expected sigv4 rest authentication to be nil; got: %v", *o.Sigv4RestAuthentication)
 		}
 		return nil
 	})

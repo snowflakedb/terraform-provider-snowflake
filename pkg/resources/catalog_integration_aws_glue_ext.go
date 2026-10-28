@@ -20,14 +20,9 @@ import (
 // =============================================================================
 
 var (
-	catalogIntegrationAwsGlueCreateExt = TrackingCreateWrapper(resources.CatalogIntegrationAwsGlue, CreateCatalogIntegrationAwsGlue)
-	catalogIntegrationAwsGlueReadExt   = TrackingReadWrapper(resources.CatalogIntegrationAwsGlue, ReadCatalogIntegrationAwsGlueFunc(true))
-	catalogIntegrationAwsGlueUpdateExt = TrackingUpdateWrapper(resources.CatalogIntegrationAwsGlue, UpdateCatalogIntegrationAwsGlue)
-	// Same delete wiring as deleteCatalogIntegrationFunc: ParseAccountObjectIdentifier and CatalogIntegrations.DropSafely.
-	catalogIntegrationAwsGlueDeleteExt = TrackingDeleteWrapper(resources.CatalogIntegrationAwsGlue, ResourceDeleteContextFunc(
-		catalogIntegrationAwsGlueParseIdExt,
-		catalogIntegrationAwsGlueDropSafelyInSdkExt,
-	))
+	catalogIntegrationAwsGlueCreateExt      = TrackingCreateWrapper(resources.CatalogIntegrationAwsGlue, CreateCatalogIntegrationAwsGlue)
+	catalogIntegrationAwsGlueReadExt        = TrackingReadWrapper(resources.CatalogIntegrationAwsGlue, ReadCatalogIntegrationAwsGlueFunc(true))
+	catalogIntegrationAwsGlueUpdateExt      = TrackingUpdateWrapper(resources.CatalogIntegrationAwsGlue, UpdateCatalogIntegrationAwsGlue)
 	catalogIntegrationAwsGlueDescriptionExt = "Resource used to manage AWS Glue catalog integration objects. For more information, check [catalog integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-glue)."
 	// CustomizeDiff was not wrapped in TrackingCustomDiffWrapper.
 	catalogIntegrationAwsGlueCustomizeDiffExt = customdiff.All(
@@ -44,28 +39,20 @@ var (
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-func catalogIntegrationAwsGlueParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
-	return sdk.ParseAccountObjectIdentifier(id)
-}
-
-func catalogIntegrationAwsGlueNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateCatalogIntegrationRequest, error) {
+func catalogIntegrationAwsGlueNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateAwsGlueCatalogIntegrationRequest, error) {
 	enabled := d.Get("enabled").(bool)
 	glueAwsRoleArn := d.Get("glue_aws_role_arn").(string)
 	glueCatalogId := d.Get("glue_catalog_id").(string)
 
-	request := sdk.NewCreateCatalogIntegrationRequest(id, enabled)
-	awsGlueRequest := sdk.NewAwsGlueParamsRequest(glueAwsRoleArn, glueCatalogId)
-	// Attached before optionals so glue_region and catalog_namespace can be written
-	// onto this params pointer. The create request matches the previous post-optional copy.
-	return request.WithAwsGlueCatalogSourceParams(*awsGlueRequest), nil
+	return sdk.NewCreateAwsGlueCatalogIntegrationRequest(id, glueAwsRoleArn, glueCatalogId, enabled), nil
 }
 
-func catalogIntegrationAwsGlueApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.CreateCatalogIntegrationRequest) error {
+func catalogIntegrationAwsGlueApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.CreateAwsGlueCatalogIntegrationRequest) error {
 	return errors.Join(
 		intAttributeCreateBuilder(d, "refresh_interval_seconds", request.WithRefreshIntervalSeconds),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
-		stringAttributeCreateBuilder(d, "glue_region", request.AwsGlueCatalogSourceParams.WithGlueRegion),
-		stringAttributeCreateBuilder(d, "catalog_namespace", request.AwsGlueCatalogSourceParams.WithCatalogNamespace),
+		stringAttributeCreateBuilder(d, "glue_region", request.WithGlueRegion),
+		stringAttributeCreateBuilder(d, "catalog_namespace", request.WithCatalogNamespace),
 	)
 }
 
@@ -115,17 +102,20 @@ func catalogIntegrationAwsGlueApplySetUnsetExt(d *schema.ResourceData) (*catalog
 	return &catalogIntegrationAwsGlueAlterRequestsExt{set: set}, nil
 }
 
-func catalogIntegrationAwsGlueSetFieldsNotSetByReadExt(_ *schema.ResourceData, _ sdk.AccountObjectIdentifier, _ *sdk.CatalogIntegrationAwsGlueDetails) error {
-	return nil
+func catalogIntegrationAwsGlueSetFieldsNotSetByReadExt(d *schema.ResourceData, _ sdk.AccountObjectIdentifier, details *sdk.CatalogIntegrationAwsGlueDetails, importPermissiveMode bool) error {
+	return errors.Join(
+		importIntAttribute(d, "refresh_interval_seconds", importPermissiveMode, details.RefreshIntervalSeconds),
+		importStringAttribute(d, "glue_region", importPermissiveMode, details.GlueRegion),
+	)
 }
 
 // =============================================================================
 // SDK incision points
 // =============================================================================
 
-func catalogIntegrationAwsGlueCreateInSdkExt(ctx context.Context, meta any, _ sdk.AccountObjectIdentifier, req *sdk.CreateCatalogIntegrationRequest) diag.Diagnostics {
+func catalogIntegrationAwsGlueCreateInSdkExt(ctx context.Context, meta any, _ sdk.AccountObjectIdentifier, req *sdk.CreateAwsGlueCatalogIntegrationRequest) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	if err := client.CatalogIntegrations.Create(ctx, req); err != nil {
+	if err := client.CatalogIntegrations.CreateAwsGlue(ctx, req); err != nil {
 		return diag.FromErr(fmt.Errorf("error creating AWS Glue catalog integration, err = %w", err))
 	}
 	return nil
@@ -182,12 +172,4 @@ func catalogIntegrationAwsGlueAlterSetInSdkExt(ctx context.Context, _ *schema.Re
 		return fmt.Errorf("error updating catalog integration (%s), err = %w", helpers.EncodeResourceIdentifier(id), err)
 	}
 	return nil
-}
-
-func catalogIntegrationAwsGlueAlterUnsetInSdkExt(context.Context, any, sdk.AccountObjectIdentifier, *catalogIntegrationAwsGlueAlterRequestsExt) error {
-	return nil
-}
-
-func catalogIntegrationAwsGlueDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
-	return client.CatalogIntegrations.DropSafely
 }

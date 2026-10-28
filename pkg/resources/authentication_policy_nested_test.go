@@ -32,16 +32,16 @@ func Test_parseAuthenticationPolicyNestedBlocks(t *testing.T) {
 		},
 	})
 
-	mfa, err := parseMfaPolicy(d, "mfa_policy.0.")
+	mfa, err := parseAuthenticationPolicyMfaPolicy(d, "mfa_policy.0.")
 	require.NoError(t, err)
 	require.NotNil(t, mfa.EnforceMfaOnExternalAuthentication)
 	assert.Equal(t, sdk.EnforceMfaOnExternalAuthenticationOptionAll, *mfa.EnforceMfaOnExternalAuthentication)
-	assert.ElementsMatch(t, []sdk.AuthenticationPolicyMfaPolicyListItem{
-		{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey},
-		{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
+	assert.ElementsMatch(t, []sdk.MfaPolicyAllowedMethodsOptionListItem{
+		{Value: sdk.MfaPolicyAllowedMethodsOptionPasskey},
+		{Value: sdk.MfaPolicyAllowedMethodsOptionDuo},
 	}, mfa.AllowedMethods)
 
-	pat, err := parsePatPolicy(d, "pat_policy.0.")
+	pat, err := parseAuthenticationPolicyPatPolicy(d, "pat_policy.0.")
 	require.NoError(t, err)
 	require.NotNil(t, pat.DefaultExpiryInDays)
 	assert.Equal(t, 20, *pat.DefaultExpiryInDays)
@@ -51,18 +51,18 @@ func Test_parseAuthenticationPolicyNestedBlocks(t *testing.T) {
 	require.NotNil(t, pat.RequireRoleRestrictionForServiceUsers)
 	assert.False(t, *pat.RequireRoleRestrictionForServiceUsers)
 
-	workload, err := parseWorkloadIdentityPolicy(d, "workload_identity_policy.0.")
+	workload, err := parseAuthenticationPolicyWorkloadIdentityPolicy(d, "workload_identity_policy.0.")
 	require.NoError(t, err)
-	assert.ElementsMatch(t, []sdk.AuthenticationPolicyAllowedProviderListItem{
-		{Provider: sdk.AllowedProviderOptionAws},
-		{Provider: sdk.AllowedProviderOptionOidc},
+	assert.ElementsMatch(t, []sdk.AllowedProviderOptionListItem{
+		{Value: sdk.AllowedProviderOptionAws},
+		{Value: sdk.AllowedProviderOptionOidc},
 	}, workload.AllowedProviders)
 	assert.Equal(t, []sdk.StringListItemWrapper{{Value: "123"}}, workload.AllowedAwsAccounts)
 	assert.Nil(t, workload.AllowedAzureIssuers)
 	assert.Nil(t, workload.AllowedOidcIssuers)
 }
 
-func Test_parsePatPolicy_defaultsRequireRoleRestriction(t *testing.T) {
+func Test_parseAuthenticationPolicyPatPolicy_leavesRequireRoleRestrictionToSnowflake(t *testing.T) {
 	d := schema.TestResourceDataRaw(t, authenticationPolicySchema, map[string]any{
 		"pat_policy": []any{
 			map[string]any{
@@ -72,10 +72,9 @@ func Test_parsePatPolicy_defaultsRequireRoleRestriction(t *testing.T) {
 		},
 	})
 
-	pat, err := parsePatPolicy(d, "pat_policy.0.")
+	pat, err := parseAuthenticationPolicyPatPolicy(d, "pat_policy.0.")
 	require.NoError(t, err)
-	require.NotNil(t, pat.RequireRoleRestrictionForServiceUsers)
-	assert.True(t, *pat.RequireRoleRestrictionForServiceUsers)
+	assert.Nil(t, pat.RequireRoleRestrictionForServiceUsers)
 	require.NotNil(t, pat.DefaultExpiryInDays)
 	assert.Equal(t, 10, *pat.DefaultExpiryInDays)
 }

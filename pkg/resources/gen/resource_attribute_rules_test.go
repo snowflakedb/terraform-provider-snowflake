@@ -196,7 +196,7 @@ func Test_applyResourceAttributeRules_setOfEnum(t *testing.T) {
 
 	require.Equal(t, SchemaTypeSet, got.TfType)
 	require.True(t, got.Optional)
-	require.Equal(t, "NormalizeAndCompare(sdk.ToComputePoolInstanceFamily)", got.DiffSuppressExpr)
+	require.Equal(t, `NormalizeAndCompareEnumsInSet("allowed_values", sdk.ToComputePoolInstanceFamily)`, got.DiffSuppressExpr)
 	require.Equal(t, `"Specifies a set of allowed values. " + enumValuesDescription(sdk.AllComputePoolInstanceFamilies)`, got.DescriptionExpr)
 	require.NotNil(t, got.Elem)
 	require.Equal(t, SchemaTypeString, got.Elem.TfType)
@@ -427,11 +427,11 @@ func Test_applyResourceAttributeRules_nestedBlocksRecurse(t *testing.T) {
 		Name:        "outer",
 		Type:        ssot.AttrSet,
 		Description: "Outer block.",
-		Children: []ssot.Attribute{{
+		Elem: ssot.ObjectElem([]ssot.Attribute{{
 			Name:     "inner",
 			Type:     ssot.AttrList,
 			Required: true,
-			Children: []ssot.Attribute{{
+			Elem: ssot.ObjectElem([]ssot.Attribute{{
 				Name:        "leaf",
 				Type:        ssot.AttrEnum,
 				Required:    true,
@@ -440,8 +440,8 @@ func Test_applyResourceAttributeRules_nestedBlocksRecurse(t *testing.T) {
 			}, {
 				Name: "target",
 				Type: ssot.AttrIdentifier,
-			}},
-		}},
+			}}),
+		}}),
 	}, resourceAttributeRuleContext{IdType: "SchemaObjectIdentifier"})
 
 	require.Equal(t, SchemaTypeSet, got.TfType)
@@ -487,14 +487,14 @@ func gotSourceNested() ssot.Attribute {
 	return ssot.Attribute{
 		Name: "outer",
 		Type: ssot.AttrSet,
-		Children: []ssot.Attribute{{
+		Elem: ssot.ObjectElem([]ssot.Attribute{{
 			Name: "inner",
 			Type: ssot.AttrList,
-			Children: []ssot.Attribute{{
+			Elem: ssot.ObjectElem([]ssot.Attribute{{
 				Name: "leaf",
 				Type: ssot.AttrString,
-			}},
-		}},
+			}}),
+		}}),
 	}
 }
 
@@ -503,7 +503,7 @@ func Test_applyResourceAttributeRules_nestedBlock(t *testing.T) {
 		Name:        "client_policy",
 		Type:        ssot.AttrSet,
 		Description: "Allows to set policies per-client type.",
-		Children: []ssot.Attribute{
+		Elem: ssot.ObjectElem([]ssot.Attribute{
 			{
 				Name:        "client_type",
 				Type:        ssot.AttrEnum,
@@ -522,7 +522,7 @@ func Test_applyResourceAttributeRules_nestedBlock(t *testing.T) {
 				Required:    true,
 				Description: "Minimum allowed version.",
 			},
-		},
+		}),
 	}, resourceAttributeRuleContext{IdType: "SchemaObjectIdentifier"})
 
 	require.Equal(t, SchemaTypeSet, got.TfType)
@@ -555,12 +555,12 @@ func Test_applyResourceAttributeRules_listOfBlocksAllowsMultipleItems(t *testing
 		Required:    true,
 		MinItems:    new(1),
 		Description: "List of named cloud storage locations.",
-		Children: []ssot.Attribute{
+		Elem: ssot.ObjectElem([]ssot.Attribute{
 			{Name: "storage_location_name", Type: ssot.AttrString, Required: true, Description: "Name of the storage location."},
 			{Name: "storage_base_url", Type: ssot.AttrString, Required: true, Description: "Specifies the base URL."},
 			{Name: "storage_aws_role_arn", Type: ssot.AttrString, Description: "Specifies the role ARN."},
 			{Name: "allowed_locations", Type: ssot.AttrList, MinItems: new(1), Description: "Extra locations.", Elem: &ssot.Attribute{Type: ssot.AttrString}},
-		},
+		}),
 	}
 	got := resolveResourceAttribute(attr, resourceAttributeRuleContext{})
 
@@ -594,6 +594,110 @@ func Test_applyResourceAttributeRules_listOfBlocksAllowsMultipleItems(t *testing
 	require.Contains(t, rendered, "&tfschema.Schema{")
 }
 
+func Test_applyResourceAttributeRules_setOfIdentifiers(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:        "tables",
+		Type:        ssot.AttrSet,
+		Description: "Specifies the tables.",
+		Elem: &ssot.Attribute{
+			Type:           ssot.AttrIdentifier,
+			IdentifierType: "SchemaObjectIdentifier",
+		},
+	}, resourceAttributeRuleContext{IdType: "AccountObjectIdentifier"})
+
+	require.Equal(t, SchemaTypeSet, got.TfType)
+	require.Equal(t, `NormalizeAndCompareIdentifiersInSet("tables")`, got.DiffSuppressExpr)
+	require.NotNil(t, got.Elem)
+	require.Equal(t, "IsValidIdentifier[sdk.SchemaObjectIdentifier]()", got.Elem.ValidateDiagExpr)
+	require.Empty(t, got.Elem.DescriptionExpr)
+}
+
+func Test_applyResourceAttributeRules_nestedSetOfEnumsStaysElementWise(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:     "mfa_policy",
+		Type:     ssot.AttrList,
+		MaxItems: new(1),
+		Elem: ssot.ObjectElem([]ssot.Attribute{{
+			Name:        "allowed_methods",
+			Type:        ssot.AttrSet,
+			Description: "Specifies the allowed methods.",
+			Elem: &ssot.Attribute{
+				Type: ssot.AttrEnum,
+				Enum: defs.MfaPolicyAllowedMethodsOption,
+			},
+		}}),
+	}, resourceAttributeRuleContext{})
+
+	require.Equal(t, "NormalizeAndCompare(sdk.ToMfaPolicyAllowedMethodsOption)", got.Children[0].DiffSuppressExpr)
+}
+
+func Test_applyResourceAttributeRules_nestedRelationsAndSensitive(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:     "alert_schedule",
+		Type:     ssot.AttrList,
+		MaxItems: new(1),
+		Elem: ssot.ObjectElem([]ssot.Attribute{
+			{
+				Name:          "cron",
+				Type:          ssot.AttrList,
+				MaxItems:      new(1),
+				ConflictsWith: []ssot.Attribute{{Name: "interval"}},
+			},
+			{
+				Name:          "interval",
+				Type:          ssot.AttrInt,
+				ConflictsWith: []ssot.Attribute{{Name: "cron"}},
+				AtLeastOneOf:  []ssot.Attribute{{Name: "interval"}, {Name: "cron"}},
+			},
+		}),
+	}, resourceAttributeRuleContext{})
+
+	require.Equal(t, []string{"alert_schedule.0.interval"}, got.Children[0].ConflictsWith)
+	require.Equal(t, []string{"alert_schedule.0.cron"}, got.Children[1].ConflictsWith)
+	require.Equal(t, []string{"alert_schedule.0.interval", "alert_schedule.0.cron"}, got.Children[1].AtLeastOneOf)
+
+	object := resolveResourceAttribute(ssot.Attribute{
+		Name: "policy",
+		Type: ssot.AttrObject,
+		Children: []ssot.Attribute{
+			{Name: "left", Type: ssot.AttrString, AtLeastOneOf: []ssot.Attribute{{Name: "left"}, {Name: "right"}}},
+			{Name: "right", Type: ssot.AttrString, AtLeastOneOf: []ssot.Attribute{{Name: "left"}, {Name: "right"}}},
+		},
+	}, resourceAttributeRuleContext{})
+	require.Equal(t, []string{"policy.0.left", "policy.0.right"}, object.Children[0].AtLeastOneOf)
+	require.Equal(t, SchemaTypeList, object.TfType)
+	require.Equal(t, new(1), object.MaxItems)
+
+	secret := resolveResourceAttribute(ssot.Attribute{
+		Name:      "storage_aws_secret_key",
+		Type:      ssot.AttrString,
+		Sensitive: true,
+	}, resourceAttributeRuleContext{})
+	require.True(t, secret.Sensitive)
+
+	model := ModelFromInputObject(ResourceObject{Object: ssot.Object{
+		Name: "Widget",
+		Attributes: []ssot.Attribute{
+			{
+				Name:     "alert_schedule",
+				Type:     ssot.AttrList,
+				MaxItems: new(1),
+				Elem: ssot.ObjectElem([]ssot.Attribute{
+					{Name: "cron", Type: ssot.AttrString, ConflictsWith: []ssot.Attribute{{Name: "interval"}}},
+					{Name: "interval", Type: ssot.AttrInt, AtLeastOneOf: []ssot.Attribute{{Name: "cron"}, {Name: "interval"}}},
+				}),
+			},
+			{Name: "storage_aws_secret_key", Type: ssot.AttrString, Sensitive: true},
+		},
+	}}, nil, nil)
+	var b strings.Builder
+	require.NoError(t, SchemaTemplate.ExecuteTemplate(&b, "attributesSchemaDefinition", model))
+	rendered := b.String()
+	require.Contains(t, rendered, `"alert_schedule.0.interval"`)
+	require.Contains(t, rendered, "AtLeastOneOf: []string{")
+	require.Contains(t, rendered, "Sensitive: true,")
+}
+
 func Test_ModelFromInputObject_skipsSqlOnly(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: ssot.Object{
 		Name: "WarehouseAdaptive",
@@ -608,4 +712,57 @@ func Test_ModelFromInputObject_skipsSqlOnly(t *testing.T) {
 	}}, nil, nil)
 	require.Len(t, model.Attributes, 1)
 	require.Equal(t, "comment", model.Attributes[0].Name)
+}
+
+func Test_applyResourceAttributeRules_singleObjectIsListOfOne(t *testing.T) {
+	leaf := ssot.Attribute{Name: "leaf", Type: ssot.AttrString, Required: true, ForceNew: true}
+	inner := ssot.Attribute{Name: "inner", Type: ssot.AttrObject, Children: []ssot.Attribute{leaf}}
+
+	t.Run("optional", func(t *testing.T) {
+		got := resolveResourceAttribute(ssot.Attribute{Name: "block", Type: ssot.AttrObject, ForceNew: true, Children: []ssot.Attribute{leaf, inner}}, resourceAttributeRuleContext{})
+
+		require.Equal(t, SchemaTypeList, got.TfType)
+		require.True(t, got.Optional)
+		require.True(t, got.ForceNew)
+		require.Nil(t, got.MinItems)
+		require.Equal(t, new(1), got.MaxItems)
+		require.Len(t, got.Children, 2)
+		require.Equal(t, "leaf", got.Children[0].Name)
+		require.Equal(t, SchemaTypeList, got.Children[1].TfType, "a nested object is a list of one too")
+		require.Equal(t, new(1), got.Children[1].MaxItems)
+	})
+
+	t.Run("required", func(t *testing.T) {
+		got := resolveResourceAttribute(ssot.Attribute{Name: "block", Type: ssot.AttrObject, Required: true, Children: []ssot.Attribute{leaf}}, resourceAttributeRuleContext{})
+
+		require.Equal(t, SchemaTypeList, got.TfType)
+		require.True(t, got.Required)
+		require.Equal(t, new(1), got.MinItems)
+		require.Equal(t, new(1), got.MaxItems)
+	})
+
+	t.Run("equals the list declaration", func(t *testing.T) {
+		object := resolveResourceAttribute(ssot.Attribute{Name: "block", Type: ssot.AttrObject, Required: true, ForceNew: true, Children: []ssot.Attribute{leaf}}, resourceAttributeRuleContext{})
+		list := resolveResourceAttribute(ssot.Attribute{
+			Name: "block", Type: ssot.AttrList, Required: true, ForceNew: true, MinItems: new(1), MaxItems: new(1),
+			Elem: ssot.ObjectElem([]ssot.Attribute{leaf}),
+		}, resourceAttributeRuleContext{})
+		require.Equal(t, list, object)
+	})
+}
+
+func Test_applyExactlyOneOf(t *testing.T) {
+	one := ssot.Attribute{Name: "one"}
+	two := ssot.Attribute{Name: "two"}
+	three := ssot.Attribute{Name: "three"}
+	attributes := []ResourceAttribute{{Name: "one"}, {Name: "two"}, {Name: "three"}, {Name: "other"}}
+
+	applyExactlyOneOf([][]*ssot.Attribute{{&one, &three}}, attributes)
+
+	require.Equal(t, []string{"one", "three"}, attributes[0].ExactlyOneOf)
+	require.Nil(t, attributes[1].ExactlyOneOf)
+	require.Equal(t, []string{"one", "three"}, attributes[2].ExactlyOneOf)
+	require.Nil(t, attributes[3].ExactlyOneOf)
+
+	require.Panics(t, func() { applyExactlyOneOf([][]*ssot.Attribute{{&one, &two, {Name: "missing"}}}, attributes) })
 }

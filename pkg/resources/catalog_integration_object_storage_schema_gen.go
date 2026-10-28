@@ -20,6 +20,7 @@ var catalogIntegrationObjectStorageAttributesSchema = catalogIntegrationObjectSt
 		Type:             tfschema.TypeInt,
 		Optional:         true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("refresh_interval_seconds"),
 		Description:      "Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh. For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.",
 	},
 	"comment": {
@@ -65,7 +66,7 @@ var catalogIntegrationObjectStorageSchema = collections.MergeMaps(
 		DescribeOutputAttributeName: {
 			Type:        tfschema.TypeList,
 			Computed:    true,
-			Description: "Outputs the result of `DESCRIBE CATALOG INTEGRATION` for the given catalog integration object storage.",
+			Description: "Outputs the result of `DESCRIBE CATALOG INTEGRATION` for the given catalog integration.",
 			Elem: &tfschema.Resource{
 				Schema: schemas.DescribeCatalogIntegrationObjectStorageDetailsSchema,
 			},

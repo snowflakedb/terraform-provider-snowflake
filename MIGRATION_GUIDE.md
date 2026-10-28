@@ -28,6 +28,106 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.22.x ➞ v2.23.0
 
+### *(new feature)* Code bundle resource and data source
+
+We have added a new preview resource, [`snowflake_code_bundle`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/code_bundle), for managing [code bundles](https://docs.snowflake.com/en/developer-guide/code-bundles/code-bundles). `from` is the source that backs the bundle, a `snow://workspace/...` URL or an internal or temporary stage reference, and it cannot be changed after creation.
+
+We have also added a new preview data source, [`snowflake_code_bundles`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/code_bundles), for listing code bundles. SHOW supports extended `IN` only (`account`, `database`, `schema`, `application`, or `application_package`). `with_describe` is on by default and runs DESCRIBE for each bundle returned by SHOW.
+
+These features will be marked as stable in future releases. Breaking changes are expected, even without bumping the major version. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_code_bundle_resource` for `snowflake_code_bundle`;
+- `snowflake_code_bundles_datasource` for `snowflake_code_bundles`.
+
+No changes are required for existing configurations unless you want to adopt these preview features with Terraform.
+
+### *(new feature)* Backup policy resource and data source
+
+We have added a new preview resource, [`snowflake_backup_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/backup_policy), for managing [backup policies](https://docs.snowflake.com/en/sql-reference/sql/create-backup-policy). CREATE requires a schedule, an expiration, or both. `with_retention_lock` cannot be changed after creation.
+
+We have also added a new preview data source, [`snowflake_backup_policies`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/backup_policies), for listing backup policies. It supports `like`, `in`, `starts_with`, and `limit`. `with_describe` is on by default and runs DESCRIBE for each policy returned by SHOW.
+
+These features will be marked as stable in future releases. Breaking changes are expected, even without bumping the major version. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_backup_policy_resource` for `snowflake_backup_policy`;
+- `snowflake_backup_policies_datasource` for `snowflake_backup_policies`.
+
+No changes are required for existing configurations unless you want to adopt these preview features with Terraform.
+
+### *(new feature)* Opt-in experiment: permissive import mode
+
+Imports follow one of two modes:
+
+- **Enforcing mode** (default): the plan after import shows a change for every attribute that the configuration omits but that has a value in Snowflake, whether it's the Snowflake default or not. Applying the plan resets these attributes to their Snowflake defaults. To avoid the changes, add the values to your configuration.
+- **Permissive mode** (opt-in): the provider accepts the values the object already has for the attributes that the configuration omits, so the plan after import shows no change for them. This applies only to the import itself: external changes made after the import are detected as usual.
+
+To switch to permissive mode, enable the new `IMPORT_PERMISSIVE_MODE` opt-in experiment:
+
+```terraform
+provider "snowflake" {
+  experimental_features_enabled = ["IMPORT_PERMISSIVE_MODE"]
+}
+```
+
+The experiment is currently supported on the following resources:
+
+- [`snowflake_authentication_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy)
+- [`snowflake_catalog_integration_aws_glue`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue)
+- [`snowflake_catalog_integration_iceberg_rest`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest)
+- [`snowflake_catalog_integration_object_storage`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_object_storage)
+- [`snowflake_catalog_integration_open_catalog`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_open_catalog)
+- [`snowflake_compute_pool`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/compute_pool)
+
+More resources will be added gradually and listed in the experiment's description and in this guide.
+
+#### `IMPORT_BOOLEAN_DEFAULT` is deprecated
+
+`IMPORT_PERMISSIVE_MODE` replaces `IMPORT_BOOLEAN_DEFAULT`, which does the same for a narrower set: the boolean fields that use the special `"default"` value in the stage, stream, and storage integration resources. `IMPORT_BOOLEAN_DEFAULT` was [enabled by default in v2.22.0](#new-feature-experiments-enabled-by-default); to make enforcing mode the default for all resources, it's an opt-in experiment again.
+
+This affects only new imports of these resources. Resources that are already in state keep their values. Depending on your provider configuration:
+
+- **`IMPORT_BOOLEAN_DEFAULT` isn't listed:** these resources are imported in enforcing mode, so the plan after import shows a change for every field that uses the special `"default"` value and that your configuration omits (e.g. `use_privatelink_endpoint: "false" -> "default"`). These resources don't support `IMPORT_PERMISSIVE_MODE` yet. To get no change for these fields, enable `IMPORT_BOOLEAN_DEFAULT`:
+
+  ```terraform
+  provider "snowflake" {
+    experimental_features_enabled = ["IMPORT_BOOLEAN_DEFAULT"]
+  }
+  ```
+
+- **`IMPORT_BOOLEAN_DEFAULT` is listed in `experimental_features_enabled`:** nothing changes.
+- **`IMPORT_BOOLEAN_DEFAULT` is listed in `experimental_features_disabled`:** nothing changes either, but the provider shows a warning, because opt-in experiments don't need to be disabled. Remove the entry.
+
+When a resource starts supporting `IMPORT_PERMISSIVE_MODE`, it stops honoring `IMPORT_BOOLEAN_DEFAULT`, and this guide lists it. After all resources are migrated, `IMPORT_BOOLEAN_DEFAULT` will be discontinued.
+
+### *(bug fix)* `snowflake_authentication_policy` detects external changes to `client_policy`, `mfa_policy`, `pat_policy`, and `workload_identity_policy`
+
+Previously, [`snowflake_authentication_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy) didn't detect changes made outside Terraform to the `client_policy`, `mfa_policy`, `pat_policy`, and `workload_identity_policy` blocks. The plan showed no changes, and the values in Snowflake stayed different from your configuration.
+
+The provider now detects these changes, and the plan shows an update that restores the values from your configuration. If your configuration omits a block, the plan removes the block, so applying it resets the block to the Snowflake defaults.
+
+After upgrading:
+
+- `client_policy` is compared with Snowflake on every refresh, so differences that already exist show on the first plan.
+- `mfa_policy`, `pat_policy`, and `workload_identity_policy` are compared through `describe_output`, so only changes made after the upgrade are detected.
+
+No configuration changes are required. To keep a value that was changed outside Terraform, add it to your configuration.
+
+### *(bug fix)* `snowflake_pipe` can replace `error_integration` on an existing pipe
+
+Changing `error_integration` on an existing [`snowflake_pipe`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/pipe) from one notification integration to another failed during `terraform apply`. Snowflake rejects `ALTER PIPE ... SET ERROR_INTEGRATION` while an integration is already assigned:
+
+```text
+Cannot reset ERROR_INTEGRATION property
+```
+
+The provider now clears the current error integration and then sets the new one. No configuration changes are required. After upgrading, apply the same configuration that previously failed. This resource is still in preview and will be reworked in the future.
+
+### *(bug fix)* `snowflake_alert` rejects a schedule that sets both `cron` and `interval`
+
+[`snowflake_alert`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/alert) treats `alert_schedule.cron` and `alert_schedule.interval` as mutually exclusive. The conflict check used `alert_schedule.interval` and `alert_schedule.cron`, which Terraform cannot read on a single-item list, so a configuration that set both was accepted.
+
+The check now uses `alert_schedule.0.interval` and `alert_schedule.0.cron`. Setting both fails at plan time. Remove one of them. Configurations that set only one are unchanged.
+
 ### *(bug fix)* `snowflake_resource_monitor` now saves configured values in state
 
 Previously, [`snowflake_resource_monitor`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/resource_monitor) left some optional fields empty in Terraform state when your configuration used the value Snowflake already had. A number could appear as `0`, and text could appear blank, although the value was present both in your configuration and in Snowflake. This affected:
@@ -41,6 +141,19 @@ Previously, [`snowflake_resource_monitor`](https://registry.terraform.io/provide
 - `suspend_immediate_trigger`
 
 The provider now saves these configured values in state. When they already match Snowflake, Snowflake is left unchanged. No configuration changes are required. After upgrading, the next `terraform plan` refreshes the resource monitor and the fields listed above show the configured values.
+
+### *(bug fix)* Catalog integrations and warehouses now save configured values in state
+
+Previously, the catalog integration resources and the adaptive and interactive warehouse resources left some optional fields empty in Terraform state when your configuration used the value Snowflake already had. A number could appear as `0` or `-1`, and text could appear blank, although the value was present both in your configuration and in Snowflake. This affected:
+
+- [`snowflake_catalog_integration_aws_glue`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue): `refresh_interval_seconds`, `glue_region`, `catalog_namespace`
+- [`snowflake_catalog_integration_iceberg_rest`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest): `refresh_interval_seconds`, `catalog_namespace`
+- [`snowflake_catalog_integration_object_storage`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_object_storage): `refresh_interval_seconds`
+- [`snowflake_catalog_integration_open_catalog`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_open_catalog): `refresh_interval_seconds`, `catalog_namespace`
+- [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive): `max_query_performance_level`, `query_throughput_multiplier`, `resource_monitor`
+- [`snowflake_warehouse_interactive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive): `warehouse_size`, `max_cluster_count`, `min_cluster_count`, `auto_suspend`, `auto_resume`, `resource_monitor`
+
+The provider now saves these configured values in state. When they already match Snowflake, Snowflake is left unchanged. No configuration changes are required. After upgrading, the next `terraform plan` refreshes the resource and the fields listed above show the configured values.
 
 ### *(bug fix)* Fixed task graph root resolution for quoted identifiers
 

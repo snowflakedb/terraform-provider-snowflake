@@ -30,9 +30,9 @@ func TestAcc_AuthenticationPolicies_CompleteUseCase(t *testing.T) {
 		WithMfaPolicy(
 			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
 				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionAll).
-				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-					{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey},
-					{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
+				WithAllowedMethods([]sdk.MfaPolicyAllowedMethodsOptionListItem{
+					{Value: sdk.MfaPolicyAllowedMethodsOptionPasskey},
+					{Value: sdk.MfaPolicyAllowedMethodsOptionDuo},
 				}),
 		).
 		WithPatPolicy(
@@ -43,8 +43,8 @@ func TestAcc_AuthenticationPolicies_CompleteUseCase(t *testing.T) {
 		).
 		WithWorkloadIdentityPolicy(
 			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-					{Provider: sdk.AllowedProviderOptionAll},
+				WithAllowedProviders([]sdk.AllowedProviderOptionListItem{
+					{Value: sdk.AllowedProviderOptionAll},
 				}).
 				WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
 					{Value: "111122223333"},

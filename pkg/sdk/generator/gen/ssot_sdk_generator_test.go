@@ -3,9 +3,42 @@ package gen
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 	"github.com/stretchr/testify/require"
 )
+
+func Test_ShowOperationFromObject_plainIn(t *testing.T) {
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
+	obj := ssot.Object{
+		Name:       "Fake",
+		NamePlural: "Fakes",
+		IdType:     "SchemaObjectIdentifier",
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShow(
+			ssot.SdkShowOptionalLike(),
+			ssot.SdkShowOptionalIn(),
+			ssot.SdkShowOptionalStartsWith(),
+			ssot.SdkShowOptionalLimit(),
+			ssot.SdkShowByIDFiltering(ssot.SdkShowByIDIn, ssot.SdkShowByIDLike),
+		))},
+	}
+	got := NewInterface("Fakes", "Fake", "SchemaObjectIdentifier").ShowOperationFromObject(obj)
+	want := NewInterface("Fakes", "Fake", "SchemaObjectIdentifier").ShowOperationWithPairedStructs(
+		"https://docs.snowflake.com/en/sql-reference/sql/show-fakes",
+		ShowPairedStructs(obj),
+		NewQueryStruct("ShowFakes").
+			Show().
+			SQL("FAKES").
+			OptionalLike().
+			OptionalIn().
+			OptionalStartsWith().
+			OptionalLimit(),
+		ShowByIDInFiltering,
+		ShowByIDLikeFiltering,
+	)
+	requireSameOperations(t, want, got)
+}
 
 func Test_ShowDescribeFromObject(t *testing.T) {
 	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
@@ -22,6 +55,7 @@ func Test_ShowDescribeFromObject(t *testing.T) {
 				ssot.SdkShowOptionalSql("HISTORY"),
 				ssot.SdkShowOptionalLike(),
 				ssot.SdkShowOptionalExtendedIn(),
+				ssot.SdkShowOptionalOn(),
 				ssot.SdkShowOptionalStartsWith(),
 				ssot.SdkShowOptionalLimitFrom(),
 				ssot.SdkShowOptionalLimit(),
@@ -47,6 +81,7 @@ func Test_ShowDescribeFromObject(t *testing.T) {
 				OptionalSQL("HISTORY").
 				OptionalLike().
 				OptionalExtendedIn().
+				OptionalOn().
 				OptionalStartsWith().
 				OptionalLimitFrom().
 				OptionalLimit(),
@@ -112,6 +147,54 @@ func Test_DescribeOperationFromObject_plainShowVariants(t *testing.T) {
 		PlainStruct("WidgetInteractive").Field("Running", "*int"),
 	)
 	requireSameOperations(t, want, got)
+	require.Equal(t, []*ShowProjection{
+		{Source: "Widget", Method: "AsRegular", Target: "WidgetRegular", Fields: []string{"Name", "Running"}},
+		{Source: "Widget", Method: "AsAdaptive", Target: "WidgetAdaptive", Fields: []string{"Name", "ResourceMonitor"}},
+		{Source: "Widget", Method: "AsInteractive", Target: "WidgetInteractive", Fields: []string{"Running"}},
+	}, got.ShowProjections)
+	require.Empty(t, got.ShowByIDProjections)
+}
+
+func Test_DescribeOperationFromObject_showByIDProjections(t *testing.T) {
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
+	main := ssot.Object{
+		Name:          "Widget",
+		NamePlural:    "Widgets",
+		IdType:        "AccountObjectIdentifier",
+		Describe:      ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+		ShowPlainName: "WidgetRegular",
+		Show:          ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+		Generators:    []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShow(), ssot.SdkDescribe())},
+	}
+	adaptive := ssot.Object{
+		Name:      "WidgetAdaptive",
+		VariantOf: &main,
+		Show:      ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+	}
+	main.ShowVariants = []*ssot.Object{&adaptive}
+
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").
+		ShowOperationFromObject(main).
+		DescribeOperationFromObject(main)
+	require.Equal(t, []*ShowByIDProjection{
+		{Suffix: "Regular", ProjectionMethod: "AsRegular", Target: "WidgetRegular"},
+		{Suffix: "Adaptive", ProjectionMethod: "AsAdaptive", Target: "WidgetAdaptive"},
+	}, got.ShowByIDProjections)
+}
+
+func Test_DescribeOperationFromObject_showProjectionPanics(t *testing.T) {
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
+	column := ssot.OutputSpec{Columns: []*ssot.Attribute{&name}}
+	obj := ssot.Object{
+		Name:          "Widget",
+		ShowPlainName: "Other",
+		Show:          column,
+		Describe:      column,
+		Generators:    []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe())},
+	}
+	require.Panics(t, func() {
+		NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(obj)
+	})
 }
 
 func Test_ShowDescribeFromObject_panics(t *testing.T) {
@@ -410,6 +493,36 @@ func Test_CreateAlterFromObject(t *testing.T) {
 	})
 }
 
+func Test_CreateOperationFromObject_atLeastOneOf(t *testing.T) {
+	schedule := ssot.Attribute{Name: "schedule", Type: ssot.AttrString, CreateSql: ssot.StringParameter()}
+	expire := ssot.Attribute{Name: "expire_after_days", Type: ssot.AttrInt, CreateSql: ssot.IntParameter()}
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString, CreateSql: ssot.StringParameter()}
+	obj := ssot.Object{
+		Name:         "Widget",
+		Attributes:   []ssot.Attribute{schedule, expire, comment},
+		AtLeastOneOf: [][]*ssot.Attribute{{&schedule, &expire}},
+		Create:       ssot.CreateSpec{Clauses: []*ssot.Attribute{&schedule, &expire, &comment}},
+		Generators:   []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate())},
+	}
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/create-widget",
+		NewQueryStruct("CreateWidget").
+			Create().
+			OrReplace().
+			SQL("WIDGET").
+			IfNotExists().
+			Name().
+			OptionalTextAssignment("SCHEDULE", ParameterOptions().SingleQuotes()).
+			OptionalNumberAssignment("EXPIRE_AFTER_DAYS", ParameterOptions()).
+			OptionalTextAssignment("COMMENT", ParameterOptions().SingleQuotes()).
+			WithValidation(ValidIdentifier, "name").
+			WithValidation(ConflictingFields, "OrReplace", "IfNotExists").
+			WithValidation(AtLeastOneValueSet, "Schedule", "ExpireAfterDays"),
+	)
+	requireSameOperations(t, want, got)
+}
+
 func Test_CreateOperationFromObject_fakeObject(t *testing.T) {
 	comment := ssot.Attribute{
 		Name:      "comment",
@@ -445,6 +558,40 @@ func Test_CreateOperationFromObject_fakeObject(t *testing.T) {
 			WithValidation(ValidIdentifier, "name").
 			WithValidation(ConflictingFields, "OrReplace", "IfNotExists").
 			WithAdditionalValidations(),
+	)
+	requireSameOperations(t, want, got)
+}
+
+func Test_AlterOperationFromObject_unsetConflicts(t *testing.T) {
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	schedule := ssot.Attribute{Name: "schedule", Type: ssot.AttrString}
+	expire := ssot.Attribute{Name: "expire_after_days", Type: ssot.AttrInt}
+	obj := ssot.Object{
+		Name:           "Widget",
+		Attributes:     []ssot.Attribute{comment, schedule, expire},
+		Unset:          []*ssot.Attribute{&comment, &schedule, &expire},
+		UnsetConflicts: [][]*ssot.Attribute{{&schedule, &expire}},
+		Alter:          ssot.AlterSpec{Clauses: []ssot.AlterClause{ssot.AlterUnset()}},
+		Generators:     []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter(ssot.SdkAlterWithoutIfExists(), ssot.SdkAlterWithoutExactlyOneValueSet()))},
+	}
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-widget",
+		NewQueryStruct("AlterWidget").
+			Alter().
+			SQL("WIDGET").
+			Name().
+			OptionalQueryStructField(
+				"Unset",
+				NewQueryStruct("WidgetUnset").
+					OptionalSQL("COMMENT").
+					OptionalSQL("SCHEDULE").
+					OptionalSQL("EXPIRE_AFTER_DAYS").
+					WithValidation(AtLeastOneValueSet, "Comment", "Schedule", "ExpireAfterDays").
+					WithValidation(ConflictingFields, "Schedule", "ExpireAfterDays"),
+				ListOptions().NoParentheses().SQL("UNSET"),
+			).
+			WithValidation(ValidIdentifier, "name"),
 	)
 	requireSameOperations(t, want, got)
 }
@@ -620,12 +767,12 @@ func Test_parametersForStatement_addsAlterLevels(t *testing.T) {
 	}
 	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
 	obj := ssot.Object{
-		Name:                               "Widget",
-		AlterAdditionalParametersForLevels: []ssot.ParameterLevel{ssot.ParameterLevelWarehouseInteractive},
-		Attributes:                         []ssot.Attribute{comment},
-		Create:                             ssot.CreateSpec{Clauses: []*ssot.Attribute{ssot.Parameters}},
-		Set:                                []*ssot.Attribute{ssot.Parameters},
-		Unset:                              []*ssot.Attribute{ssot.Parameters},
+		Name:                                  "Widget",
+		ShowParametersDetailsAdditionalLevels: []ssot.ParameterLevel{ssot.ParameterLevelWarehouseInteractive},
+		Attributes:                            []ssot.Attribute{comment},
+		Create:                                ssot.CreateSpec{Clauses: []*ssot.Attribute{ssot.Parameters}},
+		Set:                                   []*ssot.Attribute{ssot.Parameters},
+		Unset:                                 []*ssot.Attribute{ssot.Parameters},
 		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
 			ssot.AlterSet(),
 			ssot.AlterUnset(),
@@ -943,6 +1090,87 @@ func Test_CreateVariantOperationsFromObject_panics(t *testing.T) {
 	})
 }
 
+func Test_AlterVariantOperationsFromObject_fakeObject(t *testing.T) {
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	base := ssot.Object{
+		Name: "Widget",
+		Generators: []ssot.GeneratorOption{
+			ssot.WithSdk(ssot.SdkAlterForVariants()),
+		},
+	}
+	variant := ssot.Object{
+		Name:                       "WidgetMini",
+		VariantOf:                  &base,
+		SdkCreateRequestObjectName: "MiniWidget",
+		Set:                        []*ssot.Attribute{&comment},
+		Unset:                      []*ssot.Attribute{&comment},
+		Alter: ssot.AlterSpec{
+			Doc:                   "https://docs.example.com/alter-mini",
+			AdditionalValidations: true,
+			Clauses: []ssot.AlterClause{
+				ssot.AlterRenameTo(),
+				ssot.AlterSet(),
+				ssot.AlterUnset(),
+			},
+		},
+	}
+	orig := variantsOf
+	t.Cleanup(func() { variantsOf = orig })
+	variantsOf = func(ssot.Object) []ssot.Object { return []ssot.Object{variant} }
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterVariantOperationsFromObject(base)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CustomOperation(
+		"AlterMini",
+		"https://docs.example.com/alter-mini",
+		NewQueryStruct("AlterMiniWidget").
+			Alter().
+			SQL("WIDGET").
+			IfExists().
+			Name().
+			RenameTo().
+			OptionalQueryStructField(
+				"Set",
+				NewQueryStruct("WidgetMiniSet").
+					OptionalTextAssignment("COMMENT", ParameterOptions().SingleQuotes()).
+					WithValidation(AtLeastOneValueSet, "Comment"),
+				KeywordOptions().SQL("SET"),
+			).
+			OptionalQueryStructField(
+				"Unset",
+				NewQueryStruct("WidgetMiniUnset").
+					OptionalSQL("COMMENT").
+					WithValidation(AtLeastOneValueSet, "Comment"),
+				ListOptions().NoParentheses().SQL("UNSET"),
+			).
+			WithValidation(ValidIdentifier, "name").
+			WithValidation(ExactlyOneValueSet, "RenameTo", "Set", "Unset").
+			WithValidation(ValidIdentifierIfSet, "RenameTo").
+			WithAdditionalValidations(),
+	)
+	requireSameOperations(t, want, got)
+}
+
+func Test_AlterVariantOperationsFromObject_panics(t *testing.T) {
+	base := ssot.Object{Name: "Widget"}
+	variant := ssot.Object{Name: "WidgetMini", VariantOf: &base}
+	orig := variantsOf
+	t.Cleanup(func() { variantsOf = orig })
+	variantsOf = func(ssot.Object) []ssot.Object { return []ssot.Object{variant} }
+	require.Panics(t, func() {
+		NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterVariantOperationsFromObject(base)
+	})
+	base.Generators = []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlterForVariants())}
+	require.Panics(t, func() {
+		NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterVariantOperationsFromObject(base)
+	})
+	variantsOf = func(ssot.Object) []ssot.Object { return nil }
+	require.Panics(t, func() {
+		NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterVariantOperationsFromObject(base)
+	})
+	require.Panics(t, func() {
+		NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(variant)
+	})
+}
+
 func Test_CustomOperationsFromObject_fakeObject(t *testing.T) {
 	transient := ssot.Attribute{
 		Name:      "is_transient",
@@ -1153,10 +1381,10 @@ func Test_ShowParametersFromObject_fakeObject(t *testing.T) {
 
 func Test_ShowParametersDetailsFromObject_includesAlterLevels(t *testing.T) {
 	obj := ssot.Object{
-		Name:                               "Widget",
-		IdType:                             "DatabaseObjectIdentifier",
-		AlterAdditionalParametersForLevels: []ssot.ParameterLevel{ssot.ParameterLevelWarehouseInteractive},
-		Generators:                         []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShowParametersDetails())},
+		Name:                                  "Widget",
+		IdType:                                "DatabaseObjectIdentifier",
+		ShowParametersDetailsAdditionalLevels: []ssot.ParameterLevel{ssot.ParameterLevelWarehouseInteractive},
+		Generators:                            []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShowParametersDetails())},
 	}
 	got := NewInterface("Widgets", "Widget", "DatabaseObjectIdentifier").ShowParametersDetailsFromObject(obj)
 	keys := make([]string, len(got.ParametersDetails.Fields))
@@ -1198,6 +1426,18 @@ func Test_InterfaceFromObject_enabledOperationsOnly(t *testing.T) {
 }
 
 func Test_SdkInterfacesFromSsot_uniquePluralAndFlag(t *testing.T) {
+	base := ssot.Object{
+		Name:       "Warehouse",
+		NamePlural: "Warehouses",
+		IdType:     "AccountObjectIdentifier",
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDefineFromSsot(), ssot.SdkDrop())},
+	}
+	variant := ssot.Object{
+		Name:       "WarehouseAdaptive",
+		NamePlural: "Warehouses",
+		IdType:     "AccountObjectIdentifier",
+		VariantOf:  &base,
+	}
 	objects := []ssot.Object{
 		{
 			Name:       "VariantA",
@@ -1219,10 +1459,13 @@ func Test_SdkInterfacesFromSsot_uniquePluralAndFlag(t *testing.T) {
 			Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe())},
 		},
 		{Name: "Quiet", NamePlural: "Quiets", IdType: "AccountObjectIdentifier"},
+		base,
+		variant,
 	}
 	got := SdkInterfacesFromSsot(objects, nil)
-	require.Len(t, got, 1)
+	require.Len(t, got, 2)
 	require.Equal(t, "Widgets", got[0].Name)
+	require.Equal(t, "Warehouses", got[1].Name)
 }
 
 func Test_SdkInterfacesFromSsot_override(t *testing.T) {
@@ -1275,4 +1518,317 @@ func requireSameOperations(t *testing.T, want, got *Interface) {
 		got.Operations[i].ObjectInterface = nil
 		require.Equal(t, want.Operations[i], got.Operations[i])
 	}
+}
+
+func Test_AlterOperationFromObject_textAndBlocks(t *testing.T) {
+	widget := newWidgetLocationAttributes()
+	locations := widget.list
+	update := ssot.Attribute{
+		Name:      "update_location",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(),
+		Children: []ssot.Attribute{
+			{Name: "location_name", Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier", CreateSql: ssot.StringParameter(ssot.Sql("LOCATION"), ssot.NoEquals(), ssot.Required())},
+		},
+	}
+	obj := ssot.Object{
+		Name: "Widget",
+		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
+			ssot.AlterText("REMOVE LOCATION"),
+			ssot.AlterParameterBlock("AddLocation", "ADD LOCATION", &locations),
+			ssot.AlterKeywordBlock("UpdateLocation", "UPDATE", &update),
+		}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter())},
+	}
+
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-widget",
+		NewQueryStruct("AlterWidget").
+			Alter().
+			SQL("WIDGET").
+			IfExists().
+			Name().
+			OptionalTextAssignment("REMOVE LOCATION", ParameterOptions().SingleQuotes().NoEquals()).
+			OptionalQueryStructField("AddLocation", queryStructFromObjectList("Widget", locations), ParameterOptions().SQL("ADD LOCATION")).
+			OptionalQueryStructField("UpdateLocation", NewQueryStruct("WidgetUpdateLocation").
+				TextAssignment("LOCATION", ParameterOptions().SingleQuotes().NoEquals().Required()), KeywordOptions().SQL("UPDATE")).
+			WithValidation(ValidIdentifier, "name").
+			WithValidation(ExactlyOneValueSet, "RemoveLocation", "AddLocation", "UpdateLocation"),
+	)
+	requireSameOperations(t, want, got)
+}
+
+func Test_DescribeOperationFromObject_propertyList(t *testing.T) {
+	parent := ssot.Attribute{Name: "parent_property", Type: ssot.AttrString, Readonly: true}
+	property := ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true}
+	value := ssot.Attribute{Name: "property_value", Type: ssot.AttrString, Readonly: true}
+	active := ssot.Attribute{Name: "active", Type: ssot.AttrString, Readonly: true}
+	obj := ssot.Object{
+		Name:         "Widget",
+		NamePlural:   "Widgets",
+		IdType:       "AccountObjectIdentifier",
+		Describe:     ssot.OutputSpec{Columns: []*ssot.Attribute{&active}},
+		DescribeRows: ssot.OutputSpec{Columns: []*ssot.Attribute{&parent, &property, &value}},
+		Generators:   []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe())},
+	}
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationWithPairedStructs(
+		DescriptionMappingKindSlice,
+		"https://docs.snowflake.com/en/sql-reference/sql/desc-widget",
+		StructPair("widgetDescRow", "WidgetProperty").
+			Text("parent_property").
+			Text("property").
+			Text("property_value"),
+		NewQueryStruct("DescWidget").
+			Describe().
+			SQL("WIDGET").
+			Name().
+			WithValidation(ValidIdentifier, "name"),
+	)
+	requireSameOperations(t, want, got)
+}
+
+func Test_DescribeOperationFromObject_details(t *testing.T) {
+	property := ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true}
+	locations := ssot.Attribute{Name: "storage_locations", Type: ssot.AttrList, Readonly: true, Elem: &ssot.Attribute{Type: ssot.AttrString}}
+	active := ssot.Attribute{Name: "active", Type: ssot.AttrString, Readonly: true}
+	size := ssot.Attribute{Name: "size", Type: ssot.AttrInt, Readonly: true, OptionalInShow: true}
+	obj := ssot.Object{
+		Name:         "Widget",
+		NamePlural:   "Widgets",
+		IdType:       "AccountObjectIdentifier",
+		Describe:     ssot.OutputSpec{Columns: []*ssot.Attribute{&locations, &active, &size}},
+		DescribeRows: ssot.OutputSpec{Columns: []*ssot.Attribute{&property}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(
+			ssot.SdkDescribeDetails(ssot.SdkDescribeDetailsNestedField(&locations)),
+		))},
+	}
+	want := PlainStruct("WidgetDetails").
+		Field("Id", "AccountObjectIdentifier").
+		Field("StorageLocations", "[]WidgetStorageLocationDetails").
+		Field("Active", "string").
+		Field("Size", "*int")
+	require.Equal(t, want.IntoField(), DescribeDetailsPlain(obj).IntoField())
+
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(obj)
+	helperNames := collections.Map(got.Operations[0].HelperStructs, func(f *Field) string { return f.Name })
+	require.Contains(t, helperNames, "WidgetDetails")
+	require.Contains(t, helperNames, "WidgetProperty")
+
+	id := ssot.Attribute{Name: "id", Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier", Readonly: true}
+	obj.Describe = ssot.OutputSpec{Columns: []*ssot.Attribute{&id, &active}}
+	obj.Generators = []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeDetails()))}
+	require.Equal(t,
+		PlainStruct("WidgetDetails").Field("Id", "AccountObjectIdentifier").Field("Active", "string").IntoField(),
+		DescribeDetailsPlain(obj).IntoField(),
+		"a column named id replaces the leading Id field",
+	)
+}
+
+func Test_DescribeOperationFromObject_detailsMethod(t *testing.T) {
+	property := ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true}
+	active := ssot.Attribute{Name: "active", Type: ssot.AttrString, Readonly: true}
+	obj := ssot.Object{
+		Name:         "Widget",
+		NamePlural:   "Widgets",
+		IdType:       "AccountObjectIdentifier",
+		Describe:     ssot.OutputSpec{Columns: []*ssot.Attribute{&active}},
+		DescribeRows: ssot.OutputSpec{Columns: []*ssot.Attribute{&property}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(
+			ssot.SdkDescribeDetails(ssot.SdkDescribeDetailsMethod()),
+		))},
+	}
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(obj)
+	require.Equal(t, []*DescribeDetailsConfig{{MethodName: "DescribeDetails", DetailsType: "WidgetDetails", ParseFunc: "ParseWidgetDescribed"}}, got.DescribeDetailsMethods)
+	require.Len(t, got.CustomMethods, 1)
+	require.Equal(t, "DescribeDetails", got.CustomMethods[0].Name)
+	require.Equal(t, []string{"*WidgetDetails", "error"}, got.CustomMethods[0].ReturnTypes)
+	require.Equal(t, "AccountObjectIdentifier", got.CustomMethods[0].Parameters[0].Kind)
+}
+
+func Test_DescribeOperationFromObject_detailsParse(t *testing.T) {
+	property := ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true}
+	locations := ssot.Attribute{Name: "storage_locations", Type: ssot.AttrList, Readonly: true, Elem: &ssot.Attribute{Type: ssot.AttrString}}
+	active := ssot.Attribute{Name: "active", Type: ssot.AttrString, Readonly: true}
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString, Readonly: true}
+	obj := ssot.Object{
+		Name:         "ExternalWidget",
+		NamePlural:   "ExternalWidgets",
+		IdType:       "AccountObjectIdentifier",
+		Describe:     ssot.OutputSpec{Columns: []*ssot.Attribute{&locations, &active, &comment}},
+		DescribeRows: ssot.OutputSpec{Columns: []*ssot.Attribute{&property}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(
+			ssot.SdkDescribeDetails(
+				ssot.SdkDescribeDetailsNestedField(&locations),
+				ssot.SdkDescribeDetailsParse(
+					ssot.DescribeProperty(&comment, "COMMENT"),
+					ssot.DescribeProperty(&active, "ACTIVE"),
+					ssot.DescribePropertyPrefix(&locations, "LOCATION_"),
+				),
+			),
+		))},
+	}
+	got := NewInterface("ExternalWidgets", "ExternalWidget", "AccountObjectIdentifier").DescribeOperationFromObject(obj)
+	require.Equal(t, &DescribeParseConfig{
+		RowsType:      "ExternalWidgetProperty",
+		PropertyField: "Property",
+		ValueField:    "PropertyValue",
+		DetailsType:   "ExternalWidgetDetails",
+		ErrorLabel:    "external widget",
+		ValidateFunc:  "validateExternalWidgetDescribed",
+		Properties: []DescribeParseProperty{
+			{Property: "COMMENT", Field: "Comment"},
+			{Property: "ACTIVE", Field: "Active"},
+		},
+		Prefixes: []DescribeParsePrefix{{
+			Prefix:        "LOCATION_",
+			Field:         "StorageLocations",
+			Var:           "storageLocations",
+			ElementType:   "ExternalWidgetStorageLocationDetails",
+			ElementParser: "ParseExternalWidgetStorageLocationDescribed",
+		}},
+	}, got.DescribeParse)
+}
+
+func Test_Interface_WithDescribeDetailsMethod_manyMethods(t *testing.T) {
+	i := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").
+		WithDescribeDetails("WidgetDetails", "ParseWidgetDescribed").
+		WithDescribeDetailsMethod("DescribeMiniDetails", "WidgetMiniDetails", "ParseWidgetMiniDescribed")
+
+	require.Equal(t, []*DescribeDetailsConfig{
+		{MethodName: "DescribeDetails", DetailsType: "WidgetDetails", ParseFunc: "ParseWidgetDescribed"},
+		{MethodName: "DescribeMiniDetails", DetailsType: "WidgetMiniDetails", ParseFunc: "ParseWidgetMiniDescribed"},
+	}, i.DescribeDetailsMethods)
+	require.Equal(t, []string{"DescribeDetails", "DescribeMiniDetails"}, collections.Map(i.CustomMethods, func(m *CustomInterfaceMethod) string { return m.Name }))
+}
+
+func Test_DescribeOperationFromObject_detailsForVariants(t *testing.T) {
+	property := ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true}
+	active := ssot.Attribute{Name: "active", Type: ssot.AttrString, Readonly: true}
+	mode := ssot.NewEnum("WidgetMode", "WidgetModes", "FAST", "SLOW")
+	config := ssot.Attribute{
+		Name: "config", Type: ssot.AttrObject, Required: true,
+		Children: []ssot.Attribute{
+			{Name: "uri", Type: ssot.AttrString, Required: true},
+			{Name: "mode", Type: ssot.AttrEnum, Enum: mode},
+			{Name: "scopes", Type: ssot.AttrList, Elem: &ssot.Attribute{Type: ssot.AttrString}},
+			{Name: "fixed", SqlOnly: true, CreateSql: ssot.StaticSQL("fixed", "A = B")},
+		},
+	}
+	auth := ssot.Attribute{Name: "o_auth_config", Type: ssot.AttrObject, Children: []ssot.Attribute{{Name: "token", Type: ssot.AttrString}}}
+	base := ssot.Object{
+		Name:         "Widget",
+		NamePlural:   "Widgets",
+		IdType:       "AccountObjectIdentifier",
+		DescribeRows: ssot.OutputSpec{Columns: []*ssot.Attribute{&property}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(
+			ssot.SdkDescribeDetailsForVariants(),
+		))},
+	}
+	mini := ssot.Object{
+		Name:      "WidgetMini",
+		IdType:    "AccountObjectIdentifier",
+		VariantOf: &base,
+		Describe:  ssot.OutputSpec{Columns: []*ssot.Attribute{&active}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(
+			ssot.SdkDescribeSql("WIDGET"),
+			ssot.SdkDescribeDetails(),
+		))},
+	}
+	maxi := ssot.Object{
+		Name:      "WidgetMaxi",
+		IdType:    "AccountObjectIdentifier",
+		VariantOf: &base,
+		Describe:  ssot.OutputSpec{Columns: []*ssot.Attribute{&active, &config, &auth}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(
+			ssot.SdkDescribeSql("WIDGET"),
+			ssot.SdkDescribeDetails(),
+		))},
+	}
+	other := ssot.Object{Name: "WidgetOther", IdType: "AccountObjectIdentifier", VariantOf: &base, Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&active}}}
+	orig := variantsOf
+	t.Cleanup(func() { variantsOf = orig })
+	variantsOf = func(ssot.Object) []ssot.Object { return []ssot.Object{mini, other, maxi} }
+
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(base)
+
+	require.Equal(t, []*DescribeDetailsConfig{
+		{MethodName: "DescribeMiniDetails", DetailsType: "WidgetMiniDetails", ParseFunc: "ParseWidgetMiniDescribed"},
+		{MethodName: "DescribeMaxiDetails", DetailsType: "WidgetMaxiDetails", ParseFunc: "ParseWidgetMaxiDescribed"},
+	}, got.DescribeDetailsMethods, "a variant without SdkDescribeDetails has no details")
+
+	helpers := collections.Map(got.Operations[0].HelperStructs, func(f *Field) string { return f.Name })
+	require.Equal(t, []string{"WidgetMiniDetails", "WidgetMaxiDetails", "WidgetMaxiConfigDetails", "WidgetMaxiOAuthConfigDetails"}, helpers[len(helpers)-4:])
+
+	require.Equal(t,
+		PlainStruct("WidgetMaxiDetails").
+			Field("Id", "AccountObjectIdentifier").
+			Field("Active", "string").
+			Field("Config", "WidgetMaxiConfigDetails").
+			Field("OAuthConfig", "*WidgetMaxiOAuthConfigDetails").
+			IntoField(),
+		DescribeDetailsPlain(maxi).IntoField(),
+		"an object column is a struct of its Children, a pointer when it is not required",
+	)
+
+	nested := DescribeNestedPlains(maxi)
+	require.Len(t, nested, 2)
+	require.Equal(t,
+		PlainStruct("WidgetMaxiConfigDetails").
+			Field("Uri", "string").
+			Field("Mode", "WidgetMode").
+			Field("Scopes", "[]string").
+			IntoField(),
+		nested[0].IntoField(),
+		"a Child that is only SQL is not a field",
+	)
+
+	t.Run("no variant with details", func(t *testing.T) {
+		variantsOf = func(ssot.Object) []ssot.Object { return []ssot.Object{other} }
+		require.Panics(t, func() {
+			NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(base)
+		})
+	})
+}
+
+func Test_DescribeOperationFromObject_detailsParseParsedAndRows(t *testing.T) {
+	property := ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true}
+	value := ssot.Attribute{Name: "value", Type: ssot.AttrString, Readonly: true}
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true}
+	mode := ssot.Attribute{Name: "mode", Type: ssot.AttrEnum, Enum: ssot.NewEnum("WidgetMode", "WidgetModes", "FAST"), Readonly: true}
+	obj := ssot.Object{
+		Name:         "Widget",
+		NamePlural:   "Widgets",
+		IdType:       "AccountObjectIdentifier",
+		Describe:     ssot.OutputSpec{Columns: []*ssot.Attribute{&name, &mode}},
+		DescribeRows: ssot.OutputSpec{Columns: []*ssot.Attribute{&property, &value}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(
+			ssot.SdkDescribeDetails(
+				ssot.SdkDescribeDetailsRowsField("descriptions", "WidgetDescriptions"),
+				ssot.SdkDescribeDetailsParseIgnoreUnknown(),
+				ssot.SdkDescribeDetailsParse(
+					ssot.DescribeProperty(&name, "NAME"),
+					ssot.DescribePropertyParsed(&mode, "MODE"),
+				),
+			),
+		))},
+	}
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(obj)
+	require.Equal(t, &DescribeParseConfig{
+		RowsType:      "WidgetProperty",
+		PropertyField: "Property",
+		ValueField:    "Value",
+		DetailsType:   "WidgetDetails",
+		ErrorLabel:    "widget",
+		ValidateFunc:  "validateWidgetDescribed",
+		IgnoreUnknown: true,
+		RowsField:     "descriptions",
+		RowsFieldType: "WidgetDescriptions",
+		Properties: []DescribeParseProperty{
+			{Property: "NAME", Field: "Name"},
+			{Property: "MODE", Field: "Mode", Parser: "ParseWidgetModeDescribed"},
+		},
+	}, got.DescribeParse)
 }

@@ -15,7 +15,7 @@ type Pipes interface {
 	Show(ctx context.Context, request *ShowPipeRequest) ([]Pipe, error)
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Pipe, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Pipe, error)
-	Describe(ctx context.Context, id SchemaObjectIdentifier) (*PipeDetail, error)
+	Describe(ctx context.Context, id SchemaObjectIdentifier) (*PipeDetails, error)
 }
 
 // CreatePipeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-pipe.
@@ -143,7 +143,7 @@ type pipeDetailRow struct {
 	InvalidReason       sql.NullString `db:"invalid_reason"`
 }
 
-type PipeDetail struct {
+type PipeDetails struct {
 	CreatedOn           string
 	Name                string
 	DatabaseName        string

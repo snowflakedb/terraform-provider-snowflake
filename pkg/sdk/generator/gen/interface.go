@@ -65,6 +65,11 @@ type Interface struct {
 	// ParametersDetails, when set (via ShowParametersDetails), drives generation of the typed
 	// <NameSingular>ParametersDetails struct and its ShowParametersDetails accessor.
 	ParametersDetails *ParametersDetailsConfig
+	// DescribeDetailsMethods, when set (via WithDescribeDetails or WithDescribeDetailsMethod), drive generation of the
+	// Describe details method bodies. An interface has one per kind of details, such as one per variant.
+	DescribeDetailsMethods []*DescribeDetailsConfig
+	// DescribeParse, when set (via WithDescribeParse), drives generation of Parse<NameSingular>Described.
+	DescribeParse *DescribeParseConfig
 	// CustomMethods holds interface methods that have no generated implementation.
 	// They will appear in the generated interface but the user is responsible for implementing them.
 	CustomMethods []*CustomInterfaceMethod
@@ -75,6 +80,15 @@ type Interface struct {
 	ShowObjectName string
 	// ShowByIDFindPredicateKind selects the predicate strategy for the generated ShowByID FindFirst call.
 	ShowByIDFindPredicateKind ShowByIDFindPredicateKind
+	// ShowProjections are field-subset methods on an already emitted struct.
+	ShowProjections []*ShowProjection
+	// ShowByIDProjections are ShowByID and ShowByIDSafely methods that return a projected row.
+	ShowByIDProjections []*ShowByIDProjection
+
+	// checkStructShapes makes preprocessing panic when two operations define a struct with the same name and a different
+	// shape. The ssot operation builders set it: they derive a nested struct name from the object and the attribute, so
+	// CREATE and ALTER SET share the struct.
+	checkStructShapes bool
 
 	// UnitTests is the prepared model for the optional unit_tests generation part.
 	UnitTests *UnitTestsModel

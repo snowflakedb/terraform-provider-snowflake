@@ -7,6 +7,9 @@ import (
 	"errors"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-cty/cty"
@@ -22,7 +25,7 @@ func ExternalVolume() *tfschema.Resource {
 		CreateContext: externalVolumeCreateExt,
 		ReadContext:   externalVolumeReadExt,
 		UpdateContext: externalVolumeUpdateExt,
-		DeleteContext: externalVolumeDeleteExt,
+		DeleteContext: TrackingDeleteWrapper(resources.ExternalVolume, DeleteExternalVolume),
 		Importer:      externalVolumeImporterExt,
 
 		CustomizeDiff: externalVolumeCustomizeDiffExt,
@@ -40,7 +43,7 @@ func ExternalVolume() *tfschema.Resource {
 }
 
 func ImportExternalVolume(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
-	id, err := externalVolumeParseIdExt(d.Id())
+	id, err := externalVolumeParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +53,8 @@ func ImportExternalVolume(ctx context.Context, d *tfschema.ResourceData, meta an
 		return nil, err
 	}
 
-	if err := externalVolumeSetFieldsNotSetByReadExt(d, id, externalVolume); err != nil {
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
+	if err := externalVolumeSetFieldsNotSetByReadExt(d, id, externalVolume, importPermissiveMode); err != nil {
 		return nil, err
 	}
 	return []*tfschema.ResourceData{d}, nil
@@ -81,7 +85,7 @@ func CreateExternalVolume(ctx context.Context, d *tfschema.ResourceData, meta an
 
 func ReadExternalVolumeFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := externalVolumeParseIdExt(d.Id())
+		id, err := externalVolumeParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -98,14 +102,17 @@ func ReadExternalVolumeFunc(withExternalChangesMarking bool) tfschema.ReadContex
 			return diag.FromErr(err)
 		}
 
-		if err = setStateToValuesFromConfig(d, externalVolumeSchema, externalVolumeSetStateToValueFromConfigFieldsExt); err != nil {
+		if err = setStateToValuesFromConfig(d, externalVolumeSchema, []string{
+			"allow_writes",
+		}); err != nil {
 			return diag.FromErr(err)
 		}
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ExternalVolumeToSchema(externalVolume)}),
+			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ExternalVolumeDetailsToSchema(externalVolumeDetails)}),
 			externalVolumeSetDescribeOutputExt(d, id, externalVolumeDetails, nil, withExternalChangesMarking),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			externalVolumeSetConfigFieldsExt(d, externalVolume),
+			externalVolumeSetConfigFields(d, externalVolume),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
@@ -115,7 +122,7 @@ func ReadExternalVolumeFunc(withExternalChangesMarking bool) tfschema.ReadContex
 }
 
 func UpdateExternalVolume(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := externalVolumeParseIdExt(d.Id())
+	id, err := externalVolumeParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -126,9 +133,6 @@ func UpdateExternalVolume(ctx context.Context, d *tfschema.ResourceData, meta an
 	if err := externalVolumeAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := externalVolumeAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
-	}
 	return ReadExternalVolumeFunc(false)(ctx, d, meta)
 }
 
@@ -136,9 +140,28 @@ func externalVolumeParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjec
 	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
 }
 
+func externalVolumeParseId(id string) (sdk.AccountObjectIdentifier, error) {
+	return sdk.ParseAccountObjectIdentifier(id)
+}
+
 func externalVolumeApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateExternalVolumeRequest) error {
 	return errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 		booleanStringAttributeCreateBuilder(d, "allow_writes", request.WithAllowWrites),
+	)
+}
+
+func DeleteExternalVolume(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	return ResourceDeleteContextFunc(
+		sdk.ParseAccountObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.ExternalVolumes.DropSafely
+		},
+	)(ctx, d, meta)
+}
+
+func externalVolumeSetConfigFields(d *tfschema.ResourceData, obj *sdk.ExternalVolume) error {
+	return errors.Join(
+		d.Set("comment", obj.Comment),
 	)
 }

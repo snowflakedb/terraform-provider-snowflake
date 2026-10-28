@@ -21,13 +21,9 @@ import (
 // =============================================================================
 
 var (
-	warehouseCreateExt = TrackingCreateWrapper(resources.Warehouse, CreateWarehouse)
-	warehouseReadExt   = TrackingReadWrapper(resources.Warehouse, ReadWarehouseFunc(true))
-	warehouseUpdateExt = TrackingUpdateWrapper(resources.Warehouse, UpdateWarehouse)
-	warehouseDeleteExt = TrackingDeleteWrapper(resources.Warehouse, ResourceDeleteContextFunc(
-		warehouseParseIdExt,
-		warehouseDropSafelyInSdkExt,
-	))
+	warehouseCreateExt      = TrackingCreateWrapper(resources.Warehouse, CreateWarehouse)
+	warehouseReadExt        = TrackingReadWrapper(resources.Warehouse, ReadWarehouseFunc(true))
+	warehouseUpdateExt      = TrackingUpdateWrapper(resources.Warehouse, UpdateWarehouse)
 	warehouseDescriptionExt = "Resource used to manage warehouse objects. For more information, check [warehouse documentation](https://docs.snowflake.com/en/sql-reference/commands-warehouse)."
 	// Listed on the warehouse SSOT object and appended to the generated customdiff.All.
 	warehouseForceNewIfSizeRemoved = customdiff.ForceNewIfChange("warehouse_size", func(_ context.Context, old, new, _ any) bool {
@@ -50,28 +46,9 @@ var (
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-var warehouseSetStateToValueFromConfigFieldsExt = []string{
-	"warehouse_type",
-	"warehouse_size",
-	"max_cluster_count",
-	"min_cluster_count",
-	"scaling_policy",
-	"auto_suspend",
-	"auto_resume",
-	"resource_monitor",
-	"enable_query_acceleration",
-	"query_acceleration_max_scale_factor",
-	"resource_constraint",
-	"generation",
-}
-
 type warehouseAlterRequestsExt struct {
 	set   *sdk.WarehouseSetRequest
 	unset *sdk.WarehouseUnsetRequest
-}
-
-func warehouseParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
-	return sdk.ParseAccountObjectIdentifier(id)
 }
 
 func warehouseNewCreateRequestExt(_ *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateWarehouseRequest, error) {
@@ -97,7 +74,7 @@ func warehouseApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.Creat
 	)
 }
 
-func warehouseHandleExternalChangesExt(d *schema.ResourceData, warehouse *sdk.Warehouse, withExternalChangesMarking bool) error {
+func warehouseHandleExternalChangesExt(d *schema.ResourceData, warehouse *sdk.WarehouseRegular, withExternalChangesMarking bool) error {
 	if !withExternalChangesMarking {
 		return nil
 	}
@@ -132,10 +109,10 @@ func warehouseHandleExternalChangesExt(d *schema.ResourceData, warehouse *sdk.Wa
 	)
 }
 
-func warehouseSetConfigFieldsExt(d *schema.ResourceData, warehouse *sdk.Warehouse) error {
+func warehouseSetConfigFieldsExt(d *schema.ResourceData, warehouse *sdk.WarehouseRegular) error {
 	return errors.Join(
 		d.Set("comment", warehouse.Comment),
-		d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseRegularToSchema(warehouse.AsRegular())}),
+		d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseRegularToSchema(warehouse)}),
 	)
 }
 
@@ -178,7 +155,7 @@ func warehouseApplySetUnsetExt(d *schema.ResourceData) (*warehouseAlterRequestsE
 	return &warehouseAlterRequestsExt{set: set, unset: unset}, nil
 }
 
-func warehouseSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, warehouse *sdk.Warehouse) error {
+func warehouseSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, warehouse *sdk.WarehouseRegular, _ bool) error {
 	if err := d.Set("name", id.Name()); err != nil {
 		return err
 	}
@@ -244,16 +221,8 @@ func warehouseGenerationUpdate(d *schema.ResourceData, set *sdk.WarehouseSetRequ
 // SDK incision points
 // =============================================================================
 
-func warehouseCreateInSdkExt(ctx context.Context, meta any, _ sdk.AccountObjectIdentifier, req *sdk.CreateWarehouseRequest) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	if err := client.Warehouses.Create(ctx, req); err != nil {
-		return diag.FromErr(err)
-	}
-	return nil
-}
-
-func warehouseShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier) (*sdk.Warehouse, diag.Diagnostics) {
-	warehouse, err := showWarehouseByIDSafely(ctx, meta.(*provider.Context), id)
+func warehouseShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier) (*sdk.WarehouseRegular, diag.Diagnostics) {
+	warehouse, err := showWarehouseRegularByIDSafely(ctx, meta.(*provider.Context), id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
@@ -270,8 +239,8 @@ func warehouseShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData
 	return warehouse, nil
 }
 
-func warehouseShowByIdInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier) (*sdk.Warehouse, error) {
-	return showWarehouseByID(ctx, meta.(*provider.Context), id)
+func warehouseShowByIdInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier) (*sdk.WarehouseRegular, error) {
+	return showWarehouseRegularByID(ctx, meta.(*provider.Context), id)
 }
 
 func warehouseAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseAlterRequestsExt) error {
@@ -282,28 +251,68 @@ func warehouseAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta
 	return nil
 }
 
-func warehouseAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseAlterRequestsExt) error {
-	if *reqs.unset != *sdk.NewWarehouseUnsetRequest() {
-		client := meta.(*provider.Context).Client
-		return client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithUnset(*reqs.unset))
-	}
-	return nil
-}
-
-func warehouseDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
-	return client.Warehouses.DropSafely
-}
-
-func showWarehouseByID(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.Warehouse, error) {
+func showWarehouseRegularByID(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.WarehouseRegular, error) {
 	if providerCtx.Experiments.IsEnabled(experimentalfeatures.WarehouseShowImprovedPerformance) {
-		return providerCtx.Client.Warehouses.ShowByIDExperimental(ctx, id)
+		warehouse, err := providerCtx.Client.Warehouses.ShowByIDExperimental(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		return warehouse.AsRegular(), nil
 	}
-	return providerCtx.Client.Warehouses.ShowByID(ctx, id)
+	return providerCtx.Client.Warehouses.ShowByIDRegular(ctx, id)
 }
 
-func showWarehouseByIDSafely(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.Warehouse, error) {
+func showWarehouseRegularByIDSafely(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.WarehouseRegular, error) {
 	if providerCtx.Experiments.IsEnabled(experimentalfeatures.WarehouseShowImprovedPerformance) {
-		return providerCtx.Client.Warehouses.ShowByIDExperimentalSafely(ctx, id)
+		warehouse, err := providerCtx.Client.Warehouses.ShowByIDExperimentalSafely(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		return warehouse.AsRegular(), nil
 	}
-	return providerCtx.Client.Warehouses.ShowByIDSafely(ctx, id)
+	return providerCtx.Client.Warehouses.ShowByIDSafelyRegular(ctx, id)
+}
+
+func showWarehouseAdaptiveByID(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.WarehouseAdaptive, error) {
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.WarehouseShowImprovedPerformance) {
+		warehouse, err := providerCtx.Client.Warehouses.ShowByIDExperimental(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		return warehouse.AsAdaptive(), nil
+	}
+	return providerCtx.Client.Warehouses.ShowByIDAdaptive(ctx, id)
+}
+
+func showWarehouseAdaptiveByIDSafely(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.WarehouseAdaptive, error) {
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.WarehouseShowImprovedPerformance) {
+		warehouse, err := providerCtx.Client.Warehouses.ShowByIDExperimentalSafely(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		return warehouse.AsAdaptive(), nil
+	}
+	return providerCtx.Client.Warehouses.ShowByIDSafelyAdaptive(ctx, id)
+}
+
+func showWarehouseInteractiveByID(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.WarehouseInteractive, error) {
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.WarehouseShowImprovedPerformance) {
+		warehouse, err := providerCtx.Client.Warehouses.ShowByIDExperimental(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		return warehouse.AsInteractive(), nil
+	}
+	return providerCtx.Client.Warehouses.ShowByIDInteractive(ctx, id)
+}
+
+func showWarehouseInteractiveByIDSafely(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.WarehouseInteractive, error) {
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.WarehouseShowImprovedPerformance) {
+		warehouse, err := providerCtx.Client.Warehouses.ShowByIDExperimentalSafely(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		return warehouse.AsInteractive(), nil
+	}
+	return providerCtx.Client.Warehouses.ShowByIDSafelyInteractive(ctx, id)
 }

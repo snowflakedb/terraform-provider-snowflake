@@ -303,10 +303,10 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 		stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
 		t.Cleanup(stageCleanup)
 
-		pipe, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, createPipeCopyStatement(t, table, stage))
+		pipe, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, testClientHelper().Pipe.CopyStatement(t, table, stage))
 		t.Cleanup(pipeCleanup)
 
-		secondPipe, secondPipeCleanup := testClientHelper().Pipe.CreatePipe(t, createPipeCopyStatement(t, table, stage))
+		secondPipe, secondPipeCleanup := testClientHelper().Pipe.CreatePipe(t, testClientHelper().Pipe.CopyStatement(t, table, stage))
 		t.Cleanup(secondPipeCleanup)
 
 		role, roleCleanup := testClientHelper().Role.CreateRole(t)
@@ -330,10 +330,10 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 		stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
 		t.Cleanup(stageCleanup)
 
-		_, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, createPipeCopyStatement(t, table, stage))
+		_, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, testClientHelper().Pipe.CopyStatement(t, table, stage))
 		t.Cleanup(pipeCleanup)
 
-		_, secondPipeCleanup := testClientHelper().Pipe.CreatePipe(t, createPipeCopyStatement(t, table, stage))
+		_, secondPipeCleanup := testClientHelper().Pipe.CreatePipe(t, testClientHelper().Pipe.CopyStatement(t, table, stage))
 		t.Cleanup(secondPipeCleanup)
 
 		role, roleCleanup := testClientHelper().Role.CreateRole(t)
@@ -572,10 +572,10 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
 		t.Cleanup(stageCleanup)
 
-		pipe, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, createPipeCopyStatement(t, table, stage))
+		pipe, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, testClientHelper().Pipe.CopyStatement(t, table, stage))
 		t.Cleanup(pipeCleanup)
 
-		secondPipe, secondPipeCleanup := testClientHelper().Pipe.CreatePipe(t, createPipeCopyStatement(t, table, stage))
+		secondPipe, secondPipeCleanup := testClientHelper().Pipe.CreatePipe(t, testClientHelper().Pipe.CopyStatement(t, table, stage))
 		t.Cleanup(secondPipeCleanup)
 
 		role, roleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
@@ -599,10 +599,10 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 		stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
 		t.Cleanup(stageCleanup)
 
-		_, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, createPipeCopyStatement(t, table, stage))
+		_, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, testClientHelper().Pipe.CopyStatement(t, table, stage))
 		t.Cleanup(pipeCleanup)
 
-		_, secondPipeCleanup := testClientHelper().Pipe.CreatePipe(t, createPipeCopyStatement(t, table, stage))
+		_, secondPipeCleanup := testClientHelper().Pipe.CreatePipe(t, testClientHelper().Pipe.CopyStatement(t, table, stage))
 		t.Cleanup(secondPipeCleanup)
 
 		role, roleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
@@ -745,7 +745,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 	stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
 	t.Cleanup(stageCleanup)
 
-	copyStatement := createPipeCopyStatement(t, table, stage)
+	copyStatement := testClientHelper().Pipe.CopyStatement(t, table, stage)
 
 	checkOwnershipOnObjectToRole := func(t *testing.T, on sdk.OwnershipGrantOnRequest, role sdk.AccountObjectIdentifier) {
 		t.Helper()

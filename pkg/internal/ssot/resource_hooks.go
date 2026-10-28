@@ -78,11 +78,11 @@ func DefaultResourceExtHooks(opts ...ResourceHookOption) ResourceHooks {
 		DescribeInSdk:                   ExtCall(),
 		HandleExternalChanges:           ExtCall(),
 		HandleExternalChangesInDescribe: Omitted(),
-		SetStateToValuesFromConfig:      ExtCall(),
-		ShowOutputSet:                   ExtCall(),
-		DescribeOutputSet:               ExtCall(),
+		SetStateToValuesFromConfig:      Generated(),
+		ShowOutputSet:                   Generated(),
+		DescribeOutputSet:               Generated(),
 		SetDescribeOutput:               Omitted(),
-		FqnSet:                          ExtCall(),
+		FqnSet:                          Generated(),
 		SetConfigFields:                 ExtCall(),
 		HierarchyRename:                 Omitted(),
 		BeforeAlter:                     Omitted(),
@@ -114,7 +114,21 @@ func DefaultResourceExtHooks(opts ...ResourceHookOption) ResourceHooks {
 	for _, opt := range opts {
 		opt(&h)
 	}
+	deriveOutputSetHooks(&h)
 	return h
+}
+
+// deriveOutputSetHooks drops a generated output set call when the state it fills does not exist.
+// It only turns Generated into Omitted, so an explicit ExtCall or Omitted stays as it was set.
+func deriveOutputSetHooks(h *ResourceHooks) {
+	// show_output is only in the schema when the show output schema is present.
+	if h.ShowOutputSet.Generate && !h.ShowOutputSchema.Present {
+		h.ShowOutputSet = Omitted()
+	}
+	// describe_output needs the describe step and its schema.
+	if h.DescribeOutputSet.Generate && (!h.DescribeInSdk.Present || !h.DescribeOutputSchema.Present) {
+		h.DescribeOutputSet = Omitted()
+	}
 }
 
 func WithParseIdFromConfig(h ResourceHook) ResourceHookOption {

@@ -19,6 +19,9 @@ func Test_ObjectGenerators_options(t *testing.T) {
 	g = ObjectGenerators(WithSchema())
 	require.Equal(t, Generators{}, g)
 
+	g = ObjectGenerators(WithResource())
+	require.Equal(t, Generators{Resource: ResourceGenerator{Enabled: true}}, g)
+
 	g = ObjectGenerators(WithModel())
 	require.Equal(t, Generators{Model: ModelGenerator{Enabled: true}}, g)
 
@@ -83,12 +86,12 @@ func Test_ShowFromBase(t *testing.T) {
 		Name:      "WidgetAdaptive",
 		VariantOf: &base,
 		Generators: []GeneratorOption{
-			WithObjectAssert(ObjectAssertShow(ObjectAssertShowFromBase("AsAdaptive"))),
+			WithObjectAssert(ObjectAssertShow(ObjectAssertShowFromBase("ShowByIDAdaptive"))),
 		},
 	}
 	got, ok := obj.ShowFromBase()
 	require.True(t, ok)
-	require.Equal(t, ShowFromBase{ClientName: "Widget", Method: "AsAdaptive"}, got)
+	require.Equal(t, ShowFromBase{ClientName: "Widget", Method: "ShowByIDAdaptive"}, got)
 
 	_, ok = Object{Name: "Widget"}.ShowFromBase()
 	require.False(t, ok)
@@ -97,7 +100,7 @@ func Test_ShowFromBase(t *testing.T) {
 		Object{
 			Name: "WidgetAdaptive",
 			Generators: []GeneratorOption{
-				WithObjectAssert(ObjectAssertShow(ObjectAssertShowFromBase("AsAdaptive"))),
+				WithObjectAssert(ObjectAssertShow(ObjectAssertShowFromBase("ShowByIDAdaptive"))),
 			},
 		}.ShowFromBase()
 	})
@@ -116,6 +119,7 @@ func Test_ParameterAssertionNames(t *testing.T) {
 }
 
 func Test_ObjectGenerators_sdk(t *testing.T) {
+	scopes := Attribute{Name: "scopes", Type: AttrList}
 	g := ObjectGenerators(WithSdk(SdkShow(), SdkDescribe()))
 	require.Equal(t, Generators{Sdk: SdkGenerator{Show: true, Describe: true}}, g)
 
@@ -132,10 +136,13 @@ func Test_ObjectGenerators_sdk(t *testing.T) {
 		SdkShowOptionalSql("HISTORY", "FUTURE"),
 		SdkShowOptionalLike(),
 		SdkShowOptionalExtendedIn(),
+		SdkShowOptionalOn(),
 		SdkShowOptionalStartsWith(),
 		SdkShowOptionalLimitFrom(),
 		SdkShowOptionalLimit(),
 		SdkShowByIDFiltering(SdkShowByIDExtendedIn, SdkShowByIDLike),
+		SdkShowResultFilterHook(),
+		SdkShowPlainOnly(&scopes, "[]Scope"),
 	), SdkDescribe(
 		SdkDescribeDoc("https://desc"),
 		SdkDescribeSql("THING"),
@@ -151,23 +158,54 @@ func Test_ObjectGenerators_sdk(t *testing.T) {
 		ShowOptionalSql:         []string{"HISTORY", "FUTURE"},
 		ShowOptionalLike:        true,
 		ShowOptionalExtendedIn:  true,
+		ShowOptionalOn:          true,
 		ShowOptionalStartsWith:  true,
 		ShowOptionalLimitFrom:   true,
 		ShowOptionalLimit:       true,
 		ShowByIDFiltering:       []SdkShowByIDFilteringKind{SdkShowByIDExtendedIn, SdkShowByIDLike},
+		ShowResultFilterHook:    true,
+		ShowPlainOnlyFields:     []SdkShowPlainOnlyField{{Column: &scopes, Kind: "[]Scope"}},
 		DescribeDoc:             "https://desc",
 		DescribeSql:             "THING",
 		DescribeMapping:         SdkDescriptionMappingSlice,
 		DescribeQueryStructName: "DescThing",
 	}}, g)
 
+	g = ObjectGenerators(WithSdk(SdkDescribe(
+		SdkDescribePlainOnlyField("DatabaseName", "string"),
+		SdkDescribePlainOnlyField("SchemaName", "string"),
+	)))
+	require.Equal(t, Generators{Sdk: SdkGenerator{
+		Describe: true,
+		DescribePlainOnlyFields: []SdkPlainOnlyField{
+			{Name: "DatabaseName", Kind: "string"},
+			{Name: "SchemaName", Kind: "string"},
+		},
+	}}, g)
+
+	column := Attribute{Name: "column", Type: AttrString}
+	g = ObjectGenerators(WithSdk(SdkDescribe(SdkDescribeDetails(
+		SdkDescribeDetailsRowsField("descriptions", "Descriptions"),
+		SdkDescribeDetailsParseIgnoreUnknown(),
+		SdkDescribeDetailsParse(DescribePropertyParsed(&column, "COLUMN")),
+	))))
+	require.Equal(t, Generators{Sdk: SdkGenerator{
+		Describe:                          true,
+		DescribeDetails:                   true,
+		DescribeDetailsRowsField:          &SdkPlainOnlyField{Name: "descriptions", Kind: "Descriptions"},
+		DescribeDetailsParseIgnoreUnknown: true,
+		DescribeDetailsParse:              []DescribeDetailsMapping{{Attr: &column, Property: "COLUMN", Parsed: true}},
+	}}, g)
+
 	g = ObjectGenerators(WithSdk(SdkDrop(
+		SdkDropDoc("https://drop"),
 		SdkDropSafelyHook(),
 		SdkDropSafelyForce(),
 		SdkDropCascadeRestrict(),
 	)))
 	require.Equal(t, Generators{Sdk: SdkGenerator{
 		Drop:                true,
+		DropDoc:             "https://drop",
 		DropSafelyHook:      true,
 		DropSafelyForce:     true,
 		DropCascadeRestrict: true,

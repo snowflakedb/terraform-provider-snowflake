@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -21,13 +20,9 @@ import (
 // =============================================================================
 
 var (
-	pipeCreateExt = PreviewFeatureCreateContextWrapper(string(previewfeatures.PipeResource), TrackingCreateWrapper(resources.Pipe, CreatePipe))
-	pipeReadExt   = PreviewFeatureReadContextWrapper(string(previewfeatures.PipeResource), TrackingReadWrapper(resources.Pipe, ReadPipeFunc(true)))
-	pipeUpdateExt = PreviewFeatureUpdateContextWrapper(string(previewfeatures.PipeResource), TrackingUpdateWrapper(resources.Pipe, UpdatePipe))
-	pipeDeleteExt = PreviewFeatureDeleteContextWrapper(string(previewfeatures.PipeResource), TrackingDeleteWrapper(resources.Pipe, ResourceDeleteContextFunc(
-		pipeParseIdExt,
-		pipeDropSafelyInSdkExt,
-	)))
+	pipeCreateExt        = PreviewFeatureCreateContextWrapper(string(previewfeatures.PipeResource), TrackingCreateWrapper(resources.Pipe, CreatePipe))
+	pipeReadExt          = PreviewFeatureReadContextWrapper(string(previewfeatures.PipeResource), TrackingReadWrapper(resources.Pipe, ReadPipeFunc(true)))
+	pipeUpdateExt        = PreviewFeatureUpdateContextWrapper(string(previewfeatures.PipeResource), TrackingUpdateWrapper(resources.Pipe, UpdatePipe))
 	pipeDescriptionExt   = ""
 	pipeCustomizeDiffExt schema.CustomizeDiffFunc
 	pipeImporterExt      = &schema.ResourceImporter{
@@ -40,12 +35,9 @@ var (
 // =============================================================================
 
 type pipeAlterRequestsExt struct {
-	set   *sdk.PipeSetRequest
-	unset *sdk.PipeUnsetRequest
-}
-
-func pipeParseIdExt(id string) (sdk.SchemaObjectIdentifier, error) {
-	return helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier](id)
+	set                   *sdk.PipeSetRequest
+	unset                 *sdk.PipeUnsetRequest
+	resetErrorIntegration bool
 }
 
 func pipeApplyCreateOptionalsExt(d *schema.ResourceData, req *sdk.CreatePipeRequest) error {
@@ -105,6 +97,8 @@ func pipeApplySetUnsetExt(d *schema.ResourceData) (*pipeAlterRequestsExt, error)
 
 	if d.HasChange("error_integration") {
 		if errorIntegration, ok := d.GetOk("error_integration"); ok {
+			oldValue, _ := d.GetChange("error_integration")
+			reqs.resetErrorIntegration = oldValue.(string) != ""
 			reqs.set.WithErrorIntegration(errorIntegration.(string))
 		} else {
 			reqs.unset.WithErrorIntegration(true)
@@ -116,14 +110,6 @@ func pipeApplySetUnsetExt(d *schema.ResourceData) (*pipeAlterRequestsExt, error)
 // =============================================================================
 // SDK incision points
 // =============================================================================
-
-func pipeCreateInSdkExt(ctx context.Context, meta any, _ sdk.SchemaObjectIdentifier, req *sdk.CreatePipeRequest) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	if err := client.Pipes.Create(ctx, req); err != nil {
-		return diag.FromErr(err)
-	}
-	return nil
-}
 
 func pipeShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) (*sdk.Pipe, diag.Diagnostics) {
 	client := meta.(*provider.Context).Client
@@ -146,6 +132,12 @@ func pipeShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, met
 
 func pipeAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier, reqs *pipeAlterRequestsExt) error {
 	client := meta.(*provider.Context).Client
+	// Snowflake rejects setting another integration while one is already assigned.
+	if reqs.resetErrorIntegration {
+		if err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(id).WithUnset(*sdk.NewPipeUnsetRequest().WithErrorIntegration(true))); err != nil {
+			return fmt.Errorf("error clearing pipe %v error integration: %w", id.Name(), err)
+		}
+	}
 	if !reflect.DeepEqual(reqs.set, sdk.NewPipeSetRequest()) {
 		if err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(id).WithSet(*reqs.set)); err != nil {
 			return fmt.Errorf("error updating pipe %v: %w", id.Name(), err)
@@ -162,10 +154,6 @@ func pipeAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.SchemaObjectId
 		}
 	}
 	return nil
-}
-
-func pipeDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
-	return client.Pipes.DropSafely
 }
 
 // =============================================================================

@@ -21,6 +21,7 @@ const (
 	ParametersReducedOutput              ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
 	TagsAllowEmptyAllowedValues          ExperimentalFeature = "TAGS_ALLOW_EMPTY_ALLOWED_VALUES"
 	ImportBooleanDefault                 ExperimentalFeature = "IMPORT_BOOLEAN_DEFAULT"
+	ImportPermissiveMode                 ExperimentalFeature = "IMPORT_PERMISSIVE_MODE"
 	GrantsSafeDestroy                    ExperimentalFeature = "GRANTS_SAFE_DESTROY"
 	TagAssociationSafeDestroy            ExperimentalFeature = "TAG_ASSOCIATION_SAFE_DESTROY"
 	GrantAccountRoleSafePublicRole       ExperimentalFeature = "GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE"
@@ -152,12 +153,19 @@ var allExperiments = []Experiment{
 		"When enabled, the three possible states in Snowflake for allowed values will be supported: `nil` (any value is allowed; whenever `allowed_values` are empty), `empty` (no value is allowed; handled by the `no_allowed_values` field), and `set` (all values defined in `allowed_values` are allowed).",
 		"Otherwise, the `no_allowed_values` field will be ignored (explicit changes will cause updates, but without any effect) and the `allowed_values` field will follow the old behavior: `nil` (any value is allowed; only available whenever tag resource is created without `allowed_values`), `empty` (no value is allowed; always set when updating from filled `allowed_values` set to empty one or completely removed from config), `set` (all values defined in `allowed_values` are allowed).",
 	),
-	NewEnabledByDefaultExperiment(
+	NewOptInExperiment(
 		ImportBooleanDefault,
-		[]string{"v2.23.0", "v2.24.0"},
+		fmt.Sprintf("This experiment is deprecated in favor of `%s`. Resources are migrated to `%s` gradually; when all of them are migrated, this experiment will be discontinued.", ImportPermissiveMode, ImportPermissiveMode),
 		"Changes import behavior for boolean fields using the special `\"default\"` value.",
 		"When enabled, boolean fields using the special `\"default\"` value are set to `\"default\"` during import instead of the actual Snowflake value (e.g., `\"false\"`). This prevents unavoidable diffs on every plan after import.",
-		"Note: this is supported on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`) and stream resources (`snowflake_stream_on_table` and `snowflake_stream_on_view`).",
+		"Note: this is supported on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`), stream resources (`snowflake_stream_on_table` and `snowflake_stream_on_view`), and storage integration resources (`snowflake_storage_integration_aws` and `snowflake_storage_integration_azure`).",
+	),
+	NewOptInExperiment(
+		ImportPermissiveMode,
+		"Switches imports to the permissive mode.",
+		"By default, imports use the enforcing mode: the plan after import shows a change for every attribute that the configuration omits but that has a value in Snowflake. Applying that plan resets these attributes to their Snowflake defaults.",
+		"When enabled, the provider accepts the values the object already has for the attributes that the configuration omits, so the plan after import shows no change for them. This applies only to the import itself: external changes made after the import are detected as usual.",
+		"Note: this is currently supported only on the `snowflake_authentication_policy`, `snowflake_catalog_integration_aws_glue`, `snowflake_catalog_integration_iceberg_rest`, `snowflake_catalog_integration_object_storage`, `snowflake_catalog_integration_open_catalog`, and `snowflake_compute_pool` resources.",
 	),
 	NewEnabledByDefaultExperiment(
 		GrantsSafeDestroy,
@@ -292,9 +300,7 @@ var (
 	EnabledByDefaultExperiments   = collections.Filter(allExperiments, filterByStateFuncProvider(ExperimentalFeatureStateEnabledByDefault))
 	PromotedExperiments           = collections.Filter(allExperiments, filterByStateFuncProvider(ExperimentalFeatureStatePromoted))
 	DiscontinuedExperiments       = collections.Filter(allExperiments, filterByStateFuncProvider(ExperimentalFeatureStateDiscontinued))
-	acceptedInDisabledExperiments = collections.Filter(allExperiments, func(e Experiment) bool {
-		return e.state != ExperimentalFeatureStateOptIn
-	})
+	acceptedInDisabledExperiments = allExperiments
 )
 
 var (

@@ -2,28 +2,16 @@ package resources
 
 import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var warehouseInteractiveIdentitySchemaExt = map[string]*schema.Schema{
-	"name": {
-		Type:             schema.TypeString,
-		Required:         true,
-		Description:      blocklistedCharactersFieldDescription("Identifier for the interactive warehouse; must be unique for your account."),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
-}
-
 // warehouseInteractiveAttributesModificationExt applies schema details the attribute generator does not emit.
 // warehouse_type is computed. auto_suspend keeps the IntDefault sentinel even though 0 is invalid (min 1).
-// tables is a set of schema-object identifiers, applied incrementally in BeforeAlter.
+// A top-level set of identifiers, including tables, is generated.
 func warehouseInteractiveAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
 	s["warehouse_type"].Optional = false
 	s["warehouse_type"].Computed = true
 	s["auto_suspend"].Default = IntDefault
-	s["tables"].Elem.(*schema.Schema).ValidateDiagFunc = IsValidIdentifier[sdk.SchemaObjectIdentifier]()
-	s["tables"].DiffSuppressFunc = NormalizeAndCompareIdentifiersInSet("tables")
 	return s
 }
 

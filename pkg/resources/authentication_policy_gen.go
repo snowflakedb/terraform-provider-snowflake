@@ -5,8 +5,12 @@ package resources
 import (
 	"context"
 	"errors"
+	"fmt"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -24,7 +28,7 @@ func AuthenticationPolicy() *tfschema.Resource {
 		CreateContext: authenticationPolicyCreateExt,
 		ReadContext:   authenticationPolicyReadExt,
 		UpdateContext: authenticationPolicyUpdateExt,
-		DeleteContext: authenticationPolicyDeleteExt,
+		DeleteContext: TrackingDeleteWrapper(resources.AuthenticationPolicy, DeleteAuthenticationPolicy),
 		Importer:      authenticationPolicyImporterExt,
 
 		CustomizeDiff: authenticationPolicyCustomizeDiff,
@@ -42,7 +46,7 @@ func AuthenticationPolicy() *tfschema.Resource {
 }
 
 func ImportAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
-	id, err := authenticationPolicyParseIdExt(d.Id())
+	id, err := authenticationPolicyParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +56,8 @@ func ImportAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, m
 		return nil, err
 	}
 
-	if err := authenticationPolicySetFieldsNotSetByReadExt(d, id, authenticationPolicy); err != nil {
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
+	if err := authenticationPolicySetFieldsNotSetByReadExt(d, id, authenticationPolicy, importPermissiveMode); err != nil {
 		return nil, err
 	}
 	return []*tfschema.ResourceData{d}, nil
@@ -69,12 +74,12 @@ func CreateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	if err := authenticationPolicyApplyCreateOptionalsExt(d, req); err != nil {
+	if err := authenticationPolicyApplyCreateOptionals(d, req); err != nil {
 		return diag.FromErr(err)
 	}
 
-	if diags := authenticationPolicyCreateInSdkExt(ctx, meta, id, req); diags != nil {
-		return diags
+	if err := meta.(*provider.Context).Client.AuthenticationPolicies.Create(ctx, req); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
@@ -83,14 +88,25 @@ func CreateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, m
 
 func ReadAuthenticationPolicyFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := authenticationPolicyParseIdExt(d.Id())
+		id, err := authenticationPolicyParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		authenticationPolicy, diags := authenticationPolicyShowByIdSafelyInSdkExt(ctx, d, meta, id)
-		if diags != nil {
-			return diags
+		var diags diag.Diagnostics
+		authenticationPolicy, err := meta.(*provider.Context).Client.AuthenticationPolicies.ShowByIDSafely(ctx, id)
+		if err != nil {
+			if errors.Is(err, sdk.ErrObjectNotFound) {
+				d.SetId("")
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Failed to query authentication policy. Marking the resource as removed.",
+						Detail:   fmt.Sprintf("Authentication policy id: %s, Err: %s", id.FullyQualifiedName(), err),
+					},
+				}
+			}
+			return diag.FromErr(err)
 		}
 		authenticationPolicyDetails, err := authenticationPolicyDescribeInSdkExt(ctx, meta, id)
 		if err != nil {
@@ -102,14 +118,19 @@ func ReadAuthenticationPolicyFunc(withExternalChangesMarking bool) tfschema.Read
 			return diags
 		}
 
-		if err = setStateToValuesFromConfig(d, authenticationPolicySchema, authenticationPolicySetStateToValueFromConfigFieldsExt); err != nil {
+		if err = setStateToValuesFromConfig(d, authenticationPolicySchema, []string{
+			"authentication_methods",
+			"mfa_enrollment",
+			"client_types",
+			"security_integrations",
+		}); err != nil {
 			return append(diags, diag.FromErr(err)...)
 		}
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.AuthenticationPolicyToSchema(authenticationPolicy)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.AuthenticationPolicyDetailsToSchema(authenticationPolicyDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			authenticationPolicySetConfigFieldsExt(d, authenticationPolicy),
+			authenticationPolicySetConfigFields(d, authenticationPolicy),
 		)
 		if errs != nil {
 			return append(diags, diag.FromErr(errs)...)
@@ -119,7 +140,7 @@ func ReadAuthenticationPolicyFunc(withExternalChangesMarking bool) tfschema.Read
 }
 
 func UpdateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := authenticationPolicyParseIdExt(d.Id())
+	id, err := authenticationPolicyParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -131,11 +152,15 @@ func UpdateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := authenticationPolicyAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.set, *sdk.NewAuthenticationPolicySetRequest()) {
+		if err := meta.(*provider.Context).Client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(id).WithSet(*setUnset.set)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
-	if err := authenticationPolicyAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.unset, *sdk.NewAuthenticationPolicyUnsetRequest()) {
+		if err := meta.(*provider.Context).Client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(id).WithUnset(*setUnset.unset)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	return ReadAuthenticationPolicyFunc(false)(ctx, d, meta)
 }
@@ -148,4 +173,68 @@ var authenticationPolicyCustomizeDiff = TrackingCustomDiffWrapper(resources.Auth
 
 func authenticationPolicyParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
 	return sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string)), nil
+}
+
+func authenticationPolicyParseId(id string) (sdk.SchemaObjectIdentifier, error) {
+	return sdk.ParseSchemaObjectIdentifier(id)
+}
+
+func authenticationPolicyApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateAuthenticationPolicyRequest) error {
+	return errors.Join(
+		setMappedValueCreateBuilder(d, "authentication_methods", request.WithAuthenticationMethods, toAuthenticationPolicyAuthenticationMethods),
+		attributeMappedValueCreateBuilder(d, "mfa_enrollment", request.WithMfaEnrollment, sdk.ToMfaEnrollmentOption),
+		setMappedValueCreateBuilder(d, "client_types", request.WithClientTypes, toAuthenticationPolicyClientTypes),
+		setMappedValueCreateBuilder(d, "client_policy", request.WithClientPolicy, toAuthenticationPolicyClientPolicy),
+		singleBlockAttributeCreate(d, "mfa_policy", request.WithMfaPolicy, parseAuthenticationPolicyMfaPolicy),
+		singleBlockAttributeCreate(d, "pat_policy", request.WithPatPolicy, parseAuthenticationPolicyPatPolicy),
+		singleBlockAttributeCreate(d, "workload_identity_policy", request.WithWorkloadIdentityPolicy, parseAuthenticationPolicyWorkloadIdentityPolicy),
+		attributeMappedValueCreateBuilder(d, "security_integrations", request.WithSecurityIntegrations, ToSecurityIntegrationsRequest),
+		stringAttributeCreateBuilder(d, "comment", request.WithComment),
+	)
+}
+
+func parseAuthenticationPolicyMfaPolicy(d *tfschema.ResourceData, prefix string) (sdk.AuthenticationPolicyMfaPolicyRequest, error) {
+	request := sdk.NewAuthenticationPolicyMfaPolicyRequest()
+	errs := errors.Join(
+		attributeMappedValueCreateBuilder(d, prefix+"enforce_mfa_on_external_authentication", request.WithEnforceMfaOnExternalAuthentication, sdk.ToEnforceMfaOnExternalAuthenticationOption),
+		setMappedValueCreateBuilder(d, prefix+"allowed_methods", request.WithAllowedMethods, toAuthenticationPolicyMfaPolicyAllowedMethods),
+	)
+	return *request, errs
+}
+
+func parseAuthenticationPolicyPatPolicy(d *tfschema.ResourceData, prefix string) (sdk.AuthenticationPolicyPatPolicyRequest, error) {
+	request := sdk.NewAuthenticationPolicyPatPolicyRequest()
+	errs := errors.Join(
+		intAttributeCreateBuilder(d, prefix+"default_expiry_in_days", request.WithDefaultExpiryInDays),
+		intAttributeCreateBuilder(d, prefix+"max_expiry_in_days", request.WithMaxExpiryInDays),
+		booleanStringAttributeCreateBuilder(d, prefix+"require_role_restriction_for_service_users", request.WithRequireRoleRestrictionForServiceUsers),
+		attributeMappedValueCreateBuilder(d, prefix+"network_policy_evaluation", request.WithNetworkPolicyEvaluation, sdk.ToNetworkPolicyEvaluationOption),
+	)
+	return *request, errs
+}
+
+func parseAuthenticationPolicyWorkloadIdentityPolicy(d *tfschema.ResourceData, prefix string) (sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest, error) {
+	request := sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest()
+	errs := errors.Join(
+		setMappedValueCreateBuilder(d, prefix+"allowed_providers", request.WithAllowedProviders, toAuthenticationPolicyWorkloadIdentityPolicyAllowedProviders),
+		setMappedValueCreateBuilder(d, prefix+"allowed_aws_accounts", request.WithAllowedAwsAccounts, toAuthenticationPolicyWorkloadIdentityPolicyAllowedAwsAccounts),
+		setMappedValueCreateBuilder(d, prefix+"allowed_azure_issuers", request.WithAllowedAzureIssuers, toAuthenticationPolicyWorkloadIdentityPolicyAllowedAzureIssuers),
+		setMappedValueCreateBuilder(d, prefix+"allowed_oidc_issuers", request.WithAllowedOidcIssuers, toAuthenticationPolicyWorkloadIdentityPolicyAllowedOidcIssuers),
+	)
+	return *request, errs
+}
+
+func DeleteAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	return ResourceDeleteContextFunc(
+		sdk.ParseSchemaObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.AuthenticationPolicies.DropSafely
+		},
+	)(ctx, d, meta)
+}
+
+func authenticationPolicySetConfigFields(d *tfschema.ResourceData, obj *sdk.AuthenticationPolicy) error {
+	return errors.Join(
+		d.Set("comment", obj.Comment),
+	)
 }

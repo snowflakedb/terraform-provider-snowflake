@@ -37,7 +37,7 @@ func CatalogIntegrationIcebergRest(
 	resourceName string,
 	name string,
 	enabled bool,
-	restConfig []sdk.IcebergRestRestConfigRequest,
+	restConfig []sdk.CatalogIntegrationIcebergRestRestConfigRequest,
 ) *CatalogIntegrationIcebergRestModel {
 	c := &CatalogIntegrationIcebergRestModel{ResourceModelMeta: config.Meta(resourceName, resources.CatalogIntegrationIcebergRest)}
 	c.WithName(name)
@@ -49,7 +49,7 @@ func CatalogIntegrationIcebergRest(
 func CatalogIntegrationIcebergRestWithDefaultMeta(
 	name string,
 	enabled bool,
-	restConfig []sdk.IcebergRestRestConfigRequest,
+	restConfig []sdk.CatalogIntegrationIcebergRestRestConfigRequest,
 ) *CatalogIntegrationIcebergRestModel {
 	c := &CatalogIntegrationIcebergRestModel{ResourceModelMeta: config.DefaultMeta(resources.CatalogIntegrationIcebergRest)}
 	c.WithName(name)

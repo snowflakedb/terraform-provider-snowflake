@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -32,7 +33,7 @@ func WarehouseInteractive() *tfschema.Resource {
 }
 
 func ImportWarehouseInteractive(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
-	id, err := warehouseInteractiveParseIdExt(d.Id())
+	id, err := warehouseInteractiveParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +43,8 @@ func ImportWarehouseInteractive(ctx context.Context, d *tfschema.ResourceData, m
 		return nil, err
 	}
 
-	if err := warehouseInteractiveSetFieldsNotSetByReadExt(d, id, warehouseInteractive); err != nil {
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
+	if err := warehouseInteractiveSetFieldsNotSetByReadExt(d, id, warehouseInteractive, importPermissiveMode); err != nil {
 		return nil, err
 	}
 	return []*tfschema.ResourceData{d}, nil
@@ -77,7 +79,7 @@ func CreateWarehouseInteractive(ctx context.Context, d *tfschema.ResourceData, m
 
 func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := warehouseInteractiveParseIdExt(d.Id())
+		id, err := warehouseInteractiveParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -101,6 +103,18 @@ func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) tfschema.Read
 			return diag.FromErr(err)
 		}
 
+		if err = setStateToValuesFromConfig(d, warehouseInteractiveSchema, []string{
+			"warehouse_size",
+			"max_cluster_count",
+			"min_cluster_count",
+			"auto_suspend",
+			"auto_resume",
+			"resource_monitor",
+			"tables",
+			"warehouse_type",
+		}); err != nil {
+			return diag.FromErr(err)
+		}
 		errs := errors.Join(
 			d.Set(ParametersAttributeName, []map[string]any{schemas.WarehouseInteractiveParametersToSchema(rawWarehouseInteractiveParameters, meta.(*provider.Context))}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
@@ -114,7 +128,7 @@ func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) tfschema.Read
 }
 
 func UpdateWarehouseInteractive(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := warehouseInteractiveParseIdExt(d.Id())
+	id, err := warehouseInteractiveParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -141,6 +155,10 @@ func UpdateWarehouseInteractive(ctx context.Context, d *tfschema.ResourceData, m
 		return diag.FromErr(err)
 	}
 	return ReadWarehouseInteractiveFunc(false)(ctx, d, meta)
+}
+
+func warehouseInteractiveParseId(id string) (sdk.AccountObjectIdentifier, error) {
+	return sdk.ParseAccountObjectIdentifier(id)
 }
 
 func DeleteWarehouseInteractive(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

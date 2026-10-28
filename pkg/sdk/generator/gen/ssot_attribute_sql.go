@@ -3,6 +3,7 @@ package gen
 import (
 	"fmt"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 )
 
@@ -95,6 +96,8 @@ func (v *QueryStruct) appendAttributeClause(attr ssot.Attribute, clause ssot.Sql
 		return v.appendIdentifierClause(attr, clause, clauseRequired(attr, clause, statement))
 	case ssot.SqlKindStatic:
 		return v.appendStaticClause(attr, clause)
+	case ssot.SqlKindObject:
+		return v.appendObjectClause(attr, clause, clauseRequired(attr, clause, statement))
 	default:
 		panic(fmt.Sprintf("attribute %q: sql kind %q", attr.Name, clause.Kind))
 	}
@@ -122,32 +125,51 @@ func clauseRequired(attr ssot.Attribute, clause ssot.SqlClause, statement attrib
 func (v *QueryStruct) appendParameterClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
 	sql := clause.SQLText(attr)
 	opts := parameterOptionsFromClause(clause, required)
-	switch attr.Type {
+	// scalar adds a scalar parameter. FieldName replaces the name derived from the SQL text.
+	scalar := func(kind string) *QueryStruct {
+		if clause.Field != "" {
+			return v.AssignmentWithFieldName(sql, kind, opts, clause.Field)
+		}
+		return v.Assignment(sql, kind, opts)
+	}
+	pointer := func(kind string) string {
+		if required {
+			return kind
+		}
+		return "*" + kind
+	}
+	attrType := attr.Type
+	enum := attr.ColumnEnum()
+	if clause.Enum != nil {
+		// The clause makes the attribute an enum parameter, such as a string that is a provider-specific enum.
+		attrType, enum = ssot.AttrEnum, clause.Enum
+	}
+	if attrType == ssot.AttrIdentifier {
+		// An identifier with a parameter clause is quoted text.
+		attrType = ssot.AttrString
+	}
+	switch attrType {
 	case ssot.AttrInt:
-		if required {
-			return v.NumberAssignment(sql, opts)
-		}
-		return v.OptionalNumberAssignment(sql, opts)
+		return scalar(pointer("int"))
 	case ssot.AttrBool:
-		if required {
-			return v.BooleanAssignment(sql, opts)
-		}
-		return v.OptionalBooleanAssignment(sql, opts)
+		return scalar(pointer("bool"))
 	case ssot.AttrString:
-		if required {
-			return v.TextAssignment(sql, opts)
+		if clause.AllowEmpty {
+			return scalar(pointer("StringAllowEmpty"))
 		}
-		return v.OptionalTextAssignment(sql, opts)
+		return scalar(pointer("string"))
 	case ssot.AttrEnum:
-		enum := attr.ColumnEnum()
 		if enum == nil || enum.Name == "" {
 			panic(fmt.Sprintf("attribute %q: enum parameter has no Enum", attr.Name))
 		}
 		if required {
-			return v.EnumAssignment(sql, enum, opts)
+			return scalar(enum.Kind())
 		}
-		return v.OptionalEnumAssignment(sql, enum, opts)
+		return scalar(enum.KindPtr())
 	case ssot.AttrList, ssot.AttrSet:
+		if attr.IsObjectList() {
+			return v.appendObjectList(attr, clause, required)
+		}
 		item := clause.ItemStruct
 		if item == "" && attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
 			item = attr.Elem.IdentifierType
@@ -166,13 +188,69 @@ func (v *QueryStruct) appendParameterClause(attr ssot.Attribute, clause ssot.Sql
 }
 
 func (v *QueryStruct) appendKeywordClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	if clause.ValueKeyword {
+		return v.appendValueKeywordClause(attr, clause, required)
+	}
 	if required {
 		panic(fmt.Sprintf("attribute %q: keyword clause is required", attr.Name))
 	}
 	if clause.Quotes != "" || clause.Parentheses != "" || clause.Equals != "" {
 		panic(fmt.Sprintf("attribute %q: keyword clause has parameter tags", attr.Name))
 	}
-	return v.OptionalSQL(clause.SQLText(attr))
+	sql := clause.SQLText(attr)
+	name := sqlToFieldName(sql, true)
+	if clause.Field != "" {
+		name = clause.Field
+	}
+	return v.OptionalSQLWithCustomFieldName(name, sql)
+}
+
+// appendValueKeywordClause adds the value of the attribute written as a bare keyword: an enum, or a list of identifiers.
+// The field name is the clause Field, or the attribute name.
+func (v *QueryStruct) appendValueKeywordClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	if (attr.Type == ssot.AttrList || attr.Type == ssot.AttrSet) && attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
+		return v.appendIdentifierListKeywordClause(attr, clause)
+	}
+	enum := clause.Enum
+	if enum == nil {
+		enum = attr.ColumnEnum()
+	}
+	if enum == nil || enum.Name == "" {
+		panic(fmt.Sprintf("attribute %q: enum keyword has no Enum", attr.Name))
+	}
+	if clause.Parentheses != "" || clause.Equals != "" {
+		panic(fmt.Sprintf("attribute %q: enum keyword has parentheses or equals", attr.Name))
+	}
+	name := clause.Field
+	if name == "" {
+		name = genhelpers.SnakeCaseToCamel(attr.Name)
+	}
+	opts := KeywordOptions()
+	switch clause.Quotes {
+	case "":
+	case ssot.SqlQuotesSingle:
+		opts = opts.SingleQuotes()
+	case ssot.SqlQuotesNo:
+		opts = opts.NoQuotes()
+	default:
+		panic(fmt.Sprintf("sql clause quotes %q", clause.Quotes))
+	}
+	if required {
+		return v.Enum(name, enum, opts.Required())
+	}
+	return v.OptionalEnum(name, enum, opts)
+}
+
+func (v *QueryStruct) appendIdentifierListKeywordClause(attr ssot.Attribute, clause ssot.SqlClause) *QueryStruct {
+	name := clause.Field
+	if name == "" {
+		name = genhelpers.SnakeCaseToCamel(attr.Name)
+	}
+	opts := KeywordOptions()
+	if clause.Parentheses == ssot.SqlParensYes {
+		opts = opts.Parentheses()
+	}
+	return v.UnnamedList(name, attr.Elem.IdentifierType, opts).WithValidation(ValidIdentifier, name)
 }
 
 func (v *QueryStruct) appendIdentifierClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
@@ -246,4 +324,17 @@ func identifierOptionsFromClause(clause ssot.SqlClause, required bool) *Identifi
 		opts = opts.Required()
 	}
 	return opts
+}
+
+// clauseFieldName is the Go field name that the attribute's clause gets in the statement struct.
+func clauseFieldName(attr ssot.Attribute, statement attributeSqlStatement) string {
+	clause := attributeClause(attr, statement)
+	if !clause.Present {
+		panic(fmt.Sprintf("attribute %q has no %s clause", attr.Name, statementName(statement)))
+	}
+	fields := NewQueryStruct("scratch").appendAttributeClause(attr, clause, statement).fields
+	if len(fields) == 0 {
+		panic(fmt.Sprintf("attribute %q adds no field", attr.Name))
+	}
+	return fields[0].Name
 }

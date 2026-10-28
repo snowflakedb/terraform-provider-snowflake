@@ -4,14 +4,16 @@ package sdk
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var (
 	_ ExternalVolumes                        = (*externalVolumes)(nil)
+	_ convertibleRow[ExternalVolume]         = new(externalVolumesRow)
 	_ convertibleRow[ExternalVolumeProperty] = new(externalVolumeDescRow)
-	_ convertibleRow[ExternalVolume]         = new(externalVolumeShowRow)
 )
 
 type externalVolumes struct {
@@ -37,24 +39,13 @@ func (v *externalVolumes) DropSafely(ctx context.Context, id AccountObjectIdenti
 	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropExternalVolumeRequest(id).WithIfExists(true)) }, ctx, id)
 }
 
-func (v *externalVolumes) Describe(ctx context.Context, id AccountObjectIdentifier) ([]ExternalVolumeProperty, error) {
-	opts := &DescribeExternalVolumeOptions{
-		name: id,
-	}
-	rows, err := validateAndQuery[externalVolumeDescRow](v.client, ctx, opts)
-	if err != nil {
-		return nil, err
-	}
-	return convertRows[externalVolumeDescRow, ExternalVolumeProperty](rows)
-}
-
 func (v *externalVolumes) Show(ctx context.Context, request *ShowExternalVolumeRequest) ([]ExternalVolume, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[externalVolumeShowRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[externalVolumesRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[externalVolumeShowRow, ExternalVolume](dbRows)
+	return convertRows[externalVolumesRow, ExternalVolume](dbRows)
 }
 
 func (v *externalVolumes) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolume, error) {
@@ -69,6 +60,17 @@ func (v *externalVolumes) ShowByID(ctx context.Context, id AccountObjectIdentifi
 
 func (v *externalVolumes) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolume, error) {
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
+}
+
+func (v *externalVolumes) Describe(ctx context.Context, id AccountObjectIdentifier) ([]ExternalVolumeProperty, error) {
+	opts := &DescribeExternalVolumeOptions{
+		name: id,
+	}
+	rows, err := validateAndQuery[externalVolumeDescRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return convertRows[externalVolumeDescRow, ExternalVolumeProperty](rows)
 }
 
 func (r *CreateExternalVolumeRequest) toOpts() *CreateExternalVolumeOptions {
@@ -107,7 +109,7 @@ func (r *CreateExternalVolumeRequest) toOpts() *CreateExternalVolumeOptions {
 					StorageBaseUrl: v.ExternalVolumeStorageLocation.GCSStorageLocationParams.StorageBaseUrl,
 				}
 				if v.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption != nil {
-					storageLocations[i].ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption = &ExternalVolumeGCSEncryption{
+					storageLocations[i].ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption = &ExternalVolumeGcsEncryption{
 						EncryptionType: v.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.EncryptionType,
 						KmsKeyId:       v.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.KmsKeyId,
 					}
@@ -143,7 +145,7 @@ func (r *AlterExternalVolumeRequest) toOpts() *AlterExternalVolumeOptions {
 		RemoveStorageLocation: r.RemoveStorageLocation,
 	}
 	if r.Set != nil {
-		opts.Set = &AlterExternalVolumeSet{
+		opts.Set = &ExternalVolumeSet{
 			AllowWrites: r.Set.AllowWrites,
 			Comment:     r.Set.Comment,
 		}
@@ -174,7 +176,7 @@ func (r *AlterExternalVolumeRequest) toOpts() *AlterExternalVolumeOptions {
 				StorageBaseUrl: r.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams.StorageBaseUrl,
 			}
 			if r.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption != nil {
-				opts.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption = &ExternalVolumeGCSEncryption{
+				opts.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption = &ExternalVolumeGcsEncryption{
 					EncryptionType: r.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.EncryptionType,
 					KmsKeyId:       r.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.KmsKeyId,
 				}
@@ -199,7 +201,7 @@ func (r *AlterExternalVolumeRequest) toOpts() *AlterExternalVolumeOptions {
 		}
 	}
 	if r.UpdateStorageLocation != nil {
-		opts.UpdateStorageLocation = &AlterExternalVolumeUpdateStorageLocation{
+		opts.UpdateStorageLocation = &ExternalVolumeUpdateStorageLocation{
 			StorageLocation: r.UpdateStorageLocation.StorageLocation,
 		}
 		opts.UpdateStorageLocation.Credentials = ExternalVolumeUpdateCredentials{
@@ -218,6 +220,22 @@ func (r *DropExternalVolumeRequest) toOpts() *DropExternalVolumeOptions {
 	return opts
 }
 
+func (r *ShowExternalVolumeRequest) toOpts() *ShowExternalVolumeOptions {
+	opts := &ShowExternalVolumeOptions{
+		Like: r.Like,
+	}
+	return opts
+}
+
+func (r externalVolumesRow) convert() (*ExternalVolume, error) {
+	result := &ExternalVolume{
+		Name:        r.Name,
+		AllowWrites: r.AllowWrites,
+	}
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	return result, nil
+}
+
 func (r *DescribeExternalVolumeRequest) toOpts() *DescribeExternalVolumeOptions {
 	opts := &DescribeExternalVolumeOptions{
 		name: r.name,
@@ -227,27 +245,52 @@ func (r *DescribeExternalVolumeRequest) toOpts() *DescribeExternalVolumeOptions 
 
 func (r externalVolumeDescRow) convert() (*ExternalVolumeProperty, error) {
 	result := &ExternalVolumeProperty{
-		Parent:  r.ParentProperty,
-		Name:    r.Property,
-		Type:    r.PropertyType,
-		Value:   r.PropertyValue,
-		Default: r.PropertyDefault,
+		ParentProperty:  r.ParentProperty,
+		Property:        r.Property,
+		PropertyType:    r.PropertyType,
+		PropertyValue:   r.PropertyValue,
+		PropertyDefault: r.PropertyDefault,
 	}
 	return result, nil
 }
 
-func (r *ShowExternalVolumeRequest) toOpts() *ShowExternalVolumeOptions {
-	opts := &ShowExternalVolumeOptions{
-		Like: r.Like,
+func ParseExternalVolumeDescribed(rows []ExternalVolumeProperty) (ExternalVolumeDetails, error) {
+	details := ExternalVolumeDetails{}
+	var storageLocations []ExternalVolumeStorageLocationDetails
+	for _, row := range rows {
+		switch {
+		case row.Property == "COMMENT":
+			details.Comment = row.PropertyValue
+		case row.Property == "ACTIVE":
+			details.Active = row.PropertyValue
+		case row.Property == "ALLOW_WRITES":
+			details.AllowWrites = row.PropertyValue
+		case strings.Contains(row.Property, "STORAGE_LOCATION_"):
+			element, err := ParseExternalVolumeStorageLocationDescribed(row.PropertyValue)
+			if err != nil {
+				return ExternalVolumeDetails{}, err
+			}
+			storageLocations = append(storageLocations, element)
+		default:
+			return ExternalVolumeDetails{}, fmt.Errorf("Unrecognized external volume property: %s", row.Property)
+		}
 	}
-	return opts
+	details.StorageLocations = storageLocations
+	if err := validateExternalVolumeDescribed(details); err != nil {
+		return ExternalVolumeDetails{}, err
+	}
+	return details, nil
 }
 
-func (r externalVolumeShowRow) convert() (*ExternalVolume, error) {
-	result := &ExternalVolume{
-		Name:        r.Name,
-		AllowWrites: r.AllowWrites,
+func (v *externalVolumes) DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolumeDetails, error) {
+	rows, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
 	}
-	mapNullStringToNonNullableField(&result.Comment, r.Comment)
-	return result, nil
+	details, err := ParseExternalVolumeDescribed(rows)
+	if err != nil {
+		return nil, err
+	}
+	details.Id = id
+	return &details, nil
 }

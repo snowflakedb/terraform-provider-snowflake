@@ -1,15 +1,10 @@
 package resources
 
 import (
-	"context"
 	"errors"
-	"fmt"
-	"reflect"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -42,12 +37,6 @@ var (
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-var computePoolSetStateToValueFromConfigFieldsExt = []string{
-	"for_application",
-	"auto_resume",
-	"auto_suspend_secs",
-}
-
 type computePoolAlterRequestsExt struct {
 	set   *sdk.ComputePoolSetRequest
 	unset *sdk.ComputePoolUnsetRequest
@@ -72,84 +61,17 @@ func computePoolOutputMappingsExt(computePool *sdk.ComputePool) []outputMapping 
 	}
 }
 
-func computePoolSetConfigFieldsExt(d *schema.ResourceData, computePool *sdk.ComputePool) error {
-	return errors.Join(
-		d.Set("min_nodes", computePool.MinNodes),
-		d.Set("max_nodes", computePool.MaxNodes),
-		d.Set("instance_family", computePool.InstanceFamily),
-		d.Set("backup_instance_families", computePool.BackupInstanceFamilies),
-		d.Set("comment", computePool.Comment),
-	)
-}
-
-func computePoolSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, computePool *sdk.ComputePool) error {
+func computePoolSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, computePool *sdk.ComputePool, importPermissiveMode bool) error {
+	var applicationFullyQualifiedName string
 	if computePool.Application != nil {
-		if err := d.Set("for_application", computePool.Application.FullyQualifiedName()); err != nil {
-			return err
-		}
+		applicationFullyQualifiedName = computePool.Application.FullyQualifiedName()
 	}
 	return errors.Join(
 		d.Set("name", id.Name()),
-		d.Set("auto_resume", booleanStringFromBool(computePool.AutoResume)),
-		d.Set("auto_suspend_secs", computePool.AutoSuspendSecs),
+		importStringAttribute(d, "for_application", importPermissiveMode, applicationFullyQualifiedName),
+		importBooleanStringAttribute(d, "auto_resume", importPermissiveMode, computePool.AutoResume),
+		importIntWithIntDefaultAttribute(d, "auto_suspend_secs", importPermissiveMode, computePool.AutoSuspendSecs),
 	)
-}
-
-// =============================================================================
-// SDK incision points
-// =============================================================================
-
-func computePoolCreateInSdkExt(ctx context.Context, meta any, _ sdk.AccountObjectIdentifier, req *sdk.CreateComputePoolRequest) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	if err := client.ComputePools.Create(ctx, req); err != nil {
-		return diag.FromErr(err)
-	}
-	return nil
-}
-
-func computePoolShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier) (*sdk.ComputePool, diag.Diagnostics) {
-	client := meta.(*provider.Context).Client
-	computePool, err := client.ComputePools.ShowByIDSafely(ctx, id)
-	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotFound) {
-			d.SetId("")
-			return nil, diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "Failed to query compute pool. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Compute pool id: %s, Err: %s", id.FullyQualifiedName(), err),
-				},
-			}
-		}
-		return nil, diag.FromErr(err)
-	}
-	return computePool, nil
-}
-
-func computePoolShowByIdInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier) (*sdk.ComputePool, error) {
-	client := meta.(*provider.Context).Client
-	return client.ComputePools.ShowByID(ctx, id)
-}
-
-func computePoolDescribeInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier) (*sdk.ComputePoolDetails, error) {
-	client := meta.(*provider.Context).Client
-	return client.ComputePools.Describe(ctx, id)
-}
-
-func computePoolAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *computePoolAlterRequestsExt) error {
-	if reflect.DeepEqual(*reqs.set, *sdk.NewComputePoolSetRequest()) {
-		return nil
-	}
-	client := meta.(*provider.Context).Client
-	return client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithSet(*reqs.set))
-}
-
-func computePoolAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier, reqs *computePoolAlterRequestsExt) error {
-	if reflect.DeepEqual(*reqs.unset, *sdk.NewComputePoolUnsetRequest()) {
-		return nil
-	}
-	client := meta.(*provider.Context).Client
-	return client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithUnset(*reqs.unset))
 }
 
 // =============================================================================

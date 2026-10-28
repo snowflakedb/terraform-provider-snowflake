@@ -3,66 +3,44 @@
 package sdk
 
 var (
-	_ optionsProvider[CreateCatalogIntegrationOptions]   = new(CreateCatalogIntegrationRequest)
-	_ optionsProvider[AlterCatalogIntegrationOptions]    = new(AlterCatalogIntegrationRequest)
-	_ optionsProvider[DropCatalogIntegrationOptions]     = new(DropCatalogIntegrationRequest)
-	_ optionsProvider[ShowCatalogIntegrationOptions]     = new(ShowCatalogIntegrationRequest)
-	_ optionsProvider[DescribeCatalogIntegrationOptions] = new(DescribeCatalogIntegrationRequest)
+	_ optionsProvider[CreateAwsGlueCatalogIntegrationOptions]       = new(CreateAwsGlueCatalogIntegrationRequest)
+	_ optionsProvider[CreateIcebergRestCatalogIntegrationOptions]   = new(CreateIcebergRestCatalogIntegrationRequest)
+	_ optionsProvider[CreateObjectStorageCatalogIntegrationOptions] = new(CreateObjectStorageCatalogIntegrationRequest)
+	_ optionsProvider[CreateOpenCatalogCatalogIntegrationOptions]   = new(CreateOpenCatalogCatalogIntegrationRequest)
+	_ optionsProvider[AlterCatalogIntegrationOptions]               = new(AlterCatalogIntegrationRequest)
+	_ optionsProvider[DropCatalogIntegrationOptions]                = new(DropCatalogIntegrationRequest)
+	_ optionsProvider[ShowCatalogIntegrationOptions]                = new(ShowCatalogIntegrationRequest)
+	_ optionsProvider[DescribeCatalogIntegrationOptions]            = new(DescribeCatalogIntegrationRequest)
 )
 
-type CreateCatalogIntegrationRequest struct {
-	OrReplace                        *bool
-	IfNotExists                      *bool
-	name                             AccountObjectIdentifier // required
-	AwsGlueCatalogSourceParams       *AwsGlueParamsRequest
-	ObjectStorageCatalogSourceParams *ObjectStorageParamsRequest
-	OpenCatalogCatalogSourceParams   *OpenCatalogParamsRequest
-	IcebergRestCatalogSourceParams   *IcebergRestParamsRequest
-	Enabled                          bool // required
-	RefreshIntervalSeconds           *int
-	Comment                          *string
+type CreateAwsGlueCatalogIntegrationRequest struct {
+	OrReplace              *bool
+	IfNotExists            *bool
+	name                   AccountObjectIdentifier // required
+	GlueAwsRoleArn         string                  // required
+	GlueCatalogId          string                  // required
+	GlueRegion             *string
+	CatalogNamespace       *string
+	Enabled                bool // required
+	RefreshIntervalSeconds *int
+	Comment                *string
 }
 
-type AwsGlueParamsRequest struct {
-	GlueAwsRoleArn   string // required
-	GlueCatalogId    string // required
-	GlueRegion       *string
-	CatalogNamespace *string
-}
-
-type ObjectStorageParamsRequest struct {
-	TableFormat CatalogIntegrationTableFormat // required
-}
-
-type OpenCatalogParamsRequest struct {
-	CatalogNamespace   *string
-	RestConfig         OpenCatalogRestConfigRequest
-	RestAuthentication OAuthRestAuthenticationRequest
-}
-
-type OpenCatalogRestConfigRequest struct {
-	CatalogUri           string // required
-	CatalogApiType       *CatalogIntegrationCatalogApiType
-	CatalogName          string // required
-	AccessDelegationMode *CatalogIntegrationAccessDelegationMode
-}
-
-type OAuthRestAuthenticationRequest struct {
-	OauthTokenUri      *string
-	OauthClientId      string                  // required
-	OauthClientSecret  string                  // required
-	OauthAllowedScopes []StringListItemWrapper // required
-}
-
-type IcebergRestParamsRequest struct {
+type CreateIcebergRestCatalogIntegrationRequest struct {
+	OrReplace                *bool
+	IfNotExists              *bool
+	name                     AccountObjectIdentifier // required
 	CatalogNamespace         *string
-	RestConfig               IcebergRestRestConfigRequest
-	OAuthRestAuthentication  *OAuthRestAuthenticationRequest
-	BearerRestAuthentication *BearerRestAuthenticationRequest
-	SigV4RestAuthentication  *SigV4RestAuthenticationRequest
+	RestConfig               CatalogIntegrationIcebergRestRestConfigRequest // required
+	OAuthRestAuthentication  *CatalogIntegrationIcebergRestOauthRestAuthenticationRequest
+	BearerRestAuthentication *CatalogIntegrationIcebergRestBearerRestAuthenticationRequest
+	SigV4RestAuthentication  *CatalogIntegrationIcebergRestSigv4RestAuthenticationRequest
+	Enabled                  bool // required
+	RefreshIntervalSeconds   *int
+	Comment                  *string
 }
 
-type IcebergRestRestConfigRequest struct {
+type CatalogIntegrationIcebergRestRestConfigRequest struct {
 	CatalogUri           string // required
 	Prefix               *string
 	CatalogName          *string
@@ -70,14 +48,57 @@ type IcebergRestRestConfigRequest struct {
 	AccessDelegationMode *CatalogIntegrationAccessDelegationMode
 }
 
-type BearerRestAuthenticationRequest struct {
+type CatalogIntegrationIcebergRestOauthRestAuthenticationRequest struct {
+	OauthTokenUri      *string
+	OauthClientId      string                  // required
+	OauthClientSecret  string                  // required
+	OauthAllowedScopes []StringListItemWrapper // required
+}
+
+type CatalogIntegrationIcebergRestBearerRestAuthenticationRequest struct {
 	BearerToken string // required
 }
 
-type SigV4RestAuthenticationRequest struct {
+type CatalogIntegrationIcebergRestSigv4RestAuthenticationRequest struct {
 	Sigv4IamRole       string // required
 	Sigv4SigningRegion *string
 	Sigv4ExternalId    *string
+}
+
+type CreateObjectStorageCatalogIntegrationRequest struct {
+	OrReplace              *bool
+	IfNotExists            *bool
+	name                   AccountObjectIdentifier       // required
+	TableFormat            CatalogIntegrationTableFormat // required
+	Enabled                bool                          // required
+	RefreshIntervalSeconds *int
+	Comment                *string
+}
+
+type CreateOpenCatalogCatalogIntegrationRequest struct {
+	OrReplace              *bool
+	IfNotExists            *bool
+	name                   AccountObjectIdentifier // required
+	CatalogNamespace       *string
+	RestConfig             CatalogIntegrationOpenCatalogRestConfigRequest         // required
+	RestAuthentication     CatalogIntegrationOpenCatalogRestAuthenticationRequest // required
+	Enabled                bool                                                   // required
+	RefreshIntervalSeconds *int
+	Comment                *string
+}
+
+type CatalogIntegrationOpenCatalogRestConfigRequest struct {
+	CatalogUri           string // required
+	CatalogApiType       *CatalogIntegrationCatalogApiType
+	CatalogName          string // required
+	AccessDelegationMode *CatalogIntegrationAccessDelegationMode
+}
+
+type CatalogIntegrationOpenCatalogRestAuthenticationRequest struct {
+	OauthTokenUri      *string
+	OauthClientId      string                  // required
+	OauthClientSecret  string                  // required
+	OauthAllowedScopes []StringListItemWrapper // required
 }
 
 type AlterCatalogIntegrationRequest struct {
@@ -89,18 +110,18 @@ type AlterCatalogIntegrationRequest struct {
 }
 
 type CatalogIntegrationSetRequest struct {
-	SetOAuthRestAuthentication  *SetOAuthRestAuthenticationRequest
-	SetBearerRestAuthentication *SetBearerRestAuthenticationRequest
+	SetOAuthRestAuthentication  *CatalogIntegrationSetOauthRestAuthenticationRequest
+	SetBearerRestAuthentication *CatalogIntegrationSetBearerRestAuthenticationRequest
 	Enabled                     *bool
 	RefreshIntervalSeconds      *int
 	Comment                     *StringAllowEmpty
 }
 
-type SetOAuthRestAuthenticationRequest struct {
+type CatalogIntegrationSetOauthRestAuthenticationRequest struct {
 	OauthClientSecret string // required
 }
 
-type SetBearerRestAuthenticationRequest struct {
+type CatalogIntegrationSetBearerRestAuthenticationRequest struct {
 	BearerToken string // required
 }
 

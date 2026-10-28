@@ -56,21 +56,50 @@ var alertAttributesSchema = alertAttributesModificationExt(map[string]*tfschema.
 							},
 						},
 					},
+					ConflictsWith: []string{
+						"alert_schedule.0.interval",
+					},
 					Description: "Specifies the cron expression for the alert. The cron expression must be in the following format: \"minute hour day-of-month month day-of-week\". The following values are supported: minute: 0-59 hour: 0-23 day-of-month: 1-31 month: 1-12 day-of-week: 0-6 (0 is Sunday)",
 				},
 				"interval": {
-					Type:        tfschema.TypeInt,
-					Optional:    true,
+					Type:     tfschema.TypeInt,
+					Optional: true,
+					ConflictsWith: []string{
+						"alert_schedule.0.cron",
+					},
 					Description: "Specifies the interval in minutes for the alert schedule. The interval must be greater than 0 and less than 1440 (24 hours).",
 				},
 			},
 		},
 		Description: "The schedule for periodically running an alert.",
 	},
+	"enabled": {
+		Type:     tfschema.TypeBool,
+		Optional: true,
+	},
 })
 
 var alertSchema = collections.MergeMaps(
-	alertIdentitySchemaExt,
+	map[string]*tfschema.Schema{
+		"name": {
+			Type:        tfschema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "Specifies the identifier for the alert; must be unique for the schema in which the alert is created.",
+		},
+		"database": {
+			Type:        tfschema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The database in which to create the alert.",
+		},
+		"schema": {
+			Type:        tfschema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The schema in which to create the alert.",
+		},
+	},
 	alertAttributesSchema,
 	map[string]*tfschema.Schema{
 		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,

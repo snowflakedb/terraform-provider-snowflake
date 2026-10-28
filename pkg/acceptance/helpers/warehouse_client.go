@@ -188,6 +188,20 @@ func (c *WarehouseClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*s
 	return c.client().ShowByID(ctx, id)
 }
 
+func (c *WarehouseClient) ShowByIDAdaptive(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.WarehouseAdaptive, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().ShowByIDAdaptive(ctx, id)
+}
+
+func (c *WarehouseClient) ShowByIDInteractive(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.WarehouseInteractive, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().ShowByIDInteractive(ctx, id)
+}
+
 func (c *WarehouseClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.WarehouseDetails, error) {
 	t.Helper()
 	ctx := context.Background()

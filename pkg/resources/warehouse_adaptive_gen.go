@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -32,7 +33,7 @@ func WarehouseAdaptive() *tfschema.Resource {
 }
 
 func ImportWarehouseAdaptive(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
-	id, err := warehouseAdaptiveParseIdExt(d.Id())
+	id, err := warehouseAdaptiveParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +43,8 @@ func ImportWarehouseAdaptive(ctx context.Context, d *tfschema.ResourceData, meta
 		return nil, err
 	}
 
-	if err := warehouseAdaptiveSetFieldsNotSetByReadExt(d, id, warehouseAdaptive); err != nil {
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
+	if err := warehouseAdaptiveSetFieldsNotSetByReadExt(d, id, warehouseAdaptive, importPermissiveMode); err != nil {
 		return nil, err
 	}
 	return []*tfschema.ResourceData{d}, nil
@@ -77,7 +79,7 @@ func CreateWarehouseAdaptive(ctx context.Context, d *tfschema.ResourceData, meta
 
 func ReadWarehouseAdaptiveFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := warehouseAdaptiveParseIdExt(d.Id())
+		id, err := warehouseAdaptiveParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -101,6 +103,14 @@ func ReadWarehouseAdaptiveFunc(withExternalChangesMarking bool) tfschema.ReadCon
 			return diag.FromErr(err)
 		}
 
+		if err = setStateToValuesFromConfig(d, warehouseAdaptiveSchema, []string{
+			"warehouse_type",
+			"max_query_performance_level",
+			"query_throughput_multiplier",
+			"resource_monitor",
+		}); err != nil {
+			return diag.FromErr(err)
+		}
 		errs := errors.Join(
 			d.Set(ParametersAttributeName, []map[string]any{schemas.WarehouseAdaptiveParametersToSchema(rawWarehouseAdaptiveParameters, meta.(*provider.Context))}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
@@ -114,7 +124,7 @@ func ReadWarehouseAdaptiveFunc(withExternalChangesMarking bool) tfschema.ReadCon
 }
 
 func UpdateWarehouseAdaptive(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := warehouseAdaptiveParseIdExt(d.Id())
+	id, err := warehouseAdaptiveParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -136,6 +146,10 @@ func UpdateWarehouseAdaptive(ctx context.Context, d *tfschema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 	return ReadWarehouseAdaptiveFunc(false)(ctx, d, meta)
+}
+
+func warehouseAdaptiveParseId(id string) (sdk.AccountObjectIdentifier, error) {
+	return sdk.ParseAccountObjectIdentifier(id)
 }
 
 func DeleteWarehouseAdaptive(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

@@ -9,7 +9,10 @@ import (
 )
 
 type CatalogIntegrations interface {
-	Create(ctx context.Context, request *CreateCatalogIntegrationRequest) error
+	CreateAwsGlue(ctx context.Context, request *CreateAwsGlueCatalogIntegrationRequest) error
+	CreateIcebergRest(ctx context.Context, request *CreateIcebergRestCatalogIntegrationRequest) error
+	CreateObjectStorage(ctx context.Context, request *CreateObjectStorageCatalogIntegrationRequest) error
+	CreateOpenCatalog(ctx context.Context, request *CreateOpenCatalogCatalogIntegrationRequest) error
 	Alter(ctx context.Context, request *AlterCatalogIntegrationRequest) error
 	Drop(ctx context.Context, request *DropCatalogIntegrationRequest) error
 	DropSafely(ctx context.Context, id AccountObjectIdentifier) error
@@ -17,78 +20,51 @@ type CatalogIntegrations interface {
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegration, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegration, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) ([]CatalogIntegrationProperty, error)
+	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationDetails, error)
 	DescribeAwsGlueDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAwsGlueDetails, error)
+	DescribeIcebergRestDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationIcebergRestDetails, error)
 	DescribeObjectStorageDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationObjectStorageDetails, error)
 	DescribeOpenCatalogDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationOpenCatalogDetails, error)
-	DescribeIcebergRestDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationIcebergRestDetails, error)
-	// DescribeDetails returns combined describe output for all types of catalog integrations.
-	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAllDetails, error)
 }
 
-// CreateCatalogIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration.
-type CreateCatalogIntegrationOptions struct {
-	create                           bool                    `ddl:"static" sql:"CREATE"`
-	OrReplace                        *bool                   `ddl:"keyword" sql:"OR REPLACE"`
-	catalogIntegration               bool                    `ddl:"static" sql:"CATALOG INTEGRATION"`
-	IfNotExists                      *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                             AccountObjectIdentifier `ddl:"identifier"`
-	AwsGlueCatalogSourceParams       *AwsGlueParams          `ddl:"keyword"`
-	ObjectStorageCatalogSourceParams *ObjectStorageParams    `ddl:"keyword"`
-	OpenCatalogCatalogSourceParams   *OpenCatalogParams      `ddl:"keyword"`
-	IcebergRestCatalogSourceParams   *IcebergRestParams      `ddl:"keyword"`
-	Enabled                          bool                    `ddl:"parameter" sql:"ENABLED"`
-	RefreshIntervalSeconds           *int                    `ddl:"parameter,no_quotes" sql:"REFRESH_INTERVAL_SECONDS"`
-	Comment                          *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
+// CreateAwsGlueCatalogIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-glue.
+type CreateAwsGlueCatalogIntegrationOptions struct {
+	create                 bool                    `ddl:"static" sql:"CREATE"`
+	OrReplace              *bool                   `ddl:"keyword" sql:"OR REPLACE"`
+	catalogIntegration     bool                    `ddl:"static" sql:"CATALOG INTEGRATION"`
+	IfNotExists            *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                   AccountObjectIdentifier `ddl:"identifier"`
+	catalogSource          bool                    `ddl:"static" sql:"CATALOG_SOURCE = GLUE"`
+	tableFormat            bool                    `ddl:"static" sql:"TABLE_FORMAT = ICEBERG"`
+	GlueAwsRoleArn         string                  `ddl:"parameter,single_quotes" sql:"GLUE_AWS_ROLE_ARN"`
+	GlueCatalogId          string                  `ddl:"parameter,single_quotes" sql:"GLUE_CATALOG_ID"`
+	GlueRegion             *string                 `ddl:"parameter,single_quotes" sql:"GLUE_REGION"`
+	CatalogNamespace       *string                 `ddl:"parameter,single_quotes" sql:"CATALOG_NAMESPACE"`
+	Enabled                bool                    `ddl:"parameter" sql:"ENABLED"`
+	RefreshIntervalSeconds *int                    `ddl:"parameter,no_quotes" sql:"REFRESH_INTERVAL_SECONDS"`
+	Comment                *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
-type AwsGlueParams struct {
-	catalogSource    bool    `ddl:"static" sql:"CATALOG_SOURCE = GLUE"`
-	tableFormat      bool    `ddl:"static" sql:"TABLE_FORMAT = ICEBERG"`
-	GlueAwsRoleArn   string  `ddl:"parameter,single_quotes" sql:"GLUE_AWS_ROLE_ARN"`
-	GlueCatalogId    string  `ddl:"parameter,single_quotes" sql:"GLUE_CATALOG_ID"`
-	GlueRegion       *string `ddl:"parameter,single_quotes" sql:"GLUE_REGION"`
-	CatalogNamespace *string `ddl:"parameter,single_quotes" sql:"CATALOG_NAMESPACE"`
+// CreateIcebergRestCatalogIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-rest.
+type CreateIcebergRestCatalogIntegrationOptions struct {
+	create                   bool                                                   `ddl:"static" sql:"CREATE"`
+	OrReplace                *bool                                                  `ddl:"keyword" sql:"OR REPLACE"`
+	catalogIntegration       bool                                                   `ddl:"static" sql:"CATALOG INTEGRATION"`
+	IfNotExists              *bool                                                  `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                     AccountObjectIdentifier                                `ddl:"identifier"`
+	catalogSource            bool                                                   `ddl:"static" sql:"CATALOG_SOURCE = ICEBERG_REST"`
+	tableFormat              bool                                                   `ddl:"static" sql:"TABLE_FORMAT = ICEBERG"`
+	CatalogNamespace         *string                                                `ddl:"parameter,single_quotes" sql:"CATALOG_NAMESPACE"`
+	RestConfig               CatalogIntegrationIcebergRestRestConfig                `ddl:"list,parentheses,no_comma" sql:"REST_CONFIG ="`
+	OAuthRestAuthentication  *CatalogIntegrationIcebergRestOauthRestAuthentication  `ddl:"list,parentheses,no_comma" sql:"REST_AUTHENTICATION ="`
+	BearerRestAuthentication *CatalogIntegrationIcebergRestBearerRestAuthentication `ddl:"list,parentheses,no_comma" sql:"REST_AUTHENTICATION ="`
+	SigV4RestAuthentication  *CatalogIntegrationIcebergRestSigv4RestAuthentication  `ddl:"list,parentheses,no_comma" sql:"REST_AUTHENTICATION ="`
+	Enabled                  bool                                                   `ddl:"parameter" sql:"ENABLED"`
+	RefreshIntervalSeconds   *int                                                   `ddl:"parameter,no_quotes" sql:"REFRESH_INTERVAL_SECONDS"`
+	Comment                  *string                                                `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
-type ObjectStorageParams struct {
-	catalogSource bool                          `ddl:"static" sql:"CATALOG_SOURCE = OBJECT_STORE"`
-	TableFormat   CatalogIntegrationTableFormat `ddl:"parameter,no_quotes" sql:"TABLE_FORMAT"`
-}
-
-type OpenCatalogParams struct {
-	catalogSource      bool                    `ddl:"static" sql:"CATALOG_SOURCE = POLARIS"`
-	tableFormat        bool                    `ddl:"static" sql:"TABLE_FORMAT = ICEBERG"`
-	CatalogNamespace   *string                 `ddl:"parameter,single_quotes" sql:"CATALOG_NAMESPACE"`
-	RestConfig         OpenCatalogRestConfig   `ddl:"list,parentheses,no_comma" sql:"REST_CONFIG ="`
-	RestAuthentication OAuthRestAuthentication `ddl:"list,parentheses,no_comma" sql:"REST_AUTHENTICATION ="`
-}
-
-type OpenCatalogRestConfig struct {
-	CatalogUri           string                                  `ddl:"parameter,single_quotes" sql:"CATALOG_URI"`
-	CatalogApiType       *CatalogIntegrationCatalogApiType       `ddl:"parameter,no_quotes" sql:"CATALOG_API_TYPE"`
-	CatalogName          string                                  `ddl:"parameter,single_quotes" sql:"CATALOG_NAME"`
-	AccessDelegationMode *CatalogIntegrationAccessDelegationMode `ddl:"parameter,no_quotes" sql:"ACCESS_DELEGATION_MODE"`
-}
-
-type OAuthRestAuthentication struct {
-	restAuthType       bool                    `ddl:"static" sql:"TYPE = OAUTH"`
-	OauthTokenUri      *string                 `ddl:"parameter,single_quotes" sql:"OAUTH_TOKEN_URI"`
-	OauthClientId      string                  `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_ID"`
-	OauthClientSecret  string                  `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_SECRET"`
-	OauthAllowedScopes []StringListItemWrapper `ddl:"parameter,parentheses" sql:"OAUTH_ALLOWED_SCOPES"`
-}
-
-type IcebergRestParams struct {
-	catalogSource            bool                      `ddl:"static" sql:"CATALOG_SOURCE = ICEBERG_REST"`
-	tableFormat              bool                      `ddl:"static" sql:"TABLE_FORMAT = ICEBERG"`
-	CatalogNamespace         *string                   `ddl:"parameter,single_quotes" sql:"CATALOG_NAMESPACE"`
-	RestConfig               IcebergRestRestConfig     `ddl:"list,parentheses,no_comma" sql:"REST_CONFIG ="`
-	OAuthRestAuthentication  *OAuthRestAuthentication  `ddl:"list,parentheses,no_comma" sql:"REST_AUTHENTICATION ="`
-	BearerRestAuthentication *BearerRestAuthentication `ddl:"list,parentheses,no_comma" sql:"REST_AUTHENTICATION ="`
-	SigV4RestAuthentication  *SigV4RestAuthentication  `ddl:"list,parentheses,no_comma" sql:"REST_AUTHENTICATION ="`
-}
-
-type IcebergRestRestConfig struct {
+type CatalogIntegrationIcebergRestRestConfig struct {
 	CatalogUri           string                                  `ddl:"parameter,single_quotes" sql:"CATALOG_URI"`
 	Prefix               *string                                 `ddl:"parameter,single_quotes" sql:"PREFIX"`
 	CatalogName          *string                                 `ddl:"parameter,single_quotes" sql:"CATALOG_NAME"`
@@ -96,16 +72,70 @@ type IcebergRestRestConfig struct {
 	AccessDelegationMode *CatalogIntegrationAccessDelegationMode `ddl:"parameter,no_quotes" sql:"ACCESS_DELEGATION_MODE"`
 }
 
-type BearerRestAuthentication struct {
+type CatalogIntegrationIcebergRestOauthRestAuthentication struct {
+	restAuthType       bool                    `ddl:"static" sql:"TYPE = OAUTH"`
+	OauthTokenUri      *string                 `ddl:"parameter,single_quotes" sql:"OAUTH_TOKEN_URI"`
+	OauthClientId      string                  `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_ID"`
+	OauthClientSecret  string                  `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_SECRET"`
+	OauthAllowedScopes []StringListItemWrapper `ddl:"parameter,parentheses" sql:"OAUTH_ALLOWED_SCOPES"`
+}
+
+type CatalogIntegrationIcebergRestBearerRestAuthentication struct {
 	restAuthType bool   `ddl:"static" sql:"TYPE = BEARER"`
 	BearerToken  string `ddl:"parameter,single_quotes" sql:"BEARER_TOKEN"`
 }
 
-type SigV4RestAuthentication struct {
+type CatalogIntegrationIcebergRestSigv4RestAuthentication struct {
 	restAuthType       bool    `ddl:"static" sql:"TYPE = SIGV4"`
 	Sigv4IamRole       string  `ddl:"parameter,single_quotes" sql:"SIGV4_IAM_ROLE"`
 	Sigv4SigningRegion *string `ddl:"parameter,single_quotes" sql:"SIGV4_SIGNING_REGION"`
 	Sigv4ExternalId    *string `ddl:"parameter,single_quotes" sql:"SIGV4_EXTERNAL_ID"`
+}
+
+// CreateObjectStorageCatalogIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-object-storage.
+type CreateObjectStorageCatalogIntegrationOptions struct {
+	create                 bool                          `ddl:"static" sql:"CREATE"`
+	OrReplace              *bool                         `ddl:"keyword" sql:"OR REPLACE"`
+	catalogIntegration     bool                          `ddl:"static" sql:"CATALOG INTEGRATION"`
+	IfNotExists            *bool                         `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                   AccountObjectIdentifier       `ddl:"identifier"`
+	catalogSource          bool                          `ddl:"static" sql:"CATALOG_SOURCE = OBJECT_STORE"`
+	TableFormat            CatalogIntegrationTableFormat `ddl:"parameter,no_quotes" sql:"TABLE_FORMAT"`
+	Enabled                bool                          `ddl:"parameter" sql:"ENABLED"`
+	RefreshIntervalSeconds *int                          `ddl:"parameter,no_quotes" sql:"REFRESH_INTERVAL_SECONDS"`
+	Comment                *string                       `ddl:"parameter,single_quotes" sql:"COMMENT"`
+}
+
+// CreateOpenCatalogCatalogIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-open-catalog.
+type CreateOpenCatalogCatalogIntegrationOptions struct {
+	create                 bool                                            `ddl:"static" sql:"CREATE"`
+	OrReplace              *bool                                           `ddl:"keyword" sql:"OR REPLACE"`
+	catalogIntegration     bool                                            `ddl:"static" sql:"CATALOG INTEGRATION"`
+	IfNotExists            *bool                                           `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                   AccountObjectIdentifier                         `ddl:"identifier"`
+	catalogSource          bool                                            `ddl:"static" sql:"CATALOG_SOURCE = POLARIS"`
+	tableFormat            bool                                            `ddl:"static" sql:"TABLE_FORMAT = ICEBERG"`
+	CatalogNamespace       *string                                         `ddl:"parameter,single_quotes" sql:"CATALOG_NAMESPACE"`
+	RestConfig             CatalogIntegrationOpenCatalogRestConfig         `ddl:"list,parentheses,no_comma" sql:"REST_CONFIG ="`
+	RestAuthentication     CatalogIntegrationOpenCatalogRestAuthentication `ddl:"list,parentheses,no_comma" sql:"REST_AUTHENTICATION ="`
+	Enabled                bool                                            `ddl:"parameter" sql:"ENABLED"`
+	RefreshIntervalSeconds *int                                            `ddl:"parameter,no_quotes" sql:"REFRESH_INTERVAL_SECONDS"`
+	Comment                *string                                         `ddl:"parameter,single_quotes" sql:"COMMENT"`
+}
+
+type CatalogIntegrationOpenCatalogRestConfig struct {
+	CatalogUri           string                                  `ddl:"parameter,single_quotes" sql:"CATALOG_URI"`
+	CatalogApiType       *CatalogIntegrationCatalogApiType       `ddl:"parameter,no_quotes" sql:"CATALOG_API_TYPE"`
+	CatalogName          string                                  `ddl:"parameter,single_quotes" sql:"CATALOG_NAME"`
+	AccessDelegationMode *CatalogIntegrationAccessDelegationMode `ddl:"parameter,no_quotes" sql:"ACCESS_DELEGATION_MODE"`
+}
+
+type CatalogIntegrationOpenCatalogRestAuthentication struct {
+	restAuthType       bool                    `ddl:"static" sql:"TYPE = OAUTH"`
+	OauthTokenUri      *string                 `ddl:"parameter,single_quotes" sql:"OAUTH_TOKEN_URI"`
+	OauthClientId      string                  `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_ID"`
+	OauthClientSecret  string                  `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_SECRET"`
+	OauthAllowedScopes []StringListItemWrapper `ddl:"parameter,parentheses" sql:"OAUTH_ALLOWED_SCOPES"`
 }
 
 // AlterCatalogIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-catalog-integration.
@@ -120,18 +150,18 @@ type AlterCatalogIntegrationOptions struct {
 }
 
 type CatalogIntegrationSet struct {
-	SetOAuthRestAuthentication  *SetOAuthRestAuthentication  `ddl:"list,parentheses,no_comma" sql:"REST_AUTHENTICATION ="`
-	SetBearerRestAuthentication *SetBearerRestAuthentication `ddl:"list,parentheses,no_comma" sql:"REST_AUTHENTICATION ="`
-	Enabled                     *bool                        `ddl:"parameter" sql:"ENABLED"`
-	RefreshIntervalSeconds      *int                         `ddl:"parameter,no_quotes" sql:"REFRESH_INTERVAL_SECONDS"`
-	Comment                     *StringAllowEmpty            `ddl:"parameter" sql:"COMMENT"`
+	SetOAuthRestAuthentication  *CatalogIntegrationSetOauthRestAuthentication  `ddl:"list,parentheses,no_comma" sql:"REST_AUTHENTICATION ="`
+	SetBearerRestAuthentication *CatalogIntegrationSetBearerRestAuthentication `ddl:"list,parentheses,no_comma" sql:"REST_AUTHENTICATION ="`
+	Enabled                     *bool                                          `ddl:"parameter" sql:"ENABLED"`
+	RefreshIntervalSeconds      *int                                           `ddl:"parameter,no_quotes" sql:"REFRESH_INTERVAL_SECONDS"`
+	Comment                     *StringAllowEmpty                              `ddl:"parameter" sql:"COMMENT"`
 }
 
-type SetOAuthRestAuthentication struct {
+type CatalogIntegrationSetOauthRestAuthentication struct {
 	OauthClientSecret string `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_SECRET"`
 }
 
-type SetBearerRestAuthentication struct {
+type CatalogIntegrationSetBearerRestAuthentication struct {
 	BearerToken string `ddl:"parameter,single_quotes" sql:"BEARER_TOKEN"`
 }
 
@@ -150,7 +180,7 @@ type ShowCatalogIntegrationOptions struct {
 	Like                *Like `ddl:"keyword" sql:"LIKE"`
 }
 
-type showCatalogIntegrationsDbRow struct {
+type catalogIntegrationsRow struct {
 	Name      string         `db:"name"`
 	Enabled   bool           `db:"enabled"`
 	Type      string         `db:"type"`
@@ -183,7 +213,7 @@ type DescribeCatalogIntegrationOptions struct {
 	name               AccountObjectIdentifier `ddl:"identifier"`
 }
 
-type descCatalogIntegrationsDbRow struct {
+type catalogIntegrationDescRow struct {
 	Property        string `db:"property"`
 	PropertyType    string `db:"property_type"`
 	PropertyValue   string `db:"property_value"`
@@ -191,10 +221,54 @@ type descCatalogIntegrationsDbRow struct {
 }
 
 type CatalogIntegrationProperty struct {
-	Name    string
-	Type    string
-	Value   string
-	Default string
+	Property        string
+	PropertyType    string
+	PropertyValue   string
+	PropertyDefault string
+}
+
+type CatalogIntegrationDetails struct {
+	Id                       AccountObjectIdentifier
+	CatalogSource            CatalogIntegrationCatalogSourceType
+	TableFormat              CatalogIntegrationTableFormat
+	Enabled                  bool
+	RefreshIntervalSeconds   int
+	Comment                  string
+	GlueAwsRoleArn           string
+	GlueCatalogId            string
+	GlueRegion               string
+	CatalogNamespace         string
+	GlueAwsIamUserArn        string
+	GlueAwsExternalId        string
+	RestConfig               *CatalogIntegrationRestConfigDetails
+	OauthRestAuthentication  *CatalogIntegrationOauthRestAuthenticationDetails
+	BearerRestAuthentication *CatalogIntegrationBearerRestAuthenticationDetails
+	Sigv4RestAuthentication  *CatalogIntegrationSigv4RestAuthenticationDetails
+}
+
+type CatalogIntegrationRestConfigDetails struct {
+	CatalogUri           string
+	Prefix               string
+	CatalogName          string
+	CatalogApiType       CatalogIntegrationCatalogApiType
+	AccessDelegationMode CatalogIntegrationAccessDelegationMode
+}
+
+type CatalogIntegrationOauthRestAuthenticationDetails struct {
+	OauthTokenUri      string
+	OauthClientId      string
+	OauthClientSecret  string
+	OauthAllowedScopes []string
+}
+
+type CatalogIntegrationBearerRestAuthenticationDetails struct {
+	BearerToken string
+}
+
+type CatalogIntegrationSigv4RestAuthenticationDetails struct {
+	Sigv4IamRole       string
+	Sigv4SigningRegion string
+	Sigv4ExternalId    string
 }
 
 type CatalogIntegrationAwsGlueDetails struct {
@@ -210,6 +284,45 @@ type CatalogIntegrationAwsGlueDetails struct {
 	CatalogNamespace       string
 	GlueAwsIamUserArn      string
 	GlueAwsExternalId      string
+}
+
+type CatalogIntegrationIcebergRestDetails struct {
+	Id                       AccountObjectIdentifier
+	CatalogSource            CatalogIntegrationCatalogSourceType
+	TableFormat              CatalogIntegrationTableFormat
+	Enabled                  bool
+	RefreshIntervalSeconds   int
+	Comment                  string
+	CatalogNamespace         string
+	RestConfig               CatalogIntegrationIcebergRestRestConfigDetails
+	OauthRestAuthentication  *CatalogIntegrationIcebergRestOauthRestAuthenticationDetails
+	BearerRestAuthentication *CatalogIntegrationIcebergRestBearerRestAuthenticationDetails
+	Sigv4RestAuthentication  *CatalogIntegrationIcebergRestSigv4RestAuthenticationDetails
+}
+
+type CatalogIntegrationIcebergRestRestConfigDetails struct {
+	CatalogUri           string
+	Prefix               string
+	CatalogName          string
+	CatalogApiType       CatalogIntegrationCatalogApiType
+	AccessDelegationMode CatalogIntegrationAccessDelegationMode
+}
+
+type CatalogIntegrationIcebergRestOauthRestAuthenticationDetails struct {
+	OauthTokenUri      string
+	OauthClientId      string
+	OauthClientSecret  string
+	OauthAllowedScopes []string
+}
+
+type CatalogIntegrationIcebergRestBearerRestAuthenticationDetails struct {
+	BearerToken string
+}
+
+type CatalogIntegrationIcebergRestSigv4RestAuthenticationDetails struct {
+	Sigv4IamRole       string
+	Sigv4SigningRegion string
+	Sigv4ExternalId    string
 }
 
 type CatalogIntegrationObjectStorageDetails struct {
@@ -229,71 +342,20 @@ type CatalogIntegrationOpenCatalogDetails struct {
 	RefreshIntervalSeconds int
 	Comment                string
 	CatalogNamespace       string
-	RestConfig             OpenCatalogRestConfigDetails
-	RestAuthentication     OAuthRestAuthenticationDetails
+	RestConfig             CatalogIntegrationOpenCatalogRestConfigDetails
+	RestAuthentication     CatalogIntegrationOpenCatalogRestAuthenticationDetails
 }
 
-type CatalogIntegrationIcebergRestDetails struct {
-	Id                       AccountObjectIdentifier
-	CatalogSource            CatalogIntegrationCatalogSourceType
-	TableFormat              CatalogIntegrationTableFormat
-	Enabled                  bool
-	RefreshIntervalSeconds   int
-	Comment                  string
-	CatalogNamespace         string
-	RestConfig               IcebergRestRestConfigDetails
-	OAuthRestAuthentication  *OAuthRestAuthenticationDetails
-	BearerRestAuthentication *BearerRestAuthenticationDetails
-	SigV4RestAuthentication  *SigV4RestAuthenticationDetails
-}
-
-type CatalogIntegrationAllDetails struct {
-	Id                       AccountObjectIdentifier
-	CatalogSource            CatalogIntegrationCatalogSourceType
-	TableFormat              CatalogIntegrationTableFormat
-	Enabled                  bool
-	RefreshIntervalSeconds   int
-	Comment                  string
-	GlueAwsRoleArn           string
-	GlueCatalogId            string
-	GlueRegion               string
-	CatalogNamespace         string
-	GlueAwsIamUserArn        string
-	GlueAwsExternalId        string
-	RestConfig               *IcebergRestRestConfigDetails
-	OAuthRestAuthentication  *OAuthRestAuthenticationDetails
-	BearerRestAuthentication *BearerRestAuthenticationDetails
-	SigV4RestAuthentication  *SigV4RestAuthenticationDetails
-}
-
-type OpenCatalogRestConfigDetails struct {
+type CatalogIntegrationOpenCatalogRestConfigDetails struct {
 	CatalogUri           string
 	CatalogApiType       CatalogIntegrationCatalogApiType
 	CatalogName          string
 	AccessDelegationMode CatalogIntegrationAccessDelegationMode
 }
 
-type IcebergRestRestConfigDetails struct {
-	CatalogUri           string
-	Prefix               string
-	CatalogName          string
-	CatalogApiType       CatalogIntegrationCatalogApiType
-	AccessDelegationMode CatalogIntegrationAccessDelegationMode
-}
-
-type OAuthRestAuthenticationDetails struct {
+type CatalogIntegrationOpenCatalogRestAuthenticationDetails struct {
 	OauthTokenUri      string
 	OauthClientId      string
 	OauthClientSecret  string
 	OauthAllowedScopes []string
-}
-
-type BearerRestAuthenticationDetails struct {
-	BearerToken string
-}
-
-type SigV4RestAuthenticationDetails struct {
-	Sigv4IamRole       string
-	Sigv4SigningRegion string
-	Sigv4ExternalId    string
 }

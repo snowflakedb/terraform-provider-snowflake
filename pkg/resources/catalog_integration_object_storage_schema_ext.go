@@ -7,7 +7,6 @@ import (
 // catalogIntegrationObjectStorageAttributesModificationExt adds behavior the generator does not emit.
 // catalog_source is describe-only. table_format is an SSOT attribute and stays in the generated schema.
 func catalogIntegrationObjectStorageAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
-	s["refresh_interval_seconds"].DiffSuppressFunc = IgnoreChangeToCurrentSnowflakeValueInDescribe("refresh_interval_seconds")
 	s["catalog_source"] = &schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
