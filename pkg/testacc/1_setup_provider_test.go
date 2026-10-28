@@ -90,6 +90,7 @@ func acceptanceTestsProvider() *schema.Provider {
 	// TODO(next postgres prs): Remove postgres resources from here
 	p.ResourcesMap["snowflake_postgres_fork"] = resources.PostgresFork()
 	p.ResourcesMap["snowflake_code_bundle"] = resources.CodeBundle()
+	p.ResourcesMap["snowflake_backup_policy"] = resources.BackupPolicy()
 	return p
 }
 

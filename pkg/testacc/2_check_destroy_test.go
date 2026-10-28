@@ -221,6 +221,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.AuthenticationPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.AuthenticationPolicies.ShowByID)
 	},
+	resources.BackupPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.BackupPolicies.ShowByID)
+	},
 	resources.CatalogIntegrationAwsGlue: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.CatalogIntegrations.ShowByID)
 	},
