@@ -21,6 +21,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.Account{}):                     {"Accounts"},
 	normalized(sdk.ApiIntegration{}):              {"ApiIntegrations"},
 	normalized(sdk.AuthenticationPolicy{}):        {"AuthenticationPolicies"},
+	normalized(sdk.BackupPolicy{}):                {"BackupPolicies"},
 	normalized(sdk.CatalogIntegration{}):          {"CatalogIntegrations"},
 	normalized(sdk.ComputePool{}):                 {"ComputePools"},
 	normalized(sdk.CortexAgent{}):                 {"CortexAgents"},
@@ -68,6 +69,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 
 	// Describe output:
 	normalized(sdk.ApiIntegrationAllDetails{}):      {"ApiIntegrations"},
+	normalized(sdk.BackupPolicyDetails{}):           {"BackupPolicies"},
 	normalized(sdk.CatalogIntegrationDetails{}):     {"CatalogIntegrations"},
 	normalized(sdk.CortexAgentDetails{}):            {"CortexAgents"},
 	normalized(sdk.ExternalVolumeDetails{}):         {"ExternalVolumes"},

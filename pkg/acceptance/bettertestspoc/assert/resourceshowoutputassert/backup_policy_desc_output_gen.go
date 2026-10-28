@@ -31,6 +31,21 @@ func ImportedBackupPolicyDescribeOutput(t *testing.T, id string) *BackupPolicyDe
 	return &backupPolicyAssert
 }
 
+func BackupPoliciesDatasourceDescribeOutput(t *testing.T, name string) *BackupPolicyDescribeOutputAssert {
+	t.Helper()
+
+	return BackupPoliciesDatasourceDescribeOutputOnIdx(t, name, 0)
+}
+
+func BackupPoliciesDatasourceDescribeOutputOnIdx(t *testing.T, name string, idx int) *BackupPolicyDescribeOutputAssert {
+	t.Helper()
+
+	backupPolicyAssert := BackupPolicyDescribeOutputAssert{
+		ResourceAssert: assert.NewDatasourceDescribeOutputAssert(name, "backup_policies", idx),
+	}
+	return &backupPolicyAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////

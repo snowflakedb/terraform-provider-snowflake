@@ -39,6 +39,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.AuthenticationPolicies().Schema,
 	},
 	{
+		name:   "BackupPolicies",
+		schema: datasources.BackupPolicies().Schema,
+	},
+	{
 		name:   "CatalogIntegrations",
 		schema: datasources.CatalogIntegrations().Schema,
 	},
