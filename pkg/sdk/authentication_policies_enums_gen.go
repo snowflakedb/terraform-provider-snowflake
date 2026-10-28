@@ -7,6 +7,34 @@ import (
 	"strings"
 )
 
+type AuthenticationPolicyTargetScope string
+
+const (
+	AuthenticationPolicyTargetScopeAccount      AuthenticationPolicyTargetScope = "ACCOUNT"
+	AuthenticationPolicyTargetScopePersonUsers  AuthenticationPolicyTargetScope = "PERSON_USERS"
+	AuthenticationPolicyTargetScopeServiceUsers AuthenticationPolicyTargetScope = "SERVICE_USERS"
+)
+
+var AllAuthenticationPolicyTargetScopes = []AuthenticationPolicyTargetScope{
+	AuthenticationPolicyTargetScopeAccount,
+	AuthenticationPolicyTargetScopePersonUsers,
+	AuthenticationPolicyTargetScopeServiceUsers,
+}
+
+func ToAuthenticationPolicyTargetScope(s string) (AuthenticationPolicyTargetScope, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(AuthenticationPolicyTargetScopeAccount):
+		return AuthenticationPolicyTargetScopeAccount, nil
+	case string(AuthenticationPolicyTargetScopePersonUsers):
+		return AuthenticationPolicyTargetScopePersonUsers, nil
+	case string(AuthenticationPolicyTargetScopeServiceUsers):
+		return AuthenticationPolicyTargetScopeServiceUsers, nil
+	default:
+		return "", fmt.Errorf("invalid authentication policy target scope: %s", s)
+	}
+}
+
 type AuthenticationMethodsOption string
 
 const (
@@ -51,66 +79,6 @@ func ToAuthenticationMethodsOption(s string) (AuthenticationMethodsOption, error
 	}
 }
 
-type MfaAuthenticationMethodsOption string
-
-const (
-	MfaAuthenticationMethodsOptionAll      MfaAuthenticationMethodsOption = "ALL"
-	MfaAuthenticationMethodsOptionSaml     MfaAuthenticationMethodsOption = "SAML"
-	MfaAuthenticationMethodsOptionPassword MfaAuthenticationMethodsOption = "PASSWORD"
-)
-
-var AllMfaAuthenticationMethodsOptions = []MfaAuthenticationMethodsOption{
-	MfaAuthenticationMethodsOptionAll,
-	MfaAuthenticationMethodsOptionSaml,
-	MfaAuthenticationMethodsOptionPassword,
-}
-
-func ToMfaAuthenticationMethodsOption(s string) (MfaAuthenticationMethodsOption, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(MfaAuthenticationMethodsOptionAll):
-		return MfaAuthenticationMethodsOptionAll, nil
-	case string(MfaAuthenticationMethodsOptionSaml):
-		return MfaAuthenticationMethodsOptionSaml, nil
-	case string(MfaAuthenticationMethodsOptionPassword):
-		return MfaAuthenticationMethodsOptionPassword, nil
-	default:
-		return "", fmt.Errorf("invalid mfa authentication methods option: %s", s)
-	}
-}
-
-type MfaAuthenticationMethodsReadOption string
-
-const (
-	MfaAuthenticationMethodsReadOptionAll      MfaAuthenticationMethodsReadOption = "ALL"
-	MfaAuthenticationMethodsReadOptionSaml     MfaAuthenticationMethodsReadOption = "SAML"
-	MfaAuthenticationMethodsReadOptionPassword MfaAuthenticationMethodsReadOption = "PASSWORD"
-	MfaAuthenticationMethodsReadOptionOidc     MfaAuthenticationMethodsReadOption = "OIDC"
-)
-
-var AllMfaAuthenticationMethodsReadOptions = []MfaAuthenticationMethodsReadOption{
-	MfaAuthenticationMethodsReadOptionAll,
-	MfaAuthenticationMethodsReadOptionSaml,
-	MfaAuthenticationMethodsReadOptionPassword,
-	MfaAuthenticationMethodsReadOptionOidc,
-}
-
-func ToMfaAuthenticationMethodsReadOption(s string) (MfaAuthenticationMethodsReadOption, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(MfaAuthenticationMethodsReadOptionAll):
-		return MfaAuthenticationMethodsReadOptionAll, nil
-	case string(MfaAuthenticationMethodsReadOptionSaml):
-		return MfaAuthenticationMethodsReadOptionSaml, nil
-	case string(MfaAuthenticationMethodsReadOptionPassword):
-		return MfaAuthenticationMethodsReadOptionPassword, nil
-	case string(MfaAuthenticationMethodsReadOptionOidc):
-		return MfaAuthenticationMethodsReadOptionOidc, nil
-	default:
-		return "", fmt.Errorf("invalid mfa authentication methods read option: %s", s)
-	}
-}
-
 type MfaEnrollmentOption string
 
 const (
@@ -136,38 +104,6 @@ func ToMfaEnrollmentOption(s string) (MfaEnrollmentOption, error) {
 		return MfaEnrollmentOptionOptional, nil
 	default:
 		return "", fmt.Errorf("invalid mfa enrollment option: %s", s)
-	}
-}
-
-type MfaEnrollmentReadOption string
-
-const (
-	MfaEnrollmentReadOptionRequired                        MfaEnrollmentReadOption = "REQUIRED"
-	MfaEnrollmentReadOptionRequiredPasswordOnly            MfaEnrollmentReadOption = "REQUIRED_PASSWORD_ONLY"
-	MfaEnrollmentReadOptionOptional                        MfaEnrollmentReadOption = "OPTIONAL"
-	MfaEnrollmentReadOptionRequiredSnowflakeUiPasswordOnly MfaEnrollmentReadOption = "REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY"
-)
-
-var AllMfaEnrollmentReadOptions = []MfaEnrollmentReadOption{
-	MfaEnrollmentReadOptionRequired,
-	MfaEnrollmentReadOptionRequiredPasswordOnly,
-	MfaEnrollmentReadOptionOptional,
-	MfaEnrollmentReadOptionRequiredSnowflakeUiPasswordOnly,
-}
-
-func ToMfaEnrollmentReadOption(s string) (MfaEnrollmentReadOption, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(MfaEnrollmentReadOptionRequired):
-		return MfaEnrollmentReadOptionRequired, nil
-	case string(MfaEnrollmentReadOptionRequiredPasswordOnly):
-		return MfaEnrollmentReadOptionRequiredPasswordOnly, nil
-	case string(MfaEnrollmentReadOptionOptional):
-		return MfaEnrollmentReadOptionOptional, nil
-	case string(MfaEnrollmentReadOptionRequiredSnowflakeUiPasswordOnly):
-		return MfaEnrollmentReadOptionRequiredSnowflakeUiPasswordOnly, nil
-	default:
-		return "", fmt.Errorf("invalid mfa enrollment read option: %s", s)
 	}
 }
 
@@ -287,67 +223,27 @@ func ToClientPolicyDriverType(s string) (ClientPolicyDriverType, error) {
 	}
 }
 
-type AllowedProviderOption string
+type EnforceMfaOnExternalAuthenticationOption string
 
 const (
-	AllowedProviderOptionAll   AllowedProviderOption = "ALL"
-	AllowedProviderOptionAws   AllowedProviderOption = "AWS"
-	AllowedProviderOptionAzure AllowedProviderOption = "AZURE"
-	AllowedProviderOptionGcp   AllowedProviderOption = "GCP"
-	AllowedProviderOptionOidc  AllowedProviderOption = "OIDC"
+	EnforceMfaOnExternalAuthenticationOptionAll  EnforceMfaOnExternalAuthenticationOption = "ALL"
+	EnforceMfaOnExternalAuthenticationOptionNone EnforceMfaOnExternalAuthenticationOption = "NONE"
 )
 
-var AllAllowedProviderOptions = []AllowedProviderOption{
-	AllowedProviderOptionAll,
-	AllowedProviderOptionAws,
-	AllowedProviderOptionAzure,
-	AllowedProviderOptionGcp,
-	AllowedProviderOptionOidc,
+var AllEnforceMfaOnExternalAuthenticationOptions = []EnforceMfaOnExternalAuthenticationOption{
+	EnforceMfaOnExternalAuthenticationOptionAll,
+	EnforceMfaOnExternalAuthenticationOptionNone,
 }
 
-func ToAllowedProviderOption(s string) (AllowedProviderOption, error) {
+func ToEnforceMfaOnExternalAuthenticationOption(s string) (EnforceMfaOnExternalAuthenticationOption, error) {
 	s = strings.ToUpper(s)
 	switch s {
-	case string(AllowedProviderOptionAll):
-		return AllowedProviderOptionAll, nil
-	case string(AllowedProviderOptionAws):
-		return AllowedProviderOptionAws, nil
-	case string(AllowedProviderOptionAzure):
-		return AllowedProviderOptionAzure, nil
-	case string(AllowedProviderOptionGcp):
-		return AllowedProviderOptionGcp, nil
-	case string(AllowedProviderOptionOidc):
-		return AllowedProviderOptionOidc, nil
+	case string(EnforceMfaOnExternalAuthenticationOptionAll):
+		return EnforceMfaOnExternalAuthenticationOptionAll, nil
+	case string(EnforceMfaOnExternalAuthenticationOptionNone):
+		return EnforceMfaOnExternalAuthenticationOptionNone, nil
 	default:
-		return "", fmt.Errorf("invalid allowed provider option: %s", s)
-	}
-}
-
-type NetworkPolicyEvaluationOption string
-
-const (
-	NetworkPolicyEvaluationOptionEnforcedRequired    NetworkPolicyEvaluationOption = "ENFORCED_REQUIRED"
-	NetworkPolicyEvaluationOptionEnforcedNotRequired NetworkPolicyEvaluationOption = "ENFORCED_NOT_REQUIRED"
-	NetworkPolicyEvaluationOptionNotEnforced         NetworkPolicyEvaluationOption = "NOT_ENFORCED"
-)
-
-var AllNetworkPolicyEvaluationOptions = []NetworkPolicyEvaluationOption{
-	NetworkPolicyEvaluationOptionEnforcedRequired,
-	NetworkPolicyEvaluationOptionEnforcedNotRequired,
-	NetworkPolicyEvaluationOptionNotEnforced,
-}
-
-func ToNetworkPolicyEvaluationOption(s string) (NetworkPolicyEvaluationOption, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(NetworkPolicyEvaluationOptionEnforcedRequired):
-		return NetworkPolicyEvaluationOptionEnforcedRequired, nil
-	case string(NetworkPolicyEvaluationOptionEnforcedNotRequired):
-		return NetworkPolicyEvaluationOptionEnforcedNotRequired, nil
-	case string(NetworkPolicyEvaluationOptionNotEnforced):
-		return NetworkPolicyEvaluationOptionNotEnforced, nil
-	default:
-		return "", fmt.Errorf("invalid network policy evaluation option: %s", s)
+		return "", fmt.Errorf("invalid enforce mfa on external authentication option: %s", s)
 	}
 }
 
@@ -387,54 +283,158 @@ func ToMfaPolicyAllowedMethodsOption(s string) (MfaPolicyAllowedMethodsOption, e
 	}
 }
 
-type EnforceMfaOnExternalAuthenticationOption string
+type NetworkPolicyEvaluationOption string
 
 const (
-	EnforceMfaOnExternalAuthenticationOptionAll  EnforceMfaOnExternalAuthenticationOption = "ALL"
-	EnforceMfaOnExternalAuthenticationOptionNone EnforceMfaOnExternalAuthenticationOption = "NONE"
+	NetworkPolicyEvaluationOptionEnforcedRequired    NetworkPolicyEvaluationOption = "ENFORCED_REQUIRED"
+	NetworkPolicyEvaluationOptionEnforcedNotRequired NetworkPolicyEvaluationOption = "ENFORCED_NOT_REQUIRED"
+	NetworkPolicyEvaluationOptionNotEnforced         NetworkPolicyEvaluationOption = "NOT_ENFORCED"
 )
 
-var AllEnforceMfaOnExternalAuthenticationOptions = []EnforceMfaOnExternalAuthenticationOption{
-	EnforceMfaOnExternalAuthenticationOptionAll,
-	EnforceMfaOnExternalAuthenticationOptionNone,
+var AllNetworkPolicyEvaluationOptions = []NetworkPolicyEvaluationOption{
+	NetworkPolicyEvaluationOptionEnforcedRequired,
+	NetworkPolicyEvaluationOptionEnforcedNotRequired,
+	NetworkPolicyEvaluationOptionNotEnforced,
 }
 
-func ToEnforceMfaOnExternalAuthenticationOption(s string) (EnforceMfaOnExternalAuthenticationOption, error) {
+func ToNetworkPolicyEvaluationOption(s string) (NetworkPolicyEvaluationOption, error) {
 	s = strings.ToUpper(s)
 	switch s {
-	case string(EnforceMfaOnExternalAuthenticationOptionAll):
-		return EnforceMfaOnExternalAuthenticationOptionAll, nil
-	case string(EnforceMfaOnExternalAuthenticationOptionNone):
-		return EnforceMfaOnExternalAuthenticationOptionNone, nil
+	case string(NetworkPolicyEvaluationOptionEnforcedRequired):
+		return NetworkPolicyEvaluationOptionEnforcedRequired, nil
+	case string(NetworkPolicyEvaluationOptionEnforcedNotRequired):
+		return NetworkPolicyEvaluationOptionEnforcedNotRequired, nil
+	case string(NetworkPolicyEvaluationOptionNotEnforced):
+		return NetworkPolicyEvaluationOptionNotEnforced, nil
 	default:
-		return "", fmt.Errorf("invalid enforce mfa on external authentication option: %s", s)
+		return "", fmt.Errorf("invalid network policy evaluation option: %s", s)
 	}
 }
 
-type AuthenticationPolicyTargetScope string
+type AllowedProviderOption string
 
 const (
-	AuthenticationPolicyTargetScopeAccount      AuthenticationPolicyTargetScope = "ACCOUNT"
-	AuthenticationPolicyTargetScopePersonUsers  AuthenticationPolicyTargetScope = "PERSON_USERS"
-	AuthenticationPolicyTargetScopeServiceUsers AuthenticationPolicyTargetScope = "SERVICE_USERS"
+	AllowedProviderOptionAll   AllowedProviderOption = "ALL"
+	AllowedProviderOptionAws   AllowedProviderOption = "AWS"
+	AllowedProviderOptionAzure AllowedProviderOption = "AZURE"
+	AllowedProviderOptionGcp   AllowedProviderOption = "GCP"
+	AllowedProviderOptionOidc  AllowedProviderOption = "OIDC"
 )
 
-var AllAuthenticationPolicyTargetScopes = []AuthenticationPolicyTargetScope{
-	AuthenticationPolicyTargetScopeAccount,
-	AuthenticationPolicyTargetScopePersonUsers,
-	AuthenticationPolicyTargetScopeServiceUsers,
+var AllAllowedProviderOptions = []AllowedProviderOption{
+	AllowedProviderOptionAll,
+	AllowedProviderOptionAws,
+	AllowedProviderOptionAzure,
+	AllowedProviderOptionGcp,
+	AllowedProviderOptionOidc,
 }
 
-func ToAuthenticationPolicyTargetScope(s string) (AuthenticationPolicyTargetScope, error) {
+func ToAllowedProviderOption(s string) (AllowedProviderOption, error) {
 	s = strings.ToUpper(s)
 	switch s {
-	case string(AuthenticationPolicyTargetScopeAccount):
-		return AuthenticationPolicyTargetScopeAccount, nil
-	case string(AuthenticationPolicyTargetScopePersonUsers):
-		return AuthenticationPolicyTargetScopePersonUsers, nil
-	case string(AuthenticationPolicyTargetScopeServiceUsers):
-		return AuthenticationPolicyTargetScopeServiceUsers, nil
+	case string(AllowedProviderOptionAll):
+		return AllowedProviderOptionAll, nil
+	case string(AllowedProviderOptionAws):
+		return AllowedProviderOptionAws, nil
+	case string(AllowedProviderOptionAzure):
+		return AllowedProviderOptionAzure, nil
+	case string(AllowedProviderOptionGcp):
+		return AllowedProviderOptionGcp, nil
+	case string(AllowedProviderOptionOidc):
+		return AllowedProviderOptionOidc, nil
 	default:
-		return "", fmt.Errorf("invalid authentication policy target scope: %s", s)
+		return "", fmt.Errorf("invalid allowed provider option: %s", s)
+	}
+}
+
+type MfaAuthenticationMethodsOption string
+
+const (
+	MfaAuthenticationMethodsOptionAll      MfaAuthenticationMethodsOption = "ALL"
+	MfaAuthenticationMethodsOptionSaml     MfaAuthenticationMethodsOption = "SAML"
+	MfaAuthenticationMethodsOptionPassword MfaAuthenticationMethodsOption = "PASSWORD"
+)
+
+var AllMfaAuthenticationMethodsOptions = []MfaAuthenticationMethodsOption{
+	MfaAuthenticationMethodsOptionAll,
+	MfaAuthenticationMethodsOptionSaml,
+	MfaAuthenticationMethodsOptionPassword,
+}
+
+func ToMfaAuthenticationMethodsOption(s string) (MfaAuthenticationMethodsOption, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(MfaAuthenticationMethodsOptionAll):
+		return MfaAuthenticationMethodsOptionAll, nil
+	case string(MfaAuthenticationMethodsOptionSaml):
+		return MfaAuthenticationMethodsOptionSaml, nil
+	case string(MfaAuthenticationMethodsOptionPassword):
+		return MfaAuthenticationMethodsOptionPassword, nil
+	default:
+		return "", fmt.Errorf("invalid mfa authentication methods option: %s", s)
+	}
+}
+
+type MfaAuthenticationMethodsReadOption string
+
+const (
+	MfaAuthenticationMethodsReadOptionAll      MfaAuthenticationMethodsReadOption = "ALL"
+	MfaAuthenticationMethodsReadOptionSaml     MfaAuthenticationMethodsReadOption = "SAML"
+	MfaAuthenticationMethodsReadOptionPassword MfaAuthenticationMethodsReadOption = "PASSWORD"
+	MfaAuthenticationMethodsReadOptionOidc     MfaAuthenticationMethodsReadOption = "OIDC"
+)
+
+var AllMfaAuthenticationMethodsReadOptions = []MfaAuthenticationMethodsReadOption{
+	MfaAuthenticationMethodsReadOptionAll,
+	MfaAuthenticationMethodsReadOptionSaml,
+	MfaAuthenticationMethodsReadOptionPassword,
+	MfaAuthenticationMethodsReadOptionOidc,
+}
+
+func ToMfaAuthenticationMethodsReadOption(s string) (MfaAuthenticationMethodsReadOption, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(MfaAuthenticationMethodsReadOptionAll):
+		return MfaAuthenticationMethodsReadOptionAll, nil
+	case string(MfaAuthenticationMethodsReadOptionSaml):
+		return MfaAuthenticationMethodsReadOptionSaml, nil
+	case string(MfaAuthenticationMethodsReadOptionPassword):
+		return MfaAuthenticationMethodsReadOptionPassword, nil
+	case string(MfaAuthenticationMethodsReadOptionOidc):
+		return MfaAuthenticationMethodsReadOptionOidc, nil
+	default:
+		return "", fmt.Errorf("invalid mfa authentication methods read option: %s", s)
+	}
+}
+
+type MfaEnrollmentReadOption string
+
+const (
+	MfaEnrollmentReadOptionRequired                        MfaEnrollmentReadOption = "REQUIRED"
+	MfaEnrollmentReadOptionRequiredPasswordOnly            MfaEnrollmentReadOption = "REQUIRED_PASSWORD_ONLY"
+	MfaEnrollmentReadOptionOptional                        MfaEnrollmentReadOption = "OPTIONAL"
+	MfaEnrollmentReadOptionRequiredSnowflakeUiPasswordOnly MfaEnrollmentReadOption = "REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY"
+)
+
+var AllMfaEnrollmentReadOptions = []MfaEnrollmentReadOption{
+	MfaEnrollmentReadOptionRequired,
+	MfaEnrollmentReadOptionRequiredPasswordOnly,
+	MfaEnrollmentReadOptionOptional,
+	MfaEnrollmentReadOptionRequiredSnowflakeUiPasswordOnly,
+}
+
+func ToMfaEnrollmentReadOption(s string) (MfaEnrollmentReadOption, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(MfaEnrollmentReadOptionRequired):
+		return MfaEnrollmentReadOptionRequired, nil
+	case string(MfaEnrollmentReadOptionRequiredPasswordOnly):
+		return MfaEnrollmentReadOptionRequiredPasswordOnly, nil
+	case string(MfaEnrollmentReadOptionOptional):
+		return MfaEnrollmentReadOptionOptional, nil
+	case string(MfaEnrollmentReadOptionRequiredSnowflakeUiPasswordOnly):
+		return MfaEnrollmentReadOptionRequiredSnowflakeUiPasswordOnly, nil
+	default:
+		return "", fmt.Errorf("invalid mfa enrollment read option: %s", s)
 	}
 }

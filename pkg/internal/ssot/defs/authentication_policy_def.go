@@ -411,6 +411,7 @@ var AuthenticationPolicy = ssot.Object{
 			&AuthenticationPolicyAttrs.DescribeWorkloadIdentityPolicy,
 		))),
 		ssot.WithSdk(
+			ssot.SdkDefineFromSsot(),
 			ssot.SdkShow(
 				ssot.SdkShowOptionalLike(),
 				ssot.SdkShowOptionalExtendedIn(),
