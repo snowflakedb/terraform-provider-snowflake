@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,11 +11,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-func (r showAuthenticationPolicyDBRow) excludeFromShow() bool {
+func (r authenticationPoliciesRow) excludeFromShow() bool {
 	return !r.DatabaseName.Valid || !r.SchemaName.Valid
 }
 
-func (r showAuthenticationPolicyDBRow) additionalConvert(result *AuthenticationPolicy) error {
+func (r authenticationPoliciesRow) additionalConvert(result *AuthenticationPolicy) error {
 	var errs []error
 	if !r.DatabaseName.Valid {
 		errs = append(errs, fmt.Errorf("missing database name for authentication policy with name: %s", r.Name))
@@ -53,49 +52,22 @@ func parseAuthenticationPolicyTargetScopes(options string) ([]AuthenticationPoli
 	return raw.TargetScopes, nil
 }
 
-type AuthenticationPolicyDescriptions []AuthenticationPolicyDescription
+type AuthenticationPolicyDescriptions []AuthenticationPolicyProperty
 
 func (v AuthenticationPolicyDescriptions) Raw(key string) string {
-	raw, err := collections.FindFirst(v, func(r AuthenticationPolicyDescription) bool { return r.Property == key })
+	raw, err := collections.FindFirst(v, func(r AuthenticationPolicyProperty) bool { return r.Property == key })
 	if err != nil {
 		return ""
 	}
 	return raw.Value
 }
 
-// AsAuthenticationPolicyDescribe projects DESCRIBE output onto TypeString describe_output columns.
-func AsAuthenticationPolicyDescribe(descriptions []AuthenticationPolicyDescription) *AuthenticationPolicyDescribeDetails {
-	if descriptions == nil {
-		return nil
-	}
-	details := &AuthenticationPolicyDescribeDetails{}
-	for _, description := range descriptions {
-		switch description.Property {
-		case "NAME":
-			details.Name = description.Value
-		case "OWNER":
-			details.Owner = description.Value
-		case "AUTHENTICATION_METHODS":
-			details.AuthenticationMethods = description.Value
-		case "MFA_ENROLLMENT":
-			details.MfaEnrollment = description.Value
-		case "CLIENT_TYPES":
-			details.ClientTypes = description.Value
-		case "SECURITY_INTEGRATIONS":
-			details.SecurityIntegrations = description.Value
-		case "COMMENT":
-			details.Comment = description.Value
-		case "CLIENT_POLICY":
-			details.ClientPolicy = description.Value
-		case "MFA_POLICY":
-			details.MfaPolicy = description.Value
-		case "PAT_POLICY":
-			details.PatPolicy = description.Value
-		case "WORKLOAD_IDENTITY_POLICY":
-			details.WorkloadIdentityPolicy = description.Value
-		}
-	}
-	return details
+// AuthenticationPolicyClientPolicyDetails is an element of the client_policy column of the details.
+// TODO [next PRs]: generate this element struct from the Elem children of the column, like the object columns. External volume has the same
+// hand-written element (ExternalVolumeStorageLocationDetails).
+type AuthenticationPolicyClientPolicyDetails struct {
+	ClientType     ClientPolicyDriverType
+	MinimumVersion string
 }
 
 func (d *AuthenticationPolicyDetails) ID() SchemaObjectIdentifier {
@@ -110,87 +82,63 @@ func (d *AuthenticationPolicyDetails) Descriptions() AuthenticationPolicyDescrip
 	return d.descriptions
 }
 
-// Describe projects the original DESC rows onto the string columns used by describe_output.
-func (d *AuthenticationPolicyDetails) Describe() *AuthenticationPolicyDescribeDetails {
-	if d == nil {
-		return nil
-	}
-	return AsAuthenticationPolicyDescribe(d.descriptions)
+func validateAuthenticationPolicyDescribed(AuthenticationPolicyDetails) error {
+	return nil
 }
 
-func (v *authenticationPolicies) DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*AuthenticationPolicyDetails, error) {
-	properties, err := v.Describe(ctx, id)
+// The column parsers below are called by the generated ParseAuthenticationPolicyDescribed, one for each property.
+
+// TODO [next PRs]: The parsers of authentication_methods, client_types, mfa_enrollment and comment can be generated from the column
+// (list of enums, single enum, a string whose null value means empty), see the ssot README Limitations.
+func ParseAuthenticationPolicyAuthenticationMethodsDescribed(value string) ([]AuthenticationMethodsOption, error) {
+	result, err := parseEnumList(value, ToAuthenticationMethodsOption)
+	return result, wrapParsingError("AUTHENTICATION_METHODS", err)
+}
+
+func ParseAuthenticationPolicyMfaEnrollmentDescribed(value string) (MfaEnrollmentReadOption, error) {
+	result, err := ToMfaEnrollmentReadOption(value)
+	return result, wrapParsingError("MFA_ENROLLMENT", err)
+}
+
+func ParseAuthenticationPolicyClientTypesDescribed(value string) ([]ClientTypesOption, error) {
+	result, err := parseEnumList(value, ToClientTypesOption)
+	return result, wrapParsingError("CLIENT_TYPES", err)
+}
+
+func ParseAuthenticationPolicySecurityIntegrationsDescribed(value string) (AuthenticationPolicySecurityIntegrationsDetails, error) {
+	result, err := parseAuthenticationPolicySecurityIntegrations(value)
+	return result, wrapParsingError("SECURITY_INTEGRATIONS", err)
+}
+
+func ParseAuthenticationPolicyCommentDescribed(value string) (string, error) {
+	return emptyIfNull(value), nil
+}
+
+func ParseAuthenticationPolicyClientPolicyDescribed(value string) ([]AuthenticationPolicyClientPolicyDetails, error) {
+	result, err := parseAuthenticationPolicyClientPolicy(value)
+	return result, wrapParsingError("CLIENT_POLICY", err)
+}
+
+func ParseAuthenticationPolicyMfaPolicyDescribed(value string) (AuthenticationPolicyMfaPolicyDetails, error) {
+	result, err := parseAuthenticationPolicyMfaPolicy(value)
+	return result, wrapParsingError("MFA_POLICY", err)
+}
+
+func ParseAuthenticationPolicyPatPolicyDescribed(value string) (AuthenticationPolicyPatPolicyDetails, error) {
+	result, err := parseAuthenticationPolicyPatPolicy(value)
+	return result, wrapParsingError("PAT_POLICY", err)
+}
+
+func ParseAuthenticationPolicyWorkloadIdentityPolicyDescribed(value string) (AuthenticationPolicyWorkloadIdentityPolicyDetails, error) {
+	result, err := parseAuthenticationPolicyWorkloadIdentityPolicy(value)
+	return result, wrapParsingError("WORKLOAD_IDENTITY_POLICY", err)
+}
+
+func wrapParsingError(property string, err error) error {
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("parsing %s: %w", property, err)
 	}
-	return parseAuthenticationPolicyDetails(properties, id)
-}
-
-func parseAuthenticationPolicyDetails(properties []AuthenticationPolicyDescription, id SchemaObjectIdentifier) (*AuthenticationPolicyDetails, error) {
-	details := &AuthenticationPolicyDetails{
-		Id:           id,
-		descriptions: properties,
-	}
-	var errs []error
-	for _, prop := range properties {
-		switch prop.Property {
-		case "NAME":
-			details.Name = prop.Value
-		case "OWNER":
-			details.Owner = prop.Value
-		case "COMMENT":
-			details.Comment = emptyIfNull(prop.Value)
-		case "AUTHENTICATION_METHODS":
-			if methods, err := parseEnumList(prop.Value, ToAuthenticationMethodsOption); err != nil {
-				errs = append(errs, fmt.Errorf("parsing AUTHENTICATION_METHODS: %w", err))
-			} else {
-				details.AuthenticationMethods = methods
-			}
-		case "MFA_ENROLLMENT":
-			if enrollment, err := ToMfaEnrollmentReadOption(prop.Value); err != nil {
-				errs = append(errs, fmt.Errorf("parsing MFA_ENROLLMENT: %w", err))
-			} else {
-				details.MfaEnrollment = enrollment
-			}
-		case "CLIENT_TYPES":
-			if clientTypes, err := parseEnumList(prop.Value, ToClientTypesOption); err != nil {
-				errs = append(errs, fmt.Errorf("parsing CLIENT_TYPES: %w", err))
-			} else {
-				details.ClientTypes = clientTypes
-			}
-		case "SECURITY_INTEGRATIONS":
-			if securityIntegrations, err := parseAuthenticationPolicySecurityIntegrations(prop.Value); err != nil {
-				errs = append(errs, fmt.Errorf("parsing SECURITY_INTEGRATIONS: %w", err))
-			} else {
-				details.SecurityIntegrations = securityIntegrations
-			}
-		case "CLIENT_POLICY":
-			if clientPolicy, err := parseAuthenticationPolicyClientPolicy(prop.Value); err != nil {
-				errs = append(errs, fmt.Errorf("parsing CLIENT_POLICY: %w", err))
-			} else {
-				details.ClientPolicy = clientPolicy
-			}
-		case "MFA_POLICY":
-			if mfaPolicy, err := parseAuthenticationPolicyMfaPolicy(prop.Value); err != nil {
-				errs = append(errs, fmt.Errorf("parsing MFA_POLICY: %w", err))
-			} else {
-				details.MfaPolicy = mfaPolicy
-			}
-		case "PAT_POLICY":
-			if patPolicy, err := parseAuthenticationPolicyPatPolicy(prop.Value); err != nil {
-				errs = append(errs, fmt.Errorf("parsing PAT_POLICY: %w", err))
-			} else {
-				details.PatPolicy = patPolicy
-			}
-		case "WORKLOAD_IDENTITY_POLICY":
-			if workloadIdentityPolicy, err := parseAuthenticationPolicyWorkloadIdentityPolicy(prop.Value); err != nil {
-				errs = append(errs, fmt.Errorf("parsing WORKLOAD_IDENTITY_POLICY: %w", err))
-			} else {
-				details.WorkloadIdentityPolicy = workloadIdentityPolicy
-			}
-		}
-	}
-	return details, errors.Join(errs...)
+	return nil
 }
 
 func parseEnumList[T ~string](value string, convert func(string) (T, error)) ([]T, error) {
@@ -214,12 +162,12 @@ func parseAuthenticationPolicySecurityIntegrations(value string) (Authentication
 	return AuthenticationPolicySecurityIntegrationsDetails{SecurityIntegrations: ids}, nil
 }
 
-func parseAuthenticationPolicyClientPolicy(value string) ([]AuthenticationPolicyClientPolicyEntryDetails, error) {
+func parseAuthenticationPolicyClientPolicy(value string) ([]AuthenticationPolicyClientPolicyDetails, error) {
 	pairs, err := parseSnowflakeMap(value)
 	if err != nil {
 		return nil, err
 	}
-	entries := make([]AuthenticationPolicyClientPolicyEntryDetails, 0, len(pairs))
+	entries := make([]AuthenticationPolicyClientPolicyDetails, 0, len(pairs))
 	var errs []error
 	for _, pair := range pairs {
 		clientType, err := ToClientPolicyDriverType(pair.key)
@@ -227,7 +175,7 @@ func parseAuthenticationPolicyClientPolicy(value string) ([]AuthenticationPolicy
 			errs = append(errs, err)
 			continue
 		}
-		entry := AuthenticationPolicyClientPolicyEntryDetails{ClientType: clientType}
+		entry := AuthenticationPolicyClientPolicyDetails{ClientType: clientType}
 		inner, err := parseSnowflakeMap(pair.value)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("%s: %w", pair.key, err))

@@ -70,6 +70,32 @@ func SdkShowOptionalExtendedIn() SdkShowOption {
 	return func(s *SdkGenerator) { s.ShowOptionalExtendedIn = true }
 }
 
+// SdkShowOptionalOn adds the optional ON clause, after IN and before STARTS WITH.
+func SdkShowOptionalOn() SdkShowOption {
+	return func(s *SdkGenerator) { s.ShowOptionalOn = true }
+}
+
+// SdkShowResultFilterHook calls the excludeFromShow method of the SHOW row, which the SDK ext file implements,
+// for each row. A row for which it returns true is left out of the result.
+func SdkShowResultFilterHook() SdkShowOption {
+	return func(s *SdkGenerator) { s.ShowResultFilterHook = true }
+}
+
+// SdkShowPlainOnlyField is a SHOW column that only the plain struct has, with Go type Kind (without a package prefix).
+type SdkShowPlainOnlyField struct {
+	Column *Attribute
+	Kind   string
+}
+
+// SdkShowPlainOnly marks a SHOW column as plain-only. column is the same *Attribute that sits in Show.Columns.
+// The column stays in Columns for the schema and the assertions, but the SHOW row does not read it:
+// convert skips it, and additionalConvert in the SDK ext file fills the plain field. kind is the plain Go type.
+func SdkShowPlainOnly(column *Attribute, kind string) SdkShowOption {
+	return func(s *SdkGenerator) {
+		s.ShowPlainOnlyFields = append(s.ShowPlainOnlyFields, SdkShowPlainOnlyField{Column: column, Kind: kind})
+	}
+}
+
 func SdkShowOptionalStartsWith() SdkShowOption {
 	return func(s *SdkGenerator) { s.ShowOptionalStartsWith = true }
 }

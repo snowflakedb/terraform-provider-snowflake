@@ -36,9 +36,9 @@ func Test_parseAuthenticationPolicyNestedBlocks(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, mfa.EnforceMfaOnExternalAuthentication)
 	assert.Equal(t, sdk.EnforceMfaOnExternalAuthenticationOptionAll, *mfa.EnforceMfaOnExternalAuthentication)
-	assert.ElementsMatch(t, []sdk.AuthenticationPolicyMfaPolicyListItem{
-		{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey},
-		{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
+	assert.ElementsMatch(t, []sdk.MfaPolicyAllowedMethodsOptionListItem{
+		{Value: sdk.MfaPolicyAllowedMethodsOptionPasskey},
+		{Value: sdk.MfaPolicyAllowedMethodsOptionDuo},
 	}, mfa.AllowedMethods)
 
 	pat, err := parseAuthenticationPolicyPatPolicy(d, "pat_policy.0.")
@@ -53,9 +53,9 @@ func Test_parseAuthenticationPolicyNestedBlocks(t *testing.T) {
 
 	workload, err := parseAuthenticationPolicyWorkloadIdentityPolicy(d, "workload_identity_policy.0.")
 	require.NoError(t, err)
-	assert.ElementsMatch(t, []sdk.AuthenticationPolicyAllowedProviderListItem{
-		{Provider: sdk.AllowedProviderOptionAws},
-		{Provider: sdk.AllowedProviderOptionOidc},
+	assert.ElementsMatch(t, []sdk.AllowedProviderOptionListItem{
+		{Value: sdk.AllowedProviderOptionAws},
+		{Value: sdk.AllowedProviderOptionOidc},
 	}, workload.AllowedProviders)
 	assert.Equal(t, []sdk.StringListItemWrapper{{Value: "123"}}, workload.AllowedAwsAccounts)
 	assert.Nil(t, workload.AllowedAzureIssuers)

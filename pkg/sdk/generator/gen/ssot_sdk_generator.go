@@ -19,7 +19,7 @@ var variantsOf = ssotdefs.VariantsOf
 
 // ShowOperationFromObject adds SHOW and ShowByID from obj.SdkConfig.
 // The field chain comes from ShowPairedStructs. Clauses are emitted in a fixed order:
-// Show, Terse, SQL, OptionalSQL, Like, plain IN or ExtendedIn, StartsWith, LimitFrom, Limit.
+// Show, Terse, SQL, OptionalSQL, Like, plain IN or ExtendedIn, On, StartsWith, LimitFrom, Limit.
 // An empty ShowByID filtering list passes no filtering argument, so ShowByID stays Like.
 func (i *Interface) ShowOperationFromObject(obj ssot.Object) *Interface {
 	cfg := obj.SdkConfig()
@@ -106,15 +106,33 @@ func describeDetailsVariants(base ssot.Object) []ssot.Object {
 
 func describeParseConfig(obj ssot.Object, cfg ssot.SdkGenerator) DescribeParseConfig {
 	config := DescribeParseConfig{
-		RowsType:     obj.DescribePlainName(),
-		DetailsType:  obj.Name + "Details",
-		ErrorLabel:   genhelpers.CamelToWords(obj.Name),
-		ValidateFunc: "validate" + obj.Name + "Described",
+		RowsType:      obj.DescribePlainName(),
+		DetailsType:   obj.Name + "Details",
+		ErrorLabel:    genhelpers.CamelToWords(obj.Name),
+		ValidateFunc:  "validate" + obj.Name + "Described",
+		IgnoreUnknown: cfg.DescribeDetailsParseIgnoreUnknown,
+	}
+	if cfg.DescribeDetailsRowsField != nil {
+		config.RowsField = cfg.DescribeDetailsRowsField.Name
+		config.RowsFieldType = cfg.DescribeDetailsRowsField.Kind
+	}
+	// The property and value fields of the row are the columns property and property_value, or value.
+	for _, column := range obj.DescribeRows.Columns {
+		switch column.OutputKey() {
+		case "property":
+			config.PropertyField = ssot.ColumnFieldName(*column)
+		case "property_value", "value":
+			config.ValueField = ssot.ColumnFieldName(*column)
+		}
 	}
 	for _, mapping := range cfg.DescribeDetailsParse {
 		field := sqlToFieldName(mapping.Attr.OutputKey(), true)
 		if !mapping.Prefix {
-			config.Properties = append(config.Properties, DescribeParseProperty{Property: mapping.Property, Field: field})
+			property := DescribeParseProperty{Property: mapping.Property, Field: field}
+			if mapping.Parsed {
+				property.Parser = "Parse" + obj.Name + field + "Described"
+			}
+			config.Properties = append(config.Properties, property)
 			continue
 		}
 		element := ssot.NestedDetailsElem(obj, mapping.Attr)
@@ -197,6 +215,9 @@ func showQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 	}
 	if cfg.ShowOptionalExtendedIn {
 		q = q.OptionalExtendedIn()
+	}
+	if cfg.ShowOptionalOn {
+		q = q.OptionalOn()
 	}
 	if cfg.ShowOptionalStartsWith {
 		q = q.OptionalStartsWith()
@@ -295,6 +316,7 @@ func (i *Interface) CreateOperationFromObject(obj ssot.Object, helperStructs ...
 	if !cfg.Create {
 		panic(fmt.Sprintf("object %q is not enabled for SDK CREATE generation", obj.Name))
 	}
+	i.checkStructShapes = true
 	return i.CreateOperation(cfg.CreateDoc, createQueryStructFromConfig(obj, cfg), append(helperStructs, enumListItemStructs(obj)...)...)
 }
 
@@ -747,6 +769,7 @@ func (i *Interface) AlterOperationFromObject(obj ssot.Object) *Interface {
 	if !cfg.Alter {
 		panic(fmt.Sprintf("object %q is not enabled for SDK ALTER generation", obj.Name))
 	}
+	i.checkStructShapes = true
 	return i.AlterOperation(cfg.AlterDoc, alterQueryStructFromConfig(obj, cfg)).withEnumListItems(obj)
 }
 
@@ -788,17 +811,25 @@ func enumListItemQueryStructs(obj ssot.Object) []*QueryStruct {
 	// TODO [next PRs]: Move this shape into ssot as a description (struct name, field Value, the enum, single quotes, required). This function should only translate that description into a query struct. Do that together with more complex list items, not for this enum case alone.
 	seen := map[string]struct{}{}
 	var out []*QueryStruct
+	var addAttr func(attr *ssot.Attribute)
+	addAttr = func(attr *ssot.Attribute) {
+		if attr == nil {
+			return
+		}
+		if (attr.Type == ssot.AttrList || attr.Type == ssot.AttrSet) && attr.Elem != nil && attr.Elem.Type == ssot.AttrEnum && attr.Elem.Enum != nil {
+			name := ssot.EnumListItemName(attr.Elem.Enum)
+			if _, ok := seen[name]; !ok {
+				seen[name] = struct{}{}
+				out = append(out, NewQueryStruct(name).Enum("Value", attr.Elem.Enum, KeywordOptions().SingleQuotes().Required()))
+			}
+		}
+		for i := range attr.Children {
+			addAttr(&attr.Children[i])
+		}
+	}
 	add := func(list []*ssot.Attribute) {
 		for _, attr := range list {
-			if attr == nil || attr.Type != ssot.AttrList || attr.Elem == nil || attr.Elem.Type != ssot.AttrEnum || attr.Elem.Enum == nil {
-				continue
-			}
-			name := ssot.EnumListItemName(attr.Elem.Enum)
-			if _, ok := seen[name]; ok {
-				continue
-			}
-			seen[name] = struct{}{}
-			out = append(out, NewQueryStruct(name).Enum("Value", attr.Elem.Enum, KeywordOptions().SingleQuotes().Required()))
+			addAttr(attr)
 		}
 	}
 	add(obj.Create.KeywordsBefore)

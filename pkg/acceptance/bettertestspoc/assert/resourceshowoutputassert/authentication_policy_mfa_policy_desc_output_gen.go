@@ -44,12 +44,12 @@ func (a *AuthenticationPolicyMfaPolicyDescribeOutputAssert) HasEnforceMfaOnExter
 // Attribute no value checks //
 ///////////////////////////////
 
-func (a *AuthenticationPolicyMfaPolicyDescribeOutputAssert) HasNoAllowedMethods() *AuthenticationPolicyMfaPolicyDescribeOutputAssert {
-	a.ValueSet("allowed_methods.#", "0")
+func (a *AuthenticationPolicyMfaPolicyDescribeOutputAssert) HasNoEnforceMfaOnExternalAuthentication() *AuthenticationPolicyMfaPolicyDescribeOutputAssert {
+	a.ValueNotSet("enforce_mfa_on_external_authentication")
 	return a
 }
 
-func (a *AuthenticationPolicyMfaPolicyDescribeOutputAssert) HasNoEnforceMfaOnExternalAuthentication() *AuthenticationPolicyMfaPolicyDescribeOutputAssert {
-	a.ValueNotSet("enforce_mfa_on_external_authentication")
+func (a *AuthenticationPolicyMfaPolicyDescribeOutputAssert) HasNoAllowedMethods() *AuthenticationPolicyMfaPolicyDescribeOutputAssert {
+	a.ValueSet("allowed_methods.#", "0")
 	return a
 }

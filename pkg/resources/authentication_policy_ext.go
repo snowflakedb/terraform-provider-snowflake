@@ -48,19 +48,20 @@ func authenticationPolicyHandleExternalChangesInDescribeExt(d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 	if withExternalChangesMarking {
-		described := details.Describe()
-		if described == nil {
+		rows := details.Descriptions()
+		if rows == nil {
 			return nil
 		}
 		// valueToCompare matches the TypeString describe_output values. valueToSet is the config representation.
+		// mfa_enrollment is the parsed enum; the other fields are the raw DESCRIBE strings.
 		if err := handleExternalChangesToObjectInFlatDescribe(d,
-			outputMapping{"authentication_methods", "authentication_methods", described.AuthenticationMethods, authenticationPolicyEnumStrings(details.AuthenticationMethods), nil},
-			outputMapping{"mfa_enrollment", "mfa_enrollment", described.MfaEnrollment, string(details.MfaEnrollment), nil},
-			outputMapping{"client_types", "client_types", described.ClientTypes, authenticationPolicyEnumStrings(details.ClientTypes), nil},
-			outputMapping{"security_integrations", "security_integrations", described.SecurityIntegrations, authenticationPolicySecurityIntegrationNames(details.SecurityIntegrations), nil},
-			outputMapping{"mfa_policy", "mfa_policy", described.MfaPolicy, authenticationPolicyMfaPolicyToSchema(details.MfaPolicy), nil},
-			outputMapping{"pat_policy", "pat_policy", described.PatPolicy, authenticationPolicyPatPolicyToSchema(details.PatPolicy), nil},
-			outputMapping{"workload_identity_policy", "workload_identity_policy", described.WorkloadIdentityPolicy, authenticationPolicyWorkloadIdentityPolicyToSchema(details.WorkloadIdentityPolicy), nil},
+			outputMapping{"authentication_methods", "authentication_methods", rows.Raw("AUTHENTICATION_METHODS"), authenticationPolicyEnumStrings(details.AuthenticationMethods), nil},
+			outputMapping{"mfa_enrollment", "mfa_enrollment", string(details.MfaEnrollment), string(details.MfaEnrollment), nil},
+			outputMapping{"client_types", "client_types", rows.Raw("CLIENT_TYPES"), authenticationPolicyEnumStrings(details.ClientTypes), nil},
+			outputMapping{"security_integrations", "security_integrations", rows.Raw("SECURITY_INTEGRATIONS"), authenticationPolicySecurityIntegrationNames(details.SecurityIntegrations), nil},
+			outputMapping{"mfa_policy", "mfa_policy", rows.Raw("MFA_POLICY"), authenticationPolicyMfaPolicyToSchema(details.MfaPolicy), nil},
+			outputMapping{"pat_policy", "pat_policy", rows.Raw("PAT_POLICY"), authenticationPolicyPatPolicyToSchema(details.PatPolicy), nil},
+			outputMapping{"workload_identity_policy", "workload_identity_policy", rows.Raw("WORKLOAD_IDENTITY_POLICY"), authenticationPolicyWorkloadIdentityPolicyToSchema(details.WorkloadIdentityPolicy), nil},
 		); err != nil {
 			return diag.FromErr(err)
 		}
@@ -155,37 +156,37 @@ func authenticationPolicyDescribeInSdkExt(ctx context.Context, meta any, id sdk.
 // Pre-existing mappers
 // =============================================================================
 
-func toAuthenticationPolicyAuthenticationMethods(v any) (sdk.AuthenticationMethods, error) {
+func toAuthenticationPolicyAuthenticationMethods(v any) (sdk.AuthenticationMethodsOptionListItem, error) {
 	option, err := sdk.ToAuthenticationMethodsOption(v.(string))
 	if err != nil {
-		return sdk.AuthenticationMethods{}, err
+		return sdk.AuthenticationMethodsOptionListItem{}, err
 	}
-	return sdk.AuthenticationMethods{Method: option}, nil
+	return sdk.AuthenticationMethodsOptionListItem{Value: option}, nil
 }
 
-func toAuthenticationPolicyClientTypes(v any) (sdk.ClientTypes, error) {
+func toAuthenticationPolicyClientTypes(v any) (sdk.ClientTypesOptionListItem, error) {
 	option, err := sdk.ToClientTypesOption(v.(string))
 	if err != nil {
-		return sdk.ClientTypes{}, err
+		return sdk.ClientTypesOptionListItem{}, err
 	}
-	return sdk.ClientTypes{ClientType: option}, nil
+	return sdk.ClientTypesOptionListItem{Value: option}, nil
 }
 
 func applyMfaPolicyUpdate(d *schema.ResourceData, prefix string, req *sdk.AuthenticationPolicyMfaPolicyRequest) error {
 	return errors.Join(
 		attributeMappedValueUpdateSetOnlyFallback(d, prefix+"enforce_mfa_on_external_authentication", &req.EnforceMfaOnExternalAuthentication, sdk.ToEnforceMfaOnExternalAuthenticationOption, sdk.EnforceMfaOnExternalAuthenticationOptionNone),
-		setValueUpdateFallback(d, prefix+"allowed_methods", &req.AllowedMethods, toAuthenticationPolicyMfaPolicyAllowedMethods, []sdk.AuthenticationPolicyMfaPolicyListItem{{
-			Method: sdk.MfaPolicyAllowedMethodsOptionAll,
+		setValueUpdateFallback(d, prefix+"allowed_methods", &req.AllowedMethods, toAuthenticationPolicyMfaPolicyAllowedMethods, []sdk.MfaPolicyAllowedMethodsOptionListItem{{
+			Value: sdk.MfaPolicyAllowedMethodsOptionAll,
 		}}),
 	)
 }
 
-func toAuthenticationPolicyMfaPolicyAllowedMethods(v any) (sdk.AuthenticationPolicyMfaPolicyListItem, error) {
+func toAuthenticationPolicyMfaPolicyAllowedMethods(v any) (sdk.MfaPolicyAllowedMethodsOptionListItem, error) {
 	option, err := sdk.ToMfaPolicyAllowedMethodsOption(v.(string))
 	if err != nil {
-		return sdk.AuthenticationPolicyMfaPolicyListItem{}, err
+		return sdk.MfaPolicyAllowedMethodsOptionListItem{}, err
 	}
-	return sdk.AuthenticationPolicyMfaPolicyListItem{Method: option}, nil
+	return sdk.MfaPolicyAllowedMethodsOptionListItem{Value: option}, nil
 }
 
 func applyPatPolicyUpdate(d *schema.ResourceData, prefix string, req *sdk.AuthenticationPolicyPatPolicyRequest) error {
@@ -199,8 +200,8 @@ func applyPatPolicyUpdate(d *schema.ResourceData, prefix string, req *sdk.Authen
 
 func applyWorkloadIdentityPolicyUpdate(d *schema.ResourceData, prefix string, req *sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest) error {
 	return errors.Join(
-		setValueUpdateFallback(d, prefix+"allowed_providers", &req.AllowedProviders, toAuthenticationPolicyWorkloadIdentityPolicyAllowedProviders, []sdk.AuthenticationPolicyAllowedProviderListItem{{
-			Provider: sdk.AllowedProviderOptionAll,
+		setValueUpdateFallback(d, prefix+"allowed_providers", &req.AllowedProviders, toAuthenticationPolicyWorkloadIdentityPolicyAllowedProviders, []sdk.AllowedProviderOptionListItem{{
+			Value: sdk.AllowedProviderOptionAll,
 		}}),
 		setValueUpdateFallback(d, prefix+"allowed_aws_accounts", &req.AllowedAwsAccounts, toAuthenticationPolicyWorkloadIdentityPolicyAllowedAwsAccounts, allStringListItems()),
 		setValueUpdateFallback(d, prefix+"allowed_azure_issuers", &req.AllowedAzureIssuers, toAuthenticationPolicyWorkloadIdentityPolicyAllowedAzureIssuers, allStringListItems()),
@@ -212,12 +213,12 @@ func allStringListItems() []sdk.StringListItemWrapper {
 	return []sdk.StringListItemWrapper{{Value: "ALL"}}
 }
 
-func toAuthenticationPolicyWorkloadIdentityPolicyAllowedProviders(v any) (sdk.AuthenticationPolicyAllowedProviderListItem, error) {
+func toAuthenticationPolicyWorkloadIdentityPolicyAllowedProviders(v any) (sdk.AllowedProviderOptionListItem, error) {
 	option, err := sdk.ToAllowedProviderOption(v.(string))
 	if err != nil {
-		return sdk.AuthenticationPolicyAllowedProviderListItem{}, err
+		return sdk.AllowedProviderOptionListItem{}, err
 	}
-	return sdk.AuthenticationPolicyAllowedProviderListItem{Provider: option}, nil
+	return sdk.AllowedProviderOptionListItem{Value: option}, nil
 }
 
 func stringListItem(v any) (sdk.StringListItemWrapper, error) {
@@ -230,34 +231,29 @@ var (
 	toAuthenticationPolicyWorkloadIdentityPolicyAllowedOidcIssuers  = stringListItem
 )
 
-func ToSecurityIntegrationsRequest(value any) (sdk.SecurityIntegrationsOptionRequest, error) {
+func ToSecurityIntegrationsRequest(value any) (sdk.AuthenticationPolicySecurityIntegrationsOptionRequest, error) {
 	raw := expandStringList(value.(*schema.Set).List())
 	securityIntegrations := make([]sdk.AccountObjectIdentifier, len(raw))
 	for i, v := range raw {
 		securityIntegrations[i] = sdk.NewAccountObjectIdentifier(v)
 	}
 	// ALL is handled as a single-elem list - a pseudoidentifier.
-	return *sdk.NewSecurityIntegrationsOptionRequest().WithSecurityIntegrations(securityIntegrations), nil
+	return *sdk.NewAuthenticationPolicySecurityIntegrationsOptionRequest().WithSecurityIntegrations(securityIntegrations), nil
 }
 
-func toAuthenticationPolicyClientPolicy(v any) (sdk.AuthenticationPolicyClientPolicyEntry, error) {
+func toAuthenticationPolicyClientPolicy(v any) (sdk.AuthenticationPolicyClientPolicyRequest, error) {
 	m, ok := v.(map[string]any)
 	if !ok {
-		return sdk.AuthenticationPolicyClientPolicyEntry{}, fmt.Errorf("client_policy entry: expected map, got %T", v)
+		return sdk.AuthenticationPolicyClientPolicyRequest{}, fmt.Errorf("client_policy entry: expected map, got %T", v)
 	}
 	clientType, err := sdk.ToClientPolicyDriverType(m["client_type"].(string))
 	if err != nil {
-		return sdk.AuthenticationPolicyClientPolicyEntry{}, err
+		return sdk.AuthenticationPolicyClientPolicyRequest{}, err
 	}
-	return sdk.AuthenticationPolicyClientPolicyEntry{
-		ClientType: clientType,
-		Params: &sdk.AuthenticationPolicyClientPolicyEntryParams{
-			MinimumVersion: sdk.Pointer(m["minimum_version"].(string)),
-		},
-	}, nil
+	return *sdk.NewAuthenticationPolicyClientPolicyRequest(clientType, *sdk.NewAuthenticationPolicyClientPolicyParamsRequest(m["minimum_version"].(string))), nil
 }
 
-func authenticationPolicyClientPolicyToSchema(entries []sdk.AuthenticationPolicyClientPolicyEntryDetails) []map[string]any {
+func authenticationPolicyClientPolicyToSchema(entries []sdk.AuthenticationPolicyClientPolicyDetails) []map[string]any {
 	out := make([]map[string]any, len(entries))
 	for i, entry := range entries {
 		out[i] = map[string]any{

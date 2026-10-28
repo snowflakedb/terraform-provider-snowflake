@@ -19,6 +19,16 @@ const (
 	AttrObject AttributeType = "object"
 )
 
+// ChildrenRule is a validation over the fields of the SQL struct of an object attribute.
+type ChildrenRule string
+
+const (
+	// ChildrenAtLeastOne requires at least one field to be set (AtLeastOneValueSet).
+	ChildrenAtLeastOne ChildrenRule = "at_least_one"
+	// ChildrenExactlyOne requires exactly one field to be set (ExactlyOneValueSet).
+	ChildrenExactlyOne ChildrenRule = "exactly_one"
+)
+
 // ObjectElem is the Elem of a list or set of objects: an AttrObject whose Children are the fields of each element.
 func ObjectElem(children []Attribute) *Attribute {
 	return &Attribute{Type: AttrObject, Children: children}
@@ -56,7 +66,11 @@ type Attribute struct {
 	// object clause. It is in NestedSqlFields and not in NestedFields, so it is not a Terraform field.
 	// A nested field may itself be a block. Generated create parses an optional list block; see the README.
 	// Resource alter generation skips a nested attribute and every field under it.
-	Children       []Attribute
+	Children []Attribute
+	// ChildrenRule adds a validation over the Children that are fields of the SQL struct of an object, not fixed texts:
+	// at least one of them is set, or exactly one. The order is the Children order. It is valid only on an object with at
+	// least two such Children. The schema-side AtLeastOneOf is not generated from it.
+	ChildrenRule   ChildrenRule
 	OptionalInShow bool // SHOW/DESCRIBE SDK field is a pointer; drives schema ToSchema nil-guards
 	OptionalInDb   bool // DB row is nullable; live for the SDK paired-struct db and plain kinds
 	StoredAsText   bool // the db column is text, and the plain kind stays the semantic type
@@ -86,7 +100,8 @@ type Attribute struct {
 	UnsetSql      SqlClause // UNSET SQL clause. Zero is absent from that statement.
 	DiffSuppress  DiffSuppress
 	// ConflictsWith names other attributes on the same level. The generator emits schema.ConflictsWith
-	// as a path from the resource root: the name at the top, and parent.0.name under a list with MaxItems 1.
+	// as a path from the resource root: the name at the top, and parent.0.name under a single block
+	// (an object, or a list of objects with MaxItems 1).
 	// A set, or a list without that bound, cannot name these relations.
 	ConflictsWith []Attribute
 	// AtLeastOneOf names attributes of which at least one must be set. Paths follow ConflictsWith.

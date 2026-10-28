@@ -286,10 +286,10 @@ func relationPaths(prefix string, attrs []ssot.Attribute) []string {
 	})
 }
 
-// listBlockRelationPrefix is the Terraform path of children of a list with MaxItems 1.
-// Other blocks cannot name child relations, so their children keep an empty prefix.
+// listBlockRelationPrefix is the Terraform path of children of a single block: an object, or a list of objects
+// with MaxItems 1. Other blocks cannot name child relations, so their children keep an empty prefix.
 func listBlockRelationPrefix(parent ssot.Attribute, ctx resourceAttributeRuleContext) string {
-	if parent.Type != ssot.AttrList || parent.MaxItems == nil || *parent.MaxItems != 1 {
+	if !parent.IsSingleBlock() {
 		return ""
 	}
 	segment := parent.Name + ".0"

@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 )
 
@@ -15,7 +16,15 @@ func ShowPairedStructs(obj ssot.Object) *PairedStructs {
 	if obj.Name == "" || obj.NamePlural == "" {
 		panic(fmt.Sprintf("object %q needs Name and NamePlural to build the SHOW paired struct", obj.Name))
 	}
-	return pairedStructsFromColumns(obj, false, unexported(obj.NamePlural)+"Row", obj.Name)
+	cfg := ssot.ObjectGenerators(obj.Generators...).Sdk
+	pairs := pairedStructsFromColumns(obj, false, unexported(obj.NamePlural)+"Row", obj.Name)
+	for _, field := range cfg.ShowPlainOnlyFields {
+		pairs = pairs.PlainOnlyField(sqlToFieldName(field.Column.OutputKey(), true), field.Kind)
+	}
+	if cfg.ShowResultFilterHook {
+		pairs = pairs.WithShowResultFilterHook()
+	}
+	return pairs
 }
 
 // DescribePairedStructs builds a DESCRIBE field chain from Columns by calling PairedStructs methods.
@@ -51,6 +60,9 @@ func DescribeDetailsPlain(obj ssot.Object) *Plain {
 		kind := detailsFieldKind(obj, *column, cfg.DescribeDetailsNestedFields)
 		plain = plain.Field(sqlToFieldName(column.OutputKey(), true), kind)
 	}
+	if cfg.DescribeDetailsRowsField != nil {
+		plain = plain.Field(cfg.DescribeDetailsRowsField.Name, cfg.DescribeDetailsRowsField.Kind)
+	}
 	return plain
 }
 
@@ -59,13 +71,22 @@ func detailsFieldKind(obj ssot.Object, attr ssot.Attribute, nested []*ssot.Attri
 	if slices.ContainsFunc(nested, func(n *ssot.Attribute) bool { return n.Name == attr.Name }) {
 		kind = "[]" + ssot.NestedDetailsElem(obj, &attr)
 	} else {
-		concrete, _ := ssot.AttributeGoTypes(obj, attr)
-		kind = strings.ReplaceAll(concrete, "sdk.", "")
+		kind = detailsGoType(obj, attr)
 	}
 	if attr.IsOptionalColumn() {
 		kind = "*" + kind
 	}
 	return kind
+}
+
+// detailsGoType is the Go type of a column in a details struct. A list or set of enums is a slice of the enum there,
+// unlike in a SHOW row, where it is []string.
+func detailsGoType(obj ssot.Object, attr ssot.Attribute) string {
+	if (attr.Type == ssot.AttrList || attr.Type == ssot.AttrSet) && attr.Elem != nil && attr.Elem.Type == ssot.AttrEnum && attr.Elem.ColumnEnum() != nil {
+		return "[]" + attr.Elem.ColumnEnum().Name
+	}
+	concrete, _ := ssot.AttributeGoTypes(obj, attr)
+	return strings.ReplaceAll(concrete, "sdk.", "")
 }
 
 // DescribeNestedPlains are the plain structs of the columns of obj that are objects. The fields are the Children of the
@@ -81,8 +102,7 @@ func DescribeNestedPlains(obj ssot.Object) []*Plain {
 			if child.Type == ssot.AttrObject {
 				panic(fmt.Sprintf("object %q: DESCRIBE column %q has an object child %q", obj.Name, column.Name, child.Name))
 			}
-			concrete, _ := ssot.AttributeGoTypes(obj, child)
-			plain = plain.Field(ssot.ColumnFieldName(child), strings.ReplaceAll(concrete, "sdk.", ""))
+			plain = plain.Field(ssot.ColumnFieldName(child), detailsGoType(obj, child))
 		}
 		plains = append(plains, plain)
 	}
@@ -125,9 +145,13 @@ func pairedStructsFromColumns(obj ssot.Object, describe bool, dbName, plainName 
 		panic(fmt.Sprintf("object %q is enabled for SDK paired struct %s but has no columns", obj.Name, kind))
 	}
 	pairs := StructPair(dbName, plainName)
+	plainOnly := collections.Map(generators.Sdk.ShowPlainOnlyFields, func(field ssot.SdkShowPlainOnlyField) *ssot.Attribute { return field.Column })
 	for _, column := range columns {
 		if column == nil {
 			panic(fmt.Sprintf("object %q: nil %s column", obj.Name, kind))
+		}
+		if !describe && slices.Contains(plainOnly, column) {
+			continue
 		}
 		pairs = appendPairedColumn(pairs, obj, *column)
 	}
@@ -140,11 +164,11 @@ func appendPairedColumn(pairs *PairedStructs, obj ssot.Object, attr ssot.Attribu
 	case ssot.AttrString:
 		switch {
 		case !attr.OptionalInShow && !attr.OptionalInDb:
-			return pairs.Text(key)
+			return pairs.Text(key, manualConvertOpt(attr)...)
 		case attr.OptionalInShow && attr.OptionalInDb:
-			return pairs.OptionalText(key)
+			return pairs.OptionalText(key, manualConvertOpt(attr)...)
 		case !attr.OptionalInShow && attr.OptionalInDb:
-			return pairs.OptionalText(key, WithRequiredInPlain())
+			return pairs.OptionalText(key, append(plainRequiredOpt(attr), manualConvertOpt(attr)...)...)
 		default:
 			panicPairedColumn(obj, attr, "OptionalInShow without OptionalInDb has no paired struct mapping")
 		}
@@ -226,6 +250,13 @@ func boolFromTextOpts(attr ssot.Attribute) []PairedFieldOption {
 		opts = append(opts, WithBoolParsed())
 	}
 	return opts
+}
+
+func manualConvertOpt(attr ssot.Attribute) []PairedFieldOption {
+	if attr.ManualConvert {
+		return []PairedFieldOption{WithManualConvert()}
+	}
+	return nil
 }
 
 func plainRequiredOpt(attr ssot.Attribute) []PairedFieldOption {

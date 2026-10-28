@@ -321,3 +321,169 @@ func Test_alterQueryStruct_setBlocksAllowEmptyAndConflicts(t *testing.T) {
 	)
 	requireSameOperations(t, want, got)
 }
+
+func Test_CreateOperationFromObject_singleBlockWithEnumSetsAndAtLeastOne(t *testing.T) {
+	family := ssot.NewEnum("WidgetFamily", "WidgetFamilies", "SMALL")
+	policy := ssot.Attribute{
+		Name:         "policy",
+		Type:         ssot.AttrObject,
+		CreateSql:    ssot.ObjectParameter(ssot.Sql("POLICY ="), ssot.Parentheses()),
+		ChildrenRule: ssot.ChildrenAtLeastOne,
+		Children: []ssot.Attribute{
+			{Name: "limit", Type: ssot.AttrInt},
+			{Name: "families", Type: ssot.AttrSet, Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: family}},
+			{Name: "names", Type: ssot.AttrSet, Elem: &ssot.Attribute{Type: ssot.AttrString}, CreateSql: ssot.ListParameter("StringListItemWrapper")},
+		},
+	}
+	obj := ssot.Object{
+		Name:       "Widget",
+		Attributes: []ssot.Attribute{policy},
+		Create:     ssot.CreateSpec{Clauses: []*ssot.Attribute{&policy}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate(
+			ssot.SdkCreateWithoutOrReplace(),
+			ssot.SdkCreateWithoutIfNotExists(),
+		))},
+	}
+	nested := NewQueryStruct("WidgetPolicy").
+		OptionalNumberAssignment("LIMIT", ParameterOptions()).
+		ListAssignment("FAMILIES", "WidgetFamilyListItem", ParameterOptions().Parentheses()).
+		ListAssignment("NAMES", "StringListItemWrapper", ParameterOptions().Parentheses()).
+		WithValidation(AtLeastOneValueSet, "Limit", "Families", "Names")
+	item := NewQueryStruct("WidgetFamilyListItem").Enum("Value", family, KeywordOptions().SingleQuotes().Required())
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/create-widget",
+		NewQueryStruct("CreateWidget").
+			Create().
+			SQL("WIDGET").
+			Name().
+			OptionalQueryStructField("Policy", nested, ListOptions().SQL("POLICY =").Parentheses().NoComma()).
+			WithValidation(ValidIdentifier, "name"),
+		item,
+	)
+	requireSameOperations(t, want, got)
+}
+
+func Test_CreateOperationFromObject_enumKeywordAndContainedChild(t *testing.T) {
+	driver := ssot.NewEnum("WidgetDriver", "WidgetDrivers", "JDBC")
+	version := ssot.Attribute{Name: "minimum_version", Type: ssot.AttrString, Required: true}
+	params := ssot.Attribute{
+		Name:      "entry_params",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(ssot.Sql("="), ssot.Parentheses(), ssot.FieldName("Params"), ssot.Required()),
+		Children:  []ssot.Attribute{version},
+	}
+	entries := ssot.Attribute{
+		Name:      "entries",
+		Type:      ssot.AttrSet,
+		CreateSql: ssot.ListOfObjects(ssot.Sql("ENTRIES"), ssot.Parentheses()),
+		Elem: &ssot.Attribute{
+			Type:      ssot.AttrObject,
+			CreateSql: ssot.ObjectParameter(),
+			Children: []ssot.Attribute{
+				{Name: "driver", Type: ssot.AttrEnum, Required: true, Enum: driver, CreateSql: ssot.EnumKeyword(ssot.NoQuotes(), ssot.Required())},
+				version,
+				params,
+			},
+		},
+	}
+	obj := ssot.Object{
+		Name:       "Widget",
+		Attributes: []ssot.Attribute{entries},
+		Create:     ssot.CreateSpec{Clauses: []*ssot.Attribute{&entries}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate(
+			ssot.SdkCreateWithoutOrReplace(),
+			ssot.SdkCreateWithoutIfNotExists(),
+		))},
+	}
+	nestedParams := NewQueryStruct("WidgetEntryParams").
+		TextAssignment("MINIMUM_VERSION", ParameterOptions().SingleQuotes().Required())
+	element := NewQueryStruct("WidgetEntries").
+		Enum("Driver", driver, KeywordOptions().NoQuotes().Required()).
+		QueryStructField("Params", nestedParams, ListOptions().SQL("=").Parentheses().NoComma().Required())
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/create-widget",
+		NewQueryStruct("CreateWidget").
+			Create().
+			SQL("WIDGET").
+			Name().
+			ListQueryStructField("Entries", element, ParameterOptions().Parentheses().SQL("ENTRIES")).
+			WithValidation(ValidIdentifier, "name"),
+	)
+	requireSameOperations(t, want, got)
+}
+
+func Test_CreateOperationFromObject_exactlyOneKeywordAndIdentifierList(t *testing.T) {
+	names := ssot.Attribute{
+		Name:      "names",
+		Type:      ssot.AttrSet,
+		Elem:      &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"},
+		CreateSql: ssot.IdentifierListKeyword(),
+	}
+	option := ssot.Attribute{
+		Name:      "names_option",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(ssot.Sql("NAMES ="), ssot.FieldName("Names")),
+		Children: []ssot.Attribute{
+			{Name: "names_all", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("('ALL')"), ssot.FieldName("All"))},
+			names,
+		},
+		ChildrenRule: ssot.ChildrenExactlyOne,
+	}
+	obj := ssot.Object{
+		Name:       "Widget",
+		Attributes: []ssot.Attribute{names},
+		Create:     ssot.CreateSpec{Clauses: []*ssot.Attribute{&option}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate(
+			ssot.SdkCreateWithoutOrReplace(),
+			ssot.SdkCreateWithoutIfNotExists(),
+		))},
+	}
+	nested := NewQueryStruct("WidgetNamesOption").
+		OptionalSQLWithCustomFieldName("All", "('ALL')").
+		UnnamedList("Names", "AccountObjectIdentifier", KeywordOptions().Parentheses()).
+		WithValidation(ValidIdentifier, "Names").
+		WithValidation(ExactlyOneValueSet, "All", "Names")
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/create-widget",
+		NewQueryStruct("CreateWidget").
+			Create().
+			SQL("WIDGET").
+			Name().
+			OptionalQueryStructField("Names", nested, ListOptions().SQL("NAMES =").NoComma()).
+			WithValidation(ValidIdentifier, "name"),
+	)
+	requireSameOperations(t, want, got)
+}
+
+func Test_CreateOperationFromObject_objectAsParameter(t *testing.T) {
+	option := ssot.Attribute{
+		Name:      "option",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(ssot.Sql("OPTION"), ssot.FieldName("Option"), ssot.AsParameter()),
+		Children: []ssot.Attribute{
+			{Name: "all", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("('ALL')"), ssot.FieldName("All"))},
+		},
+	}
+	obj := ssot.Object{
+		Name:       "Widget",
+		Create:     ssot.CreateSpec{Clauses: []*ssot.Attribute{&option}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate(ssot.SdkCreateWithoutOrReplace(), ssot.SdkCreateWithoutIfNotExists()))},
+	}
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/create-widget",
+		NewQueryStruct("CreateWidget").
+			Create().
+			SQL("WIDGET").
+			Name().
+			OptionalQueryStructField("Option", NewQueryStruct("WidgetOption").OptionalSQLWithCustomFieldName("All", "('ALL')"), ParameterOptions().SQL("OPTION")).
+			WithValidation(ValidIdentifier, "name"),
+	)
+	requireSameOperations(t, want, got)
+}

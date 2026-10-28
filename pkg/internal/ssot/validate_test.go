@@ -136,6 +136,19 @@ func Test_ValidateObject_atLeastOneOfAndNestedRelations(t *testing.T) {
 			}},
 		})
 	})
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name: "AuthenticationPolicy",
+			Attributes: []Attribute{{
+				Name: "mfa_policy",
+				Type: AttrObject,
+				Children: []Attribute{
+					{Name: "enforce_mfa_on_external_authentication", AtLeastOneOf: []Attribute{{Name: "enforce_mfa_on_external_authentication"}, {Name: "allowed_methods"}}},
+					{Name: "allowed_methods", AtLeastOneOf: []Attribute{{Name: "enforce_mfa_on_external_authentication"}, {Name: "allowed_methods"}}},
+				},
+			}},
+		})
+	})
 	require.PanicsWithValue(t, `object "AuthenticationPolicy": attribute "allowed_methods" at least one of unknown attribute "missing"`, func() {
 		ValidateObject(Object{
 			Name: "AuthenticationPolicy",
@@ -149,7 +162,7 @@ func Test_ValidateObject_atLeastOneOfAndNestedRelations(t *testing.T) {
 			}},
 		})
 	})
-	require.PanicsWithValue(t, `object "Widget": attribute "items" relations require a list with MaxItems 1`, func() {
+	require.PanicsWithValue(t, `object "Widget": attribute "items" relations require a single block`, func() {
 		ValidateObject(Object{
 			Name: "Widget",
 			Attributes: []Attribute{{
@@ -943,6 +956,34 @@ func Test_ValidateObject_describeGeneric(t *testing.T) {
 	})
 }
 
+func Test_ValidateObject_showPlainOnly(t *testing.T) {
+	name := Attribute{Name: "name", Type: AttrString, Readonly: true}
+	other := Attribute{Name: "other", Type: AttrString, Readonly: true}
+	obj := func(generators ...GeneratorOption) Object {
+		return Object{
+			Name:       "Widget",
+			NamePlural: "Widgets",
+			Show:       OutputSpec{Columns: []*Attribute{&name}},
+			Generators: generators,
+		}
+	}
+	require.NotPanics(t, func() { ValidateObject(obj(WithSdk(SdkShow(SdkShowPlainOnly(&name, "string"))))) })
+	require.PanicsWithValue(t, `object "Widget": SdkShowPlainOnly needs SdkShow`, func() {
+		ValidateObject(obj(WithSdk(func(s *SdkGenerator) {
+			s.ShowPlainOnlyFields = []SdkShowPlainOnlyField{{Column: &name, Kind: "string"}}
+		})))
+	})
+	require.PanicsWithValue(t, `object "Widget": SdkShowPlainOnly needs a column and a kind`, func() {
+		ValidateObject(obj(WithSdk(SdkShow(SdkShowPlainOnly(&name, "")))))
+	})
+	require.PanicsWithValue(t, `object "Widget": SdkShowPlainOnly column "other" is not in the SHOW columns`, func() {
+		ValidateObject(obj(WithSdk(SdkShow(SdkShowPlainOnly(&other, "string")))))
+	})
+	require.PanicsWithValue(t, `object "Widget": SdkShowPlainOnly column "name" is repeated`, func() {
+		ValidateObject(obj(WithSdk(SdkShow(SdkShowPlainOnly(&name, "string"), SdkShowPlainOnly(&name, "string")))))
+	})
+}
+
 func Test_ValidateObject_describePlainOnlyField(t *testing.T) {
 	name := Attribute{Name: "name", Type: AttrString, Readonly: true}
 	obj := func(generators ...GeneratorOption) Object {
@@ -1201,14 +1242,14 @@ func Test_ValidateObject_nestedStaticFields(t *testing.T) {
 	})
 
 	t.Run("without an object clause", func(t *testing.T) {
-		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."type_oauth" is SQL-only but not a static clause of an object clause`, func() {
+		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."type_oauth" is SQL-only but not a static clause, a keyword or a nested struct of an object clause`, func() {
 			ValidateObject(Object{Name: "Widget", Attributes: []Attribute{{Name: "block", Type: AttrObject, Children: []Attribute{typeOauth, uri}}}})
 		})
 	})
 
 	t.Run("not static", func(t *testing.T) {
 		notStatic := Attribute{Name: "other", SqlOnly: true, CreateSql: StringParameter()}
-		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."other" is SQL-only but not a static clause of an object clause`, func() {
+		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."other" is SQL-only but not a static clause, a keyword or a nested struct of an object clause`, func() {
 			validate(Attribute{Name: "block", Type: AttrObject, CreateSql: ObjectParameter(Sql("BLOCK =")), Children: []Attribute{notStatic, uri}})
 		})
 	})
@@ -1345,4 +1386,49 @@ func Test_Attribute_IsOptionalColumn(t *testing.T) {
 	require.False(t, Attribute{Type: AttrString}.IsOptionalColumn())
 	require.True(t, Attribute{Type: AttrObject}.IsOptionalColumn(), "an object that is not required is a pointer")
 	require.False(t, Attribute{Type: AttrObject, Required: true}.IsOptionalColumn())
+}
+
+func Test_ValidateObject_childrenAtLeastOneValueSet(t *testing.T) {
+	obj := func(policy Attribute) Object {
+		return Object{Name: "Widget", Attributes: []Attribute{policy}}
+	}
+	children := []Attribute{{Name: "limit", Type: AttrInt}, {Name: "size", Type: AttrInt}}
+	require.NotPanics(t, func() {
+		ValidateObject(obj(Attribute{Name: "policy", Type: AttrObject, ChildrenRule: ChildrenAtLeastOne, Children: children}))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "policy" sets ChildrenRule and needs at least two Children that are fields`, func() {
+		ValidateObject(obj(Attribute{Name: "policy", Type: AttrObject, ChildrenRule: ChildrenAtLeastOne, Children: children[:1]}))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "policy" sets ChildrenRule but is not an object`, func() {
+		ValidateObject(obj(Attribute{Name: "policy", Type: AttrString, ChildrenRule: ChildrenAtLeastOne}))
+	})
+}
+
+func Test_ValidateObject_enumKeywordAndNestedStruct(t *testing.T) {
+	driver := NewEnum("WidgetDriver", "WidgetDrivers", "JDBC")
+	version := Attribute{Name: "minimum_version", Type: AttrString}
+	params := Attribute{
+		Name:      "entry_params",
+		Type:      AttrObject,
+		SqlOnly:   true,
+		CreateSql: ObjectParameter(Sql("="), Parentheses()),
+		Children:  []Attribute{version},
+	}
+	entries := func(driverAttr Attribute) Attribute {
+		return Attribute{
+			Name:      "entries",
+			Type:      AttrSet,
+			CreateSql: ListOfObjects(Sql("ENTRIES"), Parentheses()),
+			Elem:      &Attribute{Type: AttrObject, CreateSql: ObjectParameter(), Children: []Attribute{driverAttr, version, params}},
+		}
+	}
+	obj := func(list Attribute) Object {
+		return Object{Name: "Widget", Attributes: []Attribute{list}, Create: CreateSpec{Clauses: []*Attribute{&list}}}
+	}
+	require.NotPanics(t, func() {
+		ValidateObject(obj(entries(Attribute{Name: "driver", Type: AttrEnum, Enum: driver, CreateSql: EnumKeyword(NoQuotes())})))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "driver" CREATE value keyword needs an enum attribute with an Enum, or a list of identifiers`, func() {
+		ValidateObject(obj(entries(Attribute{Name: "driver", Type: AttrString, CreateSql: EnumKeyword(NoQuotes())})))
+	})
 }

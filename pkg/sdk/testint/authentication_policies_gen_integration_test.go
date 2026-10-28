@@ -85,25 +85,25 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 			WithComment(comment).
 			WithMfaEnrollment(sdk.MfaEnrollmentOptionOptional).
 			WithSecurityIntegrations(
-				*sdk.NewSecurityIntegrationsOptionRequest().
+				*sdk.NewAuthenticationPolicySecurityIntegrationsOptionRequest().
 					WithSecurityIntegrations([]sdk.AccountObjectIdentifier{
 						samlIntegration.ID(),
 					}),
 			).
-			WithClientTypes([]sdk.ClientTypes{
-				{ClientType: sdk.ClientTypesOptionDrivers},
-				{ClientType: sdk.ClientTypesOptionSnowsql},
+			WithClientTypes([]sdk.ClientTypesOptionListItem{
+				{Value: sdk.ClientTypesOptionDrivers},
+				{Value: sdk.ClientTypesOptionSnowsql},
 			}).
-			WithAuthenticationMethods([]sdk.AuthenticationMethods{
-				{Method: sdk.AuthenticationMethodsOptionPassword},
-				{Method: sdk.AuthenticationMethodsOptionSaml},
+			WithAuthenticationMethods([]sdk.AuthenticationMethodsOptionListItem{
+				{Value: sdk.AuthenticationMethodsOptionPassword},
+				{Value: sdk.AuthenticationMethodsOptionSaml},
 			}).
 			WithMfaPolicy(
 				*sdk.NewAuthenticationPolicyMfaPolicyRequest().
 					WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionAll).
-					WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-						{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey},
-						{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
+					WithAllowedMethods([]sdk.MfaPolicyAllowedMethodsOptionListItem{
+						{Value: sdk.MfaPolicyAllowedMethodsOptionPasskey},
+						{Value: sdk.MfaPolicyAllowedMethodsOptionDuo},
 					}),
 			).
 			WithPatPolicy(
@@ -115,8 +115,8 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 			).
 			WithWorkloadIdentityPolicy(
 				*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-					WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-						{Provider: sdk.AllowedProviderOptionAll},
+					WithAllowedProviders([]sdk.AllowedProviderOptionListItem{
+						{Value: sdk.AllowedProviderOptionAll},
 					}).
 					WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
 						{Value: "111122223333"},
@@ -128,14 +128,14 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 						{Value: "https://example.com"},
 					}),
 			).
-			WithClientPolicy([]sdk.AuthenticationPolicyClientPolicyEntry{
+			WithClientPolicy([]sdk.AuthenticationPolicyClientPolicyRequest{
 				{
 					ClientType: sdk.ClientPolicyDriverTypeGoDriver,
-					Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("1.14.1")},
+					Params:     sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "1.14.1"},
 				},
 				{
 					ClientType: sdk.ClientPolicyDriverTypeJdbcDriver,
-					Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("3.25.0")},
+					Params:     sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "3.25.0"},
 				},
 			}))
 		require.NoError(t, err)
@@ -153,10 +153,10 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 				HasAll(false).
 				HasSecurityIntegrations(samlIntegration.ID())).
 			HasClientPolicyWith(
-				objectassert.NewAuthenticationPolicyClientPolicyEntryDetailsAssert().
+				objectassert.NewAuthenticationPolicyClientPolicyDetailsAssert().
 					HasClientType(sdk.ClientPolicyDriverTypeJdbcDriver).
 					HasMinimumVersion("3.25.0"),
-				objectassert.NewAuthenticationPolicyClientPolicyEntryDetailsAssert().
+				objectassert.NewAuthenticationPolicyClientPolicyDetailsAssert().
 					HasClientType(sdk.ClientPolicyDriverTypeGoDriver).
 					HasMinimumVersion("1.14.1"),
 			).
@@ -180,11 +180,11 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.AuthenticationPolicies.Create(
 			ctx, sdk.NewCreateAuthenticationPolicyRequest(id).
-				WithClientTypes([]sdk.ClientTypes{{ClientType: sdk.ClientTypesOptionSnowflakeUi}}).
-				WithClientPolicy([]sdk.AuthenticationPolicyClientPolicyEntry{
+				WithClientTypes([]sdk.ClientTypesOptionListItem{{Value: sdk.ClientTypesOptionSnowflakeUi}}).
+				WithClientPolicy([]sdk.AuthenticationPolicyClientPolicyRequest{
 					{
 						ClientType: sdk.ClientPolicyDriverTypeGoDriver,
-						Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("1.0.0")},
+						Params:     sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "1.0.0"},
 					},
 				}),
 		)
@@ -208,26 +208,26 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 						WithComment(comment).
 						WithMfaEnrollment(sdk.MfaEnrollmentOptionRequired).
 						WithSecurityIntegrations(
-							*sdk.NewSecurityIntegrationsOptionRequest().
+							*sdk.NewAuthenticationPolicySecurityIntegrationsOptionRequest().
 								WithSecurityIntegrations([]sdk.AccountObjectIdentifier{
 									samlIntegration.ID(),
 								}),
 						).
-						WithClientTypes([]sdk.ClientTypes{
-							{ClientType: sdk.ClientTypesOptionDrivers},
-							{ClientType: sdk.ClientTypesOptionSnowsql},
-							{ClientType: sdk.ClientTypesOptionSnowflakeUi},
+						WithClientTypes([]sdk.ClientTypesOptionListItem{
+							{Value: sdk.ClientTypesOptionDrivers},
+							{Value: sdk.ClientTypesOptionSnowsql},
+							{Value: sdk.ClientTypesOptionSnowflakeUi},
 						}).
-						WithAuthenticationMethods([]sdk.AuthenticationMethods{
-							{Method: sdk.AuthenticationMethodsOptionPassword},
-							{Method: sdk.AuthenticationMethodsOptionSaml},
+						WithAuthenticationMethods([]sdk.AuthenticationMethodsOptionListItem{
+							{Value: sdk.AuthenticationMethodsOptionPassword},
+							{Value: sdk.AuthenticationMethodsOptionSaml},
 						}).
 						WithMfaPolicy(
 							*sdk.NewAuthenticationPolicyMfaPolicyRequest().
 								WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionAll).
-								WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-									{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey},
-									{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
+								WithAllowedMethods([]sdk.MfaPolicyAllowedMethodsOptionListItem{
+									{Value: sdk.MfaPolicyAllowedMethodsOptionPasskey},
+									{Value: sdk.MfaPolicyAllowedMethodsOptionDuo},
 								}),
 						).
 						WithPatPolicy(
@@ -238,8 +238,8 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 						).
 						WithWorkloadIdentityPolicy(
 							*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-								WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-									{Provider: sdk.AllowedProviderOptionAll},
+								WithAllowedProviders([]sdk.AllowedProviderOptionListItem{
+									{Value: sdk.AllowedProviderOptionAll},
 								}).
 								WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
 									{Value: "111122223333"},
@@ -251,8 +251,8 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 									{Value: "https://example.com"},
 								}),
 						).
-						WithClientPolicy([]sdk.AuthenticationPolicyClientPolicyEntry{
-							{ClientType: sdk.ClientPolicyDriverTypeSqlAlchemy, Params: &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("2.0.0")}},
+						WithClientPolicy([]sdk.AuthenticationPolicyClientPolicyRequest{
+							{ClientType: sdk.ClientPolicyDriverTypeSqlAlchemy, Params: sdk.AuthenticationPolicyClientPolicyParamsRequest{MinimumVersion: "2.0.0"}},
 						}),
 				),
 		)
@@ -268,7 +268,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 			HasSecurityIntegrationsWith(objectassert.NewAuthenticationPolicySecurityIntegrationsDetailsAssert().
 				HasAll(false).
 				HasSecurityIntegrations(samlIntegration.ID())).
-			HasClientPolicyWith(objectassert.NewAuthenticationPolicyClientPolicyEntryDetailsAssert().
+			HasClientPolicyWith(objectassert.NewAuthenticationPolicyClientPolicyDetailsAssert().
 				HasClientType(sdk.ClientPolicyDriverTypeSqlAlchemy).
 				HasMinimumVersion("2.0.0")).
 			HasMfaPolicyWith(objectassert.NewAuthenticationPolicyMfaPolicyDetailsAssert().
@@ -433,7 +433,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.GreaterOrEqual(t, len(desc), 10)
-		assert.Contains(t, desc, sdk.AuthenticationPolicyDescription{
+		assert.Contains(t, desc, sdk.AuthenticationPolicyProperty{
 			Property:    "COMMENT",
 			Value:       "some_comment",
 			Default:     "null",

@@ -45,13 +45,13 @@ func (a *AuthenticationPolicyPatPolicyDescribeOutputAssert) HasMaxExpiryInDays(e
 	return a
 }
 
-func (a *AuthenticationPolicyPatPolicyDescribeOutputAssert) HasNetworkPolicyEvaluation(expected sdk.NetworkPolicyEvaluationOption) *AuthenticationPolicyPatPolicyDescribeOutputAssert {
-	a.StringValueSet("network_policy_evaluation", string(expected))
+func (a *AuthenticationPolicyPatPolicyDescribeOutputAssert) HasRequireRoleRestrictionForServiceUsers(expected bool) *AuthenticationPolicyPatPolicyDescribeOutputAssert {
+	a.BoolValueSet("require_role_restriction_for_service_users", expected)
 	return a
 }
 
-func (a *AuthenticationPolicyPatPolicyDescribeOutputAssert) HasRequireRoleRestrictionForServiceUsers(expected bool) *AuthenticationPolicyPatPolicyDescribeOutputAssert {
-	a.BoolValueSet("require_role_restriction_for_service_users", expected)
+func (a *AuthenticationPolicyPatPolicyDescribeOutputAssert) HasNetworkPolicyEvaluation(expected sdk.NetworkPolicyEvaluationOption) *AuthenticationPolicyPatPolicyDescribeOutputAssert {
+	a.StringValueSet("network_policy_evaluation", string(expected))
 	return a
 }
 
@@ -69,12 +69,12 @@ func (a *AuthenticationPolicyPatPolicyDescribeOutputAssert) HasNoMaxExpiryInDays
 	return a
 }
 
-func (a *AuthenticationPolicyPatPolicyDescribeOutputAssert) HasNoNetworkPolicyEvaluation() *AuthenticationPolicyPatPolicyDescribeOutputAssert {
-	a.ValueNotSet("network_policy_evaluation")
+func (a *AuthenticationPolicyPatPolicyDescribeOutputAssert) HasNoRequireRoleRestrictionForServiceUsers() *AuthenticationPolicyPatPolicyDescribeOutputAssert {
+	a.ValueNotSet("require_role_restriction_for_service_users")
 	return a
 }
 
-func (a *AuthenticationPolicyPatPolicyDescribeOutputAssert) HasNoRequireRoleRestrictionForServiceUsers() *AuthenticationPolicyPatPolicyDescribeOutputAssert {
-	a.ValueNotSet("require_role_restriction_for_service_users")
+func (a *AuthenticationPolicyPatPolicyDescribeOutputAssert) HasNoNetworkPolicyEvaluation() *AuthenticationPolicyPatPolicyDescribeOutputAssert {
+	a.ValueNotSet("network_policy_evaluation")
 	return a
 }

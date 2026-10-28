@@ -258,7 +258,7 @@ var authenticationPolicySchema = collections.MergeMaps(
 			Computed:    true,
 			Description: "Outputs the result of `DESCRIBE AUTHENTICATION POLICY` for the given authentication policy.",
 			Elem: &tfschema.Resource{
-				Schema: schemas.DescribeAuthenticationPolicyDescribeDetailsSchema,
+				Schema: schemas.DescribeAuthenticationPolicyDetailsSchema,
 			},
 		},
 	},

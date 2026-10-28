@@ -82,6 +82,12 @@ type SqlClause struct {
 	Enum *Enum
 	// AllowEmpty makes a string parameter take an empty string (StringAllowEmpty), so SET can clear the value. AllowEmpty sets it.
 	AllowEmpty bool
+	// AsParameter writes an object clause as a parameter field (ddl "parameter", the SQL text is the parameter name) instead
+	// of a list. AsParameter sets it.
+	AsParameter bool
+	// ValueKeyword makes a keyword clause carry the value of the attribute instead of marking presence: the enum is written
+	// as a bare keyword. EnumKeyword sets it.
+	ValueKeyword bool
 	// Variants are the provider-like variants of an object: each is a struct of the attributes it refers to, and the
 	// object has one optional field per variant, exactly one of which is set. WithVariants sets it.
 	Variants []SqlVariant
@@ -129,6 +135,12 @@ func BoolParameter(opts ...SqlClauseOption) SqlClause {
 	return newClause(SqlKindParameter, nil, opts)
 }
 
+// PlainParameter is a parameter clause with no quote tag, whatever the type of the attribute is.
+// The type defaults add one to a string (single quotes) and to an enum (no quotes).
+func PlainParameter(opts ...SqlClauseOption) SqlClause {
+	return newClause(SqlKindParameter, nil, opts)
+}
+
 func StringParameter(opts ...SqlClauseOption) SqlClause {
 	return newClause(SqlKindParameter, func(c *SqlClause) {
 		c.Quotes = SqlQuotesSingle
@@ -163,6 +175,23 @@ func StaticSQL(field, sql string) SqlClause {
 // BoolKeyword is a bare keyword.
 func BoolKeyword(opts ...SqlClauseOption) SqlClause {
 	return newClause(SqlKindKeyword, nil, opts)
+}
+
+// EnumKeyword is an enum value written as a bare keyword, such as a driver name before its settings.
+// The enum is the one of the attribute, or the EnumOf option. Pass NoQuotes or SingleQuotes, and Required when it is mandatory.
+func EnumKeyword(opts ...SqlClauseOption) SqlClause {
+	return newClause(SqlKindKeyword, func(c *SqlClause) {
+		c.ValueKeyword = true
+	}, opts)
+}
+
+// IdentifierListKeyword is a list of identifiers written with no name, in parentheses: ('a', 'b').
+// The attribute is a list or set of identifiers.
+func IdentifierListKeyword(opts ...SqlClauseOption) SqlClause {
+	return newClause(SqlKindKeyword, func(c *SqlClause) {
+		c.ValueKeyword = true
+		c.Parentheses = SqlParensYes
+	}, opts)
 }
 
 // IdentifierKeyword is an identifier keyword.
@@ -224,7 +253,7 @@ func (a *Attribute) defaultSqlClause(use ClauseUse) SqlClause {
 		return StringParameter()
 	case AttrEnum:
 		return EnumParameter()
-	case AttrList:
+	case AttrList, AttrSet:
 		if item := a.enumListItemName(); item != "" {
 			return ListParameter(item)
 		}
@@ -282,6 +311,12 @@ func overlaySqlClause(base, over SqlClause) SqlClause {
 	}
 	if over.AllowEmpty {
 		base.AllowEmpty = true
+	}
+	if over.AsParameter {
+		base.AsParameter = true
+	}
+	if over.ValueKeyword {
+		base.ValueKeyword = true
 	}
 	if len(over.Variants) > 0 {
 		base.Variants = over.Variants
@@ -363,6 +398,14 @@ func (a Attribute) NestedSqlFields() []Attribute {
 	}
 }
 
+// RuleFields are the Children that ChildrenRule is applied to: the fields of the SQL struct that are not a fixed text, in
+// Children order. A child with no explicit clause uses the type default.
+func (a Attribute) RuleFields() []Attribute {
+	return collections.Filter(a.NestedSqlFields(), func(child Attribute) bool {
+		return child.CreateSql.Kind != SqlKindStatic
+	})
+}
+
 // IsObjectList reports whether the attribute is a list or set whose elements are objects.
 func (a Attribute) IsObjectList() bool {
 	return (a.Type == AttrList || a.Type == AttrSet) && a.Elem != nil && a.Elem.Type == AttrObject
@@ -380,6 +423,12 @@ func AllowEmpty() SqlClauseOption {
 		c.AllowEmpty = true
 		c.Quotes = ""
 	}
+}
+
+// AsParameter writes an object clause as a parameter: `NAME = (fields)` with the field tagged parameter, and Sql is the name
+// without the equals sign.
+func AsParameter() SqlClauseOption {
+	return func(c *SqlClause) { c.AsParameter = true }
 }
 
 func Sql(text string) SqlClauseOption {
