@@ -26,6 +26,18 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.22.0 ➞ v2.22.1
+
+### *(chore)* Provider rebuilt with Go 1.26.10 (CVE-2026-111943)
+
+v2.22.0 was built with Go 1.26.4. That toolchain still accepts a small set of intermediate certificates that are no longer considered trustworthy. v2.22.1 is built with Go 1.26.10, which adds a denylist in `crypto/x509`. `Certificate.Verify` now returns an error for any chain that contains one of those intermediates ([CVE-2026-111943](https://pkg.go.dev/vuln/GO-2026-6809)).
+
+Go normally uses the system root certificates. On some platforms that store stays stale until a separate OS update, so the denylist is compiled into the provider binary and applies even when the process uses the operating system's trust store.
+
+No Terraform configuration changes are required. Upgrade to v2.22.1. Connections whose certificate chain does not include those intermediates behave as before. A connection that presents one of them fails certificate verification.
+
+References: [Go 1.26.10 security announcement](https://groups.google.com/g/golang-announce/c/66pojueaQek/m/tmWX2Pq9AgAJ), [GO-2026-6809](https://pkg.go.dev/vuln/GO-2026-6809), [golang/go#82345](https://go.dev/issue/82345).
+
 ## v2.21.x ➞ v2.22.0
 
 ### *(new feature)* `optimized_refresh` and `rpo_assurance` on `snowflake_failover_group`
