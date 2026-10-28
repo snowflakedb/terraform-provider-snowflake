@@ -47,6 +47,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.CatalogIntegrations().Schema,
 	},
 	{
+		name:   "CodeBundles",
+		schema: datasources.CodeBundles().Schema,
+	},
+	{
 		name:   "Connections",
 		schema: datasources.Connections().Schema,
 	},

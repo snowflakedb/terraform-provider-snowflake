@@ -31,6 +31,21 @@ func ImportedCodeBundleShowOutput(t *testing.T, id string) *CodeBundleShowOutput
 	return &codeBundleAssert
 }
 
+func CodeBundlesDatasourceShowOutput(t *testing.T, name string) *CodeBundleShowOutputAssert {
+	t.Helper()
+
+	return CodeBundlesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func CodeBundlesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *CodeBundleShowOutputAssert {
+	t.Helper()
+
+	codeBundleAssert := CodeBundleShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "code_bundles", idx),
+	}
+	return &codeBundleAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////
