@@ -3,15 +3,16 @@ package resources
 import (
 	"errors"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var (
-	codeBundleCreateExt      = TrackingCreateWrapper(resources.CodeBundle, CreateCodeBundle)
-	codeBundleReadExt        = TrackingReadWrapper(resources.CodeBundle, ReadCodeBundleFunc(true))
-	codeBundleUpdateExt      = TrackingUpdateWrapper(resources.CodeBundle, UpdateCodeBundle)
+	codeBundleCreateExt      = PreviewFeatureCreateContextWrapper(string(previewfeatures.CodeBundleResource), TrackingCreateWrapper(resources.CodeBundle, CreateCodeBundle))
+	codeBundleReadExt        = PreviewFeatureReadContextWrapper(string(previewfeatures.CodeBundleResource), TrackingReadWrapper(resources.CodeBundle, ReadCodeBundleFunc(true)))
+	codeBundleUpdateExt      = PreviewFeatureUpdateContextWrapper(string(previewfeatures.CodeBundleResource), TrackingUpdateWrapper(resources.CodeBundle, UpdateCodeBundle))
 	codeBundleDescriptionExt = "Resource used to manage code bundles. For more information, check [code bundle documentation](https://docs.snowflake.com/en/developer-guide/code-bundles/code-bundles)."
 	codeBundleImporterExt    = &schema.ResourceImporter{
 		StateContext: TrackingImportWrapper(resources.CodeBundle, ImportCodeBundle),

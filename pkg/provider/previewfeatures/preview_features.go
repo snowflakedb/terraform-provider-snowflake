@@ -31,6 +31,8 @@ const (
 	AuthenticationPoliciesDatasource               feature = "snowflake_authentication_policies_datasource"
 	BackupPoliciesDatasource                       feature = "snowflake_backup_policies_datasource"
 	BackupPolicyResource                           feature = "snowflake_backup_policy_resource"
+	CodeBundleResource                             feature = "snowflake_code_bundle_resource"
+	CodeBundlesDatasource                          feature = "snowflake_code_bundles_datasource"
 	CatalogIntegrationAwsGlueResource              feature = "snowflake_catalog_integration_aws_glue_resource"
 	CatalogIntegrationObjectStorageResource        feature = "snowflake_catalog_integration_object_storage_resource"
 	CatalogIntegrationOpenCatalogResource          feature = "snowflake_catalog_integration_open_catalog_resource"
@@ -174,6 +176,8 @@ var allPreviewFeatures = []feature{
 	ApiIntegrationResource,
 	BackupPoliciesDatasource,
 	BackupPolicyResource,
+	CodeBundleResource,
+	CodeBundlesDatasource,
 	CortexSearchServiceResource,
 	CortexSearchServicesDatasource,
 	CurrentAccountDatasource,
