@@ -65,6 +65,7 @@ var BackupPolicy = ssot.Object{
 	NamePlural:                "BackupPolicies",
 	IdType:                    "SchemaObjectIdentifier",
 	IdentityHierarchyForceNew: true,
+	PreviewFeature:            true,
 	AtLeastOneOf: [][]*ssot.Attribute{{
 		&BackupPolicyAttrs.Schedule,
 		&BackupPolicyAttrs.ExpireAfterDays,
