@@ -119,11 +119,12 @@ func catalogIntegrationOpenCatalogApplySetUnsetExt(d *schema.ResourceData) (*cat
 	return &catalogIntegrationOpenCatalogAlterRequestsExt{set: set}, nil
 }
 
-func catalogIntegrationOpenCatalogSetFieldsNotSetByReadExt(d *schema.ResourceData, _ sdk.AccountObjectIdentifier, details *sdk.CatalogIntegrationOpenCatalogDetails, _ bool) error {
-	if err := setOpenCatalogRestConfigInState(d, details); err != nil {
-		return err
-	}
-	return setOpenCatalogRestAuthInState(d, details)
+func catalogIntegrationOpenCatalogSetFieldsNotSetByReadExt(d *schema.ResourceData, _ sdk.AccountObjectIdentifier, details *sdk.CatalogIntegrationOpenCatalogDetails, importPermissiveMode bool) error {
+	return errors.Join(
+		importIntAttribute(d, "refresh_interval_seconds", importPermissiveMode, details.RefreshIntervalSeconds),
+		setOpenCatalogRestConfigInState(d, details, importPermissiveMode),
+		setOpenCatalogRestAuthInState(d, details, importPermissiveMode),
+	)
 }
 
 // =============================================================================
@@ -239,18 +240,27 @@ func handleExternalChangesToRestAuthentication(d *schema.ResourceData, details *
 	)
 }
 
-func setOpenCatalogRestConfigInState(d *schema.ResourceData, details *sdk.CatalogIntegrationOpenCatalogDetails) error {
+func setOpenCatalogRestConfigInState(d *schema.ResourceData, details *sdk.CatalogIntegrationOpenCatalogDetails, importPermissiveMode bool) error {
+	var catalogApiType, accessDelegationMode string
+	if !importPermissiveMode {
+		catalogApiType = string(details.RestConfig.CatalogApiType)
+		accessDelegationMode = string(details.RestConfig.AccessDelegationMode)
+	}
 	return d.Set("rest_config", []any{map[string]any{
 		"catalog_uri":            details.RestConfig.CatalogUri,
 		"catalog_name":           details.RestConfig.CatalogName,
-		"catalog_api_type":       string(details.RestConfig.CatalogApiType),
-		"access_delegation_mode": string(details.RestConfig.AccessDelegationMode),
+		"catalog_api_type":       catalogApiType,
+		"access_delegation_mode": accessDelegationMode,
 	}})
 }
 
-func setOpenCatalogRestAuthInState(d *schema.ResourceData, details *sdk.CatalogIntegrationOpenCatalogDetails) error {
+func setOpenCatalogRestAuthInState(d *schema.ResourceData, details *sdk.CatalogIntegrationOpenCatalogDetails, importPermissiveMode bool) error {
+	var oAuthTokenUri string
+	if !importPermissiveMode {
+		oAuthTokenUri = details.RestAuthentication.OauthTokenUri
+	}
 	return d.Set("rest_authentication", []any{map[string]any{
-		"oauth_token_uri": details.RestAuthentication.OauthTokenUri,
+		"oauth_token_uri": oAuthTokenUri,
 		"oauth_client_id": details.RestAuthentication.OauthClientId,
 		// oauth_client_secret not returned from Snowflake
 		"oauth_allowed_scopes": details.RestAuthentication.OauthAllowedScopes,

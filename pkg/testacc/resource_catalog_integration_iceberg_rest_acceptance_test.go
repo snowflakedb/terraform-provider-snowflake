@@ -18,8 +18,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
@@ -485,8 +487,10 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasSigv4RestAuthenticationEmpty(),
 	}, evenMoreForceNewAssertions[1:4]...)
 
+	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -494,6 +498,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -503,8 +508,25 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 				ConfigVariables: oauthClientSecretConfigVariables,
 				Check:           assertThat(t, basicAssertions...),
 			},
+			// Import - permissive mode
+			// oauth_client_secret is not returned from Snowflake, so the plan after import updates it.
+			{
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				Config:                   config.FromModels(t, providerModelImportPermissiveMode, basic, oauthClientSecretVariableModel),
+				ConfigVariables:          oauthClientSecretConfigVariables,
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
+				ExpectNonEmptyPlan:       true,
+				ImportPlanChecks: resource.ImportPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+			},
 			// Change alterable props
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -516,6 +538,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Unset
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -527,6 +550,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Destroy
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroy),
@@ -538,6 +562,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Create with all attributes
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -549,6 +574,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change alterable props externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					alterRequest := sdk.NewAlterCatalogIntegrationRequest(id).WithSet(
 						*sdk.NewCatalogIntegrationSetRequest().
@@ -575,6 +601,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change force new "catalog_namespace" prop
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -586,6 +613,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change force new "catalog_namespace" prop externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					createRequest := sdk.NewCreateIcebergRestCatalogIntegrationRequest(id, completeRestConfig, false).
 						WithOAuthRestAuthentication(completeRestAuth).
@@ -606,6 +634,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change force new props in "rest_config"
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -617,6 +646,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change force new props in "rest_config" externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					createRequest := sdk.NewCreateIcebergRestCatalogIntegrationRequest(id, completeRestConfig, false).
 						WithOAuthRestAuthentication(basicRestAuth).
@@ -640,6 +670,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change alterable "oauth_client_secret" prop in "rest_authentication"
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -651,6 +682,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change force new props in "oauth_rest_authentication"
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -662,6 +694,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change force new props in "oauth_rest_authentication" externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					createRequest := sdk.NewCreateIcebergRestCatalogIntegrationRequest(id, changedRestConfig, false).
 						WithOAuthRestAuthentication(completeRestAuth).
@@ -685,6 +718,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change to different authentication type
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -696,6 +730,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change catalog source externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					createRequest := sdk.NewCreateObjectStorageCatalogIntegrationRequest(id, sdk.CatalogIntegrationTableFormatDelta, false).
 						WithOrReplace(true)
@@ -1067,8 +1102,10 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 			HasOAuthRestAuthenticationOauthAllowedScopes(oAuthAllowedScope),
 	}, commonAssertions...)
 
+	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1076,6 +1113,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -1085,8 +1123,25 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 				ConfigVariables: bearerTokenConfigVariables,
 				Check:           assertThat(t, basicAssertions...),
 			},
+			// Import - permissive mode
+			// bearer_token is not returned from Snowflake, so the plan after import updates it.
+			{
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				Config:                   config.FromModels(t, providerModelImportPermissiveMode, basic, bearerTokenVariableModel),
+				ConfigVariables:          bearerTokenConfigVariables,
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
+				ExpectNonEmptyPlan:       true,
+				ImportPlanChecks: resource.ImportPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+			},
 			// Change alterable "bearer_token" prop in "bearer_rest_authentication"
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -1098,6 +1153,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 			},
 			// Change to different authentication type
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -1234,8 +1290,10 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 			HasSigv4RestAuthenticationEmpty(),
 	}, basicAssertions[2:]...)
 
+	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1243,6 +1301,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -1251,8 +1310,17 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, basicAssertions...),
 			},
+			// Import - permissive mode
+			{
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				Config:                   config.FromModels(t, providerModelImportPermissiveMode, basic),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
+			},
 			// Change force new props in "sigv4_rest_authentication"
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -1263,6 +1331,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 			},
 			// Change force new props in "sigv4_rest_authentication" externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					createRequest := sdk.NewCreateIcebergRestCatalogIntegrationRequest(id, basicRestCfg, false).
 						WithSigV4RestAuthentication(basicSigV4Auth).
@@ -1283,6 +1352,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 			},
 			// Change to different authentication type
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -1406,8 +1476,10 @@ func TestAcc_CatalogIntegrationIcebergRest_CompleteUseCase(t *testing.T) {
 				HasOauthAllowedScopes(oAuthAllowedScope)),
 	}
 
+	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1415,6 +1487,7 @@ func TestAcc_CatalogIntegrationIcebergRest_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create - with all optionals (including optional force-new fields)
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -1424,18 +1497,31 @@ func TestAcc_CatalogIntegrationIcebergRest_CompleteUseCase(t *testing.T) {
 				ConfigVariables: oauthClientSecretConfigVariables,
 				Check:           assertThat(t, completeAssertions...),
 			},
-			// Import - with all optionals.
-			// ImportOAuth has no ImportStateVerifyIgnore list (it uses ImportStatePersist instead).
-			// These fields cannot round-trip through import:
+			// Import - with all optionals
 			{
-				Config:            config.FromModels(t, complete, oauthClientSecretVariableModel),
-				ConfigVariables:   oauthClientSecretConfigVariables,
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"refresh_interval_seconds",                        // unreadable: Read skips this attribute; value is only compared via describe_output
-					"oauth_rest_authentication.0.oauth_client_secret", // write-only: Snowflake never returns oauth_client_secret (see ImportOAuth)
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, complete, oauthClientSecretVariableModel),
+				ConfigVariables:          oauthClientSecretConfigVariables,
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateVerify:        true,
+				// Snowflake never returns oauth_client_secret.
+				ImportStateVerifyIgnore: []string{"oauth_rest_authentication.0.oauth_client_secret"},
+			},
+			// Import - with all optionals, permissive mode
+			// oauth_client_secret is not returned from Snowflake, so the plan after import updates it.
+			{
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				Config:                   config.FromModels(t, providerModelImportPermissiveMode, complete, oauthClientSecretVariableModel),
+				ConfigVariables:          oauthClientSecretConfigVariables,
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
+				ExpectNonEmptyPlan:       true,
+				ImportPlanChecks: resource.ImportPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
 				},
 			},
 		},
