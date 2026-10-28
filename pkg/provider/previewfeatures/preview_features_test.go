@@ -36,6 +36,8 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_api_integration_google_cloud_api_gateway_resource", want: ApiIntegrationGoogleCloudApiGatewayResource},
 		{input: "snowflake_authentication_policy_resource", want: AuthenticationPolicyResource},
 		{input: "snowflake_authentication_policies_datasource", want: AuthenticationPoliciesDatasource},
+		{input: "snowflake_backup_policies_datasource", want: BackupPoliciesDatasource},
+		{input: "snowflake_backup_policy_resource", want: BackupPolicyResource},
 		{input: "snowflake_catalog_integration_aws_glue_resource", want: CatalogIntegrationAwsGlueResource},
 		{input: "snowflake_catalog_integration_object_storage_resource", want: CatalogIntegrationObjectStorageResource},
 		{input: "snowflake_catalog_integration_open_catalog_resource", want: CatalogIntegrationOpenCatalogResource},

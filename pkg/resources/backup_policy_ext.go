@@ -3,15 +3,16 @@ package resources
 import (
 	"errors"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var (
-	backupPolicyCreateExt      = TrackingCreateWrapper(resources.BackupPolicy, CreateBackupPolicy)
-	backupPolicyReadExt        = TrackingReadWrapper(resources.BackupPolicy, ReadBackupPolicyFunc(true))
-	backupPolicyUpdateExt      = TrackingUpdateWrapper(resources.BackupPolicy, UpdateBackupPolicy)
+	backupPolicyCreateExt      = PreviewFeatureCreateContextWrapper(string(previewfeatures.BackupPolicyResource), TrackingCreateWrapper(resources.BackupPolicy, CreateBackupPolicy))
+	backupPolicyReadExt        = PreviewFeatureReadContextWrapper(string(previewfeatures.BackupPolicyResource), TrackingReadWrapper(resources.BackupPolicy, ReadBackupPolicyFunc(true)))
+	backupPolicyUpdateExt      = PreviewFeatureUpdateContextWrapper(string(previewfeatures.BackupPolicyResource), TrackingUpdateWrapper(resources.BackupPolicy, UpdateBackupPolicy))
 	backupPolicyDescriptionExt = "Resource used to manage backup policies. For more information, check [backup policy documentation](https://docs.snowflake.com/en/sql-reference/sql/create-backup-policy)."
 	backupPolicyImporterExt    = &schema.ResourceImporter{
 		StateContext: TrackingImportWrapper(resources.BackupPolicy, ImportBackupPolicy),

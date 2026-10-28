@@ -29,6 +29,8 @@ const (
 	ApiIntegrationGoogleCloudApiGatewayResource    feature = "snowflake_api_integration_google_cloud_api_gateway_resource"
 	AuthenticationPolicyResource                   feature = "snowflake_authentication_policy_resource"
 	AuthenticationPoliciesDatasource               feature = "snowflake_authentication_policies_datasource"
+	BackupPoliciesDatasource                       feature = "snowflake_backup_policies_datasource"
+	BackupPolicyResource                           feature = "snowflake_backup_policy_resource"
 	CatalogIntegrationAwsGlueResource              feature = "snowflake_catalog_integration_aws_glue_resource"
 	CatalogIntegrationObjectStorageResource        feature = "snowflake_catalog_integration_object_storage_resource"
 	CatalogIntegrationOpenCatalogResource          feature = "snowflake_catalog_integration_open_catalog_resource"
@@ -170,6 +172,8 @@ var allPreviewFeatures = []feature{
 	AlertResource,
 	AlertsDatasource,
 	ApiIntegrationResource,
+	BackupPoliciesDatasource,
+	BackupPolicyResource,
 	CortexSearchServiceResource,
 	CortexSearchServicesDatasource,
 	CurrentAccountDatasource,

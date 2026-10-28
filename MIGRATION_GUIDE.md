@@ -28,6 +28,19 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.22.x ➞ v2.23.0
 
+### *(new feature)* Backup policy resource and data source
+
+We have added a new preview resource, [`snowflake_backup_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/backup_policy), for managing [backup policies](https://docs.snowflake.com/en/sql-reference/sql/create-backup-policy). CREATE requires a schedule, an expiration, or both. `with_retention_lock` cannot be changed after creation.
+
+We have also added a new preview data source, [`snowflake_backup_policies`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/backup_policies), for listing backup policies. It supports `like`, `in`, `starts_with`, and `limit`. `with_describe` is on by default and runs DESCRIBE for each policy returned by SHOW.
+
+These features will be marked as stable in future releases. Breaking changes are expected, even without bumping the major version. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_backup_policy_resource` for `snowflake_backup_policy`;
+- `snowflake_backup_policies_datasource` for `snowflake_backup_policies`.
+
+No changes are required for existing configurations unless you want to adopt these preview features with Terraform.
+
 ### *(behavior change)* `IMPORT_BOOLEAN_DEFAULT` is no longer enabled by default
 
 `IMPORT_BOOLEAN_DEFAULT` is now an opt-in experiment, and it's deprecated in favor of `IMPORT_PERMISSIVE_MODE` (see [Opt-in experiment: permissive import mode](#new-feature-opt-in-experiment-permissive-import-mode)):
