@@ -170,6 +170,9 @@ How an attribute models a collection or a nested object. The Terraform side (sch
     parentheses, through a generated `<Struct>Item` that holds the struct.
   - The struct is named after the object and the list attribute, so `ExternalVolume` and `storage_location` give
     `ExternalVolumeStorageLocation`, and its Request type follows.
+    A nested struct is named after the object and the attribute, never the statement, so CREATE and ALTER SET that use the same
+    attribute share one struct and one Request type. The generator keeps the first definition of a name, and generation panics when
+    the same name is defined twice with a different shape (this check runs for interfaces built from ssot).
   - Each field's SQL is the `CreateSql` the child attribute already has, in `Children` order.
   - Provider-like alternatives are variants of the element: `WithVariants(Variant("S3", &a, &b, ...), ...)` lists, for each
     one, the attributes it consists of, as pointers, in SQL order. Exactly one variant is set. A child that is in no variant

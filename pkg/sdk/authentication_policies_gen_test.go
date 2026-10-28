@@ -7,18 +7,18 @@ import (
 )
 
 func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[AuthenticationPolicyTargetScope]{"AuthenticationPolicyTargetScope", AllAuthenticationPolicyTargetScopes, ToAuthenticationPolicyTargetScope})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[AuthenticationMethodsOption]{"AuthenticationMethodsOption", AllAuthenticationMethodsOptions, ToAuthenticationMethodsOption})
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaAuthenticationMethodsOption]{"MfaAuthenticationMethodsOption", AllMfaAuthenticationMethodsOptions, ToMfaAuthenticationMethodsOption})
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaAuthenticationMethodsReadOption]{"MfaAuthenticationMethodsReadOption", AllMfaAuthenticationMethodsReadOptions, ToMfaAuthenticationMethodsReadOption})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaEnrollmentOption]{"MfaEnrollmentOption", AllMfaEnrollmentOptions, ToMfaEnrollmentOption})
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaEnrollmentReadOption]{"MfaEnrollmentReadOption", AllMfaEnrollmentReadOptions, ToMfaEnrollmentReadOption})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ClientTypesOption]{"ClientTypesOption", AllClientTypesOptions, ToClientTypesOption})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ClientPolicyDriverType]{"ClientPolicyDriverType", AllClientPolicyDriverTypes, ToClientPolicyDriverType})
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[AllowedProviderOption]{"AllowedProviderOption", AllAllowedProviderOptions, ToAllowedProviderOption})
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[NetworkPolicyEvaluationOption]{"NetworkPolicyEvaluationOption", AllNetworkPolicyEvaluationOptions, ToNetworkPolicyEvaluationOption})
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaPolicyAllowedMethodsOption]{"MfaPolicyAllowedMethodsOption", AllMfaPolicyAllowedMethodsOptions, ToMfaPolicyAllowedMethodsOption})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[EnforceMfaOnExternalAuthenticationOption]{"EnforceMfaOnExternalAuthenticationOption", AllEnforceMfaOnExternalAuthenticationOptions, ToEnforceMfaOnExternalAuthenticationOption})
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[AuthenticationPolicyTargetScope]{"AuthenticationPolicyTargetScope", AllAuthenticationPolicyTargetScopes, ToAuthenticationPolicyTargetScope})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaPolicyAllowedMethodsOption]{"MfaPolicyAllowedMethodsOption", AllMfaPolicyAllowedMethodsOptions, ToMfaPolicyAllowedMethodsOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[NetworkPolicyEvaluationOption]{"NetworkPolicyEvaluationOption", AllNetworkPolicyEvaluationOptions, ToNetworkPolicyEvaluationOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[AllowedProviderOption]{"AllowedProviderOption", AllAllowedProviderOptions, ToAllowedProviderOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaAuthenticationMethodsOption]{"MfaAuthenticationMethodsOption", AllMfaAuthenticationMethodsOptions, ToMfaAuthenticationMethodsOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaAuthenticationMethodsReadOption]{"MfaAuthenticationMethodsReadOption", AllMfaAuthenticationMethodsReadOptions, ToMfaAuthenticationMethodsReadOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaEnrollmentReadOption]{"MfaEnrollmentReadOption", AllMfaEnrollmentReadOptions, ToMfaEnrollmentReadOption})
 }
 
 var authenticationPoliciesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
