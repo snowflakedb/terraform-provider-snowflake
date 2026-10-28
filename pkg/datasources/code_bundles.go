@@ -5,6 +5,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -49,7 +50,7 @@ var codeBundlesSchema = map[string]*schema.Schema{
 
 func CodeBundles() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: TrackingReadWrapper(datasources.CodeBundles, ReadCodeBundles),
+		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.CodeBundlesDatasource), TrackingReadWrapper(datasources.CodeBundles, ReadCodeBundles)),
 		Schema:      codeBundlesSchema,
 		Description: "Data source used to get details of filtered code bundles. Filtering is aligned with the current possibilities for [SHOW CODE BUNDLES](https://docs.snowflake.com/en/sql-reference/sql/show-code-bundles) query. " +
 			"The results of SHOW and DESCRIBE are encapsulated in one output collection `code_bundles`.",

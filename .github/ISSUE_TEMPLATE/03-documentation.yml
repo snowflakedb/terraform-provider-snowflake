@@ -58,6 +58,7 @@ body:
         - resource:catalog_integration_iceberg_rest
         - resource:catalog_integration_object_storage
         - resource:catalog_integration_open_catalog
+        - resource:code_bundle
         - resource:compute_pool
         - resource:cortex_agent
         - resource:cortex_search_service
@@ -197,6 +198,7 @@ body:
         - data_source:authentication_policies
         - data_source:backup_policies
         - data_source:catalog_integrations
+        - data_source:code_bundles
         - data_source:compute_pools
         - data_source:connections
         - data_source:cortex_agents

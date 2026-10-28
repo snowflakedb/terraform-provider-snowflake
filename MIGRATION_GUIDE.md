@@ -28,6 +28,19 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.22.x ➞ v2.23.0
 
+### *(new feature)* Code bundle resource and data source
+
+We have added a new preview resource, [`snowflake_code_bundle`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/code_bundle), for managing [code bundles](https://docs.snowflake.com/en/developer-guide/code-bundles/code-bundles). `from` is the source that backs the bundle, a `snow://workspace/...` URL or an internal or temporary stage reference, and it cannot be changed after creation.
+
+We have also added a new preview data source, [`snowflake_code_bundles`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/code_bundles), for listing code bundles. SHOW supports extended `IN` only (`account`, `database`, `schema`, `application`, or `application_package`). `with_describe` is on by default and runs DESCRIBE for each bundle returned by SHOW.
+
+These features will be marked as stable in future releases. Breaking changes are expected, even without bumping the major version. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_code_bundle_resource` for `snowflake_code_bundle`;
+- `snowflake_code_bundles_datasource` for `snowflake_code_bundles`.
+
+No changes are required for existing configurations unless you want to adopt these preview features with Terraform.
+
 ### *(new feature)* Backup policy resource and data source
 
 We have added a new preview resource, [`snowflake_backup_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/backup_policy), for managing [backup policies](https://docs.snowflake.com/en/sql-reference/sql/create-backup-policy). CREATE requires a schedule, an expiration, or both. `with_retention_lock` cannot be changed after creation.

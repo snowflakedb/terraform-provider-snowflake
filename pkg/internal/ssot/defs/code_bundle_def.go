@@ -96,6 +96,7 @@ var CodeBundle = ssot.Object{
 	IdType:                    "SchemaObjectIdentifier",
 	IdentityNameForceNew:      true,
 	IdentityHierarchyForceNew: true,
+	PreviewFeature:            true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),

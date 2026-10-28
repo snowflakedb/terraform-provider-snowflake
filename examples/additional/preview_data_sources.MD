@@ -3,6 +3,7 @@
 
 - [snowflake_alerts](./docs/data-sources/alerts)
 - [snowflake_backup_policies](./docs/data-sources/backup_policies)
+- [snowflake_code_bundles](./docs/data-sources/code_bundles)
 - [snowflake_cortex_search_services](./docs/data-sources/cortex_search_services)
 - [snowflake_current_account](./docs/data-sources/current_account)
 - [snowflake_current_role](./docs/data-sources/current_role)
