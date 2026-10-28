@@ -44,10 +44,6 @@ type catalogIntegrationObjectStorageAlterRequestsExt struct {
 	set *sdk.CatalogIntegrationSetRequest
 }
 
-func catalogIntegrationObjectStorageParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
-	return sdk.ParseAccountObjectIdentifier(id)
-}
-
 func catalogIntegrationObjectStorageNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateObjectStorageCatalogIntegrationRequest, error) {
 	enabled := d.Get("enabled").(bool)
 	tableFormat, err := sdk.ToCatalogIntegrationTableFormat(d.Get("table_format").(string))
@@ -168,9 +164,5 @@ func catalogIntegrationObjectStorageAlterSetInSdkExt(ctx context.Context, _ *sch
 			return fmt.Errorf("error updating catalog integration (%s), err = %w", helpers.EncodeResourceIdentifier(id), err)
 		}
 	}
-	return nil
-}
-
-func catalogIntegrationObjectStorageAlterUnsetInSdkExt(context.Context, any, sdk.AccountObjectIdentifier, *catalogIntegrationObjectStorageAlterRequestsExt) error {
 	return nil
 }

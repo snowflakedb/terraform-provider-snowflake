@@ -42,10 +42,6 @@ type catalogIntegrationIcebergRestAlterRequestsExt struct {
 	set *sdk.CatalogIntegrationSetRequest
 }
 
-func catalogIntegrationIcebergRestParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
-	return sdk.ParseAccountObjectIdentifier(id)
-}
-
 func catalogIntegrationIcebergRestNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateIcebergRestCatalogIntegrationRequest, error) {
 	enabled := d.Get("enabled").(bool)
 
@@ -198,11 +194,6 @@ func catalogIntegrationIcebergRestAlterSetInSdkExt(ctx context.Context, _ *schem
 			return fmt.Errorf("error updating Iceberg REST catalog integration (%s), err = %w", helpers.EncodeResourceIdentifier(id), err)
 		}
 	}
-	return nil
-}
-
-func catalogIntegrationIcebergRestAlterUnsetInSdkExt(context.Context, any, sdk.AccountObjectIdentifier, *catalogIntegrationIcebergRestAlterRequestsExt) error {
-	// Catalog integration ALTER has no UNSET request. Update still calls this hook after SET.
 	return nil
 }
 

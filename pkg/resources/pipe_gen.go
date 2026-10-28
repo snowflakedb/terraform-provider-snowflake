@@ -47,8 +47,8 @@ func CreatePipe(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Di
 		return diag.FromErr(err)
 	}
 
-	if diags := pipeCreateInSdkExt(ctx, meta, id, req); diags != nil {
-		return diags
+	if err := meta.(*provider.Context).Client.Pipes.Create(ctx, req); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(helpers.EncodeSnowflakeID(id))
@@ -57,7 +57,7 @@ func CreatePipe(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Di
 
 func ReadPipeFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := pipeParseIdExt(d.Id())
+		id, err := pipeParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -89,7 +89,7 @@ func ReadPipeFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 }
 
 func UpdatePipe(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := pipeParseIdExt(d.Id())
+	id, err := pipeParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -108,6 +108,10 @@ func UpdatePipe(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Di
 
 func pipeParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
 	return sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string)), nil
+}
+
+func pipeParseId(id string) (sdk.SchemaObjectIdentifier, error) {
+	return helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier](id)
 }
 
 func pipeNewCreateRequest(d *tfschema.ResourceData, id sdk.SchemaObjectIdentifier) (*sdk.CreatePipeRequest, error) {

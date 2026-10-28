@@ -65,10 +65,6 @@ func warehouseInteractiveParseIdFromConfigExt(d *schema.ResourceData) (sdk.Accou
 	return sdk.ParseAccountObjectIdentifier(d.Get("name").(string))
 }
 
-func warehouseInteractiveParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
-	return sdk.ParseAccountObjectIdentifier(id)
-}
-
 func warehouseInteractiveNewCreateRequestExt(_ *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateInteractiveWarehouseRequest, error) {
 	return sdk.NewCreateInteractiveWarehouseRequest(id), nil
 }

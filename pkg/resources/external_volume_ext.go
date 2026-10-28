@@ -43,10 +43,6 @@ type externalVolumeAlterRequestsExt struct {
 	set *sdk.ExternalVolumeSetRequest
 }
 
-func externalVolumeParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
-	return sdk.ParseAccountObjectIdentifier(id)
-}
-
 func externalVolumeNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateExternalVolumeRequest, error) {
 	var storageLocations []sdk.ExternalVolumeStorageLocationItem
 	if err := listBlockAttributeCreate(d, "storage_location", &storageLocations, parseStorageLocation); err != nil {
@@ -211,10 +207,6 @@ func externalVolumeAlterSetInSdkExt(ctx context.Context, d *schema.ResourceData,
 		return removeThenAddWithPlaceholder(tempStorageLocation, removedLocations, addedLocations, removeLocation, addLocation)
 	}
 	return removeThenAdd(removedLocations, addedLocations, removeLocation, addLocation)
-}
-
-func externalVolumeAlterUnsetInSdkExt(context.Context, any, sdk.AccountObjectIdentifier, *externalVolumeAlterRequestsExt) error {
-	return nil
 }
 
 // =============================================================================

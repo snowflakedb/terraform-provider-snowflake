@@ -36,7 +36,7 @@ var (
 )
 
 func warehouseAdaptiveParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) (*sdk.WarehouseParametersDetails, error) {
-	id, err := warehouseAdaptiveParseIdExt(d.Id())
+	id, err := warehouseAdaptiveParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}

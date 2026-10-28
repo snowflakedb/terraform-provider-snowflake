@@ -33,7 +33,7 @@ func CatalogIntegrationObjectStorage() *tfschema.Resource {
 }
 
 func ImportCatalogIntegrationObjectStorage(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
-	id, err := catalogIntegrationObjectStorageParseIdExt(d.Id())
+	id, err := catalogIntegrationObjectStorageParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func CreateCatalogIntegrationObjectStorage(ctx context.Context, d *tfschema.Reso
 
 func ReadCatalogIntegrationObjectStorageFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := catalogIntegrationObjectStorageParseIdExt(d.Id())
+		id, err := catalogIntegrationObjectStorageParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -114,7 +114,7 @@ func ReadCatalogIntegrationObjectStorageFunc(withExternalChangesMarking bool) tf
 }
 
 func UpdateCatalogIntegrationObjectStorage(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := catalogIntegrationObjectStorageParseIdExt(d.Id())
+	id, err := catalogIntegrationObjectStorageParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -125,14 +125,15 @@ func UpdateCatalogIntegrationObjectStorage(ctx context.Context, d *tfschema.Reso
 	if err := catalogIntegrationObjectStorageAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := catalogIntegrationObjectStorageAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
-	}
 	return ReadCatalogIntegrationObjectStorageFunc(false)(ctx, d, meta)
 }
 
 func catalogIntegrationObjectStorageParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
 	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
+}
+
+func catalogIntegrationObjectStorageParseId(id string) (sdk.AccountObjectIdentifier, error) {
+	return sdk.ParseAccountObjectIdentifier(id)
 }
 
 func DeleteCatalogIntegrationObjectStorage(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

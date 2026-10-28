@@ -47,8 +47,8 @@ func CreateAlert(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 		return diag.FromErr(err)
 	}
 
-	if diags := alertCreateInSdkExt(ctx, meta, id, req); diags != nil {
-		return diags
+	if err := meta.(*provider.Context).Client.Alerts.Create(ctx, req); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(helpers.EncodeSnowflakeID(id))
@@ -58,7 +58,7 @@ func CreateAlert(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 
 func ReadAlertFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := alertParseIdExt(d.Id())
+		id, err := alertParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -90,7 +90,7 @@ func ReadAlertFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 }
 
 func UpdateAlert(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := alertParseIdExt(d.Id())
+	id, err := alertParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -112,6 +112,10 @@ func UpdateAlert(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 
 func alertParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
 	return sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string)), nil
+}
+
+func alertParseId(id string) (sdk.SchemaObjectIdentifier, error) {
+	return helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier](id)
 }
 
 func alertApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateAlertRequest) error {

@@ -33,7 +33,7 @@ func CatalogIntegrationOpenCatalog() *tfschema.Resource {
 }
 
 func ImportCatalogIntegrationOpenCatalog(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
-	id, err := catalogIntegrationOpenCatalogParseIdExt(d.Id())
+	id, err := catalogIntegrationOpenCatalogParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func CreateCatalogIntegrationOpenCatalog(ctx context.Context, d *tfschema.Resour
 
 func ReadCatalogIntegrationOpenCatalogFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := catalogIntegrationOpenCatalogParseIdExt(d.Id())
+		id, err := catalogIntegrationOpenCatalogParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -114,7 +114,7 @@ func ReadCatalogIntegrationOpenCatalogFunc(withExternalChangesMarking bool) tfsc
 }
 
 func UpdateCatalogIntegrationOpenCatalog(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := catalogIntegrationOpenCatalogParseIdExt(d.Id())
+	id, err := catalogIntegrationOpenCatalogParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -125,14 +125,15 @@ func UpdateCatalogIntegrationOpenCatalog(ctx context.Context, d *tfschema.Resour
 	if err := catalogIntegrationOpenCatalogAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := catalogIntegrationOpenCatalogAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
-	}
 	return ReadCatalogIntegrationOpenCatalogFunc(false)(ctx, d, meta)
 }
 
 func catalogIntegrationOpenCatalogParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
 	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
+}
+
+func catalogIntegrationOpenCatalogParseId(id string) (sdk.AccountObjectIdentifier, error) {
+	return sdk.ParseAccountObjectIdentifier(id)
 }
 
 func DeleteCatalogIntegrationOpenCatalog(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

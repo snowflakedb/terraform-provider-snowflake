@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -180,13 +181,17 @@ func UpdateSchema(ctx context.Context, d *tfschema.ResourceData, meta any) diag.
 		d.Partial(true)
 		return diags
 	}
-	if err := schemaAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
-		d.Partial(true)
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.set, *sdk.NewSchemaSetRequest()) {
+		if err := meta.(*provider.Context).Client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithSet(*setUnset.set)); err != nil {
+			d.Partial(true)
+			return diag.FromErr(err)
+		}
 	}
-	if err := schemaAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		d.Partial(true)
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.unset, *sdk.NewSchemaUnsetRequest()) {
+		if err := meta.(*provider.Context).Client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithUnset(*setUnset.unset)); err != nil {
+			d.Partial(true)
+			return diag.FromErr(err)
+		}
 	}
 	return ReadSchemaFunc(false)(ctx, d, meta)
 }

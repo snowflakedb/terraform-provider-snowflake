@@ -43,7 +43,7 @@ func ExternalVolume() *tfschema.Resource {
 }
 
 func ImportExternalVolume(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
-	id, err := externalVolumeParseIdExt(d.Id())
+	id, err := externalVolumeParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func CreateExternalVolume(ctx context.Context, d *tfschema.ResourceData, meta an
 
 func ReadExternalVolumeFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := externalVolumeParseIdExt(d.Id())
+		id, err := externalVolumeParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -122,7 +122,7 @@ func ReadExternalVolumeFunc(withExternalChangesMarking bool) tfschema.ReadContex
 }
 
 func UpdateExternalVolume(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := externalVolumeParseIdExt(d.Id())
+	id, err := externalVolumeParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -133,14 +133,15 @@ func UpdateExternalVolume(ctx context.Context, d *tfschema.ResourceData, meta an
 	if err := externalVolumeAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := externalVolumeAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
-	}
 	return ReadExternalVolumeFunc(false)(ctx, d, meta)
 }
 
 func externalVolumeParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
 	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
+}
+
+func externalVolumeParseId(id string) (sdk.AccountObjectIdentifier, error) {
+	return sdk.ParseAccountObjectIdentifier(id)
 }
 
 func externalVolumeApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateExternalVolumeRequest) error {

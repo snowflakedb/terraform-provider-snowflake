@@ -33,7 +33,7 @@ func CatalogIntegrationAwsGlue() *tfschema.Resource {
 }
 
 func ImportCatalogIntegrationAwsGlue(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
-	id, err := catalogIntegrationAwsGlueParseIdExt(d.Id())
+	id, err := catalogIntegrationAwsGlueParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func CreateCatalogIntegrationAwsGlue(ctx context.Context, d *tfschema.ResourceDa
 
 func ReadCatalogIntegrationAwsGlueFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := catalogIntegrationAwsGlueParseIdExt(d.Id())
+		id, err := catalogIntegrationAwsGlueParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -116,7 +116,7 @@ func ReadCatalogIntegrationAwsGlueFunc(withExternalChangesMarking bool) tfschema
 }
 
 func UpdateCatalogIntegrationAwsGlue(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := catalogIntegrationAwsGlueParseIdExt(d.Id())
+	id, err := catalogIntegrationAwsGlueParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -127,14 +127,15 @@ func UpdateCatalogIntegrationAwsGlue(ctx context.Context, d *tfschema.ResourceDa
 	if err := catalogIntegrationAwsGlueAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := catalogIntegrationAwsGlueAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
-	}
 	return ReadCatalogIntegrationAwsGlueFunc(false)(ctx, d, meta)
 }
 
 func catalogIntegrationAwsGlueParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
 	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
+}
+
+func catalogIntegrationAwsGlueParseId(id string) (sdk.AccountObjectIdentifier, error) {
+	return sdk.ParseAccountObjectIdentifier(id)
 }
 
 func DeleteCatalogIntegrationAwsGlue(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

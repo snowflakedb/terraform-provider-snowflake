@@ -45,10 +45,6 @@ type catalogIntegrationOpenCatalogAlterRequestsExt struct {
 	set *sdk.CatalogIntegrationSetRequest
 }
 
-func catalogIntegrationOpenCatalogParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
-	return sdk.ParseAccountObjectIdentifier(id)
-}
-
 func catalogIntegrationOpenCatalogNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateOpenCatalogCatalogIntegrationRequest, error) {
 	enabled := d.Get("enabled").(bool)
 
@@ -188,11 +184,6 @@ func catalogIntegrationOpenCatalogAlterSetInSdkExt(ctx context.Context, _ *schem
 	if err := client.CatalogIntegrations.Alter(ctx, req); err != nil {
 		return fmt.Errorf("error updating Open Catalog catalog integration (%s), err = %w", helpers.EncodeResourceIdentifier(id), err)
 	}
-	return nil
-}
-
-func catalogIntegrationOpenCatalogAlterUnsetInSdkExt(context.Context, any, sdk.AccountObjectIdentifier, *catalogIntegrationOpenCatalogAlterRequestsExt) error {
-	// Catalog integration ALTER has no UNSET clause.
 	return nil
 }
 

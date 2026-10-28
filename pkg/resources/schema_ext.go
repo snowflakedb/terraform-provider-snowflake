@@ -236,19 +236,3 @@ func schemaDescribeInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObject
 	client := meta.(*provider.Context).Client
 	return client.Schemas.Describe(ctx, id)
 }
-
-func schemaAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.DatabaseObjectIdentifier, reqs *schemaAlterRequestsExt) error {
-	if *reqs.set != *sdk.NewSchemaSetRequest() {
-		client := meta.(*provider.Context).Client
-		return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithSet(*reqs.set))
-	}
-	return nil
-}
-
-func schemaAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObjectIdentifier, reqs *schemaAlterRequestsExt) error {
-	if *reqs.unset != *sdk.NewSchemaUnsetRequest() {
-		client := meta.(*provider.Context).Client
-		return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithUnset(*reqs.unset))
-	}
-	return nil
-}

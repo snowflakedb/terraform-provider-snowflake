@@ -48,7 +48,7 @@ var (
 )
 
 func warehouseInteractiveParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) (*sdk.WarehouseParametersDetails, error) {
-	id, err := warehouseInteractiveParseIdExt(d.Id())
+	id, err := warehouseInteractiveParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}

@@ -33,7 +33,7 @@ func WarehouseInteractive() *tfschema.Resource {
 }
 
 func ImportWarehouseInteractive(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
-	id, err := warehouseInteractiveParseIdExt(d.Id())
+	id, err := warehouseInteractiveParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func CreateWarehouseInteractive(ctx context.Context, d *tfschema.ResourceData, m
 
 func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := warehouseInteractiveParseIdExt(d.Id())
+		id, err := warehouseInteractiveParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -128,7 +128,7 @@ func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) tfschema.Read
 }
 
 func UpdateWarehouseInteractive(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := warehouseInteractiveParseIdExt(d.Id())
+	id, err := warehouseInteractiveParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -155,6 +155,10 @@ func UpdateWarehouseInteractive(ctx context.Context, d *tfschema.ResourceData, m
 		return diag.FromErr(err)
 	}
 	return ReadWarehouseInteractiveFunc(false)(ctx, d, meta)
+}
+
+func warehouseInteractiveParseId(id string) (sdk.AccountObjectIdentifier, error) {
+	return sdk.ParseAccountObjectIdentifier(id)
 }
 
 func DeleteWarehouseInteractive(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
