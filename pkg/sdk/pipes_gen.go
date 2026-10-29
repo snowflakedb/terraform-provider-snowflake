@@ -158,3 +158,7 @@ type PipeDetails struct {
 	OwnerRoleType       string
 	InvalidReason       string
 }
+
+func (v *PipeDetails) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
+}

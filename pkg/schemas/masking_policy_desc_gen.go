@@ -26,6 +26,8 @@ var DescribeMaskingPolicyDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// database_name is skipped and won't be generated
+	// schema_name is skipped and won't be generated
 }, maskingPolicyDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeMaskingPolicyDetailsSchema
@@ -38,6 +40,8 @@ func MaskingPolicyDetailsToSchema(maskingPolicyDetails *sdk.MaskingPolicyDetails
 		maskingPolicyDetailsSchema["return_type"] = maskingPolicyDetails.ReturnType.ToSql()
 	}
 	maskingPolicyDetailsSchema["body"] = maskingPolicyDetails.Body
+	// database_name is skipped and won't be generated
+	// schema_name is skipped and won't be generated
 	maskingPolicyDetailsToSchemaMapper{}.additionalToSchema(maskingPolicyDetails, maskingPolicyDetailsSchema)
 	return maskingPolicyDetailsSchema
 }

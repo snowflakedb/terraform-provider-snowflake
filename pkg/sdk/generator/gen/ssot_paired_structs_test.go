@@ -238,9 +238,16 @@ func Test_PairedStructsFromColumns_mapsWarehouseColumnShapes(t *testing.T) {
 		CustomParser: "ParseCommaSeparatedSchemaObjectIdentifierArray",
 		Elem:         &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "SchemaObjectIdentifier"},
 	}
+	objectTypes := ssot.Attribute{
+		Name:         "object_types",
+		Type:         ssot.AttrList,
+		OptionalInDb: true,
+		CustomParser: "ParseCommaSeparatedWarehouseStateArray",
+		Elem:         &ssot.Attribute{Type: ssot.AttrEnum, Enum: state},
+	}
 
 	got := ShowPairedStructs(showPairedObject("AccountObjectIdentifier",
-		&optionalInt, &dbOnlyInt, &optionalBool, &optionalBoolText, &optionalEnum, &manualEnum, &manualOptionalEnum, &available, &monitor, &tables,
+		&optionalInt, &dbOnlyInt, &optionalBool, &optionalBoolText, &optionalEnum, &manualEnum, &manualOptionalEnum, &available, &monitor, &tables, &objectTypes,
 	))
 	want := StructPair("fakesRow", "Fake").
 		OptionalNumber("min_cluster_count").
@@ -252,7 +259,8 @@ func Test_PairedStructsFromColumns_mapsWarehouseColumnShapes(t *testing.T) {
 		OptionalEnum("resource_constraint", size, WithManualConvert()).
 		Field("available", "string", "float64", WithManualConvert()).
 		Field("resource_monitor", "string", "AccountObjectIdentifier", WithCustomParser("ParseAccountObjectIdentifierExcludingExplicitNullString")).
-		Field("tables", "sql.NullString", "[]SchemaObjectIdentifier", WithCustomParser("ParseCommaSeparatedSchemaObjectIdentifierArray"))
+		Field("tables", "sql.NullString", "[]SchemaObjectIdentifier", WithCustomParser("ParseCommaSeparatedSchemaObjectIdentifierArray")).
+		Field("object_types", "sql.NullString", "[]WarehouseState", WithCustomParser("ParseCommaSeparatedWarehouseStateArray"))
 	require.Equal(t, want, got)
 
 	requiredID := ssot.Attribute{Name: "database_name", Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"}
