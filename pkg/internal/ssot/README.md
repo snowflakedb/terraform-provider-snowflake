@@ -221,7 +221,7 @@ Each warehouse variant declares its show in `Show.Columns`. `Warehouse.ShowGener
 
 They are independent: a column can be optional in SHOW, in the DB row, both, or neither.
 
-A list with `CustomParser`, `OptionalInDb`, and no `OptionalInShow` is a CSV column. The database field is `sql.NullString` and the plain field is a slice. An identifier element uses `IdentifierType`. An enum element uses the enum's SDK type name. The parser is `func(string) ([]T, error)`.
+A list with `CustomParser`, `OptionalInDb`, and no `OptionalInShow` is a CSV column. The database field is `sql.NullString` and the plain field is a slice. An identifier element uses `IdentifierType`. An enum element uses the enum's SDK type name. Object assertions use that same plain type. The parser is `func(string) ([]T, error)`.
 
 ### Generators
 
@@ -580,6 +580,7 @@ The old path for an object that is not opted in stays byte-identical. Do not edi
 Rules for CREATE and ALTER. The calls are in [Generators](#generators).
 
 - Order is membership in a slice, and the slice order is the emission order. SHOW and DESCRIBE use `Columns`. CREATE uses [`CreateSpec`](object.go). ALTER uses [`AlterSpec`](object.go). `Set` and `Unset` are the fields inside those blocks.
+- `Set` is one struct. Snowflake can require two exclusive `SET` statements, and a statement that mixes them is a syntax error. Replication groups are that case: `OBJECT_TYPES` with the allowed-object lists is one statement, and `COMMENT`, `REPLICATION_SCHEDULE`, and `ERROR_INTEGRATION` are the other. SSOT still emits every `Set` attribute in the one struct. TODO [next PRs]: dedicated SET grouping that keeps those attributes ordinary.
 - A new position or switch on a statement is a field of that statement's spec. `KeywordsBefore` is the CREATE field for clauses between `OR REPLACE` and the object words.
 - `KeywordsBefore` holds attributes. `TRANSIENT` is the `is_transient` attribute. An alter keyword that is not an attribute, such as `RESUME` or `STOP ALL`, is an `AlterKeyword` entry on `Alter.Clauses`.
 - A SQL constructor does not take an `Attribute`. Set the clause on the attribute. `ValidateObject` checks it while walking the object.

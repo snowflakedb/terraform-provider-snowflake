@@ -1,5 +1,52 @@
 package sdk
 
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
+
+func Test_ParseReplicationGroupShowLists(t *testing.T) {
+	t.Parallel()
+
+	objectTypes, err := ParseCommaSeparatedReplicationGroupObjectTypeArray("DATABASES, EXTERNAL VOLUMES, PARAMETERS")
+	require.NoError(t, err)
+	require.Equal(t, []ReplicationGroupObjectType{
+		ReplicationGroupObjectTypeDatabases,
+		ReplicationGroupObjectTypeExternalVolumes,
+		ReplicationGroupObjectTypeAccountParameters,
+	}, objectTypes)
+
+	integrationTypes, err := ParseCommaSeparatedReplicationGroupIntegrationTypeArray("API, EXTERNAL_ACCESS, NOTIFICATION, SECURITY, STORAGE")
+	require.NoError(t, err)
+	require.Equal(t, []ReplicationGroupIntegrationType{
+		ReplicationGroupIntegrationTypeApiIntegrations,
+		ReplicationGroupIntegrationTypeExternalAccessIntegrations,
+		ReplicationGroupIntegrationTypeNotificationIntegrations,
+		ReplicationGroupIntegrationTypeSecurityIntegrations,
+		ReplicationGroupIntegrationTypeStorageIntegrations,
+	}, integrationTypes)
+
+	canonicalObjectTypes, err := ParseCommaSeparatedReplicationGroupObjectTypeArray("ACCOUNT PARAMETERS")
+	require.NoError(t, err)
+	require.Equal(t, []ReplicationGroupObjectType{ReplicationGroupObjectTypeAccountParameters}, canonicalObjectTypes)
+	canonicalIntegrationTypes, err := ParseCommaSeparatedReplicationGroupIntegrationTypeArray("API INTEGRATIONS")
+	require.NoError(t, err)
+	require.Equal(t, []ReplicationGroupIntegrationType{ReplicationGroupIntegrationTypeApiIntegrations}, canonicalIntegrationTypes)
+
+	_, err = ParseCommaSeparatedReplicationGroupObjectTypeArray("NOT_A_TYPE")
+	require.ErrorContains(t, err, "invalid replication group object type: NOT_A_TYPE")
+	_, err = ParseCommaSeparatedReplicationGroupIntegrationTypeArray("NOT_A_TYPE")
+	require.ErrorContains(t, err, "invalid replication group integration type: NOT_A_TYPE")
+
+	emptyObjectTypes, err := ParseCommaSeparatedReplicationGroupObjectTypeArray("")
+	require.NoError(t, err)
+	require.Empty(t, emptyObjectTypes)
+	emptyIntegrationTypes, err := ParseCommaSeparatedReplicationGroupIntegrationTypeArray("")
+	require.NoError(t, err)
+	require.Empty(t, emptyIntegrationTypes)
+}
+
 func init() {
 	id := replicationGroupsTestIdAccountObjectIdentifier
 	allowedAccount := NewAccountIdentifier("MY_ORG", "MY_ACCOUNT")
@@ -181,12 +228,21 @@ func init() {
 						ReplicationGroupIntegrationTypeExternalAccessIntegrations,
 						ReplicationGroupIntegrationTypeNotificationIntegrations,
 					},
+				}
+			},
+			`ALTER REPLICATION GROUP %s SET OBJECT_TYPES = ACCOUNT PARAMETERS, DATABASES, EXTERNAL VOLUMES, INTEGRATIONS, NETWORK POLICIES, RESOURCE MONITORS, ROLES, SHARES, USERS, WAREHOUSES ALLOWED_DATABASES = "db1" ALLOWED_EXTERNAL_VOLUMES = "vol1" ALLOWED_SHARES = "share1" ALLOWED_INTEGRATION_TYPES = SECURITY INTEGRATIONS, API INTEGRATIONS, STORAGE INTEGRATIONS, EXTERNAL ACCESS INTEGRATIONS, NOTIFICATION INTEGRATIONS`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_Set_properties",
+			func(opts *AlterReplicationGroupOptions) {
+				opts.Set = &ReplicationGroupSet{
 					Comment:             new("comment"),
 					ReplicationSchedule: new("10 MINUTE"),
 					ErrorIntegration:    new(NewAccountObjectIdentifier("error_int")),
 				}
 			},
-			`ALTER REPLICATION GROUP %s SET OBJECT_TYPES = ACCOUNT PARAMETERS, DATABASES, EXTERNAL VOLUMES, INTEGRATIONS, NETWORK POLICIES, RESOURCE MONITORS, ROLES, SHARES, USERS, WAREHOUSES ALLOWED_DATABASES = "db1" ALLOWED_EXTERNAL_VOLUMES = "vol1" ALLOWED_SHARES = "share1" ALLOWED_INTEGRATION_TYPES = SECURITY INTEGRATIONS, API INTEGRATIONS, STORAGE INTEGRATIONS, EXTERNAL ACCESS INTEGRATIONS, NOTIFICATION INTEGRATIONS COMMENT = 'comment' REPLICATION_SCHEDULE = '10 MINUTE' ERROR_INTEGRATION = "error_int"`,
+			`ALTER REPLICATION GROUP %s SET COMMENT = 'comment' REPLICATION_SCHEDULE = '10 MINUTE' ERROR_INTEGRATION = "error_int"`,
 			id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
@@ -255,6 +311,16 @@ func init() {
 			},
 			`ALTER REPLICATION GROUP %s MOVE SHARES "share1" TO REPLICATION GROUP "myrg2"`,
 			id.FullyQualifiedName(),
+		).
+		withAdditionalValidationCase(
+			"validation_Alter_Set_exclusiveGroups",
+			func(opts *AlterReplicationGroupOptions) {
+				opts.Set = &ReplicationGroupSet{
+					ObjectTypes: []ReplicationGroupObjectType{ReplicationGroupObjectTypeDatabases},
+					Comment:     new("comment"),
+				}
+			},
+			NewError("SET cannot combine OBJECT_TYPES and allowed lists with COMMENT, REPLICATION_SCHEDULE, or ERROR_INTEGRATION"),
 		).
 		withAdditionalValidationCase(
 			"validation_Alter_Set_AllowedDatabases_requireDatabases",

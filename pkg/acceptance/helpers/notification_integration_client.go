@@ -68,7 +68,10 @@ func (c *NotificationIntegrationClient) Create(t *testing.T) (*sdk.NotificationI
 	id := c.ids.RandomAccountObjectIdentifier()
 
 	request := sdk.NewCreateNotificationIntegrationRequest(id, true).
-		WithEmailParams(*sdk.NewEmailParamsRequest().WithAllowedRecipients([]sdk.NotificationIntegrationAllowedRecipient{{Email: VerifiedEmail}}))
+		WithEmailParams(*sdk.NewEmailParamsRequest().
+			WithAllowedRecipients([]sdk.NotificationIntegrationAllowedRecipient{{Email: VerifiedEmail}}).
+			WithDefaultRecipients([]sdk.NotificationIntegrationAllowedRecipient{{Email: VerifiedEmail}}).
+			WithDefaultSubject("Snowflake Email Notification"))
 
 	err := c.client().Create(ctx, request)
 	require.NoError(t, err)

@@ -116,6 +116,8 @@ func (r *CreateNotificationIntegrationRequest) toOpts() *CreateNotificationInteg
 	if r.EmailParams != nil {
 		opts.EmailParams = &EmailParams{
 			AllowedRecipients: r.EmailParams.AllowedRecipients,
+			DefaultRecipients: r.EmailParams.DefaultRecipients,
+			DefaultSubject:    r.EmailParams.DefaultSubject,
 		}
 	}
 	if r.WebhookParams != nil {

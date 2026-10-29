@@ -30,6 +30,11 @@ func AttributeGoTypes(obj Object, attr Attribute) (concrete, underlying string) 
 			panic(fmt.Sprintf("object %q: collection attribute %q has no Elem", obj.Name, attr.Name))
 		}
 		if attr.Elem.Type == AttrEnum {
+			// A SHOW row stores an ordinary enum list as []string. A CSV column parsed by CustomParser
+			// stores the enum, the same type the plain SHOW field uses.
+			if attr.CustomParser != "" && !attr.OptionalInShow && attr.OptionalInDb && attr.Elem.ColumnEnum() != nil {
+				return "[]sdk." + attr.Elem.ColumnEnum().Kind(), "slice"
+			}
 			return "[]string", "slice"
 		}
 		elemConcrete, _ := AttributeGoTypes(obj, *attr.Elem)
