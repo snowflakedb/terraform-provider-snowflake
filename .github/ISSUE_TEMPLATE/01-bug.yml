@@ -227,6 +227,7 @@ body:
         - resource:procedure_scala
         - resource:procedure_sql
         - resource:projection_policy
+        - resource:quota
         - resource:resource_monitor
         - resource:role
         - resource:row_access_policy
@@ -331,6 +332,7 @@ body:
         - data_source:pipes
         - data_source:procedures
         - data_source:projection_policies
+        - data_source:quotas
         - data_source:resource_monitors
         - data_source:roles
         - data_source:row_access_policies

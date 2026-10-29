@@ -167,6 +167,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.ProjectionPolicies().Schema,
 	},
 	{
+		name:   "Quotas",
+		schema: datasources.Quotas().Schema,
+	},
+	{
 		name:   "ResourceMonitors",
 		schema: datasources.ResourceMonitors().Schema,
 	},

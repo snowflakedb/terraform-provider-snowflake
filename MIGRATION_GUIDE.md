@@ -28,6 +28,21 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.22.x ➞ v2.23.0
 
+### *(new feature)* Quota resource and data source
+
+We have added a new preview resource, [`snowflake_quota`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/quota), for managing [per-user quotas](https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas) (`SNOWFLAKE.CORE.QUOTA`). It manages the monitored domains (`WAREHOUSE`, `AI FUNCTION`, `CORTEX AGENT`, `CORTEX CODE`, `SNOWFLAKE INTELLIGENCE`, and `AI GATEWAY`), the users the quota applies to, and per-user limits for the monthly, weekly, and daily cycles.
+
+Apart from the name and comment, which are changed in place with `ALTER`, a quota is configured with its instance methods, which the provider calls one by one. These calls are not transactional: if one of them fails during creation, the quota is marked as tainted and recreated by the next apply; if one fails during an update, the quota is left partially configured and the next apply applies the remaining changes.
+
+We have also added a new preview data source, [`snowflake_quotas`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/quotas), for listing quotas. It supports filtering with `like`, `in`, and `limit`. `with_describe` is on by default and reads the configuration of each quota returned by SHOW with its GET_* methods.
+
+These features will be marked as stable in future releases. Breaking changes are expected, even without bumping the major version. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_quota_resource` for `snowflake_quota`;
+- `snowflake_quotas_datasource` for `snowflake_quotas`.
+
+No changes are required for existing configurations unless you want to adopt these preview features with Terraform.
+
 ### *(new feature)* Projection policy resource and data source
 
 We have added a new preview resource, [`snowflake_projection_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/projection_policy), for managing [projection policies](https://docs.snowflake.com/en/sql-reference/sql/create-projection-policy). CREATE requires a body, an SQL expression that calls `PROJECTION_CONSTRAINT`.
