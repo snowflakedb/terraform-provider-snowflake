@@ -978,6 +978,33 @@ func TestNormalizeShareGranteeName(t *testing.T) {
 	}
 }
 
+// Proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/5323 stays fixed: a single grantee that fails
+// to parse aborts the whole Grants.Show call, so snowflake_grant_database_role cannot find its grant.
+func TestParseGranteeNameOfDatabaseRole(t *testing.T) {
+	accountLocator := "AB12345"
+	databaseRoleId := NewDatabaseObjectIdentifier("SNOWFLAKE", "CORTEX_USER")
+	testCases := []struct {
+		name           string
+		grantedTo      ObjectType
+		granteeNameRaw string
+		expected       ObjectIdentifier
+	}{
+		{name: "account role", grantedTo: ObjectTypeRole, granteeNameRaw: "EXAMPLE_ROLE", expected: NewAccountObjectIdentifier("EXAMPLE_ROLE")},
+		{name: "application", grantedTo: ObjectTypeApplication, granteeNameRaw: "SNOWFLAKE", expected: NewAccountObjectIdentifier("SNOWFLAKE")},
+		{name: "application role", grantedTo: ObjectTypeApplicationRole, granteeNameRaw: "APP_PUBLIC", expected: NewDatabaseObjectIdentifier("SNOWFLAKE", "APP_PUBLIC")},
+		{name: "database role", grantedTo: ObjectTypeDatabaseRole, granteeNameRaw: "PARENT_ROLE", expected: NewDatabaseObjectIdentifier("SNOWFLAKE", "PARENT_ROLE")},
+		{name: "account-prefixed share", grantedTo: ObjectTypeShare, granteeNameRaw: "AB12345.MY_SHARE", expected: NewAccountObjectIdentifier("MY_SHARE")},
+		{name: "user", grantedTo: ObjectTypeUser, granteeNameRaw: "USER$EXAMPLE_USER", expected: NewAccountObjectIdentifier("EXAMPLE_USER")},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			granteeName, err := parseGranteeNameOfDatabaseRole(databaseRoleId, testCase.grantedTo, testCase.granteeNameRaw, accountLocator)
+			require.NoError(t, err)
+			assert.Equal(t, testCase.expected, granteeName)
+		})
+	}
+}
+
 // TestShowGrantsRequest_SQLKey covers the property the SHOW GRANTS cache relies on: the cache key
 // (ShowGrantsRequest.SQLKey) must render exactly the statement Grants.Show executes, and distinct
 // queries must not collide.
