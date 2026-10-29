@@ -20,18 +20,23 @@ var variantsOf = ssotdefs.VariantsOf
 // ShowOperationFromObject adds SHOW and ShowByID from obj.SdkConfig.
 // The field chain comes from ShowPairedStructs. Clauses are emitted in a fixed order:
 // Show, Terse, SQL, OptionalSQL, Like, plain IN or ExtendedIn, On, StartsWith, LimitFrom, Limit.
-// An empty ShowByID filtering list passes no filtering argument, so ShowByID stays Like.
+// An empty ShowByID filtering list emits LIKE. SdkShowByIDNone emits no filter.
+// ShowByIDPredicate selects the FindFirst match. Empty keeps the interface default.
 func (i *Interface) ShowOperationFromObject(obj ssot.Object) *Interface {
 	cfg := obj.SdkConfig()
 	if !cfg.Show {
 		panic(fmt.Sprintf("object %q is not enabled for SDK SHOW generation", obj.Name))
 	}
-	return i.ShowOperationWithPairedStructs(
+	i = i.ShowOperationWithPairedStructs(
 		cfg.ShowDoc,
 		ShowPairedStructs(obj),
 		showQueryStructFromConfig(cfg),
 		showByIDFilteringFromObject(obj, cfg)...,
 	)
+	if cfg.ShowByIDPredicate != "" {
+		i.WithShowByIDFindPredicateKind(showByIDPredicateFromObject(obj, cfg.ShowByIDPredicate))
+	}
+	return i
 }
 
 // DescribeOperationFromObject adds DESCRIBE from obj.SdkConfig.
@@ -235,6 +240,11 @@ func showByIDFilteringFromObject(obj ssot.Object, cfg ssot.SdkGenerator) []ShowB
 	if len(cfg.ShowByIDFiltering) == 0 {
 		return nil
 	}
+	for _, kind := range cfg.ShowByIDFiltering {
+		if kind == ssot.SdkShowByIDNone && len(cfg.ShowByIDFiltering) != 1 {
+			panic(fmt.Sprintf("object %q: ShowByID no filtering cannot be combined with another filter", obj.Name))
+		}
+	}
 	filtering := make([]ShowByIDFilteringKind, len(cfg.ShowByIDFiltering))
 	for i, kind := range cfg.ShowByIDFiltering {
 		switch kind {
@@ -244,11 +254,28 @@ func showByIDFilteringFromObject(obj ssot.Object, cfg ssot.SdkGenerator) []ShowB
 			filtering[i] = ShowByIDInFiltering
 		case ssot.SdkShowByIDExtendedIn:
 			filtering[i] = ShowByIDExtendedInFiltering
+		case ssot.SdkShowByIDNone:
+			filtering[i] = ShowByIDNoFiltering
 		default:
 			panic(fmt.Sprintf("object %q: unknown ShowByID filtering %q", obj.Name, kind))
 		}
 	}
 	return filtering
+}
+
+func showByIDPredicateFromObject(obj ssot.Object, kind ssot.SdkShowByIDPredicateKind) ShowByIDFindPredicateKind {
+	switch kind {
+	case ssot.SdkShowByIDPredicateName:
+		return ShowByIDFindPredicateName
+	case ssot.SdkShowByIDPredicateFullID:
+		return ShowByIDFindPredicateFullID
+	case ssot.SdkShowByIDPredicateAccountName:
+		return ShowByIDFindPredicateAccountName
+	case ssot.SdkShowByIDPredicateNameAndLocator:
+		return ShowByIDFindPredicateNameAndLocator
+	default:
+		panic(fmt.Sprintf("object %q: unknown ShowByID predicate %q", obj.Name, kind))
+	}
 }
 
 func describeMappingFromObject(obj ssot.Object, cfg ssot.SdkGenerator) DescriptionMappingKind {

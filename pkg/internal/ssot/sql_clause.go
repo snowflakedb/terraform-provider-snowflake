@@ -69,6 +69,8 @@ type SqlClause struct {
 	Quotes      SqlQuotes
 	Parentheses SqlParens
 	Equals      SqlEquals
+	// Reverse puts a list parameter before its SQL text, as in ADD id TO ALLOWED_DATABASES.
+	Reverse bool
 	// Required overrides optional-ness. Nil follows Attribute.Required on create and is optional on set.
 	Required *bool
 	// ItemStruct is the list-item query struct name. ListParameter sets it.
@@ -123,6 +125,9 @@ func (c SqlClause) Ddl() string {
 	}
 	if c.Equals != "" {
 		parts = append(parts, string(c.Equals))
+	}
+	if c.Reverse {
+		parts = append(parts, "reverse")
 	}
 	return strings.Join(parts, ",")
 }
@@ -318,6 +323,9 @@ func overlaySqlClause(base, over SqlClause) SqlClause {
 	if over.ValueKeyword {
 		base.ValueKeyword = true
 	}
+	if over.Reverse {
+		base.Reverse = true
+	}
 	if len(over.Variants) > 0 {
 		base.Variants = over.Variants
 	}
@@ -457,6 +465,13 @@ func Equals() SqlClauseOption {
 
 func NoEquals() SqlClauseOption {
 	return func(c *SqlClause) { c.Equals = SqlEqualsNo }
+}
+
+// Reverse puts a list parameter before its SQL text.
+// TODO [next PRs]: drop reverse. One struct per allowed-list target, the identifier list with no SQL prefix,
+// then a static TO ALLOWED_* or FROM ALLOWED_* clause. See pkg/sdk/generator/README.md#create-and-alter.
+func Reverse() SqlClauseOption {
+	return func(c *SqlClause) { c.Reverse = true }
 }
 
 func Required() SqlClauseOption {
