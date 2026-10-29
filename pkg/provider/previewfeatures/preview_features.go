@@ -129,6 +129,8 @@ const (
 	ProcedureScalaResource                         feature = "snowflake_procedure_scala_resource"
 	ProcedureSqlResource                           feature = "snowflake_procedure_sql_resource"
 	ProceduresDatasource                           feature = "snowflake_procedures_datasource"
+	ProjectionPoliciesDatasource                   feature = "snowflake_projection_policies_datasource"
+	ProjectionPolicyResource                       feature = "snowflake_projection_policy_resource"
 	QuotaResource                                  feature = "snowflake_quota_resource"
 	CurrentRoleDatasource                          feature = "snowflake_current_role_datasource"
 	SemanticViewResource                           feature = "snowflake_semantic_view_resource"
@@ -246,6 +248,8 @@ var allPreviewFeatures = []feature{
 	ProcedureScalaResource,
 	ProcedureSqlResource,
 	ProceduresDatasource,
+	ProjectionPoliciesDatasource,
+	ProjectionPolicyResource,
 	QuotaResource,
 	StageResource,
 	StagesDatasource,

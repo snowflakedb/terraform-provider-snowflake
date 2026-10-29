@@ -53,10 +53,25 @@ func objectAssertionDetailsFromSsot(obj ssot.Object, isDescribe bool) genhelpers
 	noIdentifiableObject := false
 	skip := objectAssertSkipNames(obj, g.ObjectAssert.ShowSkipFields)
 	var projection *genhelpers.ShowProjectionDef
+	var describeOverride *genhelpers.DescribeOverrideDef
 	objectTypeName := ""
+	sdkType := ""
 	if isDescribe {
 		noIdentifiableObject = g.ObjectAssert.NoIdentifiableObject
 		skip = objectAssertSkipNames(obj, g.ObjectAssert.DescribeSkipFields)
+		if fetch, ok := obj.DescribeFetch(); ok {
+			describeOverride = &genhelpers.DescribeOverrideDef{
+				ClientName: fetch.ClientName,
+				MethodName: fetch.Method,
+			}
+		}
+	} else if row, ok := obj.ShowRowFromBase(); ok {
+		projection = &genhelpers.ShowProjectionDef{
+			ClientName: row.ClientName,
+			Method:     row.Method,
+		}
+		objectTypeName = row.ClientName
+		sdkType = "sdk." + row.ClientName
 	} else if fromBase, ok := obj.ShowFromBase(); ok {
 		projection = &genhelpers.ShowProjectionDef{
 			ClientName: fromBase.ClientName,
@@ -70,6 +85,8 @@ func objectAssertionDetailsFromSsot(obj ssot.Object, isDescribe bool) genhelpers
 		IsDataSourceOutput:   isDescribe,
 		NoIdentifiableObject: noIdentifiableObject,
 		ShowProjection:       projection,
+		DescribeOverride:     describeOverride,
+		SdkType:              sdkType,
 		SkipFields:           skip,
 		NestedAssertFields:   objectAssertNestedNames(obj, nested),
 		StructDetails: genhelpers.StructDetails{
@@ -105,13 +122,16 @@ func findNestedField(nested []ssot.ObjectAssertNestedField, attr *ssot.Attribute
 	return *found, true
 }
 
-// nestedFieldGoType is the explicit GoType, or the default composition for a list or set column.
+// nestedFieldGoType is the explicit GoType, or the default for a list, set, or object column.
 func nestedFieldGoType(obj ssot.Object, nested ssot.ObjectAssertNestedField) string {
 	if nested.GoType != "" {
 		return nested.GoType
 	}
+	if nested.Attr.Type == ssot.AttrObject {
+		return ssot.ColumnField(obj, *nested.Attr).ConcreteType
+	}
 	if nested.Attr.Type != ssot.AttrList && nested.Attr.Type != ssot.AttrSet {
-		panic(fmt.Sprintf("object %q: nested column %q is not a list or set, set ObjectAssertNestedGoType", obj.Name, nested.Attr.Name))
+		panic(fmt.Sprintf("object %q: nested column %q is not a list, set, or object, set ObjectAssertNestedGoType", obj.Name, nested.Attr.Name))
 	}
 	return "[]sdk." + ssot.NestedDetailsElem(obj, nested.Attr)
 }

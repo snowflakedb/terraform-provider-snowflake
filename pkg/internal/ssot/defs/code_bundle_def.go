@@ -118,8 +118,8 @@ var CodeBundle = ssot.Object{
 				// DESCRIBE does not return database_name or schema_name. DescribeDetails fills them from the identifier.
 				ssot.SdkDescribePlainOnlyField("DatabaseName", "string"),
 				ssot.SdkDescribePlainOnlyField("SchemaName", "string"),
+				ssot.SdkDescribeDetailsFromIdentifier(),
 			),
-			ssot.SdkCustomInterfaceMethods(),
 		),
 		ssot.WithObjectAssert(
 			ssot.ObjectAssertShow(),
@@ -157,11 +157,6 @@ var CodeBundle = ssot.Object{
 			&CodeBundleAttrs.Comment,
 		},
 	},
-	CustomInterfaceMethods: []ssot.CustomInterfaceMethodSpec{{
-		Name:    "DescribeDetails",
-		Doc:     "DescribeDetails calls Describe and sets database and schema from the identifier. DESCRIBE does not return those columns.",
-		Returns: []string{"*CodeBundleDetails", "error"},
-	}},
 	Set: []*ssot.Attribute{
 		&CodeBundleAttrs.Comment,
 	},

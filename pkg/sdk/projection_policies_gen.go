@@ -64,12 +64,12 @@ type DropProjectionPolicyOptions struct {
 
 // ShowProjectionPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-projection-policies.
 type ShowProjectionPolicyOptions struct {
-	show               bool        `ddl:"static" sql:"SHOW"`
-	projectionPolicies bool        `ddl:"static" sql:"PROJECTION POLICIES"`
-	Like               *Like       `ddl:"keyword" sql:"LIKE"`
-	In                 *ExtendedIn `ddl:"keyword" sql:"IN"`
-	StartsWith         *string     `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
-	Limit              *LimitFrom  `ddl:"keyword" sql:"LIMIT"`
+	show               bool       `ddl:"static" sql:"SHOW"`
+	projectionPolicies bool       `ddl:"static" sql:"PROJECTION POLICIES"`
+	Like               *Like      `ddl:"keyword" sql:"LIKE"`
+	In                 *In        `ddl:"keyword" sql:"IN"`
+	StartsWith         *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
+	Limit              *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
 
 type projectionPoliciesRow struct {
@@ -125,4 +125,8 @@ type ProjectionPolicyDetails struct {
 	Body         string
 	DatabaseName string
 	SchemaName   string
+}
+
+func (v *ProjectionPolicyDetails) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
 }

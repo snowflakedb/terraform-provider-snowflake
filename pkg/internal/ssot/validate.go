@@ -56,6 +56,8 @@ func ValidateObject(obj Object) {
 		if obj.Create.Sql != "" {
 			panic(fmt.Sprintf("object %q: variant CREATE words are VariantEntityCreateName", obj.Name))
 		}
+	case obj.Create.WithoutOrReplace:
+		panic(fmt.Sprintf("object %q: Create.WithoutOrReplace is for a variant", obj.Name))
 	case obj.VariantEntityCreateName != "":
 		panic(fmt.Sprintf("object %q: VariantEntityCreateName is for a variant", obj.Name))
 	case obj.VariantEntityAlterName != "":
@@ -84,6 +86,7 @@ func ValidateObject(obj Object) {
 	validateDescribeRows(obj)
 	validateDescribeDetails(obj)
 	validateDescribePlainOnlyFields(obj)
+	validateDescribeDetailsFromIdentifier(obj)
 	validateShowPlainOnlyFields(obj)
 	g := ObjectGenerators(obj.Generators...)
 	validateGeneratorSkips(obj, "object-assertion", "SHOW", g.ObjectAssert.Show, obj.PairedShowColumns(), g.ObjectAssert.ShowSkipFields)
@@ -895,6 +898,82 @@ func validateShowPlainOnlyFields(obj Object) {
 		}
 		seen[field.Column.Name] = struct{}{}
 	}
+}
+
+// validateDescribeDetailsFromIdentifier rejects a columnar DescribeDetails whose plain-only fields are not identifier
+// parts, or that is combined with a property-list DESCRIBE. SchemaObjectIdentifier allows DatabaseName and SchemaName.
+// DatabaseObjectIdentifier allows DatabaseName.
+func validateDescribeDetailsFromIdentifier(obj Object) {
+	sdk := ObjectGenerators(obj.Generators...).Sdk
+	if !sdk.DescribeDetailsFromIdentifier {
+		return
+	}
+	if !sdk.Describe {
+		panic(fmt.Sprintf("object %q: SdkDescribeDetailsFromIdentifier needs SdkDescribe", obj.Name))
+	}
+	if sdk.DescribeDetails {
+		panic(fmt.Sprintf("object %q: SdkDescribeDetailsFromIdentifier cannot be used with SdkDescribeDetails", obj.Name))
+	}
+	if len(obj.DescribeRows.Columns) > 0 {
+		panic(fmt.Sprintf("object %q: SdkDescribeDetailsFromIdentifier cannot be used with DescribeRows", obj.Name))
+	}
+	for _, spec := range obj.CustomInterfaceMethods {
+		if spec.Name == "DescribeDetails" {
+			panic(fmt.Sprintf("object %q: SdkDescribeDetailsFromIdentifier conflicts with custom interface method DescribeDetails", obj.Name))
+		}
+	}
+	obj.DescribeDetailsFromIdentifierAssignments()
+}
+
+// DescribeDetailsFromIdentifierAssignments are the plain-only fields DescribeDetails copies from the identifier,
+// in assignment order. SchemaObjectIdentifier allows DatabaseName and SchemaName. DatabaseObjectIdentifier allows DatabaseName.
+func (obj Object) DescribeDetailsFromIdentifierAssignments() []string {
+	allowed := describeDetailsIdentifierFields(obj.IdType)
+	if allowed == nil {
+		panic(fmt.Sprintf("object %q: SdkDescribeDetailsFromIdentifier needs IdType SchemaObjectIdentifier or DatabaseObjectIdentifier", obj.Name))
+	}
+	label := identifierFieldLabel(allowed)
+	fields := ObjectGenerators(obj.Generators...).Sdk.DescribePlainOnlyFields
+	if len(fields) == 0 {
+		panic(fmt.Sprintf("object %q: SdkDescribeDetailsFromIdentifier needs a plain-only %s", obj.Name, label))
+	}
+	present := make(map[string]struct{}, len(fields))
+	for _, field := range fields {
+		if !slices.Contains(allowed, field.Name) {
+			panic(fmt.Sprintf("object %q: SdkDescribeDetailsFromIdentifier plain-only field %q must be %s", obj.Name, field.Name, label))
+		}
+		if field.Kind != "string" {
+			panic(fmt.Sprintf("object %q: SdkDescribeDetailsFromIdentifier plain-only field %q must be a string", obj.Name, field.Name))
+		}
+		present[field.Name] = struct{}{}
+	}
+	assigned := make([]string, 0, len(allowed))
+	for _, name := range allowed {
+		if _, ok := present[name]; ok {
+			assigned = append(assigned, name)
+		}
+	}
+	return assigned
+}
+
+// describeDetailsIdentifierFields are the plain-only fields DescribeDetails can copy from idType.
+// Nil means this option does not support that identifier.
+func describeDetailsIdentifierFields(idType string) []string {
+	switch idType {
+	case "SchemaObjectIdentifier":
+		return []string{"DatabaseName", "SchemaName"}
+	case "DatabaseObjectIdentifier":
+		return []string{"DatabaseName"}
+	default:
+		return nil
+	}
+}
+
+func identifierFieldLabel(fields []string) string {
+	if len(fields) == 1 {
+		return fields[0]
+	}
+	return fields[0] + " or " + fields[1]
 }
 
 // validateDescribeRows rejects a DescribeRows row that nothing reads or that cannot be a raw row.

@@ -48,7 +48,7 @@ func (v *projectionPolicies) Show(ctx context.Context, request *ShowProjectionPo
 
 func (v *projectionPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*ProjectionPolicy, error) {
 	request := NewShowProjectionPolicyRequest().
-		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}}).
+		WithIn(In{Schema: id.SchemaId()}).
 		WithLike(Like{Pattern: String(id.Name())})
 	projectionPolicies, err := v.Show(ctx, request)
 	if err != nil {
@@ -153,8 +153,15 @@ func (r projectionPolicyDescRow) convert() (*ProjectionPolicyDetails, error) {
 		ReturnType: r.ReturnType,
 		Body:       r.Body,
 	}
-	if err := r.additionalConvert(result); err != nil {
+	return result, nil
+}
+
+func (v *projectionPolicies) DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*ProjectionPolicyDetails, error) {
+	details, err := v.Describe(ctx, id)
+	if err != nil {
 		return nil, err
 	}
-	return result, nil
+	details.DatabaseName = id.DatabaseName()
+	details.SchemaName = id.SchemaName()
+	return details, nil
 }
