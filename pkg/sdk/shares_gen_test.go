@@ -17,6 +17,7 @@ var (
 
 const (
 	case_Shares_validation_Create_name_ValidIdentifier                  testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Shares_validation_Create_opts_ConflictingFields                testCaseName = "validation_Create_opts_ConflictingFields"
 	case_Shares_sql_Create_basic                                        testCaseName = "sql_Create_basic"
 	case_Shares_sql_Create_all                                          testCaseName = "sql_Create_all"
 	case_Shares_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
@@ -71,6 +72,14 @@ var sharesTests = SharesTestsContext{
 				ExpectedErr: errInvalidIdentifier("CreateShareOptions", "name"),
 				DefaultModify: func(opts *CreateShareOptions) {
 					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateShareOptions]{
+				Name:        case_Shares_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateShareOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateShareOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
 				},
 			},
 		).

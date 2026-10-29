@@ -11,9 +11,11 @@ var (
 )
 
 type CreateShareRequest struct {
-	OrReplace *bool
-	name      AccountObjectIdentifier // required
-	Comment   *string
+	OrReplace         *bool
+	IfNotExists       *bool
+	name              AccountObjectIdentifier // required
+	SecureObjectsOnly *bool
+	Comment           *string
 }
 
 type AlterShareRequest struct {

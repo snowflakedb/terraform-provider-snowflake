@@ -44,6 +44,14 @@ var ShowShareSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"listing_global_name": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"secure_objects_only": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	"to_total": {
 		Type:     schema.TypeInt,
 		Computed: true,
@@ -62,6 +70,8 @@ func ShareToSchema(share *sdk.Share) map[string]any {
 	shareSchema["to"] = collections.Map(share.To, sdk.AccountIdentifier.Name)
 	shareSchema["owner"] = share.Owner
 	shareSchema["comment"] = share.Comment
+	shareSchema["listing_global_name"] = share.ListingGlobalName
+	shareSchema["secure_objects_only"] = share.SecureObjectsOnly
 	shareSchema["to_total"] = share.ToTotal
 	shareToSchemaMapper{}.additionalToSchema(share, shareSchema)
 	return shareSchema

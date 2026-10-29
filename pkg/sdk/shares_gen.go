@@ -26,11 +26,13 @@ type Shares interface {
 
 // CreateShareOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-share.
 type CreateShareOptions struct {
-	create    bool                    `ddl:"static" sql:"CREATE"`
-	OrReplace *bool                   `ddl:"keyword" sql:"OR REPLACE"`
-	share     bool                    `ddl:"static" sql:"SHARE"`
-	name      AccountObjectIdentifier `ddl:"identifier"`
-	Comment   *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	create            bool                    `ddl:"static" sql:"CREATE"`
+	OrReplace         *bool                   `ddl:"keyword" sql:"OR REPLACE"`
+	share             bool                    `ddl:"static" sql:"SHARE"`
+	IfNotExists       *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name              AccountObjectIdentifier `ddl:"identifier"`
+	SecureObjectsOnly *bool                   `ddl:"parameter" sql:"SECURE_OBJECTS_ONLY"`
+	Comment           *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 // AlterShareOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-share.
@@ -83,26 +85,30 @@ type ShowShareOptions struct {
 }
 
 type sharesRow struct {
-	CreatedOn    time.Time `db:"created_on"`
-	Kind         string    `db:"kind"`
-	OwnerAccount string    `db:"owner_account"`
-	Name         string    `db:"name"`
-	DatabaseName string    `db:"database_name"`
-	To           string    `db:"to"`
-	Owner        string    `db:"owner"`
-	Comment      string    `db:"comment"`
+	CreatedOn         time.Time `db:"created_on"`
+	Kind              string    `db:"kind"`
+	OwnerAccount      string    `db:"owner_account"`
+	Name              string    `db:"name"`
+	DatabaseName      string    `db:"database_name"`
+	To                string    `db:"to"`
+	Owner             string    `db:"owner"`
+	Comment           string    `db:"comment"`
+	ListingGlobalName string    `db:"listing_global_name"`
+	SecureObjectsOnly string    `db:"secure_objects_only"`
 }
 
 type Share struct {
-	CreatedOn    time.Time
-	Kind         ShareKind
-	OwnerAccount string
-	Name         string
-	DatabaseName AccountObjectIdentifier
-	To           []AccountIdentifier
-	Owner        string
-	Comment      string
-	ToTotal      int
+	CreatedOn         time.Time
+	Kind              ShareKind
+	OwnerAccount      string
+	Name              string
+	DatabaseName      AccountObjectIdentifier
+	To                []AccountIdentifier
+	Owner             string
+	Comment           string
+	ListingGlobalName string
+	SecureObjectsOnly string
+	ToTotal           int
 }
 
 func (v *Share) ID() AccountObjectIdentifier {
