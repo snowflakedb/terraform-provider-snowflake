@@ -38,6 +38,9 @@ func Test_UpdateCall(t *testing.T) {
 	call := IntAttributeUpdateSetOnlyBuilder.UpdateCall("ComputePool", Attribute{Name: "min_nodes"})
 	require.Equal(t, UpdateCall{Helper: "intAttributeUpdateSetOnlyBuilder", Target: "set.WithMinNodes"}, call)
 
+	call = BooleanAttributeUpdateSetOnlyBuilder.UpdateCall("Table", Attribute{Name: "change_tracking"})
+	require.Equal(t, UpdateCall{Helper: "booleanAttributeUpdateSetOnlyBuilder", Target: "set.WithChangeTracking"}, call)
+
 	call = BooleanStringAttributeUpdateBuilder.UpdateCall("ComputePool", Attribute{Name: "auto_resume"})
 	require.Equal(t, UpdateCall{
 		Helper: "booleanStringAttributeUpdateBuilder",

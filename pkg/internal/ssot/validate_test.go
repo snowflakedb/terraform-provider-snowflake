@@ -198,21 +198,20 @@ func Test_ValidateObject_conflictsWithKnownAttribute(t *testing.T) {
 	})
 }
 
-func Test_ValidateObject_skipCreateBlockMustBeListBlock(t *testing.T) {
-	require.PanicsWithValue(t, `object "Alert": SkipCreateBlock attribute "comment" must be a block`, func() {
-		ValidateObject(Object{
-			Name:       "Alert",
-			Attributes: []Attribute{{Name: "comment", Type: AttrString, SkipCreateBlock: true}},
-		})
-	})
+func Test_ValidateObject_skipCreate(t *testing.T) {
 	require.NotPanics(t, func() {
 		ValidateObject(Object{
 			Name: "Alert",
 			Attributes: []Attribute{{
-				Name:            "alert_schedule",
-				Type:            AttrList,
-				SkipCreateBlock: true,
-				Elem:            ObjectElem([]Attribute{{Name: "interval", Type: AttrInt}}),
+				Name:       "enabled",
+				Type:       AttrBool,
+				NativeBool: true,
+				SkipCreate: true,
+			}, {
+				Name:       "alert_schedule",
+				Type:       AttrList,
+				SkipCreate: true,
+				Elem:       ObjectElem([]Attribute{{Name: "interval", Type: AttrInt}}),
 			}},
 		})
 	})
@@ -1170,16 +1169,11 @@ func Test_Attribute_sqlStructNames(t *testing.T) {
 	require.Equal(t, "GCSStorageLocationParams", attr.SqlVariantStructName("GCS"))
 }
 
-func Test_ValidateObject_skipCreateBlockOnObjectLists(t *testing.T) {
+func Test_ValidateObject_skipCreateOnObjectLists(t *testing.T) {
 	leaf := Attribute{Name: "leaf", Type: AttrString}
 	inner := Attribute{Name: "inner", Type: AttrList, Elem: ObjectElem([]Attribute{leaf})}
-	outer := Attribute{Name: "outer", Type: AttrList, SkipCreateBlock: true, Elem: ObjectElem([]Attribute{inner})}
+	outer := Attribute{Name: "outer", Type: AttrList, SkipCreate: true, Elem: ObjectElem([]Attribute{inner})}
 	require.NotPanics(t, func() { ValidateObject(Object{Name: "Widget", Attributes: []Attribute{outer}}) })
-
-	scalar := Attribute{Name: "scalar", Type: AttrString, SkipCreateBlock: true}
-	require.PanicsWithValue(t, `object "Widget": SkipCreateBlock attribute "scalar" must be a block`, func() {
-		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{scalar}})
-	})
 }
 
 func Test_ObjectElem(t *testing.T) {

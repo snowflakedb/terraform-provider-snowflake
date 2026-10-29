@@ -36,6 +36,22 @@ func Test_ComputePoolUpdateMappings_renderApplySetUnset(t *testing.T) {
 `, renderTemplate(t, "generatedApplySetUnset", model))
 }
 
+func Test_attachUpdateMappings_skipCreateStays(t *testing.T) {
+	src := []ssot.Attribute{{Name: "enabled", Type: ssot.AttrBool, NativeBool: true, SkipCreate: true}}
+	dst := applyResourceAttributeRules("", src)
+	attachUpdateMappings("Widget", src, dst)
+	require.Equal(t, "booleanAttributeUpdateSetOnlyBuilder", dst[0].UpdateCall.Helper)
+	require.Equal(t, "set.WithEnabled", dst[0].UpdateCall.Target)
+}
+
+func Test_attachUpdateMappings_nativeBoolIsSetOnly(t *testing.T) {
+	src := []ssot.Attribute{{Name: "change_tracking", Type: ssot.AttrBool, NativeBool: true}}
+	dst := applyResourceAttributeRules("", src)
+	attachUpdateMappings("Table", src, dst)
+	require.Equal(t, "booleanAttributeUpdateSetOnlyBuilder", dst[0].UpdateCall.Helper)
+	require.Equal(t, "set.WithChangeTracking", dst[0].UpdateCall.Target)
+}
+
 func Test_attachUpdateMappings_skipsNested(t *testing.T) {
 	src := []ssot.Attribute{{
 		Name:          "client_policy",

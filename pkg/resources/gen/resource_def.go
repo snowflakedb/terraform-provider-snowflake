@@ -16,13 +16,6 @@ type ResourceObject struct {
 }
 
 var resourceGenerationSettings = map[string]*genhelpers.ObjectGenerationSettings{
-	// TODO [next PRs]: generate the table lifecycle and remove this entry. The template encodes
-	// ids with EncodeResourceIdentifier, has no preview-feature wrappers, and imports through SHOW.
-	// Table still uses the legacy pipe-delimited id, preview wrappers, and ImportStatePassthrough.
-	// Read and Update apply column diffs rather than SET/UNSET.
-	"Table": {
-		AllowedGenerationParts: []genhelpers.GenerationPartNamer{PartSchema},
-	},
 	"Schema": {
 		AllowedGenerationParts: []genhelpers.GenerationPartNamer{PartDefault, PartSchema, PartParameters},
 		EnabledGenerationParts: []genhelpers.GenerationPartNamer{PartParameters},

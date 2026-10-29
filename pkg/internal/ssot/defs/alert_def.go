@@ -4,10 +4,12 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 
 // AlertAttrs holds reusable alert fields.
 //
-// alert_schedule is a nested block with SkipCreateBlock. SCHEDULE is one SQL string, and the
+// alert_schedule is a nested block with SkipCreate. SCHEDULE is one SQL string, and the
 // ext NewCreateRequest builds it from the block. cron and interval conflict; the generator emits
 // alert_schedule.0.cron and alert_schedule.0.interval.
-// enabled stays in the ext. Optional+computed fields are not a generator setting.
+// enabled uses SkipCreate. CREATE has no ENABLED clause. Resume and suspend stay in the ext
+// after-create and after-alter hooks. ApplySetUnset stays ExtCall. The schema description
+// stays in the ext: optional+computed fields are not a generator setting.
 //
 // warehouse stays a string: the resource never suppressed identifier quoting on it.
 // The resource has no show_output and no describe_output.
@@ -28,7 +30,7 @@ var AlertAttrs = struct {
 	DescribeState ssot.Attribute
 	OwnerRoleType ssot.Attribute
 }{
-	Enabled: ssot.Attribute{Name: "enabled", Type: ssot.AttrBool, NativeBool: true},
+	Enabled: ssot.Attribute{Name: "enabled", Type: ssot.AttrBool, NativeBool: true, SkipCreate: true},
 	Comment: ssot.Attribute{
 		Name:           "comment",
 		OptionalInShow: true,
@@ -58,11 +60,11 @@ var AlertAttrs = struct {
 		DiffSuppress: ssot.SuppressStatement,
 	},
 	AlertSchedule: ssot.Attribute{
-		Name:            "alert_schedule",
-		Type:            ssot.AttrList,
-		MaxItems:        new(1),
-		Description:     "The schedule for periodically running an alert.",
-		SkipCreateBlock: true,
+		Name:        "alert_schedule",
+		Type:        ssot.AttrList,
+		MaxItems:    new(1),
+		Description: "The schedule for periodically running an alert.",
+		SkipCreate:  true,
 		Elem: ssot.ObjectElem([]ssot.Attribute{
 			{
 				Name:          "cron",

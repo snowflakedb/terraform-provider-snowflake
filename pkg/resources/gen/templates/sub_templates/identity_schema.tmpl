@@ -24,12 +24,8 @@
 {{- if .IdentityNameForceNew }}
 			ForceNew: true,
 {{- end }}
-{{- if .LegacyIdEncoding }}
-			Description: {{ Quote $nameText }},
-{{- else }}
 			Description: blocklistedCharactersFieldDescription({{ Quote $nameText }}),
 			DiffSuppressFunc: suppressIdentifierQuoting,
-{{- end }}
 		},
 {{- if or (eq .IdType "DatabaseObjectIdentifier") (eq .IdType "SchemaObjectIdentifier") }}
 		"database": {
@@ -38,12 +34,8 @@
 {{- if .IdentityHierarchyForceNew }}
 			ForceNew:         true,
 {{- end }}
-{{- if .LegacyIdEncoding }}
-			Description: {{ Quote $databaseText }},
-{{- else }}
 			Description: blocklistedCharactersFieldDescription({{ Quote $databaseText }}),
 			DiffSuppressFunc: suppressIdentifierQuoting,
-{{- end }}
 		},
 {{- end }}
 {{- if eq .IdType "SchemaObjectIdentifier" }}
@@ -53,12 +45,8 @@
 {{- if .IdentityHierarchyForceNew }}
 			ForceNew:         true,
 {{- end }}
-{{- if .LegacyIdEncoding }}
-			Description: {{ Quote $schemaText }},
-{{- else }}
 			Description: blocklistedCharactersFieldDescription({{ Quote $schemaText }}),
 			DiffSuppressFunc: suppressIdentifierQuoting,
-{{- end }}
 		},
 {{- end }}
 	},

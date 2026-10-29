@@ -42,8 +42,9 @@ generators will follow. Ultimately, all the generators should default to using s
 
 Identity (`Name`, `IdType`, ...) is separate from `Attributes`. `LegacyIdEncoding` keeps the pipe-delimited resource id
 (`db|schema|name`, `helpers.EncodeSnowflakeID`) that older resources store. The generated Create calls it instead of
-`helpers.EncodeResourceIdentifier`. The identity schema for those resources stays a plain string and omits
-`suppressIdentifierQuoting`. `WithParseId(Generated())` emits a named parser used by Import, Read, and Update.
+`helpers.EncodeResourceIdentifier`. The identity schema is the same for every object: `name`, and `database` and `schema`
+when the `IdType` has them, use `blocklistedCharactersFieldDescription` and `suppressIdentifierQuoting`, whatever
+`LegacyIdEncoding` is. `WithParseId(Generated())` emits a named parser used by Import, Read, and Update.
 It calls `sdk.Parse<IdType>` for current ids and `helpers.DecodeSnowflakeIDErrLegacy[<IdType>]` for legacy ids.
 The default `ExtCall` keeps the handwritten parser. `PreviewFeature` marks a preview resource. Generated `Delete`
 wraps `DeleteContext` with `PreviewFeatureDeleteContextWrapper` and `previewfeatures.<Name>Resource`.
@@ -68,24 +69,22 @@ its `Name`, extend SSOT with an explicit parameter-level override.
 - `CreateMapping` - overrides the create helper a generated `ApplyCreateOptionals` deduces for the attribute. Leave it
   nil, including on nested fields, unless the deduced call does not match the SDK request. The helpers are in
   `pkg/resources/resource_helpers_create.go`. Without a mapping, an optional field is deduced from its type and the
-  schema default: a string, int, bool, enum (`attributeMappedValueCreateBuilder` with `sdk.To<Enum>`), or
+  schema default: a string, an int, a `NativeBool` (`boolAttributeCreateBuilder`), a boolean-string when the default is `BooleanDefault`, an enum (`attributeMappedValueCreateBuilder` with `sdk.To<Enum>`), or
   `AccountObjectIdentifier` (by its own `IdentifierType`) uses its builder. A list with `Elem` calls `listValueCreate`,
   and a set, of scalars or of objects, calls `setMappedValueCreateBuilder`. Both take a hand-written per-element mapper
   in package resources named `to<Stem><Field>`, where the stem is the object name plus any enclosing block names:
   `toComputePoolBackupInstanceFamilies`, `toAuthenticationPolicyMfaPolicyAllowedMethods`. A required field with no
-  mapping is a constructor argument (string, int, bool, or enum). To override, use a `HelperMapping` constant
+  mapping is a constructor argument (string, int, bool, or enum). `SkipCreate` leaves the field out of that deduction and out of constructor arguments. To override, use a `HelperMapping` constant
   (`StringAttributeCreateBuilder`, ...), `ListValueCreate("<mapperFunc>")`, or
   `AttributeMappedValueCreate("<mapperFunc>")` when the SDK setter takes the whole value. A generated
   `ApplyCreateOptionals` covers only `Attributes`, so a resource field that is not an attribute keeps the
   ext call. The resource identifier is not an attribute. A generated `ParseIdFromConfig` builds it from `IdType`:
   `name` for an account object, `database` and `name` for a database object, and `database`, `schema`, and `name` for
   a schema object.
-- `SkipCreateBlock` - leaves a list block out of generated create even when its fields could be mapped. Ext create code
-  builds the value, and the generator does not emit a parse function.
+- `SkipCreate` - leaves the attribute out of generated create, including a list block whose fields could be mapped and a scalar that type deduction would otherwise emit. There is no constructor argument, no `ApplyCreateOptionals` call, and no parse function. Ext create code builds the value when CREATE still needs it. The update helper stays.
 - `UpdateMapping` - the update helper from `pkg/resources/resource_helpers_update.go` used by a generated
-  `ApplySetUnset`. Use a `SetOnlyMapping` constant (`IntAttributeUpdateSetOnlyBuilder`), a `SetUnsetMapping` constant
-  (`StringAttributeUpdateBuilder`, ...), or `ListValueUpdate("<mapperFunc>")`. An attribute with no mapping is left out
-  of set/unset.
+  `ApplySetUnset`. Use a `SetOnlyMapping` constant (`IntAttributeUpdateSetOnlyBuilder`, `BooleanAttributeUpdateSetOnlyBuilder`), a `SetUnsetMapping` constant
+  (`StringAttributeUpdateBuilder`, ...), or `ListValueUpdate("<mapperFunc>")`. `ForceNew` and `CreateOnly` are left out of set/unset. `SkipCreate` is not. An optional `NativeBool` with no mapping uses `BooleanAttributeUpdateSetOnlyBuilder`. A boolean-string whose default is `BooleanDefault` uses `BooleanStringAttributeUpdateBuilder`.
 - `NativeBool` - an optional bool stays Terraform `TypeBool`. Without the mark, an optional bool is a boolean string.
 - `IncludeAliasedInTheDescription` - the resource description lists enum aliases. Without the mark, the description
   lists canonical values. Warehouse size sets it.
@@ -193,8 +192,8 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   that request. Fields are read from `prefix+"<name>"`. The stem of a block is the parent stem plus the block name:
   `Widget` + `policy` + `limit` is `sdk.WidgetPolicyLimitRequest`. A set block is not parsed, because a set element has no
   index for the prefix. It uses the set rule of `CreateMapping`. A list block stays out of generated create when it is
-  required or any field has no create mapping, including a required field the constructor cannot take. Keep such a block
-  in an ext `ApplyCreateOptionals`, or use `SkipCreateBlock`. Resource update generation (`ApplySetUnset`) skips nested
+  required or any field has no create mapping, including a required field the constructor cannot take or a `SkipCreate` field. Keep such a block
+  in an ext `ApplyCreateOptionals`, or set `SkipCreate` on the block. Resource update generation (`ApplySetUnset`) skips nested
   attributes.
 - **Where each part is used.** CREATE reads the list attribute through `Create.Clauses`. ALTER reuses the same element with
   `AlterParameterBlock(field, sql, &listAttr)` (`ADD STORAGE_LOCATION`), or a `SqlOnly` object with

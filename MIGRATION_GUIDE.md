@@ -236,6 +236,12 @@ The provider now treats a notification channel as an SNS topic when it contains 
 
 No configuration changes are required for pipes that use a commercial SNS ARN. After upgrading, refresh pipes whose notification channel is an SNS ARN in another AWS partition. If `aws_sns_topic_arn` is already set and matches the channel, the perpetual diff goes away. The attribute is ForceNew. If the configuration omits it, the next plan may propose replacing the pipe once the read fills the value; add the channel ARN to the configuration to keep the pipe. This resource is still in preview and will be reworked in the future.
 
+### *(bug fix)* `snowflake_pipe` and `snowflake_alert` ignore identifier quoting in `name`, `database`, and `schema`
+
+The `name`, `database`, and `schema` fields of [`snowflake_pipe`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/pipe) and [`snowflake_alert`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/alert) now suppress diffs that only come from identifier quoting. A configuration that spells the same identifier with and without double quotes no longer shows a plan diff. These fields are ForceNew, so before this fix such a diff could propose replacing the pipe or alert.
+
+No configuration changes are required. Both resources are in preview. If a plan on these resources showed a replacement caused only by quoting, it should no longer appear after upgrading.
+
 ### *(bug fix)* `external_oauth_scope_delimiter` is managed only for `CUSTOM` external OAuth integrations
 
 Snowflake accepts `EXTERNAL_OAUTH_SCOPE_DELIMITER` only for `CUSTOM` external OAuth integrations. For other types, such as `AZURE`, Snowflake rejects the property on create and update but still returns its system-managed value from `DESCRIBE SECURITY INTEGRATION`. The provider previously copied that value into `external_oauth_scope_delimiter`, causing drift after import and encouraging configurations that Snowflake could not apply ([#5322](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5322)).

@@ -140,7 +140,7 @@ func attachCreateMappings(objectName string, src []ssot.Attribute, dst []Resourc
 // attachFieldCreate records how one field is created: a constructor argument, a helper call, or a parsed block.
 // The bool is false when the field has no create mapping. An object field is then left out, and a block holding it is not parsed.
 func attachFieldCreate(scope createScope, src ssot.Attribute, dst *ResourceAttribute) bool {
-	if src.SkipCreateBlock {
+	if src.SkipCreate {
 		return false
 	}
 	if len(src.NestedFields()) > 0 && src.CreateMapping == nil && (src.Type == ssot.AttrList || src.Type == ssot.AttrObject) {
@@ -238,6 +238,8 @@ func deduceCreateCall(objectName string, src ssot.Attribute, resolved ResourceAt
 		return ssot.CreateCall{}, false
 	}
 	switch {
+	case src.Type == ssot.AttrBool && src.NativeBool:
+		return ssot.BoolAttributeCreateBuilder.CreateCall(objectName, src), true
 	case src.Type == ssot.AttrBool && resolved.DefaultExpr == "BooleanDefault":
 		return ssot.BooleanStringAttributeCreateBuilder.CreateCall(objectName, src), true
 	case src.Type == ssot.AttrInt && resolved.DefaultExpr == "IntDefault":

@@ -498,12 +498,12 @@ func fourLevelBlock(adjustDeepest func(d *ssot.Attribute)) ssot.Attribute {
 	return block
 }
 
-func Test_attachCreateMappings_skipCreateBlockStaysHandwritten(t *testing.T) {
+func Test_attachCreateMappings_skipCreateStaysHandwritten(t *testing.T) {
 	src := []ssot.Attribute{{
-		Name:            "schedule",
-		Type:            ssot.AttrList,
-		MaxItems:        new(1),
-		SkipCreateBlock: true,
+		Name:       "schedule",
+		Type:       ssot.AttrList,
+		MaxItems:   new(1),
+		SkipCreate: true,
 		Elem: ssot.ObjectElem([]ssot.Attribute{{
 			Name:     "expression",
 			Type:     ssot.AttrString,
@@ -550,6 +550,32 @@ func Test_ApplyCreateOptionals_rendersBlockParseFuncs(t *testing.T) {
 	require.Contains(t, rendered, "func widgetApplyCreateOptionals(")
 	require.Contains(t, rendered, "func parseWidgetPolicy(")
 	require.Less(t, strings.Index(rendered, "func widgetApplyCreateOptionals("), strings.Index(rendered, "func parseWidgetPolicy("))
+}
+
+func Test_attachCreateMappings_skipCreateLeavesScalarOut(t *testing.T) {
+	model := createOptionalsModel("Widget", []ssot.Attribute{{
+		Name:       "enabled",
+		Type:       ssot.AttrBool,
+		NativeBool: true,
+		SkipCreate: true,
+	}, {
+		Name: "comment",
+		Type: ssot.AttrString,
+	}})
+
+	require.Nil(t, model.Attributes[0].CreateOptionalCall)
+	require.Nil(t, model.Attributes[0].CreateConstructorArg)
+	require.Equal(t, "stringAttributeCreateBuilder", model.Attributes[1].CreateOptionalCall.Helper)
+}
+
+func Test_attachCreateMappings_nativeBool(t *testing.T) {
+	model := createOptionalsModel("Table", []ssot.Attribute{{
+		Name:       "change_tracking",
+		Type:       ssot.AttrBool,
+		NativeBool: true,
+	}})
+	require.Equal(t, "boolAttributeCreateBuilder", model.Attributes[0].CreateOptionalCall.Helper)
+	require.Equal(t, "request.WithChangeTracking", model.Attributes[0].CreateOptionalCall.Target)
 }
 
 func createOptionalsModel(name string, attrs []ssot.Attribute) ResourceModel {
