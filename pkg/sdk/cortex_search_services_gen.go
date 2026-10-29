@@ -192,6 +192,10 @@ type CortexSearchServiceDetails struct {
 	FullIndexBuildIntervalDays *int
 }
 
+func (v *CortexSearchServiceDetails) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
+}
+
 // DropCortexSearchServiceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-cortex-search.
 type DropCortexSearchServiceOptions struct {
 	drop                bool                   `ddl:"static" sql:"DROP"`

@@ -210,3 +210,7 @@ type SecretDetails struct {
 	OauthScopes                 []string
 	IntegrationName             *string
 }
+
+func (v *SecretDetails) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
+}

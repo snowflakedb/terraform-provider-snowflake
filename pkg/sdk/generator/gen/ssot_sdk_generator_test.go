@@ -1884,6 +1884,34 @@ func Test_DescribeOperationFromObject_detailsFromIdentifier(t *testing.T) {
 	})
 }
 
+func Test_preprocessDefinition_describeIDFromColumns(t *testing.T) {
+	iface := NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").
+		DescribeOperationWithPairedStructs(
+			DescriptionMappingKindSingleValue,
+			"https://example.com",
+			StructPair("widgetDescRow", "WidgetDetails").
+				Text("name").
+				Text("database_name").
+				Text("schema_name"),
+			NewQueryStruct("DescWidget").Describe().SQL("WIDGET").Name().WithValidation(ValidIdentifier, "name"),
+		)
+	preprocessDefinition(iface, log.New(io.Discard, "", 0))
+	require.Equal(t, NewShowObjectIDMethod("WidgetDetails", SchemaObjectIdentifier), iface.Operations[0].ObjectIdMethod)
+
+	optional := NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").
+		DescribeOperationWithPairedStructs(
+			DescriptionMappingKindSingleValue,
+			"https://example.com",
+			StructPair("widgetDescRow", "WidgetDetails").
+				Text("name").
+				OptionalText("database_name").
+				Text("schema_name"),
+			NewQueryStruct("DescWidget").Describe().SQL("WIDGET").Name().WithValidation(ValidIdentifier, "name"),
+		)
+	preprocessDefinition(optional, log.New(io.Discard, "", 0))
+	require.Nil(t, optional.Operations[0].ObjectIdMethod)
+}
+
 func Test_preprocessDefinition_identifierPlainOnlySkipsAdditionalConvert(t *testing.T) {
 	describe := func(fields *PairedStructs, fromIdentifier []string) *Interface {
 		iface := NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").

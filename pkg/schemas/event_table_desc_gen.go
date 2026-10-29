@@ -21,6 +21,8 @@ var DescribeEventTableDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// database_name is skipped and won't be generated
+	// schema_name is skipped and won't be generated
 }
 
 var _ = DescribeEventTableDetailsSchema
@@ -30,6 +32,8 @@ func EventTableDetailsToSchema(eventTableDetails *sdk.EventTableDetails) map[str
 	eventTableDetailsSchema["name"] = eventTableDetails.Name
 	eventTableDetailsSchema["kind"] = eventTableDetails.Kind
 	eventTableDetailsSchema["comment"] = eventTableDetails.Comment
+	// database_name is skipped and won't be generated
+	// schema_name is skipped and won't be generated
 	return eventTableDetailsSchema
 }
 

@@ -26,6 +26,8 @@ var DescribeRowAccessPolicyDescriptionSchema = mergeSchema(map[string]*schema.Sc
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// database_name is skipped and won't be generated
+	// schema_name is skipped and won't be generated
 }, rowAccessPolicyDescriptionToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeRowAccessPolicyDescriptionSchema
@@ -36,6 +38,8 @@ func RowAccessPolicyDescriptionToSchema(rowAccessPolicyDescription *sdk.RowAcces
 	// signature: manual addition and mapping is needed
 	rowAccessPolicyDescriptionSchema["return_type"] = rowAccessPolicyDescription.ReturnType
 	rowAccessPolicyDescriptionSchema["body"] = rowAccessPolicyDescription.Body
+	// database_name is skipped and won't be generated
+	// schema_name is skipped and won't be generated
 	rowAccessPolicyDescriptionToSchemaMapper{}.additionalToSchema(rowAccessPolicyDescription, rowAccessPolicyDescriptionSchema)
 	return rowAccessPolicyDescriptionSchema
 }

@@ -335,7 +335,7 @@ The field name is the identifier method, so `DatabaseName` calls `id.DatabaseNam
 
 See [sequences_def.go](example/defs/sequences_def.go). `sequenceDescribeFields` marks `DatabaseName` and `SchemaName` as
 `PlainOnlyField`, and the interface calls `WithDescribeDetailsFromIdentifier("SequenceDetail", []string{"DatabaseName", "SchemaName"})`.
-When that list covers every plain-only field, `convert` does not call `additionalConvert`. A plain-only field outside the list keeps the hook. When the details struct has the identifier parts, the generator emits `ID()`.
+When that list covers every plain-only field, `convert` does not call `additionalConvert`. A plain-only field outside the list keeps the hook. When the details struct has the identifier parts, the generator emits `ID()`. A DESCRIBE plain struct that already has those columns as strings gets the same `ID()`.
 
 This is separate from [property-list DESCRIBE](#property-list-describe). That path parses property rows and sets `Id`.
 
