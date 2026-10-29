@@ -11,6 +11,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -27,7 +28,7 @@ func ProjectionPolicy() *tfschema.Resource {
 		CreateContext: projectionPolicyCreateExt,
 		ReadContext:   projectionPolicyReadExt,
 		UpdateContext: projectionPolicyUpdateExt,
-		DeleteContext: TrackingDeleteWrapper(resources.ProjectionPolicy, DeleteProjectionPolicy),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ProjectionPolicyResource), TrackingDeleteWrapper(resources.ProjectionPolicy, DeleteProjectionPolicy)),
 		Importer:      projectionPolicyImporterExt,
 
 		CustomizeDiff: projectionPolicyCustomizeDiff,

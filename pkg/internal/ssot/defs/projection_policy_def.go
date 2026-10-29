@@ -58,6 +58,7 @@ var ProjectionPolicy = ssot.Object{
 	DescribeFailRead:          true,
 	IdType:                    "SchemaObjectIdentifier",
 	IdentityHierarchyForceNew: true,
+	PreviewFeature:            true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),

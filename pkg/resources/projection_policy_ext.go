@@ -6,6 +6,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -13,9 +14,9 @@ import (
 )
 
 var (
-	projectionPolicyCreateExt      = TrackingCreateWrapper(resources.ProjectionPolicy, CreateProjectionPolicy)
-	projectionPolicyReadExt        = TrackingReadWrapper(resources.ProjectionPolicy, ReadProjectionPolicyFunc(true))
-	projectionPolicyUpdateExt      = TrackingUpdateWrapper(resources.ProjectionPolicy, UpdateProjectionPolicy)
+	projectionPolicyCreateExt      = PreviewFeatureCreateContextWrapper(string(previewfeatures.ProjectionPolicyResource), TrackingCreateWrapper(resources.ProjectionPolicy, CreateProjectionPolicy))
+	projectionPolicyReadExt        = PreviewFeatureReadContextWrapper(string(previewfeatures.ProjectionPolicyResource), TrackingReadWrapper(resources.ProjectionPolicy, ReadProjectionPolicyFunc(true)))
+	projectionPolicyUpdateExt      = PreviewFeatureUpdateContextWrapper(string(previewfeatures.ProjectionPolicyResource), TrackingUpdateWrapper(resources.ProjectionPolicy, UpdateProjectionPolicy))
 	projectionPolicyDescriptionExt = "Resource used to manage projection policies. For more information, check [projection policy documentation](https://docs.snowflake.com/en/sql-reference/sql/create-projection-policy)."
 	projectionPolicyImporterExt    = &schema.ResourceImporter{
 		StateContext: TrackingImportWrapper(resources.ProjectionPolicy, importProjectionPolicy),

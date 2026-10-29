@@ -28,6 +28,19 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.22.x ➞ v2.23.0
 
+### *(new feature)* Projection policy resource and data source
+
+We have added a new preview resource, [`snowflake_projection_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/projection_policy), for managing [projection policies](https://docs.snowflake.com/en/sql-reference/sql/create-projection-policy). CREATE requires a body, an SQL expression that calls `PROJECTION_CONSTRAINT`.
+
+We have also added a new preview data source, [`snowflake_projection_policies`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/projection_policies), for listing projection policies. It supports `like`, `starts_with`, `limit`, and `in` (`account`, `database`, or `schema`). `with_describe` is on by default and runs DESCRIBE for each policy returned by SHOW.
+
+These features will be marked as stable in future releases. Breaking changes are expected, even without bumping the major version. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_projection_policy_resource` for `snowflake_projection_policy`;
+- `snowflake_projection_policies_datasource` for `snowflake_projection_policies`.
+
+No changes are required for existing configurations unless you want to adopt these preview features with Terraform.
+
 ### *(new feature)* Code bundle resource and data source
 
 We have added a new preview resource, [`snowflake_code_bundle`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/code_bundle), for managing [code bundles](https://docs.snowflake.com/en/developer-guide/code-bundles/code-bundles). `from` is the source that backs the bundle, a `snow://workspace/...` URL or an internal or temporary stage reference, and it cannot be changed after creation.
