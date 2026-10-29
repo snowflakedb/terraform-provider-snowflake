@@ -177,15 +177,8 @@ func (r describeStorageLifecyclePolicyDBRow) convert() (*StorageLifecyclePolicyD
 		result.ReturnType = v
 	}
 	mapNullInt(&result.ArchiveForDays, r.ArchiveForDays)
-	return result, nil
-}
-
-func (v *storageLifecyclePolicies) DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*StorageLifecyclePolicyDetails, error) {
-	details, err := v.Describe(ctx, id)
-	if err != nil {
+	if err := r.additionalConvert(result); err != nil {
 		return nil, err
 	}
-	details.DatabaseName = id.DatabaseName()
-	details.SchemaName = id.SchemaName()
-	return details, nil
+	return result, nil
 }

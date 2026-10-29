@@ -102,10 +102,6 @@ type GitRepository struct {
 	LastFetchedAt  *time.Time
 }
 
-func (v *GitRepository) ID() SchemaObjectIdentifier {
-	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
-}
-
 // ShowGitRepositoryOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-git-repositories.
 type ShowGitRepositoryOptions struct {
 	show            bool       `ddl:"static" sql:"SHOW"`
@@ -113,6 +109,10 @@ type ShowGitRepositoryOptions struct {
 	Like            *Like      `ddl:"keyword" sql:"LIKE"`
 	In              *In        `ddl:"keyword" sql:"IN"`
 	Limit           *LimitFrom `ddl:"keyword" sql:"LIMIT"`
+}
+
+func (v *GitRepository) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
 }
 
 func (v *GitRepository) ObjectType() ObjectType {

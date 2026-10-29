@@ -10,6 +10,10 @@ func (r *CreateMcpServerRequest) GetName() SchemaObjectIdentifier {
 	return r.name
 }
 
+func (d *McpServerDetails) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(d.DatabaseName, d.SchemaName, d.Name)
+}
+
 // NormalizeMcpServerSpecification parses YAML or JSON MCP server specifications into a canonical
 // JSON string so Terraform can compare user YAML with Snowflake JSON responses without spurious
 // formatting diffs. Snowflake always persists a version field, so it is removed when present.

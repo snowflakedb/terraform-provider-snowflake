@@ -42,7 +42,6 @@ func PrepareSdkDefinition(definition *Interface, logger *log.Logger) {
 func preprocessDefinition(definition *Interface, logger *log.Logger) {
 	generatedStructs := make([]string, 0)
 	generatedDtos := make([]string, 0)
-	seenIDStructs := make(map[string]struct{})
 
 	for _, o := range definition.Operations {
 		o.ObjectInterface = definition
@@ -81,10 +80,7 @@ func preprocessDefinition(definition *Interface, logger *log.Logger) {
 					logger.Printf("[WARN] for showObjectIdMethod: %v", err)
 				}
 				if CheckRequiredFieldsForIdMethod(definition.NameSingular, o.HelperStructs, idKind, logger) {
-					if _, seen := seenIDStructs[definition.NameSingular]; !seen {
-						o.ObjectIdMethod = NewShowObjectIDMethod(definition.NameSingular, idKind)
-						seenIDStructs[definition.NameSingular] = struct{}{}
-					}
+					o.ObjectIdMethod = NewShowObjectIDMethod(definition.NameSingular, idKind)
 				}
 
 				typeName := definition.NameSingular
@@ -93,19 +89,12 @@ func preprocessDefinition(definition *Interface, logger *log.Logger) {
 				}
 				o.ObjectTypeMethod = NewShowObjectTypeMethod(definition.ShowObjectName, typeName)
 			}
-			if o.Name == string(OperationKindDescribe) && o.DescribeMapping != nil && o.DescribeMapping.To != nil {
+			if o.Name == string(OperationKindDescribe) && definition.DescribeDetailsFromIdentifier != nil {
 				idKind, err := ToObjectIdentifierKind(definition.IdentifierKind)
 				if err != nil {
 					logger.Printf("[WARN] for describeObjectIdMethod: %v", err)
-				} else if idKind != AccountObjectIdentifier {
-					detailsName := o.DescribeMapping.To.Name
-					if definition.DescribeDetailsFromIdentifier != nil && definition.DescribeDetailsFromIdentifier.DetailsType != "" {
-						detailsName = definition.DescribeDetailsFromIdentifier.DetailsType
-					}
-					if _, seen := seenIDStructs[detailsName]; !seen && describeIDPartsAreStrings(detailsName, o.HelperStructs, idKind) {
-						o.ObjectIdMethod = NewShowObjectIDMethod(detailsName, idKind)
-						seenIDStructs[detailsName] = struct{}{}
-					}
+				} else if CheckRequiredFieldsForIdMethod(definition.DescribeDetailsFromIdentifier.DetailsType, o.HelperStructs, idKind, logger) {
+					o.ObjectIdMethod = NewShowObjectIDMethod(definition.DescribeDetailsFromIdentifier.DetailsType, idKind)
 				}
 			}
 

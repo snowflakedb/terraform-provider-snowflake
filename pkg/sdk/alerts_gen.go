@@ -153,7 +153,3 @@ type AlertDetails struct {
 	Condition    string
 	Action       string
 }
-
-func (v *AlertDetails) ID() SchemaObjectIdentifier {
-	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
-}

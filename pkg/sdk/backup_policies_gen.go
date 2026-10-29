@@ -141,7 +141,3 @@ type BackupPolicyDetails struct {
 	HasRetentionLock bool
 	OwnerRoleType    string
 }
-
-func (v *BackupPolicyDetails) ID() SchemaObjectIdentifier {
-	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
-}

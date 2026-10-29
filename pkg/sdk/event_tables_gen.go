@@ -17,8 +17,6 @@ type EventTables interface {
 	Drop(ctx context.Context, request *DropEventTableRequest) error
 	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
 	Alter(ctx context.Context, request *AlterEventTableRequest) error
-	// DescribeDetails calls Describe and sets database and schema from the identifier. DESCRIBE does not return those columns.
-	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*EventTableDetails, error)
 }
 
 // CreateEventTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-event-table.
@@ -92,15 +90,9 @@ type eventTableDetailsRow struct {
 }
 
 type EventTableDetails struct {
-	Name         string
-	Kind         string
-	Comment      string
-	DatabaseName string
-	SchemaName   string
-}
-
-func (v *EventTableDetails) ID() SchemaObjectIdentifier {
-	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
+	Name    string
+	Kind    string
+	Comment string
 }
 
 // DropEventTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-table.

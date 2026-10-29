@@ -97,7 +97,3 @@ type McpServerDetails struct {
 	ServerSpec   string
 	CreatedOn    time.Time
 }
-
-func (v *McpServerDetails) ID() SchemaObjectIdentifier {
-	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
-}

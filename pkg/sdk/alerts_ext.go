@@ -8,3 +8,8 @@ func NewAlertConditionFromString(condition string) []AlertConditionRequest {
 func (r *CreateAlertRequest) GetName() SchemaObjectIdentifier {
 	return r.name
 }
+
+// ID returns the schema identifier of the described object.
+func (v *AlertDetails) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
+}

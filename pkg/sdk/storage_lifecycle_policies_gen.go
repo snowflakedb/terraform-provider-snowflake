@@ -19,7 +19,6 @@ type StorageLifecyclePolicies interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*StorageLifecyclePolicy, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*StorageLifecyclePolicy, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*StorageLifecyclePolicyDetails, error)
-	// DescribeDetails calls Describe and sets database and schema from the identifier. DESCRIBE does not return those columns.
 	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*StorageLifecyclePolicyDetails, error)
 }
 
@@ -141,8 +140,4 @@ type StorageLifecyclePolicyDetails struct {
 	Body           string
 	ArchiveForDays *int
 	ArchiveTier    string
-}
-
-func (v *StorageLifecyclePolicyDetails) ID() SchemaObjectIdentifier {
-	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
 }

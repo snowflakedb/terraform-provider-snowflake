@@ -159,13 +159,3 @@ func (r describeRowAccessPolicyDBRow) convert() (*RowAccessPolicyDescription, er
 	}
 	return result, nil
 }
-
-func (v *rowAccessPolicies) DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*RowAccessPolicyDescription, error) {
-	details, err := v.Describe(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	details.DatabaseName = id.DatabaseName()
-	details.SchemaName = id.SchemaName()
-	return details, nil
-}

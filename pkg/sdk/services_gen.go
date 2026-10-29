@@ -282,10 +282,6 @@ type ServiceDetails struct {
 	ManagingObjectName         *string
 }
 
-func (v *ServiceDetails) ID() SchemaObjectIdentifier {
-	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
-}
-
 // ExecuteJobServiceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/execute-job-service.
 type ExecuteJobServiceOptions struct {
 	executeJobService                   bool                                 `ddl:"static" sql:"EXECUTE JOB SERVICE"`
