@@ -101,6 +101,30 @@ func Test_ShowDescribeFromObject(t *testing.T) {
 	requireSameOperations(t, want, got)
 }
 
+func Test_DescribeOperationFromObject_identifierOverride(t *testing.T) {
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
+	obj := ssot.Object{
+		Name:       "Fake",
+		NamePlural: "Fakes",
+		IdType:     "AccountObjectIdentifier",
+		Describe:   ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeIdentifierOverride("ObjectIdentifier")))},
+	}
+	got := NewInterface("Fakes", "Fake", "AccountObjectIdentifier").DescribeOperationFromObject(obj)
+	want := NewInterface("Fakes", "Fake", "AccountObjectIdentifier").
+		DescribeOperationWithPairedStructs(
+			DescriptionMappingKindSingleValue,
+			"https://docs.snowflake.com/en/sql-reference/sql/desc-fake",
+			DescribePairedStructs(obj),
+			NewQueryStruct("DescFake").
+				Describe().
+				SQL("FAKE").
+				Identifier("name", "ObjectIdentifier", IdentifierOptions().Required()).
+				WithValidation(ValidIdentifier, "name"),
+		)
+	requireSameOperations(t, want, got)
+}
+
 func Test_DescribeOperationFromObject_plainShowVariants(t *testing.T) {
 	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
 	running := ssot.Attribute{Name: "running", Type: ssot.AttrInt, OptionalInShow: true, OptionalInDb: true}
@@ -622,6 +646,46 @@ func Test_AlterOperationFromObject_setList(t *testing.T) {
 					OptionalTextAssignment("LABEL", ParameterOptions().SingleQuotes()).
 					WithValidation(AtLeastOneValueSet, "Label"),
 				ListOptions().NoParentheses().SQL("SET"),
+			).
+			WithValidation(ValidIdentifier, "name"),
+	)
+	requireSameOperations(t, want, got)
+}
+
+func Test_AlterOperationFromObject_requiredIdentifierList(t *testing.T) {
+	accounts := ssot.Attribute{
+		Name:   "accounts",
+		Type:   ssot.AttrList,
+		Elem:   &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountIdentifier"},
+		SetSql: ssot.PlainParameter(),
+	}
+	block := ssot.Attribute{
+		Name:      "add",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(),
+		Children:  []ssot.Attribute{ssot.WithCreateSql(&accounts, ssot.PlainParameter(ssot.Required()))},
+	}
+	obj := ssot.Object{
+		Name:       "Widget",
+		Attributes: []ssot.Attribute{accounts},
+		Alter:      ssot.AlterSpec{Clauses: []ssot.AlterClause{ssot.AlterKeywordBlock("Add", "ADD", &block)}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter(ssot.SdkAlterWithoutIfExists(), ssot.SdkAlterWithoutExactlyOneValueSet()))},
+	}
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-widget",
+		NewQueryStruct("AlterWidget").
+			Alter().
+			SQL("WIDGET").
+			Name().
+			OptionalQueryStructField(
+				"Add",
+				NewQueryStruct("WidgetAdd").
+					ListAssignment("ACCOUNTS", "AccountIdentifier", ParameterOptions().Required()).
+					WithValidation(AtLeastOneValueSet, "Accounts").
+					WithValidation(ValidIdentifier, "Accounts"),
+				KeywordOptions().SQL("ADD"),
 			).
 			WithValidation(ValidIdentifier, "name"),
 	)

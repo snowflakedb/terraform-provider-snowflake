@@ -15,11 +15,11 @@ type Shares interface {
 	Show(ctx context.Context, request *ShowShareRequest) ([]Share, error)
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Share, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Share, error)
-	Describe(ctx context.Context, id AccountObjectIdentifier) ([]ShareInfo, error)
+	Describe(ctx context.Context, id AccountObjectIdentifier) ([]ShareDetails, error)
 	// DescribeProvider returns the share contents for a provider (outbound) share.
-	DescribeProvider(ctx context.Context, id AccountObjectIdentifier) ([]ShareInfo, error)
+	DescribeProvider(ctx context.Context, id AccountObjectIdentifier) ([]ShareDetails, error)
 	// DescribeConsumer returns the share contents for a consumer (inbound) share.
-	DescribeConsumer(ctx context.Context, id ExternalObjectIdentifier) ([]ShareInfo, error)
+	DescribeConsumer(ctx context.Context, id ExternalObjectIdentifier) ([]ShareDetails, error)
 	// ShowTargetAccounts returns all target accounts of an outbound share from SNOWFLAKE.ACCOUNT_USAGE.SHARES, because SHOW SHARES lists at most three of them.
 	ShowTargetAccounts(ctx context.Context, id AccountObjectIdentifier) ([]AccountIdentifier, error)
 }
@@ -42,7 +42,7 @@ type AlterShareOptions struct {
 	Add       *ShareAdd               `ddl:"keyword" sql:"ADD"`
 	Remove    *ShareRemove            `ddl:"keyword" sql:"REMOVE"`
 	Set       *ShareSet               `ddl:"keyword" sql:"SET"`
-	Unset     *ShareUnset             `ddl:"keyword" sql:"UNSET"`
+	Unset     *ShareUnset             `ddl:"list,no_parentheses" sql:"UNSET"`
 	SetTags   []TagAssociation        `ddl:"keyword" sql:"SET TAG"`
 	UnsetTags []ObjectIdentifier      `ddl:"keyword" sql:"UNSET TAG"`
 }
@@ -82,7 +82,7 @@ type ShowShareOptions struct {
 	Limit      *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
 
-type shareRow struct {
+type sharesRow struct {
 	CreatedOn    time.Time `db:"created_on"`
 	Kind         string    `db:"kind"`
 	OwnerAccount string    `db:"owner_account"`
@@ -120,13 +120,13 @@ type DescribeShareOptions struct {
 	name     ObjectIdentifier `ddl:"identifier"`
 }
 
-type shareDetailsRow struct {
+type shareDescRow struct {
 	Kind     string    `db:"kind"`
 	Name     string    `db:"name"`
 	SharedOn time.Time `db:"shared_on"`
 }
 
-type ShareInfo struct {
+type ShareDetails struct {
 	Kind     ObjectType
 	Name     ObjectIdentifier
 	SharedOn time.Time

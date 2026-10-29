@@ -20,7 +20,7 @@ var shareRecipientsTruncationRegexp = regexp.MustCompile(`^\.\.\. \((\d+) TOTAL\
 
 // additionalConvert maps the "to" column of SHOW SHARES manually, because for more than three recipients Snowflake
 // lists only the first three and appends a "... (N TOTAL)" marker, which is not an account identifier.
-func (r shareRow) additionalConvert(s *Share) error {
+func (r sharesRow) additionalConvert(s *Share) error {
 	to, total, err := parseShareRecipients(r.To)
 	if err != nil {
 		return err
@@ -47,7 +47,7 @@ func parseShareRecipients(value string) ([]AccountIdentifier, int, error) {
 	return ids, total, nil
 }
 
-func (r *shareDetailsRow) additionalConvert(s *ShareInfo) error {
+func (r *shareDescRow) additionalConvert(s *ShareDetails) error {
 	s.Kind = ObjectType(r.Kind)
 	trimmedS := strings.Trim(r.Name, "\"")
 	// TODO(SNOW-1229218): Use a common mapper to get object id.
@@ -85,15 +85,15 @@ func (s *shares) ShowTargetAccounts(ctx context.Context, id AccountObjectIdentif
 	return ids, err
 }
 
-func (s *shares) DescribeProvider(ctx context.Context, id AccountObjectIdentifier) ([]ShareInfo, error) {
+func (s *shares) DescribeProvider(ctx context.Context, id AccountObjectIdentifier) ([]ShareDetails, error) {
 	return s.Describe(ctx, id)
 }
 
-func (s *shares) DescribeConsumer(ctx context.Context, id ExternalObjectIdentifier) ([]ShareInfo, error) {
+func (s *shares) DescribeConsumer(ctx context.Context, id ExternalObjectIdentifier) ([]ShareDetails, error) {
 	opts := &DescribeShareOptions{name: id}
-	dbRows, err := validateAndQuery[shareDetailsRow](s.client, ctx, opts)
+	dbRows, err := validateAndQuery[shareDescRow](s.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[shareDetailsRow, ShareInfo](dbRows)
+	return convertRows[shareDescRow, ShareDetails](dbRows)
 }

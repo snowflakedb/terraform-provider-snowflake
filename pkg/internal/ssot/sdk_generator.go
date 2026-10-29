@@ -137,6 +137,13 @@ func SdkDescribeQueryStructName(name string) SdkDescribeOption {
 	return func(s *SdkGenerator) { s.DescribeQueryStructName = name }
 }
 
+// SdkDescribeIdentifierOverride makes the DESCRIBE name a required identifier of this Go type, such as ObjectIdentifier,
+// instead of the identifier type of the object. Use it when DESCRIBE accepts more than one kind of identifier,
+// such as an outbound share name and an inbound share <provider_account>.<share_name>.
+func SdkDescribeIdentifierOverride(kind string) SdkDescribeOption {
+	return func(s *SdkGenerator) { s.DescribeIdentifierOverride = kind }
+}
+
 // SdkPlainOnlyField is a field on the DESCRIBE plain struct that DESCRIBE does not return.
 // Name is the Go field name. Kind is the plain Go type, without a package prefix.
 type SdkPlainOnlyField struct {

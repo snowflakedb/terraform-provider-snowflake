@@ -254,6 +254,22 @@ func Test_PairedStructsFromColumns_mapsWarehouseColumnShapes(t *testing.T) {
 		Field("resource_monitor", "string", "AccountObjectIdentifier", WithCustomParser("ParseAccountObjectIdentifierExcludingExplicitNullString")).
 		Field("tables", "sql.NullString", "[]SchemaObjectIdentifier", WithCustomParser("ParseCommaSeparatedSchemaObjectIdentifierArray"))
 	require.Equal(t, want, got)
+
+	requiredID := ssot.Attribute{Name: "database_name", Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"}
+	manualID := ssot.Attribute{Name: "name", Type: ssot.AttrIdentifier, IdentifierType: "ObjectIdentifier", ManualConvert: true}
+	manualIDs := ssot.Attribute{
+		Name:          "to",
+		Type:          ssot.AttrList,
+		ManualConvert: true,
+		Elem:          &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountIdentifier"},
+	}
+	require.Equal(t,
+		StructPair("fakesRow", "Fake").
+			Field("database_name", "string", "AccountObjectIdentifier").
+			Field("name", "string", "ObjectIdentifier", WithManualConvert()).
+			Field("to", "string", "[]AccountIdentifier", WithManualConvert()),
+		ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &requiredID, &manualID, &manualIDs)),
+	)
 }
 
 func showPairedObject(idType string, columns ...*ssot.Attribute) ssot.Object {

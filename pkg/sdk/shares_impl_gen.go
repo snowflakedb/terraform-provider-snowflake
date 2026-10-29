@@ -9,9 +9,9 @@ import (
 )
 
 var (
-	_ Shares                    = (*shares)(nil)
-	_ convertibleRow[Share]     = new(shareRow)
-	_ convertibleRow[ShareInfo] = new(shareDetailsRow)
+	_ Shares                       = (*shares)(nil)
+	_ convertibleRow[Share]        = new(sharesRow)
+	_ convertibleRow[ShareDetails] = new(shareDescRow)
 )
 
 type shares struct {
@@ -39,11 +39,11 @@ func (v *shares) DropSafely(ctx context.Context, id AccountObjectIdentifier) err
 
 func (v *shares) Show(ctx context.Context, request *ShowShareRequest) ([]Share, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[shareRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[sharesRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[shareRow, Share](dbRows)
+	return convertRows[sharesRow, Share](dbRows)
 }
 
 func (v *shares) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Share, error) {
@@ -60,15 +60,15 @@ func (v *shares) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier)
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
-func (v *shares) Describe(ctx context.Context, id AccountObjectIdentifier) ([]ShareInfo, error) {
+func (v *shares) Describe(ctx context.Context, id AccountObjectIdentifier) ([]ShareDetails, error) {
 	opts := &DescribeShareOptions{
 		name: id,
 	}
-	rows, err := validateAndQuery[shareDetailsRow](v.client, ctx, opts)
+	rows, err := validateAndQuery[shareDescRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[shareDetailsRow, ShareInfo](rows)
+	return convertRows[shareDescRow, ShareDetails](rows)
 }
 
 func (r *CreateShareRequest) toOpts() *CreateShareOptions {
@@ -129,7 +129,7 @@ func (r *ShowShareRequest) toOpts() *ShowShareOptions {
 	return opts
 }
 
-func (r shareRow) convert() (*Share, error) {
+func (r sharesRow) convert() (*Share, error) {
 	result := &Share{
 		CreatedOn:    r.CreatedOn,
 		OwnerAccount: r.OwnerAccount,
@@ -152,8 +152,8 @@ func (r *DescribeShareRequest) toOpts() *DescribeShareOptions {
 	return opts
 }
 
-func (r shareDetailsRow) convert() (*ShareInfo, error) {
-	result := &ShareInfo{
+func (r shareDescRow) convert() (*ShareDetails, error) {
+	result := &ShareDetails{
 		SharedOn: r.SharedOn,
 	}
 	if err := r.additionalConvert(result); err != nil {

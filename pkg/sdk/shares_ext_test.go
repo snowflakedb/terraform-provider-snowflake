@@ -176,7 +176,7 @@ func Test_parseShareRecipients(t *testing.T) {
 }
 
 func Test_shareRow_convert_truncatedRecipients(t *testing.T) {
-	share, err := shareRow{Kind: "OUTBOUND", Name: "S", To: "ORG.ACC1,ORG.ACC2,ORG.ACC3,... (4 TOTAL)"}.convert()
+	share, err := sharesRow{Kind: "OUTBOUND", Name: "S", To: "ORG.ACC1,ORG.ACC2,ORG.ACC3,... (4 TOTAL)"}.convert()
 	require.NoError(t, err)
 	require.Len(t, share.To, 3)
 	require.Equal(t, 4, share.ToTotal)

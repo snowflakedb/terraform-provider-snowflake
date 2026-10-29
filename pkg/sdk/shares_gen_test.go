@@ -28,7 +28,7 @@ const (
 	case_Shares_validation_Alter_Remove_Accounts_ValidIdentifier        testCaseName = "validation_Alter_Remove_Accounts_ValidIdentifier"
 	case_Shares_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_Shares_validation_Alter_Set_Accounts_ValidIdentifier           testCaseName = "validation_Alter_Set_Accounts_ValidIdentifier"
-	case_Shares_validation_Alter_opts_Unset_ExactlyOneValueSet_NoneSet  testCaseName = "validation_Alter_opts_Unset_ExactlyOneValueSet_NoneSet"
+	case_Shares_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_Shares_validation_Alter_SetTags_ValidIdentifier                testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_Shares_sql_Alter_Add                                           testCaseName = "sql_Alter_Add"
 	case_Shares_sql_Alter_Remove                                        testCaseName = "sql_Alter_Remove"
@@ -169,8 +169,8 @@ var sharesTests = SharesTestsContext{
 				},
 			},
 			validationCase[*AlterShareOptions]{
-				Name:        case_Shares_validation_Alter_opts_Unset_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterShareOptions.Unset", "Comment"),
+				Name:        case_Shares_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterShareOptions.Unset", "Comment"),
 				DefaultModify: func(opts *AlterShareOptions) {
 					opts.Unset = &ShareUnset{}
 					opts.Unset.Comment = nil

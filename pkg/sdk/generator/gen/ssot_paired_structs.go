@@ -220,11 +220,17 @@ func appendPairedColumn(pairs *PairedStructs, obj ssot.Object, attr ssot.Attribu
 		if attr.CustomParser != "" && !attr.OptionalInShow && !attr.OptionalInDb {
 			return pairs.Field(key, "string", kind, WithCustomParser(attr.CustomParser))
 		}
+		if !attr.OptionalInShow && !attr.OptionalInDb {
+			return pairs.Field(key, "string", kind, manualConvertOpt(attr)...)
+		}
 		if !attr.OptionalInShow || !attr.OptionalInDb {
-			panicPairedColumn(obj, attr, "an identifier maps only when it is optional in SHOW and in the DB row")
+			panicPairedColumn(obj, attr, "an identifier maps only when it is required in SHOW and in the DB row, or optional in both")
 		}
 		return pairs.Field(key, "sql.NullString", "*"+kind, WithPlainFieldName(sqlToFieldName(key, true)))
 	case ssot.AttrList:
+		if attr.ManualConvert && attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier && !attr.OptionalInShow && !attr.OptionalInDb {
+			return pairs.Field(key, "string", "[]"+attr.Elem.IdentifierType, WithManualConvert())
+		}
 		if attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier && attr.CustomParser != "" && !attr.OptionalInShow && attr.OptionalInDb {
 			kind := attr.Elem.IdentifierType
 			return pairs.Field(key, "sql.NullString", "[]"+kind, WithCustomParser(attr.CustomParser))

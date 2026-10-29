@@ -297,13 +297,13 @@ enable nothing.
   independent. Leave the handwritten entry while only one of them is opted in.
 - `WithSdk(SdkShow(), SdkDescribe(), SdkDrop(), SdkCreate(), SdkAlter())` - SDK paired structs, DROP, CREATE, and ALTER (`make generate-sdk`).
   See [PairedStructs](../../sdk/generator/README.md#pairedstructs). Show and Describe fields come
-  from [SHOW and DESCRIBE](#show-and-describe) `Columns`, not from `Attributes`. `SdkDescribePlainOnlyField(name, kind)` adds a field that is only on the DESCRIBE plain struct. `name` is the Go field name and `kind` is its type, as in `PlainOnlyField`. It is not a column. `convert` skips it, and `additionalConvert` in the SDK ext file fills it.
+  from [SHOW and DESCRIBE](#show-and-describe) `Columns`, not from `Attributes`. `SdkDescribeIdentifierOverride(kind)` makes the DESCRIBE `name` a required identifier of that Go type, such as `ObjectIdentifier`, when DESCRIBE accepts more than one kind of identifier (an outbound share name or an inbound `<provider_account>.<share_name>`); the interface method keeps the identifier type of the object. `SdkDescribePlainOnlyField(name, kind)` adds a field that is only on the DESCRIBE plain struct. `name` is the Go field name and `kind` is its type, as in `PlainOnlyField`. It is not a column. `convert` skips it, and `additionalConvert` in the SDK ext file fills it.
   `SdkShowOptionalOn()` adds the optional `ON` clause, after `IN` and before `STARTS WITH`.
   `SdkShowResultFilterHook()` makes the generated `Show` drop each row for which `excludeFromShow()` returns true, a method
   of the SHOW row that the SDK ext file implements. `SdkShowPlainOnly(&attr, kind)` marks a SHOW column as only on the plain
   struct, with Go type `kind`. `attr` is the same `*Attribute` that sits in `Show.Columns`: the column stays there for the
   schema and the assertions, the SHOW row does not read it, and `additionalConvert` fills the field. A string column with
-  `ManualConvert` is skipped by `convert` the same way. `OptionalInDb` is live for the mapped
+  `ManualConvert` is skipped by `convert` the same way, and so is an identifier column or a list of identifiers with `ManualConvert`. An identifier column that is neither `OptionalInShow` nor `OptionalInDb` maps as a required db string. `OptionalInDb` is live for the mapped
   db and plain kinds. `StoredAsText` selects `BoolFromText` for a bool. A bool without the mark is still db `bool`.
   Other generators ignore the mark. See [Attribute](#attribute). `SdkDrop()` builds DROP from `Name`: `DROP`, the
   uppercase words, `IF EXISTS`, and the name. `SdkDropDoc()` overrides the default DROP doc URL. `SdkDropSafelyHook()`, `SdkDropSafelyForce()`, and
@@ -639,6 +639,9 @@ the enum type in a details struct (also in its nested structs).
   `WithPlainFieldName` for that, such as `property_value` to `Value`). An object moved to ssot may end up with slightly
   different plain struct fields than its handwritten def had. That is acceptable for now: the SDK is internal, so callers
   are renamed with the move. Add an override to both paths together if a real need appears.
+- A DESCRIBE column whose plain type is an SDK type that is not an ssot type, such as `sdk.ObjectType`, is an enum with `SdkType` set
+  (the enum is not generated) and `ManualConvert`; the SDK ext converts it in `additionalConvert`. The DESCRIBE plain struct and row are named
+  `<Name>Details` and `<unexported Name>DescRow`, so an object moved to ssot may rename them, as share did (`ShareInfo` to `ShareDetails`).
 - A list that is not a list of enums or of objects takes the item query struct name as a string. That struct stays in the SDK
   def. A list of objects is generated from its attributes: see [Lists and nested objects](#lists-and-nested-objects).
 - A list of enums is built in the SDK generator: struct name `{Enum}ListItem`, field `Value`, required single-quoted keyword. ssot should hold that description, and the generator should only translate it into the query struct. Do that together with more complex list items, not for this enum case alone.

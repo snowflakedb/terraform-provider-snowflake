@@ -263,11 +263,15 @@ func describeMappingFromObject(obj ssot.Object, cfg ssot.SdkGenerator) Descripti
 }
 
 func describeQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
-	return NewQueryStruct(cfg.DescribeQueryStructName).
+	q := NewQueryStruct(cfg.DescribeQueryStructName).
 		Describe().
-		SQL(cfg.DescribeSql).
-		Name().
-		WithValidation(ValidIdentifier, "name")
+		SQL(cfg.DescribeSql)
+	if cfg.DescribeIdentifierOverride != "" {
+		q = q.Identifier("name", cfg.DescribeIdentifierOverride, IdentifierOptions().Required())
+	} else {
+		q = q.Name()
+	}
+	return q.WithValidation(ValidIdentifier, "name")
 }
 
 // DropOperationFromObject adds DROP from obj.SdkConfig.
