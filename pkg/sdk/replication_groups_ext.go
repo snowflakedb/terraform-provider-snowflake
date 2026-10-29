@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"slices"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -112,13 +113,64 @@ func (opts *ReplicationGroupSet) additionalValidations() error {
 		!slices.Contains(opts.ObjectTypes, ReplicationGroupObjectTypeRoles) {
 		errs = append(errs, NewError("OBJECT_TYPES must include ROLES when ALLOWED_INTEGRATION_TYPES includes SECURITY INTEGRATIONS"))
 	}
+	if replicationGroupSetHasObjectLists(opts) && replicationGroupSetHasProperties(opts) {
+		errs = append(errs, NewError("SET cannot combine OBJECT_TYPES and allowed lists with COMMENT, REPLICATION_SCHEDULE, or ERROR_INTEGRATION"))
+	}
 	return JoinErrors(errs...)
 }
 
+func replicationGroupSetHasObjectLists(opts *ReplicationGroupSet) bool {
+	return len(opts.ObjectTypes) > 0 ||
+		len(opts.AllowedDatabases) > 0 ||
+		len(opts.AllowedExternalVolumes) > 0 ||
+		len(opts.AllowedShares) > 0 ||
+		len(opts.AllowedIntegrationTypes) > 0
+}
+
+func replicationGroupSetHasProperties(opts *ReplicationGroupSet) bool {
+	return opts.Comment != nil || opts.ReplicationSchedule != nil || opts.ErrorIntegration != nil
+}
+
+// SHOW tokens that differ from the create-page values. A token that is not listed is left unchanged.
+var replicationGroupObjectTypeShowTokens = map[string]string{
+	"PARAMETERS": string(ReplicationGroupObjectTypeAccountParameters),
+}
+
+var replicationGroupIntegrationTypeShowTokens = map[string]string{
+	"API":             string(ReplicationGroupIntegrationTypeApiIntegrations),
+	"EXTERNAL_ACCESS": string(ReplicationGroupIntegrationTypeExternalAccessIntegrations),
+	"NOTIFICATION":    string(ReplicationGroupIntegrationTypeNotificationIntegrations),
+	"SECURITY":        string(ReplicationGroupIntegrationTypeSecurityIntegrations),
+	"STORAGE":         string(ReplicationGroupIntegrationTypeStorageIntegrations),
+}
+
+func replicationGroupShowToken(part string, tokens map[string]string) string {
+	if mapped, ok := tokens[strings.ToUpper(part)]; ok {
+		return mapped
+	}
+	return part
+}
+
 func ParseCommaSeparatedReplicationGroupObjectTypeArray(value string) ([]ReplicationGroupObjectType, error) {
-	return collections.MapErr(ParseCommaSeparatedStringArray(value, false), ToReplicationGroupObjectType)
+	parts := ParseCommaSeparatedStringArray(value, false)
+	rewritten := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if part == "" {
+			continue
+		}
+		rewritten = append(rewritten, replicationGroupShowToken(part, replicationGroupObjectTypeShowTokens))
+	}
+	return collections.MapErr(rewritten, ToReplicationGroupObjectType)
 }
 
 func ParseCommaSeparatedReplicationGroupIntegrationTypeArray(value string) ([]ReplicationGroupIntegrationType, error) {
-	return collections.MapErr(ParseCommaSeparatedStringArray(value, false), ToReplicationGroupIntegrationType)
+	parts := ParseCommaSeparatedStringArray(value, false)
+	rewritten := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if part == "" {
+			continue
+		}
+		rewritten = append(rewritten, replicationGroupShowToken(part, replicationGroupIntegrationTypeShowTokens))
+	}
+	return collections.MapErr(rewritten, ToReplicationGroupIntegrationType)
 }

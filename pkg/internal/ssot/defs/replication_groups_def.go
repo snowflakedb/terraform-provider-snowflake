@@ -141,6 +141,8 @@ var ReplicationGroupAttrs = struct {
 		Description: "Types of objects replicated from the source account to the target accounts.",
 		Elem:        &ssot.Attribute{Type: ssot.AttrEnum, Enum: ReplicationGroupObjectType},
 		// CSV. NULL or empty when a secondary group lists none. The plain field stays a slice.
+		// SHOW uses PARAMETERS for account parameters. That token is mapped to ACCOUNT PARAMETERS.
+		// Any other token is left unchanged.
 		OptionalInDb: true,
 		CustomParser: "ParseCommaSeparatedReplicationGroupObjectTypeArray",
 		CreateSql:    replicationGroupEnumList(ReplicationGroupObjectType, true),
@@ -176,8 +178,8 @@ var ReplicationGroupAttrs = struct {
 		Description: "Integration types enabled for replication. Requires Business Critical Edition or higher. OBJECT_TYPES must include INTEGRATIONS. SECURITY INTEGRATIONS also requires ROLES.",
 		Elem:        &ssot.Attribute{Type: ssot.AttrEnum, Enum: ReplicationGroupIntegrationType},
 		// The column is always present. It is empty when no integration types are set.
-		// The failover SHOW converter rewrites underscores and appends " INTEGRATIONS".
-		// This parser accepts the create-page spellings.
+		// SHOW prints short tokens such as API and EXTERNAL_ACCESS. Those tokens are mapped to the
+		// create-page values. Any other token is left unchanged.
 		OptionalInDb: true,
 		CustomParser: "ParseCommaSeparatedReplicationGroupIntegrationTypeArray",
 		CreateSql:    replicationGroupEnumList(ReplicationGroupIntegrationType, false),
@@ -386,6 +388,7 @@ var ReplicationGroup = ssot.Object{
 			),
 			ssot.SdkAlterForVariants(),
 		),
+		ssot.WithObjectAssert(ssot.ObjectAssertShow()),
 	},
 	Attributes: []ssot.Attribute{
 		ReplicationGroupAttrs.ObjectTypes,
@@ -418,6 +421,11 @@ var ReplicationGroup = ssot.Object{
 			&ReplicationGroupAttrs.ErrorIntegration,
 		},
 	},
+	// TODO [next PRs]: these fields are two exclusive SET groups, and SSOT emits them as one struct.
+	// OBJECT_TYPES and the allowed-object lists are one statement. COMMENT, REPLICATION_SCHEDULE, and
+	// ERROR_INTEGRATION are the other. Snowflake rejects a statement that mixes them. Dedicated SSOT handling
+	// should keep the attributes ordinary and emit two groups. Until then, ReplicationGroupSet.additionalValidations
+	// rejects a mixed SET.
 	Set: []*ssot.Attribute{
 		&ReplicationGroupAttrs.ObjectTypes,
 		&ReplicationGroupAttrs.AllowedDatabases,
@@ -437,7 +445,8 @@ var ReplicationGroup = ssot.Object{
 	},
 	Alter: ssot.AlterSpec{
 		Doc: "https://docs.snowflake.com/en/sql-reference/sql/alter-replication-group",
-		// SET: allowed databases, external volumes, shares, and integration types require the matching OBJECT_TYPES value.
+		// SET: allowed lists require the matching OBJECT_TYPES value.
+		// OBJECT_TYPES and the allowed lists cannot share a SET with COMMENT, REPLICATION_SCHEDULE, or ERROR_INTEGRATION.
 		SetAdditionalValidations: true,
 		// MOVE sets exactly one of databases, external volumes, and shares, and To is a valid identifier.
 		AdditionalValidations: true,

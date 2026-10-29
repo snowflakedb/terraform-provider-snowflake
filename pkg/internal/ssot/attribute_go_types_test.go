@@ -54,6 +54,16 @@ func Test_AttributeGoTypes(t *testing.T) {
 	require.Equal(t, "slice", underlying)
 
 	concrete, underlying = AttributeGoTypes(obj, Attribute{
+		Name:         "object_types",
+		Type:         AttrList,
+		CustomParser: "ParseCommaSeparatedPoolFamilyArray",
+		OptionalInDb: true,
+		Elem:         &Attribute{Type: AttrEnum, Enum: family},
+	})
+	require.Equal(t, "[]sdk.PoolFamily", concrete)
+	require.Equal(t, "slice", underlying)
+
+	concrete, underlying = AttributeGoTypes(obj, Attribute{
 		Name: "names",
 		Type: AttrSet,
 		Elem: &Attribute{Type: AttrString},
