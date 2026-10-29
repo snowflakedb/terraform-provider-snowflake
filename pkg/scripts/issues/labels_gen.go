@@ -124,6 +124,7 @@ var RepositoryLabels = []string{
 	"resource:procedure_python",
 	"resource:procedure_scala",
 	"resource:procedure_sql",
+	"resource:quota",
 	"resource:resource_monitor",
 	"resource:role",
 	"resource:row_access_policy",

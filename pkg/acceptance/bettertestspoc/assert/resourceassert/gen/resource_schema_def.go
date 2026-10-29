@@ -354,6 +354,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ProcedureSql().Schema,
 	},
 	{
+		name:   "Quota",
+		schema: resources.Quota().Schema,
+	},
+	{
 		name:   "ResourceMonitor",
 		schema: resources.ResourceMonitor().Schema,
 	},

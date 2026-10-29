@@ -719,6 +719,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_procedure_python":                                             resources.ProcedurePython(),
 		"snowflake_procedure_scala":                                              resources.ProcedureScala(),
 		"snowflake_procedure_sql":                                                resources.ProcedureSql(),
+		"snowflake_quota":                                                        resources.Quota(),
 		"snowflake_resource_monitor":                                             resources.ResourceMonitor(),
 		"snowflake_row_access_policy":                                            resources.RowAccessPolicy(),
 		"snowflake_saml2_integration":                                            resources.SAML2Integration(),
