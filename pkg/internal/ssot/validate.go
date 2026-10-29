@@ -56,6 +56,8 @@ func ValidateObject(obj Object) {
 		if obj.Create.Sql != "" {
 			panic(fmt.Sprintf("object %q: variant CREATE words are VariantEntityCreateName", obj.Name))
 		}
+	case obj.Create.WithoutOrReplace:
+		panic(fmt.Sprintf("object %q: Create.WithoutOrReplace is for a variant", obj.Name))
 	case obj.VariantEntityCreateName != "":
 		panic(fmt.Sprintf("object %q: VariantEntityCreateName is for a variant", obj.Name))
 	case obj.VariantEntityAlterName != "":

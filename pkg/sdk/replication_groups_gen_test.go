@@ -25,6 +25,9 @@ const (
 	case_ReplicationGroups_validation_Create_Tag_ValidIdentifier                              testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_ReplicationGroups_sql_Create_basic                                                   testCaseName = "sql_Create_basic"
 	case_ReplicationGroups_sql_Create_all                                                     testCaseName = "sql_Create_all"
+	case_ReplicationGroups_validation_CreateSecondary_name_ValidIdentifier                    testCaseName = "validation_CreateSecondary_name_ValidIdentifier"
+	case_ReplicationGroups_sql_CreateSecondary_basic                                          testCaseName = "sql_CreateSecondary_basic"
+	case_ReplicationGroups_sql_CreateSecondary_all                                            testCaseName = "sql_CreateSecondary_all"
 	case_ReplicationGroups_validation_Alter_name_ValidIdentifier                              testCaseName = "validation_Alter_name_ValidIdentifier"
 	case_ReplicationGroups_validation_Alter_opts_ExactlyOneValueSet_NoneSet                   testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_ReplicationGroups_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet            testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
@@ -54,25 +57,26 @@ const (
 	case_ReplicationGroups_sql_Alter_Add                                                      testCaseName = "sql_Alter_Add"
 	case_ReplicationGroups_sql_Alter_Move                                                     testCaseName = "sql_Alter_Move"
 	case_ReplicationGroups_sql_Alter_Remove                                                   testCaseName = "sql_Alter_Remove"
-	case_ReplicationGroups_sql_Alter_Refresh                                                  testCaseName = "sql_Alter_Refresh"
-	case_ReplicationGroups_sql_Alter_Suspend                                                  testCaseName = "sql_Alter_Suspend"
-	case_ReplicationGroups_sql_Alter_Resume                                                   testCaseName = "sql_Alter_Resume"
+	case_ReplicationGroups_validation_AlterSecondary_name_ValidIdentifier                     testCaseName = "validation_AlterSecondary_name_ValidIdentifier"
+	case_ReplicationGroups_validation_AlterSecondary_opts_ExactlyOneValueSet_NoneSet          testCaseName = "validation_AlterSecondary_opts_ExactlyOneValueSet_NoneSet"
+	case_ReplicationGroups_validation_AlterSecondary_opts_ExactlyOneValueSet_MoreThanOneSet   testCaseName = "validation_AlterSecondary_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_ReplicationGroups_sql_AlterSecondary_Refresh                                         testCaseName = "sql_AlterSecondary_Refresh"
+	case_ReplicationGroups_sql_AlterSecondary_Suspend                                         testCaseName = "sql_AlterSecondary_Suspend"
+	case_ReplicationGroups_sql_AlterSecondary_Resume                                          testCaseName = "sql_AlterSecondary_Resume"
 	case_ReplicationGroups_validation_Drop_name_ValidIdentifier                               testCaseName = "validation_Drop_name_ValidIdentifier"
 	case_ReplicationGroups_sql_Drop_basic                                                     testCaseName = "sql_Drop_basic"
 	case_ReplicationGroups_sql_Drop_all                                                       testCaseName = "sql_Drop_all"
 	case_ReplicationGroups_sql_Show_basic                                                     testCaseName = "sql_Show_basic"
 	case_ReplicationGroups_sql_Show_all                                                       testCaseName = "sql_Show_all"
-	case_ReplicationGroups_validation_CreateSecondary_name_ValidIdentifier                    testCaseName = "validation_CreateSecondary_name_ValidIdentifier"
-	case_ReplicationGroups_sql_CreateSecondary_basic                                          testCaseName = "sql_CreateSecondary_basic"
-	case_ReplicationGroups_sql_CreateSecondary_all                                            testCaseName = "sql_CreateSecondary_all"
 )
 
 type ReplicationGroupsTestsContext struct {
 	Create          *sdkTestCtx[*CreateReplicationGroupOptions]
+	CreateSecondary *sdkTestCtx[*CreateSecondaryReplicationGroupOptions]
 	Alter           *sdkTestCtx[*AlterReplicationGroupOptions]
+	AlterSecondary  *sdkTestCtx[*AlterSecondaryReplicationGroupOptions]
 	Drop            *sdkTestCtx[*DropReplicationGroupOptions]
 	Show            *sdkTestCtx[*ShowReplicationGroupOptions]
-	CreateSecondary *sdkTestCtx[*CreateSecondaryReplicationGroupOptions]
 }
 
 var replicationGroupsTests = ReplicationGroupsTestsContext{
@@ -144,6 +148,32 @@ var replicationGroupsTests = ReplicationGroupsTestsContext{
 				Name: case_ReplicationGroups_sql_Create_all,
 			},
 		),
+	CreateSecondary: newSdkTestCtx[*CreateSecondaryReplicationGroupOptions](
+		"ReplicationGroups", "CreateSecondary",
+	).
+		withDefaultOpts(func() *CreateSecondaryReplicationGroupOptions {
+			return &CreateSecondaryReplicationGroupOptions{
+				name: replicationGroupsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateSecondaryReplicationGroupOptions]{
+				Name:        case_ReplicationGroups_validation_CreateSecondary_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSecondaryReplicationGroupOptions", "name"),
+				DefaultModify: func(opts *CreateSecondaryReplicationGroupOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateSecondaryReplicationGroupOptions]{
+				Name:           case_ReplicationGroups_sql_CreateSecondary_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateSecondaryReplicationGroupOptions]{
+				Name: case_ReplicationGroups_sql_CreateSecondary_all,
+			},
+		),
 	Alter: newSdkTestCtx[*AlterReplicationGroupOptions](
 		"ReplicationGroups", "Alter",
 	).
@@ -162,7 +192,7 @@ var replicationGroupsTests = ReplicationGroupsTestsContext{
 			},
 			validationCase[*AlterReplicationGroupOptions]{
 				Name:        case_ReplicationGroups_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterReplicationGroupOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "Add", "Move", "Remove", "Refresh", "Suspend", "Resume"),
+				ExpectedErr: errExactlyOneOf("AlterReplicationGroupOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "Add", "Move", "Remove"),
 				DefaultModify: func(opts *AlterReplicationGroupOptions) {
 					opts.RenameTo = nil
 					opts.Set = nil
@@ -172,14 +202,11 @@ var replicationGroupsTests = ReplicationGroupsTestsContext{
 					opts.Add = nil
 					opts.Move = nil
 					opts.Remove = nil
-					opts.Refresh = nil
-					opts.Suspend = nil
-					opts.Resume = nil
 				},
 			},
 			validationCase[*AlterReplicationGroupOptions]{
 				Name:        case_ReplicationGroups_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("AlterReplicationGroupOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "Add", "Move", "Remove", "Refresh", "Suspend", "Resume"),
+				ExpectedErr: errExactlyOneOf("AlterReplicationGroupOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "Add", "Move", "Remove"),
 				DefaultModify: func(opts *AlterReplicationGroupOptions) {
 					opts.RenameTo = new(randomAccountObjectIdentifier())
 					opts.Set = &ReplicationGroupSet{}
@@ -362,14 +389,50 @@ var replicationGroupsTests = ReplicationGroupsTestsContext{
 			sqlCase[*AlterReplicationGroupOptions]{
 				Name: case_ReplicationGroups_sql_Alter_Remove,
 			},
-			sqlCase[*AlterReplicationGroupOptions]{
-				Name: case_ReplicationGroups_sql_Alter_Refresh,
+		),
+	AlterSecondary: newSdkTestCtx[*AlterSecondaryReplicationGroupOptions](
+		"ReplicationGroups", "AlterSecondary",
+	).
+		withDefaultOpts(func() *AlterSecondaryReplicationGroupOptions {
+			return &AlterSecondaryReplicationGroupOptions{
+				name: replicationGroupsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterSecondaryReplicationGroupOptions]{
+				Name:        case_ReplicationGroups_validation_AlterSecondary_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterSecondaryReplicationGroupOptions", "name"),
+				DefaultModify: func(opts *AlterSecondaryReplicationGroupOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
 			},
-			sqlCase[*AlterReplicationGroupOptions]{
-				Name: case_ReplicationGroups_sql_Alter_Suspend,
+			validationCase[*AlterSecondaryReplicationGroupOptions]{
+				Name:        case_ReplicationGroups_validation_AlterSecondary_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterSecondaryReplicationGroupOptions", "Refresh", "Suspend", "Resume"),
+				DefaultModify: func(opts *AlterSecondaryReplicationGroupOptions) {
+					opts.Refresh = nil
+					opts.Suspend = nil
+					opts.Resume = nil
+				},
 			},
-			sqlCase[*AlterReplicationGroupOptions]{
-				Name: case_ReplicationGroups_sql_Alter_Resume,
+			validationCase[*AlterSecondaryReplicationGroupOptions]{
+				Name:        case_ReplicationGroups_validation_AlterSecondary_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterSecondaryReplicationGroupOptions", "Refresh", "Suspend", "Resume"),
+				DefaultModify: func(opts *AlterSecondaryReplicationGroupOptions) {
+					opts.Refresh = new(true)
+					opts.Suspend = &ReplicationGroupSecondarySuspend{}
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterSecondaryReplicationGroupOptions]{
+				Name: case_ReplicationGroups_sql_AlterSecondary_Refresh,
+			},
+			sqlCase[*AlterSecondaryReplicationGroupOptions]{
+				Name: case_ReplicationGroups_sql_AlterSecondary_Suspend,
+			},
+			sqlCase[*AlterSecondaryReplicationGroupOptions]{
+				Name: case_ReplicationGroups_sql_AlterSecondary_Resume,
 			},
 		),
 	Drop: newSdkTestCtx[*DropReplicationGroupOptions](
@@ -414,32 +477,6 @@ var replicationGroupsTests = ReplicationGroupsTestsContext{
 				Name: case_ReplicationGroups_sql_Show_all,
 			},
 		),
-	CreateSecondary: newSdkTestCtx[*CreateSecondaryReplicationGroupOptions](
-		"ReplicationGroups", "CreateSecondary",
-	).
-		withDefaultOpts(func() *CreateSecondaryReplicationGroupOptions {
-			return &CreateSecondaryReplicationGroupOptions{
-				name: replicationGroupsTestIdAccountObjectIdentifier,
-			}
-		}).
-		withValidationCases(
-			validationCase[*CreateSecondaryReplicationGroupOptions]{
-				Name:        case_ReplicationGroups_validation_CreateSecondary_name_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("CreateSecondaryReplicationGroupOptions", "name"),
-				DefaultModify: func(opts *CreateSecondaryReplicationGroupOptions) {
-					opts.name = emptyAccountObjectIdentifier
-				},
-			},
-		).
-		withSqlCases(
-			sqlCase[*CreateSecondaryReplicationGroupOptions]{
-				Name:           case_ReplicationGroups_sql_CreateSecondary_basic,
-				NoModifyNeeded: true,
-			},
-			sqlCase[*CreateSecondaryReplicationGroupOptions]{
-				Name: case_ReplicationGroups_sql_CreateSecondary_all,
-			},
-		),
 }
 
 func TestReplicationGroups_Create(t *testing.T) {
@@ -447,9 +484,19 @@ func TestReplicationGroups_Create(t *testing.T) {
 	replicationGroupsTests.Create.RunSqlCases(t)
 }
 
+func TestReplicationGroups_CreateSecondary(t *testing.T) {
+	replicationGroupsTests.CreateSecondary.RunValidationCases(t)
+	replicationGroupsTests.CreateSecondary.RunSqlCases(t)
+}
+
 func TestReplicationGroups_Alter(t *testing.T) {
 	replicationGroupsTests.Alter.RunValidationCases(t)
 	replicationGroupsTests.Alter.RunSqlCases(t)
+}
+
+func TestReplicationGroups_AlterSecondary(t *testing.T) {
+	replicationGroupsTests.AlterSecondary.RunValidationCases(t)
+	replicationGroupsTests.AlterSecondary.RunSqlCases(t)
 }
 
 func TestReplicationGroups_Drop(t *testing.T) {
@@ -460,9 +507,4 @@ func TestReplicationGroups_Drop(t *testing.T) {
 func TestReplicationGroups_Show(t *testing.T) {
 	replicationGroupsTests.Show.RunValidationCases(t)
 	replicationGroupsTests.Show.RunSqlCases(t)
-}
-
-func TestReplicationGroups_CreateSecondary(t *testing.T) {
-	replicationGroupsTests.CreateSecondary.RunValidationCases(t)
-	replicationGroupsTests.CreateSecondary.RunSqlCases(t)
 }

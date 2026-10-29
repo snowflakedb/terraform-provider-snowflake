@@ -10,13 +10,14 @@ import (
 
 type ReplicationGroups interface {
 	Create(ctx context.Context, request *CreateReplicationGroupRequest) error
+	CreateSecondary(ctx context.Context, request *CreateSecondaryReplicationGroupRequest) error
 	Alter(ctx context.Context, request *AlterReplicationGroupRequest) error
+	AlterSecondary(ctx context.Context, request *AlterSecondaryReplicationGroupRequest) error
 	Drop(ctx context.Context, request *DropReplicationGroupRequest) error
 	DropSafely(ctx context.Context, id AccountObjectIdentifier) error
 	Show(ctx context.Context, request *ShowReplicationGroupRequest) ([]ReplicationGroup, error)
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ReplicationGroup, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*ReplicationGroup, error)
-	CreateSecondary(ctx context.Context, request *CreateSecondaryReplicationGroupRequest) error
 }
 
 // CreateReplicationGroupOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-replication-group.
@@ -45,6 +46,15 @@ type ReplicationGroupIntegrationTypeListItem struct {
 	Value ReplicationGroupIntegrationType `ddl:"keyword,single_quotes"`
 }
 
+// CreateSecondaryReplicationGroupOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-replication-group.
+type CreateSecondaryReplicationGroupOptions struct {
+	create           bool                     `ddl:"static" sql:"CREATE"`
+	replicationGroup bool                     `ddl:"static" sql:"REPLICATION GROUP"`
+	IfNotExists      *bool                    `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name             AccountObjectIdentifier  `ddl:"identifier"`
+	AsReplicaOf      ExternalObjectIdentifier `ddl:"identifier" sql:"AS REPLICA OF"`
+}
+
 // AlterReplicationGroupOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-replication-group.
 type AlterReplicationGroupOptions struct {
 	alter            bool                     `ddl:"static" sql:"ALTER"`
@@ -59,9 +69,6 @@ type AlterReplicationGroupOptions struct {
 	Add              *ReplicationGroupAdd     `ddl:"keyword" sql:"ADD"`
 	Move             *ReplicationGroupMove    `ddl:"keyword" sql:"MOVE"`
 	Remove           *ReplicationGroupRemove  `ddl:"keyword" sql:"REMOVE"`
-	Refresh          *bool                    `ddl:"keyword" sql:"REFRESH"`
-	Suspend          *ReplicationGroupSuspend `ddl:"keyword" sql:"SUSPEND"`
-	Resume           *bool                    `ddl:"keyword" sql:"RESUME"`
 }
 
 type ReplicationGroupSet struct {
@@ -103,7 +110,18 @@ type ReplicationGroupRemove struct {
 	FromAllowedAccounts        []AccountIdentifier       `ddl:"parameter,no_parentheses,reverse" sql:"FROM ALLOWED_ACCOUNTS"`
 }
 
-type ReplicationGroupSuspend struct {
+// AlterSecondaryReplicationGroupOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-replication-group.
+type AlterSecondaryReplicationGroupOptions struct {
+	alter            bool                              `ddl:"static" sql:"ALTER"`
+	replicationGroup bool                              `ddl:"static" sql:"REPLICATION GROUP"`
+	IfExists         *bool                             `ddl:"keyword" sql:"IF EXISTS"`
+	name             AccountObjectIdentifier           `ddl:"identifier"`
+	Refresh          *bool                             `ddl:"keyword" sql:"REFRESH"`
+	Suspend          *ReplicationGroupSecondarySuspend `ddl:"keyword" sql:"SUSPEND"`
+	Resume           *bool                             `ddl:"keyword" sql:"RESUME"`
+}
+
+type ReplicationGroupSecondarySuspend struct {
 	Immediate *bool `ddl:"keyword" sql:"IMMEDIATE"`
 }
 
@@ -173,13 +191,4 @@ func (v *ReplicationGroup) ID() AccountObjectIdentifier {
 
 func (v *ReplicationGroup) ObjectType() ObjectType {
 	return ObjectTypeReplicationGroup
-}
-
-// CreateSecondaryReplicationGroupOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-replication-group.
-type CreateSecondaryReplicationGroupOptions struct {
-	create           bool                     `ddl:"static" sql:"CREATE"`
-	replicationGroup bool                     `ddl:"static" sql:"REPLICATION GROUP"`
-	IfNotExists      *bool                    `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name             AccountObjectIdentifier  `ddl:"identifier"`
-	AsReplicaOf      ExternalObjectIdentifier `ddl:"identifier" sql:"AS REPLICA OF"`
 }

@@ -1175,6 +1175,43 @@ func Test_CreateVariantOperationsFromObject_fakeObject(t *testing.T) {
 	requireSameOperations(t, want, got)
 }
 
+func Test_CreateVariantOperationsFromObject_withoutOrReplace(t *testing.T) {
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	base := ssot.Object{
+		Name: "Widget",
+		Generators: []ssot.GeneratorOption{
+			ssot.WithSdk(ssot.SdkCreateForVariants()),
+		},
+	}
+	variant := ssot.Object{
+		Name:                       "WidgetMini",
+		VariantOf:                  &base,
+		VariantEntityCreateName:    "MINI WIDGET",
+		SdkCreateRequestObjectName: "MiniWidget",
+		Create: ssot.CreateSpec{
+			Doc:              "https://docs.example.com/mini",
+			WithoutOrReplace: true,
+			Clauses:          []*ssot.Attribute{&comment},
+		},
+	}
+	orig := variantsOf
+	t.Cleanup(func() { variantsOf = orig })
+	variantsOf = func(ssot.Object) []ssot.Object { return []ssot.Object{variant} }
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateVariantOperationsFromObject(base)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CustomOperation(
+		"CreateMini",
+		"https://docs.example.com/mini",
+		NewQueryStruct("CreateMiniWidget").
+			Create().
+			SQL("MINI WIDGET").
+			IfNotExists().
+			Name().
+			OptionalTextAssignment("COMMENT", ParameterOptions().SingleQuotes()).
+			WithValidation(ValidIdentifier, "name"),
+	)
+	requireSameOperations(t, want, got)
+}
+
 func Test_CreateVariantOperationsFromObject_panics(t *testing.T) {
 	base := ssot.Object{Name: "Widget"}
 	variant := ssot.Object{Name: "WidgetMini", VariantOf: &base}
