@@ -63,6 +63,7 @@ type SdkGenerator struct {
 	// DescribeDetailsParseIgnoreUnknown skips a property with no mapping and logs a warning, instead of returning an error.
 	DescribeDetailsParseIgnoreUnknown bool
 	DescribeQueryStructName           string
+	DescribeIdentifierOverride        string
 	// DescribePlainOnlyFields are fields on the DESCRIBE plain struct that are not DESCRIBE columns.
 	// convert skips them. additionalConvert in the SDK ext file fills them.
 	DescribePlainOnlyFields []SdkPlainOnlyField

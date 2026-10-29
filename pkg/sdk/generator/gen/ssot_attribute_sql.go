@@ -178,6 +178,9 @@ func (v *QueryStruct) appendParameterClause(attr ssot.Attribute, clause ssot.Sql
 			panic(fmt.Sprintf("attribute %q: list parameter has no item struct", attr.Name))
 		}
 		v = v.ListAssignment(sql, item, opts)
+		if required && attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
+			v = v.WithValidation(AtLeastOneValueSet, sqlToFieldName(sql, true))
+		}
 		if attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
 			v = v.WithValidation(ValidIdentifier, sqlToFieldName(sql, true))
 		}

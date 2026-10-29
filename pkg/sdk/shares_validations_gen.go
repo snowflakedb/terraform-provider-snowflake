@@ -71,8 +71,8 @@ func (opts *AlterShareOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !exactlyOneValueSet(opts.Unset.Comment) {
-			errs = append(errs, errExactlyOneOf("AlterShareOptions.Unset", "Comment"))
+		if !anyValueSet(opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterShareOptions.Unset", "Comment"))
 		}
 	}
 	if valueSet(opts.SetTags) {
