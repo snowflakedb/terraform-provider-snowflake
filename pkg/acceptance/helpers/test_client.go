@@ -78,6 +78,7 @@ type TestClient struct {
 	Procedure                    *ProcedureClient
 	ProjectionPolicy             *ProjectionPolicyClient
 	PolicyReferences             *PolicyReferencesClient
+	Quota                        *QuotaClient
 	ReplicationGroup             *ReplicationGroupClient
 	ResourceMonitor              *ResourceMonitorClient
 	Role                         *RoleClient
@@ -194,6 +195,7 @@ func NewTestClient(
 		Procedure:                    NewProcedureClient(context, idsGenerator),
 		ProjectionPolicy:             NewProjectionPolicyClient(context, idsGenerator),
 		PolicyReferences:             NewPolicyReferencesClient(context),
+		Quota:                        NewQuotaClient(context, idsGenerator),
 		ReplicationGroup:             NewReplicationGroupClient(context, idsGenerator),
 		ResourceMonitor:              NewResourceMonitorClient(context, idsGenerator),
 		Role:                         NewRoleClient(context, idsGenerator),

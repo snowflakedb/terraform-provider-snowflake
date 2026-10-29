@@ -17,10 +17,29 @@ type modifierType string
 const (
 	quoteModifierType   modifierType = "quotes"
 	parenModifierType   modifierType = "paren"
+	bracketModifierType modifierType = "bracket"
 	commaModifierType   modifierType = "comma"
 	reverseModifierType modifierType = "reverse"
 	equalsModifierType  modifierType = "equals"
 )
+
+// ddl classifiers that are not modifiers; their names must not contain any modifierType value,
+// because getModifier matches modifiers by substring.
+const (
+	instanceMethodClassifier  = "instance_method"
+	systemReferenceClassifier = "system_reference"
+	subqueryClassifier        = "subquery"
+	arrayElementsClassifier   = "array_elements"
+)
+
+func hasDdlClassifier(ddlTagParts []string, classifier string) bool {
+	for _, part := range ddlTagParts {
+		if strings.TrimSpace(part) == classifier {
+			return true
+		}
+	}
+	return false
+}
 
 type modifier interface {
 	Modify(v any) string
@@ -153,6 +172,26 @@ func (pm parenModifier) Modify(v any) string {
 	}
 }
 
+type bracketModifier string
+
+const (
+	NoBrackets   bracketModifier = "no_brackets"
+	Brackets     bracketModifier = "brackets"
+	MustBrackets bracketModifier = "must_brackets"
+)
+
+func (bm bracketModifier) Modify(v any) string {
+	s := fmt.Sprintf("%v", v)
+	switch bm {
+	case NoBrackets:
+		return s
+	case Brackets, MustBrackets:
+		return fmt.Sprintf(`[%v]`, s)
+	default:
+		return s
+	}
+}
+
 // TODO [next PRs]: drop the reverse modifier. One struct per allowed-list target, then a static
 // TO ALLOWED_* or FROM ALLOWED_* clause. See pkg/sdk/generator/README.md#create-and-alter.
 type reverseModifier string
@@ -212,6 +251,8 @@ func (b *sqlBuilder) getModifier(tag reflect.StructTag, tagName string, modType 
 				return quoteModifier(trimmedS)
 			case parenModifierType:
 				return parenModifier(trimmedS)
+			case bracketModifierType:
+				return bracketModifier(trimmedS)
 			case equalsModifierType:
 				return equalsModifier(trimmedS)
 			case reverseModifierType:
@@ -383,24 +424,30 @@ func (b sqlBuilder) parseFieldStruct(field reflect.StructField, value reflect.Va
 					return nil, nil
 				}
 				// instance_method classifier: render as identifier!METHOD
-				for _, part := range ddlTagParts {
-					if strings.TrimSpace(part) == "instance_method" {
-						objectID, ok := reflectedValue.(ObjectIdentifier)
-						if !ok {
-							return nil, fmt.Errorf("instance_method classifier requires ObjectIdentifier, got %T", reflectedValue)
-						}
-						return sqlInstanceMethodClause{object: objectID, method: sqlTag}, nil
+				if hasDdlClassifier(ddlTagParts, instanceMethodClassifier) {
+					objectID, ok := reflectedValue.(ObjectIdentifier)
+					if !ok {
+						return nil, fmt.Errorf("instance_method classifier requires ObjectIdentifier, got %T", reflectedValue)
 					}
+					return sqlInstanceMethodClause{object: objectID, method: sqlTag}, nil
 				}
-				// system_reference classifier: render as SYSTEM$REFERENCE('<objectType>', '<fqn>')
-				for _, part := range ddlTagParts {
-					if strings.TrimSpace(part) == "system_reference" {
-						objectID, ok := reflectedValue.(ObjectIdentifier)
-						if !ok {
-							return nil, fmt.Errorf("system_reference classifier requires ObjectIdentifier, got %T", reflectedValue)
-						}
-						return sqlSystemReferenceClause{objectType: sqlTag, object: objectID}, nil
+				// the sql tag holds the object type, followed by any comma-separated extra arguments (e.g. scope and privileges)
+				if hasDdlClassifier(ddlTagParts, systemReferenceClassifier) {
+					objectID, ok := reflectedValue.(ObjectIdentifier)
+					if !ok {
+						return nil, fmt.Errorf("system_reference classifier requires ObjectIdentifier, got %T", reflectedValue)
 					}
+					sqlTagParts := strings.Split(sqlTag, ",")
+					extraArgs := make([]string, 0, len(sqlTagParts)-1)
+					for _, arg := range sqlTagParts[1:] {
+						extraArgs = append(extraArgs, strings.TrimSpace(arg))
+					}
+					return sqlSystemReferenceClause{
+						objectType: strings.TrimSpace(sqlTagParts[0]),
+						object:     objectID,
+						extraArgs:  extraArgs,
+						inSubquery: hasDdlClassifier(ddlTagParts, subqueryClassifier),
+					}, nil
 				}
 				return sqlIdentifierClause{
 					key:   sqlTag,
@@ -417,17 +464,19 @@ func (b sqlBuilder) parseFieldStruct(field reflect.StructField, value reflect.Va
 			if err != nil {
 				return nil, err
 			}
+			pm := b.getModifier(field.Tag, "ddl", parenModifierType, NoParentheses).(parenModifier)
+			bm := b.getModifier(field.Tag, "ddl", bracketModifierType, NoBrackets).(bracketModifier)
 			if len(fieldStructClauses) == 0 {
-				// handle the case where the list is empty and parentheses are a must
-				pm := b.getModifier(field.Tag, "ddl", parenModifierType, NoParentheses).(parenModifier)
-				if pm == MustParentheses {
+				// handle the case where the list is empty and parentheses or brackets are a must
+				if pm == MustParentheses || bm == MustBrackets {
 					fieldStructClauses = append(fieldStructClauses, sqlStaticClause(""))
 				}
 			}
 			clauses = append(clauses, sqlListClause{
 				clauses: fieldStructClauses,
 				cm:      b.getModifier(field.Tag, "ddl", commaModifierType, Comma).(commaModifier),
-				pm:      b.getModifier(field.Tag, "ddl", parenModifierType, NoParentheses).(parenModifier),
+				bm:      bm,
+				pm:      pm,
 			})
 			return b.renderStaticClause(clauses...)
 		case "parameter":
@@ -473,6 +522,12 @@ func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Val
 	if value.Kind() == reflect.Pointer {
 		value = value.Elem()
 	}
+	ddlTagParts := strings.Split(field.Tag.Get("ddl"), ",")
+	// for list fields, the quote modifier applies to each element; for parameter and keyword fields it applies to the whole rendered list
+	elementQuotes := NoQuotes
+	if ddlTagParts[0] == "list" {
+		elementQuotes = b.getModifier(field.Tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier)
+	}
 	listClauses := make([]sqlClause, 0)
 	// loop through the slice call parseStruct on each element (since the elements could be structs)
 	for i := 0; i < value.Len(); i++ {
@@ -483,8 +538,7 @@ func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Val
 			listClauses = append(listClauses, sqlIdentifierClause{
 				value: identifier,
 				em:    b.getModifier(field.Tag, "ddl", equalsModifierType, NoEquals).(equalsModifier),
-				// TODO [next PRs]: handle single quotes for identifier lists correctly
-				// qm:    b.getModifier(field.Tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier),
+				qm:    elementQuotes,
 			})
 			continue
 		}
@@ -512,6 +566,13 @@ func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Val
 					return nil, err
 				}
 			}
+			// empty elements are skipped rather than rendered as []
+			if hasDdlClassifier(ddlTagParts, arrayElementsClassifier) {
+				if len(structClauses) > 0 {
+					listClauses = append(listClauses, sqlListClause{clauses: structClauses, cm: Comma, bm: Brackets})
+				}
+				continue
+			}
 			// each element of the slice needs to be pre-rendered before the commas are added.
 			sClause, err := b.renderStaticClause(structClauses...)
 			if err != nil {
@@ -520,28 +581,28 @@ func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Val
 			listClauses = append(listClauses, sClause)
 		} else {
 			// if it is not a struct, then it is a primitive type and can be added directly.
-			listClauses = append(listClauses, sqlStaticClause(fmt.Sprintf("%v", reflectedValue)))
+			listClauses = append(listClauses, sqlStaticClause(elementQuotes.Modify(reflectedValue)))
 		}
 	}
+	pm := b.getModifier(field.Tag, "ddl", parenModifierType, NoParentheses).(parenModifier)
+	bm := b.getModifier(field.Tag, "ddl", bracketModifierType, NoBrackets).(bracketModifier)
 	if len(listClauses) < 1 {
-		// handle the case where the list is empty and parentheses are a must
-		modifier := b.getModifier(field.Tag, "ddl", parenModifierType, NoParentheses).(parenModifier)
-		switch modifier {
-		case MustParentheses:
-			listClauses = append(listClauses, sqlStaticClause(""))
-		default:
+		// handle the case where the list is empty and parentheses or brackets are a must
+		if pm != MustParentheses && bm != MustBrackets {
 			return nil, nil
 		}
+		listClauses = append(listClauses, sqlStaticClause(""))
 	}
 	sClause, err := b.renderStaticClause(sqlListClause{
 		clauses: listClauses,
 		cm:      b.getModifier(field.Tag, "ddl", commaModifierType, Comma).(commaModifier),
-		pm:      b.getModifier(field.Tag, "ddl", parenModifierType, NoParentheses).(parenModifier),
+		bm:      bm,
+		pm:      pm,
 	})
 	if err != nil {
 		return nil, err
 	}
-	ddlTag := strings.Split(field.Tag.Get("ddl"), ",")[0]
+	ddlTag := ddlTagParts[0]
 	sqlTag := field.Tag.Get("sql")
 	// depending on the ddl tag we may want to add a parameter clause or a keyword clause before rendered list clause
 	switch ddlTag {
@@ -654,6 +715,7 @@ func (b sqlBuilder) getInterface(field reflect.Value) any {
 type sqlListClause struct {
 	clauses []sqlClause
 	cm      commaModifier
+	bm      bracketModifier
 	pm      parenModifier
 }
 
@@ -670,6 +732,7 @@ func (v sqlListClause) String() (string, error) {
 		clauseStrings[i] = s
 	}
 	s := v.cm.Modify(clauseStrings)
+	s = v.bm.Modify(s)
 	s = v.pm.Modify(s)
 	return s, nil
 }
@@ -771,14 +834,33 @@ type sqlInstanceMethodClause struct {
 }
 
 func (v sqlInstanceMethodClause) String() (string, error) {
-	return fmt.Sprintf("%s!%s", v.object.FullyQualifiedName(), v.method), nil
+	return fmt.Sprintf("%s!%s", v.object.FullyQualifiedNameEscaped(), v.method), nil
 }
 
 type sqlSystemReferenceClause struct {
 	objectType string
 	object     ObjectIdentifier
+	extraArgs  []string
+	inSubquery bool
+}
+
+// quoteSystemReferenceArg wraps an argument in single quotes, escaping only the characters that would end the string literal
+// (double quotes inside names are already escaped by FullyQualifiedNameEscaped).
+func quoteSystemReferenceArg(arg string) string {
+	arg = strings.ReplaceAll(arg, `\`, `\\`)
+	arg = strings.ReplaceAll(arg, `'`, `\'`)
+	return fmt.Sprintf("'%s'", arg)
 }
 
 func (v sqlSystemReferenceClause) String() (string, error) {
-	return fmt.Sprintf("SYSTEM$REFERENCE('%s', '%s')", v.objectType, v.object.FullyQualifiedName()), nil
+	args := make([]string, 0, 2+len(v.extraArgs))
+	args = append(args, quoteSystemReferenceArg(v.objectType), quoteSystemReferenceArg(v.object.FullyQualifiedNameEscaped()))
+	for _, arg := range v.extraArgs {
+		args = append(args, quoteSystemReferenceArg(arg))
+	}
+	s := fmt.Sprintf("SYSTEM$REFERENCE(%s)", strings.Join(args, ", "))
+	if v.inSubquery {
+		return fmt.Sprintf("(SELECT %s)", s), nil
+	}
+	return s, nil
 }
