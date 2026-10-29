@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
+	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -52,6 +54,15 @@ func quotaTagValueSchema(description string) *schema.Schema {
 				},
 			},
 		},
+	}
+}
+
+func quotaProcedureSchema(description string) *schema.Schema {
+	return &schema.Schema{
+		Type:             schema.TypeString,
+		Required:         true,
+		Description:      description,
+		ValidateDiagFunc: sdkValidation(sdk.ParseSchemaObjectIdentifierWithArguments),
 	}
 }
 
@@ -227,6 +238,58 @@ var quotaSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Elem:        &schema.Schema{Type: schema.TypeString},
 		Description: "Email addresses that receive admin summary notifications. Each must be the verified email of a user in the account.",
+	},
+	"custom_action": {
+		Type:        schema.TypeSet,
+		Optional:    true,
+		Description: "Stored procedures called when users cross a threshold of their monthly limit.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"procedure": quotaProcedureSchema(joinWithSpace(
+					"Fully qualified name of the procedure with its argument types, e.g. `\"<database>\".\"<schema>\".\"<procedure>\"(VARCHAR)`.",
+					"The procedure must use EXECUTE AS OWNER and be granted to the SNOWFLAKE application; its first argument receives the IDs of the users who crossed the threshold.",
+				)),
+				"arguments": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					Elem:        &schema.Schema{Type: schema.TypeString},
+					Description: "Additional arguments passed to the procedure.",
+				},
+				"spend_strategy": {
+					Type:             schema.TypeString,
+					Optional:         true,
+					Default:          string(sdk.QuotaSpendStrategyActual),
+					Description:      joinWithSpace("Whether the threshold applies to actual or projected spend.", quotaEnumValuesDescription(sdk.AllQuotaSpendStrategies)),
+					ValidateDiagFunc: quotaEnumValidation(sdk.AllQuotaSpendStrategies),
+				},
+				"threshold": {
+					Type:         schema.TypeInt,
+					Required:     true,
+					ValidateFunc: validation.IntAtLeast(1),
+					Description:  "Percentage of the monthly limit.",
+				},
+			},
+		},
+	},
+	"cycle_start_action": {
+		Type:        schema.TypeList,
+		Optional:    true,
+		MaxItems:    1,
+		Description: "Stored procedure called at the start of each monthly cycle.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"procedure": quotaProcedureSchema(joinWithSpace(
+					"Fully qualified name of the procedure with its argument types, e.g. `\"<database>\".\"<schema>\".\"<procedure>\"()`.",
+					"The procedure must use EXECUTE AS OWNER and be granted to the SNOWFLAKE application.",
+				)),
+				"arguments": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					Elem:        &schema.Schema{Type: schema.TypeString},
+					Description: "Arguments passed to the procedure.",
+				},
+			},
+		},
 	},
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,
@@ -474,6 +537,8 @@ func ReadQuota(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 		d.Set("admin_emails", remote.adminEmails),
 		d.Set("notification_threshold", remote.notificationThresholdsToSchema()),
 		d.Set("notification_integrations", remote.notificationIntegrationsToSchema()),
+		d.Set("custom_action", remote.customActionsToSchema()),
+		d.Set("cycle_start_action", remote.cycleStartActionToSchema()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.QuotaToSchema(quota)}),
 		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.QuotaDetailsToSchema(details)}),
 	)
@@ -560,6 +625,37 @@ func reconcileQuota(ctx context.Context, client *sdk.Client, id sdk.SchemaObject
 	if blockEnforcementChanged && !desired.blockEnforcementEnabled {
 		if err := setBlockEnforcement(); err != nil {
 			return err
+		}
+	}
+
+	// REMOVE_CUSTOM_ACTIONS(<threshold>, <procedure>) removes the actions for both spend strategies,
+	// so the desired actions sharing a removed (threshold, procedure) pair are added back afterwards.
+	removedActions, addedActions := quotaDiffByKey(previous.customActions, desired.customActions, quotaCustomAction.key)
+	removedActionGroups := make(map[string]quotaCustomAction)
+	for _, action := range removedActions {
+		removedActionGroups[action.removalKey()] = action
+	}
+	if len(removedActionGroups) > 0 {
+		// the registered actions are read first, so that the procedure is passed back exactly as Snowflake returns it
+		registered, err := quotas.GetCustomActions(ctx, sdk.NewGetCustomActionsQuotaRequest(id))
+		if err != nil {
+			return fmt.Errorf("reading custom actions: %w", err)
+		}
+		for _, key := range slices.Sorted(maps.Keys(removedActionGroups)) {
+			action := removedActionGroups[key]
+			procedureFqn, found := quotaRegisteredProcedureFqn(registered, action)
+			if !found {
+				continue
+			}
+			args := sdk.NewQuotaRemoveCustomActionsArgsRequest().WithThreshold(action.threshold).WithProcedureFqn(procedureFqn)
+			if _, err := quotas.RemoveCustomActions(ctx, sdk.NewRemoveCustomActionsQuotaRequest(id, *args)); err != nil {
+				return fmt.Errorf("removing custom actions at %d%% for %s: %w", action.threshold, action.procedure.FullyQualifiedName(), err)
+			}
+		}
+	}
+	for _, action := range desired.customActions {
+		if _, ok := removedActionGroups[action.removalKey()]; ok && !slices.ContainsFunc(addedActions, func(a quotaCustomAction) bool { return a.key() == action.key() }) {
+			addedActions = append(addedActions, action)
 		}
 	}
 
@@ -687,6 +783,25 @@ func reconcileQuota(ctx context.Context, client *sdk.Client, id sdk.SchemaObject
 		args := sdk.NewQuotaAddNotificationThresholdArgsRequest(threshold.threshold, threshold.spendStrategy, threshold.notifyUser, threshold.cycle)
 		if _, err := quotas.AddNotificationThreshold(ctx, sdk.NewAddNotificationThresholdQuotaRequest(id, *args)); err != nil {
 			return fmt.Errorf("adding notification threshold %d%% (%s): %w", threshold.threshold, threshold.spendStrategy, err)
+		}
+	}
+
+	for _, action := range addedActions {
+		args := sdk.NewQuotaAddCustomActionArgsRequest(action.procedure, action.arguments, action.spendStrategy, action.threshold)
+		if _, err := quotas.AddCustomAction(ctx, sdk.NewAddCustomActionQuotaRequest(id, *args)); err != nil {
+			return fmt.Errorf("adding custom action at %d%% for %s: %w", action.threshold, action.procedure.FullyQualifiedName(), err)
+		}
+	}
+	if previous.cycleStartActionKey() != desired.cycleStartActionKey() {
+		if desired.cycleStartAction == nil {
+			if _, err := quotas.RemoveCycleStartAction(ctx, sdk.NewRemoveCycleStartActionQuotaRequest(id)); err != nil {
+				return fmt.Errorf("removing the cycle-start action: %w", err)
+			}
+		} else {
+			args := sdk.NewQuotaSetCycleStartActionArgsRequest(desired.cycleStartAction.procedure, desired.cycleStartAction.arguments)
+			if _, err := quotas.SetCycleStartAction(ctx, sdk.NewSetCycleStartActionQuotaRequest(id, *args)); err != nil {
+				return fmt.Errorf("setting the cycle-start action: %w", err)
+			}
 		}
 	}
 

@@ -17,6 +17,8 @@ type QuotaModel struct {
 	AdminEmails              tfconfig.Variable `json:"admin_emails,omitempty"`
 	BlockEnforcementEnabled  tfconfig.Variable `json:"block_enforcement_enabled,omitempty"`
 	Comment                  tfconfig.Variable `json:"comment,omitempty"`
+	CustomAction             tfconfig.Variable `json:"custom_action,omitempty"`
+	CycleStartAction         tfconfig.Variable `json:"cycle_start_action,omitempty"`
 	ExcludedUserTag          tfconfig.Variable `json:"excluded_user_tag,omitempty"`
 	ExcludedUsers            tfconfig.Variable `json:"excluded_users,omitempty"`
 	FullyQualifiedName       tfconfig.Variable `json:"fully_qualified_name,omitempty"`
@@ -127,6 +129,10 @@ func (q *QuotaModel) WithComment(comment string) *QuotaModel {
 	return q
 }
 
+// custom_action attribute type is not yet supported, so WithCustomAction can't be generated
+
+// cycle_start_action attribute type is not yet supported, so WithCycleStartAction can't be generated
+
 // excluded_user_tag attribute type is not yet supported, so WithExcludedUserTag can't be generated
 
 // excluded_users attribute type is not yet supported, so WithExcludedUsers can't be generated
@@ -197,6 +203,16 @@ func (q *QuotaModel) WithBlockEnforcementEnabledValue(value tfconfig.Variable) *
 
 func (q *QuotaModel) WithCommentValue(value tfconfig.Variable) *QuotaModel {
 	q.Comment = value
+	return q
+}
+
+func (q *QuotaModel) WithCustomActionValue(value tfconfig.Variable) *QuotaModel {
+	q.CustomAction = value
+	return q
+}
+
+func (q *QuotaModel) WithCycleStartActionValue(value tfconfig.Variable) *QuotaModel {
+	q.CycleStartAction = value
 	return q
 }
 

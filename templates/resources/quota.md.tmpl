@@ -17,7 +17,7 @@ description: |-
 
 ~> **Note** Users are selected either by tags (`user_tags`) or by excluding tags (`excluded_user_tag`), not both. Snowflake clears the included and excluded users when tags are excluded, so the provider sets them again after changing `excluded_user_tag`.
 
--> **Note** The role managing the quota needs the `SNOWFLAKE.QUOTA_CREATOR` database role and the `CREATE SNOWFLAKE.CORE.QUOTA` privilege on the schema. Tags used in `user_tags` and `excluded_user_tag` require the `APPLYBUDGET` privilege. Notification integrations must be webhook or queue integrations (email integrations aren't accepted; email recipients are set with `admin_emails`). USAGE on the notification integrations must be granted to the `SNOWFLAKE` application, and `admin_emails` must be verified emails of users in the account. Check the [per-user quotas documentation](https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas) for details.
+-> **Note** The role managing the quota needs the `SNOWFLAKE.QUOTA_CREATOR` database role and the `CREATE SNOWFLAKE.CORE.QUOTA` privilege on the schema. Tags used in `user_tags` and `excluded_user_tag` require the `APPLYBUDGET` privilege. Notification integrations must be webhook or queue integrations (email integrations aren't accepted; email recipients are set with `admin_emails`). USAGE on the notification integrations and on the procedures used in `custom_action` and `cycle_start_action` must be granted to the `SNOWFLAKE` application, and `admin_emails` must be verified emails of users in the account. Check the [per-user quotas documentation](https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas) for details.
 
 # {{.Name}} ({{.Type}})
 

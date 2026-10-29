@@ -13,7 +13,7 @@ description: |-
 
 ~> **Note** Users are selected either by tags (`user_tags`) or by excluding tags (`excluded_user_tag`), not both. Snowflake clears the included and excluded users when tags are excluded, so the provider sets them again after changing `excluded_user_tag`.
 
--> **Note** The role managing the quota needs the `SNOWFLAKE.QUOTA_CREATOR` database role and the `CREATE SNOWFLAKE.CORE.QUOTA` privilege on the schema. Tags used in `user_tags` and `excluded_user_tag` require the `APPLYBUDGET` privilege. Notification integrations must be webhook or queue integrations (email integrations aren't accepted; email recipients are set with `admin_emails`). USAGE on the notification integrations must be granted to the `SNOWFLAKE` application, and `admin_emails` must be verified emails of users in the account. Check the [per-user quotas documentation](https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas) for details.
+-> **Note** The role managing the quota needs the `SNOWFLAKE.QUOTA_CREATOR` database role and the `CREATE SNOWFLAKE.CORE.QUOTA` privilege on the schema. Tags used in `user_tags` and `excluded_user_tag` require the `APPLYBUDGET` privilege. Notification integrations must be webhook or queue integrations (email integrations aren't accepted; email recipients are set with `admin_emails`). USAGE on the notification integrations and on the procedures used in `custom_action` and `cycle_start_action` must be granted to the `SNOWFLAKE` application, and `admin_emails` must be verified emails of users in the account. Check the [per-user quotas documentation](https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas) for details.
 
 # snowflake_quota (Resource)
 
@@ -101,7 +101,7 @@ resource "snowflake_quota" "all_but_high_tier" {
   per_user_limit_monthly = 200
 }
 
-## Warehouse domain: per-user warehouse credit limits
+## Warehouse domain: per-user warehouse credit limits with custom and cycle-start actions
 resource "snowflake_quota" "warehouse" {
   database = "database_name"
   schema   = "schema_name"
@@ -113,6 +113,18 @@ resource "snowflake_quota" "warehouse" {
   }
 
   per_user_limit_monthly = 100
+
+  # The procedures must use EXECUTE AS OWNER and be granted to the SNOWFLAKE application. The first argument of a custom action
+  # procedure receives the IDs of the users who crossed the threshold; `arguments` fill the remaining ones.
+  custom_action {
+    procedure      = "\"database_name\".\"schema_name\".\"disable_users\"(VARCHAR)"
+    spend_strategy = "ACTUAL"
+    threshold      = 100
+  }
+
+  cycle_start_action {
+    procedure = "\"database_name\".\"schema_name\".\"enable_users\"()"
+  }
 }
 ```
 
@@ -135,6 +147,8 @@ resource "snowflake_quota" "warehouse" {
 - `admin_emails` (Set of String) Email addresses that receive admin summary notifications. Each must be the verified email of a user in the account.
 - `block_enforcement_enabled` (Boolean) (Default: `false`) Blocks new requests of users who reached their limit. Applies only to the AI domains.
 - `comment` (String) Specifies a comment for the quota.
+- `custom_action` (Block Set) Stored procedures called when users cross a threshold of their monthly limit. (see [below for nested schema](#nestedblock--custom_action))
+- `cycle_start_action` (Block List, Max: 1) Stored procedure called at the start of each monthly cycle. (see [below for nested schema](#nestedblock--cycle_start_action))
 - `excluded_user_tag` (Block Set) Applies the quota to all users except the ones with the given tag and value. Conflicts with `user_tags`. (see [below for nested schema](#nestedblock--excluded_user_tag))
 - `excluded_users` (Set of String) Names of individual users excluded from the quota. Names are resolved case-insensitively. For more information about this resource, see [docs](./user).
 - `included_users` (Set of String) Names of individual users the quota applies to. Names are resolved case-insensitively. For more information about this resource, see [docs](./user).
@@ -154,6 +168,32 @@ resource "snowflake_quota" "warehouse" {
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
 - `show_output` (List of Object) Outputs the result of `SHOW SNOWFLAKE.CORE.QUOTA` for the given quota. (see [below for nested schema](#nestedatt--show_output))
+
+<a id="nestedblock--custom_action"></a>
+### Nested Schema for `custom_action`
+
+Required:
+
+- `procedure` (String) Fully qualified name of the procedure with its argument types, e.g. `"<database>"."<schema>"."<procedure>"(VARCHAR)`. The procedure must use EXECUTE AS OWNER and be granted to the SNOWFLAKE application; its first argument receives the IDs of the users who crossed the threshold.
+- `threshold` (Number) Percentage of the monthly limit.
+
+Optional:
+
+- `arguments` (List of String) Additional arguments passed to the procedure.
+- `spend_strategy` (String) (Default: `ACTUAL`) Whether the threshold applies to actual or projected spend. Valid values are (case-sensitive): `ACTUAL` | `PROJECTED`.
+
+
+<a id="nestedblock--cycle_start_action"></a>
+### Nested Schema for `cycle_start_action`
+
+Required:
+
+- `procedure` (String) Fully qualified name of the procedure with its argument types, e.g. `"<database>"."<schema>"."<procedure>"()`. The procedure must use EXECUTE AS OWNER and be granted to the SNOWFLAKE application.
+
+Optional:
+
+- `arguments` (List of String) Arguments passed to the procedure.
+
 
 <a id="nestedblock--excluded_user_tag"></a>
 ### Nested Schema for `excluded_user_tag`

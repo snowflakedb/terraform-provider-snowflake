@@ -48,3 +48,23 @@ func (q *QuotaResourceAssert) HasNotificationThreshold(threshold int, spendStrat
 	}))
 	return q
 }
+
+func (q *QuotaResourceAssert) HasCustomActionsCount(expected int) *QuotaResourceAssert {
+	q.AddAssertion(assert.ValueSet("custom_action.#", strconv.Itoa(expected)))
+	return q
+}
+
+func (q *QuotaResourceAssert) HasCustomAction(procedure sdk.SchemaObjectIdentifierWithArguments, spendStrategy sdk.QuotaSpendStrategy, threshold int) *QuotaResourceAssert {
+	q.AddAssertion(assert.SetElemNested("custom_action", map[string]string{
+		"procedure":      procedure.FullyQualifiedName(),
+		"spend_strategy": string(spendStrategy),
+		"threshold":      strconv.Itoa(threshold),
+	}))
+	return q
+}
+
+func (q *QuotaResourceAssert) HasCycleStartAction(procedure sdk.SchemaObjectIdentifierWithArguments) *QuotaResourceAssert {
+	q.AddAssertion(assert.ValueSet("cycle_start_action.#", "1"))
+	q.AddAssertion(assert.ValueSet("cycle_start_action.0.procedure", procedure.FullyQualifiedName()))
+	return q
+}

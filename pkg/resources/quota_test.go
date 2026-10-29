@@ -17,7 +17,8 @@ import (
 // unexported, so only the order and number of calls are checked here; the rendered SQL is covered by the SDK unit tests.
 type fakeQuotas struct {
 	sdk.Quotas
-	calls []string
+	calls      []string
+	registered []sdk.QuotaCustomAction
 }
 
 func (f *fakeQuotas) record(method string) (*string, error) {
@@ -77,10 +78,39 @@ func (f *fakeQuotas) SetAdminEmails(context.Context, *sdk.SetAdminEmailsQuotaReq
 	return f.record("SET_ADMIN_EMAILS")
 }
 
+func (f *fakeQuotas) AddCustomAction(context.Context, *sdk.AddCustomActionQuotaRequest) (*string, error) {
+	return f.record("ADD_CUSTOM_ACTION")
+}
+
+func (f *fakeQuotas) RemoveCustomActions(context.Context, *sdk.RemoveCustomActionsQuotaRequest) (*string, error) {
+	return f.record("REMOVE_CUSTOM_ACTIONS")
+}
+
+func (f *fakeQuotas) GetCustomActions(context.Context, *sdk.GetCustomActionsQuotaRequest) ([]sdk.QuotaCustomAction, error) {
+	f.calls = append(f.calls, "GET_CUSTOM_ACTIONS")
+	return f.registered, nil
+}
+
+func (f *fakeQuotas) SetCycleStartAction(context.Context, *sdk.SetCycleStartActionQuotaRequest) (*string, error) {
+	return f.record("SET_CYCLE_START_ACTION")
+}
+
+func (f *fakeQuotas) RemoveCycleStartAction(context.Context, *sdk.RemoveCycleStartActionQuotaRequest) (*string, error) {
+	return f.record("REMOVE_CYCLE_START_ACTION")
+}
+
 func Test_reconcileQuota(t *testing.T) {
 	id := sdk.NewSchemaObjectIdentifier("DB", "SCH", "QUOTA")
+	procedure := sdk.NewSchemaObjectIdentifierWithArguments("DB", "SCH", "PROC", sdk.DataTypeVARCHAR)
 	aiFunction := quotaSharedResource{domain: sdk.QuotaSharedResourceDomainAiFunction}
 	warehouse := quotaSharedResource{domain: sdk.QuotaSharedResourceDomainWarehouse, instance: "WH"}
+	actualAction := quotaCustomAction{procedure: procedure, spendStrategy: sdk.QuotaSpendStrategyActual, threshold: 100}
+	projectedAction := quotaCustomAction{procedure: procedure, spendStrategy: sdk.QuotaSpendStrategyProjected, threshold: 100}
+	registeredActions := []sdk.QuotaCustomAction{
+		{ProcedureFqn: "DB.SCH.PROC(VARCHAR)", SpendStrategy: sdk.QuotaSpendStrategyActual, Threshold: 100},
+		{ProcedureFqn: "DB.SCH.PROC(VARCHAR)", SpendStrategy: sdk.QuotaSpendStrategyProjected, Threshold: 100},
+	}
+
 	configuration := func(customize func(c *quotaConfiguration)) *quotaConfiguration {
 		c := &quotaConfiguration{perUserLimits: make(map[sdk.QuotaCycle]int)}
 		if customize != nil {
@@ -88,15 +118,15 @@ func Test_reconcileQuota(t *testing.T) {
 		}
 		return c
 	}
-	reconcile := func(t *testing.T, previous, desired *quotaConfiguration) []string {
+	reconcile := func(t *testing.T, previous, desired *quotaConfiguration, registered []sdk.QuotaCustomAction) []string {
 		t.Helper()
-		fake := &fakeQuotas{}
+		fake := &fakeQuotas{registered: registered}
 		require.NoError(t, reconcileQuota(context.Background(), &sdk.Client{Quotas: fake}, id, previous, desired))
 		return fake.calls
 	}
 
 	t.Run("a default configuration makes no call", func(t *testing.T) {
-		assert.Empty(t, reconcile(t, configuration(nil), configuration(nil)))
+		assert.Empty(t, reconcile(t, configuration(nil), configuration(nil), nil))
 	})
 
 	t.Run("block enforcement is enabled after the other changes", func(t *testing.T) {
@@ -105,7 +135,7 @@ func Test_reconcileQuota(t *testing.T) {
 			c.perUserLimits[sdk.QuotaCycleMonthly] = 100
 			c.blockEnforcementEnabled = true
 		})
-		assert.Equal(t, []string{"ADD_SHARED_RESOURCE", "SET_PER_USER_LIMIT", "SET_BLOCK_ENFORCEMENT_ENABLED"}, reconcile(t, configuration(nil), desired))
+		assert.Equal(t, []string{"ADD_SHARED_RESOURCE", "SET_PER_USER_LIMIT", "SET_BLOCK_ENFORCEMENT_ENABLED"}, reconcile(t, configuration(nil), desired, nil))
 	})
 
 	t.Run("block enforcement is disabled before switching to the WAREHOUSE domain", func(t *testing.T) {
@@ -116,7 +146,7 @@ func Test_reconcileQuota(t *testing.T) {
 		desired := configuration(func(c *quotaConfiguration) {
 			c.sharedResources = []quotaSharedResource{warehouse}
 		})
-		assert.Equal(t, []string{"SET_BLOCK_ENFORCEMENT_ENABLED", "REMOVE_SHARED_RESOURCE", "ADD_SHARED_RESOURCE"}, reconcile(t, previous, desired))
+		assert.Equal(t, []string{"SET_BLOCK_ENFORCEMENT_ENABLED", "REMOVE_SHARED_RESOURCE", "ADD_SHARED_RESOURCE"}, reconcile(t, previous, desired, nil))
 	})
 
 	t.Run("accumulating user lists are cleared before a removal and extended otherwise", func(t *testing.T) {
@@ -125,7 +155,7 @@ func Test_reconcileQuota(t *testing.T) {
 			c.includedUsers = []string{"B"}
 			c.excludedUsers = []string{"C"}
 		})
-		assert.Equal(t, []string{"INCLUDE_USERS", "INCLUDE_USERS", "EXCLUDE_USERS"}, reconcile(t, previous, desired))
+		assert.Equal(t, []string{"INCLUDE_USERS", "INCLUDE_USERS", "EXCLUDE_USERS"}, reconcile(t, previous, desired, nil))
 	})
 
 	tagId := sdk.NewSchemaObjectIdentifier("DB", "SCH", "TAG")
@@ -140,7 +170,7 @@ func Test_reconcileQuota(t *testing.T) {
 			c.userTags, c.userTagsOperator = []quotaTagValue{{tag: tagId, value: "b"}}, &operator
 			c.includedUsers = []string{"A"}
 		})
-		assert.Equal(t, []string{"SET_USER_TAGS"}, reconcile(t, previous, desired))
+		assert.Equal(t, []string{"SET_USER_TAGS"}, reconcile(t, previous, desired, nil))
 	})
 
 	t.Run("excluding tags clears the users, which are set again", func(t *testing.T) {
@@ -154,18 +184,18 @@ func Test_reconcileQuota(t *testing.T) {
 			c.includedUsers = []string{"A"}
 			c.excludedUsers = []string{"B"}
 		})
-		assert.Equal(t, []string{"EXCLUDE_USERS", "INCLUDE_USERS", "EXCLUDE_USERS"}, reconcile(t, previous, desired))
+		assert.Equal(t, []string{"EXCLUDE_USERS", "INCLUDE_USERS", "EXCLUDE_USERS"}, reconcile(t, previous, desired, nil))
 	})
 
 	t.Run("removing all tags resets the quota to all users", func(t *testing.T) {
 		previous := configuration(func(c *quotaConfiguration) { c.excludedUserTags = []quotaTagValue{{tag: tagId, value: "c"}} })
-		assert.Equal(t, []string{"EXCLUDE_USERS"}, reconcile(t, previous, configuration(nil)))
+		assert.Equal(t, []string{"EXCLUDE_USERS"}, reconcile(t, previous, configuration(nil), nil))
 	})
 
 	t.Run("limits are unset and set per cycle", func(t *testing.T) {
 		previous := configuration(func(c *quotaConfiguration) { c.perUserLimits[sdk.QuotaCycleMonthly] = 1000 })
 		desired := configuration(func(c *quotaConfiguration) { c.perUserLimits[sdk.QuotaCycleWeekly] = 100 })
-		assert.Equal(t, []string{"UNSET_PER_USER_LIMIT", "SET_PER_USER_LIMIT"}, reconcile(t, previous, desired))
+		assert.Equal(t, []string{"UNSET_PER_USER_LIMIT", "SET_PER_USER_LIMIT"}, reconcile(t, previous, desired, nil))
 	})
 
 	t.Run("a changed notification threshold is removed and added back", func(t *testing.T) {
@@ -174,19 +204,36 @@ func Test_reconcileQuota(t *testing.T) {
 		changed.notifyUser = false
 		previous := configuration(func(c *quotaConfiguration) { c.notificationThresholds = []quotaNotificationThreshold{threshold} })
 		desired := configuration(func(c *quotaConfiguration) { c.notificationThresholds = []quotaNotificationThreshold{changed} })
-		assert.Equal(t, []string{"REMOVE_NOTIFICATION_THRESHOLD", "ADD_NOTIFICATION_THRESHOLD"}, reconcile(t, previous, desired))
+		assert.Equal(t, []string{"REMOVE_NOTIFICATION_THRESHOLD", "ADD_NOTIFICATION_THRESHOLD"}, reconcile(t, previous, desired, nil))
 	})
 
-	t.Run("notification integrations and admin emails", func(t *testing.T) {
+	t.Run("removing one custom action re-adds its sibling at the same threshold", func(t *testing.T) {
+		previous := configuration(func(c *quotaConfiguration) { c.customActions = []quotaCustomAction{actualAction, projectedAction} })
+		desired := configuration(func(c *quotaConfiguration) { c.customActions = []quotaCustomAction{actualAction} })
+		assert.Equal(t, []string{"GET_CUSTOM_ACTIONS", "REMOVE_CUSTOM_ACTIONS", "ADD_CUSTOM_ACTION"}, reconcile(t, previous, desired, registeredActions))
+	})
+
+	t.Run("removing both custom actions at a threshold is a single removal", func(t *testing.T) {
+		previous := configuration(func(c *quotaConfiguration) { c.customActions = []quotaCustomAction{actualAction, projectedAction} })
+		assert.Equal(t, []string{"GET_CUSTOM_ACTIONS", "REMOVE_CUSTOM_ACTIONS"}, reconcile(t, previous, configuration(nil), registeredActions))
+	})
+
+	t.Run("a custom action already removed in Snowflake is skipped", func(t *testing.T) {
+		previous := configuration(func(c *quotaConfiguration) { c.customActions = []quotaCustomAction{actualAction} })
+		assert.Equal(t, []string{"GET_CUSTOM_ACTIONS"}, reconcile(t, previous, configuration(nil), nil))
+	})
+
+	t.Run("cycle-start action, notifications and admin emails", func(t *testing.T) {
 		integration := quotaNotificationIntegration{id: sdk.NewAccountObjectIdentifier("INT")}
 		previous := configuration(func(c *quotaConfiguration) {
+			c.cycleStartAction = &quotaCycleStartAction{procedure: procedure}
 			c.notificationIntegrations = []quotaNotificationIntegration{integration}
 		})
 		desired := configuration(func(c *quotaConfiguration) {
 			c.adminEmails = []string{"admin@example.com"}
 		})
-		assert.Equal(t, []string{"REMOVE_NOTIFICATION_INTEGRATION", "SET_ADMIN_EMAILS"}, reconcile(t, previous, desired))
-		assert.Equal(t, []string{"ADD_NOTIFICATION_INTEGRATION", "SET_ADMIN_EMAILS"}, reconcile(t, desired, previous))
+		assert.Equal(t, []string{"REMOVE_NOTIFICATION_INTEGRATION", "SET_ADMIN_EMAILS", "REMOVE_CYCLE_START_ACTION"}, reconcile(t, previous, desired, nil))
+		assert.Equal(t, []string{"ADD_NOTIFICATION_INTEGRATION", "SET_ADMIN_EMAILS", "SET_CYCLE_START_ACTION"}, reconcile(t, desired, previous, nil))
 	})
 }
 
@@ -292,5 +339,5 @@ func Test_quotaConfigurationFromRaw_importState(t *testing.T) {
 	assert.Nil(t, config.userTagsOperator)
 	assert.Empty(t, config.includedUsers)
 	assert.False(t, config.blockEnforcementEnabled)
-	assert.Empty(t, config.notificationThresholds)
+	assert.Nil(t, config.cycleStartAction)
 }

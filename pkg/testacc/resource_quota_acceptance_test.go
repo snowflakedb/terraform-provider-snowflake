@@ -23,6 +23,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
+func grantProcedureToSnowflakeApplication(t *testing.T, procedureId sdk.SchemaObjectIdentifierWithArguments) {
+	t.Helper()
+	t.Cleanup(testClient().Grant.GrantUsageOnDatabaseToSnowflakeApplication(t, procedureId.DatabaseId()))
+	t.Cleanup(testClient().Grant.GrantUsageOnSchemaToSnowflakeApplication(t, procedureId.SchemaId()))
+	t.Cleanup(testClient().Grant.GrantUsageOnProcedureToSnowflakeApplication(t, procedureId))
+}
+
 func quotaTestCase(t *testing.T, steps ...resource.TestStep) resource.TestCase {
 	t.Helper()
 	return resource.TestCase{
@@ -84,7 +91,9 @@ func TestAcc_Quota_BasicUseCase(t *testing.T) {
 				HasNotifyBlockedUsers(true).
 				HasNotificationThresholdsCount(0).
 				HasNotificationIntegrationsEmpty().
-				HasAdminEmailsEmpty(),
+				HasAdminEmailsEmpty().
+				HasCustomActionsCount(0).
+				HasCycleStartActionEmpty(),
 			resourceshowoutputassert.QuotaShowOutput(t, ref).
 				HasCreatedOnNotEmpty().
 				HasName(id.Name()).
@@ -446,6 +455,82 @@ func TestAcc_Quota_Domains(t *testing.T) {
 	})
 
 	resource.Test(t, quotaTestCase(t, steps...))
+}
+
+func TestAcc_Quota_WarehouseWithActions(t *testing.T) {
+	warehouse, warehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
+	t.Cleanup(warehouseCleanup)
+	// the first argument of an action procedure receives the IDs of the users who crossed the threshold
+	actionProcedure, actionProcedureCleanup := testClient().Procedure.Create(t, sdk.DataTypeVARCHAR)
+	t.Cleanup(actionProcedureCleanup)
+	grantProcedureToSnowflakeApplication(t, actionProcedure.ID())
+	actionProcedureWithArgument, actionProcedureWithArgumentCleanup := testClient().Procedure.Create(t, sdk.DataTypeVARCHAR, sdk.DataTypeVARCHAR)
+	t.Cleanup(actionProcedureWithArgumentCleanup)
+	t.Cleanup(testClient().Grant.GrantUsageOnProcedureToSnowflakeApplication(t, actionProcedureWithArgument.ID()))
+	cycleStartProcedure, cycleStartProcedureCleanup := testClient().Procedure.Create(t)
+	t.Cleanup(cycleStartProcedureCleanup)
+	t.Cleanup(testClient().Grant.GrantUsageOnProcedureToSnowflakeApplication(t, cycleStartProcedure.ID()))
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	warehouseResource := model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainWarehouse, Instance: warehouse.ID().Name()}
+
+	withActions := model.QuotaFromId("test", id).
+		WithSharedResources(warehouseResource).
+		WithPerUserLimitMonthly(100).
+		WithCustomActions(
+			model.QuotaCustomActionModel{Procedure: actionProcedure.ID(), SpendStrategy: sdk.QuotaSpendStrategyActual, Threshold: 100},
+			model.QuotaCustomActionModel{Procedure: actionProcedure.ID(), SpendStrategy: sdk.QuotaSpendStrategyProjected, Threshold: 100},
+		).
+		WithCycleStartAction(cycleStartProcedure.ID())
+	// removing one of the two actions at the same threshold re-adds the other, because REMOVE_CUSTOM_ACTIONS removes both
+	withChangedActions := model.QuotaFromId("test", id).
+		WithSharedResources(warehouseResource).
+		WithPerUserLimitMonthly(100).
+		WithCustomActions(
+			model.QuotaCustomActionModel{Procedure: actionProcedure.ID(), SpendStrategy: sdk.QuotaSpendStrategyActual, Threshold: 100},
+			model.QuotaCustomActionModel{Procedure: actionProcedureWithArgument.ID(), SpendStrategy: sdk.QuotaSpendStrategyProjected, Threshold: 90, Arguments: []string{"it's"}},
+		)
+
+	ref := withActions.ResourceReference()
+
+	resource.Test(t, quotaTestCase(t,
+		resource.TestStep{
+			Config: accconfig.FromModels(t, withActions),
+			Check: assertThat(t,
+				resourceassert.QuotaResource(t, ref).
+					HasSharedResource(sdk.QuotaSharedResourceDomainWarehouse, warehouse.ID().Name()).
+					HasPerUserLimitMonthly(100).
+					HasCustomActionsCount(2).
+					HasCustomAction(actionProcedure.ID(), sdk.QuotaSpendStrategyActual, 100).
+					HasCustomAction(actionProcedure.ID(), sdk.QuotaSpendStrategyProjected, 100).
+					HasCycleStartAction(cycleStartProcedure.ID()),
+			),
+		},
+		resource.TestStep{
+			Config:            accconfig.FromModels(t, withActions),
+			ResourceName:      ref,
+			ImportState:       true,
+			ImportStateVerify: true,
+		},
+		resource.TestStep{
+			Config: accconfig.FromModels(t, withChangedActions),
+			Check: assertThat(t,
+				resourceassert.QuotaResource(t, ref).
+					HasCustomActionsCount(2).
+					HasCustomAction(actionProcedure.ID(), sdk.QuotaSpendStrategyActual, 100).
+					HasCustomAction(actionProcedureWithArgument.ID(), sdk.QuotaSpendStrategyProjected, 90).
+					HasCycleStartActionEmpty(),
+			),
+		},
+		resource.TestStep{
+			Config: accconfig.FromModels(t, withChangedActions),
+			ConfigPlanChecks: resource.ConfigPlanChecks{
+				PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectEmptyPlan(),
+				},
+			},
+		},
+	))
 }
 
 func TestAcc_Quota_Validations(t *testing.T) {

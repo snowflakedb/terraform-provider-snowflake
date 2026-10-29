@@ -25,6 +25,8 @@ func Test_quotaConfigurationFromRaw(t *testing.T) {
 		"included_users":         []any{"ALICE"},
 		"per_user_limit_monthly": 1000,
 		"notification_threshold": []any{map[string]any{"threshold": 80, "spend_strategy": "ACTUAL", "notify_user": false, "cycle": "DAILY"}},
+		"custom_action":          []any{map[string]any{"procedure": `"DB"."SCH"."PROC"(VARCHAR)`, "arguments": []any{"a"}, "spend_strategy": "ACTUAL", "threshold": 100}},
+		"cycle_start_action":     []any{map[string]any{"procedure": `"DB"."SCH"."RESET"()`}},
 	})
 
 	config, err := quotaConfigurationFromRaw(d.Get)
@@ -42,6 +44,11 @@ func Test_quotaConfigurationFromRaw(t *testing.T) {
 	assert.Equal(t, 1000, config.perUserLimit(sdk.QuotaCycleMonthly))
 	assert.Equal(t, IntDefault, config.perUserLimit(sdk.QuotaCycleWeekly))
 	assert.Equal(t, []quotaNotificationThreshold{{threshold: 80, spendStrategy: sdk.QuotaSpendStrategyActual, notifyUser: false, cycle: sdk.QuotaCycleDaily}}, config.notificationThresholds)
+	require.Len(t, config.customActions, 1)
+	assert.Equal(t, sdk.NewSchemaObjectIdentifierWithArguments("DB", "SCH", "PROC", sdk.DataTypeVARCHAR), config.customActions[0].procedure)
+	assert.Equal(t, []string{"a"}, config.customActions[0].arguments)
+	require.NotNil(t, config.cycleStartAction)
+	assert.Empty(t, config.cycleStartAction.arguments)
 }
 
 func Test_quotaConfigurationFromDetails(t *testing.T) {
@@ -115,6 +122,7 @@ func Test_quotaConfigurationFromDetails(t *testing.T) {
 		{threshold: 80, spendStrategy: sdk.QuotaSpendStrategyProjected, notifyUser: true, cycle: sdk.QuotaCycleWeekly},
 		{threshold: 100, spendStrategy: sdk.QuotaSpendStrategyActual, cycle: sdk.QuotaCycleMonthly},
 	}, remote.notificationThresholds)
+	assert.Nil(t, remote.cycleStartAction)
 
 	t.Run("shared resources of unknown domains are left out", func(t *testing.T) {
 		details := &sdk.QuotaDetails{Scope: sdk.QuotaScope{SharedResources: []sdk.QuotaScopeSharedResource{
@@ -258,4 +266,13 @@ func Test_quotaReconcileAccumulatingList(t *testing.T) {
 		require.NoError(t, quotaReconcileAccumulatingList([]string{"A"}, nil, quotaUserKey, record(&calls)))
 		assert.Equal(t, [][]string{{}}, calls)
 	})
+}
+
+func Test_quotaCustomAction_removalKey(t *testing.T) {
+	procedure := sdk.NewSchemaObjectIdentifierWithArguments("DB", "SCH", "PROC", sdk.DataTypeVARCHAR)
+	actual := quotaCustomAction{procedure: procedure, spendStrategy: sdk.QuotaSpendStrategyActual, threshold: 100}
+	projected := quotaCustomAction{procedure: procedure, spendStrategy: sdk.QuotaSpendStrategyProjected, threshold: 100}
+
+	assert.Equal(t, actual.removalKey(), projected.removalKey())
+	assert.NotEqual(t, actual.key(), projected.key())
 }

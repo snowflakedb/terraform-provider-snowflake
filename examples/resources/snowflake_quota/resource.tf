@@ -77,7 +77,7 @@ resource "snowflake_quota" "all_but_high_tier" {
   per_user_limit_monthly = 200
 }
 
-## Warehouse domain: per-user warehouse credit limits
+## Warehouse domain: per-user warehouse credit limits with custom and cycle-start actions
 resource "snowflake_quota" "warehouse" {
   database = "database_name"
   schema   = "schema_name"
@@ -89,4 +89,16 @@ resource "snowflake_quota" "warehouse" {
   }
 
   per_user_limit_monthly = 100
+
+  # The procedures must use EXECUTE AS OWNER and be granted to the SNOWFLAKE application. The first argument of a custom action
+  # procedure receives the IDs of the users who crossed the threshold; `arguments` fill the remaining ones.
+  custom_action {
+    procedure      = "\"database_name\".\"schema_name\".\"disable_users\"(VARCHAR)"
+    spend_strategy = "ACTUAL"
+    threshold      = 100
+  }
+
+  cycle_start_action {
+    procedure = "\"database_name\".\"schema_name\".\"enable_users\"()"
+  }
 }

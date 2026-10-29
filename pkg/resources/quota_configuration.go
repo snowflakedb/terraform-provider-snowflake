@@ -25,6 +25,8 @@ type quotaConfiguration struct {
 	notificationThresholds   []quotaNotificationThreshold
 	notificationIntegrations []quotaNotificationIntegration
 	adminEmails              []string
+	customActions            []quotaCustomAction
+	cycleStartAction         *quotaCycleStartAction
 
 	// unsupportedSharedResources are the shared resources read from Snowflake whose domain this provider version doesn't
 	// know. They can't be configured, so they're left out of the state instead of making every later plan fail.
@@ -92,6 +94,29 @@ func (i quotaNotificationIntegration) key() string {
 	return i.id.FullyQualifiedName()
 }
 
+type quotaCustomAction struct {
+	procedure     sdk.SchemaObjectIdentifierWithArguments
+	raw           string
+	arguments     []string
+	spendStrategy sdk.QuotaSpendStrategy
+	threshold     int
+}
+
+func (a quotaCustomAction) key() string {
+	return fmt.Sprintf("%s/%s/%q", a.removalKey(), a.spendStrategy, a.arguments)
+}
+
+// removalKey identifies the actions removed together by REMOVE_CUSTOM_ACTIONS(<threshold>, <procedure>).
+func (a quotaCustomAction) removalKey() string {
+	return fmt.Sprintf("%d/%s", a.threshold, a.procedure.FullyQualifiedName())
+}
+
+type quotaCycleStartAction struct {
+	procedure sdk.SchemaObjectIdentifierWithArguments
+	raw       string
+	arguments []string
+}
+
 // quotaUserKey compares user names case-insensitively: INCLUDE_USERS and EXCLUDE_USERS resolve them that way, and GET_QUOTA_SCOPE
 // returns them as stored (e.g. QUOTA_U1 for 'quota_u1').
 func quotaUserKey(name string) string {
@@ -126,6 +151,13 @@ func (c *quotaConfiguration) userTagsEqual(other *quotaConfiguration) bool {
 		return string(*c.userTagsOperator)
 	}
 	return operator(c) == operator(other) && quotaKeysEqual(c.userTags, other.userTags, quotaTagValue.key)
+}
+
+func (c *quotaConfiguration) cycleStartActionKey() string {
+	if c.cycleStartAction == nil {
+		return ""
+	}
+	return fmt.Sprintf("%s/%q", c.cycleStartAction.procedure.FullyQualifiedName(), c.cycleStartAction.arguments)
 }
 
 func quotaConfigurationFromRaw(get func(key string) any) (*quotaConfiguration, error) {
@@ -193,6 +225,38 @@ func quotaConfigurationFromRaw(get func(key string) any) (*quotaConfiguration, e
 	}
 
 	config.adminEmails = expandStringList(get("admin_emails").(*schema.Set).List())
+
+	for _, raw := range get("custom_action").(*schema.Set).List() {
+		action := raw.(map[string]any)
+		procedure, err := sdk.ParseSchemaObjectIdentifierWithArguments(action["procedure"].(string))
+		if err != nil {
+			return nil, err
+		}
+		spendStrategy, err := sdk.ToQuotaSpendStrategy(action["spend_strategy"].(string))
+		if err != nil {
+			return nil, err
+		}
+		config.customActions = append(config.customActions, quotaCustomAction{
+			procedure:     procedure,
+			raw:           action["procedure"].(string),
+			arguments:     expandStringListAllowEmpty(action["arguments"].([]any)),
+			spendStrategy: spendStrategy,
+			threshold:     action["threshold"].(int),
+		})
+	}
+
+	if cycleStartAction := get("cycle_start_action").([]any); len(cycleStartAction) > 0 && cycleStartAction[0] != nil {
+		action := cycleStartAction[0].(map[string]any)
+		procedure, err := sdk.ParseSchemaObjectIdentifierWithArguments(action["procedure"].(string))
+		if err != nil {
+			return nil, err
+		}
+		config.cycleStartAction = &quotaCycleStartAction{
+			procedure: procedure,
+			raw:       action["procedure"].(string),
+			arguments: expandStringListAllowEmpty(action["arguments"].([]any)),
+		}
+	}
 
 	return config, nil
 }
@@ -299,7 +363,52 @@ func quotaConfigurationFromDetails(details *sdk.QuotaDetails, current *quotaConf
 		remote.notificationIntegrations = append(remote.notificationIntegrations, preferCurrentQuotaValue(current.notificationIntegrations, remoteIntegration, quotaNotificationIntegration.key))
 	}
 
+	for _, action := range details.CustomActions {
+		procedure, err := action.ProcedureId()
+		if err != nil {
+			return nil, fmt.Errorf("parsing the procedure of the custom action %s: %w", action.ActionId, err)
+		}
+		remoteAction := quotaCustomAction{
+			procedure:     procedure,
+			raw:           procedure.FullyQualifiedName(),
+			arguments:     action.ProcedureArgs,
+			spendStrategy: action.SpendStrategy,
+			threshold:     action.Threshold,
+		}
+		remote.customActions = append(remote.customActions, preferCurrentQuotaValue(current.customActions, remoteAction, quotaCustomAction.key))
+	}
+
+	if action := details.CycleStartAction; action != nil && action.IsSet() {
+		procedure, err := action.ProcedureId()
+		if err != nil {
+			return nil, fmt.Errorf("parsing the procedure of the cycle-start action: %w", err)
+		}
+		remote.cycleStartAction = &quotaCycleStartAction{
+			procedure: procedure,
+			raw:       procedure.FullyQualifiedName(),
+			arguments: action.ProcedureArgs,
+		}
+		if current.cycleStartAction != nil && current.cycleStartActionKey() == remote.cycleStartActionKey() {
+			remote.cycleStartAction.raw = current.cycleStartAction.raw
+		}
+	}
+
 	return remote, nil
+}
+
+// quotaRegisteredProcedureFqn finds the PROCEDURE_FQN Snowflake returns for the given configured action, so that it can be
+// passed back to REMOVE_CUSTOM_ACTIONS unchanged.
+func quotaRegisteredProcedureFqn(registered []sdk.QuotaCustomAction, action quotaCustomAction) (string, bool) {
+	for _, registeredAction := range registered {
+		if registeredAction.Threshold != action.threshold {
+			continue
+		}
+		procedure, err := registeredAction.ProcedureId()
+		if err == nil && procedure.FullyQualifiedName() == action.procedure.FullyQualifiedName() {
+			return registeredAction.ProcedureFqn, true
+		}
+	}
+	return "", false
 }
 
 // matchCurrentQuotaSharedResource keeps the configured spelling of an equivalent shared resource. GET_QUOTA_SCOPE may return an
@@ -429,6 +538,26 @@ func (c *quotaConfiguration) notificationIntegrationsToSchema() []string {
 		result[i] = integration.raw
 	}
 	return result
+}
+
+func (c *quotaConfiguration) customActionsToSchema() []map[string]any {
+	result := make([]map[string]any, len(c.customActions))
+	for i, action := range c.customActions {
+		result[i] = map[string]any{
+			"procedure":      action.raw,
+			"arguments":      action.arguments,
+			"spend_strategy": string(action.spendStrategy),
+			"threshold":      action.threshold,
+		}
+	}
+	return result
+}
+
+func (c *quotaConfiguration) cycleStartActionToSchema() []map[string]any {
+	if c.cycleStartAction == nil {
+		return []map[string]any{}
+	}
+	return []map[string]any{{"procedure": c.cycleStartAction.raw, "arguments": c.cycleStartAction.arguments}}
 }
 
 func quotaDiffByKey[T any](previous []T, desired []T, key func(T) string) (removed []T, added []T) {

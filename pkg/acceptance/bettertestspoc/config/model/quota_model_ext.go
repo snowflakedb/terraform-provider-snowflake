@@ -24,6 +24,13 @@ type QuotaNotificationThresholdModel struct {
 	Cycle         sdk.QuotaCycle
 }
 
+type QuotaCustomActionModel struct {
+	Procedure     sdk.SchemaObjectIdentifierWithArguments
+	Arguments     []string
+	SpendStrategy sdk.QuotaSpendStrategy
+	Threshold     int
+}
+
 func QuotaFromId(
 	resourceName string,
 	id sdk.SchemaObjectIdentifier,
@@ -36,6 +43,13 @@ func quotaStringSet(values []string) tfconfig.Variable {
 		return config.EmptyListVariable()
 	}
 	return tfconfig.SetVariable(collections.Map(values, func(v string) tfconfig.Variable { return tfconfig.StringVariable(v) })...)
+}
+
+func quotaStringList(values []string) tfconfig.Variable {
+	if len(values) == 0 {
+		return config.EmptyListVariable()
+	}
+	return tfconfig.ListVariable(collections.Map(values, func(v string) tfconfig.Variable { return tfconfig.StringVariable(v) })...)
 }
 
 func quotaTagValues(tags []QuotaTagValueModel) []tfconfig.Variable {
@@ -93,4 +107,22 @@ func (q *QuotaModel) WithNotificationIntegrations(integrations ...sdk.AccountObj
 
 func (q *QuotaModel) WithAdminEmails(emails ...string) *QuotaModel {
 	return q.WithAdminEmailsValue(quotaStringSet(emails))
+}
+
+func (q *QuotaModel) WithCustomActions(actions ...QuotaCustomActionModel) *QuotaModel {
+	return q.WithCustomActionValue(tfconfig.SetVariable(collections.Map(actions, func(action QuotaCustomActionModel) tfconfig.Variable {
+		return tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"procedure":      tfconfig.StringVariable(action.Procedure.FullyQualifiedName()),
+			"arguments":      quotaStringList(action.Arguments),
+			"spend_strategy": tfconfig.StringVariable(string(action.SpendStrategy)),
+			"threshold":      tfconfig.IntegerVariable(action.Threshold),
+		})
+	})...))
+}
+
+func (q *QuotaModel) WithCycleStartAction(procedure sdk.SchemaObjectIdentifierWithArguments, arguments ...string) *QuotaModel {
+	return q.WithCycleStartActionValue(tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		"procedure": tfconfig.StringVariable(procedure.FullyQualifiedName()),
+		"arguments": quotaStringList(arguments),
+	})))
 }

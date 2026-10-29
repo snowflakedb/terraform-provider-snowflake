@@ -62,6 +62,10 @@ func (q *QuotaResourceAssert) HasComment(expected string) *QuotaResourceAssert {
 	return q
 }
 
+// typed assert for "custom_action" (type: Set, subtype: Map) is not currently supported
+
+// typed assert for "cycle_start_action" (type: List, subtype: Map) is not currently supported
+
 // typed assert for "excluded_user_tag" (type: Set, subtype: Map) is not currently supported
 
 func (q *QuotaResourceAssert) HasExcludedUsers(expected ...string) *QuotaResourceAssert {
@@ -234,6 +238,16 @@ func (q *QuotaResourceAssert) HasBlockEnforcementEnabledEmpty() *QuotaResourceAs
 
 func (q *QuotaResourceAssert) HasCommentEmpty() *QuotaResourceAssert {
 	q.ValueSet("comment", "")
+	return q
+}
+
+func (q *QuotaResourceAssert) HasCustomActionEmpty() *QuotaResourceAssert {
+	q.ValueSet("custom_action.#", "0")
+	return q
+}
+
+func (q *QuotaResourceAssert) HasCycleStartActionEmpty() *QuotaResourceAssert {
+	q.ValueSet("cycle_start_action.#", "0")
 	return q
 }
 
