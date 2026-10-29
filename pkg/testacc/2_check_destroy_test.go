@@ -434,6 +434,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.ProcedureSql: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Procedures.ShowByID)
 	},
+	resources.ProjectionPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.ProjectionPolicies.ShowByID)
+	},
 	resources.ResourceMonitor: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ResourceMonitors.ShowByID)
 	},
