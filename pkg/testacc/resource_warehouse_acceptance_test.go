@@ -44,8 +44,8 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 	warehouseId2 := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 	newComment := random.Comment()
-
-	autoSuspendDefault := testClient().SnowflakeDefaults.DefaultAutoSuspend(t)
+	statementTimeoutDefault := 172800
+	statementTimeoutDefaultString := "172800"
 
 	warehouseModel := model.Warehouse("test", warehouseId.Name()).WithComment(comment)
 	warehouseModelRenamed := model.BasicWarehouseModel(warehouseId2, comment)
@@ -53,7 +53,7 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 	warehouseModelRenamedFullWithParameters := model.WarehouseSnowflakeDefaultWithoutParameters(warehouseId2, comment).
 		WithMaxConcurrencyLevel(8).
 		WithStatementQueuedTimeoutInSeconds(0).
-		WithStatementTimeoutInSeconds(172800)
+		WithStatementTimeoutInSeconds(statementTimeoutDefault)
 	warehouseModelRenamedFull := model.BasicWarehouseModel(warehouseId2, newComment).
 		WithWarehouseTypeEnum(sdk.WarehouseTypeSnowparkOptimized).
 		WithResourceConstraintEnum(sdk.WarehouseResourceConstraintMemory16X).
@@ -115,20 +115,17 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 						HasQueryAccelerationMaxScaleFactorString(r.IntDefaultString).
 						HasMaxConcurrencyLevelString("8").
 						HasStatementQueuedTimeoutInSecondsString("0").
-						HasStatementTimeoutInSecondsString("172800").
+						HasStatementTimeoutInSecondsString(statementTimeoutDefaultString).
 						// alternatively extensions possible:
 						HasDefaultMaxConcurrencyLevel().
-						HasDefaultStatementQueuedTimeoutInSeconds().
-						HasDefaultStatementTimeoutInSeconds().
-						// alternatively extension possible
-						HasAllDefault(),
+						HasDefaultStatementQueuedTimeoutInSeconds(),
 					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModel.ResourceReference()).
 						HasType(sdk.WarehouseTypeStandard).
 						HasSize(sdk.WarehouseSizeXSmall).
 						HasMaxClusterCount(1).
 						HasMinClusterCount(1).
 						HasScalingPolicy(sdk.ScalingPolicyStandard).
-						HasAutoSuspend(autoSuspendDefault).
+						HasAutoSuspend(600).
 						HasAutoResume(true).
 						HasResourceMonitor(sdk.AccountObjectIdentifier{}).
 						HasComment(comment).
@@ -137,7 +134,7 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 					resourceparametersassert.WarehouseResourceParameters(t, warehouseModel.ResourceReference()).
 						HasMaxConcurrencyLevel(8).
 						HasStatementQueuedTimeoutInSeconds(0).
-						HasStatementTimeoutInSeconds(172800).
+						HasStatementTimeoutInSeconds(statementTimeoutDefault).
 						// alternatively extensions possible:
 						HasDefaultMaxConcurrencyLevel().
 						HasDefaultStatementQueuedTimeoutInSeconds().
@@ -150,7 +147,7 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 						HasMaxClusterCount(1).
 						HasMinClusterCount(1).
 						HasScalingPolicy(sdk.ScalingPolicyStandard).
-						HasAutoSuspend(autoSuspendDefault).
+						HasAutoSuspend(600).
 						HasAutoResume(true).
 						HasResourceMonitor(sdk.AccountObjectIdentifier{}).
 						HasComment(comment).
@@ -179,7 +176,7 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 						HasMaxClusterCountString("1").
 						HasMinClusterCountString("1").
 						HasScalingPolicyString(string(sdk.ScalingPolicyStandard)).
-						HasAutoSuspendString(strconv.Itoa(autoSuspendDefault)).
+						HasAutoSuspendString("600").
 						HasAutoResumeString("true").
 						HasResourceMonitorString("").
 						HasCommentString(comment).
@@ -187,14 +184,14 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 						HasQueryAccelerationMaxScaleFactorString(strconv.Itoa(8)).
 						HasDefaultMaxConcurrencyLevel().
 						HasDefaultStatementQueuedTimeoutInSeconds().
-						HasDefaultStatementTimeoutInSeconds(),
+						HasStatementTimeoutInSecondsString(statementTimeoutDefaultString),
 					resourceshowoutputassert.ImportedWarehouseShowOutput(t, helpers.EncodeResourceIdentifier(warehouseId)),
 					resourceparametersassert.ImportedWarehouseResourceParameters(t, helpers.EncodeResourceIdentifier(warehouseId)).
 						HasMaxConcurrencyLevel(8).
 						HasMaxConcurrencyLevelLevel("").
 						HasStatementQueuedTimeoutInSeconds(0).
 						HasStatementQueuedTimeoutInSecondsLevel("").
-						HasStatementTimeoutInSeconds(172800).
+						HasStatementTimeoutInSeconds(statementTimeoutDefault).
 						HasStatementTimeoutInSecondsLevel(testClient().SnowflakeDefaults.DefaultStatementTimeoutInSecondsLevel(t)),
 					objectassert.Warehouse(t, warehouseId).
 						HasName(warehouseId.Name()).
@@ -204,7 +201,7 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 						HasMaxClusterCount(1).
 						HasMinClusterCount(1).
 						HasScalingPolicy(sdk.ScalingPolicyStandard).
-						HasAutoSuspend(autoSuspendDefault).
+						HasAutoSuspend(600).
 						HasAutoResume(true).
 						HasResourceMonitor(sdk.AccountObjectIdentifier{}).
 						HasComment(comment).
@@ -258,7 +255,7 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "max_cluster_count", "1"),
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "min_cluster_count", "1"),
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "scaling_policy", string(sdk.ScalingPolicyStandard)),
-					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "auto_suspend", strconv.Itoa(autoSuspendDefault)),
+					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "auto_suspend", "600"),
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "auto_resume", "true"),
 					resource.TestCheckNoResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "initially_suspended"),
 					resource.TestCheckNoResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "resource_monitor"),
@@ -269,7 +266,7 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 					// parameters have the same values...
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "max_concurrency_level", "8"),
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "statement_queued_timeout_in_seconds", "0"),
-					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "statement_timeout_in_seconds", "172800"),
+					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "statement_timeout_in_seconds", statementTimeoutDefaultString),
 
 					// ... but are set on different level
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "parameters.#", "1"),
@@ -277,7 +274,7 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "parameters.0.max_concurrency_level.0.level", string(sdk.ParameterTypeWarehouse)),
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "parameters.0.statement_queued_timeout_in_seconds.0.value", "0"),
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "parameters.0.statement_queued_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
-					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "parameters.0.statement_timeout_in_seconds.0.value", "172800"),
+					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "parameters.0.statement_timeout_in_seconds.0.value", statementTimeoutDefaultString),
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "parameters.0.statement_timeout_in_seconds.0.level", string(sdk.ParameterTypeWarehouse)),
 				),
 			},
@@ -293,14 +290,14 @@ func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "max_cluster_count", tfjson.ActionUpdate, sdk.String("1"), sdk.String("4")),
 						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "min_cluster_count", tfjson.ActionUpdate, sdk.String("1"), sdk.String("2")),
 						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "scaling_policy", tfjson.ActionUpdate, sdk.String(string(sdk.ScalingPolicyStandard)), sdk.String(string(sdk.ScalingPolicyEconomy))),
-						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "auto_suspend", tfjson.ActionUpdate, sdk.String(strconv.Itoa(autoSuspendDefault)), sdk.String("1200")),
+						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "auto_suspend", tfjson.ActionUpdate, sdk.String("600"), sdk.String("1200")),
 						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "auto_resume", tfjson.ActionUpdate, sdk.String("true"), sdk.String("false")),
 						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "enable_query_acceleration", tfjson.ActionUpdate, sdk.String("true"), sdk.String("false")),
 						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "query_acceleration_max_scale_factor", tfjson.ActionUpdate, sdk.String(strconv.Itoa(8)), sdk.String("4")),
 
 						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "max_concurrency_level", tfjson.ActionUpdate, sdk.String("8"), sdk.String("4")),
 						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "statement_queued_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("0"), sdk.String("5")),
-						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("172800"), sdk.String("86400")),
+						planchecks.ExpectChange(warehouseModelRenamedFull.ResourceReference(), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String(statementTimeoutDefaultString), sdk.String("86400")),
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
