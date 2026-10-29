@@ -77,6 +77,7 @@ var ProjectionPolicy = ssot.Object{
 			ssot.SdkCustomInterfaceMethods(),
 		),
 		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
+		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
 	},
 	CustomInterfaceMethods: []ssot.CustomInterfaceMethodSpec{{
 		Name:    "DescribeDetails",
