@@ -46,6 +46,26 @@ func Test_showResultSchemaDetailsFromSsot_collectsSchemaSkips(t *testing.T) {
 	require.Equal(t, []genhelpers.Field{ssot.ColumnField(obj, name), ssot.ColumnField(obj, actives)}, got.Fields)
 }
 
+func Test_showResultSchemaDetailsFromSsot_showFromBase(t *testing.T) {
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	base := ssot.Object{Name: "Widget"}
+	obj := ssot.Object{
+		Name:      "WidgetGlue",
+		VariantOf: &base,
+		Generators: []ssot.GeneratorOption{
+			ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowFromBase())),
+		},
+		Show: ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+	}
+
+	got := showResultSchemaDetailsFromSsot(obj, false)
+	require.Equal(t, "sdk.WidgetGlue", got.Name)
+	require.Equal(t, "sdk.Widget", got.SdkType)
+	model := ModelFromStructDetails(got, nil, nil)
+	require.Equal(t, "WidgetGlue", model.Name)
+	require.Equal(t, "sdk.Widget", model.SdkType)
+}
+
 func Test_showResultSchemaDetailsFromSsot_panicsOnNilColumn(t *testing.T) {
 	require.Panics(t, func() {
 		showResultSchemaDetailsFromSsot(ssot.Object{

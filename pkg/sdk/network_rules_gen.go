@@ -136,3 +136,7 @@ type NetworkRuleDetails struct {
 	Mode         NetworkRuleMode
 	ValueList    []string
 }
+
+func (v *NetworkRuleDetails) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
+}

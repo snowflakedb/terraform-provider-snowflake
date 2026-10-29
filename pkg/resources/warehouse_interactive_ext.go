@@ -102,7 +102,6 @@ func warehouseInteractiveOutputMappingsExt(w *sdk.WarehouseInteractive) []output
 		{"min_cluster_count", "min_cluster_count", minClusterCount, minClusterCount, nil},
 		{"auto_suspend", "auto_suspend", autoSuspend, autoSuspend, nil},
 		{"auto_resume", "auto_resume", autoResumeVal, autoResumeStr, nil},
-		{"resource_monitor", "resource_monitor", w.ResourceMonitor.Name(), w.ResourceMonitor.Name(), nil},
 	}
 }
 
@@ -122,6 +121,7 @@ func warehouseInteractiveSetConfigFieldsExt(d *schema.ResourceData, w *sdk.Wareh
 		d.Set("name", w.Name),
 		d.Set("comment", w.Comment),
 		d.Set("warehouse_type", effectiveType),
+		d.Set("resource_monitor", w.ResourceMonitor.Name()),
 		d.Set("tables", tables),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseInteractiveToSchema(w)}),
 	)
@@ -188,28 +188,17 @@ func warehouseInteractiveApplySetUnsetExt(d *schema.ResourceData) (*warehouseInt
 	return &warehouseInteractiveAlterRequestsExt{set: set, unset: unset}, nil
 }
 
-func warehouseInteractiveSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, w *sdk.WarehouseInteractive, _ bool) error {
+func warehouseInteractiveSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, w *sdk.WarehouseInteractive, importPermissiveMode bool) error {
 	if w.Type != sdk.WarehouseTypeInteractive {
 		return fmt.Errorf("warehouse %s is not an interactive warehouse; use snowflake_warehouse or snowflake_warehouse_adaptive instead", id.FullyQualifiedName())
 	}
-
-	// Only the fields reconciled through handleExternalChangesToObjectInShow need seeding here: Read leaves
-	// them unset on a fresh import because there is no previous SHOW output to compare against. Every other
-	// attribute (name, comment, tables, fallback_warehouse, ...) is populated by the Read that Terraform
-	// runs immediately after this importer, so setting them here too would be redundant.
-	errs := errors.Join(
-		d.Set("auto_resume", booleanStringFromBool(w.AutoResume)),
-		setOptionalFromPtr(d, "auto_suspend", w.AutoSuspend),
-		setOptionalFromPtr(d, "max_cluster_count", w.MaxClusterCount),
-		setOptionalFromPtr(d, "min_cluster_count", w.MinClusterCount),
+	return errors.Join(
+		importOptionalStringAttribute(d, "warehouse_size", importPermissiveMode, w.Size),
+		importOptionalIntAttribute(d, "max_cluster_count", importPermissiveMode, w.MaxClusterCount),
+		importOptionalIntAttribute(d, "min_cluster_count", importPermissiveMode, w.MinClusterCount),
+		importOptionalIntWithIntDefaultAttribute(d, "auto_suspend", importPermissiveMode, w.AutoSuspend),
+		importBooleanStringAttribute(d, "auto_resume", importPermissiveMode, w.AutoResume),
 	)
-	if w.Size != nil {
-		errs = errors.Join(errs, d.Set("warehouse_size", string(*w.Size)))
-	}
-	if rm := w.ResourceMonitor.Name(); rm != "" {
-		errs = errors.Join(errs, d.Set("resource_monitor", rm))
-	}
-	return errs
 }
 
 // =============================================================================

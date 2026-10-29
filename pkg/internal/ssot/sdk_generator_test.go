@@ -224,6 +224,9 @@ func Test_VariantCreateConfig_usesEntityName(t *testing.T) {
 		CreateSql:             "INTERACTIVE WAREHOUSE",
 		CreateQueryStructName: "CreateAdaptiveWarehouse",
 	}, obj.VariantCreateConfig())
+
+	obj.Create.WithoutOrReplace = true
+	require.True(t, obj.VariantCreateConfig().CreateWithoutOrReplace)
 }
 
 func Test_VariantAlterConfig_usesEntityName(t *testing.T) {

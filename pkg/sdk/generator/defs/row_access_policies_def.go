@@ -87,10 +87,13 @@ var rowAccessPoliciesDef = g.NewInterface(
 			Text("name").
 			Field("signature", "string", "[]TableColumnSignature", g.WithCustomParser("ParseTableColumnSignature")).
 			Text("return_type").
-			Text("body"),
+			Text("body").
+			PlainOnlyField("DatabaseName", "string").
+			PlainOnlyField("SchemaName", "string"),
 		g.NewQueryStruct("DescribeRowAccessPolicy").
 			Describe().
 			SQL("ROW ACCESS POLICY").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
-	)
+	).
+	WithDescribeDetailsFromIdentifier("RowAccessPolicyDescription", []string{"DatabaseName", "SchemaName"})

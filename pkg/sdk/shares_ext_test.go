@@ -18,9 +18,10 @@ func init() {
 			case_Shares_sql_Create_all,
 			func(opts *CreateShareOptions) {
 				opts.OrReplace = new(true)
+				opts.SecureObjectsOnly = new(false)
 				opts.Comment = new("comment")
 			},
-			`CREATE OR REPLACE SHARE %s COMMENT = 'comment'`, id.FullyQualifiedName(),
+			`CREATE OR REPLACE SHARE %s SECURE_OBJECTS_ONLY = false COMMENT = 'comment'`, id.FullyQualifiedName(),
 		)
 
 	accountId1 := NewAccountIdentifier("my-org", "myaccount")

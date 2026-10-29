@@ -18,13 +18,25 @@ const (
 )
 
 // SdkShowByIDFilteringKind is one ShowByID filter, in call-argument order.
-// Omitted filters mean the SHOW call passes no filtering argument.
+// An empty list emits LIKE. SdkShowByIDNone emits no filter and cannot be combined with another kind.
 type SdkShowByIDFilteringKind string
 
 const (
 	SdkShowByIDLike       SdkShowByIDFilteringKind = "like"
 	SdkShowByIDIn         SdkShowByIDFilteringKind = "in"
 	SdkShowByIDExtendedIn SdkShowByIDFilteringKind = "extended_in"
+	SdkShowByIDNone       SdkShowByIDFilteringKind = "none"
+)
+
+// SdkShowByIDPredicateKind selects the ShowByID row match.
+// Empty keeps the generator default: name, or full id for a schema object with arguments.
+type SdkShowByIDPredicateKind string
+
+const (
+	SdkShowByIDPredicateName           SdkShowByIDPredicateKind = "name"
+	SdkShowByIDPredicateFullID         SdkShowByIDPredicateKind = "full_id"
+	SdkShowByIDPredicateAccountName    SdkShowByIDPredicateKind = "account_name"
+	SdkShowByIDPredicateNameAndLocator SdkShowByIDPredicateKind = "name_and_locator"
 )
 
 // SdkDescriptionMapping is the DESCRIBE result shape the SDK method emits.
@@ -112,6 +124,16 @@ func SdkShowByIDFiltering(kinds ...SdkShowByIDFilteringKind) SdkShowOption {
 	return func(s *SdkGenerator) { s.ShowByIDFiltering = kinds }
 }
 
+// SdkShowByIDNoFiltering emits ShowByID with no LIKE, IN, or other filter.
+func SdkShowByIDNoFiltering() SdkShowOption {
+	return SdkShowByIDFiltering(SdkShowByIDNone)
+}
+
+// SdkShowByIDPredicate sets the ShowByID FindFirst match.
+func SdkShowByIDPredicate(kind SdkShowByIDPredicateKind) SdkShowOption {
+	return func(s *SdkGenerator) { s.ShowByIDPredicate = kind }
+}
+
 // SdkDescribeDoc overrides the default DESCRIBE doc URL.
 // The default is https://docs.snowflake.com/en/sql-reference/sql/desc- plus the hyphenated Name.
 func SdkDescribeDoc(url string) SdkDescribeOption {
@@ -152,8 +174,8 @@ type SdkPlainOnlyField struct {
 }
 
 // SdkDescribePlainOnlyField adds a plain-only field to the DESCRIBE paired struct.
-// It is the ssot form of PlainOnlyField. The field is not a column, convert skips it,
-// and additionalConvert in the SDK ext file fills it.
+// It is the ssot form of PlainOnlyField. The field is not a column and convert skips it.
+// additionalConvert in the SDK ext file fills it, unless SdkDescribeDetailsFromIdentifier copies every plain-only field.
 func SdkDescribePlainOnlyField(name, kind string) SdkDescribeOption {
 	return func(s *SdkGenerator) {
 		s.DescribePlainOnlyFields = append(s.DescribePlainOnlyFields, SdkPlainOnlyField{Name: name, Kind: kind})
@@ -357,7 +379,7 @@ func (obj Object) VariantAlterConfig() SdkGenerator {
 }
 
 // VariantCreateConfig is the CREATE config for emitting this variant as a custom method.
-// It does not read WithSdk. Doc and AdditionalValidations come from Create.
+// It does not read WithSdk. Doc, AdditionalValidations, and WithoutOrReplace come from Create.
 // SQL words are VariantEntityCreateName, or VariantOf.ObjectType when that override is empty.
 // The query struct name is Create plus SdkCreateRequestObjectName, or Create plus Name.
 func (obj Object) VariantCreateConfig() SdkGenerator {
@@ -373,6 +395,7 @@ func (obj Object) VariantCreateConfig() SdkGenerator {
 		CreateSql:                   obj.variantEntityName(obj.VariantEntityCreateName),
 		CreateQueryStructName:       "Create" + stem,
 		CreateAdditionalValidations: obj.Create.AdditionalValidations,
+		CreateWithoutOrReplace:      obj.Create.WithoutOrReplace,
 	}
 }
 

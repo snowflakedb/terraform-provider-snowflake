@@ -109,10 +109,14 @@ func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *
 	if sdkObject.ObjectTypeName != "" {
 		objectTypeName = sdkObject.ObjectTypeName
 	}
+	sdkType := sdkObject.Name
+	if sdkObject.SdkType != "" {
+		sdkType = sdkObject.SdkType
+	}
 
 	return SnowflakeObjectAssertionsModel{
 		Name:                 name,
-		SdkType:              sdkObject.Name,
+		SdkType:              sdkType,
 		IdType:               sdkObject.IdType,
 		IsDataSourceOutput:   sdkObject.IsDataSourceOutput,
 		IsSubStruct:          sdkObject.IsSubStruct,
