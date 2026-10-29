@@ -231,8 +231,7 @@ func appendPairedColumn(pairs *PairedStructs, obj ssot.Object, attr ssot.Attribu
 		if attr.ManualConvert && attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier && !attr.OptionalInShow && !attr.OptionalInDb {
 			return pairs.Field(key, "string", "[]"+attr.Elem.IdentifierType, WithManualConvert())
 		}
-		if attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier && attr.CustomParser != "" && !attr.OptionalInShow && attr.OptionalInDb {
-			kind := attr.Elem.IdentifierType
+		if kind, ok := customListElementKind(attr); ok {
 			return pairs.Field(key, "sql.NullString", "[]"+kind, WithCustomParser(attr.CustomParser))
 		}
 		if attr.OptionalInShow || attr.OptionalInDb || attr.Elem == nil || attr.Elem.Type != ssot.AttrEnum {
@@ -245,6 +244,31 @@ func appendPairedColumn(pairs *PairedStructs, obj ssot.Object, attr ssot.Attribu
 		panicPairedColumn(obj, attr, fmt.Sprintf("type %q has no paired struct mapping", attr.Type))
 	}
 	return pairs
+}
+
+// customListElementKind is the element type of a CSV list parsed by CustomParser.
+// The column is optional in the database row and required in the plain struct.
+// The parser is func(string) ([]T, error). An identifier element uses IdentifierType.
+// An enum element uses the enum's SDK type name.
+func customListElementKind(attr ssot.Attribute) (string, bool) {
+	if attr.CustomParser == "" || attr.OptionalInShow || !attr.OptionalInDb || attr.Elem == nil {
+		return "", false
+	}
+	switch attr.Elem.Type {
+	case ssot.AttrIdentifier:
+		if attr.Elem.IdentifierType == "" {
+			return "", false
+		}
+		return attr.Elem.IdentifierType, true
+	case ssot.AttrEnum:
+		enum := attr.Elem.ColumnEnum()
+		if enum == nil || enum.Kind() == "" {
+			return "", false
+		}
+		return enum.Kind(), true
+	default:
+		return "", false
+	}
 }
 
 func boolFromTextOpts(attr ssot.Attribute) []PairedFieldOption {

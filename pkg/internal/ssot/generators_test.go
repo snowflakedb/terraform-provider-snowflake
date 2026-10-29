@@ -141,6 +141,7 @@ func Test_ObjectGenerators_sdk(t *testing.T) {
 		SdkShowOptionalLimitFrom(),
 		SdkShowOptionalLimit(),
 		SdkShowByIDFiltering(SdkShowByIDExtendedIn, SdkShowByIDLike),
+		SdkShowByIDPredicate(SdkShowByIDPredicateNameAndLocator),
 		SdkShowResultFilterHook(),
 		SdkShowPlainOnly(&scopes, "[]Scope"),
 	), SdkDescribe(
@@ -163,6 +164,7 @@ func Test_ObjectGenerators_sdk(t *testing.T) {
 		ShowOptionalLimitFrom:   true,
 		ShowOptionalLimit:       true,
 		ShowByIDFiltering:       []SdkShowByIDFilteringKind{SdkShowByIDExtendedIn, SdkShowByIDLike},
+		ShowByIDPredicate:       SdkShowByIDPredicateNameAndLocator,
 		ShowResultFilterHook:    true,
 		ShowPlainOnlyFields:     []SdkShowPlainOnlyField{{Column: &scopes, Kind: "[]Scope"}},
 		DescribeDoc:             "https://desc",

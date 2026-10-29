@@ -40,6 +40,31 @@ func Test_ShowOperationFromObject_plainIn(t *testing.T) {
 	requireSameOperations(t, want, got)
 }
 
+func Test_ShowOperationFromObject_noFilteringAndPredicate(t *testing.T) {
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
+	obj := ssot.Object{
+		Name:       "Fake",
+		NamePlural: "Fakes",
+		IdType:     "AccountObjectIdentifier",
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShow(
+			ssot.SdkShowByIDNoFiltering(),
+			ssot.SdkShowByIDPredicate(ssot.SdkShowByIDPredicateNameAndLocator),
+		))},
+	}
+	got := NewInterface("Fakes", "Fake", "AccountObjectIdentifier").ShowOperationFromObject(obj)
+	want := NewInterface("Fakes", "Fake", "AccountObjectIdentifier").
+		ShowOperationWithPairedStructs(
+			"https://docs.snowflake.com/en/sql-reference/sql/show-fakes",
+			ShowPairedStructs(obj),
+			NewQueryStruct("ShowFakes").Show().SQL("FAKES"),
+			ShowByIDNoFiltering,
+		).
+		WithShowByIDFindPredicateKind(ShowByIDFindPredicateNameAndLocator)
+	requireSameOperations(t, want, got)
+	require.Equal(t, ShowByIDFindPredicateNameAndLocator, got.ShowByIDFindPredicateKind)
+}
+
 func Test_ShowDescribeFromObject(t *testing.T) {
 	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
 	column := ssot.OutputSpec{Columns: []*ssot.Attribute{&name}}
@@ -234,6 +259,24 @@ func Test_ShowDescribeFromObject_panics(t *testing.T) {
 			call: func() {
 				NewInterface("Fakes", "Fake", "AccountObjectIdentifier").
 					ShowOperationFromObject(ssot.Object{Name: "Fake", NamePlural: "Fakes"})
+			},
+		},
+		{
+			name: "show by id no filtering combined",
+			call: func() {
+				NewInterface("Fakes", "Fake", "AccountObjectIdentifier").
+					ShowOperationFromObject(showMethodObject(ssot.SdkShow(
+						ssot.SdkShowByIDFiltering(ssot.SdkShowByIDNone, ssot.SdkShowByIDLike),
+					), column, ssot.OutputSpec{}))
+			},
+		},
+		{
+			name: "unknown show by id predicate",
+			call: func() {
+				NewInterface("Fakes", "Fake", "AccountObjectIdentifier").
+					ShowOperationFromObject(showMethodObject(ssot.SdkShow(
+						ssot.SdkShowByIDPredicate("nope"),
+					), column, ssot.OutputSpec{}))
 			},
 		},
 		{

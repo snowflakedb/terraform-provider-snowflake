@@ -299,6 +299,9 @@ func parameterOptionsFromClause(clause ssot.SqlClause, required bool) *Parameter
 	default:
 		panic(fmt.Sprintf("sql clause equals %q", clause.Equals))
 	}
+	if clause.Reverse {
+		opts = opts.Reverse()
+	}
 	if required {
 		opts = opts.Required()
 	}

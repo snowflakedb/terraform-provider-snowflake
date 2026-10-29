@@ -33,6 +33,7 @@ type SdkGenerator struct {
 	ShowOptionalLimitFrom  bool
 	ShowOptionalLimit      bool
 	ShowByIDFiltering      []SdkShowByIDFilteringKind
+	ShowByIDPredicate      SdkShowByIDPredicateKind
 	ShowQueryStructName    string
 	// ShowResultFilterHook makes the generated Show drop rows for which the SDK ext file's excludeFromShow returns true.
 	ShowResultFilterHook bool

@@ -23,6 +23,7 @@ func All() []ssot.Object {
 		BackupPolicy,
 		ProjectionPolicy,
 		Share,
+		ReplicationGroup,
 	}
 	for _, obj := range objs {
 		ssot.ValidateObject(obj)

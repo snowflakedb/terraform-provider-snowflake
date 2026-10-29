@@ -18,13 +18,25 @@ const (
 )
 
 // SdkShowByIDFilteringKind is one ShowByID filter, in call-argument order.
-// Omitted filters mean the SHOW call passes no filtering argument.
+// An empty list emits LIKE. SdkShowByIDNone emits no filter and cannot be combined with another kind.
 type SdkShowByIDFilteringKind string
 
 const (
 	SdkShowByIDLike       SdkShowByIDFilteringKind = "like"
 	SdkShowByIDIn         SdkShowByIDFilteringKind = "in"
 	SdkShowByIDExtendedIn SdkShowByIDFilteringKind = "extended_in"
+	SdkShowByIDNone       SdkShowByIDFilteringKind = "none"
+)
+
+// SdkShowByIDPredicateKind selects the ShowByID row match.
+// Empty keeps the generator default: name, or full id for a schema object with arguments.
+type SdkShowByIDPredicateKind string
+
+const (
+	SdkShowByIDPredicateName           SdkShowByIDPredicateKind = "name"
+	SdkShowByIDPredicateFullID         SdkShowByIDPredicateKind = "full_id"
+	SdkShowByIDPredicateAccountName    SdkShowByIDPredicateKind = "account_name"
+	SdkShowByIDPredicateNameAndLocator SdkShowByIDPredicateKind = "name_and_locator"
 )
 
 // SdkDescriptionMapping is the DESCRIBE result shape the SDK method emits.
@@ -110,6 +122,16 @@ func SdkShowOptionalLimit() SdkShowOption {
 
 func SdkShowByIDFiltering(kinds ...SdkShowByIDFilteringKind) SdkShowOption {
 	return func(s *SdkGenerator) { s.ShowByIDFiltering = kinds }
+}
+
+// SdkShowByIDNoFiltering emits ShowByID with no LIKE, IN, or other filter.
+func SdkShowByIDNoFiltering() SdkShowOption {
+	return SdkShowByIDFiltering(SdkShowByIDNone)
+}
+
+// SdkShowByIDPredicate sets the ShowByID FindFirst match.
+func SdkShowByIDPredicate(kind SdkShowByIDPredicateKind) SdkShowOption {
+	return func(s *SdkGenerator) { s.ShowByIDPredicate = kind }
 }
 
 // SdkDescribeDoc overrides the default DESCRIBE doc URL.
