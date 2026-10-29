@@ -68,6 +68,8 @@ type Interface struct {
 	// DescribeDetailsMethods, when set (via WithDescribeDetails or WithDescribeDetailsMethod), drive generation of the
 	// Describe details method bodies. An interface has one per kind of details, such as one per variant.
 	DescribeDetailsMethods []*DescribeDetailsConfig
+	// DescribeDetailsFromIdentifier, when set, generates DescribeDetails that copies identifier fields onto the DESCRIBE plain struct.
+	DescribeDetailsFromIdentifier *DescribeDetailsFromIdentifierConfig
 	// DescribeParse, when set (via WithDescribeParse), drives generation of Parse<NameSingular>Described.
 	DescribeParse *DescribeParseConfig
 	// CustomMethods holds interface methods that have no generated implementation.

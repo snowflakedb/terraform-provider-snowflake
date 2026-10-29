@@ -42,6 +42,7 @@ func PrepareSdkDefinition(definition *Interface, logger *log.Logger) {
 func preprocessDefinition(definition *Interface, logger *log.Logger) {
 	generatedStructs := make([]string, 0)
 	generatedDtos := make([]string, 0)
+	seenIDStructs := make(map[string]struct{})
 
 	for _, o := range definition.Operations {
 		o.ObjectInterface = definition
@@ -80,7 +81,10 @@ func preprocessDefinition(definition *Interface, logger *log.Logger) {
 					logger.Printf("[WARN] for showObjectIdMethod: %v", err)
 				}
 				if CheckRequiredFieldsForIdMethod(definition.NameSingular, o.HelperStructs, idKind, logger) {
-					o.ObjectIdMethod = NewShowObjectIDMethod(definition.NameSingular, idKind)
+					if _, seen := seenIDStructs[definition.NameSingular]; !seen {
+						o.ObjectIdMethod = NewShowObjectIDMethod(definition.NameSingular, idKind)
+						seenIDStructs[definition.NameSingular] = struct{}{}
+					}
 				}
 
 				typeName := definition.NameSingular
@@ -88,6 +92,21 @@ func preprocessDefinition(definition *Interface, logger *log.Logger) {
 					typeName = definition.ShowObjectTypeName
 				}
 				o.ObjectTypeMethod = NewShowObjectTypeMethod(definition.ShowObjectName, typeName)
+			}
+			if o.Name == string(OperationKindDescribe) && o.DescribeMapping != nil && o.DescribeMapping.To != nil {
+				idKind, err := ToObjectIdentifierKind(definition.IdentifierKind)
+				if err != nil {
+					logger.Printf("[WARN] for describeObjectIdMethod: %v", err)
+				} else if idKind != AccountObjectIdentifier {
+					detailsName := o.DescribeMapping.To.Name
+					if definition.DescribeDetailsFromIdentifier != nil && definition.DescribeDetailsFromIdentifier.DetailsType != "" {
+						detailsName = definition.DescribeDetailsFromIdentifier.DetailsType
+					}
+					if _, seen := seenIDStructs[detailsName]; !seen && describeIDPartsAreStrings(detailsName, o.HelperStructs, idKind) {
+						o.ObjectIdMethod = NewShowObjectIDMethod(detailsName, idKind)
+						seenIDStructs[detailsName] = struct{}{}
+					}
+				}
 			}
 
 			if o.NoRequest {
@@ -126,8 +145,43 @@ func preprocessDefinition(definition *Interface, logger *log.Logger) {
 		requireConsistentStructShapes(definition)
 	}
 
+	omitAdditionalConvertForIdentifierCopies(definition)
+
 	// Built for every object regardless of opt-in; main.go's generation part decides whether to render it.
 	definition.UnitTests = definition.buildUnitTestsModel()
+}
+
+// omitAdditionalConvertForIdentifierCopies drops the additionalConvert hook when DescribeDetails copies every
+// plain-only DESCRIBE field from the identifier. A plain-only field outside that list keeps the hook.
+// A column marked manual still calls additionalConvert through its field pair.
+func omitAdditionalConvertForIdentifierCopies(definition *Interface) {
+	cfg := definition.DescribeDetailsFromIdentifier
+	if cfg == nil {
+		return
+	}
+	covered := make(map[string]struct{}, len(cfg.Fields))
+	for _, name := range cfg.Fields {
+		covered[name] = struct{}{}
+	}
+	for _, op := range definition.Operations {
+		mapping := op.DescribeMapping
+		if mapping == nil || len(mapping.PlainOnlyFields) == 0 {
+			continue
+		}
+		if !identifierFieldsCover(mapping.PlainOnlyFields, covered) {
+			continue
+		}
+		mapping.AdditionalConvert = false
+	}
+}
+
+func identifierFieldsCover(fields []string, covered map[string]struct{}) bool {
+	for _, name := range fields {
+		if _, ok := covered[name]; !ok {
+			return false
+		}
+	}
+	return true
 }
 
 // resolveInterfaceIdentifierKinds walks all fields recursively and replaces sentinel kind values
