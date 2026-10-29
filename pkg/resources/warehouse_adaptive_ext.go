@@ -86,7 +86,6 @@ func warehouseAdaptiveOutputMappingsExt(w *sdk.WarehouseAdaptive) []outputMappin
 	return []outputMapping{
 		{"max_query_performance_level", "max_query_performance_level", maxQueryPerformanceLevel, maxQueryPerformanceLevel, nil},
 		{"query_throughput_multiplier", "query_throughput_multiplier", queryThroughputMultiplier, queryThroughputMultiplier, nil},
-		{"resource_monitor", "resource_monitor", w.ResourceMonitor.Name(), w.ResourceMonitor.Name(), nil},
 	}
 }
 
@@ -95,6 +94,7 @@ func warehouseAdaptiveSetConfigFieldsExt(d *schema.ResourceData, w *sdk.Warehous
 		d.Set("name", w.Name),
 		d.Set("comment", w.Comment),
 		d.Set("warehouse_type", string(w.Type)),
+		d.Set("resource_monitor", w.ResourceMonitor.Name()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseAdaptiveToSchema(w)}),
 	)
 }
@@ -130,7 +130,7 @@ func warehouseAdaptiveApplySetUnsetExt(d *schema.ResourceData) (*warehouseAdapti
 	return &warehouseAdaptiveAlterRequestsExt{set: set, unset: unset}, nil
 }
 
-func warehouseAdaptiveSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, w *sdk.WarehouseAdaptive, _ bool) error {
+func warehouseAdaptiveSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, w *sdk.WarehouseAdaptive, importPermissiveMode bool) error {
 	// Warehouses of other types can be imported and converted to ADAPTIVE with an in-place ALTER during the next update.
 	// INTERACTIVE is the exception and Snowflake rejects it.
 	if w.Type == sdk.WarehouseTypeInteractive {
@@ -139,10 +139,8 @@ func warehouseAdaptiveSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.Ac
 
 	return errors.Join(
 		d.Set("name", id.Name()),
-		d.Set("comment", w.Comment),
-		setOptionalFromPtr(d, "max_query_performance_level", w.MaxQueryPerformanceLevel),
-		setOptionalFromPtr(d, "query_throughput_multiplier", w.QueryThroughputMultiplier),
-		d.Set("resource_monitor", w.ResourceMonitor.Name()),
+		importOptionalStringAttribute(d, "max_query_performance_level", importPermissiveMode, w.MaxQueryPerformanceLevel),
+		importOptionalIntWithIntDefaultAttribute(d, "query_throughput_multiplier", importPermissiveMode, w.QueryThroughputMultiplier),
 	)
 }
 
