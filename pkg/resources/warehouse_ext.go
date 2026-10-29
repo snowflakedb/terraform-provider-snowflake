@@ -101,7 +101,6 @@ func warehouseHandleExternalChangesExt(d *schema.ResourceData, warehouse *sdk.Wa
 		outputMapping{"scaling_policy", "scaling_policy", scalingPolicyStr, scalingPolicyVal, nil},
 		outputMapping{"auto_suspend", "auto_suspend", autoSuspend, autoSuspend, nil},
 		outputMapping{"auto_resume", "auto_resume", autoResumeVal, autoResumeStr, nil},
-		outputMapping{"resource_monitor", "resource_monitor", warehouse.ResourceMonitor.Name(), warehouse.ResourceMonitor.Name(), nil},
 		outputMapping{"enable_query_acceleration", "enable_query_acceleration", enableQAVal, enableQAStr, nil},
 		outputMapping{"query_acceleration_max_scale_factor", "query_acceleration_max_scale_factor", queryAccelerationMaxScaleFactor, queryAccelerationMaxScaleFactor, nil},
 		outputMapping{"generation", "generation", generation, generation, nil},
@@ -112,6 +111,7 @@ func warehouseHandleExternalChangesExt(d *schema.ResourceData, warehouse *sdk.Wa
 func warehouseSetConfigFieldsExt(d *schema.ResourceData, warehouse *sdk.WarehouseRegular) error {
 	return errors.Join(
 		d.Set("comment", warehouse.Comment),
+		d.Set("resource_monitor", warehouse.ResourceMonitor.Name()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseRegularToSchema(warehouse)}),
 	)
 }
@@ -155,24 +155,20 @@ func warehouseApplySetUnsetExt(d *schema.ResourceData) (*warehouseAlterRequestsE
 	return &warehouseAlterRequestsExt{set: set, unset: unset}, nil
 }
 
-func warehouseSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, warehouse *sdk.WarehouseRegular, _ bool) error {
-	if err := d.Set("name", id.Name()); err != nil {
-		return err
-	}
+func warehouseSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, warehouse *sdk.WarehouseRegular, importPermissiveMode bool) error {
 	return errors.Join(
-		d.Set("warehouse_type", warehouse.Type),
-		setOptionalValueWithMapping(d, "warehouse_size", warehouse.Size, func(v *sdk.WarehouseSize) string { return string(*v) }),
-		d.Set("max_cluster_count", warehouse.MaxClusterCount),
-		d.Set("min_cluster_count", warehouse.MinClusterCount),
-		setOptionalValueWithMapping(d, "scaling_policy", warehouse.ScalingPolicy, func(v *sdk.ScalingPolicy) string { return string(*v) }),
-		d.Set("auto_suspend", warehouse.AutoSuspend),
-		d.Set("auto_resume", booleanStringFromBool(warehouse.AutoResume)),
-		d.Set("resource_monitor", warehouse.ResourceMonitor.Name()),
-		d.Set("comment", warehouse.Comment),
-		setOptionalValueWithMapping(d, "enable_query_acceleration", warehouse.EnableQueryAcceleration, func(v *bool) string { return booleanStringFromBool(*v) }),
-		d.Set("query_acceleration_max_scale_factor", warehouse.QueryAccelerationMaxScaleFactor),
-		setOptionalFromPtr(d, "resource_constraint", warehouse.ResourceConstraint),
-		setOptionalFromPtr(d, "generation", warehouse.Generation),
+		d.Set("name", id.Name()),
+		importStringAttribute(d, "warehouse_type", importPermissiveMode, warehouse.Type),
+		importOptionalStringAttribute(d, "warehouse_size", importPermissiveMode, warehouse.Size),
+		importOptionalIntAttribute(d, "max_cluster_count", importPermissiveMode, warehouse.MaxClusterCount),
+		importOptionalIntAttribute(d, "min_cluster_count", importPermissiveMode, warehouse.MinClusterCount),
+		importOptionalStringAttribute(d, "scaling_policy", importPermissiveMode, warehouse.ScalingPolicy),
+		importOptionalIntWithIntDefaultAttribute(d, "auto_suspend", importPermissiveMode, warehouse.AutoSuspend),
+		importBooleanStringAttribute(d, "auto_resume", importPermissiveMode, warehouse.AutoResume),
+		importOptionalBooleanStringAttribute(d, "enable_query_acceleration", importPermissiveMode, warehouse.EnableQueryAcceleration),
+		importOptionalIntWithIntDefaultAttribute(d, "query_acceleration_max_scale_factor", importPermissiveMode, warehouse.QueryAccelerationMaxScaleFactor),
+		importOptionalStringAttribute(d, "resource_constraint", importPermissiveMode, warehouse.ResourceConstraint),
+		importOptionalStringAttribute(d, "generation", importPermissiveMode, warehouse.Generation),
 	)
 }
 

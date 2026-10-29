@@ -118,7 +118,7 @@ func authenticationPolicySetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk
 		d.Set("database", id.DatabaseName()),
 		d.Set("schema", id.SchemaName()),
 		importSetAttribute(d, "authentication_methods", importPermissiveMode, details.AuthenticationMethods),
-		importStringAttribute(d, "mfa_enrollment", importPermissiveMode, string(details.MfaEnrollment)),
+		importStringAttribute(d, "mfa_enrollment", importPermissiveMode, details.MfaEnrollment),
 		importSetAttribute(d, "client_types", importPermissiveMode, details.ClientTypes),
 		importSetAttribute(d, "security_integrations", importPermissiveMode, authenticationPolicySecurityIntegrationNames(details.SecurityIntegrations)),
 		importBlockAttribute(d, "mfa_policy", importPermissiveMode, authenticationPolicyMfaPolicyToSchema(details.MfaPolicy)),

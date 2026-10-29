@@ -129,6 +129,107 @@ func Test_importStringAttribute(t *testing.T) {
 	}
 }
 
+// importedStateValue returns nil when set doesn't write key to the state.
+func importedStateValue(t *testing.T, key string, set func(d *schema.ResourceData) error) *string {
+	t.Helper()
+	d := (&schema.Resource{Schema: importTestSchema()}).Data(nil)
+	d.SetId("id")
+	require.NoError(t, set(d))
+	if v, ok := d.State().Attributes[key]; ok {
+		return &v
+	}
+	return nil
+}
+
+func Test_importOptionalBooleanStringAttribute(t *testing.T) {
+	tests := []struct {
+		name                 string
+		importPermissiveMode bool
+		snowflakeValue       *bool
+		expected             *string
+	}{
+		{name: "enforcing, true", snowflakeValue: new(true), expected: new(BooleanTrue)},
+		{name: "enforcing, false", snowflakeValue: new(false), expected: new(BooleanFalse)},
+		{name: "enforcing, nil", snowflakeValue: nil, expected: new(BooleanDefault)},
+		{name: "permissive", importPermissiveMode: true, snowflakeValue: new(true), expected: new(BooleanDefault)},
+		{name: "permissive, nil", importPermissiveMode: true, snowflakeValue: nil, expected: new(BooleanDefault)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, importedStateValue(t, "boolean_string", func(d *schema.ResourceData) error {
+				return importOptionalBooleanStringAttribute(d, "boolean_string", tt.importPermissiveMode, tt.snowflakeValue)
+			}))
+		})
+	}
+}
+
+func Test_importOptionalIntWithIntDefaultAttribute(t *testing.T) {
+	tests := []struct {
+		name                 string
+		importPermissiveMode bool
+		snowflakeValue       *int
+		expected             *string
+	}{
+		{name: "enforcing", snowflakeValue: new(600), expected: new("600")},
+		{name: "enforcing, zero", snowflakeValue: new(0), expected: new("0")},
+		{name: "enforcing, nil", snowflakeValue: nil, expected: new(IntDefaultString)},
+		{name: "permissive", importPermissiveMode: true, snowflakeValue: new(600), expected: new(IntDefaultString)},
+		{name: "permissive, nil", importPermissiveMode: true, snowflakeValue: nil, expected: new(IntDefaultString)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, importedStateValue(t, "int_with_int_default", func(d *schema.ResourceData) error {
+				return importOptionalIntWithIntDefaultAttribute(d, "int_with_int_default", tt.importPermissiveMode, tt.snowflakeValue)
+			}))
+		})
+	}
+}
+
+func Test_importOptionalIntAttribute(t *testing.T) {
+	tests := []struct {
+		name                 string
+		importPermissiveMode bool
+		snowflakeValue       *int
+		expected             *string
+	}{
+		{name: "enforcing", snowflakeValue: new(600), expected: new("600")},
+		{name: "enforcing, zero", snowflakeValue: new(0), expected: new("0")},
+		{name: "enforcing, nil", snowflakeValue: nil, expected: nil},
+		{name: "permissive", importPermissiveMode: true, snowflakeValue: new(600), expected: new("0")},
+		{name: "permissive, nil", importPermissiveMode: true, snowflakeValue: nil, expected: nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, importedStateValue(t, "int", func(d *schema.ResourceData) error {
+				return importOptionalIntAttribute(d, "int", tt.importPermissiveMode, tt.snowflakeValue)
+			}))
+		})
+	}
+}
+
+func Test_importOptionalStringAttribute(t *testing.T) {
+	type stringEnum string
+
+	tests := []struct {
+		name                 string
+		importPermissiveMode bool
+		snowflakeValue       *stringEnum
+		expected             *string
+	}{
+		{name: "enforcing", snowflakeValue: new(stringEnum("value")), expected: new("value")},
+		{name: "enforcing, nil", snowflakeValue: nil, expected: nil},
+		{name: "permissive", importPermissiveMode: true, snowflakeValue: new(stringEnum("value")), expected: new("")},
+		{name: "permissive, nil", importPermissiveMode: true, snowflakeValue: nil, expected: nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, importedStateValue(t, "string", func(d *schema.ResourceData) error {
+				return importOptionalStringAttribute(d, "string", tt.importPermissiveMode, tt.snowflakeValue)
+			}))
+		})
+	}
+}
+
 func Test_importSetAttribute(t *testing.T) {
 	type stringEnum string
 
