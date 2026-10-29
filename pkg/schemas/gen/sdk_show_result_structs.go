@@ -168,7 +168,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	// Public describe_output Elem is the row (created_on / name / kind). DatabaseDetails is a Rows wrapper; list helper in ext.
 	{ObjectStruct: sdk.DatabaseDetailsRow{}, IsDescribe: true},
 	{ObjectStruct: sdk.DynamicTableDetails{}, IsDescribe: true},
-	{ObjectStruct: sdk.EventTableDetails{}, IsDescribe: true},
+	// database_name and schema_name are copied from the identifier by DescribeDetails. DESCRIBE does not return them.
+	{ObjectStruct: sdk.EventTableDetails{}, IsDescribe: true, SkipFields: []string{"database_name", "schema_name"}},
 	{ObjectStruct: sdk.ExternalAccessIntegrationDetails{}, IsDescribe: true, ManualFields: []string{"allowed_network_rules", "allowed_api_authentication_integrations", "allowed_authentication_secrets"}},
 	// Nested DescribePropertyListSchema in ext (today’s public describe_output).
 	// ManualFields `external_oauth_rsa_public_key2` is ToSnakeCase of ExternalOauthRsaPublicKey2;
@@ -199,7 +200,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.IcebergTableDetails{}, IsDescribe: true, SkipFields: []string{"data_type_raw"}, ManualFields: []string{"type"}},
 	{ObjectStruct: sdk.ListingDetails{}, IsDescribe: true},
 	// ManualFields `signature` stays ext (slice of structs)
-	{ObjectStruct: sdk.MaskingPolicyDetails{}, IsDescribe: true, ManualFields: []string{"signature"}},
+	// database_name and schema_name are copied from the identifier by DescribeDetails. DESCRIBE does not return them.
+	{ObjectStruct: sdk.MaskingPolicyDetails{}, IsDescribe: true, SkipFields: []string{"database_name", "schema_name"}, ManualFields: []string{"signature"}},
 	{ObjectStruct: sdk.MaterializedViewDetails{}, IsDescribe: true},
 	{ObjectStruct: sdk.McpServerDetails{}, IsDescribe: true},
 	// TypeString of each property .Value (today’s public describe_output).
@@ -250,7 +252,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"snowpark_version",
 	}},
 	// ManualFields `signature` stays ext (slice of structs). `return_type` is string (not datatypes.DataType) so it generates natively.
-	{ObjectStruct: sdk.RowAccessPolicyDescription{}, IsDescribe: true, ManualFields: []string{"signature"}},
+	// database_name and schema_name are copied from the identifier by DescribeDetails. DESCRIBE does not return them.
+	{ObjectStruct: sdk.RowAccessPolicyDescription{}, IsDescribe: true, SkipFields: []string{"database_name", "schema_name"}, ManualFields: []string{"signature"}},
 	// Nested DescribePropertyListSchema in ext (today’s public describe_output).
 	// TODO [v3]: flatten to typed scalars (enabled.0.value → enabled) via a details
 	// struct + DescribeSaml2Details parse (API/storage-integration analog); native TypeList of the property row is not the end state.
@@ -307,9 +310,11 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	// Property-row list entry (same pattern as SecurityIntegrationProperty). Nested DescribeStorageIntegrationDetailsSchema stays the name-keyed consumer.
 	{ObjectStruct: sdk.StorageIntegrationProperty{}, UsedAsListEntry: true},
 	// ManualFields `signature` stays ext (slice of structs)
+	// ManualFields `signature` stays ext (slice of structs). database_name and schema_name stay in the schema; DescribeDetails copies them from the identifier.
 	{ObjectStruct: sdk.StorageLifecyclePolicyDetails{}, IsDescribe: true, ManualFields: []string{"signature"}},
 	// ManualFields `root_location` (ParseRootLocation rewrite) and []string TypeSets.
-	{ObjectStruct: sdk.StreamlitDetail{}, IsDescribe: true, ManualFields: []string{"root_location", "user_packages", "import_urls", "external_access_integrations"}},
+	// database_name and schema_name are copied from the identifier by DescribeDetails. DESCRIBE does not return them.
+	{ObjectStruct: sdk.StreamlitDetail{}, IsDescribe: true, SkipFields: []string{"database_name", "schema_name"}, ManualFields: []string{"root_location", "user_packages", "import_urls", "external_access_integrations"}},
 	// ManualFields `check`: SDK is *bool; public describe_output is TypeString.
 	{ObjectStruct: sdk.TableColumnDetails{}, IsDescribe: true, ManualFields: []string{"check"}},
 	// Keep omitted: password (secret).
