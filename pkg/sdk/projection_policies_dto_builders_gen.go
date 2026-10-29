@@ -118,7 +118,7 @@ func (s *ShowProjectionPolicyRequest) WithLike(like Like) *ShowProjectionPolicyR
 	return s
 }
 
-func (s *ShowProjectionPolicyRequest) WithIn(in ExtendedIn) *ShowProjectionPolicyRequest {
+func (s *ShowProjectionPolicyRequest) WithIn(in In) *ShowProjectionPolicyRequest {
 	s.In = &in
 	return s
 }
