@@ -4,10 +4,11 @@ package sdk
 
 var (
 	_ optionsProvider[CreateReplicationGroupOptions]          = new(CreateReplicationGroupRequest)
+	_ optionsProvider[CreateSecondaryReplicationGroupOptions] = new(CreateSecondaryReplicationGroupRequest)
 	_ optionsProvider[AlterReplicationGroupOptions]           = new(AlterReplicationGroupRequest)
+	_ optionsProvider[AlterSecondaryReplicationGroupOptions]  = new(AlterSecondaryReplicationGroupRequest)
 	_ optionsProvider[DropReplicationGroupOptions]            = new(DropReplicationGroupRequest)
 	_ optionsProvider[ShowReplicationGroupOptions]            = new(ShowReplicationGroupRequest)
-	_ optionsProvider[CreateSecondaryReplicationGroupOptions] = new(CreateSecondaryReplicationGroupRequest)
 )
 
 type CreateReplicationGroupRequest struct {
@@ -25,6 +26,12 @@ type CreateReplicationGroupRequest struct {
 	ErrorIntegration        *AccountObjectIdentifier
 }
 
+type CreateSecondaryReplicationGroupRequest struct {
+	IfNotExists *bool
+	name        AccountObjectIdentifier  // required
+	AsReplicaOf ExternalObjectIdentifier // required
+}
+
 type AlterReplicationGroupRequest struct {
 	IfExists  *bool
 	name      AccountObjectIdentifier // required
@@ -36,9 +43,6 @@ type AlterReplicationGroupRequest struct {
 	Add       *ReplicationGroupAddRequest
 	Move      *ReplicationGroupMoveRequest
 	Remove    *ReplicationGroupRemoveRequest
-	Refresh   *bool
-	Suspend   *ReplicationGroupSuspendRequest
-	Resume    *bool
 }
 
 type ReplicationGroupSetRequest struct {
@@ -80,7 +84,15 @@ type ReplicationGroupRemoveRequest struct {
 	FromAllowedAccounts        []AccountIdentifier
 }
 
-type ReplicationGroupSuspendRequest struct {
+type AlterSecondaryReplicationGroupRequest struct {
+	IfExists *bool
+	name     AccountObjectIdentifier // required
+	Refresh  *bool
+	Suspend  *ReplicationGroupSecondarySuspendRequest
+	Resume   *bool
+}
+
+type ReplicationGroupSecondarySuspendRequest struct {
 	Immediate *bool
 }
 
@@ -90,9 +102,3 @@ type DropReplicationGroupRequest struct {
 }
 
 type ShowReplicationGroupRequest struct{}
-
-type CreateSecondaryReplicationGroupRequest struct {
-	IfNotExists *bool
-	name        AccountObjectIdentifier  // required
-	AsReplicaOf ExternalObjectIdentifier // required
-}

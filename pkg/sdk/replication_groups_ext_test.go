@@ -256,32 +256,6 @@ func init() {
 			`ALTER REPLICATION GROUP %s MOVE SHARES "share1" TO REPLICATION GROUP "myrg2"`,
 			id.FullyQualifiedName(),
 		).
-		withModifyAndExpectedSqlf(
-			case_ReplicationGroups_sql_Alter_Refresh,
-			func(opts *AlterReplicationGroupOptions) { opts.Refresh = new(true) },
-			"ALTER REPLICATION GROUP %s REFRESH",
-			id.FullyQualifiedName(),
-		).
-		withModifyAndExpectedSqlf(
-			case_ReplicationGroups_sql_Alter_Suspend,
-			func(opts *AlterReplicationGroupOptions) { opts.Suspend = &ReplicationGroupSuspend{} },
-			"ALTER REPLICATION GROUP %s SUSPEND",
-			id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_Suspend_immediate",
-			func(opts *AlterReplicationGroupOptions) {
-				opts.Suspend = &ReplicationGroupSuspend{Immediate: new(true)}
-			},
-			"ALTER REPLICATION GROUP %s SUSPEND IMMEDIATE",
-			id.FullyQualifiedName(),
-		).
-		withModifyAndExpectedSqlf(
-			case_ReplicationGroups_sql_Alter_Resume,
-			func(opts *AlterReplicationGroupOptions) { opts.Resume = new(true) },
-			"ALTER REPLICATION GROUP %s RESUME",
-			id.FullyQualifiedName(),
-		).
 		withAdditionalValidationCase(
 			"validation_Alter_Set_AllowedDatabases_requireDatabases",
 			func(opts *AlterReplicationGroupOptions) {
@@ -448,6 +422,36 @@ func init() {
 				opts.Remove = &ReplicationGroupRemove{}
 			},
 			NewError("REMOVE must set exactly one allowed list"),
+		)
+
+	replicationGroupsTests.AlterSecondary.
+		withModifyAndExpectedSqlf(
+			case_ReplicationGroups_sql_AlterSecondary_Refresh,
+			func(opts *AlterSecondaryReplicationGroupOptions) { opts.Refresh = new(true) },
+			"ALTER REPLICATION GROUP %s REFRESH",
+			id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_ReplicationGroups_sql_AlterSecondary_Suspend,
+			func(opts *AlterSecondaryReplicationGroupOptions) {
+				opts.Suspend = &ReplicationGroupSecondarySuspend{}
+			},
+			"ALTER REPLICATION GROUP %s SUSPEND",
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_AlterSecondary_Suspend_immediate",
+			func(opts *AlterSecondaryReplicationGroupOptions) {
+				opts.Suspend = &ReplicationGroupSecondarySuspend{Immediate: new(true)}
+			},
+			"ALTER REPLICATION GROUP %s SUSPEND IMMEDIATE",
+			id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_ReplicationGroups_sql_AlterSecondary_Resume,
+			func(opts *AlterSecondaryReplicationGroupOptions) { opts.Resume = new(true) },
+			"ALTER REPLICATION GROUP %s RESUME",
+			id.FullyQualifiedName(),
 		)
 
 	primary := NewExternalObjectIdentifier(NewAccountIdentifier("myorg", "myaccount"), NewAccountObjectIdentifier("myrg"))

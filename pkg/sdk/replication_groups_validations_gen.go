@@ -6,10 +6,11 @@ import "fmt"
 
 var (
 	_ validatable = new(CreateReplicationGroupOptions)
+	_ validatable = new(CreateSecondaryReplicationGroupOptions)
 	_ validatable = new(AlterReplicationGroupOptions)
+	_ validatable = new(AlterSecondaryReplicationGroupOptions)
 	_ validatable = new(DropReplicationGroupOptions)
 	_ validatable = new(ShowReplicationGroupOptions)
-	_ validatable = new(CreateSecondaryReplicationGroupOptions)
 )
 
 func (opts *CreateReplicationGroupOptions) validate() error {
@@ -62,6 +63,18 @@ func (opts *CreateReplicationGroupOptions) validate() error {
 	return JoinErrors(errs...)
 }
 
+func (opts *CreateSecondaryReplicationGroupOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("CreateSecondaryReplicationGroupOptions", "name"))
+	}
+	errs = append(errs, opts.additionalValidations())
+	return JoinErrors(errs...)
+}
+
 func (opts *AlterReplicationGroupOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
@@ -70,8 +83,8 @@ func (opts *AlterReplicationGroupOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("AlterReplicationGroupOptions", "name"))
 	}
-	if !exactlyOneValueSet(opts.RenameTo, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.Add, opts.Move, opts.Remove, opts.Refresh, opts.Suspend, opts.Resume) {
-		errs = append(errs, errExactlyOneOf("AlterReplicationGroupOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "Add", "Move", "Remove", "Refresh", "Suspend", "Resume"))
+	if !exactlyOneValueSet(opts.RenameTo, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.Add, opts.Move, opts.Remove) {
+		errs = append(errs, errExactlyOneOf("AlterReplicationGroupOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "Add", "Move", "Remove"))
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
 		errs = append(errs, errInvalidIdentifier("AlterReplicationGroupOptions", "RenameTo"))
@@ -202,6 +215,20 @@ func (opts *AlterReplicationGroupOptions) validate() error {
 	return JoinErrors(errs...)
 }
 
+func (opts *AlterSecondaryReplicationGroupOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("AlterSecondaryReplicationGroupOptions", "name"))
+	}
+	if !exactlyOneValueSet(opts.Refresh, opts.Suspend, opts.Resume) {
+		errs = append(errs, errExactlyOneOf("AlterSecondaryReplicationGroupOptions", "Refresh", "Suspend", "Resume"))
+	}
+	return JoinErrors(errs...)
+}
+
 func (opts *DropReplicationGroupOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
@@ -218,17 +245,5 @@ func (opts *ShowReplicationGroupOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
-	return JoinErrors(errs...)
-}
-
-func (opts *CreateSecondaryReplicationGroupOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, errInvalidIdentifier("CreateSecondaryReplicationGroupOptions", "name"))
-	}
-	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
 }

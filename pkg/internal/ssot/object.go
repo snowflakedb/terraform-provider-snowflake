@@ -39,8 +39,10 @@ type Object struct {
 	IdentityHierarchyForceNew bool
 	// AdditionalIdentityNameDescription is appended to the generated name sentence.
 	AdditionalIdentityNameDescription string
-	SdkCreateRequestObjectName        string  // SDK Create<Name>Request stem; defaults to Name
-	VariantOf                         *Object // Shares SDK parameter details, set/unset request, and ParameterType names with this object; catalog membership still uses Name
+	SdkCreateRequestObjectName        string // SDK CREATE request stem, and the variant CREATE and ALTER query-struct stem. Empty uses Name
+	// VariantOf is the base of this role. Name starts with the base Name, and NamePlural matches the base.
+	// The variant also shares SDK parameter details, SET/UNSET requests, and ParameterType names. Catalog membership still uses Name.
+	VariantOf *Object
 	// VariantEntityCreateName overrides the SQL object words a variant CREATE emits.
 	// Empty uses VariantOf.ObjectType, so WarehouseAdaptive emits WAREHOUSE. Interactive CREATE sets INTERACTIVE WAREHOUSE.
 	VariantEntityCreateName string
@@ -231,16 +233,18 @@ func (obj Object) HasAlterSpec() bool {
 // KeywordsBefore is the order after OR REPLACE and before the object words.
 // Doc and Sql override the generated doc URL and object words. Empty Sql is the uppercase words of Name.
 // A variant does not set Sql. Variant CREATE uses VariantEntityCreateName, or VariantOf.ObjectType when that override is empty.
+// WithoutOrReplace leaves OR REPLACE out of a variant CREATE. The base uses SdkCreateWithoutOrReplace.
 type CreateSpec struct {
 	Doc                   string
 	Sql                   string
 	AdditionalValidations bool
+	WithoutOrReplace      bool
 	Clauses               []*Attribute
 	KeywordsBefore        []*Attribute
 }
 
 // HasCreateSpec reports whether this object defines a CREATE statement.
-// Presence is Clauses. Doc, Sql, KeywordsBefore, and AdditionalValidations do not define it.
+// Presence is Clauses. Doc, Sql, KeywordsBefore, WithoutOrReplace, and AdditionalValidations do not define it.
 func (obj Object) HasCreateSpec() bool {
 	return len(obj.Create.Clauses) > 0
 }

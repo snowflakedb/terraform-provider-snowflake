@@ -357,15 +357,12 @@ var replicationGroupSuspend = ssot.Attribute{
 	}},
 }
 
-// ReplicationGroup is an account object.
+// ReplicationGroup is the source-account role and the shared SDK interface.
 // SDK create, show, drop, and alter are on. CREATE has no OR REPLACE.
 // DROP documents IF EXISTS, so SdkDrop keeps it. The page shows no pre-drop step.
-// TODO [next PRs]: model the source and target roles as variants, the way warehouses do.
-// The base keeps this interface, SHOW, DROP, the normal CREATE, and the source-account ALTER
-// (rename, SET, UNSET, tags, ADD, MOVE, REMOVE). A secondary variant keeps CREATE ... AS REPLICA OF
-// and the target-account ALTER (REFRESH, SUSPEND, RESUME), and replaces the CreateSecondary custom operation.
-// SHOW stays on the base: SHOW REPLICATION GROUPS returns both roles.
-// See Adding a new entity in pkg/internal/ssot/README.md.
+// SHOW stays here: SHOW REPLICATION GROUPS returns both roles.
+// ReplicationGroupSecondary holds the target-account CREATE and ALTER.
+// SdkCreateForVariants emits CreateSecondary. SdkAlterForVariants emits AlterSecondary.
 var ReplicationGroup = ssot.Object{
 	Name:       "ReplicationGroup",
 	NamePlural: "ReplicationGroups",
@@ -377,6 +374,7 @@ var ReplicationGroup = ssot.Object{
 				ssot.SdkCreateWithoutOrReplace(),
 				ssot.SdkCreateAdditionalValidations(),
 			),
+			ssot.SdkCreateForVariants(),
 			ssot.SdkShow(
 				ssot.SdkShowByIDNoFiltering(),
 				ssot.SdkShowByIDPredicate(ssot.SdkShowByIDPredicateNameAndLocator),
@@ -386,7 +384,7 @@ var ReplicationGroup = ssot.Object{
 				ssot.SdkAlterSetAdditionalValidations(),
 				ssot.SdkAlterAdditionalValidations(),
 			),
-			ssot.SdkCustomOperations(),
+			ssot.SdkAlterForVariants(),
 		),
 	},
 	Attributes: []ssot.Attribute{
@@ -452,24 +450,8 @@ var ReplicationGroup = ssot.Object{
 			ssot.AlterKeywordBlock("Add", "ADD", &replicationGroupAdd),
 			ssot.AlterKeywordBlock("Move", "MOVE", &replicationGroupMove),
 			ssot.AlterKeywordBlock("Remove", "REMOVE", &replicationGroupRemove),
-			ssot.AlterKeyword("REFRESH"),
-			ssot.AlterKeywordBlock("Suspend", "SUSPEND", &replicationGroupSuspend),
-			ssot.AlterKeyword("RESUME"),
 		},
 	},
-	CustomOperations: []ssot.CustomOperationSpec{{
-		Kind: "CreateSecondary",
-		Doc:  "https://docs.snowflake.com/en/sql-reference/sql/create-replication-group",
-		// Primary is a valid external identifier.
-		AdditionalValidations: true,
-		Clauses: []ssot.CustomOperationClause{
-			ssot.CustomStaticSQL("CREATE"),
-			ssot.CustomObjectWords(),
-			ssot.CustomIfNotExists(),
-			ssot.CustomName(),
-			ssot.CustomAttribute(&replicationGroupAsReplicaOf),
-		},
-	}},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{
 			&ReplicationGroupAttrs.RegionGroup,
@@ -492,6 +474,39 @@ var ReplicationGroup = ssot.Object{
 			&ReplicationGroupAttrs.Owner,
 			&ReplicationGroupAttrs.IsListingAutoFulfillmentGroup,
 			&ReplicationGroupAttrs.ReadOnly,
+		},
+	},
+}
+
+// ReplicationGroupSecondary is the target-account role.
+// The name starts with ReplicationGroup so the methods are CreateSecondary and AlterSecondary.
+// SdkCreateRequestObjectName keeps the query struct CreateSecondaryReplicationGroup.
+// CreateSecondary and AlterSecondary are emitted from this object.
+var ReplicationGroupSecondary = ssot.Object{
+	Name:                       "ReplicationGroupSecondary",
+	NamePlural:                 "ReplicationGroups",
+	IdType:                     "AccountObjectIdentifier",
+	SdkCreateRequestObjectName: "SecondaryReplicationGroup",
+	VariantOf:                  &ReplicationGroup,
+	Attributes: []ssot.Attribute{
+		replicationGroupAsReplicaOf,
+	},
+	Create: ssot.CreateSpec{
+		Doc: "https://docs.snowflake.com/en/sql-reference/sql/create-replication-group",
+		// The secondary CREATE page has IF NOT EXISTS and no OR REPLACE.
+		WithoutOrReplace: true,
+		// AsReplicaOf is a valid external identifier.
+		AdditionalValidations: true,
+		Clauses: []*ssot.Attribute{
+			&replicationGroupAsReplicaOf,
+		},
+	},
+	Alter: ssot.AlterSpec{
+		Doc: "https://docs.snowflake.com/en/sql-reference/sql/alter-replication-group",
+		Clauses: []ssot.AlterClause{
+			ssot.AlterKeyword("REFRESH"),
+			ssot.AlterKeywordBlock("Suspend", "SUSPEND", &replicationGroupSuspend),
+			ssot.AlterKeyword("RESUME"),
 		},
 	},
 }

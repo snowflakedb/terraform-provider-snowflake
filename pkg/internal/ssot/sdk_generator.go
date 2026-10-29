@@ -379,7 +379,7 @@ func (obj Object) VariantAlterConfig() SdkGenerator {
 }
 
 // VariantCreateConfig is the CREATE config for emitting this variant as a custom method.
-// It does not read WithSdk. Doc and AdditionalValidations come from Create.
+// It does not read WithSdk. Doc, AdditionalValidations, and WithoutOrReplace come from Create.
 // SQL words are VariantEntityCreateName, or VariantOf.ObjectType when that override is empty.
 // The query struct name is Create plus SdkCreateRequestObjectName, or Create plus Name.
 func (obj Object) VariantCreateConfig() SdkGenerator {
@@ -395,6 +395,7 @@ func (obj Object) VariantCreateConfig() SdkGenerator {
 		CreateSql:                   obj.variantEntityName(obj.VariantEntityCreateName),
 		CreateQueryStructName:       "Create" + stem,
 		CreateAdditionalValidations: obj.Create.AdditionalValidations,
+		CreateWithoutOrReplace:      obj.Create.WithoutOrReplace,
 	}
 }
 

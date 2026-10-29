@@ -23,7 +23,17 @@ func (v *replicationGroups) Create(ctx context.Context, request *CreateReplicati
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *replicationGroups) CreateSecondary(ctx context.Context, request *CreateSecondaryReplicationGroupRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
 func (v *replicationGroups) Alter(ctx context.Context, request *AlterReplicationGroupRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *replicationGroups) AlterSecondary(ctx context.Context, request *AlterSecondaryReplicationGroupRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
@@ -61,11 +71,6 @@ func (v *replicationGroups) ShowByIDSafely(ctx context.Context, id AccountObject
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
-func (v *replicationGroups) CreateSecondary(ctx context.Context, request *CreateSecondaryReplicationGroupRequest) error {
-	opts := request.toOpts()
-	return validateAndExec(v.client, ctx, opts)
-}
-
 func (r *CreateReplicationGroupRequest) toOpts() *CreateReplicationGroupOptions {
 	opts := &CreateReplicationGroupOptions{
 		IfNotExists:             r.IfNotExists,
@@ -84,6 +89,15 @@ func (r *CreateReplicationGroupRequest) toOpts() *CreateReplicationGroupOptions 
 	return opts
 }
 
+func (r *CreateSecondaryReplicationGroupRequest) toOpts() *CreateSecondaryReplicationGroupOptions {
+	opts := &CreateSecondaryReplicationGroupOptions{
+		IfNotExists: r.IfNotExists,
+		name:        r.name,
+		AsReplicaOf: r.AsReplicaOf,
+	}
+	return opts
+}
+
 func (r *AlterReplicationGroupRequest) toOpts() *AlterReplicationGroupOptions {
 	opts := &AlterReplicationGroupOptions{
 		IfExists:  r.IfExists,
@@ -91,8 +105,6 @@ func (r *AlterReplicationGroupRequest) toOpts() *AlterReplicationGroupOptions {
 		RenameTo:  r.RenameTo,
 		SetTags:   r.SetTags,
 		UnsetTags: r.UnsetTags,
-		Refresh:   r.Refresh,
-		Resume:    r.Resume,
 	}
 	if r.Set != nil {
 		opts.Set = &ReplicationGroupSet{
@@ -138,8 +150,18 @@ func (r *AlterReplicationGroupRequest) toOpts() *AlterReplicationGroupOptions {
 			FromAllowedAccounts:        r.Remove.FromAllowedAccounts,
 		}
 	}
+	return opts
+}
+
+func (r *AlterSecondaryReplicationGroupRequest) toOpts() *AlterSecondaryReplicationGroupOptions {
+	opts := &AlterSecondaryReplicationGroupOptions{
+		IfExists: r.IfExists,
+		name:     r.name,
+		Refresh:  r.Refresh,
+		Resume:   r.Resume,
+	}
 	if r.Suspend != nil {
-		opts.Suspend = &ReplicationGroupSuspend{
+		opts.Suspend = &ReplicationGroupSecondarySuspend{
 			Immediate: r.Suspend.Immediate,
 		}
 	}
@@ -205,13 +227,4 @@ func (r replicationGroupsRow) convert() (*ReplicationGroup, error) {
 	mapNullString(&result.Owner, r.Owner)
 	mapNullBool(&result.ReadOnly, r.ReadOnly)
 	return result, nil
-}
-
-func (r *CreateSecondaryReplicationGroupRequest) toOpts() *CreateSecondaryReplicationGroupOptions {
-	opts := &CreateSecondaryReplicationGroupOptions{
-		IfNotExists: r.IfNotExists,
-		name:        r.name,
-		AsReplicaOf: r.AsReplicaOf,
-	}
-	return opts
 }

@@ -934,6 +934,9 @@ func Test_ValidateObject_variantEntityCreateName(t *testing.T) {
 	require.PanicsWithValue(t, `object "Widget": VariantEntityCreateName is for a variant`, func() {
 		ValidateObject(Object{Name: "Widget", VariantEntityCreateName: "WIDGET"})
 	})
+	require.PanicsWithValue(t, `object "Widget": Create.WithoutOrReplace is for a variant`, func() {
+		ValidateObject(Object{Name: "Widget", Create: CreateSpec{WithoutOrReplace: true}})
+	})
 }
 
 func Test_ValidateObject_describeGeneric(t *testing.T) {

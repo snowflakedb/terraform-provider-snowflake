@@ -59,6 +59,21 @@ func (s *CreateReplicationGroupRequest) WithErrorIntegration(errorIntegration Ac
 	return s
 }
 
+func NewCreateSecondaryReplicationGroupRequest(
+	name AccountObjectIdentifier,
+	asReplicaOf ExternalObjectIdentifier,
+) *CreateSecondaryReplicationGroupRequest {
+	s := CreateSecondaryReplicationGroupRequest{}
+	s.name = name
+	s.AsReplicaOf = asReplicaOf
+	return &s
+}
+
+func (s *CreateSecondaryReplicationGroupRequest) WithIfNotExists(ifNotExists bool) *CreateSecondaryReplicationGroupRequest {
+	s.IfNotExists = &ifNotExists
+	return s
+}
+
 func NewAlterReplicationGroupRequest(
 	name AccountObjectIdentifier,
 ) *AlterReplicationGroupRequest {
@@ -109,21 +124,6 @@ func (s *AlterReplicationGroupRequest) WithMove(move ReplicationGroupMoveRequest
 
 func (s *AlterReplicationGroupRequest) WithRemove(remove ReplicationGroupRemoveRequest) *AlterReplicationGroupRequest {
 	s.Remove = &remove
-	return s
-}
-
-func (s *AlterReplicationGroupRequest) WithRefresh(refresh bool) *AlterReplicationGroupRequest {
-	s.Refresh = &refresh
-	return s
-}
-
-func (s *AlterReplicationGroupRequest) WithSuspend(suspend ReplicationGroupSuspendRequest) *AlterReplicationGroupRequest {
-	s.Suspend = &suspend
-	return s
-}
-
-func (s *AlterReplicationGroupRequest) WithResume(resume bool) *AlterReplicationGroupRequest {
-	s.Resume = &resume
 	return s
 }
 
@@ -270,12 +270,40 @@ func (s *ReplicationGroupRemoveRequest) WithFromAllowedAccounts(fromAllowedAccou
 	return s
 }
 
-func NewReplicationGroupSuspendRequest() *ReplicationGroupSuspendRequest {
-	s := ReplicationGroupSuspendRequest{}
+func NewAlterSecondaryReplicationGroupRequest(
+	name AccountObjectIdentifier,
+) *AlterSecondaryReplicationGroupRequest {
+	s := AlterSecondaryReplicationGroupRequest{}
+	s.name = name
 	return &s
 }
 
-func (s *ReplicationGroupSuspendRequest) WithImmediate(immediate bool) *ReplicationGroupSuspendRequest {
+func (s *AlterSecondaryReplicationGroupRequest) WithIfExists(ifExists bool) *AlterSecondaryReplicationGroupRequest {
+	s.IfExists = &ifExists
+	return s
+}
+
+func (s *AlterSecondaryReplicationGroupRequest) WithRefresh(refresh bool) *AlterSecondaryReplicationGroupRequest {
+	s.Refresh = &refresh
+	return s
+}
+
+func (s *AlterSecondaryReplicationGroupRequest) WithSuspend(suspend ReplicationGroupSecondarySuspendRequest) *AlterSecondaryReplicationGroupRequest {
+	s.Suspend = &suspend
+	return s
+}
+
+func (s *AlterSecondaryReplicationGroupRequest) WithResume(resume bool) *AlterSecondaryReplicationGroupRequest {
+	s.Resume = &resume
+	return s
+}
+
+func NewReplicationGroupSecondarySuspendRequest() *ReplicationGroupSecondarySuspendRequest {
+	s := ReplicationGroupSecondarySuspendRequest{}
+	return &s
+}
+
+func (s *ReplicationGroupSecondarySuspendRequest) WithImmediate(immediate bool) *ReplicationGroupSecondarySuspendRequest {
 	s.Immediate = &immediate
 	return s
 }
@@ -296,19 +324,4 @@ func (s *DropReplicationGroupRequest) WithIfExists(ifExists bool) *DropReplicati
 func NewShowReplicationGroupRequest() *ShowReplicationGroupRequest {
 	s := ShowReplicationGroupRequest{}
 	return &s
-}
-
-func NewCreateSecondaryReplicationGroupRequest(
-	name AccountObjectIdentifier,
-	asReplicaOf ExternalObjectIdentifier,
-) *CreateSecondaryReplicationGroupRequest {
-	s := CreateSecondaryReplicationGroupRequest{}
-	s.name = name
-	s.AsReplicaOf = asReplicaOf
-	return &s
-}
-
-func (s *CreateSecondaryReplicationGroupRequest) WithIfNotExists(ifNotExists bool) *CreateSecondaryReplicationGroupRequest {
-	s.IfNotExists = &ifNotExists
-	return s
 }
