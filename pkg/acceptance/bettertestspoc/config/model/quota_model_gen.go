@@ -11,19 +11,24 @@ import (
 )
 
 type QuotaModel struct {
-	Database            tfconfig.Variable `json:"database,omitempty"`
-	Schema              tfconfig.Variable `json:"schema,omitempty"`
-	Name                tfconfig.Variable `json:"name,omitempty"`
-	Comment             tfconfig.Variable `json:"comment,omitempty"`
-	ExcludedUserTag     tfconfig.Variable `json:"excluded_user_tag,omitempty"`
-	ExcludedUsers       tfconfig.Variable `json:"excluded_users,omitempty"`
-	FullyQualifiedName  tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	IncludedUsers       tfconfig.Variable `json:"included_users,omitempty"`
-	PerUserLimitDaily   tfconfig.Variable `json:"per_user_limit_daily,omitempty"`
-	PerUserLimitMonthly tfconfig.Variable `json:"per_user_limit_monthly,omitempty"`
-	PerUserLimitWeekly  tfconfig.Variable `json:"per_user_limit_weekly,omitempty"`
-	SharedResource      tfconfig.Variable `json:"shared_resource,omitempty"`
-	UserTags            tfconfig.Variable `json:"user_tags,omitempty"`
+	Database                 tfconfig.Variable `json:"database,omitempty"`
+	Schema                   tfconfig.Variable `json:"schema,omitempty"`
+	Name                     tfconfig.Variable `json:"name,omitempty"`
+	AdminEmails              tfconfig.Variable `json:"admin_emails,omitempty"`
+	BlockEnforcementEnabled  tfconfig.Variable `json:"block_enforcement_enabled,omitempty"`
+	Comment                  tfconfig.Variable `json:"comment,omitempty"`
+	ExcludedUserTag          tfconfig.Variable `json:"excluded_user_tag,omitempty"`
+	ExcludedUsers            tfconfig.Variable `json:"excluded_users,omitempty"`
+	FullyQualifiedName       tfconfig.Variable `json:"fully_qualified_name,omitempty"`
+	IncludedUsers            tfconfig.Variable `json:"included_users,omitempty"`
+	NotificationIntegrations tfconfig.Variable `json:"notification_integrations,omitempty"`
+	NotificationThreshold    tfconfig.Variable `json:"notification_threshold,omitempty"`
+	NotifyBlockedUsers       tfconfig.Variable `json:"notify_blocked_users,omitempty"`
+	PerUserLimitDaily        tfconfig.Variable `json:"per_user_limit_daily,omitempty"`
+	PerUserLimitMonthly      tfconfig.Variable `json:"per_user_limit_monthly,omitempty"`
+	PerUserLimitWeekly       tfconfig.Variable `json:"per_user_limit_weekly,omitempty"`
+	SharedResource           tfconfig.Variable `json:"shared_resource,omitempty"`
+	UserTags                 tfconfig.Variable `json:"user_tags,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -110,6 +115,13 @@ func (q *QuotaModel) WithName(name string) *QuotaModel {
 	return q
 }
 
+// admin_emails attribute type is not yet supported, so WithAdminEmails can't be generated
+
+func (q *QuotaModel) WithBlockEnforcementEnabled(blockEnforcementEnabled bool) *QuotaModel {
+	q.BlockEnforcementEnabled = tfconfig.BoolVariable(blockEnforcementEnabled)
+	return q
+}
+
 func (q *QuotaModel) WithComment(comment string) *QuotaModel {
 	q.Comment = tfconfig.StringVariable(comment)
 	return q
@@ -125,6 +137,15 @@ func (q *QuotaModel) WithFullyQualifiedName(fullyQualifiedName string) *QuotaMod
 }
 
 // included_users attribute type is not yet supported, so WithIncludedUsers can't be generated
+
+// notification_integrations attribute type is not yet supported, so WithNotificationIntegrations can't be generated
+
+// notification_threshold attribute type is not yet supported, so WithNotificationThreshold can't be generated
+
+func (q *QuotaModel) WithNotifyBlockedUsers(notifyBlockedUsers bool) *QuotaModel {
+	q.NotifyBlockedUsers = tfconfig.BoolVariable(notifyBlockedUsers)
+	return q
+}
 
 func (q *QuotaModel) WithPerUserLimitDaily(perUserLimitDaily int) *QuotaModel {
 	q.PerUserLimitDaily = tfconfig.IntegerVariable(perUserLimitDaily)
@@ -164,6 +185,16 @@ func (q *QuotaModel) WithNameValue(value tfconfig.Variable) *QuotaModel {
 	return q
 }
 
+func (q *QuotaModel) WithAdminEmailsValue(value tfconfig.Variable) *QuotaModel {
+	q.AdminEmails = value
+	return q
+}
+
+func (q *QuotaModel) WithBlockEnforcementEnabledValue(value tfconfig.Variable) *QuotaModel {
+	q.BlockEnforcementEnabled = value
+	return q
+}
+
 func (q *QuotaModel) WithCommentValue(value tfconfig.Variable) *QuotaModel {
 	q.Comment = value
 	return q
@@ -186,6 +217,21 @@ func (q *QuotaModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *Quota
 
 func (q *QuotaModel) WithIncludedUsersValue(value tfconfig.Variable) *QuotaModel {
 	q.IncludedUsers = value
+	return q
+}
+
+func (q *QuotaModel) WithNotificationIntegrationsValue(value tfconfig.Variable) *QuotaModel {
+	q.NotificationIntegrations = value
+	return q
+}
+
+func (q *QuotaModel) WithNotificationThresholdValue(value tfconfig.Variable) *QuotaModel {
+	q.NotificationThreshold = value
+	return q
+}
+
+func (q *QuotaModel) WithNotifyBlockedUsersValue(value tfconfig.Variable) *QuotaModel {
+	q.NotifyBlockedUsers = value
 	return q
 }
 

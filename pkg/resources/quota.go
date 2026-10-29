@@ -165,6 +165,69 @@ var quotaSchema = map[string]*schema.Schema{
 	"per_user_limit_monthly": quotaPerUserLimitSchema("monthly"),
 	"per_user_limit_weekly":  quotaPerUserLimitSchema("weekly"),
 	"per_user_limit_daily":   quotaPerUserLimitSchema("daily"),
+	"block_enforcement_enabled": {
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Default:     false,
+		Description: "Blocks new requests of users who reached their limit. Applies only to the AI domains.",
+	},
+	"notify_blocked_users": {
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Default:     true,
+		Description: "Sends an email to users when they are blocked. Used only when `block_enforcement_enabled` is true.",
+	},
+	"notification_threshold": {
+		Type:        schema.TypeSet,
+		Optional:    true,
+		Description: "Thresholds (percentages of the limit) at which notifications are sent.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"threshold": {
+					Type:         schema.TypeInt,
+					Required:     true,
+					ValidateFunc: validation.IntBetween(1, 1000),
+					Description:  "Percentage of the limit (1 to 1000).",
+				},
+				"spend_strategy": {
+					Type:             schema.TypeString,
+					Optional:         true,
+					Default:          string(sdk.QuotaSpendStrategyProjected),
+					Description:      joinWithSpace("Whether the threshold applies to actual or projected spend.", quotaEnumValuesDescription(sdk.AllQuotaSpendStrategies)),
+					ValidateDiagFunc: quotaEnumValidation(sdk.AllQuotaSpendStrategies),
+				},
+				"notify_user": {
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Default:     true,
+					Description: "Notifies the user who crossed the threshold.",
+				},
+				"cycle": {
+					Type:             schema.TypeString,
+					Optional:         true,
+					Default:          string(sdk.QuotaCycleMonthly),
+					Description:      joinWithSpace("Cycle the threshold applies to.", quotaEnumValuesDescription(sdk.AllQuotaCycles)),
+					ValidateDiagFunc: quotaEnumValidation(sdk.AllQuotaCycles),
+				},
+			},
+		},
+	},
+	"notification_integrations": {
+		Type:     schema.TypeSet,
+		Optional: true,
+		Elem: &schema.Schema{
+			Type:             schema.TypeString,
+			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+		},
+		Description: relatedResourceDescription("Webhook or queue notification integrations used to send admin summaries; email integrations aren't accepted (use `admin_emails` for email recipients). USAGE on each integration must be granted to the SNOWFLAKE application.", resources.NotificationIntegration),
+	},
+	"admin_emails": {
+		Type:        schema.TypeSet,
+		Optional:    true,
+		Elem:        &schema.Schema{Type: schema.TypeString},
+		Description: "Email addresses that receive admin summary notifications. Each must be the verified email of a user in the account.",
+	},
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,
 		Computed:    true,
@@ -209,6 +272,7 @@ func Quota() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Quota, customdiff.All(
 			validateQuotaDomains,
+			validateQuotaNotificationThresholds,
 			ComputedIfAnyAttributeChanged(quotaSchema, ShowOutputAttributeName, "name", "comment"),
 			// Set and list blocks are excluded from describe_output invalidation, because they produce false-positive
 			// HasChange results in ComputedIfAnyAttributeChanged. describe_output is still refreshed after every apply.
@@ -220,6 +284,10 @@ func Quota() *schema.Resource {
 				"per_user_limit_monthly",
 				"per_user_limit_weekly",
 				"per_user_limit_daily",
+				"block_enforcement_enabled",
+				"notify_blocked_users",
+				"notification_integrations",
+				"admin_emails",
 			),
 			ComputedIfAnyAttributeChanged(quotaSchema, FullyQualifiedNameAttributeName, "name", "schema", "database"),
 		)),
@@ -277,6 +345,9 @@ func validateQuotaDomains(_ context.Context, d *schema.ResourceDiff, _ any) erro
 	if monitorsWarehouses && monitorsAi {
 		errs = append(errs, errors.New("a quota can monitor either the WAREHOUSE domain or the AI domains, not both"))
 	}
+	if monitorsWarehouses && d.Get("block_enforcement_enabled").(bool) {
+		errs = append(errs, errors.New("block_enforcement_enabled applies only to the AI domains and can't be used with the WAREHOUSE domain"))
+	}
 	return errors.Join(errs...)
 }
 
@@ -300,6 +371,23 @@ func quotaUnknownInstancesByDomain(rawConfig cty.Value) map[sdk.QuotaSharedResou
 		}
 	}
 	return counts
+}
+
+// validateQuotaNotificationThresholds rejects thresholds Snowflake can't tell apart: it keeps one per (threshold, spend strategy, cycle).
+func validateQuotaNotificationThresholds(_ context.Context, d *schema.ResourceDiff, _ any) error {
+	if !d.NewValueKnown("notification_threshold") {
+		return nil
+	}
+	seen := make(map[string]struct{})
+	for _, raw := range d.Get("notification_threshold").(*schema.Set).List() {
+		threshold := raw.(map[string]any)
+		key := fmt.Sprintf("%d%% %s %s", threshold["threshold"].(int), strings.ToUpper(threshold["spend_strategy"].(string)), strings.ToUpper(threshold["cycle"].(string)))
+		if _, duplicate := seen[key]; duplicate {
+			return fmt.Errorf("notification_threshold: Snowflake keeps one threshold per threshold, spend_strategy and cycle, but %s is defined more than once", key)
+		}
+		seen[key] = struct{}{}
+	}
+	return nil
 }
 
 func CreateQuota(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -381,6 +469,11 @@ func ReadQuota(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 		d.Set("per_user_limit_monthly", remote.perUserLimit(sdk.QuotaCycleMonthly)),
 		d.Set("per_user_limit_weekly", remote.perUserLimit(sdk.QuotaCycleWeekly)),
 		d.Set("per_user_limit_daily", remote.perUserLimit(sdk.QuotaCycleDaily)),
+		d.Set("block_enforcement_enabled", remote.blockEnforcementEnabled),
+		d.Set("notify_blocked_users", remote.notifyBlockedUsers),
+		d.Set("admin_emails", remote.adminEmails),
+		d.Set("notification_threshold", remote.notificationThresholdsToSchema()),
+		d.Set("notification_integrations", remote.notificationIntegrationsToSchema()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.QuotaToSchema(quota)}),
 		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.QuotaDetailsToSchema(details)}),
 	)
@@ -450,10 +543,41 @@ func UpdateQuota(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	return ReadQuota(ctx, d, meta)
 }
 
-// Removals go first, so that e.g. switching between the WAREHOUSE and AI domains works. The calls aren't transactional:
-// if one fails, the quota is left partially configured.
+// Removals go first, so that e.g. switching between the WAREHOUSE and AI domains works. Block enforcement is disabled before
+// any other change (it can't be combined with the WAREHOUSE domain) and enabled after all of them, so that users aren't blocked
+// by a partially applied configuration. The calls aren't transactional: if one fails, the quota is left partially configured.
 func reconcileQuota(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, previous *quotaConfiguration, desired *quotaConfiguration) error {
 	quotas := client.Quotas
+
+	blockEnforcementChanged := previous.blockEnforcementEnabled != desired.blockEnforcementEnabled || previous.notifyBlockedUsers != desired.notifyBlockedUsers
+	setBlockEnforcement := func() error {
+		args := sdk.NewQuotaSetBlockEnforcementEnabledArgsRequest(desired.blockEnforcementEnabled).WithNotifyUsers(desired.notifyBlockedUsers)
+		if _, err := quotas.SetBlockEnforcementEnabled(ctx, sdk.NewSetBlockEnforcementEnabledQuotaRequest(id, *args)); err != nil {
+			return fmt.Errorf("setting block enforcement: %w", err)
+		}
+		return nil
+	}
+	if blockEnforcementChanged && !desired.blockEnforcementEnabled {
+		if err := setBlockEnforcement(); err != nil {
+			return err
+		}
+	}
+
+	removedThresholds, addedThresholds := quotaDiffByKey(previous.notificationThresholds, desired.notificationThresholds, quotaNotificationThreshold.key)
+	for _, threshold := range removedThresholds {
+		args := sdk.NewQuotaRemoveNotificationThresholdArgsRequest(threshold.threshold, threshold.spendStrategy).WithCycle(threshold.cycle)
+		if _, err := quotas.RemoveNotificationThreshold(ctx, sdk.NewRemoveNotificationThresholdQuotaRequest(id, *args)); err != nil {
+			return fmt.Errorf("removing notification threshold %d%% (%s, %s): %w", threshold.threshold, threshold.spendStrategy, threshold.cycle, err)
+		}
+	}
+
+	removedIntegrations, addedIntegrations := quotaDiffByKey(previous.notificationIntegrations, desired.notificationIntegrations, quotaNotificationIntegration.key)
+	for _, integration := range removedIntegrations {
+		args := sdk.NewQuotaRemoveNotificationIntegrationArgsRequest(integration.id)
+		if _, err := quotas.RemoveNotificationIntegration(ctx, sdk.NewRemoveNotificationIntegrationQuotaRequest(id, *args)); err != nil {
+			return fmt.Errorf("removing notification integration %s: %w", integration.id.FullyQualifiedName(), err)
+		}
+	}
 
 	removedResources, addedResources := quotaDiffByKey(previous.sharedResources, desired.sharedResources, quotaSharedResource.key)
 	for _, resource := range removedResources {
@@ -543,6 +667,32 @@ func reconcileQuota(ctx context.Context, client *sdk.Client, id sdk.SchemaObject
 		}
 		if _, err := quotas.SetPerUserLimit(ctx, sdk.NewSetPerUserLimitQuotaRequest(id, *args)); err != nil {
 			return fmt.Errorf("setting the %s per-user limit: %w", cycle, err)
+		}
+	}
+
+	for _, integration := range addedIntegrations {
+		args := sdk.NewQuotaAddNotificationIntegrationArgsRequest(integration.id)
+		if _, err := quotas.AddNotificationIntegration(ctx, sdk.NewAddNotificationIntegrationQuotaRequest(id, *args)); err != nil {
+			return fmt.Errorf("adding notification integration %s: %w", integration.id.FullyQualifiedName(), err)
+		}
+	}
+	if !quotaKeysEqual(previous.adminEmails, desired.adminEmails, quotaEmailKey) {
+		// an empty string clears the admin emails
+		args := sdk.NewQuotaSetAdminEmailsArgsRequestFromEmails(desired.adminEmails...)
+		if _, err := quotas.SetAdminEmails(ctx, sdk.NewSetAdminEmailsQuotaRequest(id, *args)); err != nil {
+			return fmt.Errorf("setting admin emails: %w", err)
+		}
+	}
+	for _, threshold := range addedThresholds {
+		args := sdk.NewQuotaAddNotificationThresholdArgsRequest(threshold.threshold, threshold.spendStrategy, threshold.notifyUser, threshold.cycle)
+		if _, err := quotas.AddNotificationThreshold(ctx, sdk.NewAddNotificationThresholdQuotaRequest(id, *args)); err != nil {
+			return fmt.Errorf("adding notification threshold %d%% (%s): %w", threshold.threshold, threshold.spendStrategy, err)
+		}
+	}
+
+	if blockEnforcementChanged && desired.blockEnforcementEnabled {
+		if err := setBlockEnforcement(); err != nil {
+			return err
 		}
 	}
 

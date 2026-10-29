@@ -5,7 +5,7 @@ resource "snowflake_quota" "basic" {
   name     = "quota_name"
 }
 
-## AI domains: per-user Cortex Code and AI function limits for the finance team
+## AI domains: per-user Cortex Code and AI function limits for the finance team, with blocking
 resource "snowflake_quota" "ai" {
   database = "database_name"
   schema   = "schema_name"
@@ -37,6 +37,26 @@ resource "snowflake_quota" "ai" {
   per_user_limit_monthly = 1000
   per_user_limit_weekly  = 300
   per_user_limit_daily   = 60
+
+  block_enforcement_enabled = true
+  notify_blocked_users      = true
+
+  notification_threshold {
+    threshold      = 80
+    spend_strategy = "PROJECTED"
+    notify_user    = true
+    cycle          = "MONTHLY"
+  }
+  notification_threshold {
+    threshold      = 100
+    spend_strategy = "ACTUAL"
+    notify_user    = false
+  }
+
+  # Webhook or queue integrations with USAGE granted to the SNOWFLAKE application; admin emails must be verified emails of
+  # users in the account.
+  notification_integrations = [snowflake_notification_integration.example.name]
+  admin_emails              = ["admin@example.com"]
 }
 
 ## All users except the ones with a tag

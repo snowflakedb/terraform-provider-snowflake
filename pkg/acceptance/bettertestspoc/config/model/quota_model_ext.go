@@ -17,6 +17,13 @@ type QuotaTagValueModel struct {
 	Value string
 }
 
+type QuotaNotificationThresholdModel struct {
+	Threshold     int
+	SpendStrategy sdk.QuotaSpendStrategy
+	NotifyUser    bool
+	Cycle         sdk.QuotaCycle
+}
+
 func QuotaFromId(
 	resourceName string,
 	id sdk.SchemaObjectIdentifier,
@@ -67,4 +74,23 @@ func (q *QuotaModel) WithIncludedUsers(users ...string) *QuotaModel {
 
 func (q *QuotaModel) WithExcludedUsers(users ...string) *QuotaModel {
 	return q.WithExcludedUsersValue(quotaStringSet(users))
+}
+
+func (q *QuotaModel) WithNotificationThresholds(thresholds ...QuotaNotificationThresholdModel) *QuotaModel {
+	return q.WithNotificationThresholdValue(tfconfig.SetVariable(collections.Map(thresholds, func(threshold QuotaNotificationThresholdModel) tfconfig.Variable {
+		return tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"threshold":      tfconfig.IntegerVariable(threshold.Threshold),
+			"spend_strategy": tfconfig.StringVariable(string(threshold.SpendStrategy)),
+			"notify_user":    tfconfig.BoolVariable(threshold.NotifyUser),
+			"cycle":          tfconfig.StringVariable(string(threshold.Cycle)),
+		})
+	})...))
+}
+
+func (q *QuotaModel) WithNotificationIntegrations(integrations ...sdk.AccountObjectIdentifier) *QuotaModel {
+	return q.WithNotificationIntegrationsValue(quotaStringSet(collections.Map(integrations, sdk.AccountObjectIdentifier.Name)))
+}
+
+func (q *QuotaModel) WithAdminEmails(emails ...string) *QuotaModel {
+	return q.WithAdminEmailsValue(quotaStringSet(emails))
 }

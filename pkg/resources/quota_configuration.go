@@ -13,13 +13,18 @@ import (
 // or from the quota's GET_* methods. Elements keep the spelling they were read with ("raw" fields), and are compared
 // by normalized keys, so that equivalent spellings (e.g. quoted and unquoted identifiers) don't produce diffs.
 type quotaConfiguration struct {
-	sharedResources  []quotaSharedResource
-	userTagsOperator *sdk.QuotaUserTagsOperator
-	userTags         []quotaTagValue
-	excludedUserTags []quotaTagValue
-	includedUsers    []string
-	excludedUsers    []string
-	perUserLimits    map[sdk.QuotaCycle]int
+	sharedResources          []quotaSharedResource
+	userTagsOperator         *sdk.QuotaUserTagsOperator
+	userTags                 []quotaTagValue
+	excludedUserTags         []quotaTagValue
+	includedUsers            []string
+	excludedUsers            []string
+	perUserLimits            map[sdk.QuotaCycle]int
+	blockEnforcementEnabled  bool
+	notifyBlockedUsers       bool
+	notificationThresholds   []quotaNotificationThreshold
+	notificationIntegrations []quotaNotificationIntegration
+	adminEmails              []string
 
 	// unsupportedSharedResources are the shared resources read from Snowflake whose domain this provider version doesn't
 	// know. They can't be configured, so they're left out of the state instead of making every later plan fail.
@@ -67,6 +72,26 @@ func (t quotaTagValue) key() string {
 	return t.tag.FullyQualifiedName() + "=" + t.value
 }
 
+type quotaNotificationThreshold struct {
+	threshold     int
+	spendStrategy sdk.QuotaSpendStrategy
+	notifyUser    bool
+	cycle         sdk.QuotaCycle
+}
+
+func (t quotaNotificationThreshold) key() string {
+	return fmt.Sprintf("%d/%s/%t/%s", t.threshold, t.spendStrategy, t.notifyUser, t.cycle)
+}
+
+type quotaNotificationIntegration struct {
+	id  sdk.AccountObjectIdentifier
+	raw string
+}
+
+func (i quotaNotificationIntegration) key() string {
+	return i.id.FullyQualifiedName()
+}
+
 // quotaUserKey compares user names case-insensitively: INCLUDE_USERS and EXCLUDE_USERS resolve them that way, and GET_QUOTA_SCOPE
 // returns them as stored (e.g. QUOTA_U1 for 'quota_u1').
 func quotaUserKey(name string) string {
@@ -80,6 +105,10 @@ func quotaUserNames(names []string) []string {
 		result[i] = strings.Trim(name, `"`)
 	}
 	return result
+}
+
+func quotaEmailKey(email string) string {
+	return strings.ToLower(email)
 }
 
 func (c *quotaConfiguration) perUserLimit(cycle sdk.QuotaCycle) int {
@@ -134,6 +163,37 @@ func quotaConfigurationFromRaw(get func(key string) any) (*quotaConfiguration, e
 	config.perUserLimits[sdk.QuotaCycleWeekly] = get("per_user_limit_weekly").(int)
 	config.perUserLimits[sdk.QuotaCycleDaily] = get("per_user_limit_daily").(int)
 
+	config.blockEnforcementEnabled = get("block_enforcement_enabled").(bool)
+	config.notifyBlockedUsers = get("notify_blocked_users").(bool)
+
+	for _, raw := range get("notification_threshold").(*schema.Set).List() {
+		threshold := raw.(map[string]any)
+		spendStrategy, err := sdk.ToQuotaSpendStrategy(threshold["spend_strategy"].(string))
+		if err != nil {
+			return nil, err
+		}
+		cycle, err := sdk.ToQuotaCycle(threshold["cycle"].(string))
+		if err != nil {
+			return nil, err
+		}
+		config.notificationThresholds = append(config.notificationThresholds, quotaNotificationThreshold{
+			threshold:     threshold["threshold"].(int),
+			spendStrategy: spendStrategy,
+			notifyUser:    threshold["notify_user"].(bool),
+			cycle:         cycle,
+		})
+	}
+
+	for _, raw := range expandStringList(get("notification_integrations").(*schema.Set).List()) {
+		id, err := sdk.ParseAccountObjectIdentifier(raw)
+		if err != nil {
+			return nil, err
+		}
+		config.notificationIntegrations = append(config.notificationIntegrations, quotaNotificationIntegration{id: id, raw: raw})
+	}
+
+	config.adminEmails = expandStringList(get("admin_emails").(*schema.Set).List())
+
 	return config, nil
 }
 
@@ -152,7 +212,11 @@ func quotaTagValuesFromRaw(set *schema.Set) ([]quotaTagValue, error) {
 
 // Values equivalent to the current configuration keep its spelling.
 func quotaConfigurationFromDetails(details *sdk.QuotaDetails, current *quotaConfiguration) (*quotaConfiguration, error) {
-	remote := &quotaConfiguration{perUserLimits: make(map[sdk.QuotaCycle]int)}
+	remote := &quotaConfiguration{
+		perUserLimits:           make(map[sdk.QuotaCycle]int),
+		blockEnforcementEnabled: details.Config.BlockEnforcementEnabled,
+		notifyBlockedUsers:      details.Config.PerUserBlockNotificationsEnabled,
+	}
 
 	for _, resource := range details.Scope.SharedResources {
 		domain, err := resource.NormalizedDomain()
@@ -213,6 +277,28 @@ func quotaConfigurationFromDetails(details *sdk.QuotaDetails, current *quotaConf
 			remote.perUserLimits[cycle] = *limit
 		}
 	}
+	for _, email := range details.Config.AdminEmails {
+		remote.adminEmails = append(remote.adminEmails, preferCurrentQuotaValue(current.adminEmails, email, quotaEmailKey))
+	}
+
+	for _, threshold := range details.NotificationThresholds {
+		remote.notificationThresholds = append(remote.notificationThresholds, quotaNotificationThreshold{
+			threshold:     threshold.Threshold,
+			spendStrategy: threshold.SpendStrategy,
+			notifyUser:    threshold.NotifyUser,
+			cycle:         threshold.Cycle,
+		})
+	}
+
+	for _, integration := range details.NotificationIntegrations {
+		id, err := sdk.ParseAccountObjectIdentifier(integration.IntegrationName)
+		if err != nil {
+			id = sdk.NewAccountObjectIdentifier(integration.IntegrationName)
+		}
+		remoteIntegration := quotaNotificationIntegration{id: id, raw: integration.IntegrationName}
+		remote.notificationIntegrations = append(remote.notificationIntegrations, preferCurrentQuotaValue(current.notificationIntegrations, remoteIntegration, quotaNotificationIntegration.key))
+	}
+
 	return remote, nil
 }
 
@@ -320,6 +406,27 @@ func quotaTagValuesToSchema(tags []quotaTagValue) []map[string]any {
 	result := make([]map[string]any, len(tags))
 	for i, tag := range tags {
 		result[i] = map[string]any{"tag": tag.raw, "value": tag.value}
+	}
+	return result
+}
+
+func (c *quotaConfiguration) notificationThresholdsToSchema() []map[string]any {
+	result := make([]map[string]any, len(c.notificationThresholds))
+	for i, threshold := range c.notificationThresholds {
+		result[i] = map[string]any{
+			"threshold":      threshold.threshold,
+			"spend_strategy": string(threshold.spendStrategy),
+			"notify_user":    threshold.notifyUser,
+			"cycle":          string(threshold.cycle),
+		}
+	}
+	return result
+}
+
+func (c *quotaConfiguration) notificationIntegrationsToSchema() []string {
+	result := make([]string, len(c.notificationIntegrations))
+	for i, integration := range c.notificationIntegrations {
+		result[i] = integration.raw
 	}
 	return result
 }

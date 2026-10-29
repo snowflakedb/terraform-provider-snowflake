@@ -47,6 +47,16 @@ func (q *QuotaResourceAssert) HasName(expected string) *QuotaResourceAssert {
 	return q
 }
 
+func (q *QuotaResourceAssert) HasAdminEmails(expected ...string) *QuotaResourceAssert {
+	q.SetContainsExactlyStringValues("admin_emails", expected...)
+	return q
+}
+
+func (q *QuotaResourceAssert) HasBlockEnforcementEnabled(expected bool) *QuotaResourceAssert {
+	q.BoolValueSet("block_enforcement_enabled", expected)
+	return q
+}
+
 func (q *QuotaResourceAssert) HasComment(expected string) *QuotaResourceAssert {
 	q.StringValueSet("comment", expected)
 	return q
@@ -66,6 +76,18 @@ func (q *QuotaResourceAssert) HasFullyQualifiedName(expected string) *QuotaResou
 
 func (q *QuotaResourceAssert) HasIncludedUsers(expected ...string) *QuotaResourceAssert {
 	q.SetContainsExactlyStringValues("included_users", expected...)
+	return q
+}
+
+func (q *QuotaResourceAssert) HasNotificationIntegrations(expected ...string) *QuotaResourceAssert {
+	q.SetContainsExactlyStringValues("notification_integrations", expected...)
+	return q
+}
+
+// typed assert for "notification_threshold" (type: Set, subtype: Map) is not currently supported
+
+func (q *QuotaResourceAssert) HasNotifyBlockedUsers(expected bool) *QuotaResourceAssert {
+	q.BoolValueSet("notify_blocked_users", expected)
 	return q
 }
 
@@ -107,6 +129,11 @@ func (q *QuotaResourceAssert) HasNameString(expected string) *QuotaResourceAsser
 	return q
 }
 
+func (q *QuotaResourceAssert) HasBlockEnforcementEnabledString(expected string) *QuotaResourceAssert {
+	q.ValueSet("block_enforcement_enabled", expected)
+	return q
+}
+
 func (q *QuotaResourceAssert) HasCommentString(expected string) *QuotaResourceAssert {
 	q.ValueSet("comment", expected)
 	return q
@@ -114,6 +141,11 @@ func (q *QuotaResourceAssert) HasCommentString(expected string) *QuotaResourceAs
 
 func (q *QuotaResourceAssert) HasFullyQualifiedNameString(expected string) *QuotaResourceAssert {
 	q.ValueSet("fully_qualified_name", expected)
+	return q
+}
+
+func (q *QuotaResourceAssert) HasNotifyBlockedUsersString(expected string) *QuotaResourceAssert {
+	q.ValueSet("notify_blocked_users", expected)
 	return q
 }
 
@@ -151,6 +183,11 @@ func (q *QuotaResourceAssert) HasNoName() *QuotaResourceAssert {
 	return q
 }
 
+func (q *QuotaResourceAssert) HasNoBlockEnforcementEnabled() *QuotaResourceAssert {
+	q.ValueNotSet("block_enforcement_enabled")
+	return q
+}
+
 func (q *QuotaResourceAssert) HasNoComment() *QuotaResourceAssert {
 	q.ValueNotSet("comment")
 	return q
@@ -158,6 +195,11 @@ func (q *QuotaResourceAssert) HasNoComment() *QuotaResourceAssert {
 
 func (q *QuotaResourceAssert) HasNoFullyQualifiedName() *QuotaResourceAssert {
 	q.ValueNotSet("fully_qualified_name")
+	return q
+}
+
+func (q *QuotaResourceAssert) HasNoNotifyBlockedUsers() *QuotaResourceAssert {
+	q.ValueNotSet("notify_blocked_users")
 	return q
 }
 
@@ -179,6 +221,16 @@ func (q *QuotaResourceAssert) HasNoPerUserLimitWeekly() *QuotaResourceAssert {
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
+
+func (q *QuotaResourceAssert) HasAdminEmailsEmpty() *QuotaResourceAssert {
+	q.ValueSet("admin_emails.#", "0")
+	return q
+}
+
+func (q *QuotaResourceAssert) HasBlockEnforcementEnabledEmpty() *QuotaResourceAssert {
+	q.ValueSet("block_enforcement_enabled", "")
+	return q
+}
 
 func (q *QuotaResourceAssert) HasCommentEmpty() *QuotaResourceAssert {
 	q.ValueSet("comment", "")
@@ -202,6 +254,21 @@ func (q *QuotaResourceAssert) HasFullyQualifiedNameEmpty() *QuotaResourceAssert 
 
 func (q *QuotaResourceAssert) HasIncludedUsersEmpty() *QuotaResourceAssert {
 	q.ValueSet("included_users.#", "0")
+	return q
+}
+
+func (q *QuotaResourceAssert) HasNotificationIntegrationsEmpty() *QuotaResourceAssert {
+	q.ValueSet("notification_integrations.#", "0")
+	return q
+}
+
+func (q *QuotaResourceAssert) HasNotificationThresholdEmpty() *QuotaResourceAssert {
+	q.ValueSet("notification_threshold.#", "0")
+	return q
+}
+
+func (q *QuotaResourceAssert) HasNotifyBlockedUsersEmpty() *QuotaResourceAssert {
+	q.ValueSet("notify_blocked_users", "")
 	return q
 }
 
@@ -249,6 +316,11 @@ func (q *QuotaResourceAssert) HasNameNotEmpty() *QuotaResourceAssert {
 	return q
 }
 
+func (q *QuotaResourceAssert) HasBlockEnforcementEnabledNotEmpty() *QuotaResourceAssert {
+	q.ValuePresent("block_enforcement_enabled")
+	return q
+}
+
 func (q *QuotaResourceAssert) HasCommentNotEmpty() *QuotaResourceAssert {
 	q.ValuePresent("comment")
 	return q
@@ -256,6 +328,11 @@ func (q *QuotaResourceAssert) HasCommentNotEmpty() *QuotaResourceAssert {
 
 func (q *QuotaResourceAssert) HasFullyQualifiedNameNotEmpty() *QuotaResourceAssert {
 	q.ValuePresent("fully_qualified_name")
+	return q
+}
+
+func (q *QuotaResourceAssert) HasNotifyBlockedUsersNotEmpty() *QuotaResourceAssert {
+	q.ValuePresent("notify_blocked_users")
 	return q
 }
 

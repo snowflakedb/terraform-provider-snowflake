@@ -9,11 +9,11 @@ description: |-
 
 ~> **Note** Apart from the name and comment, a quota is configured with its instance methods, which the provider calls one by one. These calls are not transactional. If one of them fails while the quota is being created, the quota is marked as tainted and the next `terraform apply` recreates it. If one fails during an update, the quota is left partially configured, and the next `terraform apply` applies the remaining changes.
 
-~> **Note** A quota monitors either the `WAREHOUSE` domain or the AI domains (`AI FUNCTION`, `CORTEX AGENT`, `CORTEX CODE`, `SNOWFLAKE INTELLIGENCE`, `AI GATEWAY`), not both, and each domain either as a whole or by its instances. Snowflake evaluates quotas within minutes, not in real time, so users can briefly exceed their limits.
+~> **Note** A quota monitors either the `WAREHOUSE` domain or the AI domains (`AI FUNCTION`, `CORTEX AGENT`, `CORTEX CODE`, `SNOWFLAKE INTELLIGENCE`, `AI GATEWAY`), not both, and each domain either as a whole or by its instances. Block enforcement applies only to the AI domains. Snowflake evaluates quotas within minutes, not in real time, so users can briefly exceed their limits.
 
 ~> **Note** Users are selected either by tags (`user_tags`) or by excluding tags (`excluded_user_tag`), not both. Snowflake clears the included and excluded users when tags are excluded, so the provider sets them again after changing `excluded_user_tag`.
 
--> **Note** The role managing the quota needs the `SNOWFLAKE.QUOTA_CREATOR` database role and the `CREATE SNOWFLAKE.CORE.QUOTA` privilege on the schema. Tags used in `user_tags` and `excluded_user_tag` require the `APPLYBUDGET` privilege. Check the [per-user quotas documentation](https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas) for details.
+-> **Note** The role managing the quota needs the `SNOWFLAKE.QUOTA_CREATOR` database role and the `CREATE SNOWFLAKE.CORE.QUOTA` privilege on the schema. Tags used in `user_tags` and `excluded_user_tag` require the `APPLYBUDGET` privilege. Notification integrations must be webhook or queue integrations (email integrations aren't accepted; email recipients are set with `admin_emails`). USAGE on the notification integrations must be granted to the `SNOWFLAKE` application, and `admin_emails` must be verified emails of users in the account. Check the [per-user quotas documentation](https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas) for details.
 
 # snowflake_quota (Resource)
 
@@ -29,7 +29,7 @@ resource "snowflake_quota" "basic" {
   name     = "quota_name"
 }
 
-## AI domains: per-user Cortex Code and AI function limits for the finance team
+## AI domains: per-user Cortex Code and AI function limits for the finance team, with blocking
 resource "snowflake_quota" "ai" {
   database = "database_name"
   schema   = "schema_name"
@@ -61,6 +61,26 @@ resource "snowflake_quota" "ai" {
   per_user_limit_monthly = 1000
   per_user_limit_weekly  = 300
   per_user_limit_daily   = 60
+
+  block_enforcement_enabled = true
+  notify_blocked_users      = true
+
+  notification_threshold {
+    threshold      = 80
+    spend_strategy = "PROJECTED"
+    notify_user    = true
+    cycle          = "MONTHLY"
+  }
+  notification_threshold {
+    threshold      = 100
+    spend_strategy = "ACTUAL"
+    notify_user    = false
+  }
+
+  # Webhook or queue integrations with USAGE granted to the SNOWFLAKE application; admin emails must be verified emails of
+  # users in the account.
+  notification_integrations = [snowflake_notification_integration.example.name]
+  admin_emails              = ["admin@example.com"]
 }
 
 ## All users except the ones with a tag
@@ -112,10 +132,15 @@ resource "snowflake_quota" "warehouse" {
 
 ### Optional
 
+- `admin_emails` (Set of String) Email addresses that receive admin summary notifications. Each must be the verified email of a user in the account.
+- `block_enforcement_enabled` (Boolean) (Default: `false`) Blocks new requests of users who reached their limit. Applies only to the AI domains.
 - `comment` (String) Specifies a comment for the quota.
 - `excluded_user_tag` (Block Set) Applies the quota to all users except the ones with the given tag and value. Conflicts with `user_tags`. (see [below for nested schema](#nestedblock--excluded_user_tag))
 - `excluded_users` (Set of String) Names of individual users excluded from the quota. Names are resolved case-insensitively. For more information about this resource, see [docs](./user).
 - `included_users` (Set of String) Names of individual users the quota applies to. Names are resolved case-insensitively. For more information about this resource, see [docs](./user).
+- `notification_integrations` (Set of String) Webhook or queue notification integrations used to send admin summaries; email integrations aren't accepted (use `admin_emails` for email recipients). USAGE on each integration must be granted to the SNOWFLAKE application. For more information about this resource, see [docs](./notification_integration).
+- `notification_threshold` (Block Set) Thresholds (percentages of the limit) at which notifications are sent. (see [below for nested schema](#nestedblock--notification_threshold))
+- `notify_blocked_users` (Boolean) (Default: `true`) Sends an email to users when they are blocked. Used only when `block_enforcement_enabled` is true.
 - `per_user_limit_daily` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Credit limit (a whole number of credits) applied to each user in scope for every daily cycle (UTC-aligned). If not set, the limit is unset.
 - `per_user_limit_monthly` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Credit limit (a whole number of credits) applied to each user in scope for every monthly cycle (UTC-aligned). If not set, the limit is unset.
 - `per_user_limit_weekly` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Credit limit (a whole number of credits) applied to each user in scope for every weekly cycle (UTC-aligned). If not set, the limit is unset.
@@ -137,6 +162,20 @@ Required:
 
 - `tag` (String) Fully qualified name of the tag, e.g. `"<database>"."<schema>"."<tag>"`. The role managing the quota needs the APPLYBUDGET privilege on the tag.
 - `value` (String) Tag value.
+
+
+<a id="nestedblock--notification_threshold"></a>
+### Nested Schema for `notification_threshold`
+
+Required:
+
+- `threshold` (Number) Percentage of the limit (1 to 1000).
+
+Optional:
+
+- `cycle` (String) (Default: `MONTHLY`) Cycle the threshold applies to. Valid values are (case-sensitive): `MONTHLY` | `WEEKLY` | `DAILY`.
+- `notify_user` (Boolean) (Default: `true`) Notifies the user who crossed the threshold.
+- `spend_strategy` (String) (Default: `PROJECTED`) Whether the threshold applies to actual or projected spend. Valid values are (case-sensitive): `ACTUAL` | `PROJECTED`.
 
 
 <a id="nestedblock--shared_resource"></a>

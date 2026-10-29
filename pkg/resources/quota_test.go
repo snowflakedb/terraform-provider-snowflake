@@ -53,6 +53,30 @@ func (f *fakeQuotas) UnsetPerUserLimit(context.Context, *sdk.UnsetPerUserLimitQu
 	return f.record("UNSET_PER_USER_LIMIT")
 }
 
+func (f *fakeQuotas) SetBlockEnforcementEnabled(context.Context, *sdk.SetBlockEnforcementEnabledQuotaRequest) (*string, error) {
+	return f.record("SET_BLOCK_ENFORCEMENT_ENABLED")
+}
+
+func (f *fakeQuotas) AddNotificationThreshold(context.Context, *sdk.AddNotificationThresholdQuotaRequest) (*string, error) {
+	return f.record("ADD_NOTIFICATION_THRESHOLD")
+}
+
+func (f *fakeQuotas) RemoveNotificationThreshold(context.Context, *sdk.RemoveNotificationThresholdQuotaRequest) (*string, error) {
+	return f.record("REMOVE_NOTIFICATION_THRESHOLD")
+}
+
+func (f *fakeQuotas) AddNotificationIntegration(context.Context, *sdk.AddNotificationIntegrationQuotaRequest) (*string, error) {
+	return f.record("ADD_NOTIFICATION_INTEGRATION")
+}
+
+func (f *fakeQuotas) RemoveNotificationIntegration(context.Context, *sdk.RemoveNotificationIntegrationQuotaRequest) (*string, error) {
+	return f.record("REMOVE_NOTIFICATION_INTEGRATION")
+}
+
+func (f *fakeQuotas) SetAdminEmails(context.Context, *sdk.SetAdminEmailsQuotaRequest) (*string, error) {
+	return f.record("SET_ADMIN_EMAILS")
+}
+
 func Test_reconcileQuota(t *testing.T) {
 	id := sdk.NewSchemaObjectIdentifier("DB", "SCH", "QUOTA")
 	aiFunction := quotaSharedResource{domain: sdk.QuotaSharedResourceDomainAiFunction}
@@ -75,18 +99,24 @@ func Test_reconcileQuota(t *testing.T) {
 		assert.Empty(t, reconcile(t, configuration(nil), configuration(nil)))
 	})
 
-	t.Run("shared resources are added before the limits are set", func(t *testing.T) {
+	t.Run("block enforcement is enabled after the other changes", func(t *testing.T) {
 		desired := configuration(func(c *quotaConfiguration) {
 			c.sharedResources = []quotaSharedResource{aiFunction}
 			c.perUserLimits[sdk.QuotaCycleMonthly] = 100
+			c.blockEnforcementEnabled = true
 		})
-		assert.Equal(t, []string{"ADD_SHARED_RESOURCE", "SET_PER_USER_LIMIT"}, reconcile(t, configuration(nil), desired))
+		assert.Equal(t, []string{"ADD_SHARED_RESOURCE", "SET_PER_USER_LIMIT", "SET_BLOCK_ENFORCEMENT_ENABLED"}, reconcile(t, configuration(nil), desired))
 	})
 
-	t.Run("the AI domains are removed before switching to the WAREHOUSE domain", func(t *testing.T) {
-		previous := configuration(func(c *quotaConfiguration) { c.sharedResources = []quotaSharedResource{aiFunction} })
-		desired := configuration(func(c *quotaConfiguration) { c.sharedResources = []quotaSharedResource{warehouse} })
-		assert.Equal(t, []string{"REMOVE_SHARED_RESOURCE", "ADD_SHARED_RESOURCE"}, reconcile(t, previous, desired))
+	t.Run("block enforcement is disabled before switching to the WAREHOUSE domain", func(t *testing.T) {
+		previous := configuration(func(c *quotaConfiguration) {
+			c.sharedResources = []quotaSharedResource{aiFunction}
+			c.blockEnforcementEnabled = true
+		})
+		desired := configuration(func(c *quotaConfiguration) {
+			c.sharedResources = []quotaSharedResource{warehouse}
+		})
+		assert.Equal(t, []string{"SET_BLOCK_ENFORCEMENT_ENABLED", "REMOVE_SHARED_RESOURCE", "ADD_SHARED_RESOURCE"}, reconcile(t, previous, desired))
 	})
 
 	t.Run("accumulating user lists are cleared before a removal and extended otherwise", func(t *testing.T) {
@@ -137,6 +167,27 @@ func Test_reconcileQuota(t *testing.T) {
 		desired := configuration(func(c *quotaConfiguration) { c.perUserLimits[sdk.QuotaCycleWeekly] = 100 })
 		assert.Equal(t, []string{"UNSET_PER_USER_LIMIT", "SET_PER_USER_LIMIT"}, reconcile(t, previous, desired))
 	})
+
+	t.Run("a changed notification threshold is removed and added back", func(t *testing.T) {
+		threshold := quotaNotificationThreshold{threshold: 80, spendStrategy: sdk.QuotaSpendStrategyProjected, notifyUser: true, cycle: sdk.QuotaCycleMonthly}
+		changed := threshold
+		changed.notifyUser = false
+		previous := configuration(func(c *quotaConfiguration) { c.notificationThresholds = []quotaNotificationThreshold{threshold} })
+		desired := configuration(func(c *quotaConfiguration) { c.notificationThresholds = []quotaNotificationThreshold{changed} })
+		assert.Equal(t, []string{"REMOVE_NOTIFICATION_THRESHOLD", "ADD_NOTIFICATION_THRESHOLD"}, reconcile(t, previous, desired))
+	})
+
+	t.Run("notification integrations and admin emails", func(t *testing.T) {
+		integration := quotaNotificationIntegration{id: sdk.NewAccountObjectIdentifier("INT")}
+		previous := configuration(func(c *quotaConfiguration) {
+			c.notificationIntegrations = []quotaNotificationIntegration{integration}
+		})
+		desired := configuration(func(c *quotaConfiguration) {
+			c.adminEmails = []string{"admin@example.com"}
+		})
+		assert.Equal(t, []string{"REMOVE_NOTIFICATION_INTEGRATION", "SET_ADMIN_EMAILS"}, reconcile(t, previous, desired))
+		assert.Equal(t, []string{"ADD_NOTIFICATION_INTEGRATION", "SET_ADMIN_EMAILS"}, reconcile(t, desired, previous))
+	})
 }
 
 func Test_Quota_CustomizeDiff(t *testing.T) {
@@ -162,9 +213,22 @@ func Test_Quota_CustomizeDiff(t *testing.T) {
 		require.ErrorContains(t, err, "either the WAREHOUSE domain or the AI domains")
 	})
 
+	t.Run("block enforcement needs an AI domain", func(t *testing.T) {
+		err := planConfig(t, map[string]any{"shared_resource": []any{sharedResource("WAREHOUSE", "WH")}, "block_enforcement_enabled": true})
+		require.ErrorContains(t, err, "block_enforcement_enabled applies only to the AI domains")
+	})
+
 	t.Run("instance must match the domain", func(t *testing.T) {
 		err := planConfig(t, map[string]any{"shared_resource": []any{sharedResource("CORTEX AGENT", "AGENT")}})
 		require.ErrorContains(t, err, `invalid instance "AGENT" of the CORTEX AGENT domain`)
+	})
+
+	t.Run("duplicate notification thresholds are rejected", func(t *testing.T) {
+		err := planConfig(t, map[string]any{"notification_threshold": []any{
+			map[string]any{"threshold": 80, "spend_strategy": "PROJECTED", "cycle": "MONTHLY", "notify_user": true},
+			map[string]any{"threshold": 80, "spend_strategy": "PROJECTED", "cycle": "MONTHLY", "notify_user": false},
+		}})
+		require.ErrorContains(t, err, "80% PROJECTED MONTHLY is defined more than once")
 	})
 
 	t.Run("a domain can't be monitored both as a whole and by its instances", func(t *testing.T) {
@@ -206,8 +270,13 @@ func Test_Quota_CustomizeDiff(t *testing.T) {
 
 	t.Run("a valid configuration plans", func(t *testing.T) {
 		require.NoError(t, planConfig(t, map[string]any{
-			"shared_resource":        []any{sharedResource("AI FUNCTION", "AI_CLASSIFY"), sharedResource("CORTEX AGENT", "DB.SCH.AGENT")},
-			"per_user_limit_monthly": 1000,
+			"shared_resource":           []any{sharedResource("AI FUNCTION", "AI_CLASSIFY"), sharedResource("CORTEX AGENT", "DB.SCH.AGENT")},
+			"block_enforcement_enabled": true,
+			"notification_threshold": []any{
+				map[string]any{"threshold": 80, "spend_strategy": "PROJECTED"},
+				map[string]any{"threshold": 80, "spend_strategy": "ACTUAL"},
+				map[string]any{"threshold": 80, "spend_strategy": "PROJECTED", "cycle": "DAILY"},
+			},
 		}))
 	})
 }
@@ -222,5 +291,6 @@ func Test_quotaConfigurationFromRaw_importState(t *testing.T) {
 	assert.Empty(t, config.sharedResources)
 	assert.Nil(t, config.userTagsOperator)
 	assert.Empty(t, config.includedUsers)
-	assert.Equal(t, IntDefault, config.perUserLimit(sdk.QuotaCycleMonthly))
+	assert.False(t, config.blockEnforcementEnabled)
+	assert.Empty(t, config.notificationThresholds)
 }

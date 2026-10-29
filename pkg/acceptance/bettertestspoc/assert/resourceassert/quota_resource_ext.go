@@ -33,3 +33,18 @@ func (q *QuotaResourceAssert) HasExcludedUserTag(tag sdk.SchemaObjectIdentifier,
 	q.AddAssertion(assert.SetElemNested("excluded_user_tag", map[string]string{"tag": tag.FullyQualifiedName(), "value": value}))
 	return q
 }
+
+func (q *QuotaResourceAssert) HasNotificationThresholdsCount(expected int) *QuotaResourceAssert {
+	q.AddAssertion(assert.ValueSet("notification_threshold.#", strconv.Itoa(expected)))
+	return q
+}
+
+func (q *QuotaResourceAssert) HasNotificationThreshold(threshold int, spendStrategy sdk.QuotaSpendStrategy, notifyUser bool, cycle sdk.QuotaCycle) *QuotaResourceAssert {
+	q.AddAssertion(assert.SetElemNested("notification_threshold", map[string]string{
+		"threshold":      strconv.Itoa(threshold),
+		"spend_strategy": string(spendStrategy),
+		"notify_user":    strconv.FormatBool(notifyUser),
+		"cycle":          string(cycle),
+	}))
+	return q
+}

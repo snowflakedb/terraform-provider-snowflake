@@ -13,6 +13,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -51,7 +52,14 @@ func TestAcc_Quota_BasicUseCase(t *testing.T) {
 		).
 		WithIncludedUsers(user.ID().Name()).
 		WithPerUserLimitMonthly(1000).
-		WithPerUserLimitDaily(50)
+		WithPerUserLimitDaily(50).
+		WithBlockEnforcementEnabled(true).
+		WithNotificationThresholds(model.QuotaNotificationThresholdModel{
+			Threshold:     80,
+			SpendStrategy: sdk.QuotaSpendStrategyProjected,
+			NotifyUser:    true,
+			Cycle:         sdk.QuotaCycleMonthly,
+		})
 	renamed := model.QuotaFromId("test", newId)
 
 	ref := basic.ResourceReference()
@@ -71,7 +79,12 @@ func TestAcc_Quota_BasicUseCase(t *testing.T) {
 				HasExcludedUsersEmpty().
 				HasPerUserLimitMonthly(-1).
 				HasPerUserLimitWeekly(-1).
-				HasPerUserLimitDaily(-1),
+				HasPerUserLimitDaily(-1).
+				HasBlockEnforcementEnabled(false).
+				HasNotifyBlockedUsers(true).
+				HasNotificationThresholdsCount(0).
+				HasNotificationIntegrationsEmpty().
+				HasAdminEmailsEmpty(),
 			resourceshowoutputassert.QuotaShowOutput(t, ref).
 				HasCreatedOnNotEmpty().
 				HasName(id.Name()).
@@ -92,7 +105,11 @@ func TestAcc_Quota_BasicUseCase(t *testing.T) {
 			HasIncludedUsers(user.ID().Name()).
 			HasPerUserLimitMonthly(1000).
 			HasPerUserLimitWeekly(-1).
-			HasPerUserLimitDaily(50),
+			HasPerUserLimitDaily(50).
+			HasBlockEnforcementEnabled(true).
+			HasNotifyBlockedUsers(true).
+			HasNotificationThresholdsCount(1).
+			HasNotificationThreshold(80, sdk.QuotaSpendStrategyProjected, true, sdk.QuotaCycleMonthly),
 		resourceshowoutputassert.QuotaShowOutput(t, ref).
 			HasComment(comment),
 		assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.config.0.per_user_limit", "1000")),
@@ -203,7 +220,14 @@ func TestAcc_Quota_CompleteUseCase(t *testing.T) {
 		WithExcludedUsers(excludedUser.ID().Name()).
 		WithPerUserLimitMonthly(1000).
 		WithPerUserLimitWeekly(300).
-		WithPerUserLimitDaily(60)
+		WithPerUserLimitDaily(60).
+		WithBlockEnforcementEnabled(true).
+		WithNotifyBlockedUsers(false).
+		WithNotificationThresholds(
+			model.QuotaNotificationThresholdModel{Threshold: 80, SpendStrategy: sdk.QuotaSpendStrategyProjected, NotifyUser: true, Cycle: sdk.QuotaCycleMonthly},
+			model.QuotaNotificationThresholdModel{Threshold: 80, SpendStrategy: sdk.QuotaSpendStrategyProjected, NotifyUser: false, Cycle: sdk.QuotaCycleDaily},
+			model.QuotaNotificationThresholdModel{Threshold: 100, SpendStrategy: sdk.QuotaSpendStrategyActual, NotifyUser: false, Cycle: sdk.QuotaCycleWeekly},
+		)
 
 	ref := complete.ResourceReference()
 
@@ -226,12 +250,19 @@ func TestAcc_Quota_CompleteUseCase(t *testing.T) {
 					HasExcludedUsers(excludedUser.ID().Name()).
 					HasPerUserLimitMonthly(1000).
 					HasPerUserLimitWeekly(300).
-					HasPerUserLimitDaily(60),
+					HasPerUserLimitDaily(60).
+					HasBlockEnforcementEnabled(true).
+					HasNotifyBlockedUsers(false).
+					HasNotificationThresholdsCount(3).
+					HasNotificationThreshold(80, sdk.QuotaSpendStrategyProjected, true, sdk.QuotaCycleMonthly).
+					HasNotificationThreshold(80, sdk.QuotaSpendStrategyProjected, false, sdk.QuotaCycleDaily).
+					HasNotificationThreshold(100, sdk.QuotaSpendStrategyActual, false, sdk.QuotaCycleWeekly),
 				resourceshowoutputassert.QuotaShowOutput(t, ref).
 					HasName(id.Name()).
 					HasComment(comment),
 				assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.scope.0.user_tags_operator", "INTERSECTION")),
-				assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.config.0.per_user_limit", "1000")),
+				assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.config.0.per_user_block_notifications_enabled", "false")),
+				assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.notification_thresholds.#", "3")),
 			),
 		},
 		resource.TestStep{
@@ -320,6 +351,49 @@ func TestAcc_Quota_ExcludedUserTags(t *testing.T) {
 	))
 }
 
+// Quotas accept webhook and queue integrations (not email ones), and verified admin emails only; helpers.VerifiedEmail is verified
+// in the accounts the tests run in.
+func TestAcc_Quota_AdminNotifications(t *testing.T) {
+	// the webhook is never called: admin summaries are sent only when users cross their limits
+	integration, integrationCleanup := testClient().NotificationIntegration.CreateWebhook(t, "https://hooks.slack.com/services/T00000000/B00000000/AAAAAAAAAAAAAAAAAAAAAAAA")
+	t.Cleanup(integrationCleanup)
+	t.Cleanup(testClient().Grant.GrantUsageOnIntegrationToSnowflakeApplication(t, integration.ID()))
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	withNotifications := model.QuotaFromId("test", id).
+		WithNotificationIntegrations(integration.ID()).
+		WithAdminEmails(helpers.VerifiedEmail)
+	withoutNotifications := model.QuotaFromId("test", id)
+
+	ref := withNotifications.ResourceReference()
+
+	resource.Test(t, quotaTestCase(t,
+		resource.TestStep{
+			Config: accconfig.FromModels(t, withNotifications),
+			Check: assertThat(t,
+				resourceassert.QuotaResource(t, ref).
+					HasNotificationIntegrations(integration.ID().Name()).
+					HasAdminEmails(helpers.VerifiedEmail),
+			),
+		},
+		resource.TestStep{
+			Config:            accconfig.FromModels(t, withNotifications),
+			ResourceName:      ref,
+			ImportState:       true,
+			ImportStateVerify: true,
+		},
+		resource.TestStep{
+			Config: accconfig.FromModels(t, withoutNotifications),
+			Check: assertThat(t,
+				resourceassert.QuotaResource(t, ref).
+					HasNotificationIntegrationsEmpty().
+					HasAdminEmailsEmpty(),
+			),
+		},
+	))
+}
+
 func TestAcc_Quota_Domains(t *testing.T) {
 	agentId := testClient().Ids.RandomSchemaObjectIdentifier()
 	t.Cleanup(testClient().CortexAgent.CreateWithId(t, agentId))
@@ -400,11 +474,17 @@ func TestAcc_Quota_Validations(t *testing.T) {
 				model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainAiFunction, Instance: "AI_CLASSIFY"},
 			), "the AI FUNCTION domain is monitored as a whole"),
 			planFails(model.QuotaFromId("test", id).
+				WithSharedResources(model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainWarehouse}).
+				WithBlockEnforcementEnabled(true), "block_enforcement_enabled applies only to the AI domains"),
+			planFails(model.QuotaFromId("test", id).
 				WithSharedResources(model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainCortexAgent, Instance: "AGENT"}),
 				`invalid instance "AGENT" of the CORTEX AGENT domain`),
 			planFails(model.QuotaFromId("test", id).
 				WithSharedResources(model.QuotaSharedResourceModel{Domain: "ai function"}), `expected .*domain to be one of`),
 			planFails(model.QuotaFromId("test", id).WithPerUserLimitMonthly(0), `expected per_user_limit_monthly to be in the range \(1 - 1000000000\)`),
+			planFails(model.QuotaFromId("test", id).WithNotificationThresholds(
+				model.QuotaNotificationThresholdModel{Threshold: 1001, SpendStrategy: sdk.QuotaSpendStrategyActual, Cycle: sdk.QuotaCycleMonthly},
+			), `expected .*threshold to be in the range \(1 - 1000\)`),
 			planFails(model.QuotaFromId("test", id).
 				WithUserTags(sdk.QuotaUserTagsOperatorUnion, model.QuotaTagValueModel{Tag: id, Value: "a"}).
 				WithExcludedUserTags(model.QuotaTagValueModel{Tag: id, Value: "b"}), `Conflicting configuration arguments`),

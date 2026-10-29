@@ -30,7 +30,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ### *(new feature)* Quota resource
 
-We have added a new preview resource, [`snowflake_quota`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/quota), for managing [per-user quotas](https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas) (`SNOWFLAKE.CORE.QUOTA`). It manages the monitored domains (`WAREHOUSE`, `AI FUNCTION`, `CORTEX AGENT`, `CORTEX CODE`, `SNOWFLAKE INTELLIGENCE`, and `AI GATEWAY`), the users the quota applies to, and per-user limits for the monthly, weekly, and daily cycles.
+We have added a new preview resource, [`snowflake_quota`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/quota), for managing [per-user quotas](https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas) (`SNOWFLAKE.CORE.QUOTA`). It manages the monitored domains (`WAREHOUSE`, `AI FUNCTION`, `CORTEX AGENT`, `CORTEX CODE`, `SNOWFLAKE INTELLIGENCE`, and `AI GATEWAY`), the users the quota applies to, per-user limits for the monthly, weekly, and daily cycles, block enforcement, and notifications.
 
 Apart from the name and comment, which are changed in place with `ALTER`, a quota is configured with its instance methods, which the provider calls one by one. These calls are not transactional: if one of them fails during creation, the quota is marked as tainted and recreated by the next apply; if one fails during an update, the quota is left partially configured and the next apply applies the remaining changes.
 
