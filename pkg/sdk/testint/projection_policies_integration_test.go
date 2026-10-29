@@ -117,7 +117,7 @@ func TestInt_ProjectionPolicies(t *testing.T) {
 
 		shown, err := client.ProjectionPolicies.Show(ctx, sdk.NewShowProjectionPolicyRequest().
 			WithLike(sdk.Like{Pattern: sdk.String(id.Name())}).
-			WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id.SchemaId()}}).
+			WithIn(sdk.In{Schema: id.SchemaId()}).
 			WithStartsWith(id.Name()).
 			WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}))
 		require.NoError(t, err)
@@ -131,13 +131,13 @@ func TestInt_ProjectionPolicies(t *testing.T) {
 
 		inDatabase, err := client.ProjectionPolicies.Show(ctx, sdk.NewShowProjectionPolicyRequest().
 			WithLike(sdk.Like{Pattern: sdk.String(id.Name())}).
-			WithIn(sdk.ExtendedIn{In: sdk.In{Database: id.DatabaseId()}}))
+			WithIn(sdk.In{Database: id.DatabaseId()}))
 		require.NoError(t, err)
 		require.Len(t, inDatabase, 1)
 
 		inAccount, err := client.ProjectionPolicies.Show(ctx, sdk.NewShowProjectionPolicyRequest().
 			WithLike(sdk.Like{Pattern: sdk.String(id.Name())}).
-			WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Bool(true)}}))
+			WithIn(sdk.In{Account: sdk.Bool(true)}))
 		require.NoError(t, err)
 		require.Len(t, inAccount, 1)
 	})

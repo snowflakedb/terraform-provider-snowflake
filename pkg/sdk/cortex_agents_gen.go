@@ -130,3 +130,7 @@ type CortexAgentDetails struct {
 	Versions           *string
 	Aliases            *string
 }
+
+func (v *CortexAgentDetails) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
+}

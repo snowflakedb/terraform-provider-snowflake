@@ -66,10 +66,10 @@ var ProjectionPolicy = ssot.Object{
 			ssot.SdkDrop(),
 			ssot.SdkShow(
 				ssot.SdkShowOptionalLike(),
-				ssot.SdkShowOptionalExtendedIn(),
+				ssot.SdkShowOptionalIn(),
 				ssot.SdkShowOptionalStartsWith(),
 				ssot.SdkShowOptionalLimit(),
-				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDLike, ssot.SdkShowByIDExtendedIn),
+				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDLike, ssot.SdkShowByIDIn),
 			),
 			ssot.SdkDescribe(
 				ssot.SdkDescribePlainOnlyField("DatabaseName", "string"),
@@ -80,6 +80,9 @@ var ProjectionPolicy = ssot.Object{
 		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
 		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
 		ssot.WithResource(),
+		ssot.WithModel(),
+		ssot.WithResourceAssert(),
+		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
 	},
 	// body is SET BODY -> and cannot share a SET with comment. The setter is WithSetBody.
 	// Generated ApplySetUnset would emit WithBody and put both fields on one request.

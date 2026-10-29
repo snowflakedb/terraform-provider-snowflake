@@ -45,6 +45,8 @@ var DescribeStreamlitDetailSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// database_name is skipped and won't be generated
+	// schema_name is skipped and won't be generated
 }, streamlitDetailToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeStreamlitDetailSchema
@@ -62,6 +64,8 @@ func StreamlitDetailToSchema(streamlitDetail *sdk.StreamlitDetail) map[string]an
 	// import_urls: manual addition and mapping is needed
 	// external_access_integrations: manual addition and mapping is needed
 	streamlitDetailSchema["external_access_secrets"] = streamlitDetail.ExternalAccessSecrets
+	// database_name is skipped and won't be generated
+	// schema_name is skipped and won't be generated
 	streamlitDetailToSchemaMapper{}.additionalToSchema(streamlitDetail, streamlitDetailSchema)
 	return streamlitDetailSchema
 }
