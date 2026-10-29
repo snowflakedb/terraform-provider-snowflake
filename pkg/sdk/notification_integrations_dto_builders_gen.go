@@ -138,6 +138,16 @@ func (s *EmailParamsRequest) WithAllowedRecipients(allowedRecipients []Notificat
 	return s
 }
 
+func (s *EmailParamsRequest) WithDefaultRecipients(defaultRecipients []NotificationIntegrationAllowedRecipient) *EmailParamsRequest {
+	s.DefaultRecipients = defaultRecipients
+	return s
+}
+
+func (s *EmailParamsRequest) WithDefaultSubject(defaultSubject string) *EmailParamsRequest {
+	s.DefaultSubject = &defaultSubject
+	return s
+}
+
 func NewWebhookParamsRequest(
 	webhookUrl string,
 ) *WebhookParamsRequest {

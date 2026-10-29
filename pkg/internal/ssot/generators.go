@@ -7,6 +7,9 @@ import (
 type SchemaGenerator struct {
 	Show     bool
 	Describe bool
+	// ShowFromBase keeps Show<Variant>Schema and <Variant>ToSchema, and maps *sdk.<VariantOf.Name>.
+	// Use it when every variant is one row of the base SHOW type.
+	ShowFromBase bool
 	// ShowManualFields and DescribeManualFields are the same *Attribute pointers that sit in Columns.
 	// The key stays in the generated schema map and ToSchema, but the mapping line is omitted: a
 	// generated additionalSchemaMapper[T] stub is emitted, and *_ext.go must implement it.
@@ -33,6 +36,7 @@ type SdkGenerator struct {
 	ShowOptionalLimitFrom  bool
 	ShowOptionalLimit      bool
 	ShowByIDFiltering      []SdkShowByIDFilteringKind
+	ShowByIDPredicate      SdkShowByIDPredicateKind
 	ShowQueryStructName    string
 	// ShowResultFilterHook makes the generated Show drop rows for which the SDK ext file's excludeFromShow returns true.
 	ShowResultFilterHook bool
@@ -65,8 +69,13 @@ type SdkGenerator struct {
 	DescribeQueryStructName           string
 	DescribeIdentifierOverride        string
 	// DescribePlainOnlyFields are fields on the DESCRIBE plain struct that are not DESCRIBE columns.
-	// convert skips them. additionalConvert in the SDK ext file fills them.
+	// convert skips them. additionalConvert in the SDK ext file fills them, unless DescribeDetailsFromIdentifier
+	// copies every one of them from the identifier. Then the hook is not generated.
 	DescribePlainOnlyFields []SdkPlainOnlyField
+	// DescribeDetailsFromIdentifier emits DescribeDetails for a columnar DESCRIBE. The method calls Describe
+	// and copies plain-only identifier fields from the id. SchemaObjectIdentifier copies DatabaseName and SchemaName.
+	// DatabaseObjectIdentifier copies DatabaseName. It is separate from DescribeDetailsMethod, which parses a property-list DESCRIBE and sets Id.
+	DescribeDetailsFromIdentifier bool
 
 	Drop                bool
 	DropDoc             string
@@ -144,10 +153,16 @@ type ObjectAssertGenerator struct {
 	// The column stays in Columns. Has* is not generated.
 	ShowSkipFields     []*Attribute
 	DescribeSkipFields []*Attribute
-	// ShowProjection is the method on the VariantOf row, such as AsAdaptive.
-	// The fetch is testClient.<VariantOf.Name>.Show, then that method.
-	// The object type constant is sdk.ObjectType<VariantOf.Name>.
+	// ShowProjection is the method on the VariantOf client, such as ShowByIDAdaptive.
+	// The fetch is testClient.<VariantOf.Name>.<ShowProjection>.
+	// The row type stays sdk.<Variant>. The object type constant is sdk.ObjectType<VariantOf.Name>.
 	ShowProjection string
+	// ShowRowFromBase uses sdk.<VariantOf.Name> as the SHOW row and fetches through
+	// testClient.<VariantOf.Name>.Show. The assertion name stays the variant.
+	ShowRowFromBase bool
+	// DescribeMethod replaces testClient.<Object>.Describe. DescribeOnBase uses VariantOf.Name as the client.
+	DescribeMethod string
+	DescribeOnBase bool
 
 	// ShowNestedFields and DescribeNestedFields hold the *Attribute pointers that sit in Columns.
 	// The column gets the nested assertion adapter (Has<Field>With) instead of a plain Has*.
@@ -157,9 +172,10 @@ type ObjectAssertGenerator struct {
 
 // ObjectAssertNestedField is a nested-block column. The nested assertion type is derived from the Go type of
 // its SDK field. GoType is that type when set, e.g. "[]sdk.ExternalVolumeStorageLocationDetails".
-// Empty GoType means the default for a list or set column: "[]sdk." + object Name + the column name in
+// Empty GoType means the default. A list or set is "[]sdk." + object Name + the column name in
 // camel case with one trailing "s" dropped + "Details" (storage_locations on ExternalVolume is
-// []sdk.ExternalVolumeStorageLocationDetails).
+// []sdk.ExternalVolumeStorageLocationDetails). An object column is sdk.<NestedObjectDetails>, and a
+// pointer when the column is not required.
 type ObjectAssertNestedField struct {
 	Attr   *Attribute
 	GoType string
@@ -212,6 +228,12 @@ func SchemaShow(opts ...SchemaShowOption) SchemaOption {
 			opt(s)
 		}
 	}
+}
+
+// SchemaShowFromBase keeps Show<Variant>Schema and <Variant>ToSchema, and maps *sdk.<VariantOf.Name>.
+// Use it when every variant is one row of the base SHOW type.
+func SchemaShowFromBase() SchemaShowOption {
+	return func(s *SchemaGenerator) { s.ShowFromBase = true }
 }
 
 // SchemaShowManualFields copies ManualFields from the old show schema def.
@@ -346,6 +368,13 @@ func SdkDescribeDetailsParseIgnoreUnknown() SdkDescribeDetailsOption {
 // the rows with the hand-written Parse<Name>Described(rows []<Name>Property) (<Name>Details, error), and sets Id.
 func SdkDescribeDetailsMethod() SdkDescribeDetailsOption {
 	return func(s *SdkGenerator) { s.DescribeDetailsMethod = true }
+}
+
+// SdkDescribeDetailsFromIdentifier emits DescribeDetails for a columnar DESCRIBE. The method calls Describe and copies
+// plain-only identifier fields from the id: DatabaseName and SchemaName for a SchemaObjectIdentifier, and DatabaseName
+// for a DatabaseObjectIdentifier. It is not SdkDescribeDetailsMethod: that option parses a property-list DESCRIBE and sets Id.
+func SdkDescribeDetailsFromIdentifier() SdkDescribeOption {
+	return func(s *SdkGenerator) { s.DescribeDetailsFromIdentifier = true }
 }
 
 // SdkDescribeDetailsForVariants emits the details of each variant: the struct <Variant>Details from the Describe.Columns
@@ -675,11 +704,18 @@ func ObjectAssertShowSkipFields(attrs ...*Attribute) ObjectAssertShowOption {
 }
 
 // ObjectAssertShowFromBase fetches through testClient.<VariantOf.Name>.<method>, such as ShowByIDAdaptive.
-// The client name is VariantOf.Name, returned by Object.ShowFromBase.
+// The row type stays sdk.<Variant>. The client name is VariantOf.Name, returned by Object.ShowFromBase.
 func ObjectAssertShowFromBase(projection string) ObjectAssertShowOption {
 	return func(a *ObjectAssertGenerator) {
 		a.ShowProjection = projection
 	}
+}
+
+// ObjectAssertShowRowFromBase uses sdk.<VariantOf.Name> as the SHOW row and fetches through
+// testClient.<VariantOf.Name>.Show. The assertion name stays the variant.
+// Use it when every variant is one row of the base SHOW type.
+func ObjectAssertShowRowFromBase() ObjectAssertShowOption {
+	return func(a *ObjectAssertGenerator) { a.ShowRowFromBase = true }
 }
 
 // ShowFromBase is the SHOW fetch for a variant object assertion.
@@ -691,14 +727,79 @@ type ShowFromBase struct {
 
 // ShowFromBase returns the resolved SHOW projection. ok is false when ObjectAssertShowFromBase is not set.
 func (obj Object) ShowFromBase() (ShowFromBase, bool) {
-	method := ObjectGenerators(obj.Generators...).ObjectAssert.ShowProjection
-	if method == "" {
+	g := ObjectGenerators(obj.Generators...).ObjectAssert
+	if g.ShowProjection == "" {
 		return ShowFromBase{}, false
 	}
-	if obj.VariantOf == nil || obj.VariantOf.Name == "" {
-		panic(fmt.Sprintf("object %q: object assertion show projection %q requires VariantOf", obj.Name, method))
+	if g.ShowRowFromBase {
+		panic(fmt.Sprintf("object %q: object assertion show row from base and show projection are both set", obj.Name))
 	}
-	return ShowFromBase{ClientName: obj.VariantOf.Name, Method: method}, true
+	if obj.VariantOf == nil || obj.VariantOf.Name == "" {
+		panic(fmt.Sprintf("object %q: object assertion show projection %q requires VariantOf", obj.Name, g.ShowProjection))
+	}
+	return ShowFromBase{ClientName: obj.VariantOf.Name, Method: g.ShowProjection}, true
+}
+
+// ShowRowFromBase returns the shared SHOW row fetch. ok is false when ObjectAssertShowRowFromBase is not set.
+// ClientName is VariantOf.Name. Method is Show. The row type is sdk.<VariantOf.Name>.
+func (obj Object) ShowRowFromBase() (ShowFromBase, bool) {
+	g := ObjectGenerators(obj.Generators...).ObjectAssert
+	if !g.ShowRowFromBase {
+		return ShowFromBase{}, false
+	}
+	if g.ShowProjection != "" {
+		panic(fmt.Sprintf("object %q: object assertion show row from base and show projection are both set", obj.Name))
+	}
+	if obj.VariantOf == nil || obj.VariantOf.Name == "" {
+		panic(fmt.Sprintf("object %q: object assertion show row from base requires VariantOf", obj.Name))
+	}
+	return ShowFromBase{ClientName: obj.VariantOf.Name, Method: "Show"}, true
+}
+
+// DescribeFetch is the DESCRIBE fetch when it is not testClient.<Object>.Describe.
+type DescribeFetch struct {
+	ClientName string
+	Method     string
+}
+
+// DescribeFetch returns the resolved DESCRIBE fetch. ok is false when no method override is set.
+// ObjectAssertDescribeMethod uses this object's name as the client.
+// ObjectAssertDescribeFromBase uses VariantOf.Name.
+func (obj Object) DescribeFetch() (DescribeFetch, bool) {
+	g := ObjectGenerators(obj.Generators...).ObjectAssert
+	if g.DescribeMethod == "" {
+		return DescribeFetch{}, false
+	}
+	client := obj.Name
+	if g.DescribeOnBase {
+		if obj.VariantOf == nil || obj.VariantOf.Name == "" {
+			panic(fmt.Sprintf("object %q: object assertion describe method %q from base requires VariantOf", obj.Name, g.DescribeMethod))
+		}
+		client = obj.VariantOf.Name
+	}
+	return DescribeFetch{ClientName: client, Method: g.DescribeMethod}, true
+}
+
+// ObjectAssertDescribeMethod fetches through testClient.<Object>.<method> instead of .Describe.
+func ObjectAssertDescribeMethod(method string) ObjectAssertDescribeOption {
+	return func(a *ObjectAssertGenerator) {
+		if method == "" {
+			panic("object assertion describe method is empty")
+		}
+		a.DescribeMethod = method
+	}
+}
+
+// ObjectAssertDescribeFromBase fetches through testClient.<VariantOf.Name>.<method> instead of testClient.<Object>.Describe.
+// The details type stays sdk.<Object>Details.
+func ObjectAssertDescribeFromBase(method string) ObjectAssertDescribeOption {
+	return func(a *ObjectAssertGenerator) {
+		if method == "" {
+			panic("object assertion describe method is empty")
+		}
+		a.DescribeMethod = method
+		a.DescribeOnBase = true
+	}
 }
 
 func ObjectAssertDescribe(opts ...ObjectAssertDescribeOption) ObjectAssertOption {

@@ -156,6 +156,30 @@ var CatalogIntegration = ssot.Object{
 		CatalogIntegrationCatalogApiType,
 	},
 	Generators: []ssot.GeneratorOption{
+		ssot.WithSchema(
+			ssot.SchemaShow(),
+			ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(
+				&catalogIntegrationDescribeColumns.RestConfig,
+				&catalogIntegrationDescribeColumns.OauthRestAuthentication,
+				&catalogIntegrationDescribeColumns.BearerRestAuthentication,
+				&catalogIntegrationDescribeColumns.Sigv4RestAuthentication,
+			)),
+		),
+		ssot.WithShowOutputAssert(
+			ssot.ShowOutputShow(),
+			ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(
+				&catalogIntegrationDescribeColumns.RestConfig,
+				&catalogIntegrationDescribeColumns.OauthRestAuthentication,
+				&catalogIntegrationDescribeColumns.BearerRestAuthentication,
+				&catalogIntegrationDescribeColumns.Sigv4RestAuthentication,
+			)),
+		),
+		// Parameter assertions omitted. The catalog has no CATALOG_INTEGRATION entries.
+		ssot.WithObjectAssert(
+			ssot.ObjectAssertShow(),
+			// Describe returns property rows. The parsed struct is fetched by DescribeDetails.
+			ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeMethod("DescribeDetails")),
+		),
 		ssot.WithSdk(
 			ssot.SdkCreateForVariants(),
 			ssot.SdkAlter(),

@@ -18,6 +18,8 @@ type RowAccessPolicies interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*RowAccessPolicy, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*RowAccessPolicy, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*RowAccessPolicyDescription, error)
+	// DescribeDetails calls Describe and sets database and schema from the identifier. DESCRIBE does not return those columns.
+	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*RowAccessPolicyDescription, error)
 }
 
 // CreateRowAccessPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-row-access-policy.
@@ -116,8 +118,14 @@ type describeRowAccessPolicyDBRow struct {
 }
 
 type RowAccessPolicyDescription struct {
-	Name       string
-	Signature  []TableColumnSignature
-	ReturnType string
-	Body       string
+	Name         string
+	Signature    []TableColumnSignature
+	ReturnType   string
+	Body         string
+	DatabaseName string
+	SchemaName   string
+}
+
+func (v *RowAccessPolicyDescription) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
 }

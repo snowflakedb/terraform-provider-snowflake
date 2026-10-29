@@ -192,6 +192,8 @@ func (bm bracketModifier) Modify(v any) string {
 	}
 }
 
+// TODO [next PRs]: drop the reverse modifier. One struct per allowed-list target, then a static
+// TO ALLOWED_* or FROM ALLOWED_* clause. See pkg/sdk/generator/README.md#create-and-alter.
 type reverseModifier string
 
 const (

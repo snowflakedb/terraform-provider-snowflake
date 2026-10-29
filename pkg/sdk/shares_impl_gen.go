@@ -73,9 +73,11 @@ func (v *shares) Describe(ctx context.Context, id AccountObjectIdentifier) ([]Sh
 
 func (r *CreateShareRequest) toOpts() *CreateShareOptions {
 	opts := &CreateShareOptions{
-		OrReplace: r.OrReplace,
-		name:      r.name,
-		Comment:   r.Comment,
+		OrReplace:         r.OrReplace,
+		IfNotExists:       r.IfNotExists,
+		name:              r.name,
+		SecureObjectsOnly: r.SecureObjectsOnly,
+		Comment:           r.Comment,
 	}
 	return opts
 }
@@ -131,11 +133,13 @@ func (r *ShowShareRequest) toOpts() *ShowShareOptions {
 
 func (r sharesRow) convert() (*Share, error) {
 	result := &Share{
-		CreatedOn:    r.CreatedOn,
-		OwnerAccount: r.OwnerAccount,
-		Name:         r.Name,
-		Owner:        r.Owner,
-		Comment:      r.Comment,
+		CreatedOn:         r.CreatedOn,
+		OwnerAccount:      r.OwnerAccount,
+		Name:              r.Name,
+		Owner:             r.Owner,
+		Comment:           r.Comment,
+		ListingGlobalName: r.ListingGlobalName,
+		SecureObjectsOnly: r.SecureObjectsOnly,
 	}
 	mapStringWithMapping(&result.Kind, r.Kind, ToShareKind)
 	mapStringWithMapping(&result.DatabaseName, r.DatabaseName, ParseAccountObjectIdentifier)

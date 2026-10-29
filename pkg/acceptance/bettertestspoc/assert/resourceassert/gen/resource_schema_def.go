@@ -98,22 +98,6 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.AuthenticationPolicy().Schema,
 	},
 	{
-		name:   "CatalogIntegrationAwsGlue",
-		schema: resources.CatalogIntegrationAwsGlue().Schema,
-	},
-	{
-		name:   "CatalogIntegrationObjectStorage",
-		schema: resources.CatalogIntegrationObjectStorage().Schema,
-	},
-	{
-		name:   "CatalogIntegrationOpenCatalog",
-		schema: resources.CatalogIntegrationOpenCatalog().Schema,
-	},
-	{
-		name:   "CatalogIntegrationIcebergRest",
-		schema: resources.CatalogIntegrationIcebergRest().Schema,
-	},
-	{
 		name:   "CortexAgent",
 		schema: resources.CortexAgent().Schema,
 	},

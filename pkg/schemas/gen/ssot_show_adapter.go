@@ -37,10 +37,18 @@ func showResultSchemaDetailsFromSsot(obj ssot.Object, isDescribe bool) ShowResul
 	if len(manualAttrs) > 0 {
 		manual = collections.Map(manualAttrs, func(attr *ssot.Attribute) string { return attr.OutputKey() })
 	}
+	sdkType := ""
+	if !isDescribe && g.Schema.ShowFromBase {
+		if obj.VariantOf == nil || obj.VariantOf.Name == "" {
+			panic(fmt.Sprintf("object %q: schema show from base requires VariantOf", obj.Name))
+		}
+		sdkType = "sdk." + obj.VariantOf.Name
+	}
 	return ShowResultSchemaDetails{
 		IsDescribe:    isDescribe,
 		SkipFields:    skip,
 		ManualFields:  manual,
+		SdkType:       sdkType,
 		StructDetails: genhelpers.StructDetails{Name: name, Fields: fields},
 	}
 }
